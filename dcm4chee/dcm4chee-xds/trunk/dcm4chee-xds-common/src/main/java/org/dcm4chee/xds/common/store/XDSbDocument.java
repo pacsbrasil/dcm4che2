@@ -39,7 +39,6 @@
 
 package org.dcm4chee.xds.common.store;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -57,15 +56,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class XDSDocument extends BasicXDSDocument {
+public class XDSbDocument extends XDSDocument {
 
 	private ExtrinsicObjectType extrinsicObj;
 	private Map slotByName;
 	private Map extIdentifiers;
 	
-	private Logger log = LoggerFactory.getLogger(XDSDocument.class);
+	private Logger log = LoggerFactory.getLogger(XDSbDocument.class);
 			
-	public XDSDocument(ExtrinsicObjectType extrObj, XDSDocumentWriter xdsDocWriter) {
+	public XDSbDocument(ExtrinsicObjectType extrObj, XDSDocumentWriter xdsDocWriter) {
 		super(xdsDocWriter);
 		extrinsicObj = extrObj;
 	}

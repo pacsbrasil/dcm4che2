@@ -38,12 +38,11 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xds.common.store;
 
-import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import javax.xml.transform.Source;
 
 import org.dcm4chee.xds.common.XDSConstants;
 import org.dcm4chee.xds.common.exception.XDSException;
@@ -66,23 +65,8 @@ public class DocumentStoreDelegate {
 		this.documentStoreService = documentStoreService;
 	}
 	
-	public StoredDocument storeDocument(XDSDocument xdsDoc) throws XDSException {
-		log.info("storeDocument xdsDoc:"+xdsDoc);
-		try {
-	        return (StoredDocument) server.invoke(documentStoreService,
-	                "storeDocument",
-	                new Object[] { xdsDoc },
-	                new String[] { XDSDocument.class.getName() } );
-		} catch ( Exception x ) {
-			if ( x instanceof XDSException ) {
-				throw (XDSException)x;
-			} else if ( x.getCause() instanceof XDSException ){
-				throw (XDSException) x.getCause();
-			} else {
-				log.error( "Exception occured in storeDocument!", x );
-				throw new XDSException(XDSConstants.XDS_ERR_REPOSITORY_ERROR,"Store Document Failed!",x);
-			}
-		}
+	public XDSDocument storeDocument(XDSDocument xdsDoc) throws XDSException {
+		return storeDocument(xdsDoc,null);
 	}
 
 	/**
@@ -117,16 +101,35 @@ public class DocumentStoreDelegate {
 		}
 	}
 	
-	public BasicXDSDocument retrieveDocument(String docUid) throws XDSException {
+	public XDSDocument retrieveDocument(String docUid, String mime) throws XDSException {
 		log.info("#### Retrieve Document:"+docUid);
 		try {
-	        return (BasicXDSDocument) server.invoke(documentStoreService,
+	        return (XDSDocument) server.invoke(documentStoreService,
 	                "retrieveDocument",
-	                new Object[] { docUid },
-	                new String[] { String.class.getName() } );
+	                new Object[] { docUid, mime },
+	                new String[] { String.class.getName(), String.class.getName() } );
 		} catch ( Exception x ) {
 			log.error( "Exception occured in retrieveDocument!", x );
 			throw new XDSException(XDSConstants.XDS_ERR_REPOSITORY_ERROR,"Retrieve Document Failed! document UID:"+docUid,x);
+		}
+	}
+
+	public XDSDocument storeDocument(XDSDocument xdsDoc, Source metadata) throws XDSException {
+		log.info("storeDocument xdsDoc:"+xdsDoc+" metadata:"+metadata);
+		try {
+	        return (XDSDocument) server.invoke(documentStoreService,
+	                "storeDocument",
+	                new Object[] { xdsDoc, metadata },
+	                new String[] { XDSDocument.class.getName(), Source.class.getName() } );
+		} catch ( Exception x ) {
+			if ( x instanceof XDSException ) {
+				throw (XDSException)x;
+			} else if ( x.getCause() instanceof XDSException ){
+				throw (XDSException) x.getCause();
+			} else {
+				log.error( "Exception occured in storeDocument!", x );
+				throw new XDSException(XDSConstants.XDS_ERR_REPOSITORY_ERROR,"Store Document Failed!",x);
+			}
 		}
 	}	
 }

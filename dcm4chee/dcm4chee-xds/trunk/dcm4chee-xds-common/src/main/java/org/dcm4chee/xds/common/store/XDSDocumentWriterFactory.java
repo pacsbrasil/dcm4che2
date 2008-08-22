@@ -40,6 +40,7 @@
 package org.dcm4chee.xds.common.store;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,8 +50,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.activation.DataHandler;
+import javax.activation.DataSource;
 import javax.activation.FileDataSource;
-import javax.activation.URLDataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.xml.soap.AttachmentPart;
@@ -65,18 +66,18 @@ public class XDSDocumentWriterFactory {
     private int bufferSize = 8192;
 
     private static XDSDocumentWriterFactory singleton;
-    
+
     private static Logger log = LoggerFactory.getLogger(XDSDocumentWriter.class);
-    
+
     private XDSDocumentWriterFactory() {
     }
-    
+
     public static XDSDocumentWriterFactory getInstance() {
         if ( singleton == null )
             singleton = new XDSDocumentWriterFactory();
         return singleton;
     }
-    
+
     public XDSDocumentWriter getDocumentWriter(File f) throws IOException {
         long fileSize = f.length();
         if ( fileSize > Integer.MAX_VALUE) {
@@ -85,28 +86,28 @@ public class XDSDocumentWriterFactory {
         FileDataSource ds = new FileDataSource(f);
         return new DataHandlerWriter(new DataHandler(ds), (int)fileSize);
     }
-    
+
     public XDSDocumentWriter getDocumentWriter(InputStream inputStream, int size) throws IOException {
         InputStreamDataSource ds = new InputStreamDataSource(inputStream);
         return new DataHandlerWriter(new DataHandler(ds), size);
     }
-    
+
     public XDSDocumentWriter getDocumentWriter(AttachmentPart part) throws SOAPException, IOException {
-    	if ( log.isDebugEnabled()) {
-    		log.debug("part datahandler:"+part.getDataHandler().getClass().getName());
-    		log.debug("part contentType:"+part.getContentType());
-    	}
-    	if ( "application/dicom".equalsIgnoreCase(part.getContentType() ) ) { //ImageIO isn't the right handler to handle basic DICOM objects like manifest KOS
-    		InputStream is = part.getDataHandler().getInputStream();
-    		return new CachedWriter( is );
-    	}
+        if ( log.isDebugEnabled()) {
+            log.debug("part datahandler:"+part.getDataHandler().getClass().getName());
+            log.debug("part contentType:"+part.getContentType());
+        }
+        if ( "application/dicom".equalsIgnoreCase(part.getContentType() ) ) { //ImageIO isn't the right handler to handle basic DICOM objects like manifest KOS
+            InputStream is = part.getDataHandler().getInputStream();
+            return new CachedWriter( is );
+        }
         Object content = part.getContent();
         log.debug("part:"+part.getClass().getName());
         log.debug("content:"+content.getClass().getName());
         if ( content instanceof String ) {
             return new DataWriter(content.toString());
         } else if ( content instanceof StreamSource ) {
-        	return new CachedWriter(((StreamSource) content).getInputStream());
+            return new CachedWriter(((StreamSource) content).getInputStream());
         } else if ( content instanceof InputStream ) {
             return new CachedWriter( (InputStream) content );
         } else if ( content instanceof MimeMultipart ) {
@@ -115,7 +116,7 @@ public class XDSDocumentWriterFactory {
             throw new IllegalArgumentException("Cant get Writer for attachment! Reason: Unknown content:"+content.getClass().getName()+" contentType:"+part.getContentType());
         }
     }
-    
+
     public XDSDocumentWriter getDocumentWriter(String s) throws IOException {
         return new DataWriter(s);
     }
@@ -123,119 +124,122 @@ public class XDSDocumentWriterFactory {
     public XDSDocumentWriter getDocumentWriter(byte[] data) throws IOException {
         return new DataWriter(data);
     }
-    
+
     public XDSDocumentWriter getDocumentWriter(DataHandler dh, int size) throws IOException {
         return new DataHandlerWriter(dh, size);
     }
-    
+
     // TODO: remove if not needed
     class CachedWriter implements XDSDocumentWriter {
-    	public static final int MAX_MEMORY_CACHESIZE = 1<<26; //64 MBytes
+        public static final int MAX_MEMORY_CACHESIZE = 1<<26; //64 MBytes
         private byte[] buffer;
         private File cacheFile;
         private boolean deleteCacheFileOnClose = true;
 
         public CachedWriter( InputStream is ) throws IOException {
-        	this(is, MAX_MEMORY_CACHESIZE);
+            this(is, MAX_MEMORY_CACHESIZE);
         }
         public CachedWriter( InputStream is, int maxMemory ) throws IOException {
-        	if ( is.available() > maxMemory ) {
-        		writeCacheFile(null, is);
-        	} else {
-        		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        		buffer = new byte[bufferSize];
-        		int r;
-		        while ((r = is.read(buffer)) > 0) {
-		        	log.debug("-----write bytes to memory cache:"+r+" is.available:"+is.available());
-		            baos.write(buffer, 0, r);
-		            if ( baos.size() > maxMemory ) {
-		            	writeCacheFile(baos, is);
-		            	baos = null;
-		            	break;
-		            }
-		        }
-		        if ( baos != null ) 
-		        	buffer = baos.toByteArray();
-        	}
+            if ( is.available() > maxMemory ) {
+                writeCacheFile(null, is);
+            } else {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                buffer = new byte[bufferSize];
+                int r;
+                while ((r = is.read(buffer)) > 0) {
+                    log.debug("-----write bytes to memory cache:"+r+" is.available:"+is.available());
+                    baos.write(buffer, 0, r);
+                    if ( baos.size() > maxMemory ) {
+                        writeCacheFile(baos, is);
+                        baos = null;
+                        break;
+                    }
+                }
+                if ( baos != null ) 
+                    buffer = baos.toByteArray();
+            }
         }
-        
+
         public CachedWriter( MimeMultipart mmp ) throws IOException {
-        	BufferedOutputStream bos = null;
-        	try {
-				cacheFile = File.createTempFile("xds_cache", "tmp");
-				bos = new BufferedOutputStream(new FileOutputStream(cacheFile));
-		        mmp.writeTo(bos);
-        	} catch (MessagingException x) {
-				log.error("Cant cache MimeMultipart!",x);
-				throw new IOException("Cant cache MimeMultipart!");
-			} finally {
-        		if ( bos != null )
-        			try {
-        				bos.close();
-        			} catch ( Exception ignore ) {}
-        	}
+            BufferedOutputStream bos = null;
+            try {
+                cacheFile = File.createTempFile("xds_cache", "tmp");
+                bos = new BufferedOutputStream(new FileOutputStream(cacheFile));
+                mmp.writeTo(bos);
+            } catch (MessagingException x) {
+                log.error("Cant cache MimeMultipart!",x);
+                throw new IOException("Cant cache MimeMultipart!");
+            } finally {
+                if ( bos != null )
+                    try {
+                        bos.close();
+                    } catch ( Exception ignore ) {}
+            }
         }
 
         public CachedWriter( File f ) throws IOException {
-        	cacheFile = f;
-        	deleteCacheFileOnClose = false;
+            cacheFile = f;
+            deleteCacheFileOnClose = false;
         }
 
         private void writeCacheFile(ByteArrayOutputStream baos, InputStream is) throws IOException {
-        	FileOutputStream fos = null;
-        	try {
-				cacheFile = File.createTempFile("xds_cache", "tmp");
-				fos = new FileOutputStream(cacheFile);
-				if ( baos != null ) {
-		        	log.debug("-----write bytes from memory cache to file:"+baos.size());
-					fos.write(baos.toByteArray());
-				}
-				int r;
-		        while ((r = is.read(buffer)) > 0) {
-		        	log.debug("-----write bytes to file:"+r+" is.available:"+is.available());
-		            fos.write(buffer, 0, r);
-		        }
-        	} finally {
-        		if ( fos != null )
-        			try {
-        				fos.close();
-        			} catch ( Exception ignore ) {}
-        	}
-			
-		}
-		public int size() {
+            FileOutputStream fos = null;
+            try {
+                cacheFile = File.createTempFile("xds_cache", "tmp");
+                fos = new FileOutputStream(cacheFile);
+                if ( baos != null ) {
+                    log.debug("-----write bytes from memory cache to file:"+baos.size());
+                    fos.write(baos.toByteArray());
+                }
+                int r;
+                while ((r = is.read(buffer)) > 0) {
+                    log.debug("-----write bytes to file:"+r+" is.available:"+is.available());
+                    fos.write(buffer, 0, r);
+                }
+            } finally {
+                if ( fos != null )
+                    try {
+                        fos.close();
+                    } catch ( Exception ignore ) {}
+            }
+
+        }
+        public int size() {
             return cacheFile == null ? buffer.length : (int)cacheFile.length();
         }
 
         public void writeTo(OutputStream os) throws IOException {
-        	long t1 = System.currentTimeMillis();
-        	if ( cacheFile == null ) {
-		        log.debug("-----start writing! using buffer:"+buffer.length);
-        		os.write(buffer);
-        	} else {
-		        int r;
-		        FileInputStream is = new FileInputStream( cacheFile);
-		        buffer = new byte[bufferSize];
-		        log.debug("-----start writing! using cacheFile "+cacheFile+" ("+cacheFile.length()+" bytes) bufferSize:"+bufferSize);
-		        while ((r = is.read(buffer)) > 0) {
-		        	log.debug("-----write bytes:"+r+" is.available:"+is.available());
-		            os.write(buffer, 0, r);
-		        }
-        	}
-	        log.debug("-----finished writing after "+(System.currentTimeMillis() - t1)+ "ms");
+            long t1 = System.currentTimeMillis();
+            if ( cacheFile == null ) {
+                log.debug("-----start writing! using buffer:"+buffer.length);
+                os.write(buffer);
+            } else {
+                int r;
+                FileInputStream is = new FileInputStream( cacheFile);
+                buffer = new byte[bufferSize];
+                log.debug("-----start writing! using cacheFile "+cacheFile+" ("+cacheFile.length()+" bytes) bufferSize:"+bufferSize);
+                while ((r = is.read(buffer)) > 0) {
+                    log.debug("-----write bytes:"+r+" is.available:"+is.available());
+                    os.write(buffer, 0, r);
+                }
+            }
+            log.debug("-----finished writing after "+(System.currentTimeMillis() - t1)+ "ms");
         }
 
-		public void close() throws IOException {
-			if ( cacheFile != null && deleteCacheFileOnClose ) {
-				cacheFile.delete();
-			}
-		}
-		
+        public void close() throws IOException {
+            if ( cacheFile != null && deleteCacheFileOnClose ) {
+                cacheFile.delete();
+            }
+        }
+
         public DataHandler getDataHandler() {
-        	return null;
+            DataSource ds = cacheFile == null ?
+                    new InputStreamDataSource(new ByteArrayInputStream(buffer)) :
+                    new FileDataSource(cacheFile);
+            return new DataHandler(ds);
         } 		
     }
-    
+
     // TODO: remove if not needed
     class DataWriter implements XDSDocumentWriter {
         byte[] data;
@@ -246,19 +250,19 @@ public class XDSDocumentWriterFactory {
             this.data = data;
         }
         public void writeTo(OutputStream os) throws IOException {
-        	log.info("@@@@@ Write data:"+data);
+            log.info("@@@@@ Write data:"+data);
             os.write( data );
         }
         public void close() throws IOException {
         }
-		public int size() {
-			return data.length;
-		}
+        public int size() {
+            return data.length;
+        }
         public DataHandler getDataHandler() {
-        	return null;
+            return new DataHandler( new InputStreamDataSource(new ByteArrayInputStream(data)));
         }
     }
-    
+
     class DataHandlerWriter implements XDSDocumentWriter {
         DataHandler dh;
         int size = 0;
@@ -272,10 +276,10 @@ public class XDSDocumentWriterFactory {
         public void close() throws IOException {
         }
         public int size() {
-        	return size;
+            return size;
         }
         public DataHandler getDataHandler() {
-        	return dh;
+            return dh;
         }        
     }
 
