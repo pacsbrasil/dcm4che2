@@ -189,7 +189,7 @@ public class XdsCfgService extends ServiceMBeanSupport {
     /**
      * Save attributes defined in 'attributesToStore' for given name.
      * <p>
-     * Call Persistance Manager store method for each service defined in attributesToStore.
+     * Call Persistence Manager store method for each service defined in attributesToStore.
      * 
      * @param configName
      * @throws Exception
