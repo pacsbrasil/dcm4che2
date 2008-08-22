@@ -23,6 +23,7 @@ ALTER TABLE ae
   DROP port;
 ALTER TABLE ae
   ALTER port_int TO port;
+ALTER TABLE ae ADD wado_url VARCHAR(255);
 
 --
 -- Emulate ALTER TABLE study

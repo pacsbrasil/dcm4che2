@@ -8,3 +8,5 @@ CREATE INDEX mpps_drcode_fk ON mpps(drcode_fk);
 ALTER TABLE gppps MODIFY pps_status NUMBER(38,0);
 
 ALTER TABLE patient MODIFY pat_birthdate DATE;
+
+ALTER TABLE ae ADD wado_url VARCHAR2(255);

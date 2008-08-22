@@ -76,6 +76,7 @@ public class AEDTO implements Serializable {
     private final String passwd;
     private final String fsGroupID;
     private final String desc;
+    private final String wadoUrl;
 
     // Constructors --------------------------------------------------
     public AEDTO(
@@ -88,7 +89,8 @@ public class AEDTO implements Serializable {
         String userID,
         String passwd,
         String fsGroupID,
-        String desc) {
+        String desc, 
+        String wadoUrl) {
         this.pk = pk;
         this.title = title;
         this.hostname = hostname;
@@ -99,6 +101,7 @@ public class AEDTO implements Serializable {
         this.passwd = passwd;
         this.fsGroupID = fsGroupID;
         this.desc = desc;
+        this.wadoUrl = wadoUrl;
     }
 
     /**
@@ -179,6 +182,10 @@ public class AEDTO implements Serializable {
         return desc;        
     }
     
+    public String getWadoUrl() {
+        return wadoUrl;
+    }
+
     public String toString() {
         return (isTLS() ? "dicom-tls://" : "dicom://")
             + title

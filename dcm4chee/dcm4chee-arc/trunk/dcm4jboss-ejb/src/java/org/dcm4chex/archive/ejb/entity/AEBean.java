@@ -197,11 +197,22 @@ public abstract class AEBean implements EntityBean {
     public abstract void setDescription(String desc);
 
     /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="wado_url"
+     */
+    public abstract String getWadoUrl();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setWadoUrl(String desc);
+
+    /**
      * @ejb.create-method
      */
     public Long ejbCreate(String title, String hostname, int port,
             String cipherSuites, String issuer, String user, String passwd,
-            String fsGroupID, String desc)
+            String fsGroupID, String desc, String wadoUrl)
             throws CreateException {
         if (log.isDebugEnabled()) {
             log.debug("create AEBean(" + title + ")");
@@ -215,12 +226,13 @@ public abstract class AEBean implements EntityBean {
         setPassword(passwd);
         setFileSystemGroupID(fsGroupID);
         setDescription(desc);
+        this.setWadoUrl(wadoUrl);
         return null;
     }
 
     public void ejbPostCreate(String title, String host, int port,
             String cipherSuites, String issuer, String user, String passwd,
-            String fsGroupID, String desc)
+            String fsGroupID, String desc, String wadoUrl)
             throws CreateException {
     }
 
@@ -239,7 +251,8 @@ public abstract class AEBean implements EntityBean {
                 getUserID(),
                 getPassword(),
                 getFileSystemGroupID(),
-                getDescription());
+                getDescription(),
+                getWadoUrl());
     }
     
     /**

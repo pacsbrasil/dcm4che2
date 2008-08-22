@@ -8,7 +8,8 @@ CREATE TABLE ae (
 	user_id			TEXT,
 	passwd			TEXT,
 	fs_group_id		TEXT,
-	ae_desc			TEXT
+    ae_desc         TEXT,
+    wado_url        TEXT
 );
 CREATE UNIQUE INDEX aet ON ae(aet);
 

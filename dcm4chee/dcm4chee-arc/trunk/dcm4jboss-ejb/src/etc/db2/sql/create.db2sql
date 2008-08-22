@@ -13,7 +13,8 @@ CREATE TABLE ae (
 	user_id			VARCHAR(254),
 	passwd			VARCHAR(254),
 	fs_group_id		VARCHAR(254),
-	ae_desc			VARCHAR(254)
+    ae_desc         VARCHAR(254),
+    wado_url        VARCHAR(254)
 );
 CREATE UNIQUE INDEX aet ON ae(aet);
 

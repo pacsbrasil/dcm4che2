@@ -5,10 +5,11 @@ CREATE TABLE ae (
 	port			INTEGER NOT NULL,
 	cipher_suites  	VARCHAR(250) BINARY,
 	pat_id_issuer	VARCHAR(250) BINARY,
-	user_id			VARCHAR(250) BINARY,
-	passwd			VARCHAR(250) BINARY,
+	user_id		VARCHAR(250) BINARY,
+	passwd		VARCHAR(250) BINARY,
 	fs_group_id		VARCHAR(250) BINARY,
-	ae_desc			VARCHAR(250) BINARY
+	ae_desc		VARCHAR(250) BINARY,
+	wado_url		VARCHAR(250) BINARY
 ) ENGINE=INNODB;
 CREATE UNIQUE INDEX aet ON ae(aet(64));
 
