@@ -67,85 +67,94 @@ import org.xml.sax.SAXException;
  */
 public class RIDService extends ServiceMBeanSupport  {
 
-	private static final String NONE = "NONE";
-	private RIDSupport support = new RIDSupport( this );
-	private float waveformCorrection = 1f;
-	
-	public RIDService() {
-	}
+    private static final String NONE = "NONE";
+    private RIDSupport support = new RIDSupport( this );
+    private float waveformCorrection = 1f;
 
-	public float getWaveformCorrection() {
-		return waveformCorrection;
-	}
-	public void setWaveformCorrection(float waveformCorrection) {
-		this.waveformCorrection = waveformCorrection;
-	}
-	
-	public String getWadoURL() {
-		return support.getWadoURL();
-	}
-	public void setWadoURL( String wadoURL ) {
-		support.setWadoURL( wadoURL );
-	}
-	
-	public String getRIDSummaryXsl() {
-		String s = support.getRIDSummaryXsl();
-		if ( s == null ) s = "";
-		return s;
-	}
-	
-	public void setRIDSummaryXsl( String xslFile ) {
-		if ( xslFile != null && xslFile.trim().length() < 1 ) xslFile = null;
-		support.setRIDSummaryXsl( xslFile );
-	}
-	
-	/**
-	 * @return Returns the useXSLInstruction.
-	 */
-	public boolean isUseXSLInstruction() {
-		return support.isUseXSLInstruction();
-	}
-	/**
-	 * @param useXSLInstruction The useXSLInstruction to set.
-	 */
-	public void setUseXSLInstruction(boolean useXSLInstruction) {
-		support.setUseXSLInstruction( useXSLInstruction );
-	}
-	
-	/**
-	 * @return Returns the useOrigFile.
-	 */
-	public boolean isUseOrigFile() {
-		return support.isUseOrigFile();
-	}
-	/**
-	 * @param useOrigFile The useOrigFile to set.
-	 */
-	public void setUseOrigFile(boolean useOrigFile) {
-		support.setUseOrigFile(useOrigFile);
-	}
+    public RIDService() {
+    }
 
-	/**
-	 * Returns a String with all defined SOP Class UIDs that are used to find ECG documents.
-	 * <p>
-	 * The uids are seperated with '|'.
-	 * 
-	 * @return SOP Class UIDs to find ECG related files.
-	 */
-	public String getECGSopCuids() {
-		return toString(support.getECGSopCuids());
-	}
+    public float getWaveformCorrection() {
+        return waveformCorrection;
+    }
+    public void setWaveformCorrection(float waveformCorrection) {
+        this.waveformCorrection = waveformCorrection;
+    }
 
-	/**
-	 * Set a list of SOP Class UIDs that are used to find ECG documents.
-	 * <p>
-	 * The UIDs are seperated with '|'.
-	 * 
-	 * @param sopCuids String with SOP class UIDs seperated with '|'
-	 */
-	public void setECGSopCuids( String cuids ) {
-		support.setECGSopCuids( toUidMap(cuids) );
-	}
+    public String getWadoURL() {
+        return support.getWadoURL();
+    }
+    public void setWadoURL( String wadoURL ) {
+        support.setWadoURL( wadoURL );
+    }
+
+    public String getRIDSummaryXsl() {
+        String s = support.getRIDSummaryXsl();
+        if ( s == null ) s = "";
+        return s;
+    }
+
+    public void setRIDSummaryXsl( String xslFile ) {
+        if ( xslFile != null && xslFile.trim().length() < 1 ) xslFile = null;
+        support.setRIDSummaryXsl( xslFile );
+    }
+
+    /**
+     * @return Returns the useXSLInstruction.
+     */
+    public boolean isUseXSLInstruction() {
+        return support.isUseXSLInstruction();
+    }
+    /**
+     * @param useXSLInstruction The useXSLInstruction to set.
+     */
+    public void setUseXSLInstruction(boolean useXSLInstruction) {
+        support.setUseXSLInstruction( useXSLInstruction );
+    }
+
+    /**
+     * @return Returns the useOrigFile.
+     */
+    public boolean isUseOrigFile() {
+        return support.isUseOrigFile();
+    }
+    /**
+     * @param useOrigFile The useOrigFile to set.
+     */
+    public void setUseOrigFile(boolean useOrigFile) {
+        support.setUseOrigFile(useOrigFile);
+    }
+
+    public String getSrImageRows() {
+        String rows = support.getSrImageRows();
+        return rows == null ? NONE : support.getSrImageRows();
+    }
+
+    public void setSrImageRows(String srImageRows) {
+        support.setSrImageRows( NONE.equals(srImageRows) ? null : srImageRows );
+    }
+
+    /**
+     * Returns a String with all defined SOP Class UIDs that are used to find ECG documents.
+     * <p>
+     * The uids are seperated with '|'.
+     * 
+     * @return SOP Class UIDs to find ECG related files.
+     */
+    public String getECGSopCuids() {
+        return toString(support.getECGSopCuids());
+    }
+
+    /**
+     * Set a list of SOP Class UIDs that are used to find ECG documents.
+     * <p>
+     * The UIDs are seperated with '|'.
+     * 
+     * @param sopCuids String with SOP class UIDs seperated with '|'
+     */
+    public void setECGSopCuids( String cuids ) {
+        support.setECGSopCuids( toUidMap(cuids) );
+    }
 
     /**
      * Returns a String with all defined SOP Class UIDs that are used to find SR documents.
@@ -192,21 +201,21 @@ public class RIDService extends ServiceMBeanSupport  {
     }
 
     private Map toUidMap(String cuids) {
-    	if ( NONE.equalsIgnoreCase(cuids)) return null;
+        if ( NONE.equalsIgnoreCase(cuids)) return null;
         StringTokenizer st = new StringTokenizer(cuids, "\r\n;");
         String uid,name;
         Map map = new TreeMap();
         int i = 0;
         while ( st.hasMoreTokens() ) {
-        	uid = st.nextToken().trim();
-    		name = uid;
-        	if ( isDigit(uid.charAt(0) ) ) {
-        		if ( ! UIDs.isValid(uid) ) 
-        			throw new IllegalArgumentException("UID "+uid+" isn't a valid UID!");
-        	} else {
-        		uid = UIDs.forName( name );
-        	}
-        	map.put(name,uid);
+            uid = st.nextToken().trim();
+            name = uid;
+            if ( isDigit(uid.charAt(0) ) ) {
+                if ( ! UIDs.isValid(uid) ) 
+                    throw new IllegalArgumentException("UID "+uid+" isn't a valid UID!");
+            } else {
+                uid = UIDs.forName( name );
+            }
+            map.put(name,uid);
         }
         return map;
     }
@@ -221,131 +230,128 @@ public class RIDService extends ServiceMBeanSupport  {
         return sb.toString();
     }
 
-	public boolean isEncapsulatedPDFSupport() {
-		return support.isEncapsulatedPDFSupport();
-	}
-	public void setEncapsulatedPDFSupport(boolean encapsulatedPDFSupport) {
-		support.setEncapsulatedPDFSupport(encapsulatedPDFSupport);
-	}
-	
-	public String getRadiologyConceptNames() {
-		return support.getRadiologyConceptNames();
-	}
-	public void setRadiologyConceptNames( String conceptNames ) {
-		support.setRadiologyConceptNames( conceptNames );
-	}
+    public boolean isEncapsulatedPDFSupport() {
+        return support.isEncapsulatedPDFSupport();
+    }
+    public void setEncapsulatedPDFSupport(boolean encapsulatedPDFSupport) {
+        support.setEncapsulatedPDFSupport(encapsulatedPDFSupport);
+    }
 
-	public String getCardiologyConceptNames() {
-		return support.getCardiologyConceptNames();
-	}
-	public void setCardiologyConceptNames( String conceptNames ) {
-		support.setCardiologyConceptNames( conceptNames );
-	}
+    public String getRadiologyConceptNames() {
+        return support.getRadiologyConceptNames();
+    }
+    public void setRadiologyConceptNames( String conceptNames ) {
+        support.setRadiologyConceptNames( conceptNames );
+    }
 
-	public String getRadiologyPDFConceptCodeNames() {
-		return support.getRadiologyPDFConceptCodeNames();
-	}
-	
-	public void setRadiologyPDFConceptCodeNames( String conceptNames ) {
-		support.setRadiologyPDFConceptNameCodes( conceptNames );
-	}
-	public String getCardiologyPDFConceptCodeNames() {
-		return support.getCardiologyPDFConceptCodeNames();
-	}
-	
-	public void setCardiologyPDFConceptCodeNames( String conceptNames ) {
-		support.setCardiologyPDFConceptNameCodes( conceptNames );
-	}
-	public String getECGPDFConceptCodeNames() {
-		return support.getECGPDFConceptCodeNames();
-	}
-	
-	public void setECGPDFConceptCodeNames( String conceptNames ) {
-		support.setECGPDFConceptNameCodes( conceptNames );
-	}
-	
+    public String getCardiologyConceptNames() {
+        return support.getCardiologyConceptNames();
+    }
+    public void setCardiologyConceptNames( String conceptNames ) {
+        support.setCardiologyConceptNames( conceptNames );
+    }
+
+    public String getRadiologyPDFConceptCodeNames() {
+        return support.getRadiologyPDFConceptCodeNames();
+    }
+
+    public void setRadiologyPDFConceptCodeNames( String conceptNames ) {
+        support.setRadiologyPDFConceptNameCodes( conceptNames );
+    }
+    public String getCardiologyPDFConceptCodeNames() {
+        return support.getCardiologyPDFConceptCodeNames();
+    }
+
+    public void setCardiologyPDFConceptCodeNames( String conceptNames ) {
+        support.setCardiologyPDFConceptNameCodes( conceptNames );
+    }
+    public String getECGPDFConceptCodeNames() {
+        return support.getECGPDFConceptCodeNames();
+    }
+
+    public void setECGPDFConceptCodeNames( String conceptNames ) {
+        support.setECGPDFConceptNameCodes( conceptNames );
+    }
+
     private static boolean isDigit(char c) {
         return c >= '0' && c <= '9';
     }
-	
-	/**
-	 * Getter for the name of the FileSystemMgt MBean.
-	 * <p>
-	 * This bean is used to locate the DICOM file.
-	 *  
-	 * @return Name of the MBean
-	 */
-	public ObjectName getFileSystemMgtName() {
-		return support.getFileSystemMgtName();
-	}
-	
-	/**
-	 * Setter for the name of the FileSystemMgt MBean.
-	 * <p>
-	 * This bean is used to locate the DICOM file.
-	 *  
-	 * @param Name of the MBean
-	 */
-	public void setFileSystemMgtName( ObjectName name ) {
-			support.setFileSystemMgtName( name );
-	}
 
-	/**
-	 * Set the name of the AuditLogger MBean.
-	 * <p>
-	 * This bean is used to create Audit Logs.
-	 * 
-	 * @param name The Audit Logger Name to set.
-	 */
-	public void setAuditLoggerName( ObjectName name ) {
-		support.setAuditLoggerName( name );
-	}
+    /**
+     * Getter for the name of the FileSystemMgt MBean.
+     * <p>
+     * This bean is used to locate the DICOM file.
+     *  
+     * @return Name of the MBean
+     */
+    public ObjectName getFileSystemMgtName() {
+        return support.getFileSystemMgtName();
+    }
 
-	/**
-	 * Get the name of the AuditLogger MBean.
-	 * <p>
-	 * This bean is used to create Audit Logs.
-	 * 
-	 * @return Returns the name of the Audit Logger MBean.
-	 */
-	public ObjectName getAuditLoggerName() {
-		return support.getAuditLoggerName();
-	}
-	
-	/**
-	 * Get the requested Summary information object as Stream packed in a RIDResponseObject.
-	 * <p>
-	 *  
-	 * @param reqVO The request parameters packed in an value object.
-	 * 
-	 * @return The value object containing the retrieved object or an error.
-	 * @throws SQLException
-	 * @throws SAXException
-	 * @throws IOException
-	 * @throws TransformerConfigurationException
-	 */
-	public RIDResponseObject getRIDSummary( RIDRequestObject reqVO ) throws SQLException, TransformerConfigurationException, IOException, SAXException {
-		if ( log.isDebugEnabled() ) log.debug( "getRIDSummary:"+reqVO );
-		return support.getRIDSummary( reqVO );
-	}
-	
-	/**
-	 * Get the requested Document object as Stream packed in a RIDResponseObject.
-	 * <p>
-	 *  
-	 * @param reqVO The request parameters packed in an value object.
-	 * 
-	 * @return The value object containing the retrieved object or an error.
-	 */
-	public RIDResponseObject getRIDDocument( RIDRequestObject reqVO ) {
-		if ( log.isDebugEnabled() ) log.debug("getRIDDocument:"+reqVO );
-		return support.getRIDDocument( reqVO );
-	}
-	
-	public DataHandler getDocumentDataHandler(String objectUID, String contentType) throws IOException {
-		return support.getOrCreateDocument(objectUID,contentType).getDataHandler();
-	}
-	
-	
-    
+    /**
+     * Setter for the name of the FileSystemMgt MBean.
+     * <p>
+     * This bean is used to locate the DICOM file.
+     *  
+     * @param Name of the MBean
+     */
+    public void setFileSystemMgtName( ObjectName name ) {
+        support.setFileSystemMgtName( name );
+    }
+
+    /**
+     * Set the name of the AuditLogger MBean.
+     * <p>
+     * This bean is used to create Audit Logs.
+     * 
+     * @param name The Audit Logger Name to set.
+     */
+    public void setAuditLoggerName( ObjectName name ) {
+        support.setAuditLoggerName( name );
+    }
+
+    /**
+     * Get the name of the AuditLogger MBean.
+     * <p>
+     * This bean is used to create Audit Logs.
+     * 
+     * @return Returns the name of the Audit Logger MBean.
+     */
+    public ObjectName getAuditLoggerName() {
+        return support.getAuditLoggerName();
+    }
+
+    /**
+     * Get the requested Summary information object as Stream packed in a RIDResponseObject.
+     * <p>
+     *  
+     * @param reqVO The request parameters packed in an value object.
+     * 
+     * @return The value object containing the retrieved object or an error.
+     * @throws SQLException
+     * @throws SAXException
+     * @throws IOException
+     * @throws TransformerConfigurationException
+     */
+    public RIDResponseObject getRIDSummary( RIDRequestObject reqVO ) throws SQLException, TransformerConfigurationException, IOException, SAXException {
+        if ( log.isDebugEnabled() ) log.debug( "getRIDSummary:"+reqVO );
+        return support.getRIDSummary( reqVO );
+    }
+
+    /**
+     * Get the requested Document object as Stream packed in a RIDResponseObject.
+     * <p>
+     *  
+     * @param reqVO The request parameters packed in an value object.
+     * 
+     * @return The value object containing the retrieved object or an error.
+     */
+    public RIDResponseObject getRIDDocument( RIDRequestObject reqVO ) {
+        if ( log.isDebugEnabled() ) log.debug("getRIDDocument:"+reqVO );
+        return support.getRIDDocument( reqVO );
+    }
+
+    public DataHandler getDocumentDataHandler(String objectUID, String contentType) throws IOException {
+        return support.getOrCreateDocument(objectUID,contentType).getDataHandler();
+    }
 }

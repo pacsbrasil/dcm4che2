@@ -95,6 +95,7 @@ import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.DataExportMessage;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
+import org.dcm4chee.docstore.Availability;
 import org.dcm4chee.docstore.BaseDocument;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
@@ -116,24 +117,25 @@ import org.xml.sax.SAXException;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class RIDSupport {
-	private static final String CARDIOLOGY = "Cardiology";
-	private static final String RADIOLOGY = "Radiology";
-	private static final String ENCAPSED_PDF_CARDIOLOGY = "encapsed_PDF_Cardiology";
-	private static final String ENCAPSED_PDF_RADIOLOGY = "encapsed_PDF_Radiology";
-	public static final String ENCAPSED_PDF_ECG = "encapsed_PDF_ECG";
-	
-	private static final String SUMMARY = "SUMMARY";
-	private static final String SUMMARY_RADIOLOGY = "SUMMARY-RADIOLOGY";
-	private static final String SUMMARY_CARDIOLOGY = "SUMMARY-CARDIOLOGY";
-	private static final String SUMMARY_CARDIOLOGY_ECG = "SUMMARY-CARDIOLOGY-ECG";
-	
-	private static final String CONTENT_TYPE_XHTML = "text/xhtml";
-	public static final String CONTENT_TYPE_XML = "text/xml";
-	public static final String CONTENT_TYPE_HTML = "text/html";
-	public static final String CONTENT_TYPE_JPEG = "image/jpeg";
-	public static final String CONTENT_TYPE_PDF = "application/pdf";
-	
-	private static Logger log = Logger.getLogger( RIDService.class.getName() );
+    private static final String CARDIOLOGY = "Cardiology";
+    private static final String RADIOLOGY = "Radiology";
+    private static final String ENCAPSED_PDF_CARDIOLOGY = "encapsed_PDF_Cardiology";
+    private static final String ENCAPSED_PDF_RADIOLOGY = "encapsed_PDF_Radiology";
+    public static final String ENCAPSED_PDF_ECG = "encapsed_PDF_ECG";
+
+    private static final String SUMMARY = "SUMMARY";
+    private static final String SUMMARY_RADIOLOGY = "SUMMARY-RADIOLOGY";
+    private static final String SUMMARY_CARDIOLOGY = "SUMMARY-CARDIOLOGY";
+    private static final String SUMMARY_CARDIOLOGY_ECG = "SUMMARY-CARDIOLOGY-ECG";
+
+    public static final String CONTENT_TYPE_XHTML = "text/xhtml";
+    public static final String CONTENT_TYPE_XML = "text/xml";
+    public static final String CONTENT_TYPE_HTML = "text/html";
+    public static final String CONTENT_TYPE_JPEG = "image/jpeg";
+    public static final String CONTENT_TYPE_PDF = "application/pdf";
+    public static final String CONTENT_TYPE_DICOM = "application/dicom";
+
+    private static Logger log = Logger.getLogger( RIDService.class.getName() );
     private static final DcmObjectFactory factory = DcmObjectFactory.getInstance();
 
     private static final String FOBSR_XSL_URI = "resource:xsl/fobsr.xsl";
@@ -143,76 +145,77 @@ public class RIDSupport {
     private Map ecgSopCuids = new TreeMap();
     private Map srSopCuids = new TreeMap();
     private Map docSopCuids = new TreeMap();
-	private String ridSummaryXsl;
-	
-	private boolean useXSLInstruction;
-	private String wadoURL;
-	
-	private ObjectName fileSystemMgtName;
-	private ObjectName auditLogName;
+    private String ridSummaryXsl;
+
+    private boolean useXSLInstruction;
+    private String wadoURL;
+
+    private ObjectName fileSystemMgtName;
+    private ObjectName auditLogName;
     private Boolean auditLogIHEYr4;
-	
-	private ECGSupport ecgSupport = null;
-	
-	private Dataset patientDS = null;
-	private RIDService service;
-	private ConceptNameCodeConfig conceptNameCodeConfig = new ConceptNameCodeConfig();
-	
-	private boolean encapsulatedPDFSupport = true;
-	private boolean useOrigFile = false;
-	private StorageDelegate storage = StorageDelegate.getInstance();
 
-	private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
-	
-	public RIDSupport( RIDService service ) {
-		this.service = service;
-		RIDSupport.server = service.getServer();
-		if ( server == null ) {
-			server = MBeanServerLocator.locate();
-		}
-	}
-	
-	private ECGSupport getECGSupport() {
-		if ( ecgSupport == null )
-			ecgSupport = new ECGSupport( this );
-		return ecgSupport;
-	}
+    private ECGSupport ecgSupport = null;
 
-	/**
-	 * @return Returns the conceptNameCodeConfig.
-	 */
-	public ConceptNameCodeConfig getConceptNameCodeConfig() {
-		return conceptNameCodeConfig;
-	}
-	/**
-	 * @return Returns the sopCuids.
-	 */
-	public Map getECGSopCuids() {
-		if ( ecgSopCuids == null ) setDefaultECGSopCuids();
-		return ecgSopCuids;
-	}
-	/**
-	 * @param sopCuids The sopCuids to set.
-	 */
-	public void setECGSopCuids(Map sopCuids) {
-		if ( sopCuids != null && ! sopCuids.isEmpty() )
-			ecgSopCuids = sopCuids;
-		else {
-			setDefaultECGSopCuids();
-		}
-	}
-	
-	/**
-	 * 
-	 */
-	private void setDefaultECGSopCuids() {
-		ecgSopCuids.clear();
-		ecgSopCuids.put( "TwelveLeadECGWaveformStorage", UIDs.TwelveLeadECGWaveformStorage );
-		ecgSopCuids.put( "GeneralECGWaveformStorage", UIDs.GeneralECGWaveformStorage );
-		ecgSopCuids.put( "AmbulatoryECGWaveformStorage", UIDs.AmbulatoryECGWaveformStorage );
-		ecgSopCuids.put( "HemodynamicWaveformStorage", UIDs.HemodynamicWaveformStorage );
-		ecgSopCuids.put( "CardiacElectrophysiologyWaveformStorage", UIDs.CardiacElectrophysiologyWaveformStorage );
-	}
+    private Dataset patientDS = null;
+    private RIDService service;
+    private ConceptNameCodeConfig conceptNameCodeConfig = new ConceptNameCodeConfig();
+
+    private boolean encapsulatedPDFSupport = true;
+    private boolean useOrigFile = false;
+    private RIDStorageDelegate storage = RIDStorageDelegate.getInstance();
+    private String srImageRows;
+
+    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+
+    public RIDSupport( RIDService service ) {
+        this.service = service;
+        RIDSupport.server = service.getServer();
+        if ( server == null ) {
+            server = MBeanServerLocator.locate();
+        }
+    }
+
+    private ECGSupport getECGSupport() {
+        if ( ecgSupport == null )
+            ecgSupport = new ECGSupport( this );
+        return ecgSupport;
+    }
+
+    /**
+     * @return Returns the conceptNameCodeConfig.
+     */
+    public ConceptNameCodeConfig getConceptNameCodeConfig() {
+        return conceptNameCodeConfig;
+    }
+    /**
+     * @return Returns the sopCuids.
+     */
+    public Map getECGSopCuids() {
+        if ( ecgSopCuids == null ) setDefaultECGSopCuids();
+        return ecgSopCuids;
+    }
+    /**
+     * @param sopCuids The sopCuids to set.
+     */
+    public void setECGSopCuids(Map sopCuids) {
+        if ( sopCuids != null && ! sopCuids.isEmpty() )
+            ecgSopCuids = sopCuids;
+        else {
+            setDefaultECGSopCuids();
+        }
+    }
+
+    /**
+     * 
+     */
+    private void setDefaultECGSopCuids() {
+        ecgSopCuids.clear();
+        ecgSopCuids.put( "TwelveLeadECGWaveformStorage", UIDs.TwelveLeadECGWaveformStorage );
+        ecgSopCuids.put( "GeneralECGWaveformStorage", UIDs.GeneralECGWaveformStorage );
+        ecgSopCuids.put( "AmbulatoryECGWaveformStorage", UIDs.AmbulatoryECGWaveformStorage );
+        ecgSopCuids.put( "HemodynamicWaveformStorage", UIDs.HemodynamicWaveformStorage );
+        ecgSopCuids.put( "CardiacElectrophysiologyWaveformStorage", UIDs.CardiacElectrophysiologyWaveformStorage );
+    }
 
     /**
      * @return Returns the sopCuids.
@@ -240,129 +243,141 @@ public class RIDSupport {
      */
     public void setEncapsulatedDocumentSopCuids(Map cuids) {
         if ( cuids == null ) {
-        	docSopCuids.clear();
+            docSopCuids.clear();
         } else {
-        	docSopCuids = cuids;
+            docSopCuids = cuids;
         }
     }
-    
-	/**
-	 * @return Returns the encapsulatedPDFSupport.
-	 */
-	public boolean isEncapsulatedPDFSupport() {
-		return encapsulatedPDFSupport;
-	}
-	/**
-	 * @param encapsulatedPDFSupport The encapsulatedPDFSupport to set.
-	 */
-	public void setEncapsulatedPDFSupport(boolean encapsulatedPDFSupport) {
-		this.encapsulatedPDFSupport = encapsulatedPDFSupport;
-	}
-	/**
-	 * @return Returns the wadoURL.
-	 */
-	public String getWadoURL() {
-		return wadoURL;
-	}
-	/**
-	 * @param wadoURL The wadoURL to set.
-	 */
-	public void setWadoURL(String wadoURL) {
-		this.wadoURL = wadoURL;
-	}
-	/**
-	 * @return Returns the ridSummaryXsl.
-	 */
-	public String getRIDSummaryXsl() {
-		return ridSummaryXsl;
-	}
-	/**
-	 * @param ridSummaryXsl The ridSummaryXsl to set.
-	 */
-	public void setRIDSummaryXsl(String ridSummaryXsl) {
-		this.ridSummaryXsl = ridSummaryXsl;
-	}
-	/**
-	 * @return Returns the useXSLInstruction.
-	 */
-	public boolean isUseXSLInstruction() {
-		return useXSLInstruction;
-	}
-	/**
-	 * @param useXSLInstruction The useXSLInstruction to set.
-	 */
-	public void setUseXSLInstruction(boolean useXSLInstruction) {
-		this.useXSLInstruction = useXSLInstruction;
-	}
-	
-	/**
-	 * @return Returns the useOrigFile.
-	 */
-	public boolean isUseOrigFile() {
-		return useOrigFile;
-	}
-	/**
-	 * @param useOrigFile The useOrigFile to set.
-	 */
-	public void setUseOrigFile(boolean useOrigFile) {
-		this.useOrigFile = useOrigFile;
-	}
-	/**
-	 * Set the name of the FileSystemMgtBean.
-	 * <p>
-	 * This bean is used to retrieve the DICOM object.
-	 * 
-	 * @param fileSystemMgtName The fileSystemMgtName to set.
-	 */
-	public void setFileSystemMgtName(ObjectName fileSystemMgtName) {
-		this.fileSystemMgtName = fileSystemMgtName;
-	}
 
-	/**
-	 * Get the name of the FileSystemMgtBean.
-	 * <p>
-	 * This bean is used to retrieve the DICOM object.
-	 * 
-	 * @return Returns the fileSystemMgtName.
-	 */
-	public ObjectName getFileSystemMgtName() {
-		return fileSystemMgtName;
-	}
-	
-	protected MBeanServer getMBeanServer() {
-		return server;
-	}
-	
-	/**
-	 * Set the name of the AuditLogger MBean.
-	 * <p>
-	 * This bean is used to create Audit Logs.
-	 * 
-	 * @param name The Audit Logger Name to set.
-	 */
-	public void setAuditLoggerName(ObjectName name) {
-		auditLogName = name;
-	}
-	/**
-	 * Get the name of the AuditLogger MBean.
-	 * <p>
-	 * This bean is used to create Audit Logs.
-	 * 
-	 * @return Returns the name of the Audit Logger MBean.
-	 */
-	public ObjectName getAuditLoggerName() {
-		return auditLogName;
-	}
-	
-	
-	/**
-	 * @param reqObj
-	 * @return
-	 * @throws SQLException
-	 * @throws IOException
-	 * @throws SAXException
-	 * @throws TransformerConfigurationException
-	 */
+    /**
+     * @return Returns the encapsulatedPDFSupport.
+     */
+    public boolean isEncapsulatedPDFSupport() {
+        return encapsulatedPDFSupport;
+    }
+    /**
+     * @param encapsulatedPDFSupport The encapsulatedPDFSupport to set.
+     */
+    public void setEncapsulatedPDFSupport(boolean encapsulatedPDFSupport) {
+        this.encapsulatedPDFSupport = encapsulatedPDFSupport;
+    }
+    /**
+     * @return Returns the wadoURL.
+     */
+    public String getWadoURL() {
+        return wadoURL;
+    }
+    /**
+     * @param wadoURL The wadoURL to set.
+     */
+    public void setWadoURL(String wadoURL) {
+        this.wadoURL = wadoURL;
+    }
+    /**
+     * @return Returns the ridSummaryXsl.
+     */
+    public String getRIDSummaryXsl() {
+        return ridSummaryXsl;
+    }
+    /**
+     * @param ridSummaryXsl The ridSummaryXsl to set.
+     */
+    public void setRIDSummaryXsl(String ridSummaryXsl) {
+        this.ridSummaryXsl = ridSummaryXsl;
+    }
+    /**
+     * @return Returns the useXSLInstruction.
+     */
+    public boolean isUseXSLInstruction() {
+        return useXSLInstruction;
+    }
+    /**
+     * @param useXSLInstruction The useXSLInstruction to set.
+     */
+    public void setUseXSLInstruction(boolean useXSLInstruction) {
+        this.useXSLInstruction = useXSLInstruction;
+    }
+
+    /**
+     * @return Returns the useOrigFile.
+     */
+    public boolean isUseOrigFile() {
+        return useOrigFile;
+    }
+    /**
+     * @param useOrigFile The useOrigFile to set.
+     */
+    public void setUseOrigFile(boolean useOrigFile) {
+        this.useOrigFile = useOrigFile;
+    }
+
+    public String getSrImageRows() {
+        return srImageRows;
+    }
+
+    public void setSrImageRows(String srImageRows) {
+        if ( srImageRows != null )
+            Integer.parseInt(srImageRows);
+        this.srImageRows = srImageRows;
+    }
+
+
+    /**
+     * Set the name of the FileSystemMgtBean.
+     * <p>
+     * This bean is used to retrieve the DICOM object.
+     * 
+     * @param fileSystemMgtName The fileSystemMgtName to set.
+     */
+    public void setFileSystemMgtName(ObjectName fileSystemMgtName) {
+        this.fileSystemMgtName = fileSystemMgtName;
+    }
+
+    /**
+     * Get the name of the FileSystemMgtBean.
+     * <p>
+     * This bean is used to retrieve the DICOM object.
+     * 
+     * @return Returns the fileSystemMgtName.
+     */
+    public ObjectName getFileSystemMgtName() {
+        return fileSystemMgtName;
+    }
+
+    protected MBeanServer getMBeanServer() {
+        return server;
+    }
+
+    /**
+     * Set the name of the AuditLogger MBean.
+     * <p>
+     * This bean is used to create Audit Logs.
+     * 
+     * @param name The Audit Logger Name to set.
+     */
+    public void setAuditLoggerName(ObjectName name) {
+        auditLogName = name;
+    }
+    /**
+     * Get the name of the AuditLogger MBean.
+     * <p>
+     * This bean is used to create Audit Logs.
+     * 
+     * @return Returns the name of the Audit Logger MBean.
+     */
+    public ObjectName getAuditLoggerName() {
+        return auditLogName;
+    }
+
+
+    /**
+     * @param reqObj
+     * @return
+     * @throws SQLException
+     * @throws IOException
+     * @throws SAXException
+     * @throws TransformerConfigurationException
+     */
     public RIDResponseObject getRIDSummary(RIDRequestObject reqObj) throws SQLException, IOException, TransformerConfigurationException, SAXException {
         String contentType = checkContentType( reqObj, new String[]{CONTENT_TYPE_HTML,CONTENT_TYPE_XML } );
         if ( contentType == null ) {
@@ -389,7 +404,7 @@ public class RIDSupport {
                 if ( encapsulatedPDFSupport ) {
                     fillDocList( pat[0], pat[1], docList, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_ECG), encPdfCuids);
                 }
-                
+
                 if ( useXSLInstruction ) docList.setXslFile( ridSummaryXsl );
                 return new RIDTransformResponseObjectImpl(docList, CONTENT_TYPE_XML, HttpServletResponse.SC_OK, null);
             }
@@ -414,7 +429,7 @@ public class RIDSupport {
                     fillDocList( pat[0], pat[1], docList, conceptNameCodeConfig.getConceptNameCodes(ENCAPSED_PDF_RADIOLOGY), encPdfCuids);
                 }
             }
-    
+
             if ( docList.size() < 1 ) {
                 log.info("No documents found: patientDS:"+patientDS);
                 if ( patientDS != null ) {
@@ -424,11 +439,11 @@ public class RIDSupport {
                         log.info("family:"+ pn.get( PersonName.FAMILY ));
                         log.info("givenName:"+ pn.get( PersonName.GIVEN ));
                     }
-                    
+
                     docList.setQueryDS( patientDS );
                 }
             }
-            
+
             if ( ! contentType.equals(CONTENT_TYPE_XML) ) { // transform to (x)html only if client supports (x)html.
                 docList.setXslt( ridSummaryXsl );
             }
@@ -440,70 +455,70 @@ public class RIDSupport {
             return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Creation of Summary failed! Reason:"+x.getMessage());
         }
     }
-	
-	/**
-	 * Checks if one of the given content types are allowed.
-	 * <p>
-	 * 
-	 * 
-	 * @param reqObj	The RID request object.
-	 * @param types		Array of content types that can be used.
-	 * 
-	 * @return The content type that is allowed by the request or null.
-	 */
-	protected String checkContentType(RIDRequestObject reqObj, String[] types) {
-		List allowed = reqObj.getAllowedContentTypes();
-		if ( log.isDebugEnabled() ) log.debug(" check against:"+allowed);
-		if ( allowed == null ) {
-			log.debug("No accept header field! use content type:"+types[0]);
-			return types[0];
-		}
-		String s;
-		for ( int i = 0, len = types.length ; i < len ; i++ ) {
-			s = types[i];
-			if ( log.isDebugEnabled() ) log.debug(" check "+s+":"+allowed.contains( s )+" ,"+s.substring( 0, s.indexOf( "/") )+"/*: "+allowed.contains( s.substring( 0, s.indexOf( "/") )+"/*" ) );
-			if ( allowed.contains( s ) || allowed.contains( s.substring( 0, s.indexOf( "/") )+"/*" ) ) {
-				return s;
-			}
-		}
-		if ( log.isDebugEnabled() ) log.debug(" check */*:"+allowed.contains("*/*") );
-		if ( allowed.contains("*/*") ) {
-			return types[0];
-		}
-		return null;
-	}
-	
-	private void initDocList( IHEDocumentList docList, RIDRequestObject reqObj, Dataset patDS ) {
-	    String reqURL = reqObj.getRequestURL();
-	    docList.setReqURL(reqURL);
-	    int pos = reqURL.indexOf('?');
-	    if ( pos != -1 ) reqURL = reqURL.substring(0, pos);
-	    docList.setDocRIDUrl( reqURL.substring( 0, reqURL.lastIndexOf("/") ) );//last path element should be the servlet name! 
-	    docList.setQueryDS( patDS );
-	    String docCode = reqObj.getRequestType();
-		docList.setDocCode( docCode );
-		if ( SUMMARY.equalsIgnoreCase( docCode )) 
-			docList.setDocDisplayName( "List of radiology and cardiology reports");
-		else if (SUMMARY_RADIOLOGY.equals( docCode ) )
-			docList.setDocDisplayName( "List of radiology reports");
-		else if (SUMMARY_CARDIOLOGY.equals( docCode ) )
-			docList.setDocDisplayName( "List of cardiology reports");
-		else if (SUMMARY_CARDIOLOGY_ECG.equals( docCode ) )
-			docList.setDocDisplayName( "List of ECG");
-		String mrr = reqObj.getParam("mostRecentResults");
-                if (mrr != null) {
-                    docList.setMostRecentResults(Integer.parseInt(mrr));
-                }
-                Date ldt = toDate(reqObj.getParam("lowerDateTime"));
-                if (ldt != null) {
-                    docList.setLowerDateTime(ldt);
-                }
-                Date udt = toDate(reqObj.getParam("upperDateTime"));
-                if (udt != null) {
-                    docList.setUpperDateTime(udt);
-                }
-	}
-	
+
+    /**
+     * Checks if one of the given content types are allowed.
+     * <p>
+     * 
+     * 
+     * @param reqObj	The RID request object.
+     * @param types		Array of content types that can be used.
+     * 
+     * @return The content type that is allowed by the request or null.
+     */
+    protected String checkContentType(RIDRequestObject reqObj, String[] types) {
+        List allowed = reqObj.getAllowedContentTypes();
+        if ( log.isDebugEnabled() ) log.debug(" check against:"+allowed);
+        if ( allowed == null ) {
+            log.debug("No accept header field! use content type:"+types[0]);
+            return types[0];
+        }
+        String s;
+        for ( int i = 0, len = types.length ; i < len ; i++ ) {
+            s = types[i];
+            if ( log.isDebugEnabled() ) log.debug(" check "+s+":"+allowed.contains( s )+" ,"+s.substring( 0, s.indexOf( "/") )+"/*: "+allowed.contains( s.substring( 0, s.indexOf( "/") )+"/*" ) );
+            if ( allowed.contains( s ) || allowed.contains( s.substring( 0, s.indexOf( "/") )+"/*" ) ) {
+                return s;
+            }
+        }
+        if ( log.isDebugEnabled() ) log.debug(" check */*:"+allowed.contains("*/*") );
+        if ( allowed.contains("*/*") ) {
+            return types[0];
+        }
+        return null;
+    }
+
+    private void initDocList( IHEDocumentList docList, RIDRequestObject reqObj, Dataset patDS ) {
+        String reqURL = reqObj.getRequestURL();
+        docList.setReqURL(reqURL);
+        int pos = reqURL.indexOf('?');
+        if ( pos != -1 ) reqURL = reqURL.substring(0, pos);
+        docList.setDocRIDUrl( reqURL.substring( 0, reqURL.lastIndexOf("/") ) );//last path element should be the servlet name! 
+        docList.setQueryDS( patDS );
+        String docCode = reqObj.getRequestType();
+        docList.setDocCode( docCode );
+        if ( SUMMARY.equalsIgnoreCase( docCode )) 
+            docList.setDocDisplayName( "List of radiology and cardiology reports");
+        else if (SUMMARY_RADIOLOGY.equals( docCode ) )
+            docList.setDocDisplayName( "List of radiology reports");
+        else if (SUMMARY_CARDIOLOGY.equals( docCode ) )
+            docList.setDocDisplayName( "List of cardiology reports");
+        else if (SUMMARY_CARDIOLOGY_ECG.equals( docCode ) )
+            docList.setDocDisplayName( "List of ECG");
+        String mrr = reqObj.getParam("mostRecentResults");
+        if (mrr != null) {
+            docList.setMostRecentResults(Integer.parseInt(mrr));
+        }
+        Date ldt = toDate(reqObj.getParam("lowerDateTime"));
+        if (ldt != null) {
+            docList.setLowerDateTime(ldt);
+        }
+        Date udt = toDate(reqObj.getParam("upperDateTime"));
+        if (udt != null) {
+            docList.setUpperDateTime(udt);
+        }
+    }
+
     private void fillDocList( String pid, String issuer, IHEDocumentList docList, Collection conceptCodes, Collection cuids ) throws RemoteException, FinderException, Exception {
         List docs = getContentManager().listInstanceInfosByPatientAndSRCode(pid, issuer, conceptCodes, cuids);
         for ( Iterator iter = docs.iterator() ; iter.hasNext() ; ) {
@@ -521,50 +536,51 @@ public class RIDSupport {
         }
     }
 
-	/**
-	 * @param reqObj
-	 * @return
-	 */
-	public RIDResponseObject getRIDDocument(RIDRequestObject reqObj) {
-		String uid = reqObj.getParam("documentUID");
-		try {
-			Dataset ds = getDicomObjectForDocument(uid);
+    /**
+     * @param reqObj
+     * @return
+     */
+    public RIDResponseObject getRIDDocument(RIDRequestObject reqObj) {
+        String uid = reqObj.getParam("documentUID");
+        try {
+            Dataset ds = getDicomObjectForDocument(uid);
             if ( ds != null ) {
                 RIDResponseObject response;
                 log.info("Found Dataset:");log.info(ds);
-				String cuid = ds.getString( Tags.SOPClassUID );
-				if ( getECGSopCuids().values().contains( cuid ) ) {
-					response = getECGSupport().getECGDocument( reqObj, ds );
-				} else if ( encapsulatedPDFSupport && UIDs.EncapsulatedPDFStorage.equals(cuid)) {
-					response = getEncapsulatedPDF( reqObj );
-				} else if ( getEncapsulatedDocumentSopCuids().values().contains( cuid )) {
-					response = getEncapsulatedDocument( reqObj );
-					logExport(reqObj, ds, "XDS Document Retrieve");
-				} else {
-					response = getDocument( reqObj );
-				}
+                String cuid = ds.getString( Tags.SOPClassUID );
+                if ( getECGSopCuids().values().contains( cuid ) ) {
+                    response = getECGSupport().getECGDocument( reqObj, ds );
+                } else if ( encapsulatedPDFSupport && UIDs.EncapsulatedPDFStorage.equals(cuid)) {
+                    response = getEncapsulatedPDF( reqObj );
+                } else if ( getEncapsulatedDocumentSopCuids().values().contains( cuid )) {
+                    response = getEncapsulatedDocument( reqObj );
+                    logExport(reqObj, ds, "XDS Document Retrieve");
+                } else {
+                    response = getDocument( reqObj );
+                }
                 logExport(reqObj, ds, "RID Request");
-				return response;
-			} else {
-				InputStream is = getOrCreateDocument(uid,reqObj.getParam("preferredContentType")).getInputStream();//Document is not stored in PACS (XDS)
-				if ( is != null && is.available() > 0) {
-					logExport(reqObj, getXDSPatientInfo(reqObj, is), "XDS Document Retrieve");
-					return new RIDStreamResponseObjectImpl( is, reqObj.getParam("preferredContentType"), HttpServletResponse.SC_OK, null);
-				}
-				return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Object with documentUID="+uid+ " not found!");
-			}
-		} catch (Exception x) {
-			log.error("Cant get RIDDocument:", x);
-			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get Document! Reason: unexpected error:"+x.getMessage() );
-		}
-	}
+                return response;
+            } else {
+                BaseDocument doc = retrieveDocument(uid,reqObj.getParam("preferredContentType"));//Document is not stored in PACS but maybe in DocumentStore (e.g. XDS)
+                if ( doc != null && doc.getAvailability().compareTo(Availability.UNAVAILABLE) < 0) {
+                    //logExport(reqObj, getXDSPatientInfo(reqObj, is), "XDS Document Retrieve");
+                    return new RIDStreamResponseObjectImpl( doc.getInputStream(), 
+                            reqObj.getParam("preferredContentType"), HttpServletResponse.SC_OK, null);
+                }
+                return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Object with documentUID="+uid+ " not found!");
+            }
+        } catch (Exception x) {
+            log.error("Cant get RIDDocument:", x);
+            return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get Document! Reason: unexpected error:"+x.getMessage() );
+        }
+    }
 
-	private Dataset getDicomObjectForDocument(String uid) throws FinderException,
-			RemoteException, Exception {
-		List instances = getContentManager().listInstanceInfos( new String[] {uid}, false);
-		return instances.isEmpty() ? null : (Dataset) instances.get(0);
-	}
-	
+    private Dataset getDicomObjectForDocument(String uid) throws FinderException,
+    RemoteException, Exception {
+        List instances = getContentManager().listInstanceInfos( new String[] {uid}, false);
+        return instances.isEmpty() ? null : (Dataset) instances.get(0);
+    }
+
     private boolean isAuditLogIHEYr4() {
         if (auditLogName == null) {
             return false;
@@ -580,7 +596,7 @@ public class RIDSupport {
         }
         return auditLogIHEYr4.booleanValue();
     }
-    
+
     private void logExport(RIDRequestObject reqObj, Dataset ds, String mediaType ) {
         if (isAuditLogIHEYr4()) return;
         try {
@@ -598,7 +614,7 @@ public class RIDSupport {
             if (user != null) {
                 ActiveParticipant ap = ActiveParticipant.createActivePerson(user, null, user, null, true);
                 msg.addActiveParticipant(ap);
-                
+
             }
             msg.addPatient(ds.getString(Tags.PatientID), ds.getString(Tags.PatientName));
             ParticipantObjectDescription desc = new ParticipantObjectDescription();
@@ -611,17 +627,17 @@ public class RIDSupport {
         } catch (Exception e) {
             log.warn("Audit Log failed:", e);
         }		
-	}
+    }
 
-	/**
-	 * @param reqObj
-	 * @param f 
-	 * @return
-	 */
-	private Dataset getXDSPatientInfo(RIDRequestObject reqObj, InputStream is) {
+    /**
+     * @param reqObj
+     * @param f 
+     * @return
+     */
+    private Dataset getXDSPatientInfo(RIDRequestObject reqObj, InputStream is) {
         String pct = reqObj.getParam("preferredContentType");
         Dataset ds = dof.newDataset();
-        if ( "application/dicom".equals(pct) ) {
+        if ( CONTENT_TYPE_DICOM.equals(pct) ) {
             try {
                 DataInputStream dis = new DataInputStream(is);
                 DcmParser parser = DcmParserFactory.getInstance().newDcmParser(dis);
@@ -634,328 +650,337 @@ public class RIDSupport {
             }
         }
         log.debug("Not a Dicom file! try to get patient infos!");
-		//TODO REAL stuff (need metadata here!)
-		if ( ! ds.containsValue(Tags.StudyInstanceUID) ) ds.putUI(Tags.StudyInstanceUID);
+        //TODO REAL stuff (need metadata here!)
+        if ( ! ds.containsValue(Tags.StudyInstanceUID) ) ds.putUI(Tags.StudyInstanceUID);
         if ( ! ds.containsValue(Tags.PatientID) ) ds.putLO(Tags.PatientID,"UNKNOWN");
         if ( ! ds.containsValue(Tags.PatientName) ) ds.putPN(Tags.PatientName,"UNKNOWN");
-		return ds;
-	}
-	
-	public BaseDocument getOrCreateDocument(String objectUID, String contentType) throws IOException {
-		BaseDocument doc = storage.getDocument( objectUID, contentType );
-		return doc != null ? doc : storage.createDocument(objectUID, contentType);
-	}
+        return ds;
+    }
 
-	private RIDResponseObject getDocument( RIDRequestObject reqObj ) {
-		String docUID = reqObj.getParam("documentUID");
-		if ( log.isDebugEnabled() ) log.debug(" Document UID:"+docUID);
-		String contentType = reqObj.getParam("preferredContentType");
-		if ( contentType == null ) {
-			contentType = CONTENT_TYPE_PDF;
-		} else {
-			if ( contentType.equals( CONTENT_TYPE_JPEG )) {
-				if ( this.checkContentType( reqObj, new String[]{ CONTENT_TYPE_JPEG } ) == null ) {
-					return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
-				}
-				RIDResponseObject resp = handleJPEG( reqObj );
-				if ( resp != null ) return resp; 
-				contentType = CONTENT_TYPE_PDF; //cant be rendered as image (SR) make PDF instead.
-			} else if ( ! contentType.equals( CONTENT_TYPE_PDF) ) {
-				if ( this.docSopCuids.isEmpty() ) //if no encapsulated document cuid defined, we accept only jpeg and pdf.
-					return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "preferredContentType '"+contentType+"' is not supported! Only 'application/pdf' and 'image/jpeg' are supported !");
-			}
-		}
-		if ( this.checkContentType( reqObj, new String[]{ CONTENT_TYPE_PDF } ) == null ) {
-			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
-		}
-		BaseDocument dh = storage.getDocument( docUID, contentType );
-		OutputStream out = null;
-		try {
-			if ( dh == null ) {
-				dh = storage.createDocument( docUID, contentType );
-				out = dh.getOutputStream();
-				File inFile = getDICOMFile( docUID );
-				if ( inFile == null ) {
-					return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Object with documentUID="+docUID+ "not found!");
-				}
-				if ( ! useOrigFile   ) {
-					DataSource ds = null;
-					try {
-				        ds = (DataSource) server.invoke(fileSystemMgtName,
-				                "getDatasourceOfInstance",
-				                new Object[] { docUID },
-				                new String[] { String.class.getName() } );
-				        
-				    } catch (Exception e) {
-				        log.error("Failed to get updated DICOM file", e);
-						return new RIDStreamResponseObjectImpl( null, contentType, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get updated dicom object");
-				    }
-				    File tmpFile = File.createTempFile("coerced", "dcm");
-				    tmpFile.deleteOnExit();
-				    log.info("Temporary coerced dicom file:"+tmpFile);
-				    OutputStream os = new BufferedOutputStream( new FileOutputStream( tmpFile ));
-				    ds.writeTo( os, null);
-				    os.close();
-				    renderSRFile( new FileInputStream(tmpFile), out );
-				    tmpFile.delete();
-				} else {
-					renderSRFile( new FileInputStream(inFile), out );
-				}
-				out.close();
-			}
-			InputStream in = dh.getInputStream();
-			return new RIDStreamResponseObjectImpl( in,in.available(), contentType, HttpServletResponse.SC_OK, null);
-		} catch (Exception x) {
-			log.error("Cant get document! docUID:"+docUID, x);
-			if ( out != null) try {
-				out.close();
-			} catch (IOException ignore) {}
-			storage.removeDocument( docUID );
-		}
-		return null;
-	}
-	
-	/**
-	 * @param outFile
-	 * @return
-	 */
-	protected boolean isOutdated(File outFile, String docUID) {
-		Date fileDate = new Date( outFile.lastModified() );
-		Dataset dsQ = factory.newDataset();
-		dsQ.putUI(Tags.SOPInstanceUID, docUID);
-		dsQ.putCS(Tags.QueryRetrieveLevel, "IMAGE");
-		RetrieveStudyDatesCmd cmd = null;
-		try {
-			cmd = RetrieveStudyDatesCmd.create(dsQ);
-			Date[] dates = cmd.getUpdatedTimes(1);//IMAGE should contain only one result set
-			if (dates != null) {
-//				check only patient and instance (study and series maybe changed without influence of this instance!) 
-				return dates[0].after(fileDate) || dates[3].after(fileDate);
-			} else {
-				return true;
-			}
-		} catch (SQLException e) {
-			log.error("Cant get Study date/times! mark "+outFile+" as outdated!",e);
-			return true;
-		} finally {
-			if ( cmd != null ) cmd.close();
-		}
-	}
+    public BaseDocument retrieveDocument(String objectUID, String contentType) throws IOException {
+        BaseDocument doc = storage.getDocument( objectUID, contentType );
+        return doc;
+    }
 
-	/**
-	 * @param reqObj
-	 * @return
-	 */
-	private RIDResponseObject handleJPEG(final RIDRequestObject reqObj) {
-		File file;
-		try {
-			String sn = String.class.getName();
-			file = (File) server.invoke(null, "getJpgFile", 
-						new Object[] { "rid", "rid", reqObj.getParam("documentUID") }, 
-						new String[] { sn, sn, sn,});
-			if ( file != null ) {
-				return new RIDStreamResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, null );
-			} else {
-				return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND, "Requested Document not found! documentID:"+reqObj.getParam("documentUID") );
-			}
-		} catch (Exception e) {
-			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error:"+e.getMessage() );
-		}
-	}
+    public BaseDocument getOrCreateDocument(String objectUID, String contentType) throws IOException {
+        BaseDocument doc = storage.getDocument( objectUID, contentType );
+        return doc != null ? doc : storage.createDocument(objectUID, contentType);
+    }
 
-	/**
-	 * @param f
-	 * @return
-	 * @throws IOException
-	 * @throws TransformerException
-	 */
-	private void renderSRFile(InputStream input, OutputStream out ) throws IOException, TransformerException {
+    private RIDResponseObject getDocument( RIDRequestObject reqObj ) {
+        String docUID = reqObj.getParam("documentUID");
+        if ( log.isDebugEnabled() ) log.debug(" Document UID:"+docUID);
+        String contentType = reqObj.getParam("preferredContentType");
+        if ( contentType == null ) {
+            contentType = CONTENT_TYPE_PDF;
+        } else {
+            if ( contentType.equals( CONTENT_TYPE_JPEG )) {
+                if ( this.checkContentType( reqObj, new String[]{ CONTENT_TYPE_JPEG } ) == null ) {
+                    return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
+                }
+                RIDResponseObject resp = handleJPEG( reqObj );
+                if ( resp != null ) return resp; 
+                contentType = CONTENT_TYPE_PDF; //cant be rendered as image (SR) make PDF instead.
+            } else if ( ! contentType.equals( CONTENT_TYPE_PDF) ) {
+                if ( this.docSopCuids.isEmpty() ) //if no encapsulated document cuid defined, we accept only jpeg and pdf.
+                    return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "preferredContentType '"+contentType+"' is not supported! Only 'application/pdf' and 'image/jpeg' are supported !");
+            }
+        }
+        if ( this.checkContentType( reqObj, new String[]{ CONTENT_TYPE_PDF } ) == null ) {
+            return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
+        }
+        BaseDocument doc = storage.getDocument( docUID, contentType );
+        OutputStream out = null;
+        try {
+            if ( doc == null ) {
+                doc = storage.createDocument( docUID, contentType );
+                out = doc.getOutputStream();
+                File inFile = getDICOMFile( docUID );
+                if ( inFile == null ) {
+                    return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Object with documentUID="+docUID+ "not found!");
+                }
+                if ( ! useOrigFile   ) {
+                    DataSource ds = null;
+                    try {
+                        ds = (DataSource) server.invoke(fileSystemMgtName,
+                                "getDatasourceOfInstance",
+                                new Object[] { docUID },
+                                new String[] { String.class.getName() } );
+
+                    } catch (Exception e) {
+                        log.error("Failed to get updated DICOM file", e);
+                        return new RIDStreamResponseObjectImpl( null, contentType, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get updated dicom object");
+                    }
+                    File tmpFile = File.createTempFile("coerced", "dcm");
+                    tmpFile.deleteOnExit();
+                    log.info("Temporary coerced dicom file:"+tmpFile);
+                    OutputStream os = new BufferedOutputStream( new FileOutputStream( tmpFile ));
+                    ds.writeTo( os, null);
+                    os.close();
+                    renderSRFile( new FileInputStream(tmpFile), out );
+                    tmpFile.delete();
+                } else {
+                    renderSRFile( new FileInputStream(inFile), out );
+                }
+                out.close();
+            }
+            InputStream in = doc.getInputStream();
+            return new RIDStreamResponseObjectImpl( in,in.available(), contentType, HttpServletResponse.SC_OK, null);
+        } catch (Exception x) {
+            log.error("Cant get document! docUID:"+docUID, x);
+            if ( out != null) try {
+                out.close();
+            } catch (IOException ignore) {}
+            storage.removeDocument( docUID );
+        }
+        return null;
+    }
+
+    /**
+     * @param outFile
+     * @return
+     */
+    protected boolean isOutdated(File outFile, String docUID) {
+        Date fileDate = new Date( outFile.lastModified() );
+        Dataset dsQ = factory.newDataset();
+        dsQ.putUI(Tags.SOPInstanceUID, docUID);
+        dsQ.putCS(Tags.QueryRetrieveLevel, "IMAGE");
+        RetrieveStudyDatesCmd cmd = null;
+        try {
+            cmd = RetrieveStudyDatesCmd.create(dsQ);
+            Date[] dates = cmd.getUpdatedTimes(1);//IMAGE should contain only one result set
+            if (dates != null) {
+//              check only patient and instance (study and series maybe changed without influence of this instance!) 
+                return dates[0].after(fileDate) || dates[3].after(fileDate);
+            } else {
+                return true;
+            }
+        } catch (SQLException e) {
+            log.error("Cant get Study date/times! mark "+outFile+" as outdated!",e);
+            return true;
+        } finally {
+            if ( cmd != null ) cmd.close();
+        }
+    }
+
+    /**
+     * @param reqObj
+     * @return
+     */
+    private RIDResponseObject handleJPEG(final RIDRequestObject reqObj) {
+        File file;
+        try {
+            String sn = String.class.getName();
+            file = (File) server.invoke(null, "getJpgFile", 
+                    new Object[] { "rid", "rid", reqObj.getParam("documentUID") }, 
+                    new String[] { sn, sn, sn,});
+            if ( file != null ) {
+                return new RIDStreamResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, null );
+            } else {
+                return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND, "Requested Document not found! documentID:"+reqObj.getParam("documentUID") );
+            }
+        } catch (Exception e) {
+            return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error:"+e.getMessage() );
+        }
+    }
+
+    /**
+     * @param f
+     * @return
+     * @throws IOException
+     * @throws TransformerException
+     */
+    private void renderSRFile(InputStream input, OutputStream out ) throws IOException, TransformerException {
         DataInputStream in = new DataInputStream(new BufferedInputStream(input));
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
         fop.setRenderer(Driver.RENDER_PDF);
         fop.setOutputStream( out );
         Templates template = tf.newTemplates(new StreamSource(FOBSR_XSL_URI));
         TransformerHandler th = tf.newTransformerHandler(template);
+        if ( srImageRows != null ) {
+            Transformer t = th.getTransformer();
+            t.setParameter("srImageRows", srImageRows);
+        }
         th.getTransformer().setParameter("wadoURL", wadoURL);
         th.setResult(new SAXResult( fop.getContentHandler() ));
         DcmParser parser = DcmParserFactory.getInstance().newDcmParser(in);
         parser.setSAXHandler2(th,DictionaryFactory.getInstance().getDefaultTagDictionary(), null, 4000, null );//4000 ~ one text page.
         parser.parseDcmFile(null, -1);
-	}
+    }
 
-	/**
-	 * Returns the DICOM file for given arguments.
-	 * <p>
-	 * Use the FileSystemMgtService MBean to localize the DICOM file.
-	 * 
-	 * @param instanceUID	Unique identifier of the instance.
-	 * 
-	 * @return The File object or null if not found.
-	 * 
-	 * @throws IOException
-	 */
-	public File getDICOMFile( String instanceUID ) throws IOException {
-	    File file;
-	    Object dicomObject = null;
-		try {
-	        dicomObject = server.invoke(fileSystemMgtName,
-	                "locateInstance",
-	                new Object[] { instanceUID },
-	                new String[] { String.class.getName() } );
-	        
-	    } catch (Exception e) {
-	        log.error("Failed to get DICOM file", e);
-	    }
-	    if ( dicomObject == null ) return null; //not found!
-	    if ( dicomObject instanceof File ) return (File) dicomObject; //We have the File!
-	    if ( dicomObject instanceof String ) {
-	    	log.info("Requested DICOM file is not local! You can retrieve it from:"+dicomObject);
-	    }
-		return null;
-	}
-	
-	private RIDResponseObject getEncapsulatedPDF( RIDRequestObject reqObj ) {
-		if ( ! encapsulatedPDFSupport ) 
-			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "Encapsulated PDF documents not supported! Please check RID configuration");
-		if ( checkContentType( reqObj, new String[]{CONTENT_TYPE_PDF}) == null ) 
-			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "The Display actor doesnt accept application/pdf! (requested document is of type application/pdf)");
+    /**
+     * Returns the DICOM file for given arguments.
+     * <p>
+     * Use the FileSystemMgtService MBean to localize the DICOM file.
+     * 
+     * @param instanceUID	Unique identifier of the instance.
+     * 
+     * @return The File object or null if not found.
+     * 
+     * @throws IOException
+     */
+    public File getDICOMFile( String instanceUID ) throws IOException {
+        File file;
+        Object dicomObject = null;
+        try {
+            dicomObject = server.invoke(fileSystemMgtName,
+                    "locateInstance",
+                    new Object[] { instanceUID },
+                    new String[] { String.class.getName() } );
 
-		try {
-			File inFile = getDICOMFile( reqObj.getParam("documentUID"));
-			InputStream is = new BufferedInputStream( new FileInputStream(inFile) );
-	        DataInputStream dis = new DataInputStream(is);
-	        DcmParser parser = DcmParserFactory.getInstance().newDcmParser(dis);
-	        parser.parseDcmFile(null,Tags.EncapsulatedDocument);
-	        long len = parser.getReadLength();
-	        return new RIDStreamResponseObjectImpl(is, len, CONTENT_TYPE_PDF, HttpServletResponse.SC_OK, null);
-		} catch ( Exception x ) {
-			log.error("Error getting encapsulated PDF!", x);
-			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get encapsulated PDF document! Reason:"+x.getMessage());
-		}
-	}
-	
-	private RIDResponseObject getEncapsulatedDocument( RIDRequestObject reqObj ) {
+        } catch (Exception e) {
+            log.error("Failed to get DICOM file", e);
+        }
+        if ( dicomObject == null ) return null; //not found!
+        if ( dicomObject instanceof File ) return (File) dicomObject; //We have the File!
+        if ( dicomObject instanceof String ) {
+            log.info("Requested DICOM file is not local! You can retrieve it from:"+dicomObject);
+        }
+        return null;
+    }
 
-		try {
-	        FileDataSource fds = (FileDataSource) server.invoke(fileSystemMgtName,
-	                "getDatasourceOfInstance",
-	                new Object[] { reqObj.getParam("documentUID") },
-	                new String[] { String.class.getName() } );
-	        
-			InputStream is = new BufferedInputStream( new FileInputStream(fds.getFile()) );
-			Dataset ds = fds.getMergeAttrs();
-			String mime = ds.getString(Tags.MIMETypeOfEncapsulatedDocument);
-			if (mime == null) {
-				mime = "application.octet-stream";
-			}
-			log.info("Mime type of encapsulated document:"+mime);
-			if ( checkContentType( reqObj, new String[]{mime}) == null ) 
-				return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "The Display actor doesnt accept mime type of requested document:"+mime+"!");
-	        DataInputStream dis = new DataInputStream(is);
-	        DcmParser parser = DcmParserFactory.getInstance().newDcmParser(dis);
-	        Dataset attrs = dof.newDataset();
-	        parser.setDcmHandler( attrs.getDcmHandler() );
-	        parser.parseDcmFile(null,Tags.EncapsulatedDocument);
-	        long len = parser.getReadLength();
-	        log.debug("read length of encapsulated document:"+len);
-	        return new RIDStreamResponseObjectImpl(is, len, mime, HttpServletResponse.SC_OK, null);
-		} catch ( Exception x ) {
-			log.error("Error getting encapsulated PDF!", x);
-			return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get encapsulated PDF document! Reason:"+x.getMessage());
-		}
-	}
-	
-	/**
-	 * @param patientID patient id in form patientID^^^issuerOfPatientID
-	 * @return String[] 0..patientID 1.. issuerOfPatientID
-	 */
-	private String[] splitPatID(String patientID) {
-		String[] sa = StringUtils.split(patientID, '^');
+    private RIDResponseObject getEncapsulatedPDF( RIDRequestObject reqObj ) {
+        if ( ! encapsulatedPDFSupport ) 
+            return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "Encapsulated PDF documents not supported! Please check RID configuration");
+        if ( checkContentType( reqObj, new String[]{CONTENT_TYPE_PDF}) == null ) 
+            return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "The Display actor doesnt accept application/pdf! (requested document is of type application/pdf)");
+
+        try {
+            File inFile = getDICOMFile( reqObj.getParam("documentUID"));
+            InputStream is = new BufferedInputStream( new FileInputStream(inFile) );
+            DataInputStream dis = new DataInputStream(is);
+            DcmParser parser = DcmParserFactory.getInstance().newDcmParser(dis);
+            parser.parseDcmFile(null,Tags.EncapsulatedDocument);
+            long len = parser.getReadLength();
+            return new RIDStreamResponseObjectImpl(is, len, CONTENT_TYPE_PDF, HttpServletResponse.SC_OK, null);
+        } catch ( Exception x ) {
+            log.error("Error getting encapsulated PDF!", x);
+            return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get encapsulated PDF document! Reason:"+x.getMessage());
+        }
+    }
+
+    private RIDResponseObject getEncapsulatedDocument( RIDRequestObject reqObj ) {
+
+        try {
+            FileDataSource fds = (FileDataSource) server.invoke(fileSystemMgtName,
+                    "getDatasourceOfInstance",
+                    new Object[] { reqObj.getParam("documentUID") },
+                    new String[] { String.class.getName() } );
+
+            InputStream is = new BufferedInputStream( new FileInputStream(fds.getFile()) );
+            Dataset ds = fds.getMergeAttrs();
+            String mime = ds.getString(Tags.MIMETypeOfEncapsulatedDocument);
+            if (mime == null) {
+                mime = "application.octet-stream";
+            }
+            log.info("Mime type of encapsulated document:"+mime);
+            if ( checkContentType( reqObj, new String[]{mime}) == null ) 
+                return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "The Display actor doesnt accept mime type of requested document:"+mime+"!");
+            DataInputStream dis = new DataInputStream(is);
+            DcmParser parser = DcmParserFactory.getInstance().newDcmParser(dis);
+            Dataset attrs = dof.newDataset();
+            parser.setDcmHandler( attrs.getDcmHandler() );
+            parser.parseDcmFile(null,Tags.EncapsulatedDocument);
+            long len = parser.getReadLength();
+            log.debug("read length of encapsulated document:"+len);
+            return new RIDStreamResponseObjectImpl(is, len, mime, HttpServletResponse.SC_OK, null);
+        } catch ( Exception x ) {
+            log.error("Error getting encapsulated PDF!", x);
+            return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cant get encapsulated PDF document! Reason:"+x.getMessage());
+        }
+    }
+
+    /**
+     * @param patientID patient id in form patientID^^^issuerOfPatientID
+     * @return String[] 0..patientID 1.. issuerOfPatientID
+     */
+    private String[] splitPatID(String patientID) {
+        String[] sa = StringUtils.split(patientID, '^');
         String[] pat = new String[]{sa[0],null};
         if ( sa.length > 3 && sa[3] != null && sa[3].trim().length() > 0 ) {
             pat[1] = sa[3];
         }
-		return pat;
-	}
+        return pat;
+    }
 
-	public float getWaveformCorrection() {
-		// TODO Auto-generated method stub
-		return service.getWaveformCorrection();
-	}
+    public float getWaveformCorrection() {
+        // TODO Auto-generated method stub
+        return service.getWaveformCorrection();
+    }
 
-	public String getRadiologyConceptNames() {
-		return conceptNameCodeConfig.getConceptNameCodeString(RADIOLOGY);
-	}
+    public String getRadiologyConceptNames() {
+        return conceptNameCodeConfig.getConceptNameCodeString(RADIOLOGY);
+    }
 
-	/**
-	 * @param conceptNames
-	 */
-	public void setRadiologyConceptNames(String conceptNames) {
-		if ( conceptNameCodeConfig.setConceptNameCodes(RADIOLOGY, conceptNames ) == null )
-			conceptNameCodeConfig.setConceptNameCodes(RADIOLOGY,ConceptNameCodeConfig.getDefaultRadiologyConceptNameCodes());
-		
-	}
-	public String getCardiologyConceptNames() {
-		return conceptNameCodeConfig.getConceptNameCodeString(CARDIOLOGY);
-	}
+    /**
+     * @param conceptNames
+     */
+    public void setRadiologyConceptNames(String conceptNames) {
+        if ( conceptNameCodeConfig.setConceptNameCodes(RADIOLOGY, conceptNames ) == null )
+            conceptNameCodeConfig.setConceptNameCodes(RADIOLOGY,ConceptNameCodeConfig.getDefaultRadiologyConceptNameCodes());
 
-	/**
-	 * @param conceptNames
-	 */
-	public void setCardiologyConceptNames(String conceptNames) {
-		if ( conceptNameCodeConfig.setConceptNameCodes(CARDIOLOGY, conceptNames ) == null )
-			conceptNameCodeConfig.setConceptNameCodes(CARDIOLOGY,ConceptNameCodeConfig.getDefaultCardiologyConceptNameCodes());
-		
-	}
-	
-	/**
-	 * @return
-	 */
-	public String getRadiologyPDFConceptCodeNames() {
-		return conceptNameCodeConfig.getConceptNameCodeString(ENCAPSED_PDF_RADIOLOGY);
-	}
+    }
+    public String getCardiologyConceptNames() {
+        return conceptNameCodeConfig.getConceptNameCodeString(CARDIOLOGY);
+    }
 
-	/**
-	 * @param conceptNames
-	 */
-	public void setRadiologyPDFConceptNameCodes(String conceptNames) {
-		conceptNameCodeConfig.setConceptNameCodes(ENCAPSED_PDF_RADIOLOGY, conceptNames );
-	}
-	/**
-	 * @return
-	 */
-	public String getCardiologyPDFConceptCodeNames() {
-		return conceptNameCodeConfig.getConceptNameCodeString(ENCAPSED_PDF_CARDIOLOGY);
-	}
+    /**
+     * @param conceptNames
+     */
+    public void setCardiologyConceptNames(String conceptNames) {
+        if ( conceptNameCodeConfig.setConceptNameCodes(CARDIOLOGY, conceptNames ) == null )
+            conceptNameCodeConfig.setConceptNameCodes(CARDIOLOGY,ConceptNameCodeConfig.getDefaultCardiologyConceptNameCodes());
 
-	/**
-	 * @param conceptNames
-	 */
-	public void setCardiologyPDFConceptNameCodes(String conceptNames) {
-		conceptNameCodeConfig.setConceptNameCodes(ENCAPSED_PDF_CARDIOLOGY, conceptNames );
-	}
-	/**
-	 * @return
-	 */
-	public String getECGPDFConceptCodeNames() {
-		return conceptNameCodeConfig.getConceptNameCodeString(ENCAPSED_PDF_ECG);
-	}
+    }
 
-	/**
-	 * @param conceptNames
-	 */
-	public void setECGPDFConceptNameCodes(String conceptNames) {
-		conceptNameCodeConfig.setConceptNameCodes(ENCAPSED_PDF_ECG, conceptNames );
-	}
-    
+    /**
+     * @return
+     */
+    public String getRadiologyPDFConceptCodeNames() {
+        return conceptNameCodeConfig.getConceptNameCodeString(ENCAPSED_PDF_RADIOLOGY);
+    }
+
+    /**
+     * @param conceptNames
+     */
+    public void setRadiologyPDFConceptNameCodes(String conceptNames) {
+        conceptNameCodeConfig.setConceptNameCodes(ENCAPSED_PDF_RADIOLOGY, conceptNames );
+    }
+    /**
+     * @return
+     */
+    public String getCardiologyPDFConceptCodeNames() {
+        return conceptNameCodeConfig.getConceptNameCodeString(ENCAPSED_PDF_CARDIOLOGY);
+    }
+
+    /**
+     * @param conceptNames
+     */
+    public void setCardiologyPDFConceptNameCodes(String conceptNames) {
+        conceptNameCodeConfig.setConceptNameCodes(ENCAPSED_PDF_CARDIOLOGY, conceptNames );
+    }
+    /**
+     * @return
+     */
+    public String getECGPDFConceptCodeNames() {
+        return conceptNameCodeConfig.getConceptNameCodeString(ENCAPSED_PDF_ECG);
+    }
+
+    /**
+     * @param conceptNames
+     */
+    public void setECGPDFConceptNameCodes(String conceptNames) {
+        conceptNameCodeConfig.setConceptNameCodes(ENCAPSED_PDF_ECG, conceptNames );
+    }
+
     private ContentManager getContentManager() throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory.getFactory()
-                .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
+        .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
         return home.create();
     }
 
-	public File getDICOMFile(String string, String string2, String iuid) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public File getDICOMFile(String string, String string2, String iuid) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }
