@@ -61,4 +61,16 @@
   <!-- Operations -->
   &defaultOperations;
 
+   <operation impact="INFO">
+      <description>Get free space for given path.
+      </description>
+      <name>freeSpace</name>
+      <parameter>
+        <description>Path String</description>
+        <name>path</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>long</return-type>
+   </operation>
+
 </mbean>
