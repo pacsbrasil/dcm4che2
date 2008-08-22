@@ -37,6 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.archive.mbean;
 
+import java.io.IOException;
+
 import org.dcm4chex.archive.util.FileSystemUtils;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -63,4 +65,8 @@ public class DFCommandService extends ServiceMBeanSupport {
         FileSystemUtils.setDFCommandOption(dfCommandOption);
     }    
 
+    public long freeSpace(String path) throws IOException {
+        return FileSystemUtils.freeSpace(path);
+    }
+    
 }
