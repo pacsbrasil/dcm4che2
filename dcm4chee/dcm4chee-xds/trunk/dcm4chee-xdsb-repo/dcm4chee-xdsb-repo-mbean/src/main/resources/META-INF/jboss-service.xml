@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+
 <!--  Version $Revision:$ $Date:$ -->
 <server>
   <mbean code="org.dcm4chee.xdsb.repository.mbean.XDSbRepositoryService" 
@@ -123,7 +125,7 @@
       <name>RetrieveURI</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="NONE"/>
+         <value value="http://127.0.0.1:8080/rid/IHERetrieveDocument"/>
       </descriptors>
    </attribute>
 
@@ -217,10 +219,15 @@
       <name>DocumentStoreService</name>
       <type>javax.management.ObjectName</type>
       <descriptors>
-         <value value="dcm4chee.xds:service=DocumentStoreService"/>
+         <value value="dcm4chee.xds:service=XDSStoreService"/>
       </descriptors>
    </attribute>
 
+       &defaultAttributes;
+       
+       <!-- Operations -->
+       &defaultOperations;
+       
    <operation impact="ACTION">
       <description><![CDATA[ Perform the document export.<br/>
       			1) Store attachments<br/>

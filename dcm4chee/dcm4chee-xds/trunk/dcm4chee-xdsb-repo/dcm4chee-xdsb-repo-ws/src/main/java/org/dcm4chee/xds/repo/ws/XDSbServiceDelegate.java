@@ -68,93 +68,93 @@ import org.slf4j.LoggerFactory;
 public class XDSbServiceDelegate {
 
     private static final String DEFAULT_XDSB_REPOSITORY_SERVICE_NAME = "dcm4chee.xds:service=XDSbRepositoryService";
-	private static ObjectName xdsServiceName = null;
-	private static MBeanServer server;
-	private ObjectFactory objFac = new ObjectFactory();
-	
-	private Logger log = LoggerFactory.getLogger(XDSbServiceDelegate.class);
+    private static ObjectName xdsServiceName = null;
+    private static MBeanServer server;
+    private ObjectFactory objFac = new ObjectFactory();
 
-	public XDSbServiceDelegate() {
-		init();
-	}
-	public void init() {
+    private Logger log = LoggerFactory.getLogger(XDSbServiceDelegate.class);
+
+    public XDSbServiceDelegate() {
+        init();
+    }
+    public void init() {
         if (server != null) return;
         server = MBeanServerLocator.locate();
         String s = DEFAULT_XDSB_REPOSITORY_SERVICE_NAME;
-		try {
-			xdsServiceName = new ObjectName(s);
-		} catch (Exception e) {
-			log.error( "Exception in init! Cant create xdsServiceName for "+s,e );
-		}
+        try {
+            xdsServiceName = new ObjectName(s);
+        } catch (Exception e) {
+            log.error( "Exception in init! Cant create xdsServiceName for "+s,e );
+        }
     }
-	
-	/**
-	 * Makes the MBean call to export the document packed in a SOAP message.
-	 * @param submitRequest 
-	 * 
-	 * @param msg The document(s) packed in a SOAP message.
-	 * 
-	 * @return List of StoredDocument objects.
-	 */
-	public RegistryResponseType storeAndRegisterDocuments( ProvideAndRegisterDocumentSetRequestType req ) throws XDSException {
-		try {
-			return (RegistryResponseType) server.invoke(xdsServiceName,
-	                "storeAndRegisterDocuments",
-	                new Object[] { req },
-	                new String[] { ProvideAndRegisterDocumentSetRequestType.class.getName() } );
-		} catch ( Exception x ) {
-			if ( x instanceof XDSException ) {
-				throw (XDSException)x;
-			} else if ( x.getCause() instanceof XDSException ){
-				throw (XDSException) x.getCause();
-			}
-			log.error( "Exception occured in exportDocument: "+x.getMessage(), x );
-			throw new XDSException( XDSConstants.XDS_ERR_REPOSITORY_ERROR, "Unexpected error in XDS service !: "+x.getMessage(),x);
-		}
-	}
 
-	public RetrieveDocumentSetResponseType retrieveDocumentSet(
-			RetrieveDocumentSetRequestType req) throws XDSException {
-		try {
-			return (RetrieveDocumentSetResponseType) server.invoke(xdsServiceName,
-	                "retrieveDocumentSet",
-	                new Object[] { req },
-	                new String[] { RetrieveDocumentSetRequestType.class.getName() } );
-		} catch ( Exception x ) {
-			if ( x instanceof XDSException ) {
-				throw (XDSException)x;
-			} else if ( x.getCause() instanceof XDSException ){
-				throw (XDSException) x.getCause();
-			}
-			log.error( "Exception occured in retrieveDocumentSet: "+x.getMessage(), x );
-			throw new XDSException( XDSConstants.XDS_ERR_REPOSITORY_ERROR, "Unexpected error in XDS service !: "+x.getMessage(),x);
-		}
-	}
-	
-	public RegistryResponseType getErrorRegistryResponse( XDSException x) throws JAXBException {
+    /**
+     * Makes the MBean call to export the document packed in a SOAP message.
+     * @param submitRequest 
+     * 
+     * @param msg The document(s) packed in a SOAP message.
+     * 
+     * @return List of StoredDocument objects.
+     */
+    public RegistryResponseType storeAndRegisterDocuments( ProvideAndRegisterDocumentSetRequestType req ) throws XDSException {
+        try {
+            return (RegistryResponseType) server.invoke(xdsServiceName,
+                    "storeAndRegisterDocuments",
+                    new Object[] { req },
+                    new String[] { ProvideAndRegisterDocumentSetRequestType.class.getName() } );
+        } catch ( Exception x ) {
+            if ( x instanceof XDSException ) {
+                throw (XDSException)x;
+            } else if ( x.getCause() instanceof XDSException ){
+                throw (XDSException) x.getCause();
+            }
+            log.error( "Exception occured in exportDocument: "+x.getMessage(), x );
+            throw new XDSException( XDSConstants.XDS_ERR_REPOSITORY_ERROR, "Unexpected error in XDS service !: "+x.getMessage(),x);
+        }
+    }
+
+    public RetrieveDocumentSetResponseType retrieveDocumentSet(
+            RetrieveDocumentSetRequestType req) throws XDSException {
+        try {
+            return (RetrieveDocumentSetResponseType) server.invoke(xdsServiceName,
+                    "retrieveDocumentSet",
+                    new Object[] { req },
+                    new String[] { RetrieveDocumentSetRequestType.class.getName() } );
+        } catch ( Exception x ) {
+            if ( x instanceof XDSException ) {
+                throw (XDSException)x;
+            } else if ( x.getCause() instanceof XDSException ){
+                throw (XDSException) x.getCause();
+            }
+            log.error( "Exception occured in retrieveDocumentSet: "+x.getMessage(), x );
+            throw new XDSException( XDSConstants.XDS_ERR_REPOSITORY_ERROR, "Unexpected error in XDS service !: "+x.getMessage(),x);
+        }
+    }
+
+    public RegistryResponseType getErrorRegistryResponse( XDSException x) throws JAXBException {
         RegistryResponseType rsp = objFac.createRegistryResponseType();
         rsp.setStatus(XDSConstants.XDS_B_STATUS_FAILURE);
         RegistryErrorList errList = objFac.createRegistryErrorList();
         List<RegistryError> errors = errList.getRegistryError();
-		rsp.setRegistryErrorList( errList );
-		RegistryError error = getRegistryError(x);
-		errors.add(error);
-		return rsp;
-	}
-	private RegistryError getRegistryError(XDSException xdsException)
-			throws JAXBException {
-		RegistryError error = objFac.createRegistryError();
-		error.setErrorCode(xdsException.getErrorCode());
-		error.setCodeContext(xdsException.getMsg());
-		error.setSeverity(xdsException.getSeverity());
-		error.setLocation(xdsException.getLocation());
-		error.setValue(xdsException.getMsg());
-		return error;
-	}
-	public RetrieveDocumentSetResponseType getErrorRetrieveDocumentSetResponse(XDSException x) throws JAXBException {
-		RetrieveDocumentSetResponseType rsp = objFac.createRetrieveDocumentSetResponseType();
-		rsp.setRegistryResponse(getErrorRegistryResponse(x));
-		return rsp;
-	}
-	
+        rsp.setRegistryErrorList( errList );
+        RegistryError error = getRegistryError(x);
+        errors.add(error);
+        return rsp;
+    }
+    private RegistryError getRegistryError(XDSException xdsException)
+    throws JAXBException {
+        RegistryError error = objFac.createRegistryError();
+        error.setErrorCode(xdsException.getErrorCode());
+        error.setCodeContext(xdsException.getMsg());
+        error.setSeverity(xdsException.getSeverity());
+        error.setLocation(xdsException.getLocation());
+        error.setValue(xdsException.getMsg());
+        return error;
+    }
+    public RetrieveDocumentSetResponseType getErrorRetrieveDocumentSetResponse(XDSException x) throws JAXBException {
+        RetrieveDocumentSetResponseType rsp = objFac.createRetrieveDocumentSetResponseType();
+        rsp.setRegistryResponse(getErrorRegistryResponse(x));
+        return rsp;
+    }
+
 }
