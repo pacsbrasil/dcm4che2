@@ -349,13 +349,13 @@ public class DicomOutputStream extends FilterOutputStream {
         }
     }
 
-    private void writeElements(Iterator itr, boolean groupLength1,
+    private void writeElements(Iterator<DicomElement> itr, boolean groupLength1,
             ItemInfo itemInfo) throws IOException {
         int gggg0 = -1;
         int gri = -1;
         int sqi = -1;
         while (itr.hasNext()) {
-            DicomElement a = (DicomElement) itr.next();
+            DicomElement a = itr.next();
             if (groupLength1) {
                 int gggg = a.tag() & 0xffff0000;
                 if (gggg != gggg0) {

@@ -118,8 +118,8 @@ public class SAXWriter implements DicomInputHandler {
                     Long.toString(attrs.getItemOffset()));
         }
         ch.startElement("", "", qName, new AttributesImpl());
-        for (Iterator it = attrs.iterator(); it.hasNext();) {
-            writeElement(attrs, (DicomElement) it.next());
+        for (Iterator<DicomElement> it = attrs.iterator(); it.hasNext();) {
+            writeElement(attrs, it.next());
         }
         ch.endElement("", "", qName);
     }

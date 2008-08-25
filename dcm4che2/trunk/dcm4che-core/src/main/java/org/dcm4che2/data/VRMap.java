@@ -100,10 +100,9 @@ public final class VRMap implements Serializable {
     public static void reloadVRMaps() {
         VRMap newVRMap = null;
         Hashtable<String, VRMap> newPrivVRMaps = new Hashtable<String, VRMap>();
-        List list = ResourceLocator.findResources(VRMap.class);
-        for (int i = 0, n = list.size(); i < n; ++i) {
-            VRMap m = (VRMap) ResourceLocator
-                    .loadResource((String) list.get(i));
+        List<String> list = ResourceLocator.findResources(VRMap.class);
+        for (String s : list) {
+            VRMap m = (VRMap) ResourceLocator.loadResource(s);
             if (m.getPrivateCreator() == null) {
                 newVRMap = m;
             } else {

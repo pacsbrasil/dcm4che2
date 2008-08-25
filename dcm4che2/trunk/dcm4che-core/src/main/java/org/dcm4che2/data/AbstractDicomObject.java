@@ -100,8 +100,9 @@ abstract class AbstractDicomObject implements DicomObject {
         if (param == null)
             param = DicomObjectToStringParam.getDefaultParam();
         int lines = 0;
-        for (Iterator it = iterator(); lines < param.numLines && it.hasNext();) {
-            DicomElement e = (DicomElement) it.next();
+        for (Iterator<DicomElement> it = iterator();
+                lines < param.numLines && it.hasNext();) {
+            DicomElement e = it.next();
             if (++lines == param.numLines) {
                 sb.append("...").append(param.lineSeparator);
                 break;

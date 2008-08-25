@@ -58,9 +58,9 @@ class SimpleDicomElement extends AbstractDicomElement {
     private static final long serialVersionUID = 4049072757025092152L;
     private static final WeakHashMap<SimpleDicomElement, WeakReference<SimpleDicomElement>> shared =
         new WeakHashMap<SimpleDicomElement, WeakReference<SimpleDicomElement>>();
-    private static final ThreadLocal cbuf = new ThreadLocal(){
+    private static final ThreadLocal<char[]> cbuf = new ThreadLocal<char[]>(){
         @Override
-        protected Object initialValue() {
+        protected char[] initialValue() {
             return new char[64];
         }
     };
@@ -117,9 +117,9 @@ class SimpleDicomElement extends AbstractDicomElement {
     }
     
     public DicomElement share() {
-        WeakReference wr = shared.get(this);
+        WeakReference<SimpleDicomElement> wr = shared.get(this);
         if (wr != null) {
-            DicomElement e = (DicomElement) wr.get();
+            DicomElement e = wr.get();
             if (e != null) {
                 return e;
             }
@@ -130,8 +130,7 @@ class SimpleDicomElement extends AbstractDicomElement {
     
     @Override
     protected void appendValue(StringBuffer sb, int maxValLen) {
-        vr.promptValue(value, bigEndian, null, (char[]) cbuf.get(),
-                maxValLen, sb);        
+        vr.promptValue(value, bigEndian, null, cbuf.get(), maxValLen, sb);
     }
     
     @Override
