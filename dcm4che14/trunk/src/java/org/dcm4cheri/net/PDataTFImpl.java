@@ -142,9 +142,6 @@ final class PDataTFImpl implements PDataTF {
       if (it != null) {
          throw new IllegalStateException("P-DATA-TF read only");
       }
-      if ((pcid & 1) == 0) {
-         throw new IllegalArgumentException("pcid=" + pcid);
-      }
       if (curPDV != null) {
          throw new IllegalStateException("Open PDV " + curPDV);
       }
