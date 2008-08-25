@@ -67,7 +67,7 @@
     
     <dependency>
       <groupId>org.dcm4chee.xero</groupId>
-      <artifactId>util-xero</artifactId>
+      <artifactId>util-jar</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
