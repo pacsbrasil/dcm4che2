@@ -452,6 +452,7 @@ public class WADOService extends AbstractCacheService {
                 desc.addSOPClass(sopClass);
                 msg.addStudy(ds.getString(Tags.StudyInstanceUID), desc);
             } else {
+                msg.addPatient("unknown_patid", "unknown_pn");
                 msg.addStudy(reqObj.getStudyUID(), null);
             }
             msg.validate();

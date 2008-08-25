@@ -69,8 +69,11 @@ import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
@@ -98,12 +101,14 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.imageio.plugins.DcmMetadata;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionManager;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionManagerHome;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
+import org.dcm4chex.archive.exceptions.UnknownAETException;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.wado.common.WADORequestObject;
@@ -121,7 +126,9 @@ import org.jboss.mx.util.MBeanServerLocator;
  */
 public class WADOSupport {
 
-	public static final String CONTENT_TYPE_JPEG = "image/jpeg";
+    private static final String REDIRECT_PARAM = "redir";
+
+    public static final String CONTENT_TYPE_JPEG = "image/jpeg";
 
     public static final String CONTENT_TYPE_DICOM = "application/dicom";
 
@@ -138,22 +145,22 @@ public class WADOSupport {
     private static final String SUBJECT_CONTEXT_KEY = "javax.security.auth.Subject.container";
 
     private static final String ERROR_INVALID_SIMPLE_FRAME_LIST =
-            "Error: simpleFrameList parameter is invalid! Must be a comma " +
-            "separated list of positive integer strings in ascending order.";
+        "Error: simpleFrameList parameter is invalid! Must be a comma " +
+        "separated list of positive integer strings in ascending order.";
 
     private static final String ERROR_INVALID_CALCULATED_FRAME_LIST =
-            "Error: calculatedFrameList parameter is invalid! Must be a comma " +
-            "separated list of triples of integer strings, defining " +
-            "non-overlapping ranges of frame numbers.";
+        "Error: calculatedFrameList parameter is invalid! Must be a comma " +
+        "separated list of triples of integer strings, defining " +
+        "non-overlapping ranges of frame numbers.";
 
     private static final String ERROR_SIMPLE_AND_CALCULATED_FRAME_LIST =
-            "Error: use of simpleFrameList and calculatedFrameList parameter" +
-            " are mutually exclusive.";
+        "Error: use of simpleFrameList and calculatedFrameList parameter" +
+        " are mutually exclusive.";
 
     private static Logger log = Logger.getLogger(WADOService.class.getName());
 
     private static final AuditLoggerFactory alf = AuditLoggerFactory
-            .getInstance();
+    .getInstance();
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
@@ -195,7 +202,7 @@ public class WADOSupport {
     private Map mapTemplates = new HashMap();
 
     private String srImageRows;
-    
+
     public WADOSupport(MBeanServer mbServer) {
         if (server != null) {
             server = mbServer;
@@ -218,7 +225,7 @@ public class WADOSupport {
      * object.</DD>
      * <DD> if clientRedirect is enabled, the WADOResponse object return code is
      * set to <code>HttpServletResponse.SC_TEMPORARY_REDIRECT</code> and error
-     * message is set to the hostname to redirect.</DD>
+     * message is set to the aedto to redirect.</DD>
      * <DT>If the request was not successfull (not found or an error):</DT>
      * <DD> The return code of the WADO response object is set to a http error
      * code and an error message was set.</DD>
@@ -233,11 +240,11 @@ public class WADOSupport {
      * @throws PolicyContextException
      */
     public WADOResponseObject getWADOObject(WADORequestObject req)
-            throws Exception {
+    throws Exception {
         log.info("Get WADO object for " + req.getObjectUID());
         Dataset objectDs = null;
         QueryCmd cmd = null;
-		log.debug("isStudyPermissionCheckDisabled:"+req.isStudyPermissionCheckDisabled());
+        log.debug("isStudyPermissionCheckDisabled:"+req.isStudyPermissionCheckDisabled());
         if (!hasPermission(req)) {
             return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_HTML,
                     HttpServletResponse.SC_UNAUTHORIZED,
@@ -274,7 +281,7 @@ public class WADOSupport {
             return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_HTML,
                     HttpServletResponse.SC_NOT_ACCEPTABLE,
                     "Requested object can not be served as requested content type! Requested contentType(s):"
-                            + req.getRequest().getParameter("contentType"));
+                    + req.getRequest().getParameter("contentType"));
         } else if (CONTENT_TYPE_JPEG.equals(contentType)) {
             return this.handleJpg(req);
         } else if (CONTENT_TYPE_DICOM.equals(contentType)) {
@@ -290,26 +297,20 @@ public class WADOSupport {
                     log.debug("Dicom object not found: " + req);
                 return new WADOStreamResponseObjectImpl(null, contentType,
                         HttpServletResponse.SC_NOT_FOUND,
-                        "DICOM object not found!");
+                "DICOM object not found!");
             }
         } catch (IOException x) {
             log.error("Exception in getWADOObject: " + x.getMessage(), x);
             return new WADOStreamResponseObjectImpl(null, contentType,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Unexpected error! Cant get file");
+            "Unexpected error! Cant get file");
         } catch (NeedRedirectionException nre) {
-            if (!WADOCacheImpl.getWADOCache().isClientRedirect()) {
-                return getRemoteDICOMFile(nre.getHostname(), req);
-            } else {
-                return new WADOStreamResponseObjectImpl(null, contentType,
-                        HttpServletResponse.SC_TEMPORARY_REDIRECT,
-                        getRedirectURL(nre.getHostname(), req).toString());
-            }
+            return handleNeedRedirectException(req, contentType, nre);
         }
         if (CONTENT_TYPE_DICOM_XML.equals(contentType)) {
             if (dict == null)
                 dict = DictionaryFactory.getInstance()
-                        .getDefaultTagDictionary();
+                .getDefaultTagDictionary();
             resp = handleTextTransform(req, file, contentTypeDicomXML,
                     getDicomXslURL(), dict);
         } else if (CONTENT_TYPE_HTML.equals(contentType)) {
@@ -328,24 +329,46 @@ public class WADOSupport {
             resp = new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_DICOM,
                     HttpServletResponse.SC_NOT_IMPLEMENTED,
                     "This method is not implemented for requested (preferred) content type!"
-                            + contentType);
+                    + contentType);
         }
         return resp;
     }
 
+    private WADOResponseObject handleNeedRedirectException(
+            WADORequestObject req, String contentType,
+            NeedRedirectionException nre) {
+        if ( nre.getExternalRetrieveAET() == null ) {
+            return new WADOStreamResponseObjectImpl(null, contentType,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, nre.getMessage());
+        }
+        if (req.getRequest().getParameter(REDIRECT_PARAM) != null) {
+            log.warn("WADO request is already redirected! Return 'NOT FOUND' to avoid circular redirect!\n(Maybe a filesystem was removed from filesystem management but already exists in database!)");
+            return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_JPEG,
+                    HttpServletResponse.SC_NOT_FOUND,
+            "Object not found (Circular redirect found)!");
+        }
+        if (!WADOCacheImpl.getWADOCache().isClientRedirect()) {
+            return getRemoteWADOObject(nre.getExternalRetrieveAET(), req);
+        } else {
+            return new WADOStreamResponseObjectImpl(null, contentType,
+                    HttpServletResponse.SC_TEMPORARY_REDIRECT,
+                    getRedirectURL(nre.getExternalRetrieveAET(), req).toString());
+        }
+    }
+
     private boolean hasPermission(WADORequestObject req)
-            throws PolicyContextException, RemoteException, Exception {
+    throws PolicyContextException, RemoteException, Exception {
         if ( req.getRemoteUser() == null || req.isStudyPermissionCheckDisabled() ) {
-        	log.debug("StudyPermission check disabled!");
+            log.debug("StudyPermission check disabled!");
             return true;
         }
         Subject subject = (Subject) PolicyContext
-                .getContext(SUBJECT_CONTEXT_KEY);
+        .getContext(SUBJECT_CONTEXT_KEY);
         return getStudyPermissionManager().hasPermission(req.getStudyUID(),
                 StudyPermissionDTO.READ_ACTION, subject);
     }
 
-	/**
+    /**
      * @param contentTypes
      * @return
      */
@@ -401,37 +424,25 @@ public class WADOSupport {
                     log.debug("Dicom object not found: " + req);
                 return new WADOStreamResponseObjectImpl(null,
                         CONTENT_TYPE_DICOM, HttpServletResponse.SC_NOT_FOUND,
-                        "DICOM object not found!");
+                "DICOM object not found!");
             }
         } catch (IOException x) {
             log.error("Exception in handleDicom: " + x.getMessage(), x);
             return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_DICOM,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Unexpected error! Cant get dicom object");
+            "Unexpected error! Cant get dicom object");
         } catch (NeedRedirectionException nre) {
-            if (!WADOCacheImpl.getWADOCache().isClientRedirect()) {
-                return getRemoteDICOMFile(nre.getHostname(), req);
-            } else {
-                return new WADOStreamResponseObjectImpl(null,
-                        CONTENT_TYPE_DICOM,
-                        HttpServletResponse.SC_TEMPORARY_REDIRECT,
-                        getRedirectURL(nre.getHostname(), req).toString()); // error
-                // message
-                // is
-                // set
-                // to
-                // redirect
-                // host!
-            }
+            return handleNeedRedirectException(req, CONTENT_TYPE_DICOM, nre);
         }
+
         if ("true".equals(req.getRequest().getParameter("useOrig"))) {
             try {
                 WADOStreamResponseObjectImpl resp = new WADOStreamResponseObjectImpl(
                         new FileInputStream(file), CONTENT_TYPE_DICOM,
                         HttpServletResponse.SC_OK, null);
                 log
-                        .info("Original Dicom object file retrieved (useOrig=true) objectUID:"
-                                + req.getObjectUID());
+                .info("Original Dicom object file retrieved (useOrig=true) objectUID:"
+                        + req.getObjectUID());
                 Dataset ds = getPatientInfo(req);
                 ds.putPN(Tags.PatientName, ds.getString(Tags.PatientName)
                         + " (orig)");
@@ -442,7 +453,7 @@ public class WADOSupport {
                 return new WADOStreamResponseObjectImpl(null,
                         CONTENT_TYPE_DICOM,
                         HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                        "Unexpected error! Cant get dicom object");
+                "Unexpected error! Cant get dicom object");
             }
         }
         return getUpdatedInstance(req, checkTransferSyntax(req
@@ -462,15 +473,15 @@ public class WADOSupport {
         }
         if (!UIDs.isValid(transferSyntax)) {
             log
-                    .warn("WADO parameter transferSyntax is not a valid UID! Use Explicit VR little endian instead! transferSyntax:"
-                            + transferSyntax);
+            .warn("WADO parameter transferSyntax is not a valid UID! Use Explicit VR little endian instead! transferSyntax:"
+                    + transferSyntax);
             return UIDs.ExplicitVRLittleEndian;
         }
         if (transferSyntax.equals(UIDs.ImplicitVRLittleEndian)
                 || transferSyntax.equals(UIDs.ExplicitVRBigEndian)) {
             log
-                    .warn("WADO parameter transferSyntax should neither Implicit VR, nor Big Endian! Use Explicit VR little endian instead! transferSyntax:"
-                            + transferSyntax);
+            .warn("WADO parameter transferSyntax should neither Implicit VR, nor Big Endian! Use Explicit VR little endian instead! transferSyntax:"
+                    + transferSyntax);
             return UIDs.ExplicitVRLittleEndian;
         }
         return transferSyntax;
@@ -532,7 +543,7 @@ public class WADOSupport {
             log.error("Failed to get updated DICOM file", e);
             return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_DICOM,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Unexpected error! Cant get updated dicom object");
+            "Unexpected error! Cant get updated dicom object");
         }
     }
 
@@ -597,36 +608,23 @@ public class WADOSupport {
             } else {
                 return new WADOStreamResponseObjectImpl(null,
                         CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND,
-                        "DICOM object not found!");
+                "DICOM object not found!");
             }
         } catch (NeedRedirectionException nre) {
-            if (!WADOCacheImpl.getWADOCache().isClientRedirect()) {
-                return getRemoteDICOMFile(nre.getHostname(), req);
-            } else {
-                return new WADOStreamResponseObjectImpl(null,
-                        CONTENT_TYPE_JPEG,
-                        HttpServletResponse.SC_TEMPORARY_REDIRECT,
-                        getRedirectURL(nre.getHostname(), req).toString()); // error
-                // message
-                // is
-                // set
-                // to
-                // redirect
-                // host!
-            }
+            return handleNeedRedirectException(req, CONTENT_TYPE_JPEG, nre);
         } catch (NoImageException x1) {
             return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_JPEG,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Cant get jpeg from requested object");
+            "Cant get jpeg from requested object");
         } catch (ImageCachingException x1) {
             return new WADOImageResponseObjectImpl(x1.getImage(),
                     CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK,
-                    "Warning: Caching failed!");
+            "Warning: Caching failed!");
         } catch (Exception x) {
             log.error("Exception in handleJpg: " + x.getMessage(), x);
             return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_JPEG,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Unexpected error! Cant get jpeg");
+            "Unexpected error! Cant get jpeg");
         }
     }
 
@@ -656,8 +654,8 @@ public class WADOSupport {
     public File getJpg(String studyUID, String seriesUID, String instanceUID,
             String rows, String columns, String frameNumber, String region,
             String windowWidth, String windowCenter, String imageQuality)
-            throws IOException, NeedRedirectionException, NoImageException,
-            ImageCachingException {
+    throws IOException, NeedRedirectionException, NoImageException,
+    ImageCachingException {
         int frame = 0;
         String suffix = null;
         if (frameNumber != null) {
@@ -724,8 +722,8 @@ public class WADOSupport {
             }
             TransformerHandler th = getTransformerHandler(xslURL);
             if ( srImageRows != null ) {
-	            Transformer t = th.getTransformer();
-	            t.setParameter("srImageRows", srImageRows);
+                Transformer t = th.getTransformer();
+                t.setParameter("srImageRows", srImageRows);
             }
             DatasetXMLResponseObject res = new DatasetXMLResponseObject(ds, th,
                     dict);
@@ -737,21 +735,21 @@ public class WADOSupport {
             log.error("Failed to get DICOM file", e);
             return new WADOStreamResponseObjectImpl(null, contentType,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Unexpected error! Cant get dicom object");
+            "Unexpected error! Cant get dicom object");
         }
     }
 
     public String getSrImageRows() {
-		return srImageRows;
-	}
+        return srImageRows;
+    }
 
-	public void setSrImageRows(String srImageRows) {
-		if ( srImageRows != null )
-			Integer.parseInt(srImageRows);
-		this.srImageRows = srImageRows;
-	}
+    public void setSrImageRows(String srImageRows) {
+        if ( srImageRows != null )
+            Integer.parseInt(srImageRows);
+        this.srImageRows = srImageRows;
+    }
 
-	/**
+    /**
      * @return
      */
     public String getHtmlXslURL() {
@@ -827,9 +825,9 @@ public class WADOSupport {
     }
 
     private TransformerHandler getTransformerHandler(String xslt)
-            throws TransformerConfigurationException {
+    throws TransformerConfigurationException {
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory
-                .newInstance();
+        .newInstance();
         TransformerHandler th;
         if (xslt != null && !xslt.equalsIgnoreCase("NONE")) {
             Templates stylesheet = (Templates) mapTemplates.get(xslt);
@@ -870,17 +868,23 @@ public class WADOSupport {
         try {
             dicomObject = server.invoke(fileSystemMgtName, "locateInstance",
                     new Object[] { instanceUID }, new String[] { String.class
-                            .getName() });
+                    .getName() });
 
         } catch (Exception e) {
+            if (e.getCause() instanceof UnknownAETException) {
+                //Indicate NeedRedirect with unknown external retrieve AET
+                throw new NeedRedirectionException(
+                        "Can't redirect WADO request to external retrieve AET! Unknown AET:"
+                        +e.getCause().getMessage(), null);
+            }
             log.error("Failed to get DICOM file:" + instanceUID, e);
         }
         if (dicomObject == null)
             return null; // not found!
         if (dicomObject instanceof File)
             return (File) dicomObject; // We have the File!
-        if (dicomObject instanceof String) {
-            throw new NeedRedirectionException((String) dicomObject);
+        if (dicomObject instanceof AEDTO) {
+            throw new NeedRedirectionException(null, (AEDTO) dicomObject);
         }
         return null;
     }
@@ -891,28 +895,32 @@ public class WADOSupport {
      * the remote server have to be a dcm4chee-wado server on the same port as
      * this WADO server!
      * 
-     * @param hostname
+     * @param aedto
      * @param req
      * @return
      */
-    private URL getRedirectURL(String hostname, WADORequestObject req) {
-        StringBuffer sb = new StringBuffer();
-        sb.append("/wado?requestType=WADO");
-        Map mapParam = req.getRequestParams();
-        Iterator iter = mapParam.keySet().iterator();
-        Object key;
-        while (iter.hasNext()) {
-            key = iter.next();
-            sb.append("&").append(key).append("=").append(
-                    ((String[]) mapParam.get(key))[0]);
-        }
+    private URL getRedirectURL(AEDTO aedto, WADORequestObject req) {
         URL url = null;
         try {
-            int port = new URL(req.getRequestURL()).getPort();
-            url = new URL("http", hostname, port, sb.toString());
+            URL reqURL =  new URL( req.getRequestURL());
+            if ( aedto.getWadoUrl() != null ) {
+                URL baseURL = new URL(aedto.getWadoUrl());
+                StringBuffer sbQuery = new StringBuffer();
+                sbQuery.append('?').append(REDIRECT_PARAM).append("=true");
+                sbQuery.append('&').append(reqURL.getQuery());
+                String baseQuery = baseURL.getQuery();
+                if ( baseQuery != null && !baseQuery.equals("requestType=WADO")) {
+                    sbQuery.append('&').append(baseQuery);
+                }
+                url = new URL(baseURL.getProtocol(), baseURL.getHost(), 
+                        baseURL.getPort(), baseURL.getPath()+sbQuery);
+            } else {
+                url = new URL(reqURL.getProtocol(), aedto.getHostName(), 
+                        reqURL.getPort(), reqURL.getFile());
+            }
         } catch (MalformedURLException e) {
-            log.error("Malformed redirect URL: hostname:" + hostname + " page:"
-                    + sb, e);
+            log.error("Malformed redirect URL to remote AET:" + aedto + " wadoURL:"
+                    + aedto.getWadoUrl(), e);
         }
         if (log.isDebugEnabled())
             log.debug("redirect url:" + url);
@@ -920,38 +928,27 @@ public class WADOSupport {
     }
 
     /**
-     * Tries to get the DICOM file from an external WADO service.
+     * Tries to get the WADO object from an external WADO service.
      * 
-     * @param hostname
-     *                Hostname of remote WADO service.
-     * @param studyUID
-     *                Unique identifier of the study.
-     * @param seriesUID
-     *                Unique identifier of the series.
-     * @param instanceUID
-     *                Unique identifier of the instance.
+     * @param aedto
+     *                External Retrieve AE to reference remote WADO service.
+     * @param req
+     *                The original WADO request.
      * 
-     * @return The File object or null if not found.
+     * @return A WADOResponseObject containing the result of a remote WADO request.
      */
-    private WADOResponseObject getRemoteDICOMFile(String hostname,
+    private WADOResponseObject getRemoteWADOObject(AEDTO aedto,
             WADORequestObject req) {
-        if ("localhost".equals(hostname)) {
-            log
-                    .warn("WADO request redirected to localhost! Return 'NOT FOUND' to avoid circular redirect!\n(Maybe a filesystem was removed from filesystem management but already exists in database!)");
-            return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_JPEG,
-                    HttpServletResponse.SC_NOT_FOUND,
-                    "Object not found (Circular redirect found)!");
-        }
         if (log.isInfoEnabled())
-            log.info("WADO request redirected to hostname:" + hostname);
+            log.info("WADO request redirected to aedto:" + aedto.getHostName()+" WADO URL:"+aedto.getWadoUrl());
         URL url = null;
         try {
-            url = getRedirectURL(hostname, req);
+            url = getRedirectURL(aedto, req);
             if (log.isDebugEnabled())
                 log.debug("redirect url:" + url);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             String authHeader = (String) req.getRequestHeaders().get(
-                    "Authorization");
+            "Authorization");
             if (authHeader != null) {
                 conn.addRequestProperty("Authorization", authHeader);
             }
@@ -989,7 +986,7 @@ public class WADOSupport {
                     CONTENT_TYPE_JPEG,
                     HttpServletResponse.SC_NOT_FOUND,
                     "Redirect to find requested object failed! (Can't connect to remote WADO service:"
-                            + url + ")!");
+                    + url + ")!");
         }
     }
 
@@ -1051,7 +1048,7 @@ public class WADOSupport {
             }
             if (windowWidth != null && windowCenter != null) {
                 Dataset data = ((DcmMetadata) reader.getStreamMetadata())
-                        .getDataset();
+                .getDataset();
                 data.putDS(Tags.WindowWidth, windowWidth);
                 data.putDS(Tags.WindowCenter, windowCenter);
             }
@@ -1161,14 +1158,14 @@ public class WADOSupport {
     }
 
     public ObjectName getStoreScpServiceName() {
-		return storeScpServiceName;
-	}
+        return storeScpServiceName;
+    }
 
-	public void setStoreScpServiceName(ObjectName storeScpServiceName) {
-		this.storeScpServiceName = storeScpServiceName;
-	}
+    public void setStoreScpServiceName(ObjectName storeScpServiceName) {
+        this.storeScpServiceName = storeScpServiceName;
+    }
 
-	/**
+    /**
      * @return Returns if audit log is enabled for the host of the given
      *         request.
      */
@@ -1224,19 +1221,19 @@ public class WADOSupport {
             boolean useTransferSyntaxOfFileAsDefault) {
         this.useTransferSyntaxOfFileAsDefault = useTransferSyntaxOfFileAsDefault;
     }
-    
+
     public Map getImageSopCuids() {
-    	if ( imageSopCuids == null ) {
-    		try {
-    			imageSopCuids = uidsString2map((String) server.getAttribute(
-    					storeScpServiceName, "AcceptedImageSOPClasses") );
-    		} catch ( Exception x ) {
-    			log.error("Cant get list of image SOP Class UIDs!",x);
-    		}
-    	}
-    	return imageSopCuids;
+        if ( imageSopCuids == null ) {
+            try {
+                imageSopCuids = uidsString2map((String) server.getAttribute(
+                        storeScpServiceName, "AcceptedImageSOPClasses") );
+            } catch ( Exception x ) {
+                log.error("Cant get list of image SOP Class UIDs!",x);
+            }
+        }
+        return imageSopCuids;
     }
- 
+
     /**
      * @return Returns the sopCuids.
      */
@@ -1290,7 +1287,7 @@ public class WADOSupport {
             server.invoke(auditLogName, "logInstancesSent", new Object[] {
                     rnode, alf.newInstancesAction("Access", suid, patient) },
                     new String[] { RemoteNode.class.getName(),
-                            InstancesAction.class.getName() });
+                    InstancesAction.class.getName() });
         } catch (Exception e) {
             log.warn("Failed to log Instances Sent:", e);
         }
@@ -1314,7 +1311,7 @@ public class WADOSupport {
                 UIDs.KeyObjectSelectionDocument);
         textSopCuids.put("MammographyCADSR", UIDs.MammographyCADSR);
     }
-    
+
     public Map uidsString2map(String uids) {
         StringTokenizer st = new StringTokenizer(uids, "\r\n;");
         String uid, name;
@@ -1331,24 +1328,24 @@ public class WADOSupport {
             }
             map.put(name, uid);
         }
-    	return map;
+        return map;
     }
-    
+
     private static boolean isDigit(char c) {
         return c >= '0' && c <= '9';
     }
 
     private ContentManager getContentManager() throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-                .getFactory().lookup(ContentManagerHome.class,
-                        ContentManagerHome.JNDI_NAME);
+        .getFactory().lookup(ContentManagerHome.class,
+                ContentManagerHome.JNDI_NAME);
         return home.create();
     }
 
     private StudyPermissionManager getStudyPermissionManager() throws Exception {
         StudyPermissionManagerHome home = (StudyPermissionManagerHome) EJBHomeFactory
-                .getFactory().lookup(StudyPermissionManagerHome.class,
-                        StudyPermissionManagerHome.JNDI_NAME);
+        .getFactory().lookup(StudyPermissionManagerHome.class,
+                StudyPermissionManagerHome.JNDI_NAME);
         return home.create();
     }
 
@@ -1357,7 +1354,7 @@ public class WADOSupport {
      * 
      * @author franz.willer
      * 
-     * Holds the hostname of the WADO server that have direct access of the
+     * Holds the aedto of the WADO server that have direct access of the
      * requested object.
      */
     class NeedRedirectionException extends Exception {
@@ -1365,26 +1362,26 @@ public class WADOSupport {
         /** Comment for <code>serialVersionUID</code> */
         private static final long serialVersionUID = 1L;
 
-        /** holds the hostname to redirect */
-        private String hostname;
+        /** holds the AEDTO to redirect */
+        private AEDTO aedto;
 
         /**
          * Creates a NeedRedirectionException instance.
          * 
-         * @param hostname
+         * @param aedto
          *                the target of redirection.
          */
-        public NeedRedirectionException(String hostname) {
-            this.hostname = hostname;
+        public NeedRedirectionException(String msg, AEDTO aedto) {
+            super(msg);
+            this.aedto = aedto;
         }
 
-        /**
-         * Returns the hostname to redirect.
-         * 
-         * @return
-         */
-        public String getHostname() {
-            return this.hostname;
+        public AEDTO getExternalRetrieveAET() {
+            return aedto;
+        }
+
+        public String getWadoUrl() {
+            return aedto == null ? null : aedto.getWadoUrl();
         }
     }
 
