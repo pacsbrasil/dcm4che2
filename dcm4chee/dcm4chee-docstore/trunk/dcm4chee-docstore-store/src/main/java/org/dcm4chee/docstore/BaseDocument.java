@@ -51,7 +51,7 @@ public class BaseDocument {
     private DataHandler dh;
     private Availability availability;
     private long size;
-    private byte[] hash;
+    private String hash;
     private DocumentStorage storage;
     private OutputStream out;
 
@@ -80,7 +80,7 @@ public class BaseDocument {
         return dh;
     }
 
-    public byte[] getHash() {
+    public String getHash() {
         return hash;
     }
 
@@ -101,7 +101,7 @@ public class BaseDocument {
         return storage;
     }
 
-    public void setHash(byte[] digest) {
-        this.hash = digest;
+    public void setHash(String hash) {
+        this.hash = hash;
     }
 }

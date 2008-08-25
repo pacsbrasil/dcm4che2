@@ -17,6 +17,7 @@ import javax.activation.FileDataSource;
 import org.apache.log4j.Logger;
 import org.dcm4chee.docstore.Availability;
 import org.dcm4chee.docstore.BaseDocument;
+import org.dcm4chee.docstore.DocumentStore;
 import org.dcm4chee.docstore.Feature;
 import org.dcm4chee.docstore.spi.BaseDocumetStorage;
 import org.dcm4chee.docstore.util.FileSystemInfo;
@@ -202,7 +203,7 @@ public class DocumentFileStorage extends BaseDocumetStorage {
             }
             BaseDocument doc = new BaseDocument(docUid, dh.getContentType(), 
                     new DataHandler(new FileDataSource(docFile)), Availability.ONLINE, docFile.length(), this);
-            doc.setHash(digest);
+            doc.setHash(DocumentStore.toHexString(digest));
             notifyStored(doc);
             return doc;
         } catch (NoSuchAlgorithmException x) {

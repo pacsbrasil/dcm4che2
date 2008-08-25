@@ -55,6 +55,9 @@ import org.dcm4chee.docstore.spi.DocumentStorage;
  * @since 17.06.2008
  */
 public class DocumentStore {
+
+    private static final char[] HEX_STRINGS = "0123456789abcdef".toCharArray();
+
     private String name;
     private String domain;
     private static HashMap<String, DocumentStore> singletons = new HashMap<String, DocumentStore>();
@@ -345,6 +348,17 @@ public class DocumentStore {
             deleted |= st.deleteDocument(docUid);
         }
         return deleted;
+    }
+
+    public static final String toHexString(byte[] hash) {
+        StringBuffer sb = new StringBuffer();
+        int h;
+        for(int i=0 ; i < hash.length ; i++) {
+            h = hash[i] & 0xff;
+            sb.append(HEX_STRINGS[h>>>4]);
+            sb.append(HEX_STRINGS[h&0x0f]);
+        }
+        return sb.toString();
     }
 
 }
