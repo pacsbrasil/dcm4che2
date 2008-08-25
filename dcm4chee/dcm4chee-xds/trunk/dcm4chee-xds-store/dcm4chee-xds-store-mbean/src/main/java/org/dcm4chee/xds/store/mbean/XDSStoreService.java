@@ -90,8 +90,6 @@ public class XDSStoreService extends ServiceMBeanSupport {
 
     private static final String NONE = "NONE";
 
-    private static final char[] HEX_STRINGS = "0123456789abcdef".toCharArray();
-
     private DocumentStore docStore;
 
     private String storeBeforeRegisterPool;
@@ -181,7 +179,7 @@ public class XDSStoreService extends ServiceMBeanSupport {
                    
                 }
                 storedDoc = new XDSDocument( doc.getDocumentUID(), doc.getMimeType(), 
-                        getXdsDocWriter(doc), toHexString(doc.getHash()), null);
+                        getXdsDocWriter(doc), doc.getHash(), null);
             }
             
             if ( storeMetadata && metadata != null) {
@@ -228,7 +226,7 @@ public class XDSStoreService extends ServiceMBeanSupport {
         }
         return md == null ? null : 
             new XDSDocument( doc.getDocumentUID(), doc.getMimeType(), 
-                    getXdsDocWriter(doc), toHexString(md.digest()), null);
+                    getXdsDocWriter(doc), DocumentStore.toHexString(md.digest()), null);
     }
 
     private XDSDocumentWriter getXdsDocWriter(BaseDocument doc)
@@ -269,7 +267,7 @@ public class XDSStoreService extends ServiceMBeanSupport {
         MessageDigest md  = MessageDigest.getInstance("SHA1");
         DigestInputStream dis = new DigestInputStream(fis, md);
         while (dis.read(buf) != -1);
-        String hash = toHexString( md.digest() );
+        String hash = DocumentStore.toHexString( md.digest() );
         log.info("SHA1 read digest:"+hash);
         return hash;
     }
@@ -287,20 +285,10 @@ public class XDSStoreService extends ServiceMBeanSupport {
             dos.write(buf, 0, len);
             size += len;
         }
-        String hash = toHexString( md.digest() );
+        String hash = DocumentStore.toHexString( md.digest() );
         dos.close();
         if ( log.isDebugEnabled() ) log.debug("SHA1 write digest (alg:"+alg+"):"+hash);
         return hash;
-    }
-    private String toHexString(byte[] hash) {
-        StringBuffer sb = new StringBuffer();
-        int h;
-        for(int i=0 ; i < hash.length ; i++) {
-            h = hash[i] & 0xff;
-            sb.append(HEX_STRINGS[h>>>4]);
-            sb.append(HEX_STRINGS[h&0x0f]);
-        }
-        return sb.toString();
     }
 
     /**
