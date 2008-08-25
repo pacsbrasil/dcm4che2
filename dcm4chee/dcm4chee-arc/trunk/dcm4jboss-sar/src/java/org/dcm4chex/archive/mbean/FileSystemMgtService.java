@@ -1102,7 +1102,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         } catch (FinderException ignore) {}
         if ( aet == null ) return null;
         AEDTO aeData = aeMgt().findByAET(aet);
-        return aeData.getHostName();
+        return aeData;
     }
 
     private AEManager aeMgt() throws Exception {
