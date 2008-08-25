@@ -52,7 +52,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.UID;
@@ -889,9 +888,7 @@ public class NetworkApplicationEntity {
                 && !(reuseAssocationToAETitle.isEmpty() && reuseAssocationFromAETitle
                         .isEmpty())) {
             synchronized (pool) {
-                for (Iterator<Association> iter = pool.iterator(); iter
-                        .hasNext();) {
-                    Association as = iter.next();
+                for (Association as : pool) {
                     if (!remoteAET.equals(as.getRemoteAET()))
                         continue;
                     if (userIdentity != as.getUserIdentity()) {
@@ -963,8 +960,7 @@ public class NetworkApplicationEntity {
         freePc = initPCwithUncompressedLETS(aarq, cuid2ts, freePc);
         initPCwith1TS(aarq, cuid2ts, freePc);
         initPCwithRemainingTS(aarq, cuid2ts);
-        for (Iterator<String> iter = scp.iterator(); iter.hasNext();) {
-            String cuid = iter.next();
+        for (String cuid : scp) {
             aarq.addRoleSelection(new RoleSelection(cuid, scu.contains(cuid),
                     true));
         }
@@ -1013,11 +1009,11 @@ public class NetworkApplicationEntity {
 
     private int initPCwithUncompressedLETS(AAssociateRQ aarq,
             Map<String, LinkedHashSet<String>> cuid2ts, int freePc) {
-        for (Iterator iter = cuid2ts.entrySet().iterator(); freePc > 0
-                && iter.hasNext();) {
-            Map.Entry e = (Entry) iter.next();
-            String cuid = (String) e.getKey();
-            LinkedHashSet ts = (LinkedHashSet) e.getValue();
+        for (Iterator<Map.Entry<String, LinkedHashSet<String>>> iter =
+                cuid2ts.entrySet().iterator(); freePc > 0 && iter.hasNext();) {
+            Map.Entry<String, LinkedHashSet<String>> e = iter.next();
+            String cuid = e.getKey();
+            LinkedHashSet<String> ts = e.getValue();
             boolean implicitVR = ts.remove(UID.ImplicitVRLittleEndian);
             boolean explicitVR = ts.remove(UID.ExplicitVRLittleEndian);
             if (!implicitVR && !explicitVR) {
@@ -1052,16 +1048,16 @@ public class NetworkApplicationEntity {
     private void initPCwith1TS(AAssociateRQ aarq,
             Map<String, LinkedHashSet<String>> cuid2ts, int freePc) {
         while (freePc > 0 && !cuid2ts.isEmpty()) {
-            for (Iterator iter = cuid2ts.entrySet().iterator(); freePc > 0
-                    && iter.hasNext();) {
-                Map.Entry e = (Entry) iter.next();
+            for (Iterator<Map.Entry<String, LinkedHashSet<String>>> iter =
+                    cuid2ts.entrySet().iterator(); freePc > 0 && iter.hasNext();) {
+                Map.Entry<String, LinkedHashSet<String>> e = iter.next();
                 String cuid = (String) e.getKey();
-                LinkedHashSet ts = (LinkedHashSet) e.getValue();
-                Iterator tsiter = ts.iterator();
+                LinkedHashSet<String> ts = e.getValue();
+                Iterator<String> tsiter = ts.iterator();
                 PresentationContext pctx = new PresentationContext();
                 pctx.setPCID(aarq.nextPCID());
                 pctx.setAbstractSyntax(cuid);
-                pctx.addTransferSyntax((String) tsiter.next());
+                pctx.addTransferSyntax(tsiter.next());
                 aarq.addPresentationContext(pctx);
                 tsiter.remove();
                 if (ts.isEmpty()) {
@@ -1076,16 +1072,17 @@ public class NetworkApplicationEntity {
 
     private void initPCwithRemainingTS(AAssociateRQ aarq,
             Map<String, LinkedHashSet<String>> cuid2ts) {
-        for (Iterator iter = cuid2ts.entrySet().iterator(); iter.hasNext()
+        for (Iterator<Map.Entry<String, LinkedHashSet<String>>> iter =
+                cuid2ts.entrySet().iterator(); iter.hasNext()
                 && aarq.getNumberOfPresentationContexts() < 128;) {
-            Map.Entry e = (Entry) iter.next();
-            String cuid = (String) e.getKey();
-            LinkedHashSet ts = (LinkedHashSet) e.getValue();
+            Map.Entry<String, LinkedHashSet<String>> e = iter.next();
+            String cuid = e.getKey();
+            LinkedHashSet<String> ts = e.getValue();
             PresentationContext pctx = new PresentationContext();
             pctx.setPCID(aarq.nextPCID());
             pctx.setAbstractSyntax(cuid);
-            for (Iterator tsiter = ts.iterator(); tsiter.hasNext();) {
-                pctx.addTransferSyntax((String) tsiter.next());
+            for (String tsuid : ts) {
+                pctx.addTransferSyntax(tsuid);
             }
             aarq.addPresentationContext(pctx);
         }
@@ -1211,9 +1208,8 @@ public class NetworkApplicationEntity {
                         maxOpsPerformed));
         ac.setMaxOpsPerformed(minZeroAsMax(rq.getMaxOpsPerformed(),
                 maxOpsInvoked));
-        Collection pcs = rq.getPresentationContexts();
-        for (Iterator iter = pcs.iterator(); iter.hasNext();) {
-            PresentationContext rqpc = (PresentationContext) iter.next();
+        Collection<PresentationContext> pcs = rq.getPresentationContexts();
+        for (PresentationContext rqpc : pcs) {
             PresentationContext acpc = negPresCtx(rq, ac, rqpc);
             ac.addPresentationContext(acpc);
         }
@@ -1237,7 +1233,7 @@ public class NetworkApplicationEntity {
         PresentationContext acpc = new PresentationContext();
         acpc.setPCID(rqpc.getPCID());
         if (tc != null) {
-            Set rqts = rqpc.getTransferSyntaxes();
+            Set<String> rqts = rqpc.getTransferSyntaxes();
             String[] acts = tc.getTransferSyntax();
             for (int i = 0; i < acts.length; i++) {
                 if (rqts.contains(acts[i])) {

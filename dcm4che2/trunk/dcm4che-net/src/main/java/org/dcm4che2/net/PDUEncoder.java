@@ -44,7 +44,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
-import java.util.Iterator;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.io.DicomOutputStream;
@@ -260,20 +259,18 @@ class PDUEncoder extends PDVOutputStream
         putASCIIString(s);
     }
 
-    private void encodePCs(int pcItemType, Collection pcs)
+    private void encodePCs(int pcItemType, Collection<PresentationContext> pcs)
     {
-        for (Iterator it = pcs.iterator(); it.hasNext();)
-        {
-            PresentationContext pc = (PresentationContext) it.next();
+        for (PresentationContext pc : pcs) {
             encodeItemHeader(pcItemType, pc.length());
             put(pc.getPCID());
             put(0);
             put(pc.getResult());
             put(0);
             encodeStringItem(ItemType.ABSTRACT_SYNTAX, pc.getAbstractSyntax());
-            for (Iterator it2 = pc.getTransferSyntaxes().iterator(); it2
-                    .hasNext();)
-                encodeStringItem(ItemType.TRANSFER_SYNTAX, (String) it2.next());
+            for (String tsuid : pc.getTransferSyntaxes()) {
+                encodeStringItem(ItemType.TRANSFER_SYNTAX, tsuid);
+            }
         }
     }
 
@@ -284,20 +281,20 @@ class PDUEncoder extends PDVOutputStream
         encodeStringItem(ItemType.IMPL_CLASS_UID, rqac.getImplClassUID());
         if (rqac.isAsyncOps())
             encodeAsyncOpsWindow(rqac);
-        for (Iterator it = rqac.getRoleSelections().iterator(); it.hasNext();)
-            encodeRoleSelection((RoleSelection) it.next());
+        for (RoleSelection rs : rqac.getRoleSelections()) {
+            encodeRoleSelection(rs);
+        }
         encodeStringItem(ItemType.IMPL_VERSION_NAME, rqac.getImplVersionName());
-        for (Iterator it = rqac.getExtendedNegotiations().iterator(); it
-                .hasNext();)
-            encodeExtendedNegotiation((ExtendedNegotiation) it.next());
-        for (Iterator it = rqac.getCommonExtendedNegotiations().iterator(); it
-                .hasNext();)
-            encodeCommonExtendedNegotiation((CommonExtendedNegotiation) it
-                    .next());
+        for (ExtendedNegotiation en : rqac.getExtendedNegotiations()) {
+            encodeExtendedNegotiation(en);
+        }
+        for (CommonExtendedNegotiation cen : rqac.getCommonExtendedNegotiations()) {
+            encodeCommonExtendedNegotiation(cen);
+        }
         if (rqac instanceof AAssociateRQ) {
             encodeUserIdentityRQ(((AAssociateRQ) rqac).getUserIdentity());
         } else {
-            encodeUserIdentityAC(((AAssociateAC) rqac).getUserIdentity());            
+            encodeUserIdentityAC(((AAssociateAC) rqac).getUserIdentity());
         }
     }
 
@@ -321,9 +318,9 @@ class PDUEncoder extends PDVOutputStream
         encodeItemHeader(ItemType.COMMON_EXT_NEG, extNeg.length());
         encodeASCIIString(extNeg.getSOPClassUID());
         encodeASCIIString(extNeg.getServiceClassUID());
-        for (Iterator it = extNeg.getRelatedGeneralSOPClassUIDs().iterator(); it
-                .hasNext();)
-            encodeASCIIString((String) it.next());
+        for (String cuid : extNeg.getRelatedGeneralSOPClassUIDs()) {
+            encodeASCIIString(cuid);
+        }
     }
 
     private void encodeAsyncOpsWindow(AAssociateRQAC rqac)

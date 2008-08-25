@@ -46,7 +46,6 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.dcm4che2.data.DicomObject;
@@ -227,9 +226,8 @@ public class Association implements Runnable {
     }
 
     private void processAC() {
-        Collection c = associateAC.getPresentationContexts();
-        for (Iterator iter = c.iterator(); iter.hasNext();) {
-            PresentationContext pc = (PresentationContext) iter.next();
+        Collection<PresentationContext> c = associateAC.getPresentationContexts();
+        for (PresentationContext pc : c) {
             if (!pc.isAccepted())
                 continue;
             PresentationContext pcrq = associateRQ.getPresentationContext(
@@ -353,14 +351,14 @@ public class Association implements Runnable {
 
     private PresentationContext pcFor(String cuid, String tsuid)
             throws NoPresentationContextException {
-        Map ts2pc = acceptedPCs.get(cuid);
+        Map<String,PresentationContext> ts2pc = acceptedPCs.get(cuid);
         if (ts2pc == null)
             throw new NoPresentationContextException("Abstract Syntax "
                     + UIDDictionary.getDictionary().prompt(cuid)
                     + " not supported");
         if (tsuid == null)
-            return (PresentationContext) ts2pc.values().iterator().next();
-        PresentationContext pc = (PresentationContext) ts2pc.get(tsuid);
+            return ts2pc.values().iterator().next();
+        PresentationContext pc = ts2pc.get(tsuid);
         if (pc == null)
             throw new NoPresentationContextException("Abstract Syntax "
                     + UIDDictionary.getDictionary().prompt(cuid)

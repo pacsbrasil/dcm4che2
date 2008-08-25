@@ -130,7 +130,7 @@ public class NetworkConnection {
     protected ServerSocket server;
 
     // Limiting factors
-    private List excludeConnectionsFrom;
+    private List<String> excludeConnectionsFrom;
 
     private int maxScpAssociations = 50;
 
@@ -660,25 +660,20 @@ public class NetworkConnection {
                 || excludeConnectionsFrom.size() == 0)
             return true;
 
-        String ip = null;
-        try {
-            // Check to see if this connection attempt is just a keep alive
-            // ping from the CSS. Use a list of possible pingers in the case
-            // of a high-availability network.
-            for (int i = 0; i < excludeConnectionsFrom.size(); i++) {
-                ip = (String) excludeConnectionsFrom.get(i);
-                if (s.getInetAddress().getHostAddress().equals(ip)) {
-                    log.debug("Rejecting connection from {}", ip);
+        // Check to see if this connection attempt is just a keep alive
+        // ping from the CSS. Use a list of possible pingers in the case
+        // of a high-availability network.
+        for (String ip : excludeConnectionsFrom) {
+            if (s.getInetAddress().getHostAddress().equals(ip)) {
+                log.debug("Rejecting connection from {}", ip);
+                try {
                     s.close();
-                    return false;
+                } catch (IOException e) {
+                    log.debug("Caught IOException closing socket from {}", ip);
                 }
+                return false;
             }
         }
-        catch (IOException e) {
-            log.debug("Caught IOException closing socket from {}", ip);
-            return false;
-        }
-
         return true;
     }
 
@@ -755,7 +750,7 @@ public class NetworkConnection {
      * 
      * @return Returns the list of IP addresses which should be ignored.
      */
-    public List getExcludeConnectionsFrom() {
+    public List<String> getExcludeConnectionsFrom() {
         return excludeConnectionsFrom;
     }
 
@@ -768,7 +763,7 @@ public class NetworkConnection {
      * @param excludeConnectionsFrom
      *                the list of IP addresses which should be ignored.
      */
-    public void setExcludeConnectionsFrom(List excludeConnectionsFrom) {
+    public void setExcludeConnectionsFrom(List<String> excludeConnectionsFrom) {
         this.excludeConnectionsFrom = excludeConnectionsFrom;
     }
 
