@@ -90,10 +90,14 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("serial")
 public class MetaDataServlet extends HttpServlet {
-   private static Logger log = LoggerFactory.getLogger(MetaDataServlet.class.getName());
+   public static final String REQUEST_TYPE = "requestType";
+
+	private static Logger log = LoggerFactory.getLogger(MetaDataServlet.class.getName());
 
    /** A key value to use to fetch the full request URI - t */
    public static final String REQUEST_URI = "_requestURI";
+   public static final String REQUEST = "_request";
+   public static final String USER_KEY = "user";
    
    /** The meta data needs to be read from the appropriate location. */
    MetaDataBean metaData;
@@ -136,7 +140,7 @@ public class MetaDataServlet extends HttpServlet {
    @SuppressWarnings("unchecked")
    protected void doFilter(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	  try {
-		 String requestType = request.getParameter("requestType");
+		 String requestType = request.getParameter(REQUEST_TYPE);
 		 Map<String, Object> params = computeParameterMap(request);
 		 FilterItem useFilterItem;
 		 if (requestType != null) {
@@ -192,6 +196,10 @@ public class MetaDataServlet extends HttpServlet {
 	  }
 	  ret.put(MemoryCacheFilter.KEY_NAME, request.getQueryString());
 	  ret.put(REQUEST_URI,request.getRequestURI());
+	  // This is a bit ugly, but it does allow full access to the request if a filter really
+	  // needs it - eg for auditing.
+	  ret.put(REQUEST,request);
+	  ret.put(USER_KEY, request.getRemoteUser());
 	  return ret;
    }
 

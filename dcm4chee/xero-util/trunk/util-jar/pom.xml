@@ -5,7 +5,7 @@
     <version>0.7-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>util-xero</artifactId>
+  <artifactId>util-jar</artifactId>
   <name>Xero Utilities</name>
   <dependencies>
     <dependency>

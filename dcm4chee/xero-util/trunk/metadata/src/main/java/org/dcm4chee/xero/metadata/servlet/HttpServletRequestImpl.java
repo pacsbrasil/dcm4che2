@@ -25,6 +25,8 @@ import javax.servlet.http.HttpSession;
 public class HttpServletRequestImpl implements HttpServletRequest {
 	
 	Map<String,Object> headers = new HashMap<String,Object>();
+	private StringBuffer requestUrl;
+	private String queryString;
 	
 	/** Create a HttpServletRequestImpl */
 	public HttpServletRequestImpl() {
@@ -74,9 +76,13 @@ public class HttpServletRequestImpl implements HttpServletRequest {
 	public String getPathTranslated() {
 		return null;
 	}
+	
+	public void setQueryString(String queryString) {
+		this.queryString = queryString;
+	}
 
 	public String getQueryString() {
-		return null;
+		return queryString;
 	}
 
 	public String getRemoteUser() {
@@ -87,8 +93,13 @@ public class HttpServletRequestImpl implements HttpServletRequest {
 		return null;
 	}
 
+	/** Sets the request URL - does not set the URI, path etc, only sets the URL */
+	public void setRequestURL(String url) {
+		this.requestUrl = new StringBuffer(url);
+	}
+	
 	public StringBuffer getRequestURL() {
-		return null;
+		return requestUrl;
 	}
 
 	public String getRequestedSessionId() {
