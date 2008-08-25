@@ -56,6 +56,7 @@ import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,15 +100,11 @@ public class DicomImageFilter implements Filter<WadoImage> {
 	  DicomImageReadParam dParam = (DicomImageReadParam) param;
 	  dParam.setOverlayRGB((String) params.get("rgb"));
 
-	  String strFrame = (String) params.get(FRAME_NUMBER);
-	  int frame = 0;
-	  if (strFrame != null) {
-		 frame = Integer.parseInt(strFrame) - 1;
-		 // Overlays are specified as the actual overlay number, not as an
-		 // offset value.
-		 if ((frame & 0x60000000) != 0)
-			frame++;
-	  }
+	  int frame = FilterUtil.getInt(params,FRAME_NUMBER,1)-1;
+	  // Overlays are specified as the actual overlay number, not as an
+	  // offset value.
+	  if ((frame & 0x60000000) != 0)	frame++;
+	  
 	  try {
 		 long start = System.nanoTime();
 		 String op = "decompress";

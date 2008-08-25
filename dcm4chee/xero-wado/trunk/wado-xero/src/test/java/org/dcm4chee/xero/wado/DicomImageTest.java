@@ -18,6 +18,9 @@ public class DicomImageTest {
 
    static final boolean debug = false;
 
+   /**
+    *  checks to see that a CR grayscale object can be read, encoded as raw data
+    */ 
    @Test
    public void imageHeaderReadTest() {
 	  Object dobj = callFilter("image", "org/dcm4chee/xero/wado/CR3S1IM1.dcm");

@@ -16,6 +16,8 @@ servletFilter.source.priority=-1
 source=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 source.rename=${class:org.dcm4chee.xero.search.study.RenameAttributeFilter}
 source.rename.priority=10000
+source.audit=${class:org.dcm4chee.xero.search.filter.QueryAudit}
+source.audit.priority=9000
 
 source.searchCondition.priority=-1
 source.priority=0
@@ -48,6 +50,9 @@ dicom.memcache=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
 dicom.memcache.cacheSize=2000000
 dicom.memcache.priority=200
 dicom.memcache.queryStr=objectUID
+# Need to audit after memory cache in case the user name is different
+dicom.audit=${class:org.dcm4chee.xero.wado.ViewAudit}
+dicom.audit.priority=200
 # Dicom Update happens relatively late.
 dicom.update=${class:org.dcm4chee.xero.wado.DicomUpdateFilter}
 dicom.update.priority=250
@@ -57,6 +62,8 @@ dicom.seriesCFind.priority=-1
 dicom.searchCondition=${class:org.dcm4chee.xero.search.study.ImageSearchConditionParser}
 dicom.searchCondition.priority=-1
 
+# A dicom object reader that reads the un-corrected image object - not necessarily a full header
+dicomImageObject=${class:org.dcm4chee.xero.wado.DicomImageReaderToDicomObject}
 
 #Now, add a study filter that provides study searches.
 studyFilter.source.imageSearch=${ref:imageSource}
@@ -143,9 +150,23 @@ baseImg.dicom.priority=-1
 baseImg.fileLocation=${ref:fileLocation}
 baseImg.fileLocation.priority=-2
 
+imageRel=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+imageRel.pixelPadding=${class:org.dcm4chee.xero.wado.PixelPadding}
+imageRel.pixelPadding.priority=500
+imageRel.overlay=${class:org.dcm4chee.xero.wado.Overlay}
+imageRel.overlay.priority=400
+imageRel.source=${class:org.dcm4chee.xero.wado.IndexedImageSource}
+
+displayRel=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+displayRel.source=${class:org.dcm4chee.xero.wado.IndexedImageSource}
+
+
 xeroImg.inherit=baseImg
 xeroImg.wl=${class:org.dcm4chee.xero.wado.WLFilter}
 xeroImg.wl.priority=6000
+xeroImg.relative=${class:org.dcm4chee.xero.wado.ImageDisplayRelative}
+xeroImg.relative.priority=7000
+
 
 # Items belonging to the wadoImg area, but not used by Xero directly,
 # including burn-in of various information.
@@ -239,6 +260,9 @@ cfind=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 cfind.blocked=${class:org.dcm4chee.xero.search.dicom.BlockedSearchFilter}
 cfind.rename=${class:org.dcm4chee.xero.search.study.RenameAttributeFilter}
 cfind.priority=10000
+
+cfind.audit=${class:org.dcm4chee.xero.search.filter.QueryAudit}
+cfind.audit.priority=9000
 
 cfind.study=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 cfind.study.priority=-1

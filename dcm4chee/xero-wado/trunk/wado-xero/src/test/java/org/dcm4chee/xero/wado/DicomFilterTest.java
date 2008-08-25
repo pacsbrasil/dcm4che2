@@ -22,7 +22,7 @@ public class DicomFilterTest {
 
 	@Test
 	public void imageHeaderReadTest() throws IOException {
-		Object dobj = callFilter("wado", "org/dcm4chee/xero/wado/CR3S1IM1.dcm");
+		Object dobj = callFilter("dicom", "org/dcm4chee/xero/wado/CR3S1IM1.dcm");
 		assert dobj != null;
 		DicomObject dicom = ((DicomStreamMetaData) ((ImageReader) dobj).getStreamMetadata()).getDicomObject();
 		assert dicom.contains(Tag.PixelData) == false;
@@ -33,7 +33,7 @@ public class DicomFilterTest {
 
 	@Test
 	public void koHeaderReadTest() throws IOException {
-		Object dobj = callFilter("wado", "org/dcm4chee/xero/wado/ko_513_mr.dcm");
+		Object dobj = callFilter("dicom", "sr/513/sr_513_mr.dcm");
 		assert dobj != null;
 		assert dobj instanceof ImageReader;
 		ImageReader ir = (ImageReader) dobj;

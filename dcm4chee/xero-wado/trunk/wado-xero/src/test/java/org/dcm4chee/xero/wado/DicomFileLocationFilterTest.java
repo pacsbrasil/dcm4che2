@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
-import org.dcm4chee.xero.metadata.filter.FilterList;
+import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.search.filter.DicomFileLocationFilter;
 import org.testng.annotations.Test;
@@ -16,23 +16,27 @@ public class DicomFileLocationFilterTest {
 	static MetaDataBean mdb = StaticMetaData.getMetaData("dicom.metadata"); 
 
 	/** Call the dicom.metadata named filter, providing the given filename */
-	@SuppressWarnings("unchecked")
    public static Object callFilter(String mdbName, String filename) {
+		Map<String, Object> params = new HashMap<String, Object>();
+		return callFilter(mdbName,filename,params);
+	}
+
+   /** Call the dicom.metadata named filter, providing the given filename */
+   public static Object callFilter(String mdbName, String filename, Map<String,Object> params) {
 		assert mdb != null;
 		MetaDataBean wado = mdb.getChild(mdbName);
 		assert wado != null;
-		FilterList<?> fl = (FilterList<?>) wado.getValue();
-		assert (fl != null);
-		Map<String, Object> params = new HashMap<String, Object>();
+		Filter<?> fi = (Filter<?>) wado.getValue();
+		assert (fi != null);
 		params.put(MemoryCacheFilter.KEY_NAME,filename);
 		URL url = Thread.currentThread().getContextClassLoader().getResource(filename);
-		assert url != null;
+		if( url==null ) throw new IllegalArgumentException("Resource not found "+filename);
 		//File f = new File(url.getFile());
 		//assert f.canRead();
 		params.put(DicomFileLocationFilter.DICOM_FILE_LOCATION, url);
-		return fl.filter(null, params);
+		return fi.filter(null, params);
 	}
-	
+   
 	@Test
 	public void testProvidedFile() {
 		URL f = (URL) callFilter("fileLocation","org/dcm4chee/xero/wado/CR3S1IM1.dcm"); 
