@@ -4,7 +4,7 @@ $if(layout.study)$
 	$layout.study.StudyDescription$ <br />
 	Study ID: $layout.study.StudyID$ <br />
 	Acc#: $layout.study.AccessionNumber$ <br />
-	$studyTrayItems:{$(it)()$}$
+	$shared.studyTrayItems:{$(it)()$}$
 
 $else$
 No Study
