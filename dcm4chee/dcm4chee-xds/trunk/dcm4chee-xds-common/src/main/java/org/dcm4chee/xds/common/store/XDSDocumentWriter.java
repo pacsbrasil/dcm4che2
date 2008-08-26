@@ -43,7 +43,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import javax.activation.DataHandler;
 public interface XDSDocumentWriter {
-    int size();
+    long size();
     void writeTo( OutputStream os ) throws IOException;
     void close() throws IOException;
     public DataHandler getDataHandler();

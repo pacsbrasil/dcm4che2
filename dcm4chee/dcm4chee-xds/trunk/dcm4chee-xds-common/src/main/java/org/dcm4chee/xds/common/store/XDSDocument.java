@@ -39,16 +39,22 @@
 
 package org.dcm4chee.xds.common.store;
 
-public class XDSDocument implements XDSDocumentIdentifier{
+public class XDSDocument {
 
 	private String docUid;
 	private String mimeType;
 	private XDSDocumentWriter xdsDocWriter;
+	private long size;
 	private String hashString;
 	private String desc;
 	
+	private XDSDocument() {
+	    
+	}
+	
 	public XDSDocument(XDSDocumentWriter xdsDocWriter) {
 		this.xdsDocWriter = xdsDocWriter;
+		size = xdsDocWriter.size();
 	}
 	public XDSDocument(String docUid, String mime, XDSDocumentWriter xdsDocWriter) {
 		this(xdsDocWriter);
@@ -63,6 +69,16 @@ public class XDSDocument implements XDSDocumentIdentifier{
 		this.hashString = hashString;
 		this.desc = desc;
 	}
+
+        public XDSDocument(String documentUID, String mimeType,
+                long size, String hashString, String desc) {
+            this.docUid = docUid;
+            this.mimeType = mimeType;
+            this.size = size;
+            this.hashString = hashString;
+            this.desc = desc;
+        }
+	
 	public XDSDocumentWriter getXdsDocWriter() {
 		return xdsDocWriter;
 	}
@@ -79,7 +95,7 @@ public class XDSDocument implements XDSDocumentIdentifier{
 	
 	/** Size of the Document */
 	public long getSize(){
-		return xdsDocWriter.size();
+		return size;
 	}
 	/** Hash of this Document (SHA1 MessageDigest) */
 	public String getHash() {

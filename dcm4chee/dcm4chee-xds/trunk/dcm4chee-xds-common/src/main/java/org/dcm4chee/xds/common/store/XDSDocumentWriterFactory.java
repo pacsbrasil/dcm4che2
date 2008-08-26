@@ -48,6 +48,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -84,10 +85,10 @@ public class XDSDocumentWriterFactory {
             throw new IllegalArgumentException("File is to large! "+fileSize+" exceeds maximum of "+Integer.MAX_VALUE+" bytes");
         }
         FileDataSource ds = new FileDataSource(f);
-        return new DataHandlerWriter(new DataHandler(ds), (int)fileSize);
+        return new DataHandlerWriter(new DataHandler(ds), fileSize);
     }
 
-    public XDSDocumentWriter getDocumentWriter(InputStream inputStream, int size) throws IOException {
+    public XDSDocumentWriter getDocumentWriter(InputStream inputStream, long size) throws IOException {
         InputStreamDataSource ds = new InputStreamDataSource(inputStream);
         return new DataHandlerWriter(new DataHandler(ds), size);
     }
@@ -125,8 +126,12 @@ public class XDSDocumentWriterFactory {
         return new DataWriter(data);
     }
 
-    public XDSDocumentWriter getDocumentWriter(DataHandler dh, int size) throws IOException {
+    public XDSDocumentWriter getDocumentWriter(DataHandler dh, long size) throws IOException {
         return new DataHandlerWriter(dh, size);
+    }
+
+    public XDSDocumentWriter getDocumentWriter(long size) throws IOException {
+        return new DummyWriter(size);
     }
 
     // TODO: remove if not needed
@@ -204,8 +209,8 @@ public class XDSDocumentWriterFactory {
             }
 
         }
-        public int size() {
-            return cacheFile == null ? buffer.length : (int)cacheFile.length();
+        public long size() {
+            return cacheFile == null ? buffer.length : cacheFile.length();
         }
 
         public void writeTo(OutputStream os) throws IOException {
@@ -255,7 +260,7 @@ public class XDSDocumentWriterFactory {
         }
         public void close() throws IOException {
         }
-        public int size() {
+        public long size() {
             return data.length;
         }
         public DataHandler getDataHandler() {
@@ -265,8 +270,8 @@ public class XDSDocumentWriterFactory {
 
     class DataHandlerWriter implements XDSDocumentWriter {
         DataHandler dh;
-        int size = 0;
-        DataHandlerWriter( DataHandler dh, int size ){
+        long size = 0;
+        DataHandlerWriter( DataHandler dh, long size ){
             this.dh = dh;
             this.size = size;
         }
@@ -275,10 +280,52 @@ public class XDSDocumentWriterFactory {
         }
         public void close() throws IOException {
         }
-        public int size() {
+        public long size() {
             return size;
         }
         public DataHandler getDataHandler() {
+            return dh;
+        }        
+    }
+
+    /**
+     * Dummy XDS writer.
+     * <p/>
+     * This implementation is intended to hold a document size or 
+     * to write a dummy document with given size and byte value.
+     * <p/>
+     * The buffer and DataHandler are only created when getDataHandler() 
+     * or writeTo() is called!
+     * @author franz.willer
+     *
+     */
+    class DummyWriter implements XDSDocumentWriter {
+        long size = 0;
+        DataHandler dh = null;
+        byte fillByte = (byte)'T';
+        
+        DummyWriter(long size ){
+            this(size, (byte)'T');
+        }
+        DummyWriter(long size, byte b ){
+            this.size = size;
+            fillByte = b;
+        }
+        
+        public void writeTo(OutputStream os) throws IOException {
+            getDataHandler().writeTo(os);
+        }
+        public void close() throws IOException {
+        }
+        public long size() {
+            return size;
+        }
+        public DataHandler getDataHandler() {
+            if ( dh == null ) {
+                byte[] buffer = new byte[(int)size];
+                Arrays.fill(buffer, fillByte);
+                dh = new DataHandler( new InputStreamDataSource(new ByteArrayInputStream(buffer)));
+            }
             return dh;
         }        
     }
