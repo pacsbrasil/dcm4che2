@@ -85,11 +85,13 @@ public class BaseDocument {
     }
 
     public InputStream getInputStream() throws IOException {
-        return dh.getInputStream();
+        return dh == null ? null : dh.getInputStream();
     }
 
     public OutputStream getOutputStream() throws IOException {
-        if (out == null ) out = dh.getOutputStream(); //ensure that only one OutputStream is used! 
+        if (out == null && dh != null) {
+            out = dh.getOutputStream(); //ensure that only one OutputStream is used! 
+        }
         return out;
     }
 
