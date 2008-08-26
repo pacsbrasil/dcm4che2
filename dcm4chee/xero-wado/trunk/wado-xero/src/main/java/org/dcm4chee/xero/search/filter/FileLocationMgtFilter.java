@@ -53,6 +53,7 @@ import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.search.study.DicomObjectType;
+import org.jboss.mx.util.MBeanServerLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,9 +82,10 @@ public class FileLocationMgtFilter implements Filter<URL> {
 		 e.printStackTrace();
 	  }
 	  try {
-		server = MBeanConnectionManager.getConnectionManager().getMBeanServerConnection();
+	     server = MBeanConnectionManager.getConnectionManager().getMBeanServerConnection();
 	  } catch (IOException e) {
-		e.printStackTrace();
+	     // Failed to connect to the remote server. Default to the local.
+	     server = MBeanServerLocator.locate(); 
 	  }
    }
 
