@@ -380,7 +380,8 @@ public class Association implements Runnable {
         PresentationContext pc = pcFor(asuid, tsuid);
         DicomObject cstorerq = CommandUtils.mkCStoreRQ(++msgID, cuid, iuid,
                 priority);
-        invoke(pc.getPCID(), cstorerq, data, rspHandler);
+        invoke(pc.getPCID(), cstorerq, data, rspHandler,
+                ae.getDimseRspTimeout());
     }
 
     public DimseRSP cstore(String cuid, String iuid, int priority,
@@ -408,7 +409,8 @@ public class Association implements Runnable {
             throws IOException, InterruptedException {
         PresentationContext pc = pcFor(asuid, tsuid);
         DicomObject cfindrq = CommandUtils.mkCFindRQ(++msgID, cuid, priority);
-        invoke(pc.getPCID(), cfindrq, new DataWriterAdapter(data), rspHandler);
+        invoke(pc.getPCID(), cfindrq, new DataWriterAdapter(data), rspHandler,
+                ae.getDimseRspTimeout());
     }
 
     public DimseRSP cfind(String cuid, int priority, DicomObject data,
@@ -437,7 +439,8 @@ public class Association implements Runnable {
             InterruptedException {
         PresentationContext pc = pcFor(asuid, tsuid);
         DicomObject cfindrq = CommandUtils.mkCGetRQ(++msgID, cuid, priority);
-        invoke(pc.getPCID(), cfindrq, new DataWriterAdapter(data), rspHandler);
+        invoke(pc.getPCID(), cfindrq, new DataWriterAdapter(data), rspHandler,
+                ae.getRetrieveRspTimeout());
     }
 
     public DimseRSP cget(String cuid, int priority, DicomObject data,
@@ -466,7 +469,8 @@ public class Association implements Runnable {
         PresentationContext pc = pcFor(asuid, tsuid);
         DicomObject cfindrq = CommandUtils.mkCMoveRQ(++msgID, cuid, priority,
                 destination);
-        invoke(pc.getPCID(), cfindrq, new DataWriterAdapter(data), rspHandler);
+        invoke(pc.getPCID(), cfindrq, new DataWriterAdapter(data), rspHandler,
+                ae.getRetrieveRspTimeout());
     }
 
     public DimseRSP cmove(String cuid, int priority, DicomObject data,
@@ -491,7 +495,7 @@ public class Association implements Runnable {
         FutureDimseRSP rsp = new FutureDimseRSP();
         PresentationContext pc = pcFor(cuid, null);
         DicomObject cechorq = CommandUtils.mkCEchoRQ(++msgID, cuid);
-        invoke(pc.getPCID(), cechorq, null, rsp);
+        invoke(pc.getPCID(), cechorq, null, rsp, ae.getDimseRspTimeout());
         return rsp;
     }
 
@@ -509,7 +513,7 @@ public class Association implements Runnable {
                 iuid, eventTypeId, attrs);
         invoke(pc.getPCID(), neventrq,
                 attrs != null ? new DataWriterAdapter(attrs) : null,
-                rspHandler);
+                rspHandler, ae.getDimseRspTimeout());
     }
 
     public DimseRSP nevent(String cuid, String iuid, int eventTypeId,
@@ -536,7 +540,7 @@ public class Association implements Runnable {
             throws IOException, InterruptedException {
         PresentationContext pc = pcFor(asuid, null);
         DicomObject ngetrq = CommandUtils.mkNGetRQ(++msgID, cuid, iuid);
-        invoke(pc.getPCID(), ngetrq, null, rspHandler);
+        invoke(pc.getPCID(), ngetrq, null, rspHandler, ae.getDimseRspTimeout());
     }
 
     public DimseRSP nget(String cuid, String iuid)
@@ -562,7 +566,8 @@ public class Association implements Runnable {
             InterruptedException {
         PresentationContext pc = pcFor(asuid, tsuid);
         DicomObject nsetrq = CommandUtils.mkNSetRQ(++msgID, cuid, iuid);
-        invoke(pc.getPCID(), nsetrq, new DataWriterAdapter(attrs), rspHandler);
+        invoke(pc.getPCID(), nsetrq, new DataWriterAdapter(attrs), rspHandler,
+                ae.getDimseRspTimeout());
     }
 
     public DimseRSP nset(String cuid, String iuid, DicomObject attrs,
@@ -593,7 +598,7 @@ public class Association implements Runnable {
                 actionTypeId, attrs);
         invoke(pc.getPCID(), nactionrq,
                 attrs != null ? new DataWriterAdapter(attrs) : null,
-                rspHandler);
+                rspHandler, ae.getDimseRspTimeout());
     }
 
     public DimseRSP naction(String cuid, String iuid, int actionTypeId,
@@ -623,7 +628,7 @@ public class Association implements Runnable {
         DicomObject ncreaterq = CommandUtils.mkNCreateRQ(++msgID, cuid, iuid);
         invoke(pc.getPCID(), ncreaterq,
                 attrs != null ? new DataWriterAdapter(attrs) : null,
-                rspHandler);
+                rspHandler, ae.getDimseRspTimeout());
     }
 
     public DimseRSP ncreate(String cuid, String iuid, DicomObject attrs,
@@ -649,7 +654,7 @@ public class Association implements Runnable {
             InterruptedException {
         PresentationContext pc = pcFor(asuid, null);
         DicomObject nsetrq = CommandUtils.mkNDeleteRQ(++msgID, cuid, iuid);
-        invoke(pc.getPCID(), nsetrq, null, rspHandler);
+        invoke(pc.getPCID(), nsetrq, null, rspHandler, ae.getDimseRspTimeout());
     }
 
     public DimseRSP ndelete(String asuid, String cuid, String iuid)
@@ -665,7 +670,7 @@ public class Association implements Runnable {
     }
 
     void invoke(int pcid, DicomObject cmd, DataWriter data,
-            DimseRSPHandler rspHandler) throws IOException,
+            DimseRSPHandler rspHandler, int rspTimeout) throws IOException,
             InterruptedException {
         if (CommandUtils.isResponse(cmd))
             throw new IllegalArgumentException("cmd:\n" + cmd);
@@ -681,9 +686,7 @@ public class Association implements Runnable {
                     "Presentation State not accepted - " + pc);
         rspHandler.setPcid(pcid);
         rspHandler.setMsgId(cmd.getInt(Tag.MessageID));
-        rspHandler.setTimeout(System.currentTimeMillis()
-                + (cmd.getInt(Tag.CommandField) == CommandUtils.C_MOVE_RQ ? ae
-                        .getMoveRspTimeout() : ae.getDimseRspTimeout()));
+        rspHandler.setTimeout(System.currentTimeMillis() + rspTimeout);
         addDimseRSPHandler(cmd.getInt(Tag.MessageID), rspHandler);
         encoder.writeDIMSE(pcid, cmd, data, pc.getTransferSyntax());
     }
@@ -757,14 +760,17 @@ public class Association implements Runnable {
                 updateIdleTimeout();
                 removeDimseRSPHandler(msgId);
             } else {
-                rspHandler
-                        .setTimeout(System.currentTimeMillis()
-                                + (cmd.getInt(Tag.CommandField) == CommandUtils.C_MOVE_RSP ? ae
-                                        .getMoveRspTimeout()
-                                        : ae.getDimseRspTimeout()));
-
+                rspHandler.setTimeout(System.currentTimeMillis()
+                        + (isRetrieveRsp(cmd) ? ae.getRetrieveRspTimeout()
+                                              : ae.getDimseRspTimeout()));
             }
         }
+    }
+
+    private static boolean isRetrieveRsp(DicomObject cmd) {
+        int cmdField = cmd.getInt(Tag.CommandField);
+        return cmdField == CommandUtils.C_MOVE_RSP
+                || cmdField == CommandUtils.C_GET_RSP;
     }
 
     private void addDimseRSPHandler(int msgId, DimseRSPHandler rspHandler)

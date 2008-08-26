@@ -118,7 +118,7 @@ public class NetworkApplicationEntity {
 
     private int dimseRspTimeout = 60000;
 
-    private int moveRspTimeout = 600000;
+    private int retrieveRspTimeout = 600000;
 
     private int idleTimeout = 60000;
 
@@ -653,7 +653,7 @@ public class NetworkApplicationEntity {
      * Set the maximum time in milliseconds that an association may remain idle.
      * Default 60 seconds (60000 milliseconds).
      * 
-     * @param dimseRspTimeout
+     * @param idleTimeout
      *                An int value signifying the max idle period in
      *                milliseconds.
      */
@@ -662,26 +662,51 @@ public class NetworkApplicationEntity {
     }
 
     /**
-     * Get the timeout in milliseconds for receiving DIMSE-RSP on an open C-MOVE
-     * association. Other types of associations use the DimseRspTimeout. Default
-     * 60 seconds (60000 milliseconds).
+     * Get the timeout in milliseconds for receiving DIMSE-RSP for an open C-GET
+     * or C-MOVE request. Other types of associations use the DimseRspTimeout.
+     * Default 600 seconds (600000 milliseconds).
      * 
      * @return An int value signifying the timeout in milliseconds.
+     * @deprecated use {@link #getRetrieveRspTimeout}
      */
     public int getMoveRspTimeout() {
-        return moveRspTimeout;
+        return retrieveRspTimeout;
     }
 
     /**
-     * Set the timeout in milliseconds for receiving DIMSE-RSP on an open C-MOVE
-     * association. Other types of associations use the DimseRspTimeout. Default
-     * 60 seconds (60000 milliseconds).
+     * Set the timeout in milliseconds for receiving DIMSE-RSP for an open C-GET
+     * or C-MOVE requestd. Other types of associations use the DimseRspTimeout.
+     * Default 600 seconds (600000 milliseconds).
      * 
-     * @param dimseRspTimeout
+     * @param moveRspTimeout
      *                An int value signifying the timeout in milliseconds.
+     * @deprecated use {@link #setRetrieveRspTimeout}
      */
     public void setMoveRspTimeout(int moveRspTimeout) {
-        this.moveRspTimeout = moveRspTimeout;
+        this.retrieveRspTimeout = moveRspTimeout;
+    }
+
+    /**
+     * Get the timeout in milliseconds for receiving DIMSE-RSP for an open C-GET
+     * or C-MOVE request. Other types of associations use the DimseRspTimeout.
+     * Default 600 seconds (600000 milliseconds).
+     * 
+     * @return An int value signifying the timeout in milliseconds.
+     */
+    public int getRetrieveRspTimeout() {
+        return retrieveRspTimeout;
+    }
+
+    /**
+     * Set the timeout in milliseconds for receiving DIMSE-RSP on for open C-GET
+     * or C-MOVE request. Other types of associations use the DimseRspTimeout.
+     * Default 600 seconds (600000 milliseconds).
+     * 
+     * @param retrieveRspTimeout
+     *                An int value signifying the timeout in milliseconds.
+     */
+    public void setRetrieveRspTimeout(int retrieveRspTimeout) {
+        this.retrieveRspTimeout = retrieveRspTimeout;
     }
 
     /**
