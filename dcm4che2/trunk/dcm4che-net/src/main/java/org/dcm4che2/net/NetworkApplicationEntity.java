@@ -675,7 +675,7 @@ public class NetworkApplicationEntity {
 
     /**
      * Set the timeout in milliseconds for receiving DIMSE-RSP for an open C-GET
-     * or C-MOVE requestd. Other types of associations use the DimseRspTimeout.
+     * or C-MOVE request. Other types of associations use the DimseRspTimeout.
      * Default 600 seconds (600000 milliseconds).
      * 
      * @param moveRspTimeout
