@@ -146,6 +146,7 @@ public abstract class AuditFilter<T> implements Filter<T> {
 		}
 		catch(RuntimeException e) {
 			AuditMessage msg = createExceptionAuditMessage(params,e);
+			if( msg==null ) throw e;
 			fillAuditMessage(params,msg,null);
 			msg.setOutcomeIndicator(AuditEvent.OutcomeIndicator.SERIOUS_FAILURE);
 			log(msg);
