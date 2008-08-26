@@ -2,13 +2,12 @@
  * This section defines some special image layout handling
  */
 function ImageLayout(id,template) {
-	if( template ) this.template = template;
-	this.id = id;
-	if( this.isDebug ) {
-		this.debug = console.debug;
-	}
+	this.baseConstructor(id,template);
 };
+
 ImageLayout.prototype = new Layout("baseImage","image/image");
+ImageLayout.prototype.baseConstructor = Layout;
+
 // Scale no smaller than fetchSize when fetching,
 // and fetch on fetchSize index boundaries 
 ImageLayout.prototype.fetchSize = 256;
@@ -16,6 +15,7 @@ ImageLayout.prototype.isDebug = false;
 ImageLayout.prototype.MAGNIFY = "MAGNIFY";
 ImageLayout.prototype.SCALE_TO_FIT = "SCALE_TO_FIT";
 ImageLayout.prototype.TRUE_SIZE = "TRUE_SIZE";
+ImageLayout.prototype.urlCount = 0;
 
 /** Updates the image position information
  */
@@ -84,7 +84,7 @@ ImageLayout.prototype.isComplete = function ImageLayout_isComplete() {
  * details that it is better to keep it part of the model.  
  */
 ImageLayout.prototype.createFullUrl = function ImageLayout_createFullUrl(base) {
-	var ret = { "imageUrl" : base+"&amp;objectUID="+this.image.objectUID, "top":0, "left":0 };
+	var ret = { "imageUrl" : base+"&amp;objectUID="+this.image.objectUID, "top":0, "left":0, "imageId":"im"+this.id, "fullImageId": this.urlCount++};
 	if( this.image.frame ) {
 		ret.imageUrl = ret.imageUrl + "&amp;frameNumber="+this.image.frame;
 	}

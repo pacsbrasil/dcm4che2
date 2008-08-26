@@ -210,8 +210,7 @@ XeroController.prototype.createPatientLayout = function PC_createPatientLayout(n
 
 /** Create the study layouts containing the study tray and the image area */
 XeroController.prototype.createStudyArea = function PC_createStudyArea(navigate, stx,sty,sex,sey,imx,imy) {
-	var cnt = Layout.prototype.idCnt++;
-	var studyArea = new Layout("studyArea"+cnt);
+	var studyArea = new Layout("studyArea");
 	this.model.studyArea = studyArea;
 	studyArea.setGrid(stx*2,sty);
 	var layouts = studyArea.layouts;
@@ -230,7 +229,7 @@ XeroController.prototype.createStudyArea = function PC_createStudyArea(navigate,
 	
 	for(j=0; j<sty; j++) {
 		for(i=0; i<stx; i++) {
-			var studyTray = new Layout("studyTray"+cnt+","+i+","+j,"image/studyTray" );
+			var studyTray = new Layout("studyTray-"+i+","+j,"image/studyTray" );
 			var childMerged = navigate.addChildListener(studyTray,StudyMergedListener,j*stx+i);
 			studyTray.absWidth = 135;
 			var seriesArea = this.createSeriesArea(childMerged,sex,sey,imx,imy);
@@ -256,8 +255,7 @@ XeroController.prototype.createStudyArea = function PC_createStudyArea(navigate,
 };
 
 XeroController.prototype.createSeriesArea = function PC_createSeriesArea(navigate,sex, sey, imx, imy) {
-	var cnt = Layout.prototype.idCnt++;
-	var seriesArea = new Layout("seriesArea"+cnt,"html/layout");
+	var seriesArea = new Layout("seriesArea","html/layout");
 	
 	seriesArea.setGrid(sex,sey*2);
 	navigate.addListener(seriesArea,StudyMergedListener);
@@ -266,7 +264,7 @@ XeroController.prototype.createSeriesArea = function PC_createSeriesArea(navigat
 	var toolbars = new Array();
 	for(j=0; j<sey; j++) {
 		for(i=0; i<sex; i++) {
-			toolbar = new Layout("seriesToolbar"+cnt+","+i+","+j,"image/seriesToolbar");
+			toolbar = new Layout("seriesToolbar-"+i+","+j,"image/seriesToolbar");
 			toolbar.parent = seriesArea;
 			toolbars[i] = toolbar;
 			navigate.addChildListener(toolbar,SeriesMergedListener,j*sex+i);
@@ -285,8 +283,7 @@ XeroController.prototype.createSeriesArea = function PC_createSeriesArea(navigat
 };
 
 XeroController.prototype.createImageArea = function PC_createImageArea(navigate,imx, imy) {
-	var cnt = Layout.prototype.idCnt++;
-	var imageArea = new Layout("imageArea"+cnt,"image/imageArea");
+	var imageArea = new Layout("imageArea","image/imageArea");
 	var xcThis = this;
 	imageArea.mousewheel = function(evt) {
 		console.info("Mouse wheel image area called.");
@@ -301,7 +298,7 @@ XeroController.prototype.createImageArea = function PC_createImageArea(navigate,
 	var i,j,layout;
 	for(j=0; j<imy; j++) {
 		for(i=0; i<imx; i++) {
-			layout = new ImageLayout("imageLay"+cnt+","+i+","+j);
+			layout = new ImageLayout("imageLay-"+i+","+j);
 			navigate.addChildListener(layout,ImageMergedListener,j*imx+i);
 			layout.resizeListener = ImageResizeListener;
 			layout.x = i;
@@ -412,7 +409,11 @@ function ImageMergedListener(navigate) {
 };
 
 function AddImageUrl(imageLay, clear) {
-	if( clear ) imageLay.imageUrls = new Array();
+	if( clear ) {
+	   imageLay.imageUrls = new Array();
+	} else if(imageLay.imageUrls.length>0 ) {
+	   imageLay.imageUrls[imageLay.imageUrls.length-1].imageId = imageLay.imageUrls[imageLay.imageUrls.length-1].fullImageId; 
+	}
 	if( (!imageLay.image) || !(imageLay.width) || !(imageLay.height) ) return;
 	imageLay.imageUrls.push(imageLay.createFullUrl(WADO_QUERY));
 	imageLay.preloadImage = new Image();
@@ -423,8 +424,12 @@ function AddImageUrl(imageLay, clear) {
 	console.info("Created a pre-load image for '%s'", src);
 };
 
-/** Listens for changes in size and re-calculates the URLs to use - LEAVING the old one in place. */
+/** Listens for changes in size and re-calculates the URLs to use - LEAVING the old one in place
+ * so that it continues to show until the new one is ready. (Leaving the old one is temporarily disabled
+ * while bugs are worked out around re-sizing - this leaving should occur only if the old image has 
+ * been fetched and is immediately visible - this change may cause some hiccups to occur for a while.)
+ */
 function ImageResizeListener() {
 	this.updatePosition();
-	AddImageUrl(this,false);
+	AddImageUrl(this,true);
 };

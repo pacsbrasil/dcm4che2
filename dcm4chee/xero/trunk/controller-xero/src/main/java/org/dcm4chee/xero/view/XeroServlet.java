@@ -44,9 +44,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.antlr.stringtemplate.StringTemplateGroup;
 import org.antlr.stringtemplate.servlet.SessionMap;
-import org.antlr.stringtemplate.servlet.StringSafeRenderer;
 import org.antlr.stringtemplate.servlet.StringTemplateServlet;
 import org.dcm4chee.xero.controller.Action;
 import org.dcm4chee.xero.controller.RequestValidator;
@@ -88,8 +86,6 @@ public class XeroServlet extends StringTemplateServlet {
    
    Action controller;
    
-   StringTemplateGroup stgIE;
-   
    /** This is the information about the model, including "defaults" - not necessarily
     * the actual model used for each event.
     */
@@ -116,20 +112,7 @@ public class XeroServlet extends StringTemplateServlet {
 	  return controller.action(mwd);
    }
    
-   
-   /** Chooses the group for IE if the user agent includes MSIE, otherwise use the regular,
-    * SVG style group.
-    */
-   @Override
-   protected StringTemplateGroup getStringTemplateGroup(HttpServletRequest req) {
-	  	if( req.getHeader("USER-AGENT").indexOf("MSIE")>=0 ) {
-	  	   return stgIE;
-	  	}
-	  	return stg;
-   }
-
-
-   /** Initialize the data and ie specific stg. */
+   /** Initialize the data */
    @Override
    public void init(ServletConfig config) throws ServletException {
 	  super.init(config);
@@ -142,8 +125,5 @@ public class XeroServlet extends StringTemplateServlet {
 	  if( model==null ) throw new ServletException("Unable to find model "+modelName+" in metadata "+metadataName);
 	  controller = (Action) root.getValue(controllerName);
 	  if( controller==null ) throw new ServletException("Unable to find controller "+controllerName+" in metadata "+metadataName);
-	  stgIE = createStringTemplateGroup("ie");
-	  stgIE.setSuperGroup(stg);
-	  stgIE.setAttributeRenderers(StringSafeRenderer.RENDERERS);
    }
 }

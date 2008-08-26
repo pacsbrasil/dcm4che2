@@ -3,17 +3,22 @@
  * plus information on what/how to display it.
  */
 function Layout(id, template) {
-	if( !template ) template = "html/layout";
-	if( !id ) id = Layout.prototype.idCnt++;
-	this.id = id;
-	this.template = template;
+	if( !id ) id = "unspecified";
+	var idcnt = this.idCount[id];
+	if(idcnt===undefined) {
+		idcnt = 1;
+	}
+	this.idCount[id] = idcnt+1;
+	this.id = id +"-"+ idcnt;
+	if( template ) this.template = template;
 	if( this.isDebug ) this.debug = console.debug;
 };
 
+Layout.prototype.idCount = new Object();
 Layout.prototype.isDebug = false;
 Layout.prototype.debug = function() {};
+Layout.prototype.template = "html/layout";
 // Some things don't quite get setup right without an initial size, even though it is wrong.
-Layout.prototype.idCnt = 0;
 Layout.prototype.setGrid = function Layout_setGrid(x,y) {
 	this.gridX = x;
 	this.gridY = y;

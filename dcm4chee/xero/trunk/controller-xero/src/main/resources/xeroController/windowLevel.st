@@ -16,7 +16,7 @@ WLController.prototype.start = function WLC_start(event) {
 	this.layout = this.findLayout();
 	if( !this.layout ) return false;
 	this.baseUrl = this.getImageUrl(["rows", "columns", "windowWidth", "windowCenter","imageQuality"]);
-	console.info("Hello window levelling layout %s url %s",this.layout.id, this.baseUrl);
+	console.info("Window levelling layout %s url %s",this.layout.id, this.baseUrl);
 	// TODO - add a server call to fetch windowing information if not already available
 	this.origCenter = this.layout.merged.get("windowCenter");
 	this.origWidth = this.layout.merged.get("windowWidth");

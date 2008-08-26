@@ -125,7 +125,9 @@ MouseHandler.prototype.end = function MouseHandler_showMouseMoveEnd(event) {
 /** Finds the (primary) image object */
 MouseHandler.prototype.getImage = function MouseHandler_getImage() {
 	var imageId = "im"+this.imageDisplay.id.substring(3);
-	return document.getElementById(imageId);
+	var ret = document.getElementById(imageId); 
+	//console.info("Getting image id %s object %s", imageId, ret);
+	return ret;
 };
 
 /** Finds the url for the image object */

@@ -29,12 +29,14 @@ templateGroup.groupNames=${class:org.dcm4chee.xero.metadata.access.ValueList}
 templateGroup.groupNames.xeroModel=xeroModel
 templateGroup.groupNames.jstemplate=jstemplate
 
-# Define the JavaScript templates to include to define the xero model data.  This is not supposed to
-# be order-dependent, so any old order should do.
+# Define the JavaScript templates to include to define the xero model data.  
+# The order can be set by defining priorities if needed.
 model.xeroModels=${class:org.dcm4chee.xero.metadata.access.ValueList}
 model.xeroModels.urlFactory=urlFactory
 model.xeroModels.xmlModel=xmlModel
+model.xeroModels.xmlModel.priority=75
 model.xeroModels.layout=layout
+model.xeroModels.layout.priority=100
 model.xeroModels.imageLayout=imageLayout
 model.xeroModels.merged=merged
 model.xeroModels.navConversation=navConversation
