@@ -91,6 +91,10 @@ class FutureDimseRSP extends DimseRSPHandler implements DimseRSP {
     public synchronized void onClosed(Association as) {
         if (!finished) {
             ex = as.getException();
+            if (ex == null) {
+                ex = new IOException("Association to " + as.getRemoteAET()
+                        + " closed before receive of outstanding DIMSE RSP");
+            }
             notifyAll();
         }
     }
