@@ -178,8 +178,13 @@ public class XDSStoreService extends ServiceMBeanSupport {
                             "SHA1 hash value missing! Storage does not support SHA1 hash! docUID:"+documentUID, null);
                    
                 }
-                storedDoc = new XDSDocument( doc.getDocumentUID(), doc.getMimeType(), 
+                if ( doc.getDataHandler() != null ) {
+                    storedDoc = new XDSDocument( doc.getDocumentUID(), doc.getMimeType(), 
                         getXdsDocWriter(doc), doc.getHash(), null);
+                } else {
+                    storedDoc = new XDSDocument(doc.getDocumentUID(), doc.getMimeType(), 
+                            doc.getSize(), doc.getHash(), "StoredDocument(no content provider)");
+                }
             }
             
             if ( storeMetadata && metadata != null) {
@@ -229,9 +234,12 @@ public class XDSStoreService extends ServiceMBeanSupport {
                     getXdsDocWriter(doc), DocumentStore.toHexString(md.digest()), null);
     }
 
-    private XDSDocumentWriter getXdsDocWriter(BaseDocument doc)
-    throws IOException {
-        return XDSDocumentWriterFactory.getInstance().getDocumentWriter(doc.getInputStream(), (int)doc.getSize());
+    private XDSDocumentWriter getXdsDocWriter(BaseDocument doc) throws IOException {
+        if ( doc.getDataHandler() == null) {
+            return XDSDocumentWriterFactory.getInstance().getDocumentWriter(doc.getSize());
+        } else {
+            return XDSDocumentWriterFactory.getInstance().getDocumentWriter(doc.getInputStream(), doc.getSize());
+        }
     }
 
     public XDSDocument retrieveDocument(String docUid, String mime) throws IOException {
@@ -280,7 +288,7 @@ public class XDSStoreService extends ServiceMBeanSupport {
             @Override
             public void write(int b) throws IOException {}}, md);
         int len;
-        int size = 0;
+        long size = 0;
         while ( (len = fis.read(buf)) > 0 ) {
             dos.write(buf, 0, len);
             size += len;
