@@ -55,6 +55,7 @@ import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import javax.ejb.CreateException;
@@ -133,6 +134,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private static final String RECEIVE_BUFFER = "RECEIVE_BUFFER";
 
     private static final String SERIES_IUID = "SERIES_IUID";
+
+    private static final String SOP_IUIDS = "SOP_IUIDS";
 
     final StoreScpService service;
 
@@ -609,13 +612,17 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             service.generatePatientID(ds, ds);
             Storage store = getStorage(assoc);
             String seriuid = ds.getString(Tags.SeriesInstanceUID);
-            String prevseriud = (String) assoc.getProperty(SERIES_IUID);
-            if (!seriuid.equals(prevseriud)) {
+            String prevseriuid = (String) assoc.getProperty(SERIES_IUID);
+            HashSet<String> iuids = (HashSet<String>) assoc.getProperty(SOP_IUIDS);
+            if (iuids == null) {
+                assoc.putProperty(SOP_IUIDS, iuids = new HashSet<String>());
+            }
+            if (!seriuid.equals(prevseriuid)) {
                 assoc.putProperty(SERIES_IUID, seriuid);
-                if (prevseriud != null) {
+                if (prevseriuid != null) {
                     try {
                         SeriesStored seriesStored = store
-                                .makeSeriesStored(prevseriud);
+                                .makeSeriesStored(prevseriuid, iuids);
                         if (seriesStored != null) {
                             log.debug("Send SeriesStoredNotification - series changed");
                             Socket sock = assoc.getSocket();
@@ -623,7 +630,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                             store.commitSeriesStored(seriesStored);
                         }
                     } catch (ObjectNotFoundException ignore) {
-                        log.warn("Previous series with uid " + prevseriud
+                        log.warn("Previous series with uid " + prevseriuid
                                 + " not found.  Not sending series stored notification.");
                     }
                 }
@@ -633,8 +640,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     coerced = merge(coerced, mergeMatchingMWLItem(assoc, ds,
                             seriuid, mwlFilter));
                 }
+                iuids.clear();
             }
-
+            iuids.add(iuid);
             perfMon.start(activeAssoc, rq,
                     PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
             long fileLength = file != null ? file.length() : 0L;
@@ -1095,7 +1103,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         if (seriuid != null) {
             try {
                 Storage store = getStorage(assoc);
-                SeriesStored seriesStored = store.makeSeriesStored(seriuid);
+                SeriesStored seriesStored = store.makeSeriesStored(seriuid,
+                        (HashSet<String>) assoc.getProperty(SOP_IUIDS));
                 if (seriesStored != null) {
                     log
                             .debug("Send SeriesStoredNotification - association closed");

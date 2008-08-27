@@ -787,7 +787,7 @@ public class StoreScpService extends AbstractScpService {
         Storage store = getStorage();
         String seriud = ds.getString(Tags.SeriesInstanceUID);
         if (prevseriuid != null && !prevseriuid.equals(seriud)) {
-            SeriesStored seriesStored = store.makeSeriesStored(prevseriuid);
+            SeriesStored seriesStored = store.makeSeriesStored(prevseriuid, null);
             if (seriesStored != null) {
                 log.debug("Send SeriesStoredNotification - series changed");
                 scp.doAfterSeriesIsStored(null, seriesStored);
@@ -805,7 +805,7 @@ public class StoreScpService extends AbstractScpService {
         scp.updateDB(store, ds, fileDTO.getFileSystemPk(), filePath, f.length(),
                 fileDTO.getFileMd5(), true);
         if (last) {
-            SeriesStored seriesStored = store.makeSeriesStored(seriud);
+            SeriesStored seriesStored = store.makeSeriesStored(seriud, null);
             if (seriesStored != null) {
                 scp.doAfterSeriesIsStored(null, seriesStored);
                 store.commitSeriesStored(seriesStored);
