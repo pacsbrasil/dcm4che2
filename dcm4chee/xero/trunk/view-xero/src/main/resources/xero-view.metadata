@@ -38,7 +38,7 @@ queryTemplates.htmlLayout=html/layout
 queryTemplates.htmlTabs=html/tabs
 queryTemplates.noHeaderTabs=html/noHeaderTabs
 queryTemplates.queryQuery=query/query
-queryTemplates.studyTable=search/studyTable
+queryTemplates.studyTable=query/studyTable
 
 displayTemplates=${class:org.dcm4chee.xero.template.AllTemplatesMap}
 displayTemplates.templateGroup=${ref:templateGroup}
