@@ -28,11 +28,12 @@ source.dicom.priority=-1
 
 # Need to be able to find the files.  Returns a URL
 fileLocation=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+fileLocation.priority=-1
+
 fileLocation.fileLocationMgt=${class:org.dcm4chee.xero.search.filter.FileLocationMgtFilter}
 fileLocation.fileLocationMgt.priority=1000
 #fileLocation.wadoLocation=${class:org.dcm4chee.xero.search.filter.DicomFileLocationFilter}
 #fileLocation.wadoLocation.priority=100
-fileLocation.priority=-1
 fileLocation.locationCache=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
 fileLocation.locationCache.priority=10000
 fileLocation.locationCache.cacheSize=2000000
