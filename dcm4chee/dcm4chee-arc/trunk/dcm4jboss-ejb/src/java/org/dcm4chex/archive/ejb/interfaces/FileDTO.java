@@ -43,21 +43,22 @@ import java.io.Serializable;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2006-06-28 18:14:25 +0200 (Wed, 28 Jun
+ *          2006) $
  * @since 20.02.2004
  */
 public final class FileDTO implements Serializable {
 
     private static final long serialVersionUID = 3617574916212536371L;
-    
+
     private long pk;
 
     private long fspk;
-    
+
     private String aet;
 
     private String userInfo;
-    
+
     private String basedir;
 
     private String path;
@@ -69,18 +70,15 @@ public final class FileDTO implements Serializable {
     private long size;
 
     private byte[] md5;
-    
+
     private int status;
 
-	private int availability;
-	
-	public String toString() {
-		return "FileDTO[pk=" + pk 
-			+ ", basedir=" + basedir 
-			+ ", path=" + path 
-			+ ", status=" + status
-			+ "]";
-	}
+    private int availability;
+
+    public String toString() {
+        return "FileDTO[pk=" + pk + ", basedir=" + basedir + ", path=" + path
+                + ", status=" + status + "]";
+    }
 
     /**
      * @return Returns the pk.
@@ -90,7 +88,8 @@ public final class FileDTO implements Serializable {
     }
 
     /**
-     * @param pk The pk to set.
+     * @param pk
+     *            The pk to set.
      */
     public final void setPk(long pk) {
         this.pk = pk;
@@ -104,19 +103,20 @@ public final class FileDTO implements Serializable {
     }
 
     /**
-     * @param aets The aets to set.
+     * @param aets
+     *            The aets to set.
      */
     public final void setRetrieveAET(String aet) {
         this.aet = aet;
     }
 
     public final String getUserInfo() {
-		return userInfo;
-	}
+        return userInfo;
+    }
 
-	public final void setUserInfo(String userInfo) {
-		this.userInfo = userInfo;
-	}
+    public final void setUserInfo(String userInfo) {
+        this.userInfo = userInfo;
+    }
 
     public final long getFileSystemPk() {
         return fspk;
@@ -135,8 +135,9 @@ public final class FileDTO implements Serializable {
     }
 
     public final String getMd5String() {
-    	return MD5.toString(md5);
+        return MD5.toString(md5);
     }
+
     /**
      * @return Returns the md5.
      */
@@ -145,12 +146,13 @@ public final class FileDTO implements Serializable {
     }
 
     /**
-     * @param md5 The md5 to set.
+     * @param md5
+     *            The md5 to set.
      */
     public final void setFileMd5(byte[] md5) {
         this.md5 = md5;
     }
-    
+
     public final int getFileStatus() {
         return status;
     }
@@ -158,7 +160,7 @@ public final class FileDTO implements Serializable {
     public final void setFileStatus(int status) {
         this.status = status;
     }
-    
+
     /**
      * @return Returns the path.
      */
@@ -167,7 +169,8 @@ public final class FileDTO implements Serializable {
     }
 
     /**
-     * @param path The path to set.
+     * @param path
+     *            The path to set.
      */
     public final void setFilePath(String path) {
         this.path = path;
@@ -181,7 +184,8 @@ public final class FileDTO implements Serializable {
     }
 
     /**
-     * @param size The size to set.
+     * @param size
+     *            The size to set.
      */
     public final void setFileSize(long size) {
         this.size = size;
@@ -195,30 +199,33 @@ public final class FileDTO implements Serializable {
     }
 
     /**
-     * @param tsuid The tsuid to set.
+     * @param tsuid
+     *            The tsuid to set.
      */
     public final void setFileTsuid(String tsuid) {
         this.tsuid = tsuid;
     }
 
+    public final int getAvailability() {
+        return availability;
+    }
 
-	public final int getAvailability() {
-		return availability;
-	}
+    public final void setAvailability(int availability) {
+        this.availability = availability;
+    }
 
-	public final void setAvailability(int availability) {
-		this.availability = availability;
-	}
-	/**
-	 * @return Returns the sopClassUID.
-	 */
-	public String getSopClassUID() {
-		return sopCuid;
-	}
-	/**
-	 * @param sopClassUID The sopClassUID to set.
-	 */
-	public void setSopClassUID(String sopClassUID) {
-		this.sopCuid = sopClassUID;
-	}
+    /**
+     * @return Returns the sopClassUID.
+     */
+    public String getSopClassUID() {
+        return sopCuid;
+    }
+
+    /**
+     * @param sopClassUID
+     *            The sopClassUID to set.
+     */
+    public void setSopClassUID(String sopClassUID) {
+        this.sopCuid = sopClassUID;
+    }
 }
