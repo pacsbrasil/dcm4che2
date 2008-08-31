@@ -56,7 +56,7 @@ public class StdGenJPEGApplicationProfile extends BasicApplicationProfile {
 	    Tag.SeriesInstanceUID, Tag.SeriesNumber };
 
     private static final int[] STD_GEN_JPEG_IMAGE_KEYS = {
-	    Tag.SpecificCharacterSet, Tag.ImageType, Tag.AcquisitionDatetime,
+	    Tag.SpecificCharacterSet, Tag.ImageType, Tag.AcquisitionDateTime,
 	    Tag.ReferencedImageSequence, Tag.AcquisitionTimeSynchronized,
 	    Tag.InstanceNumber, Tag.ImagePositionPatient,
 	    Tag.ImageOrientationPatient, Tag.FrameOfReferenceUID,
@@ -66,7 +66,7 @@ public class StdGenJPEGApplicationProfile extends BasicApplicationProfile {
 
     private static final int[] STD_GEN_SPECTROSCOPY_KEYS = {
 	    Tag.SpecificCharacterSet, Tag.ImageType, Tag.ContentDate,
-	    Tag.ContentTime, Tag.AcquisitionDatetime,
+	    Tag.ContentTime, Tag.AcquisitionDateTime,
 	    Tag.ReferencedImageSequence, Tag.ReferencedImageEvidenceSequence,
 	    Tag.AcquisitionTimeSynchronized, Tag.InstanceNumber,
 	    Tag.ImagePositionPatient, Tag.ImageOrientationPatient,

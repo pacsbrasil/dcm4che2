@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"
-    xmlns:office="http://openoffice.org/2000/office" xmlns:table="http://openoffice.org/2000/table"
+    xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
+    xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"
     exclude-result-prefixes="office table">
     <xsl:output method="xml" indent="yes"/>
     <xsl:template match="/">
         <xsl:apply-templates
-            select="office:document-content/office:body/table:table[position()=last()-1]/table:table-row[position()!=1]"/>
+            select="office:document-content/office:body/office:text/table:table[position()=last()-1]/table:table-row[position()!=1]"/>
         <xsl:apply-templates
-            select="office:document-content/office:body/table:table[position()=last()]/table:table-row[position()!=1]">
+            select="office:document-content/office:body/office:text/table:table[position()=last()]/table:table-row[position()!=1]">
             <xsl:with-param name="ret">RET</xsl:with-param>
         </xsl:apply-templates>
     </xsl:template>

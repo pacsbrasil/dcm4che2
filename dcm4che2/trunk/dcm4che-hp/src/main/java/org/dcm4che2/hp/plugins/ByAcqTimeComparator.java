@@ -99,7 +99,7 @@ extends AbstractHPComparator
         Date t = o.getDate(Tag.AcquisitionDate, Tag.AcquisitionTime);
         if (t == null)
         {
-            t = o.getDate(Tag.AcquisitionDatetime);
+            t = o.getDate(Tag.AcquisitionDateTime);
             if (t == null)
             {
                 t = o.getDate(Tag.ContentDate, Tag.ContentTime);

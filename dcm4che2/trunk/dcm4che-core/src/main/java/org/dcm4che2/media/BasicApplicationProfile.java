@@ -112,7 +112,7 @@ public class BasicApplicationProfile implements ApplicationProfile {
     private static final int[] HANGING_PROTOCOL_KEYS = {
             Tag.SpecificCharacterSet, Tag.HangingProtocolName,
             Tag.HangingProtocolDescription, Tag.HangingProtocolLevel,
-            Tag.HangingProtocolCreator, Tag.HangingProtocolCreationDatetime,
+            Tag.HangingProtocolCreator, Tag.HangingProtocolCreationDateTime,
             Tag.HangingProtocolDefinitionSequence,
             Tag.NumberOfPriorsReferenced,
             Tag.HangingProtocolUserIdentificationCodeSequence };
@@ -422,17 +422,17 @@ public class BasicApplicationProfile implements ApplicationProfile {
             }
             break;
         case 796487868:
-            if (UID.BasicTextSR.equals(cuid)) {
+            if (UID.BasicTextSRStorage.equals(cuid)) {
                 return makeSRDocumentDirectoryRecord(dcmobj, fileIDs);
             }
             break;
         case 796487900:
-            if (UID.EnhancedSR.equals(cuid)) {
+            if (UID.EnhancedSRStorage.equals(cuid)) {
                 return makeSRDocumentDirectoryRecord(dcmobj, fileIDs);
             }
             break;
         case 796487932:
-            if (UID.ComprehensiveSR.equals(cuid)) {
+            if (UID.ComprehensiveSRStorage.equals(cuid)) {
                 return makeSRDocumentDirectoryRecord(dcmobj, fileIDs);
             }
             break;
@@ -442,22 +442,22 @@ public class BasicApplicationProfile implements ApplicationProfile {
             }
             break;
         case 796487991:
-            if (UID.MammographyCADSR.equals(cuid)) {
+            if (UID.MammographyCADSRStorage.equals(cuid)) {
                 return makeSRDocumentDirectoryRecord(dcmobj, fileIDs);
             }
             break;
         case 796488000:
-            if (UID.KeyObjectSelectionDocument.equals(cuid)) {
+            if (UID.KeyObjectSelectionDocumentStorage.equals(cuid)) {
                 return makeKeyObjectDirectoryRecord(dcmobj, fileIDs);
             }
             break;
         case 796488027:
-            if (UID.ChestCADSR.equals(cuid)) {
+            if (UID.ChestCADSRStorage.equals(cuid)) {
                 return makeSRDocumentDirectoryRecord(dcmobj, fileIDs);
             }
             break;
         case 796488029:
-            if (UID.XRayRadiationDoseSR.equals(cuid)) {
+            if (UID.XRayRadiationDoseSRStorage.equals(cuid)) {
                 return makeSRDocumentDirectoryRecord(dcmobj, fileIDs);
             }
             break;            

@@ -176,12 +176,12 @@ public class HangingProtocol {
         dcmobj.putString(Tag.HangingProtocolCreator, VR.LO, creator);
     }
 
-    public Date getHangingProtocolCreationDatetime() {
-        return dcmobj.getDate(Tag.HangingProtocolCreationDatetime);
+    public Date getHangingProtocolCreationDateTime() {
+        return dcmobj.getDate(Tag.HangingProtocolCreationDateTime);
     }
 
-    public void setHangingProtocolCreationDatetime(Date datetime) {
-        dcmobj.putDate(Tag.HangingProtocolCreationDatetime, VR.DT, datetime);
+    public void setHangingProtocolCreationDateTime(Date datetime) {
+        dcmobj.putDate(Tag.HangingProtocolCreationDateTime, VR.DT, datetime);
     }
 
     public int getNumberOfPriorsReferenced() {

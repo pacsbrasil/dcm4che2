@@ -255,6 +255,12 @@ public class UID {
     /** Procedural Event Logging SOP Instance - Well-known SOP Instance */
     public static final String ProceduralEventLoggingSOPInstance = "1.2.840.10008.1.40.1";
 
+    /** Substance Administration Logging SOP Class - SOP Class */
+    public static final String SubstanceAdministrationLoggingSOPClass = "1.2.840.10008.1.42";
+
+    /** Substance Administration Logging SOP Instance - Well-known SOP Instance */
+    public static final String SubstanceAdministrationLoggingSOPInstance = "1.2.840.10008.1.42.1";
+
     /** Basic Study Content Notification SOP Class (Retired) - SOP Class */
     public static final String BasicStudyContentNotificationSOPClassRetired = "1.2.840.10008.1.9";
 
@@ -576,6 +582,9 @@ public class UID {
     /** X-Ray 3D Craniofacial Image Storage - SOP Class */
     public static final String XRay3DCraniofacialImageStorage = "1.2.840.10008.5.1.4.1.1.13.1.2";
 
+    /** Enhanced PET Image Storage - SOP Class */
+    public static final String EnhancedPETImageStorage = "1.2.840.10008.5.1.4.1.1.130";
+
     /** CT Image Storage - SOP Class */
     public static final String CTImageStorage = "1.2.840.10008.5.1.4.1.1.2";
 
@@ -669,8 +678,8 @@ public class UID {
     /** Multi-frame True Color Secondary Capture Image Storage - SOP Class */
     public static final String MultiframeTrueColorSecondaryCaptureImageStorage = "1.2.840.10008.5.1.4.1.1.7.4";
 
-    /** VL Image Storage (Retired) -  */
-    public static final String VLImageStorageRetired = "1.2.840.10008.5.1.4.1.1.77.1";
+    /** VL Image Storage - Trial (Retired) -  */
+    public static final String VLImageStorageTrialRetired = "1.2.840.10008.5.1.4.1.1.77.1";
 
     /** VL Endoscopic Image Storage - SOP Class */
     public static final String VLEndoscopicImageStorage = "1.2.840.10008.5.1.4.1.1.77.1.1";
@@ -702,38 +711,74 @@ public class UID {
     /** Stereometric Relationship Storage - SOP Class */
     public static final String StereometricRelationshipStorage = "1.2.840.10008.5.1.4.1.1.77.1.5.3";
 
-    /** VL Multi-frame Image Storage (Retired) -  */
-    public static final String VLMultiframeImageStorageRetired = "1.2.840.10008.5.1.4.1.1.77.2";
+    /** Ophthalmic Tomography Image Storage - SOP Class */
+    public static final String OphthalmicTomographyImageStorage = "1.2.840.10008.5.1.4.1.1.77.1.5.4";
+
+    /** VL Multi-frame Image Storage - Trial (Retired) -  */
+    public static final String VLMultiframeImageStorageTrialRetired = "1.2.840.10008.5.1.4.1.1.77.2";
+
+    /** Lensometry Measurements Storage - SOP Class */
+    public static final String LensometryMeasurementsStorage = "1.2.840.10008.5.1.4.1.1.78.1";
+
+    /** Autorefraction Measurements Storage - SOP Class */
+    public static final String AutorefractionMeasurementsStorage = "1.2.840.10008.5.1.4.1.1.78.2";
+
+    /** Keratometry Measurements Storage - SOP Class */
+    public static final String KeratometryMeasurementsStorage = "1.2.840.10008.5.1.4.1.1.78.3";
+
+    /** Subjective Refraction Measurements Storage - SOP Class */
+    public static final String SubjectiveRefractionMeasurementsStorage = "1.2.840.10008.5.1.4.1.1.78.4";
+
+    /** Visual Acuity Measurements - SOP Class */
+    public static final String VisualAcuityMeasurements = "1.2.840.10008.5.1.4.1.1.78.5";
+
+    /** Spectacle Prescription Reports Storage - SOP Class */
+    public static final String SpectaclePrescriptionReportsStorage = "1.2.840.10008.5.1.4.1.1.78.6";
 
     /** Standalone Overlay Storage (Retired) - SOP Class */
     public static final String StandaloneOverlayStorageRetired = "1.2.840.10008.5.1.4.1.1.8";
 
-    /** Basic Text SR - SOP Class */
-    public static final String BasicTextSR = "1.2.840.10008.5.1.4.1.1.88.11";
+    /** Text SR Storage - Trial (Retired) - SOP Class */
+    public static final String TextSRStorageTrialRetired = "1.2.840.10008.5.1.4.1.1.88.1";
 
-    /** Enhanced SR - SOP Class */
-    public static final String EnhancedSR = "1.2.840.10008.5.1.4.1.1.88.22";
+    /** Basic Text SR Storage - SOP Class */
+    public static final String BasicTextSRStorage = "1.2.840.10008.5.1.4.1.1.88.11";
 
-    /** Comprehensive SR - SOP Class */
-    public static final String ComprehensiveSR = "1.2.840.10008.5.1.4.1.1.88.33";
+    /** Audio SR Storage - Trial (Retired) - SOP Class */
+    public static final String AudioSRStorageTrialRetired = "1.2.840.10008.5.1.4.1.1.88.2";
+
+    /** Enhanced SR Storage - SOP Class */
+    public static final String EnhancedSRStorage = "1.2.840.10008.5.1.4.1.1.88.22";
+
+    /** Detail SR Storage - Trial (Retired) - SOP Class */
+    public static final String DetailSRStorageTrialRetired = "1.2.840.10008.5.1.4.1.1.88.3";
+
+    /** Comprehensive SR Storage - SOP Class */
+    public static final String ComprehensiveSRStorage = "1.2.840.10008.5.1.4.1.1.88.33";
+
+    /** Comprehensive SR Storage - Trial (Retired) - SOP Class */
+    public static final String ComprehensiveSRStorageTrialRetired = "1.2.840.10008.5.1.4.1.1.88.4";
 
     /** Procedure Log Storage - SOP Class */
     public static final String ProcedureLogStorage = "1.2.840.10008.5.1.4.1.1.88.40";
 
-    /** Mammography CAD SR - SOP Class */
-    public static final String MammographyCADSR = "1.2.840.10008.5.1.4.1.1.88.50";
+    /** Mammography CAD SR Storage - SOP Class */
+    public static final String MammographyCADSRStorage = "1.2.840.10008.5.1.4.1.1.88.50";
 
-    /** Key Object Selection Document - SOP Class */
-    public static final String KeyObjectSelectionDocument = "1.2.840.10008.5.1.4.1.1.88.59";
+    /** Key Object Selection Document Storage - SOP Class */
+    public static final String KeyObjectSelectionDocumentStorage = "1.2.840.10008.5.1.4.1.1.88.59";
 
-    /** Chest CAD SR - SOP Class */
-    public static final String ChestCADSR = "1.2.840.10008.5.1.4.1.1.88.65";
+    /** Chest CAD SR Storage - SOP Class */
+    public static final String ChestCADSRStorage = "1.2.840.10008.5.1.4.1.1.88.65";
 
-    /** X-Ray Radiation Dose SR - SOP Class */
-    public static final String XRayRadiationDoseSR = "1.2.840.10008.5.1.4.1.1.88.67";
+    /** X-Ray Radiation Dose SR Storage - SOP Class */
+    public static final String XRayRadiationDoseSRStorage = "1.2.840.10008.5.1.4.1.1.88.67";
 
     /** Standalone Curve Storage (Retired) - SOP Class */
     public static final String StandaloneCurveStorageRetired = "1.2.840.10008.5.1.4.1.1.9";
+
+    /** Waveform Storage - Trial (Retired) - SOP Class */
+    public static final String WaveformStorageTrialRetired = "1.2.840.10008.5.1.4.1.1.9.1";
 
     /** 12-lead ECG Waveform Storage - SOP Class */
     public static final String _12leadECGWaveformStorage = "1.2.840.10008.5.1.4.1.1.9.1.1";
@@ -798,6 +843,33 @@ public class UID {
     /** Instance Availability Notification SOP Class - SOP Class */
     public static final String InstanceAvailabilityNotificationSOPClass = "1.2.840.10008.5.1.4.33";
 
+    /** RT Beams Delivery Instruction Storage (Supplement 74 Frozen Draft) - SOP Class */
+    public static final String RTBeamsDeliveryInstructionStorageSupplement74FrozenDraft = "1.2.840.10008.5.1.4.34.1";
+
+    /** RT Conventional Machine Verification (Supplement 74 Frozen Draft) - SOP Class */
+    public static final String RTConventionalMachineVerificationSupplement74FrozenDraft = "1.2.840.10008.5.1.4.34.2";
+
+    /** RT Ion Machine Verification (Supplement 74 Frozen Draft) - SOP Class */
+    public static final String RTIonMachineVerificationSupplement74FrozenDraft = "1.2.840.10008.5.1.4.34.3";
+
+    /** Unified Worklist and Procedure Step Service Class - Service Class */
+    public static final String UnifiedWorklistandProcedureStepServiceClass = "1.2.840.10008.5.1.4.34.4";
+
+    /** Unified Procedure Step - Push SOP Class - SOP Class */
+    public static final String UnifiedProcedureStepPushSOPClass = "1.2.840.10008.5.1.4.34.4.1";
+
+    /** Unified Procedure Step - Watch SOP Class - SOP Class */
+    public static final String UnifiedProcedureStepWatchSOPClass = "1.2.840.10008.5.1.4.34.4.2";
+
+    /** Unified Procedure Step - Pull SOP Class - SOP Class */
+    public static final String UnifiedProcedureStepPullSOPClass = "1.2.840.10008.5.1.4.34.4.3";
+
+    /** Unified Procedure Step - Event SOP Class - SOP Class */
+    public static final String UnifiedProcedureStepEventSOPClass = "1.2.840.10008.5.1.4.34.4.4";
+
+    /** Unified Worklist and Procedure Step SOP Instance - Well-known SOP Instance */
+    public static final String UnifiedWorklistandProcedureStepSOPInstance = "1.2.840.10008.5.1.4.34.5";
+
     /** General Relevant Patient Information Query - SOP Class */
     public static final String GeneralRelevantPatientInformationQuery = "1.2.840.10008.5.1.4.37.1";
 
@@ -815,6 +887,12 @@ public class UID {
 
     /** Hanging Protocol Information Model - MOVE - SOP Class */
     public static final String HangingProtocolInformationModelMOVE = "1.2.840.10008.5.1.4.38.3";
+
+    /** Product Characteristics Query SOP Class - SOP Class */
+    public static final String ProductCharacteristicsQuerySOPClass = "1.2.840.10008.5.1.4.41";
+
+    /** Substance Approval Query SOP Class - SOP Class */
+    public static final String SubstanceApprovalQuerySOPClass = "1.2.840.10008.5.1.4.42";
 
     /** Siemens CSA Non-Image Storage - SOP Class */
     public static final String SiemensCSANonImageStorage = "1.3.12.2.1107.5.9.1";

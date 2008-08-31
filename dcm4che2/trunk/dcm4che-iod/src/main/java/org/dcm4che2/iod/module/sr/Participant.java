@@ -79,11 +79,11 @@ public class Participant extends IdentifiedPersonOrDevice {
         dcmobj.putString(Tag.ParticipationType, VR.CS, s);
     }
 
-    public Date getParticipationDatetime() {
-        return dcmobj.getDate(Tag.ParticipationDatetime);
+    public Date getParticipationDateTime() {
+        return dcmobj.getDate(Tag.ParticipationDateTime);
     }
 
-    public void setParticipationDatetime(Date dt) {
-        dcmobj.putDate(Tag.ParticipationDatetime, VR.DT, dt);
+    public void setParticipationDateTime(Date dt) {
+        dcmobj.putDate(Tag.ParticipationDateTime, VR.DT, dt);
     }    
 }

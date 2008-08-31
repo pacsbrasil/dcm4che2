@@ -371,8 +371,8 @@ public class DcmQR {
         DX(UID.DigitalXRayImageStorageForPresentation),
         MG(UID.DigitalMammographyXRayImageStorageForPresentation),
         PR(UID.GrayscaleSoftcopyPresentationStateStorageSOPClass),
-        KO(UID.KeyObjectSelectionDocument),
-        SR(UID.BasicTextSR);
+        KO(UID.KeyObjectSelectionDocumentStorage),
+        SR(UID.BasicTextSRStorage);
 
         final String uid;
         CUID(String uid) { this.uid = uid; }

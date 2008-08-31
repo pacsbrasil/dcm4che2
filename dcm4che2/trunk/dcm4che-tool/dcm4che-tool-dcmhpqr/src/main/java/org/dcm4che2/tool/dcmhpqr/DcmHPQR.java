@@ -104,7 +104,7 @@ public class DcmHPQR {
     private static final int[] RETURN_KEYS = { Tag.SOPClassUID,
             Tag.SOPInstanceUID, Tag.HangingProtocolName,
             Tag.HangingProtocolDescription, Tag.HangingProtocolLevel,
-            Tag.HangingProtocolCreator, Tag.HangingProtocolCreationDatetime,
+            Tag.HangingProtocolCreator, Tag.HangingProtocolCreationDateTime,
             Tag.NumberOfPriorsReferenced, Tag.HangingProtocolUserGroupName,
             Tag.NumberOfScreens };
 

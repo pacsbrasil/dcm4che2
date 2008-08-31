@@ -212,21 +212,21 @@ public class GeneralImageModule extends ImagePixel {
 		dcmobj.putString(Tag.AcquisitionNumber, VR.IS, s);
 	}
 
-	public Date getAcquisitionDateTime() {
+	public Date getAcquisitionDateAndTime() {
 		return dcmobj.getDate(Tag.AcquisitionDate, Tag.AcquisitionTime);
 	}
 
-	public void setAcquisitionDateTime(Date d) {
+	public void setAcquisitionDateAndTime(Date d) {
 		dcmobj.putDate(Tag.AcquisitionDate, VR.DA, d);
 		dcmobj.putDate(Tag.AcquisitionTime, VR.TM, d);
 	}
 
-	public Date getAcquisitionDatetime() {
-		return dcmobj.getDate(Tag.AcquisitionDatetime);
+	public Date getAcquisitionDateTime() {
+		return dcmobj.getDate(Tag.AcquisitionDateTime);
 	}
 
-	public void setAcquisitionDatetime(Date d) {
-		dcmobj.putDate(Tag.AcquisitionDatetime, VR.DT, d);
+	public void setAcquisitionDateTime(Date d) {
+		dcmobj.putDate(Tag.AcquisitionDateTime, VR.DT, d);
 	}
 
 	public ImageSOPInstanceReferenceAndPurpose[] getReferencedImages() {

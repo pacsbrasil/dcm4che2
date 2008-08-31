@@ -102,7 +102,7 @@ public class DcmMWL {
         Tag.PatientSex,
         Tag.PatientWeight,
         Tag.MedicalAlerts,
-        Tag.ContrastAllergies,
+        Tag.Allergies,
         Tag.PregnancyStatus,
         Tag.StudyInstanceUID,
         Tag.RequestingPhysician,

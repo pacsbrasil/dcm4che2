@@ -121,10 +121,10 @@ public class CodingSchemeIdentification extends Module {
     }
 
     public String getResponsibleOrganization() {
-        return dcmobj.getString(Tag.ResponsibleOrganization00080116);
+        return dcmobj.getString(Tag.ResponsibleOrganization);
     }
     
     public void setResponsibleOrganization(String s) {
-        dcmobj.putString(Tag.ResponsibleOrganization00080116, VR.ST, s);
+        dcmobj.putString(Tag.ResponsibleOrganization, VR.ST, s);
     }
 }

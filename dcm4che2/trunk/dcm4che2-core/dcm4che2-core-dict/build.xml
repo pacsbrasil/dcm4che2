@@ -49,23 +49,20 @@
           target: extract content                      
          - - - - - - - - - - - - - - - - - -->
     <target name="unzip">
-        <antcall target="unzip-sxw">
-            <param name="fname" value="07_07pu" />
+        <antcall target="unzip-odt">
+            <param name="fname" value="08_07pu" />
         </antcall>
-        <antcall target="unzip-sxw">
-            <param name="fname" value="07_06pu" />
+        <antcall target="unzip-odt">
+            <param name="fname" value="08_06pu" />
         </antcall>
-        <antcall target="unzip-sxw">
-            <param name="fname" value="sup114_ft" />
+        <antcall target="unzip-odt">
+            <param name="fname" value="sup117_ft" />
         </antcall>
-        <antcall target="unzip-sxw">
-            <param name="fname" value="sup116_ft2" />
+        <antcall target="unzip-odt">
+            <param name="fname" value="sup130_ft" />
         </antcall>
-        <antcall target="unzip-sxw">
-            <param name="fname" value="cp684_ft" />
-        </antcall>
-        <antcall target="unzip-sxw">
-            <param name="fname" value="cp692_ft" />
+        <antcall target="unzip-odt">
+            <param name="fname" value="cp800_ft" />
         </antcall>
     </target>
 
@@ -74,27 +71,23 @@
          - - - - - - - - - - - - - - - - - -->
     <target name="p6_element" depends="unzip">
         <antcall target="grep">
-            <param name="fname" value="07_07pu" />
+            <param name="fname" value="08_07pu" />
             <param name="style" value="p7_element" />
         </antcall>
         <antcall target="grep">
-            <param name="fname" value="07_06pu" />
+            <param name="fname" value="08_06pu" />
             <param name="style" value="p6_element" />
         </antcall>
         <antcall target="grep">
-            <param name="fname" value="sup114_ft" />
+            <param name="fname" value="sup117_ft" />
             <param name="style" value="p6_element" />
         </antcall>
         <antcall target="grep">
-            <param name="fname" value="sup116_ft2" />
+            <param name="fname" value="sup130_ft" />
             <param name="style" value="p6_element" />
         </antcall>
         <antcall target="grep">
-            <param name="fname" value="cp684_ft" />
-            <param name="style" value="p6_element" />
-        </antcall>
-        <antcall target="grep">
-            <param name="fname" value="cp692_ft" />
+            <param name="fname" value="cp800_ft" />
             <param name="style" value="p6_element" />
         </antcall>
     </target>
@@ -104,21 +97,21 @@
          - - - - - - - - - - - - - - - - - -->
     <target name="p6_uid" depends="unzip">
         <antcall target="grep">
-            <param name="fname" value="07_06pu" />
+            <param name="fname" value="08_06pu" />
             <param name="style" value="p6_uid" />
         </antcall>
         <antcall target="grep">
-            <param name="fname" value="sup114_ft" />
+            <param name="fname" value="sup117_ft" />
             <param name="style" value="p6_uid" />
         </antcall>
         <antcall target="grep">
-            <param name="fname" value="sup116_ft2" />
+            <param name="fname" value="sup130_ft" />
             <param name="style" value="p6_uid" />
         </antcall>
     </target>
 
-    <target name="unzip-sxw">
-        <unzip src="src/main/sxw/${fname}.sxw" dest="target/xml/${fname}">
+    <target name="unzip-odt">
+        <unzip src="src/main/odt/${fname}.odt" dest="target/xml/${fname}">
             <patternset includes="content.xml" />
         </unzip>
     </target>
@@ -127,10 +120,6 @@
         <xslt in="target/xml/${fname}/content.xml"
               out="target/xml/${style}/${fname}.xml"
               style="src/main/xsl/${style}.xsl">
-            <xmlcatalog>
-                <dtd publicId="-//OpenOffice.org//DTD OfficeDocument 1.0//EN"
-                     location="${office.dtd}" />
-            </xmlcatalog>
         </xslt>
     </target>
 
