@@ -120,11 +120,11 @@ public class CodingSchemeIdentification extends Module {
         dcmobj.putString(Tag.CodingSchemeVersion, VR.SH, s);
     }
 
-    public String getResponsibleOrganization() {
-        return dcmobj.getString(Tag.ResponsibleOrganization);
+    public String getCodingSchemeResponsibleOrganization() {
+        return dcmobj.getString(Tag.CodingSchemeResponsibleOrganization);
     }
     
-    public void setResponsibleOrganization(String s) {
-        dcmobj.putString(Tag.ResponsibleOrganization, VR.ST, s);
+    public void setCodingSchemeResponsibleOrganization(String s) {
+        dcmobj.putString(Tag.CodingSchemeResponsibleOrganization, VR.ST, s);
     }
 }
