@@ -186,8 +186,6 @@ public class StoreScpService extends AbstractScpService {
 
     private StoreScp scp = new StoreScp(this);
 
-    private boolean freeDiskSpaceOnAssociationClose;
-
     protected StoreScp getScp() {
         return scp;
     }
@@ -894,16 +892,4 @@ public class StoreScpService extends AbstractScpService {
         return fsmgt.isFileSystemGroupLocalAccessable(fsgrpid);
     }
 
-    public boolean isFreeDiskSpaceOnAssociationClose() {
-        return freeDiskSpaceOnAssociationClose;
-    }
-
-
-    public void setFreeDiskSpaceOnAssociationClose(boolean enable) {
-        freeDiskSpaceOnAssociationClose = enable;
-    }
-
-    void freeDiskSpace(String fsgrpid) {
-        fsmgt.freeDiskSpace(fsgrpid);
-    }
 }

@@ -88,14 +88,4 @@ public class FileSystemMgt2Delegate {
                     "Failed to invoke 'selectStorageFileSystem'", e);
         }
     }
-
-    public void freeDiskSpace(String groupID) {
-        try {
-            service.getServer().invoke(
-                    toObjectName(groupID), "freeDiskSpace", null, null);
-        } catch (JMException e) {
-            throw new RuntimeException(
-                    "Failed to invoke 'freeDiskSpace'", e);
-        }
-    }
 }

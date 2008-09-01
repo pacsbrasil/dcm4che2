@@ -129,19 +129,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isFreeDiskSpaceOnAssociationClose"
-      setMethod="setFreeDiskSpaceOnAssociationClose">
-      <description><![CDATA[Enables check to free disk space on file system
-      groups to which objects where stored during current association on
-      association release.]]>
-      </description>
-      <name>FreeDiskSpaceOnAssociationClose"</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="false"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="isAcceptMissingPatientID"
       setMethod="setAcceptMissingPatientID">
       <description><![CDATA[Accept storage of objects/images without patient ID]]>

@@ -142,8 +142,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private static final String SOP_IUIDS = "SOP_IUIDS";
 
-    private static final String FS_GOURP_IDS = "FS_GOURP_IDS";
-
     final StoreScpService service;
 
     private final Logger log;
@@ -585,7 +583,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 }
             } else {
                 String fsgrpid = service.selectFileSystemGroup(callingAET, ds);
-                addFileSystemGroupID(assoc, fsgrpid);
                 fsDTO = service.selectStorageFileSystem(fsgrpid);
                 File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
                 file = makeFile(baseDir, ds, callingAET);
@@ -701,14 +698,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
-    }
-
-    private static void addFileSystemGroupID(Association assoc, String fsgrpid) {
-        HashSet<String> ids = (HashSet<String>) assoc.getProperty(FS_GOURP_IDS);
-        if (ids == null) {
-            assoc.putProperty(FS_GOURP_IDS, ids = new HashSet<String>());
-        }
-        ids.add(fsgrpid);
     }
 
     private void checkAppendPermission(Association a, Dataset ds)
@@ -1145,15 +1134,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 store.remove();
             } catch (Exception e) {
                 log.error("Clean up on Association close failed:", e);
-            }
-        }
-        if (service.isFreeDiskSpaceOnAssociationClose()) {
-            HashSet<String> fsgrpids =
-                    (HashSet<String>) assoc.getProperty(FS_GOURP_IDS);
-            if (fsgrpids != null) {
-                for (String fsgrpid : fsgrpids) {
-                    service.freeDiskSpace(fsgrpid);
-                }
             }
         }
     }
