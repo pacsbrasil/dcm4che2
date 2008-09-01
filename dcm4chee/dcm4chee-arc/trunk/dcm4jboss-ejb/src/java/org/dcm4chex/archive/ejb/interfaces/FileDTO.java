@@ -49,7 +49,7 @@ import java.io.Serializable;
  */
 public final class FileDTO implements Serializable {
 
-    private static final long serialVersionUID = 3617574916212536371L;
+    private static final long serialVersionUID = 3073146245744171178L;
 
     private long pk;
 
@@ -60,6 +60,8 @@ public final class FileDTO implements Serializable {
     private String userInfo;
 
     private String basedir;
+
+    private String fsgrid;
 
     private String path;
 
@@ -76,8 +78,8 @@ public final class FileDTO implements Serializable {
     private int availability;
 
     public String toString() {
-        return "FileDTO[pk=" + pk + ", basedir=" + basedir + ", path=" + path
-                + ", status=" + status + "]";
+        return "FileDTO[pk=" + pk + ", basedir=" + basedir + ", fsgrid="
+                + fsgrid + ", path=" + path + ", status=" + status + "]";
     }
 
     /**
@@ -124,6 +126,14 @@ public final class FileDTO implements Serializable {
 
     public final void setFileSystemPk(long fspk) {
         this.fspk = fspk;
+    }
+
+    public final String getFileSystemGroupID() {
+        return fsgrid;
+    }
+
+    public final void setFileSystemGroupID(String fsgrid) {
+        this.fsgrid = fsgrid;
     }
 
     public final String getDirectoryPath() {

@@ -199,7 +199,7 @@
     <type>long</type>
   </attribute>
 
-  <attribute access="read-only" getMethod="getUsableDiskSpaceOnCurFSString">
+  <attribute access="read-only" getMethod="getUsableDiskSpaceString">
     <description><![CDATA[Get usable free disk space on writable file
       systems of the file system group managed my this service, considering
       the configured value for <i>MinimumFreeDiskSpace</i>, as string.]]>

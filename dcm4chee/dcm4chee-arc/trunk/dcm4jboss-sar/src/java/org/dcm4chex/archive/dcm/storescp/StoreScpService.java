@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ejb.CreateException;
-import javax.management.JMException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
@@ -79,10 +78,16 @@ import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
+import org.dcm4chex.archive.ejb.interfaces.AEManager;
+import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
+import org.dcm4chex.archive.exceptions.ConfigurationException;
+import org.dcm4chex.archive.exceptions.UnknownAETException;
+import org.dcm4chex.archive.mbean.FileSystemMgt2Delegate;
 import org.dcm4chex.archive.mbean.SchedulerDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
@@ -112,6 +117,7 @@ public class StoreScpService extends AbstractScpService {
     private Integer listenerID;
     private long checkPendingSeriesStoredInterval;
     private long pendingSeriesStoredTimeout;
+    private String defFileSystemGroupID;
 
     /**
      * Map containing accepted Image SOP Class UID. key is name (as in config
@@ -171,7 +177,7 @@ public class StoreScpService extends AbstractScpService {
 
     private String[] unrestrictedAppendPermissionsToAETitles;
 
-    private ObjectName fileSystemMgtName;
+    private FileSystemMgt2Delegate fsmgt = new FileSystemMgt2Delegate(this);
     private ObjectName mwlScuServiceName;
 
     private int bufferSize = 8192;
@@ -180,8 +186,18 @@ public class StoreScpService extends AbstractScpService {
 
     private StoreScp scp = new StoreScp(this);
 
+    private boolean freeDiskSpaceOnAssociationClose;
+
     protected StoreScp getScp() {
         return scp;
+    }
+
+    public String getDefaultFileSystemGroupID() {
+        return defFileSystemGroupID;
+    }
+
+    public void setDefaultFileSystemGroupID(String defFileSystemGroupID) {
+        this.defFileSystemGroupID = defFileSystemGroupID;
     }
 
     public final String getCheckPendingSeriesStoredInterval() {
@@ -286,6 +302,14 @@ public class StoreScpService extends AbstractScpService {
         scp.setReferencedDirectoryPath(pathOrURI);
     }
 
+    public String getReferencedFileSystemGroupID() {
+        return scp.getReferencedFileSystemGroupID();
+    }
+
+    public void setReferencedFileSystemGroupID(String groupID) {
+        scp.setReferencedFileSystemGroupID(groupID);
+    }
+
     public final boolean isReadReferencedFile() {
         return scp.isReadReferencedFile();
     }
@@ -334,12 +358,12 @@ public class StoreScpService extends AbstractScpService {
         scheduler.setSchedulerServiceName(schedulerServiceName);
     }
 
-    public final ObjectName getFileSystemMgtName() {
-        return fileSystemMgtName;
+    public String getFileSystemMgtServiceNamePrefix() {
+        return fsmgt.getFileSystemMgtServiceNamePrefix();
     }
 
-    public final void setFileSystemMgtName(ObjectName fileSystemMgtName) {
-        this.fileSystemMgtName = fileSystemMgtName;
+    public void setFileSystemMgtServiceNamePrefix(String prefix) {
+        fsmgt.setFileSystemMgtServiceNamePrefix(prefix);
     }
 
     public final ObjectName getMwlScuServiceName() {
@@ -623,57 +647,16 @@ public class StoreScpService extends AbstractScpService {
         removeRoleSelections(policy, cuids);
     }
     
-    public FileSystemDTO selectStorageFileSystem() throws DcmServiceException {
+    public FileSystemDTO selectStorageFileSystem(String fsgrpID)
+            throws DcmServiceException {
         try {
-            FileSystemDTO fsDTO = (FileSystemDTO) server.invoke(
-                    fileSystemMgtName, "selectStorageFileSystem", null, null);
+            FileSystemDTO fsDTO = fsmgt.selectStorageFileSystem(fsgrpID);
             if (fsDTO == null)
                 throw new DcmServiceException(Status.OutOfResources);
             return fsDTO;
         } catch (Exception e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
-    }
-
-    public FileSystemDTO findStorageFileSystem(String dirPath)
-            throws DcmServiceException {
-        try {
-            return (FileSystemDTO) server.invoke(fileSystemMgtName,
-                    "findStorageFileSystem", new Object[] { dirPath },
-                    new String[] { String.class.getName() });
-        } catch (Exception e) {
-            throw new DcmServiceException(Status.ProcessingFailure, e);
-        }
-    }
-
-    boolean isLocalRetrieveAET(String aet) {
-        try {
-            return aet.equals(server.getAttribute(fileSystemMgtName,
-                    "RetrieveAETitle"));
-        } catch (JMException e) {
-            throw new RuntimeException(
-                    "Failed to invoke getAttribute 'RetrieveAETitle'", e);
-        }
-    }
-
-    boolean isFreeDiskSpaceOnDemand() {
-        try {
-            Boolean b = (Boolean) server.getAttribute(fileSystemMgtName,
-                    "FreeDiskSpaceOnDemand");
-            return b.booleanValue();
-        } catch (JMException e) {
-            throw new RuntimeException(
-                    "Failed to invoke getAttribute 'FreeDiskSpaceOnDemand'", e);
-        }
-    }
-
-    void callFreeDiskSpace() {
-        try {
-            server.invoke(fileSystemMgtName, "freeDiskSpace", null, null);
-        } catch (JMException e) {
-            throw new RuntimeException("Failed to invoke freeDiskSpace", e);
-        }
-
     }
 
     void logInstancesStored(Socket s, SeriesStored seriesStored) {
@@ -813,21 +796,6 @@ public class StoreScpService extends AbstractScpService {
         }
     }
 
-    public FileDTO makeFile(Dataset dataset) throws Exception {
-        FileSystemDTO fsDTO = selectStorageFileSystem();
-        File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
-        File file = scp.makeFile(baseDir, dataset, null);
-        String filePath = file.getPath().substring(
-                baseDir.getPath().length() + 1)
-                .replace(File.separatorChar, '/');
-        FileDTO fileDTO = new FileDTO();
-        fileDTO.setFileSystemPk(fsDTO.getPk());
-        fileDTO.setAvailability(fsDTO.getAvailability());
-        fileDTO.setDirectoryPath(fsDTO.getDirectoryPath());
-        fileDTO.setFilePath(filePath);
-        return fileDTO;
-    }
-
     private void checkPendingSeriesStored() throws Exception {
         Storage store = getStorage();
         SeriesStored[] seriesStored = store
@@ -897,5 +865,45 @@ public class StoreScpService extends AbstractScpService {
 
     protected void doPostCoercionProcessing(Dataset ds) throws Exception {
         // Extension Point for customized StoreScpService
+    }
+
+    String selectFileSystemGroup(String callingAET, Dataset ds)
+            throws Exception {
+        try {
+            AEDTO aeDTO = aeMgr().findByAET(callingAET);
+            String fsgrid = aeDTO.getFileSystemGroupID();
+            if (fsgrid != null && fsgrid.length() != 0) {
+                return fsgrid;
+            }
+        } catch (UnknownAETException e) {
+        }
+        return defFileSystemGroupID;
+    }
+
+    static AEManager aeMgr() {
+        try {
+            return ((AEManagerHome) EJBHomeFactory.getFactory()
+                    .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME))
+                    .create();
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    boolean isFileSystemGroupLocalAccessable(String fsgrpid) {
+        return fsmgt.isFileSystemGroupLocalAccessable(fsgrpid);
+    }
+
+    public boolean isFreeDiskSpaceOnAssociationClose() {
+        return freeDiskSpaceOnAssociationClose;
+    }
+
+
+    public void setFreeDiskSpaceOnAssociationClose(boolean enable) {
+        freeDiskSpaceOnAssociationClose = enable;
+    }
+
+    void freeDiskSpace(String fsgrpid) {
+        fsmgt.freeDiskSpace(fsgrpid);
     }
 }

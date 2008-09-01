@@ -11,8 +11,6 @@
       >dcm4chee.archive:service=AuditLogger</depends>
     <depends optional-attribute-name="DcmServerName"
       >dcm4chee.archive:service=DcmServer</depends>
-    <depends optional-attribute-name="FileSystemMgtName"
-      >dcm4chee.archive:service=FileSystemMgt</depends>
     <depends optional-attribute-name="MwlScuServiceName"
       >dcm4chee.archive:service=MWLScu</depends>
     <depends optional-attribute-name="SchedulerServiceName"

@@ -92,8 +92,13 @@ import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
+//import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
+//import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
+import org.dcm4chex.archive.ejb.interfaces.AEDTO;
+import org.dcm4chex.archive.ejb.interfaces.AEManager;
+import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
@@ -136,6 +141,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private static final String SERIES_IUID = "SERIES_IUID";
 
     private static final String SOP_IUIDS = "SOP_IUIDS";
+
+    private static final String FS_GOURP_IDS = "FS_GOURP_IDS";
 
     final StoreScpService service;
 
@@ -182,6 +189,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private String referencedDirectoryPath;
 
     private String referencedDirectoryURI;
+
+    private String refFileSystemGroupID;
 
     private boolean readReferencedFile = true;
 
@@ -321,6 +330,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         referencedDirectoryPath = trimmed;
     }
 
+    public void setReferencedFileSystemGroupID(String groupID) {
+        this.refFileSystemGroupID = groupID;
+    }
+
+    public String getReferencedFileSystemGroupID() {
+        return refFileSystemGroupID;
+    }
+
     private static boolean isURI(String pathOrURI) {
         return pathOrURI.indexOf(':') > 1 ;
     }
@@ -458,7 +475,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             Command rspCmd, Dataset ds, DcmParser parser) throws IOException,
             DcmServiceException {
         File file = null;
-        boolean tianiURIReferenced = rq.getTransferSyntaxUID().equals(
+        boolean dcm4cheeURIReferenced = rq.getTransferSyntaxUID().equals(
                 UIDs.Dcm4cheURIReferenced);
         try {
             Command rqCmd = rq.getCommand();
@@ -505,7 +522,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 }
                 service.postCoercionProcessing(ds);
             }
-            if (tianiURIReferenced) {
+            if (dcm4cheeURIReferenced) {
                 String uri = ds.getString(Tags.RetrieveURI);
                 if (uri == null) {
                     throw new DcmServiceException(
@@ -528,7 +545,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                                         + uri + " not found!");
                     }
                 }
-                fsDTO = getFileSystemMgt().getFileSystem(referencedDirectoryPath);
+                fsDTO = getFileSystemMgt().getFileSystemOfGroup(
+                        refFileSystemGroupID, referencedDirectoryPath);
                 if (file != null && readReferencedFile) {
                     log.info("M-READ " + file);
                     Dataset fileDS = objFact.newDataset();
@@ -566,7 +584,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                             .getAffectedSOPInstanceUID(), tsuid));
                 }
             } else {
-                fsDTO = service.selectStorageFileSystem();
+                String fsgrpid = service.selectFileSystemGroup(callingAET, ds);
+                addFileSystemGroupID(assoc, fsgrpid);
+                fsDTO = service.selectStorageFileSystem(fsgrpid);
                 File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
                 file = makeFile(baseDir, ds, callingAET);
                 filePath = file.getPath().substring(
@@ -592,7 +612,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             if (md5sum != null && ignoreDuplicate(duplicates, md5sum)) {
                 log.info("Received Instance[uid=" + iuid
                         + "] already exists - ignored");
-                if (!tianiURIReferenced) {
+                if (!dcm4cheeURIReferenced) {
                     deleteFailedStorage(file);
                 }
                 return;
@@ -670,17 +690,25 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             service.postProcess(ds);
         } catch (DcmServiceException e) {
             log.warn(e.getMessage(), e);
-            if (!tianiURIReferenced) {
+            if (!dcm4cheeURIReferenced) {
                 deleteFailedStorage(file);
             }
             throw e;
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
-            if (!tianiURIReferenced) {
+            if (!dcm4cheeURIReferenced) {
                 deleteFailedStorage(file);
             }
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
+    }
+
+    private static void addFileSystemGroupID(Association assoc, String fsgrpid) {
+        HashSet<String> ids = (HashSet<String>) assoc.getProperty(FS_GOURP_IDS);
+        if (ids == null) {
+            assoc.putProperty(FS_GOURP_IDS, ids = new HashSet<String>());
+        }
+        ids.add(fsgrpid);
     }
 
     private void checkAppendPermission(Association a, Dataset ds)
@@ -810,10 +838,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME)).create();
     }
 
-    private FileSystemMgt getFileSystemMgt() throws RemoteException,
+    private FileSystemMgt2 getFileSystemMgt() throws RemoteException,
             CreateException, HomeFactoryException {
-        return ((FileSystemMgtHome) EJBHomeFactory.getFactory().lookup(
-                FileSystemMgtHome.class, FileSystemMgtHome.JNDI_NAME)).create();
+        return ((FileSystemMgt2Home) EJBHomeFactory.getFactory().lookup(
+                FileSystemMgt2Home.class, FileSystemMgt2Home.JNDI_NAME)).create();
     }
 
     private byte[] getByteBuffer(Association assoc) {
@@ -828,7 +856,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private boolean containsLocal(List duplicates) {
         for (int i = 0, n = duplicates.size(); i < n; ++i) {
             FileDTO dto = (FileDTO) duplicates.get(i);
-            if (service.isLocalRetrieveAET(dto.getRetrieveAET()))
+            if (service.isFileSystemGroupLocalAccessable(
+                    dto.getFileSystemGroupID()))
                 return true;
         }
         return false;
@@ -841,7 +870,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     && !Arrays.equals(md5sum, dto.getFileMd5()))
                 continue;
             if (storeDuplicateIfDiffHost
-                    && !service.isLocalRetrieveAET(dto.getRetrieveAET()))
+                    && !service.isFileSystemGroupLocalAccessable(
+                            dto.getFileSystemGroupID()))
                 continue;
             return true;
         }
@@ -1117,8 +1147,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 log.error("Clean up on Association close failed:", e);
             }
         }
-        if (service.isFreeDiskSpaceOnDemand()) {
-            service.callFreeDiskSpace();
+        if (service.isFreeDiskSpaceOnAssociationClose()) {
+            HashSet<String> fsgrpids =
+                    (HashSet<String>) assoc.getProperty(FS_GOURP_IDS);
+            if (fsgrpids != null) {
+                for (String fsgrpid : fsgrpids) {
+                    service.freeDiskSpace(fsgrpid);
+                }
+            }
         }
     }
 

@@ -179,7 +179,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public String getUsableDiskSpaceOnCurFSString() throws IOException {
-        return FileUtils.formatSize(getFreeDiskSpaceOnCurFS());
+        return FileUtils.formatSize(getUsableDiskSpaceOnCurFS());
     }
 
     public long getFreeDiskSpace() throws Exception {

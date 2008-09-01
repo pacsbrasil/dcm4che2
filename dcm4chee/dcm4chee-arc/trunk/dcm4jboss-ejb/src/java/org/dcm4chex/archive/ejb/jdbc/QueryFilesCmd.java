@@ -56,13 +56,13 @@ import java.sql.PreparedStatement;
  */
 public final class QueryFilesCmd extends BaseReadCmd {
 
-    private static final String QueryFilesByUIDCmd = "SELECT files.pk, files.filepath, files.file_md5, files.file_status, "
-            + "filesystem.dirpath, filesystem.retrieve_aet, filesystem.availability, filesystem.user_info, instance.sop_cuid "
-            + "FROM files, filesystem, instance WHERE instance.pk = files.instance_fk AND files.filesystem_fk = filesystem.pk "
-            + "AND instance.sop_iuid=?";
+    private static final String QueryFilesByUIDCmd = "SELECT f.pk, f.filepath, f.file_md5, f.file_status, "
+            + "fs.fs_group_id, fs.dirpath, fs.retrieve_aet, fs.availability, fs.user_info, i.sop_cuid "
+            + "FROM files f, filesystem fs, instance i "
+            + "WHERE f.filesystem_fk = fs.pk AND f.instance_fk = i.pk AND i.sop_iuid=?";
 
     private static final String QueryLinkedFilesCmd = "SELECT f.pk, f.filepath, f.file_md5, f.file_status, "
-            + "fs.dirpath, fs.retrieve_aet, fs.availability, fs.user_info, i.sop_cuid "
+            + "fs.fs_group_id, fs.dirpath, fs.retrieve_aet, fs.availability, fs.user_info, i.sop_cuid "
             + "FROM files f, filesystem fs, instance i, files f2 "
             + "WHERE f.filesystem_fk = fs.pk AND f.instance_fk = i.pk AND f.instance_fk = f2.instance_fk and f2.pk=?";
 
@@ -99,11 +99,12 @@ public final class QueryFilesCmd extends BaseReadCmd {
         dto.setFilePath(rs.getString(2));
         dto.setFileMd5(MD5.toBytes(rs.getString(3)));
         dto.setFileStatus(rs.getInt(4));
-        dto.setDirectoryPath(rs.getString(5));
-        dto.setRetrieveAET(rs.getString(6));
-        dto.setAvailability(rs.getInt(7));
-        dto.setUserInfo(rs.getString(8));
-        dto.setSopClassUID(rs.getString(9));
+        dto.setFileSystemGroupID(rs.getString(5));
+        dto.setDirectoryPath(rs.getString(6));
+        dto.setRetrieveAET(rs.getString(7));
+        dto.setAvailability(rs.getInt(8));
+        dto.setUserInfo(rs.getString(9));
+        dto.setSopClassUID(rs.getString(10));
         return dto;
     }
 

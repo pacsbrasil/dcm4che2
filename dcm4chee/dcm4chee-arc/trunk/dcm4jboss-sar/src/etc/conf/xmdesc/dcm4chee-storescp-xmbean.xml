@@ -116,6 +116,32 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getDefaultFileSystemGroupID"
+      setMethod="setDefaultFileSystemGroupID">
+      <description><![CDATA[ID of default file system group, used for storage
+      of received object from Storage SCUs, for which no specific file system
+      group is defined in an AE configuration entry.]]>
+      </description>
+      <name>setDefaultFileSystemGroupID</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="ONLINE_STORAGE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isFreeDiskSpaceOnAssociationClose"
+      setMethod="setFreeDiskSpaceOnAssociationClose">
+      <description><![CDATA[Enables check to free disk space on file system
+      groups to which objects where stored during current association on
+      association release.]]>
+      </description>
+      <name>FreeDiskSpaceOnAssociationClose"</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isAcceptMissingPatientID"
       setMethod="setAcceptMissingPatientID">
       <description><![CDATA[Accept storage of objects/images without patient ID]]>
@@ -271,6 +297,18 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="archive"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getReferencedFileSystemGroupID"
+      setMethod="setReferencedFileSystemGroupID">
+      <description><![CDATA[ID of file system group to with the file system
+      configured in <i>ReferencedDirectoryPath</i> belongs.]]>
+      </description>
+      <name>ReferencedFileSystemGroupID</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="ONLINE_STORAGE"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -902,12 +940,15 @@ StoreSCP service.
       <type>javax.management.ObjectName</type>
    </attribute>
    <attribute access="read-write"
-      getMethod="getFileSystemMgtName"
-      setMethod="setFileSystemMgtName">
+      getMethod="getFileSystemMgtServiceNamePrefix"
+      setMethod="setFileSystemMgtServiceNamePrefix">
       <description>Used internally. Do NOT modify.
       </description>
-      <name>FileSystemMgtName</name>
-      <type>javax.management.ObjectName</type>
+      <name>FileSystemMgtServiceNamePrefix</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="dcm4chee.archive:service=FileSystemMgt,group="/>
+      </descriptors>
    </attribute>
    <attribute access="read-write" 
       getMethod="getMwlScuServiceName"
