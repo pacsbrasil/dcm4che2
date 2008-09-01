@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 
 import javax.ejb.FinderException;
+import javax.management.Notification;
 
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.FileSystemStatus;
@@ -49,6 +50,7 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
+import org.dcm4chex.archive.notif.StorageFileSystemSwitched;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileSystemUtils;
 import org.dcm4chex.archive.util.FileUtils;
@@ -333,10 +335,20 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                         tmp.getPk(), FileSystemStatus.DEF_RW);
                 log.info("Switch storage file system from " + fsDTO + " to "
                         + storageFileSystem);
+                sendJMXNotification(new StorageFileSystemSwitched(
+                        fsDTO, storageFileSystem));
                 return true;
             }
         }
         return false;
+    }
+
+    void sendJMXNotification(Object o) {
+        long eventID = super.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(o.getClass().getName(), this,
+                eventID);
+        notif.setUserData(o);
+        super.sendNotification(notif);
     }
 
     private boolean checkFreeDiskSpace(FileSystemDTO fsDTO) throws IOException {

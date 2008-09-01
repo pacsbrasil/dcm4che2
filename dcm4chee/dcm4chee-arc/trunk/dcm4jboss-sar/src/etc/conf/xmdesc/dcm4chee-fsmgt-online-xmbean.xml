@@ -334,10 +334,19 @@
     <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
   </operation>
 
-   <operation impact="ACTION">
-      <description>Select Storage File System</description>
-      <name>selectStorageFileSystem</name>
-      <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
-   </operation>
+  <operation impact="ACTION">
+    <description>Select Storage File System</description>
+    <name>selectStorageFileSystem</name>
+    <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
+  </operation>
 
+
+  <!-- Notifications -->
+
+  <notification>
+    <description>The notification sent whenever the current storage
+      file system changed to the next configured storage file system.</description>
+    <name>javax.management.Notification</name>
+    <notification-type>org.dcm4chex.archive.notif.StorageFileSystemSwitched</notification-type>
+  </notification>
 </mbean>
