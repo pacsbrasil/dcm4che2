@@ -44,13 +44,31 @@ package org.dcm4chee.xero.wado;
  * @author bwallace
  */
 public class WadoParams {
+	// Keys that have UID values
 	public static final String STUDY_UID = "studyUID";
 	public static final String SERIES_UID = "seriesUID";
 	public static final String OBJECT_UID = "objectUID";
+	public static final String TRANSFER_SYNTAX="transferSyntax";
+	public static final String PRESENTATION_UID="presentationUID";
 
+	// Common/standard keys that are other types of values
    public static final String CONTENT_TYPE = "contentType";
 	public static final String ROWS = "rows";
-	public static final String COLUMNS = "columns";
+	public static final String COLUMNS = "cols";
+	public static final String REGION = "region";
+	public static final String SIMPLE_FRAME_LIST="simpleFrameList";
+	public static final String FRAME_NUMBER="frameNumber";
+	
+	// Custom keys 
+	public static final String MULTIPART_KEY = "multipart";
 
+	/** The separator to use when specifying a colour */
 	public static final String COLOUR_SEPARATOR = ":";
+	
+	// Some UIDs for various options
+   public static final String NoPixelDataUid = "1.2.840.10008.1.2.4.XX";
+   public static final String NoPixelDataDeflateUid = "1.2.840.10008.1.2.4.YY";
+
+   /** Keys for headers to return */
+   public static final String CONTENT_DISPOSITION="Content-Disposition";
 }

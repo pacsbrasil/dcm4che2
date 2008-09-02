@@ -140,6 +140,8 @@ public class IndexedImageSource implements Filter<WadoImage> {
 		WritableRaster wr = Raster.createPackedRaster(db, width, height, stored, null);
 		BufferedImage bi = new BufferedImage(icm, wr, false, null);
 		WadoImage ret = new WadoImage(ds, stored, bi);
+		ret.setFilename(ds.getString(Tag.SOPInstanceUID));
+		if( params.containsKey(FRAME_NUMBER)) ret.setFilename(ret.getFilename()+"-f"+params.get(FRAME_NUMBER));
 		if (needOriginalImage)
 			ret.setParameter(ImageDisplayRelative.NEEDS_IMAGE, orig);
 

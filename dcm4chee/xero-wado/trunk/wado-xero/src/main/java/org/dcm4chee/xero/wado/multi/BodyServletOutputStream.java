@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.xero.wado;
+package org.dcm4chee.xero.wado.multi;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.ServletOutputStream;
+
 
 /**
  * Given an HTTPServletResponse (BodyResponseWrapper)
@@ -168,6 +169,13 @@ public class BodyServletOutputStream extends ServletOutputStream
 			originalOutputStream = wrapper.getOriginalOutputStream();
 		
 		return originalOutputStream;
+	}
+	
+	/** This can be used to capture the output rather than sending it directly out. */
+	public void setBufferedOutputStream(OutputStream os) {
+		// Better not have already written anything...
+		assert this.bufferedOutputStream == null;
+		this.bufferedOutputStream = os;
 	}
 
 }

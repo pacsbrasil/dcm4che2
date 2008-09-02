@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.xero.wado;
+package org.dcm4chee.xero.wado.multi;
 
 
 import static org.easymock.EasyMock.eq;
@@ -47,6 +47,7 @@ import static org.easymock.classextension.EasyMock.replay;
 import static org.easymock.classextension.EasyMock.verify;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletOutputStream;
@@ -54,7 +55,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
-import org.testng.annotations.AfterMethod;
+import org.dcm4chee.xero.wado.multi.MultiPartContentTypeResponseItem;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -71,51 +72,7 @@ public class MultiPartContentTypeResponseItemTest {
 		responseItem = new MultiPartContentTypeResponseItem();
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@AfterMethod
-	public void tearDown() throws Exception {
-	}
-	
-	@Test
-	public void testGet_WhenFirstInitialized_ShouldBeEmpty() 
-	{
-		List<ServletResponseItem> responseList = responseItem.get();
-		assert( responseList.isEmpty() );
-	}
-	
-	@Test
-	public void testGet_WhenModifyingReturnedList_ShouldThrowUnsupportedOperationException() 
-	{
-		try
-		{
-			responseItem.get().add(null);
-			assert(false);
-		}
-		catch ( UnsupportedOperationException e)
-		{
-		}
-	}
-	
-	@Test
-	public void testAdd_WhenAddingNull_ShouldNotModifyTheList() 
-	{
-		int initialSize = responseItem.get().size();
-		responseItem.add(null);
-		assert ( responseItem.get().size() == initialSize );
-	}
-	
-	@Test
-	public void testAdd_WhenServerResponseItem_ShouldAppearInList() 
-	{
-		ServletResponseItem servletItem = createNiceMock( ServletResponseItem.class );
-		replay( servletItem );
-		
-		responseItem.add(servletItem);
-		assert ( responseItem.get().contains(servletItem) );
-	}
-	
+
 	@Test
 	public void testWriteResponse_WhenResponseListIsEmpty_SendResponseErrorSC_NOT_FOUND() throws IOException
 	{
@@ -129,7 +86,7 @@ public class MultiPartContentTypeResponseItemTest {
 	}	
 	
 	@Test
-	public void testWriteResponse_WhenResponseListHasItems_EachItemWillWriteResponse() throws IOException
+	public void testWriteResponse_WhenResponseIteratorHasItems_EachItemWillWriteResponse() throws IOException
 	{
 		MultiPartContentTypeResponseItem responseItem = new MultiPartContentTypeResponseItem() {
 
@@ -154,8 +111,10 @@ public class MultiPartContentTypeResponseItemTest {
 		servletItem2.writeResponse( eq(httpRequest), isA( BodyResponseWrapper.class ) );
 		replay( servletItem2 );
 		
-		responseItem.add(servletItem);
-		responseItem.add(servletItem2);
+		List<ServletResponseItem> list = new ArrayList<ServletResponseItem>();
+		list.add(servletItem);
+		list.add(servletItem2);
+		responseItem.setResponseIterator(list.iterator());
 		
 		responseItem.writeResponse(httpRequest, response);
 		

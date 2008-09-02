@@ -42,18 +42,21 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
-import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.FilterList;
+import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.servlet.CaptureServletOutputStream;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
-import org.easymock.EasyMock;
 import org.testng.annotations.Test;
 
+import static org.easymock.EasyMock.*;
+
 /** Tests that images can be encoded as JPEGs, GIF and PNG files.
- * Indirectly tests window levelling as well.  Uses the GradedWadoImage as an
- * image source.
+ * Uses the GradedWadoImage as an image source.
  *
  * @author bwallace
  *
@@ -66,29 +69,36 @@ public class EncodeImageTest {
 	public void testJpegEncoding() throws Exception
 	{
 		assert mdb!=null;
-		MetaDataBean mdbEncode = mdb.getChild("encode");
-		assert mdbEncode!=null;
-		FilterList<?> fl = (FilterList<?>) mdbEncode.getValue();
-		assert fl!=null;
-		FilterItem fi = new FilterItem(mdbEncode);
+		EncodeImage ei = (EncodeImage) mdb.getValue("encode");
+		assert ei!=null;
 		Map<String,Object> map = new HashMap<String,Object>();
 		map.put("contentType", "image/jpeg");
-		ServletResponseItem sri = (ServletResponseItem) fl.filter(fi,map);
+		Filter<DicomObject> dicomImageObject = createMock(Filter.class);
+		DicomObject ds = new BasicDicomObject();
+		ds.putInt(Tag.PixelRepresentation, VR.IS, 1);
+		expect(dicomImageObject.filter(null,map)).andReturn(ds);
+		ei.setDicomImageObject(dicomImageObject);
+		replay(dicomImageObject);
+		
+		ServletResponseItem sri = (ServletResponseItem) ei.filter(null,map);
+		verify(dicomImageObject);
+		
 		assert sri!=null;
-		HttpServletResponse mock = EasyMock.createMock(HttpServletResponse.class);
+		HttpServletResponse mock = createMock(HttpServletResponse.class);
 		mock.setContentType("image/jpeg");
-		mock.setHeader((String) EasyMock.anyObject(), (String) EasyMock.anyObject());
-		EasyMock.expectLastCall().anyTimes();
+		mock.setHeader((String) anyObject(), (String) anyObject());
+		expectLastCall().anyTimes();
 		CaptureServletOutputStream csos = new CaptureServletOutputStream();
-		EasyMock.expect(mock.getOutputStream()).andReturn(csos);
-		EasyMock.replay(mock);
+		mock.setContentLength(2250);
+		expect(mock.getOutputStream()).andReturn(csos);
+		replay(mock);
 		sri.writeResponse(null,mock);
-		EasyMock.verify(mock);
 		csos.close();
 		byte[] data = csos.getByteArrayOutputStream().toByteArray();
 		assert data!=null;
 		// Not sure how big it should be, but it had better have some length. 
 		assert data.length>16;
+		verify(mock);
 	}
 }
  

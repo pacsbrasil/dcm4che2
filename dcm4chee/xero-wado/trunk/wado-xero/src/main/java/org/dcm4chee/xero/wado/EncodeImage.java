@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado;
 
+import static org.dcm4chee.xero.wado.WadoParams.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -58,6 +59,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
+import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
@@ -65,7 +67,6 @@ import org.dcm4chee.xero.metadata.servlet.ErrorResponseItem;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
 
 /**
  * EncodeImage transforms a WadoImage object into a JPEG, PNG or any other
@@ -79,6 +80,11 @@ public class EncodeImage implements Filter<ServletResponseItem> {
    public static final String MAX_BITS = "maxBits";
 
    private static final float DEFAULT_QUALITY = -1.0f;
+   
+	Filter<DicomObject> dicomImageObject;
+	
+	Filter<WadoImage> wadoImage;
+
 
    protected static Map<String, EncodeResponseInfo> contentTypeMap = new HashMap<String, EncodeResponseInfo>();
    // TODO - replace the bit information with a set of additional params requested....
@@ -118,8 +124,9 @@ public class EncodeImage implements Filter<ServletResponseItem> {
    public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> map) {
 	  String contentType = (String) map.get("contentType");
 	  if (contentType == null)
-		 contentType = "image/jpeg";
-	  DicomObject ds = DicomFilter.filterImageDicomObject(filterItem, map, null);
+		 contentType = (map.containsKey("relative") ? "image/png" : "image/jpeg");
+	  log.info("Encoding image in content type={}", contentType);
+	  DicomObject ds = dicomImageObject.filter(null,map);
 	  if( ds!=null && !ds.contains(Tag.PixelRepresentation) ) {
 		 log.info("DICOM does not contain pixel representation.");
 		 return filterItem.callNextFilter(map);
@@ -160,7 +167,8 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 	  if( eri==null ) {
 		 return new ErrorResponseItem(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,"Content type "+contentType+" isn't supported.");
 	  }
-	  WadoImage image = (WadoImage) filterItem.callNamedFilter("wadoImg", map);
+	  WadoImage image = wadoImage.filter(null, map);
+	  if( image==null ) return new ErrorResponseItem(HttpServletResponse.SC_NO_CONTENT,"No content found.");
 	  return new ImageServletResponseItem(image, eri, quality);
    }
 
@@ -196,6 +204,27 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 	  if( eri==null ) return;
 	  params.put(MAX_BITS, eri.maxBits);
    }
+
+   /** Gets the filter that returns the dicom object image header */
+	public Filter<DicomObject> getDicomImageObject() {
+   	return dicomImageObject;
+   }
+
+	@MetaData(out="${ref:dicomImageObject}")
+	public void setDicomImageObject(Filter<DicomObject> dicomImageObject) {
+   	this.dicomImageObject = dicomImageObject;
+   }
+
+	/** Returns the filter that produces a wado image object */
+	public Filter<WadoImage> getWadoImage() {
+   	return wadoImage;
+   }
+
+	@MetaData(out="${ref:wadoImg}")
+	public void setWadoImage(Filter<WadoImage> wadoImage) {
+   	this.wadoImage = wadoImage;
+   }
+
 
 }
 
@@ -297,34 +326,44 @@ class ImageServletResponseItem implements ServletResponseItem {
 	  // to different values, and those need to be removed to get this cached.
 	  response.setHeader("Pragma", null);
 	  response.setHeader("Expires", null);
+	  String filename = wadoImage.getFilename();
+	  if( filename!=null ) {
+		  int extPos = 1+contentType.indexOf("/");
+		  response.setHeader(CONTENT_DISPOSITION, "inline;filename="+filename+"."+contentType.substring(extPos));
+	  }
 	  Collection<String> headers = (Collection<String>) wadoImage.getParameter("responseHeaders");
 	  if (headers != null) {
 		 for (String key : headers) {
 			response.setHeader(key, (String) wadoImage.getParameter(key));
 		 }
 	  }
-	  OutputStream os = response.getOutputStream();
+	  
+	  byte[] rawImage;
+	  String msg;
 	  if( wadoImage.getValue()==null ) {
-		 byte[] rawImage = (byte[]) wadoImage.getParameter(WadoImage.IMG_AS_BYTES);
-		 os.write(rawImage);
-		 os.flush();
-		 log.info("Raw image write took " + nanoTimeToString(System.nanoTime() - start));
-		 return;
+		 rawImage = (byte[]) wadoImage.getParameter(WadoImage.IMG_AS_BYTES);
+		 msg = "Raw image ";
+	  } else {
+		  ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		  ImageOutputStream ios = new MemoryCacheImageOutputStream(baos);
+		  writer.setOutput(ios);
+		  IIOImage iioimage = new IIOImage(wadoImage.getValue(), null, null);
+		  writer.write(iiometadata, iioimage, imageWriteParam);
+	  	  writer.dispose();
+	  	  ios.close();
+	     rawImage = baos.toByteArray();
+	     baos.close();
+	     msg = "Encoding with " + writer.getClass();
 	  }
-	  ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	  ImageOutputStream ios = new MemoryCacheImageOutputStream(baos);
-	  writer.setOutput(ios);
-	  IIOImage iioimage = new IIOImage(wadoImage.getValue(), null, null);
-	  writer.write(iiometadata, iioimage, imageWriteParam);
-	  writer.dispose();
-	  ios.close();
-	  byte[] data = baos.toByteArray();
-	  baos.close();
-	  long mid = System.nanoTime();
-	  log.info("Encoding image took " + nanoTimeToString(mid - start) + " with " + writer.getClass());
-	  os.write(data);
+     long mid = System.nanoTime();
+     response.setContentLength(rawImage.length);
+	  OutputStream os = response.getOutputStream();
+	  os.write(rawImage);
 	  os.flush();
-	  log.info("Writing image took " + nanoTimeToString(System.nanoTime() - mid) + " with " + writer.getClass());
+
+	  if( log.isInfoEnabled() ) {
+		  log.info(msg+" took "+((mid-start)/1e6)+" Writing took " + ((System.nanoTime() - mid)/1e6));
+	  }
    }
 
 }

@@ -164,6 +164,10 @@ public class Overlay implements Filter<WadoImage> {
 			}
 		}
 
+		for (OverlayInfo oi : overlays) {
+			ret.setFilename(ret.getFilename()+"-overlay"+oi.number);
+		}
+
 		return ret;
 	}
 
@@ -205,6 +209,7 @@ public class Overlay implements Filter<WadoImage> {
 		if (ret == null)
 			ret = new ArrayList<OverlayInfo>();
 		ret.add(oi);
+		oi.number = (base >> 16) & 0xFF;
 		oi.clr = clr;
 		oi.bit = ds.getInt(base | Tag.OverlayBitPosition);
 		oi.embedded = (oi.bit > 0);
@@ -252,6 +257,7 @@ public class Overlay implements Filter<WadoImage> {
 	static class OverlayInfo {
 		boolean multiframe = false;
 		boolean embedded = false;
+		int number;
 		int width, height;
 		byte[] clr;
 		int useClr;

@@ -64,6 +64,7 @@ public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem 
 
 	private DicomObject ds;
 	private int stored;
+	private String filename;
 	
 	/** Create a wado image on the given buffered image object
 	 * For images where 1 is black, minValue will be 1, and maxValue 0.
@@ -85,6 +86,7 @@ public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem 
 		super(fr);
 		this.ds = fr.ds;
 		this.stored = fr.stored;
+		this.filename = fr.filename;
 	}
 
 
@@ -147,4 +149,10 @@ public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem 
       return stored;
    }
 
+   public String getFilename() {
+   	return filename;
+   }
+   public void setFilename(String filename) {
+   	this.filename = filename;
+   }
 }

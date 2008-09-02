@@ -49,6 +49,7 @@ import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.dcm4chee.xero.search.filter.FileLocationMgtFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static org.dcm4chee.xero.wado.WadoParams.*;
 
 /** Encodes a file as a servlet response item returning the raw DICOM
  * 
@@ -64,7 +65,9 @@ public class EncodeDicom implements Filter<ServletResponseItem>{
 		 log.warn("DICOM File not found.");
 		 return new ErrorResponseItem(HttpServletResponse.SC_NOT_FOUND,"DICOM File not found.");
 	  }
-	  return new UrlServletResponseItem(url,"application/dicom");
+	  String filename = (String) params.get(OBJECT_UID);
+	  if( filename!=null ) filename = filename+".dcm";
+	  return new UrlServletResponseItem(url,"application/dicom",filename);
    }
 
 }

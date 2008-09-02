@@ -44,7 +44,9 @@ public class CombineIterator<T> implements Iterator<T> {
     */
    public T next() {
    	if( !hasNext() ) throw new IllegalArgumentException("No more items.");
-   	return childIt.next();
+   	T ret = childIt.next();
+   	if( !childIt.hasNext() ) childIt = null;
+   	return ret;
    }
 
 	/** Unsupported */

@@ -37,6 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado;
 
+import static org.dcm4chee.xero.wado.WadoParams.*;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -62,11 +64,13 @@ public class UrlServletResponseItem implements ServletResponseItem {
    private static final Logger log = LoggerFactory.getLogger(UrlServletResponseItem.class);
    URL url;
    String contentType;
+   String filename;
    
    /** Record the URL for playback */
-   public UrlServletResponseItem(URL url, String contentType) {
+   public UrlServletResponseItem(URL url, String contentType, String filename) {
 	  this.url =url;
 	  this.contentType = contentType;
+	  this.filename = filename;
    }
 
    /** Write the contents from the given URL to the servlet response */
@@ -77,6 +81,7 @@ public class UrlServletResponseItem implements ServletResponseItem {
 		 return;
 	  }
 	  if( contentType!=null ) response.setContentType(contentType);
+	  if( filename!=null ) response.setHeader(CONTENT_DISPOSITION, "attachment;filename="+filename);
 	  InputStream is;
 	  String surl = url.toString();
 	  long fileSize;

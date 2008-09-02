@@ -51,6 +51,7 @@ import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 
+import static org.dcm4chee.xero.wado.WadoParams.*;
 /**
  * Implements a servlet response item that writes a DICOM header only to the
  * output stream. Any encoding is allowed, but only items actually in the
@@ -76,6 +77,7 @@ public class NoPixelDataServletResponse implements ServletResponseItem {
     */
    public void writeResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
 	  response.setContentType("application/dicom");
+	  response.setHeader(CONTENT_DISPOSITION, "attachment;filename="+ds.getString(Tag.SOPInstanceUID)+"-header.dcm");
 	  DicomObject fmiAttrs = getFileMetaInformation();
 	  OutputStream os = response.getOutputStream();
 	  DicomOutputStream dos = new DicomOutputStream(os);
@@ -83,7 +85,7 @@ public class NoPixelDataServletResponse implements ServletResponseItem {
 	  String useTsuid = tsuid;
 	  // The NoPixelDataDeflate isn't yet fully defined, so use an internal value.
 	  // TODO remove this when Supplement 119 gets real UIDs to use as it will happen automatically.
-	  if( tsuid== RecodeDicom.NoPixelDataDeflateUid ) 
+	  if( NoPixelDataDeflateUid.equals(tsuid) ) 
 		 useTsuid = UID.DeflatedExplicitVRLittleEndian;
 	  dos.writeDataset(ds, useTsuid);
 	  dos.finish();

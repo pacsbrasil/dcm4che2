@@ -146,6 +146,8 @@ public class Injector implements MetaDataProvider {
 				  value = strValue;
 			   } else if (argType == Integer.class || argType == Integer.TYPE) {
 				  value = new Integer(strValue);
+			   } else if (argType == Boolean.TYPE || argType== Boolean.class) {
+			   	value = "true".equalsIgnoreCase(strValue);
 			   } else {
 				  throw new IllegalArgumentException("Invalid type for " + m + " value " + strValue);
 			   }

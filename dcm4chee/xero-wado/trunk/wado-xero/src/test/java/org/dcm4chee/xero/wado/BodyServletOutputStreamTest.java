@@ -45,6 +45,8 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.dcm4chee.xero.wado.multi.BodyResponseWrapper;
+import org.dcm4chee.xero.wado.multi.BodyServletOutputStream;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 

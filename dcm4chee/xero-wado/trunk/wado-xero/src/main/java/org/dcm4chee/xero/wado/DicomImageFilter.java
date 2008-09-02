@@ -37,6 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado;
 
+import static org.dcm4chee.xero.wado.WadoParams.*;
+
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -111,11 +113,12 @@ public class DicomImageFilter implements Filter<WadoImage> {
 		 synchronized (reader) {
 			int width = reader.getWidth(0);
 			int height = reader.getHeight(0);
-			updateParamFromRegion(param, params, width, height);
+			String filenameExtra = updateParamFromRegion(param, params, width, height);
 			BufferedImage bi;
 			DicomStreamMetaData streamData = (DicomStreamMetaData) reader.getStreamMetadata();
 			DicomObject ds = streamData.getDicomObject();
 			ret = new WadoImage(streamData.getDicomObject(), ds.getInt(Tag.BitsStored), null);
+			ret.setFilename((String) params.get(OBJECT_UID)+"-f"+(frame+1)+filenameExtra);
 			if (readRawBytes) {
 			   byte[] img = reader.readBytes(frame, param);
 			   ret.setParameter(WadoImage.IMG_AS_BYTES, img);
@@ -133,15 +136,15 @@ public class DicomImageFilter implements Filter<WadoImage> {
 			   log.debug("Color model for image is " + cm);
 			   bi = new BufferedImage(cm, r, false, null);
 			}
-		    Object input = reader.getInput();
+		   Object input = reader.getInput();
 			if( ds.getInt(Tag.NumberOfFrames,1)==1 && (input instanceof ReopenableImageInputStream) ) {
-			   log.info("Closing re-openable stream for {}",params.get("objectUID"));
+			   log.info("Closing re-openable stream for {}",ret.getFilename());
 			  ((ReopenableImageInputStream) input).close();
 			}
-			else log.info("Not closing re-openable multi-frame stream {}",params.get("objectUID"));
+			else log.info("Not closing re-openable multi-frame stream {}",ret.getFilename());
 
 			ret.setValue(bi);
-			log.info("Time to "+op+" image "+params.get("objectUID")+" ts=" + ds.getString(Tag.TransferSyntaxUID) + " only is "
+			log.info("Time to "+op+" image "+ret.getFilename()+" ts=" + ds.getString(Tag.TransferSyntaxUID) + " only is "
 				  + nanoTimeToString(System.nanoTime() - start));
 		 }
 	  } catch (IOException e) {
@@ -158,13 +161,16 @@ public class DicomImageFilter implements Filter<WadoImage> {
    /**
      * Compute the source, sub-sampling and destination regions appropriately
      * from the region, rows and cols in params.
+     * Also returns a human readable version of the same information, typically to be used as part of a filename.
+     * -wX-hY-rTL,BR, but null if full defaults;
      * 
      * @param read
      * @param params
      * @param width
      * @param height
      */
-   protected void updateParamFromRegion(ImageReadParam read, Map<String, Object> params, int width, int height) {
+   protected String updateParamFromRegion(ImageReadParam read, Map<String, Object> params, int width, int height) {
+     String ret = "";
 	  float[] region = getFloats(params, "region", null);
 	  int rows = getInt(params, "rows");
 	  int cols = getInt(params, "cols");
@@ -182,11 +188,12 @@ public class DicomImageFilter implements Filter<WadoImage> {
 		 sHeight = (int) ((region[3] - region[1]) * height);
 		 Rectangle rect = new Rectangle(xOffset, yOffset, sWidth, sHeight);
 		 read.setSourceRegion(rect);
+		 ret="-r"+xOffset+","+yOffset+","+sWidth+","+sHeight;
 		 log.debug("Source region " + rect);
 	  }
 
 	  if (rows == 0 && cols == 0)
-		 return;
+		 return ret;
 
 	  // Now figure out the size of the final region
 	  int subsampleX = 1;
@@ -206,9 +213,11 @@ public class DicomImageFilter implements Filter<WadoImage> {
 	  if (subsampleY < 1)
 		 subsampleY = 1;
 	  if (subsampleX == 1 && subsampleY == 1)
-		 return;
+		 return ret;
 	  log.debug("Sub-sampling " + subsampleX + "," + subsampleY + " sHeight=" + sHeight);
 	  read.setSourceSubsampling(subsampleX, subsampleY, 0, 0);
+	  ret = "-s"+subsampleX+","+subsampleY+ret;
+	  return ret;
    }
 
    /** Get the default priority for this filter. */

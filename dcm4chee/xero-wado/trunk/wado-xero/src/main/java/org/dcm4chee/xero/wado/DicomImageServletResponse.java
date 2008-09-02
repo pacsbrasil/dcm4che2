@@ -37,6 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado;
 
+import static org.dcm4chee.xero.wado.WadoParams.*;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
@@ -71,6 +73,7 @@ import org.slf4j.LoggerFactory;
 public class DicomImageServletResponse implements ServletResponseItem {
    private static Logger log = LoggerFactory.getLogger(DicomImageServletResponse.class);
 
+   /** The list of frame numbers, in order to send to the output, 1 based. */
    protected List<Integer> frames;
 
    protected FilterItem<ServletResponseItem> filterItem;
@@ -113,6 +116,7 @@ public class DicomImageServletResponse implements ServletResponseItem {
    public void writeResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
 	  log.info("Writing a DICOM image response for "+sop + " to "+response);
 	  response.setContentType("application/dicom");
+	  response.setHeader(CONTENT_DISPOSITION,"attachment;filename="+ds.getString(Tag.SOPInstanceUID)+".dcm");
 	  DicomObject dsUse = new BasicDicomObject();
 	  ds.copyTo(dsUse);
 	  dsUse.putString(Tag.TransferSyntaxUID, VR.UI, tsuid);
@@ -134,7 +138,7 @@ public class DicomImageServletResponse implements ServletResponseItem {
 		 if (this.frames != null) {
 			log.debug("Writing "+this.frames.size()+" images for sop "+sop);
 			for (int i : this.frames) {
-			   writeToSequence(diw, i);
+			   writeToSequence(diw, i-1);
 			}
 		 } else {
 			log.debug("Writing "+numberOfFrames+" images for sop "+sop);

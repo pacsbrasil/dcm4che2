@@ -230,4 +230,5 @@ public class DicomFilter implements Filter<DicomImageReader> {
 	  log.warn("Unknown return type " + ret.getClass().getName());
 	  return null;
    }
+   
 }

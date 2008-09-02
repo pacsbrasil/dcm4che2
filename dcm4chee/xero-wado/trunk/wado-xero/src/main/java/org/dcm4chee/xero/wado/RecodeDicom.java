@@ -56,6 +56,8 @@ import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.dcm4chee.xero.wado.WadoParams.*;
+
 /**
  * Takes an existing DICOM file and encodes it as the same or a different
  * transfer syntax. This may involve converting the images from one format to
@@ -71,10 +73,6 @@ import org.slf4j.LoggerFactory;
 public class RecodeDicom implements Filter<ServletResponseItem> {
    private static Logger log = LoggerFactory.getLogger(RecodeDicom.class);
 
-   public static final String NoPixelDataUid = "1.2.840.10008.1.2.4.XX";
-
-   public static final String NoPixelDataDeflateUid = "1.2.840.10008.1.2.4.YY";
-
    /**
      * Returns a servlet response item that will encode the DICOM object in the
      * desired transfer syntax, and with the given frames. TODO - have some way
@@ -87,10 +85,10 @@ public class RecodeDicom implements Filter<ServletResponseItem> {
 	  }
 
 	  try {
-		 String tsuid = (String) params.get("transferSyntax");
+		 String tsuid = (String) params.get(TRANSFER_SYNTAX);
 		 DicomImageReader reader = DicomFilter.filterDicomImageReader(filterItem, params, null);
 		 if( reader==null || reader.getStreamMetadata()==null ) {
-			log.warn("No image/dicom object found for objectUID="+params.get("objectUID"));
+			log.warn("No image/dicom object found for objectUID="+params.get(OBJECT_UID));
 			return new ErrorResponseItem(HttpServletResponse.SC_NOT_FOUND,"Object not found.");
 		 }
 		 DicomStreamMetaData streamData = (DicomStreamMetaData) reader.getStreamMetadata();
@@ -111,26 +109,41 @@ public class RecodeDicom implements Filter<ServletResponseItem> {
 	  }
    }
 
-   /** Computes the frames to return */
-   protected static List<Integer> computeFrames(DicomObject ds, Map<String, Object> params) {
-	  String sframes = (String) params.get("simpleFrameList");
-	  if( sframes==null ) sframes = (String) params.get("frameNumber");
+   /** Computes the frames to return as frame numbers (1 based)
+    * TODO - handle overlay simple frame list modifications as well...
+    * null return means ALL frames, while empty list return means no frames, any other means the selected frames.
+    */
+   public static List<Integer> computeFrames(DicomObject ds, Map<String, Object> params) {
+	  String sframes = (String) params.get(SIMPLE_FRAME_LIST);
+	  if( sframes==null ) {
+		  sframes = (String) params.get(FRAME_NUMBER);
+		  if( sframes==null ) return null;
+		  params.put(SIMPLE_FRAME_LIST, sframes);
+		  params.remove(FRAME_NUMBER);
+	  }
+	  int startFrame = 1, endFrame = ds.getInt(Tag.NumberOfFrames,1);
 	  if( sframes!=null ) {
 		 List<Integer> ret = new ArrayList<Integer>();
 		 String[] parts = sframes.split(",");
 		 for(String part : parts ) {
+            // Shortcut once all frames are included - prevents huge lists being created in memory
+            if( ret.size()>endFrame ) return ret;
 			int dash = part.indexOf('-');
 			if( dash<0 ) {
-			   Integer frame = Integer.parseInt(part.trim())-1;
-			   ret.add(frame);
+			   Integer frame = Integer.parseInt(part.trim());
+			   if( frame>=startFrame && frame <=endFrame ) ret.add(frame);
 			}
 			else {
 			   // TODO - add sanity checking on bounds.
 			   int start = Integer.parseInt(part.substring(0,dash).trim());
+			   if( start < 1 ) start = 1;
+			   if( start > endFrame ) continue;
 			   int end = Integer.parseInt(part.substring(dash+1).trim());
+			   if( end < start ) continue;
+			   if( end > endFrame ) end = endFrame;
+			   
 			   log.info("Adding frames "+start+"-"+end);
-			   end = end-1;
-			   for(int j=start-1; j<=end; j++) {
+			   for(int j=start; j<=end; j++) {
 				  ret.add(new Integer(j));
 			   }
 			}

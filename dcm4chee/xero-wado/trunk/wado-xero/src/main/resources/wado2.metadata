@@ -84,8 +84,6 @@ imageFilter.source=${ref:imageSource}
 
 imageSource.inherit=source
 imageSource.imageSearch=${class:org.dcm4chee.xero.search.study.ImageSearch}
-#imageSource.imageFromSeries=${class:org.dcm4chee.xero.search.study.ImageInSeriesSearch}
-#imageSource.imageFromSeries.priority=5
 imageSource.searchCondition=${class:org.dcm4chee.xero.search.study.ImageSearchConditionParser}
 imageSource.ko=${class:org.dcm4chee.xero.search.filter.KeyObjectFilter}
 imageSource.ko.priority=25
@@ -138,7 +136,7 @@ seriesSource.gsps.priority=20
 #seriesSource.cacheFilter=OVERRIDE TO NULL
 
 # Base Wado filters - used by both Xero and full WADO implementation
-imageCache=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
+imageCache=${class:org.dcm4chee.xero.wado.ImageCache}
 # 10 megabytes by default.
 imageCache.cacheSize=10124124
 
@@ -202,22 +200,6 @@ wadoDcm.dicom.priority=-1
 wadoDcm.fileLocation=${ref:fileLocation}
 wadoDcm.fileLocation.priority=-1
 
-# Defines the filters that are allowed as child elements of this filter.
-wado=${class:org.dcm4chee.xero.metadata.filter.FilterList}
-wado.WADO.inherit=WADO
-// WADO will be called by default.
-wado.WADO.priority=1
-
-wado.XERO=${class:org.dcm4chee.xero.metadata.filter.FilterList}
-wado.XERO.image=${class:org.dcm4chee.xero.wado.EncodeImage}
-wado.XERO.image.priority=25
-// Xero will NOT be called by default.
-wado.XERO.priority=-1
-wado.XERO.wadoImg=${ref:xeroImg}
-wado.XERO.wadoImg.priority=-1
-wado.XERO.dicom=${ref:dicom}
-wado.XERO.dicom.priority=-1
-
 xmlReport=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 xmlReport.stringTemplateFilter=${class:org.dcm4chee.xero.template.StringTemplateFilter}
 xmlReport.stringTemplateFilter.defaultView=xml
@@ -233,6 +215,17 @@ htmlReport.inherit=xmlReport
 htmlReport.stringTemplateFilter.defaultView=srhtml
 htmlReport.stringTemplateFilter.contentType=text/html
 
+# Defines the filters that are allowed as child elements of this filter.
+wado=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+wado.WADO.inherit=WADO
+// WADO will be called by default.
+wado.WADO.priority=1
+
+wado.XERO=${class:org.dcm4chee.xero.wado.EncodeImage}
+wado.XERO.wadoImage=${ref:xeroImg}
+// Xero will NOT be called by default.
+wado.XERO.priority=-1
+
 WADO=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 WADO.choose=${class:org.dcm4chee.xero.wado.ChooseContentTypeFilter}
 WADO.choose.priority=100
@@ -247,14 +240,62 @@ WADO.text/html=${ref:htmlReport}
 WADO.text/html.priority=-1
 WADO.application/dicom=${ref:wadoDcm}
 WADO.application/dicom.priority=10
-WADO.multipart=${class:org.dcm4chee.xero.wado.MultiPartContentTypeFilter}
-WADO.multipart.priority=-1
+WADO.multipart/mixed=${class:org.dcm4chee.xero.wado.multi.MultiPartContentTypeFilter}
+WADO.multipart/mixed.priority=-1
+WADO.application/zip=${class:org.dcm4chee.xero.wado.multi.MultiPartContentTypeFilter}
+WADO.application/zip.priority=-1
 
 WADO.dicom=${ref:dicom}
 WADO.dicom.priority=-1
 WADO.wadoImg=${ref:wadoImg}
 WADO.wadoImg.priority=-1
 
+multipart=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+
+multipart.objectUidItFilter=${class:org.dcm4chee.xero.wado.multi.ObjectUidItFilter}
+multipart.objectUidItFilter.priority=9000
+
+multipart.dicomHeader=${class:org.dcm4chee.xero.wado.multi.MultipartCallFilter}
+multipart.dicomHeader.addDefaults=${class:org.dcm4chee.xero.metadata.access.MapWithDefaults}
+multipart.dicomHeader.addDefaults.transferSyntax=1.2.840.10008.1.2.4.XX
+multipart.dicomHeader.childName=dicomHeader
+multipart.dicomHeader.childFilter=${ref:wadoDcm}
+multipart.dicomHeader.default=true
+multipart.dicomHeader.priority=8000
+
+# This version will get the full DICOM object, not just the header - allows for multi-part mime responses of 
+# entire DICOM objects.
+multipart.dicom=${class:org.dcm4chee.xero.wado.multi.MultipartCallFilter}
+multipart.dicom.childName=dicom
+multipart.dicom.childFilter=${ref:wadoDcm}
+multipart.dicomHeader.priority=7500
+
+multipart.frameNumberItFilter=${class:org.dcm4chee.xero.wado.multi.FrameNumberItFilter}
+multipart.frameNumberItFilter.priority=7000
+
+multipart.image=${class:org.dcm4chee.xero.wado.multi.MultipartCallFilter}
+multipart.image.childName=image
+multipart.image.childFilter=${ref:wado.XERO}
+multipart.image.default=true
+multipart.image.priority=6000
+
+multipart.padding=${class:org.dcm4chee.xero.wado.multi.MultipartCallFilter}
+multipart.padding.addDefaults=${class:org.dcm4chee.xero.metadata.access.MapWithDefaults}
+multipart.padding.addDefaults.padding=true
+multipart.padding.addDefaults.relative=image
+multipart.padding.childName=padding
+multipart.padding.childFilter=${ref:wado.XERO}
+multipart.padding.default=true
+multipart.padding.priority=5000
+
+multipart.overlay=${class:org.dcm4chee.xero.wado.multi.MultipartCallFilter}
+multipart.overlay.addDefaults=${class:org.dcm4chee.xero.metadata.access.MapWithDefaults}
+multipart.overlay.addDefaults.overlay=true
+multipart.overlay.addDefaults.relative=image
+multipart.overlay.childName=overlay
+multipart.overlay.childFilter=${ref:wado.XERO}
+multipart.overlay.default=true
+multipart.overlay.priority=4000
 
 # This section contains the series level C-FIND setup
 cfind=${class:org.dcm4chee.xero.metadata.filter.FilterList}
@@ -280,7 +321,6 @@ cfind.series.searchCondition.priority=-1
 # This is the default level
 cfind.seriesImage=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 cfind.seriesImage.priority=-1
-cfind.seriesImage.find=${class:org.dcm4chee.xero.search.dicom.ImageInSeriesSearch}
 cfind.seriesImage.searchCondition=${class:org.dcm4chee.xero.search.study.ImageSearchConditionParser}
 cfind.seriesImage.searchCondition.priority=-1
 

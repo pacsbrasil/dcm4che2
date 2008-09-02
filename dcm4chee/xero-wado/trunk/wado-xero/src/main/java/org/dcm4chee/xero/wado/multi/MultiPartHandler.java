@@ -35,46 +35,27 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.metadata.servlet;
+package org.dcm4chee.xero.wado.multi;
 
-import java.io.IOException;
+import java.util.Iterator;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 
 /**
- * Returns an error code/text.
+ * Has the necessary methods to use a multi-part response item.
  * 
  * @author bwallace
- * 
+ *
  */
-public class ErrorResponseItem implements ServletResponseItem {
-	String message;
-	int code;
+public interface MultiPartHandler extends ServletResponseItem {
+	/** Store the iterator that is used to get the responses.  An iterator is used instead of a list because the memory size and computational
+	 * complexity of computing the entire list up front may exceed the available memory size or allowed response time for the output.  As well, 
+	 * asynchronous item generation and writing of the thread can be implemented by a set of these response items.
+	 * 
+	 * Once an iterator item has been accessed, it must not be changed until the next item is
+	 * retrieved.
+	 * @return 
+	 */
+	public void setResponseIterator(Iterator<ServletResponseItem> multiResponses);
 
-	/** Create an error response item that just does a sendError on the response */
-	public ErrorResponseItem(int code, String message) { 
-		this.message = message;
-		this.code = code;
-	}
-	
-	public ErrorResponseItem(int code) {
-		this(code,null);
-	}
-
-	/** Write the given error response */
-	public void writeResponse(HttpServletRequest request,
-			HttpServletResponse response) throws IOException {
-		if( message!=null ) {
-			response.sendError(code,message);
-		} else {
-			response.sendError(code);
-		}
-		return;
-	}
-	
-	/** Get the return code */
-	public int getCode() {
-		return code;
-	}
 }

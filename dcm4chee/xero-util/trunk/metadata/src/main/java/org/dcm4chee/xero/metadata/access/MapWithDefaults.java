@@ -38,6 +38,8 @@
 package org.dcm4chee.xero.metadata.access;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.MetaDataUser;
@@ -53,6 +55,7 @@ import org.dcm4chee.xero.metadata.MetaDataUser;
 @SuppressWarnings("serial")
 public class MapWithDefaults extends LazyMap implements MetaDataUser {
    MetaDataBean mdb;
+   boolean wasEager = false;
    
    public MapWithDefaults() {   
    }
@@ -79,9 +82,17 @@ public class MapWithDefaults extends LazyMap implements MetaDataUser {
 	   for(Map.Entry<String,MetaDataBean> me : mdb.metaDataEntrySet()) {
 		   this.get(me.getKey());
 	   }
+	   wasEager = true;
    }
 
-   /** Sets the meta data to use. */
+   /** Ensure that all values are in the entry set if it is used. */
+   @Override
+   public Set<Entry<String, Object>> entrySet() {
+   	if(!wasEager) eager();
+	   return super.entrySet();
+   }
+
+	/** Sets the meta data to use. */
    public void setMetaData(MetaDataBean metaDataBean) {
 	   this.lazy = metaDataBean;
 	   this.mdb = metaDataBean;

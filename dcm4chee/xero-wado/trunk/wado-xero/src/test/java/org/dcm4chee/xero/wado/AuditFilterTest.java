@@ -117,7 +117,9 @@ public class AuditFilterTest {
 		assert poQuery.getParticipantObjectIDTypeCode()==ParticipantObject.IDTypeCode.SEARCH_CRITERIA;
 		
 		ActiveParticipant poSrc = am.getActiveParticipants().get(0);
+		assert poSrc!=null;
 		ActiveParticipant poDest = am.getActiveParticipants().get(1);
+		assert poDest!=null;
 	}
 	
 	/** Tests that a single audit message is generated per audit user/study/type for the

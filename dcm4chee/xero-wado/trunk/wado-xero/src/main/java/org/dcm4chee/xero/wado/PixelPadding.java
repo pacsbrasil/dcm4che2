@@ -113,6 +113,8 @@ public class PixelPadding implements Filter<WadoImage> {
 			}
 		}
 				
+		ret = new WadoImage(ret);
+		ret.setFilename(ret.getFilename()+"-padding");
 	   return ret;
    }
 

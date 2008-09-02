@@ -141,12 +141,7 @@ public class WLFilter implements Filter<WadoImage> {
 
 	  LookupTable lut;
 
-	  int frame = 1;
-	  String sFrame = (String) params.get(DicomImageFilter.FRAME_NUMBER);
-	  if( sFrame!=null ) {
-		 frame = Integer.parseInt(sFrame);
-	  }
-
+	  int frame = FilterUtil.getInt(params,DicomImageFilter.FRAME_NUMBER,1);
 	  BufferedImage dest = createCompatible8BitImage(bi);
 	  // Can't window level if a custom type is being used.
 	  if( dest==null ) return wi;

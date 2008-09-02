@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.xero.wado;
+package org.dcm4chee.xero.wado.multi;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -81,6 +81,19 @@ public class BodyResponseWrapper extends HttpServletResponseWrapper
     	super(response);
     	
 		myOutputStream = new BodyServletOutputStream( this );
+    }
+    
+    /** Creates a body response wrapper that allows one to capture the output fully, or otherwise
+     * re-direct it.  You are responsible for ensuring headers are flushed or handled on the first
+     * write request.
+     * 
+     * @param response
+     * @param os
+     */
+    public BodyResponseWrapper(HttpServletResponse response, OutputStream os) 
+    {
+    	this(response);
+    	myOutputStream.setBufferedOutputStream(os);
     }
     
     //

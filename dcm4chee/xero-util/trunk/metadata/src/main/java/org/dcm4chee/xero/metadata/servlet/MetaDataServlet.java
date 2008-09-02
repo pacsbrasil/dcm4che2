@@ -74,7 +74,7 @@ import org.slf4j.LoggerFactory;
  *     &lt;servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet&lt;/servlet-class>
  *     &lt;init-param>
  *        &lt;param-name>metaData&lt;/param-name>
- *        &lt;param-value>/xero-cfind.metadata&lt;/param-value>
+ *        &lt;param-value>/wado2.metadata&lt;/param-value>
  *     &lt;/init-param>
  *     &lt;init-param>
  *        &lt;param-name>filter&lt;/param-name>
@@ -210,7 +210,7 @@ public class MetaDataServlet extends HttpServlet {
     * <pre>
     * &lt;init-param>
 	*  &lt;param-name>metaData&lt;/param-name>
-    *  &lt;param-value>xero-cfind.metadata&lt;/param-value>
+    *  &lt;param-value>wado2.metadata&lt;/param-value>
     * &lt;/init-param>
     * </pre>
     * 
