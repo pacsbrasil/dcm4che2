@@ -39,6 +39,7 @@ package org.dcm4chee.xero.wado;
 
 import static org.dcm4chee.xero.wado.WadoImage.WINDOW_CENTER;
 import static org.dcm4chee.xero.wado.WadoImage.WINDOW_WIDTH;
+import static org.dcm4chee.xero.wado.WadoParams.*;
 
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
@@ -141,7 +142,7 @@ public class WLFilter implements Filter<WadoImage> {
 
 	  LookupTable lut;
 
-	  int frame = FilterUtil.getInt(params,DicomImageFilter.FRAME_NUMBER,1);
+	  int frame = FilterUtil.getInt(params,FRAME_NUMBER,1);
 	  BufferedImage dest = createCompatible8BitImage(bi);
 	  // Can't window level if a custom type is being used.
 	  if( dest==null ) return wi;

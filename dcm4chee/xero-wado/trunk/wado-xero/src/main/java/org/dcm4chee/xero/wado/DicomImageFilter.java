@@ -77,8 +77,6 @@ import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToStrin
  * @author bwallace
  */
 public class DicomImageFilter implements Filter<WadoImage> {
-   public static final String FRAME_NUMBER = "frameNumber";
-
    public static final String COLOR_MODEL_PARAM = "ColorModelParam";
 
    private static Logger log = LoggerFactory.getLogger(DicomImageFilter.class);

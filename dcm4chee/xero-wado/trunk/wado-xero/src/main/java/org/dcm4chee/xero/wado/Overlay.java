@@ -145,7 +145,7 @@ public class Overlay implements Filter<WadoImage> {
 					int start = rowLen * y;
 					if (oi.multiframe) {
 						log.debug("Returning a multi-frame embedded overlay.");
-						int frame = FilterUtil.getInt(params, DicomImageFilter.FRAME_NUMBER, 1) - 1;
+						int frame = FilterUtil.getInt(params, FRAME_NUMBER, 1) - 1;
 						start = start + frame * rowLen * h;
 					}
 					for (int x = 0; x < h;) {

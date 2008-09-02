@@ -47,6 +47,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +64,9 @@ public class ImageCache extends MemoryCacheFilter<WadoImage> {
  	  if (params == null)
  		 throw new IllegalArgumentException("Params to filter and compute key should not be null.");
  	  StringBuffer key = new StringBuffer((String) params.get(OBJECT_UID));
+
+ 	  int frameNumber = FilterUtil.getInt(params,FRAME_NUMBER,1);
+ 	  key.append("-f").append(frameNumber+1);
 
  	  DicomObject ds = dicomImageObject.filter(null,params);
  	  int width = ds.getInt(Tag.Columns);
