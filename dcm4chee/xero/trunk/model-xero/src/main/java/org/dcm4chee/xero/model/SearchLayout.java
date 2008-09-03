@@ -11,7 +11,7 @@ public class SearchLayout extends Layout {
    XmlModel columns;
    
    public SearchLayout(XmlModel search) {
-	  super("search/studyTable");
+	  super("query/studyTable");
 	  this.search = search;
    }
    

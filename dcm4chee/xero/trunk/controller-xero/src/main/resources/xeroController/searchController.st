@@ -19,3 +19,17 @@ XeroController.prototype.findAction = function XC_findAction(src) {
 	this.updateView("findAction");	
 };
  
+XeroController.prototype.sortQuery = function SC_sortQuery(src,col) {
+  console.info("Trying to sort %s on column %s", src,col);
+  var model = this.model;
+  if( !model.searchLayout.search ) this.performSearch();
+  if( !model.searchLayout.search.patient ) return;
+  model.searchLayout.search.patient.sort(function (p1,p2) {
+	var val1 = p1[col];
+	var val2 = p2[col];
+	if( val1 < val2 ) return -1;
+	if( val1==val2 ) return 0;
+	return 1;
+  });
+  this.updateView("findAction");	
+};
