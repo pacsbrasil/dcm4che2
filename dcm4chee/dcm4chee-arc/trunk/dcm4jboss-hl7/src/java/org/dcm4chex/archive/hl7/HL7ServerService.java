@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.net.Socket;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
@@ -496,7 +497,7 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         if (!log.isInfoEnabled())
             return;
         try {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            StringWriter out = new StringWriter();
             File logXslFile = FileUtils.toExistingFile(logXslPath);
             Transformer t = templates.getTemplates(logXslFile).newTransformer();
             t.transform(new DocumentSource(document), new StreamResult(out));
