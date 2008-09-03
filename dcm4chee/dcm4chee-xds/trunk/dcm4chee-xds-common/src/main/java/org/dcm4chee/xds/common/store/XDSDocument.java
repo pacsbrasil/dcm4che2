@@ -72,7 +72,7 @@ public class XDSDocument {
 
         public XDSDocument(String documentUID, String mimeType,
                 long size, String hashString, String desc) {
-            this.docUid = docUid;
+            this.docUid = documentUID;
             this.mimeType = mimeType;
             this.size = size;
             this.hashString = hashString;
