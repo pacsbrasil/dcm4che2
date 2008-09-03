@@ -75,6 +75,17 @@ import org.dcm4chex.archive.exceptions.PatientMismatchException;
  * @ejb.ejb-ref ejb-name="MWLItem" view-type="local" ref-name="ejb/MWLItem"
  */
 public abstract class MWLManagerBean implements SessionBean {
+    private static final int[] PATIENT_ATTRS_WITH_CHARSET = {
+        Tags.SpecificCharacterSet,
+        Tags.PatientName,
+        Tags.PatientID,
+        Tags.IssuerOfPatientID,
+        Tags.PatientBirthDate, 
+        Tags.PatientSex,
+        Tags.OtherPatientIDSeq,
+        Tags.PatientMotherBirthName
+    };
+
     private static final int[] PATIENT_ATTRS = {
         Tags.PatientName,
         Tags.PatientID,
@@ -159,7 +170,7 @@ public abstract class MWLManagerBean implements SessionBean {
         try {
             if (patHome.searchFor(ds, false, true).isIdentical(pat)) {
                 if (updatePatient) {
-                    pat.updateAttributes(ds.subSet(PATIENT_ATTRS));
+                    pat.updateAttributes(ds.subSet(PATIENT_ATTRS_WITH_CHARSET));
                 }
                 return mwlItem;
             }
@@ -215,7 +226,7 @@ public abstract class MWLManagerBean implements SessionBean {
         try {
             return patHome.searchFor(ds, false, true);
         } catch (ObjectNotFoundException onfe) {
-            return patHome.create(ds.subSet(PATIENT_ATTRS));
+            return patHome.create(ds.subSet(PATIENT_ATTRS_WITH_CHARSET));
         }           
     }
     
