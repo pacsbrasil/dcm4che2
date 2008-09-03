@@ -46,6 +46,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
+import javax.management.Notification;
+import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.servlet.http.HttpServletResponse;
 
@@ -63,7 +65,9 @@ import org.dcm4che2.audit.message.ParticipantObject.IDTypeCode;
 import org.dcm4che2.audit.message.ParticipantObject.TypeCode;
 import org.dcm4che2.audit.message.ParticipantObject.TypeCodeRole;
 import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
+import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.mbean.HttpUserInfo;
+import org.dcm4chex.archive.tce.ExportManagerService;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
@@ -79,7 +83,15 @@ import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
 public class WADOService extends AbstractCacheService {
 
     private static final String NONE = "NONE";
-	private WADOSupport support = new WADOSupport(this.server);
+    private WADOSupport support = new WADOSupport(this.server);
+
+    private final NotificationListener seriesStoredListener =
+        new NotificationListener() {
+        public void handleNotification(Notification notif, Object handback) {
+            SeriesStored seriesStored = (SeriesStored) notif.getUserData();
+            onSeriesStored(seriesStored);
+        }
+    };
 
     public WADOService() {
         cache = WADOCacheImpl.getWADOCache();
@@ -136,16 +148,16 @@ public class WADOService extends AbstractCacheService {
     public void setImageQuality(String imageQuality) {
         cache.setImageQuality(imageQuality);
     }
-    
-	public String getImageWriterClass() {
-		return cache.getImageWriterClass();
-	}
 
-	public void setImageWriterClass(String imageWriterClass) {
-		cache.setImageWriterClass(imageWriterClass);
-	}
-	
-	/**
+    public String getImageWriterClass() {
+        return cache.getImageWriterClass();
+    }
+
+    public void setImageWriterClass(String imageWriterClass) {
+        cache.setImageWriterClass(imageWriterClass);
+    }
+
+    /**
      * @return Returns the useTransferSyntaxOfFileAsDefault.
      */
     public boolean isUseTransferSyntaxOfFileAsDefault() {
@@ -167,13 +179,13 @@ public class WADOService extends AbstractCacheService {
 
 
     public String getSrImageRows() {
-    	String rows = support.getSrImageRows();
-		return rows == null ? NONE : support.getSrImageRows();
-	}
+        String rows = support.getSrImageRows();
+        return rows == null ? NONE : support.getSrImageRows();
+    }
 
-	public void setSrImageRows(String srImageRows) {
-		support.setSrImageRows( NONE.equals(srImageRows) ? null : srImageRows );
-	}
+    public void setSrImageRows(String srImageRows) {
+        support.setSrImageRows( NONE.equals(srImageRows) ? null : srImageRows );
+    }
     /**
      * Set URL to XSLT stylesheet that should be used to transform DICOM SR to
      * HTML document.
@@ -258,20 +270,6 @@ public class WADOService extends AbstractCacheService {
         Map uids = support.getTextSopCuids();
         return map2string(uids);
     }
-    
-    private String map2string(Map map) {
-        if (map == null || map.isEmpty())
-            return "";
-        StringBuffer sb = new StringBuffer(map.size() << 5);// StringBuffer
-                                                                // initial size:
-                                                                // nrOfUIDs x 32
-        Iterator iter = map.keySet().iterator();
-        while (iter.hasNext()) {
-            sb.append(iter.next()).append(
-                    System.getProperty("line.separator", "\n"));
-        }
-        return sb.toString();
-    }
 
     /**
      * Set a list of SOP Class UIDs that are used to find text (SR) documents.
@@ -279,11 +277,61 @@ public class WADOService extends AbstractCacheService {
      * The UIDs are separated with line separator.
      * 
      * @param sopCuids
-     *            String with SOP class UIDs seperated with '|'
+     *            String with SOP class UIDs separated with ';'
      */
     public void setTextSopCuids(String sopCuids) {
 
         support.setTextSopCuids(sopCuids);
+    }
+
+    /**
+     * Returns a String with all defined SOP Class UIDs that are used to support
+     * Video (mpeg2) DICOM objects.
+     * <p>
+     * The uids are separated with line separator.
+     * 
+     * @return SOP Class UIDs to find ECG related files.
+     */
+    public String getVideoSopCuids() {
+        Map uids = support.getVideoSopCuids();
+        return map2string(uids);
+    }
+
+    /**
+     * Set a list of SOP Class UIDs that are used to support
+     * Video (mpeg2) DICOM objects.
+     * <p>
+     * The UIDs are separated with line separator.
+     * 
+     * @param sopCuids
+     *            String with SOP class UIDs separated with ';'
+     */
+    public void setVideoSopCuids(String sopCuids) {
+
+        support.setVideoSopCuids(sopCuids);
+    }
+
+    public String getEncapsulatedSopCuids() {
+        Map uids = support.getEncapsulatedSopCuids();
+        return map2string(uids);
+    }
+
+    public void setEncapsulatedSopCuids(String sopCuids) {
+        support.setEncapsulatedSopCuids(sopCuids);
+    }
+    
+    private String map2string(Map map) {
+        if (map == null || map.isEmpty())
+            return "";
+        StringBuffer sb = new StringBuffer(map.size() << 5);// StringBuffer
+        // initial size:
+        // nrOfUIDs x 32
+        Iterator iter = map.keySet().iterator();
+        while (iter.hasNext()) {
+            sb.append(iter.next()).append(
+                    System.getProperty("line.separator", "\n"));
+        }
+        return sb.toString();
     }
 
     /**
@@ -355,7 +403,7 @@ public class WADOService extends AbstractCacheService {
             Set disabledHosts = new HashSet();
             if (!NONE.equals(disabledAuditLogHosts)) {
                 StringTokenizer st = new StringTokenizer(disabledAuditLogHosts,
-                        "\r\n;");
+                "\r\n;");
                 while (st.hasMoreTokens()) {
                     disabledHosts.add(st.nextElement());
                 }
@@ -425,7 +473,7 @@ public class WADOService extends AbstractCacheService {
             InstancesTransferredMessage msg = new InstancesTransferredMessage(
                     InstancesTransferredMessage.EXECUTE);
             msg.setOutcomeIndicator(resp.getReturnCode() == HttpServletResponse.SC_OK ? AuditEvent.OutcomeIndicator.SUCCESS
-                            : AuditEvent.OutcomeIndicator.MINOR_FAILURE);
+                    : AuditEvent.OutcomeIndicator.MINOR_FAILURE);
             msg.addSourceProcess(AuditMessage.getProcessID(), AuditMessage
                     .getLocalAETitles(), AuditMessage.getProcessName(),
                     AuditMessage.getLocalHostName(), false);
@@ -460,6 +508,13 @@ public class WADOService extends AbstractCacheService {
         } catch (Exception e) {
             log.warn("Audit Log failed:", e);
         }
+    }
+
+    private void onSeriesStored(SeriesStored seriesStored) {
+        Dataset ian = seriesStored.getIAN();
+        String suid = ian.getString(Tags.StudyInstanceUID);
+        log.info("SeriesStored! remove cached entries for study:"+suid);
+        log.warn("TODO:Implement this feature with new WADOCache!!!!!!");
     }
 
 }

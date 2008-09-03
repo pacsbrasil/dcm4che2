@@ -254,13 +254,38 @@
     <attribute access="read-write"
       getMethod="getTextSopCuids"
       setMethod="setTextSopCuids">
-      <description>List of SOP Class UIDs that are used to find Text (SR) documents (seperated with semicolon or newline).
+      <description>List of SOP Class UIDs that are used to find Text (SR) documents (separated with semicolon or newline).
       Use either the SOP Class UID or the symbolic name! Use an empty value to reset this list.
       </description>
       <name>TextSopCuids</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="" />
+      </descriptors>
+    </attribute>
+    <attribute access="read-write"
+      getMethod="getVideoSopCuids"
+      setMethod="setVideoSopCuids">
+      <description>List of Video SOP Class UIDs for mpeg2 support (separated with semicolon or newline).
+      Use either the SOP Class UID or the symbolic name! Use an empty value to disable mpeg2 support.
+      </description>
+      <name>VideoSopCuids</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="VideoEndoscopicImageStorage;VideoMicroscopicImageStorage;VideoPhotographicImageStorage" />
+      </descriptors>
+    </attribute>
+    <attribute access="read-write"
+      getMethod="getEncapsulatedSopCuids"
+      setMethod="setEncapsulatedSopCuids">
+      <description>List of SOP Class UIDs where content is encapsulated like EncapsulatedPDFStorage.
+      (separated with semicolon or newline).
+      Use either the SOP Class UID or the symbolic name! Use an empty value to disable encapsulated DICOM support.
+      </description>
+      <name>EncapsulatedSopCuids</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="EncapsulatedPDFStorage;Dcm4cheEncapsulatedDocumentStorage" />
       </descriptors>
     </attribute>
 

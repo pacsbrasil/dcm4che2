@@ -142,6 +142,8 @@ public class WADOSupport {
 
     public static final String CONTENT_TYPE_PLAIN = "text/plain";
 
+    public static final String CONTENT_TYPE_MPEG = "video/mpeg";
+
     private static final String SUBJECT_CONTEXT_KEY = "javax.security.auth.Subject.container";
 
     private static final String ERROR_INVALID_SIMPLE_FRAME_LIST =
@@ -184,6 +186,8 @@ public class WADOSupport {
 
     private Map textSopCuids = null;
     private Map imageSopCuids = null;
+    private Map videoSopCuids = new TreeMap();
+    private Map encapsSopCuids = new TreeMap();
 
     private static MBeanServer server;
 
@@ -254,6 +258,7 @@ public class WADOSupport {
             Dataset dsQ = dof.newDataset();
             dsQ.putUI(Tags.SOPInstanceUID, req.getObjectUID());
             dsQ.putUI(Tags.SOPClassUID);
+            dsQ.putUI(Tags.MIMETypeOfEncapsulatedDocument);
             dsQ.putCS(Tags.QueryRetrieveLevel, "IMAGE");
             cmd = QueryCmd.create(dsQ, true, true, null);
             cmd.execute();
@@ -307,12 +312,16 @@ public class WADOSupport {
         } catch (NeedRedirectionException nre) {
             return handleNeedRedirectException(req, contentType, nre);
         }
+        String sopCuid = objectDs.getString(Tags.SOPClassUID);
         if (CONTENT_TYPE_DICOM_XML.equals(contentType)) {
             if (dict == null)
-                dict = DictionaryFactory.getInstance()
-                .getDefaultTagDictionary();
+                dict = DictionaryFactory.getInstance().getDefaultTagDictionary();
             resp = handleTextTransform(req, file, contentTypeDicomXML,
                     getDicomXslURL(), dict);
+        } else if ( this.getEncapsulatedSopCuids().containsValue(sopCuid)) {
+            resp = handleEncaps(file, contentType);
+        } else if ( this.getVideoSopCuids().containsValue(sopCuid)){
+            resp = handleVideo(file);
         } else if (CONTENT_TYPE_HTML.equals(contentType)) {
             resp = handleTextTransform(req, file, contentType, getHtmlXslURL(),
                     null);
@@ -407,6 +416,15 @@ public class WADOSupport {
             types.add(CONTENT_TYPE_PLAIN);
         } else if ( getImageSopCuids().containsValue(sopCuid) ){
             types.add(CONTENT_TYPE_JPEG);
+        } else if ( getEncapsulatedSopCuids().containsValue(sopCuid) ){
+            String mime = objectDs.getString(Tags.MIMETypeOfEncapsulatedDocument);
+            if (mime == null) {
+                mime = "application/octet-stream";
+            }
+            log.info("Mime type of encapsulated document:"+mime);
+            types.add(mime);
+        } else if ( this.getVideoSopCuids().containsValue(sopCuid) ){
+            types.add(CONTENT_TYPE_MPEG);
         }
         types.add(CONTENT_TYPE_DICOM);
         if (!"NONE".equals(contentTypeDicomXML))
@@ -458,6 +476,43 @@ public class WADOSupport {
         }
         return getUpdatedInstance(req, checkTransferSyntax(req
                 .getTransferSyntax()));
+    }
+    
+    private WADOResponseObject handleEncaps(File file, String contentType) {
+        try {
+            InputStream is = new BufferedInputStream( new FileInputStream(file) );
+            DataInputStream dis = new DataInputStream(is);
+            DcmParser parser = DcmParserFactory.getInstance().newDcmParser(dis);
+            parser.parseDcmFile(null,Tags.EncapsulatedDocument);
+            long len = parser.getReadLength();
+            log.debug("read length of encapsulated document:"+len);
+            return new WADOStreamResponseObjectImpl(is, len, contentType, HttpServletResponse.SC_OK, null);
+        } catch (Exception x) {
+            log.error("Cant get content from encapsulated DICOM storage object! file:" + file);
+            return new WADOStreamResponseObjectImpl(null, contentType,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get content from encapsulated DICOM storage object!");
+        }
+    }
+    private WADOResponseObject handleVideo(File file) {
+        try {
+            InputStream is = new BufferedInputStream( new FileInputStream(file) );
+            DataInputStream dis = new DataInputStream(is);
+            DcmParser parser = DcmParserFactory.getInstance().newDcmParser(dis);
+            parser.parseDcmFile(null,Tags.PixelData);
+            parser.parseHeader();
+            int offsetTableLen = parser.getReadLength();
+            if ( offsetTableLen != 0 ) {
+                log.warn("OffsetTable len is not 0!");
+            }
+            parser.parseHeader();
+            long len = parser.getReadLength();
+            log.debug("read length of mpeg2 data:"+len);
+            return new WADOStreamResponseObjectImpl(is, len, CONTENT_TYPE_MPEG, HttpServletResponse.SC_OK, null);
+        } catch (Exception x) {
+            log.error("Cant get mpeg2 data! file:" + file);
+            return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_MPEG,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error! Cant get mpeg2 data!");
+        }
     }
 
     /**
@@ -1255,6 +1310,44 @@ public class WADOSupport {
         }
     }
 
+    /**
+     * @return Returns the sopCuids for mpeg2 support.
+     */
+    public Map getEncapsulatedSopCuids() {
+        return encapsSopCuids;
+    }
+
+    /**
+     * @param sopCuids
+     *                The sopCuids to set.
+     */
+    public void setEncapsulatedSopCuids(String sopCuids) {
+        if (sopCuids != null && sopCuids.length() > 0)
+            encapsSopCuids = uidsString2map(sopCuids);
+        else {
+            encapsSopCuids.clear();
+        }
+    }
+  
+    /**
+     * @return Returns the sopCuids for mpeg2 support.
+     */
+    public Map getVideoSopCuids() {
+        return videoSopCuids;
+    }
+
+    /**
+     * @param sopCuids
+     *                The sopCuids to set.
+     */
+    public void setVideoSopCuids(String sopCuids) {
+        if (sopCuids != null && sopCuids.length() > 0)
+            videoSopCuids = uidsString2map(sopCuids);
+        else {
+            videoSopCuids.clear();
+        }
+    }
+    
     protected boolean isAuditLogIHEYr4() {
         if (auditLogName == null) {
             return false;
