@@ -140,6 +140,20 @@ public interface Server
      */
     public void setPort(int port);
 
+    /**
+     * Getter for property localAddress.
+     *
+     * @return    Value of property localAddress 
+     */
+    public String getLocalAddress();
+
+
+    /**
+     * Setter for property port.
+     *
+     * @param  port  New value of property localAddress.
+     */
+    public void setLocalAddress(String localAddress);
 
     /**
      * Getter for property serverSocketFactory.

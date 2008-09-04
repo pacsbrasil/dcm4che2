@@ -152,6 +152,8 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     private boolean flushOnMedia = false;
 
+    private boolean flushOnNearline = false;
+    
     private boolean flushOnROFsAvailable = false;
 
     private int validFileStatus = 0;
@@ -501,6 +503,26 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     }
 
     /**
+     * @return Returns the flushOnNearline.
+     */
+    public boolean isFlushOnNearline() {
+        return flushOnNearline;
+    }
+
+    /**
+     * Set the freeDiskSpace policy flushOnNearline.
+     * <p>
+     * Set this policy active if studies must be on nearline media for
+     * deletion.
+     * 
+     * @param flushOnNearline
+     *            The value to set.
+     */
+    public void setFlushOnNearline(boolean flushOnNearline) {
+        this.flushOnNearline = flushOnNearline;
+    }
+    
+    /**
      * @return Returns the validFileStatus.
      */
     public String getValidFileStatus() {
@@ -811,7 +833,9 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             fsDTO = fsmgt.getFileSystem(dirPath);
         } while (!checkStorageFileSystemStatus(fsDTO)
                 || !checkStorageFileSystem(fsDTO, false));
-        storageFileSystem.setStatus(FileSystemStatus.RW);
+        // reload from database to get most recent data before updating it
+		storageFileSystem = fsmgt.getFileSystem(storageFileSystem.getPk());
+		storageFileSystem.setStatus(FileSystemStatus.RW);
         fsDTO.setStatus(FileSystemStatus.DEF_RW);
         fsmgt.updateFileSystem2(storageFileSystem, fsDTO);
         storageFileSystem = fsDTO;
@@ -1133,15 +1157,15 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             long maxSizeToDel = freeSize - available;
             if (maxSizeToDel > 0) {
                 freeDiskSpace(retrieveAET, deleteUncommited, flushOnMedia,
-                        flushExternalRetrievable, flushOnROFsAvailable,
-                        validFileStatus, maxSizeToDel,
+                        flushExternalRetrievable, flushOnNearline, 
+                        flushOnROFsAvailable, validFileStatus, maxSizeToDel,
                         limitNumberOfFilesPerTask);
             } else if (studyCacheTimeout > 0L) {
                 long accessedBefore = System.currentTimeMillis()
                         - studyCacheTimeout;
                 releaseStudies(retrieveAET, deleteUncommited, flushOnMedia,
-                        flushExternalRetrievable, flushOnROFsAvailable,
-                        validFileStatus, accessedBefore);
+                        flushExternalRetrievable, flushOnNearline, 
+                        flushOnROFsAvailable, validFileStatus, accessedBefore);
             } else {
                 return;
             }
@@ -1152,32 +1176,34 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     }
 
     private void freeDiskSpace(String retrieveAET, boolean checkUncommited,
-            boolean checkOnMedia, boolean checkExternal, boolean checkOnRO,
-            int validFileStatus, long maxSizeToDel, int deleteStudiesLimit)
+            boolean checkOnMedia, boolean checkExternal, boolean checkOnNearline, 
+            boolean checkOnRO, int validFileStatus, long maxSizeToDel, 
+            int deleteStudiesLimit)
             throws Exception {
         Map ians = new HashMap();
         log.info("Free Disk Space: try to release "
                 + (maxSizeToDel / 1000000.f) + "MB of DiskSpace");
 
         releaseStudies(retrieveAET, ians, checkUncommited, checkOnMedia,
-                checkExternal, checkOnRO, validFileStatus, maxSizeToDel,
-                deleteStudiesLimit);
+                checkExternal, checkOnNearline, checkOnRO, validFileStatus, 
+                maxSizeToDel, deleteStudiesLimit);
     }
 
     private void releaseStudies(String retrieveAET, boolean checkUncommited,
-            boolean checkOnMedia, boolean checkExternal, boolean checkOnRO,
-            int validFileStatus, long accessedBefore) throws Exception {
+            boolean checkOnMedia, boolean checkExternal, boolean checkOnNearline, 
+            boolean checkOnRO, int validFileStatus, long accessedBefore) 
+    		throws Exception {
         Timestamp tsBefore = new Timestamp(accessedBefore);
         log.info("Releasing studies not accessed since " + tsBefore);
         Map ians = new HashMap();
         releaseStudies(retrieveAET, ians, checkUncommited, checkOnMedia,
-                checkExternal, checkOnRO, validFileStatus, Long.MAX_VALUE,
-                new Timestamp(accessedBefore));
+                checkExternal, checkOnNearline, checkOnRO, validFileStatus, 
+                Long.MAX_VALUE, new Timestamp(accessedBefore));
     }
 
     private long releaseStudies(String retrieveAET, Map ians,
             boolean checkUncommited, boolean checkOnMedia,
-            boolean checkExternal, boolean checkOnRO, int validFileStatus,
+            boolean checkExternal, boolean checkOnNearline, boolean checkOnRO, int validFileStatus,
             long maxSizeToDel, Timestamp tsBefore) throws Exception {
 
         Collection c = newFileSystemMgt().getStudiesOnFsByLastAccess(
@@ -1188,6 +1214,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             log.debug(" checkUncommited: " + checkUncommited);
             log.debug(" checkOnMedia: " + checkOnMedia);
             log.debug(" checkExternal: " + checkExternal);
+            log.debug(" checkOnNearline: " + checkOnNearline);
             log.debug(" checkCopyAvailable: " + checkOnRO);
             if (maxSizeToDel != Long.MAX_VALUE)
                 log.debug(" maxSizeToDel: " + maxSizeToDel);
@@ -1199,7 +1226,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                     .next();
 
             sizeToDelete += releaseStudy(studyOnFs, checkUncommited,
-                    checkOnMedia, checkExternal, checkOnRO, validFileStatus);
+                    checkOnMedia, checkExternal, checkOnNearline, checkOnRO, validFileStatus);
         }
 
         log.info("Released " + (sizeToDelete / 1000000.f) + "MB of DiskSpace");
@@ -1208,13 +1235,14 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     private long releaseStudies(String retrieveAET, Map ians,
             boolean checkUncommited, boolean checkOnMedia,
-            boolean checkExternal, boolean checkOnRO, int validFileStatus,
+            boolean checkExternal, boolean checkOnNearline, boolean checkOnRO, int validFileStatus,
             long maxSizeToDel, int deleteStudiesLimit) throws Exception {
         if (log.isDebugEnabled()) {
             log.debug("Release oldest studies on " + retrieveAET);
             log.debug(" checkUncommited: " + checkUncommited);
             log.debug(" checkOnMedia: " + checkOnMedia);
             log.debug(" checkExternal: " + checkExternal);
+            log.debug(" checkOnNearline: " + checkOnNearline);
             log.debug(" checkCopyAvailable: " + checkOnRO);
             log.debug(" maxSizeToDel: " + maxSizeToDel);
             log.debug(" deleteStudyBatchSize: " + deleteStudiesLimit);
@@ -1241,7 +1269,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                 StudyOnFileSystemLocal studyOnFs = (StudyOnFileSystemLocal) iter
                         .next();
                 long size = releaseStudy(studyOnFs, checkUncommited,
-                        checkOnMedia, checkExternal, checkOnRO, validFileStatus);
+                        checkOnMedia, checkExternal, checkOnNearline, checkOnRO, validFileStatus);
                 if (size != 0)
                     sizeDeleted += size;
                 else
@@ -1277,12 +1305,14 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     private long releaseStudy(StudyOnFileSystemLocal studyOnFs,
             boolean deleteUncommited, boolean flushOnMedia,
-            boolean flushExternal, boolean flushOnROFs, int validFileStatus)
+            boolean flushExternal, boolean flushOnNearline, 
+            boolean flushOnROFs, int validFileStatus)
             throws Exception {
         long size = 0L;
         StudyLocal study = studyOnFs.getStudy();
         boolean release = flushExternal && study.isStudyExternalRetrievable()
                 || flushOnMedia && study.isStudyAvailableOnMedia()
+                || flushOnNearline && study.isStudyAvailable(Availability.NEARLINE)
                 || flushOnROFs && study.isStudyAvailableOnROFs(validFileStatus);
 
         deleteUncommited = (deleteUncommited && study

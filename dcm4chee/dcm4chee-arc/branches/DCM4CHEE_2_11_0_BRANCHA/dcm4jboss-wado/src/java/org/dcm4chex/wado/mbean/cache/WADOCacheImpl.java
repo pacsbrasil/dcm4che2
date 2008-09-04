@@ -894,6 +894,15 @@ public class WADOCacheImpl implements WADOCache {
                     + " quality) for WADO request. file: " + file);
             ImageWriteParam iwparam = writer.getDefaultWriteParam();
             iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            String[] compressionTypes = iwparam.getCompressionTypes();
+            if (compressionTypes != null && compressionTypes.length > 0) {
+            	for (int i=0; i<compressionTypes.length; i++) {
+            		if (compressionTypes[i].compareToIgnoreCase("jpeg") == 0) {
+            			iwparam.setCompressionType(compressionTypes[i]);
+            			break;            			
+            		}
+            	}
+            }
             iwparam.setCompressionQuality(Float.parseFloat(imageQuality)/100);
             writer.write(null, new IIOImage(bi, null, null), iwparam);
             out.flush();

@@ -180,6 +180,14 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         hl7srv.setPort(port);
     }
 
+    public String getLocalAddress() {
+        return hl7srv.getLocalAddress();
+    }
+
+    public void setLocalAddress(String localAddress) {
+        hl7srv.setLocalAddress(localAddress);
+    }
+
     public final String getNoopMessageTypes() {
         return StringUtils.toString(noopMessageTypes, ',');
     }

@@ -175,8 +175,11 @@ public class StoreScpService extends AbstractScpService {
 
     private StoreScp scp = new StoreScp(this);
     
-    private String timerIDCheckPendingSeriesStored;
+    protected StoreScp getScp() {
+    	return scp;
+    }
 
+    private String timerIDCheckPendingSeriesStored;
 
     public final String getCheckPendingSeriesStoredInterval() {
         return RetryIntervalls
@@ -841,5 +844,18 @@ public class StoreScpService extends AbstractScpService {
     protected void doPostProcess(Dataset ds) throws Exception {
         // Extension Point for customized StoreScpService    
     }
-   
+    
+    /**
+     * Callback for post-processing the dataset after the 
+     * dataset has been coerced.
+     * @param ds the coerced dataset
+     * @throws Exception
+     */
+    void postCoercionProcessing(Dataset ds) throws Exception {
+    	doPostCoercionProcessing(ds);        
+    }
+
+    protected void doPostCoercionProcessing(Dataset ds) throws Exception {
+        // Extension Point for customized StoreScpService    
+    }   
 }

@@ -612,7 +612,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                         .stop(activeAssoc, rq,
                                 PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
             }
-            if (md5sum != null && ignoreDuplicate(duplicates, md5sum)) {
+
+            String sopClassUID = ds.getString(Tags.SOPClassUID);
+            if (md5sum != null && ignoreDuplicate(duplicates, md5sum) && (sopClassUID.compareTo(UIDs.AgfaAttributePresentationState) != 0)) {
                 log.info("Received Instance[uid=" + iuid
                         + "] already exists - ignored");
                 if (!tianiURIReferenced) {
@@ -629,6 +631,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             if (coerced != null) {
                 service.coerceAttributes(ds, coerced);
             }
+            service.postCoercionProcessing(ds);
             Storage store = getStorage(assoc);
             checkPatientIdAndName(ds, callingAET, store);
             String seriuid = ds.getString(Tags.SeriesInstanceUID);

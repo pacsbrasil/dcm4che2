@@ -64,6 +64,11 @@ public class HttpUserInfo {
             init(rq, enableDNSLookups);
         } catch (PolicyContextException e) {
             userId = "UNKOWN_USER";
+        } catch (NullPointerException e) {
+            //
+            // Thrown when mbean method is invoked by MDB
+            // no PolicyContextException is thrown
+            userId = "SYSTEM";
         }
     }
     public HttpUserInfo(HttpServletRequest rq, boolean enableDNSLookups) {

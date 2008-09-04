@@ -43,6 +43,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -83,6 +84,8 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
     private int soRcvBuf;
     private int soSndBuf;
     private boolean tcpNoDelay = true;
+    
+    private InetAddress laddr;
     
     // Static --------------------------------------------------------
     
@@ -148,6 +151,19 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
             HandshakeFailedListener listener) {
         hfl = removeFromList(hfl, listener);
     }
+    
+    public String getLocalAddress() {
+        return laddr == null ? "0.0.0.0" : laddr.getHostAddress();
+    }
+    
+    public void setLocalAddress(String laddrStr) {
+        try {
+            laddr = InetAddress.getByName(laddrStr);           
+        } catch (UnknownHostException e) {
+            throw new IllegalArgumentException("Unknown Host: " + laddrStr);
+        }
+    }
+
     // Listeners
     
     // Add an element to a list, creating a new list if the
@@ -211,8 +227,8 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
     public void start() throws IOException {
         checkNotRunning();
         if (log.isInfoEnabled())
-            log.info("Start Server listening at port " + port);
-        ss = ssf.createServerSocket(port);
+            log.info("Start Server listening on " + getLocalAddress() + ":" + port);
+        ss = ssf.createServerSocket(port,0,laddr);
         new Thread(new Runnable() {
             public void run() { threadPool.join(); }
         }, name).start();

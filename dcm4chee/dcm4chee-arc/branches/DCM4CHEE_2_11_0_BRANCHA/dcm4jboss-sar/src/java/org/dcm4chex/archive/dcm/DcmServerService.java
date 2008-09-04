@@ -91,6 +91,14 @@ public class DcmServerService extends ServiceMBeanSupport {
         dcmsrv.setPort(port);
     }
 
+    public String getLocalAddress() {
+        return dcmsrv.getLocalAddress();
+    }
+
+    public void setLocalAddress(String localAddress) {
+        dcmsrv.setLocalAddress(localAddress);
+    }
+
     public String getProtocolName() {
         return protocol.toString();
     }

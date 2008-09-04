@@ -35,6 +35,28 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getLocalAddress"
+      setMethod="setLocalAddress">
+      <description>Local interface IP address to listen for TCP communication.  0.0.0.0 indicates all active interfaces.
+      </description>
+      <name>LocalAddress</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="0.0.0.0" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getLocalAddress"
+      setMethod="setLocalAddress">
+      <description>Local interface IP address to listen for TCP communication.  0.0.0.0 indicates all active interfaces.
+      </description>
+      <name>LocalAddress</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="0.0.0.0" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getProtocolName"
       setMethod="setProtocolName">
       <description><![CDATA[Enable Transport Security Layer (TLS) mode:<ul>

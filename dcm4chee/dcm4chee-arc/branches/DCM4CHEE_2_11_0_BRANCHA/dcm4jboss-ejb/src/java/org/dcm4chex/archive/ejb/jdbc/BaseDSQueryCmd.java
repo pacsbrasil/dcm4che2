@@ -148,6 +148,11 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
             final int vr = key.vr();
             DcmElement el = ds.get(tag);
             if (el == null) {
+                if ( Tags.isPrivateCreatorDataElement(tag)) {
+                    keys.setPrivateCreatorID(null);
+                    ds.putXX(tag,keys.getString(tag));
+                    continue;
+                }
                 el = ds.putXX(tag, vr);
             }
             if (vr == VRs.SQ) {
