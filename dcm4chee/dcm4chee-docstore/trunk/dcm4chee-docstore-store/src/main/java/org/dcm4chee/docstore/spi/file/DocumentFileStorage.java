@@ -306,9 +306,6 @@ public class DocumentFileStorage extends BaseDocumetStorage {
         return new File(docPath.getAbsolutePath(), DEFAULT_MIME_FILENAME);
     }
 
-    public boolean commitDocument(String docUid) {
-        return true;
-    }
 
     private String getFilepath(String uid) {
         if (directoryTree == null) 

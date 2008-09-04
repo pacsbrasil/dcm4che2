@@ -44,6 +44,8 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
 import org.dcm4chee.docstore.BaseDocument;
 import org.dcm4chee.docstore.DocumentStorageListener;
 import org.dcm4chee.docstore.Feature;
@@ -55,6 +57,7 @@ public abstract class BaseDocumetStorage implements DocumentStorage {
     private String name;
     private HashSet<DocumentStorageListener> listeners = new HashSet<DocumentStorageListener>();
 
+    private static Logger log = Logger.getLogger( BaseDocumetStorage.class.getName() );
     public BaseDocumetStorage() {
     }
 
@@ -101,10 +104,12 @@ public abstract class BaseDocumetStorage implements DocumentStorage {
     }
 
     public boolean commitDocument(String docUid) {
-        return false;
+        log.debug("commitDocument:"+docUid+" ignored (with success status true)!");
+        return true;
     }
 
     public boolean deleteDocument(String docUid) {
+        log.debug("deleteDocument:"+docUid+" ignored!");
         return false;
     }
 

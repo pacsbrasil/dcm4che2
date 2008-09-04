@@ -333,6 +333,23 @@ public class DocumentStore {
      * @param docUid
      * @return true if at least one document is deleted from given pool
      */
+    public boolean commitDocument(String pool, String docUid) {
+        Collection<DocumentStorage> c = registry.getDocumentStoragesOfPool(pool);
+        if ( c == null ) {
+            log.warn("Storage pool '"+pool+"' does not exist!");
+            return false;
+        }
+        return commitDocumentfromStorages(docUid, c);
+    }
+
+    /**
+     * Delete document.
+     * Deletes the document with docUid from given pool.
+     * Documents stored on other pools are NOT deleted!
+     * 
+     * @param docUid
+     * @return true if at least one document is deleted from given pool
+     */
     public boolean deleteDocument(String pool, String docUid) {
         Collection<DocumentStorage> c = registry.getDocumentStoragesOfPool(pool);
         if ( c == null ) {
@@ -348,6 +365,13 @@ public class DocumentStore {
             deleted |= st.deleteDocument(docUid);
         }
         return deleted;
+    }
+    public boolean commitDocumentfromStorages(String docUid, Collection<DocumentStorage> c) {
+        boolean commited = false;
+        for ( DocumentStorage st : c ) {
+            commited |= st.commitDocument(docUid);
+        }
+        return commited;
     }
 
     public static final String toHexString(byte[] hash) {
