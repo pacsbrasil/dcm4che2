@@ -126,6 +126,8 @@ import org.jboss.mx.util.MBeanServerLocator;
  */
 public class WADOSupport {
 
+    public static final String NONE = "NONE";
+
     private static final String REDIRECT_PARAM = "redir";
 
     public static final String CONTENT_TYPE_JPEG = "image/jpeg";
@@ -427,7 +429,7 @@ public class WADOSupport {
             types.add(CONTENT_TYPE_MPEG);
         }
         types.add(CONTENT_TYPE_DICOM);
-        if (!"NONE".equals(contentTypeDicomXML))
+        if (!NONE.equals(contentTypeDicomXML))
             types.add(CONTENT_TYPE_DICOM_XML);
         return types;
     }
@@ -884,7 +886,7 @@ public class WADOSupport {
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory
         .newInstance();
         TransformerHandler th;
-        if (xslt != null && !xslt.equalsIgnoreCase("NONE")) {
+        if (xslt != null && !xslt.equalsIgnoreCase(NONE)) {
             Templates stylesheet = (Templates) mapTemplates.get(xslt);
             if (stylesheet == null) {
                 stylesheet = tf.newTemplates(new StreamSource(xslt));
@@ -1303,7 +1305,7 @@ public class WADOSupport {
      *                The sopCuids to set.
      */
     public void setTextSopCuids(String sopCuids) {
-        if (sopCuids != null && sopCuids.length() > 0)
+        if (sopCuids != null && sopCuids.trim().length() > 0)
             textSopCuids = uidsString2map(sopCuids);
         else {
             setDefaultTextSopCuids();
@@ -1322,7 +1324,7 @@ public class WADOSupport {
      *                The sopCuids to set.
      */
     public void setEncapsulatedSopCuids(String sopCuids) {
-        if (sopCuids != null && sopCuids.length() > 0)
+        if (sopCuids != null && !NONE.equalsIgnoreCase(sopCuids.trim()))
             encapsSopCuids = uidsString2map(sopCuids);
         else {
             encapsSopCuids.clear();
@@ -1341,7 +1343,7 @@ public class WADOSupport {
      *                The sopCuids to set.
      */
     public void setVideoSopCuids(String sopCuids) {
-        if (sopCuids != null && sopCuids.length() > 0)
+        if (sopCuids != null && !NONE.equalsIgnoreCase(sopCuids.trim()))
             videoSopCuids = uidsString2map(sopCuids);
         else {
             videoSopCuids.clear();

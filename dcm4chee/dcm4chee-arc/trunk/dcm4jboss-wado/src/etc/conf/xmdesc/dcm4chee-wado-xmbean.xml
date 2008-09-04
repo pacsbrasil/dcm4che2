@@ -267,7 +267,7 @@
       getMethod="getVideoSopCuids"
       setMethod="setVideoSopCuids">
       <description>List of Video SOP Class UIDs for mpeg2 support (separated with semicolon or newline).
-      Use either the SOP Class UID or the symbolic name! Use an empty value to disable mpeg2 support.
+      Use either the SOP Class UID or the symbolic name! Use NONE to disable mpeg2 support.
       </description>
       <name>VideoSopCuids</name>
       <type>java.lang.String</type>
@@ -280,7 +280,7 @@
       setMethod="setEncapsulatedSopCuids">
       <description>List of SOP Class UIDs where content is encapsulated like EncapsulatedPDFStorage.
       (separated with semicolon or newline).
-      Use either the SOP Class UID or the symbolic name! Use an empty value to disable encapsulated DICOM support.
+      Use either the SOP Class UID or the symbolic name! Use NONE to disable encapsulated DICOM support.
       </description>
       <name>EncapsulatedSopCuids</name>
       <type>java.lang.String</type>

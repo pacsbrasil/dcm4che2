@@ -294,7 +294,7 @@ public class WADOService extends AbstractCacheService {
      */
     public String getVideoSopCuids() {
         Map uids = support.getVideoSopCuids();
-        return map2string(uids);
+        return uids.isEmpty() ? WADOSupport.NONE : map2string(uids);
     }
 
     /**
@@ -313,7 +313,7 @@ public class WADOService extends AbstractCacheService {
 
     public String getEncapsulatedSopCuids() {
         Map uids = support.getEncapsulatedSopCuids();
-        return map2string(uids);
+        return uids.isEmpty() ? WADOSupport.NONE : map2string(uids);
     }
 
     public void setEncapsulatedSopCuids(String sopCuids) {
