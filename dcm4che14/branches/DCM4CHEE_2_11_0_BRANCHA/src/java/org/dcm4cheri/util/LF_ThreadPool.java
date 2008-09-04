@@ -167,8 +167,8 @@ public class LF_ThreadPool
 	            leader = Thread.currentThread();
 	            if (log.isDebugEnabled())
 	               log.debug("" + this + " - New Leader"); 
+	            ++running;
 	         }
-	         ++running;
 	         try {  
 	            do {
 	               handler.run(this);
@@ -176,7 +176,7 @@ public class LF_ThreadPool
 	         } catch (Throwable th) {
 	            log.warn("Exception thrown in " + Thread.currentThread().getName(), th);
 	            shutdown();
-	         } finally { --running; }
+	         } finally { synchronized (mutex) { --running; } }
 	      }
       } finally {
           log.debug("Thread: " + Thread.currentThread().getName() + " LEFT ThreadPool " + name);
