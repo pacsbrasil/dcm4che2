@@ -256,7 +256,14 @@ public class XDSStoreService extends ServiceMBeanSupport {
 
     public boolean commitDocuments(Collection<XDSDocument> documents) {
         log.info("#### Commit Documents:"+documents);
-        return true;
+        if ( documents == null || documents.size() < 1 ) 
+            return true;
+        boolean success = true;
+        for ( XDSDocument doc : documents ) {
+            log.debug("commit XDSDocument:"+doc);
+            success = success & docStore.commitDocument(storeBeforeRegisterPool, doc.getDocumentUID());
+        }
+        return success;
     }
     public boolean rollbackDocuments(Collection<XDSDocument> documents) {
         log.info("#### Rollback Documents:"+documents);
