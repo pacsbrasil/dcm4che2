@@ -113,8 +113,6 @@ public class WADOCacheImpl implements WADOCache {
     private DeleterThresholds deleterThresholds = new DeleterThresholds(
             "23:50MB", true);
 
-    private int[] directoryTree;
-
     /**
      * Flag to indicate if client side redirection should be used if DICOM
      * object is not locally available.
@@ -494,6 +492,29 @@ public class WADOCacheImpl implements WADOCache {
                 log.debug("WADOCache.freeDiskSpace: nothing todo");
         }
     }
+    
+    /**
+     * Remove cache entries for given study!
+     * <p>
+     * May delete cache entries for other studies because hashCode directory name is ambiguous! 
+     */
+    public void purgeStudy(String studyIUID) {
+        log.info("Delete WADO CACHE Entries for Study:"+studyIUID);
+        File f = getStudyDir(studyIUID);
+        if ( f.exists()) {
+            delDir(f);
+        }
+    }
+    
+    private void delDir(File f) {
+        log.debug("M_DELETE:"+f);
+        if ( f.isDirectory() ) {
+            for ( File child : f.listFiles() ) {
+                delDir(child);
+            }
+        }
+        f.delete();
+    }
 
     /**
      * Deletes old files to free the given amount of disk space.
@@ -681,13 +702,12 @@ public class WADOCacheImpl implements WADOCache {
      * The subdir argument is used to seperate default images and special sized
      * images.
      * <p>
-     * The directory and file names for studyID, seriesID and instaneID are
-     * calculated with <code>_getSubDirName</code>
-     * 
+     * The directory names are hex-string values of hashCode from studyUID, seriesUID and instaneUID.
+     * (so they are not unique!)
      * <DL>
      * <DT>The File object was build like:</DT>
      * <DD>
-     * &lt;root&gt;/[&lt;subdir&gt;/&lt;]studyID&gt;/&lt;seriesID&gt;/&lt;instanceID&gt;</DD>
+     * &lt;root&gt;/6lt;studyUIDasHex&gt;/&lt;seriesUIDasHex&gt;/&lt;instanceUIDasHex&gt;/[&lt;subdir&gt;/&lt;]/&lt;instanceUID&gt;.&lt;ext&gt;</DD>
      * </DL>
      * 
      * @param subdir
@@ -709,24 +729,22 @@ public class WADOCacheImpl implements WADOCache {
         if (contentType == null)
             contentType = "image/jpg";// use jpg instead of jpeg here because
                                         // for extension jpeg is set to jpg.
-        File file = getAbsCacheRoot();
+        File file = getStudyDir(studyUID);
+        file = new File(file, Integer.toHexString( seriesUID.hashCode()) );
+        file = new File(file, Integer.toHexString( instanceUID.hashCode()) );
         if (subdir != null)
-            file = new File(this.getAbsCacheRoot(), subdir);
+            file = new File(file, subdir);
         String ext = getFileExtension(contentType);
         if (ext.length() < 1)
             file = new File(file, contentType.replace('/', '_'));
-        if (directoryTree == null) {
-            if (studyUID != null)
-                file = new File(file, _getSubDirName(studyUID));
-            if (seriesUID != null)
-                file = new File(file, _getSubDirName(seriesUID));
-        } else {
-            file = new File(file, _getSubDirName(instanceUID));
-        }
         if (suffix != null)
             instanceUID += suffix;
         file = new File(file, instanceUID + ext);
         return file;
+    }
+
+    private File getStudyDir(String studyUID) {
+        return new File( getAbsCacheRoot(), Integer.toHexString( studyUID.hashCode()) );
     }
 
     /**
@@ -746,95 +764,6 @@ public class WADOCacheImpl implements WADOCache {
             ext = "." + ext;
         }
         return ext.toLowerCase();
-    }
-
-    /**
-     * Returns the directory name for given UID. <p/> This implementation use
-     * directoryTree and the uid hashvalue to build a subdirectory(ies). <p/> If
-     * directoryTree is null, following file path is used:
-     * &lt;StudyIUID&gt;/&lt;SeriesIUID&gt;/&lt;instanceIUID&gt.</dd>
-     * The size of directoryTree specify the depth of the tree.<br/> The values
-     * in directoryTree specify the max. number of subdirectories in the
-     * corresponding directory.<br/> Therefore prime values should be used to
-     * achieve an evenly distributed cache.
-     * 
-     * @param uid
-     *            A unique DICOM identifier
-     * 
-     * @return directory name.
-     */
-    private String _getSubDirName(String uid) {
-        if (directoryTree == null)
-            return uid;
-        int hash = uid.hashCode();
-        StringBuffer sb = new StringBuffer();
-        int modulo;
-        for (int i = 0; i < directoryTree.length; i++) {
-            if (directoryTree[i] == 0) {
-                sb.append(Integer.toHexString(hash)).append(File.separatorChar);
-            } else {
-                modulo = hash % directoryTree[i];
-                if (modulo < 0) {
-                    modulo *= -1;
-                }
-                sb.append(modulo).append(File.separatorChar);
-            }
-        }
-        return sb.toString();
-    }
-
-    /**
-     * @return Returns the directoryTree.
-     */
-    public String getDirectoryTree() {
-        if (directoryTree == null)
-            return "NONE";
-        StringBuffer sb = new StringBuffer();
-        sb.append(directoryTree[0]);
-        for (int i = 1; i < directoryTree.length; i++) {
-            sb.append('/').append(directoryTree[i]);
-        }
-        return sb.toString();
-    }
-
-    /**
-     * @param directoryTree
-     *            The directoryTree to set.
-     */
-    public void setDirectoryTree(String primes) {
-        if ("NONE".equals(primes)) {
-            this.directoryTree = null;
-        } else {
-            StringTokenizer st = new StringTokenizer(primes, "/");
-            directoryTree = new int[st.countTokens()];
-            for (int i = 0; st.hasMoreTokens(); i++) {
-                directoryTree[i] = Integer.parseInt(st.nextToken());
-            }
-        }
-    }
-
-    public void computeDirectoryStructure(long cacheSize, long fileSize,
-            int maxSubDirPerDir) {
-        if (maxSubDirPerDir < 0) {
-            directoryTree = null;
-            return;
-        }
-        long nrOfFiles = cacheSize / fileSize;
-        int dirDepth = 0;
-        for (long l = maxSubDirPerDir; l < nrOfFiles; l *= maxSubDirPerDir, dirDepth++)
-            ;
-        this.directoryTree = new int[dirDepth];
-        int idx = 0, subIdx = -1, fileIdx = -1;
-        for (; idx < PRIMES.length; ++idx) {
-            if (maxSubDirPerDir < PRIMES[idx]) {
-                break;
-            }
-        }
-        if (idx != 0)
-            idx--;
-        for (int i = 0, len = dirDepth; i < len; i++) {
-            directoryTree[i] = PRIMES[idx--];
-        }
     }
 
     /**
@@ -924,4 +853,5 @@ public class WADOCacheImpl implements WADOCache {
         return null;
     }
 
+    
 }

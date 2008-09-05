@@ -46,6 +46,8 @@ import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.wado.common.WADORequestObject;
 
@@ -111,6 +113,8 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
     private String imageQuality;
 
     private List contentTypes;
+    
+    private Dataset objectInfo;
 
     /**
      * Creates a WADORequestObjectImpl instance configured with http request.
@@ -145,7 +149,7 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
      * @return the studyUID.
      */
     public String getStudyUID() {
-        return studyUID;
+        return objectInfo == null ? studyUID : objectInfo.getString(Tags.StudyInstanceUID);
     }
 
     /**
@@ -156,7 +160,7 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
      * @return the seriesUID.
      */
     public String getSeriesUID() {
-        return seriesUID;
+        return objectInfo == null ? seriesUID : objectInfo.getString(Tags.SeriesInstanceUID);
     }
 
     /**
@@ -466,6 +470,14 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
 
     public String getCalculatedFrameList() {
         return request.getParameter("calculatedFrameList");
+    }
+
+    public Dataset getObjectInfo() {
+        return objectInfo;
+    }
+
+    public void setObjectInfo(Dataset objectInfo) {
+        this.objectInfo = objectInfo;
     }
 
 }

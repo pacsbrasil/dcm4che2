@@ -225,6 +225,13 @@ public interface WADOCache {
      */
     void freeDiskSpace(boolean background) throws IOException;
 
+
+    /**
+     * Remove all cached entries for given StudyUID
+     * @param studyIUID
+     */
+    void purgeStudy(String studyIUID);
+    
     /**
      * Setter for root directory of this cache.
      * <p>
