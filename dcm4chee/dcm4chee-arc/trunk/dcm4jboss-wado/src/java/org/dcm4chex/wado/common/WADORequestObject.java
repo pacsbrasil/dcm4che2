@@ -41,6 +41,8 @@ package org.dcm4chex.wado.common;
 
 import java.util.List;
 
+import org.dcm4che.data.Dataset;
+
 /**
  * @author franz.willer
  * 
@@ -143,5 +145,8 @@ public interface WADORequestObject extends BasicRequestObject {
     String getSimpleFrameList();
 
     String getCalculatedFrameList();
+    
+    void setObjectInfo(Dataset ds);
+    Dataset getObjectInfo();
 
 }

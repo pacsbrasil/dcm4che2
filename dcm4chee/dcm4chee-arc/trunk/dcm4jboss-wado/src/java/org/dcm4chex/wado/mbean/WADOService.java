@@ -44,7 +44,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 
 import javax.management.Notification;
 import javax.management.NotificationListener;
@@ -54,7 +53,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.UIDs;
 import org.dcm4che2.audit.message.ActiveParticipant;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
@@ -66,8 +64,9 @@ import org.dcm4che2.audit.message.ParticipantObject.TypeCode;
 import org.dcm4che2.audit.message.ParticipantObject.TypeCodeRole;
 import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
 import org.dcm4chex.archive.common.SeriesStored;
+import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
 import org.dcm4chex.archive.mbean.HttpUserInfo;
-import org.dcm4chex.archive.tce.ExportManagerService;
+import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
@@ -95,20 +94,6 @@ public class WADOService extends AbstractCacheService {
 
     public WADOService() {
         cache = WADOCacheImpl.getWADOCache();
-    }
-
-    public String getDirectoryTree() {
-        return ((WADOCacheImpl) cache).getDirectoryTree();
-    }
-
-    public void setDirectoryTree(String primes) {
-        ((WADOCacheImpl) cache).setDirectoryTree(primes);
-    }
-
-    public void computeDirectoryStructure(long cacheSize, long fileSize,
-            int maxSubDirPerDir) {
-        ((WADOCacheImpl) cache).computeDirectoryStructure(cacheSize, fileSize,
-                maxSubDirPerDir);
     }
 
     /**
@@ -510,11 +495,22 @@ public class WADOService extends AbstractCacheService {
         }
     }
 
+    protected void startService() throws Exception {
+        server.addNotificationListener(getStoreScpServiceName(),
+                seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
+
+    }
+
+    protected void stopService() throws Exception {
+        server.removeNotificationListener(getStoreScpServiceName(),
+                seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
+    }
+    
     private void onSeriesStored(SeriesStored seriesStored) {
         Dataset ian = seriesStored.getIAN();
-        String suid = ian.getString(Tags.StudyInstanceUID);
-        log.info("SeriesStored! remove cached entries for study:"+suid);
-        log.warn("TODO:Implement this feature with new WADOCache!!!!!!");
+        String studyIUID = ian.getString(Tags.StudyInstanceUID);
+        log.info("SeriesStored! remove cached entries for seriesStored:"+seriesStored);
+        cache.purgeStudy(studyIUID);
     }
 
 }

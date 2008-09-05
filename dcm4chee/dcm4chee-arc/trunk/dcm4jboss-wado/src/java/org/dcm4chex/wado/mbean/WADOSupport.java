@@ -260,6 +260,10 @@ public class WADOSupport {
             Dataset dsQ = dof.newDataset();
             dsQ.putUI(Tags.SOPInstanceUID, req.getObjectUID());
             dsQ.putUI(Tags.SOPClassUID);
+            dsQ.putLO(Tags.PatientID);
+            dsQ.putPN(Tags.PatientName);
+            dsQ.putUI(Tags.StudyInstanceUID);
+            dsQ.putUI(Tags.SeriesInstanceUID);
             dsQ.putUI(Tags.MIMETypeOfEncapsulatedDocument);
             dsQ.putCS(Tags.QueryRetrieveLevel, "IMAGE");
             cmd = QueryCmd.create(dsQ, true, true, null);
@@ -289,7 +293,9 @@ public class WADOSupport {
                     HttpServletResponse.SC_NOT_ACCEPTABLE,
                     "Requested object can not be served as requested content type! Requested contentType(s):"
                     + req.getRequest().getParameter("contentType"));
-        } else if (CONTENT_TYPE_JPEG.equals(contentType)) {
+        }
+        req.setObjectInfo(objectDs);
+        if (CONTENT_TYPE_JPEG.equals(contentType)) {
             return this.handleJpg(req);
         } else if (CONTENT_TYPE_DICOM.equals(contentType)) {
             return handleDicom(req); // audit log is done in handleDicom to
@@ -460,10 +466,9 @@ public class WADOSupport {
                 WADOStreamResponseObjectImpl resp = new WADOStreamResponseObjectImpl(
                         new FileInputStream(file), CONTENT_TYPE_DICOM,
                         HttpServletResponse.SC_OK, null);
-                log
-                .info("Original Dicom object file retrieved (useOrig=true) objectUID:"
+                log.info("Original Dicom object file retrieved (useOrig=true) objectUID:"
                         + req.getObjectUID());
-                Dataset ds = getPatientInfo(req);
+                Dataset ds = req.getObjectInfo();
                 ds.putPN(Tags.PatientName, ds.getString(Tags.PatientName)
                         + " (orig)");
                 resp.setPatInfo(ds);
@@ -605,22 +610,6 @@ public class WADOSupport {
     }
 
     /**
-     * @param req
-     * @return
-     */
-    protected Dataset getPatientInfo(WADORequestObject req) {
-        log.debug("Get patient info from database for WADO request:" + req);
-        try {
-            return this.getContentManager().getInstanceInfo(req.getObjectUID(),
-                    false);
-        } catch (Exception e) {
-            log.error("Cant get Patient/Study info for " + req.getObjectUID(),
-                    e);
-            return dof.newDataset();
-        }
-    }
-
-    /**
      * Handles a request for content type image/jpeg.
      * <p>
      * Use this method first if content type jpeg is possible to get advantage
@@ -660,7 +649,7 @@ public class WADOSupport {
                 WADOStreamResponseObjectImpl resp = new WADOStreamResponseObjectImpl(
                         new FileInputStream(file), CONTENT_TYPE_JPEG,
                         HttpServletResponse.SC_OK, null);
-                resp.setPatInfo(this.getPatientInfo(req));
+                resp.setPatInfo(req.getObjectInfo());
                 return resp;
             } else {
                 return new WADOStreamResponseObjectImpl(null,
