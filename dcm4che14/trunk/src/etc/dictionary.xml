@@ -2499,6 +2499,8 @@
   <uid value="1.2.840.10008.5.1.4.1.1.12.2" name="X-Ray Radiofluoroscopic Image Storage" key="XRayRadiofluoroscopicImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.12.2.1" name="Enhanced X-Ray Radiofluoroscopic Image Storage" key="EnhancedXRayRadiofluoroscopicImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.12.3" name="X-Ray Angiographic Bi-Plane Image Storage (Retired)" key="XRayAngiographicBiPlaneImageStorageRetired" retired="true" />
+  <uid value="1.2.840.10008.5.1.4.1.1.13.1.1" name="X-Ray 3D Angiographic Image Storage" key="XRay3DAngiographicImageStorage" />
+  <uid value="1.2.840.10008.5.1.4.1.1.13.1.2" name="X-Ray 3D Craniofacial Image Storage" key="XRay3DCraniofacialImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.20" name="Nuclear Medicine Image Storage" key="NuclearMedicineImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.66" name="Raw Data Storage" key="RawDataStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.66.1" name="Spatial Registration Storage" key="SpatialRegistrationStorage" /> 
