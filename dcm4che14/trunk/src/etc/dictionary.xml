@@ -1393,6 +1393,7 @@
   <element tag="(0042,0011)" name="Encapsulated Document" vr="OB" vm="1" key="EncapsulatedDocument" />
   <element tag="(0042,0012)" name="MIME Type of Encapsulated Document" vr="LO" vm="1" key="MIMETypeOfEncapsulatedDocument" />
   <element tag="(0042,0013)" name="Source Instance Sequence" vr="SQ" vm="1" key="SourceInstanceSeq" />
+  <element tag="(0042,0014)" name="List of MIME Types" vr="LO" vm="1-n" key="ListOfMIMETypes" />
   
   <element tag="(0050,0004)" name="Calibration Image" vr="CS" vm="1" key="CalibrationImage" />
   <element tag="(0050,0010)" name="Device Sequence" vr="SQ" vm="1" key="DeviceSeq" />
@@ -2419,6 +2420,7 @@
   <uid value="1.2.840.10008.1.2.4.100" name="MPEG2 Main Profile @ Main Level" key="MPEG2" />
   <uid value="1.2.840.10008.1.2.5" name="RLE Lossless" key="RLELossless" />
   <uid value="1.2.840.10008.1.2.6.1" name="RFC 2557 MIME encapsulation" key="RFC2557MIMEEncapsulation" />
+  <uid value="1.2.840.10008.1.2.6.2" name="XML Encoding" key="XMLEncoding" />
   <uid value="1.2.40.0.13.1.1.2.4.94" name="Dcm4che URI Referenced" key="Dcm4cheURIReferenced" />  
 </uids>
 
@@ -2533,6 +2535,7 @@
   <uid value="1.2.840.10008.5.1.4.1.1.88.65" name="Chest CAD SR" key="ChestCADSR" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.67" name="X-Ray Radiation Dose SR" key="XRayRadiationDoseSR" />
   <uid value="1.2.840.10008.5.1.4.1.1.104.1" name="Encapsulated PDF Storage" key="EncapsulatedPDFStorage" />
+  <uid value="1.2.840.10008.5.1.4.1.1.104.2" name="Encapsulated CDA Storage" key="EncapsulatedCDAStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.128" name="Positron Emission Tomography Image Storage" key="PositronEmissionTomographyImageStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.129" name="Standalone PET Curve Storage" key="StandalonePETCurveStorage" />
   <uid value="1.2.840.10008.5.1.4.1.1.481.1" name="RT Image Storage" key="RTImageStorage" />
