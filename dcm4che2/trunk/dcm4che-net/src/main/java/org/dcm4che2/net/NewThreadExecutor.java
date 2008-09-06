@@ -39,6 +39,8 @@
 
 package org.dcm4che2.net;
 
+import java.util.concurrent.Executor;
+
 /**
  * <code>Executor</code> implementation which executes a <code>Runnable</code>
  * object in a new thread.

@@ -52,6 +52,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.UID;

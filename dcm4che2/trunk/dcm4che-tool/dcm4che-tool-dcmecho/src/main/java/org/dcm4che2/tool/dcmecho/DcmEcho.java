@@ -46,6 +46,7 @@ import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
@@ -57,7 +58,6 @@ import org.dcm4che2.data.UID;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.ConfigurationException;
 import org.dcm4che2.net.Device;
-import org.dcm4che2.net.Executor;
 import org.dcm4che2.net.NetworkApplicationEntity;
 import org.dcm4che2.net.NetworkConnection;
 import org.dcm4che2.net.NewThreadExecutor;

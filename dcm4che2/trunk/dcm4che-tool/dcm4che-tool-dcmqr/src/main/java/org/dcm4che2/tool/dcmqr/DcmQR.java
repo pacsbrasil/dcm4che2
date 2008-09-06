@@ -51,6 +51,7 @@ import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
@@ -73,7 +74,6 @@ import org.dcm4che2.net.Device;
 import org.dcm4che2.net.DicomServiceException;
 import org.dcm4che2.net.DimseRSP;
 import org.dcm4che2.net.DimseRSPHandler;
-import org.dcm4che2.net.Executor;
 import org.dcm4che2.net.ExtQueryTransferCapability;
 import org.dcm4che2.net.ExtRetrieveTransferCapability;
 import org.dcm4che2.net.NetworkApplicationEntity;

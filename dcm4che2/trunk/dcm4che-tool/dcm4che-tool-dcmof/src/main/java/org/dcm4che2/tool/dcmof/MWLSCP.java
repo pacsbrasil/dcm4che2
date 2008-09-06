@@ -39,13 +39,13 @@
 package org.dcm4che2.tool.dcmof;
 
 import java.io.File;
+import java.util.concurrent.Executor;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.DicomServiceException;
 import org.dcm4che2.net.DimseRSP;
-import org.dcm4che2.net.Executor;
 import org.dcm4che2.net.service.CFindService;
 
 /**
