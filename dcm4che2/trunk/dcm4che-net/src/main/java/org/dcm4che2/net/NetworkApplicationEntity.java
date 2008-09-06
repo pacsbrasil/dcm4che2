@@ -137,6 +137,8 @@ public class NetworkApplicationEntity {
 
     private Device device;
 
+    private AssociationCloseListener[] acls = {};
+
     private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
 
     private final List<Association> pool = new ArrayList<Association>();
@@ -1284,5 +1286,44 @@ public class NetworkApplicationEntity {
 
     private int minZeroAsMax(int i1, int i2) {
         return i1 == 0 ? i2 : i2 == 0 ? i1 : Math.min(i1, i2);
+    }
+
+    public void addAssociationCloseListener(AssociationCloseListener l) {
+        if (l == null) {
+            throw new NullPointerException();
+        }
+        synchronized (acls) {
+            AssociationCloseListener[] tmp = 
+                    new AssociationCloseListener[acls.length + 1];
+            System.arraycopy(acls, 0, tmp, 0, acls.length);
+            tmp[acls.length] = l;
+            acls = tmp;
+        }
+    }
+
+    public void removeAssociationCloseListener(AssociationCloseListener l) {
+        if (l == null) {
+            throw new NullPointerException();
+        }
+        synchronized (acls) {
+            for (int i = 0; i < acls.length; i++) {
+                if (acls[i].equals(l)) {
+                    AssociationCloseListener[] tmp = 
+                            new AssociationCloseListener[acls.length - 1];
+                    System.arraycopy(acls, 0, tmp, 0, i);
+                    System.arraycopy(acls, i+1, tmp, i, tmp.length - i);
+                    acls = tmp;
+                    return;
+                }
+            }
+        }
+    }
+
+    void associationClosed(Association as) {
+        synchronized (acls) {
+            for (AssociationCloseListener l : acls) {
+                l.associationClosed(new AssociationCloseEvent(this, as));
+            }
+        }
     }
 }

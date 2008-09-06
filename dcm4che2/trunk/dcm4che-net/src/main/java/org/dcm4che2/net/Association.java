@@ -853,8 +853,9 @@ public class Association implements Runnable {
             rspHandlerForMsgId.clear();
             rspHandlerForMsgId.notifyAll();
         }
-        // if (ae != null)
-        // ae.onClosed(this);
+        if (ae != null) {
+            ae.associationClosed(this);
+        }
 
     }
 
