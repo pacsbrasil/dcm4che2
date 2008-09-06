@@ -1041,6 +1041,7 @@ public class Association implements Runnable {
             updateIdleTimeout();
             reaper.register(this);
             ae.addToPool(this);
+            ae.associationAccepted(this);
         } catch (AAssociateRJ e) {
             setState(State.STA13);
             encoder.write(e);

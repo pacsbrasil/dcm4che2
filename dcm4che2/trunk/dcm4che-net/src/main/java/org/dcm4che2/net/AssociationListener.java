@@ -45,7 +45,9 @@ import java.util.EventListener;
  * @version $Revision$ $Date$
  * @since Sep 6, 2008
  */
-public interface AssociationCloseListener extends EventListener {
+public interface AssociationListener extends EventListener {
+
+    public void associationAccepted(AssociationAcceptEvent event);
 
     public void associationClosed(AssociationCloseEvent event);
 }

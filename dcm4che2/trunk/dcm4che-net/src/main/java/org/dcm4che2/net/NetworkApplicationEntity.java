@@ -137,7 +137,7 @@ public class NetworkApplicationEntity {
 
     private Device device;
 
-    private AssociationCloseListener[] acls = {};
+    private AssociationListener[] als = {};
 
     private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
 
@@ -946,6 +946,7 @@ public class NetworkApplicationEntity {
                     executor.execute(a);
                     a.negotiate(rq);
                     addToPool(a);
+                    associationAccepted(a);
                     return a;
                 }
             }
@@ -1288,41 +1289,49 @@ public class NetworkApplicationEntity {
         return i1 == 0 ? i2 : i2 == 0 ? i1 : Math.min(i1, i2);
     }
 
-    public void addAssociationCloseListener(AssociationCloseListener l) {
+    public void addAssociationListener(AssociationListener l) {
         if (l == null) {
             throw new NullPointerException();
         }
-        synchronized (acls) {
-            AssociationCloseListener[] tmp = 
-                    new AssociationCloseListener[acls.length + 1];
-            System.arraycopy(acls, 0, tmp, 0, acls.length);
-            tmp[acls.length] = l;
-            acls = tmp;
+        synchronized (als) {
+            AssociationListener[] tmp = 
+                    new AssociationListener[als.length + 1];
+            System.arraycopy(als, 0, tmp, 0, als.length);
+            tmp[als.length] = l;
+            als = tmp;
         }
     }
 
-    public void removeAssociationCloseListener(AssociationCloseListener l) {
+    public void removeAssociationListener(AssociationListener l) {
         if (l == null) {
             throw new NullPointerException();
         }
-        synchronized (acls) {
-            for (int i = 0; i < acls.length; i++) {
-                if (acls[i].equals(l)) {
-                    AssociationCloseListener[] tmp = 
-                            new AssociationCloseListener[acls.length - 1];
-                    System.arraycopy(acls, 0, tmp, 0, i);
-                    System.arraycopy(acls, i+1, tmp, i, tmp.length - i);
-                    acls = tmp;
+        synchronized (als) {
+            for (int i = 0; i < als.length; i++) {
+                if (als[i].equals(l)) {
+                    AssociationListener[] tmp = 
+                            new AssociationListener[als.length - 1];
+                    System.arraycopy(als, 0, tmp, 0, i);
+                    System.arraycopy(als, i+1, tmp, i, tmp.length - i);
+                    als = tmp;
                     return;
                 }
             }
         }
     }
 
-    void associationClosed(Association as) {
-        synchronized (acls) {
-            for (AssociationCloseListener l : acls) {
-                l.associationClosed(new AssociationCloseEvent(this, as));
+    void associationAccepted(Association a) {
+        synchronized (als) {
+            for (AssociationListener l : als) {
+                l.associationAccepted(new AssociationAcceptEvent(this, a));
+            }
+        }
+    }
+
+    void associationClosed(Association a) {
+        synchronized (als) {
+            for (AssociationListener l : als) {
+                l.associationClosed(new AssociationCloseEvent(this, a));
             }
         }
     }
