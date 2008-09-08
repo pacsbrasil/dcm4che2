@@ -518,9 +518,9 @@ public abstract class PatientBean implements EntityBean {
         // we have to delete studies explicitly here due to an foreign key constrain error 
         // if an mpps key is set in one of the series.
         for ( Iterator iter = getStudies().iterator() ; iter.hasNext() ; ) {
-        	StudyLocal study = (StudyLocal) iter.next();
-        	iter.remove(); 
-        	study.remove();
+            StudyLocal study = (StudyLocal) iter.next();
+            iter.remove(); 
+            study.remove();
         }
     }
 
@@ -807,11 +807,11 @@ public abstract class PatientBean implements EntityBean {
             }
         }
         if (update) {
-            setAttributes(attrs);            
+            setAttributes(attrs);
         }
         return update;
     }
-    
+
     private boolean containsPID(String pid, String issuer, DcmElement opidsq) {
         for (int i = 0, n = opidsq.countItems(); i < n; i++) {
             Dataset opid = opidsq.getItem(i);
