@@ -45,6 +45,7 @@ public class MultipartCallFilter implements Filter<Iterator<ServletResponseItem>
 				return it;
 		} else {
 			int pos = multipart.indexOf(childName);
+			if( pos<0 ) return it;
 			if (pos > 0 && multipart.charAt(pos - 1) != ',')
 				return it;
 			if (pos + childName.length() < multipart.length() && multipart.charAt(pos + childName.length()) != ',')
