@@ -116,6 +116,7 @@ public class ItemParser implements StreamSegmentMapper {
     private final int numberOfFrames;
     private final boolean rle;
     private final boolean jpeg;
+    private final boolean jpeg2000;
     private int[] basicOffsetTable;
     private byte[] soi = new byte[2];
     private boolean lastItemSeen = false;
@@ -127,8 +128,9 @@ public class ItemParser implements StreamSegmentMapper {
         this.iis = parser.getImageInputStream();
         this.numberOfFrames = numberOfFrames;
         this.firstItemOfFrame = new ArrayList(numberOfFrames);
-        this.rle = UIDs.RLELossless.equals(tsuid);
-        this.jpeg = !rle && JPEG_TS.contains(tsuid);
+        this.jpeg = JPEG_TS.contains(tsuid);
+        this.jpeg2000 = jpeg && (UIDs.JPEG2000Lossless.equals(tsuid) || UIDs.JPEG2000Lossless.equals(tsuid));
+        this.rle = !jpeg && UIDs.RLELossless.equals(tsuid);
         parser.parseHeader();
         int offsetTableLen = parser.getReadLength();
         if (offsetTableLen != 0) {
@@ -194,10 +196,10 @@ public class ItemParser implements StreamSegmentMapper {
                         }
                     } else if (jpeg) {
                         iis.read(soi, 0, 2);
-                        if (soi[0] == (byte) 0xFF
-                                && soi[1] == (byte) 0xD8) {
+                        if (soi[0] == (byte) 0xFF && (soi[1] == (byte) 0xD8
+                                                   || soi[1] == (byte) 0x4F)) {
                             if (log.isDebugEnabled()) {
-                                log.debug("Detect JPEG SOI at item #"
+                                log.debug("Detect JPEG SOI/SOC at item #"
                                         + (items.size()+1));
                             }
                             addFirstItemOfFrame(item);
