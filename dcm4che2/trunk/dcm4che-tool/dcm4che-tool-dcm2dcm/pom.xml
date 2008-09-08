@@ -7,14 +7,18 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4che-tool-dcm2dcm</artifactId>
-  <version>2.0.16-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>DICOM to DICOM Converter</name>
   <dependencies>
     <dependency>
       <groupId>dcm4che</groupId>
+      <artifactId>dcm4che-imageio</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>dcm4che</groupId>
       <artifactId>dcm4che-core</artifactId>
-      <version>2.0.16-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-cli</groupId>
