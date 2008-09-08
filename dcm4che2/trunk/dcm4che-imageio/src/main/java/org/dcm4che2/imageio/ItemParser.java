@@ -212,10 +212,10 @@ public class ItemParser implements StreamSegmentMapper {
                         }
                     } else if (jpeg) {
                         iis.read(soi, 0, 2);
-                        if (soi[0] == (byte) 0xFF
-                                && soi[1] == (byte) 0xD8) {
+                        if (soi[0] == (byte) 0xFF && (soi[1] == (byte) 0xD8
+                                                   || soi[1] == (byte) 0x4F)) {
                             if (log.isDebugEnabled()) {
-                                log.debug("Detect JPEG SOI at item #"
+                                log.debug("Detect JPEG SOI/SOC at item #"
                                         + (items.size()+1));
                             }
                             addFirstItemOfFrame(item);
