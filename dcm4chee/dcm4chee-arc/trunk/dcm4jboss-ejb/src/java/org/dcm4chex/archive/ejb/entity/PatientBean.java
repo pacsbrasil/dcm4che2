@@ -545,32 +545,32 @@ public abstract class PatientBean implements EntityBean {
                 }
             }
         } else {
-        	PersonName pn = trustPatientID ? null : ds.getPersonName(Tags.PatientName);
-        	if (pn != null) {
-        		String pnLike = toLike(pn);
-        		Date birthdate = ds.getDate(Tags.PatientBirthDate);
-        		if (birthdate != null) {
-        			Timestamp ts = new Timestamp(birthdate.getTime());
-        			if (pid != null) {
-        				c = patHome.findByPatientIdAndNameAndBirthDate(pid,
-        						pnLike, ts);
-        			} else { // pid == null
-        				c = patHome.findByPatientNameAndBirthDate(pnLike, ts);
-        			}
-        		} else { // birthdate == null
-        			if (pid != null) {
-        				c = patHome.findByPatientIdAndName(pid, pnLike);       			
-        			} else { // pid == null
-        				c = patHome.findByPatientName(pnLike);
-        			}
-        		}
-        	} else { // pn == null
-        		if (pid != null) {
-        			c = patHome .findByPatientId(pid);
-        		} else { // pid == null
-        			throw new ObjectNotFoundException();
-        		}
-        	}
+            PersonName pn = trustPatientID ? null : ds.getPersonName(Tags.PatientName);
+            if (pn != null) {
+                String pnLike = toLike(pn);
+                Date birthdate = ds.getDate(Tags.PatientBirthDate);
+                if (birthdate != null) {
+                    Timestamp ts = new Timestamp(birthdate.getTime());
+                    if (pid != null) {
+                        c = patHome.findByPatientIdAndNameAndBirthDate(pid,
+                                pnLike, ts);
+                    } else { // pid == null
+                        c = patHome.findByPatientNameAndBirthDate(pnLike, ts);
+                    }
+                } else { // birthdate == null
+                    if (pid != null) {
+                        c = patHome.findByPatientIdAndName(pid, pnLike);       			
+                    } else { // pid == null
+                        c = patHome.findByPatientName(pnLike);
+                    }
+                }
+            } else { // pn == null
+                if (pid != null) {
+                    c = patHome .findByPatientId(pid);
+                } else { // pid == null
+                    throw new ObjectNotFoundException();
+                }
+            }
         }
         if (c.isEmpty()) {
             throw new ObjectNotFoundException();
@@ -694,7 +694,8 @@ public abstract class PatientBean implements EntityBean {
             if (filter.isMerge()) {
                 attrs = getAttributes(false);
                 appendOtherPatientIds(attrs, ds);
-                AttrUtils.updateAttributes(attrs, filter.filter(ds).exclude(OTHER_PID_SQ), log);
+                AttrUtils.updateAttributes(attrs, 
+                        filter.filter(ds).exclude(OTHER_PID_SQ), log);
             } else {
                 log.debug("-merge update-strategy not specified.  Not synchronizing other patient ids!");
                 attrs = filter.filter(ds);
