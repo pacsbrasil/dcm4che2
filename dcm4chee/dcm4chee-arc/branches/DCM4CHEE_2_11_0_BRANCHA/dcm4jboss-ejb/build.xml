@@ -43,9 +43,11 @@
 	<property name="log4j.jar" value="${jboss.conf}/lib/log4j.jar"/>		
 	<property name="getopt.jar" value="${jboss.client}/getopt.jar"/>		
 	<property name="jboss-system.jar" value="${jboss.home}/lib/jboss-system.jar"/>		
+	<property name="jboss-common-jdbc-wrapper.jar" value="${jboss.conf}/lib/jboss-common-jdbc-wrapper.jar"/>		
 
 	<path id="base.path">
 		<pathelement location="${jboss-system.jar}"/>
+		<pathelement location="${jboss-common-jdbc-wrapper.jar}"/>
 		<pathelement location="${concurrent.jar}"/>
 		<pathelement location="${ejb.jar}"/>
 		<pathelement location="${log4j.jar}"/>

@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
+import java.sql.Types;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
@@ -72,6 +73,9 @@ public class MPPSQueryCmd extends BaseReadCmd {
     public MPPSQueryCmd(Dataset filter, boolean emptyAccNo) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
 				transactionIsolationLevel);
+        // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+        defineColumnType(1, Types.LONGVARBINARY);
+        defineColumnType(2, Types.LONGVARBINARY);
         // ensure keys contains (8,0005) for use as result filter
         sqlBuilder.setSelect(SELECT);
         sqlBuilder.setFrom(FROM);

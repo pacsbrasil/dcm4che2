@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 
 import org.dcm4che.data.Dataset;
@@ -76,6 +77,8 @@ public class HPQueryCmd extends BaseReadCmd {
     public HPQueryCmd(Dataset keys) throws SQLException {
 		super(JdbcProperties.getInstance().getDataSource(),
 				transactionIsolationLevel);
+                // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+                defineColumnType(1, Types.LONGVARBINARY);
 		String s;
 		int i;
 		this.keys = keys;

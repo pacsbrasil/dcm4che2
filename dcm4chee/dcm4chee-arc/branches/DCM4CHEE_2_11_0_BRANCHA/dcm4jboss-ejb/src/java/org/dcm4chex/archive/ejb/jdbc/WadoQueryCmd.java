@@ -41,6 +41,7 @@ package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -355,6 +356,8 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
 
         PatientQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue) throws SQLException {
             super(keys, filterResult, noMatchForNoValue);
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(2, Types.LONGVARBINARY);
         }
 
         protected void init() {
@@ -382,6 +385,9 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
         StudyQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
         throws SQLException {
             super(keys, filterResult, noMatchForNoValue);
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(2, Types.LONGVARBINARY);
+            defineColumnType(4, Types.LONGVARBINARY);
         }
 
         protected void init() {
@@ -429,6 +435,10 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
         SeriesQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
         throws SQLException {
             super(keys, filterResult, noMatchForNoValue);
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(2, Types.LONGVARBINARY);
+            defineColumnType(4, Types.LONGVARBINARY);
+            defineColumnType(6, Types.LONGVARBINARY);
         }
 
         protected void init() {
@@ -483,7 +493,12 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
         ImageQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
         throws SQLException {
             super(keys, filterResult, noMatchForNoValue);
-        }
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(2, Types.LONGVARBINARY);
+            defineColumnType(4, Types.LONGVARBINARY);
+            defineColumnType(6, Types.LONGVARBINARY);
+            defineColumnType(8, Types.LONGVARBINARY);
+       }
 
         protected void init() {
             super.init();
@@ -555,7 +570,7 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
     	LocationQueryCmd(Dataset keys, boolean filterResult, boolean noMatchForNoValue)
         throws SQLException {
             super(keys, filterResult, noMatchForNoValue);
-        }
+         }
 
         protected String[] getSelectAttributes() {
             return new String[] { "Patient.pk", "Patient.encodedAttributes",
