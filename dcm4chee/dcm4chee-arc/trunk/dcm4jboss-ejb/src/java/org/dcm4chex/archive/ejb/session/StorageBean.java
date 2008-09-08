@@ -197,7 +197,7 @@ public abstract class StorageBean implements SessionBean {
                 coerceInstanceIdentity(instance, ds, coercedElements);
             } catch (ObjectNotFoundException onfe) {
                 instance = instHome.create(ds,
-                		getSeries(ds, coercedElements, fs));
+                        getSeries(ds, coercedElements, fs));
             }
             FileLocal file = fileHome.create(fileid, tsuid, size, md5, 0,
                     instance, fs);
@@ -222,26 +222,26 @@ public abstract class StorageBean implements SessionBean {
         }
     }
 
-	private void touchStudyOnFileSystem(String siud, FileSystemLocal fs)
-	    throws FinderException, CreateException {
-		String dirPath = fs.getDirectoryPath();
-		try {
-			sofHome.findByStudyAndFileSystem(siud, dirPath).touch();
-		} catch (ObjectNotFoundException e) {
-		    try {
-		        sofHome.create(studyHome.findByStudyIuid(siud), fs);
-		    } catch (CreateException ignore) {
-		        // Check if concurrent create
-		        sofHome.findByStudyAndFileSystem(siud, dirPath).touch();
-		    }
-		}
-	}
-	
+    private void touchStudyOnFileSystem(String siud, FileSystemLocal fs)
+            throws FinderException, CreateException {
+        String dirPath = fs.getDirectoryPath();
+        try {
+            sofHome.findByStudyAndFileSystem(siud, dirPath).touch();
+        } catch (ObjectNotFoundException e) {
+            try {
+                sofHome.create(studyHome.findByStudyIuid(siud), fs);
+            } catch (CreateException ignore) {
+                // Check if concurrent create
+                sofHome.findByStudyAndFileSystem(siud, dirPath).touch();
+            }
+        }
+    }
+
     /**
      * @ejb.interface-method
      */
     public SeriesStored makeSeriesStored(String seriuid, Collection iuids)
-    throws FinderException {
+            throws FinderException {
         SeriesLocal series = findBySeriesIuid(seriuid);
         return makeSeriesStored(series, iuids);
     }
@@ -250,7 +250,7 @@ public abstract class StorageBean implements SessionBean {
      * @ejb.interface-method
      */
     public void commitSeriesStored(SeriesStored seriesStored)
-    throws FinderException {
+            throws FinderException {
         Dataset ian = seriesStored.getIAN();
         Dataset refSeries = ian.get(Tags.RefSeriesSeq).getItem(0);
         DcmElement refSOPs = refSeries.get(Tags.RefSOPSeq);
@@ -283,7 +283,7 @@ public abstract class StorageBean implements SessionBean {
      * @ejb.interface-method
      */
     public SeriesStored[] checkSeriesStored(long maxPendingTime)
-    throws FinderException {
+            throws FinderException {
         Timestamp before = new Timestamp(System.currentTimeMillis() 
                 - maxPendingTime);
         Collection c = seriesHome.findByStatusReceivedBefore(RECEIVED, before);
@@ -350,57 +350,56 @@ public abstract class StorageBean implements SessionBean {
      * @ejb.interface-method
      */
     public void storeFile(java.lang.String iuid, java.lang.String tsuid,
-    		java.lang.String dirpath, java.lang.String fileid,
-    		int size, byte[] md5, int status)
-    throws CreateException, FinderException
+            java.lang.String dirpath, java.lang.String fileid,
+            int size, byte[] md5, int status)
+            throws CreateException, FinderException
     {
-		FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirpath);
-		InstanceLocal instance = instHome.findBySopIuid(iuid);
+        FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirpath);
+        InstanceLocal instance = instHome.findBySopIuid(iuid);
         fileHome.create(fileid, tsuid, size, md5, status, instance, fs);    	
     }
 
     private SeriesLocal getSeries(Dataset ds, Dataset coercedElements,
-    		FileSystemLocal fs) throws Exception {
+            FileSystemLocal fs) throws Exception {
         final String uid = ds.getString(Tags.SeriesInstanceUID);
         SeriesLocal series;
         try {
             series = findBySeriesIuid(uid);
         } catch (ObjectNotFoundException onfe) {
-        	try {
-        		return seriesHome.create(ds, getStudy(ds, coercedElements, fs));
-        	} catch (CreateException e1) {
-        		// check if Series record was inserted by concurrent thread
+            try {
+                return seriesHome.create(ds, getStudy(ds, coercedElements, fs));
+            } catch (CreateException e1) {
+                // check if Series record was inserted by concurrent thread
                 try {
-                	series = findBySeriesIuid(uid);
+                    series = findBySeriesIuid(uid);
                 } catch (Exception e2) {
-                	throw e1;
-                }       		
-        	}
+                    throw e1;
+                }
+            }
         }
         coerceSeriesIdentity(series, ds, coercedElements);
         return series;
     }
 
     private StudyLocal getStudy(Dataset ds, Dataset coercedElements,
-    		FileSystemLocal fs)
-    		throws Exception {
+            FileSystemLocal fs) throws Exception {
         final String uid = ds.getString(Tags.StudyInstanceUID);
         StudyLocal study;
         try {
             study = studyHome.findByStudyIuid(uid);
         } catch (ObjectNotFoundException onfe) {
-        	try {
-        		study = studyHome.create(ds, getPatient(ds, coercedElements));
-        		sofHome.create(study, fs);
-        		return study;
-        	} catch (CreateException e1) {
-        		// check if Study record was inserted by concurrent thread
+            try {
+                study = studyHome.create(ds, getPatient(ds, coercedElements));
+                sofHome.create(study, fs);
+                return study;
+            } catch (CreateException e1) {
+                // check if Study record was inserted by concurrent thread
                 try {
                     study = studyHome.findByStudyIuid(uid);
                 } catch (Exception e2) {
-                	throw e1;
-                }       		
-        	}
+                    throw e1;
+                }
+            }
         }
         coerceStudyIdentity(study, ds, coercedElements);
         return study;
@@ -408,25 +407,25 @@ public abstract class StorageBean implements SessionBean {
 
     private PatientLocal getPatient(Dataset ds, Dataset coercedElements)
             throws Exception {
-    	PatientLocal pat;
+        PatientLocal pat;
         try {
             pat = patHome.searchFor(ds, true, false);
         } catch (ObjectNotFoundException e) {
             try {
-				return patHome.create(ds);
-			} catch (CreateException e1) {
-        		// check if Patient record was inserted by concurrent thread
-		        try {
-		            pat = patHome.searchFor(ds, true, false);
-		        } catch (Exception e2) {
-		        	throw e1;
-		        }
-			}
+                return patHome.create(ds);
+            } catch (CreateException e1) {
+                // check if Patient record was inserted by concurrent thread
+                try {
+                    pat = patHome.searchFor(ds, true, false);
+                } catch (Exception e2) {
+                    throw e1;
+                }
+            }
         }
         coercePatientIdentity(pat, ds, coercedElements);
         return pat;
     }
-    
+
     private void coercePatientIdentity(PatientLocal patient, Dataset ds,
             Dataset coercedElements) throws DcmServiceException, CreateException {
         patient.coerceAttributes(ds, coercedElements);
@@ -472,27 +471,27 @@ public abstract class StorageBean implements SessionBean {
             final String iuid = refSOP.getString(Tags.RefSOPInstanceUID);
             final String aet = refSOP.getString(Tags.RetrieveAET, aet0);
             if (iuid != null && aet != null)
-            	commited(seriesSet, studySet, iuid, aet);
+                commited(seriesSet, studySet, iuid, aet);
         }
         for (Iterator series = seriesSet.iterator(); series.hasNext();) {
             final SeriesLocal ser = findBySeriesIuid((String) series.next());
-			ser.updateDerivedFields(false, false, true, false, false);
+            ser.updateDerivedFields(false, false, true, false, false);
         }
         for (Iterator studies = studySet.iterator(); studies.hasNext();) {
             final StudyLocal study = studyHome.findByStudyIuid((String) studies.next());
-			study.updateDerivedFields(false, false, true, false, false, false);
+            study.updateDerivedFields(false, false, true, false, false, false);
         }
     }
 
     private void commited(HashSet seriesSet, HashSet studySet,
             final String iuid, final String aet) throws FinderException {
-		InstanceLocal inst = instHome.findBySopIuid(iuid);
-		inst.setExternalRetrieveAET(aet);
-		SeriesLocal series = inst.getSeries();
-		seriesSet.add(series.getSeriesIuid());
-		StudyLocal study = series.getStudy();
-		studySet.add(study.getStudyIuid());
-	}
+        InstanceLocal inst = instHome.findBySopIuid(iuid);
+        inst.setExternalRetrieveAET(aet);
+        SeriesLocal series = inst.getSeries();
+        seriesSet.add(series.getSeriesIuid());
+        StudyLocal study = series.getStudy();
+        studySet.add(study.getStudyIuid());
+    }
 
     /**
      * @ejb.interface-method
@@ -507,42 +506,43 @@ public abstract class StorageBean implements SessionBean {
             throw new EJBException(e);
         }
     }
-    
+
     /**
      * @ejb.interface-method
      */
     public void deleteInstances(String[] iuids, boolean deleteSeries, 
-    		boolean deleteStudy) 
-    throws FinderException, EJBException, RemoveException
+            boolean deleteStudy) 
+            throws FinderException, EJBException, RemoveException
     {
-    	for (int i = 0; i < iuids.length; i++)
-    	{
-    		InstanceLocal inst = instHome.findBySopIuid(iuids[i]);
-    		SeriesLocal series = inst.getSeries();
-    		StudyLocal study = series.getStudy();
-    		inst.remove();
-    		series.updateDerivedFields(true, true, true, true, true);
-    		if (deleteSeries && series.getNumberOfSeriesRelatedInstances() == 0)
-    			series.remove();	    	
-	    	study.updateDerivedFields(true, true, true, true, true, true);
-	    	if (deleteStudy && study.getNumberOfStudyRelatedSeries() == 0)
-	    		study.remove();
-    	}
+        for (int i = 0; i < iuids.length; i++)
+        {
+            InstanceLocal inst = instHome.findBySopIuid(iuids[i]);
+            SeriesLocal series = inst.getSeries();
+            StudyLocal study = series.getStudy();
+            inst.remove();
+            series.updateDerivedFields(true, true, true, true, true);
+            if (deleteSeries && series.getNumberOfSeriesRelatedInstances() == 0)
+                series.remove();	    	
+            study.updateDerivedFields(true, true, true, true, true, true);
+            if (deleteStudy && study.getNumberOfStudyRelatedSeries() == 0)
+                study.remove();
+        }
     }
-    
-    private SeriesLocal findBySeriesIuid(String uid) throws javax.ejb.FinderException {
-    	Long pk = (Long)seriesPkCache.get(uid);
-    	if (pk != null) {
+
+    private SeriesLocal findBySeriesIuid(String uid)
+            throws javax.ejb.FinderException {
+        Long pk = (Long)seriesPkCache.get(uid);
+        if (pk != null) {
             try { 
                 return seriesHome.findByPrimaryKey(pk);
             } catch ( ObjectNotFoundException x ) {
                 log.warn("Series "+uid+" not found with cached pk! Cache entry removed!");
                 seriesPkCache.remove(uid);
             }
-    	}
-    	SeriesLocal ser = seriesHome.findBySeriesIuid(uid);
-    	seriesPkCache.put(uid, ser.getPk());
-    	return ser;
+        }
+        SeriesLocal ser = seriesHome.findBySeriesIuid(uid);
+        seriesPkCache.put(uid, ser.getPk());
+        return ser;
     }
 }
 
