@@ -44,6 +44,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.servlet.ErrorResponseItem;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.dcm4chee.xero.search.filter.FileLocationMgtFilter;
@@ -59,7 +60,13 @@ import static org.dcm4chee.xero.wado.WadoParams.*;
 public class EncodeDicom implements Filter<ServletResponseItem>{
    private static Logger log = LoggerFactory.getLogger(EncodeDicom.class);
    
+   private static int MIN_BUFFER_SIZE = 1024;
+   private static int MAX_BUFFER_SIZE = MIN_BUFFER_SIZE * 10240;
+   // A size of 10k is about optimal performance wise.
+   private static int DEFAULT_BUFFER_SIZE = MIN_BUFFER_SIZE*10;
+   
    public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
+     long start = System.nanoTime();
 	  URL url = FileLocationMgtFilter.filterURL(filterItem, params, null);
 	  if( url==null ) {
 		 log.warn("DICOM File not found.");
@@ -67,7 +74,18 @@ public class EncodeDicom implements Filter<ServletResponseItem>{
 	  }
 	  String filename = (String) params.get(OBJECT_UID);
 	  if( filename!=null ) filename = filename+".dcm";
-	  return new UrlServletResponseItem(url,"application/dicom",filename);
+	  log.info("Time to find file to read {}", ((System.nanoTime()-start)/1e6));
+	  UrlServletResponseItem ret = new UrlServletResponseItem(url,"application/dicom",filename);
+	  Boolean memoryMap = null;
+	  if( params.containsKey("memoryMap") ) memoryMap = FilterUtil.getBoolean(params,"memoryMap");
+	  int bufSize = FilterUtil.getInt(params,"bufferSize",DEFAULT_BUFFER_SIZE);
+	  if( bufSize < MIN_BUFFER_SIZE || bufSize > MAX_BUFFER_SIZE ) {
+		  log.warn("User attempted to request in-appropriate buffer size {}, using default instead.", bufSize);
+		  bufSize = DEFAULT_BUFFER_SIZE;
+	  }
+	  ret.setMemoryMap(memoryMap);
+	  ret.setBufSize(bufSize);
+	  return ret;
    }
 
 }
