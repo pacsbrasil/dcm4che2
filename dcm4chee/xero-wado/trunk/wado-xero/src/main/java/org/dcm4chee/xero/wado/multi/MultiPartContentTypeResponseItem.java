@@ -85,13 +85,20 @@ public class MultiPartContentTypeResponseItem implements MultiPartHandler
 			if( sri==null ) continue;
 			writeStartBoundary( os );
 			try {
-				sri.writeResponse(httpRequest, new BodyResponseWrapper(response));
+
+				BodyResponseWrapper bodyResponseWrapper = new BodyResponseWrapper(response);
+				sri.writeResponse(httpRequest, bodyResponseWrapper);
+				bodyResponseWrapper.flushBuffer();
+
 			} catch ( Exception e ) {
 				log.warn("response for content type=\"" + response.getContentType() + "has failed");
 			}
 		}
 
 		writeEndBoundary( os );
+		
+		if( os != null )
+			os.close();
 	}
 
 	protected void writeStartBoundary( ServletOutputStream os ) throws IOException
