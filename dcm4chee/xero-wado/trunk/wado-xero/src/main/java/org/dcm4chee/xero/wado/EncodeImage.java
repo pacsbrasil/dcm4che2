@@ -123,11 +123,14 @@ public class EncodeImage implements Filter<ServletResponseItem> {
      */
    public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> map) {
 	  String contentType = (String) map.get("contentType");
+	  // If the request contains relative, it means it wants an image or display relative object which MAY
+	  // not mean it needs actual pixel data to display, so return an image regardless.
+	  boolean containsRelative = map.containsKey("relative");
 	  if (contentType == null)
-		 contentType = (map.containsKey("relative") ? "image/png" : "image/jpeg");
+		 contentType = (containsRelative ? "image/png" : "image/jpeg");
 	  log.info("Encoding image in content type={}", contentType);
 	  DicomObject ds = dicomImageObject.filter(null,map);
-	  if( ds!=null && !ds.contains(Tag.PixelRepresentation) ) {
+	  if( ds!=null && !(ds.contains(Tag.PixelRepresentation) || containsRelative) ) {
 		 log.info("DICOM does not contain pixel representation.");
 		 return filterItem.callNextFilter(map);
 	  }
@@ -146,7 +149,7 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 		 log.info("Source tsuid="+tsuid);
 		 if (tsEri != null && contentType.indexOf(tsEri.mimeType) >= 0) {
 			contentType = tsEri.mimeType;
-			log.info("Trying to read raw image for ",map.get("objectUID"));
+			log.debug("Trying to read raw image for {}",map.get(OBJECT_UID));
 			MemoryCacheFilter.addToQuery(map, WadoImage.IMG_AS_BYTES, "true");
 			eri = tsEri;
 			contentType = eri.mimeType;
@@ -318,7 +321,6 @@ class ImageServletResponseItem implements ServletResponseItem {
 		 return;
 	  }
 	  long start = System.nanoTime();
-	  log.info("wadoImage is of type {}",wadoImage.getValue().getType());
 	  response.setContentType(contentType);
 	  response.setHeader("Cache-Control", "max-age=" + maxAge);
 	  // Because this is controlled by login, it will have Pragma and Expires
