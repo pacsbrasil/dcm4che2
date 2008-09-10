@@ -163,6 +163,8 @@ displayRel.source=${class:org.dcm4chee.xero.wado.IndexedImageSource}
 xeroImg.inherit=baseImg
 xeroImg.wl=${class:org.dcm4chee.xero.wado.WLFilter}
 xeroImg.wl.priority=6000
+xeroImg.reduceBits=${class:org.dcm4chee.xero.wado.ReduceBitsFilter}
+xeroImg.reduceBits.priority=6300
 xeroImg.relative=${class:org.dcm4chee.xero.wado.ImageDisplayRelative}
 xeroImg.relative.priority=7000
 
@@ -170,18 +172,14 @@ xeroImg.relative.priority=7000
 # Items belonging to the wadoImg area, but not used by Xero directly,
 # including burn-in of various information.
 wadoImg.inherit=xeroImg
-wadoImg.wl=${class:org.dcm4chee.xero.wado.WLFilter}
-wadoImg.wl.priority=6000
 wadoImg.scale=${class:org.dcm4chee.xero.wado.ScaleFilter}
 wadoImg.scale.priority=6100
-wadoImg.reduceBits=${class:org.dcm4chee.xero.wado.ReduceBitsFilter}
-wadoImg.reduceBits.priority=6300
 wadoImg.imageSource=${ref:imageSource}
 wadoImg.imageSource.priority=-2
 wadoImg.gspsBurn=${class:org.dcm4chee.xero.wado.GspsBurnIn}
 wadoImg.gspsBurn.priority=7000
 
-# Provide images for re-encoding as DICOM.  Exclude window levelling as that
+# Provide images for re-encoding as DICOM etc.  Exclude window levelling as that
 # does weird things to the image.
 dcmImg.inherit=baseImg
 dcmImg.scale=${class:org.dcm4chee.xero.wado.ScaleFilter}
