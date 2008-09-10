@@ -37,9 +37,9 @@ public class DicomUpdateFilter implements Filter<DicomImageReader> {
 	private static Logger log = LoggerFactory.getLogger(DicomUpdateFilter.class);
 
 	/** Skip these tags on the comparison - MUST be sorted */
-	static int[] skipUpdate = new int[]{Tag.QueryRetrieveLevel, Tag.RetrieveAETitle, 
-		Tag.InstanceAvailability, Tag.ModalitiesInStudy, Tag.SOPClassesInStudy, Integer.MAX_VALUE};
-	
+	static int[] skipUpdate = new int[] { Tag.QueryRetrieveLevel, Tag.RetrieveAETitle, Tag.InstanceAvailability,
+	      Tag.ModalitiesInStudy, Tag.SOPClassesInStudy, Integer.MAX_VALUE };
+
 	/**
 	 * Set this value in the params to cause the header to be updated by this
 	 * filter. In general this is not set by end-users, but is rather set by
@@ -62,39 +62,35 @@ public class DicomUpdateFilter implements Filter<DicomImageReader> {
 	@Override
 	public DicomImageReader filter(FilterItem<DicomImageReader> filterItem, Map<String, Object> params) {
 		DicomImageReader ret = filterItem.callNextFilter(params);
-		if (ret == null ) {
+		if (ret == null) {
 			log.debug("Not applying dicom update - no object found.");
 			return null;
 		}
-		if( !params.containsKey(UPDATE_HEADER)) {
+		if (!params.containsKey(UPDATE_HEADER)) {
 			log.debug("Not applying dicom update - no key value.");
-			return ret;			
-		}
-		String studyUid = (String) params.get("studyUID");
-		if (studyUid == null)
-			throw new RuntimeException("Unable to update headers - no study UID provided.");
-		if (studyUid.equals("1")) {
-			log.warn("Unable to update headers for {}", params.get("objectUID"));
-			return ret;
-		}
-		String seriesUid = (String) params.get("seriesUID");
-		if (seriesUid == null)
-			throw new RuntimeException("Unable to update headers - no series UID provided.");
-		if (studyUid.equals("1")) {
-			log.warn("Unable to update headers for {}, series UID provided is 1.", params.get("seriesUID"));
-			return ret;
-		}
-
-		StudyInfo si = studyCache.get(studyUid);
-		DicomObject series = DicomUpdateFilter.readSeriesHeader(si, seriesUid, filterItem);
-		if (series == null) {
-			log.warn("Unable to find series info - may not update all fields.");
 			return ret;
 		}
 		try {
+			DicomStreamMetaData dsmd;
+			DicomObject header;
+			String studyUid, seriesUid;
 			synchronized (ret) {
-				DicomStreamMetaData dsmd = (DicomStreamMetaData) ret.getStreamMetadata();
-				DicomObject header = dsmd.getDicomObject();
+				dsmd = (DicomStreamMetaData) ret.getStreamMetadata();
+				header = dsmd.getDicomObject();
+				studyUid = header.getString(Tag.StudyInstanceUID);
+				assert studyUid != null;
+				seriesUid = header.getString(Tag.SeriesInstanceUID);
+				assert seriesUid != null;
+			}
+			StudyInfo si = studyCache.get(studyUid);
+			DicomObject series = DicomUpdateFilter.readSeriesHeader(si, seriesUid, filterItem);
+			if (series == null) {
+				log.warn("Unable to find series info - may not update all fields.");
+				return ret;
+			}
+			synchronized (ret) {
+				// Re-load the header in case someone else updated it
+				header = dsmd.getDicomObject();
 				if (!needsUpdate(header, series)) {
 					log.debug("Not applying dicom header update - no changes required.");
 					return ret;
@@ -126,9 +122,11 @@ public class DicomUpdateFilter implements Filter<DicomImageReader> {
 		int skipi = 0, skip = skipUpdate[0];
 		while (it.hasNext()) {
 			DicomElement de = it.next();
-			if( de.tag()>=skip ) {
-				while( de.tag()>skip ) skip = skipUpdate[++skipi];
-				if( de.tag()==skip ) continue;
+			if (de.tag() >= skip) {
+				while (de.tag() > skip)
+					skip = skipUpdate[++skipi];
+				if (de.tag() == skip)
+					continue;
 			}
 			DicomElement hde = header.get(de.tag());
 			if (hde == null) {
