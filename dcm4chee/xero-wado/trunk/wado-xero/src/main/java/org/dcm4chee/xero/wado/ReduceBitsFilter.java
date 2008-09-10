@@ -90,13 +90,19 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
     */
    public WadoImage filter(FilterItem<WadoImage> filterItem, Map<String, Object> params) {
 	  int bits = FilterUtil.getInt(params,EncodeImage.MAX_BITS);
-	  if( bits==0 || bits>15 ) return filterItem.callNextFilter(params);
+	  if( bits==0 || bits>15 ) {
+		  log.debug("Not applying reduce bits - either default of 16 bits is allowed: {}", bits);
+		  return filterItem.callNextFilter(params);
+	  }
 
 	  if( params.containsKey(WadoImage.IMG_AS_BYTES) ) {
 		 // Check up-front to see if the image can be returned as bytes so that no
 		 // decoding is necessary.  This only works if the correct number of bits is set.
 		 DicomObject ds = DicomFilter.filterImageDicomObject(filterItem,params,null);
-		 if( !needsRescale(bits,ds) ) return filterItem.callNextFilter(params);
+		 if( !needsRescale(bits,ds) ) {
+			 log.debug("Image doesn't need to be rescaled and can be returned as raw bytes.");
+			 return filterItem.callNextFilter(params);
+		 }
 		 // Can't get it as bytes....
 		 MemoryCacheFilter.removeFromQuery(params,WadoImage.IMG_AS_BYTES);
 		 params.remove(WadoImage.IMG_AS_BYTES);
@@ -105,7 +111,11 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 	  WadoImage wi = (WadoImage) filterItem.callNextFilter(params);
 	  if( wi==null ) return wi;
 	  DicomObject ds = wi.getDicomObject();
-	  if( !needsRescale(bits,ds) )  return wi;
+	  if( !needsRescale(bits,ds) )  {
+		  log.debug("Image doesn't need to be rescaled, and can be returned as a regular image.");
+		  return wi;
+	  }
+	  log.debug("Rescaling image.");
 
 	  long start = System.nanoTime();
 	  int maxAllowed = (1 << bits)-1;

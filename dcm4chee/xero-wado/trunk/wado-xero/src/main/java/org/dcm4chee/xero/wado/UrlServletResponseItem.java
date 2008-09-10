@@ -88,9 +88,10 @@ public class UrlServletResponseItem implements ServletResponseItem {
 	  OutputStream os = response.getOutputStream();
 	  if (surl.startsWith("file:")) {
 		String fileName = url.getFile();
-		log.info("Using memory mapped file "+fileName);
 		FileInputStream fis = new FileInputStream(fileName);
 		fileSize = new File(fileName).length();
+		log.info("Using memory mapped file {} of size {}",fileName,fileSize);
+		response.setContentLength((int) fileSize);
 		FileChannel fc = fis.getChannel();
 		ByteBuffer bb = ByteBuffer.allocate(32*1024);
 		int s = fc.read(bb);
@@ -111,7 +112,7 @@ public class UrlServletResponseItem implements ServletResponseItem {
 		  is = conn.getInputStream();
 	  }
 	  if( fileSize!=-1 ) {
-		 log.info("Returning "+fileSize+" bytes for file "+url);
+		 log.info("Returning {} bytes for file {}",fileSize, url);
 		 response.setContentLength((int) fileSize);
 	  }
 	  byte[] data = new byte[64*1024];
