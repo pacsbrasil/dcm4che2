@@ -165,8 +165,7 @@ if (!("console" in window) || !("firebug" in console)) {
 
     function writeMessage(message, className, handler)
     {
-    	print(message);
-    	print("\n");
+    	java.lang.System.out.println(message);
     }
     
     // ********************************************************************************************

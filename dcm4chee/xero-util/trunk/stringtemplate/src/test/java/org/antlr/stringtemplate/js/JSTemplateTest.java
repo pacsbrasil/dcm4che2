@@ -7,16 +7,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
 import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.StringTemplateGroup;
 import org.antlr.stringtemplate.js.NameJSTemplate;
 import org.antlr.stringtemplate.servlet.FindAllTemplates;
 import org.antlr.stringtemplate.servlet.StringSafeRenderer;
 import org.junit.Test;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ContextFactory;
+import org.mozilla.javascript.EcmaError;
+import org.mozilla.javascript.ScriptableObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,9 +120,9 @@ public class JSTemplateTest {
    }
    
    public void runTest(String testKey, boolean verbose) throws Exception {
-	  ScriptEngineManager sem = new ScriptEngineManager();
-	  ScriptEngine se = sem.getEngineByExtension("js");
-	  assert se != null;
+	   ContextFactory cf = new ContextFactory();
+	   Context cx = cf.enterContext();
+	   ScriptableObject scope = cx.initStandardObjects();
 
 	  String expected = generateJavaResult(testKey);
 	  String js = generateScript(testKey,expected);
@@ -130,8 +130,8 @@ public class JSTemplateTest {
 		 log.info("Testing "+testKey+" expected result "+expected+" using script\n"+js);
 	  }
 	  try {
-		 se.eval(js);
-	  } catch (ScriptException e) {
+		 cx.evaluateString(scope, js, "<cmd>", 1, null);
+	  } catch (EcmaError e) {
 		 log.warn("Caught exception {} on line {}", e.getMessage(), e.getLineNumber());
 		 int line = e.getLineNumber();
 		 String[] splits = StringUtil.split(js, '\n', true);
