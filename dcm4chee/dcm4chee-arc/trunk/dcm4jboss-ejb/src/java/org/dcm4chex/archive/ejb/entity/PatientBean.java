@@ -548,7 +548,10 @@ public abstract class PatientBean implements EntityBean {
             PersonName pn = trustPatientID ? null : ds.getPersonName(Tags.PatientName);
             if (pn != null) {
                 String pnLike = toLike(pn);
-                Date birthdate = ds.getDate(Tags.PatientBirthDate);
+                Date birthdate = null;
+                try {
+                    birthdate = ds.getDate(Tags.PatientBirthDate);
+                } catch (Exception ignore) {}
                 if (birthdate != null) {
                     Timestamp ts = new Timestamp(birthdate.getTime());
                     if (pid != null) {
