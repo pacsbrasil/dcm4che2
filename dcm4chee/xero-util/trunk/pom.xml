@@ -17,6 +17,7 @@
       <module>metadata</module>
       <module>util-jar</module>
       <module>dicomTest</module>
+      <module>rhino-access</module>
   </modules>
 
   <dependencies>

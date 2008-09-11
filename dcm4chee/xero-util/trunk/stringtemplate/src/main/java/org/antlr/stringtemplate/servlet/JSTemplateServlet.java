@@ -49,6 +49,7 @@ public class JSTemplateServlet extends StringTemplateServlet {
    public JSTemplateServlet() {
 	  this.templates = "jstemplate";
 	  this.contentType = "text/javascript";
+	  this.view = "jstemplate";
    }
 
    /**
@@ -69,14 +70,6 @@ public class JSTemplateServlet extends StringTemplateServlet {
 	  return ret;
    }
 
-   /**
-    * Return the generic jstemplate name
-    */
-   @Override
-   protected String getTemplateName(HttpServletRequest req) {
-	  return "jstemplate";
-   }
-   
    /**
     * Initialize the string template groups to be used to render the JavaScript
     * text

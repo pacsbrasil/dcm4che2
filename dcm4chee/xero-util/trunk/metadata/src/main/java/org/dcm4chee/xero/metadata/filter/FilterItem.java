@@ -127,9 +127,7 @@ public class FilterItem<T> implements Comparable<FilterItem<?>> {
 	{
 		if( nextFilterItem==null ) return null;
 		if( nextFilterItem.priority < 0 ) return null;
-		if( log.isDebugEnabled() ) {
-		   log.debug("Calling next filter "+nextFilterItem.name);
-		}
+	   log.debug("Calling next filter {}",nextFilterItem.name);
 		return nextFilterItem.filter.filter(nextFilterItem, params);
 	}
 	
@@ -137,6 +135,7 @@ public class FilterItem<T> implements Comparable<FilterItem<?>> {
 	 * @param filterName is the local name to look for.
 	 * @param params are the parameters to pass.
 	 * @return value from the filter.
+	 * @deprecated Assign child-filters directly via meta-data plugins.  This is better type/initialization safety.
 	 */
 	@SuppressWarnings("unchecked")
    public Object callNamedFilter(String filterName, Map<String,Object> params)
@@ -151,9 +150,7 @@ public class FilterItem<T> implements Comparable<FilterItem<?>> {
 			 log.warn("No filter named "+filterName+" in "+metaData.getParent().getPath());
 			 return null;			 
 		 }
-		 if( log.isDebugEnabled() ) {
-			log.debug("Calling named filter "+namedFilter.name);
-		 }
+		 log.debug("Calling named filter {}",namedFilter.name);
 		 return namedFilter.filter.filter(namedFilter, params);
 	 }
 	

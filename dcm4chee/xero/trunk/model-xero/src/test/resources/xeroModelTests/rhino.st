@@ -27,6 +27,9 @@ function localName(node) {
 	if( node.localName!==undefined && node.localName!==null ) return node.localName;
 	if( node.baseName!==undefined ) return node.baseName;
 	var tn = node.tagName;
+	if( tn==null ) {
+	   return node.nodeName;
+	}
 	var i = tn.indexOf(":");
 	if( i>=0 ) tn = ""+tn.substring(i+1);
 	return tn;

@@ -250,8 +250,19 @@ WADO.wadoImg.priority=-1
 
 multipart=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 
+multipart.seriesUidItFilter=${class:org.dcm4chee.xero.wado.multi.SeriesUidItFilter}
+multipart.seriesUidItFilter.priority=9000
+
 multipart.objectUidItFilter=${class:org.dcm4chee.xero.wado.multi.ObjectUidItFilter}
 multipart.objectUidItFilter.priority=9000
+
+multipart.original=${class:org.dcm4chee.xero.wado.multi.MultipartCallFilter}
+multipart.original.addDefaults=${class:org.dcm4chee.xero.metadata.access.MapWithDefaults}
+multipart.original.addDefaults.useOrig=true
+multipart.original.childName=original
+multipart.original.childFilter=${ref:wadoDcm}
+multipart.original.default=false
+multipart.original.priority=8500
 
 multipart.dicomHeader=${class:org.dcm4chee.xero.wado.multi.MultipartCallFilter}
 multipart.dicomHeader.addDefaults=${class:org.dcm4chee.xero.metadata.access.MapWithDefaults}
@@ -260,6 +271,7 @@ multipart.dicomHeader.childName=dicomHeader
 multipart.dicomHeader.childFilter=${ref:wadoDcm}
 multipart.dicomHeader.default=true
 multipart.dicomHeader.priority=8000
+
 
 # This version will get the full DICOM object, not just the header - allows for multi-part mime responses of 
 # entire DICOM objects.

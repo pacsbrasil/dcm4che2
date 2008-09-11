@@ -82,8 +82,8 @@ public class ChooseContentTypeFilter implements Filter<ServletResponseItem> {
 			   || modality.equalsIgnoreCase("ECG") ) {
 			contentType = "text/html";
 		 }
-		 else if( modality.equalsIgnoreCase("PR") ) {
-			if( params.containsKey("frameNumber") ) contentType="image/jpeg";
+		 else if( modality.equalsIgnoreCase("PR")  ) {
+			if( params.containsKey("relative") ) contentType="image/png";
 			else contentType="text/html";
 		 }
 	  }

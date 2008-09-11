@@ -38,8 +38,11 @@ public class MultipartCallFilter implements Filter<Iterator<ServletResponseItem>
 	 */
 	public Iterator<ServletResponseItem> filter(FilterItem<Iterator<ServletResponseItem>> filterItem,
 	      Map<String, Object> params) {
-		Iterator<ServletResponseItem> it = filterItem.callNextFilter(params);
 		String multipart = (String) params.get(MULTIPART_KEY);
+		Iterator<ServletResponseItem> it = null;
+		// Skip all other iterations if this is the only iterator.
+		if( !childName.equals(multipart) )
+			it = filterItem.callNextFilter(params);
 		if (multipart == null) {
 			if (!isDefault)
 				return it;

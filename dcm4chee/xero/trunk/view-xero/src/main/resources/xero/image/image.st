@@ -41,8 +41,12 @@ $layout.imageUrls:{
 <line x1="0" y1="0" x2="0" y2="$layout.image.Rows$" style="stroke: #202020; stroke-width: 4;" />
 <line x1="$layout.image.Columns$" y1="0" x2="$layout.image.Columns$" y2="$layout.image.Rows$" style="stroke: #202020; stroke-width: 4;" />
 <line x1="0" y1="$layout.image.Rows$" x2="$layout.image.Columns$" y2="$layout.image.Rows$" style="stroke: #202020; stroke-width: 4;" />
+
+$image/imageRelativeSvg()$
+
 </g>
 <svg class="imageDisplayRel" style="width: 100%; height: 100%;" preserveAspectRatio="none" viewBox="0,0,1000,1000">
+$image/displayRelativeSvg()$
 </svg>
 </svg>
 $else$

@@ -129,7 +129,10 @@ public class DicomImageFilter implements Filter<WadoImage> {
 			   log.debug("ColorSpace of returned buffered image is " + bi.getColorModel().getColorSpace());
 			   op="read overlay/colour";
 			}  else {
+			   log.debug("Requested source {}", param.getSourceRegion());
+			   log.debug("Requested subsampling {},{}", param.getSourceXSubsampling(), param.getSourceYSubsampling());
 			   WritableRaster r = (WritableRaster) reader.readRaster(frame, param);
+			   log.debug("Size of returned raster {}", r.getBounds());
 			   ColorModel cm = ColorModelFactory.createColorModel(ds);
 			   log.debug("Color model for image is " + cm);
 			   bi = new BufferedImage(cm, r, false, null);
@@ -184,10 +187,12 @@ public class DicomImageFilter implements Filter<WadoImage> {
 		 yOffset = (int) (region[1] * height);
 		 sWidth = (int) ((region[2] - region[0]) * width);
 		 sHeight = (int) ((region[3] - region[1]) * height);
-		 Rectangle rect = new Rectangle(xOffset, yOffset, sWidth, sHeight);
-		 read.setSourceRegion(rect);
-		 ret="-r"+xOffset+","+yOffset+","+sWidth+","+sHeight;
-		 log.debug("Source region " + rect);
+		 if( xOffset>0 || yOffset>0 || sWidth < width || sHeight<height) {
+			 Rectangle rect = new Rectangle(xOffset, yOffset, sWidth, sHeight);
+			 read.setSourceRegion(rect);
+			 ret="-r"+xOffset+","+yOffset+","+sWidth+","+sHeight;
+			 log.debug("Source region {} region {}",rect,region);
+		 }
 	  }
 
 	  if (rows == 0 && cols == 0)
@@ -212,7 +217,7 @@ public class DicomImageFilter implements Filter<WadoImage> {
 		 subsampleY = 1;
 	  if (subsampleX == 1 && subsampleY == 1)
 		 return ret;
-	  log.debug("Sub-sampling " + subsampleX + "," + subsampleY + " sHeight=" + sHeight);
+	  log.debug("Sub-sampling " + subsampleX + "," + subsampleY + " sWidth,Height=" + sWidth+","+sHeight);
 	  read.setSourceSubsampling(subsampleX, subsampleY, 0, 0);
 	  ret = "-s"+subsampleX+","+subsampleY+ret;
 	  return ret;

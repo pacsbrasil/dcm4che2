@@ -77,12 +77,14 @@ public class MultiPartContentTypeResponseItem implements MultiPartHandler
 
 		ServletOutputStream os = response.getOutputStream();
 
+		int errors = 0;
 		// each child *can't* be allowed to modify the response headers by itself.
 		while( multiResponses.hasNext())  
 		{
 			ServletResponseItem sri = multiResponses.next();
 			// This is perfectly acceptable to return a null response - it just means that particular content type isn't found.
 			if( sri==null ) continue;
+			
 			writeStartBoundary( os );
 			try {
 
@@ -92,6 +94,12 @@ public class MultiPartContentTypeResponseItem implements MultiPartHandler
 
 			} catch ( Exception e ) {
 				log.warn("response for content type=\"" + response.getContentType() + "has failed");
+				errors++;
+				if( errors>3 ) {
+					log.warn("3rd error on request - returning without completing request.");
+					os.close();
+					return;
+				}
 			}
 		}
 

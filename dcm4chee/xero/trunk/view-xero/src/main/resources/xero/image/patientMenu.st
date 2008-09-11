@@ -1,8 +1,8 @@
 <div class="menu" $html/style()$>
 	<ul>
 	$if(layout.patient)$
-	<li>$layout.patient.PatientName$</li>
-	<li>| $layout.patient.PatientID$</li>
+	<li>$layout.patient.PatientName;format="xml"$</li>
+	<li>| $layout.patient.PatientID;format="xml"$</li>
 	
 	$image/wlmenu()$
 	

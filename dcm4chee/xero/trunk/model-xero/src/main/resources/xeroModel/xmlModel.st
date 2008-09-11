@@ -7,6 +7,10 @@
  * <results><patient name="Fred"><study id="1" /></patient></results> then the returned object would equivalent
  * to (using JSON notation):
  * { "patient":[{"name":"Fred", "study":[ {"id":1} ]}]}
+ 
+ * The resulting structure can be customized if necessary, for example, to generate synthetic elements
+ * based on the actual elements, or to auto-sort the children etc.  To do so, add a function customize_<local-name>
+ *
  */
  
 function XmlModel(urlSource) {
@@ -59,9 +63,11 @@ XmlModel.prototype.parse = function XM_parse(el, modifiers) {
 	var children = el.attributes;
 	var i,n=children.length;
 	var child, colon;
+	
 	for(i=0; i<n;i++) {
 		child = children.item(i);
-		this[child.nodeName] = child.nodeValue;
+		// No guarantee of name space prefixes, so for now strip out namespace info.
+		this[localName(child)] = child.nodeValue;
 	};
 	
 	// Handle element children
@@ -70,6 +76,10 @@ XmlModel.prototype.parse = function XM_parse(el, modifiers) {
 	var lst, name,xchild;
 	for(i=0; i<n; i++) {
 		child = children.item(i);
+		if( child.nodeType===3 ) {
+			this.TEXT = child.data;
+			continue;
+		}
 		if( child.nodeType!==1 ) continue;
 		name = localName(child);
 		xchild = this.getChild(name,child,modifiers);
@@ -77,6 +87,9 @@ XmlModel.prototype.parse = function XM_parse(el, modifiers) {
 		xchild.parse(child,modifiers);
 		xchild._parent = this;
 	};
+
+	var nodeType = localName(el);
+	if( this["customize_"+nodeType]!=null ) this["customize_"+nodeType]();	
 };
 
 /** Parses a String into XML and thence into this object */

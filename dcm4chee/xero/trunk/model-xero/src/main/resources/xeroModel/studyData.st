@@ -39,6 +39,8 @@ StudyData.prototype.getChild = function StudyData_getChild(name,el,modifiers) {
 	// For now, assume only 1 child type - that may not be a good assumption longer term.
 	if(! this.childId ) {
 		this.childId = this.idVars[name];
+		// Detect a non-DICOM image object child, and just use id for those.
+		if( name=="image" && el.getAttribute("objectUID")==null ) this.childId = "id";
 		if( !this.childId ) this.childId = "id";
 		this.debug("Choose childID %s for level %d on child %s", this.childId,this.level,name); 
 	}
@@ -65,4 +67,13 @@ StudyData.prototype.addQueries = function StudyData_addQueries(queries) {
 		this.debug("Adding information from %s",key);
 		this.requestUrl(key, queries[key]);
 	}
+};
+
+/** Adds a customization for the use node to indicate the type of node it is - this gets around the
+ * templating problem of not being able to distinguish different classes of objects.
+ */
+StudyData.prototype.customize_use = function StudyData_customize_use() {
+    var clazz = this["class"];
+	if( clazz==null ) clazz = "IMAGEREL";
+	this["is"+clazz] = true;
 };

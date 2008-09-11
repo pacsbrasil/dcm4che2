@@ -57,7 +57,7 @@ public class MultipartCallFilterTest {
 	@SuppressWarnings("unchecked")
    @Test 
 	public void testFilter_withMatch_returnsCombinedChildNext() {
-		params.put(MULTIPART_KEY, "child");
+		params.put(MULTIPART_KEY, "child,next");
 		params.put("child.contentType", "image/png");
 		expect(filterItem.callNextFilter(params)).andReturn(it1);
 		Capture<Map<String,Object>> cap = new Capture<Map<String,Object>>();
@@ -68,6 +68,7 @@ public class MultipartCallFilterTest {
 		assert it!=it1;
 		assert it.hasNext();
 		assert it.next()==sri2;
+		assert it.hasNext();
 		assert it.next()==sri1;
 		assert !it.hasNext();
 
@@ -84,7 +85,7 @@ public class MultipartCallFilterTest {
 
 	@Test 
 	public void testFilter_withMatchButNoReturn_returnsNextIt() {
-		params.put(MULTIPART_KEY, "child");
+		params.put(MULTIPART_KEY, "child,next");
 		expect(filterItem.callNextFilter(params)).andReturn(it1);
 		expect(childFilter.filter(null,params)).andReturn(null);
 		replay(filterItem,childFilter);

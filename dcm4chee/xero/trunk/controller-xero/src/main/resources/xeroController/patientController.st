@@ -83,12 +83,12 @@ XeroController.prototype.selectGsps = function XC_selectGsps(navId, gsps) {
 	nav.conversation.setPresentation("&gsps="+gsps);
 	console.info("Conversation info set on %s at level %d external id now %s", nav.conversation.id, 
 		nav.conversation.level, nav.conversation.getUrlId());
-	this.updateDisplayTab();
+	this.updateDisplayTab(true);
 	console.info("Completed applying gsps %s", gsps);	
 };
 
 /** Redisplays the display tab, resizing and merging external information etc */
-XeroController.prototype.updateDisplayTab = function XC_updateDisplayTab() {
+XeroController.prototype.updateDisplayTab = function XC_updateDisplayTab(forceComplete) {
 	var sameTab = !this.model.studyArea.tabs.selectTab("seriesAreas");
 	
 	this.mergeExternal();
@@ -98,7 +98,7 @@ XeroController.prototype.updateDisplayTab = function XC_updateDisplayTab() {
 	console.info("Viewport size %d,%d",size[0],size[1]);
 	this.model.patientLayout.resize(size[0]-8,size[1]-32, "width:100%; height:100%;");
 
-	if( sameTab ) {
+	if( sameTab && forceComplete!==true ) {
 		this.waitUpdate("displayTab");
 	}
 	else {

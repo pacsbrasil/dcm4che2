@@ -78,16 +78,20 @@ public class ImageCache extends MemoryCacheFilter<WadoImage> {
  	  float[] region = getFloats(params, REGION, null);
 	  int rows = getInt(params, ROWS);
 	  int cols = getInt(params, COLUMNS);
-	  log.debug("rows=" + rows + " cols=" + cols+" region="+region);
-
+	  if( region==null && rows==0 && cols==0 && params.containsKey(WadoImage.IMG_AS_BYTES)) {
+		  return key.append("-asbytes").toString();
+	  }
+	  log.debug("rows=" + rows + " cols=" + cols);
+	  
 	  int sWidth = width, sHeight = height;
 	  if (region != null) {
+		 log.debug("region="+region[0]+","+region[1]+","+region[2]+","+region[3]);
 		 // Figure out the sub-region to use
 		 int xOffset = (int) (region[0] * width);
 		 int yOffset = (int) (region[1] * height);
 		 sWidth = (int) ((region[2] - region[0]) * width);
 		 sHeight = (int) ((region[3] - region[1]) * height);
-		 if( xOffset>0 && yOffset>0 && sWidth < width && sHeight<height) {
+		 if( xOffset>0 || yOffset>0 || sWidth < width || sHeight<height) {
 			 key.append("-r").append(xOffset).append(',').append(yOffset).append(',').append(sWidth).append(',').append(sHeight);
 		 }
 	  }
@@ -111,6 +115,7 @@ public class ImageCache extends MemoryCacheFilter<WadoImage> {
 	  if( subsampleX>1 && subsampleY>1 ) { 
 		  key.append("-s").append(subsampleX).append(",").append(subsampleY);
 	  }
+	  log.debug("ImageCache key is {}",key);
  	  return key.toString();
    }
 

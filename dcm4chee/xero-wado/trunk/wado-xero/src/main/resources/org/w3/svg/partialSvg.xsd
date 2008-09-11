@@ -1028,7 +1028,34 @@
   </attributeGroup>
 
   <element name="svg" type="svg:svgType"/>
-  <element name="image" type="svg:imageType"/>
+  <element name="image" >
+   <annotation><appinfo>
+     <jxb:class name="ImageType" />
+   </appinfo></annotation>
+  
+   <complexType>
+    <attributeGroup ref="svg:stdAttrs"/>
+
+    <attributeGroup ref="svg:xlinkRefAttrs"/>
+    <attribute ref="xlink:href" use="optional"/>
+    <attributeGroup ref="svg:testAttrs"/>
+    <attributeGroup ref="svg:PresentationAttributes-Color"/>
+    <attributeGroup ref="svg:langSpaceAttrs"/>
+    <attribute name="externalResourcesRequired" type="boolean" use="optional"/>
+    <attribute name="class" type="string" use="optional"/>
+    <attribute name="style" type="svg:StyleSheetType" use="optional"/>
+    <attributeGroup ref="svg:PresentationAttributes-Graphics"/>
+
+    <attributeGroup ref="svg:PresentationAttributes-Viewports"/>
+    <attribute name="transform" type="svg:TransformListType" use="optional"/>
+    <attributeGroup ref="svg:graphicsElementEvents"/>
+    <attribute name="x" type="svg:CoordinateType" use="optional"/>
+    <attribute name="y" type="svg:CoordinateType" use="optional"/>
+    <attribute name="width" type="svg:LengthType" use="required"/>
+    <attribute name="height" type="svg:LengthType" use="required"/>
+   </complexType>
+  </element>
+  
   <element name="g" type="svg:gType"/>
   <element name="defs" type="svg:defsType"/>
   <element name="text" type="svg:textType"/>
@@ -1098,28 +1125,6 @@
    </complexType>
   </element>
   
-  <complexType name="imageType">
-    <attributeGroup ref="svg:stdAttrs"/>
-
-    <attributeGroup ref="svg:xlinkRefAttrs"/>
-    <attribute ref="xlink:href" use="optional"/>
-    <attributeGroup ref="svg:testAttrs"/>
-    <attributeGroup ref="svg:PresentationAttributes-Color"/>
-    <attributeGroup ref="svg:langSpaceAttrs"/>
-    <attribute name="externalResourcesRequired" type="boolean" use="optional"/>
-    <attribute name="class" type="string" use="optional"/>
-    <attribute name="style" type="svg:StyleSheetType" use="optional"/>
-    <attributeGroup ref="svg:PresentationAttributes-Graphics"/>
-
-    <attributeGroup ref="svg:PresentationAttributes-Viewports"/>
-    <attribute name="transform" type="svg:TransformListType" use="optional"/>
-    <attributeGroup ref="svg:graphicsElementEvents"/>
-    <attribute name="x" type="svg:CoordinateType" use="optional"/>
-    <attribute name="y" type="svg:CoordinateType" use="optional"/>
-    <attribute name="width" type="svg:LengthType" use="required"/>
-    <attribute name="height" type="svg:LengthType" use="required"/>
-  </complexType>
-
   <complexType name="gType">
     <choice minOccurs="0" maxOccurs="unbounded">
       <annotation><appinfo>

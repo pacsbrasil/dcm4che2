@@ -38,6 +38,7 @@ ImageLayout.prototype.updatePosition = function ImageLayout_updatePosition() {
 	
 	var tl = this.merged.get("topLeft");
 	if( tl ) {
+	    // The points are all backwards and the first set are offset by 1 each as they are starting/ending points
 		var br = this.merged.get("bottomRight");
 		this.region = parsePoint(tl+","+br);
 		console.info("Using specified region %s", this.region);
@@ -93,6 +94,12 @@ ImageLayout.prototype.createFullUrl = function ImageLayout_createFullUrl(base) {
 		var wc = this.merged.get("windowCenter");
 		ret.imageUrl = ret.imageUrl + "&amp;windowWidth="+ww+"&amp;windowCenter="+wc;
 	}
+	var isinvert = this.merged.get("invert");
+	if( isinvert=="true" ) {
+		// Changes from the natural presentation to the inverted presentation - this is an OVERRIDE
+		// on the base value or base value + GSPS value, it isn't the base value itself.
+		ret.imageUrl = ret.imageUrl+"&amp;invert=true";
+	}
 	var puid = this.merged.get("gspsUID");
 	if( puid ) {
 		ret.imageUrl = ret.imageUrl + "&amp;presentationUID="+puid;
@@ -101,7 +108,7 @@ ImageLayout.prototype.createFullUrl = function ImageLayout_createFullUrl(base) {
 	var intScale = 1;
 	// Only fetch sizes down to 256 -otherwise fetch full size.
 	for(ret.fetchScale=1; ret.fetchScale < this.image.Rows/this.fetchSize; ret.fetchScale *=2 ) {
-		if( this.scale > intScale ) break;
+		if( this.scale >= intScale ) break;
 		intScale = intScale/2;
 	}
 	
@@ -159,12 +166,14 @@ ImageLayout.prototype.computeTranslate = function ImageLayout_computeTranslate()
 	// Remember that the image area is translated first, then scaled, then rotated
 	var dispX = this.width/2;
 	var dispY = this.height/2;
-	this.debug("Half x,y=%f,%f", dispX, dispY);
+	this.debug("Half x,y=%f,%f  region %s", dispX, dispY, this.region);
 	var imgTL = this.toDisplay(this.region,0);
 	var imgBR = this.toDisplay(this.region,2);
+	this.debug("imgTL %s imgBR %s", imgTL, imgBR);
 	
 	var imgX = (imgBR[0]-imgTL[0])/2+imgTL[0];
 	var imgY = (imgBR[1]-imgTL[1])/2+imgTL[1];
+	this.debug("imgX,Y = %d,%d", imgX, imgY);
 	this.translateX = dispX-imgX;
 	this.translateY = dispY-imgY;
 	if( this.translateX > -1 && this.translateX < 1 ) this.translateX = 0;

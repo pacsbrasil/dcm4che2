@@ -37,7 +37,7 @@ model.search.url=query
 # sets this first - if someone else does set it, then it will be whatever the value is that was set.
 model.layout=${ref:controller.queryController}
 
-# This defines the controller plugin components.
+# This defines the controller plugin components for JavaScript - NOT the dynamic instances
 model.xeroControllers=${class:org.dcm4chee.xero.metadata.access.ValueList}
 model.xeroControllers.patientController=patientController
 model.xeroControllers.reportController=reportController

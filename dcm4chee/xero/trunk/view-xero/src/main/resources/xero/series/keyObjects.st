@@ -3,7 +3,7 @@ $layout.study.series:{$if(it.keyObject)$
   <ul class="keyObject">
     $it.keyObject:{
 	  <li class="keyObject">
-		<span>$it.conceptMeaning$</span>
+		<span>$it.conceptMeaning; format="xml"$</span>
 	  </li>
     }$
   </ul>

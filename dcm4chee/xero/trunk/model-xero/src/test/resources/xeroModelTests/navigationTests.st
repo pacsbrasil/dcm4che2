@@ -42,33 +42,33 @@ navigationTests.testStudyQuery = function() {
 	console.info("Set navigation to %s", uids);
 	var c0 = patNav.getChild(0);
 	var c1 = patNav.getChild(1);
-	assertEquals(c0.id,stuid0,"c0.id");
-	assertEquals(c1.id,stuid1,"c1.id");
+	$assert(test="c0.id==stuid0")$;
+	$assert(test="c1.id==stuid1")$;
 	studyData = new StudyData();
 	studyData.parseString(twoStudy);
 	var urls = nav.mergeExternal(studyData);
-	assertNull(urls,"URLS must be null since no request has been made below that level");
+	$assert(test="urls==null",msg="URLs must be null initially without anyone being interested in studies")$
 	var se00 = c0.getChild(0);
 	var se10 = c1.getChild(0);
 	var im000 = se00.getChild(0);
 	var im100 = se10.getChild(0);
 	var im10n = se10.getChild(10000);
 	urls = nav.mergeExternal(studyData);
-	assertNotNull(urls,"URLS must not be null now.");
+	$assert(test="urls!=null",msg="Must require more URLs after adding studies to view.")$;
 	var cnt = 0;
 	for(key in urls) {
 		console.info("Looking for URL %s", key);
 		cnt++;
 	}
-	assertEquals(cnt,2,"Must have 2 urls requested.");
+	$assert(test="cnt==2",msg="Must have 2 studies to retrieve information for.")$;
 	studyData.parseString(images0);
 	studyData.parseString(images1);
 	urls = nav.mergeExternal(studyData);
-	assertNull(urls,"Urls must be null after supplying all data.");
-	assertNotNull(se00.id,"se00.id");
-	assertNotNull(se00.external,"se00.external");
-	assertNotNull(im000.id,"im000.id");
-	assertNotNull(im000.external,"im000.external");
+	$assert(test="urls==null",msg="Urls must be null after supplying all data.")$
+	$assert(test="se00.id!=null")$
+	$assert(test="se00.external!=null")$
+	$assert(test="im000.id!=null")$
+	$assert(test="im000.external!=null")$
 };
  
 /**
