@@ -68,7 +68,8 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
     protected final boolean type2;
 
     protected BaseDSQueryCmd(Dataset keys, boolean filterResult,
-            boolean noMatchForNoValue, int transactionIsolationLevel) throws SQLException {
+            boolean noMatchForNoValue, int transactionIsolationLevel)
+            throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel);
         this.keys = keys;

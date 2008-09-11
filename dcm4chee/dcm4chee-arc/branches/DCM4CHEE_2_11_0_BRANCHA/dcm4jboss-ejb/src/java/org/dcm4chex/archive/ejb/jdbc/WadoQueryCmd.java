@@ -343,7 +343,7 @@ public abstract class WadoQueryCmd extends BaseReadCmd {
 
     public void doFillDataset(Dataset ds, int column) throws SQLException {
     	if(column > 0)
-    		DatasetUtils.fromByteArray(getBytes(column), ds);
+    		DatasetUtils.fromByteArray(getBytes(column, true), ds);
     	else
     		fillDatasetLocal(ds);
 	}

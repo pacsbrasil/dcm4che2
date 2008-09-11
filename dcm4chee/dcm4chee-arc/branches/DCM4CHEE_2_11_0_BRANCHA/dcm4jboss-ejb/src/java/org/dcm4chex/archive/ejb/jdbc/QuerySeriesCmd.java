@@ -15,13 +15,12 @@
  * Java(TM), available at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * TIANI Medgraph AG.
+ * Agfa-Gevaert Group.
  * Portions created by the Initial Developer are Copyright (C) 2003-2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunter.zeilinger@tiani.com>
- * Franz Willer <franz.willer@gwi-ag.com>
+ * See @authors listed below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -39,55 +38,54 @@
 
 package org.dcm4chex.archive.ejb.jdbc;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
 
 /**
- * @author gunter.zeilinger@tiani.com
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Aug 22, 2005
+ * @since Jan 18, 2008
  */
-public class HPRetrieveCmd extends BaseReadCmd {
+class QuerySeriesCmd extends BaseReadCmd {
 
-    public static int transactionIsolationLevel = 0;
-    public static boolean accessBlobAsLongVarBinary = true;
+    private boolean accessBlobAsLongVarBinary;
 
-    private static final String[] FROM = { "HP" };
-
-    private static final String[] SELECT = { "HP.encodedAttributes" };
-
-    private final SqlBuilder sqlBuilder = new SqlBuilder();
-
-    public HPRetrieveCmd(Dataset keys) throws SQLException {
-		super(JdbcProperties.getInstance().getDataSource(),
-		        transactionIsolationLevel);
-                if (accessBlobAsLongVarBinary) {
-                    // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-                    defineColumnType(1, Types.LONGVARBINARY);
-                }
-		sqlBuilder.setSelect(SELECT);
-		sqlBuilder.setFrom(FROM);
-		sqlBuilder.addListOfUidMatch(null, "HP.sopIuid", SqlBuilder.TYPE1,
-				keys.getStrings(Tags.SOPInstanceUID));
-	}
-	
-	public List getDatasets() throws SQLException {
-		ArrayList result = new ArrayList();
-		try {
-	        execute(sqlBuilder.getSql());
-			while (next()) {
-				result.add(DatasetUtils.fromByteArray(getBytes(1, accessBlobAsLongVarBinary)));			
-			}
-		} finally {
-			close();
-		}
-		return result;
+    public QuerySeriesCmd(int transactionIsolationLevel,
+            boolean accessBlobAsLongVarBinary) throws SQLException {
+        super(JdbcProperties.getInstance().getDataSource(), 
+                transactionIsolationLevel,
+                JdbcProperties.getInstance().getProperty("QuerySeriesCmd"));
+        this.accessBlobAsLongVarBinary = accessBlobAsLongVarBinary;
+        if (accessBlobAsLongVarBinary) {
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(1, Types.LONGVARBINARY);
+            defineColumnType(2, Types.LONGVARBINARY);
+            defineColumnType(3, Types.LONGVARBINARY);
+        }
     }
-	
+
+    public void setSeriesIUID(String iuid) throws SQLException {
+        ((PreparedStatement) stmt).setString(1, iuid);          
+    }
+
+    public Dataset getDataset() throws SQLException {
+        Dataset dataset = DcmObjectFactory.getInstance().newDataset();
+        DatasetUtils.fromByteArray(getBytes(1, accessBlobAsLongVarBinary), dataset);
+        DatasetUtils.fromByteArray(getBytes(2, accessBlobAsLongVarBinary), dataset);
+        DatasetUtils.fromByteArray(getBytes(3, accessBlobAsLongVarBinary), dataset);
+        dataset.putCS(Tags.ModalitiesInStudy,
+                StringUtils.split(rs.getString(4), '\\'));
+        dataset.putCS(Tags.StudyStatusID, rs.getString(5));
+        dataset.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(6));
+        dataset.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(7));
+        dataset.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(8));
+        return dataset;
+    }
 }

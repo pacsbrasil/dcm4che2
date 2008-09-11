@@ -62,6 +62,7 @@ import org.dcm4chex.archive.util.Convert;
 public class QueryStudiesCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
+    public static boolean accessBlobAsLongVarBinary = true;
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
@@ -86,9 +87,11 @@ public class QueryStudiesCmd extends BaseReadCmd {
     public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies)
     	throws SQLException {
     	this(filter, hideMissingStudies, false );
-        // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-        defineColumnType(2, Types.LONGVARBINARY);
-        defineColumnType(4, Types.LONGVARBINARY);
+        if (accessBlobAsLongVarBinary) {
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(2, Types.LONGVARBINARY);
+            defineColumnType(4, Types.LONGVARBINARY);
+        }
     }
     /**
      * Creates a new QueryStudiesCmd object with given filter.
@@ -107,7 +110,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
     public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, boolean noMatchForNoValue)
             throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-				transactionIsolationLevel);
+                transactionIsolationLevel);
 
         boolean type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
     	sqlBuilder.setFrom(ENTITY);
@@ -189,9 +192,9 @@ public class QueryStudiesCmd extends BaseReadCmd {
                 Dataset ds = dof.newDataset();
                 ds.setPrivateCreatorID(PrivateTags.CreatorID);
                 ds.putOB(PrivateTags.PatientPk, Convert.toBytes(rs.getLong(1)) );
-                final byte[] patAttrs = getBytes(2);
+                final byte[] patAttrs = getBytes(2, accessBlobAsLongVarBinary);
                 long studyPk = rs.getLong(3);
-                final byte[] styAttrs = getBytes(4);
+                final byte[] styAttrs = getBytes(4, accessBlobAsLongVarBinary);
                 DatasetUtils.fromByteArray(patAttrs, ds);
                 if (styAttrs != null) {
                     ds.putOB(PrivateTags.StudyPk, Convert.toBytes(studyPk) );

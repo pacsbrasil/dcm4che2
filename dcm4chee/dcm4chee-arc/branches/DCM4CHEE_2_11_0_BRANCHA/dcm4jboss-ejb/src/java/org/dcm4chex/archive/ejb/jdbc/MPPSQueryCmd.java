@@ -55,6 +55,7 @@ import org.dcm4chex.archive.common.DatasetUtils;
 public class MPPSQueryCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
+    public static boolean accessBlobAsLongVarBinary = true;
 
     private static final String[] FROM = { "Patient", "MPPS"};
 
@@ -72,10 +73,12 @@ public class MPPSQueryCmd extends BaseReadCmd {
      */
     public MPPSQueryCmd(Dataset filter, boolean emptyAccNo) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
-				transactionIsolationLevel);
-        // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-        defineColumnType(1, Types.LONGVARBINARY);
-        defineColumnType(2, Types.LONGVARBINARY);
+                transactionIsolationLevel);
+        if (accessBlobAsLongVarBinary) {
+            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
+            defineColumnType(1, Types.LONGVARBINARY);
+            defineColumnType(2, Types.LONGVARBINARY);
+        }
         // ensure keys contains (8,0005) for use as result filter
         sqlBuilder.setSelect(SELECT);
         sqlBuilder.setFrom(FROM);
@@ -119,8 +122,8 @@ public class MPPSQueryCmd extends BaseReadCmd {
 
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();       
-        DatasetUtils.fromByteArray( getBytes(1), ds);
-        DatasetUtils.fromByteArray( getBytes(2), ds);
+        DatasetUtils.fromByteArray( getBytes(1, accessBlobAsLongVarBinary), ds);
+        DatasetUtils.fromByteArray( getBytes(2, accessBlobAsLongVarBinary), ds);
         return ds;
     }
     
