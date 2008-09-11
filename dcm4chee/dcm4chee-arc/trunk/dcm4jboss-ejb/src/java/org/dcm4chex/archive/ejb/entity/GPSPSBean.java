@@ -170,10 +170,8 @@ public abstract class GPSPSBean implements EntityBean {
             createScheduledHumanPerformers(
                     ds.get(Tags.ScheduledHumanPerformersSeq));
             createRefRequests(ds.get(Tags.RefRequestSeq));            
-        } catch (CreateException e) {
-            throw e;
-        } catch (FinderException e) {
-            throw new CreateException(e.getMessage());
+        } catch (Exception e) {
+            throw new EJBException(e);
         }
         log.info("Created " + prompt());
         if (log.isDebugEnabled()) {
