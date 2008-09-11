@@ -41,6 +41,7 @@ package org.dcm4chex.archive.dcm.hpscp;
 
 import java.net.InetAddress;
 import java.net.Socket;
+import java.sql.Types;
 
 import javax.management.JMException;
 import javax.management.ObjectName;
@@ -147,21 +148,19 @@ public class HPScpService extends AbstractScpService {
     }
 
     public final boolean getQueryAccessBlobAsLongVarBinary() {
-        return HPQueryCmd.accessBlobAsLongVarBinary;
+        return HPQueryCmd.blobAccessType == Types.LONGVARBINARY;
     }
 
-    public final void setQueryAccessBlobAsLongVarBinary(
-            boolean accessBlobAsLongVarBinary) {
-        HPQueryCmd.accessBlobAsLongVarBinary = accessBlobAsLongVarBinary;
+    public final void setQueryAccessBlobAsLongVarBinary(boolean enable) {
+        HPQueryCmd.blobAccessType = enable ? Types.LONGVARBINARY : Types.BLOB;
     }
 
     public final boolean getRetrieveAccessBlobAsLongVarBinary() {
-        return HPRetrieveCmd.accessBlobAsLongVarBinary;
+        return HPRetrieveCmd.blobAccessType == Types.LONGVARBINARY;
     }
 
-    public final void setRetrieveAccessBlobAsLongVarBinary(
-            boolean accessBlobAsLongVarBinary) {
-        HPRetrieveCmd.accessBlobAsLongVarBinary = accessBlobAsLongVarBinary;
+    public final void setRetrieveAccessBlobAsLongVarBinary(boolean enable) {
+        HPRetrieveCmd.blobAccessType = enable ? Types.LONGVARBINARY : Types.BLOB;
     }
 
     public final String getQueryTransactionIsolationLevel() {

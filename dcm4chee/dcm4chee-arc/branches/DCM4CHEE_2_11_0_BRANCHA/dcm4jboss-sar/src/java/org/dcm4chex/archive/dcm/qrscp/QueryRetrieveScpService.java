@@ -42,6 +42,7 @@ package org.dcm4chex.archive.dcm.qrscp;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -79,6 +80,7 @@ import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
+import org.dcm4chex.archive.ejb.jdbc.MWLQueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
@@ -384,28 +386,27 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     public final boolean getQueryAccessBlobAsLongVarBinary() {
-        return QueryCmd.accessBlobAsLongVarBinary;
+        return QueryCmd.blobAccessType == Types.LONGVARBINARY;
     }
 
     public final void setQueryAccessBlobAsLongVarBinary(boolean enable) {
-        QueryCmd.accessBlobAsLongVarBinary = enable;
+        QueryCmd.blobAccessType = enable ? Types.LONGVARBINARY : Types.BLOB;
     }
 
     public final boolean getQueryAccessSeriesBlobAsLongVarBinary() {
-        return QueryCmd.accessSeriesBlobAsLongVarBinary;
+        return QueryCmd.seriesBlobAccessType == Types.LONGVARBINARY;
     }
 
     public final void setQueryAccessSeriesBlobAsLongVarBinary(boolean enable) {
-        QueryCmd.accessSeriesBlobAsLongVarBinary = enable;
+        QueryCmd.seriesBlobAccessType = enable ? Types.LONGVARBINARY : Types.BLOB;
     }
 
     public final boolean getRetrieveAccessBlobAsLongVarBinary() {
-        return RetrieveCmd.accessBlobAsLongVarBinary;
+        return RetrieveCmd.blobAccessType == Types.LONGVARBINARY;
     }
 
-    public final void setRetrieveAccessBlobAsLongVarBinary(
-            boolean accessBlobAsLongVarBinary) {
-        RetrieveCmd.accessBlobAsLongVarBinary = accessBlobAsLongVarBinary;
+    public final void setRetrieveAccessBlobAsLongVarBinary(boolean enable) {
+        RetrieveCmd.blobAccessType = enable ? Types.LONGVARBINARY : Types.BLOB;
     }
 
     public final String getQueryTransactionIsolationLevel() {
