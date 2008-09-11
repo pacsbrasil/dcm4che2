@@ -131,6 +131,30 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getAccessBlobAsLongVarBinary"
+      setMethod="setAccessBlobAsLongVarBinary">
+      <description>Change JDBC binding for Oracle BLOB's to LONGVARBINARY for
+      accessing attributes stored in BLOB columns of DB records.
+      </description>
+      <name>AccessBlobAsLongVarBinary</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getTransactionIsolationLevel"
+      setMethod="setTransactionIsolationLevel">
+      <description>Transaction isolation level for queries. Values can be one of: 
+      DEFAULT|READ_UNCOMMITTED|READ_COMMITTED|REPEATABLE_READ|SERIALIZABLE.
+      </description>
+      <name>TransactionIsolationLevel</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="DEFAULT"/>
+      </descriptors>
+   </attribute>
+      <attribute access="read-write"
       getMethod="getDcmServerName"
       setMethod="setDcmServerName">
       <description>Used internally. Do NOT modify.

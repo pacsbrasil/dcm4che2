@@ -50,6 +50,7 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4chex.archive.dcm.AbstractScpService;
+import org.dcm4chex.archive.ejb.jdbc.GPWLQueryCmd;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -110,6 +111,25 @@ public class GPWLScpService extends AbstractScpService {
         updateAcceptedSOPClass(cuidMap, s, null);
     }
     
+    public final boolean getAccessBlobAsLongVarBinary() {
+        return GPWLQueryCmd.accessBlobAsLongVarBinary;
+    }
+
+    public final void setAccessBlobAsLongVarBinary(
+            boolean accessBlobAsLongVarBinary) {
+        GPWLQueryCmd.accessBlobAsLongVarBinary = accessBlobAsLongVarBinary;
+    }
+
+    public final String getTransactionIsolationLevel() {
+        return GPWLQueryCmd.transactionIsolationLevelAsString(
+                GPWLQueryCmd.transactionIsolationLevel);
+    }
+
+    public final void setTransactionIsolationLevel(String level) {
+        GPWLQueryCmd.transactionIsolationLevel = 
+            GPWLQueryCmd.transactionIsolationLevelOf(level);
+    }
+
     protected void startService() throws Exception {
         super.startService();
     }

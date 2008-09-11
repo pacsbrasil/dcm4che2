@@ -141,16 +141,29 @@ public class MWLScuService extends AbstractScuService {
         this.priority = DicomPriority.toCode(priority);
     }
 
-    /**
-     * 
-     */
+    public final boolean getAccessBlobAsLongVarBinary() {
+        return MWLQueryCmd.accessBlobAsLongVarBinary;
+    }
+
+    public final void setAccessBlobAsLongVarBinary(
+            boolean accessBlobAsLongVarBinary) {
+        MWLQueryCmd.accessBlobAsLongVarBinary = accessBlobAsLongVarBinary;
+    }
+
+    public final String getTransactionIsolationLevel() {
+        return MWLQueryCmd.transactionIsolationLevelAsString(
+                MWLQueryCmd.transactionIsolationLevel);
+    }
+
+    public final void setTransactionIsolationLevel(String level) {
+        MWLQueryCmd.transactionIsolationLevel = 
+                MWLQueryCmd.transactionIsolationLevelOf(level);
+    }
+
     protected void startService() throws Exception {
         super.startService();
     }
 
-    /**
-     * 
-     */
     protected void stopService() throws Exception {
         super.stopService();
     }

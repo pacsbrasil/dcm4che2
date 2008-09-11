@@ -48,7 +48,6 @@ import javax.xml.transform.Templates;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.ActiveAssociation;
@@ -70,15 +69,11 @@ public class MWLFindScp extends DcmServiceBase {
     private static final String RESULT_XML = "-mwl-cfindrsp.xml";
     
     private final MWLFindScpService service;
-	private final Logger log;
+    private final Logger log;
 
-    public static int transactionIsolationLevel = 0;
-
-    protected static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
-	
-	public MWLFindScp(MWLFindScpService service) {
+    public MWLFindScp(MWLFindScpService service) {
         this.service = service;
-		this.log = service.getLog();
+        this.log = service.getLog();
     }
 	
 	protected MultiDimseRsp doCFind(ActiveAssociation assoc, Dimse rq,
