@@ -6,6 +6,9 @@ CREATE INDEX pat_id ON patient(pat_id, pat_id_issuer);
 
 CREATE INDEX mpps_drcode_fk ON mpps(drcode_fk);
 
+DROP INDEX code_value;
+CREATE UNIQUE INDEX code_value ON code(code_value,code_designator,code_version);
+
 ALTER TABLE ae
   ALTER pk DROP IDENTITY;
 

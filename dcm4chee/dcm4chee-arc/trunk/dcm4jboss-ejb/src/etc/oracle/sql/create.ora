@@ -22,7 +22,7 @@ CREATE TABLE code (
 	code_version   	VARCHAR2(255),
 	code_meaning   	NVARCHAR2(255)
 );
-CREATE UNIQUE INDEX code_value ON code(code_value,code_designator);
+CREATE UNIQUE INDEX code_value ON code(code_value,code_designator,code_version);
 
 CREATE SEQUENCE patient_pk_seq;
 CREATE TABLE patient (

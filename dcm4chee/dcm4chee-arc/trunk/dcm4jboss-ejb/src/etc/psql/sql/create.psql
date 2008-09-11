@@ -20,7 +20,7 @@ CREATE TABLE code (
 	code_version   	TEXT,
 	code_meaning   	TEXT
 );
-CREATE UNIQUE INDEX code_value ON code(code_value,code_designator);
+CREATE UNIQUE INDEX code_value ON code(code_value,code_designator,code_version);
 
 CREATE TABLE patient (
 	pk          	SERIAL8 NOT NULL CONSTRAINT patient_pk PRIMARY KEY,

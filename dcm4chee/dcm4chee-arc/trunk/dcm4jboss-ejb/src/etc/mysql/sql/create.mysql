@@ -20,7 +20,7 @@ CREATE TABLE code (
 	code_version   	VARCHAR(250) BINARY,
 	code_meaning   	VARCHAR(250) BINARY
 ) ENGINE=INNODB;
-CREATE UNIQUE INDEX code_value ON code(code_value(64),code_designator(64));
+CREATE UNIQUE INDEX code_value ON code(code_value(64),code_designator(64),code_version(64));
 
 CREATE TABLE patient (
 	pk          	BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY,

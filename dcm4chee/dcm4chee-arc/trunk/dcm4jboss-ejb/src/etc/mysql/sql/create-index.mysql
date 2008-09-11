@@ -1,5 +1,5 @@
 CREATE UNIQUE INDEX aet ON ae(aet(64));
-CREATE UNIQUE INDEX code_value ON code(code_value(64),code_designator(64));
+CREATE UNIQUE INDEX code_value ON code(code_value(64),code_designator(64),code_version(64));
 CREATE INDEX pat_merge_fk ON patient(merge_fk);
 CREATE INDEX pat_id ON patient(pat_id(64), pat_id_issuer(64));
 CREATE INDEX pat_name ON patient(pat_name(64));

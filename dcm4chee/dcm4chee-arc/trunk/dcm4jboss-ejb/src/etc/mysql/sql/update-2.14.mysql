@@ -5,6 +5,9 @@ CREATE INDEX pat_id ON patient(pat_id(64), pat_id_issuer(64));
 
 CREATE INDEX mpps_drcode_fk ON mpps(drcode_fk);
 
+ALTER TABLE code DROP INDEX code_value;
+CREATE UNIQUE INDEX code_value ON code(code_value(64),code_designator(64),code_version(64));
+
 ALTER TABLE ae ADD wado_url VARCHAR(250) BINARY;
 
 ALTER TABLE instance
