@@ -20,7 +20,8 @@ RemoveRoleFromUserCmd=DELETE FROM roles WHERE user_id=? AND roles=?
 QueryUsersCmd=SELECT user_id FROM users
 QueryPasswordForUserCmd=SELECT passwd FROM users WHERE user_id=?
 QueryRolesForUserCmd=SELECT roles FROM roles WHERE user_id=?
-QuerySeriesCmd=SELECT patient.pat_attrs,study.study_attrs,series.series_attrs,study.mods_in_study,study.study_status_id,study.num_series,study.num_instances,series.num_instances FROM patient,study,series WHERE patient.pk=study.patient_fk AND study.pk=series.study_fk AND series.series_iuid=?
+QuerySeriesAttrsForQueryCmd=SELECT patient.pat_attrs,study.study_attrs,series.series_attrs,study.mods_in_study,study.study_status_id,study.num_series,study.num_instances,series.num_instances FROM patient,study,series WHERE patient.pk=study.patient_fk AND study.pk=series.study_fk AND series.series_iuid=?
+QuerySeriesAttrsForRetrieveCmd=SELECT patient.pat_attrs,study.study_attrs,series.series_attrs,patient.pat_id,patient.pat_name,study.study_iuid FROM patient,study,series WHERE patient.pk=study.patient_fk AND study.pk=series.study_fk AND series.series_iuid=?
 QueryOldARRCmd=SELECT * FROM ( SELECT pk,xml_data FROM audit_record_old WHERE pk>? ORDER BY pk ) WHERE ROWNUM&lt;=?
 QueryOldARRCmdLimitPos=2
 </xsl:text>

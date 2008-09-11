@@ -900,15 +900,23 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(7));
             Dataset seriesAttrs = (Dataset) seriesAttrsCache.get(seriesIuid);
             if (seriesAttrs == null) {
-                QuerySeriesCmd seriesQuery = new QuerySeriesCmd(
-                        QueryCmd.transactionIsolationLevel,
-                        QueryCmd.seriesBlobAccessType);
-                seriesQuery.setSeriesIUID(seriesIuid);
-                seriesQuery.execute();
-                seriesQuery.next();
-                seriesAttrsCache.put(seriesIuid,
-                        seriesAttrs = seriesQuery.getDataset());
-                seriesQuery.close();
+                if (log.isDebugEnabled()) {
+                    log.debug("Lazy fetch Series attributes for Series "
+                            + seriesIuid);
+                }
+                QuerySeriesAttrsForQueryCmd seriesQuery =
+                        new QuerySeriesAttrsForQueryCmd(
+                                QueryCmd.transactionIsolationLevel,
+                                QueryCmd.seriesBlobAccessType,
+                                seriesIuid);
+                try {
+                    seriesQuery.execute();
+                    seriesQuery.next();
+                    seriesAttrs = seriesQuery.getDataset();
+                } finally {
+                    seriesQuery.close();
+                }
+                seriesAttrsCache.put(seriesIuid, seriesAttrs);
             }
             ds.putAll(seriesAttrs);
             ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
@@ -921,11 +929,18 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 String seriesIuid = rs.getString(2);
                 Dataset seriesAttrs = (Dataset) seriesAttrsCache.get(seriesIuid);
                 if (seriesAttrs == null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Cache Series attributes for Series "
+                                + seriesIuid);
+                    }
                     seriesAttrs = DcmObjectFactory.getInstance().newDataset();
                     fillDataset(seriesAttrs, 3);
                     fillDataset(seriesAttrs, 4);
                     fillDataset(seriesAttrs, 5);
                     seriesAttrsCache.put(seriesIuid, seriesAttrs);
+                } else if (log.isDebugEnabled()) {
+                    log.debug("Use cached Series attributes for Series "
+                            + seriesIuid);
                 }
                 ds.putAll(seriesAttrs);
             } else {
