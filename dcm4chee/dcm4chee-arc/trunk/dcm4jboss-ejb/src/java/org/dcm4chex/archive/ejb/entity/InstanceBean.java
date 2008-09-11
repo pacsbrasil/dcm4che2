@@ -455,17 +455,16 @@ public abstract class InstanceBean implements EntityBean {
         try {
             setSrCode(CodeBean.valueOf(codeHome, ds
                     .getItem(Tags.ConceptNameCodeSeq)));
-        } catch (CreateException e) {
-            throw new CreateException(e.getMessage());
-        } catch (FinderException e) {
-            throw new CreateException(e.getMessage());
-        }
-        DcmElement sq = ds.get(Tags.VerifyingObserverSeq);
-        if (sq != null) {
-            Collection c = getVerifyingObservers();
-            for (int i = 0, n = sq.countItems(); i < n; i++) {
-                c.add(observerHome.create(sq.getItem(i)));
+            DcmElement sq = ds.get(Tags.VerifyingObserverSeq);
+            if (sq != null) {
+                Collection c = getVerifyingObservers();
+                for (int i = 0, n = sq.countItems(); i < n; i++) {
+                    c.add(observerHome.create(sq.getItem(i)));
+                }
             }
+        } catch (Exception e) {
+            // ensure to rollback transaction
+            throw new EJBException(e);
         }
         setSeries(series);
         log.info("Created " + prompt());
