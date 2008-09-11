@@ -60,7 +60,7 @@ import org.dcm4chex.archive.common.InputAvailabilityFlag;
 public class GPWLQueryCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
-    public static boolean accessBlobAsLongVarBinary = true;
+    public static int blobAccessType = Types.LONGVARBINARY;
 
     private static final String[] FROM = { "Patient", "GPSPS"};
 
@@ -84,11 +84,7 @@ public class GPWLQueryCmd extends BaseReadCmd {
     public GPWLQueryCmd(Dataset keys) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
 				transactionIsolationLevel);
-        if (accessBlobAsLongVarBinary) {
-            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-            defineColumnType(1, Types.LONGVARBINARY);
-            defineColumnType(2, Types.LONGVARBINARY);
-        }
+        defineColumnTypes(new int[] { blobAccessType, blobAccessType });
         String s;
         this.keys = keys;
         // ensure keys contains (8,0005) for use as result filter
@@ -279,8 +275,8 @@ public class GPWLQueryCmd extends BaseReadCmd {
 
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
-        DatasetUtils.fromByteArray( getBytes(1, accessBlobAsLongVarBinary), ds);
-        DatasetUtils.fromByteArray( getBytes(2, accessBlobAsLongVarBinary), ds);
+        DatasetUtils.fromByteArray( rs.getBytes(1), ds);
+        DatasetUtils.fromByteArray( rs.getBytes(2), ds);
         QueryCmd.adjustDataset(ds, keys);
         return ds.subSet(keys);
     }

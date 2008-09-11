@@ -60,12 +60,15 @@ import org.dcm4chex.archive.util.Convert;
 public class QueryPrivateStudiesCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
-    public static boolean accessBlobAsLongVarBinary = true;
+    public static int blobAccessType = Types.LONGVARBINARY;
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
-    private static final String[] SELECT_ATTRIBUTE = { "PrivatePatient.pk", "PrivatePatient.privateType",
-            "PrivatePatient.encodedAttributes", "PrivateStudy.pk", "PrivateStudy.encodedAttributes"};
+    private static final String[] SELECT_ATTRIBUTE = { 
+            "PrivatePatient.encodedAttributes",
+            "PrivateStudy.encodedAttributes",
+            "PrivatePatient.pk",
+            "PrivateStudy.pk"};
 
     private static final String[] ENTITY = {"PrivatePatient"};
 
@@ -80,11 +83,11 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
             throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel);
-        if (accessBlobAsLongVarBinary) {
-            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-            defineColumnType(3, Types.LONGVARBINARY);
-            defineColumnType(5, Types.LONGVARBINARY);
-        }
+        defineColumnTypes(new int[] {
+                blobAccessType,
+                blobAccessType,
+                Types.BIGINT,
+                Types.BIGINT});
     	this.hideMissingStudies = hideMissingStudies;
     	sqlBuilder.setFrom(ENTITY);
         sqlBuilder.setLeftJoin(LEFT_JOIN);
@@ -155,12 +158,12 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
             ArrayList result = new ArrayList();
             
             while (next()) {
+                final byte[] patAttrs = rs.getBytes(1);
+                final byte[] styAttrs = rs.getBytes(2);
                 Dataset ds = dof.newDataset();
                 ds.setPrivateCreatorID(PrivateTags.CreatorID);
-                ds.putOB(PrivateTags.PatientPk, Convert.toBytes(rs.getLong(1)) );
-                final byte[] patAttrs = getBytes(3, accessBlobAsLongVarBinary);
+                ds.putOB(PrivateTags.PatientPk, Convert.toBytes(rs.getLong(3)) );
                 long studyPk = rs.getLong(4);
-                final byte[] styAttrs = getBytes(5, accessBlobAsLongVarBinary);
                 DatasetUtils.fromByteArray(patAttrs, ds);
                 if (styAttrs != null) {
                     ds.putOB(PrivateTags.StudyPk, Convert.toBytes(studyPk) );

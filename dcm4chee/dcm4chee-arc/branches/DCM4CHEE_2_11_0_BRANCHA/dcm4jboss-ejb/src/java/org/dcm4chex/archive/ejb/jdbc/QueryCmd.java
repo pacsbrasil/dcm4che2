@@ -137,8 +137,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     private static final String SR_CODE = "sr_code";
 
     public static int transactionIsolationLevel = 0;
-    public static boolean accessBlobAsLongVarBinary = true;
-    public static boolean accessSeriesBlobAsLongVarBinary = false;
+    public static int blobAccessType = Types.LONGVARBINARY;
+    public static int seriesBlobAccessType = Types.BLOB;
     public static boolean lazyFetchSeriesAttrsOnImageLevelQuery = false;
     public static boolean cacheSeriesAttrsOnImageLevelQuery = true;
 
@@ -547,7 +547,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     private void checkPatAttrs() throws SQLException {
         Dataset ds = dof.newDataset();
-        fillDataset(ds, 1, accessBlobAsLongVarBinary);
+        fillDataset(ds, 1);
         String key = getPatIdString(ds);
         if (chkPatAttrs == null) {
             chkPatAttrs = new HashMap();
@@ -614,9 +614,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     protected abstract void fillDataset(Dataset ds) throws SQLException;
 
-    protected void fillDataset(Dataset ds, int column,
-            boolean accessBlobAsLongVarBinary) throws SQLException {
-        DatasetUtils.fromByteArray(getBytes(column, accessBlobAsLongVarBinary), ds);
+    protected void fillDataset(Dataset ds, int column) throws SQLException {
+        DatasetUtils.fromByteArray(rs.getBytes(column), ds);
     }
 
     static class PatientQueryCmd extends QueryCmd {
@@ -624,10 +623,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         PatientQueryCmd(Dataset keys, boolean filterResult,
                 boolean noMatchForNoValue) throws SQLException {
             super(keys, filterResult, noMatchForNoValue);
-            if (accessBlobAsLongVarBinary) {
-                // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-                defineColumnType(1, Types.LONGVARBINARY);
-            }
+            defineColumnTypes(new int[] { blobAccessType });
         }
 
         protected void init() {
@@ -636,7 +632,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
-            fillDataset(ds, 1, accessBlobAsLongVarBinary);
+            fillDataset(ds, 1);
             ds.putCS(Tags.QueryRetrieveLevel, "PATIENT");
         }
 
@@ -655,11 +651,18 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         StudyQueryCmd(Dataset keys, boolean filterResult,
                 boolean noMatchForNoValue) throws SQLException {
             super(keys, filterResult, noMatchForNoValue);
-            if (accessBlobAsLongVarBinary) {
-                // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-                defineColumnType(1, Types.LONGVARBINARY);
-                defineColumnType(2, Types.LONGVARBINARY);
-            }
+            defineColumnTypes(new int[] {
+                    blobAccessType,
+                    blobAccessType,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.INTEGER,
+                    Types.INTEGER,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.INTEGER });
         }
 
         protected void init() {
@@ -670,12 +673,18 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected String[] getSelectAttributes() {
-            return new String[] { "Patient.encodedAttributes",
-                    "Study.encodedAttributes", "Study.modalitiesInStudy",
-                    "Study.studyStatusId", "Study.numberOfStudyRelatedSeries",
-                    "Study.numberOfStudyRelatedInstances", "Study.filesetId",
-                    "Study.filesetIuid", "Study.retrieveAETs",
-                    "Study.externalRetrieveAET", "Study.availability" };
+            return new String[] { 
+                    "Patient.encodedAttributes",
+                    "Study.encodedAttributes",
+                    "Study.modalitiesInStudy",
+                    "Study.studyStatusId",
+                    "Study.numberOfStudyRelatedSeries",
+                    "Study.numberOfStudyRelatedInstances",
+                    "Study.filesetId",
+                    "Study.filesetIuid",
+                    "Study.retrieveAETs",
+                    "Study.externalRetrieveAET",
+                    "Study.availability" };
         }
 
         protected String[] getTables() {
@@ -687,8 +696,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
-            fillDataset(ds, 1, accessBlobAsLongVarBinary);
-            fillDataset(ds, 2, accessBlobAsLongVarBinary);
+            fillDataset(ds, 1);
+            fillDataset(ds, 2);
             ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(rs.getString(3),
                     '\\'));
             ds.putCS(Tags.StudyStatusID, rs.getString(4));
@@ -708,12 +717,20 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         SeriesQueryCmd(Dataset keys, boolean filterResult,
                 boolean noMatchForNoValue) throws SQLException {
             super(keys, filterResult, noMatchForNoValue);
-            if (accessBlobAsLongVarBinary) {
-                // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-                defineColumnType(1, Types.LONGVARBINARY);
-                defineColumnType(2, Types.LONGVARBINARY);
-                defineColumnType(3, Types.LONGVARBINARY);
-            }
+            defineColumnTypes(new int[] {
+                    blobAccessType,
+                    blobAccessType,
+                    blobAccessType,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.INTEGER,
+                    Types.INTEGER,
+                    Types.INTEGER,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.VARCHAR,
+                    Types.INTEGER });
         }
 
         protected void init() {
@@ -724,14 +741,19 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected String[] getSelectAttributes() {
-            return new String[] { "Patient.encodedAttributes",
-                    "Study.encodedAttributes", "Series.encodedAttributes",
-                    "Study.modalitiesInStudy", "Study.studyStatusId",
+            return new String[] {
+                    "Patient.encodedAttributes",
+                    "Study.encodedAttributes",
+                    "Series.encodedAttributes",
+                    "Study.modalitiesInStudy",
+                    "Study.studyStatusId",
                     "Study.numberOfStudyRelatedSeries",
                     "Study.numberOfStudyRelatedInstances",
                     "Series.numberOfSeriesRelatedInstances",
-                    "Series.filesetId", "Series.filesetIuid",
-                    "Series.retrieveAETs", "Series.externalRetrieveAET",
+                    "Series.filesetId",
+                    "Series.filesetIuid",
+                    "Series.retrieveAETs",
+                    "Series.externalRetrieveAET",
                     "Series.availability" };
         }
 
@@ -749,9 +771,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
-            fillDataset(ds, 1, accessBlobAsLongVarBinary);
-            fillDataset(ds, 2, accessBlobAsLongVarBinary);
-            fillDataset(ds, 3, accessBlobAsLongVarBinary);
+            fillDataset(ds, 1);
+            fillDataset(ds, 2);
+            fillDataset(ds, 3);
             ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(rs.getString(4),
                     '\\'));
             ds.putCS(Tags.StudyStatusID, rs.getString(5));
@@ -773,22 +795,31 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         ImageQueryCmd(Dataset keys, boolean filterResult,
                 boolean noMatchForNoValue) throws SQLException {
             super(keys, filterResult, noMatchForNoValue);
-            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-            if (accessBlobAsLongVarBinary) {
-                defineColumnType(1, Types.LONGVARBINARY);
-            }
-            if (accessSeriesBlobAsLongVarBinary
-                    && !lazyFetchSeriesAttrsOnImageLevelQuery) {
-                // has to also set binding of VARCHAR2 Series.seriesIuid to
-                // LONGVARBINARY, otherwise Oracle JDBC Driver v10.2.0.3.0
-                // throws java.sql.SQLException: Io exception: 
-                // Bigger type length than Maximum on access of column 3 
-                defineColumnType(2, Types.LONGVARBINARY);
-                
-                defineColumnType(3, Types.LONGVARBINARY);
-                defineColumnType(4, Types.LONGVARBINARY);
-                defineColumnType(5, Types.LONGVARBINARY);
-            }
+            defineColumnTypes(lazyFetchSeriesAttrsOnImageLevelQuery
+                    ? new int[] {
+                            blobAccessType,
+                            Types.VARCHAR,
+                            Types.VARCHAR,
+                            Types.INTEGER,
+                            Types.VARCHAR,
+                            Types.VARCHAR,
+                            Types.VARCHAR }
+                    : new int[] {
+                            blobAccessType,
+                            Types.VARCHAR,
+                            blobAccessType,
+                            blobAccessType,
+                            blobAccessType,
+                            Types.VARCHAR,
+                            Types.VARCHAR,
+                            Types.INTEGER,
+                            Types.INTEGER,
+                            Types.INTEGER,
+                            Types.VARCHAR,
+                            Types.VARCHAR,
+                            Types.INTEGER,
+                            Types.VARCHAR,
+                            Types.VARCHAR });
         }
 
         protected void init() {
@@ -861,7 +892,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         
         private void fillDatasetWithLazyFetchSeriesAttrs(Dataset ds)
                 throws SQLException {
-            fillDataset(ds, 1, accessBlobAsLongVarBinary);
+            fillDataset(ds, 1);
             DatasetUtils.putRetrieveAET(ds, rs.getString(2), rs.getString(3));
             ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(4)]);
             String seriesIuid = rs.getString(5);
@@ -871,7 +902,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             if (seriesAttrs == null) {
                 QuerySeriesCmd seriesQuery = new QuerySeriesCmd(
                         QueryCmd.transactionIsolationLevel,
-                        QueryCmd.accessSeriesBlobAsLongVarBinary);
+                        QueryCmd.seriesBlobAccessType);
                 seriesQuery.setSeriesIUID(seriesIuid);
                 seriesQuery.execute();
                 seriesQuery.next();
@@ -885,22 +916,22 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         
         private void fillDatasetWithEagerFetchSeriesAttrs(Dataset ds)
                 throws SQLException {
-            fillDataset(ds, 1, accessBlobAsLongVarBinary);
+            fillDataset(ds, 1);
             if (cacheSeriesAttrsOnImageLevelQuery) {
                 String seriesIuid = rs.getString(2);
                 Dataset seriesAttrs = (Dataset) seriesAttrsCache.get(seriesIuid);
                 if (seriesAttrs == null) {
                     seriesAttrs = DcmObjectFactory.getInstance().newDataset();
-                    fillDataset(seriesAttrs, 3, accessSeriesBlobAsLongVarBinary);
-                    fillDataset(seriesAttrs, 4, accessSeriesBlobAsLongVarBinary);
-                    fillDataset(seriesAttrs, 5, accessSeriesBlobAsLongVarBinary);
+                    fillDataset(seriesAttrs, 3);
+                    fillDataset(seriesAttrs, 4);
+                    fillDataset(seriesAttrs, 5);
                     seriesAttrsCache.put(seriesIuid, seriesAttrs);
                 }
                 ds.putAll(seriesAttrs);
             } else {
-                fillDataset(ds, 3, accessSeriesBlobAsLongVarBinary);
-                fillDataset(ds, 4, accessSeriesBlobAsLongVarBinary);
-                fillDataset(ds, 5, accessSeriesBlobAsLongVarBinary);
+                fillDataset(ds, 3);
+                fillDataset(ds, 4);
+                fillDataset(ds, 5);
             }
             ds.putCS(Tags.ModalitiesInStudy,
                     StringUtils.split(rs.getString(6), '\\'));

@@ -62,15 +62,22 @@ import org.dcm4chex.archive.util.Convert;
 public class QueryStudiesCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
-    public static boolean accessBlobAsLongVarBinary = true;
+    public static int blobAccessType = Types.LONGVARBINARY;
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
-    private static final String[] SELECT_ATTRIBUTE = { "Patient.pk",
-            "Patient.encodedAttributes", "Study.pk", "Study.encodedAttributes",
-            "Study.modalitiesInStudy", "Study.numberOfStudyRelatedSeries",
-            "Study.numberOfStudyRelatedInstances", "Study.retrieveAETs",
-            "Study.availability", "Study.filesetId", "Study.studyStatusId"};
+    private static final String[] SELECT_ATTRIBUTE = {
+            "Patient.encodedAttributes",
+            "Study.encodedAttributes",
+            "Patient.pk",
+            "Study.pk",
+            "Study.modalitiesInStudy",
+            "Study.numberOfStudyRelatedSeries",
+            "Study.numberOfStudyRelatedInstances",
+            "Study.retrieveAETs",
+            "Study.availability",
+            "Study.filesetId",
+            "Study.studyStatusId"};
 
     private static final String[] ENTITY = {"Patient"};
 
@@ -87,11 +94,18 @@ public class QueryStudiesCmd extends BaseReadCmd {
     public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies)
     	throws SQLException {
     	this(filter, hideMissingStudies, false );
-        if (accessBlobAsLongVarBinary) {
-            // set JDBC binding for Oracle BLOB columns to LONGVARBINARY
-            defineColumnType(2, Types.LONGVARBINARY);
-            defineColumnType(4, Types.LONGVARBINARY);
-        }
+        defineColumnTypes(new int[] { 
+                blobAccessType, 
+                blobAccessType,
+                Types.BIGINT,
+                Types.BIGINT,
+                Types.VARCHAR,
+                Types.INTEGER,
+                Types.INTEGER,
+                Types.VARCHAR,
+                Types.INTEGER,
+                Types.VARCHAR,
+                Types.VARCHAR });
     }
     /**
      * Creates a new QueryStudiesCmd object with given filter.
@@ -189,12 +203,12 @@ public class QueryStudiesCmd extends BaseReadCmd {
             ArrayList result = new ArrayList();
             
             while (next()) {
+                final byte[] patAttrs = rs.getBytes(1);
+                final byte[] styAttrs = rs.getBytes(2);
                 Dataset ds = dof.newDataset();
                 ds.setPrivateCreatorID(PrivateTags.CreatorID);
-                ds.putOB(PrivateTags.PatientPk, Convert.toBytes(rs.getLong(1)) );
-                final byte[] patAttrs = getBytes(2, accessBlobAsLongVarBinary);
-                long studyPk = rs.getLong(3);
-                final byte[] styAttrs = getBytes(4, accessBlobAsLongVarBinary);
+                ds.putOB(PrivateTags.PatientPk, Convert.toBytes(rs.getLong(3)) );
+                long studyPk = rs.getLong(4);
                 DatasetUtils.fromByteArray(patAttrs, ds);
                 if (styAttrs != null) {
                     ds.putOB(PrivateTags.StudyPk, Convert.toBytes(studyPk) );
