@@ -685,21 +685,21 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getQueryAccessBlobAsLongVarBinary"
-      setMethod="setQueryAccessBlobAsLongVarBinary">
+      getMethod="getAccessBlobAsLongVarBinaryOnQuery"
+      setMethod="setAccessBlobAsLongVarBinaryOnQuery">
       <description>Change JDBC binding for Oracle BLOB's to LONGVARBINARY for
       accessing attributes stored in BLOB columns of DB records on query.
       Only effective with Oracle as DB.
       </description>
-      <name>QueryAccessBlobAsLongVarBinary</name>
+      <name>AccessBlobAsLongVarBinaryOnQuery</name>
       <type>boolean</type>
       <descriptors>
          <value value="true"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getQueryAccessSeriesBlobAsLongVarBinary"
-      setMethod="setQueryAccessSeriesBlobAsLongVarBinary">
+      getMethod="getAccessSeriesBlobAsLongVarBinaryOnImageLevelQuery"
+      setMethod="setAccessSeriesBlobAsLongVarBinaryOnImageLevelQuery">
       <description>
        Change JDBC binding for Oracle BLOB's to LONGVARBINARY for accessing
        Patient, Study and Series attributes stored in BLOB columns of DB records
@@ -707,23 +707,96 @@ QueryRetrieveScp service.</description>
        enabled with LazyFetchSeriesAttrsOnImageLevelQuery = true or
        CacheSeriesAttrsOnImageLevelQuery = false.
       </description>
-      <name>QueryAccessSeriesBlobAsLongVarBinary</name>
+      <name>AccessSeriesBlobAsLongVarBinaryOnImageLevelQuery</name>
       <type>boolean</type>
       <descriptors>
          <value value="false"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getRetrieveAccessBlobAsLongVarBinary"
-      setMethod="setRetrieveAccessBlobAsLongVarBinary">
+      getMethod="getLazyFetchSeriesAttrsOnRetrieve"
+      setMethod="setLazyFetchSeriesAttrsOnRetrieve">
+      <description>Activates lazy fetch of Series, Study and Instance
+      attributes stored in BLOB columns by an additional query for
+      each series.on DICOM Retrieve and access by WADO with 
+      contentType=application/dicom.
+      </description>
+      <name>LazyFetchSeriesAttrsOnRetrieve</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCacheSeriesAttrsOnRetrieve"
+      setMethod="setCacheSeriesAttrsOnRetrieve">
+      <description>Activates caching of Series attributes on DICOM Retrieve,
+      - but also for successive WADO requests for Instances of the same Series - 
+      which reduces the number of BLOB access from 4 x Number of
+      retrieved Instances to Number of retrieved Instances + 3 * Number of
+      different Series. Implicit set by LazyFetchSeriesAttrsOnRetrieve
+      = true.
+      </description>
+      <name>CacheSeriesAttrsOnRetrieve</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCacheSeriesAttrsOnRetrieveMaxSize"
+      setMethod="setCacheSeriesAttrsOnRetrieveMaxSize">
+      <description>Defines maximal number of Series, which attributes are cached
+       on retrieve of Instances.
+       Only effective if CacheSeriesAttrsOnRetrieve = true.
+      </description>
+      <name>CacheSeriesAttrsOnRetrieveMaxSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="100"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCacheSeriesAttrsOnRetrieveCurrencyTimeLimit"
+      setMethod="setCacheSeriesAttrsOnRetrieveCurrencyTimeLimit">
+      <description>Defines how long cached Series Attributes on retrieve are
+       valid. 
+       Format: ##s (in seconds), ##m (in minutes)
+       Only effective if CacheSeriesAttrsOnRetrieve = true
+      </description>
+      <name>CacheSeriesAttrsOnRetrieveCurrencyTimeLimit</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="1m"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getAccessBlobAsLongVarBinaryOnRetrieve"
+      setMethod="setAccessBlobAsLongVarBinaryOnRetrieve">
       <description>Change JDBC binding for Oracle BLOB's to LONGVARBINARY for
       accessing attributes stored in BLOB columns of DB records on retrieve.
       Only effective with Oracle as DB.
       </description>
-      <name>RetrieveAccessBlobAsLongVarBinary</name>
+      <name>AccessBlobAsLongVarBinaryOnRetrieve</name>
       <type>boolean</type>
       <descriptors>
          <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getAccessSeriesBlobAsLongVarBinaryOnRetrieve"
+      setMethod="setAccessSeriesBlobAsLongVarBinaryOnRetrieve">
+      <description>
+       Change JDBC binding for Oracle BLOB's to LONGVARBINARY for accessing
+       Patient, Study and Series attributes stored in BLOB columns of DB records
+       on retrieve. Only effective with Oracle as DB. Should only be
+       enabled with LazyFetchSeriesAttrsOnRetrieve = true or
+       CacheSeriesAttrsOnRetrieve = false.
+      </description>
+      <name>AccessSeriesBlobAsLongVarBinaryOnRetrieve</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

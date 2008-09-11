@@ -73,6 +73,7 @@ import org.dcm4che2.audit.message.InstanceSorter;
 import org.dcm4che2.audit.message.InstancesTransferredMessage;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
@@ -385,28 +386,70 @@ public class QueryRetrieveScpService extends AbstractScpService {
         QueryCmd.cacheSeriesAttrsOnImageLevelQuery = enable;
     }
 
-    public final boolean getQueryAccessBlobAsLongVarBinary() {
+    public final boolean getAccessBlobAsLongVarBinaryOnQuery() {
         return QueryCmd.blobAccessType == Types.LONGVARBINARY;
     }
 
-    public final void setQueryAccessBlobAsLongVarBinary(boolean enable) {
+    public final void setAccessBlobAsLongVarBinaryOnQuery(boolean enable) {
         QueryCmd.blobAccessType = enable ? Types.LONGVARBINARY : Types.BLOB;
     }
 
-    public final boolean getQueryAccessSeriesBlobAsLongVarBinary() {
+    public final boolean getAccessSeriesBlobAsLongVarBinaryOnImageLevelQuery() {
         return QueryCmd.seriesBlobAccessType == Types.LONGVARBINARY;
     }
 
-    public final void setQueryAccessSeriesBlobAsLongVarBinary(boolean enable) {
+    public final void setAccessSeriesBlobAsLongVarBinaryOnImageLevelQuery(boolean enable) {
         QueryCmd.seriesBlobAccessType = enable ? Types.LONGVARBINARY : Types.BLOB;
     }
 
-    public final boolean getRetrieveAccessBlobAsLongVarBinary() {
+    public final boolean getLazyFetchSeriesAttrsOnRetrive() {
+        return RetrieveCmd.lazyFetchSeriesAttrs;
+    }
+
+    public final void setLazyFetchSeriesAttrsOnRetrieve(boolean enable) {
+        RetrieveCmd.lazyFetchSeriesAttrs = enable;
+    }
+
+    public final boolean getCacheSeriesAttrsOnRetrieve() {
+        return RetrieveCmd.cacheSeriesAttrs || RetrieveCmd.lazyFetchSeriesAttrs;
+    }
+
+    public final void setCacheSeriesAttrsOnRetrieve(boolean enable) {
+        RetrieveCmd.cacheSeriesAttrs = enable;
+    }
+
+    public final int getCacheSeriesAttrsOnRetrieveMaxSize() {
+        return RetrieveCmd.getSeriesAttrsCacheMaxSize();
+    }
+
+    public final void setCacheSeriesAttrsOnRetrieveMaxSize(int maxSize) {
+        RetrieveCmd.setSeriesAttrsCacheMaxSize(maxSize);
+    }
+
+    public final String getCacheSeriesAttrsOnRetrieveCurrencyTimeLimit() {
+        return RetryIntervalls.formatInterval(
+                RetrieveCmd.seriesAttrsCacheCurrencyTimeLimit);
+    }
+
+    public final void setCacheSeriesAttrsOnRetrieveCurrencyTimeLimit(String s) {
+        RetrieveCmd.seriesAttrsCacheCurrencyTimeLimit =
+                RetryIntervalls.parseInterval(s);
+    }
+
+    public final boolean getAccessBlobAsLongVarBinaryOnRetrieve() {
         return RetrieveCmd.blobAccessType == Types.LONGVARBINARY;
     }
 
-    public final void setRetrieveAccessBlobAsLongVarBinary(boolean enable) {
+    public final void setAccessBlobAsLongVarBinaryOnRetrieve(boolean enable) {
         RetrieveCmd.blobAccessType = enable ? Types.LONGVARBINARY : Types.BLOB;
+    }
+
+    public final boolean getAccessSeriesBlobAsLongVarBinaryOnRetrieve() {
+        return RetrieveCmd.seriesBlobAccessType == Types.LONGVARBINARY;
+    }
+
+    public final void setAccessSeriesBlobAsLongVarBinaryOnRetrieve(boolean enable) {
+        RetrieveCmd.seriesBlobAccessType = enable ? Types.LONGVARBINARY : Types.BLOB;
     }
 
     public final String getQueryTransactionIsolationLevel() {
