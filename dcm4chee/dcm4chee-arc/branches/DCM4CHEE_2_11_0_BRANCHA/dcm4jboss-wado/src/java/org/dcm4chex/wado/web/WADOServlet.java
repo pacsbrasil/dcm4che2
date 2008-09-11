@@ -76,7 +76,6 @@ public class WADOServlet extends HttpServlet {
 	public void init() {
 		delegate = new WADOServiceDelegate();
 		delegate.init( getServletConfig() );
-		RequestObjectFactory.setWADOextRequestType( delegate.getExtendedWADORequestType() );
 	}
 
 	/**
@@ -99,7 +98,6 @@ public class WADOServlet extends HttpServlet {
 		log.debug("WADO URL:"+request.getRequestURI()+"?"+request.getQueryString());
 		BasicRequestObject reqObject = RequestObjectFactory.getRequestObject( request );
 		if ( reqObject == null || ! (reqObject instanceof WADORequestObject) ) {
-			RequestObjectFactory.setWADOextRequestType( delegate.getExtendedWADORequestType() );//try if config has changed!
 			reqObject = RequestObjectFactory.getRequestObject( request );
 			if ( reqObject == null ) {
 				sendError( response, HttpServletResponse.SC_BAD_REQUEST, "Not A WADO URL" );
@@ -110,11 +108,6 @@ public class WADOServlet extends HttpServlet {
 		if ( iErr < 0 ) {
 			sendError( response, HttpServletResponse.SC_BAD_REQUEST, reqObject.getErrorMsg() );//required params missing or invalid!
 			return;
-		} else if ( iErr == WADORequestObject.EXTENDED_WADO_URL ) {
-			if ( ! delegate.isWadoExtAllowed() ) {
-				sendError( response, HttpServletResponse.SC_BAD_REQUEST, "Not A WADO URL" );
-				return;
-			}
 		}
 		WADOResponseObject respObject = delegate.getWADOObject( (WADORequestObject)reqObject );
 		int returnCode = respObject.getReturnCode();

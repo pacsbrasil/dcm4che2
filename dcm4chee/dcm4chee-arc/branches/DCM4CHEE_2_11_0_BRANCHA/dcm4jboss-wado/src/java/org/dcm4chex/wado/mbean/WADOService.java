@@ -368,36 +368,6 @@ public class WADOService extends AbstractCacheService {
     }
 
     /**
-     * @return Returns the extendedWADOAllowed.
-     */
-    public boolean isExtendedWADOAllowed() {
-        return support.isExtendedWADOAllowed();
-    }
-
-    /**
-     * @param extendedWADOAllowed
-     *            The extendedWADOAllowed to set.
-     */
-    public void setExtendedWADOAllowed(boolean extendedWADOAllowed) {
-        support.setExtendedWADOAllowed(extendedWADOAllowed);
-    }
-
-    /**
-     * @return Returns the extendedWADORequestType.
-     */
-    public String getExtendedWADORequestType() {
-        return support.getExtendedWADORequestType();
-    }
-
-    /**
-     * @param extendedWADORequestType
-     *            The extendedWADORequestType to set.
-     */
-    public void setExtendedWADORequestType(String extendedWADORequestType) {
-        support.setExtendedWADORequestType(extendedWADORequestType);
-    }
-
-    /**
      * Get the requested DICOM object as File packed in a WADOResponseObject.
      * <p>
      * 

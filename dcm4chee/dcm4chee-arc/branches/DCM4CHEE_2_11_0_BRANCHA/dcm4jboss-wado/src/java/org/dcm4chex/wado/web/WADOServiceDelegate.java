@@ -66,7 +66,6 @@ import org.jboss.mx.util.MBeanServerLocator;
 public class WADOServiceDelegate {
 
     private static ObjectName wadoServiceName = null;
-    private static ObjectName wadoExtServiceName = null;
 	private static MBeanServer server;
 	
     private static Logger log = Logger.getLogger( WADOServiceDelegate.class.getName() );
@@ -88,27 +87,10 @@ public class WADOServiceDelegate {
 		} catch (Exception e) {
 			log.error( "Exception in init! Servlet init parameter 'wadoServiceName' not valid",e );
 		}
-        s = config.getInitParameter("wadoExtServiceName");
-        try {
-			wadoExtServiceName = new ObjectName(s);
-			
-		} catch (Exception e) {
-			log.error( "Exception in init! Servlet init parameter 'wadoExtServiceName' not valid",e );
-		}
-       
     }
 
 	public Logger getLogger() {
 		return log;
-	}
-	
-	public boolean isWadoExtAllowed() {
-		try {
-			return ( (Boolean)server.getAttribute( wadoServiceName, "ExtendedWADOAllowed" ) ).booleanValue();
-		} catch (Exception x) {
-			log.error("Exception occured in isWadoExtAllowed: "+x.getMessage(), x);
-			return false;
-		}
 	}
 	
 	/**
@@ -120,27 +102,17 @@ public class WADOServiceDelegate {
 	 */
 	public WADOResponseObject getWADOObject( WADORequestObject reqVO ) {
 		WADOResponseObject resp = null;
-		ObjectName serviceName = "WADO".equalsIgnoreCase( reqVO.getRequestType() ) ? wadoServiceName : wadoExtServiceName;
 		try {
-	        Object o = server.invoke(serviceName,
+	        Object o = server.invoke(wadoServiceName,
 	                "getWADOObject",
 	                new Object[] { reqVO },
 	                new String[] { WADORequestObject.class.getName() } );
 	        resp = (WADOResponseObject) o;
 		} catch ( Exception x ) {
 			log.error( "Exception occured in getWADOObject: "+x.getMessage(), x );
-			resp = new WADOStreamResponseObjectImpl( null, "text.html", HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error in WADO service ("+serviceName+"): "+x.getMessage());
+			resp = new WADOStreamResponseObjectImpl( null, "text.html", HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unexpected error in WADO service ("+wadoServiceName+"): "+x.getMessage());
 		}
         return resp;
-	}
-	
-	public String getExtendedWADORequestType() {
-		try {
-			return ( (String)server.getAttribute( wadoServiceName, "ExtendedWADORequestType" ) );
-		} catch (Exception x) {
-			log.error("Exception occured in getExtendedWADORequestType: "+x.getMessage(), x);
-			return "WADOext";
-		}
 	}
 
 }
