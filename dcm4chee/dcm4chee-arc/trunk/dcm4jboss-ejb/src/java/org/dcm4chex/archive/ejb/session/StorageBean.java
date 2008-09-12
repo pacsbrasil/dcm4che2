@@ -201,7 +201,7 @@ public abstract class StorageBean implements SessionBean {
             }
             FileLocal file = fileHome.create(fileid, tsuid, size, md5, 0,
                     instance, fs);
-            instance.setAvailability(Availability.ONLINE);
+            instance.setAvailability(fs.getAvailability());
             instance.addRetrieveAET(fs.getRetrieveAET());
             instance.setInstanceStatus(RECEIVED);
             instance.getSeries().setSeriesStatus(RECEIVED);
