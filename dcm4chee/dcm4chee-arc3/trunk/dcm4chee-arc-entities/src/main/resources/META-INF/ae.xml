@@ -38,6 +38,9 @@
       <basic name="description">
         <column name="ae_desc" />
       </basic>
+      <basic name="wadoURL">
+        <column name="wado_url" />
+      </basic>
     </attributes>
   </entity>
 </entity-mappings>

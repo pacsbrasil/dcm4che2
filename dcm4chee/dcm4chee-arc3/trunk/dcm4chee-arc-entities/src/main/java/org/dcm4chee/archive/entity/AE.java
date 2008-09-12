@@ -71,6 +71,8 @@ public class AE implements Serializable {
 
     private String description;
 
+    private String wadoURL;
+
     public long getPk() {
         return pk;
     }
@@ -145,6 +147,14 @@ public class AE implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public void setWadoURL(String wadoURL) {
+        this.wadoURL = wadoURL;
+    }
+
+    public String getWadoURL() {
+        return wadoURL;
     }
 
     @Override
