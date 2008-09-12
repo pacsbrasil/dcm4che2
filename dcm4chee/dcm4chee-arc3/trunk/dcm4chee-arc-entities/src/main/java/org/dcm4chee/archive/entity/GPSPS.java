@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa-Gevaert AG.
- * Portions created by the Initial Developer are Copyright (C) 2008
+ * Accurate Software Design, LLC.
+ * Portions created by the Initial Developer are Copyright (C) 2006-2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -52,6 +52,8 @@ import org.dcm4chee.archive.conf.AttributeFilter;
 import org.dcm4chee.archive.util.DicomObjectUtils;
 
 /**
+ * @author Damien Evans <damien.daddy@gmail.com>
+ * @author Justin Falk <jfalkmu@gmail.com>
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Mar 1, 2008
