@@ -87,6 +87,7 @@ public class ADTService extends AbstractHL7Service {
     private List issuersOfOnlyOtherPatientIDs;
 
     private boolean ignoreDeleteErrors;
+
     private boolean handleEmptyMrgAsUpdate;
 
     public final String getPatientArrivingMessageType() {
@@ -119,7 +120,8 @@ public class ADTService extends AbstractHL7Service {
         return deletePatientMessageType;
     }
 
-    public final void setDeletePatientMessageType(String deletePatientMessageType) {
+    public final void setDeletePatientMessageType(
+            String deletePatientMessageType) {
         this.deletePatientMessageType = deletePatientMessageType;
     }
 
@@ -147,7 +149,8 @@ public class ADTService extends AbstractHL7Service {
     public final void setIssuersOfOnlyOtherPatientIDs(String s) {
         if (s.trim().equals("-")) {
             issuersOfOnlyOtherPatientIDs = null;
-        } else {
+        }
+        else {
             String[] a = StringUtils.split(s, ',');
             issuersOfOnlyOtherPatientIDs = new ArrayList(a.length);
             for (int i = 0; i < a.length; i++) {
@@ -211,52 +214,66 @@ public class ADTService extends AbstractHL7Service {
                 try {
                     checkMRG(mrg);
                     update.mergePatient(pat, mrg);
-                } catch (HL7Exception e) {
+                }
+                catch (HL7Exception e) {
                     if (handleEmptyMrgAsUpdate) {
                         update.updatePatient(pat);
-                    } else {
+                    }
+                    else {
                         throw e;
                     }
                 }
-            } else if (changePatientIdentifierListMessageType.equals(msgtype)) {
+            }
+            else if (changePatientIdentifierListMessageType.equals(msgtype)) {
                 Dataset mrg = xslt(msg, mrgXslPath);
                 checkMRG(mrg);
                 update.changePatientIdentifierList(pat, mrg);
-            } else if (deletePatientMessageType.equals(msgtype)) {
+            }
+            else if (deletePatientMessageType.equals(msgtype)) {
                 try {
                     update.deletePatient(pat);
-                } catch (Exception x) {
+                }
+                catch (Exception x) {
                     if (!ignoreDeleteErrors) {
                         throw x;
                     }
                 }
-            } else if (patientArrivingMessageType.equals(msgtype)) {
+            }
+            else if (patientArrivingMessageType.equals(msgtype)) {
                 update.patientArrived(pat);
-            } else {
+            }
+            else {
                 update.updatePatient(pat);
             }
-        } catch (HL7Exception e) {
+        }
+        catch (HL7Exception e) {
             throw e;
-        } catch (PatientAlreadyExistsException e) {
+        }
+        catch (PatientAlreadyExistsException e) {
             throw new HL7Exception("AR", e.getMessage());
-        } catch (PatientMergedException e) {
+        }
+        catch (PatientMergedException e) {
             throw new HL7Exception("AR", e.getMessage());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new HL7Exception("AE", e.getMessage(), e);
         }
         return true;
     }
-    
+
     public void updatePatient(Document msg) throws HL7Exception {
         try {
             Dataset pid = xslt(msg, pidXslPath);
             checkPID(pid);
             getPatientUpdate().updatePatient(pid);
-        } catch (HL7Exception e) {
+        }
+        catch (HL7Exception e) {
             throw e;
-        } catch (PatientMergedException e) {
+        }
+        catch (PatientMergedException e) {
             throw new HL7Exception("AR", e.getMessage());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new HL7Exception("AE", e.getMessage(), e);
         }
     }
@@ -268,11 +285,14 @@ public class ADTService extends AbstractHL7Service {
             checkPID(pid);
             checkMRG(mrg);
             getPatientUpdate().mergePatient(pid, mrg);
-        } catch (HL7Exception e) {
+        }
+        catch (HL7Exception e) {
             throw e;
-        } catch (PatientMergedException e) {
+        }
+        catch (PatientMergedException e) {
             throw new HL7Exception("AR", e.getMessage());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new HL7Exception("AE", e.getMessage(), e);
         }
     }
@@ -282,8 +302,7 @@ public class ADTService extends AbstractHL7Service {
             throw new HL7Exception("AR",
                     "Missing required PID-3: Patient ID (Internal ID)");
         if (!pid.containsValue(Tags.PatientName))
-            throw new HL7Exception("AR",
-                    "Missing required PID-5: Patient Name");
+            throw new HL7Exception("AR", "Missing required PID-5: Patient Name");
     }
 
     private void checkMRG(Dataset mrg) throws HL7Exception {
@@ -310,7 +329,8 @@ public class ADTService extends AbstractHL7Service {
         List pids;
         try {
             pids = new PID(msg).getPatientIDs();
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
             throw new HL7Exception("AR", e.getMessage());
         }
         PatientUpdate patUpdate = getPatientUpdate();
@@ -339,9 +359,9 @@ public class ADTService extends AbstractHL7Service {
     }
 
     private PatientUpdate getPatientUpdate() throws Exception {
-        PatientUpdateHome patHome = (PatientUpdateHome)
-                EJBHomeFactory.getFactory().lookup(
-                        PatientUpdateHome.class, PatientUpdateHome.JNDI_NAME);
+        PatientUpdateHome patHome = (PatientUpdateHome) EJBHomeFactory
+                .getFactory().lookup(PatientUpdateHome.class,
+                        PatientUpdateHome.JNDI_NAME);
         return patHome.create();
     }
 
