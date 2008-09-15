@@ -58,166 +58,166 @@ import org.dcm4chex.rid.common.RIDResponseObject;
  */
 public class RIDServlet extends HttpServlet {
 
-	private static final int BUF_LEN = 65536;
+    private static final int BUF_LEN = 65536;
 
-	/**
-	 * Comment for <code>serialVersionUID</code>
-	 */
-	private static final long serialVersionUID = 3258409538737483825L;
-	private RIDServiceDelegate delegate;
-	
-	private static Logger log = Logger.getLogger( RIDServlet.class.getName() );
+    /**
+     * Comment for <code>serialVersionUID</code>
+     */
+    private static final long serialVersionUID = 3258409538737483825L;
+    private RIDServiceDelegate delegate;
+
+    private static Logger log = Logger.getLogger( RIDServlet.class.getName() );
 
 
-	/**
-	 * Initialize the RIDServiceDelegator.
-	 * <p>
-	 * Set the name of the MBean from servlet init param.
-	 */
-	public void init() {
-		delegate = new RIDServiceDelegate();
-		delegate.getLogger().info("RIDServiceDelegate initialized");
-		delegate.init( getServletConfig() );
-	}
-	
-	/**
-	 * Handles the POST requset in the doGet method.
-	 * 
-	 * @param request 	The http request.
-	 * @param response	The http response.
-	 * @throws IOException
-	 */
-	public void doPost( HttpServletRequest request, HttpServletResponse response ) throws IOException{
-		doGet( request, response);
-	}
+    /**
+     * Initialize the RIDServiceDelegator.
+     * <p>
+     * Set the name of the MBean from servlet init param.
+     */
+    public void init() {
+        delegate = new RIDServiceDelegate();
+        delegate.getLogger().info("RIDServiceDelegate initialized");
+        delegate.init( getServletConfig() );
+    }
 
-	/**
-	 * Handles the GET requset.
-	 * 
-	 * @param request 	The http request.
-	 * @param response	The http response.
-	 * @throws IOException
-	 */
-	public void doGet( HttpServletRequest request, HttpServletResponse response ) throws IOException{
-		log.debug("RID URL:"+request.getRequestURI()+"?"+request.getQueryString());
-		if ( request.getParameter("requestType") == null ) {
-			handleMissingRequestType(request, response);
-			return;
-		}
-		BasicRequestObject reqObj = RequestObjectFactory.getRequestObject( request );
-		delegate.getLogger().info("doGet: reqObj:"+reqObj);
-		int reqTypeCode = RIDRequestObject.INVALID_RID_URL;
-		if ( reqObj != null ) {
-			reqTypeCode = reqObj.checkRequest();
-		}
-		if ( reqTypeCode == RIDRequestObject.INVALID_RID_URL) {
-			sendError( response, HttpServletResponse.SC_BAD_REQUEST, "Not a IHE RID URL!" );//missing or wrong request parameter
-			return;
-		}
-		if ( reqTypeCode == RIDRequestObject.RID_REQUEST_NOT_SUPPORTED ) {
-			sendError( response, HttpServletResponse.SC_NOT_FOUND, "This IHE RID request is not supported!" );
-			return;
-		} 
-		RIDResponseObject resp = null; //use RIDResponseObject for encapsulate response.
-		if ( reqTypeCode == RIDRequestObject.SUMMERY_INFO ) {
-			resp = delegate.getRIDSummary( (RIDRequestObject) reqObj );
-		} else if ( reqTypeCode == RIDRequestObject.DOCUMENT ) {
-			resp = delegate.getRIDDocument( (RIDRequestObject) reqObj );
-		} else {
-			sendError( response, HttpServletResponse.SC_NOT_IMPLEMENTED, "This IHE RID request is not yet implemented!" );
-			return;
-		}
-		if ( resp != null ) {
-			int returnCode = resp.getReturnCode();
-			delegate.getLogger().info("doGet: resp returnCode:"+returnCode);
-			if ( returnCode == HttpServletResponse.SC_OK ) {
-				sendResponse( response, resp );
-			} else {
-				sendError( response, returnCode, resp.getErrorMessage() );
-			}
-		} else {
-			sendError( response, HttpServletResponse.SC_NOT_FOUND, "Not found!" );
-		}
-	}
-	
-	/**
-	 * @param request
-	 * @throws IOException
-	 */
-	private void handleMissingRequestType(HttpServletRequest request, HttpServletResponse response ) throws IOException {
-		if ("true".equals(this.getServletConfig().getInitParameter("allowShortURL") )) {
-			StringBuffer sb = request.getRequestURL();
-			sb.append("?requestType=").append(request.getParameter("RT"));
-			sb.append("&documentUID=").append(request.getParameter("UID"));
-			sb.append("&preferredContentType=").append(getFullContentType(request.getParameter("PCT")));
-			log.info("redirect shortURL to "+sb);
-			response.sendRedirect(sb.toString());
-		}
-	}
+    /**
+     * Handles the POST requset in the doGet method.
+     * 
+     * @param request 	The http request.
+     * @param response	The http response.
+     * @throws IOException
+     */
+    public void doPost( HttpServletRequest request, HttpServletResponse response ) throws IOException{
+        doGet( request, response);
+    }
 
-	/**
-	 * @param parameter
-	 * @return
-	 */
-	private String getFullContentType(String parameter) {
-		if ( parameter.indexOf('/') != -1 ) return parameter;
-		if ( "pdf".equals(parameter) ) return "application/pdf";
-		if ( "xml".equals(parameter) ) return "text/xml";
-		if ( "dcm".equals(parameter) ) return "application/dicom";
-		return parameter;
-	}
+    /**
+     * Handles the GET requset.
+     * 
+     * @param request 	The http request.
+     * @param response	The http response.
+     * @throws IOException
+     */
+    public void doGet( HttpServletRequest request, HttpServletResponse response ) throws IOException{
+        log.debug("RID URL:"+request.getRequestURI()+"?"+request.getQueryString());
+        if ( request.getParameter("requestType") == null ) {
+            handleMissingRequestType(request, response);
+            return;
+        }
+        BasicRequestObject reqObj = RequestObjectFactory.getRequestObject( request );
+        delegate.getLogger().info("doGet: reqObj:"+reqObj);
+        int reqTypeCode = RIDRequestObject.INVALID_RID_URL;
+        if ( reqObj != null ) {
+            reqTypeCode = reqObj.checkRequest();
+        }
+        if ( reqTypeCode == RIDRequestObject.INVALID_RID_URL) {
+            sendError( response, HttpServletResponse.SC_BAD_REQUEST, "Not a IHE RID URL!" );//missing or wrong request parameter
+            return;
+        }
+        if ( reqTypeCode == RIDRequestObject.RID_REQUEST_NOT_SUPPORTED ) {
+            sendError( response, HttpServletResponse.SC_NOT_FOUND, "This IHE RID request is not supported!" );
+            return;
+        } 
+        RIDResponseObject resp = null; //use RIDResponseObject for encapsulate response.
+        if ( reqTypeCode == RIDRequestObject.SUMMERY_INFO ) {
+            resp = delegate.getRIDSummary( (RIDRequestObject) reqObj );
+        } else if ( reqTypeCode == RIDRequestObject.DOCUMENT ) {
+            resp = delegate.getRIDDocument( (RIDRequestObject) reqObj );
+        } else {
+            sendError( response, HttpServletResponse.SC_NOT_IMPLEMENTED, "This IHE RID request is not yet implemented!" );
+            return;
+        }
+        if ( resp != null ) {
+            int returnCode = resp.getReturnCode();
+            delegate.getLogger().info("doGet: resp returnCode:"+returnCode);
+            if ( returnCode == HttpServletResponse.SC_OK ) {
+                sendResponse( response, resp );
+            } else {
+                sendError( response, returnCode, resp.getErrorMessage() );
+            }
+        } else {
+            sendError( response, HttpServletResponse.SC_NOT_FOUND, "Not found!" );
+        }
+    }
 
-	/**
-	 * Send an error response with given response code and message to the client.
-	 * <p>
-	 * It is recommended that this method is only called once per erequest!<br>
-	 * Otherwise a IllegalStateException will be thrown!
-	 * 
-	 * @param response	The HttpServletResponse of the request.
-	 * @param errCode	One of the response code defined in HttpServletResponse.
-	 * @param msg		A description for the reason to send the error.
-	 */
-	private void sendError( HttpServletResponse response, int errCode, String msg ) {
-		try {
-			response.sendError( errCode, msg );
-		} catch (IOException e) {
-			//delegate.getLogger().error("Cant perform sendError( "+errCode+", "+msg+" )! reason:"+e.getMessage(), e );
-		}
-	}
-	
-	/**
-	 * Send the retrieved file to the client.
-	 * <p>
-	 * Sets the content type as defined in the RIDResponseObject object.
-	 * 
-	 * @param response
-	 * @param respObject
-	 */
-	private void sendResponse( HttpServletResponse response, RIDResponseObject respObject ) {
-		response.setHeader("Expires","0");//disables client side caching!!!
-		delegate.getLogger().info("sendResponse"+respObject);
-		try {
-			if ( respObject != null ) {
-				response.setContentType( respObject.getContentType() );
-				long len = respObject.length();
-				if ( len != -1 ) 
-					response.setContentLength((int)len);
-				try {
-					delegate.getLogger().info("respObject execute");
-					//respObject.execute( System.out );
-					respObject.execute( response.getOutputStream() );
-					response.getOutputStream().close();
-				} catch ( Exception e ) {
-					delegate.getLogger().error("Exception while writing RID response to client! reason:"+e.getMessage(), e );
-				}
-				
-			}
-		} catch ( Exception x ) {
-			x.printStackTrace();
-			sendError(	response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, x.getMessage() );
-		}
-		
-	}
+    /**
+     * @param request
+     * @throws IOException
+     */
+    private void handleMissingRequestType(HttpServletRequest request, HttpServletResponse response ) throws IOException {
+        if ("true".equals(this.getServletConfig().getInitParameter("allowShortURL") )) {
+            StringBuffer sb = request.getRequestURL();
+            sb.append("?requestType=").append(request.getParameter("RT"));
+            sb.append("&documentUID=").append(request.getParameter("UID"));
+            sb.append("&preferredContentType=").append(getFullContentType(request.getParameter("PCT")));
+            log.info("redirect shortURL to "+sb);
+            response.sendRedirect(sb.toString());
+        }
+    }
 
-	
+    /**
+     * @param parameter
+     * @return
+     */
+    private String getFullContentType(String parameter) {
+        if ( parameter.indexOf('/') != -1 ) return parameter;
+        if ( "pdf".equals(parameter) ) return "application/pdf";
+        if ( "xml".equals(parameter) ) return "text/xml";
+        if ( "dcm".equals(parameter) ) return "application/dicom";
+        return parameter;
+    }
+
+    /**
+     * Send an error response with given response code and message to the client.
+     * <p>
+     * It is recommended that this method is only called once per erequest!<br>
+     * Otherwise a IllegalStateException will be thrown!
+     * 
+     * @param response	The HttpServletResponse of the request.
+     * @param errCode	One of the response code defined in HttpServletResponse.
+     * @param msg		A description for the reason to send the error.
+     */
+    private void sendError( HttpServletResponse response, int errCode, String msg ) {
+        try {
+            response.sendError( errCode, msg );
+        } catch (IOException e) {
+            //delegate.getLogger().error("Cant perform sendError( "+errCode+", "+msg+" )! reason:"+e.getMessage(), e );
+        }
+    }
+
+    /**
+     * Send the retrieved file to the client.
+     * <p>
+     * Sets the content type as defined in the RIDResponseObject object.
+     * 
+     * @param response
+     * @param respObject
+     */
+    private void sendResponse( HttpServletResponse response, RIDResponseObject respObject ) {
+        log.info("--- sendResponse started! :"+respObject);
+        response.setHeader("Expires","0");//disables client side caching!!!
+        try {
+            if ( respObject != null ) {
+                response.setContentType( respObject.getContentType() );
+                long len = respObject.length();
+                if ( len != -1 ) 
+                    response.setContentLength((int)len);
+                try {
+                    delegate.getLogger().info("respObject execute");
+                    //respObject.execute( System.out );
+                    respObject.execute( response.getOutputStream() );
+                    response.getOutputStream().close();
+                } catch ( Exception e ) {
+                    delegate.getLogger().error("Exception while writing RID response to client! reason:"+e.getMessage(), e );
+                }
+
+            }
+        } catch ( Exception x ) {
+            x.printStackTrace();
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, x.getMessage() );
+        }
+        log.info("--- sendResponse finished!");
+    }
+
+
 }

@@ -46,7 +46,7 @@ import java.io.OutputStream;
 
 import javax.xml.transform.TransformerConfigurationException;
 
-import org.dcm4chex.rid.common.RIDResponseObject;
+import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
 /**
@@ -57,56 +57,64 @@ import org.xml.sax.SAXException;
  */
 public class RIDStreamResponseObjectImpl extends BasicRIDResponseObject {
 
-	private InputStream stream;
-	private static final int BUF_LEN = 65536;
-	private long maxLen = -1L;
+    private InputStream stream;
+    private static final int BUF_LEN = 65536;
+    private long maxLen = -1L;
 
-	public RIDStreamResponseObjectImpl( InputStream is, String contentType, int retCode, String errMsg ) {
-		super(contentType,retCode,errMsg);
-		this.stream = is;
-	}
-	public RIDStreamResponseObjectImpl( InputStream is, long maxLen, String contentType, int retCode, String errMsg ) {
-		this( is, contentType,retCode,errMsg);
-		this.maxLen = maxLen;
-	}
-	
-	public long length() {
-		return maxLen;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.dcm4chex.rid.common.WADOResponseObject#getFile()
-	 */
-	public void execute( OutputStream out ) throws TransformerConfigurationException, SAXException, IOException {
-		if ( stream != null ) {
-			InputStream in;
-			if ( stream instanceof BufferedInputStream ) {
-				in = stream;
-			} else {
-				in = new BufferedInputStream( stream, BUF_LEN );
-			}
-			byte[] buf = new byte[BUF_LEN];
-			long totLen = 0L;
-			boolean checkLen = maxLen > 0;
-			try {
-				int len = in.read( buf );
-				while ( len > 0 ) {
-					if ( checkLen ) {
-						totLen += len;
-						if (totLen > maxLen ) {
-							int diff = (int)(totLen-maxLen);
-							out.write( buf, 0, len-diff );
-							break;
-						}
-					}
-					out.write( buf, 0, len );
-					len = in.read( buf );
-				}
-			} catch ( IOException e ) {
-				throw e;
-			} finally {
-				in.close();
-			}
-		}
-	}
+    private static Logger log = Logger.getLogger( RIDStreamResponseObjectImpl.class.getName() );
+    
+    public RIDStreamResponseObjectImpl( InputStream is, String contentType, int retCode, String errMsg ) {
+        super(contentType,retCode,errMsg);
+        this.stream = is;
+    }
+    public RIDStreamResponseObjectImpl( InputStream is, long maxLen, String contentType, int retCode, String errMsg ) {
+        this( is, contentType,retCode,errMsg);
+        this.maxLen = maxLen;
+    }
+
+    public long length() {
+        return maxLen;
+    }
+
+    /* (non-Javadoc)
+     * @see org.dcm4chex.rid.common.WADOResponseObject#getFile()
+     */
+    public void execute( OutputStream out ) throws TransformerConfigurationException, SAXException, IOException {
+        if ( stream != null ) {
+            InputStream in;
+            if ( stream instanceof BufferedInputStream ) {
+                in = stream;
+            } else {
+                in = new BufferedInputStream( stream, BUF_LEN );
+            }
+            byte[] buf = new byte[BUF_LEN];
+            long remain = maxLen;
+            boolean checkLen = maxLen > 0;
+            try {
+                int len = in.read( buf );
+                while ( len > 0 ) {
+                    if ( checkLen && len > remain ) {
+                        len = (int)remain;
+                        int idx = len; idx--;
+                        if ( buf[idx] == 0) { //padding? 
+                            log.debug( "PADDING! chang 0x0 to ' '!");
+                            buf[idx] = ' ';
+                        }
+                        out.write( buf, 0, len );
+                        if (log.isDebugEnabled()) log.debug("write last "+len+" bytes!");
+                        break;
+                    }
+                    remain -= len;
+                    if (log.isDebugEnabled()) log.debug("write junk of "+len+" bytes!");
+                    out.write( buf, 0, len );
+                    len = in.read( buf );
+                }
+            } catch ( IOException e ) {
+                throw e;
+            } finally {
+                in.close();
+                log.info("InputSTream closed!");
+            }
+        }
+    }
 }

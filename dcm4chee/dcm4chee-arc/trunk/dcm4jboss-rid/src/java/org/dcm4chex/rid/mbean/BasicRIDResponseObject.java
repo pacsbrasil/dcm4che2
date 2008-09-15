@@ -52,41 +52,41 @@ import org.dcm4chex.rid.common.RIDResponseObject;
  */
 public abstract class BasicRIDResponseObject implements RIDResponseObject {
 
-	private String contentType;
-	private int returnCode;
-	private String errorMessage;
+    private String contentType;
+    private int returnCode;
+    private String errorMessage;
     private Dataset patInfo;
 
-	public BasicRIDResponseObject( String contentType, int retCode, String errMsg ) {
-		this.contentType = contentType;
-		returnCode = retCode;
-		errorMessage = errMsg;
-	}
-	
-	public long length() {
-		return -1L;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.dcm4chex.rid.common.RIDResponseObject#getContentType()
-	 */
-	public String getContentType() {
-		return contentType;
-	}
+    public BasicRIDResponseObject( String contentType, int retCode, String errMsg ) {
+        this.contentType = contentType;
+        returnCode = retCode;
+        errorMessage = errMsg;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.dcm4chex.rid.common.RIDResponseObject#getReturnCode()
-	 */
-	public int getReturnCode() {
-		return returnCode;
-	}
+    public long length() {
+        return -1L;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.dcm4chex.rid.common.RIDResponseObject#getErrorMessage()
-	 */
-	public String getErrorMessage() {
-		return errorMessage;
-	}
+    /* (non-Javadoc)
+     * @see org.dcm4chex.rid.common.RIDResponseObject#getContentType()
+     */
+    public String getContentType() {
+        return contentType;
+    }
+
+    /* (non-Javadoc)
+     * @see org.dcm4chex.rid.common.RIDResponseObject#getReturnCode()
+     */
+    public int getReturnCode() {
+        return returnCode;
+    }
+
+    /* (non-Javadoc)
+     * @see org.dcm4chex.rid.common.RIDResponseObject#getErrorMessage()
+     */
+    public String getErrorMessage() {
+        return errorMessage;
+    }
 
     /**
      * @return the patInfo
@@ -101,5 +101,5 @@ public abstract class BasicRIDResponseObject implements RIDResponseObject {
     public void setPatInfo(Dataset patInfo) {
         this.patInfo = patInfo;
     }
-	
+
 }

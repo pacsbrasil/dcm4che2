@@ -42,8 +42,11 @@ package org.dcm4chex.rid.mbean;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -137,7 +140,7 @@ public class RIDService extends ServiceMBeanSupport  {
     /**
      * Returns a String with all defined SOP Class UIDs that are used to find ECG documents.
      * <p>
-     * The uids are seperated with '|'.
+     * The uids are separated with semicolon or newline.
      * 
      * @return SOP Class UIDs to find ECG related files.
      */
@@ -148,9 +151,9 @@ public class RIDService extends ServiceMBeanSupport  {
     /**
      * Set a list of SOP Class UIDs that are used to find ECG documents.
      * <p>
-     * The UIDs are seperated with '|'.
+     * The UIDs are separated with semicolon or newline.
      * 
-     * @param sopCuids String with SOP class UIDs seperated with '|'
+     * @param sopCuids String with SOP class UIDs
      */
     public void setECGSopCuids( String cuids ) {
         support.setECGSopCuids( toUidMap(cuids) );
@@ -159,7 +162,7 @@ public class RIDService extends ServiceMBeanSupport  {
     /**
      * Returns a String with all defined SOP Class UIDs that are used to find SR documents.
      * <p>
-     * The uids are seperated with '|'.
+     * The uids are separated with semicolon or newline.
      * 
      * @return SOP Class UIDs to find Structured Reports.
      */
@@ -170,9 +173,9 @@ public class RIDService extends ServiceMBeanSupport  {
     /**
      * Set a list of SOP Class UIDs that are used to find SR documents.
      * <p>
-     * The UIDs are seperated with '|'.
+     * The UIDs are separated with semicolon or newline.
      * 
-     * @param sopCuids String with SOP class UIDs seperated with '|'
+     * @param sopCuids String with SOP class UIDs
      */
     public void setSRSopCuids( String cuids ) {
         support.setSRSopCuids( toUidMap(cuids) );
@@ -181,7 +184,7 @@ public class RIDService extends ServiceMBeanSupport  {
     /**
      * Returns a String with all defined SOP Class UIDs that are used to find SR documents.
      * <p>
-     * The uids are separated with '|'.
+     * The uids are separated with semicolon or newline.
      * 
      * @return SOP Class UIDs to find Structured Reports.
      */
@@ -192,12 +195,51 @@ public class RIDService extends ServiceMBeanSupport  {
     /**
      * Set a list of SOP Class UIDs that are used to find encapsulated documents.
      * <p>
-     * The UIDs are separated with '|'.
+     * The UIDs are separated with semicolon or newline.
      * 
-     * @param sopCuids String with SOP class UIDs separated with '|'
+     * @param sopCuids String with SOP class UIDs
      */
     public void setEncapsulatedDocumentSopCuids( String cuids ) {
         support.setEncapsulatedDocumentSopCuids( toUidMap(cuids) );
+    }
+    
+    public String getCuidsForSummaryAll() {
+        return toString( support.getCuidsForSummaryAll() );
+    }
+    
+    /**
+     * Set a list of SOP Class UIDs that are added to document list for requestType=SUMMARY.
+     * <p>
+     * The UIDs are separated with semicolon or newline.
+     * 
+     * @param sopCuids String with SOP class UIDs
+     */
+    public void setCuidsForSummaryAll(String cuids) {
+        support.setCuidsForSummaryAll(toUidMap(cuids));
+    }
+    
+    /**
+     * Returns a String with all defined SOP Class UIDs Groups.
+     * <p/>
+     * The uids are separated with semicolon or newline.
+     * 
+     * @return SOP Class UIDs to find Structured Reports.
+     */
+    public String getSopCuidGroups() {
+        return toUidGrpString(support.getSopCuidGroups());
+    }
+
+    /**
+     * Set a list of SOP Class UIDs Groups.
+     * <p/>
+     * Format: <grpId>:<UID>
+     * <p/>
+     * The UIDs are separated with semicolon or newline.
+     * 
+     * @param sopCuids String with SOP class UIDs
+     */
+    public void setSopCuidGroups( String cuidGrps ) {
+        support.updateSopCuidGroups( toUidGrpMap(cuidGrps) );
     }
 
     private Map toUidMap(String cuids) {
@@ -230,47 +272,85 @@ public class RIDService extends ServiceMBeanSupport  {
         return sb.toString();
     }
 
-    public boolean isEncapsulatedPDFSupport() {
-        return support.isEncapsulatedPDFSupport();
-    }
-    public void setEncapsulatedPDFSupport(boolean encapsulatedPDFSupport) {
-        support.setEncapsulatedPDFSupport(encapsulatedPDFSupport);
-    }
-
-    public String getRadiologyConceptNames() {
-        return support.getRadiologyConceptNames();
-    }
-    public void setRadiologyConceptNames( String conceptNames ) {
-        support.setRadiologyConceptNames( conceptNames );
+    private String toUidGrpString(Map<String, Map<String, String>> uids) {
+        StringBuffer sb = new StringBuffer();
+        String grpId;
+        for ( Map.Entry entry : uids.entrySet() ) {
+            grpId = (String) entry.getKey();
+            for ( String uid : ((Map<String, String>) entry.getValue()).keySet() ) {
+                sb.append(grpId).append(':').append(uid).append(System.getProperty("line.separator", "\n"));
+            }
+        }
+        return sb.toString();
     }
 
-    public String getCardiologyConceptNames() {
-        return support.getCardiologyConceptNames();
-    }
-    public void setCardiologyConceptNames( String conceptNames ) {
-        support.setCardiologyConceptNames( conceptNames );
+    
+
+    private Map<String, Map<String, String>> toUidGrpMap(String cuidGrps) {
+        StringTokenizer st = new StringTokenizer(cuidGrps, "\r\n;");
+        String s,grp,uid,name;
+        Map<String, Map<String, String>> mapGrps = new HashMap<String, Map<String, String>>();
+        Map<String,String> map;
+        int i = 0, pos;
+        while ( st.hasMoreTokens() ) {
+            s = st.nextToken().trim();
+            pos = s.indexOf(':');
+            if ( pos != -1 ) {
+                grp = s.substring(0,pos);
+                if ( grp.equals(RIDSupport.CUID_GRP_SR) 
+                        || grp.equals(RIDSupport.CUID_GRP_ECG) 
+                        || grp.equals(RIDSupport.CUID_GRP_DOC))
+                    continue;
+                uid = s.substring(++pos);
+            } else {
+                grp = "unknown";
+                uid=s;
+            }
+            name = uid;
+            if ( isDigit(uid.charAt(0) ) ) {
+                if ( ! UIDs.isValid(uid) ) 
+                    throw new IllegalArgumentException("UID "+uid+" isn't a valid UID!");
+            } else {
+                uid = UIDs.forName( name );
+            }
+            map = mapGrps.get(grp);
+            if ( map == null ) {
+                map = new TreeMap<String, String>();
+                mapGrps.put(grp, map);
+            }
+            map.put(name,uid);
+        }
+        return mapGrps;
     }
 
-    public String getRadiologyPDFConceptCodeNames() {
-        return support.getRadiologyPDFConceptCodeNames();
+    public String getConceptNameCodes() {
+        return support.getConceptNameCodes();
     }
 
-    public void setRadiologyPDFConceptCodeNames( String conceptNames ) {
-        support.setRadiologyPDFConceptNameCodes( conceptNames );
-    }
-    public String getCardiologyPDFConceptCodeNames() {
-        return support.getCardiologyPDFConceptCodeNames();
+    public void setConceptNameCodes( String conceptNames ) {
+        support.setConceptNameCodes( conceptNames );
     }
 
-    public void setCardiologyPDFConceptCodeNames( String conceptNames ) {
-        support.setCardiologyPDFConceptNameCodes( conceptNames );
-    }
-    public String getECGPDFConceptCodeNames() {
-        return support.getECGPDFConceptCodeNames();
+    public String getDocTitlePatterns() {
+        Map<String,String> m = support.getDocTitlePatterns();
+        if (m == null) return NONE;
+        StringBuffer sb = new StringBuffer();
+        for (Map.Entry e : m.entrySet()) {
+            sb.append(e.getKey()).append('=').append(e.getValue()).append(System.getProperty("line.separator", "\n"));
+        }
+        return sb.toString();
     }
 
-    public void setECGPDFConceptCodeNames( String conceptNames ) {
-        support.setECGPDFConceptNameCodes( conceptNames );
+    public void setDocTitlePatterns(String docTitlePatterns) {
+        Map<String,String> m = null;
+        if (docTitlePatterns != null && !docTitlePatterns.trim().equalsIgnoreCase(NONE) ) {
+            m = new HashMap<String,String>();
+            StringTokenizer st = new StringTokenizer(docTitlePatterns, "\r\n;=");
+            while ( st.hasMoreElements() ) {
+                m.put( st.nextToken(), st.nextToken());
+            }
+        }
+        support.setDocTitlePatterns(m);
     }
 
     private static boolean isDigit(char c) {

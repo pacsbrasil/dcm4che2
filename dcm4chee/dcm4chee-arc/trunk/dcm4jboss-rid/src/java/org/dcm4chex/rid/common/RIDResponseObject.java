@@ -54,46 +54,46 @@ import org.xml.sax.SAXException;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public interface RIDResponseObject {
-	
-	/**
-	 * The RIDCommand to execute this.
-	 * 
-	 * @return A command object to perform output process.
-	 * @throws SAXException
-	 * @throws TransformerConfigurationException
-	 * @throws IOException
-	 */
-	void execute( OutputStream out ) throws TransformerConfigurationException, SAXException, IOException;
-	
-	/**
-	 * Returns the contentLength or -1 (unknown) of this response. 
-	 * @return
-	 */
-	long length();
-	/**
-	 * Returns the content type that should be set in the response.
-	 * 
-	 * @return a content type like 'image/jpeg'
-	 */
-	String getContentType();
-	
-	/**
-	 * Returns the HTTP return code for the response.
-	 * <p>
-	 * This can be used to send an error back to the client.
-	 * 
-	 * @return An http return code.
-	 */
-	int getReturnCode();
-	
-	/**
-	 * Returns an error message.
-	 * <p>
-	 * 
-	 * @return An error message or null if return code is OK.
-	 */
-	String getErrorMessage();
-    
+
+    /**
+     * The RIDCommand to execute this.
+     * 
+     * @return A command object to perform output process.
+     * @throws SAXException
+     * @throws TransformerConfigurationException
+     * @throws IOException
+     */
+    void execute( OutputStream out ) throws TransformerConfigurationException, SAXException, IOException;
+
+    /**
+     * Returns the contentLength or -1 (unknown) of this response. 
+     * @return
+     */
+    long length();
+    /**
+     * Returns the content type that should be set in the response.
+     * 
+     * @return a content type like 'image/jpeg'
+     */
+    String getContentType();
+
+    /**
+     * Returns the HTTP return code for the response.
+     * <p>
+     * This can be used to send an error back to the client.
+     * 
+     * @return An http return code.
+     */
+    int getReturnCode();
+
+    /**
+     * Returns an error message.
+     * <p>
+     * 
+     * @return An error message or null if return code is OK.
+     */
+    String getErrorMessage();
+
     /**
      * Returns Dataset with patient info (if available)
      * 
