@@ -221,10 +221,10 @@ public abstract class StorageBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public SeriesStored makeSeriesStored(String seriuid)
+    public SeriesStored makeSeriesStored(String seriuid, Collection iuids)
     throws FinderException {
         SeriesLocal series = findBySeriesIuid(seriuid);
-        return makeSeriesStored(series);
+        return makeSeriesStored(series, iuids);
     }
 
     /**
@@ -275,7 +275,7 @@ public abstract class StorageBean implements SessionBean {
         ArrayList list = new ArrayList(c.size());
         SeriesStored seriesStored;
         for (Iterator iter = c.iterator(); iter.hasNext();) {
-            seriesStored = makeSeriesStored((SeriesLocal) iter.next());
+            seriesStored = makeSeriesStored((SeriesLocal) iter.next(), null);
             if (seriesStored != null) {
                 list.add(seriesStored);
             }
@@ -283,7 +283,8 @@ public abstract class StorageBean implements SessionBean {
         return (SeriesStored[]) list.toArray(new SeriesStored[list.size()]);
     }
     
-    private SeriesStored makeSeriesStored(SeriesLocal series) {
+    private SeriesStored makeSeriesStored(SeriesLocal series, Collection iuids)
+            throws FinderException {
         StudyLocal study = series.getStudy();
         PatientLocal pat = study.getPatient();
         Dataset seriesAttrs = series.getAttributes(true);
@@ -305,7 +306,8 @@ public abstract class StorageBean implements SessionBean {
         Collection c = series.getInstances();
         for (Iterator iter = c.iterator(); iter.hasNext();) {
             InstanceLocal inst = (InstanceLocal) iter.next();
-            if (inst.getInstanceStatus() != RECEIVED) {
+            if (inst.getInstanceStatus() != RECEIVED 
+                    || (iuids != null && !iuids.contains(inst.getSopIuid()))) {
                 continue;
             }
             Dataset refSOP = refSOPs.addNewItem();           
