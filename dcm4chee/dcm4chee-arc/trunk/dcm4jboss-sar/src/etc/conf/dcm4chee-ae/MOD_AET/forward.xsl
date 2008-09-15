@@ -4,21 +4,27 @@
 
   <!--
    The following parameters are made available by the application:
+   source-aet   - AET of the Storage SCU from which the series was received
+   retrieve-aet - AET of the Query Retrieve SCP from which the series can be retrieved
    year  - The current year
    month - The current month (1=Jan, 2=Feb ..)
    date  - The current day of the month
    day   - The current day of the week (0=Sun, 1=Mon ..)
    hour  - The current hour of the day
    
-   These parameters may be to define rules that depend on the current date or time.
+   These parameters may be to define rules that depend on the source or retrieve AET
+   or on the current date or time.
    
    An example of the parameters that are made available to this stylesheet is as follows:
-   <xsl:param name="year">2007</xsl:param>
+   <xsl:param name="source-aet">DCMSND</xsl:param>
+   <xsl:param name="retrieve-aet">DCM4CHEE</xsl:param>
    <xsl:param name="month">4</xsl:param>
    <xsl:param name="date">30</xsl:param> 
    <xsl:param name="day">1</xsl:param>
    <xsl:param name="hour">15</xsl:param>
   -->
+  <xsl:param name="source-aet"/>
+  <xsl:param name="retrieve-aet"/>
   <xsl:param name="year"/>
   <xsl:param name="month"/>
   <xsl:param name="date"/> 

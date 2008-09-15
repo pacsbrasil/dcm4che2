@@ -261,7 +261,7 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
 
     private boolean isUpgradeEnabled(SeriesStored seriesStored, String xml,
             String cuid) {
-        String callingAET = seriesStored.getCallingAET();
+        String callingAET = seriesStored.getSourceAET();
         return getConfigFile(callingAET, xml).exists()
             && containsOnlySOPClass(seriesStored, cuid);
     }
@@ -407,7 +407,7 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
 
     private EnhancedMFBuilder newEMFBuilder(SeriesStored seriesStored,
             int numFrames) {
-        String callingAET = seriesStored.getCallingAET();
+        String callingAET = seriesStored.getSourceAET();
         String modality = seriesStored.getModality();
         if ("CT".equals(modality)) {
             return new EnhancedMFBuilder(this,

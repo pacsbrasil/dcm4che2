@@ -681,8 +681,8 @@ public class StoreScpService extends AbstractScpService {
                 action.setNumberOfInstances(n);
                 RemoteNode remoteNode;
                 if (s != null) {
-                    remoteNode = alf.newRemoteNode(s, seriesStored
-                            .getCallingAET());
+                    remoteNode = alf.newRemoteNode(s,
+                            seriesStored.getSourceAET());
                 } else {
                     try {
                         InetAddress iAddr = InetAddress.getLocalHost();
@@ -712,7 +712,7 @@ public class StoreScpService extends AbstractScpService {
                 }
                 InstancesTransferredMessage msg = new InstancesTransferredMessage(
                         InstancesTransferredMessage.CREATE);
-                String srcAET = seriesStored.getCallingAET();
+                String srcAET = seriesStored.getSourceAET();
                 String srcHost = s != null ? AuditMessage.hostNameOf(s
                         .getInetAddress()) : null;
                 String srcID = srcHost != null ? srcHost : srcAET;
@@ -768,11 +768,10 @@ public class StoreScpService extends AbstractScpService {
         Storage store = getStorage();
         String seriud = ds.getString(Tags.SeriesInstanceUID);
         if (prevseriuid != null && !prevseriuid.equals(seriud)) {
-            SeriesStored seriesStored = store.makeSeriesStored(prevseriuid, null);
+            SeriesStored seriesStored = store.makeSeriesStored(prevseriuid);
             if (seriesStored != null) {
                 log.debug("Send SeriesStoredNotification - series changed");
-                scp.doAfterSeriesIsStored(null, seriesStored);
-                store.commitSeriesStored(seriesStored);
+                scp.doAfterSeriesIsStored(store, null, seriesStored);
             }
         }
         String cuid = ds.getString(Tags.SOPClassUID);
@@ -786,10 +785,9 @@ public class StoreScpService extends AbstractScpService {
         scp.updateDB(store, ds, fileDTO.getFileSystemPk(), filePath, f.length(),
                 fileDTO.getFileMd5(), true);
         if (last) {
-            SeriesStored seriesStored = store.makeSeriesStored(seriud, null);
+            SeriesStored seriesStored = store.makeSeriesStored(seriud);
             if (seriesStored != null) {
-                scp.doAfterSeriesIsStored(null, seriesStored);
-                store.commitSeriesStored(seriesStored);
+                scp.doAfterSeriesIsStored(store, null, seriesStored);
             }
         }
     }
@@ -800,8 +798,7 @@ public class StoreScpService extends AbstractScpService {
                 .checkSeriesStored(pendingSeriesStoredTimeout);
         for (int i = 0; i < seriesStored.length; i++) {
             log.info("Detect pending " + seriesStored[i]);
-            scp.doAfterSeriesIsStored(null, seriesStored[i]);
-            store.commitSeriesStored(seriesStored[i]);
+            scp.doAfterSeriesIsStored(store, null, seriesStored[i]);
         }
     }
 

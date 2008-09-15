@@ -162,7 +162,7 @@ public class ForwardService2 extends ServiceMBeanSupport {
     
     private void onSeriesStored(final SeriesStored stored) {
         Templates tpl = templates.getTemplatesForAET(
-                stored.getCallingAET(), FORWARD_XSL);
+                stored.getSourceAET(), FORWARD_XSL);
         if (tpl != null) {
             Dataset ds = DcmObjectFactory.getInstance().newDataset();
             ds.putAll(stored.getPatientAttrs());
@@ -172,7 +172,8 @@ public class ForwardService2 extends ServiceMBeanSupport {
             try {
                 log.debug("Forward2 transform input:");
                 log.debug(ds);
-                xslt(cal, ds, tpl, new DefaultHandler(){
+                xslt(cal, stored.getSourceAET(), stored.getRetrieveAET(),
+                        ds, tpl, new DefaultHandler(){
 
                     public void startElement(String uri, String localName,
                             String qName, Attributes attrs) {
@@ -188,7 +189,7 @@ public class ForwardService2 extends ServiceMBeanSupport {
                         }
                     }});
             } catch (Exception e) {
-                log.error("Applying forwarding rules to " + stored + " fails:", e);                
+                log.error("Applying forwarding rules to " + stored + " fails:", e);
             }
         }
     }
@@ -196,7 +197,7 @@ public class ForwardService2 extends ServiceMBeanSupport {
     private String[] sopIUIDsOrNull(SeriesStored seriesStored) {
         int numI = seriesStored.getNumberOfInstances();
         if (numI > 1 && !isForwardOnInstanceLevelFromAET(
-                        seriesStored.getCallingAET())) {
+                        seriesStored.getSourceAET())) {
             return null;
         }
         String[] iuids = new String[numI];
@@ -227,12 +228,15 @@ public class ForwardService2 extends ServiceMBeanSupport {
         return ForwardingRules.afterBusinessHours(cal, s.substring(index+1));
     }
     
-    private static void xslt(Calendar cal, Dataset ds, Templates tpl, ContentHandler ch)
+    private static void xslt(Calendar cal, String sourceAET, String retrieveAET,
+            Dataset ds, Templates tpl, ContentHandler ch)
             throws TransformerConfigurationException, IOException {
         SAXTransformerFactory tf = (SAXTransformerFactory)
             TransformerFactory.newInstance();
         TransformerHandler th = tf.newTransformerHandler(tpl);
         Transformer t = th.getTransformer();
+        t.setParameter("source-aet", sourceAET);
+        t.setParameter("retrieve-aet", retrieveAET);
         t.setParameter("year", new Integer(cal.get(Calendar.YEAR)));
         t.setParameter("month", new Integer(cal.get(Calendar.MONTH)+1));
         t.setParameter("date", new Integer(cal.get(Calendar.DAY_OF_MONTH)));

@@ -77,7 +77,7 @@ public class ForwardService extends ServiceMBeanSupport {
         public void handleNotification(Notification notif, Object handback) {
             SeriesStored seriesStored = (SeriesStored) notif.getUserData();
             Map<String, String[]> param = new HashMap<String, String[]>();
-            param.put("calling", new String[] { seriesStored.getCallingAET() });
+            param.put("calling", new String[] { seriesStored.getSourceAET() });
             String[] destAETs = forwardingRules
                     .getForwardDestinationsFor(param);
             for (int i = 0; i < destAETs.length; i++) {
@@ -98,7 +98,7 @@ public class ForwardService extends ServiceMBeanSupport {
     private String[] sopIUIDsOrNull(SeriesStored seriesStored) {
         int numI = seriesStored.getNumberOfInstances();
         if (numI > 1 && !isForwardOnInstanceLevelFromAET(
-                        seriesStored.getCallingAET())) {
+                        seriesStored.getSourceAET())) {
             return null;
         }
         String[] iuids = new String[numI];

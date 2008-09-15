@@ -41,6 +41,7 @@ package org.dcm4chex.archive.ejb.session;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -240,10 +241,9 @@ public abstract class StorageBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public SeriesStored makeSeriesStored(String seriuid, Collection iuids)
+    public SeriesStored makeSeriesStored(String seriuid)
             throws FinderException {
-        SeriesLocal series = findBySeriesIuid(seriuid);
-        return makeSeriesStored(series, iuids);
+        return makeSeriesStored(findBySeriesIuid(seriuid));
     }
 
     /**
@@ -294,7 +294,7 @@ public abstract class StorageBean implements SessionBean {
         ArrayList list = new ArrayList(c.size());
         SeriesStored seriesStored;
         for (Iterator iter = c.iterator(); iter.hasNext();) {
-            seriesStored = makeSeriesStored((SeriesLocal) iter.next(), null);
+            seriesStored = makeSeriesStored((SeriesLocal) iter.next());
             if (seriesStored != null) {
                 list.add(seriesStored);
             }
@@ -302,7 +302,7 @@ public abstract class StorageBean implements SessionBean {
         return (SeriesStored[]) list.toArray(new SeriesStored[list.size()]);
     }
     
-    private SeriesStored makeSeriesStored(SeriesLocal series, Collection iuids)
+    private SeriesStored makeSeriesStored(SeriesLocal series)
             throws FinderException {
         StudyLocal study = series.getStudy();
         Dataset ian = DcmObjectFactory.getInstance().newDataset();
@@ -310,29 +310,35 @@ public abstract class StorageBean implements SessionBean {
         Dataset refSeries = ian.putSQ(Tags.RefSeriesSeq).addNewItem();
         DcmElement refSOPs = refSeries.putSQ(Tags.RefSOPSeq);
         refSeries.putUI(Tags.SeriesInstanceUID, series.getSeriesIuid());
+        HashSet commonRetrieveAETs = null;
         Collection c = series.getInstances();
         for (Iterator iter = c.iterator(); iter.hasNext();) {
             InstanceLocal inst = (InstanceLocal) iter.next();
-            if (inst.getInstanceStatus() != RECEIVED 
-                    || (iuids != null && !iuids.contains(inst.getSopIuid()))) {
+            if (inst.getInstanceStatus() != RECEIVED) {
                 continue;
+            }
+            String[] retrieveAETs = StringUtils.split(
+                    inst.getRetrieveAETs(), '\\');
+            if (commonRetrieveAETs == null) {
+                commonRetrieveAETs = new HashSet();
+                commonRetrieveAETs.addAll(Arrays.asList(retrieveAETs));
+            } else {
+                commonRetrieveAETs.retainAll(Arrays.asList(retrieveAETs));
             }
             Dataset refSOP = refSOPs.addNewItem();           
             refSOP.putUI(Tags.RefSOPClassUID, inst.getSopCuid());
             refSOP.putUI(Tags.RefSOPInstanceUID, inst.getSopIuid());
-            refSOP.putAE(Tags.RetrieveAET, StringUtils.split(
-                    inst.getRetrieveAETs(), '\\')[0]);
-            refSOP.putCS(Tags.InstanceAvailability, "ONLINE");
+            refSOP.putAE(Tags.RetrieveAET, retrieveAETs);
+            refSOP.putCS(Tags.InstanceAvailability,
+                    Availability.toString(inst.getAvailabilitySafe()));
         }
-        if (refSOPs.countItems() == 0) {
+        if (commonRetrieveAETs == null) {
             return null;
         }
-        series.updateDerivedFields(true, true, false, true, true);
-        study.updateDerivedFields(true, true, false, true, true, true);
         PatientLocal pat = study.getPatient();
-        Dataset patAttrs = pat.getAttributes(true);
-        Dataset seriesAttrs = series.getAttributes(true);
-        Dataset studyAttrs = study.getAttributes(true);
+        Dataset patAttrs = pat.getAttributes(false);
+        Dataset studyAttrs = study.getAttributes(false);
+        Dataset seriesAttrs = series.getAttributes(false);
         Dataset pps = seriesAttrs.getItem(Tags.RefPPSSeq);
         DcmElement refPPSSeq = ian.putSQ(Tags.RefPPSSeq);
         if (pps != null) {
@@ -341,11 +347,23 @@ public abstract class StorageBean implements SessionBean {
             }
             refPPSSeq.addItem(pps);
         }
-        SeriesStored seriesStored = new SeriesStored(patAttrs, studyAttrs,
-                seriesAttrs, ian);
+        SeriesStored seriesStored = new SeriesStored(series.getSourceAET(),
+                commonRetrieveAETs.isEmpty() ? null
+                        : (String) commonRetrieveAETs.iterator().next(),
+                patAttrs, studyAttrs, seriesAttrs, ian);
         return seriesStored;
     }
-    
+
+    /**
+     * @ejb.interface-method
+     */
+    public void updateDerivedStudyAndSeriesFields(String seriuid)
+            throws FinderException {
+        SeriesLocal series = findBySeriesIuid(seriuid);
+        series.updateDerivedFields(true, true, false, true, true);
+        series.getStudy().updateDerivedFields(true, true, false, true, true, true);
+    }
+
     /**
      * @ejb.interface-method
      */

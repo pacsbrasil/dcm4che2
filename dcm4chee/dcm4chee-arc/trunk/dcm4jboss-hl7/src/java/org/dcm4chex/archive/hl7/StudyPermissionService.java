@@ -459,7 +459,7 @@ public class StudyPermissionService extends ServiceMBeanSupport {
             ds.putAll(stored.getPatientAttrs());
             ds.putAll(stored.getStudyAttrs());
             ds.putAll(stored.getSeriesAttrs());
-            xslt(seriesStylesheet, ds, stored.getCallingAET());        
+            xslt(seriesStylesheet, ds, stored.getSourceAET());        
         } catch (Exception e) {
             log.error("Failed to update permissions on Series stored", e);
         }

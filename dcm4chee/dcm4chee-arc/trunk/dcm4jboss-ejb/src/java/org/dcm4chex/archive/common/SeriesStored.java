@@ -68,11 +68,12 @@ public class SeriesStored implements Serializable {
     private final Dataset patAttrs;
     private final Dataset studyAttrs;
     private final Dataset seriesAttrs;
+    private final String sourceAET;
+    private final String retrieveAET;
     private final Dataset ian;
-    private final int numI;
 
-    public SeriesStored(Dataset patient, Dataset study, Dataset series,
-            Dataset ian) {
+    public SeriesStored(String sourceAET, String retrieveAET, Dataset patient,
+            Dataset study, Dataset series, Dataset ian) {
         if (patient == null) {
             throw new NullPointerException("patient");
         }
@@ -85,20 +86,29 @@ public class SeriesStored implements Serializable {
         if (ian == null) {
             throw new NullPointerException("ian");
         }
+        this.sourceAET = sourceAET;
+        this.retrieveAET = retrieveAET;
         this.patAttrs = patient;
         this.studyAttrs = study;
         this.seriesAttrs = series;
         this.ian = ian;
-        this.numI = ian.getItem(Tags.RefSeriesSeq).get(Tags.RefSOPSeq)
-                .countItems();
     }
 
     public String toString() {
-        return "SeriesStored[calling=" + getCallingAET()
+        return "SeriesStored[sourceAET=" + getSourceAET()
+                + ", retrieveAET=" + getRetrieveAET()
                 + ", modality=" + getModality()
-                + ", numOfInst=" + numI
+                + ", numOfInst=" + getNumberOfInstances()
                 + ", study-iuid=" + getStudyInstanceUID()
                 + ", series-iuid=" + getSeriesInstanceUID() + "]";
+    }
+
+    public final String getSourceAET() {
+        return sourceAET;
+    }
+
+    public final String getRetrieveAET() {
+        return retrieveAET;
     }
 
     public final Dataset getPatientAttrs() {
@@ -115,15 +125,6 @@ public class SeriesStored implements Serializable {
 
     public final Dataset getIAN() {
         return ian;
-    }
-
-    public final String getCallingAET() {
-        seriesAttrs.setPrivateCreatorID(PrivateTags.CreatorID);
-        return seriesAttrs.getString(PrivateTags.CallingAET);
-    }
-
-    public String getRetrieveAET() {
-        return seriesAttrs.getString(Tags.RetrieveAET);
     }
 
     public String getPatientID() {
@@ -155,7 +156,8 @@ public class SeriesStored implements Serializable {
     }
 
     public int getNumberOfInstances() {
-        return numI;
+        return ian.getItem(Tags.RefSeriesSeq).get(Tags.RefSOPSeq)
+            .countItems();
     }
 
 }

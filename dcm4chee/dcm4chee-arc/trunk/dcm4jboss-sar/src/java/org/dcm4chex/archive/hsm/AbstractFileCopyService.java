@@ -237,7 +237,7 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
         SeriesStored seriesStored = (SeriesStored) notif.getUserData();
         if (condition != null) {
             Map param = new HashMap();
-            param.put("calling", new String[] { seriesStored.getCallingAET() });
+            param.put("calling", new String[] { seriesStored.getSourceAET() });
             if (!condition.isTrueFor(param)) {
                 return;
             }
