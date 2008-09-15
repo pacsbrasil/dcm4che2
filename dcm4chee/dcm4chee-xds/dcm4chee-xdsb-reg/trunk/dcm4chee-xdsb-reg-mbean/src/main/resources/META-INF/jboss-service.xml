@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+
+<!--  Version $Revision:$ $Date:$ -->
+<server>
+  <mbean code="org.dcm4chee.xdsb.registry.mbean.XDSbRegistryService" 
+         name="dcm4chee.xds:service=XDSbRegistryService"
+         xmbean-dd="">
+
+    <xmbean>
+      <description><![CDATA[<b>XDSbRegistry MBeanService</b><br/>
+		Provides a XDS.b Registry Service.<br/>.
+		]]> </description>
+
+    <descriptors>
+       <persistence persistPolicy="OnUpdate"/>
+       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+    </descriptors>
+
+    <class>org.dcm4chee.xdsb.registry.mbean.XDSbRegistryService</class>
+
+    <constructor>
+         <description>The default constructor</description>
+         <name>XDSbRegistryService</name>
+    </constructor>
+      
+
+   <attribute access="read-write"
+      getMethod="isLogReceivedMessage"
+      setMethod="setLogReceivedMessage">
+      <description>Enable logging of received Request message (Provide And Register Document Set).
+      </description>
+      <name>LogReceivedMessage</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isLogResponseMessage"
+      setMethod="setLogResponseMessage">
+      <description>Enable/Disable logging of received Response message (RegistryResponse). 
+      </description>
+      <name>LogResponseMessage</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isIndentXmlLog"
+      setMethod="setIndentXmlLog">
+      <description>Enable/disable indention of logged XML message.
+      </description>
+      <name>IndentXmlLog</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isSaveRequestAsFile"
+      setMethod="setSaveRequestAsFile">
+      <description>Save Provide And Register Document Set Request as file.
+      </description>
+      <name>SaveRequestAsFile</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute> 
+   <attribute access="read-write"
+      getMethod="getSavePath"
+      setMethod="setSavePath">
+      <description><![CDATA[Base directory where requests are stored.<br/>
+            Format of the file name is: &lt;SavePath&gt;/&lt;SubmissionSetUID&gt;.xml<br/>
+            ]]>
+      </description>
+      <name>SavePath</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="log/xdsb/reg" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMockError"
+      setMethod="setMockError">
+      <description><![CDATA[ An optional error message for mocked Registry Response.<br/>
+      			Format: NONE or [&lt;Error Code&gt;|]&lt;ErrorMessage&gt;<br/>
+      			NONE: Means Success status<br/>
+      			ErrorCode: Optional ErrorCode. If not specified 'XDSRegistryError' is used.<br/>
+      			ErrorMessage: The error message.<br/>
+      		]]>
+      </description>
+      <name>MockError</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isSendJmxNotification"
+      setMethod="setSendJmxNotification">
+      <description>Activates notification of registered listeners about received
+      'Register Document Set' request.
+      </description>
+      <name>SendNotification</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+
+   &defaultAttributes;
+   
+   <!-- Operations -->
+   &defaultOperations;
+       
+   <operation impact="ACTION">
+      <description><![CDATA[ Perform the register document set transaction.
+      		]]> </description>
+      <name>registerDocuments</name>
+      <parameter>
+        <description>The SubmitObjectsRequest Object</description>
+        <name>SubmitObjectsRequest</name>
+        <type>org.dcm4chee.xds.common.infoset.SubmitObjectsRequest</type>
+      </parameter>
+      <return-type>org.dcm4chee.xds.common.infoset.RegistryResponseType</return-type>
+   </operation>
+ 
+   <!-- Notifications -->
+   <notification>
+      <description><![CDATA[ The notification sent whenever a 'Register Document Set' request is received.
+      ]]></description>
+      <name>javax.management.Notification</name>
+      <notification-type>org.dcm4chee.xds.common.infoset.SubmitObjectsRequest</notification-type>
+   </notification>
+        
+    </xmbean>
+  </mbean>
+</server>
