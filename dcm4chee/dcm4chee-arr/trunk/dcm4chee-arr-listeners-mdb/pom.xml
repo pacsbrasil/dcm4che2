@@ -25,19 +25,19 @@
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-j2ee</artifactId>
-      <version>4.2.2.GA</version>
+      <version>4.2.3.GA</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-ejb3x</artifactId>
-      <version>4.2.2.GA</version>
+      <version>4.2.3.GA</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>ejb3-persistence</artifactId>
-      <version>4.2.2.GA</version>
+      <version>4.2.3.GA</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
