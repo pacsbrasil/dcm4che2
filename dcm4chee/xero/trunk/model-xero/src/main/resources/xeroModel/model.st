@@ -25,14 +25,14 @@ $xeroModels:{ $(it)()$ }$
 var XeroStudyColumns = {
 	"template":"xeroStudyColumns",
 	"header":[
-		{"name":"Patient Name", "var":"PatientName", "template":"image/patientNameSel","action":"controller.sortQuery" },
-		{"name":"Patient ID", "var":"PatientID", "template":"html/displayFirst","action":"controller.sortQuery" },
-		{"name":"Study Description", "var":"StudyDescription", "template":"image/studyDescriptionSel","action":"controller.sortQuery" },
-		{"name":"Modality", "var":"ModalitiesInStudy", "template":"html/displayIt","action":"controller.sortQuery" },
-		{"name":"Acc#", "var":"AccessionNumber", "template":"html/displayIt","action":"controller.sortQuery" },
+		{"name":"Patient Name", "var":"PatientName",  "sort":"PatientName", "template":"image/patientNameSel","action":"controller.sortQuery" },
+		{"name":"Patient ID", "var":"PatientID", "sort":"PatientID", "template":"html/displayFirst","action":"controller.sortQuery" },
+		{"name":"Study Description", "var":"StudyDescription", "sort":"StudyDescription", "template":"image/studyDescriptionSel","action":"controller.sortQuery" },
+		{"name":"Modality", "var":"ModalitiesInStudy", "sort":"ModalitiesInStudy", "template":"html/displayIt","action":"controller.sortQuery" },
+		{"name":"Acc#", "var":"AccessionNumber", "sort":"AccessionNumber", "template":"html/displayIt","action":"controller.sortQuery" },
 		{"name":"Study Date", "var":"StudyDateF", "sort":"StudyDateTime", "template":"html/displayIt","action":"controller.sortQuery" },
-		{"name":"# Series", "var":"NumberOfStudyRelatedSeries", "template":"html/displayIt","action":"controller.sortQuery" },
-		{"name":"# Objects", "var":"NumberOfStudyRelatedInstances", "template":"html/displayIt","action":"controller.sortQuery" }
+		{"name":"# Series", "var":"NumberOfStudyRelatedSeries", "sort":"NumberOfStudyRelatedSeries", "template":"html/displayIt","action":"controller.sortQuery" },
+		{"name":"# Objects", "var":"NumberOfStudyRelatedInstances", "sort":"NumberOfStudyRelatedInstances", "template":"html/displayIt","action":"controller.sortQuery" }
 	]
 };
 
@@ -44,6 +44,7 @@ xeroModel.searchLayout.query = xeroModel.queryBox.query;
 xeroModel.findLayout = new Layout();
 xeroModel.findLayout.add(xeroModel.queryBox);
 xeroModel.findLayout.add(xeroModel.searchLayout);
+xeroModel.sortPatient = new SortPatient(xeroModel.searchLayout);
 
 xeroModel.layout = new TabsLayout();
 xeroModel.layout.tabMenu = new Layout("userMenu","userMenu"); 
