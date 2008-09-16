@@ -3,7 +3,7 @@
   <parent>
     <artifactId>xero-util</artifactId>
     <groupId>org.dcm4chee.xero</groupId>
-    <version>0.7</version>
+    <version>0.8-SNAPSHOT</version>
   </parent>
   <groupId>org.dcm4chee.xero</groupId>
   <artifactId>rhino-access</artifactId>
