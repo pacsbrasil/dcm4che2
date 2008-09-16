@@ -82,9 +82,6 @@ public class JMSDelegate {
                         MessageListener.class.getName(), int.class.getName() });
         } catch (MBeanException e) {
             throw e.getTargetException();
-        } catch (Exception e) {
-            service.getLog().fatal("Failed to invoke operation startListening on "
-                    + jmsServiceName, e);
         }
     }
 
@@ -95,9 +92,6 @@ public class JMSDelegate {
                     new String[] { String.class.getName() });
         } catch (MBeanException e) {
             throw e.getTargetException();
-        } catch (Exception e) {
-            service.getLog().fatal("Failed to invoke operation stopListening on "
-                    + jmsServiceName, e);
         }
     }
 
@@ -112,8 +106,6 @@ public class JMSDelegate {
                         long.class.getName() });
         } catch (MBeanException e) {
             throw e.getTargetException();
-        } catch (Exception e) {
-            service.getLog().fatal("Failed to invoke operation queue on " + jmsServiceName, e);
         }
     }
 }

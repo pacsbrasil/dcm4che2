@@ -71,11 +71,6 @@ import org.jboss.system.ServiceMBeanSupport;
 public abstract class AbstractFileCopyService extends ServiceMBeanSupport
         implements MessageListener, NotificationListener {
 
-    private static final NotificationFilterSupport seriesStoredFilter = new NotificationFilterSupport();
-    static {
-        seriesStoredFilter.enableType(SeriesStored.class.getName());
-    }
-
     protected ObjectName storeScpServiceName;
 
     protected String queueName;
@@ -211,13 +206,9 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
 
     protected void startService() throws Exception {
         jmsDelegate.startListening(queueName, this, concurrency);
-        server.addNotificationListener(storeScpServiceName, this,
-                seriesStoredFilter, null);
     }
 
     protected void stopService() throws Exception {
-        server.removeNotificationListener(storeScpServiceName, this,
-                seriesStoredFilter, null);
         jmsDelegate.stopListening(queueName);
     }
 
@@ -226,6 +217,18 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
             return;
         }
         SeriesStored seriesStored = (SeriesStored) notif.getUserData();
+		try {
+			handleSeriesStored(seriesStored);
+		} catch (Exception e) {
+			log.error("Failed to schedule job", e);
+		}
+	}
+
+	public void handleSeriesStored(SeriesStored seriesStored) throws Exception {
+		if (destination == null) {
+			return;
+		}
+        
         if (condition != null) {
             Map param = new HashMap();
             param.put("calling", new String[] { seriesStored.getCallingAET() });
@@ -238,14 +241,10 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
         		ForwardingRules.toScheduledTime(destination));
     }
         
-    protected void schedule(BaseJmsOrder order, long scheduledTime) {
-        try {
-            log.info("Scheduling " + order.toIdString());
-            jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
-                    scheduledTime);
-        } catch (Exception e) {
-            log.error("Failed to schedule " + order, e);
-        }
+	protected void schedule(BaseJmsOrder order, long scheduledTime) throws Exception{
+		log.info("Scheduling " + order.toIdString());
+		jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
+				scheduledTime);
     }
 
     public void onMessage(Message message) {

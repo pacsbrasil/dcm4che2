@@ -77,6 +77,7 @@ import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.QueryMessage;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.mbean.AuditLoggerDelegate;
 import org.dcm4chex.archive.mbean.TemplatesDelegate;
@@ -634,6 +635,9 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         super.sendNotification(notif);
     }
 
+    public void seriesStored(SeriesStored o) throws Exception {
+    }
+    
     public void logDicomQuery(Association assoc, String cuid, Dataset keys) {
         try {
             if (auditLogger.isAuditLogIHEYr4()) {

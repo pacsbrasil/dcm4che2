@@ -154,7 +154,11 @@ public class FileCopyService extends AbstractFileCopyService {
         if ( ds != null ) {
             ian.putUI(Tags.StudyInstanceUID, ds.getString(Tags.StudyInstanceUID));
             refSeries.putUI(Tags.SeriesInstanceUID, ds.getString(Tags.SeriesInstanceUID));
-            schedule(createOrder(ian),0l);
+            try {
+            	schedule(createOrder(ian),0l);
+            } catch (Exception e) {
+            	log.error("Failed to schedule", e);
+            }
             log.info("Copy files of series "+seriesIUID+" scheduled!");
             return true;
         } else {
