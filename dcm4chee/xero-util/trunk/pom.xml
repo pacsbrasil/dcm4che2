@@ -4,12 +4,12 @@
    <groupId>org.dcm4chee.xero</groupId>
    <artifactId>xero-util</artifactId>
    <packaging>pom</packaging>
-   <version>0.7</version>
+   <version>0.8-SNAPSHOT</version>
    <name>Xero Util</name>
    <url>http://www.dcm4che.org/xero</url>
 
    <scm>
-      <developerConnection>scm:svn:https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4chee/xero-util/tags/xero-overall-agfa-0.7</developerConnection>
+      <developerConnection>scm:svn:https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4chee/xero-util/trunk</developerConnection>
    </scm>
 
    <modules>
