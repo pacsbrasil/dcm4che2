@@ -38,7 +38,7 @@
 	<property name="dcm4chee-ejb.src" value="${dcm4chee-ejb.home}/src"/>		
 
    <!-- Override with your JBoss/Web server bundle dist location -->
-	<property name="jboss.home" value="${user.home}/jboss-4.2.2.GA"/>		
+	<property name="jboss.home" value="${user.home}/jboss-4.2.3.GA"/>		
 	<property name="jboss.server" value="${jboss.home}/server"/>		
 	<property name="jboss.server.home" value="${jboss.home}/server/default"/>		
 	<property name="jboss.deploy" value="${jboss.server.home}/deploy"/>		

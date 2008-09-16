@@ -37,7 +37,7 @@ Installation Procedure:
 of your choice. Avoid using a directory that has a name that contains spaces
 as installation directory.
 
-2. Download the binary distribution package of JBoss Application Server 4.2.2.GA
+2. Download the binary distribution package of JBoss Application Server 4.2.3.GA
 from http://labs.jboss.com/jbossas/downloads and extract it into a different
 directory.
 
@@ -128,28 +128,27 @@ exception messages:
 
   JBoss Bootstrap Environment
 
-  JBOSS_HOME: /home/gunter/dcm4chee-psql-2.13.6
+  JBOSS_HOME: /home/gunter/dcm4chee-psql-2.14.0
 
-  JAVA: /usr/lib/j2sdk1.5-sun/bin/java
+  JAVA: /usr/lib/jvm/java-6-sun/bin/java
 
   JAVA_OPTS: -Dprogram.name=run.sh -server -Xms128m -Xmx512m
    -Dsun.rmi.dgc.client.gcInterval=3600000
    -Dsun.rmi.dgc.server.gcInterval=3600000 -Djava.awt.headless=true
    -Dapp.name=dcm4chee -Djava.net.preferIPv4Stack=true
-   -Djava.library.path=/home/gunter/dcm4chee-psql-2.13.6/bin/native
+   -Djava.library.path=/home/gunter/dcm4chee-psql-2.14.0/bin/native
 
-  CLASSPATH: /home/gunter/dcm4chee-psql-2.13.6/bin/run.jar:
-   /usr/lib/j2sdk1.5-sun/lib/tools.jar
+  CLASSPATH: /home/gunter/dcm4chee-psql-2.14.0/bin/run.jar:
+   /usr/lib/jvm/java-6-sun/lib/tools.jar
 
 =========================================================================
 
-23:17:52,373 INFO  [Server] Starting JBoss (MX MicroKernel)...
-23:17:52,374 INFO  [Server] Release ID: JBoss [Trinity] 4.2.2.GA (build:
- SVNTag=JBoss_4_2_2_GA date=200710221139)
+17:18:49,573 INFO  [Server] Starting JBoss (MX MicroKernel)...
+17:18:49,574 INFO  [Server] Release ID: JBoss [Trinity] 4.2.3.GA
+ (build: SVNTag=JBoss_4_2_3_GA date=200807181439)
 :
-23:19:49,580 INFO  [AjpProtocol] Starting Coyote AJP/1.3 on ajp-127.0.0.1-8009
-23:19:49,632 INFO  [Server] JBoss (MX MicroKernel) [4.2.2.GA (build:
- SVNTag=JBoss_4_2_2_GA date=200710221139)] Started in 1m:57s:103ms
+17:19:11,496 INFO  [Server] JBoss (MX MicroKernel) [4.2.3.GA
+ (build: SVNTag=JBoss_4_2_3_GA date=200807181439)] Started in 21s:919ms
 
 10. Connect to the Web Interface at http://localhost:8080/dcm4chee-web/
 of the archive using any Web Browser (most tested are Mozilla-Firefox and

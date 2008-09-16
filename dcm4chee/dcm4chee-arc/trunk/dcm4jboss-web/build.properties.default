@@ -18,4 +18,4 @@ dcm4chee-sar.home=../dcm4jboss-sar
 dcm4chee-hl7.home=../dcm4jboss-hl7
 
 #Override with your JBoss dist location
-jboss.home=${user.home}/jboss-4.2.2.GA
+jboss.home=${user.home}/jboss-4.2.3.GA

@@ -8,7 +8,7 @@ to download and install:
 
 - XDoclet 1.2.3 [http://xdoclet.sourceforge.net]
 
-- JBoss Application Server 4.2.2.GA [http://labs.jboss.com/jbossas/downloads]
+- JBoss Application Server 4.2.3.GA [http://labs.jboss.com/jbossas/downloads]
 
 - Apache FOP 0.20.5 [http://xmlgraphics.apache.org/fop/]
 
@@ -47,7 +47,7 @@ your local Maven2 Repository:
 
 dcm4che14.home=${user.home}/dcm4che14/build/dcm4che-1.4.18
 xdoclet.home=${user.home}/xdoclet-1.2.3
-jboss.home=${user.home}/jboss-4.2.2.GA
+jboss.home=${user.home}/jboss-4.2.3.GA
 fop.home=${user.home}/fop-0.20.5
 cactus.home=${user.home}/jakarta-cactus-13-1.7
 m2.repos=${user.home}/.m2/repository.
