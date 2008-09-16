@@ -42,7 +42,8 @@ public interface XDSConstants {
 	public static final String URN_IHE_ITI_2007_RETRIEVE_DOCUMENT_SET_RESPONSE = "urn:ihe:iti:2007:RetrieveDocumentSetResponse";
 
 //ERROR	const
-	public static final String XDS_ERR_REPOSITORY_ERROR = "XDSRepositoryError";
+        public static final String XDS_ERR_REPOSITORY_ERROR = "XDSRepositoryError";
+        public static final String XDS_ERR_REGISTRY_ERROR = "XDSRegistryError";
 	public static final String XDS_ERR_MISSING_DOCUMENT_METADATA = "XDSMissingDocumentMetadata";
 	public static final String XDS_ERR_MISSING_DOCUMENT = "XDSMissingDocument";
 	public static final String XDS_ERR_REG_NOT_AVAIL = "XDSRegistryNotAvailable";
@@ -52,6 +53,5 @@ public interface XDSConstants {
 	public static final String XDS_ERR_SEVERITY_WARNING = "urn:oasis:names:tc:ebxml-regrep:ErrorSeverityType:Warning";
 	public static final String XDS_ERR_SEVERITY_ERROR = "urn:oasis:names:tc:ebxml-regrep:ErrorSeverityType:Error";
 	public static final String XDS_ERR_MISSING_REGISTRY_PACKAGE = "RegistryPackage missing";
-	public static final String WORKAROUND_DOC_DATA_SESSION_KEY = "org.dcm4chee.xds.doc_data_workaround";
 	
 }

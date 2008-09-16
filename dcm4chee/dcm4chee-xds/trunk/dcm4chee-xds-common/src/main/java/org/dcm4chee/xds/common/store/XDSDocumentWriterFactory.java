@@ -302,10 +302,10 @@ public class XDSDocumentWriterFactory {
     class DummyWriter implements XDSDocumentWriter {
         long size = 0;
         DataHandler dh = null;
-        byte fillByte = (byte)'T';
+        byte fillByte;
         
         DummyWriter(long size ){
-            this(size, (byte)'T');
+            this(size, (byte)'#');
         }
         DummyWriter(long size, byte b ){
             this.size = size;
@@ -322,6 +322,7 @@ public class XDSDocumentWriterFactory {
         }
         public DataHandler getDataHandler() {
             if ( dh == null ) {
+                //TODO use tmp File if size > Integer.MAX_VALUE
                 byte[] buffer = new byte[(int)size];
                 Arrays.fill(buffer, fillByte);
                 dh = new DataHandler( new InputStreamDataSource(new ByteArrayInputStream(buffer)));
