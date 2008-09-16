@@ -46,7 +46,7 @@ Installation Procedure:
 1. Extract the binary distribution package of dcm4chee-cdw. Avoid using a
    directory that has a name that contains spaces as installation directory.
 
-2. Download the binary distribution package of JBoss Application Server 4.2.2.GA
+2. Download the binary distribution package of JBoss Application Server 4.2.3.GA
    from http://labs.jboss.com/jbossas/downloads and extract it into a different
    directory.
 
@@ -87,28 +87,24 @@ Installation Procedure:
 
     JBOSS_HOME: /home/gunter/dcm4chee-cdw-2.13.6
 
-    JAVA: /usr/lib/j2sdk1.6-sun/bin/java
+    JAVA: /usr/lib/jvm/java-6-sun/bin/java
 
     JAVA_OPTS: -Dprogram.name=run.sh -server -Xms128m -Xmx256m
      -Dsun.rmi.dgc.client.gcInterval=3600000
-     -Dsun.rmi.dgc.server.gcInterval=3600000
-     -Djava.net.preferIPv4Stack=true
+     -Dsun.rmi.dgc.server.gcInterval=3600000 -Djava.net.preferIPv4Stack=true
      -Djava.library.path=/home/gunter/dcm4chee-cdw-2.13.6/bin/native
 
     CLASSPATH: /home/gunter/dcm4chee-cdw-2.13.6/bin/run.jar:
-     /usr/lib/j2sdk1.6-sun/lib/tools.jar
+     /usr/lib/jvm/java-6-sun/lib/tools.jar
 
   =========================================================================
 
-  23:14:17,825 INFO  [Server] Starting JBoss (MX MicroKernel)...
-  23:14:17,827 INFO  [Server] Release ID: JBoss [Trinity] 4.2.2.GA (build:
-   SVNTag=JBoss_4_2_2_GA date=200710221139)
+  18:01:13,908 INFO  [Server] Starting JBoss (MX MicroKernel)...
+  18:01:13,908 INFO  [Server] Release ID: JBoss [Trinity] 4.2.3.GA
+   (build: SVNTag=JBoss_4_2_3_GA date=200807181439)
   :
-  23:14:53,104 INFO  [Http11Protocol] Starting Coyote HTTP/1.1 on
-   http-127.0.0.1-8080
-  23:14:53,145 INFO  [AjpProtocol] Starting Coyote AJP/1.3 on ajp-127.0.0.1-8009
-  23:14:53,213 INFO  [Server] JBoss (MX MicroKernel) [4.2.2.GA (build:
-   SVNTag=JBoss_4_2_2_GA date=200710221139)] Started in 35s:230ms
+  18:01:22,571 INFO  [Server] JBoss (MX MicroKernel) [4.2.3.GA
+   (build: SVNTag=JBoss_4_2_3_GA date=200807181439)] Started in 8s:659ms
 
 7. Open the JBoss Administration Console http://localhost:8080/jmx-console with
    any Web Browser. Scroll down to section "dcm4chee.cdw" and follow the link
