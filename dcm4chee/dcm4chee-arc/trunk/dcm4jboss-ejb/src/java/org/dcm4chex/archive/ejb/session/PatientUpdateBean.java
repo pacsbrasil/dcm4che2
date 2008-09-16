@@ -62,6 +62,7 @@ import org.dcm4chex.archive.ejb.interfaces.MWLItemLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
+import org.dcm4chex.archive.exceptions.NonUniquePatientException;
 import org.dcm4chex.archive.exceptions.PatientAlreadyExistsException;
 
 /**
@@ -204,12 +205,40 @@ public abstract class PatientUpdateBean implements SessionBean {
     private PatientLocal updateOrCreate(Dataset ds)
             throws CreateException, FinderException {
        try {
-            PatientLocal pat = patHome.searchFor(ds, false, true);
-            pat.updateAttributes(ds);
-            return pat;
-        } catch (ObjectNotFoundException e) {
-            return patHome.create(ds);
+            return findAndUpdatePatient(ds);
+       } catch (ObjectNotFoundException e) {
+            PatientLocal pat;
+            try {
+                pat = patHome.create(ds);
+            } catch (CreateException ce) {
+                // Check if patient record was inserted by concurrent thread
+                // with unique index on (pat_id, pat_id_issuer)
+                try {
+                    return findAndUpdatePatient(ds);
+                } catch (FinderException fe) {
+                    throw ce;
+                }
+            }
+            // Check if patient record was also inserted by concurrent thread
+            // with non-unique index on (pat_id, pat_id_issuer)
+            try {
+                patHome.searchFor(ds, false, true);
+                return pat;
+            } catch (NonUniquePatientException nupe) {
+                try {
+                    pat.remove();
+                } catch (RemoveException e1) {
+                    throw new EJBException(e);
+                }
+                return findAndUpdatePatient(ds);
+            }
         }
+    }
+
+    private PatientLocal findAndUpdatePatient(Dataset ds) throws FinderException {
+        PatientLocal pat = patHome.searchFor(ds, false, true);
+        pat.updateAttributes(ds);
+        return pat;
     }
 
     /**
