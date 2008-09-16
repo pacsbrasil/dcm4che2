@@ -36,6 +36,7 @@ model.xeroModels.urlFactory=urlFactory
 model.xeroModels.xmlModel=xmlModel
 model.xeroModels.xmlModel.priority=75
 model.xeroModels.layout=layout
+model.xeroModels.sortPatient=sortPatient
 model.xeroModels.layout.priority=100
 model.xeroModels.imageLayout=imageLayout
 model.xeroModels.merged=merged
