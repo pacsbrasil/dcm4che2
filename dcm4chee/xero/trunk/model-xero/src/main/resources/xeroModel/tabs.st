@@ -2,11 +2,10 @@
  * Define the model information for a Layout that implements a tab.
  */
 function TabsLayout(id) {
-	if( !id ) id = "tab"+Layout.prototype.idCnt++;
-	this.id = id;
+	this.baseConstructor(id,this.template);
 };
- 
-TabsLayout.prototype = new Layout(null,"html/tabs");
+TabsLayout.prototype = new Layout("TabLayoutPrototype","html/tabs");
+TabsLayout.prototype.baseConstructor = Layout;
 
 /** The height of the header section */
 TabsLayout.prototype.headerHeight = 22;
