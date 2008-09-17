@@ -130,7 +130,7 @@ import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToStrin
  * 
  */
 public class GspsEncode implements Filter<ResultsBean> {
-	private static final float WIDTH_CORRECTION = 0.48f;
+	private static final float WIDTH_CORRECTION = 0.55f;
 
 	private static final float HEIGHT_CORRECTION = 1.5f;
 
@@ -154,7 +154,8 @@ public class GspsEncode implements Filter<ResultsBean> {
 
 	private static final ICC_ColorSpace lab = new ICC_ColorSpace(ICC_Profile.getInstance(ICC_ColorSpace.CS_sRGB));
 
-	private static final int MIN_FONT_SIZE = 24;
+	private static final int MIN_FONT_SIZE = 12;
+	private static final int MIN_DISPLAY_FONT_SIZE = 20;
 
 	/** The string to use for the wado image references */
 	private String wadoUrl = "/wado2/wado";
@@ -440,6 +441,8 @@ public class GspsEncode implements Filter<ResultsBean> {
 				use.setHref("#" + gimg.getId());
 				use.setId(ResultsBean.createId("u"));
 				addUse(images, use, gran.getImageSOPInstanceReferences());
+			} else {
+				gspsType.getSvg().getChildren().remove(gimg);
 			}
 			if (gdisp.getChildren().size() > 0) {
 				Use use = new Use();
@@ -447,6 +450,8 @@ public class GspsEncode implements Filter<ResultsBean> {
 				use.setHref("#" + gdisp.getId());
 				use.setId(ResultsBean.createId("u"));
 				addUse(images, use, gran.getImageSOPInstanceReferences());
+			} else {
+				gspsType.getSvg().getChildren().remove(gdisp);
 			}
 		}
 	}
@@ -620,7 +625,8 @@ public class GspsEncode implements Filter<ResultsBean> {
 		GType g = gimg;
 		int pixScale = 1;
 		if (topLeft != null) {
-			if ("DISPLAY".equalsIgnoreCase(txo.getBoundingBoxAnnotationUnits())) {
+			boolean isDisplay = ("DISPLAY".equalsIgnoreCase(txo.getBoundingBoxAnnotationUnits())); 
+			if ( isDisplay) {
 				g = gdisp;
 				pixScale = 1000;
 				flip = false;
@@ -637,12 +643,14 @@ public class GspsEncode implements Filter<ResultsBean> {
 			float boxHeight = (bottomRight[offset] - topLeft[offset]) * pixScale;
 
 			// Figure out the font size, in pixels/unit lengths
-			int fontSizeW = (int) Math.abs(boxWidth / maxLen);
+			int fontSizeW = (int) Math.abs(boxWidth / (maxLen ) );
 			int fontSizeH = (int) Math.abs(boxHeight / (lines.length * HEIGHT_CORRECTION));
 			if (fontSizeW > fontSizeH)
 				fontSizeW = fontSizeH;
-			if (fontSizeW < MIN_FONT_SIZE)
+			if ( (!isDisplay) && fontSizeW < MIN_FONT_SIZE)
 				fontSizeW = MIN_FONT_SIZE;
+			if( isDisplay && fontSizeW < MIN_DISPLAY_FONT_SIZE )
+				fontSizeW = MIN_DISPLAY_FONT_SIZE;
 
 			String just = txo.getBoundingBoxTextHorizontalJustification();
 			boolean isCenter = "CENTER".equalsIgnoreCase(just);
@@ -896,7 +904,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 		v.append((int) topX).append(',').append((int) topY);
 
 		circle.setD(d.toString());
-		circle.setPath(v.toString());
+		circle.setV(v.toString());
 		circle.setId(ResultsBean.createId("el"));
 		return circle;
 	}
@@ -1366,7 +1374,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 		path.setFill(rgb);
 		path.setId(ResultsBean.createId("shcr"));
 		path.setD(d.toString());
-		path.setPath(v.toString());
+		path.setV(v.toString());
 		path.setStrokeWidth("4");
 		g.getChildren().add(path);
 	}

@@ -201,6 +201,8 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 	  
 	  wi.setParameter(SMALLEST_IMAGE_PIXEL_VALUE, ""+smallest);
 	  wi.setParameter(LARGEST_IMAGE_PIXEL_VALUE, ""+largest);
+	  
+	  wi.setFilename(wi.getFilename()+"-pixelRange"+smallest+","+largest);
 	  return new int[]{smallest,largest};
    }
 

@@ -1225,7 +1225,7 @@
     <attributeGroup ref="svg:graphicsElementEvents"/>
     <attribute name="d" type="svg:PathDataType" use="required"/>
     <attribute name="pathLength" type="double" use="optional"/>
-    <attribute name="path" type="string" use="optional" />
+    <attribute name="v" type="string" use="optional" />
     <attribute name="prType" type="string" />
   </complexType>
 
