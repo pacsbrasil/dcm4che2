@@ -768,11 +768,10 @@ public class StoreScpService extends AbstractScpService {
         Storage store = getStorage();
         String seriud = ds.getString(Tags.SeriesInstanceUID);
         if (prevseriuid != null && !prevseriuid.equals(seriud)) {
-            SeriesStored seriesStored = store.makeSeriesStored(prevseriuid, null);
+            SeriesStored seriesStored = store.makeSeriesStored(prevseriuid);
             if (seriesStored != null) {
                 log.debug("Send SeriesStoredNotification - series changed");
                 scp.doAfterSeriesIsStored(store, null, seriesStored);
-                store.commitSeriesStored(seriesStored);
             }
         }
         String cuid = ds.getString(Tags.SOPClassUID);
@@ -786,10 +785,9 @@ public class StoreScpService extends AbstractScpService {
         scp.updateDB(store, ds, fileDTO.getFileSystemPk(), filePath, f, fileDTO
                 .getFileMd5());
         if (last) {
-            SeriesStored seriesStored = store.makeSeriesStored(seriud, null);
+            SeriesStored seriesStored = store.makeSeriesStored(seriud);
             if (seriesStored != null) {
                 scp.doAfterSeriesIsStored(store, null, seriesStored);
-                store.commitSeriesStored(seriesStored);
             }
         }
     }
@@ -801,7 +799,6 @@ public class StoreScpService extends AbstractScpService {
         for (int i = 0; i < seriesStored.length; i++) {
             log.info("Detect pending " + seriesStored[i]);
             scp.doAfterSeriesIsStored(store, null, seriesStored[i]);
-            store.commitSeriesStored(seriesStored[i]);
         }
     }
 
