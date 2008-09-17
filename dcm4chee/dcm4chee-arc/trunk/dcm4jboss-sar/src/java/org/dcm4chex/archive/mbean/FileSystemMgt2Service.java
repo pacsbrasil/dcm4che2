@@ -40,12 +40,15 @@ package org.dcm4chex.archive.mbean;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.Calendar;
 
 import javax.ejb.FinderException;
+import javax.management.Attribute;
 import javax.management.Notification;
 
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.FileSystemStatus;
+import org.dcm4chex.archive.config.DeleterThresholds;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
@@ -90,6 +93,13 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     private long checkFreeDiskSpaceMaxInterval;
 
     private long checkFreeDiskSpaceTime;
+
+    private DeleterThresholds deleterThresholds = new DeleterThresholds(
+            "7:1h;19:24h", true);
+
+    private long expectedDataVolumePerDay = 100000L;
+
+    private long adjustExpectedDataVolumePerDay = 0;
 
     private FileSystemDTO storageFileSystem;
 
@@ -206,8 +216,11 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public long getUsableDiskSpace() throws Exception {
-        FileSystemDTO[] fsDTOs =
-            fileSystemMgt().getFileSystemsOfGroup(getFileSystemGroupID());
+        return calcUsableDiskSpace(fileSystemMgt()
+                .getFileSystemsOfGroup(getFileSystemGroupID()));
+    }
+
+    private long calcUsableDiskSpace(FileSystemDTO[] fsDTOs) throws IOException {
         long free = 0L;
         for (FileSystemDTO fsDTO : fsDTOs) {
             int status = fsDTO.getStatus();
@@ -244,7 +257,80 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         this.checkFreeDiskSpaceMaxInterval = RetryIntervalls.parseInterval(s);
     }
 
-    
+    public final String getDeleterThresholds() {
+        return deleterThresholds.toString();
+    }
+
+    public final void setDeleterThresholds(String s) {
+        this.deleterThresholds = new DeleterThresholds(s, true);
+    }
+
+    public final String getExpectedDataVolumePerDay() {
+        return FileUtils.formatSize(expectedDataVolumePerDay);
+    }
+
+    public final void setExpectedDataVolumePerDay(String s) {
+        this.expectedDataVolumePerDay = FileUtils.parseSize(s, FileUtils.MEGA);
+    }
+
+    public final boolean isAdjustExpectedDataVolumePerDay() {
+        return adjustExpectedDataVolumePerDay != 0L;
+    }
+
+    public final void setAdjustExpectedDataVolumePerDay(boolean b) {
+        this.adjustExpectedDataVolumePerDay = b ? nextMidnight() : 0L;
+    }
+
+    private long nextMidnight() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        return cal.getTimeInMillis();
+    }
+
+    public String adjustExpectedDataVolumePerDay() throws Exception {
+        FileSystemMgt2 fsMgt = fileSystemMgt();
+        return adjustExpectedDataVolumePerDay(fsMgt,
+                fsMgt.getFileSystemsOfGroup(getFileSystemGroupID()));
+    }
+
+    private String adjustExpectedDataVolumePerDay(FileSystemMgt2 fsMgt,
+            FileSystemDTO[] fss) throws Exception {
+        Calendar cal = Calendar.getInstance();
+        cal.roll(Calendar.DAY_OF_MONTH, false);
+        long after = cal.getTimeInMillis();
+        long sum = 0L;
+        for (FileSystemDTO fs : fss) {
+            sum = fsMgt.sizeOfFilesCreatedAfter(fs.getPk(), after);
+        }
+        String size = FileUtils.formatSize(sum);
+        if (sum > expectedDataVolumePerDay) {
+            server.setAttribute(super.serviceName, new Attribute(
+                    "ExpectedDataVolumePerDay", size));
+        }
+        return size;
+    }
+
+    public long getCurrentDeleterThreshold() throws Exception {
+        FileSystemMgt2 fsMgt = fileSystemMgt();
+        return getCurrentDeleterThreshold(fsMgt,
+                fsMgt.getFileSystemsOfGroup(getFileSystemGroupID()));
+    }
+
+    private long getCurrentDeleterThreshold(FileSystemMgt2 fsMgt,
+            FileSystemDTO[] fsDTOs) throws Exception {
+        Calendar now = Calendar.getInstance();
+        if (adjustExpectedDataVolumePerDay != 0
+                && now.getTimeInMillis() > adjustExpectedDataVolumePerDay) {
+            adjustExpectedDataVolumePerDay(fsMgt, fsDTOs);
+            adjustExpectedDataVolumePerDay = nextMidnight();
+        }
+        return deleterThresholds.getDeleterThreshold(now)
+                .getFreeSize(expectedDataVolumePerDay);
+    }
+
     public String listAllFileSystems() throws Exception {
         FileSystemDTO[] fss = fileSystemMgt().getAllFileSystems();
         sortFileSystems(fss);
@@ -275,13 +361,14 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public FileSystemDTO removeFileSystem(String dirPath) throws Exception {
-        return fileSystemMgt().removeFileSystem(dirPath);
+        return fileSystemMgt()
+                .removeFileSystem(getFileSystemGroupID(), dirPath);
     }
 
     public FileSystemDTO linkFileSystems(String dirPath, String next)
             throws Exception {
-        return fileSystemMgt().linkFileSystems(getFileSystemGroupID(), dirPath,
-                next);
+        return fileSystemMgt()
+                .linkFileSystems(getFileSystemGroupID(), dirPath, next);
     }
 
     public FileSystemDTO updateFileSystemStatus(String dirPath, String status)
@@ -483,5 +570,9 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
             }
         }
         return false;
+    }
+
+    public int freeDiskSpace() {
+        return 0;
     }
 }

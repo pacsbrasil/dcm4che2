@@ -247,6 +247,59 @@
     </descriptors>
   </attribute>
 
+  <attribute access="read-write" getMethod="getDeleterThresholds"
+    setMethod="setDeleterThresholds">
+    <description><![CDATA[Defines thresholds dependent on hour of day, for
+      deleting the most infrequently accessed studies. Format: HOUR:##MB or
+      HOUR:##GB or HOUR:##h, multiple thresholds with different (start) hour
+      separated by ';'. E.g.: 7:1h;19:24h => free space for expected data
+      volume received in 24 hours between  7pm and 7am. Between 7am and 7pm
+      only delete studies if the available free space falls below the expected
+      data volume received in one hour.]]>
+    </description>
+    <name>DeleterThresholds</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="7:1h;19:24h" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write" getMethod="getExpectedDataVolumePerDay"
+    setMethod="setExpectedDataVolumePerDay">
+    <description><![CDATA[Expected data volume per day. Used to transform
+      time based deleter thresholds (s. DeleterThresholds) into disk space size
+      to free.]]>
+    </description>
+    <name>ExpectedDataVolumePerDay</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="100MB" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write" getMethod="isAdjustExpectedDataVolumePerDay"
+    setMethod="setAdjustExpectedDataVolumePerDay">
+    <description><![CDATA[Update value of attribute ExpectedDataVolumePerDay
+      at midnight, if data volume received during last 24 hours exceeds its
+      current value.]]>
+    </description>
+    <name>AdjustExpectedDataVolumePerDay</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="true" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-only" getMethod="getCurrentDeleterThreshold">
+    <description><![CDATA[Get current effective deleter threshold in bytes
+      according configured <i>DeleterThreshold</i> and
+      <i>ExpectedDataVolumePerDay</i>.]]>
+    </description>
+    <name>CurrentDeleterThreshold</name>
+    <type>long</type>
+  </attribute>
+
+
   <!-- Operations -->
   &defaultOperations;
 
@@ -340,6 +393,24 @@
     <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
   </operation>
 
+   <operation impact="ACTION">
+      <description>Update value of attribute ExpectedDataVolumePerDay,
+      if data volume received during last 24 hours exceeds its current value.
+      </description>
+      <name>adjustExpectedDataVolumePerDay</name>
+      <return-type>java.lang.String</return-type>
+   </operation>
+
+  <operation impact="ACTION">
+    <description><![CDATA[Delete most infrequently accessed studies which
+      match the configured <i>DeleterPolicy</i> from writable file systems of
+      the file system group managed my this service, if <i>UsableDiskSpace</i>
+      falls below <i>CurrentDeleterThreshold</i>. Returns the number of
+      released studies.]]>
+    </description>
+    <name>freeDiskSpace</name>
+    <return-type>int</return-type>
+  </operation>
 
   <!-- Notifications -->
 

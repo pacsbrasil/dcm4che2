@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.archive.ejb.session;
 
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -108,9 +109,10 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public FileSystemDTO removeFileSystem(String dirPath)
+    public FileSystemDTO removeFileSystem(String groupID, String dirPath)
             throws FinderException, RemoveException {
-        FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirPath);
+        FileSystemLocal fs = fileSystemHome
+                .findByGroupIdAndDirectoryPath(groupID, dirPath);
         FileSystemDTO dto = fs.toDTO();
         removeFileSystem(fs);
         return dto;
@@ -228,7 +230,6 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     }
 
     /**
-     * @throws FileSystemsDoesNotBelongToSameGroupException 
      * @ejb.interface-method
      */
     public FileSystemDTO linkFileSystems(String groupID, String dirPath,
@@ -263,6 +264,15 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             fs.setNextFileSystem(next);
         }
         return fs.toDTO();
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public long sizeOfFilesCreatedAfter(long pk, long after)
+            throws FinderException {
+        return fileSystemHome
+                .sizeOfFilesCreatedAfter(new Long(pk), new Timestamp(after));
     }
 
     private static FileSystemDTO toDTO(FileSystemLocal fs) {
