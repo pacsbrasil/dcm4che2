@@ -74,6 +74,58 @@ StudyData.prototype.addQueries = function StudyData_addQueries(queries) {
  */
 StudyData.prototype.customize_use = function StudyData_customize_use() {
     var clazz = this["class"];
-	if( clazz==null ) clazz = "IMAGEREL";
-	this["is"+clazz] = true;
+    if( clazz==null || clazz=="Overlay" ) this.isIMAGEREL = true;
+    else this.isDISPLAYREL = true;
+};
+
+/** Adds a customization for the path - sets the filled value appropriately. */
+StudyData.prototype.customize_path = function StudyData_customize_path() {
+	this.filled = 't';
+	if( this.fill=="none" ) this.filled='f';
+};
+
+/** Adds a customization for the path - sets the filled value appropriately. */
+StudyData.prototype.customize_text = function StudyData_customize_path() {
+	this.fontsize = parseInt(this["font-size"]);
+	this.iefontsize = this.fontsize*0.65;
+	this.xc = parseInt(this.x);
+	this.yc = parseInt(this.y)+this.fontsize/2;
+	this.xc2 = this.xc + parseInt(this.textLength);	
+	this.yc2 = this.yc+1;
+	if( this.transform ) {
+		var rot = this.transform.indexOf("rotate(");
+		if( rot<0 ) return;
+		rot = this.transform.substring(rot+7,this.transform.indexOf(",",rot+7));
+		rot = parseInt(rot);
+		if( rot==0 ) return;
+		if( rot==90 ) {
+			this.xc = this.xc + this.fontsize/2;
+			this.yc = parseInt(this.y);
+			this.xc2 = this.xc+1;
+			this.yc2 = this.yc + parseInt(this.textLength);
+		}
+		else if( rot==180 ) {
+			this.xc2 = this.xc - parseInt(this.textLength);
+		}
+		else if( rot==270 ) {
+			this.xc = this.xc + this.fontsize/2;
+			this.yc = parseInt(this.y);
+			this.xc2 = this.xc-1;
+			this.yc2 = this.yc - parseInt(this.textLength);
+		}
+	}
+};
+
+/**
+ * Adds a customization for the svg node, registering all the g children at the study level in "svg" for easy
+ * access from use nodes.  The id used includes the href # sign prefix so it is a complete href equivalent.
+ */
+StudyData.prototype.customize_svg = function StudyData_customize_svg() {
+	var study = this._parent._parent._parent;
+	if(! study.svg ) study.svg = new Object();
+	var svg = study.svg;
+	var key;
+	for(key in this.children) {
+		svg["#"+key] = this.children[key];
+	};
 };

@@ -9,7 +9,6 @@ function UrlFactory(base, formId) {
 	this.base = base;
 	this.formId = formId;
 	this.url = base;
-	this.updateUrl();
 };
 
 UrlFactory.prototype.debug = function() {};

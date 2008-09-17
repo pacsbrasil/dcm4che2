@@ -9,6 +9,25 @@
 function XeroModel() {
 };
 
+if( !console.info ) {
+	console.info = console.log;
+	console.debug = console.log;
+	console.warn = console.log;
+    console.time = function(name)
+        {
+            this.timeMap[name] = (new Date()).getTime();
+        };
+    console.timeEnd = function(name) {
+            if (name in this.timeMap)
+            {
+                var delta = (new Date()).getTime() - this.timeMap[name];
+                this.log([name+ ":"+ delta+"ms"]);
+                delete this.timeMap[name];
+            }
+        };
+    console.timeMap = new Object();
+};
+
 var xeroModel = new XeroModel();
 /** Shared data is the static data that is shared between server and client. */
 XeroModel.prototype.shared = new Object();
@@ -41,12 +60,11 @@ xeroModel.queryBox.query = new UrlFactory("/wado2/study.xml","query");
 xeroModel.searchLayout = new Layout("results","query/studyTable");
 xeroModel.searchLayout.columns = XeroStudyColumns;
 xeroModel.searchLayout.query = xeroModel.queryBox.query;
-xeroModel.findLayout = new Layout();
+xeroModel.findLayout = new Layout("Find");
 xeroModel.findLayout.add(xeroModel.queryBox);
 xeroModel.findLayout.add(xeroModel.searchLayout);
-xeroModel.sortPatient = new SortPatient(xeroModel.searchLayout);
 
-xeroModel.layout = new TabsLayout();
+xeroModel.layout = new TabsLayout("XeroRootTab");
 xeroModel.layout.tabMenu = new Layout("userMenu","userMenu"); 
 xeroModel.layout.addTab("Find", xeroModel.findLayout);
 xeroModel.layout.addTab("Display");

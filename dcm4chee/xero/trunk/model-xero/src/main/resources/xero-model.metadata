@@ -12,8 +12,6 @@ shared=${class:org.dcm4chee.xero.metadata.access.MapWithDefaults}
 shared.studyTrayItems=${class:org.dcm4chee.xero.metadata.access.ValueList}
 
 static.scripts=${class:org.dcm4chee.xero.metadata.access.ValueList}
-static.scripts.firebug=firebug/firebug.js
-static.scripts.firebug.priority=2000
 static.scripts.events=js/Events.js
 static.scripts.events.priority=900
 static.scripts.sarissa=js/sarissa.js

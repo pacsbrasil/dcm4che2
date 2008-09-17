@@ -108,6 +108,11 @@ public class XeroServlet extends StringTemplateServlet {
 	  String userName = req.getRemoteUser();
 	  mwd.put("userName", userName);
 	  
+	  if( req.getParameter("firebug")!=null ) {
+		  log.info("Activating firebug.");
+		  mwd.put("firebug", req.getParameter("firebug"));
+	  }
+	  
 	  log.info("Creating model for user {}",userName);
 	  return controller.action(mwd);
    }
