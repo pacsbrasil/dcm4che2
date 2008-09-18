@@ -37,12 +37,12 @@ public class ExtendibleIterator<T> implements Iterator<T> {
    	return nextIterator.next();
    }
 
-   /** Adds a new item to the iteration - after the last of the preivously added items, but before the
+   /** Adds a new item to the iteration - before the previously added items
     * next iterator.
     * @param addItem
     */
    public void add(T addItem) {
-   	items.add(addItem);
+   	items.add(0,addItem);
    }
 
    /** Unsupported */
