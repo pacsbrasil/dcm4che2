@@ -1,0 +1,27 @@
+<project name="xero" default="install">
+  <!-- Include build.properties first as it over-rides default.properties   -->
+  <property file="build.properties" />
+  <property name="baseAntDefns" value="../xero-util/baseBuild.xml" />
+  <property name="version.tags" value="https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4chee/xero/nightly" />
+
+  <import file="${baseAntDefns}" />
+
+  <!-- Recursively calls "childCall" on all child elements -->
+  <target name="recurseChildrenAll">
+     <ant dir="model-xero" target="${childCall}" inheritAll="false">
+      <propertyset refid="childProperties" />
+     </ant>
+     <ant dir="view-xero" target="${childCall}"  inheritAll="false">
+      <propertyset refid="childProperties" />
+     </ant>
+     <ant dir="controller-xero" target="${childCall}"  inheritAll="false">
+      <propertyset refid="childProperties" />
+     </ant>
+     <ant dir="xero-war" target="${childCall}"  inheritAll="false">
+      <propertyset refid="childProperties" />
+     </ant>
+  </target>
+
+
+</project>
+
