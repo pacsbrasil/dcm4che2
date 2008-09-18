@@ -1241,10 +1241,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
      * </dl>
      */
     protected void doAfterSeriesIsStored(Storage store, Association assoc,
-            SeriesStored seriesStored) throws RemoteException, FinderException {
+            SeriesStored seriesStored) throws RemoteException, FinderException, Exception {
         store.updateDerivedStudyAndSeriesFields(
                 seriesStored.getSeriesInstanceUID());
         service.logInstancesStored(assoc == null ? null : assoc.getSocket(), seriesStored);
+        service.seriesStored(seriesStored);
         service.sendJMXNotification(seriesStored);
         store.commitSeriesStored(seriesStored);
     }
