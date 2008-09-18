@@ -278,7 +278,7 @@ multipart.dicomHeader.priority=8000
 multipart.dicom=${class:org.dcm4chee.xero.wado.multi.MultipartCallFilter}
 multipart.dicom.childName=dicom
 multipart.dicom.childFilter=${ref:wadoDcm}
-multipart.dicomHeader.priority=7500
+multipart.dicom.priority=7500
 
 multipart.frameNumberItFilter=${class:org.dcm4chee.xero.wado.multi.FrameNumberItFilter}
 multipart.frameNumberItFilter.priority=7000
