@@ -154,14 +154,18 @@
      </exec>
   </target>
 
-  <target name="releaseCommit" depends="copyToTag">
+  <target name="commitReleaseProperties" if="toplevel">
+     <echo>TODO - add update of tagged child versions in svn:externals.</echo>
+     <exec executable="${svn}" failonerror="true">
+        <arg line="commit release.properties --non-interactive -m 'Update the release.properties file.'" />
+     </exec>
+  </target>
+
+  <target name="releaseCommit" depends="copyToTag, commitReleaseProperties">
      <!-- Recursively enumerate over the child directories calling release commit. -->
      <antcall target="recurseChildren">
         <param name="childCall" value="releaseCommit" />
      </antcall>
-     <exec executable="${svn}" failonerror="true">
-        <arg line="revert pom.xml" />
-     </exec>
   </target>
 
   <target name="prepareRelease" depends="clean,nextVersion,updatePomRelease,install,releaseCommit" />
