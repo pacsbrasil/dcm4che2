@@ -72,17 +72,12 @@
         token="&lt;property name=&quot;version.increment&quot; value=&quot;${version.increment}&quot; />" 
         value="&lt;property name=&quot;version.increment&quot; value=&quot;${version.next}&quot; />" 
      />
-     <exec executable="${svn}" failonerror="true">
-        <arg line="commit build.xml --non-interactive -m 'Update the version number.'" />
-     </exec>
   </target>
 
   <!-- Erase the release properties if this is being run at the top level -->
   <target name="intializeReleaseProperties" unless="version.releaseProperties">     
      <delete file="release.properties" quiet="true"/>
-     <delete file="svn.externals" quiet="true" />
      <property name="version.releaseProperties" value="release.properties" />
-     <property name="version.svnexternals" value="svn.externals" />
   </target>
 
 
@@ -156,20 +151,45 @@
      <exec executable="${svn}" failonerror="true">
         <arg line="copy . ${version.tags}/${ant.project.name}-${version.version} -m 'Releasing version ${version.version}' --non-interactive" />
      </exec>
+  </target>
+
+
+  <target name="createSvnExternalsChildTags" if="version.tags">
      <echo file="${version.svnexternals}" append="true">${ant.project.name} ${version.tags}/${ant.project.name}-${version.version}
      </echo>
   </target>
 
-  <target name="commitReleaseProperties" if="toplevel">
-     <exec executable="${svn}" failonerror="true">
-        <arg line="commit release.properties --non-interactive -m 'Update the release.properties file.'" />
-     </exec>
-     <exec executable="${svn}" failonerror="true">
-        <arg line="propset ${version.tags}/${ant.project.name}-${version.version} -F ${version.svnexternals} --non-interactive -m 'Update the svn:externals on copy'" />
-     </exec>
+  <target name="createSvnExternalsChild" unless="toplevel">
+     <antcall target="createSvnExternalsChildTags" />
   </target>
 
-  <target name="releaseCommit" depends="copyToTag, commitReleaseProperties">
+  <target name="createSvnExternalsTop" if="toplevel">
+      <delete file="svn.externals"/>
+      <property name="version.svnexternals" value="svn.externals" />
+  </target>
+
+  <target name="createSvnExternals" depends="createSvnExternalsTop, createSvnExternalsChild">
+     <antcall target="recurseChildren">
+        <param name="childCall" value="createSvnExternals" />
+     </antcall>
+  </target>
+
+  <target name="commitReleaseProperties" if="toplevel">
+     <exec executable="${svn}" failonerror="true">
+        <arg line="commit release.properties build.xml --non-interactive -m 'Update the release.properties file.'" />
+     </exec>
+
+     <exec executable="${svn}" failonerror="true">
+        <arg line="checkout ${version.tags}/${ant.project.name}-${version.version} ${ant.project.name} --depth immediates" />
+     </exec>
+     <exec executable="${svn}" failonerror="true">
+        <arg line="propset svn:externals -F ${version.svnexternals} ${ant.project.name} --non-interactive -m 'Update the svn:externals on copy'" />
+     </exec>
+     <delete dir="${ant.project.name}" />
+     <delete file="svn.externals" />
+  </target>
+
+  <target name="releaseCommit" depends="copyToTag, createSvnExternals, commitReleaseProperties">
      <!-- Recursively enumerate over the child directories calling release commit. -->
      <antcall target="recurseChildren">
         <param name="childCall" value="releaseCommit" />
