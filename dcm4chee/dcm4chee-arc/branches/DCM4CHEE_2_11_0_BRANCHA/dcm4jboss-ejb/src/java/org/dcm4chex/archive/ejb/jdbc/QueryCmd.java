@@ -527,38 +527,38 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     }
 
     private void addOtherPatientSeq(Dataset ds, Dataset keys)
-            throws SQLException {
-        DcmElement sq = keys.get(Tags.OtherPatientIDSeq);
-        if (sq != null) {
-            checkPatAttrs();
-            if ( coercePatientIds ) {
-                if (log.isDebugEnabled()) {
-                    log.debug("PatientID in response:"
-                        + keys.getString(Tags.PatientID) + "^"
-                        + keys.getString(Tags.IssuerOfPatientID));
-                    log.debug("PatientID of match:" + ds.getString(Tags.PatientID)
-                        + "^" + ds.getString(Tags.IssuerOfPatientID));
-                }
-                ds.putAll(keys.subSet(new int[] { Tags.PatientID,
-                    Tags.IssuerOfPatientID, Tags.OtherPatientIDSeq }));
-            }
-        }
+    		throws SQLException {
+    	DcmElement sq = keys.get(Tags.OtherPatientIDSeq);
+    	if (sq != null) {
+    		AttributeFilter patientFilter = AttributeFilter.getPatientAttributeFilter(null);
+    		Dataset patientAttrs = patientFilter.filter(ds);
+    		checkPatAttrs(patientAttrs);
+    		if ( coercePatientIds ) {
+    			if (log.isDebugEnabled()) {
+    				log.debug("PatientID in response:"
+    						+ keys.getString(Tags.PatientID) + "^"
+    						+ keys.getString(Tags.IssuerOfPatientID));
+    				log.debug("PatientID of match:" + ds.getString(Tags.PatientID)
+    						+ "^" + ds.getString(Tags.IssuerOfPatientID));
+    			}
+    			ds.putAll(keys.subSet(new int[] { Tags.PatientID,
+    					Tags.IssuerOfPatientID, Tags.OtherPatientIDSeq }));
+    		}
+    	}
     }
 
-    private void checkPatAttrs() throws SQLException {
-        Dataset ds = dof.newDataset();
-        fillDataset(ds, 1);
-        String key = getPatIdString(ds);
-        if (chkPatAttrs == null) {
-            chkPatAttrs = new HashMap();
-            chkPatAttrs.put(key, ds);
-        } else if (!chkPatAttrs.containsKey(key)) {
-            for (Iterator iter = chkPatAttrs.values().iterator(); iter
-                    .hasNext();) {
-                logDiffs(ds, (Dataset) iter.next(), key);
-            }
-            chkPatAttrs.put(key, ds);
-        }
+    private void checkPatAttrs(Dataset ds) throws SQLException {
+    	String key = getPatIdString(ds);
+    	if (chkPatAttrs == null) {
+    		chkPatAttrs = new HashMap();
+    		chkPatAttrs.put(key, ds);
+    	} else if (!chkPatAttrs.containsKey(key)) {
+    		for (Iterator iter = chkPatAttrs.values().iterator(); iter
+    		.hasNext();) {
+    			logDiffs(ds, (Dataset) iter.next(), key);
+    		}
+    		chkPatAttrs.put(key, ds);
+    	}
     }
 
     private void logDiffs(Dataset ds, Dataset ds1, String dsPrefix) {
