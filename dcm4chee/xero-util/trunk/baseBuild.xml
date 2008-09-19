@@ -21,6 +21,7 @@
   <propertyset id="childProperties">
      <propertyref prefix="version.parent" />
      <propertyref name="version.releaseProperties" />
+     <propertyref name="version.svnexternals" />
   </propertyset>
 
   <target name="install" description="Perform a Maven Install">
@@ -51,6 +52,7 @@
         <param name="version.parent.increment" value="${version.increment}" />
         <param name="childCall" value="${childCall}" />
         <param name="version.releaseProperties" value="../${version.releaseProperties}" />
+        <param name="version.svnexternals" value="../${version.svnexternals}" />
      </antcall>
   </target>
 
@@ -78,7 +80,9 @@
   <!-- Erase the release properties if this is being run at the top level -->
   <target name="intializeReleaseProperties" unless="version.releaseProperties">     
      <delete file="release.properties" quiet="true"/>
+     <delete file="svn.externals" quiet="true" />
      <property name="version.releaseProperties" value="release.properties" />
+     <property name="version.svnexternals" value="svn.externals" />
   </target>
 
 
@@ -152,12 +156,16 @@
      <exec executable="${svn}" failonerror="true">
         <arg line="copy . ${version.tags}/${ant.project.name}-${version.version} -m 'Releasing version ${version.version}' --non-interactive" />
      </exec>
+     <echo file="${version.svnexternals}" append="true">${ant.project.name} ${version.tags}/${ant.project.name}-${version.version}
+     </echo>
   </target>
 
   <target name="commitReleaseProperties" if="toplevel">
-     <echo>TODO - add update of tagged child versions in svn:externals.</echo>
      <exec executable="${svn}" failonerror="true">
         <arg line="commit release.properties --non-interactive -m 'Update the release.properties file.'" />
+     </exec>
+     <exec executable="${svn}" failonerror="true">
+        <arg line="propset ${version.tags}/${ant.project.name}-${version.version} -F ${version.svnexternals} --non-interactive -m 'Update the svn:externals on copy'" />
      </exec>
   </target>
 
@@ -170,5 +178,8 @@
 
   <target name="prepareRelease" depends="clean,nextVersion,updatePomRelease,install,releaseCommit" />
 
+  <target name="releaseDeploy" depends="deploy,revertPomDevelop" />
+
+  <target name="release" depends="prepareRelease,releaseDeploy" description="Release the overall project."/>
 
 </project>
