@@ -238,7 +238,7 @@
       <i>CheckFreeDiskSpaceMinimalInterval</i>. Otherwise the interval will be
       calculated as described above for attribute
       <i>CheckFreeDiskSpaceMinimalInterval</i>.
-      Format: ##m (in minutes) | ##s (in seconds).]]>
+      <p>Format: ##m (in minutes) | ##s (in seconds).]]>
     </description>
     <name>CheckFreeDiskSpaceMaximalInterval</name>
     <type>java.lang.String</type>
@@ -250,12 +250,14 @@
   <attribute access="read-write" getMethod="getDeleterThresholds"
     setMethod="setDeleterThresholds">
     <description><![CDATA[Defines thresholds dependent on hour of day, for
-      deleting the most infrequently accessed studies. Format: HOUR:##MB or
-      HOUR:##GB or HOUR:##h, multiple thresholds with different (start) hour
-      separated by ';'. E.g.: 7:1h;19:24h => free space for expected data
-      volume received in 24 hours between  7pm and 7am. Between 7am and 7pm
-      only delete studies if the available free space falls below the expected
-      data volume received in one hour.]]>
+      deleting the most infrequently accessed studies which satisfy the
+      configured set of constraints.
+      <p>Format: HOUR:##MB or HOUR:##GB or HOUR:##h, multiple thresholds with
+      different (start) hour separated by ';'.
+      <p>E.g.: 7:1h;19:24h => free space for expected data volume received in
+      24 hours between  7pm and 7am. Between 7am and 7pm only delete studies if
+      the usable free space falls below the expected data volume received in
+      one hour.]]>
     </description>
     <name>DeleterThresholds</name>
     <type>java.lang.String</type>
@@ -293,12 +295,152 @@
   <attribute access="read-only" getMethod="getCurrentDeleterThreshold">
     <description><![CDATA[Get current effective deleter threshold in bytes
       according configured <i>DeleterThreshold</i> and
-      <i>ExpectedDataVolumePerDay</i>.]]>
+      <i>ExpectedDataVolumePerDay</i>. If <i>UsableDiskSpace</i> falls below
+      this value, most infrequently accessed studies which satisfy the
+      configured set of constraints will be deleted on next invocation of
+      operation <i>freeDiskSpace</i>.]]>
     </description>
     <name>CurrentDeleterThreshold</name>
     <type>long</type>
   </attribute>
 
+  <attribute access="read-write" getMethod="getDeleteStudiesAfter"
+    setMethod="setDeleteStudiesAfter">
+    <description><![CDATA[Defines how long a study is not accessed before it
+      will be deleted from file systems of the file system group managed my
+      this service, if it satisfies the configured set of constraints.
+      <p>Format: 
+      <br>##h (in hours) | ##d (in days) | ##w (in weeks) | NEVER
+      <br>NEVER = deletion of studies is only triggered by running out of disk
+      space.
+      <br>Example:
+      <br>52w = any studies that have not been accessed for 52 weeks or more
+      can be deleted if they match the configured conditions.]]>
+    </description>
+    <name>DeleteStudiesAfter</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="NEVER" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write" getMethod="isKeepDBRecordsOfDeletedStudies"
+    setMethod="setKeepDBRecordsOfDeletedStudies">
+    <description><![CDATA[Defines if DB records of studies which files were
+      deleted by the deleter function shall be retained, so query requests
+      for such studies still return matching entries and retrieve requests
+      may be forwarded to an external retrieve application entity referenced
+      in the DB records for such studies.]]>
+    </description>
+    <name>KeepDBRecordsOfDeletedStudies</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="true" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write"
+    getMethod="isDeleteStudyOnlyIfStorageNotCommited"
+    setMethod="setDeleteStudyOnlyIfStorageNotCommited">
+    <description><![CDATA[Defines if no Storage Commitment request must have
+      been accepted for any instances of a study to become a candidate for
+      deletion from file systems of the file system group managed my this
+      service triggered by running out of disk space or being not accessed
+      longer than configured <i>DeleteStudiesAfter</i>. Typically only
+      activated if no other constraint for study deletion is configured.]]>
+    </description>
+    <name>DeleteStudyOnlyIfStorageNotCommited</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="false" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write"
+    getMethod="isDeleteStudyOnlyIfCopyExternalRetrieveable"
+    setMethod="setDeleteStudyOnlyIfCopyExternalRetrieveable">
+    <description><![CDATA[Defines if all instances of a study must be
+      retrieveable from an external Application Entity to become a candidate
+      for deletion from file systems of the file system group managed my this
+      service triggered by running out of disk space or being not accessed
+      longer than configured <i>DeleteStudiesAfter</i>.]]>
+    </description>
+    <name>DeleteStudyOnlyIfExternalRetrieveable</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="false" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write"
+    getMethod="isDeleteStudyOnlyIfCopyOnMedia"
+    setMethod="setDeleteStudyOnlyIfCopyOnMedia">
+    <description><![CDATA[Defines if all instances of a study must be
+      stored on Media to become a candidate for deletion from file systems of
+      the file system group managed my this service triggered by running out of
+      disk space or being not accessed longer than configured
+      <i>DeleteStudiesAfter</i>.]]>
+    </description>
+    <name>DeleteStudyOnlyIfCopyOnMedia</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="false" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write"
+    getMethod="getDeleteStudyOnlyIfCopyOnFileSystemOfFileSystemGroup"
+    setMethod="setDeleteStudyOnlyIfCopyOnFileSystemOfFileSystemGroup">
+    <description><![CDATA[Defines if all instances of a study must be
+      stored on a file system of the specified different file system group to
+      become a candidate for deletion from file systems of the file system
+      group managed my this service triggered by running out of disk space or
+      being not accessed longer than configured <i>DeleteStudiesAfter</i>.
+      "NONE" = no such constraint.]]>
+    </description>
+    <name>DeleteStudyOnlyIfCopyOnFileSystemOfFileSystemGroup</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="NEARLINE_STORAGE" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write"
+    getMethod="isDeleteStudyOnlyIfCopyArchived"
+    setMethod="setDeleteStudyOnlyIfCopyArchived">
+    <description><![CDATA[Defines if all instances of a study must be stored
+      on a file system of a different file system group with file status:
+      ARCHIVED to become a candidate for deletion from file systems of the file
+      system group managed my this service triggered by running out of disk
+      space or being not accessed longer than configured
+      <i>DeleteStudiesAfter</i>. Typically the file system group of the file
+      system holding the archived copy is specified by
+      <i>DeleteStudyIfCopyOnFileSystemOfFileSystemGroup</i>.]]>
+    </description>
+    <name>DeleteStudyOnlyIfCopyArchived</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="false" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write"
+    getMethod="isDeleteStudyOnlyIfCopyOnReadOnlyFileSystem"
+    setMethod="setDeleteStudyOnlyIfCopyOnReadOnlyFileSystem">
+    <description><![CDATA[Defines if all instances of a study must be stored
+      on a read-only file system of a different file system group to become a
+      candidate for deletion from file systems of the file system group managed
+      my this service triggered by running out of disk space or being not
+      accessed longer than configured <i>DeleteStudiesAfter</i>. Typically
+      the file system group of the read-only file systems is specified by
+      <i>DeleteStudyIfCopyOnFileSystemOfFileSystemGroup</i>.]]> 
+    </description>
+    <name>DeleteStudyOnlyIfCopyOnReadOnlyFileSystem</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="false" />
+    </descriptors>
+  </attribute>
 
   <!-- Operations -->
   &defaultOperations;
@@ -403,10 +545,10 @@
 
   <operation impact="ACTION">
     <description><![CDATA[Delete most infrequently accessed studies which
-      match the configured <i>DeleterPolicy</i> from writable file systems of
+      match the configured conditions from writable file systems of
       the file system group managed my this service, if <i>UsableDiskSpace</i>
       falls below <i>CurrentDeleterThreshold</i>. Returns the number of
-      released studies.]]>
+      deleted studies.]]>
     </description>
     <name>freeDiskSpace</name>
     <return-type>int</return-type>

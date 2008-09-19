@@ -101,6 +101,22 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     private long adjustExpectedDataVolumePerDay = 0;
 
+    private long deleteStudiesAfter = 0;
+
+    private boolean keepDBRecords;
+
+    private boolean externalRetrieveable;
+
+    private boolean storageNotCommited;
+
+    private boolean copyOnMedia;
+
+    private String copyOnFSGroup;
+
+    private boolean copyArchived;
+
+    private boolean copyOnReadOnlyFS;
+
     private FileSystemDTO storageFileSystem;
 
     public String getFileSystemGroupID() {
@@ -136,8 +152,8 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public void setDefStorageDir(String defStorageDir) {
-        this.defStorageDir = defStorageDir.equalsIgnoreCase(NONE)
-                ? null : defStorageDir;
+        String trimmed = copyOnFSGroup.trim();
+        this.defStorageDir = trimmed.equalsIgnoreCase(NONE) ? null : trimmed;
     }
 
     public final boolean isCheckStorageFileSystemStatus() {
@@ -329,6 +345,81 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         }
         return deleterThresholds.getDeleterThreshold(now)
                 .getFreeSize(expectedDataVolumePerDay);
+    }
+
+    public String getDeleteStudiesAfter() {
+        return RetryIntervalls.formatIntervalZeroAsNever(deleteStudiesAfter);
+    }
+
+    public void setDeleteStudiesAfter(String interval) {
+        this.deleteStudiesAfter = RetryIntervalls.parseIntervalOrNever(interval);
+    }
+
+    public boolean isKeepDBRecordsOfDeletedStudies() {
+        return keepDBRecords;
+    }
+
+    public void setKeepDBRecordsOfDeletedStudies(
+            boolean keepDBRecordsOfDeletedStudies) {
+        this.keepDBRecords = keepDBRecordsOfDeletedStudies;
+    }
+
+    public boolean isDeleteStudyOnlyIfStorageNotCommited() {
+        return storageNotCommited;
+    }
+
+    public void setDeleteStudyOnlyIfStorageNotCommited(
+            boolean storageNotCommited) {
+        this.storageNotCommited = storageNotCommited;
+    }
+
+    public boolean isDeleteStudyOnlyIfCopyOnMedia() {
+        return copyOnMedia;
+    }
+
+    public boolean isDeleteStudyOnlyIfCopyExternalRetrieveable() {
+        return externalRetrieveable;
+    }
+
+    public void setDeleteStudyOnlyIfCopyExternalRetrieveable(
+            boolean externalRetrieveable) {
+        this.externalRetrieveable = externalRetrieveable;
+    }
+
+    public void setDeleteStudyOnlyIfCopyOnMedia(boolean copyOnMedia) {
+        this.copyOnMedia = copyOnMedia;
+    }
+
+    public String getDeleteStudyOnlyIfCopyOnFileSystemOfFileSystemGroup() {
+        return copyOnFSGroup != null ? copyOnFSGroup : NONE;
+    }
+
+    public void setDeleteStudyOnlyIfCopyOnFileSystemOfFileSystemGroup(
+            String copyOnFSGroup) {
+        String trimmed = copyOnFSGroup.trim();
+        if (serviceName != null // may not be initialized when invoked during bean registration
+                && trimmed.equals(getFileSystemGroupID())) {
+            throw new IllegalArgumentException(
+                    "Must differ from file system group managed by this service");
+        }
+        this.copyOnFSGroup = trimmed.equalsIgnoreCase(NONE) ? null : trimmed;
+    }
+
+    public boolean isDeleteStudyOnlyIfCopyArchived() {
+        return copyArchived;
+    }
+
+    public void setDeleteStudyOnlyIfCopyArchived(boolean copyArchived) {
+        this.copyArchived = copyArchived;
+    }
+
+    public boolean isDeleteStudyOnlyIfCopyOnReadOnlyFileSystem() {
+        return copyOnReadOnlyFS;
+    }
+
+    public void setDeleteStudyOnlyIfCopyOnReadOnlyFileSystem(
+            boolean copyOnReadOnlyFS) {
+        this.copyOnReadOnlyFS = copyOnReadOnlyFS;
     }
 
     public String listAllFileSystems() throws Exception {
