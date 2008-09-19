@@ -32,7 +32,7 @@
 
   <target name="deploy" description="Perfrom a Maven Deploy">
      <exec executable="${mvn}" failonerror="true">
-        <arg line="deploy:deploy" />
+        <arg line="deploy" />
      </exec>
   </target>
 
@@ -200,7 +200,7 @@
      </antcall>
   </target>
 
-  <target name="prepareRelease" depends="clean,nextVersion,updatePomRelease,install,releaseCommit" />
+  <target name="prepareRelease" depends="clean,updatePomRelease,install,nextVersion,releaseCommit" />
 
   <target name="releaseDeploy" depends="deploy,revertPomDevelop" />
 
