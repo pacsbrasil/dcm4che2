@@ -325,8 +325,8 @@ public class RetrieveCmd extends BaseReadCmd {
         long instPk = rs.getLong(3);
         info.sopIUID = rs.getString(4);
         info.sopCUID = rs.getString(5);
-        info.pk = rs.getLong(6);
-        info.extRetrieveAET = rs.getString(7);
+        info.extRetrieveAET = rs.getString(6);
+        info.pk = rs.getLong(7);
         info.fileRetrieveAET = rs.getString(8);
         info.availability = rs.getInt(9);
         info.basedir = rs.getString(10);
@@ -425,8 +425,8 @@ public class RetrieveCmd extends BaseReadCmd {
         long instPk = rs.getLong(9);
         info.sopIUID = rs.getString(10);
         info.sopCUID = rs.getString(11);
-        info.pk = rs.getLong(12);
-        info.extRetrieveAET = rs.getString(13);
+        info.extRetrieveAET = rs.getString(12);
+        info.pk = rs.getLong(13);
         info.fileRetrieveAET = rs.getString(14);
         info.availability = rs.getInt(15);
         info.basedir = rs.getString(16);
