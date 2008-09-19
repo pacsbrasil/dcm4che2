@@ -179,11 +179,15 @@
         <arg line="commit release.properties build.xml --non-interactive -m 'Update the release.properties file.'" />
      </exec>
 
+     <delete dir="${ant.project.name}" quiet="true"/>
      <exec executable="${svn}" failonerror="true">
         <arg line="checkout ${version.tags}/${ant.project.name}-${version.version} ${ant.project.name} --depth immediates" />
      </exec>
      <exec executable="${svn}" failonerror="true">
-        <arg line="propset svn:externals -F ${version.svnexternals} ${ant.project.name} --non-interactive -m 'Update the svn:externals on copy'" />
+        <arg line="propset svn:externals -F ${version.svnexternals} ${ant.project.name} --non-interactive" />
+     </exec>
+     <exec executable="${svn}" failonerror="true">
+        <arg line="commit ${ant.project.name} --non-interactive -m 'Commit the svn:externals property on the tagged version.'" />
      </exec>
      <delete dir="${ant.project.name}" />
      <delete file="svn.externals" />
