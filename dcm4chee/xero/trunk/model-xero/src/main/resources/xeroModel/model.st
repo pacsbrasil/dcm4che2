@@ -60,6 +60,7 @@ xeroModel.queryBox.query = new UrlFactory("/wado2/study.xml","query");
 xeroModel.searchLayout = new Layout("results","query/studyTable");
 xeroModel.searchLayout.columns = XeroStudyColumns;
 xeroModel.searchLayout.query = xeroModel.queryBox.query;
+xeroModel.searchLayout.sortPatient = new SortPatient(xeroModel.searchLayout)
 xeroModel.findLayout = new Layout("Find");
 xeroModel.findLayout.add(xeroModel.queryBox);
 xeroModel.findLayout.add(xeroModel.searchLayout);
@@ -68,6 +69,7 @@ xeroModel.layout = new TabsLayout("XeroRootTab");
 xeroModel.layout.tabMenu = new Layout("userMenu","userMenu"); 
 xeroModel.layout.addTab("Find", xeroModel.findLayout);
 xeroModel.layout.addTab("Display");
+
 
 xeroModel.IS_IE = _SARISSA_IS_IE;
 

@@ -22,9 +22,8 @@ XeroController.prototype.findAction = function XC_findAction(src) {
 
 /** Sort the selected columns */
 XeroController.prototype.sortQuery = function SC_sortQuery(src,col) {
-  var lay = model.layout.findLayout(src);
+  var lay = model.searchLayout
   console.info("Found sort layout %s",lay);
-  if( !lay.sortPatient ) lay.sortPatient = new SortPatient(lay);  
   console.info("Trying to sort %s on column %s", src,col);
   lay.sortPatient.sortColumn(col);
   this.updateView("findAction");	
