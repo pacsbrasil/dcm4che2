@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><project>
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>dcm4che</groupId>
@@ -8,6 +9,7 @@
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-xdsb-repo-ws</artifactId>
   <packaging>war</packaging>
+  <name>Webservice for XDSb Repository</name>
   <version>0.0.2-SNAPSHOT</version>
   <description></description>
   <build>
