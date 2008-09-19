@@ -39,7 +39,10 @@
 package org.dcm4chex.archive.xdsi;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 
 import javax.activation.DataHandler;
 
@@ -107,6 +110,13 @@ public class XDSIDatasetDocument extends XDSIDocument {
 			ds.writeFile(out,null);
 		}
 
+		/** we actually kind of break the JAF model, because we don't have underlying javax.activation.DataSource
+		 *  objects.  if we did, we wouldn't need to override this method. */
+		public InputStream getInputStream() throws IOException {
+		    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		    writeTo(bos);
+		    return new ByteArrayInputStream(bos.toByteArray());		    
+		}
 	}
 	
 }
