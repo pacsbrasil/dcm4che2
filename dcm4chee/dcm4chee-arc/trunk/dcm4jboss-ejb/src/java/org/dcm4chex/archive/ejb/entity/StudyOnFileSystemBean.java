@@ -44,9 +44,12 @@ import java.util.Collection;
 
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
+import javax.ejb.EntityContext;
 import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
+import org.dcm4chex.archive.common.FileStatus;
+import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 
@@ -77,8 +80,22 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * @ejb.finder signature="java.util.Collection findByRetrieveAETAndAccessAfter(java.lang.String aet, java.sql.Timestamp tsAfter, int limit )"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findByRetrieveAETAndAccessAfter(java.lang.String aet, java.sql.Timestamp tsAfter, int limit )"
- *             query="SELECT DISTINCT OBJECT(sof) FROM StudyOnFileSystem sof, IN (sof.study.series) s WHERE sof.fileSystem.retrieveAET = ?1 AND sof.fileSystem.status IN (0,1) AND sof.accessTime > ?2 AND s.seriesStatus = 0 ORDER BY sof.accessTime ASC LIMIT ?3"
- *             strategy="on-find" eager-load-group="*"
+ *              query="SELECT DISTINCT OBJECT(sof) FROM StudyOnFileSystem sof, IN (sof.study.series) s WHERE sof.fileSystem.retrieveAET = ?1 AND sof.fileSystem.status IN (0,1) AND sof.accessTime > ?2 AND s.seriesStatus = 0 ORDER BY sof.accessTime ASC LIMIT ?3"
+ *              strategy="on-find" eager-load-group="*"
+ * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupIdAndStatusAndFileStatus(org.dcm4chex.archive.ejb.interfaces.StudyLocal study, java.lang.String fsGroupId, int fsStatus, int fileStatus)"
+ *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study = ?1 AND f.fileSystem.groupID = ?2 AND f.fileSystem.status = ?3 AND f.fileStatus = ?4"
+ * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupIdAndFileStatus(org.dcm4chex.archive.ejb.interfaces.StudyLocal study, java.lang.String fsGroupId, int fileStatus)"
+ *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study = ?1 AND f.fileSystem.groupID = ?2 AND f.fileStatus = ?3"
+ * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupIdAndStatus(org.dcm4chex.archive.ejb.interfaces.StudyLocal study, java.lang.String fsGroupId, int fsStatus)"
+ *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study = ?1 AND f.fileSystem.groupID = ?2 AND f.fileSystem.status = ?3"
+ * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupId(org.dcm4chex.archive.ejb.interfaces.StudyLocal study, java.lang.String fsGroupId)"
+ *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study = ?1 AND f.fileSystem.groupID = ?2"
+ * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnFSWithDifferentGroupIdAndStatusAndFileStatus(org.dcm4chex.archive.ejb.interfaces.StudyLocal study, java.lang.String fsGroupId, int fsStatus, int fileStatus)"
+ *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study = ?1 AND f.fileSystem.groupID <> ?2 AND f.fileSystem.status = ?3 AND f.fileStatus = ?4"
+ * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnFSWithDifferentGroupIdAndFileStatus(org.dcm4chex.archive.ejb.interfaces.StudyLocal study, java.lang.String fsGroupId, int fileStatus)"
+ *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study = ?1 AND f.fileSystem.groupID <> ?2 AND f.fileStatus = ?3"
+ * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnFSWithDifferentGroupIdAndStatus(org.dcm4chex.archive.ejb.interfaces.StudyLocal study, java.lang.String fsGroupId, int fsStatus)"
+ *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study = ?1 AND f.fileSystem.groupID <> ?2 AND f.fileSystem.status = ?3"
  */
 public abstract class StudyOnFileSystemBean implements EntityBean {
 
@@ -180,4 +197,109 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
     public Collection getFiles() throws FinderException {    	
         return ejbSelectFiles(getStudy().getPk(), getFileSystem().getPk());
     }
+
+    /**    
+     * @ejb.interface-method
+     */
+    public boolean matchDeleteConstrains(
+            boolean externalRetrieveable,
+            boolean storageNotCommited,
+            boolean copyOnMedia,
+            String copyOnFSGroup,
+            boolean copyArchived,
+            boolean copyOnReadOnlyFS) throws FinderException {
+        StudyLocal study = getStudy();
+        if (externalRetrieveable && !study.isStudyExternalRetrievable()
+                || storageNotCommited && study.getNumberOfCommitedInstances() != 0
+                || copyOnMedia && !study.isStudyAvailableOnMedia()) {
+            return false;
+        }
+        int count;
+        if (copyOnFSGroup != null) {
+            if (copyArchived) {
+                if (copyOnReadOnlyFS) {
+                    count = ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupIdAndStatusAndFileStatus(
+                            study, copyOnFSGroup, FileSystemStatus.RO, FileStatus.ARCHIVED);
+                } else {
+                    count = ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupIdAndFileStatus(
+                            study, copyOnFSGroup, FileStatus.ARCHIVED);
+                }
+            } else {
+                if (copyOnReadOnlyFS) {
+                    count = ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupIdAndStatus(
+                            study, copyOnFSGroup, FileSystemStatus.RO);
+                } else {
+                    count = ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupId(
+                            study, copyOnFSGroup);
+                }
+            }
+        } else {
+            if (copyArchived) {
+                if (copyOnReadOnlyFS) {
+                    count = ejbSelectNumberOfStudyRelatedInstancesOnFSWithDifferentGroupIdAndStatusAndFileStatus(
+                            study, getFileSystem().getGroupID(), FileSystemStatus.RO, FileStatus.ARCHIVED);
+                } else {
+                    count = ejbSelectNumberOfStudyRelatedInstancesOnFSWithDifferentGroupIdAndFileStatus(
+                            study, getFileSystem().getGroupID(), FileStatus.ARCHIVED);
+                }
+            } else {
+                if (copyOnReadOnlyFS) {
+                    count = ejbSelectNumberOfStudyRelatedInstancesOnFSWithDifferentGroupIdAndStatus(
+                            study, getFileSystem().getGroupID(), FileSystemStatus.RO);
+                } else {
+                    return true; // no constraint
+                }
+            }
+        }
+        return count == study.getNumberOfStudyRelatedInstances();
+    }
+
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupIdAndStatusAndFileStatus(
+            StudyLocal study, String fsGroupId, int fsStatus, int fileStatus)
+            throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupIdAndFileStatus(
+            StudyLocal study, String fsGroupId, int fileStatus)
+            throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupIdAndStatus(
+            StudyLocal study, String fsGroupId, int fsStatus)
+            throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupId(
+            StudyLocal study, String fsGroupId)
+            throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfStudyRelatedInstancesOnFSWithDifferentGroupIdAndStatusAndFileStatus(
+            StudyLocal study, String fsGroupId, int fsStatus, int fileStatus)
+            throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfStudyRelatedInstancesOnFSWithDifferentGroupIdAndFileStatus(
+            StudyLocal study, String fsGroupId, int fileStatus)
+            throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfStudyRelatedInstancesOnFSWithDifferentGroupIdAndStatus(
+            StudyLocal study, String fsGroupId, int fsStatus)
+            throws FinderException;
 }
