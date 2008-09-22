@@ -790,6 +790,8 @@ public class DicomObjects {
         }
 
         public DicomElement bigEndian(boolean bigEndian) {
+            if (e.bigEndian() == bigEndian || e.isEmpty())
+                return this;
             throw new UnsupportedOperationException();
         }
 
