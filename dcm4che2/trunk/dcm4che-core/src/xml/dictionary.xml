@@ -439,7 +439,7 @@
 <element tag="00181150" alias="ExposureTime" vr="IS" vm="1" ret="">Exposure Time</element>
 <element tag="00181151" alias="XRayTubeCurrent" vr="IS" vm="1" ret="">X-Ray Tube Current</element>
 <element tag="00181152" alias="Exposure" vr="IS" vm="1" ret="">Exposure</element>
-<element tag="00181153" alias="ExposureInμAs" vr="IS" vm="1" ret="">Exposure in μAs</element>
+<element tag="00181153" alias="ExposureInUAs" vr="IS" vm="1" ret="">Exposure in uAs</element>
 <element tag="00181154" alias="AveragePulseWidth" vr="DS" vm="1" ret="">Average Pulse Width</element>
 <element tag="00181155" alias="RadiationSetting" vr="CS" vm="1" ret="">Radiation Setting</element>
 <element tag="00181156" alias="RectificationType" vr="CS" vm="1" ret="">Rectification Type</element>

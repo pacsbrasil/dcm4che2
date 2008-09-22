@@ -1413,8 +1413,8 @@ public class Tag {
     /** (0018,1152) VR=IS, VM=1 Exposure  */
     public static final int Exposure = 0x00181152;
         
-    /** (0018,1153) VR=IS, VM=1 Exposure in μAs  */
-    public static final int ExposureInμAs = 0x00181153;
+    /** (0018,1153) VR=IS, VM=1 Exposure in uAs  */
+    public static final int ExposureInUAs = 0x00181153;
         
     /** (0018,1154) VR=DS, VM=1 Average Pulse Width  */
     public static final int AveragePulseWidth = 0x00181154;

@@ -3,8 +3,8 @@
     <xsl:output method="xml" indent="yes"/>
     <xsl:param name="package">org.dcm4che2.data</xsl:param>
     <xsl:param name="class">Tag</xsl:param>
-    <xsl:variable name="noascii">&#xF06D;&#x2019;&#x2013;</xsl:variable>
-    <xsl:variable name="ascii">u'-</xsl:variable>
+    <xsl:variable name="noascii">&#x03BC;&#xF06D;&#x2019;&#x2013;</xsl:variable>
+    <xsl:variable name="ascii">uu'-</xsl:variable>
     <xsl:variable name="apos">'</xsl:variable>
     <xsl:variable name="nojavaid">,/-()[]@:&amp;</xsl:variable>
     <xsl:variable name="lower">abcdefghijklmnopqrstuvwxyz</xsl:variable>
