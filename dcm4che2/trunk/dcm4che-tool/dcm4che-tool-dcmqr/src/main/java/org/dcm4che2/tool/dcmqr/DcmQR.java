@@ -562,6 +562,10 @@ public class DcmQR {
         ae.setDimseRspTimeout(timeout);
     }
 
+    public final void setRetrieveRspTimeout(int timeout) {
+        ae.setRetrieveRspTimeout(timeout);
+    }
+
     public final void setTcpNoDelay(boolean tcpNoDelay) {
         conn.setTcpNoDelay(tcpNoDelay);
     }
@@ -777,8 +781,20 @@ public class DcmQR {
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "timeout in ms for receiving DIMSE-RSP, 60s by default");
-        opts.addOption(OptionBuilder.create("rspTO"));
+                "timeout in ms for receiving C-FIND-RSP, 60s by default");
+        opts.addOption(OptionBuilder.create("cfindrspTO"));
+
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "timeout in ms for receiving C-MOVE-RSP and C-GET RSP, 600s by default");
+        opts.addOption(OptionBuilder.create("cmoverspTO"));
+
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "timeout in ms for receiving C-GET-RSP and C-MOVE RSP, 600s by default");
+        opts.addOption(OptionBuilder.create("cgetrspTO"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
@@ -970,9 +986,15 @@ public class DcmQR {
             dcmqr.setAssociationReaperPeriod(parseInt(cl.getOptionValue("reaper"),
                             "illegal argument of option -reaper", 1,
                             Integer.MAX_VALUE));
-        if (cl.hasOption("rspTO"))
-            dcmqr.setDimseRspTimeout(parseInt(cl.getOptionValue("rspTO"),
-                    "illegal argument of option -rspTO", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("cfindrspTO"))
+            dcmqr.setDimseRspTimeout(parseInt(cl.getOptionValue("cfindrspTO"),
+                    "illegal argument of option -cfindrspTO", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("cmoverspTO"))
+            dcmqr.setRetrieveRspTimeout(parseInt(cl.getOptionValue("cmoverspTO"),
+                    "illegal argument of option -cmoverspTO", 1, Integer.MAX_VALUE));
+        if (cl.hasOption("cgetrspTO"))
+            dcmqr.setRetrieveRspTimeout(parseInt(cl.getOptionValue("cgetrspTO"),
+                    "illegal argument of option -cgetrspTO", 1, Integer.MAX_VALUE));
         if (cl.hasOption("acceptTO"))
             dcmqr.setAcceptTimeout(parseInt(cl.getOptionValue("acceptTO"),
                     "illegal argument of option -acceptTO", 1,
