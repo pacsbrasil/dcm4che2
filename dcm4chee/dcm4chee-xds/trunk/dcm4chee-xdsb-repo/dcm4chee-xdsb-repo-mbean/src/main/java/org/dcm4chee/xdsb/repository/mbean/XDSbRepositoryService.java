@@ -38,11 +38,12 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xdsb.repository.mbean;
 
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -58,14 +59,9 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPMessage;
-import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Dispatch;
-import javax.xml.ws.Service;
-import javax.xml.ws.Service.Mode;
 import javax.xml.ws.soap.SOAPBinding;
 
 import org.apache.log4j.Logger;
@@ -77,7 +73,7 @@ import org.dcm4chee.xds.common.XDSPerformanceLogger;
 import org.dcm4chee.xds.common.audit.HttpUserInfo;
 import org.dcm4chee.xds.common.audit.XDSExportMessage;
 import org.dcm4chee.xds.common.audit.XDSImportMessage;
-import org.dcm4chee.xds.common.audit.XDSRetrieveMessage;
+import org.dcm4chee.xds.common.delegate.XDSbServiceDelegate;
 import org.dcm4chee.xds.common.exception.XDSException;
 import org.dcm4chee.xds.common.infoset.ExtrinsicObjectType;
 import org.dcm4chee.xds.common.infoset.ObjectFactory;
@@ -93,16 +89,15 @@ import org.dcm4chee.xds.common.infoset.SlotType1;
 import org.dcm4chee.xds.common.infoset.SubmitObjectsRequest;
 import org.dcm4chee.xds.common.infoset.ValueListType;
 import org.dcm4chee.xds.common.infoset.ProvideAndRegisterDocumentSetRequestType.Document;
+import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetRequestType.DocumentRequest;
 import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType.DocumentResponse;
-import org.dcm4chee.xds.common.store.BasicXDSDocument;
 import org.dcm4chee.xds.common.store.DocumentStoreDelegate;
-import org.dcm4chee.xds.common.store.StoredDocument;
 import org.dcm4chee.xds.common.store.XDSDocument;
-import org.dcm4chee.xds.common.store.XDSbDocument;
 import org.dcm4chee.xds.common.store.XDSDocumentWriter;
 import org.dcm4chee.xds.common.store.XDSDocumentWriterFactory;
+import org.dcm4chee.xds.common.store.XDSbDocument;
 import org.dcm4chee.xds.common.utils.InfoSetUtil;
-import org.dcm4chee.xdsb.repository.ws.client.DocumentRegistryPortType;
+import org.dcm4chee.xds.common.ws.DocumentRegistryPortType;
 import org.dcm4chee.xdsb.repository.ws.client.DocumentRegistryService;
 import org.dcm4chee.xdsb.repository.ws.client.RegistryClientHeaderHandler;
 import org.jboss.system.ServiceMBeanSupport;
@@ -124,6 +119,8 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 
     private static final String CERT = "CERT";
     private static final String NONE = "NONE";
+    
+    private String repositoryUniqueId;
     private String xdsRegistryURI;
     private String proxyHost;
     private int proxyPort;
@@ -135,7 +132,6 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
     private HostnameVerifier origHostnameVerifier = null;
     private String allowedUrlHost = null;
 
-    private String repositoryUniqueId;
     private String retrieveURI;
     private boolean logReceivedMessage;
     private boolean logRegisterMessage;
@@ -147,6 +143,8 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 
 
     private DocumentStoreDelegate docStoreDelegate = new DocumentStoreDelegate();
+    private XDSbServiceDelegate xdsbServiceDelegate = new XDSbServiceDelegate();
+    
     private ObjectFactory objFac = new ObjectFactory();
     private XDSDocumentWriterFactory wrFac = XDSDocumentWriterFactory.getInstance();
 
@@ -321,8 +319,20 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         docStoreDelegate.setDocumentStoreService(name);
     }
 
+    public ObjectName getXDSbRetrieveService() {
+        return XDSbServiceDelegate.getXdsRetrieveServiceName();
+    }
+
+    public void setXDSbRetrieveService(ObjectName name) {
+        XDSbServiceDelegate.setXdsRetrieveServiceName(name);
+    }
+    
+    protected void startService() throws Exception {
+        XDSbServiceDelegate.setXdsRepositoryServiceName(this.getServiceName());
+    }
+
     public RegistryResponseType storeAndRegisterDocuments(ProvideAndRegisterDocumentSetRequestType req) throws XDSException {
-        Map<String, StoredDocument> storedDocuments = null;
+        Map<String, XDSDocument> storedDocuments = null;
         boolean success = false;
         XDSPerformanceLogger perfLogger = new XDSPerformanceLogger("XDSb", "ProvideAndRegisterDocumentSet");
         try {
@@ -407,6 +417,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         }
         perfLogger.startSubEvent("RegisterDocuments");
         perfLogger.setSubEventProperty("RegistryURI", xdsRegistryURI);
+        configProxyAndTLS(xdsRegistryURI);
         DocumentRegistryPortType port = new DocumentRegistryService().getDocumentRegistryPortSoap12();
         Map<String, Object> reqCtx = ((BindingProvider)port).getRequestContext();
         List customHandlerChain = new ArrayList();
@@ -423,7 +434,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         log.info("XDS.b: Send register document-b request to registry:"+xdsRegistryURI);
         log.info("####################################################");
         log.info("####################################################");
-        RegistryResponseType rsp = port.registerDocumentSetB(submitRequest);
+        RegistryResponseType rsp = port.documentRegistryRegisterDocumentSetB(submitRequest);
         log.info("Received RegistryResponse:"+InfoSetUtil.marshallObject(
                 objFac.createRegistryResponse(rsp), indentXmlLog) );
         perfLogger.endSubEvent();
@@ -452,7 +463,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         perfLogger.endSubEvent();
         return rsp;
     }
-    private void postProcessStorage( Map<String, StoredDocument> storedDocuments, 
+    private void postProcessStorage( Map<String, XDSDocument> storedDocuments, 
             boolean success) {
         if ( success ) {
             docStoreDelegate.commitDocuments(storedDocuments.values());
@@ -462,72 +473,20 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
     }
 
     public RetrieveDocumentSetResponseType retrieveDocumentSet(RetrieveDocumentSetRequestType req) throws XDSException {
-        XDSPerformanceLogger perfLogger = new XDSPerformanceLogger("XDSb", "RetrieveDocumentSet");
-        String docUid;
-        XDSDocument doc;
-        RetrieveDocumentSetRequestType.DocumentRequest docReq;
-        RetrieveDocumentSetResponseType rsp = objFac.createRetrieveDocumentSetResponseType();
-        RetrieveDocumentSetResponseType.DocumentResponse docRsp;
-        List localDocUids = new ArrayList();
-        for ( Iterator<RetrieveDocumentSetRequestType.DocumentRequest> iter = req.getDocumentRequest().iterator() ; iter.hasNext() ; ) {
-            docReq = iter.next();
-            docUid = docReq.getDocumentUniqueId();
-            if ( docReq.getRepositoryUniqueId().equals(this.repositoryUniqueId) ) {
-                perfLogger.startSubEvent("RetrieveDocument");
-                perfLogger.setSubEventProperty("DocumentUUID", docUid);
-                doc = docStoreDelegate.retrieveDocument(docUid, null);
-                if ( doc != null ) {
-                    perfLogger.setSubEventProperty("DocumentSize", String.valueOf(doc.getXdsDocWriter().size()));
-                    localDocUids.add(docUid);
-                    try {
-                        docRsp = getDocumentResponse(doc);
-                        rsp.getDocumentResponse().add(docRsp);
-                    } catch (IOException e) {
-                        log.error("Error in building DocumentResponse for document:"+doc);
-                    }
-                } else {
-                    log.warn("Document not found! document UID:"+docUid);
-                }
-                perfLogger.endSubEvent();
-            } else {
-                log.info("Retrieve Document Request for other Repository!("+docReq.getRepositoryUniqueId()+
-                        ") docUid:"+docUid);
-            }
-        }
-        perfLogger.startSubEvent("AuditAndCreateResponse");
-        logRetrieve(localDocUids,true);
-        RegistryResponseType regRsp = objFac.createRegistryResponseType();
-        regRsp.setStatus(XDSConstants.XDS_B_STATUS_SUCCESS);
-        rsp.setRegistryResponse(regRsp);
-        perfLogger.endSubEvent();
-        perfLogger.flush();
-        return rsp;
+        return retrieveDocumentSet(req, repositoryUniqueId);
     }
-
-    private DocumentResponse getDocumentResponse(XDSDocument doc) throws IOException {
-        RetrieveDocumentSetResponseType.DocumentResponse docRsp;
-        docRsp = objFac.createRetrieveDocumentSetResponseTypeDocumentResponse();
-        docRsp.setDocumentUniqueId(doc.getDocumentUID());
-        docRsp.setMimeType(doc.getMimeType());
-        docRsp.setRepositoryUniqueId(this.repositoryUniqueId);
-        docRsp.setDocument(doc.getXdsDocWriter().getDataHandler());
-        return docRsp;
-    }
-
-    public DataHandler retrieveDocument(String docUid, String mime) throws XDSException {
-        log.info("Retrieve Document "+docUid+" with mime type:"+mime);
-        XDSDocument doc = docStoreDelegate.retrieveDocument(docUid, mime);
-        if ( doc != null ) {
-            if ( mime == null || mime.equals( doc.getMimeType() ) ) {
-                XDSDocumentWriter wr = doc.getXdsDocWriter();
-                return new XdsDataHandler(wr, mime);
+    private RetrieveDocumentSetResponseType retrieveDocumentSet(RetrieveDocumentSetRequestType req, String repoUID) throws XDSException {
+        try {
+            return xdsbServiceDelegate.retrieveDocumentSetFromXDSbRetrieveService(req, repoUID);
+        } catch ( Exception x ) {
+            if ( x instanceof XDSException ) {
+                throw (XDSException)x;
+            } else if ( x.getCause() instanceof XDSException ){
+                throw (XDSException) x.getCause();
             }
-            log.info("Requested mime type ("+mime+
-                    ") doesn't match with mime type of stored document ("+doc.getMimeType()+")!");
-        } else {
-            log.info("Requested document not found:"+docUid);
+            log.error( "Exception occured in retrieveDocumentSet: "+x.getMessage(), x );
+            throw new XDSException( XDSConstants.XDS_ERR_REPOSITORY_ERROR, "Unexpected error in XDS service !: "+x.getMessage(),x);
         }
-        return null;
     }
 
     public Map exportDocuments(ProvideAndRegisterDocumentSetRequestType req, XDSPerformanceLogger perfLogger) throws XDSException {
@@ -572,7 +531,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
                         perfLogger.setSubEventProperty("DocumentSize", String.valueOf(doc.getSize()));
                         storedDocuments.put(extrObj.getId(),doc);
                         slots = xdsDoc.getSlots();
-                        addOrOverwriteSlot(extrObj, slots, XDSConstants.SLOT_REPOSITORY_UNIQUE_ID, this.getRepositoryUniqueId());
+                        addOrOverwriteSlot(extrObj, slots, XDSConstants.SLOT_REPOSITORY_UNIQUE_ID, getRepositoryUniqueId());
                         addOrOverwriteSlot(extrObj, slots, XDSConstants.SLOT_SIZE, String.valueOf(doc.getSize()));
                         addOrOverwriteSlot(extrObj, slots, XDSConstants.SLOT_HASH, doc.getHash());
                         if ( this.retrieveURI != null ) {
@@ -627,24 +586,6 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         String status = rsp.getStatus();
         log.debug("Rsp status:"+status );
         return status == null ? false : XDSConstants.XDS_B_STATUS_SUCCESS.equalsIgnoreCase(rsp.getStatus());
-    }
-
-    private Dispatch<Source> createDispatch() throws MalformedURLException, JAXBException {
-        String targetNS = XDSConstants.NS_URN_IHE_ITI_XDS_B_2007;
-        QName serviceName = new QName(targetNS, "XDSbRepositoryService");
-        QName portName = new QName(targetNS, "XDSbRepositoryPort");
-        Service service = Service.create(serviceName);
-        configProxyAndTLS(xdsRegistryURI);
-        service.addPort(portName, SOAPBinding.SOAP12HTTP_BINDING, new URL(xdsRegistryURI).toExternalForm());
-        Dispatch<Source> dispatch = service.createDispatch(portName, Source.class, Mode.PAYLOAD);
-
-        log.info("############# add custom RegSOAPHeaderHandler!");
-        SOAPBinding binding = (SOAPBinding)((BindingProvider)dispatch).getBinding();
-        List customHandlerChain = new ArrayList();
-        customHandlerChain.add(new RegSOAPHeaderHandler());
-        binding.setHandlerChain(customHandlerChain);               
-        log.info("############# add custom RegSOAPHeaderHandler done!");
-        return dispatch;
     }
 
     /**
@@ -768,25 +709,69 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         Logger.getLogger("auditlog").info(msg);
     }
 
-    private void logRetrieve(List<String> docUids, boolean success) {
+    public RetrieveDocumentSetResponseType retrieveDocumentSet(String docUid, String repositoryUID, String homeUid, boolean useLocalRepo) throws XDSException {
+        RetrieveDocumentSetRequestType rq = objFac.createRetrieveDocumentSetRequestType();
+        rq.getDocumentRequest().add( createDocRequest(docUid, repositoryUID, homeUid) );
+        return retrieveDocumentSet(rq, useLocalRepo ? repositoryUniqueId : null);
+    }
+    
+    public DataHandler retrieveDocument(String docUid, String repositoryUID, String homeUid, boolean useLocalRepo) throws XDSException {
+        RetrieveDocumentSetResponseType rsp = retrieveDocumentSet(docUid, repositoryUID, homeUid, useLocalRepo);
         try {
-            HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
-            String user = userInfo.getUserId();
-            XDSRetrieveMessage msg = XDSRetrieveMessage.createDocumentRepositoryRetrieveMessage(docUids);
-            msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
-                AuditEvent.OutcomeIndicator.MINOR_FAILURE);
-            msg.setSource(AuditMessage.getProcessID(), 
-                    AuditMessage.getLocalAETitles(),
-                    AuditMessage.getProcessName(),
-                    AuditMessage.getLocalHostName());
-            msg.setHumanRequestor(user != null ? user : "unknown", null, null);
-            msg.setDestination(userInfo.getRequestURI(), null, userInfo.getHostName(), userInfo.getIP() );
-            msg.validate();
-            Logger.getLogger("auditlog").info(msg);
-        } catch ( Throwable t) {
-            log.error("Cant send Audit Log for Retrieve Document Set! Ignored");
+            if ( checkResponse(rsp.getRegistryResponse()) ) {
+                List<DocumentResponse> l = rsp.getDocumentResponse();
+                if ( l.size() == 1) {
+                    DocumentResponse docRsp = l.get(0);
+                    return docRsp.getDocument();
+                } else if ( l.size() == 0 ) {
+                    log.info("XDSDocument "+docUid+" not found on this Repository!");
+                } else {
+                    log.warn("More than one document found for documentUID:"+docUid);
+                }
+            }
+        } catch ( Exception x) {
+            throw new XDSException(XDSConstants.XDS_ERR_REPOSITORY_ERROR, "Error Checking response!",x);
+        }
+        return null;
+    }
+
+    public String retrieveDocumentAsString(String docUid, String repositoryUID, String homeUid, boolean useLocalRepo) throws XDSException, IOException {
+        DataHandler dh = retrieveDocument(docUid, repositoryUID, homeUid, useLocalRepo);
+        BufferedInputStream is = null;
+        StringWriter w = null;
+        try {
+            if ( dh == null ) {
+                return ("XDSDocument "+docUid+" not found on this Repository!");
+            } else {
+                w = new StringWriter();
+                is = new BufferedInputStream(dh.getInputStream());
+                int b;
+                while ( (b = is.read()) != -1 ) {
+                    if ( b > 31) {
+                        w.write(b);
+                    }
+                }
+                return w.toString();
+            }
+        } finally {
+            if (is != null) 
+                is.close();
+            if (w != null)
+                w.close();
         }
     }
+    
+    private DocumentRequest createDocRequest(String docUid,
+            String repositoryUID, String homeUid) {
+        DocumentRequest docRq = objFac.createRetrieveDocumentSetRequestTypeDocumentRequest();
+        docRq.setDocumentUniqueId(docUid);
+        docRq.setRepositoryUniqueId( (repositoryUID == null || repositoryUID.trim().length() == 0)
+                ? this.getRepositoryUniqueId() : repositoryUID);
+        if ( homeUid != null && homeUid.trim().length() > 0 )
+            docRq.setHomeCommunityId(homeUid);
+        return docRq;
+    }
+    
 
     public class XdsDataHandler extends DataHandler {
         private XDSDocumentWriter writer;

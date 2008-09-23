@@ -6,6 +6,7 @@ import javax.jws.soap.SOAPBinding;
 import javax.xml.bind.JAXBException;
 import javax.xml.ws.WebServiceContext;
 
+import org.dcm4chee.xds.common.delegate.XDSbServiceDelegate;
 import org.dcm4chee.xds.common.exception.XDSException;
 import org.dcm4chee.xds.common.infoset.ProvideAndRegisterDocumentSetRequestType;
 import org.dcm4chee.xds.common.infoset.RegistryResponseType;
@@ -69,7 +70,7 @@ public class DocumentRepository implements DocumentRepositoryPortType {
             RetrieveDocumentSetRequestType req) {
         RetrieveDocumentSetResponseType rsp =  null;
         try {
-            rsp = delegate.retrieveDocumentSet(req);
+            rsp = delegate.retrieveDocumentSetFromXDSbRepositoryService(req);
         } catch (XDSException x) {
             log.error("ProvideAndRegisterDocumentSet failed!Reason:"+x,x);
             try {

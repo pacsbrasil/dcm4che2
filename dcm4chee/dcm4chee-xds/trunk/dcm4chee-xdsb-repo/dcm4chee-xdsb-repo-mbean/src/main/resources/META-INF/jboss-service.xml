@@ -30,7 +30,7 @@
       <name>RepositoryUniqueId</name>
       <type>java.lang.String</type>
       <descriptors>
-      	 <value value="1.2.40.0.13.1.1.192.168.0.211.200801012243"/>
+         <value value="1.2.40.0.13.1.1.192.168.0.211.200801012243"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getXDSRegistryURI" setMethod="setXDSRegistryURI">
@@ -222,6 +222,14 @@
          <value value="dcm4chee.xds:service=XDSStoreService"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="getXDSbRetrieveService" setMethod="setXDSbRetrieveService">
+      <description>Used internally - do NOT modify.</description>
+      <name>getXDSbRetrieveService</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.xds:service=XDSbRetrieveService"/>
+      </descriptors>
+   </attribute>
 
        &defaultAttributes;
        
@@ -267,21 +275,86 @@
       </parameter>
       <return-type>org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType</return-type>
    </operation>
+
    <operation impact="ACTION">
-      <description><![CDATA[ Retrieve Document Set.<br/>
-      		]]> </description>
+      <description><![CDATA[ Retrieve Document Set for single document.<br/>
+            ]]> </description>
+      <name>retrieveDocumentSet</name>
+      <parameter>
+        <description>Document Unique ID.</description>
+        <name>DocumentUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Repository Unique ID. Default: this RepositoryUniqueId</description>
+        <name>RepositoryUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Home Community ID. Default: no optional Home Community ID</description>
+        <name>HomeCommunityID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Use local Repository Unique ID to avoid webservice round trip for local retrieve requests.</description>
+        <name>UseLocalRepository</name>
+        <type>boolean</type>
+      </parameter>
+      <return-type>org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType</return-type>
+   </operation>
+        
+   <operation impact="ACTION">
+      <description><![CDATA[ Retrieve single Document (DataHandler).<br/>
+            ]]> </description>
       <name>retrieveDocument</name>
       <parameter>
-        <description>Doc UID</description>
-        <name>doc</name>
+        <description>Document Unique ID.</description>
+        <name>DocumentUID</name>
         <type>java.lang.String</type>
       </parameter>
       <parameter>
-        <description>Mime Type</description>
-        <name>mime</name>
+        <description>Repository Unique ID. Default: this RepositoryUniqueId</description>
+        <name>RepositoryUID</name>
         <type>java.lang.String</type>
       </parameter>
+      <parameter>
+        <description>Home Community ID. Default: no optional Home Community ID</description>
+        <name>HomeCommunityID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Use local Repository Unique ID to avoid webservice round trip for local retrieve requests.</description>
+        <name>UseLocalRepository</name>
+        <type>boolean</type>
+      </parameter>
       <return-type>javax.activation.DataHandler</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[ Retrieve single Document as String (extract only letters, digits and spaces).<br/>
+            ]]> </description>
+      <name>retrieveDocumentAsString</name>
+      <parameter>
+        <description>Document Unique ID.</description>
+        <name>DocumentUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Repository Unique ID. Default: this RepositoryUniqueId</description>
+        <name>RepositoryUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Home Community ID. Default: no optional Home Community ID</description>
+        <name>HomeCommunityID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Use local Repository Unique ID to avoid webservice round trip for local retrieve requests.</description>
+        <name>UseLocalRepository</name>
+        <type>boolean</type>
+      </parameter>
+      <return-type>java.lang.String</return-type>
    </operation>
         
     </xmbean>

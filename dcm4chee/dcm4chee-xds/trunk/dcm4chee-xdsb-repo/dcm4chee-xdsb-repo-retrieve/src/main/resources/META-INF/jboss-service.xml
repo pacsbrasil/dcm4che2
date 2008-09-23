@@ -24,15 +24,6 @@
          <name>XDSbRepositoryRetrieveService</name>
     </constructor>
       
-   <attribute access="read-write" getMethod="getRepositoryUniqueId" setMethod="setRepositoryUniqueId">
-      <description>Unique ID of this Repository.
-      </description>
-      <name>RepositoryUniqueId</name>
-      <type>java.lang.String</type>
-      <descriptors>
-      	 <value value="1.2.40.0.13.1.1.192.168.0.211.200801012243"/>
-      </descriptors>
-   </attribute>
    <attribute access="read-write" getMethod="getExternalRepositories" setMethod="setExternalRepositories">
       <description><![CDATA[ List of remote XDS.b Repositories.<br/>
             Format: &lt;Repository UniqueID&gt;=&lt;RetrieveDocument URI&gt; <br/>
@@ -209,73 +200,12 @@
         <name>RetrieveDocumentSetRequestType</name>
         <type>org.dcm4chee.xds.common.infoset.RetrieveDocumentSetRequestType</type>
       </parameter>
-      <return-type>org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType</return-type>
-   </operation>
-
-   <operation impact="ACTION">
-      <description><![CDATA[ Retrieve Document Set for single document.<br/>
-            ]]> </description>
-      <name>retrieveDocumentSet</name>
       <parameter>
-        <description>Document Unique ID.</description>
-        <name>DocumentUID</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Repository Unique ID. Default: this RepositoryUniqueId</description>
+        <description>Repository Unique ID of the local Repository. </description>
         <name>RepositoryUID</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Home Community ID. Default: no optional Home Community ID</description>
-        <name>HomeCommunityID</name>
         <type>java.lang.String</type>
       </parameter>
       <return-type>org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType</return-type>
-   </operation>
-        
-   <operation impact="ACTION">
-      <description><![CDATA[ Retrieve single Document (DataHandler).<br/>
-            ]]> </description>
-      <name>retrieveDocument</name>
-      <parameter>
-        <description>Document Unique ID.</description>
-        <name>DocumentUID</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Repository Unique ID. Default: this RepositoryUniqueId</description>
-        <name>RepositoryUID</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Home Community ID. Default: no optional Home Community ID</description>
-        <name>HomeCommunityID</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>javax.activation.DataHandler</return-type>
-   </operation>
-
-   <operation impact="ACTION">
-      <description><![CDATA[ Retrieve single Document as String (extract only letters, digits and spaces).<br/>
-            ]]> </description>
-      <name>retrieveDocumentAsString</name>
-      <parameter>
-        <description>Document Unique ID.</description>
-        <name>DocumentUID</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Repository Unique ID. Default: this RepositoryUniqueId</description>
-        <name>RepositoryUID</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <description>Home Community ID. Default: no optional Home Community ID</description>
-        <name>HomeCommunityID</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>java.lang.String</return-type>
    </operation>
 
     </xmbean>

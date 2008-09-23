@@ -14,6 +14,7 @@
   <modules>
     <module>dcm4chee-xdsb-repo-ws</module>
     <module>dcm4chee-xdsb-repo-mbean</module>
+    <module>dcm4chee-xdsb-repo-retrieve</module>
   </modules>
 </project>
 

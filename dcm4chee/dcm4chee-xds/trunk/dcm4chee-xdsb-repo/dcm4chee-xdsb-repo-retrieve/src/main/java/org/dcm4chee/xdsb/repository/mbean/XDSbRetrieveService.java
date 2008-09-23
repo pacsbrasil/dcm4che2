@@ -101,7 +101,6 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
     private HostnameVerifier origHostnameVerifier = null;
     private String allowedUrlHost = null;
 
-    private String repositoryUniqueId;
     
     private boolean logRequestMessage;
     private boolean logResponseMessage;
@@ -115,13 +114,6 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
 
     private DocumentStoreDelegate docStoreDelegate = new DocumentStoreDelegate();
     private ObjectFactory objFac = new ObjectFactory();
-
-    public String getRepositoryUniqueId() {
-        return repositoryUniqueId;
-    }
-    public void setRepositoryUniqueId(String repositoryUniqueId) {
-        this.repositoryUniqueId = repositoryUniqueId;
-    }
 
     public String getExternalRepositories() {
         if (mapExternalRepositories == null) return NONE;
@@ -274,7 +266,7 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
         docStoreDelegate.setDocumentStoreService(name);
     }
 
-    public RetrieveDocumentSetResponseType retrieveDocumentSet(RetrieveDocumentSetRequestType req) throws XDSException {
+    public RetrieveDocumentSetResponseType retrieveDocumentSet(RetrieveDocumentSetRequestType req, String repositoryUniqueId) throws XDSException {
         if ( logRequestMessage) {
             try {
                 log.info("RetrieveDocumentSetRequest:"+InfoSetUtil.marshallObject(
@@ -295,7 +287,7 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
         for ( RetrieveDocumentSetRequestType.DocumentRequest docReq : req.getDocumentRequest() ) {
             reqRepoUid = docReq.getRepositoryUniqueId();
             docUid = docReq.getDocumentUniqueId();
-            if ( reqRepoUid.equals(this.repositoryUniqueId) ) {
+            if ( reqRepoUid.equals(repositoryUniqueId) ) {
                 perfLogger.startSubEvent("RetrieveDocument");
                 perfLogger.setSubEventProperty("DocumentUUID", docUid);
                 doc = docStoreDelegate.retrieveDocument(docUid, null);
@@ -303,7 +295,7 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
                     perfLogger.setSubEventProperty("DocumentSize", String.valueOf(doc.getXdsDocWriter().size()));
                     localDocUids.add(docUid);
                     try {
-                        docRsp = getDocumentResponse(doc);
+                        docRsp = getDocumentResponse(doc, repositoryUniqueId);
                         rsp.getDocumentResponse().add(docRsp);
                     } catch (IOException e) {
                         log.error("Error in building DocumentResponse for document:"+doc);
@@ -353,75 +345,13 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
         return rsp;
     }
 
-    public RetrieveDocumentSetResponseType retrieveDocumentSet(String docUid, String repositoryUID, String homeUid) throws XDSException {
-        RetrieveDocumentSetRequestType rq = objFac.createRetrieveDocumentSetRequestType();
-        rq.getDocumentRequest().add( createDocRequest(docUid, repositoryUID, homeUid) );
-        return retrieveDocumentSet(rq);
-    }
     
-    public DataHandler retrieveDocument(String docUid, String repositoryUID, String homeUid) throws XDSException {
-        RetrieveDocumentSetResponseType rsp = retrieveDocumentSet(docUid, repositoryUID, homeUid);
-        try {
-            if ( checkResponse(rsp.getRegistryResponse()) ) {
-                List<DocumentResponse> l = rsp.getDocumentResponse();
-                if ( l.size() == 1) {
-                    DocumentResponse docRsp = l.get(0);
-                    return docRsp.getDocument();
-                } else if ( l.size() == 0 ) {
-                    log.info("XDSDocument "+docUid+" not found on this Repository! repositoryUniqueId:"+repositoryUniqueId);
-                } else {
-                    log.warn("More than one document found for documentUID:"+docUid);
-                }
-            }
-        } catch ( Exception x) {
-            throw new XDSException(XDSConstants.XDS_ERR_REPOSITORY_ERROR, "Error Checking response!",x);
-        }
-        return null;
-    }
-    
-    public String retrieveDocumentAsString(String docUid, String repositoryUID, String homeUid) throws XDSException, IOException {
-        DataHandler dh = retrieveDocument(docUid, repositoryUID, homeUid);
-        BufferedInputStream is = null;
-        StringWriter w = null;
-        try {
-            if ( dh == null ) {
-                return ("XDSDocument "+docUid+" not found on this Repository!");
-            } else {
-                w = new StringWriter();
-                is = new BufferedInputStream(dh.getInputStream());
-                int b;
-                while ( (b = is.read()) != -1 ) {
-                    if ( b > 31) {
-                        w.write(b);
-                    }
-                }
-                return w.toString();
-            }
-        } finally {
-            if (is != null) 
-                is.close();
-            if (w != null)
-                w.close();
-        }
-    }
-    
-    private DocumentRequest createDocRequest(String docUid,
-            String repositoryUID, String homeUid) {
-        DocumentRequest docRq = objFac.createRetrieveDocumentSetRequestTypeDocumentRequest();
-        docRq.setDocumentUniqueId(docUid);
-        docRq.setRepositoryUniqueId( (repositoryUID == null || repositoryUID.trim().length() == 0)
-                ? this.repositoryUniqueId : repositoryUID);
-        if ( homeUid != null && homeUid.trim().length() > 0 )
-            docRq.setHomeCommunityId(homeUid);
-        return docRq;
-    }
-    
-    private DocumentResponse getDocumentResponse(XDSDocument doc) throws IOException {
+    private DocumentResponse getDocumentResponse(XDSDocument doc, String repositoryUniqueId) throws IOException {
         RetrieveDocumentSetResponseType.DocumentResponse docRsp;
         docRsp = objFac.createRetrieveDocumentSetResponseTypeDocumentResponse();
         docRsp.setDocumentUniqueId(doc.getDocumentUID());
         docRsp.setMimeType(doc.getMimeType());
-        docRsp.setRepositoryUniqueId(this.repositoryUniqueId);
+        docRsp.setRepositoryUniqueId(repositoryUniqueId);
         docRsp.setDocument(doc.getXdsDocWriter().getDataHandler());
         return docRsp;
     }
