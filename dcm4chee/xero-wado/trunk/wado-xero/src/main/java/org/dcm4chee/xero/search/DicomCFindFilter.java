@@ -37,6 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
@@ -46,6 +48,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
@@ -79,6 +82,10 @@ import org.slf4j.LoggerFactory;
 public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 {
 	public static final String EXTEND_RESULTS_KEY = "EXTEND_RESULTS";
+	
+	private static final String PROPERTIES_FILE = "org/dcm4chee/xero/search/ae-default-connection.properties";
+	
+	private static final String OVERRIDING_PROPERTIES_FILE = "ae-connection.properties";
 
 	static Logger log = LoggerFactory.getLogger(DicomCFindFilter.class);
 	
@@ -93,23 +100,53 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     private int priority = 0;
     private int cancelAfter = Integer.MAX_VALUE;
 	private String hostname = "localhost";
+	private String port = "11112";
+	private String title = "DCM4CHEE";
+	private String localTitle = "XERO";
     
     private static final String[] NATIVE_LE_TS = {
         UID.ImplicitVRLittleEndian,
         UID.ExplicitVRLittleEndian  };
+
+   
     
     
     public DicomCFindFilter() {
 		remoteAE.setInstalled(true);
 		remoteAE.setAssociationAcceptor(true);
 		remoteAE.setNetworkConnection(new NetworkConnection[] { remoteConn });
-		remoteAE.setAETitle("DCM4CHEE");
 		device.setNetworkApplicationEntity(ae);
 		device.setNetworkConnection(conn);
 		ae.setNetworkConnection(conn);
 		ae.setAssociationInitiator(true);
-		ae.setAETitle("XERO");
 
+
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        InputStream is = cl.getResourceAsStream(OVERRIDING_PROPERTIES_FILE);
+        if (is == null) {
+           is = cl.getResourceAsStream(PROPERTIES_FILE);
+        }
+        Properties props = new Properties();
+        if (is != null) {
+           try {
+              props.load(is);
+              hostname = props.getProperty("host");
+              port = props.getProperty("port");
+              title = props.getProperty("title");
+              localTitle = props.getProperty("local.title");
+           } catch (Exception e) {
+              // Do nothing
+           } finally {
+              if (is != null) {
+                 try {
+                    is.close();
+                 } catch (IOException e) {
+                    // Do nothing
+                 }
+              }
+           }
+        }		
+		
 		try {
 			// The hostname is sometimes provided as upper case, but DCM4CHEE
 			// doesn't like that.
@@ -120,10 +157,21 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 		} catch (UnknownHostException e) {
 			log.warn("Unable to get local hostname:"+e);
 		}
-		conn.setHostname(hostname);
+		conn.setHostname("localhost");
 		
+		if (title==null)  {
+		   title="DCM4CHEE";
+		}
+        
+		if (localTitle==null)  {
+		   localTitle="XERO";
+	    }
+	      
 		remoteConn.setHostname(hostname);
-		remoteConn.setPort(11112);
+		remoteConn.setPort(Integer.parseInt(port));
+	    remoteAE.setAETitle(title);
+	    ae.setAETitle(localTitle);
+
 		
 		ae.setPackPDV(true);
 		conn.setTcpNoDelay(true);
