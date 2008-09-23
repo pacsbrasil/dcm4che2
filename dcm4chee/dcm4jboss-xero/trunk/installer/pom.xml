@@ -7,45 +7,24 @@
     <version>0.8-SNAPSHOT</version>
   </parent>
   <groupId>org.dcm4chee.xero</groupId>
-  <name>Xero OSS Installer</name>
   <artifactId>installer</artifactId>
+  <name>Xero OSS Distribution</name>
+  <packaging>pom</packaging>
 
   <build>
-     <plugins>
-        <plugin>
-           <artifactId>maven-dependency-plugin</artifactId>
-           <executions>
-              <execution>
-                 <id>copyXeroWar</id>
-                 <phase>process-resources</phase>
-                 <goals>
-                    <goal>copy</goal>
-                  </goals>
-                  <configuration>
-                     <artifactItems>
-                        <artifactItem>
-                           <groupId>org.dcm4chee.xero</groupId>
-                           <artifactId>wado2-war</artifactId>
-                           <version>${project.version}</version>
-                           <type>war</type>
-                           <outputDirectory>target/classes/server/default/deploy</outputDirectory>
-                           <destFileName>wado2.war</destFileName>
-                        </artifactItem>
-                        <artifactItem>
-                           <groupId>org.dcm4chee.xero</groupId>
-                           <artifactId>xero-war</artifactId>
-                           <version>${project.version}</version>
-                           <type>war</type>
-                           <outputDirectory>target/classes/server/default/deploy</outputDirectory>
-                           <destFileName>xero.war</destFileName>
-                        </artifactItem>
-                     </artifactItems>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-      </plugins>
-   </build>
+    <finalName>dcm4jboss-xero-${version}</finalName>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <appendAssemblyId>false</appendAssemblyId>
+          <descriptors>
+            <descriptor>src/main/assembly/bin.xml</descriptor>
+          </descriptors>
+        </configuration>
+      </plugin>    
+    </plugins>
+  </build>
 
   <dependencies>
     <dependency>
@@ -59,6 +38,11 @@
       <artifactId>xero-war</artifactId>
       <version>${project.version}</version>
       <type>war</type>
+    </dependency>
+    <dependency>
+      <groupId>batik</groupId>
+      <artifactId>batik-transcoder</artifactId>
+      <version>1.6-1</version>
     </dependency>
   </dependencies>
 </project>
