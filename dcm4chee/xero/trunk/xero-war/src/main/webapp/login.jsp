@@ -10,7 +10,6 @@
 	Be aware that this critical infos are visible in browser window!
 	Therefore this user should only have WebUser role.
 --%>
-<%@ page import='org.dcm4che.util.Base64' %>
 <%@ page import='java.net.InetAddress' %>
 <html>
 <head>
