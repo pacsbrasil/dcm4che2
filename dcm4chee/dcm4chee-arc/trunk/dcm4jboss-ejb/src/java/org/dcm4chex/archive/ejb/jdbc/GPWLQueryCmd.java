@@ -199,7 +199,7 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
             list.add("rel_gpsps_appcode.gpsps_fk");
             list.add("Code");
             list.add(APP_CODE);
-            list.add("rel_gpsps_appcode.code_fk");
+            list.add("rel_gpsps_appcode.appcode_fk");
             list.add("Code.pk");
         }
         if (isMatchCode(Tags.ScheduledStationNameCodeSeq)) {
@@ -210,7 +210,7 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
             list.add("rel_gpsps_devname.gpsps_fk");
             list.add("Code");
             list.add(DEVNAME_CODE);
-            list.add("rel_gpsps_devname.code_fk");
+            list.add("rel_gpsps_devname.devname_fk");
             list.add("Code.pk");
         }
         if (isMatchCode(Tags.ScheduledStationClassCodeSeq)) {
@@ -221,7 +221,7 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
             list.add("rel_gpsps_devclass.gpsps_fk");
             list.add("Code");
             list.add(DEVCLASS_CODE);
-            list.add("rel_gpsps_devclass.code_fk");
+            list.add("rel_gpsps_devclass.devclass_fk");
             list.add("Code.pk");
         }
         if (isMatchCode(Tags.ScheduledStationGeographicLocationCodeSeq)) {
@@ -232,7 +232,7 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
             list.add("rel_gpsps_devloc.gpsps_fk");
             list.add("Code");
             list.add(DEVLOC_CODE);
-            list.add("rel_gpsps_devloc.code_fk");
+            list.add("rel_gpsps_devloc.devloc_fk");
             list.add("Code.pk");
         }
         Dataset item = keys.getItem(Tags.ScheduledHumanPerformersSeq);
