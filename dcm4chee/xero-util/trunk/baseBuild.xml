@@ -26,19 +26,19 @@
 
   <target name="install" description="Perform a Maven Install">
      <exec executable="${mvn}" failonerror="true">
-        <arg line="install" />
+        <arg line="${release.profiles} install" />
      </exec>
   </target>
 
   <target name="deploy" description="Perfrom a Maven Deploy">
      <exec executable="${mvn}" failonerror="true">
-        <arg line="deploy" />
+        <arg line="${release.profiles} deploy" />
      </exec>
   </target>
 
   <target name="clean" description="Perfrom a Maven Clean">
      <exec executable="${mvn}" failonerror="true">
-        <arg line="clean" />
+        <arg line="${release.profiles} clean" />
      </exec>
   </target>
 
