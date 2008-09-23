@@ -181,7 +181,7 @@
 
      <delete dir="${ant.project.name}" quiet="true"/>
      <exec executable="${svn}" failonerror="true">
-        <arg line="checkout ${version.tags}/${ant.project.name}-${version.version} ${ant.project.name} --depth immediates" />
+        <arg line="checkout ${version.tags}/${ant.project.name}-${version.version} ${ant.project.name} -N" />
      </exec>
      <exec executable="${svn}" failonerror="true">
         <arg line="propset svn:externals -F ${version.svnexternals} ${ant.project.name} --non-interactive" />
