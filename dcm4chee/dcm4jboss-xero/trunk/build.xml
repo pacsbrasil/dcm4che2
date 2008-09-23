@@ -2,7 +2,7 @@
   <!-- Include build.properties first as it over-rides default.properties   -->
   <property file="build.properties" />
   <property name="baseAntDefns" value="xero-util/baseBuild.xml" />
-  <property name="version.increment" value="30" />
+  <property name="version.increment" value="31" />
   <property name="version.base" value="1.0.0" />
   <property name="version.parent.tagdir" value="tags" />
   <property name="version.tags" value="https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4chee/dcm4jboss-xero/${version.parent.tagdir}" />
@@ -19,6 +19,9 @@
       <propertyset refid="childProperties" />
      </ant>
      <ant dir="xero" target="${childCall}" inheritAll="false">
+      <propertyset refid="childProperties" />
+     </ant>
+     <ant dir="installer" target="${childCall}" inheritAll="false">
       <propertyset refid="childProperties" />
      </ant>
   </target>
