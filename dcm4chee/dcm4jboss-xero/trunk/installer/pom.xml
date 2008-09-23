@@ -41,4 +41,12 @@
       <version>1.6-1</version>
     </dependency>
   </dependencies>
+
+  <distributionManagement>
+    <repository>
+       <id>dcm4che</id>
+       <name>Dcm4che maven2</name>
+       <url>scp://www.dcm4che.org:443/home/maven2</url>
+    </repository>
+  </distributionManagement>
 </project>
