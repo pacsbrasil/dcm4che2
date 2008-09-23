@@ -9,6 +9,7 @@
   <property name="mvn" value="mvn.bat" />
   <property name="svn" value="svn" />
   <property name="bc" value="bc" />
+  <property name="release.profiles" value="" />
 
   <!-- Inherit from the parent the version information, if any -->
   <property name="version.parent.base" value="1.0" />
