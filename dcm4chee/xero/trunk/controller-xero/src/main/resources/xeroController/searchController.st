@@ -24,6 +24,9 @@ XeroController.prototype.findAction = function XC_findAction(src) {
 XeroController.prototype.sortQuery = function SC_sortQuery(src,col) {
   var lay = model.searchLayout
   console.info("Found sort layout %s",lay);
+  if(! lay.search ) {
+	this.performSearch();
+  };
   console.info("Trying to sort %s on column %s", src,col);
   lay.sortPatient.sortColumn(col);
   this.updateView("findAction");	
