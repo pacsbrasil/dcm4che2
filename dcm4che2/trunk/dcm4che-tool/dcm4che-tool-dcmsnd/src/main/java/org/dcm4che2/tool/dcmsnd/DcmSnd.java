@@ -124,7 +124,7 @@ public class DcmSnd extends StorageCommitmentService {
         "\nExample: dcmsnd -stgcmt -L DCMSND:11113 STORESCP@localhost:11112 image.dcm \n"
       + "=> Start listening on local port 11113 for receiving Storage Commitment "
       + "results, send DICOM object image.dcm to Application Entity STORESCP, "
-      + "listening on local port 11112, and request Storage Commitment.";
+      + "listening on local port 11112, and request Storage Commitment in same association.";
 
     private static char[] SECRET = { 's', 'e', 'c', 'r', 'e', 't' };
     
@@ -160,7 +160,11 @@ public class DcmSnd extends StorageCommitmentService {
 
     private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
 
+    private NetworkApplicationEntity remoteStgcmtAE;
+
     private NetworkConnection remoteConn = new NetworkConnection();
+
+    private NetworkConnection remoteStgcmtConn = new NetworkConnection();
 
     private Device device = new Device("DCMSND");
 
@@ -221,7 +225,7 @@ public class DcmSnd extends StorageCommitmentService {
     public final void setLocalPort(int port) {
         conn.setPort(port);
     }
-    
+
     public final void setRemoteHost(String hostname) {
         remoteConn.setHostname(hostname);
     }
@@ -229,20 +233,31 @@ public class DcmSnd extends StorageCommitmentService {
     public final void setRemotePort(int port) {
         remoteConn.setPort(port);
     }
-    
+
+    public final void setRemoteStgcmtHost(String hostname) {
+        remoteStgcmtConn.setHostname(hostname);
+    }
+
+    public final void setRemoteStgcmtPort(int port) {
+        remoteStgcmtConn.setPort(port);
+    }
+
     public final void setTlsWithoutEncyrption() {
         conn.setTlsWithoutEncyrption();
         remoteConn.setTlsWithoutEncyrption();
+        remoteStgcmtConn.setTlsWithoutEncyrption();
     }
 
     public final void setTls3DES_EDE_CBC() {
         conn.setTls3DES_EDE_CBC();
         remoteConn.setTls3DES_EDE_CBC();
+        remoteStgcmtConn.setTls3DES_EDE_CBC();
     }
 
     public final void setTlsAES_128_CBC() {
         conn.setTlsAES_128_CBC();
         remoteConn.setTlsAES_128_CBC();
+        remoteStgcmtConn.setTlsAES_128_CBC();
     }
     
     public final void disableSSLv2Hello() {
@@ -301,7 +316,16 @@ public class DcmSnd extends StorageCommitmentService {
     public final boolean isStorageCommitment() {
         return stgcmt;
     }
-    
+
+    public final void setStgcmtCalledAET(String called) {
+        remoteStgcmtAE = new NetworkApplicationEntity();
+        remoteStgcmtAE.setInstalled(true);
+        remoteStgcmtAE.setAssociationAcceptor(true);
+        remoteStgcmtAE.setNetworkConnection(
+                new NetworkConnection[] { remoteStgcmtConn });
+        remoteStgcmtAE.setAETitle(called);
+    }
+
     public final void setShutdownDelay(int shutdownDelay) {
         this.shutdownDelay = shutdownDelay;
     }
@@ -457,9 +481,18 @@ public class DcmSnd extends StorageCommitmentService {
         OptionBuilder.withDescription(
                 "password for truststore file, 'secret' by default");
         opts.addOption(OptionBuilder.create("truststorepw"));
-        
+
+        OptionBuilder.withArgName("aet@host:port");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "request storage commitment of (successfully) sent objects " +
+                "afterwards in new association\nto specified remote " +
+                "Application Entity");
+        opts.addOption(OptionBuilder.create("stgcmtae"));
+
         opts.addOption("stgcmt", false,
-                "request storage commitment of (successfully) sent objects afterwards");
+                "request storage commitment of (successfully) sent objects " +
+                "afterwards in same association");
         
         OptionBuilder.withArgName("maxops");
         OptionBuilder.hasArg();
@@ -621,6 +654,19 @@ public class DcmSnd extends StorageCommitmentService {
             dcmsnd.setUserIdentity(userId);
         }
         dcmsnd.setStorageCommitment(cl.hasOption("stgcmt"));
+        String remoteStgCmtAE = null;
+        if (cl.hasOption("stgcmtae")) {
+            try {
+                remoteStgCmtAE = cl.getOptionValue("stgcmtae");
+                String[] aet_hostport = split(remoteStgCmtAE, '@');
+                String[] host_port = split(aet_hostport[1], ':');
+                dcmsnd.setStgcmtCalledAET(aet_hostport[0]);
+                dcmsnd.setRemoteStgcmtHost(host_port[0]);
+                dcmsnd.setRemoteStgcmtPort(toPort(host_port[1]));
+            } catch (Exception e) {
+                exit("illegal argument of option -stgcmtae");
+            }
+        }
         if (cl.hasOption("connectTO"))
             dcmsnd.setConnectTimeout(parseInt(cl.getOptionValue("connectTO"),
                     "illegal argument of option -connectTO", 1,
@@ -772,6 +818,35 @@ public class DcmSnd extends StorageCommitmentService {
              }
             dcmsnd.close();
             System.out.println("Released connection to " + remoteAE);
+            if (remoteStgCmtAE != null) {
+                t1 = System.currentTimeMillis();
+                try {
+                    dcmsnd.openToStgcmtAE();
+                } catch (Exception e) {
+                    System.err.println("ERROR: Failed to establish association:"
+                            + e.getMessage());
+                    System.exit(2);
+                }
+                t2 = System.currentTimeMillis();
+                System.out.println("Connected to " + remoteStgCmtAE + " in " 
+                        + ((t2 - t1) / 1000F) + "s");
+                t1 = System.currentTimeMillis();
+                if (dcmsnd.commit()) {
+                    t2 = System.currentTimeMillis();
+                    System.out.println("Request Storage Commitment from " 
+                            + remoteStgCmtAE + " in " + ((t2 - t1) / 1000F) + "s");
+                    System.out.println("Waiting for Storage Commitment Result..");
+                    try {
+                        DicomObject cmtrslt = dcmsnd.waitForStgCmtResult();
+                        t1 = System.currentTimeMillis();
+                        promptStgCmt(cmtrslt, ((t1 - t2) / 1000F));
+                    } catch (InterruptedException e) {
+                        System.err.println("ERROR:" + e.getMessage());
+                    }
+                }
+                dcmsnd.close();
+                System.out.println("Released connection to " + remoteStgCmtAE);
+            }
         } finally {
             dcmsnd.stop();
         }
@@ -911,9 +986,9 @@ public class DcmSnd extends StorageCommitmentService {
     }
 
     public void configureTransferCapability() {
-        int off = stgcmt ? 1 : 0;
+        int off = stgcmt || remoteStgcmtAE != null ? 1 : 0;
         TransferCapability[] tc = new TransferCapability[off + as2ts.size()];
-        if (stgcmt) {
+        if (off > 0) {
             tc[0] = new TransferCapability(
                     UID.StorageCommitmentPushModelSOPClass,
                     ONLY_IVLE_TS, 
@@ -953,6 +1028,11 @@ public class DcmSnd extends StorageCommitmentService {
     public void open() throws IOException, ConfigurationException,
             InterruptedException {
         assoc = ae.connect(remoteAE, executor);
+    }
+
+    public void openToStgcmtAE() throws IOException, ConfigurationException,
+            InterruptedException {
+        assoc = ae.connect(remoteStgcmtAE, executor);
     }
 
     public void send() {
@@ -1028,6 +1108,7 @@ public class DcmSnd extends StorageCommitmentService {
             }
         }
         try {
+            stgCmtResult = null;
             DimseRSP rsp = assoc.naction(UID.StorageCommitmentPushModelSOPClass,
                 UID.StorageCommitmentPushModelSOPInstance, STG_CMT_ACTION_TYPE,
                 actionInfo, UID.ImplicitVRLittleEndian);
