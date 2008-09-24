@@ -62,8 +62,7 @@ public class PixelPadding implements Filter<WadoImage> {
 	private static final byte[] BLACK = new byte[]{0,0,0};
 	
 	/** Add pixel padding to the returned image. */
-	@Override
-   public WadoImage filter(FilterItem<WadoImage> filterItem, Map<String, Object> params) {
+	public WadoImage filter(FilterItem<WadoImage> filterItem, Map<String, Object> params) {
 		String padding = (String) params.get("padding");
 		if( padding==null ) {
 			log.debug("No padding specified, so just calling next method.");

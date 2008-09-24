@@ -59,7 +59,6 @@ public class DicomUpdateFilter implements Filter<DicomImageReader> {
 	 * provide information for all series at once, although individual objects
 	 * only get updated as required.
 	 */
-	@Override
 	public DicomImageReader filter(FilterItem<DicomImageReader> filterItem, Map<String, Object> params) {
 		DicomImageReader ret = filterItem.callNextFilter(params);
 		if (ret == null) {

@@ -42,30 +42,25 @@ public class StudyInfoCache extends MemoryCache<String,StudyInfo> {
 		StudyInfoFuture(String studyUid) {
 			this.ret = new StudyInfo(studyUid);
 		}
-		
-		@Override
+				
 		public boolean cancel(boolean mayInterruptIfRunning) {
 			return false;
 		}
-
-		@Override
+		
 		public StudyInfo get() throws InterruptedException, ExecutionException {
 			return ret;
 		}
 
-		@Override
 		public StudyInfo get(long timeout, TimeUnit unit)
 				throws InterruptedException, ExecutionException,
 				TimeoutException {
 			return ret;
 		}
 
-		@Override
-		public boolean isCancelled() {
+				public boolean isCancelled() {
 			return false;
 		}
-
-		@Override
+		
 		public boolean isDone() {
 			return true;
 		}
@@ -73,7 +68,6 @@ public class StudyInfoCache extends MemoryCache<String,StudyInfo> {
 		/** Default size of all study infos is 1024 - however, longer term we might
 		 * want to get a better estimate based on study size etc.
 		 */
-		@Override
 		public long getSize() {
 			return 1024;
 		}

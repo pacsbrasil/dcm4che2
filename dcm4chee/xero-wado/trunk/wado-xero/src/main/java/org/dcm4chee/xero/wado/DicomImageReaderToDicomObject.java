@@ -58,7 +58,6 @@ public class DicomImageReaderToDicomObject implements Filter<DicomObject> {
 	Filter<DicomImageReader> imageReaderFilter;
 
 	/** Just read the dicom object from the header */
-	@Override
 	public DicomObject filter(FilterItem<DicomObject> filterItem, Map<String, Object> params) {
 		DicomImageReader dir = imageReaderFilter.filter(null, params);
 		if (dir == null)
