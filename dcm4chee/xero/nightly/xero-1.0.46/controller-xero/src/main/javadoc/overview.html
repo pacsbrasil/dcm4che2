@@ -1,0 +1,19 @@
+<html>
+<head><title>Overview of Xero Controller Design</title></head>
+<body>
+<h1>Xero Controller Design</h1>
+<p><b>TODO</b> Document the Xero Controller design generally.</p>
+
+<h2>Adding new JavaScript controller scripts</h2>
+<p>The JavaScript controller components are added much like the model components are added, by declaring a 
+new stringtemplate containing the JavaScript to render.  For example:
+<pre>
+model.xeroControllers.patientController=patientController
+</pre>
+The intention of this is to allow adding/removing all or part of the controllers for different purposes.
+In specific, this is used to add/remove controllers for the no JavaScript and display tab only controller 
+designs.
+</p>
+
+</body>
+</html>
