@@ -38,6 +38,7 @@
 package org.dcm4chex.archive.ejb.session;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -53,9 +54,14 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.common.FileSystemStatus;
+import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
+import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
 
 /**
  * @ejb.bean name="FileSystemMgt2" type="Stateless" view-type="remote"
@@ -65,6 +71,9 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
  * 
  * @ejb.ejb-ref ejb-name="FileSystem" view-type="local"
  *     ref-name="ejb/FileSystem"
+ * @ejb.ejb-ref ejb-name="Study" ref-name="ejb/Study" view-type="local"
+ * @ejb.ejb-ref ejb-name="StudyOnFileSystem" ref-name="ejb/StudyOnFileSystem"
+ *              view-type="local"
  * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
@@ -75,6 +84,8 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     private static Logger log = Logger.getLogger(FileSystemMgt2Bean.class);
 
     private FileSystemLocalHome fileSystemHome;
+    private StudyLocalHome studyHome;
+    private StudyOnFileSystemLocalHome sofHome;
 
     public void setSessionContext(SessionContext ctx) {
         Context jndiCtx = null;
@@ -82,6 +93,10 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             jndiCtx = new InitialContext();
             this.fileSystemHome = (FileSystemLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/FileSystem");
+            this.studyHome = (StudyLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/Study");
+            this.sofHome = (StudyOnFileSystemLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/StudyOnFileSystem");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -96,6 +111,8 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
 
     public void unsetSessionContext() {
        fileSystemHome = null;
+       studyHome = null;
+       sofHome = null;
     }
 
     /**
@@ -286,5 +303,67 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             dto[i] = ((FileSystemLocal) it.next()).toDTO();
         }
         return dto;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public long getStudySize(DeleteStudyOrder order) throws FinderException {
+        return studyHome.selectStudySize(order.getStudyPk(), order.getFsPk());
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void removeStudyOnFSRecord(DeleteStudyOrder order)
+            throws RemoveException {
+        sofHome.remove(order.getSoFsPk());
+    }
+
+    /**    
+     * @ejb.interface-method
+     */
+    public Collection createDeleteOrdersForStudiesOnFSGroupNotAccessedAfter(
+            String fsGroup, long notAccessedAfter,
+            boolean externalRetrieveable, boolean storageNotCommited,
+            boolean copyOnMedia, String copyOnFSGroup, boolean copyArchived,
+            boolean copyOnReadOnlyFS) throws FinderException {
+        return createDeleteOrders(sofHome.findByFSGroupAndAccessBefore(fsGroup,
+                new Timestamp(notAccessedAfter)), externalRetrieveable,
+                storageNotCommited, copyOnMedia, copyOnFSGroup, copyArchived,
+                copyOnReadOnlyFS);
+    }
+
+    /**    
+     * @ejb.interface-method
+     */
+    public Collection createDeleteOrdersForStudiesOnFSGroup(
+            String fsGroup, long minAccessTime, int limit,
+            boolean externalRetrieveable, boolean storageNotCommited,
+            boolean copyOnMedia, String copyOnFSGroup, boolean copyArchived,
+            boolean copyOnReadOnlyFS) throws FinderException {
+        return createDeleteOrders(sofHome.findByFSGroupAndAccessAfter(fsGroup,
+                new Timestamp(minAccessTime), limit), externalRetrieveable,
+                storageNotCommited, copyOnMedia, copyOnFSGroup, copyArchived,
+                copyOnReadOnlyFS);
+    }
+
+    private Collection createDeleteOrders(
+            Collection sofs, boolean externalRetrieveable,
+            boolean storageNotCommited, boolean copyOnMedia,
+            String copyOnFSGroup, boolean copyArchived,
+            boolean copyOnReadOnlyFS) throws FinderException {
+        Collection orders = new ArrayList(sofs.size());
+        for (Iterator iter = sofs.iterator(); iter.hasNext();) {
+            StudyOnFileSystemLocal sof = (StudyOnFileSystemLocal) iter.next();
+            if (sof.matchDeleteConstrains(externalRetrieveable,
+                    storageNotCommited, copyOnMedia, copyOnFSGroup,
+                    copyArchived, copyOnReadOnlyFS)) {
+                orders.add(new DeleteStudyOrder(sof.getPk(),
+                        sof.getStudy().getPk(), sof.getFileSystem().getPk(),
+                        sof.getAccessTime().getTime()));
+            }
+        }
+        return orders;
     }
 }

@@ -82,6 +82,16 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * @jboss.query signature="java.util.Collection findByRetrieveAETAndAccessAfter(java.lang.String aet, java.sql.Timestamp tsAfter, int limit )"
  *              query="SELECT DISTINCT OBJECT(sof) FROM StudyOnFileSystem sof, IN (sof.study.series) s WHERE sof.fileSystem.retrieveAET = ?1 AND sof.fileSystem.status IN (0,1) AND sof.accessTime > ?2 AND s.seriesStatus = 0 ORDER BY sof.accessTime ASC LIMIT ?3"
  *              strategy="on-find" eager-load-group="*"
+ * @ejb.finder signature="java.util.Collection findByFSGroupAndAccessBefore(java.lang.String groupId, java.sql.Timestamp tsBefore)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByFSGroupAndAccessBefore(java.lang.String groupId, java.sql.Timestamp tsBefore)"
+ *              query="SELECT DISTINCT OBJECT(sof) FROM StudyOnFileSystem sof, IN (sof.study.series) s WHERE sof.fileSystem.groupID = ?1 AND sof.accessTime < ?2 AND sof.fileSystem.status IN (0,1) AND s.seriesStatus = 0 ORDER BY sof.accessTime ASC"
+ *              strategy="on-find" eager-load-group="*"
+ * @ejb.finder signature="java.util.Collection findByFSGroupAndAccessAfter(java.lang.String groupId, java.sql.Timestamp tsAfter, int limit )"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByFSGroupAndAccessAfter(java.lang.String groupId, java.sql.Timestamp tsAfter, int limit )"
+ *              query="SELECT DISTINCT OBJECT(sof) FROM StudyOnFileSystem sof, IN (sof.study.series) s WHERE sof.fileSystem.groupID = ?1 AND sof.fileSystem.status IN (0,1) AND sof.accessTime > ?2 AND s.seriesStatus = 0 ORDER BY sof.accessTime ASC LIMIT ?3"
+ *              strategy="on-find" eager-load-group="*"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupIdAndStatusAndFileStatus(org.dcm4chex.archive.ejb.interfaces.StudyLocal study, java.lang.String fsGroupId, int fsStatus, int fileStatus)"
  *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study = ?1 AND f.fileSystem.groupID = ?2 AND f.fileSystem.status = ?3 AND f.fileStatus = ?4"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupIdAndFileStatus(org.dcm4chex.archive.ejb.interfaces.StudyLocal study, java.lang.String fsGroupId, int fileStatus)"
@@ -182,20 +192,6 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
         	+ "@"
         	+ (fs == null ? "null" : fs.asString())
         	+ "]"; 
-    }
-
-    /**
-     * @ejb.select query="SELECT OBJECT(f) FROM File f WHERE f.instance.series.study.pk = ?1 AND f.fileSystem.pk = ?2"
-     *             transaction-type="Supports"
-     */
-    public abstract Collection ejbSelectFiles(java.lang.Long study_fk, java.lang.Long filesystem_fk)
-            throws FinderException;
-
-    /**    
-     * @ejb.interface-method
-     */
-    public Collection getFiles() throws FinderException {    	
-        return ejbSelectFiles(getStudy().getPk(), getFileSystem().getPk());
     }
 
     /**    

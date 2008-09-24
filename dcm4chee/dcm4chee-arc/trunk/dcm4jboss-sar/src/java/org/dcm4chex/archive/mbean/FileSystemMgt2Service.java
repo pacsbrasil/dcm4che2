@@ -41,13 +41,18 @@ import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
 
 import javax.ejb.FinderException;
 import javax.management.Attribute;
 import javax.management.Notification;
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
 
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.FileSystemStatus;
+import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.config.DeleterThresholds;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
@@ -71,6 +76,15 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     private static final String GROUP = "group";
 
     private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;
+
+    private final DeleteStudyDelegate deleteStudy =
+            new DeleteStudyDelegate(this);
+
+    private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
+
+    private String timerIDCheckFreeDiskSpace;
+
+    private long freeDiskSpaceInterval;
 
     private String defRetrieveAET;
 
@@ -117,7 +131,76 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     private boolean copyOnReadOnlyFS;
 
+    private int studyDeleteBatchSize;
+
     private FileSystemDTO storageFileSystem;
+
+    private Integer freeDiskSpaceListenerID;
+
+    public ObjectName getDeleteStudyServiceName() {
+        return deleteStudy.getDeleteStudyServiceName();
+    }
+
+    public void setDeleteStudyServiceName(ObjectName deleteStudyServiceName) {
+        deleteStudy.setDeleteStudyServiceName(deleteStudyServiceName);
+    }
+
+    public ObjectName getSchedulerServiceName() {
+        return scheduler.getSchedulerServiceName();
+    }
+
+    public void setSchedulerServiceName(ObjectName schedulerServiceName) {
+        scheduler.setSchedulerServiceName(schedulerServiceName);
+    }
+
+    public void setTimerIDCheckFreeDiskSpace(String timerIDCheckFreeDiskSpace) {
+        this.timerIDCheckFreeDiskSpace = timerIDCheckFreeDiskSpace;
+    }
+
+    public String getTimerIDCheckFreeDiskSpace() {
+        return timerIDCheckFreeDiskSpace;
+    }
+
+    public final String getFreeDiskSpaceInterval() {
+        return RetryIntervalls.formatIntervalZeroAsNever(freeDiskSpaceInterval);
+    }
+
+    public void setFreeDiskSpaceInterval(String interval) throws Exception {
+        this.freeDiskSpaceInterval = RetryIntervalls
+                .parseIntervalOrNever(interval);
+        if (getState() == STARTED) {
+            scheduler.stopScheduler(timerIDCheckFreeDiskSpace,
+                    freeDiskSpaceListenerID, freeDiskSpaceListener);
+            freeDiskSpaceListenerID = scheduler.startScheduler(
+                    timerIDCheckFreeDiskSpace, freeDiskSpaceInterval,
+                    freeDiskSpaceListener);
+        }
+    }
+
+    protected void startService() throws Exception {
+        freeDiskSpaceListenerID = scheduler.startScheduler(
+                timerIDCheckFreeDiskSpace, freeDiskSpaceInterval,
+                freeDiskSpaceListener);
+    }
+
+    protected void stopService() throws Exception {
+        scheduler.stopScheduler(timerIDCheckFreeDiskSpace,
+                freeDiskSpaceListenerID, freeDiskSpaceListener);
+    }
+
+    private final NotificationListener freeDiskSpaceListener =
+            new NotificationListener() {
+        public void handleNotification(Notification notif, Object handback) {
+            new Thread(new Runnable(){
+                public void run() {
+                    try {
+                        freeDiskSpace();
+                    } catch (Exception e) {
+                        log.error("Free Disk Space failed:", e);
+                    }
+                }}).start();
+        }
+    };
 
     public String getFileSystemGroupID() {
         return serviceName.getKeyProperty(GROUP);
@@ -152,7 +235,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public void setDefStorageDir(String defStorageDir) {
-        String trimmed = copyOnFSGroup.trim();
+        String trimmed = defStorageDir.trim();
         this.defStorageDir = trimmed.equalsIgnoreCase(NONE) ? null : trimmed;
     }
 
@@ -422,6 +505,14 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         this.copyOnReadOnlyFS = copyOnReadOnlyFS;
     }
 
+    public void setStudyDeleteBatchSize(int studyDeleteBatchSize) {
+        this.studyDeleteBatchSize = studyDeleteBatchSize;
+    }
+
+    public int getStudyDeleteBatchSize() {
+        return studyDeleteBatchSize;
+    }
+
     public String listAllFileSystems() throws Exception {
         FileSystemDTO[] fss = fileSystemMgt().getAllFileSystems();
         sortFileSystems(fss);
@@ -663,7 +754,65 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         return false;
     }
 
-    public int freeDiskSpace() {
-        return 0;
+    public int freeDiskSpace() throws Exception {
+        FileSystemMgt2 fsMgt = fileSystemMgt();
+        String fsGroup = getFileSystemGroupID();
+        FileSystemDTO[] fsDTOs = fsMgt.getFileSystemsOfGroup(fsGroup);
+        long usable = calcUsableDiskSpace(fsDTOs);
+        long threshold = getCurrentDeleterThreshold(fsMgt, fsDTOs);
+        long sizeToDel = threshold - usable;
+        long minAccessTime = 0;
+        int countStudies = 0;
+        while (sizeToDel > 0) {
+            log.info("Try to free " + sizeToDel
+                    + " of disk space on file system group "
+                    + getFileSystemGroupID());
+            Collection<DeleteStudyOrder> orders = 
+                    fsMgt.createDeleteOrdersForStudiesOnFSGroup(
+                    fsGroup, minAccessTime, studyDeleteBatchSize,
+                    externalRetrieveable, storageNotCommited, copyOnMedia,
+                    fsGroup, copyArchived, copyOnReadOnlyFS);
+            if (orders.isEmpty()) {
+                log.warn("Could not find any further study for deletion on file system group "
+                        + getFileSystemGroupID());
+                break;
+            }
+            log.info("Schedule " + orders.size()
+                    + " studies for deletion on file system group "
+                    + getFileSystemGroupID());
+            for (DeleteStudyOrder order : orders) {
+                order.setKeepDBRecords(keepDBRecords);
+                deleteStudy.scheduleDeleteOrder(order);
+                fsMgt.removeStudyOnFSRecord(order);
+                minAccessTime = order.getAccessTime();
+                sizeToDel -= fsMgt.getStudySize(order);
+                countStudies++;
+            }
+        }
+        if (deleteStudiesAfter > 0) {
+            long notAccessedAfter = System.currentTimeMillis()
+                    - deleteStudiesAfter;
+            Collection<DeleteStudyOrder> orders = 
+                fsMgt.createDeleteOrdersForStudiesOnFSGroupNotAccessedAfter(
+                fsGroup, notAccessedAfter,
+                externalRetrieveable, storageNotCommited, copyOnMedia,
+                fsGroup, copyArchived, copyOnReadOnlyFS);
+            if (!orders.isEmpty()) {
+                if (log.isInfoEnabled()) {
+                    log.info("Schedule " + orders.size()
+                            + " studies not accessed since "
+                            + new Date(notAccessedAfter)
+                            + " for deletion on file system group "
+                            + getFileSystemGroupID());
+                }
+                for (DeleteStudyOrder order : orders) {
+                    order.setKeepDBRecords(keepDBRecords);
+                    deleteStudy.scheduleDeleteOrder(order);
+                    fsMgt.removeStudyOnFSRecord(order);
+                    countStudies++;
+                }
+            }
+        }
+        return countStudies;
     }
 }

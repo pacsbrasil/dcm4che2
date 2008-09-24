@@ -442,6 +442,59 @@
     </descriptors>
   </attribute>
 
+  <attribute access="read-write"
+    getMethod="getStudyDeleteBatchSize"
+    setMethod="setStudyDeleteBatchSize">
+    <description><![CDATA[Defines maximal number of studies scheduled for
+      deletion in one transaction.]]> 
+    </description>
+    <name>StudyDeleteBatchSize</name>
+    <type>int</type>
+    <descriptors>
+      <value value="100" />
+    </descriptors>
+  </attribute>
+ 
+  <attribute access="read-write" getMethod="getFreeDiskSpaceInterval"
+    setMethod="setFreeDiskSpaceInterval">
+    <description><![CDATA[Interval in which operation <i>freeDiskSpace</i> is
+      invoked to schedule deletion of most infrequently accessed studies which
+      match the configured conditions from writable file systems of the file
+      system group managed my this service, if they were not accessed longer
+      than configured <i>DeleteStudiesAfter</i> or if <i>UsableDiskSpace</i>
+      falls below <i>CurrentDeleterThreshold</i>.
+      <p>Format: ##s (in seconds), ##m (in minutes), ##h (in hours).
+      <br>NEVER = do not invoke operation <i>freeDiskSpace</i> automatically
+      => disables automatically deletion of studies.]]>
+    </description>
+    <name>FreeDiskSpaceInterval</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="5m" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write" getMethod="getTimerIDCheckFreeDiskSpace"
+    setMethod="setTimerIDCheckFreeDiskSpace">
+    <description>Used internally. Do NOT modify. </description>
+    <name>TimerIDCheckFreeDiskSpace</name>
+    <type>java.lang.String</type>
+  </attribute>
+
+  <attribute access="read-write" getMethod="getSchedulerServiceName"
+    setMethod="setSchedulerServiceName">
+    <description>Used internally. Do NOT modify. </description>
+    <name>SchedulerServiceName</name>
+    <type>javax.management.ObjectName</type>
+  </attribute>
+
+  <attribute access="read-write" getMethod="getDeleteStudyServiceName"
+    setMethod="setDeleteStudyServiceName">
+    <description>Used internally. Do NOT modify. </description>
+    <name>DeleteStudyServiceName</name>
+    <type>javax.management.ObjectName</type>
+  </attribute>  
+
   <!-- Operations -->
   &defaultOperations;
 
@@ -544,11 +597,12 @@
    </operation>
 
   <operation impact="ACTION">
-    <description><![CDATA[Delete most infrequently accessed studies which
-      match the configured conditions from writable file systems of
-      the file system group managed my this service, if <i>UsableDiskSpace</i>
-      falls below <i>CurrentDeleterThreshold</i>. Returns the number of
-      deleted studies.]]>
+    <description><![CDATA[Schedules deletion of most infrequently accessed
+      studies which match the configured conditions from writable file systems
+      of the file system group managed my this service, if they were not
+      accessed longer than configured <i>DeleteStudiesAfter</i> or if
+      <i>UsableDiskSpace</i> falls below <i>CurrentDeleterThreshold</i>.
+      Returns the number of studies scheduled for deletion.]]>
     </description>
     <name>freeDiskSpace</name>
     <return-type>int</return-type>

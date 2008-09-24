@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mbean PUBLIC 
+    "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" 
+    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+<mbean>
+  <description><![CDATA[Delete Study Service. Perform scheduled deletion of
+    Studies.]]>
+  </description>
+  <descriptors>
+    <persistence persistPolicy="OnUpdate" />
+    <persistence-manager
+      value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+  </descriptors>
+  <class>org.dcm4chex.archive.mbean.DeleteStudyService</class>
+  <constructor>
+    <description>The default constructor</description>
+    <name>DeleteStudyService</name>
+  </constructor>
+
+  <!-- Attributes -->
+  &defaultAttributes;
+
+  <attribute access="read-write" getMethod="getRetryIntervalsForJmsOrder"
+    setMethod="setRetryIntervalsForJmsOrder">
+    <description><![CDATA[Number and interval of retries made for failed JMS
+      order, e.g., deleteStudy.
+      <br>Format:
+      <br>Comma separated list of <i>number</i>x<i>interval</i> pairs.
+      <br>The interval can be specified in seconds (##s), minutes (##m),
+      hours (##h) or days (##d).
+      <br>Example: 
+      <br>5x1m,10x10m means retry a total of 5 times, one minute apart for
+      each retry; then retry a total of 10 times, 10 minutes apart for each
+      retry.]]>
+    </description>
+    <name>RetryIntervalsForJmsOrder</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="5x1m,12x5m,24x1h,7x1d" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write" getMethod="getDeleteStudyQueueName"
+    setMethod="setDeleteStudyQueueName">
+    <description>Used internally. Do NOT modify.</description>
+    <name>DeleteStudyQueueName</name>
+    <type>java.lang.String</type>
+  </attribute>
+
+  <attribute access="read-write" getMethod="getJmsServiceName"
+    setMethod="setJmsServiceName">
+    <description>Used internally. Do NOT modify.</description>
+    <name>JMSServiceName</name>
+    <type>javax.management.ObjectName</type>
+  </attribute>
+
+  <!-- Operations -->
+  &defaultOperations;
+
+  <operation impact="ACTION">
+    <description>Schedule Delete Study Order.</description>
+    <name>scheduleDeleteOrder</name>
+    <parameter>
+      <name>order</name>
+      <type>org.dcm4chex.archive.common.DeleteStudyOrder</type>
+    </parameter>
+    <return-type>void</return-type>
+  </operation>
+
+  <!-- Notifications -->
+</mbean>
