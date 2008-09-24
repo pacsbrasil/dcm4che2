@@ -206,7 +206,6 @@ public class StringTemplateFilter implements Filter<ServletResponseItem>, MetaDa
 		
 	}
 
-	@Override
 	public void setMetaData(MetaDataBean metaDataBean) {
 		mdbModel = metaDataBean.getChild("model");
 	}

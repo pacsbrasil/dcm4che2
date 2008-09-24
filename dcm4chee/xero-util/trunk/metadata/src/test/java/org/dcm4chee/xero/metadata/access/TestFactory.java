@@ -8,7 +8,6 @@ import org.dcm4chee.xero.metadata.access.MapFactory;
 public class TestFactory implements MapFactory {
 	public static Object staticValue = new Object();
 	
-	@Override
 	public Object create(Map<String, Object> src) {
 		return staticValue;
 	}
