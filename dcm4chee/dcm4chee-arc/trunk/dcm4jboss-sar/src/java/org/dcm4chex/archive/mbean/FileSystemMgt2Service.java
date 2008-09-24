@@ -771,7 +771,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                     fsMgt.createDeleteOrdersForStudiesOnFSGroup(
                     fsGroup, minAccessTime, studyDeleteBatchSize,
                     externalRetrieveable, storageNotCommited, copyOnMedia,
-                    fsGroup, copyArchived, copyOnReadOnlyFS);
+                    copyOnFSGroup, copyArchived, copyOnReadOnlyFS);
             if (orders.isEmpty()) {
                 log.warn("Could not find any further study for deletion on file system group "
                         + getFileSystemGroupID());
@@ -796,7 +796,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                 fsMgt.createDeleteOrdersForStudiesOnFSGroupNotAccessedAfter(
                 fsGroup, notAccessedAfter,
                 externalRetrieveable, storageNotCommited, copyOnMedia,
-                fsGroup, copyArchived, copyOnReadOnlyFS);
+                copyOnFSGroup, copyArchived, copyOnReadOnlyFS);
             if (!orders.isEmpty()) {
                 if (log.isInfoEnabled()) {
                     log.info("Schedule " + orders.size()
