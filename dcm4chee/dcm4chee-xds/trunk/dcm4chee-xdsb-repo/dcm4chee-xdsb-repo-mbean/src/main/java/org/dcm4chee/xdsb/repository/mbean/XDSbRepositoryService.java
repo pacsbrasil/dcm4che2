@@ -339,18 +339,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
             log.debug("------------ProvideAndRegisterDocumentSetRequest:"+req);
             perfLogger.startSubEvent("LogAndVerify");
             if ( logReceivedMessage ) {
-                List<Document> docList = new ArrayList<Document>();
-                docList.addAll(req.getDocument());
-                req.getDocument().clear();
-                log.info(" Received ProvideAndRegisterDocumentSetRequest"+InfoSetUtil.marshallObject( objFac.createProvideAndRegisterDocumentSetRequest(req), indentXmlLog));
-                log.info("Documents:"+docList.size()+" DocumentElements in request. (Hidden in above xml representation!)");
-                Document doc;
-                for ( Iterator<Document> iter = docList.iterator() ; iter.hasNext() ; ) {
-                    doc = iter.next();
-                    log.info("Document:"+doc.getId()+" contentType:"+doc.getValue().getContentType()+
-                            " size:"+doc.getValue().getInputStream().available());
-                }
-                req.getDocument().addAll(docList);
+                log.info(InfoSetUtil.getLogMessage(req));
             }
             SubmitObjectsRequest submitRequest = req.getSubmitObjectsRequest();
             RegistryPackageType registryPackage = InfoSetUtil.getRegistryPackage(submitRequest);

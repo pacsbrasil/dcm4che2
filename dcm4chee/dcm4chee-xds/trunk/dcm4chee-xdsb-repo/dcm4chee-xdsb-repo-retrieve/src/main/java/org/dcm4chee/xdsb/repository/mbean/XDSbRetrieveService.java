@@ -46,6 +46,7 @@ import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -66,9 +67,12 @@ import org.dcm4chee.xds.common.audit.HttpUserInfo;
 import org.dcm4chee.xds.common.audit.XDSRetrieveMessage;
 import org.dcm4chee.xds.common.exception.XDSException;
 import org.dcm4chee.xds.common.infoset.ObjectFactory;
+import org.dcm4chee.xds.common.infoset.RegistryError;
+import org.dcm4chee.xds.common.infoset.RegistryErrorList;
 import org.dcm4chee.xds.common.infoset.RegistryResponseType;
 import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetRequestType;
 import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType;
+import org.dcm4chee.xds.common.infoset.ProvideAndRegisterDocumentSetRequestType.Document;
 import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetRequestType.DocumentRequest;
 import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType.DocumentResponse;
 import org.dcm4chee.xds.common.store.DocumentStoreDelegate;
@@ -107,7 +111,6 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
     private boolean logRemoteRequestMessages;
     private boolean logRemoteResponseMessages;
     private boolean indentXmlLog;
-    private boolean saveRequestAsFile;
     
     private Map<String, String> mapExternalRepositories = new HashMap<String, String>();
 
@@ -251,13 +254,6 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
     }
 
 
-    public boolean isSaveRequestAsFile() {
-        return saveRequestAsFile;
-    }
-    public void setSaveRequestAsFile(boolean saveRequestAsFile) {
-        this.saveRequestAsFile = saveRequestAsFile;
-    }
-
     public ObjectName getDocumentStoreService() {
         return docStoreDelegate.getDocumentStoreService();
     }
@@ -333,19 +329,13 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
         regRsp.setStatus(XDSConstants.XDS_B_STATUS_SUCCESS);
         rsp.setRegistryResponse(regRsp);
         if ( logResponseMessage) {
-            try {
-                log.info("RetrieveDocumentSetResponse:"+InfoSetUtil.marshallObject(
-                        objFac.createRetrieveDocumentSetResponse(rsp), indentXmlLog) );
-            } catch (JAXBException ignore) {
-                log.debug("Failed to log RetrieveDocumentSetResponse! Ignored", ignore);
-            }
+            log.info(InfoSetUtil.getLogMessage(rsp));
         }
         perfLogger.endSubEvent();
         perfLogger.flush();
         return rsp;
     }
 
-    
     private DocumentResponse getDocumentResponse(XDSDocument doc, String repositoryUniqueId) throws IOException {
         RetrieveDocumentSetResponseType.DocumentResponse docRsp;
         docRsp = objFac.createRetrieveDocumentSetResponseTypeDocumentResponse();
@@ -419,12 +409,7 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
                 }
                 RetrieveDocumentSetResponseType rsp = port.documentRepositoryRetrieveDocumentSet(req);
                 if ( logRemoteResponseMessages) {
-                    try {
-                        log.info("Remote RetrieveDocumentSetResponse:"+InfoSetUtil.marshallObject(
-                                objFac.createRetrieveDocumentSetResponse(rsp), indentXmlLog) );
-                    } catch (JAXBException ignore) {
-                        log.debug("Failed to log RetrieveDocumentSetResponse! Ignored", ignore);
-                    }
+                    log.info(InfoSetUtil.getLogMessage(rsp));
                 }
                 if ( checkResponse(rsp.getRegistryResponse()) ) {
                     log.info("Add "+rsp.getDocumentResponse().size()+" documents from remote repository!");

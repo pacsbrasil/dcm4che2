@@ -166,17 +166,6 @@
          <value value="true" />
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isSaveRequestAsFile"
-      setMethod="setSaveRequestAsFile">
-      <description>Save Provide And Register Document Set Request as file.
-      </description>
-      <name>SaveRequestAsFile</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute> 
    <attribute access="read-write" getMethod="getDocumentStoreService" setMethod="setDocumentStoreService">
       <description>Used internally - do NOT modify.</description>
       <name>DocumentStoreService</name>
