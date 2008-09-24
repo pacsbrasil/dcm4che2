@@ -41,6 +41,7 @@ package org.dcm4chee.xds.common.utils;
 import java.io.ByteArrayInputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -58,17 +59,25 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.dcm4chee.xds.common.infoset.ExternalIdentifierType;
 import org.dcm4chee.xds.common.infoset.ExtrinsicObjectType;
+import org.dcm4chee.xds.common.infoset.ObjectFactory;
 import org.dcm4chee.xds.common.infoset.ProvideAndRegisterDocumentSetRequestType;
+import org.dcm4chee.xds.common.infoset.RegistryError;
+import org.dcm4chee.xds.common.infoset.RegistryErrorList;
+import org.dcm4chee.xds.common.infoset.RegistryObjectListType;
 import org.dcm4chee.xds.common.infoset.RegistryObjectType;
 import org.dcm4chee.xds.common.infoset.RegistryPackageType;
+import org.dcm4chee.xds.common.infoset.RegistryResponseType;
+import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType;
 import org.dcm4chee.xds.common.infoset.SlotType1;
 import org.dcm4chee.xds.common.infoset.SubmitObjectsRequest;
 import org.dcm4chee.xds.common.infoset.ProvideAndRegisterDocumentSetRequestType.Document;
+import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType.DocumentResponse;
 import org.w3c.dom.Node;
 
 public class InfoSetUtil {
 
     private static JAXBContext jaxbContext;
+    private static ObjectFactory objFac = new ObjectFactory();
 
     public static Map getSlotsFromRegistryObject(RegistryObjectType ro) throws JAXBException {
         List slots = ro.getSlot();
@@ -124,7 +133,7 @@ public class InfoSetUtil {
         return null;
     }
 
-    public static Map getExtrinsicObjects(SubmitObjectsRequest so) {
+    public static Map<String,ExtrinsicObjectType> getExtrinsicObjects(SubmitObjectsRequest so) {
         Map map = new HashMap();
         List list = so.getRegistryObjectList().getIdentifiable();
         Object o;
@@ -140,9 +149,9 @@ public class InfoSetUtil {
         return map;
     }
 
-    public static Map getDocuments(ProvideAndRegisterDocumentSetRequestType req) {
+    public static Map<String,Document> getDocuments(ProvideAndRegisterDocumentSetRequestType req) {
         List docs = req.getDocument();
-        Map map = new HashMap(docs.size());
+        Map<String,Document> map = new HashMap<String,Document>(docs.size());
         Document doc;
         for ( Iterator iter = docs.iterator() ; iter.hasNext() ;) {
             doc = (Document) iter.next();
@@ -171,10 +180,13 @@ public class InfoSetUtil {
         return res.getNode();
     }
 
-    public static void writeObject(Object o, OutputStream os, boolean indent) throws JAXBException {
+    public static void writeObject(ProvideAndRegisterDocumentSetRequestType req, OutputStream os, boolean indent) throws JAXBException {
         Marshaller m = getJAXBContext().createMarshaller();
+        List saveList = new ArrayList(); 
+        saveList.addAll( (req).getDocument() );
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.valueOf(indent));
-        m.marshal(o, os);
+        m.marshal(req, os);
+        req.getDocument().addAll(saveList);
     }
 
     public static JAXBContext getJAXBContext() throws JAXBException {
@@ -182,6 +194,71 @@ public class InfoSetUtil {
             jaxbContext = JAXBContext.newInstance("org.dcm4chee.xds.common.infoset");
         }
         return jaxbContext;
+    }
+
+    public static String getLogMessage(ProvideAndRegisterDocumentSetRequestType req) {
+        try {
+            StringBuffer sb = new StringBuffer();
+            sb.append("ProvideAndRegisterDocumentSetRequest:\n");
+            List<Document> docList = new ArrayList<Document>();
+            docList.addAll(req.getDocument());
+            req.getDocument().clear();
+            sb.append(InfoSetUtil.marshallObject( objFac.createProvideAndRegisterDocumentSetRequest(req), true));
+            sb.append("Documents:").append(docList.size()).append(" DocumentElements in request. (Hidden in above xml representation!)");
+            Document doc;
+            for ( Iterator<Document> iter = docList.iterator() ; iter.hasNext() ; ) {
+                doc = iter.next();
+                sb.append("Document:").append(doc.getId()).append(" contentType:").append(doc.getValue().getContentType() )
+                        .append(" size:").append(doc.getValue().getInputStream().available());
+            }
+            req.getDocument().addAll(docList);
+            return sb.toString();
+        } catch (Exception ignore) {
+            return "Failed to log ProvideAndRegisterDocumentSetRequest! Ignored";
+        }
+    }
+    public static String getLogMessage(RetrieveDocumentSetResponseType rsp) {
+        try {
+            StringBuffer sb = new StringBuffer();
+            sb.append("RetrieveDocumentSetResponse:");
+            RegistryResponseType rRsp = rsp.getRegistryResponse();
+            sb.append("\nRequestId:").append(rRsp.getRequestId());
+            sb.append("\n   Status:").append(rRsp.getStatus());
+            appendErrorListLog(rRsp.getRegistryErrorList(), sb);
+            sb.append("\n   Status:").append(rRsp.getRegistryErrorList());
+            List<DocumentResponse> docRspList = rsp.getDocumentResponse();
+            int count = 1;
+            for ( DocumentResponse docRspItem : docRspList) {
+                sb.append("\nDocument #").append(count++);
+                sb.append("\n    DocumentUniqueId:").append(docRspItem.getDocumentUniqueId());
+                sb.append("\n            MimeType:").append(docRspItem.getMimeType());
+                sb.append("\n  RepositoryUniqueId:").append(docRspItem.getRepositoryUniqueId());
+                sb.append("\n     HomeCommunityId:").append(docRspItem.getHomeCommunityId());
+                sb.append("\n       Document size:").append(docRspItem.getDocument().getInputStream().available() );
+                sb.append("\n------------------------------------------------------");
+            }
+            sb.append("\n======================================================");
+            return sb.toString();
+        } catch (Exception ignore) {
+            return "Failed to log RetrieveDocumentSetResponse! Ignored";
+        }
+    }
+
+    
+    private static void appendErrorListLog(RegistryErrorList errList,
+            StringBuffer sb) {
+        if ( errList != null ) {
+            List<RegistryError> l = errList.getRegistryError();
+            sb.append("\nErrorlist:");
+            for ( RegistryError err : l ) {
+                sb.append("\n  ErrorCode:").append(err.getErrorCode())
+                    .append(" (").append(err.getCodeContext()).append(')');
+                sb.append("\n  Msg:").append(err.getValue());
+                sb.append("\n  Severity:").append(err.getSeverity());
+                sb.append("\n  Location:").append(err.getLocation());
+                sb.append("\n------------------------------------------------------");
+            }
+        }
     }
 
 }
