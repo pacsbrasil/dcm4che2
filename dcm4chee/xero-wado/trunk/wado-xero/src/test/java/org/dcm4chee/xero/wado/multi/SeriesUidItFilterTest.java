@@ -3,10 +3,8 @@ package org.dcm4chee.xero.wado.multi;
 import static org.easymock.classextension.EasyMock.*;
 import static org.dcm4chee.xero.wado.WadoParams.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.dcm4chee.xero.metadata.filter.Filter;
