@@ -132,8 +132,8 @@ public class JSTemplateTest {
 	  try {
 		 cx.evaluateString(scope, js, "<cmd>", 1, null);
 	  } catch (EcmaError e) {
-		 log.warn("Caught exception {} on line {}", e.getMessage(), e.getLineNumber());
-		 int line = e.getLineNumber();
+		 log.warn("Caught exception {} on line {}", e.getMessage(), e.lineNumber());
+		 int line = e.lineNumber();
 		 String[] splits = StringUtil.split(js, '\n', true);
 		 for (int i = Math.max(0, line - 5), n = Math.min(splits.length - 1, line + 5); i < n; i++) {
 			log.info("{}: {}", i + 1, splits[i]);
