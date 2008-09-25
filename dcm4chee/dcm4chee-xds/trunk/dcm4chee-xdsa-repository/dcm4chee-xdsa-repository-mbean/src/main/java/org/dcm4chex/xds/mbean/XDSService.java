@@ -70,18 +70,16 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
-import org.dcm4che2.audit.message.ActiveParticipant;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.util.UIDUtils;
+import org.dcm4chee.xds.common.delegate.XdsHttpCfgDelegate;
 import org.dcm4chee.xds.common.exception.XDSException;
 import org.dcm4chee.xds.common.store.DocumentStoreDelegate;
 import org.dcm4chee.xds.common.store.XDSDocument;
-import org.dcm4chee.xds.common.store.XDSDocumentWriter;
 import org.dcm4chee.xds.common.store.XDSDocumentWriterFactory;
 import org.dcm4chex.xds.UUID;
 import org.dcm4chex.xds.XDSDocumentMetadata;
@@ -90,8 +88,6 @@ import org.dcm4chex.xds.audit.XDSExportMessage;
 import org.dcm4chex.xds.audit.XDSImportMessage;
 import org.dcm4chex.xds.common.SoapBodyProvider;
 import org.dcm4chex.xds.common.XDSResponseObject;
-import org.dcm4chex.xds.mbean.store.DcmStorageImpl;
-import org.dcm4chex.xds.mbean.store.StoredDocument;
 import org.dcm4chex.xds.query.SQLQueryObject;
 import org.dcm4chex.xds.query.XDSQueryObject;
 import org.dcm4chex.xds.query.XDSQueryObjectFatory;
@@ -127,19 +123,10 @@ public class XDSService extends ServiceMBeanSupport {
 
 //  http attributes to document repository actor (synchron) 
     private String xdsRegistryURI;
-    private String proxyHost;
-    private int proxyPort;
-
-    private String keystoreURL = "resource:identity.p12";
-    private String keystorePassword;
-    private String trustStoreURL = "resource:cacerts.jks";
-    private String trustStorePassword;
-    private HostnameVerifier origHostnameVerifier = null;
-    private String allowedUrlHost = null;
-
     private String fetchNewPatIDURL;
 
     private DocumentStoreDelegate docStoreDelegate = new DocumentStoreDelegate();
+    private XdsHttpCfgDelegate httpCfgDelegate = new XdsHttpCfgDelegate();
 
     private String retrieveURI;
 
@@ -195,88 +182,6 @@ public class XDSService extends ServiceMBeanSupport {
      */
     public void setForceSQLQuery(boolean forceSQLQuery) {
         this.forceSQLQuery = forceSQLQuery;
-    }
-    /**
-     * @return Returns the proxyHost.
-     */
-    public String getProxyHost() {
-        return proxyHost == null ? "NONE" : proxyHost;
-    }
-    /**
-     * @param proxyHost The proxyHost to set.
-     */
-    public void setProxyHost(String proxyHost) {
-        if ( "NONE".equals(proxyHost) ) 
-            this.proxyHost = null;
-        else
-            this.proxyHost = proxyHost;
-    }
-    /**
-     * @return Returns the proxyPort.
-     */
-    public int getProxyPort() {
-        return proxyPort;
-    }
-    /**
-     * @param proxyPort The proxyPort to set.
-     */
-    public void setProxyPort(int proxyPort) {
-        this.proxyPort = proxyPort;
-    }
-
-    /**
-     * @param keyStorePassword The keyStorePassword to set.
-     */
-    public void setKeyStorePassword(String keyStorePassword) {
-        if ( "NONE".equals(keyStorePassword)) keyStorePassword = null;
-        this.keystorePassword = keyStorePassword;
-    }
-    /**
-     * @return Returns the keyStoreURL.
-     */
-    public String getKeyStoreURL() {
-        return keystoreURL;
-    }
-    /**
-     * @param keyStoreURL The keyStoreURL to set.
-     */
-    public void setKeyStoreURL(String keyStoreURL) {
-        this.keystoreURL = keyStoreURL;
-    }
-    /**
-     * @return Returns the trustStore.
-     */
-    public String getTrustStoreURL() {
-        return trustStoreURL == null ? "NONE" : trustStoreURL;
-    }
-    /**
-     * @param trustStore The trustStore to set.
-     */
-    public void setTrustStoreURL(String trustStoreURL) {
-        if ( "NONE".equals(trustStoreURL ) ) {
-            this.trustStoreURL = null;
-        } else {
-            this.trustStoreURL = trustStoreURL;
-        }
-    }
-    /**
-     * @param trustStorePassword The trustStorePassword to set.
-     */
-    public void setTrustStorePassword(String trustStorePassword) {
-        if ( "NONE".equals(trustStorePassword)) trustStorePassword = null;
-        this.trustStorePassword = trustStorePassword;
-    }
-    /**
-     * @return Returns the allowedUrlHost.
-     */
-    public String getAllowedUrlHost() {
-        return allowedUrlHost == null ? "CERT" : allowedUrlHost;
-    }
-    /**
-     * @param allowedUrlHost The allowedUrlHost to set.
-     */
-    public void setAllowedUrlHost(String allowedUrlHost) {
-        this.allowedUrlHost = "CERT".equals(allowedUrlHost) ? null : allowedUrlHost;
     }
 
     public ObjectName getXDSStoreService() {
@@ -700,13 +605,13 @@ public class XDSService extends ServiceMBeanSupport {
     public SOAPMessage sendSOAP( SOAPMessage message, String url ) throws SOAPException {
         SOAPConnection conn = null;
         try {
-            log.debug("Send request to "+url+" (proxy:"+proxyHost+":"+proxyPort+")");
-            configProxyAndTLS(url);
+            log.debug("Send request to "+url);
+            httpCfgDelegate.configTLS(url);
             SOAPConnectionFactory connFactory = SOAPConnectionFactory.newInstance();
 
             conn = connFactory.createConnection();
             log.info("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-            log.info("send registry request to "+url+" (proxy:"+proxyHost+":"+proxyPort+")");
+            log.info("send registry request to "+url);
             log.info("-------------------------------- request  ----------------------------------");
             dumpSOAPMessage(message);
             SOAPMessage response = conn.call(message, url);
@@ -858,7 +763,7 @@ public class XDSService extends ServiceMBeanSupport {
 
     public String fetchNewPatientIDfromNIST() throws IOException {
         URL url = new URL(fetchNewPatIDURL);
-        configProxyAndTLS(url.getProtocol());
+        httpCfgDelegate.configTLS(url.getProtocol());
         log.info("fetchNewPatIDURL:"+fetchNewPatIDURL);
         InputStream is = url.openStream();
         byte[] buffer = new byte[4096];
@@ -875,55 +780,6 @@ public class XDSService extends ServiceMBeanSupport {
         if ( pos == -1 ) pos = response.lastIndexOf("="); //in Attribute?
         response = response.substring(pos+1);
         return response;
-    }
-    /**
-     * 
-     */
-    private void configProxyAndTLS(String url) {
-        String protocol = url.startsWith("https") ? "https" : "http";
-        if ( proxyHost != null && proxyHost.trim().length() > 1 ) {
-            System.setProperty( protocol+".proxyHost", proxyHost);
-            System.setProperty(protocol+".proxyPort", String.valueOf(proxyPort));
-        } else {
-            System.setProperty(protocol+".proxyHost", "");
-            System.setProperty(protocol+".proxyPort", "");
-        }
-        if ( "https".equals(protocol) && trustStoreURL != null ) {
-            String keyStorePath = resolvePath(keystoreURL);
-            String trustStorePath = resolvePath(trustStoreURL);
-            System.setProperty("javax.net.ssl.keyStore", keyStorePath);
-            if ( keystorePassword != null ) 
-                System.setProperty("javax.net.ssl.keyStorePassword", keystorePassword);
-            System.setProperty("javax.net.ssl.keyStoreType","PKCS12");
-            System.setProperty("javax.net.ssl.trustStore", trustStorePath);
-            if ( trustStorePassword != null )
-                System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
-            if ( origHostnameVerifier == null) {
-                origHostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier();
-                HostnameVerifier hv = new HostnameVerifier() {
-                    public boolean verify(String urlHostName, SSLSession session) {
-                        if ( !origHostnameVerifier.verify ( urlHostName, session)) {
-                            if ( isAllowedUrlHost(urlHostName)) {
-                                System.out.println("Warning: URL Host: "+urlHostName+" vs. "+session.getPeerHost());
-                            } else {
-                                return false;
-                            }
-                        }
-                        return true;
-                    }
-
-                    private boolean isAllowedUrlHost(String urlHostName) {
-                        if (allowedUrlHost == null) return false;
-                        if ( allowedUrlHost.equals("*")) return true;
-                        return allowedUrlHost.equals(urlHostName);
-                    }
-
-                };
-
-                HttpsURLConnection.setDefaultHostnameVerifier(hv);
-            }
-        }
-
     }
     public static String resolvePath(String fn) {
         File f = new File(fn);
