@@ -74,6 +74,7 @@ import org.dcm4chee.xds.common.audit.HttpUserInfo;
 import org.dcm4chee.xds.common.audit.XDSExportMessage;
 import org.dcm4chee.xds.common.audit.XDSImportMessage;
 import org.dcm4chee.xds.common.delegate.XDSbServiceDelegate;
+import org.dcm4chee.xds.common.delegate.XdsHttpCfgDelegate;
 import org.dcm4chee.xds.common.exception.XDSException;
 import org.dcm4chee.xds.common.infoset.ExtrinsicObjectType;
 import org.dcm4chee.xds.common.infoset.ObjectFactory;
@@ -122,15 +123,6 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
     
     private String repositoryUniqueId;
     private String xdsRegistryURI;
-    private String proxyHost;
-    private int proxyPort;
-
-    private String keystoreURL = "resource:identity.p12";
-    private String keystorePassword;
-    private String trustStoreURL = "resource:cacerts.jks";
-    private String trustStorePassword;
-    private HostnameVerifier origHostnameVerifier = null;
-    private String allowedUrlHost = null;
 
     private String retrieveURI;
     private boolean logReceivedMessage;
@@ -144,6 +136,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 
     private DocumentStoreDelegate docStoreDelegate = new DocumentStoreDelegate();
     private XDSbServiceDelegate xdsbServiceDelegate = new XDSbServiceDelegate();
+    private XdsHttpCfgDelegate httpCfgDelegate = new XdsHttpCfgDelegate();
     
     private ObjectFactory objFac = new ObjectFactory();
     private XDSDocumentWriterFactory wrFac = XDSDocumentWriterFactory.getInstance();
@@ -166,89 +159,6 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
      */
     public void setXDSRegistryURI(String xdsRegistryURI) {
         this.xdsRegistryURI = xdsRegistryURI;
-    }
-
-    /**
-     * @return Returns the proxyHost.
-     */
-    public String getProxyHost() {
-        return proxyHost == null ? NONE : proxyHost;
-    }
-    /**
-     * @param proxyHost The proxyHost to set.
-     */
-    public void setProxyHost(String proxyHost) {
-        if ( NONE.equals(proxyHost) ) 
-            this.proxyHost = null;
-        else
-            this.proxyHost = proxyHost;
-    }
-    /**
-     * @return Returns the proxyPort.
-     */
-    public int getProxyPort() {
-        return proxyPort;
-    }
-    /**
-     * @param proxyPort The proxyPort to set.
-     */
-    public void setProxyPort(int proxyPort) {
-        this.proxyPort = proxyPort;
-    }
-
-    /**
-     * @param keyStorePassword The keyStorePassword to set.
-     */
-    public void setKeyStorePassword(String keyStorePassword) {
-        if ( NONE.equals(keyStorePassword)) keyStorePassword = null;
-        this.keystorePassword = keyStorePassword;
-    }
-    /**
-     * @return Returns the keyStoreURL.
-     */
-    public String getKeyStoreURL() {
-        return keystoreURL;
-    }
-    /**
-     * @param keyStoreURL The keyStoreURL to set.
-     */
-    public void setKeyStoreURL(String keyStoreURL) {
-        this.keystoreURL = keyStoreURL;
-    }
-    /**
-     * @return Returns the trustStore.
-     */
-    public String getTrustStoreURL() {
-        return trustStoreURL == null ? NONE : trustStoreURL;
-    }
-    /**
-     * @param trustStore The trustStore to set.
-     */
-    public void setTrustStoreURL(String trustStoreURL) {
-        if ( NONE.equals(trustStoreURL ) ) {
-            this.trustStoreURL = null;
-        } else {
-            this.trustStoreURL = trustStoreURL;
-        }
-    }
-    /**
-     * @param trustStorePassword The trustStorePassword to set.
-     */
-    public void setTrustStorePassword(String trustStorePassword) {
-        if ( NONE.equals(trustStorePassword)) trustStorePassword = null;
-        this.trustStorePassword = trustStorePassword;
-    }
-    /**
-     * @return Returns the allowedUrlHost.
-     */
-    public String getAllowedUrlHost() {
-        return allowedUrlHost == null ? CERT : allowedUrlHost;
-    }
-    /**
-     * @param allowedUrlHost The allowedUrlHost to set.
-     */
-    public void setAllowedUrlHost(String allowedUrlHost) {
-        this.allowedUrlHost = CERT.equals(allowedUrlHost) ? null : allowedUrlHost;
     }
 
     /**
@@ -406,7 +316,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         }
         perfLogger.startSubEvent("RegisterDocuments");
         perfLogger.setSubEventProperty("RegistryURI", xdsRegistryURI);
-        configProxyAndTLS(xdsRegistryURI);
+        httpCfgDelegate.configTLS(xdsRegistryURI);
         DocumentRegistryPortType port = new DocumentRegistryService().getDocumentRegistryPortSoap12();
         Map<String, Object> reqCtx = ((BindingProvider)port).getRequestContext();
         List customHandlerChain = new ArrayList();
@@ -595,56 +505,6 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         } else {
             return new String[]{"1|"+retrieveURI, "2|"+uidPart, "3|"+pctPart};
         }
-    }
-
-    /**
-     * 
-     */
-    private void configProxyAndTLS(String url) {
-        String protocol = url.startsWith("https") ? "https" : "http";
-        if ( proxyHost != null && proxyHost.trim().length() > 1 ) {
-            System.setProperty( protocol+".proxyHost", proxyHost);
-            System.setProperty(protocol+".proxyPort", String.valueOf(proxyPort));
-        } else {
-            System.setProperty(protocol+".proxyHost", "");
-            System.setProperty(protocol+".proxyPort", "");
-        }
-        if ( "https".equals(protocol) && trustStoreURL != null ) {
-            String keyStorePath = resolvePath(keystoreURL);
-            String trustStorePath = resolvePath(trustStoreURL);
-            System.setProperty("javax.net.ssl.keyStore", keyStorePath);
-            if ( keystorePassword != null ) 
-                System.setProperty("javax.net.ssl.keyStorePassword", keystorePassword);
-            System.setProperty("javax.net.ssl.keyStoreType","PKCS12");
-            System.setProperty("javax.net.ssl.trustStore", trustStorePath);
-            if ( trustStorePassword != null )
-                System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
-            if ( origHostnameVerifier == null) {
-                origHostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier();
-                HostnameVerifier hv = new HostnameVerifier() {
-                    public boolean verify(String urlHostName, SSLSession session) {
-                        if ( !origHostnameVerifier.verify ( urlHostName, session)) {
-                            if ( isAllowedUrlHost(urlHostName)) {
-                                log.warn("Warning: URL Host: "+urlHostName+" vs. "+session.getPeerHost());
-                            } else {
-                                return false;
-                            }
-                        }
-                        return true;
-                    }
-
-                    private boolean isAllowedUrlHost(String urlHostName) {
-                        if (allowedUrlHost == null) return false;
-                        if ( allowedUrlHost.equals("*")) return true;
-                        return allowedUrlHost.equals(urlHostName);
-                    }
-
-                };
-
-                HttpsURLConnection.setDefaultHostnameVerifier(hv);
-            }
-        }           
-
     }
 
     public static String resolvePath(String fn) {
