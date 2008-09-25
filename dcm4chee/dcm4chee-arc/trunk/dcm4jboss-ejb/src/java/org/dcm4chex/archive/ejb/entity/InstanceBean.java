@@ -519,15 +519,16 @@ public abstract class InstanceBean implements EntityBean {
     public abstract int ejbSelectLocalAvailability(Long pk)
             throws FinderException;
 
-    private boolean updateAvailability(Long pk, String retrieveAETs)
-            throws FinderException {
+    private boolean updateAvailability(Long pk, String retrieveAETs,
+            int availabilityOfExternalRetrieveable) throws FinderException {
         int availability = Availability.UNAVAILABLE;
         MediaLocal media;
         if (retrieveAETs != null)
             availability = ejbSelectLocalAvailability(pk);
-        else if (getExternalRetrieveAET() != null)
-            availability = Availability.NEARLINE;
-        else if ((media = getMedia()) != null
+        if (getExternalRetrieveAET() != null)
+            availability = Math.min(availability, availabilityOfExternalRetrieveable);
+        if (availability == Availability.UNAVAILABLE
+                && (media = getMedia()) != null
                 && media.getMediaStatus() == MediaDTO.COMPLETED)
             availability = Availability.OFFLINE;
         boolean updated;
@@ -541,14 +542,15 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.interface-method
      */
     public boolean updateDerivedFields(boolean retrieveAETs,
-            boolean availability) throws FinderException {
+            boolean availability, int availabilityOfExtRetr)
+            throws FinderException {
         boolean updated = false;
         final Long pk = getPk();
         if (retrieveAETs)
             if (updateRetrieveAETs(pk))
                 updated = true;
         if (availability)
-            if (updateAvailability(pk, getRetrieveAETs()))
+            if (updateAvailability(pk, getRetrieveAETs(), availabilityOfExtRetr))
                 updated = true;
         return updated;
     }

@@ -20,6 +20,35 @@
   <!-- Attributes -->
   &defaultAttributes;
 
+  <attribute access="read-write"
+    getMethod="getAvailabilityOfExternalRetrieveable"
+    setMethod="setAvailabilityOfExternalRetrieveable">
+    <description><![CDATA[Defines Instance Availability of studies which
+      becomes only external retrievable after deletion from file systems
+      accessable by this archive instance. Enumerated values: "ONLINE",
+      "NEARLINE", "OFFLINE", "UNAVAILABLE"]]>
+    </description>
+    <name>AvailabilityOfExternalRetrieveable</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="NEARLINE" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write" getMethod="isCreateIANonStudyDelete"
+    setMethod="setCreateIANonStudyDelete">
+    <description><![CDATA[Defines if an Instance Availability Notification
+      shall be created for deleted studies to notify remote Application
+      Entities configured in the IAN Service about changes of the Instance
+      Availability and Retrieve AETs.]]>
+    </description>
+    <name>CreateIANonStudyDelete</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="false" />
+    </descriptors>
+  </attribute>
+
   <attribute access="read-write" getMethod="getRetryIntervalsForJmsOrder"
     setMethod="setRetryIntervalsForJmsOrder">
     <description><![CDATA[Number and interval of retries made for failed JMS
@@ -68,4 +97,13 @@
   </operation>
 
   <!-- Notifications -->
+
+  <notification>
+    <description>The notification sent for each deleted study, used by
+      the IAN SCU Service to notify configured remote Application Entities
+      about changes of the Instance Availability and Retrieve AETs.
+    </description>
+    <name>javax.management.Notification</name>
+    <notification-type>org.dcm4chex.archive.notif.StudyDeleted</notification-type>
+  </notification>
 </mbean>

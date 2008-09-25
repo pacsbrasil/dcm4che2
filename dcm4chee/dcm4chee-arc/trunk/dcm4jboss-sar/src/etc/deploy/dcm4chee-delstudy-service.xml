@@ -17,10 +17,11 @@
   <mbean code="org.dcm4chex.archive.mbean.DeleteStudyService"
       name="dcm4chee.archive:service=DeleteStudy"
       xmbean-dd="xmdesc/dcm4chee-delstudy-xmbean.xml">
+    <attribute name="DeleteStudyQueueName">DeleteStudy</attribute>
     <depends optional-attribute-name="JMSServiceName"
       >dcm4chee.archive:service=JMS</depends>
     <depends>dcm4chee.archive:service=Queue,name=DeleteStudy</depends>
-    <attribute name="DeleteStudyQueueName">DeleteStudy</attribute>
+    <depends>jboss.j2ee:jndiName=ejb/FileSystemMgt2,service=EJB</depends>
   </mbean>
 
 </server>

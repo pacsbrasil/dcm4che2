@@ -40,6 +40,7 @@ package org.dcm4chex.archive.ejb.session;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
@@ -53,12 +54,22 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
-import org.dcm4chex.archive.common.FileSystemStatus;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
+import org.dcm4chex.archive.common.FileSystemStatus;
+import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
+import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
@@ -82,6 +93,9 @@ import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
 public abstract class FileSystemMgt2Bean implements SessionBean {
 
     private static Logger log = Logger.getLogger(FileSystemMgt2Bean.class);
+
+    private static final int[] IAN_PAT_TAGS = { Tags.SpecificCharacterSet,
+            Tags.PatientName, Tags.PatientID };
 
     private FileSystemLocalHome fileSystemHome;
     private StudyLocalHome studyHome;
@@ -365,5 +379,107 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             }
         }
         return orders;
+    }
+
+    /**    
+     * @ejb.interface-method
+     */
+    public Dataset createIAN(DeleteStudyOrder order) throws FinderException {
+        boolean keepDBRecords = order.isKeepDBRecords();
+        StudyLocal study = studyHome.findByPrimaryKey(order.getStudyPk());
+        PatientLocal pat = study.getPatient();
+        Dataset ian = DcmObjectFactory.getInstance().newDataset();
+        ian.putAll(pat.getAttributes(false).subSet(IAN_PAT_TAGS));
+        ian.putSH(Tags.StudyID, study.getStudyId());
+        ian.putUI(Tags.StudyInstanceUID, study.getStudyIuid());
+        DcmElement refPPSSeq = ian.putSQ(Tags.RefPPSSeq);
+        HashSet ppsuids = new HashSet();
+        DcmElement refSerSeq = ian.putSQ(Tags.RefSeriesSeq);
+        Collection seriess = study.getSeries();
+        for (Iterator siter = seriess.iterator(); siter.hasNext();) {
+            SeriesLocal series = (SeriesLocal) siter.next();
+            Dataset serAttrs = series.getAttributes(false);
+            Dataset refPPS = serAttrs.getItem(Tags.RefPPSSeq);
+            if (refPPS != null
+                    && ppsuids.add(refPPS.getString(Tags.RefSOPInstanceUID))) {
+                refPPSSeq.addItem(refPPS);
+            }
+            Dataset refSer = refSerSeq.addNewItem();
+            refSer.putUI(Tags.SeriesInstanceUID, series.getSeriesIuid());
+            DcmElement refSopSeq = refSer.putSQ(Tags.RefSOPSeq);
+            Collection insts = series.getInstances();
+            for (Iterator iiter = insts.iterator(); iiter.hasNext();) {
+                InstanceLocal inst = (InstanceLocal) iiter.next();
+                Dataset refSOP = refSopSeq.addNewItem();
+                refSOP.putUI(Tags.RefSOPClassUID, inst.getSopCuid());
+                refSOP.putUI(Tags.RefSOPInstanceUID, inst.getSopIuid());
+                DatasetUtils.putRetrieveAET(refSOP, inst.getRetrieveAETs(),
+                        inst.getExternalRetrieveAET());
+                refSOP.putCS(Tags.InstanceAvailability, Availability.toString(
+                        keepDBRecords ? inst.getAvailabilitySafe()
+                                      : Availability.UNAVAILABLE));
+             }
+        }
+        return ian;
+    }
+
+    /**    
+     * @ejb.interface-method
+     */
+    public String[] deleteStudy(DeleteStudyOrder order,
+            int availabilityOfExternalRetrieveable) {
+        try {
+            long fsPk = order.getFsPk();
+            boolean keepDBRecords = order.isKeepDBRecords();
+            StudyLocal study = studyHome.findByPrimaryKey(order.getStudyPk());
+            FileSystemLocal fs = fileSystemHome.findByPrimaryKey(fsPk);
+            String fsPath = fs.getDirectoryPath();
+            Collection files = study.getFiles(order.getFsPk());
+            String[] fpaths = new String[files.size()];
+            int i = 0;
+            for (Iterator iter = files.iterator(); iter.hasNext(); i++) {
+                FileLocal f = (FileLocal) iter.next();
+                fpaths[i] = fsPath + '/' + f.getFilePath();
+                if (keepDBRecords) {
+                    f.remove();
+                }
+            }
+            if (keepDBRecords) {
+                Collection seriess = study.getSeries();
+                for (Iterator siter = seriess.iterator(); siter.hasNext();) {
+                    SeriesLocal series = (SeriesLocal) siter.next();
+                    Collection insts = series.getInstances();
+                    for (Iterator iiter = insts.iterator(); iiter.hasNext();) {
+                        InstanceLocal inst = (InstanceLocal) iiter.next();
+                        inst.updateDerivedFields(true, true,
+                                availabilityOfExternalRetrieveable);
+                    }
+                    series.updateDerivedFields(false, true, false, false, true);
+                }
+                study.updateDerivedFields(false, true, false, false, true, false);
+            } else {
+                // Cascade-delete the study
+                // FIXME: this will delete files stored on all file systems,
+                // but currently we only deleted the one specified.
+                study.remove();
+                deletePatientWithoutObjects(study.getPatient());
+            }
+            return fpaths;
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        } catch (RemoveException e) {
+            throw new EJBException(e);
+        }
+    }
+
+    private void deletePatientWithoutObjects(PatientLocal patient)
+            throws RemoveException {
+        if ( patient.getStudies().size() == 0 &&
+                patient.getMwlItems().size() == 0 &&
+                patient.getGsps().size() == 0 &&
+                patient.getMpps().size() == 0 &&
+                patient.getGppps().size() == 0 ) {
+            patient.remove();
+        }
     }
 }

@@ -42,7 +42,6 @@ package org.dcm4chex.archive.ejb.session;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 
 import javax.ejb.EJBException;
@@ -54,20 +53,15 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
-import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
-import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 
 /**
  * 
  * @author franz.willer@gwi-ag.com
- * @version $Revision$ $Date: 2006-11-07 10:35:31 +0100 (Tue, 07 Nov
- *          2006) $
+ * @version $Revision$ $Date$
  * @since 25.03.2005
  * 
  * @ejb.bean name="ConsistencyCheck" type="Stateless" view-type="remote"
@@ -157,9 +151,11 @@ public abstract class ConsistencyCheckBean implements SessionBean {
     }
 
     /**
+     * @param availabilityOfExternalRetrieveable 
      * @ejb.interface-method
      */
-    public boolean updateStudy(long study_pk) {
+    public boolean updateStudy(long study_pk,
+            int availabilityOfExternalRetrieveable) {
         boolean updated = false;
         try {
             StudyLocal study = studyHome.findByPrimaryKey(new Long(study_pk));
@@ -174,7 +170,8 @@ public abstract class ConsistencyCheckBean implements SessionBean {
                 Iterator iter1 = instances.iterator();
                 while (iter1.hasNext()) {
                     instance = (InstanceLocal) iter1.next();
-                    if (instance.updateDerivedFields(true, true)) {
+                    if (instance.updateDerivedFields(true, true,
+                            availabilityOfExternalRetrieveable)) {
                         log.info("Instance " + instance.getSopIuid()
                                 + " updated!");
                         updated = true;

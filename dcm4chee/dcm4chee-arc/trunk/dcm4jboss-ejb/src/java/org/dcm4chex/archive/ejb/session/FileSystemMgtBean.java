@@ -372,7 +372,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
                 instance = ((FileLocal) iter.next()).getInstance();
                 if (instance != null
                         && instance.updateDerivedFields(retrieveAETs,
-                                availability)) {
+                                availability, Availability.NEARLINE)) {
                     seriess.add(instance.getSeries());
                 }
             }
@@ -689,7 +689,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
                 // Delete the file record from database
                 fileLocal.remove();
 
-                il.updateDerivedFields(true, true);
+                il.updateDerivedFields(true, true, Availability.NEARLINE);
                 int avail = il.getAvailabilitySafe();
                 refSOP.putCS(Tags.InstanceAvailability, Availability
                         .toString(avail));

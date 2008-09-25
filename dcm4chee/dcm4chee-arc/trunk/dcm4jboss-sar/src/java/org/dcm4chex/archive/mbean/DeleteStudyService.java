@@ -37,21 +37,29 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.archive.mbean;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
+import javax.management.Notification;
 import javax.management.ObjectName;
 
+import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.common.ActionOrder;
+import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.BaseJmsOrder;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.config.RetryIntervalls;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
+import org.dcm4chex.archive.notif.StudyDeleted;
+import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -62,13 +70,32 @@ import org.jboss.system.ServiceMBeanSupport;
 public class DeleteStudyService extends ServiceMBeanSupport
         implements MessageListener {
 
-    private static final String DATE_TIME_FORMAT = "yyyy/MM/dd HH:mm:ss";
-
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
 
     private String deleteStudyQueueName;
 
     private RetryIntervalls retryIntervalsForJmsOrder = new RetryIntervalls();
+
+    private int availabilityOfExternalRetrieveable;
+
+    private boolean createIANonStudyDelete = false;
+
+    public String getAvailabilityOfExternalRetrieveable() {
+        return Availability.toString(availabilityOfExternalRetrieveable);
+    }
+
+    public void setAvailabilityOfExternalRetrieveable(String availability) {
+        this.availabilityOfExternalRetrieveable =
+                Availability.toInt(availability.trim());
+    }
+
+    public boolean isCreateIANonStudyDelete() {
+        return createIANonStudyDelete;
+    }
+
+    public void setCreateIANonStudyDelete(boolean createIANonStudyDelete) {
+        this.createIANonStudyDelete = createIANonStudyDelete;
+    }
 
     public final String getRetryIntervalsForJmsOrder() {
         return retryIntervalsForJmsOrder.toString();
@@ -110,8 +137,7 @@ public class DeleteStudyService extends ServiceMBeanSupport
             throws Exception {
         if (log.isInfoEnabled()) {
             String scheduledTimeStr = scheduledTime > 0
-                    ? new SimpleDateFormat(DATE_TIME_FORMAT)
-                        .format(new Date(scheduledTime))
+                    ? new Date(scheduledTime).toString()
                     : "now";
             log.info("Scheduling job [" + order.toIdString() + "] at "
                     + scheduledTimeStr + ". Retry times: "
@@ -185,8 +211,55 @@ public class DeleteStudyService extends ServiceMBeanSupport
         }
     }
 
-    private void deleteStudy(DeleteStudyOrder order) {
-        // TODO Auto-generated method stub
-        
+    private void deleteStudy(DeleteStudyOrder order) throws Exception {
+        FileSystemMgt2 fsMgt = fileSystemMgt();
+        Dataset ian = null;
+        if (createIANonStudyDelete && !order.isKeepDBRecords()) {
+            ian = fsMgt.createIAN(order);
+        }
+        String[] filePaths = fsMgt.deleteStudy(order,
+                availabilityOfExternalRetrieveable);
+        for (int i = 0; i < filePaths.length; i++) {
+            delete(FileUtils.toFile(filePaths[i]));
+        }
+        if (createIANonStudyDelete && order.isKeepDBRecords()) {
+            ian = fsMgt.createIAN(order);
+        }
+        if (createIANonStudyDelete) {
+            sendJMXNotification(new StudyDeleted(ian));
+        }
+    }
+
+    private boolean delete(File file) {
+        log.info("M-DELETE file: " + file);
+        if (!file.exists()) {
+            log.warn("File: " + file + " was already deleted");
+            return true;
+        }
+        if (!file.delete()) {
+            log.warn("Failed to delete file: " + file);
+            return false;
+        }
+        // purge empty series and study directory
+        File seriesDir = file.getParentFile();
+        if (seriesDir.delete()) {
+            seriesDir.getParentFile().delete();
+        }
+        return true;
+    }
+
+    static FileSystemMgt2 fileSystemMgt() throws Exception {
+        FileSystemMgt2Home home = (FileSystemMgt2Home) EJBHomeFactory
+                .getFactory().lookup(FileSystemMgt2Home.class,
+                        FileSystemMgt2Home.JNDI_NAME);
+        return home.create();
+    }
+
+    void sendJMXNotification(Object o) {
+        long eventID = super.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(o.getClass().getName(), this,
+                eventID);
+        notif.setUserData(o);
+        super.sendNotification(notif);
     }
 }

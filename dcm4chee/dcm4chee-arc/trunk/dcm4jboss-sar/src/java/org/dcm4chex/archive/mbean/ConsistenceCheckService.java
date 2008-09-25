@@ -49,6 +49,7 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
+import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.ConsistencyCheck;
 import org.dcm4chex.archive.ejb.interfaces.ConsistencyCheckHome;
@@ -66,6 +67,7 @@ public class ConsistenceCheckService extends ServiceMBeanSupport {
 
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
+    private int availabilityOfExternalRetrieveable;
     private long taskInterval = 0L;
     private long minStudyAge;
     private long maxStudyAge;
@@ -100,6 +102,15 @@ public class ConsistenceCheckService extends ServiceMBeanSupport {
             }
         }
     };
+
+    public String getAvailabilityOfExternalRetrieveable() {
+        return Availability.toString(availabilityOfExternalRetrieveable);
+    }
+
+    public void setAvailabilityOfExternalRetrieveable(String availability) {
+        this.availabilityOfExternalRetrieveable =
+                Availability.toInt(availability.trim());
+    }
 
     public ObjectName getSchedulerServiceName() {
         return scheduler.getSchedulerServiceName();
@@ -230,7 +241,8 @@ public class ConsistenceCheckService extends ServiceMBeanSupport {
         long[] studyPks = checker.findStudiesToCheck(createdAfter,
                 createdBefore, checkedBefore, this.limitNumberOfStudiesPerTask);
         for (int i = 0, len = studyPks.length; i < len; i++) {
-            if (checker.updateStudy(studyPks[i])) {
+            if (checker.updateStudy(studyPks[i],
+                    availabilityOfExternalRetrieveable)) {
                 updated++;
             }
         }
