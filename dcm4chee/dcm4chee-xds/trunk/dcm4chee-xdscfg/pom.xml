@@ -13,6 +13,7 @@
   <name>XDS Configuration Managment Tool</name>
   <modules>
     <module>dcm4chee-xdscfg-mbean</module>
+    <module>dcm4chee-xdscfg-http</module>
   </modules>
 </project>
 
