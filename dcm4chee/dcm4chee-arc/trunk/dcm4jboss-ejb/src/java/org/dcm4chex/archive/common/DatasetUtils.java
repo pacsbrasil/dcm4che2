@@ -62,26 +62,25 @@ import org.xml.sax.SAXException;
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since 04.02.2005
- *
+ * 
  */
 
 public class DatasetUtils {
 
-	public static void putRetrieveAET(Dataset ds, String iAETs, String eAET) {
-		if (iAETs != null) {
-	        ds.putAE(Tags.RetrieveAET, 
-	        		StringUtils.split(
-	        				eAET != null ? iAETs + '\\' + eAET : iAETs, '\\'));
-		} else {
-			ds.putAE(Tags.RetrieveAET, eAET);
-		}
-	}
+    public static void putRetrieveAET(Dataset ds, String iAETs, String eAET) {
+        if (iAETs != null) {
+            ds.putAE(Tags.RetrieveAET, StringUtils.split(eAET != null ? iAETs
+                    + '\\' + eAET : iAETs, '\\'));
+        } else {
+            ds.putAE(Tags.RetrieveAET, eAET);
+        }
+    }
 
-	public static Dataset fromByteArray(byte[] data) {
-		return fromByteArray(data, null);
-	}
+    public static Dataset fromByteArray(byte[] data) {
+        return fromByteArray(data, null);
+    }
 
-	public static Dataset fromByteArray(byte[] data, Dataset ds) {
+    public static Dataset fromByteArray(byte[] data, Dataset ds) {
         if (data == null)
             return null;
         ByteArrayInputStream bin = new ByteArrayInputStream(data);
@@ -97,20 +96,19 @@ public class DatasetUtils {
         return ds;
     }
 
-
     public static byte[] toByteArray(Dataset ds) {
         if (ds == null)
             return null;
-        ByteArrayOutputStream bos =
-            new ByteArrayOutputStream(ds.calcLength(DcmEncodeParam.EVR_LE));
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(ds
+                .calcLength(DcmEncodeParam.EVR_LE));
         try {
             ds.writeDataset(bos, DcmEncodeParam.EVR_LE);
         } catch (IOException e) {
             throw new IllegalArgumentException("" + e);
         }
-        return bos.toByteArray();                    
+        return bos.toByteArray();
     }
-    
+
     public static byte[] toByteArray(Dataset ds, String tsuid) {
         if (ds == null)
             return null;
@@ -121,8 +119,8 @@ public class DatasetUtils {
         fmi.setPreamble(null);
         fmi.putUI(Tags.TransferSyntaxUID, tsuid);
         DcmEncodeParam encodeParam = DcmEncodeParam.valueOf(tsuid);
-        ByteArrayOutputStream bos =
-            new ByteArrayOutputStream(fmi.length() + ds.calcLength(encodeParam));
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(fmi.length()
+                + ds.calcLength(encodeParam));
         FileMetaInfo prevfmi = ds.getFileMetaInfo();
         ds.setFileMetaInfo(fmi);
         try {
@@ -134,7 +132,7 @@ public class DatasetUtils {
         }
         return bos.toByteArray();
     }
-    
+
     private static SAXParser getSAXParser() {
         try {
             return SAXParserFactory.newInstance().newSAXParser();
@@ -143,15 +141,15 @@ public class DatasetUtils {
         }
     }
 
-    public static Dataset fromXML(InputSource is)
-        throws SAXException, IOException {
+    public static Dataset fromXML(InputSource is) throws SAXException,
+            IOException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
         getSAXParser().parse(is, ds.getSAXHandler2(null));
         return ds;
     }
 
-    public static Dataset fromXML(InputStream is)
-        throws SAXException, IOException {
+    public static Dataset fromXML(InputStream is) throws SAXException,
+            IOException {
         return fromXML(new InputSource(is));
     }
 
@@ -163,5 +161,6 @@ public class DatasetUtils {
         return fromXML(new StringReader(s));
     }
 
-    private DatasetUtils() {} // no instance
+    private DatasetUtils() {
+    } // no instance
 }
