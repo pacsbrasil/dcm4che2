@@ -81,13 +81,11 @@ import org.dcm4chex.archive.util.Convert;
  * Instance Bean
  * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2008-09-11 13:37:20 +0200 (Thu, 11 Sep
+ *          2008) $
  * 
- * @ejb.bean name="Instance"
- *           type="CMP"
- *           view-type="local"
- *  		 primkey-field="pk"
- *  		 local-jndi-name="ejb/Instance"
+ * @ejb.bean name="Instance" type="CMP" view-type="local" primkey-field="pk"
+ *           local-jndi-name="ejb/Instance"
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="instance"
  * @jboss.load-group name="most"
@@ -100,69 +98,69 @@ import org.dcm4chex.archive.util.Convert;
  *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.sopIuid = ?1"
  *             transaction-type="Supports"
  * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.InstanceLocal findBySopIuid(java.lang.String uid)"
- *              strategy="on-find"
- *              eager-load-group="most"
+ *              strategy="on-find" eager-load-group="most"
  * 
  * @ejb.finder signature="java.util.Collection findNotOnMediaAndStudyReceivedBefore(java.sql.Timestamp receivedBefore)"
  *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.media IS NULL AND i.series.study.createdTime < ?1"
  *             transaction-type="Supports"
- *
+ * 
  * @ejb.finder signature="java.util.Collection findByPatientAndSopCuid(org.dcm4chex.archive.ejb.interfaces.PatientLocal patient, java.lang.String uid)"
  *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.study.patient = ?1 AND i.sopCuid = ?2"
  *             transaction-type="Supports"
- *
+ * 
  * @ejb.finder signature="java.util.Collection findByPatientAndSrCode(org.dcm4chex.archive.ejb.interfaces.PatientLocal patient, org.dcm4chex.archive.ejb.interfaces.CodeLocal srcode)"
  *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.study.patient = ?1 AND i.srCode = ?2"
  *             transaction-type="Supports"
- *
+ * 
  * @ejb.finder signature="java.util.Collection findByStudyAndSrCode(java.lang.String suid, java.lang.String cuid, java.lang.String code, java.lang.String designator)"
  *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.study.studyIuid = ?1 AND i.sopCuid = ?2 AND i.srCode.codeValue = ?3 AND i.srCode.codingSchemeDesignator = ?4"
  *             transaction-type="Supports"
- *
- * @ejb.finder signature="java.util.Collection findBySeriesPk(java.lang.Long seriesPk)"
- *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.pk = ?1 ORDER BY i.pk"
+ * 
+ * @ejb.finder 
+ *             signature="java.util.Collection findBySeriesPk(java.lang.Long seriesPk)"
+ *             query=
+ *             "SELECT OBJECT(i) FROM Instance AS i WHERE i.series.pk = ?1 ORDER BY i.pk"
  *             transaction-type="Supports"
- *
- * @jboss.query signature="java.util.Collection findBySeriesPk(java.lang.Long seriesPk)"
- *              strategy="on-find"
- *              eager-load-group="*"
- *
- * @ejb.finder signature="java.util.Collection findBySeriesIuid(java.lang.String seriesIuid)"
- *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.seriesIuid = ?1 ORDER BY i.pk"
- *             transaction-type="Supports"
- *
- * @jboss.query signature="java.util.Collection findBySeriesIuid(java.lang.String seriesIuid)"
- *              strategy="on-find"
- *              eager-load-group="most"
  * 
  * @jboss.query 
- *  signature="java.util.Collection ejbSelectGeneric(java.lang.String jbossQl, java.lang.Object[] args)"
- *  dynamic="true"
- *  strategy="on-load"
- *  page-size="20"
- *  eager-load-group="*"
- *
+ *              signature="java.util.Collection findBySeriesPk(java.lang.Long seriesPk)"
+ *              strategy="on-find" eager-load-group="*"
+ * 
+ * @ejb.finder signature=
+ *             "java.util.Collection findBySeriesIuid(java.lang.String seriesIuid)"
+ *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.series.seriesIuid = ?1 ORDER BY i.pk"
+ *             transaction-type="Supports"
+ * 
+ * @jboss.query signature=
+ *              "java.util.Collection findBySeriesIuid(java.lang.String seriesIuid)"
+ *              strategy="on-find" eager-load-group="most"
+ * 
+ * @jboss.query signature="java.util.Collection ejbSelectGeneric(java.lang.String jbossQl, java.lang.Object[] args)"
+ *              dynamic="true" strategy="on-load" page-size="20"
+ *              eager-load-group="*"
+ * 
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
- * @ejb.ejb-ref ejb-name="VerifyingObserver" view-type="local" ref-name="ejb/VerifyingObserver"
+ * @ejb.ejb-ref ejb-name="VerifyingObserver" view-type="local"
+ *              ref-name="ejb/VerifyingObserver"
  */
 public abstract class InstanceBean implements EntityBean {
 
     private static final int DEFAULT_IN_LIST_SIZE = 200;
 
-	private static final Logger log = Logger.getLogger(InstanceBean.class);
+    private static final Logger log = Logger.getLogger(InstanceBean.class);
 
     private static final Class[] STRING_PARAM = new Class[] { String.class };
-    
+
     private CodeLocalHome codeHome;
     private VerifyingObserverLocalHome observerHome;
-    
+
     public void setEntityContext(EntityContext ctx) {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
             codeHome = (CodeLocalHome) jndiCtx.lookup("java:comp/env/ejb/Code");
-            observerHome = (VerifyingObserverLocalHome)
-                    jndiCtx.lookup("java:comp/env/ejb/VerifyingObserver");
+            observerHome = (VerifyingObserverLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/VerifyingObserver");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -187,6 +185,7 @@ public abstract class InstanceBean implements EntityBean {
      * @jboss.persistence auto-increment="true"
      */
     public abstract Long getPk();
+
     public abstract void setPk(Long pk);
 
     /**
@@ -194,6 +193,7 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.persistence column-name="created_time"
      */
     public abstract java.sql.Timestamp getCreatedTime();
+
     public abstract void setCreatedTime(java.sql.Timestamp time);
 
     /**
@@ -201,23 +201,26 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.persistence column-name="updated_time"
      */
     public abstract java.sql.Timestamp getUpdatedTime();
+
     public abstract void setUpdatedTime(java.sql.Timestamp time);
-	
+
     /**
      * @ejb.interface-method
-     * @ejb.persistence column-name="sop_iuid" 
+     * @ejb.persistence column-name="sop_iuid"
      * @jboss.load-group name="most"
      */
     public abstract String getSopIuid();
+
     public abstract void setSopIuid(String iuid);
 
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="sop_cuid"
      * @jboss.load-group name="most"
-     *
+     * 
      */
     public abstract String getSopCuid();
+
     public abstract void setSopCuid(String cuid);
 
     /**
@@ -225,6 +228,7 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.persistence column-name="inst_no"
      */
     public abstract String getInstanceNumber();
+
     public abstract void setInstanceNumber(String no);
 
     /**
@@ -232,19 +236,20 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.persistence column-name="content_datetime"
      */
     public abstract java.sql.Timestamp getContentDateTime();
+
     public abstract void setContentDateTime(java.sql.Timestamp dateTime);
 
     private void setContentDateTime(java.util.Date date) {
-		setContentDateTime(date != null 
-                        ? new java.sql.Timestamp(date.getTime())
-                        : null);
+        setContentDateTime(date != null ? new java.sql.Timestamp(date.getTime())
+                : null);
     }
-	
+
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="sr_complete"
      */
     public abstract String getSrCompletionFlag();
+
     public abstract void setSrCompletionFlag(String flag);
 
     /**
@@ -252,6 +257,7 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.persistence column-name="sr_verified"
      */
     public abstract String getSrVerificationFlag();
+
     public abstract void setSrVerificationFlag(String flag);
 
     /**
@@ -259,24 +265,28 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.persistence column-name="inst_custom1"
      */
     public abstract String getInstanceCustomAttribute1();
+
     public abstract void setInstanceCustomAttribute1(String value);
 
     /**
      * @ejb.persistence column-name="inst_custom2"
      */
     public abstract String getInstanceCustomAttribute2();
+
     public abstract void setInstanceCustomAttribute2(String value);
 
     /**
      * @ejb.persistence column-name="inst_custom3"
      */
     public abstract String getInstanceCustomAttribute3();
+
     public abstract void setInstanceCustomAttribute3(String value);
 
     /**
      * @ejb.persistence column-name="inst_attrs"
      */
     public abstract byte[] getEncodedAttributes();
+
     public abstract void setEncodedAttributes(byte[] bytes);
 
     /**
@@ -288,7 +298,7 @@ public abstract class InstanceBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     */ 
+     */
     public abstract void setExternalRetrieveAET(String aet);
 
     /**
@@ -316,7 +326,7 @@ public abstract class InstanceBean implements EntityBean {
             return 0;
         }
     }
-    
+
     /**
      * @ejb.interface-method
      */
@@ -332,7 +342,7 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setInstanceStatus(int status);
-    
+
     /**
      * @ejb.persistence column-name="all_attrs"
      */
@@ -342,7 +352,7 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setAllAttributes(boolean allAttributes);
-    
+
     /**
      * @ejb.persistence column-name="commitment"
      */
@@ -358,34 +368,34 @@ public abstract class InstanceBean implements EntityBean {
             return false;
         }
     }
-    
+
     /**
      * @ejb.interface-method
      */
     public abstract void setCommitment(boolean commitment);
 
     /**
-     * @ejb.interface-method 
+     * @ejb.interface-method
      * @ejb.relation name="series-instance" role-name="instance-of-series"
      *               cascade-delete="yes"
      * @jboss.relation fk-column="series_fk" related-pk-field="pk"
      * @jboss.load-group name="most"
      * 
-     * @param series series of this instance
+     * @param series
+     *            series of this instance
      */
     public abstract void setSeries(SeriesLocal series);
 
     /**
-     * @ejb.interface-method 
+     * @ejb.interface-method
      * 
      * @return series of this series
      */
     public abstract SeriesLocal getSeries();
 
     /**
-     * @ejb.relation name="instance-files"
-     *               role-name="instance-in-files"
-     *    
+     * @ejb.relation name="instance-files" role-name="instance-in-files"
+     * 
      * @ejb.interface-method
      * 
      * @return all files of this instance
@@ -395,11 +405,9 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setFiles(java.util.Collection files);
 
     /**
-     * @ejb.relation name="instance-media"
-     *               role-name="instance-on-media"
-     * @jboss.relation fk-column="media_fk" 
-     *                 related-pk-field="pk"
-     *    
+     * @ejb.relation name="instance-media" role-name="instance-on-media"
+     * @jboss.relation fk-column="media_fk" related-pk-field="pk"
+     * 
      * @ejb.interface-method
      */
     public abstract MediaLocal getMedia();
@@ -410,15 +418,13 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setMedia(MediaLocal media);
 
     /**
-     * @ejb.relation name="instance-srcode"
-     *               role-name="sr-with-title"
-     *               target-ejb="Code"
-     *               target-role-name="title-of-sr"
+     * @ejb.relation name="instance-srcode" role-name="sr-with-title"
+     *               target-ejb="Code" target-role-name="title-of-sr"
      *               target-multiple="yes"
-     * @jboss.relation fk-column="srcode_fk"
-     *                 related-pk-field="pk"
+     * @jboss.relation fk-column="srcode_fk" related-pk-field="pk"
      * 
-     * @param srCode code of SR title
+     * @param srCode
+     *            code of SR title
      */
     public abstract void setSrCode(CodeLocal srCode);
 
@@ -434,13 +440,13 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.relation name="instance-verifying-observer"
      *               role-name="instance-with-verifying-observer"
      *               target-role-name="verifying-observer-of-instance"
-     *               target-ejb="VerifyingObserver" 
-     *               target-cascade-delete="yes"
+     *               target-ejb="VerifyingObserver" target-cascade-delete="yes"
      * @jboss.target-relation fk-column="instance_fk" related-pk-field="pk"
      */
     public abstract java.util.Collection getVerifyingObservers();
+
     public abstract void setVerifyingObservers(java.util.Collection observers);
-    
+
     /**
      * @ejb.create-method
      */
@@ -476,23 +482,24 @@ public abstract class InstanceBean implements EntityBean {
 
     /**
      * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAET FROM Instance i, IN(i.files) f WHERE i.pk = ?1"
-     */ 
+     */
     public abstract Set ejbSelectRetrieveAETs(Long pk) throws FinderException;
-    
+
     /**
      * @ejb.interface-method
      */
     public void addRetrieveAET(String aet) {
-    	String s = getRetrieveAETs();
-    	if (s == null) {
-    		setRetrieveAETs(aet);
-    	} else {
-    		final Set aetSet = new HashSet(Arrays.asList(StringUtils.split(s, '\\')));
-    		if (aetSet.add(aet))
-    			setRetrieveAETs(toString(aetSet));
-    	}   		
+        String s = getRetrieveAETs();
+        if (s == null) {
+            setRetrieveAETs(aet);
+        } else {
+            final Set aetSet = new HashSet(Arrays.asList(StringUtils.split(s,
+                    '\\')));
+            if (aetSet.add(aet))
+                setRetrieveAETs(toString(aetSet));
+        }
     }
-    
+
     private boolean updateRetrieveAETs(Long pk) throws FinderException {
         final Set aetSet = ejbSelectRetrieveAETs(pk);
         if (aetSet.remove(null))
@@ -500,78 +507,87 @@ public abstract class InstanceBean implements EntityBean {
                     + "] reference File(s) with unspecified Retrieve AET");
         final String aets = toString(aetSet);
         boolean updated;
-		if (updated = aets == null ? getRetrieveAETs() != null : !aets.equals(getRetrieveAETs()))
+        if (updated = aets == null ? getRetrieveAETs() != null : !aets
+                .equals(getRetrieveAETs()))
             setRetrieveAETs(aets);
         return updated;
-    } 
-    
+    }
+
     /**
      * @ejb.select query="SELECT MIN(f.fileSystem.availability) FROM Instance i, IN(i.files) f WHERE i.pk = ?1"
-     */ 
-    public abstract int ejbSelectLocalAvailability(Long pk) throws FinderException;
-    
-    private boolean updateAvailability(Long pk, String retrieveAETs) throws FinderException {
+     */
+    public abstract int ejbSelectLocalAvailability(Long pk)
+            throws FinderException;
+
+    private boolean updateAvailability(Long pk, String retrieveAETs)
+            throws FinderException {
         int availability = Availability.UNAVAILABLE;
         MediaLocal media;
         if (retrieveAETs != null)
             availability = ejbSelectLocalAvailability(pk);
         else if (getExternalRetrieveAET() != null)
             availability = Availability.NEARLINE;
-        else if ((media = getMedia()) != null 
+        else if ((media = getMedia()) != null
                 && media.getMediaStatus() == MediaDTO.COMPLETED)
             availability = Availability.OFFLINE;
         boolean updated;
-		if (updated = availability != getAvailabilitySafe()) {
+        if (updated = availability != getAvailabilitySafe()) {
             setAvailability(availability);
         }
         return updated;
     }
-    
+
     /**
      * @ejb.interface-method
      */
-    public boolean updateDerivedFields(boolean retrieveAETs, boolean availability) 
-    		throws FinderException {
-    	boolean updated = false;
+    public boolean updateDerivedFields(boolean retrieveAETs,
+            boolean availability) throws FinderException {
+        boolean updated = false;
         final Long pk = getPk();
-		if (retrieveAETs)
-			if (updateRetrieveAETs(pk)) updated = true;
+        if (retrieveAETs)
+            if (updateRetrieveAETs(pk))
+                updated = true;
         if (availability)
-        	if (updateAvailability(pk, getRetrieveAETs())) updated = true;
+            if (updateAvailability(pk, getRetrieveAETs()))
+                updated = true;
         return updated;
     }
 
     private static String toString(Set s) {
-    	if (s.isEmpty())
-    		return null;
+        if (s.isEmpty())
+            return null;
         String[] a = (String[]) s.toArray(new String[s.size()]);
         return StringUtils.toString(a, '\\');
     }
-    
+
     /**
      * @ejb.interface-method
      */
     public Dataset getAttributes(boolean supplement) {
         Dataset ds;
-        try { 
-        	ds = DatasetUtils.fromByteArray(getEncodedAttributes());
-        } catch ( IllegalArgumentException x ){
-        	//BLOB size not sufficient to store Attributes
-        	log.warn("Instance (pk:"+getPk()+") Attributes truncated in database! (BLOB size not sufficient to store Attributes correctly) !");
-        	ds = DcmObjectFactory.getInstance().newDataset();
-        	ds.putUI(Tags.SOPInstanceUID, this.getSopIuid());
-        	ds.putUI(Tags.SOPClassUID, this.getSopCuid());
+        try {
+            ds = DatasetUtils.fromByteArray(getEncodedAttributes());
+        } catch (IllegalArgumentException x) {
+            // BLOB size not sufficient to store Attributes
+            log
+                    .warn("Instance (pk:"
+                            + getPk()
+                            + ") Attributes truncated in database! (BLOB size not sufficient to store Attributes correctly) !");
+            ds = DcmObjectFactory.getInstance().newDataset();
+            ds.putUI(Tags.SOPInstanceUID, this.getSopIuid());
+            ds.putUI(Tags.SOPClassUID, this.getSopCuid());
         }
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
-            ds.putOB(PrivateTags.InstancePk, Convert.toBytes(getPk().longValue()));
+            ds.putOB(PrivateTags.InstancePk, Convert.toBytes(getPk()
+                    .longValue()));
             MediaLocal media = getMedia();
             if (media != null && media.getMediaStatus() == MediaDTO.COMPLETED) {
                 ds.putSH(Tags.StorageMediaFileSetID, media.getFilesetId());
-                ds.putUI(Tags.StorageMediaFileSetUID, media.getFilesetIuid());            	
+                ds.putUI(Tags.StorageMediaFileSetUID, media.getFilesetIuid());
             }
             DatasetUtils.putRetrieveAET(ds, getRetrieveAETs(),
-            		getExternalRetrieveAET());
+                    getExternalRetrieveAET());
             ds.putCS(Tags.InstanceAvailability, Availability
                     .toString(getAvailabilitySafe()));
         }
@@ -584,7 +600,8 @@ public abstract class InstanceBean implements EntityBean {
      */
     public void setAttributes(Dataset ds) {
         String cuid = ds.getString(Tags.SOPClassUID);
-        AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(cuid);
+        AttributeFilter filter = AttributeFilter
+                .getInstanceAttributeFilter(cuid);
         setAllAttributes(filter.isNoFilter());
         setAttributesInternal(filter.filter(ds), filter.getTransferSyntaxUID());
         int[] fieldTags = filter.getFieldTags();
@@ -593,23 +610,24 @@ public abstract class InstanceBean implements EntityBean {
         }
     }
 
-    private void setField(String field, String value ) {
+    private void setField(String field, String value) {
         try {
-            Method m = InstanceBean.class.getMethod("set" 
+            Method m = InstanceBean.class.getMethod("set"
                     + Character.toUpperCase(field.charAt(0))
                     + field.substring(1), STRING_PARAM);
             m.invoke(this, new Object[] { value });
         } catch (Exception e) {
             throw new ConfigurationException(e);
-        }       
+        }
     }
-    
+
     private void setAttributesInternal(Dataset ds, String tsuid) {
         setSopIuid(ds.getString(Tags.SOPInstanceUID));
         setSopCuid(ds.getString(Tags.SOPClassUID));
         setInstanceNumber(ds.getString(Tags.InstanceNumber));
         try {
-            setContentDateTime(ds.getDateTime(Tags.ContentDate, Tags.ContentTime));
+            setContentDateTime(ds.getDateTime(Tags.ContentDate,
+                    Tags.ContentTime));
         } catch (IllegalArgumentException e) {
             log.warn("Illegal Content Date/Time format: " + e.getMessage());
         }
@@ -623,13 +641,14 @@ public abstract class InstanceBean implements EntityBean {
     }
 
     /**
-     * @throws DcmServiceException 
+     * @throws DcmServiceException
      * @ejb.interface-method
      */
     public void coerceAttributes(Dataset ds, Dataset coercedElements)
-    throws DcmServiceException {
+            throws DcmServiceException {
         String cuid = ds.getString(Tags.SOPClassUID);
-        AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(cuid);
+        AttributeFilter filter = AttributeFilter
+                .getInstanceAttributeFilter(cuid);
         if (filter.isOverwrite()) {
             Dataset attrs;
             if (filter.isMerge()) {
@@ -650,96 +669,99 @@ public abstract class InstanceBean implements EntityBean {
     }
 
     /**
-     * @ejb.select query=""
-     *  transaction-type="Supports"
-     */ 
+     * @ejb.select query="" transaction-type="Supports"
+     */
     public abstract Collection ejbSelectGeneric(String jbossQl, Object[] args)
             throws FinderException;
-    
-    /**    
+
+    /**
      * @ejb.home-method
      */
     public Collection ejbHomeListByIUIDs(String[] iuids) throws FinderException {
-    	if ( iuids == null || iuids.length < 1)
-    		return new ArrayList();
-    	Collection c;
-    	String jbossQl;
-		log.debug("List by IUIDs:"+iuids.length);
-		long t0=System.currentTimeMillis();
-    	if ( iuids.length > DEFAULT_IN_LIST_SIZE ) {
-    		jbossQl = getByIUIDsQueryString(DEFAULT_IN_LIST_SIZE);
-    		String[] uids = new String[DEFAULT_IN_LIST_SIZE];
-    		System.arraycopy(iuids, 0, uids, 0, DEFAULT_IN_LIST_SIZE);
-    		int idx = DEFAULT_IN_LIST_SIZE;
-    		int maxIdx = iuids.length - DEFAULT_IN_LIST_SIZE;
-    		c = ejbSelectGeneric(jbossQl, uids);
-    		log.debug("First chunked query:"+c.size());
-    		while ( idx < maxIdx ) {
-    			System.arraycopy(iuids, idx, uids, 0, DEFAULT_IN_LIST_SIZE);
-    			c.addAll(ejbSelectGeneric(jbossQl, uids));
-        		log.debug("chunked query (idx:"+idx+"):"+c.size());
-    			idx += DEFAULT_IN_LIST_SIZE;
-    		}
-    		if ( idx < iuids.length ) {
-    			int remain = iuids.length - idx;
-    			jbossQl = getByIUIDsQueryString(remain);
-    			uids = new String[remain];
-    			System.arraycopy(iuids, idx, uids, 0, remain);
-    			c.addAll(ejbSelectGeneric(jbossQl, uids));
-        		log.debug("Remain chunked query(remain:"+remain+"):"+c.size());
-    		}
-    	} else {
-	    	jbossQl = getByIUIDsQueryString(iuids.length);
-    		c = ejbSelectGeneric(jbossQl, iuids);
-    	}
-		log.debug("Total time:"+(System.currentTimeMillis()-t0));
+        if (iuids == null || iuids.length < 1)
+            return new ArrayList();
+        Collection c;
+        String jbossQl;
+        log.debug("List by IUIDs:" + iuids.length);
+        long t0 = System.currentTimeMillis();
+        if (iuids.length > DEFAULT_IN_LIST_SIZE) {
+            jbossQl = getByIUIDsQueryString(DEFAULT_IN_LIST_SIZE);
+            String[] uids = new String[DEFAULT_IN_LIST_SIZE];
+            System.arraycopy(iuids, 0, uids, 0, DEFAULT_IN_LIST_SIZE);
+            int idx = DEFAULT_IN_LIST_SIZE;
+            int maxIdx = iuids.length - DEFAULT_IN_LIST_SIZE;
+            c = ejbSelectGeneric(jbossQl, uids);
+            log.debug("First chunked query:" + c.size());
+            while (idx < maxIdx) {
+                System.arraycopy(iuids, idx, uids, 0, DEFAULT_IN_LIST_SIZE);
+                c.addAll(ejbSelectGeneric(jbossQl, uids));
+                log.debug("chunked query (idx:" + idx + "):" + c.size());
+                idx += DEFAULT_IN_LIST_SIZE;
+            }
+            if (idx < iuids.length) {
+                int remain = iuids.length - idx;
+                jbossQl = getByIUIDsQueryString(remain);
+                uids = new String[remain];
+                System.arraycopy(iuids, idx, uids, 0, remain);
+                c.addAll(ejbSelectGeneric(jbossQl, uids));
+                log.debug("Remain chunked query(remain:" + remain + "):"
+                        + c.size());
+            }
+        } else {
+            jbossQl = getByIUIDsQueryString(iuids.length);
+            c = ejbSelectGeneric(jbossQl, iuids);
+        }
+        log.debug("Total time:" + (System.currentTimeMillis() - t0));
         return c;
     }
 
-	private String getByIUIDsQueryString(int size) {
-		StringBuffer sb = new StringBuffer("SELECT OBJECT(i) FROM Instance i");
+    private String getByIUIDsQueryString(int size) {
+        StringBuffer sb = new StringBuffer("SELECT OBJECT(i) FROM Instance i");
         sb.append(" WHERE i.sopIuid");
-        addIN( sb, 1, size);
-         log.debug("Execute JBossQL: " + sb);
-		return sb.toString();
-	}
+        addIN(sb, 1, size);
+        log.debug("Execute JBossQL: " + sb);
+        return sb.toString();
+    }
 
-    /**    
+    /**
      * @ejb.home-method
      */
-    public Collection ejbHomeListByPatientAndSRCode(PatientLocal pat, Collection srCodes, Collection cuids) throws FinderException {
-        StringBuffer jbossQl = new StringBuffer("SELECT OBJECT(i) FROM Instance i");
+    public Collection ejbHomeListByPatientAndSRCode(PatientLocal pat,
+            Collection srCodes, Collection cuids) throws FinderException {
+        StringBuffer jbossQl = new StringBuffer(
+                "SELECT OBJECT(i) FROM Instance i");
         jbossQl.append(" WHERE i.series.study.patient = ?1");
         ArrayList params = new ArrayList();
         params.add(pat);
         int idx = 2;
-        if ( srCodes != null && srCodes.size() > 0 ) {
-            jbossQl.append( " AND CONCAT(i.srCode.codeValue, CONCAT('^', i.srCode.codingSchemeDesignator) )" );
+        if (srCodes != null && srCodes.size() > 0) {
+            jbossQl
+                    .append(" AND CONCAT(i.srCode.codeValue, CONCAT('^', i.srCode.codingSchemeDesignator) )");
             idx = addIN(jbossQl, idx, srCodes.size());
             params.addAll(srCodes);
         }
-        if ( cuids != null && cuids.size() > 0 ) {
-            jbossQl.append( " AND i.sopCuid" );
+        if (cuids != null && cuids.size() > 0) {
+            jbossQl.append(" AND i.sopCuid");
             idx = addIN(jbossQl, idx, cuids.size());
             params.addAll(cuids);
         }
         log.debug("Execute JBossQL: " + jbossQl);
-        return ejbSelectGeneric( jbossQl.toString(), params.toArray() );
+        return ejbSelectGeneric(jbossQl.toString(), params.toArray());
     }
 
     private int addIN(StringBuffer jbossQl, int idx, int len) {
-        if ( len > 1 ) {
+        if (len > 1) {
             jbossQl.append(" IN ( ");
             for (int i = 1; i < len; i++) {
                 jbossQl.append("?").append(idx++).append(", ");
-            } 
+            }
             jbossQl.append("?").append(idx++).append(")");
         } else {
             jbossQl.append(" = ?").append(idx++);
         }
         return idx;
     }
-    
+
     /**
      * 
      * @ejb.interface-method
