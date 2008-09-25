@@ -66,47 +66,31 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 /**
  * 
  * @author franz.willer@gwi-ag.com
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2006-11-07 10:35:31 +0100 (Tue, 07 Nov
+ *          2006) $
  * @since 25.03.2005
  * 
- * @ejb.bean
- *  name="ConsistencyCheck"
- *  type="Stateless"
- *  view-type="remote"
- *  jndi-name="ejb/ConsistencyCheck"
+ * @ejb.bean name="ConsistencyCheck" type="Stateless" view-type="remote"
+ *           jndi-name="ejb/ConsistencyCheck"
  * 
- * @ejb.transaction-type 
- *  type="Container"
+ * @ejb.transaction-type type="Container"
  * 
- * @ejb.transaction 
- *  type="Required"
+ * @ejb.transaction type="Required"
  * 
- * @ejb.ejb-ref
- *  ejb-name="Patient" 
- *  view-type="local"
- *  ref-name="ejb/Patient" 
+ * @ejb.ejb-ref ejb-name="Patient" view-type="local" ref-name="ejb/Patient"
  * 
- * @ejb.ejb-ref
- *  ejb-name="Study" 
- *  view-type="local"
- *  ref-name="ejb/Study" 
+ * @ejb.ejb-ref ejb-name="Study" view-type="local" ref-name="ejb/Study"
  * 
- * @ejb.ejb-ref
- *  ejb-name="Series" 
- *  view-type="local"
- *  ref-name="ejb/Series" 
+ * @ejb.ejb-ref ejb-name="Series" view-type="local" ref-name="ejb/Series"
  * 
- * @ejb.ejb-ref
- *  ejb-name="Instance" 
- *  view-type="local"
- *  ref-name="ejb/Instance" 
+ * @ejb.ejb-ref ejb-name="Instance" view-type="local" ref-name="ejb/Instance"
  */
 public abstract class ConsistencyCheckBean implements SessionBean {
 
-
     private StudyLocalHome studyHome;
 
-    private static final Logger log = Logger.getLogger(ConsistencyCheckBean.class);
+    private static final Logger log = Logger
+            .getLogger(ConsistencyCheckBean.class);
 
     public void setSessionContext(SessionContext arg0) throws EJBException,
             RemoteException {
@@ -130,77 +114,87 @@ public abstract class ConsistencyCheckBean implements SessionBean {
     public void unsetSessionContext() {
         studyHome = null;
     }
-    
+
     /**
      * Return studies to check consistency..
      * <p>
      * <DL>
-     * <DD>1) Find (0-<code>limit</code>) studies with a creation date between <code>createdAfter and createdBefore</code>
-     * 			and not checked before checkedAfter</DD>
+     * <DD>1) Find (0-<code>limit</code>) studies with a creation date between
+     * <code>createdAfter and createdBefore</code> and not checked before
+     * checkedAfter</DD>
      * </DL>
-     * @param createdAfter 	Timestamp: studies must be created after this timestamp.
-     * @param createdBefore	Timestamp: studies must be created before this timestamp.
-     * @param checkedBefore	Timestamp: studies must be checked before this timestamp.
-     * @param limit			Max number of returned studies.
+     * 
+     * @param createdAfter
+     *            Timestamp: studies must be created after this timestamp.
+     * @param createdBefore
+     *            Timestamp: studies must be created before this timestamp.
+     * @param checkedBefore
+     *            Timestamp: studies must be checked before this timestamp.
+     * @param limit
+     *            Max number of returned studies.
      * 
      * @return int array with pk of studies to check.
      * @ejb.interface-method
      */
-    public long[] findStudiesToCheck(Timestamp createdAfter, Timestamp createdBefore, Timestamp checkedBefore, int limit) throws FinderException {
-    	if ( log.isDebugEnabled() ) log.debug("findStudiesToCheck: created between "+createdAfter+" - "+createdBefore+" checkedBefore"+checkedBefore+" limit:"+limit);
-        Collection c = studyHome.findStudyToCheck( createdAfter, createdBefore, checkedBefore, limit );
-        if ( c.size() < 1 ) return new long[0];
+    public long[] findStudiesToCheck(Timestamp createdAfter,
+            Timestamp createdBefore, Timestamp checkedBefore, int limit)
+            throws FinderException {
+        if (log.isDebugEnabled())
+            log.debug("findStudiesToCheck: created between " + createdAfter
+                    + " - " + createdBefore + " checkedBefore" + checkedBefore
+                    + " limit:" + limit);
+        Collection c = studyHome.findStudyToCheck(createdAfter, createdBefore,
+                checkedBefore, limit);
+        if (c.size() < 1)
+            return new long[0];
         Iterator iter = c.iterator();
         long[] ia = new long[c.size()];
         int i = 0;
-        while ( iter.hasNext() ) {
-        	ia[i++] = ((StudyLocal) iter.next()).getPk().longValue();
+        while (iter.hasNext()) {
+            ia[i++] = ((StudyLocal) iter.next()).getPk().longValue();
         }
         return ia;
     }
-    
-
-    
 
     /**
      * @ejb.interface-method
      */
     public boolean updateStudy(long study_pk) {
-    	boolean updated = false;
+        boolean updated = false;
         try {
-            StudyLocal study = studyHome
-                    .findByPrimaryKey(new Long(study_pk));
+            StudyLocal study = studyHome.findByPrimaryKey(new Long(study_pk));
             Collection col = study.getSeries();
             Iterator iter = col.iterator();
             SeriesLocal series;
             Collection instances;
             InstanceLocal instance;
-            while ( iter.hasNext() ) {
-            	series = (SeriesLocal) iter.next();
-            	instances = series.getInstances();
-            	Iterator iter1 = instances.iterator();
-            	while ( iter1.hasNext() ) {
-            		instance = (InstanceLocal) iter1.next();
-            		if ( instance.updateDerivedFields(true,true) ) {
-            			log.info("Instance "+instance.getSopIuid()+" updated!");
-            			updated = true;
-            		}
-            	}
-            	if ( series.updateDerivedFields( true, true, true, true, true ) ) {
-        			log.info("Series "+series.getSeriesIuid()+" updated!");
-        			updated = true;
-            	}
+            while (iter.hasNext()) {
+                series = (SeriesLocal) iter.next();
+                instances = series.getInstances();
+                Iterator iter1 = instances.iterator();
+                while (iter1.hasNext()) {
+                    instance = (InstanceLocal) iter1.next();
+                    if (instance.updateDerivedFields(true, true)) {
+                        log.info("Instance " + instance.getSopIuid()
+                                + " updated!");
+                        updated = true;
+                    }
+                }
+                if (series.updateDerivedFields(true, true, true, true, true)) {
+                    log.info("Series " + series.getSeriesIuid() + " updated!");
+                    updated = true;
+                }
             }
-            if ( study.updateDerivedFields( true, true, true, true, true, true ) ) {
-    			log.info("Study "+study.getStudyIuid()+" updated!");
-    			updated = true;
+            if (study.updateDerivedFields(true, true, true, true, true, true)) {
+                log.info("Study " + study.getStudyIuid() + " updated!");
+                updated = true;
             }
-            study.setTimeOfLastConsistencyCheck( new Timestamp( System.currentTimeMillis() ) );
+            study.setTimeOfLastConsistencyCheck(new Timestamp(System
+                    .currentTimeMillis()));
             return updated;
         } catch (FinderException e) {
             throw new EJBException(e);
         }
     }
-    
- 
+
 }
