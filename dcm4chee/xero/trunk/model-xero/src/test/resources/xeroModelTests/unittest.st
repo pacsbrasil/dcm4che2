@@ -32,7 +32,7 @@ function assertNull(val, varname) {
 };
 
 function fail(msg) {
-	print(msg);print("\n");
+	java.lang.System.out.println(msg);
 	throw new Error(msg);
 };
 

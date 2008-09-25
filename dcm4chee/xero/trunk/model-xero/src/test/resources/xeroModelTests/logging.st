@@ -166,16 +166,16 @@ if (!("console" in window) || !("firebug" in console)) {
     function writeMessage(message, className, handler)
     {
     	if( typeof(message)==="string" || message.length==undefined) {
-    		print(message);
+    		java.lang.System.out.println(""+message);
     	}
     	else {
     		var i,n=message.length;
     		for(i=0; i<n;i++) {
     			if( message[i]==undefined ) continue;
-    			print(message[i]);
+    			java.lang.System.out.print(""+message[i]);
     		};
+	    	java.lang.System.out.println("");
     	}
-    	print("\n");
     }
     
     // ********************************************************************************************

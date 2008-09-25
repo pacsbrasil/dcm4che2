@@ -2,15 +2,15 @@ package org.dcm4chee.xero.model;
 
 import java.util.Map;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
 import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.StringTemplateGroup;
 import org.antlr.stringtemplate.servlet.StringSafeRenderer;
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.util.StringUtil;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ContextFactory;
+import org.mozilla.javascript.EcmaError;
+import org.mozilla.javascript.ScriptableObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,10 +75,10 @@ public class JSTemplate {
 	 * 
 	 * @param jsName
 	 */
-	public void runTest(String jsName, boolean verbose) {
-		ScriptEngineManager sem = new ScriptEngineManager();
-		ScriptEngine se = sem.getEngineByExtension("js");
-		assert se != null;
+   public void runTest(String jsName, boolean verbose) {
+	   ContextFactory cf = new ContextFactory();
+	   Context cx = cf.enterContext();
+	   ScriptableObject scope = cx.initStandardObjects();
 
 		StringTemplate st;
 		Map<String,Object> useModel = this.getModel();
@@ -89,20 +89,18 @@ public class JSTemplate {
 		if (verbose) {
 			log.info("Generated script {}", js);
 		}
-		try {
-			se.eval(js);
-		} catch (ScriptException e) {
-			log.warn("Caught exception {} on line {}", e.getMessage(), e
-					.getLineNumber());
-			int line = e.getLineNumber();
-			String[] splits = StringUtil.split(js, '\n', true);
-			for (int i = Math.max(0, line - 5), n = Math.min(splits.length - 1,
-					line + 5); i < n; i++) {
-				log.info("{}: {}", i + 1, splits[i]);
-			}
-			assert false;
-		}
+	  try {
+		 cx.evaluateString(scope, js, "<cmd>", 1, null);
+	  } catch (EcmaError e) {
+		 log.warn("Caught exception {} on line {}", e.getMessage(), e.lineNumber());
+		 int line = e.lineNumber();
+		 String[] splits = StringUtil.split(js, '\n', true);
+		 for (int i = Math.max(0, line - 5), n = Math.min(splits.length - 1, line + 5); i < n; i++) {
+			log.info("{}: {}", i + 1, splits[i]);
+		 }
+		 assert false;
+	  }
+   }
 
-	}
 
 }
