@@ -1,0 +1,81 @@
+<html>
+<head>
+  <title>Xero WADO Service</title>
+</head>
+<body>
+  <h1>Xero WADO Service</h1>
+  <p>The Xero WADO service is designed as a set of filters, the first of which read information
+  about the image (location and so on), then the actual image is read, followed by
+  various operations on the image include window levelling, memory caching, disk caching and
+  so on.</p>
+  
+  <p>The basic return type of the filters is a WadoImage object.  This object contains an image as the
+  value of the object, plus DICOM headers and other information.  Modifying the headers or image requires
+  creating a new WadoImage instance to return, so most operations create new instances of the WadoImage,
+  cloning the old one.  Types of operations include scaling, burn-in of GSPS, window levelling, flip/rotate
+  and so on.  For Reports and other DICOM objects, the object returned through filters is typically the full DICOM
+  header information.</p>
+  
+  <h2>DICOM Headers</h2>
+  <p>Two types of DICOM headers can be returned - a full DICOM header, available by calling {@see org.dcm4chee.xero.wado.DicomFilter.filterDicomObject},
+  which internally just calls the correct filter to get the full DICOM header, or a partial, image header,
+  available by calling {@see org.dcm4chee.xero.wado.DicomFilter.filterImageDicomObject}.  These may return the
+  same data, but there isn't any guarantee of that - in particular, private fields and demographics information
+  are likely to be stripped out of the ImageDicomObject return value.</p>
+  
+  <h2>Handling Content Type</h2>
+  <p>When the request first arrives, the {@see org.dcm4chee.xero.wado.ChooseContentTypeFilter} chooses whether to try to encode the object
+  as HTML, XML, an Image, DICOM or multipart/mime.  This is the first filter in the list of filters and simply
+  chooses based on the primary (first listed, not necessary highest priority) content type name.</p>
+  
+  <h2>General Image Flow</h2>
+  <p>The general image rendering flow is - starting at the last filter called, which is the first filter that
+  performs any image related operations.  See the wado2.metadata file for exact, full
+  details of all filters called - this is an abbreviated set for explanatory purposes:
+  <ol>
+    <li>{@see org.dcm4chee.xero.search.filter.FileLocationMgtFilter} - uses the MBean FileSystemMgt services to find the location of the DICOM file.</li>
+    <li>{@see org.dcm4chee.xero.wado.DicomFilter} - creates a DicomImageReader on the URL and reads the DICOM header.</li>
+    <li>MemoryCacheFilter - caches the DicomImageReader</li>
+    <li>DicomImageFilter - reads the image from the DicomImageReader.</li>
+    <li>WLFilter - applies a grayscale window level to the image.</li>
+    <li>ScaleFilter - applies flip, rotate and scaling.</li>
+    <li>GspsBurnIn - adds GSPS burn in to the object.</li>
+    <li>EncodeImage - uses whatever image encoding is specified to encode the image.</li>
+  </ol>
+  
+  <h3>Image Flow Performance</h3>
+  <p>The performance of the image handling is greatly dependent on the size of the image, somewhat dependent on the
+  content of the image and fairly dependent on how much data is in cache.  The FileLocationMgtFilter takes about 15-20 ms 
+  to locate a file, while the DicomImageReader takes about 13 ms to decode a 512x512 CT image, and the WL takes about 2 ms
+  to apply the window level, and finally the encoding takes between 6-12 ms to encode a lossy JPEG version.  Thus,
+  the total time to read a new CT image is about 42 ms on an unloaded server.  Having some of this data already
+  cached help significantly - the file location caching makes this quite a bit faster, as does the pixel data caching.
+  Large images can take upwards of 1 second to decode and encode, so for those types of images, a better way to manage the
+  scaled images would be very helpful.  
+  </p>
+  
+  <h2>DICOM Object Flow</h2>
+  <p>The DICOM object flow allows the return of the DICOM objects.  There are essentially 3 available paths
+  that can be taken - use original path that just returns the raw contents of the file location ({@see org.dcm4chee.xero.wado.EncodeDicom}),
+  a no pixel data return ({@see org.dcm4chee.xero.wado.NoPixelDataServletResponse}), 
+  and a recoded images return (which may not always recode the images if no changes are required.)
+  The flow for the last one is:
+  <ol>
+    <li>{@see org.dcm4chee.xero.search.filter.FileLocationMgtFilter} - uses the MBean FileSystemMgt services to find the location of the DICOM file.</li>
+    <li>{@see org.dcm4chee.xero.wado.DicomFilter} - creates a DicomImageReader on the URL and reads the DICOM header.</li>
+    <li>DicomFilter - strips the DICOM header and return just the header - this provides required information on
+    what needs to be returned image wise.</li>
+    <li>RecodeImage - this is the root class, and in this case checks the dicom header to see what encoding it uses,
+    whether to include all, none or only some images.</li>
+    <li>Image Flow - for each image that is returned, the image flow is used to get the pixel data.</li>
+  </ol>
+  </p> 
+  
+  <h2>Multipart Mime Flow</h2>
+  <p>TODO - written by other developers, so this should be updated and then modified by them.</p>
+  
+  <h2>XML/HTML Flow</h2>
+  <p>TODO - modify the flow and describe it here.</p>
+  
+</body>
+</html>
