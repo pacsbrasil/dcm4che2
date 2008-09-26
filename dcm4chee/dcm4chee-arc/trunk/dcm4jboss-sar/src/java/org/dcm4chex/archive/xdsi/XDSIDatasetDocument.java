@@ -58,65 +58,65 @@ import org.dcm4che.dict.UIDs;
  */
 public class XDSIDatasetDocument extends XDSIDocument {
 
-	private Dataset ds;
+    private Dataset ds;
     private DataHandler dh;
-	
-	public XDSIDatasetDocument( Dataset ds, String mimeType, String docID ) {
+
+    public XDSIDatasetDocument( Dataset ds, String mimeType, String docID ) {
         super(docID, mimeType);
-		this.ds = ds;
+        this.ds = ds;
         dh = new DatasetDataHandler(ds);
-	}
-	
-	/**
-	 * @return Returns the docFile.
-	 */
-	public Dataset getDataset() {
-		return ds;
-	}
-	
-	public DataHandler getDataHandler() {
-		return dh;
-	}
+    }
+
+    /**
+     * @return Returns the docFile.
+     */
+    public Dataset getDataset() {
+        return ds;
+    }
+
+    public DataHandler getDataHandler() {
+        return dh;
+    }
     /**
      * @return Returns the uid.
      */
     public String getUniqueID() {
         return ds.getString(Tags.SOPInstanceUID);
     }
-	public String toString() {
-		return ds+"|"+getMimeType()+"|"+getDocumentID();
-	}
-	
-	
-	/**
-	 * @author franz.willer
-	 *
-	 * TODO To change the template for this generated type comment go to
-	 * Window - Preferences - Java - Code Style - Code Templates
-	 */
-	public class DatasetDataHandler extends DataHandler {
+    public String toString() {
+        return ds+"|"+getMimeType()+"|"+getDocumentID();
+    }
 
-		/**
-		 * @param ds
-		 */
-		public DatasetDataHandler(Dataset ds) {
-			super(ds,"application/dicom");
-		}
-		
-		public void writeTo( OutputStream out ) throws IOException {
+
+    /**
+     * @author franz.willer
+     *
+     * TODO To change the template for this generated type comment go to
+     * Window - Preferences - Java - Code Style - Code Templates
+     */
+    public class DatasetDataHandler extends DataHandler {
+
+        /**
+         * @param ds
+         */
+        public DatasetDataHandler(Dataset ds) {
+            super(ds,"application/dicom");
+        }
+
+        public void writeTo( OutputStream out ) throws IOException {
             if ( ds.getFileMetaInfo() == null ) {
                 ds.setFileMetaInfo(DcmObjectFactory.getInstance().newFileMetaInfo(ds, UIDs.ExplicitVRLittleEndian));
             }
-			ds.writeFile(out,null);
-		}
+            ds.writeFile(out,null);
+        }
 
-		/** we actually kind of break the JAF model, because we don't have underlying javax.activation.DataSource
-		 *  objects.  if we did, we wouldn't need to override this method. */
-		public InputStream getInputStream() throws IOException {
-		    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		    writeTo(bos);
-		    return new ByteArrayInputStream(bos.toByteArray());		    
-		}
-	}
-	
+        /** we actually kind of break the JAF model, because we don't have underlying javax.activation.DataSource
+         *  objects.  if we did, we wouldn't need to override this method. */
+        public InputStream getInputStream() throws IOException {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            writeTo(bos);
+            return new ByteArrayInputStream(bos.toByteArray());		    
+        }
+    }
+
 }
