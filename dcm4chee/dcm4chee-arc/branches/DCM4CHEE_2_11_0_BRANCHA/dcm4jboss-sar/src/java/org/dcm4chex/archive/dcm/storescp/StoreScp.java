@@ -725,7 +725,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
             refPPSSeq.addItem(pps);
         }
-        return new SeriesStored(patAttrs, studyAttrs,seriesAttrs, ian);
+        return new SeriesStored(callingAET, retrieveAET, patAttrs, studyAttrs,seriesAttrs, ian);
     }
 
     private void appendInstanceToSeriesStored(SeriesStored seriesStored,
