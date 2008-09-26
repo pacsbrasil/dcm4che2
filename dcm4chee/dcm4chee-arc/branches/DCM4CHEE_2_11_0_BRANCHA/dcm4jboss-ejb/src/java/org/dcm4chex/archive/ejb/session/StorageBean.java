@@ -329,7 +329,10 @@ public abstract class StorageBean implements SessionBean {
 			}
 			refPPSSeq.addItem(pps);
 		}
-		SeriesStored seriesStored = new SeriesStored(patAttrs, studyAttrs, seriesAttrs, ian);
+		SeriesStored seriesStored = new SeriesStored(series.getSourceAET(),
+                commonRetrieveAETs.isEmpty() ? null
+                        : (String) commonRetrieveAETs.iterator().next(),
+				patAttrs, studyAttrs, seriesAttrs, ian);
 		return seriesStored;
 	}
 
