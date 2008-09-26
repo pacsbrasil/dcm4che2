@@ -252,4 +252,24 @@ public class FileUtils {
     		in1.close();
     	}
     }
+
+    public static boolean delete(File file, boolean deleteEmptyParents) {
+        log.info("M-DELETE file: " + file);
+        if (!file.exists()) {
+            log.warn("File: " + file + " was already deleted");
+            return true;
+        }
+        if (!file.delete()) {
+            log.warn("Failed to delete file: " + file);
+            return false;
+        }
+        if (deleteEmptyParents) {
+            File parent = file.getParentFile();
+            while (parent.delete()) {
+                log.info("M-DELETE directory: " + parent);
+                parent = parent.getParentFile();
+            }
+        }
+        return true;
+    }
 }

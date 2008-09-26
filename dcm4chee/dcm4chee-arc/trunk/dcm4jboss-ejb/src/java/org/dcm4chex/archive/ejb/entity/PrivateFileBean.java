@@ -64,8 +64,12 @@ import org.dcm4chex.archive.ejb.interfaces.PrivateInstanceLocal;
  * @jboss.query signature="java.util.Collection findDereferencedInFileSystem(java.lang.String dirPath, int limit)"
  *             query="SELECT OBJECT(f) FROM PrivateFile AS f WHERE f.instance IS NULL AND f.fileSystem.directoryPath = ?1 LIMIT ?2"
  *              strategy="on-find" eager-load-group="*"
- *  
- *  */
+ * @ejb.finder signature="java.util.Collection findOrphanedOnFSGroup(java.lang.String groupId, int limit)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findOrphanedOnFSGroup(java.lang.String groupId, int limit)"
+ *             query="SELECT OBJECT(f) FROM PrivateFile AS f WHERE f.instance IS NULL AND f.fileSystem.groupID = ?1 AND f.fileSystem.status IN (0,1) LIMIT ?2"
+ *              strategy="on-find" eager-load-group="*"
+ */
 public abstract class PrivateFileBean implements EntityBean {
 
     /**

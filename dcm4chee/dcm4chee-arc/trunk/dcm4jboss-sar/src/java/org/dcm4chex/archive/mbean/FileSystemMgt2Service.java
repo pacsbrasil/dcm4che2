@@ -55,6 +55,7 @@ import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.config.DeleterThresholds;
 import org.dcm4chex.archive.config.RetryIntervalls;
+import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
@@ -82,9 +83,13 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
-    private String timerIDCheckFreeDiskSpace;
+    private String timerIDScheduleStudiesForDeletion;
 
-    private long freeDiskSpaceInterval;
+    private String timerIDDeleteOrphanedPrivateFiles;
+
+    private long scheduleStudiesForDeletionInterval;
+
+    private long deleteOrphanedPrivateFilesInterval;
 
     private String defRetrieveAET;
 
@@ -115,7 +120,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     private long adjustExpectedDataVolumePerDay = 0;
 
-    private long deleteStudiesAfter = 0;
+    private long deleteStudiesNotAccessedFor = 0;
 
     private boolean externalRetrieveable;
 
@@ -129,11 +134,15 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     private boolean copyOnReadOnlyFS;
 
-    private int studyDeleteBatchSize;
+    private int scheduleStudiesForDeletionBatchSize;
+
+    private int deleteOrphanedPrivateFilesBatchSize;
 
     private FileSystemDTO storageFileSystem;
 
-    private Integer freeDiskSpaceListenerID;
+    private Integer scheduleStudiesForDeletionListenerID;
+
+    private Integer deleteOrphanedPrivateFilesListenerID;
 
     public ObjectName getDeleteStudyServiceName() {
         return deleteStudy.getDeleteStudyServiceName();
@@ -151,52 +160,118 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         scheduler.setSchedulerServiceName(schedulerServiceName);
     }
 
-    public void setTimerIDCheckFreeDiskSpace(String timerIDCheckFreeDiskSpace) {
-        this.timerIDCheckFreeDiskSpace = timerIDCheckFreeDiskSpace;
+    public void setTimerIDScheduleStudiesForDeletion(String timerID) {
+        this.timerIDScheduleStudiesForDeletion = timerID;
     }
 
-    public String getTimerIDCheckFreeDiskSpace() {
-        return timerIDCheckFreeDiskSpace;
+    public String getTimerIDScheduleStudiesForDeletion() {
+        return timerIDScheduleStudiesForDeletion;
     }
 
-    public final String getFreeDiskSpaceInterval() {
-        return RetryIntervalls.formatIntervalZeroAsNever(freeDiskSpaceInterval);
+    public String getScheduleStudiesForDeletionInterval() {
+        return RetryIntervalls.formatIntervalZeroAsNever(
+                scheduleStudiesForDeletionInterval);
     }
 
-    public void setFreeDiskSpaceInterval(String interval) throws Exception {
-        this.freeDiskSpaceInterval = RetryIntervalls
+    public void setScheduleStudiesForDeletionInterval(String interval)
+            throws Exception {
+        this.scheduleStudiesForDeletionInterval = RetryIntervalls
                 .parseIntervalOrNever(interval);
         if (getState() == STARTED) {
-            scheduler.stopScheduler(timerIDCheckFreeDiskSpace,
-                    freeDiskSpaceListenerID, freeDiskSpaceListener);
-            freeDiskSpaceListenerID = scheduler.startScheduler(
-                    timerIDCheckFreeDiskSpace, freeDiskSpaceInterval,
-                    freeDiskSpaceListener);
+            scheduler.stopScheduler(timerIDScheduleStudiesForDeletion,
+                    scheduleStudiesForDeletionListenerID,
+                    scheduleStudiesForDeletionListener);
+            scheduleStudiesForDeletionListenerID = scheduler.startScheduler(
+                    timerIDScheduleStudiesForDeletion,
+                    scheduleStudiesForDeletionInterval,
+                    scheduleStudiesForDeletionListener);
+        }
+    }
+
+    public String getTimerIDDeleteOrphanedPrivateFiles() {
+        return timerIDDeleteOrphanedPrivateFiles;
+    }
+
+    public void setTimerIDDeleteOrphanedPrivateFiles(
+            String timerIDDeleteOrphanedPrivateFiles) {
+        this.timerIDDeleteOrphanedPrivateFiles =
+                timerIDDeleteOrphanedPrivateFiles;
+    }
+
+    public String getDeleteOrphanedPrivateFilesInterval() {
+        return RetryIntervalls.formatIntervalZeroAsNever(
+                deleteOrphanedPrivateFilesInterval);
+    }
+
+    public void setDeleteOrphanedPrivateFilesInterval(String interval)
+            throws Exception {
+        this.deleteOrphanedPrivateFilesInterval = RetryIntervalls
+                .parseIntervalOrNever(interval);
+        if (getState() == STARTED) {
+            scheduler.stopScheduler(timerIDDeleteOrphanedPrivateFiles,
+                    deleteOrphanedPrivateFilesListenerID,
+                    deleteOrphanedPrivateFilesListener);
+            deleteOrphanedPrivateFilesListenerID = scheduler.startScheduler(
+                    timerIDDeleteOrphanedPrivateFiles,
+                    deleteOrphanedPrivateFilesInterval,
+                    deleteOrphanedPrivateFilesListener);
         }
     }
 
     protected void startService() throws Exception {
-        freeDiskSpaceListenerID = scheduler.startScheduler(
-                timerIDCheckFreeDiskSpace, freeDiskSpaceInterval,
-                freeDiskSpaceListener);
+        scheduleStudiesForDeletionListenerID = scheduler.startScheduler(
+                timerIDScheduleStudiesForDeletion,
+                scheduleStudiesForDeletionInterval,
+                scheduleStudiesForDeletionListener);
+        deleteOrphanedPrivateFilesListenerID = scheduler.startScheduler(
+                timerIDDeleteOrphanedPrivateFiles,
+                deleteOrphanedPrivateFilesInterval,
+                deleteOrphanedPrivateFilesListener);
     }
 
     protected void stopService() throws Exception {
-        scheduler.stopScheduler(timerIDCheckFreeDiskSpace,
-                freeDiskSpaceListenerID, freeDiskSpaceListener);
+        scheduler.stopScheduler(timerIDScheduleStudiesForDeletion,
+                scheduleStudiesForDeletionListenerID,
+                scheduleStudiesForDeletionListener);
+        scheduler.stopScheduler(timerIDDeleteOrphanedPrivateFiles,
+                deleteOrphanedPrivateFilesListenerID,
+                deleteOrphanedPrivateFilesListener);
     }
 
-    private final NotificationListener freeDiskSpaceListener =
+    private final NotificationListener scheduleStudiesForDeletionListener =
             new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
             new Thread(new Runnable(){
                 public void run() {
                     try {
-                        freeDiskSpace();
+                        scheduleStudiesForDeletion();
                     } catch (Exception e) {
                         log.error("Free Disk Space failed:", e);
                     }
                 }}).start();
+        }
+    };
+
+    private NotificationListener deleteOrphanedPrivateFilesListener =
+            new NotificationListener() {
+        private Thread thread;
+
+        public void handleNotification(Notification notif, Object handback) {
+            if (thread == null) {
+                thread = new Thread(new Runnable(){
+                    public void run() {
+                        try {
+                            deleteOrphanedPrivateFiles();
+                        } catch (Exception e) {
+                            log.error("deleteOrphanedPrivateFiles() failed:", e);
+                        }
+                        thread = null;
+                    }});
+                thread.start();
+            } else {
+                log.info("deleteOrphanedPrivateFiles() still in progress! " +
+                        "Ignore this timer notification!");
+            }
         }
     };
 
@@ -428,12 +503,14 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                 .getFreeSize(expectedDataVolumePerDay);
     }
 
-    public String getDeleteStudiesAfter() {
-        return RetryIntervalls.formatIntervalZeroAsNever(deleteStudiesAfter);
+    public String getDeleteStudiesNotAccessedFor() {
+        return RetryIntervalls.formatIntervalZeroAsNever(
+                deleteStudiesNotAccessedFor);
     }
 
-    public void setDeleteStudiesAfter(String interval) {
-        this.deleteStudiesAfter = RetryIntervalls.parseIntervalOrNever(interval);
+    public void setDeleteStudiesNotAccessedFor(String interval) {
+        this.deleteStudiesNotAccessedFor =
+                RetryIntervalls.parseIntervalOrNever(interval);
     }
 
     public boolean isDeleteStudyOnlyIfStorageNotCommited() {
@@ -494,12 +571,20 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         this.copyOnReadOnlyFS = copyOnReadOnlyFS;
     }
 
-    public void setStudyDeleteBatchSize(int studyDeleteBatchSize) {
-        this.studyDeleteBatchSize = studyDeleteBatchSize;
+    public void setScheduleStudiesForDeletionBatchSize(int batchSize) {
+        this.scheduleStudiesForDeletionBatchSize = batchSize;
     }
 
-    public int getStudyDeleteBatchSize() {
-        return studyDeleteBatchSize;
+    public int getScheduleStudiesForDeletionBatchSize() {
+        return scheduleStudiesForDeletionBatchSize;
+    }
+
+    public void setDeleteOrphanedPrivateFilesBatchSize(int batchSize) {
+        this.deleteOrphanedPrivateFilesBatchSize = batchSize;
+    }
+
+    public int getDeleteOrphanedPrivateFilesBatchSize() {
+        return deleteOrphanedPrivateFilesBatchSize;
     }
 
     public String listAllFileSystems() throws Exception {
@@ -743,7 +828,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         return false;
     }
 
-    public int freeDiskSpace() throws Exception {
+    public int scheduleStudiesForDeletion() throws Exception {
         FileSystemMgt2 fsMgt = fileSystemMgt();
         String fsGroup = getFileSystemGroupID();
         FileSystemDTO[] fsDTOs = fsMgt.getFileSystemsOfGroup(fsGroup);
@@ -758,7 +843,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                     + getFileSystemGroupID());
             Collection<DeleteStudyOrder> orders = 
                     fsMgt.createDeleteOrdersForStudiesOnFSGroup(
-                    fsGroup, minAccessTime, studyDeleteBatchSize,
+                    fsGroup, minAccessTime, scheduleStudiesForDeletionBatchSize,
                     externalRetrieveable, storageNotCommited, copyOnMedia,
                     copyOnFSGroup, copyArchived, copyOnReadOnlyFS);
             if (orders.isEmpty()) {
@@ -777,9 +862,9 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                 countStudies++;
             }
         }
-        if (deleteStudiesAfter > 0) {
+        if (deleteStudiesNotAccessedFor > 0) {
             long notAccessedAfter = System.currentTimeMillis()
-                    - deleteStudiesAfter;
+                    - deleteStudiesNotAccessedFor;
             Collection<DeleteStudyOrder> orders = 
                 fsMgt.createDeleteOrdersForStudiesOnFSGroupNotAccessedAfter(
                 fsGroup, notAccessedAfter,
@@ -801,5 +886,28 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
             }
         }
         return countStudies;
+    }
+
+    public int deleteOrphanedPrivateFiles() throws Exception {
+        FileSystemMgt2 fsMgt = fileSystemMgt();
+        FileDTO[] fileDTOs = fsMgt.getOrphanedPrivateFilesOnFSGroup(
+                getFileSystemGroupID(), deleteOrphanedPrivateFilesBatchSize);
+        int deleted = 0;
+        for (int i = 0; i < fileDTOs.length; i++) {
+            FileDTO fileDTO = fileDTOs[i];
+            File file = FileUtils.toFile(fileDTO.getDirectoryPath(),
+                    fileDTO.getFilePath());
+            try {
+                fsMgt.deletePrivateFile(fileDTO.getPk());
+            } catch (Exception e) {
+                log.warn("Failed to remove File Record[pk=" + fileDTO.getPk()
+                        + "] from DB:", e);
+                log.info("-> Keep dereferenced file: " + file);
+                continue;
+            }
+            FileUtils.delete(file, true);
+            deleted++;
+        }
+        return deleted;
     }
 }

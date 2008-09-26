@@ -298,26 +298,26 @@
       <i>ExpectedDataVolumePerDay</i>. If <i>UsableDiskSpace</i> falls below
       this value, most infrequently accessed studies which satisfy the
       configured set of constraints will be deleted on next invocation of
-      operation <i>freeDiskSpace</i>.]]>
+      operation <i>scheduleStudiesForDeletion</i>.]]>
     </description>
     <name>CurrentDeleterThreshold</name>
     <type>long</type>
   </attribute>
 
-  <attribute access="read-write" getMethod="getDeleteStudiesAfter"
-    setMethod="setDeleteStudiesAfter">
-    <description><![CDATA[Defines how long a study is not accessed before it
-      will be deleted from file systems of the file system group managed my
-      this service, if it satisfies the configured set of constraints.
+  <attribute access="read-write" getMethod="getDeleteStudiesNotAccessedFor"
+    setMethod="setDeleteStudiesNotAccessedFor">
+    <description><![CDATA[Defines when a study not accessed for the specified
+      time will be deleted from file systems of the file system group managed
+      my this service, if it satisfies the configured set of constraints.
       <p>Format: 
       <br>##h (in hours) | ##d (in days) | ##w (in weeks) | NEVER
       <br>NEVER = deletion of studies is only triggered by running out of disk
       space.
       <br>Example:
       <br>52w = any studies that have not been accessed for 52 weeks or more
-      can be deleted if they match the configured conditions.]]>
+      can be deleted if they satisfies the configured set of constraints.]]>
     </description>
-    <name>DeleteStudiesAfter</name>
+    <name>DeleteStudiesNotAccessedFor</name>
     <type>java.lang.String</type>
     <descriptors>
       <value value="NEVER" />
@@ -331,7 +331,7 @@
       been accepted for any instances of a study to become a candidate for
       deletion from file systems of the file system group managed my this
       service triggered by running out of disk space or being not accessed
-      longer than configured <i>DeleteStudiesAfter</i>. Typically only
+      longer than configured <i>DeleteStudiesNotAccessedFor</i>. Typically only
       activated if no other constraint for study deletion is configured.]]>
     </description>
     <name>DeleteStudyOnlyIfStorageNotCommited</name>
@@ -348,7 +348,7 @@
       retrieveable from an external Application Entity to become a candidate
       for deletion from file systems of the file system group managed my this
       service triggered by running out of disk space or being not accessed
-      longer than configured <i>DeleteStudiesAfter</i>.]]>
+      longer than configured <i>DeleteStudiesNotAccessedFor</i>.]]>
     </description>
     <name>DeleteStudyOnlyIfExternalRetrieveable</name>
     <type>boolean</type>
@@ -364,7 +364,7 @@
       stored on Media to become a candidate for deletion from file systems of
       the file system group managed my this service triggered by running out of
       disk space or being not accessed longer than configured
-      <i>DeleteStudiesAfter</i>.]]>
+      <i>DeleteStudiesNotAccessedFor</i>.]]>
     </description>
     <name>DeleteStudyOnlyIfCopyOnMedia</name>
     <type>boolean</type>
@@ -380,7 +380,7 @@
       stored on a file system of the specified different file system group to
       become a candidate for deletion from file systems of the file system
       group managed my this service triggered by running out of disk space or
-      being not accessed longer than configured <i>DeleteStudiesAfter</i>.
+      being not accessed longer than configured <i>DeleteStudiesNotAccessedFor</i>.
       "NONE" = no such constraint.]]>
     </description>
     <name>DeleteStudyOnlyIfCopyOnFileSystemOfFileSystemGroup</name>
@@ -398,8 +398,8 @@
       ARCHIVED to become a candidate for deletion from file systems of the file
       system group managed my this service triggered by running out of disk
       space or being not accessed longer than configured
-      <i>DeleteStudiesAfter</i>. Typically the file system group of the file
-      system holding the archived copy is specified by
+      <i>DeleteStudiesNotAccessedFor</i>. Typically the file system group of
+      the file system holding the archived copy is specified by
       <i>DeleteStudyIfCopyOnFileSystemOfFileSystemGroup</i>.]]>
     </description>
     <name>DeleteStudyOnlyIfCopyArchived</name>
@@ -416,9 +416,9 @@
       on a read-only file system of a different file system group to become a
       candidate for deletion from file systems of the file system group managed
       my this service triggered by running out of disk space or being not
-      accessed longer than configured <i>DeleteStudiesAfter</i>. Typically
-      the file system group of the read-only file systems is specified by
-      <i>DeleteStudyIfCopyOnFileSystemOfFileSystemGroup</i>.]]> 
+      accessed longer than configured <i>DeleteStudiesNotAccessedFor</i>.
+      Typically the file system group of the read-only file systems is
+      specified by <i>DeleteStudyIfCopyOnFileSystemOfFileSystemGroup</i>.]]> 
     </description>
     <name>DeleteStudyOnlyIfCopyOnReadOnlyFileSystem</name>
     <type>boolean</type>
@@ -428,41 +428,86 @@
   </attribute>
 
   <attribute access="read-write"
-    getMethod="getStudyDeleteBatchSize"
-    setMethod="setStudyDeleteBatchSize">
+    getMethod="getScheduleStudiesForDeletionInterval"
+    setMethod="setScheduleStudiesForDeletionInterval">
+    <description><![CDATA[Interval in which operation
+      <i>scheduleStudiesForDeletion</i> is invoked to schedule deletion of most
+      infrequently accessed studies which satisfies the configured set of
+      constraints from writable file systems of the file system group managed
+      my this service, if they were not accessed longer than configured
+      <i>DeleteStudiesNotAccessedFor</i> or if <i>UsableDiskSpace</i>
+      falls below <i>CurrentDeleterThreshold</i>.
+      <p>Format: ##s (in seconds), ##m (in minutes), ##h (in hours).
+      <br>NEVER = do not invoke operation <i>scheduleStudiesForDeletion</i>
+      automatically => never delete studies from the file system group managed
+      my this service automatically.]]>
+    </description>
+    <name>ScheduleStudiesForDeletionInterval</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="NEVER" />
+    </descriptors>
+  </attribute>
+ 
+  <attribute access="read-write"
+    getMethod="getScheduleStudiesForDeletionBatchSize"
+    setMethod="setScheduleStudiesForDeletionBatchSize">
     <description><![CDATA[Defines maximal number of studies scheduled for
       deletion in one transaction.]]> 
     </description>
-    <name>StudyDeleteBatchSize</name>
+    <name>ScheduleStudiesForDeletionBatchSize</name>
     <type>int</type>
     <descriptors>
       <value value="100" />
     </descriptors>
   </attribute>
  
-  <attribute access="read-write" getMethod="getFreeDiskSpaceInterval"
-    setMethod="setFreeDiskSpaceInterval">
-    <description><![CDATA[Interval in which operation <i>freeDiskSpace</i> is
-      invoked to schedule deletion of most infrequently accessed studies which
-      match the configured conditions from writable file systems of the file
-      system group managed my this service, if they were not accessed longer
-      than configured <i>DeleteStudiesAfter</i> or if <i>UsableDiskSpace</i>
-      falls below <i>CurrentDeleterThreshold</i>.
+  <attribute access="read-write"
+    getMethod="getDeleteOrphanedPrivateFilesInterval"
+    setMethod="setDeleteOrphanedPrivateFilesInterval">
+    <description><![CDATA[Interval in which operation
+      <i>deleteOrphanedPrivateFiles</i> is invoked to delete orphaned private
+      files from writable file systems of the file system group managed my this
+      service. Orphaned private files are the result of deleting instances
+      from the web trash folder.
       <p>Format: ##s (in seconds), ##m (in minutes), ##h (in hours).
-      <br>NEVER = do not invoke operation <i>freeDiskSpace</i> automatically
-      => disables automatically deletion of studies.]]>
+      <br>NEVER = do not invoke operation <i>deleteOrphanedPrivateFiles</i>
+      automatically => never delete orphaned private files from the file
+      system group managed my this service automatically.]]>
     </description>
-    <name>FreeDiskSpaceInterval</name>
+    <name>DeleteOrphanedPrivateFilesInterval</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="5m" />
+      <value value="NEVER" />
     </descriptors>
   </attribute>
 
-  <attribute access="read-write" getMethod="getTimerIDCheckFreeDiskSpace"
-    setMethod="setTimerIDCheckFreeDiskSpace">
+   <attribute access="read-write"
+      getMethod="getDeleteOrphanedPrivateFilesBatchSize"
+      setMethod="setDeleteOrphanedPrivateFilesBatchSize">
+      <description><![CDATA[Limit the number of orphaned private files that are
+        deleted by one invocation of operation <i>deleteOrphanedPrivateFiles</i>.]]>
+      </description>
+      <name>DeleteOrphanedPrivateFilesBatchSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1000"/>
+      </descriptors>
+   </attribute>
+
+  <attribute access="read-write"
+    getMethod="getTimerIDScheduleStudiesForDeletion"
+    setMethod="setTimerIDScheduleStudiesForDeletion">
     <description>Used internally. Do NOT modify. </description>
-    <name>TimerIDCheckFreeDiskSpace</name>
+    <name>TimerIDScheduleStudiesForDeletion</name>
+    <type>java.lang.String</type>
+  </attribute>
+
+  <attribute access="read-write"
+    getMethod="getTimerIDDeleteOrphanedPrivateFiles"
+    setMethod="setTimerIDDeleteOrphanedPrivateFiles">
+    <description>Used internally. Do NOT modify. </description>
+    <name>TimerIDDeleteOrphanedPrivateFiles</name>
     <type>java.lang.String</type>
   </attribute>
 
@@ -573,23 +618,36 @@
     <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
   </operation>
 
-   <operation impact="ACTION">
-      <description>Update value of attribute ExpectedDataVolumePerDay,
-      if data volume received during last 24 hours exceeds its current value.
-      </description>
-      <name>adjustExpectedDataVolumePerDay</name>
-      <return-type>java.lang.String</return-type>
-   </operation>
+  <operation impact="ACTION">
+    <description><![CDATA[Update value of attribute
+      <i>ExpectedDataVolumePerDay</i>, if data volume received during last
+      24 hours exceeds its current value.]]>
+    </description>
+    <name>adjustExpectedDataVolumePerDay</name>
+    <return-type>java.lang.String</return-type>
+  </operation>
 
   <operation impact="ACTION">
     <description><![CDATA[Schedules deletion of most infrequently accessed
-      studies which match the configured conditions from writable file systems
-      of the file system group managed my this service, if they were not
-      accessed longer than configured <i>DeleteStudiesAfter</i> or if
-      <i>UsableDiskSpace</i> falls below <i>CurrentDeleterThreshold</i>.
+      studies which satisfies the configured set of constraints from writable
+      file systems of the file system group managed my this service, if they
+      were not accessed longer than configured
+      <i>DeleteStudiesNotAccessedFor</i> or if  <i>UsableDiskSpace</i> falls
+      below <i>CurrentDeleterThreshold</i>.
       Returns the number of studies scheduled for deletion.]]>
     </description>
-    <name>freeDiskSpace</name>
+    <name>scheduleStudiesForDeletion</name>
+    <return-type>int</return-type>
+  </operation>
+
+
+  <operation impact="ACTION">
+    <description><![CDATA[Delete orphaned private files from writable file
+      systems of the file system group managed my this service. Orphaned
+      private files are the result of deleting instances from the web trash
+      folder. Returns the number of deleted files.]]>
+    </description>
+    <name>deleteOrphanedPrivateFiles</name>
     <return-type>int</return-type>
   </operation>
 
@@ -597,7 +655,8 @@
 
   <notification>
     <description>The notification sent whenever the current storage
-      file system changed to the next configured storage file system.</description>
+      file system changed to the next configured storage file system.
+    </description>
     <name>javax.management.Notification</name>
     <notification-type>org.dcm4chex.archive.notif.StorageFileSystemSwitched</notification-type>
   </notification>

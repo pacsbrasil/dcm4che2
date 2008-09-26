@@ -37,7 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.archive.mbean;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -244,7 +243,7 @@ public class DeleteStudyService extends ServiceMBeanSupport
                 availabilityOfExternalRetrieveable, deleteStudyFromDB,
                 deletePatientWithoutObjects);
         for (int i = 0; i < filePaths.length; i++) {
-            delete(FileUtils.toFile(filePaths[i]));
+            FileUtils.delete(FileUtils.toFile(filePaths[i]), true);
         }
         if (createIANonStudyDelete) {
             try {
@@ -261,24 +260,6 @@ public class DeleteStudyService extends ServiceMBeanSupport
                 log.error("Failed to create IAN on Study Delete:", e);
             }
         }
-    }
-
-    private boolean delete(File file) {
-        log.info("M-DELETE file: " + file);
-        if (!file.exists()) {
-            log.warn("File: " + file + " was already deleted");
-            return true;
-        }
-        if (!file.delete()) {
-            log.warn("Failed to delete file: " + file);
-            return false;
-        }
-        // purge empty series and study directory
-        File seriesDir = file.getParentFile();
-        if (seriesDir.delete()) {
-            seriesDir.getParentFile().delete();
-        }
-        return true;
     }
 
     static FileSystemMgt2 fileSystemMgt() throws Exception {

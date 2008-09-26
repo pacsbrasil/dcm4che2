@@ -37,7 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.archive.ejb.session;
 
-import java.rmi.NoSuchObjectException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -64,12 +63,15 @@ import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.common.FileSystemStatus;
+import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
+import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocal;
+import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
@@ -84,7 +86,9 @@ import org.dcm4chex.archive.exceptions.NoSuchStudyException;
  * @ejb.transaction type="Required"
  * 
  * @ejb.ejb-ref ejb-name="FileSystem" view-type="local"
- *     ref-name="ejb/FileSystem"
+ *              ref-name="ejb/FileSystem"
+ * @ejb.ejb-ref ejb-name="PrivateFile" view-type="local"
+ *              ref-name="ejb/PrivateFile"
  * @ejb.ejb-ref ejb-name="Study" ref-name="ejb/Study" view-type="local"
  * @ejb.ejb-ref ejb-name="StudyOnFileSystem" ref-name="ejb/StudyOnFileSystem"
  *              view-type="local"
@@ -104,6 +108,8 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     private StudyLocalHome studyHome;
     private StudyOnFileSystemLocalHome sofHome;
 
+    private PrivateFileLocalHome privFileHome;
+
     public void setSessionContext(SessionContext ctx) {
         Context jndiCtx = null;
         try {
@@ -114,6 +120,8 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                     .lookup("java:comp/env/ejb/Study");
             this.sofHome = (StudyOnFileSystemLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/StudyOnFileSystem");
+            this.privFileHome = (PrivateFileLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/PrivateFile");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -130,6 +138,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
        fileSystemHome = null;
        studyHome = null;
        sofHome = null;
+       privFileHome = null;
     }
 
     /**
@@ -486,5 +495,30 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                 patient.getGppps().isEmpty() ) {
             patient.remove();
         }
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public FileDTO[] getOrphanedPrivateFilesOnFSGroup(String groupID, int limit)
+            throws FinderException {
+        return toFileDTOsPrivate(
+                privFileHome.findOrphanedOnFSGroup(groupID, limit));
+    }
+
+    private FileDTO[] toFileDTOsPrivate(Collection c) {
+        FileDTO[] dto = new FileDTO[c.size()];
+        Iterator it = c.iterator();
+        for (int i = 0; i < dto.length; ++i) {
+            dto[i] = ((PrivateFileLocal) it.next()).getFileDTO();
+        }
+        return dto;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void deletePrivateFile(long file_pk) throws RemoveException {
+        privFileHome.remove(file_pk);
     }
 }
