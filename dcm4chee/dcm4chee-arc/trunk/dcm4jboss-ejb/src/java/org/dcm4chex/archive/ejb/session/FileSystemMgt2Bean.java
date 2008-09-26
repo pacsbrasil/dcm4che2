@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.archive.ejb.session;
 
+import java.rmi.NoSuchObjectException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,6 +47,7 @@ import java.util.Iterator;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
@@ -73,6 +75,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
+import org.dcm4chex.archive.exceptions.NoSuchStudyException;
 
 /**
  * @ejb.bean name="FileSystemMgt2" type="Stateless" view-type="remote"
@@ -384,9 +387,14 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**    
      * @ejb.interface-method
      */
-    public Dataset createIAN(DeleteStudyOrder order) throws FinderException {
-        boolean keepDBRecords = order.isKeepDBRecords();
-        StudyLocal study = studyHome.findByPrimaryKey(order.getStudyPk());
+    public Dataset createIAN(DeleteStudyOrder order, boolean delStudyFromDB)
+            throws FinderException, NoSuchStudyException {
+        StudyLocal study;
+        try {
+            study = studyHome.findByPrimaryKey(order.getStudyPk());
+        } catch (ObjectNotFoundException e) {
+            throw new NoSuchStudyException(e);
+        }
         PatientLocal pat = study.getPatient();
         Dataset ian = DcmObjectFactory.getInstance().newDataset();
         ian.putAll(pat.getAttributes(false).subSet(IAN_PAT_TAGS));
@@ -416,8 +424,8 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                 DatasetUtils.putRetrieveAET(refSOP, inst.getRetrieveAETs(),
                         inst.getExternalRetrieveAET());
                 refSOP.putCS(Tags.InstanceAvailability, Availability.toString(
-                        keepDBRecords ? inst.getAvailabilitySafe()
-                                      : Availability.UNAVAILABLE));
+                        delStudyFromDB ? Availability.UNAVAILABLE
+                                       : inst.getAvailabilitySafe()));
              }
         }
         return ian;
@@ -427,10 +435,10 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
      * @ejb.interface-method
      */
     public String[] deleteStudy(DeleteStudyOrder order,
-            int availabilityOfExternalRetrieveable) {
+            int availabilityOfExtRetr, boolean delStudyFromDB,
+            boolean delPatientWithoutObjects) {
         try {
             long fsPk = order.getFsPk();
-            boolean keepDBRecords = order.isKeepDBRecords();
             StudyLocal study = studyHome.findByPrimaryKey(order.getStudyPk());
             FileSystemLocal fs = fileSystemHome.findByPrimaryKey(fsPk);
             String fsPath = fs.getDirectoryPath();
@@ -440,11 +448,14 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             for (Iterator iter = files.iterator(); iter.hasNext(); i++) {
                 FileLocal f = (FileLocal) iter.next();
                 fpaths[i] = fsPath + '/' + f.getFilePath();
-                if (keepDBRecords) {
-                    f.remove();
-                }
+                f.remove();
             }
-            if (keepDBRecords) {
+            if (delStudyFromDB && study.getAllFiles().isEmpty()) {
+                study.remove();
+                if (delPatientWithoutObjects) {
+                    deletePatientWithoutObjects(study.getPatient());
+                }
+            } else {
                 Collection seriess = study.getSeries();
                 for (Iterator siter = seriess.iterator(); siter.hasNext();) {
                     SeriesLocal series = (SeriesLocal) siter.next();
@@ -452,18 +463,12 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                     for (Iterator iiter = insts.iterator(); iiter.hasNext();) {
                         InstanceLocal inst = (InstanceLocal) iiter.next();
                         inst.updateDerivedFields(true, true,
-                                availabilityOfExternalRetrieveable);
+                                availabilityOfExtRetr);
                     }
                     series.updateDerivedFields(false, true, false, false, true);
                 }
                 study.updateDerivedFields(false, true, false, false, true, false);
-            } else {
-                // Cascade-delete the study
-                // FIXME: this will delete files stored on all file systems,
-                // but currently we only deleted the one specified.
-                study.remove();
-                deletePatientWithoutObjects(study.getPatient());
-            }
+             }
             return fpaths;
         } catch (FinderException e) {
             throw new EJBException(e);
@@ -474,11 +479,11 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
 
     private void deletePatientWithoutObjects(PatientLocal patient)
             throws RemoveException {
-        if ( patient.getStudies().size() == 0 &&
-                patient.getMwlItems().size() == 0 &&
-                patient.getGsps().size() == 0 &&
-                patient.getMpps().size() == 0 &&
-                patient.getGppps().size() == 0 ) {
+        if ( patient.getStudies().isEmpty() &&
+                patient.getMwlItems().isEmpty() &&
+                patient.getGsps().isEmpty() &&
+                patient.getMpps().isEmpty() &&
+                patient.getGppps().isEmpty() ) {
             patient.remove();
         }
     }

@@ -20,18 +20,33 @@
   <!-- Attributes -->
   &defaultAttributes;
 
-  <attribute access="read-write"
-    getMethod="getAvailabilityOfExternalRetrieveable"
-    setMethod="setAvailabilityOfExternalRetrieveable">
-    <description><![CDATA[Defines Instance Availability of studies which
-      becomes only external retrievable after deletion from file systems
-      accessable by this archive instance. Enumerated values: "ONLINE",
-      "NEARLINE", "OFFLINE", "UNAVAILABLE"]]>
+  <attribute access="read-write" getMethod="isDeleteStudyFromDB"
+    setMethod="setDeleteStudyFromDB">
+    <description><![CDATA[Enables deletion of Studies also from the database,
+      if none of its instances is longer stored on any file system managed
+      by this archive instance. <b>Attention:</b> will also remove only
+      external retrieveable studies and studies archived to media from the DB,
+      so its data is no longer accessable by the DICOM Query Service and DICOM
+      Retrieve requests can no longer be forwarded to the external Retrieve
+      Application Entity.]]>
     </description>
-    <name>AvailabilityOfExternalRetrieveable</name>
-    <type>java.lang.String</type>
+    <name>DeleteStudyFromDB</name>
+    <type>boolean</type>
     <descriptors>
-      <value value="NEARLINE" />
+      <value value="false" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write" getMethod="isDeletePatientWithoutObjects"
+    setMethod="setDeletePatientWithoutObjects">
+    <description><![CDATA[Enables deletion of patients without Studies, MWL,
+      MPPS, GPWL or GPPPS entries. Only effective with activated
+      <i>DeleteStudiesFromDB</i>.]]>
+    </description>
+    <name>DeletePatientWithoutObjects</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="false" />
     </descriptors>
   </attribute>
 
@@ -46,6 +61,21 @@
     <type>boolean</type>
     <descriptors>
       <value value="false" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write"
+    getMethod="getAvailabilityOfExternalRetrieveable"
+    setMethod="setAvailabilityOfExternalRetrieveable">
+    <description><![CDATA[Defines Instance Availability of studies which
+      becomes only external retrievable after deletion from file systems
+      accessable by this archive instance. Enumerated values: "ONLINE",
+      "NEARLINE", "OFFLINE", "UNAVAILABLE"]]>
+    </description>
+    <name>AvailabilityOfExternalRetrieveable</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="NEARLINE" />
     </descriptors>
   </attribute>
 

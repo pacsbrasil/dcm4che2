@@ -324,21 +324,6 @@
     </descriptors>
   </attribute>
 
-  <attribute access="read-write" getMethod="isKeepDBRecordsOfDeletedStudies"
-    setMethod="setKeepDBRecordsOfDeletedStudies">
-    <description><![CDATA[Defines if DB records of studies which files were
-      deleted by the deleter function shall be retained, so query requests
-      for such studies still return matching entries and retrieve requests
-      may be forwarded to an external retrieve application entity referenced
-      in the DB records for such studies.]]>
-    </description>
-    <name>KeepDBRecordsOfDeletedStudies</name>
-    <type>boolean</type>
-    <descriptors>
-      <value value="true" />
-    </descriptors>
-  </attribute>
-
   <attribute access="read-write"
     getMethod="isDeleteStudyOnlyIfStorageNotCommited"
     setMethod="setDeleteStudyOnlyIfStorageNotCommited">

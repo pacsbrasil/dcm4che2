@@ -117,8 +117,6 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     private long deleteStudiesAfter = 0;
 
-    private boolean keepDBRecords;
-
     private boolean externalRetrieveable;
 
     private boolean storageNotCommited;
@@ -436,15 +434,6 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     public void setDeleteStudiesAfter(String interval) {
         this.deleteStudiesAfter = RetryIntervalls.parseIntervalOrNever(interval);
-    }
-
-    public boolean isKeepDBRecordsOfDeletedStudies() {
-        return keepDBRecords;
-    }
-
-    public void setKeepDBRecordsOfDeletedStudies(
-            boolean keepDBRecordsOfDeletedStudies) {
-        this.keepDBRecords = keepDBRecordsOfDeletedStudies;
     }
 
     public boolean isDeleteStudyOnlyIfStorageNotCommited() {
@@ -781,7 +770,6 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                     + " studies for deletion on file system group "
                     + getFileSystemGroupID());
             for (DeleteStudyOrder order : orders) {
-                order.setKeepDBRecords(keepDBRecords);
                 deleteStudy.scheduleDeleteOrder(order);
                 fsMgt.removeStudyOnFSRecord(order);
                 minAccessTime = order.getAccessTime();
@@ -806,7 +794,6 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                             + getFileSystemGroupID());
                 }
                 for (DeleteStudyOrder order : orders) {
-                    order.setKeepDBRecords(keepDBRecords);
                     deleteStudy.scheduleDeleteOrder(order);
                     fsMgt.removeStudyOnFSRecord(order);
                     countStudies++;

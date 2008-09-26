@@ -42,6 +42,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
 
+import javax.ejb.ObjectNotFoundException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -57,6 +58,7 @@ import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
+import org.dcm4chex.archive.exceptions.NoSuchStudyException;
 import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
@@ -76,17 +78,28 @@ public class DeleteStudyService extends ServiceMBeanSupport
 
     private RetryIntervalls retryIntervalsForJmsOrder = new RetryIntervalls();
 
-    private int availabilityOfExternalRetrieveable;
+    private boolean deleteStudyFromDB;
+
+    private boolean deletePatientWithoutObjects;
 
     private boolean createIANonStudyDelete = false;
 
-    public String getAvailabilityOfExternalRetrieveable() {
-        return Availability.toString(availabilityOfExternalRetrieveable);
+    private int availabilityOfExternalRetrieveable;
+
+    public boolean isDeleteStudyFromDB() {
+        return deleteStudyFromDB;
     }
 
-    public void setAvailabilityOfExternalRetrieveable(String availability) {
-        this.availabilityOfExternalRetrieveable =
-                Availability.toInt(availability.trim());
+    public void setDeleteStudyFromDB(boolean deleteStudyFromDB) {
+        this.deleteStudyFromDB = deleteStudyFromDB;
+    }
+
+    public boolean isDeletePatientWithoutObjects() {
+        return deletePatientWithoutObjects;
+    }
+
+    public void setDeletePatientWithoutObjects(boolean deletePatientWithoutObjects) {
+        this.deletePatientWithoutObjects = deletePatientWithoutObjects;
     }
 
     public boolean isCreateIANonStudyDelete() {
@@ -95,6 +108,15 @@ public class DeleteStudyService extends ServiceMBeanSupport
 
     public void setCreateIANonStudyDelete(boolean createIANonStudyDelete) {
         this.createIANonStudyDelete = createIANonStudyDelete;
+    }
+
+    public String getAvailabilityOfExternalRetrieveable() {
+        return Availability.toString(availabilityOfExternalRetrieveable);
+    }
+
+    public void setAvailabilityOfExternalRetrieveable(String availability) {
+        this.availabilityOfExternalRetrieveable =
+                Availability.toInt(availability.trim());
     }
 
     public final String getRetryIntervalsForJmsOrder() {
@@ -214,19 +236,30 @@ public class DeleteStudyService extends ServiceMBeanSupport
     private void deleteStudy(DeleteStudyOrder order) throws Exception {
         FileSystemMgt2 fsMgt = fileSystemMgt();
         Dataset ian = null;
-        if (createIANonStudyDelete && !order.isKeepDBRecords()) {
-            ian = fsMgt.createIAN(order);
+        // prepare IAN if study may be deleted from DB by fsMgt.deleteStudy()
+        if (createIANonStudyDelete && deleteStudyFromDB) {
+            ian = fsMgt.createIAN(order, true);
         }
         String[] filePaths = fsMgt.deleteStudy(order,
-                availabilityOfExternalRetrieveable);
+                availabilityOfExternalRetrieveable, deleteStudyFromDB,
+                deletePatientWithoutObjects);
         for (int i = 0; i < filePaths.length; i++) {
             delete(FileUtils.toFile(filePaths[i]));
         }
-        if (createIANonStudyDelete && order.isKeepDBRecords()) {
-            ian = fsMgt.createIAN(order);
-        }
         if (createIANonStudyDelete) {
-            sendJMXNotification(new StudyDeleted(ian));
+            try {
+                try {
+                    ian = fsMgt.createIAN(order, false);
+                } catch (NoSuchStudyException e) {
+                    // OK, in case of study was deleted from DB
+                    if (ian == null) {
+                        throw e;
+                    }
+                }
+                sendJMXNotification(new StudyDeleted(ian));
+            } catch (Exception e) {
+                log.error("Failed to create IAN on Study Delete:", e);
+            }
         }
     }
 

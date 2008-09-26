@@ -35,61 +35,19 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-
-package org.dcm4chex.archive.common;
-
-import java.io.Serializable;
-
-import org.dcm4chex.archive.common.BaseJmsOrder;
+package org.dcm4chex.archive.exceptions;
 
 /**
- * JMS order for purging a study
- * 
- * @author fang.yang@agfa.com
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Jun 1, 2006
- * 
+ * @since Sep 26, 2008
  */
-public class DeleteStudyOrder extends BaseJmsOrder implements Serializable {
+public class NoSuchStudyException extends Exception {
 
-    private static final long serialVersionUID = 2395940827585137279L;
+    private static final long serialVersionUID = -2820727883355660328L;
 
-    private final long sofPk;
-    private final long studyPk;
-    private final long fsPk;
-    private final long accessTime;
-
-    public DeleteStudyOrder(long sofPk, long studyPk, long fsPk,
-            long accessTime) {
-        this.sofPk = sofPk;
-        this.studyPk = studyPk;
-        this.fsPk = fsPk;
-        this.accessTime = accessTime;
+    public NoSuchStudyException(Throwable cause) {
+        super(cause);
     }
 
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append(super.toString());
-        sb.append("\tStudyOnFS PK: ").append(sofPk).append("\n");
-        sb.append("\tStudy PK: ").append(studyPk).append("\n");
-        sb.append("\tFileSystem PK: ").append(fsPk).append("\n");
-        return sb.toString();
-    }
-
-    public long getSoFsPk() {
-        return sofPk;
-    }
-
-    public long getFsPk() {
-        return fsPk;
-    }
-
-    public long getStudyPk() {
-        return studyPk;
-    }
-
-    public long getAccessTime() {
-        return accessTime;
-    }
 }
