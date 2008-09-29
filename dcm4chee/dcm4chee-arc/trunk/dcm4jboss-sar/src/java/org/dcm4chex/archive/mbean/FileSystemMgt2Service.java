@@ -53,8 +53,10 @@ import javax.management.ObjectName;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
+import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DeleterThresholds;
 import org.dcm4chex.archive.config.RetryIntervalls;
+import org.dcm4chex.archive.dcm.movescu.ForwardService2;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
@@ -134,6 +136,8 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     private boolean copyOnReadOnlyFS;
 
+    private boolean scheduleStudiesForDeletionOnSeriesStored;
+
     private int scheduleStudiesForDeletionBatchSize;
 
     private int deleteOrphanedPrivateFilesBatchSize;
@@ -143,6 +147,16 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     private Integer scheduleStudiesForDeletionListenerID;
 
     private Integer deleteOrphanedPrivateFilesListenerID;
+
+    private ObjectName storeScpServiceName;
+
+    public ObjectName getStoreScpServiceName() {
+        return storeScpServiceName;
+    }
+
+    public final void setStoreScpServiceName(ObjectName storeScpServiceName) {
+        this.storeScpServiceName = storeScpServiceName;
+    }
 
     public ObjectName getDeleteStudyServiceName() {
         return deleteStudy.getDeleteStudyServiceName();
@@ -227,6 +241,9 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                 timerIDDeleteOrphanedPrivateFiles,
                 deleteOrphanedPrivateFilesInterval,
                 deleteOrphanedPrivateFilesListener);
+        server.addNotificationListener(storeScpServiceName,
+                scheduleStudiesForDeletionListener,
+                SeriesStored.NOTIF_FILTER, null);
     }
 
     protected void stopService() throws Exception {
@@ -236,6 +253,9 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         scheduler.stopScheduler(timerIDDeleteOrphanedPrivateFiles,
                 deleteOrphanedPrivateFilesListenerID,
                 deleteOrphanedPrivateFilesListener);
+        server.removeNotificationListener(storeScpServiceName,
+                scheduleStudiesForDeletionListener,
+                SeriesStored.NOTIF_FILTER, null);
     }
 
     private final NotificationListener scheduleStudiesForDeletionListener =
@@ -571,6 +591,16 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         this.copyOnReadOnlyFS = copyOnReadOnlyFS;
     }
 
+    public void setScheduleStudiesForDeletionOnSeriesStored(
+            boolean scheduleStudiesForDeletionOnSeriesStored) {
+        this.scheduleStudiesForDeletionOnSeriesStored =
+                scheduleStudiesForDeletionOnSeriesStored;
+    }
+
+    public boolean isScheduleStudiesForDeletionOnSeriesStored() {
+        return scheduleStudiesForDeletionOnSeriesStored;
+    }
+
     public void setScheduleStudiesForDeletionBatchSize(int batchSize) {
         this.scheduleStudiesForDeletionBatchSize = batchSize;
     }
@@ -829,6 +859,8 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public int scheduleStudiesForDeletion() throws Exception {
+        log.info("Check file system group " + getFileSystemGroupID()
+                + " for deletion of studies");
         FileSystemMgt2 fsMgt = fileSystemMgt();
         String fsGroup = getFileSystemGroupID();
         FileSystemDTO[] fsDTOs = fsMgt.getFileSystemsOfGroup(fsGroup);
@@ -889,6 +921,8 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public int deleteOrphanedPrivateFiles() throws Exception {
+        log.info("Check file system group " + getFileSystemGroupID()
+                + " for deletion of orphaned private files");
         FileSystemMgt2 fsMgt = fileSystemMgt();
         FileDTO[] fileDTOs = fsMgt.getOrphanedPrivateFilesOnFSGroup(
                 getFileSystemGroupID(), deleteOrphanedPrivateFilesBatchSize);
