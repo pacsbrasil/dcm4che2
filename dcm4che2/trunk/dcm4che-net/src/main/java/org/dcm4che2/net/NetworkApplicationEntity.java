@@ -1250,13 +1250,14 @@ public class NetworkApplicationEntity {
         RoleSelection rqrs = rq.getRoleSelectionFor(asuid);
         TransferCapability tcscp = findTC(transferCapability, asuid, true);
         TransferCapability tcscu = findTC(transferCapability, asuid, false);
-        if (rqrs != null && ac.getRoleSelectionFor(asuid) == null) {
+        RoleSelection acrs = ac.getRoleSelectionFor(asuid);
+        if (rqrs != null && acrs == null) {
             boolean scp = rqrs.isSCP() && tcscu != null;
             boolean scu = rqrs.isSCU() && tcscp != null;
-            RoleSelection rs = new RoleSelection(asuid, scu, scp);
-            ac.addRoleSelection(rs);
+            acrs = new RoleSelection(asuid, scu, scp);
+            ac.addRoleSelection(acrs);
         }
-        TransferCapability tc = rqrs == null || rqrs.isSCU() ? tcscp : tcscu;
+        TransferCapability tc = rqrs == null || acrs.isSCU() ? tcscp : tcscu;
 
         PresentationContext acpc = new PresentationContext();
         acpc.setPCID(rqpc.getPCID());
