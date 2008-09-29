@@ -12,7 +12,7 @@ SortPatient.prototype.img = new Object();
  */
 SortPatient.prototype.sortColumn = function (col)   {
     var data = this.layout.search.patient;
-  
+    this.img = [];
     /**
      * Ascending compare function for top level elements of the study result
      */
@@ -99,10 +99,10 @@ SortPatient.prototype.sortColumn = function (col)   {
     if (data[0][col])  {
         if (this[col] == undefined || this[col] == "desc")  {
             this[col]="asc";
-            SortPatient.prototype.img[col] = "icon/up_arrow_32.png";
+            this.img[col] = "icon/up_arrow_32.png";
         } else  {
             this[col]="desc";
-            SortPatient.prototype.img[col] = "icon/down_arrow_32.png";
+            this.img[col] = "icon/down_arrow_32.png";
         }
         sortLevelOne(data, this[col]);
         console.info("%s IMAGE %s",col, SortPatient.prototype.img[col]);
@@ -112,10 +112,10 @@ SortPatient.prototype.sortColumn = function (col)   {
     if (data[0].study[0][col])    {
         if (this[col] == undefined || this[col] == "desc")  {
             this[col]="asc";
-            SortPatient.prototype.img[col] = "icon/up_arrow_32.png";
+            this.img[col] = "icon/up_arrow_32.png";
         } else  {
             this[col]="desc";
-            SortPatient.prototype.img[col] = "icon/down_arrow_32.png";
+            this.img[col] = "icon/down_arrow_32.png";
         }
         sortLevelTwo(data, this[col]);
         console.info("%s IMAGE %s",col,SortPatient.prototype.img[col]);
