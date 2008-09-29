@@ -1232,9 +1232,8 @@ public class NetworkApplicationEntity {
         ac.setCalledAET(rq.getCalledAET());
         ac.setCallingAET(rq.getCallingAET());
         ac.setMaxPDULength(maxPDULengthReceive);
-        ac
-                .setMaxOpsInvoked(minZeroAsMax(rq.getMaxOpsInvoked(),
-                        maxOpsPerformed));
+        ac.setMaxOpsInvoked(minZeroAsMax(rq.getMaxOpsInvoked(),
+                maxOpsPerformed));
         ac.setMaxOpsPerformed(minZeroAsMax(rq.getMaxOpsPerformed(),
                 maxOpsInvoked));
         Collection<PresentationContext> pcs = rq.getPresentationContexts();
