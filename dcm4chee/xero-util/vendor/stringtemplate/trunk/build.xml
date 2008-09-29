@@ -47,15 +47,9 @@
     <property name="build.classes" value="${build.dir}${file.separator}classes"/>
     <property name="build.javadocs" value="${basedir}${file.separator}docs${file.separator}api"/>
     <property name="build.jar" value="${build.dir}${file.separator}${name}.jar"/>
-    <property name="antlr2.jar" value="lib/antlr-2.7.7.jar" />
-    <property name="junit.jar" value="lib/junit.jar" />
-    <property name="compile.optimize" value="true" />
-    <property name="compile.deprecation" value="false" />
-    <property name="compile.debug" value="true" />
 
     <path id="build.classpath">
         <pathelement location="${antlr2.jar}"/>
-        <pathelement location="${junit.jar}" />
     </path>
 
 <!--

@@ -127,8 +127,6 @@ options {
 		}
 	:	'<'! "if" (' '!)* "(" IF_EXPR ")" '>'! {$setType(TemplateParser.IF);}
         ( ('\r'!)? '\n'! {newline();})? // ignore any newline right after an IF
-	|	'<'! "elseif" (' '!)* "(" IF_EXPR ")" '>'! {$setType(TemplateParser.ELSEIF);}
-        ( ('\r'!)? '\n'! {newline();})? // ignore any newline right after an IF
     |   '<'! "else" '>'!         {$setType(TemplateParser.ELSE);}
         ( ('\r'!)? '\n'! {newline();})? // ignore any newline right after an ELSE
     |   '<'! "endif" '>'!        {$setType(TemplateParser.ENDIF);}

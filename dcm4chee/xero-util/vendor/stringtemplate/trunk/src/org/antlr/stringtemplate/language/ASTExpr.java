@@ -396,7 +396,7 @@ public class ASTExpr extends Expr {
      */
 	public Object getObjectProperty(StringTemplate self,
 									final Object o,
-									final Object propertyName) {
+									final String propertyName) {
 		if ( o==null || propertyName==null ) {
 			return null;
 		}
@@ -420,15 +420,14 @@ public class ASTExpr extends Expr {
 		return value;
 	}
 
-	protected Object rawGetObjectProperty(StringTemplate self, Object o, Object property) {
+	protected Object rawGetObjectProperty(StringTemplate self, Object o, String propertyName) {
 		Class c = o.getClass();
         Object value = null;
 
-		// Special case: our automatically created Aggregates via
+        // Special case: our automatically created Aggregates via
         // attribute name: "{obj.{prop1,prop2}}"
         if ( c==StringTemplate.Aggregate.class ) {
-			String propertyName = (String)property;
-            value = ((StringTemplate.Aggregate)o).get((String)propertyName);
+            value = ((StringTemplate.Aggregate)o).get(propertyName);
 			return value;
         }
 
@@ -438,7 +437,6 @@ public class ASTExpr extends Expr {
         else if ( c==StringTemplate.class ) {
             Map attributes = ((StringTemplate)o).getAttributes();
             if ( attributes!=null ) {
-				String propertyName = (String)property;
                 value = attributes.get(propertyName);
 				return value;
             }
@@ -448,18 +446,14 @@ public class ASTExpr extends Expr {
         // key not the property method.
         if ( o instanceof Map ) {
             Map map = (Map)o;
-			if ( property.equals("keys") ) {
+			if ( propertyName.equals("keys") ) {
 				value = map.keySet();
 			}
-			else if ( property.equals("values") ) {
+			else if ( propertyName.equals("values") ) {
 				value = map.values();
 			}
-			else if ( map.containsKey(property) ) {
-				value = map.get(property);
-			}
-			else if ( map.containsKey(property.toString()) ) {
-				// if we can't find the key, toString it
-				value = map.get(property.toString());				
+			else if ( map.containsKey(propertyName) ) {
+				value = map.get(propertyName);
 			}
 			else {
 				if ( map.containsKey(DEFAULT_MAP_VALUE_NAME) ) {
@@ -467,7 +461,7 @@ public class ASTExpr extends Expr {
 				}
 			}
 			if ( value == MAP_KEY_VALUE ) {
-				value = property;
+				value = propertyName;
 			}
 			return value;
         }
@@ -500,7 +494,6 @@ public class ASTExpr extends Expr {
 		*/
 
 		// must look up using reflection
-		String propertyName = (String)property;
 		String methodSuffix = Character.toUpperCase(propertyName.charAt(0))+
 			propertyName.substring(1,propertyName.length());
 		m = getMethod(c,"get"+methodSuffix);
@@ -881,7 +874,7 @@ public class ASTExpr extends Expr {
 		return value;
 	}
 
-	protected static Object convertAnythingIteratableToIterator(Object o) {
+	private static Object convertAnythingIteratableToIterator(Object o) {
 		Iterator iter = null;
 		if ( o instanceof Collection ) {
 			iter = ((Collection)o).iterator();
@@ -898,7 +891,7 @@ public class ASTExpr extends Expr {
 		return iter;
 	}
 
-	protected static Iterator convertAnythingToIterator(Object o) {
+	static Iterator convertAnythingToIterator(Object o) {
 		Iterator iter = null;
 		if ( o instanceof Collection ) {
 			iter = ((Collection)o).iterator();
@@ -946,17 +939,15 @@ public class ASTExpr extends Expr {
 		Object theRest = attribute;
 		attribute = convertAnythingIteratableToIterator(attribute);
 		if ( attribute instanceof Iterator ) {
-			List a = new ArrayList();
 			Iterator it = (Iterator)attribute;
-            if ( !it.hasNext() ) {
-                return null; // if not even one value return null
-            }
-            it.next(); // ignore first value
-			while (it.hasNext()) {
-				Object o = (Object) it.next();
-				if ( o!=null ) a.add(o);
+			if ( !it.hasNext() ) {
+				return null; // if not even one value return null
 			}
-			return a;
+			it.next(); // ignore first value
+			if ( !it.hasNext() ) {
+				return null; // if not more than one value, return null
+			}
+			theRest = it;    // return suitably altered iterator
 		}
 		else {
 			theRest = null;  // rest of single-valued attribute is null
@@ -986,40 +977,21 @@ public class ASTExpr extends Expr {
 		return last;
 	}
 
-	/** Return a new list w/o null values. */
+	/** Return an iterator that skips all null values. */
 	public Object strip(Object attribute) {
 		if ( attribute==null ) {
 			return null;
 		}
 		attribute = convertAnythingIteratableToIterator(attribute);
 		if ( attribute instanceof Iterator ) {
-			List a = new ArrayList();
-			Iterator it = (Iterator)attribute;
-			while (it.hasNext()) {
-				Object o = (Object) it.next();
-				if ( o!=null ) a.add(o);
-			}
-			return a;
+			return new StripIterator((Iterator)attribute);
 		}
 		return attribute; // strip(x)==x when x single-valued attribute
 	}
 
 	/** Return all but the last element.  trunc(x)=null if x is single-valued. */
 	public Object trunc(Object attribute) {
-		if ( attribute==null ) {
-			return null;
-		}
-		attribute = convertAnythingIteratableToIterator(attribute);
-		if ( attribute instanceof Iterator ) {
-			List a = new ArrayList();
-			Iterator it = (Iterator)attribute;
-			while (it.hasNext()) {
-				Object o = (Object) it.next();
-				if ( it.hasNext() ) a.add(o); // only add if not last one
-			}
-			return a;
-		}
-		return null; // trunc(x)==null when x single-valued attribute
+		return null; // not impl.
 	}
 
 	/** Return the length of a multiple valued attribute or 1 if it is a

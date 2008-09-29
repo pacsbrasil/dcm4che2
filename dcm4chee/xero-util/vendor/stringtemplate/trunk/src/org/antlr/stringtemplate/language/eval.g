@@ -98,11 +98,13 @@ list returns [Object value=null]
 {
 Object e = null;
 List elements = new ArrayList();
+value = new CatIterator(elements);
 }
 	:	#(	LIST
 			(	e=expr
 			  	{
 			  	if ( e!=null ) {
+					e = ASTExpr.convertAnythingToIterator(e);
 			  		elements.add(e);
 			  	}
 			  	}
@@ -113,7 +115,6 @@ List elements = new ArrayList();
                 }
 			)+
 		 )
-         {value = new Cat(elements);}
 	;
 
 templateInclude returns [Object value=null]
@@ -243,16 +244,13 @@ ifAtom returns [Object value=null]
 attribute returns [Object value=null]
 {
     Object obj = null;
-    Object propName = null;
+    String propName = null;
     Object e = null;
 }
     :   #( DOT obj=expr
            ( prop:ID {propName = prop.getText();}
-           // don't force early eval here in case it's a map
-           // we need the right type on the key.
-           // E.g., <aMap.keys:{k|<k>:<aMap.(k)>}>
-           // If aMap has Integer keys, can't convert k to string then lookup.
-           | #(VALUE e=expr) {if (e!=null) {propName=e;}}
+           | #(VALUE e=expr)
+             {if (e!=null) {propName=e.toString();}}
            )
          )
         {value = chunk.getObjectProperty(self,obj,propName);}

@@ -2,8 +2,6 @@ Changes to ST (StringTemplate).
 
 #### Releases
 
-3.2: June 11, 2008
-
 3.1: January 23, 2008
 
 3.0: September 6, 2006
@@ -20,54 +18,7 @@ Changes to ST (StringTemplate).
 
 #### Fixed bugs and changes
 
-06-11-2008 -- 3.2 release
-
-o Fixed ST-36; allow <elseif>
-
-o Fixed ST-37; chk for null
-
-06-04-2008
-
-o Added \r\n normalization in AutoIndentWriter. Converts \r\n or \n
-  to whatever the writer's newline instance var is.  wrap="\n" will
-  give the proper newline by locale as will \n and \r\n in the
-  templates or even incoming data attributes (toString()'d of course).
-  Added unit tests. It even works with special literals <\r\n> and <\n>.
-
-06-03-2008
-
-o Fixed ST-39; an obscure memory leak issue with embeddedInstances
-
-06-02-2008
-
-o rest and strip returned iterators.  Made them return show list copies
-  so recursion works. iterators have side-effects.  Added 2 unit tests.
-
-o implemented trunc. returns all but last element.
-
-o Fix ST-33; [a,b] cat function used iterators; side-effect problem.
-
-05-07-2008
-
-o Had a problem with "int" : "0" in a map but ST as incoming lookup key.
-  Decided that I'd lookup as raw object first so Integer lookup works
-  but I try toString version if not found. Document this!
-
-05-06-2008
-
-o <aMap.(k)> no longer calls toString() on k.  
-  <aMap.keys:{k|<k>:<aMap.(k)>} was not working when aMap had Integer
-  keys.  Added unit test.
-
-04-07-2008
-
-o Made unit tests not depend on map order.  commented out tests that fail.
-
-02-11-2008
-
-o debug tags now emit group name with tags. improves debugging ability.
-
-01-23-2008 -- 3.1 release
+01-23-2008
 
 o reader was not closed in PathGroupLoader.
 
