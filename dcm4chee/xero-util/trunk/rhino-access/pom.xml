@@ -8,6 +8,7 @@
   <groupId>org.dcm4chee.xero</groupId>
   <artifactId>rhino-access</artifactId>
 
+  <name>JavaScript Rhino Access</name>
   <description>JavaScript Rhino Access Code for Stringtemplate, Unit Tests etc</description>
   
   <dependencies>
