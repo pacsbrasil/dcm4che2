@@ -530,28 +530,29 @@ public class Association implements Runnable {
         return rsp;
     }
 
-    public void nget(String cuid, String iuid, DimseRSPHandler rspHandler)
+    public void nget(String cuid, String iuid, int[] tags,
+            DimseRSPHandler rspHandler)
             throws IOException, InterruptedException {
-        nget(cuid, cuid, iuid, rspHandler);
+        nget(cuid, cuid, iuid, tags, rspHandler);
     }
 
-    public void nget(String asuid, String cuid, String iuid,
+    public void nget(String asuid, String cuid, String iuid, int[] tags,
             DimseRSPHandler rspHandler)
             throws IOException, InterruptedException {
         PresentationContext pc = pcFor(asuid, null);
-        DicomObject ngetrq = CommandUtils.mkNGetRQ(++msgID, cuid, iuid);
+        DicomObject ngetrq = CommandUtils.mkNGetRQ(++msgID, cuid, iuid, tags);
         invoke(pc.getPCID(), ngetrq, null, rspHandler, ae.getDimseRspTimeout());
     }
 
-    public DimseRSP nget(String cuid, String iuid)
+    public DimseRSP nget(String cuid, String iuid, int[] tags)
             throws IOException, InterruptedException {
-        return nget(cuid, cuid, iuid);
+        return nget(cuid, cuid, iuid, tags);
     }
 
-    public DimseRSP nget(String asuid, String cuid, String iuid)
+    public DimseRSP nget(String asuid, String cuid, String iuid, int[] tags)
             throws IOException, InterruptedException {
         FutureDimseRSP rsp = new FutureDimseRSP();
-        nget(asuid, cuid, iuid, rsp);
+        nget(asuid, cuid, iuid, tags, rsp);
         return rsp;
     }
 
