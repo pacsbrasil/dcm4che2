@@ -171,13 +171,9 @@
       <delete quiet="true" file="svn.externals"/>
   </target>
 
-  <target name="createSvnExternals" depends="createSvnExternalsTop, createSvnExternalsChild">
-     <antcall target="recurseChildren">
-        <param name="childCall" value="createSvnExternals" />
-     </antcall>
-  </target>
+  <target name="createSvnExternals" depends="createSvnExternalsTop, createSvnExternalsChild" />
 
-  <target name="commitReleaseProperties" if="version.ownVersion">
+  <target name="commitReleaseProperties" unless="childCall">
      <exec executable="${svn}" failonerror="true">
         <arg line="commit release.properties --non-interactive -m 'Update the release.properties file.'" />
      </exec>
