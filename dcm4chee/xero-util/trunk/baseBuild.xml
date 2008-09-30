@@ -27,7 +27,6 @@
      <propertyref prefix="version.parent" />
      <propertyref prefix="serverDir" />
      <propertyref name="version.releaseProperties" />
-     <propertyref name="version.svnexternals" />
   </propertyset>
 
   <target name="install" description="Perform a Maven Install">
@@ -58,7 +57,6 @@
         <param name="version.parent.increment" value="${version.increment}" />
         <param name="childCall" value="${childCall}" />
         <param name="version.releaseProperties" value="../${version.releaseProperties}" />
-        <param name="version.svnexternals" value="../${version.svnexternals}" />
      </antcall>
   </target>
 
@@ -199,7 +197,7 @@
         <arg line="checkout ${version.tags}/${ant.project.name}-${version.version} ${ant.project.name} -N" />
      </exec>
      <exec executable="${svn}" failonerror="true">
-        <arg line="propset svn:externals -F ${version.svnexternals} ${ant.project.name} --non-interactive" />
+        <arg line="propset svn:externals -F svn.externals ${ant.project.name} --non-interactive" />
      </exec>
      <exec executable="${svn}" failonerror="true">
         <arg line="commit ${ant.project.name} --non-interactive -m 'Commit the svn:externals property on the tagged version.'" />
