@@ -135,17 +135,16 @@ public class FilterItem<T> implements Comparable<FilterItem<?>> {
 	 * @param filterName is the local name to look for.
 	 * @param params are the parameters to pass.
 	 * @return value from the filter.
-	 * @deprecated Assign child-filters directly via meta-data plugins.  This is better type/initialization safety.
 	 */
-	@SuppressWarnings("unchecked")
-   public Object callNamedFilter(String filterName, Map<String,Object> params)
+   @SuppressWarnings("unchecked")
+   public T callNamedFilter(String filterName, Map<String,Object> params)
 	 {
-		 FilterListConfig fl = (FilterListConfig) metaData.getParent().getValueConfig();
+		 FilterListConfig<T> fl = (FilterListConfig) metaData.getParent().getValueConfig();
 		 if( fl==null ) {
 			 log.warn("Parent "+metaData.getParent().getPath()+" did not have a filter list configuration item.");
 			 return null;
 		 }
-		 FilterItem namedFilter = fl.getNamedFilter(filterName);
+		 FilterItem<T> namedFilter = fl.getNamedFilter(filterName);
 		 if( namedFilter==null ) {
 			 log.warn("No filter named "+filterName+" in "+metaData.getParent().getPath());
 			 return null;			 
@@ -183,8 +182,7 @@ public class FilterItem<T> implements Comparable<FilterItem<?>> {
 	/** Calls the filter that this filter item is specified for.  
 	 * The return type is Object since this could be a named item.
 	 */
-	@SuppressWarnings("unchecked")
-	public Object callThisFilter(Map<String, Object> params) {
-		return filter.filter(((FilterItem) this),params);
+	public T callThisFilter(Map<String, Object> params) {
+		return filter.filter(this,params);
 	}
 }

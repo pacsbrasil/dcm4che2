@@ -57,7 +57,7 @@ public class FilterListConfig<T> {
 	private static Logger log = LoggerFactory.getLogger(FilterListConfig.class);
 	
 	List<FilterItem<T>> filterList = new ArrayList<FilterItem<T>>();
-	Map<String,FilterItem<?>> filterMap = new HashMap<String,FilterItem<?>>();
+	Map<String,FilterItem<T>> filterMap = new HashMap<String,FilterItem<T>>();
 	
 	/** Create the filter list config instance at the given meta-data bean value. */
 	@SuppressWarnings("unchecked")
@@ -68,7 +68,7 @@ public class FilterListConfig<T> {
 		for(MetaDataBean valueMdb : sortedList ) {
 			Object value = valueMdb.getValue();
 			if( value instanceof Filter ) {
-				FilterItem<?> fi = new FilterItem<Object>(valueMdb, (Filter<Object>) value);
+				FilterItem<T> fi = new FilterItem<T>(valueMdb, (Filter<T>)value);
 				filterMap.put(fi.getName(),fi);
 				if( fi.priority<0 ) continue;
 				FilterItem<T> fit = (FilterItem<T>) fi;
@@ -85,7 +85,7 @@ public class FilterListConfig<T> {
 	}
 	
 	/** This gets the named filter */
-	public FilterItem<?> getNamedFilter(String childName) {
+	public FilterItem<T> getNamedFilter(String childName) {
 		return filterMap.get(childName);
 	}
 	

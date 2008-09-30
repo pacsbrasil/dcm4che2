@@ -48,8 +48,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
 import org.dcm4chee.xero.metadata.MetaData;
-import org.dcm4chee.xero.metadata.MetaDataBean;
-import org.dcm4chee.xero.metadata.MetaDataUser;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.slf4j.Logger;
@@ -64,12 +62,12 @@ import org.slf4j.LoggerFactory;
  * @author bwallace
  *
  */
-public class JaxbFilter implements Filter<ServletResponseItem>, MetaDataUser
+public class JaxbFilter implements Filter<ServletResponseItem>
 {
 	JAXBContext context;
 	static Logger log = LoggerFactory.getLogger(JaxbFilter.class);
 	
-	protected String source = "source";
+	Filter<?> sourceFilter;
 	
 	/**
 	 * This class holds the filtered response item until it is time to be serialized
@@ -121,19 +119,27 @@ public class JaxbFilter implements Filter<ServletResponseItem>, MetaDataUser
 	 * @return a servlet response that can be used to actually write the XML data.
 	 */
 	public ServletResponseItem filter(FilterItem<ServletResponseItem> nextFilter, Map<String, Object> params) {
-		Object data = nextFilter.callNamedFilter(source, params);
+		Object data = sourceFilter.filter(null, params);
 		if( data==null ) return nextFilter.callNextFilter(params);
 		return new JaxbServletResponseItem(data,context);
 	}
 
-	/** Read the context path from the meta-data.
-	 * @param metadatabean to read the JAXBContext name from.
+	/** Returns the source filter used to get the object data to render */
+	public Filter<?> getSourceFilter() {
+		return this.sourceFilter;
+	}
+	
+	/**
+	 * Sets the filter to use to return the object data. 
+	 * @param sourceFilter
 	 */
-	public void setMetaData(MetaDataBean metaDataBean) {
-		String contextPath = (String) metaDataBean.getValue("contextPath");
-		String sourceName = (String) metaDataBean.getValue("sourceName");
-		if( sourceName!=null ) source = sourceName;
-		log.info("Found contextPath="+contextPath);
+	@MetaData
+	public void setSourceFilter(Filter<?> sourceFilter) {
+		this.sourceFilter = sourceFilter;
+	}
+	
+	@MetaData
+	public void setContextPath(String contextPath) {
 		try {
 			if( contextPath!=null ) context = JAXBContext.newInstance(contextPath);
 		}
