@@ -18,7 +18,6 @@
   <property name="version.increment" value="${version.parent.increment}" />
 
   <!-- Define various integration test properties, useful for setting up servers for automated testing. -->
-  <property name="serverDir" value="//wtlswbw01/dcm4chee" />
   <property name="userPasswordPropertyFile" value="../../server-setup/test-users.properties" />
   <property name="dicomObjectsPropertyFile" value="../../server-setup/test-objects.properties" />
 
@@ -70,7 +69,7 @@
      </antcall>
   </target>
 
-  <target name="nextVersion" description="Figure out, and set the 'next' version.">
+  <target name="nextVersion" description="Figure out, and set the 'next' version." if="version.ownVersion">
      <script language="JavaScript">
         project.setProperty("version.next",""+(1+parseInt(project.getProperty("version.increment"))));
      </script>
@@ -82,13 +81,13 @@
   </target>
 
   <!-- Erase the release properties if this is being run at the top level -->
-  <target name="intializeReleaseProperties" unless="version.releaseProperties">     
+  <target name="initReleaseProperties" unless="version.releaseProperties">     
      <delete file="release.properties" quiet="true"/>
      <property name="version.releaseProperties" value="release.properties" />
   </target>
 
 
-  <target name="updatePomRelease" description="Update the pom file versions to the next release version" depends="intializeReleaseProperties">
+  <target name="updatePomRelease" description="Update the pom file versions to the next release version" depends="initReleaseProperties">
      <echo>Update Pom Relase on ${ant.project.name} to version ${version.version}</echo>
      <echo file="${version.releaseProperties}" append="true">
         versions.${ant.project.name}=${version.version}
@@ -166,11 +165,11 @@
      </echo>
   </target>
 
-  <target name="createSvnExternalsChild" unless="toplevel">
+  <target name="createSvnExternalsChild" unless="version.ownVersion">
      <antcall target="createSvnExternalsChildTags" />
   </target>
 
-  <target name="createSvnExternalsTop" if="toplevel">
+  <target name="createSvnExternalsTop" if="version.ownVersion">
       <delete file="svn.externals"/>
       <property name="version.svnexternals" value="svn.externals" />
   </target>
@@ -181,11 +180,10 @@
      </antcall>
   </target>
 
-  <target name="commitReleaseProperties" if="toplevel">
+  <target name="commitReleaseProperties" if="version.ownVersion">
      <exec executable="${svn}" failonerror="true">
-        <arg line="commit release.properties build.xml --non-interactive -m 'Update the release.properties file.'" />
+        <arg line="commit release.properties --non-interactive -m 'Update the release.properties file.'" />
      </exec>
-
      <delete dir="${ant.project.name}" quiet="true"/>
      <exec executable="${svn}" failonerror="true">
         <arg line="checkout ${version.tags}/${ant.project.name}-${version.version} ${ant.project.name} -N" />
@@ -200,6 +198,12 @@
      <delete file="svn.externals" />
   </target>
 
+  <target name="commitVersion" if="version.ownVersion">
+     <exec executable="${svn}" failonerror="true">
+        <arg line="commit build.xml --non-interactive -m 'Update the build xml versioning.'" />
+     </exec>
+  </target>
+
   <target name="releaseCommit" depends="copyToTag, createSvnExternals, commitReleaseProperties">
      <!-- Recursively enumerate over the child directories calling release commit. -->
      <antcall target="recurseChildren">
@@ -207,7 +211,13 @@
      </antcall>
   </target>
 
-  <target name="prepareRelease" depends="clean,updatePomRelease,install,nextVersion,releaseCommit" />
+  <target name="updateVersion" description="Recursively updates/commits the new version number (if changed)" depends="nextVersion,commitVersion">
+    <antcall target="recurseChildren">
+       <param name="childCall" value="updateVersion" />
+    </antcall>
+  </target>
+
+  <target name="prepareRelease" depends="clean,updatePomRelease,install,releaseCommit" />
 
   <target name="releaseDeploy" depends="deploy,revertPomDevelop" />
 
