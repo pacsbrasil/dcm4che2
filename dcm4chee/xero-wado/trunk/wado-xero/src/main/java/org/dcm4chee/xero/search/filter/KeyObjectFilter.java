@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.search.macro.KeyObjectMacro;
@@ -124,7 +125,7 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 			}
 
 			log.info("Adding key object information for studyKo=" + studyKo);
-			KeyObjectBean kob = queryForKO(filterItem, params, studyKo, ret);
+			KeyObjectBean kob = queryForKO(dicomFullHeader, params, studyKo, ret);
 			if (kob == null) {
 			   kom = new KeyObjectMacro("ERROR:Not found " + koUid);
 			   log.warn("Key object " + studyKo + " not found.");
@@ -141,6 +142,19 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 		 }
 	  }
 	  return ret;
+   }
+
+   private Filter<DicomObject> dicomFullHeader;
+
+   /** Gets the filter that returns the dicom object image header */
+	public Filter<DicomObject> getDicomFullHeader() {
+   	return dicomFullHeader;
+   }
+
+   /** Sets the full header filter - this returns all the fields, but not updated. */
+	@MetaData(out="${ref:dicomFullHeader}")
+	public void setDicomFullHeader(Filter<DicomObject> dicomFullHeader) {
+   	this.dicomFullHeader = dicomFullHeader;
    }
 
    /** Returns the key object to use for the given study */
@@ -227,8 +241,8 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
      * Only one key object can be specified at a time. The object will be
      * returned, as well as being added to the results bean object.
      */
-   public static KeyObjectBean queryForKO(FilterItem<ResultsBean> filterItem, Map<String, Object> params, String koUid, ResultsBean rb) {
-	  DicomObject dobj = DicomFilter.filterDicomObject(filterItem, params, koUid);
+   public static KeyObjectBean queryForKO(Filter<DicomObject> dicomHeaderFilter, Map<String, Object> params, String koUid, ResultsBean rb) {
+	  DicomObject dobj = DicomFilter.callInstanceFilter(dicomHeaderFilter, params, koUid);
 	  if (dobj == null)
 		 return null;
 	  KeyObjectBean kob = (KeyObjectBean) rb.getChildren().get(koUid);

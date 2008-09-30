@@ -73,15 +73,16 @@ public class EncodeImageTest {
 		assert ei!=null;
 		Map<String,Object> map = new HashMap<String,Object>();
 		map.put("contentType", "image/jpeg");
-		Filter<DicomObject> dicomImageObject = createMock(Filter.class);
+		Filter<DicomObject> dicomImageHeader = createMock(Filter.class);
 		DicomObject ds = new BasicDicomObject();
 		ds.putInt(Tag.PixelRepresentation, VR.IS, 1);
-		expect(dicomImageObject.filter(null,map)).andReturn(ds);
-		ei.setDicomImageObject(dicomImageObject);
-		replay(dicomImageObject);
+		expect(dicomImageHeader.filter(null,map)).andReturn(ds);
+		ei.setDicomImageHeader(dicomImageHeader);
+		replay(dicomImageHeader);
+		ei.setWadoImageFilter(new GradedWadoImage());
 		
 		ServletResponseItem sri = (ServletResponseItem) ei.filter(null,map);
-		verify(dicomImageObject);
+		verify(dicomImageHeader);
 		
 		assert sri!=null;
 		HttpServletResponse mock = createMock(HttpServletResponse.class);

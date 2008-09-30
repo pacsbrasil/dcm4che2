@@ -41,6 +41,7 @@ import java.util.Map;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
@@ -63,13 +64,13 @@ import org.slf4j.LoggerFactory;
  */
 public class ChooseContentTypeFilter implements Filter<ServletResponseItem> {
    private static final Logger log = LoggerFactory.getLogger(ChooseContentTypeFilter.class);
-
-   public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
+   
+	public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
 	  String contentType = (String) params.get("contentType");
 	  if( contentType==null ) {
 		 log.info("No content type found, looking for modality of the image to determine contentType");
 		 // Use the image dicom object - that contains the modality
-		 DicomObject dobj = DicomFilter.filterImageDicomObject(filterItem, params, null);
+		 DicomObject dobj = dicomImageHeader.filter(null, params);
 		 if( dobj==null ) {
 			return null;
 		 }
@@ -92,18 +93,30 @@ public class ChooseContentTypeFilter implements Filter<ServletResponseItem> {
 	  }
 	  log.info("Search on content type "+contentType);
 	  if( filterItem.contains(contentType) ) {
-		 return (ServletResponseItem) filterItem.callNamedFilter(contentType,params);
+		 return filterItem.callNamedFilter(contentType,params);
 	  }
 	  int slashPos = contentType.indexOf("/");
 	  if( slashPos>0 ) {
 		 String mainType = contentType.substring(0,slashPos);
 		 log.info("Looking for primary type "+mainType);
 		 if( filterItem.contains(mainType) ) {
-			return (ServletResponseItem) filterItem.callNamedFilter(mainType,params);
+			return filterItem.callNamedFilter(mainType,params);
 		 }
 	  }
 	  log.warn("WADO Filter not found for contentType="+contentType);
 	  return filterItem.callNextFilter(params);
+   }
+
+   private Filter<DicomObject> dicomImageHeader;
+
+   /** Gets the filter that returns the dicom object image header */
+	public Filter<DicomObject> getDicomImageHeader() {
+   	return dicomImageHeader;
+   }
+
+	@MetaData(out="${ref:dicomImageHeader}")
+	public void setDicomImageHeader(Filter<DicomObject> dicomImageHeader) {
+   	this.dicomImageHeader = dicomImageHeader;
    }
 
 }

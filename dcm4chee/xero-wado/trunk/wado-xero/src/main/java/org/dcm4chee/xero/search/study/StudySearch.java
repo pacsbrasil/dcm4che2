@@ -39,7 +39,10 @@ package org.dcm4chee.xero.search.study;
 
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
+import org.dcm4chee.xero.metadata.MetaData;
+import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.search.DicomCFindFilter;
+import org.dcm4chee.xero.search.SearchCriteria;
 
 /**
  * A C-Find filter that knows how to perform C-Find queries to get study level data.  Prefers to use the return all
@@ -83,4 +86,17 @@ public class StudySearch extends DicomCFindFilter {
 		return STUDY_RETURN_KEYS;
 	}
 
+	/**
+	 * Set the filter that determines the search criteria to use for this query.
+	 * Defaults to the study search condition - if you want series or image level queries, you had
+	 * better modify this to use those explicitly, otherwise you will have to include a study level 
+	 * criteria.
+	 * 
+	 * @param searchCondition
+	 */
+	@MetaData(out="${class:org.dcm4chee.xero.search.study.StudySearchConditionParser}")
+   @Override
+	public void setSearchParser(Filter<SearchCriteria> searchParser) {
+   	super.setSearchParser(searchParser);
+   }
 }

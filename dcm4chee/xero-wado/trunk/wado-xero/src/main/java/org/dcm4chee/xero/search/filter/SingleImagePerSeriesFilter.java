@@ -45,6 +45,7 @@ import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.search.DicomCFindFilter;
+import org.dcm4chee.xero.search.ResultFromDicom;
 import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;
 import org.dcm4chee.xero.search.study.ResultsType;
@@ -124,7 +125,7 @@ public class SingleImagePerSeriesFilter implements Filter<ResultsBean> {
 		    log.info("Searching ",uidsToSearch.size()," series completely.");
 			String[] seriesUids = uidsToSearch.toArray(EMPTY_STRING_ARRAY);
 			Object origValue = params.put("seriesUID", seriesUids);
-			Object updated = filterItem.callNamedFilter("imageSearch", params);
+			Object updated = imageSource.filter(null, params);
 			assert updated==rb;
 			if( origValue==null ) params.remove("seriesUID");
 			else params.put("seriesUID", origValue);
@@ -139,7 +140,7 @@ public class SingleImagePerSeriesFilter implements Filter<ResultsBean> {
 		params.put(DicomCFindFilter.EXTEND_RESULTS_KEY, rb);
 		log.info("Filtering by adding an instance number=1 as a first guess.");
 		params.put(INSTANCE_NUMBER, "1");
-		ResultsBean ret = (ResultsBean) filterItem.callNamedFilter("imageSearch",params);
+		ResultsBean ret = (ResultsBean) imageSource.filter(null,params);
 		assert ret == rb;
 		params.remove(INSTANCE_NUMBER);
 		return rb;
@@ -168,6 +169,21 @@ public class SingleImagePerSeriesFilter implements Filter<ResultsBean> {
 		}
 		return ret;
 	}
+
+   private Filter<ResultFromDicom> imageSource;
+
+	public Filter<ResultFromDicom> getImageSource() {
+   	return imageSource;
+   }
+
+	/**
+	 * Sets the filter to use for an image search.
+	 * @param imageSource
+	 */
+	@MetaData(out="${ref:imageSource}")
+	public void setImageSource(Filter<ResultFromDicom> imageSource) {
+   	this.imageSource = imageSource;
+   }
 
 	/** Returns the default priority of this filter. */
 	@MetaData

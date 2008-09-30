@@ -68,8 +68,6 @@ public class Overlay implements Filter<WadoImage> {
 	public static final String OVERLAY_KEY = "overlay";
 	private static final byte[] WHITE = new byte[] { (byte) 255, (byte) 255, (byte) 255 };
 
-	private Filter<DicomObject> dicomImageObject;
-
 	/** Add pixel padding to the returned image. */
 	public WadoImage filter(FilterItem<WadoImage> filterItem, Map<String, Object> params) {
 		String overlay = (String) params.get(OVERLAY_KEY);
@@ -78,7 +76,7 @@ public class Overlay implements Filter<WadoImage> {
 			return filterItem.callNextFilter(params);
 		}
 
-		DicomObject ds = dicomImageObject.filter(null, params);
+		DicomObject ds = dicomImageHeader.filter(null, params);
 		if (ds == null)
 			return null;
 		List<OverlayInfo> overlays = findOverlays(overlay, ds);
@@ -243,16 +241,18 @@ public class Overlay implements Filter<WadoImage> {
 		return ret;
 	}
 
-	/** Gets the fitler that retrieves the dicom image object header */
-	public Filter<DicomObject> getDicomImageObject() {
-		return dicomImageObject;
-	}
+   private Filter<DicomObject> dicomImageHeader;
 
-	@MetaData(out = "${ref:dicomImageObject}")
-	public void setDicomImageObject(Filter<DicomObject> dicomImageObject) {
-		this.dicomImageObject = dicomImageObject;
-	}
+   /** Gets the filter that returns the dicom object image header */
+	public Filter<DicomObject> getDicomImageHeader() {
+   	return dicomImageHeader;
+   }
 
+	@MetaData(out="${ref:dicomImageHeader}")
+	public void setDicomImageHeader(Filter<DicomObject> dicomImageHeader) {
+   	this.dicomImageHeader = dicomImageHeader;
+   }
+	
 	/** Store information required for extracting the overlay information */
 	static class OverlayInfo {
 		boolean multiframe = false;

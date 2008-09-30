@@ -47,14 +47,12 @@ import java.util.Map;
 import javax.imageio.stream.ImageInputStream;
 
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.imageio.plugins.dcm.DicomStreamMetaData;
 import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader;
 import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReaderSpi;
 import org.dcm4chee.xero.metadata.MetaData;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.search.filter.FileLocationMgtFilter;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,167 +66,105 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class DicomFilter implements Filter<DicomImageReader> {
-   private static final Logger log = LoggerFactory.getLogger(DicomFilter.class);
+	private static final Logger log = LoggerFactory.getLogger(DicomFilter.class);
+
+	DicomImageReaderSpi dicomImageReaderSpi = new DicomImageReaderSpi();
+
+	public static String PREFERRED_DICOM_READER = "org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader";
+
+	private static final String DICOM_OBJECT_HEADER_KEY = " DICOM_OBJECT_HEADER";
+
+	/**
+	 * Return either the params cached header, or read it from the file location
+	 * as appropriate. Returns a dicom image reader that should be synchronized
+	 * on before reading images, AND while using the dicom object.
+	 * 
+	 * @param filterItem -
+	 *           call the fileLocation filter to get the location.
+	 * @param
+	 */
+	public DicomImageReader filter(FilterItem<DicomImageReader> filterItem, Map<String, Object> params) {
+		DicomImageReader ret = (DicomImageReader) params.get(DICOM_OBJECT_HEADER_KEY);
+		if (ret != null)
+			return ret;
+		URL location = fileLocation.filter(null, params);
+		if (location == null)
+			return null;
+		long start = System.nanoTime();
+		try {
+			// Creating it directly rather than iterating over the ImageIO list
+			// means that multiple instances
+			// can be in memory at once, which is rather handy for a stand-alone
+			// WAR that can
+			// use either a provided version of the library or an included version.
+			DicomImageReader reader = (DicomImageReader) dicomImageReaderSpi.createReaderInstance();
+			ImageInputStream in = new ReopenableImageInputStream(location);
+			reader.setInput(in);
+			// We don't have any reliable size information right now.
+			params.put(MemoryCacheFilter.CACHE_SIZE, 2048);
+			// Makes this a bit more thread safe if the header has been read, then
+			// it will
+			// be safe to get the stream meta-data.
+			reader.getStreamMetadata();
+			log.info("Time to open " + params.get("objectUID") + " read meta-data "
+			      + nanoTimeToString(System.nanoTime() - start));
+			return reader;
+		} catch (IOException e) {
+			log.warn("Can't read sop instance " + params.get("objectUID") + " at " + location + " exception:" + e);
+		}
+		// This might happen if the instance UID under request comes from
+		// another
+		// system and needs to be read in another way.
+		if (ret == null)
+			return filterItem.callNextFilter(params);
+		return ret;
+	}
+
+	/** Get the default priority for the dicom header filter. */
+	@MetaData
+	public static int getPriority() {
+		return 25;
+	}
+
+	/**
+	 * Make a call to fetch a UID from the same AE and with header update on or
+	 * off as setup in the request, but not necessarily the same study or series.
+	 * 
+	 * @param filter
+	 * @param params
+	 * @param uid
+	 * @return
+	 */
+	public static DicomObject callInstanceFilter(Filter<DicomObject> filter, Map<String, Object> params, String uid) {
+		Map<String, Object> newParams = new HashMap<String, Object>();
+		// This request is used for filters where the request is for some other
+		// objects, and the
+		// UID is required.
+		newParams.put("objectUID", uid);
+		if( params!=null ) {
+			if (params.containsKey(DicomUpdateFilter.UPDATE_HEADER)) {
+				newParams.put(DicomUpdateFilter.UPDATE_HEADER, "TRUE");
+			}
+			String ae = (String) params.get("AE");
+			if(ae!=null ) newParams.put("AE",ae);
+		}
+		DicomObject ret = filter.filter(null, newParams);
+		return ret;
+	}
+
+   private Filter<URL> fileLocation;
    
-   DicomImageReaderSpi dicomImageReaderSpi = new DicomImageReaderSpi();
-
-   public static String PREFERRED_DICOM_READER = "org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader";
-
-   private static final String DICOM_OBJECT_HEADER_KEY = " DICOM_OBJECT_HEADER";
-
-   /**
-     * Return either the params cached header, or read it from the file location
-     * as appropriate. Returns a dicom image reader that should be synchronized
-     * on before reading images, AND while using the dicom object.
-     * 
-     * @param filterItem -
-     *            call the fileLocation filter to get the location.
-     * @param
-     */
-   public DicomImageReader filter(FilterItem<DicomImageReader> filterItem, Map<String, Object> params) {
-	  DicomImageReader ret = (DicomImageReader) params.get(DICOM_OBJECT_HEADER_KEY);
-	  if (ret != null)
-		 return ret;
-	  URL location = FileLocationMgtFilter.filterURL(filterItem, params, null);
-	  if (location == null)
-		 return null;
-	  long start = System.nanoTime();
-	  try {
-		 // Creating it directly rather than iterating over the ImageIO list means that multiple instances
-		 // can be in memory at once, which is rather handy for a stand-alone WAR that can
-		 // use either a provided version of the library or an included version.
-		 DicomImageReader reader = (DicomImageReader) dicomImageReaderSpi.createReaderInstance();
-		 ImageInputStream in = new ReopenableImageInputStream(location);
-		 reader.setInput(in);
-		 // We don't have any reliable size information right now.   
-		 params.put(MemoryCacheFilter.CACHE_SIZE, 2048);
-		 // Makes this a bit more thread safe if the header has been read, then it will
-		 // be safe to get the stream meta-data.
-		 reader.getStreamMetadata();
-		 log.info("Time to open "+params.get("objectUID")+" read meta-data "+nanoTimeToString(System.nanoTime() - start));
-		 return reader;
-	  } catch (IOException e) {
-		 log.warn("Can't read sop instance " + params.get("objectUID") + " at " + location + " exception:" + e);
-	  }
-	  // This might happen if the instance UID under request comes from
-	  // another
-	  // system and needs to be read in another way.
-	  if (ret == null)
-		 return filterItem.callNextFilter(params);
-	  return ret;
+   public Filter<URL> getFileLocation() {
+   	return fileLocation;
    }
 
-   /** Get the default priority for the dicom header filter. */
-   @MetaData
-   public static int getPriority() {
-	  return 25;
+	/**
+	 * Sets the file location filter, that knows how to find files.
+	 * @param fileLocation
+	 */
+	@MetaData(out="${ref:fileLocation}")
+	public void setFileLocation(Filter<URL> fileLocation) {
+   	this.fileLocation = fileLocation;
    }
 
-   /**
-    * Get just the image relevant attributes for this object, eg Bit Stored, LUT's etc - things required
-    * for actual display of the object.  Will not update the headers etc, so don't count on
-    * accurate patient name etc.
-    * @param filterItem
-    * @param params
-    * @param uid
-    * @return
-    */
-   public static DicomObject filterImageDicomObject(FilterItem<?> filterItem, Map<String,Object> params, String uid) {
-	  // When the filterDicomObject returns something else, then this can be updated to use the dicom object
-	  // from the DicomImageReader or from some other location.
-	  return filterDicomObject(filterItem,params,uid,false);
-   }
-   /**
-     * Returns the complete DICOM header.  Use this for returning the the client or for complete access
-     * to all dicom attributes.  WILL update the header information, so you can count on
-     * accurate headers.
-     * 
-     * @param filterItem
-     * @param params
-     * @param uid -
-     *            can be null, if so, then the uid will be read from the
-     *            existing params.
-     * @return
-     */
-   public static DicomObject filterDicomObject(FilterItem<?> filterItem, Map<String, Object> params, String uid) {
-   	return filterDicomObject(filterItem, params, uid, true);
-   }
-
-   protected static DicomObject filterDicomObject(FilterItem<?> filterItem, Map<String, Object> params, String uid, boolean updateHeader) {
- 	  // This might come from a different series or even study, so don't
- 	  // assume anything here.
-     if(updateHeader) {
-    	  log.debug("Performing full dicom object header retrieval including C-Find updates.");
-   	  params.put(DicomUpdateFilter.UPDATE_HEADER, "TRUE");
-     }
-     else log.debug("Performing partial dicom object header retrieval.");
- 	  Object ret = callInstanceFilter(filterItem, params, uid);
- 	  if( updateHeader ) params.remove(DicomUpdateFilter.UPDATE_HEADER);
- 	  if (ret == null)
- 		 return null;
- 	  if (ret instanceof DicomObject)
- 		 return (DicomObject) ret;
- 	  if (ret instanceof DicomImageReader) {
- 		 DicomStreamMetaData streamData;
- 		 try {
- 			streamData = (DicomStreamMetaData) ((DicomImageReader) ret).getStreamMetadata();
- 		 } catch (IOException e) {
- 			log.error("Unable to reader dicom header:" + e);
- 			return null;
- 		 }
- 		 DicomObject ds = streamData.getDicomObject();
- 		 return ds;
- 	  }
- 	  log.warn("Unknown return type " + ret.getClass().getName());
- 	  return null;
-    }
-   private static Object callInstanceFilter(FilterItem<?> filterItem, Map<String, Object> params, String uid) {
-	  Map<String, Object> newParams;
-	  if (uid == null) {
-		 // This case is used for filters where the request is directly for as single instance 
-		 // object.
-		 newParams = params;
-	  } else {
-		 // This request is used for filters where the request is for some other objects, and the
-		 // UID is required.
-		 newParams = new HashMap<String, Object>();
-		 newParams.put("objectUID", uid);
-		 if( params.containsKey(DicomUpdateFilter.UPDATE_HEADER) ) {
-			 newParams.put(DicomUpdateFilter.UPDATE_HEADER,"TRUE");
-			 if( params!=null ) {
-				 // Try to copy over enough information to get study/series level updates.
-				 String studyUID = (String) params.get("studyUID");
-				 String seriesUID = (String) params.get("seriesUID");
-				 if( studyUID!=null ) newParams.put("studyUID",studyUID);
-				 if( seriesUID!=null ) newParams.put("seriesUID", seriesUID);
-			 }
-		 }
-	  }
-	  Object ret = filterItem.callNamedFilter("dicom", newParams);
-	  return ret;
-   }
-
-   /**
-     * Returns the DICOM image reader that allows frames and overlays to be read from the given object.
-     * 
-     * @param filterItem
-     * @param params
-     * @param uid
-     * @return
-     */
-   public static DicomImageReader filterDicomImageReader(FilterItem<?> filterItem, Map<String, Object> params, String uid) {
-	  // This might come from a different series or even study, so don't
-	  // assume anything here.
-	  Object ret = callInstanceFilter(filterItem, params, uid);
-	  if (ret == null)
-		 return null;
-	  if (ret instanceof DicomObject)
-		 return null;
-	  if (ret instanceof DicomImageReader) {
-		 return (DicomImageReader) ret;
-	  }
-	  log.warn("Unknown return type " + ret.getClass().getName());
-	  return null;
-   }
-   
 }

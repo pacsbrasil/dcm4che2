@@ -37,7 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado;
 
-import static org.dcm4chee.xero.wado.WadoParams.*;
+import static org.dcm4chee.xero.wado.WadoParams.CONTENT_DISPOSITION;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -57,7 +57,7 @@ import org.dcm4che2.data.VR;
 import org.dcm4che2.imageio.plugins.dcm.DicomStreamMetaData;
 import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageWriter;
 import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageWriterSpi;
-import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.slf4j.Logger;
@@ -76,8 +76,6 @@ public class DicomImageServletResponse implements ServletResponseItem {
    /** The list of frame numbers, in order to send to the output, 1 based. */
    protected List<Integer> frames;
 
-   protected FilterItem<ServletResponseItem> filterItem;
-
    protected Map<String, Object> params;
 
    protected DicomObject ds;
@@ -87,20 +85,21 @@ public class DicomImageServletResponse implements ServletResponseItem {
    protected boolean readRaw;
    
    protected String sop;
+   
+   protected Filter<WadoImage> wadoImageFilter;
 
    /** Create the dicom image writers directly rather than trying to find them. */
    static ImageWriterSpi dicomImageWriterCreator = new DicomImageWriterSpi();
 
-   public DicomImageServletResponse(DicomObject ds, String tsuid, List<Integer> frames, FilterItem<ServletResponseItem> filterItem,
-		 Map<String, Object> params) {
+   public DicomImageServletResponse(DicomObject ds, String tsuid, List<Integer> frames, Filter<WadoImage> wadoImageFilter, Map<String, Object> params) {
 	  this.ds = ds;
 	  this.tsuid = tsuid;
 	  if (frames != null && ds.getInt(Tag.NumberOfFrames, 1) == frames.size()) {
 		 frames = null;
 	  }
 	  this.frames = frames;
-	  this.filterItem = filterItem;
 	  this.params = params;
+	  this.wadoImageFilter = wadoImageFilter;
 	  this.sop = ds.getString(Tag.SOPInstanceUID);
 	  readRaw = true;
 	  if (!tsuid.equals(ds.getString(Tag.TransferSyntaxUID))) {
@@ -193,6 +192,6 @@ public class DicomImageServletResponse implements ServletResponseItem {
 		 log.info("Reading images.");
 		 MemoryCacheFilter.addToQuery(params, WadoImage.FRAME_NUMBER, Integer.toString(i));
 	  }
-	  return (WadoImage) filterItem.callNamedFilter("image", params);
+	  return wadoImageFilter.filter(null, params);
    }
 }

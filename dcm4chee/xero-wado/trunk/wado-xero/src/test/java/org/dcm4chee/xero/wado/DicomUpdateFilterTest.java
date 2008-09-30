@@ -14,6 +14,7 @@ import org.dcm4che2.data.VR;
 import org.dcm4che2.imageio.plugins.dcm.DicomStreamMetaData;
 import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader;
 import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReaderSpi;
+import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterItemSingleton;
 import org.dcm4chee.xero.search.DicomCFindFilter;
@@ -83,19 +84,19 @@ public class DicomUpdateFilterTest {
 	/** Tests that reading the series headers works as expected */
 	@Test
 	public void readSeriesHeaderTest() throws Exception {
-		TestFilterItem filterItem = new TestFilterItem(cfindSame);
+		TestFilterSeriesCFind seriesCFind = new TestFilterSeriesCFind(cfindSame);
 		assert !si.containsKey("seriesQuery");
 		DicomObject readHeader = DicomUpdateFilter.readSeriesHeader(si, dicom
-				.getString(Tag.SeriesInstanceUID), filterItem);
+				.getString(Tag.SeriesInstanceUID), seriesCFind);
 		assert readHeader == cfindSame;
 	}
 
 	/** Tests that updating the dicom header works as expected */
 	@Test
 	public void updateHeaderTest() throws Exception {
-		TestFilterItem filterItem = new TestFilterItem(cfindDiff);
+		TestFilterSeriesCFind seriesCFind = new TestFilterSeriesCFind(cfindDiff);
 		DicomObject readHeader = DicomUpdateFilter.readSeriesHeader(si, dicom
-				.getString(Tag.SeriesInstanceUID), filterItem);
+				.getString(Tag.SeriesInstanceUID), seriesCFind);
 		assert readHeader==cfindDiff;
 		
 		FilterItem<DicomImageReader> filterItemSingleton = new FilterItemSingleton<DicomImageReader>(dir);
@@ -115,18 +116,16 @@ public class DicomUpdateFilterTest {
 	}
 
 	/** Implement a simple test filter that returns the given, fixed items. */
-	static class TestFilterItem extends FilterItem<DicomImageReader> {
+	static class TestFilterSeriesCFind implements Filter<ResultFromDicom> {
 		DicomObject dicom;
 
-		public TestFilterItem(DicomObject dicom) {
+		public TestFilterSeriesCFind(DicomObject dicom) {
 			this.dicom = dicom;
 		}
 
 		/** Handles calling a named filter - reports the given header */
-		@Override
-		public Object callNamedFilter(String filterName,
+		public ResultFromDicom filter(FilterItem<ResultFromDicom> filterItem,
 				Map<String, Object> params) {
-			assert filterName.equals("seriesCFind");
 			ResultFromDicom rfd = (ResultFromDicom) params
 					.get(DicomCFindFilter.EXTEND_RESULTS_KEY);
 			assert params.get("studyUID").equals(

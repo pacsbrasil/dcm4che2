@@ -76,7 +76,7 @@ public class DicomImageReaderToDicomObject implements Filter<DicomObject> {
 	}
 
 	/** Sets the default dicom reader to be "dicom" */
-	@MetaData(out = "${ref:dicom}")
+	@MetaData(out = "${ref:dicomImageReader}")
 	public void setImageReaderFilter(Filter<DicomImageReader> imageReaderFilter) {
 		this.imageReaderFilter = imageReaderFilter;
 	}

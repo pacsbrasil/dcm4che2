@@ -49,6 +49,7 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.imageio.plugins.dcm.DicomStreamMetaData;
 import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader;
+import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.servlet.ErrorResponseItem;
@@ -86,7 +87,7 @@ public class RecodeDicom implements Filter<ServletResponseItem> {
 
 	  try {
 		 String tsuid = (String) params.get(TRANSFER_SYNTAX);
-		 DicomImageReader reader = DicomFilter.filterDicomImageReader(filterItem, params, null);
+		 DicomImageReader reader = dicomImageReaderFilter.filter(null, params);
 		 if( reader==null || reader.getStreamMetadata()==null ) {
 			log.warn("No image/dicom object found for objectUID="+params.get(OBJECT_UID));
 			return new ErrorResponseItem(HttpServletResponse.SC_NOT_FOUND,"Object not found.");
@@ -103,7 +104,7 @@ public class RecodeDicom implements Filter<ServletResponseItem> {
 		 List<Integer> frames = null;
 		 frames = computeFrames(ds, params);
 
-		 return new DicomImageServletResponse(ds, tsuid, frames, filterItem, params);
+		 return new DicomImageServletResponse(ds, tsuid, frames, wadoImageFilter, params);
 	  } catch (IOException e) {
 		 throw new RuntimeException("Caught unexpected exception ", e);
 	  }
@@ -180,5 +181,36 @@ public class RecodeDicom implements Filter<ServletResponseItem> {
 	  if (firstSyntax >= 0)
 		 return tsuid.substring(0, firstSyntax);
 	  return tsuid;
+   }
+
+   private Filter<DicomImageReader> dicomImageReaderFilter;
+
+   public Filter<DicomImageReader> getDicomImageReaderFilter() {
+      return dicomImageReaderFilter;
+   }
+
+   /**
+    * Set the filter that reads the dicom image reader objects for a given SOP UID
+    * @param dicomFilter
+    */
+   @MetaData(out="${ref:dicomImageReader}")
+   public void setDicomImageReaderFilter(Filter<DicomImageReader> dicomImageReaderFilter) {
+      this.dicomImageReaderFilter = dicomImageReaderFilter;
+   }
+
+
+   private Filter<WadoImage> wadoImageFilter;
+
+	public Filter<WadoImage> getWadoImageFilter() {
+   	return wadoImageFilter;
+   }
+
+	/**
+	 * Sets the filter to use for the wado image data.
+	 * @param wadoImageFilter
+	 */
+	@MetaData(out="${ref:dcmImg}")
+	public void setWadoImageFilter(Filter<WadoImage> wadoImageFilter) {
+   	this.wadoImageFilter = wadoImageFilter;
    }
 }

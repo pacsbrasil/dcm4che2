@@ -39,7 +39,10 @@ package org.dcm4chee.xero.search.study;
 
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
+import org.dcm4chee.xero.metadata.MetaData;
+import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.search.DicomCFindFilter;
+import org.dcm4chee.xero.search.SearchCriteria;
 
 /** A C-Find searcher for series level data.
  * Uses the private SOP classes to get all the available series level data, if these are supported.
@@ -80,5 +83,16 @@ public class SeriesSearch extends DicomCFindFilter{
 	protected int[] getReturnKeys() {
 		return SERIES_RETURN_KEYS;
 	}
+
+	/**
+	 * Set the filter that determines the search criteria to use for this query.
+	 * 
+	 * @param searchCondition
+	 */
+	@Override
+	@MetaData(out="${class:org.dcm4chee.xero.search.study.ImageSearchConditionParser}")
+	public void setSearchParser(Filter<SearchCriteria> searchParser) {
+   	super.setSearchParser(searchParser);
+   }
 
 }

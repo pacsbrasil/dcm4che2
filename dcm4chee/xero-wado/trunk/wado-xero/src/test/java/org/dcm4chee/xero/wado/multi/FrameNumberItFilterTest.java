@@ -66,7 +66,7 @@ public class FrameNumberItFilterTest {
 		it3 = l3.iterator();
 		
 		dicomFilter = createMock(Filter.class);
-		filter.setDicomImageObject(dicomFilter);
+		filter.setDicomImageHeader(dicomFilter);
 	}
 	
 	@Test

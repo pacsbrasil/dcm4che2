@@ -103,7 +103,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 	private String port = "11112";
 	private String title = "DCM4CHEE";
 	private String localTitle = "XERO";
-    
+	
     private static final String[] NATIVE_LE_TS = {
         UID.ImplicitVRLittleEndian,
         UID.ExplicitVRLittleEndian  };
@@ -462,14 +462,31 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 		log.debug("DICOM CFind filter starting to search.");
 		ResultFromDicom resultFromDicom = (ResultFromDicom) params.get(EXTEND_RESULTS_KEY);
 		if( resultFromDicom==null ) resultFromDicom = new ResultsBean();
-		SearchCriteria searchCondition = (SearchCriteria) 
-			filterItem.callNamedFilter("searchCondition", params);
-		if( searchCondition==null ) {
+		SearchCriteria searchCriteria= searchParser.filter(null,params);
+		if( searchCriteria==null ) {
 			log.warn("No search conditions found for parameters "+params);
 			return null;
 		}
-		find(searchCondition, resultFromDicom);
+		find(searchCriteria, resultFromDicom);
 		log.debug("Found result(s) - returning from filter.");
 		return resultFromDicom;
 	}
+
+	private Filter<SearchCriteria> searchParser;
+	
+	public Filter<SearchCriteria> getSearchParser() {
+   	return searchParser;
+   }
+
+	/**
+	 * Set the filter that determines the search criteria to use for this query.
+	 * Defaults to the study search condition - if you want series or image level queries, you had
+	 * better modify this to use those explicitly, otherwise you will have to include a study level 
+	 * criteria.
+	 * 
+	 * @param searchCondition
+	 */
+	public void setSearchParser(Filter<SearchCriteria> searchParser) {
+   	this.searchParser = searchParser;
+   }
 }

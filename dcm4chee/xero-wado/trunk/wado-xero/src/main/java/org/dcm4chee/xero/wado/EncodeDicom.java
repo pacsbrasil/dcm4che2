@@ -37,20 +37,21 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado;
 
+import static org.dcm4chee.xero.wado.WadoParams.OBJECT_UID;
+
 import java.net.URL;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.servlet.ErrorResponseItem;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
-import org.dcm4chee.xero.search.filter.FileLocationMgtFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static org.dcm4chee.xero.wado.WadoParams.*;
 
 /** Encodes a file as a servlet response item returning the raw DICOM
  * 
@@ -67,7 +68,7 @@ public class EncodeDicom implements Filter<ServletResponseItem>{
    
    public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
      long start = System.nanoTime();
-	  URL url = FileLocationMgtFilter.filterURL(filterItem, params, null);
+	  URL url = fileLocation.filter(null, params);
 	  if( url==null ) {
 		 log.warn("DICOM File not found.");
 		 return new ErrorResponseItem(HttpServletResponse.SC_NOT_FOUND,"DICOM File not found.");
@@ -87,5 +88,21 @@ public class EncodeDicom implements Filter<ServletResponseItem>{
 	  ret.setBufSize(bufSize);
 	  return ret;
    }
+
+   private Filter<URL> fileLocation;
+   
+   public Filter<URL> getFileLocation() {
+   	return fileLocation;
+   }
+
+	/**
+	 * Sets the file location filter, that knows how to find files.
+	 * @param fileLocation
+	 */
+	@MetaData(out="${ref:fileLocation}")
+	public void setFileLocation(Filter<URL> fileLocation) {
+   	this.fileLocation = fileLocation;
+   }
+
 
 }

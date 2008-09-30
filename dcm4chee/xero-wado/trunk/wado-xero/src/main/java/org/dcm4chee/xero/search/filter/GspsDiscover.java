@@ -42,9 +42,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
+import org.dcm4chee.xero.search.ResultFromDicom;
 import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.search.study.GspsType;
 import org.dcm4chee.xero.search.study.PatientType;
@@ -87,7 +89,7 @@ public class GspsDiscover implements Filter<ResultsBean> {
 	  ResultsBean rb = (ResultsBean) filterItem.callNextFilter(params);
 	  if (rb == null)
 		 return null;
-	  ResultsBean gspsResults = queryForGsps(filterItem, rb, null);
+	  ResultsBean gspsResults = queryForGsps(imageSource, rb, null);
 	  if (gspsResults == null)
 		 return rb;
 	  for (PatientType pt : rb.getPatient()) {
@@ -138,7 +140,7 @@ public class GspsDiscover implements Filter<ResultsBean> {
      * This method queries for PR objects associated with any study in the
      * results bean, returning a new results bean object.  Will return null if no studies have PR objects.
      */
-   public static ResultsBean queryForGsps(FilterItem<ResultsBean> filterItem, ResultsBean rb, Object presentationUID) {
+   public static ResultsBean queryForGsps(Filter<ResultFromDicom> imageSource, ResultsBean rb, Object presentationUID) {
 	  Map<String, Object> prParams = new HashMap<String, Object>();
 	  List<String> uids = new ArrayList<String>();
 	  for (PatientType pt : rb.getPatient()) {
@@ -154,8 +156,23 @@ public class GspsDiscover implements Filter<ResultsBean> {
 	  prParams.put("studyUID", uids.toArray(STRING_ARRAY_TYPE));
 	  MemoryCacheFilter.computeQueryString(prParams, "Modality", "studyUID");
 	  log.debug("Doing a search on {} Study UID's for PR objects uid[0]={}", uids.size(), uids.get(0));
-	  ResultsBean gspsRB = (ResultsBean) filterItem.callNamedFilter("imageSearch", prParams);
+	  ResultsBean gspsRB = (ResultsBean) imageSource.filter(null,prParams);
 	  return gspsRB;
+   }
+
+   private Filter<ResultFromDicom> imageSource;
+
+	public Filter<ResultFromDicom> getImageSource() {
+   	return imageSource;
+   }
+
+	/**
+	 * Sets the filter to use for an image search.
+	 * @param imageSource
+	 */
+	@MetaData(out="${ref:imageSource}")
+	public void setImageSource(Filter<ResultFromDicom> imageSource) {
+   	this.imageSource = imageSource;
    }
 
 }

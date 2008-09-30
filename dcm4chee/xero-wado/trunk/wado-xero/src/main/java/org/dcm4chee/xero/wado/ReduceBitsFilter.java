@@ -55,6 +55,7 @@ import org.dcm4che2.data.VR;
 import org.dcm4che2.image.ByteLookupTable;
 import org.dcm4che2.image.ShortLookupTable;
 import org.dcm4che2.image.VOIUtils;
+import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
@@ -98,7 +99,7 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 	  if( params.containsKey(WadoImage.IMG_AS_BYTES) ) {
 		 // Check up-front to see if the image can be returned as bytes so that no
 		 // decoding is necessary.  This only works if the correct number of bits is set.
-		 DicomObject ds = DicomFilter.filterImageDicomObject(filterItem,params,null);
+		 DicomObject ds = dicomImageHeader.filter(null,params);
 		 if( !needsRescale(bits,ds) ) {
 			 log.debug("Image doesn't need to be rescaled and can be returned as raw bytes.");
 			 return filterItem.callNextFilter(params);
@@ -223,5 +224,17 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 	  }
 	  log.info("Does not need rescale - {} of {} unsigned",stored,bits);
 	  return false;
+   }
+   
+   private Filter<DicomObject> dicomImageHeader;
+
+   /** Gets the filter that returns the dicom object image header */
+	public Filter<DicomObject> getDicomImageHeader() {
+   	return dicomImageHeader;
+   }
+
+	@MetaData(out="${ref:dicomImageHeader}")
+	public void setDicomImageHeader(Filter<DicomObject> dicomImageHeader) {
+   	this.dicomImageHeader = dicomImageHeader;
    }
 }

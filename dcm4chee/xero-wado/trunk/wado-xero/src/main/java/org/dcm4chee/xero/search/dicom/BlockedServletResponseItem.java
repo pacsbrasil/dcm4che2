@@ -48,8 +48,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomOutputStream;
-import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.FilterUtil;
+import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.dcm4chee.xero.search.DicomCFindFilter;
 import org.dcm4chee.xero.search.ResultFromDicom;
@@ -69,30 +68,24 @@ import org.slf4j.LoggerFactory;
 public class BlockedServletResponseItem implements ServletResponseItem, ResultFromDicom {
    private static final Logger log = LoggerFactory.getLogger(BlockedServletResponseItem.class);
    
-   public static final String QUERY_LEVEL="level";
-   
-   @SuppressWarnings("unchecked")
-   protected FilterItem filterItem;
+   protected Filter<ResultFromDicom> cfind;
    protected Map<String, Object> params;
    
    protected ServletOutputStream sos;
    protected DicomOutputStream dos;
 
-   @SuppressWarnings("unchecked")
-   public BlockedServletResponseItem(FilterItem filterItem, Map<String,Object> params) {
-	  this.filterItem = filterItem;
+   public BlockedServletResponseItem(Filter<ResultFromDicom> cfind, Map<String,Object> params) {
+	  this.cfind = cfind;
 	  this.params = params;
    }
 
-   @SuppressWarnings("unchecked")
    public void writeResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
 	  response.setContentType("application/dicom");
 	  sos = response.getOutputStream();
 	  dos = new DicomOutputStream(sos);
 	  dos.writeHeader(Tag.DirectoryRecordSequence, VR.SQ, -1);
 	  params.put(DicomCFindFilter.EXTEND_RESULTS_KEY, this);
-	  String queryLevel = FilterUtil.getString(params,QUERY_LEVEL,"seriesImage");
-	  filterItem.callNamedFilter(queryLevel, params);
+	  cfind.filter(null, params);
 	  dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
 	  sos.close();
    }

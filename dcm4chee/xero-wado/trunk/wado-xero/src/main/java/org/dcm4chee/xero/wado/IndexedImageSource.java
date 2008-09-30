@@ -69,9 +69,6 @@ import static org.dcm4chee.xero.wado.WadoParams.*;
 public class IndexedImageSource implements Filter<WadoImage> {
 	private static Logger log = LoggerFactory.getLogger(IndexedImageSource.class);
 
-	Filter<WadoImage> imageFilter;
-	Filter<DicomObject> dicomFilter;
-
 	/** Create an indexed colour model as required */
 	public WadoImage filter(FilterItem<WadoImage> filterItem, Map<String, Object> params) {
 		List<byte[]> colours = ImageDisplayRelative.getColours(params);
@@ -84,10 +81,10 @@ public class IndexedImageSource implements Filter<WadoImage> {
 		DicomObject ds;
 		WadoImage orig = null;
 		if (needOriginalImage) {
-			orig = imageFilter.filter(null, params);
+			orig = wadoImageFilter.filter(null, params);
 			ds = orig.getDicomObject();
 		} else {
-			ds = dicomFilter.filter(null, params);
+			ds = dicomImageHeader.filter(null, params);
 		}
 
 		int stored = 0;
@@ -150,30 +147,30 @@ public class IndexedImageSource implements Filter<WadoImage> {
 		return ret;
 	}
 
-	/**
-	 * Get the image filter list used to lookup the WadoImage complete image
-	 * object.
-	 */
-	public Filter<WadoImage> getImageFilter() {
-		return imageFilter;
-	}
+   private Filter<WadoImage> wadoImageFilter;
 
-	@MetaData(out = "${ref:baseImg}")
-	public void setImageFilter(Filter<WadoImage> imageFilterList) {
-		this.imageFilter = imageFilterList;
-	}
+	public Filter<WadoImage> getWadoImageFilter() {
+   	return wadoImageFilter;
+   }
 
 	/**
-	 * Gets the dicom filter list to use for the DicomObject - Image header data
-	 * only
+	 * Sets the filter to use for the wado image data.
+	 * @param wadoImageFilter
 	 */
-	public Filter<DicomObject> getDicomFilter() {
-		return dicomFilter;
-	}
+	@MetaData(out="${ref:dcmImg}")
+	public void setWadoImageFilter(Filter<WadoImage> wadoImageFilter) {
+   	this.wadoImageFilter = wadoImageFilter;
+   }
 
-	@MetaData(out = "${ref:dicomImageObject}")
-	public void setDicomFilterList(Filter<DicomObject> dicomFilterList) {
-		this.dicomFilter = dicomFilterList;
-	}
+   private Filter<DicomObject> dicomImageHeader;
 
+   /** Gets the filter that returns the dicom object image header */
+	public Filter<DicomObject> getDicomImageHeader() {
+   	return dicomImageHeader;
+   }
+
+	@MetaData(out="${ref:dicomImageHeader}")
+	public void setDicomImageHeader(Filter<DicomObject> dicomImageHeader) {
+   	this.dicomImageHeader = dicomImageHeader;
+   }
 }

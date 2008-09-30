@@ -43,9 +43,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.dcm4chee.xero.metadata.MetaData;
+import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.search.DicomCFindFilter;
+import org.dcm4chee.xero.search.ResultFromDicom;
 import org.dcm4chee.xero.search.macro.KeyObjectMacro;
 import org.dcm4chee.xero.search.study.KeySelection;
 import org.dcm4chee.xero.search.study.ResultsBean;
@@ -61,36 +64,51 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class KeyObjectSeries extends KeyObjectFilter {
-   private static final Logger log = LoggerFactory.getLogger(KeyObjectSeries.class);
+	private static final Logger log = LoggerFactory.getLogger(KeyObjectSeries.class);
 
-   private static final String[] EMPTY_STRING_ARR = new String[0];
+	private static final String[] EMPTY_STRING_ARR = new String[0];
 
-   /**
-     * Does a secondary query to add the missing items to the return result, and
-     * ensures they are marked as key objects as well.
-     */
-   @Override
-   protected void handleMissingItems(FilterItem<ResultsBean> filterItem, Map<String, Object> params, ResultsBean ret, KeyObjectMacro kom,
-		 List<KeySelection> missing) {
-	  Map<String, Object> newParams = new HashMap<String, Object>();
-	  Set<String> uids = new HashSet<String>(newParams.size());
-	  StringBuffer queryStr = new StringBuffer("&koUID=").append(params.get(KEY_UID));
-	  for (KeySelection key : missing) {
-		 if (uids.contains(key.getObjectUid()))
-			continue;
-		 uids.add(key.getObjectUid());
-		 queryStr.append("&objectUID=").append(key.getObjectUid());
-	  }
-	  String[] uidArr = uids.toArray(EMPTY_STRING_ARR);
-	  log.info("Querying for " + uidArr.length + " additional images: " + queryStr);
-	  newParams.put("objectUID", uidArr);
-	  newParams.put(MemoryCacheFilter.KEY_NAME, queryStr.toString());
-	  newParams.put(DicomCFindFilter.EXTEND_RESULTS_KEY, ret);
-	  filterItem.callNamedFilter("imageSearch", newParams);
-	  List<KeySelection> stillMissing = assignKeyObjectMacro(ret, kom, missing);
-	  if (stillMissing != null && !stillMissing.isEmpty()) {
-		 log.warn("Could not find " + stillMissing.size() + " items referenced in key object.");
-	  }
+	/**
+	 * Does a secondary query to add the missing items to the return result, and
+	 * ensures they are marked as key objects as well.
+	 */
+	@Override
+	protected void handleMissingItems(FilterItem<ResultsBean> filterItem, Map<String, Object> params, ResultsBean ret,
+	      KeyObjectMacro kom, List<KeySelection> missing) {
+		Map<String, Object> newParams = new HashMap<String, Object>();
+		Set<String> uids = new HashSet<String>(newParams.size());
+		StringBuffer queryStr = new StringBuffer("&koUID=").append(params.get(KEY_UID));
+		for (KeySelection key : missing) {
+			if (uids.contains(key.getObjectUid()))
+				continue;
+			uids.add(key.getObjectUid());
+			queryStr.append("&objectUID=").append(key.getObjectUid());
+		}
+		String[] uidArr = uids.toArray(EMPTY_STRING_ARR);
+		log.info("Querying for " + uidArr.length + " additional images: " + queryStr);
+		newParams.put("objectUID", uidArr);
+		newParams.put(MemoryCacheFilter.KEY_NAME, queryStr.toString());
+		newParams.put(DicomCFindFilter.EXTEND_RESULTS_KEY, ret);
+		imageSource.filter(null, newParams);
+		List<KeySelection> stillMissing = assignKeyObjectMacro(ret, kom, missing);
+		if (stillMissing != null && !stillMissing.isEmpty()) {
+			log.warn("Could not find " + stillMissing.size() + " items referenced in key object.");
+		}
+	}
+
+   private Filter<ResultFromDicom> imageSource;
+
+	public Filter<ResultFromDicom> getImageSource() {
+   	return imageSource;
+   }
+
+	/**
+	 * Sets the filter to use for an image search.
+	 * @param imageSource
+	 */
+	@MetaData(out="${ref:imageSource}")
+	public void setImageSource(Filter<ResultFromDicom> imageSource) {
+   	this.imageSource = imageSource;
    }
 
 }

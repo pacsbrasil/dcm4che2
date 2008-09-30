@@ -55,9 +55,6 @@ import org.slf4j.LoggerFactory;
 public class ImageCache extends MemoryCacheFilter<WadoImage> {
 	private static Logger log = LoggerFactory.getLogger(ImageCache.class);
 
-	Filter<DicomObject> dicomImageObject;
-
-
 	/** Add a key computation that includes the region/row sizes.  This modifies the returned file name. */
 	@Override
 	public String computeKey(Map<String, Object> params) {
@@ -68,7 +65,7 @@ public class ImageCache extends MemoryCacheFilter<WadoImage> {
  	  int frameNumber = FilterUtil.getInt(params,FRAME_NUMBER,1);
  	  key.append("-f").append(frameNumber+1);
 
- 	  DicomObject ds = dicomImageObject.filter(null,params);
+ 	  DicomObject ds = dicomImageHeader.filter(null,params);
  	  int width = ds.getInt(Tag.Columns);
  	  int height = ds.getInt(Tag.Rows);
  	  if( width==0 || height==0 ) {
@@ -119,14 +116,15 @@ public class ImageCache extends MemoryCacheFilter<WadoImage> {
  	  return key.toString();
    }
 
+   private Filter<DicomObject> dicomImageHeader;
+
    /** Gets the filter that returns the dicom object image header */
-	public Filter<DicomObject> getDicomImageObject() {
-   	return dicomImageObject;
+	public Filter<DicomObject> getDicomImageHeader() {
+   	return dicomImageHeader;
    }
 
-	@MetaData(out="${ref:dicomImageObject}")
-	public void setDicomImageObject(Filter<DicomObject> dicomImageObject) {
-   	this.dicomImageObject = dicomImageObject;
+	@MetaData(out="${ref:dicomImageHeader}")
+	public void setDicomImageHeader(Filter<DicomObject> dicomImageHeader) {
+   	this.dicomImageHeader = dicomImageHeader;
    }
-
 }

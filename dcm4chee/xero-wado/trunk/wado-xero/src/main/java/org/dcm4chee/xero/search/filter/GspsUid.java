@@ -40,14 +40,16 @@ package org.dcm4chee.xero.search.filter;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.search.ResultFromDicom;
 import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.search.study.GspsBean;
 import org.dcm4chee.xero.search.study.ImageType;
-import org.dcm4chee.xero.search.study.SeriesType;
 import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;
+import org.dcm4chee.xero.search.study.SeriesType;
 import org.dcm4chee.xero.search.study.StudyType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +79,7 @@ public class GspsUid  implements Filter<ResultsBean> {
 		ResultsBean rb = (ResultsBean) filterItem.callNextFilter(params);
 		if( rb==null ) return null;
 		// This can be restricted to a specific set of UID's
-		ResultsBean gspsResults = GspsDiscover.queryForGsps(filterItem,rb, presentationUID);
+		ResultsBean gspsResults = GspsDiscover.queryForGsps(imageSource,rb, presentationUID);
 		if( gspsResults==null ) return rb;
 		
 		Map<String,GspsBean> uidToGsps = new HashMap<String,GspsBean>();
@@ -104,6 +106,21 @@ public class GspsUid  implements Filter<ResultsBean> {
 		addGspsUids(rb, uidToGsps);
 		return rb;
 	}
+	
+   private Filter<ResultFromDicom> imageSource;
+
+	public Filter<ResultFromDicom> getImageSource() {
+   	return imageSource;
+   }
+
+	/**
+	 * Sets the filter to use for an image search.
+	 * @param imageSource
+	 */
+	@MetaData(out="${ref:imageSource}")
+	public void setImageSource(Filter<ResultFromDicom> imageSource) {
+   	this.imageSource = imageSource;
+   }
 
 	private void addGspsUids(ResultsBean rb, Map<String, GspsBean> uidToGsps) {
 		for( PatientType pt : rb.getPatient() ) {

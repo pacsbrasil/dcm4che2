@@ -58,7 +58,6 @@ import org.slf4j.LoggerFactory;
 public class PixelPadding implements Filter<WadoImage> {
 	private static Logger log = LoggerFactory.getLogger(PixelPadding.class);
 	
-	Filter<DicomObject> dicomImageObject;
 	private static final byte[] BLACK = new byte[]{0,0,0};
 	
 	/** Add pixel padding to the returned image. */
@@ -68,7 +67,7 @@ public class PixelPadding implements Filter<WadoImage> {
 			log.debug("No padding specified, so just calling next method.");
 			return filterItem.callNextFilter(params);
 		}
-		DicomObject ds = dicomImageObject.filter(null,params);
+		DicomObject ds = dicomImageHeader.filter(null,params);
 		if( ds==null ) return null;
 		if( !ds.contains(Tag.PixelPaddingValue) ) {
 			log.debug("The image does not contain pixel padding, so just returning the next call.");
@@ -117,14 +116,16 @@ public class PixelPadding implements Filter<WadoImage> {
 	   return ret;
    }
 
-	/** Gets the fitler that retrieves the dicom image object header */
-	public Filter<DicomObject> getDicomImageObject() {
-   	return dicomImageObject;
+   private Filter<DicomObject> dicomImageHeader;
+
+   /** Gets the filter that returns the dicom object image header */
+	public Filter<DicomObject> getDicomImageHeader() {
+   	return dicomImageHeader;
    }
 
-	@MetaData(out="${ref:dicomImageObject}")
-	public void setDicomImageObject(Filter<DicomObject> dicomImageObject) {
-   	this.dicomImageObject = dicomImageObject;
+	@MetaData(out="${ref:dicomImageHeader}")
+	public void setDicomImageHeader(Filter<DicomObject> dicomImageHeader) {
+   	this.dicomImageHeader = dicomImageHeader;
    }
 
 }

@@ -40,6 +40,7 @@ package org.dcm4chee.xero.search.filter;
 import java.net.URL;
 import java.util.Map;
 
+import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.search.macro.FileLocationMacro;
@@ -56,7 +57,7 @@ import org.slf4j.LoggerFactory;
 public class AddFileLocationFilter  implements Filter<ResultsBean> {
    private static final Logger log = LoggerFactory.getLogger(AddFileLocationFilter.class);
 
-   String FILE_LOCATION="fileLocation";
+   public static String FILE_LOCATION="fileLocation";
    
    /** Update any image beans with min/max pixel range information */
    public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
@@ -72,7 +73,7 @@ public class AddFileLocationFilter  implements Filter<ResultsBean> {
 				  if( ! (dot instanceof MacroMixIn) ) continue;
 				  MacroMixIn mmi = (MacroMixIn) dot;
 				  if( mmi.getMacroItems().findMacro(FileLocationMacro.class)!=null ) continue;
-				  URL url = FileLocationMgtFilter.findImageBeanUrl(dot, filterItem, params);
+				  URL url = FileLocationMgtFilter.findImageBeanUrl(dot, fileLocation, params);
 				  if( url==null ) continue;
 				  mmi.getMacroItems().addMacro(new FileLocationMacro(url.toString()));
 			   }
@@ -81,6 +82,21 @@ public class AddFileLocationFilter  implements Filter<ResultsBean> {
 	  }
 	  log.debug("Adding file location info done.");
 	  return ret;
+   }
+
+   private Filter<URL> fileLocation;
+   
+   public Filter<URL> getFileLocation() {
+   	return fileLocation;
+   }
+
+	/**
+	 * Sets the file location filter, that knows how to find files.
+	 * @param fileLocation
+	 */
+	@MetaData(out="${ref:fileLocation}")
+	public void setFileLocation(Filter<URL> fileLocation) {
+   	this.fileLocation = fileLocation;
    }
 
 }

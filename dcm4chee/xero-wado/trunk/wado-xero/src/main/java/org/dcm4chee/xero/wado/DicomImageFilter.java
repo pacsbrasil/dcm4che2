@@ -88,7 +88,7 @@ public class DicomImageFilter implements Filter<WadoImage> {
      */
    public WadoImage filter(FilterItem<WadoImage> filterItem, Map<String, Object> params) {
 	  WadoImage ret = null;
-	  DicomImageReader reader = DicomFilter.filterDicomImageReader(filterItem, params, null);
+	  DicomImageReader reader = dicomImageReaderFilter.filter(null, params);
 	  boolean readRawBytes = params.containsKey(WadoImage.IMG_AS_BYTES);
 	  if (reader == null) {
 		 log.warn("Couldn't find reader for DICOM object.");
@@ -227,6 +227,21 @@ public class DicomImageFilter implements Filter<WadoImage> {
    @MetaData
    public int getPriority() {
 	  return 0;
+   }
+
+   private Filter<DicomImageReader> dicomImageReaderFilter;
+
+   public Filter<DicomImageReader> getDicomImageReaderFilter() {
+      return dicomImageReaderFilter;
+   }
+
+   /**
+    * Set the filter that reads the dicom image reader objects for a given SOP UID
+    * @param dicomFilter
+    */
+   @MetaData(out="${ref:dicomImageReader}")
+   public void setDicomImageReaderFilter(Filter<DicomImageReader> dicomImageReaderFilter) {
+      this.dicomImageReaderFilter = dicomImageReaderFilter;
    }
 
 }

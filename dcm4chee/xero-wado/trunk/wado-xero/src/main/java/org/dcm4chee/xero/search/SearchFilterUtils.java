@@ -40,7 +40,7 @@ package org.dcm4chee.xero.search;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.search.study.ResultsBean;
 import org.slf4j.Logger;
@@ -62,7 +62,7 @@ public class SearchFilterUtils {
     * @param gspsUid
     * @return ResultsBean containing at least the given image bean, and GSPS information.
     */
-   public static ResultsBean filterImage(FilterItem<?> filterItem, Map<String,Object> params, String uid, String presentationUID) {
+   public static ResultsBean filterImage(Filter<ResultFromDicom> imageSource, Map<String,Object> params, String uid, String presentationUID) {
 	  Map<String,Object> newParams = new HashMap<String,Object>();
 	  StringBuffer queryStr = new StringBuffer("&object=").append(uid).append("&presentationUID=").append(presentationUID);
 	  newParams.put("objectUID", uid);
@@ -74,6 +74,6 @@ public class SearchFilterUtils {
 	  }
 	  newParams.put(MemoryCacheFilter.KEY_NAME,queryStr.toString());
 	  log.info("BurnIn Query str for filter image is "+queryStr);
-	  return (ResultsBean) filterItem.callNamedFilter("imageSearch", newParams);
+	  return (ResultsBean) imageSource.filter(null, newParams);
    }
 }

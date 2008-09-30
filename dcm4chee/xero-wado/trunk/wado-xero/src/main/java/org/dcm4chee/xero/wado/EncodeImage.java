@@ -81,11 +81,6 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 
    private static final float DEFAULT_QUALITY = -1.0f;
    
-	Filter<DicomObject> dicomImageObject;
-	
-	Filter<WadoImage> wadoImage;
-
-
    protected static Map<String, EncodeResponseInfo> contentTypeMap = new HashMap<String, EncodeResponseInfo>();
    // TODO - replace the bit information with a set of additional params requested....
    static {
@@ -129,7 +124,7 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 	  if (contentType == null)
 		 contentType = (containsRelative ? "image/png" : "image/jpeg");
 	  log.info("Encoding image in content type={}", contentType);
-	  DicomObject ds = dicomImageObject.filter(null,map);
+	  DicomObject ds = dicomImageHeader.filter(null,map);
 	  if( ds!=null && !(ds.contains(Tag.PixelRepresentation) || containsRelative) ) {
 		 log.info("DICOM does not contain pixel representation.");
 		 return filterItem.callNextFilter(map);
@@ -170,7 +165,7 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 	  if( eri==null ) {
 		 return new ErrorResponseItem(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,"Content type "+contentType+" isn't supported.");
 	  }
-	  WadoImage image = wadoImage.filter(null, map);
+	  WadoImage image = wadoImageFilter.filter(null, map);
 	  if( image==null ) return new ErrorResponseItem(HttpServletResponse.SC_NO_CONTENT,"No content found.");
 	  return new ImageServletResponseItem(image, eri, quality);
    }
@@ -208,24 +203,31 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 	  params.put(MAX_BITS, eri.maxBits);
    }
 
+   private Filter<DicomObject> dicomImageHeader;
+
    /** Gets the filter that returns the dicom object image header */
-	public Filter<DicomObject> getDicomImageObject() {
-   	return dicomImageObject;
+	public Filter<DicomObject> getDicomImageHeader() {
+   	return dicomImageHeader;
    }
 
-	@MetaData(out="${ref:dicomImageObject}")
-	public void setDicomImageObject(Filter<DicomObject> dicomImageObject) {
-   	this.dicomImageObject = dicomImageObject;
+	@MetaData(out="${ref:dicomImageHeader}")
+	public void setDicomImageHeader(Filter<DicomObject> dicomImageHeader) {
+   	this.dicomImageHeader = dicomImageHeader;
+   }
+	
+   private Filter<WadoImage> wadoImageFilter;
+
+	public Filter<WadoImage> getWadoImageFilter() {
+   	return wadoImageFilter;
    }
 
-	/** Returns the filter that produces a wado image object */
-	public Filter<WadoImage> getWadoImage() {
-   	return wadoImage;
-   }
-
+	/**
+	 * Sets the filter to use for the wado image data.
+	 * @param wadoImageFilter
+	 */
 	@MetaData(out="${ref:wadoImg}")
-	public void setWadoImage(Filter<WadoImage> wadoImage) {
-   	this.wadoImage = wadoImage;
+	public void setWadoImageFilter(Filter<WadoImage> wadoImageFilter) {
+   	this.wadoImageFilter = wadoImageFilter;
    }
 
 

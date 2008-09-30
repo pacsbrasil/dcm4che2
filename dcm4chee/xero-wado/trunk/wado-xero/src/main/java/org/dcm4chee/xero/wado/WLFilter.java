@@ -50,6 +50,7 @@ import java.util.Map;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.image.LookupTable;
 import org.dcm4che2.image.VOIUtils;
+import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
@@ -136,7 +137,7 @@ public class WLFilter implements Filter<WadoImage> {
 	  DicomObject pr = null;
 	  if( values[2]!=null ) {
 		 // Only image type attributes are required, so filter the image dicomobject.
-		 pr = DicomFilter.filterImageDicomObject(filterItem, params, (String) values[2]);
+		 pr = DicomFilter.callInstanceFilter(dicomImageHeader, params, (String) values[2]);
 		 if( pr==null ) log.warn("Coudn't find presentation state "+values[2]);
 	  }
 
@@ -222,4 +223,15 @@ public class WLFilter implements Filter<WadoImage> {
 	  return null;
    }
 
+   private Filter<DicomObject> dicomImageHeader;
+
+   /** Gets the filter that returns the dicom object image header */
+	public Filter<DicomObject> getDicomImageHeader() {
+   	return dicomImageHeader;
+   }
+
+	@MetaData(out="${ref:dicomImageHeader}")
+	public void setDicomImageHeader(Filter<DicomObject> dicomImageHeader) {
+   	this.dicomImageHeader = dicomImageHeader;
+   }
 }

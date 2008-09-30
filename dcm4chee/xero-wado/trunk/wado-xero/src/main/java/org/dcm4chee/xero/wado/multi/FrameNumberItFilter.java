@@ -31,8 +31,6 @@ import org.dcm4chee.xero.wado.RecodeDicom;
  */
 public class FrameNumberItFilter implements Filter<Iterator<ServletResponseItem>> {
 	
-	Filter<DicomObject> dicomImageObject;
-
 	/** 
 	 * Calls the next filter with frameNumber set, and simpleFrameList un-set, once for every
 	 * frame that matches.
@@ -41,7 +39,7 @@ public class FrameNumberItFilter implements Filter<Iterator<ServletResponseItem>
          Map<String, Object> params) {
    	String objectUID = (String) params.get(OBJECT_UID);
    	if( objectUID==null ) return null;
-   	DicomObject ds = dicomImageObject.filter(null,params);
+   	DicomObject ds = dicomImageHeader.filter(null,params);
    	if( ds==null ) return null;
    	List<Integer> frames = RecodeDicom.computeFrames(ds, params);
    	if( frames==null ) frames = allFrames(ds);
@@ -62,14 +60,16 @@ public class FrameNumberItFilter implements Filter<Iterator<ServletResponseItem>
    	return ret;
    }
 
+   private Filter<DicomObject> dicomImageHeader;
+
    /** Gets the filter that returns the dicom object image header */
-	public Filter<DicomObject> getDicomImageObject() {
-   	return dicomImageObject;
+	public Filter<DicomObject> getDicomImageHeader() {
+   	return dicomImageHeader;
    }
 
-	@MetaData(out="${ref:dicomImageObject}")
-	public void setDicomImageObject(Filter<DicomObject> dicomImageObject) {
-   	this.dicomImageObject = dicomImageObject;
+	@MetaData(out="${ref:dicomImageHeader}")
+	public void setDicomImageHeader(Filter<DicomObject> dicomImageHeader) {
+   	this.dicomImageHeader = dicomImageHeader;
    }
 
    /** Iterate over the string UID's specified in the original parameters. */

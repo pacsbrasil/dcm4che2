@@ -37,6 +37,10 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado;
 
+import static org.dcm4chee.xero.metadata.filter.FilterUtil.getInt;
+import static org.dcm4chee.xero.metadata.filter.FilterUtil.splitFloat;
+import static org.dcm4chee.xero.metadata.filter.MemoryCacheFilter.removeFromQuery;
+
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -56,9 +60,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.batik.transcoder.TranscoderException;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
+import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
+import org.dcm4chee.xero.search.ResultFromDicom;
 import org.dcm4chee.xero.search.SearchFilterUtils;
 import org.dcm4chee.xero.search.macro.AspectMacro;
 import org.dcm4chee.xero.search.macro.FlipRotateMacro;
@@ -71,11 +77,6 @@ import org.slf4j.LoggerFactory;
 import org.w3.svg.GType;
 import org.w3.svg.SvgType;
 import org.w3.svg.Use;
-
-import static org.dcm4chee.xero.metadata.filter.MemoryCacheFilter.removeFromQuery;
-
-import static org.dcm4chee.xero.metadata.filter.FilterUtil.splitFloat;
-import static org.dcm4chee.xero.metadata.filter.FilterUtil.getInt;
 
 /**
  * This class burns in GSPS information into the image. This may cause the image
@@ -104,7 +105,7 @@ public class GspsBurnIn implements Filter<WadoImage> {
 	  String uid = (String) params.get("objectUID");
 	  if (uid == null)
 		 return null;
-	  ResultsBean results = SearchFilterUtils.filterImage(filterItem, params, uid, presentationUID);
+	  ResultsBean results = SearchFilterUtils.filterImage(imageSource, params, uid, presentationUID);
 	  if (results == null) {
 		 return null;
 	  }
@@ -354,7 +355,7 @@ public class GspsBurnIn implements Filter<WadoImage> {
 
    /**
      * Select the G children elements from the GSPS object, putting them into
-     * teh return map by id.
+     * the return map by id.
      * 
      * @param gspsSvg
      * @return
@@ -370,6 +371,21 @@ public class GspsBurnIn implements Filter<WadoImage> {
 		 }
 	  }
 	  return used;
+   }
+
+   private Filter<ResultFromDicom> imageSource;
+
+	public Filter<ResultFromDicom> getImageSource() {
+   	return imageSource;
+   }
+
+	/**
+	 * Sets the filter to use for an image search.
+	 * @param imageSearch
+	 */
+	@MetaData(out="${ref:imageSource}")
+	public void setImageSource(Filter<ResultFromDicom> imageSource) {
+   	this.imageSource = imageSource;
    }
 
 }

@@ -12,7 +12,7 @@ public class DicomImageReaderToDicomHeaderTest {
 	 */
 	@Test
 	public void imageReaderToHeaderTest() {
-		DicomObject dobj = (DicomObject) callFilter("dicomImageObject", "sr/605/sr_605ct.dcm");
+		DicomObject dobj = (DicomObject) callFilter("dicomImageHeader", "sr/605/sr_605ct.dcm");
 		assert dobj!=null;
 	}
 }

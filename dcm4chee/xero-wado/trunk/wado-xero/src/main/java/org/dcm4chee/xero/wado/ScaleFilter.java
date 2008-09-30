@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader;
+import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
@@ -81,7 +82,7 @@ public class ScaleFilter implements Filter<WadoImage> {
 		 log.debug("Just calling next filter directly as no size, rotation or flip parameters.");
 		 return (WadoImage) filterItem.callNextFilter(params);
 	  }
-	  DicomImageReader dir = DicomFilter.filterDicomImageReader(filterItem, params, null);
+	  DicomImageReader dir = dicomImageReaderFilter.filter(null, params);
 	  if( dir==null ) return null;
 	  // Size can't change per-image, so just get the overall sizes.
 	  int width, height;
@@ -178,6 +179,21 @@ public class ScaleFilter implements Filter<WadoImage> {
 	  ret.setValue(biScale);
 	  if( !transform.equals("") ) ret.setParameter(SVG_TRANSFORM, transform);
 	  return ret;
+   }
+   
+   private Filter<DicomImageReader> dicomImageReaderFilter;
+
+   public Filter<DicomImageReader> getDicomImageReaderFilter() {
+      return dicomImageReaderFilter;
+   }
+
+   /**
+    * Set the filter that reads the dicom image reader objects for a given SOP UID
+    * @param dicomFilter
+    */
+   @MetaData(out="${ref:dicomImageReader}")
+   public void setDicomImageReaderFilter(Filter<DicomImageReader> dicomImageReaderFilter) {
+      this.dicomImageReaderFilter = dicomImageReaderFilter;
    }
 
 }

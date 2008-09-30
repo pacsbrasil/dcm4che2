@@ -37,11 +37,16 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.dicom;
 
+import java.util.HashMap;
 import java.util.Map;
 
+import org.dcm4chee.xero.metadata.MetaDataBean;
+import org.dcm4chee.xero.metadata.MetaDataUser;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
+import org.dcm4chee.xero.search.ResultFromDicom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,16 +59,32 @@ import org.slf4j.LoggerFactory;
  * @author bwallace
  *
  */
-public class BlockedSearchFilter implements Filter<ServletResponseItem> {
+public class BlockedSearchFilter implements Filter<ServletResponseItem>, MetaDataUser {
    private static final Logger log = LoggerFactory.getLogger(BlockedSearchFilter.class);
-
+   public static final String QUERY_LEVEL="level";
+   
+   Map<String,Filter<ResultFromDicom>> childFilters = new HashMap<String,Filter<ResultFromDicom>>(6);
+   
    /**
     * Returns a DICOM Directory 
     */
    public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
 	  log.debug("Doing a blocked servlet response to stream the C-Find data to the client.");
-	  return new BlockedServletResponseItem(filterItem, params);
-   }
-   
+	  String level = FilterUtil.getString(params,QUERY_LEVEL,"study");
 
+	  Filter<ResultFromDicom> filter = childFilters.get(level);
+	  return new BlockedServletResponseItem(filter, params);
+   }
+
+   /** Read all the available child filters */
+	@SuppressWarnings("unchecked")
+   @Override
+   public void setMetaData(MetaDataBean metaDataBean) {
+		for(Map.Entry<String,Object> me : metaDataBean.entrySet()) {
+			Object v = ((MetaDataBean) me.getValue()).getValue();
+			if( v instanceof Filter ) {
+				childFilters.put(me.getKey(), (Filter<ResultFromDicom>) v);
+			}
+		}
+   }
 }

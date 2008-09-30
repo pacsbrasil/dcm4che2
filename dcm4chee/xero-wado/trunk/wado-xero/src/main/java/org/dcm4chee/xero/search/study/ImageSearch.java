@@ -38,6 +38,9 @@
 package org.dcm4chee.xero.search.study;
 
 import org.dcm4che2.data.Tag;
+import org.dcm4chee.xero.metadata.MetaData;
+import org.dcm4chee.xero.metadata.filter.Filter;
+import org.dcm4chee.xero.search.SearchCriteria;
 
 /** Search for image level information.
  * There isn't an image specific query, so just extend the SeriesSearch as 
@@ -83,4 +86,15 @@ public class ImageSearch extends SeriesSearch
 		return IMAGE_LEVEL_RETURN_KEYS;
 	}
 
+
+	/**
+	 * Set the filter that determines the search criteria to use for this query.
+	 * 
+	 * @param searchCondition
+	 */
+	@Override
+	@MetaData(out="${class:org.dcm4chee.xero.search.study.ImageSearchConditionParser}")
+	public void setSearchParser(Filter<SearchCriteria> searchParser) {
+   	super.setSearchParser(searchParser);
+   }
 }

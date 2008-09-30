@@ -42,6 +42,7 @@ import java.util.Map;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.image.VOIUtils;
+import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.search.macro.MinMaxPixelMacro;
@@ -112,7 +113,7 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
    protected void updateImage(FilterItem<?> fi, Map<String, Object> params, ImageBean ib) {
 	  // Since we don't know what the dicom filter might add to the params,
 	  // create a new one
-	  DicomObject dobj = DicomFilter.filterImageDicomObject(fi, params, ib.getObjectUID());
+	  DicomObject dobj = DicomFilter.callInstanceFilter(dicomImageHeader, params, ib.getObjectUID());
 	  if (dobj == null) {
 		 log.warn("Could not read dicom header for this object.");
 		 return;
@@ -135,6 +136,18 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
 	  macros.addMacro(minMax);
 	  log.debug("Added {} to {}", minMax, macros);
 	  return minMax;
+   }
+
+   private Filter<DicomObject> dicomImageHeader;
+
+   /** Gets the filter that returns the dicom object image header */
+	public Filter<DicomObject> getDicomImageHeader() {
+   	return dicomImageHeader;
+   }
+
+	@MetaData(out="${ref:dicomImageHeader}")
+	public void setDicomImageHeader(Filter<DicomObject> dicomImageHeader) {
+   	this.dicomImageHeader = dicomImageHeader;
    }
 
    /**

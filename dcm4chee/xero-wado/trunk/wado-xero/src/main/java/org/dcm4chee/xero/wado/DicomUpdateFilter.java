@@ -11,6 +11,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.imageio.plugins.dcm.DicomStreamMetaData;
 import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader;
+import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
@@ -49,7 +50,7 @@ public class DicomUpdateFilter implements Filter<DicomImageReader> {
 
 	/** The study cache contains study infos for various objects */
 	StudyInfoCache studyCache = StudyInfoCache.getSingleton();
-
+	
 	/**
 	 * This method updates the dicom image reader if required to update the
 	 * header data. To do this, it uses both the StudyInfo/StudyInfoCache to get
@@ -82,7 +83,7 @@ public class DicomUpdateFilter implements Filter<DicomImageReader> {
 				assert seriesUid != null;
 			}
 			StudyInfo si = studyCache.get(studyUid);
-			DicomObject series = DicomUpdateFilter.readSeriesHeader(si, seriesUid, filterItem);
+			DicomObject series = readSeriesHeader(si, seriesUid, seriesCFind);
 			if (series == null) {
 				log.warn("Unable to find series info - may not update all fields.");
 				return ret;
@@ -149,7 +150,7 @@ public class DicomUpdateFilter implements Filter<DicomImageReader> {
 	 * @param si
 	 * @param filterItem
 	 */
-	public static DicomObject readSeriesHeader(StudyInfo si, String seriesUid, FilterItem<DicomImageReader> filterItem) {
+	public static DicomObject readSeriesHeader(StudyInfo si, String seriesUid, Filter<ResultFromDicom> seriesCFind) {
 		DicomObject series = si.getSeriesHeader(seriesUid);
 		if (series != null)
 			return series;
@@ -174,11 +175,11 @@ public class DicomUpdateFilter implements Filter<DicomImageReader> {
 			}
 			MemoryCacheFilter.computeQueryString(params);
 			params.put(DicomCFindFilter.EXTEND_RESULTS_KEY, new StudyInfoHeaderRecord(si));
-			filterItem.callNamedFilter("seriesCFind", params);
+			seriesCFind.filter(null,params);
 			series = si.getSeriesHeader(seriesUid);
 			if (series == null && params.containsKey("studyUID")) {
 				log.info("Didn't find series UID in requested study - trying series level query.");
-				series = readSeriesHeader(si, seriesUid, filterItem);
+				series = readSeriesHeader(si, seriesUid, seriesCFind);
 			}
 		}
 		return series;
@@ -216,4 +217,17 @@ public class DicomUpdateFilter implements Filter<DicomImageReader> {
 	public void setStudyInfoCache(StudyInfoCache sic) {
 		this.studyCache = sic;
 	}
+
+	/** The filter to get study level information */
+	private Filter<ResultFromDicom> seriesCFind;
+
+	public Filter<ResultFromDicom> getSeriesCFind() {
+   	return seriesCFind;
+   }
+
+	/** Sets the C-Find series level search object to use */
+   @MetaData(out="${class:org.dcm4chee.xero.search.study.SeriesSearch}")
+   public void setSeriesCFind(Filter<ResultFromDicom> seriesCFind) {
+   	this.seriesCFind = seriesCFind;
+   }
 }

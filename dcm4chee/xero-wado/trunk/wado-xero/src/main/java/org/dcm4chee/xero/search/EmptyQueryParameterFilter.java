@@ -39,6 +39,7 @@ package org.dcm4chee.xero.search;
 
 import java.util.Map;
 
+import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.search.study.ResultsBean;
@@ -56,8 +57,7 @@ public class EmptyQueryParameterFilter implements Filter<ResultFromDicom> {
 	/** Checks the search conditions to ensure there is something present. */
 	public ResultFromDicom filter(FilterItem<ResultFromDicom> filterItem, Map<String, Object> params) {
 		ResultsBean resultFromDicom = new ResultsBean();
-		SearchCriteria searchCriteria = (SearchCriteria) 
-			filterItem.callNamedFilter("searchCondition", params);
+		SearchCriteria searchCriteria = searchParser.filter(null, params);
 		if( searchCriteria==null ) return resultFromDicom;
 		if( searchCriteria.getEmpty() ) {
 			log.info("Empty query results.");
@@ -66,4 +66,23 @@ public class EmptyQueryParameterFilter implements Filter<ResultFromDicom> {
 		log.debug("Results were not empty with "+searchCriteria.getAttributeByName().size() + " items found.");
 		return filterItem.callNextFilter(params);
 	}
+
+	private Filter<SearchCriteria> searchParser;
+	
+	public Filter<SearchCriteria> getSearchParser() {
+   	return searchParser;
+   }
+
+	/**
+	 * Set the filter that determines the search criteria to use for this query.
+	 * Defaults to the study search condition - if you want series or image level queries, you had
+	 * better modify this to use those explicitly, otherwise you will have to include a study level 
+	 * criteria.
+	 * 
+	 * @param searchCondition
+	 */
+	@MetaData(out="${class:org.dcm4chee.xero.search.study.StudySearchConditionParser}")
+	public void setSearchParser(Filter<SearchCriteria> searchParser) {
+   	this.searchParser = searchParser;
+   }
 }

@@ -159,7 +159,20 @@ public class GspsEncode implements Filter<ResultsBean> {
 
 	/** The string to use for the wado image references */
 	private String wadoUrl = "/wado2/wado";
-		
+	
+   private Filter<DicomObject> dicomFullHeader;
+
+   /** Gets the filter that returns the dicom object image header */
+	public Filter<DicomObject> getDicomFullHeader() {
+   	return dicomFullHeader;
+   }
+
+   /** Sets the full header filter - this returns all the fields, but not updated. */
+	@MetaData(out="${ref:dicomFullHeader}")
+	public void setDicomFullHeader(Filter<DicomObject> dicomFullHeader) {
+   	this.dicomFullHeader = dicomFullHeader;
+   }
+
 	/**
 	 * This class adds information about the GSPS objects to the filter results.
 	 * The GSPS objects that are read/included are the set of distinct GSPS
@@ -209,7 +222,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 		for (Map.Entry<String, StudyBean> me : gspsUids.entrySet()) {
 			String gspsUid = me.getKey();
 			StudyBean study = me.getValue();
-			DicomObject dcmobj = DicomFilter.filterImageDicomObject(filterItem, params, gspsUid);
+			DicomObject dcmobj = DicomFilter.callInstanceFilter(dicomFullHeader, params, gspsUid);
 			if (dcmobj == null) {
 				log.warn("Couldn't read GSPS for uid " + gspsUid);
 				continue;
