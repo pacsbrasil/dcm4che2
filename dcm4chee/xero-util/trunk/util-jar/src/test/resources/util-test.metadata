@@ -2,7 +2,7 @@
 
 model.templateGroup=${class:org.dcm4chee.xero.template.AutoStringTemplateGroup}
 model.templateGroup.refreshInterval=5
-model.templateGroup.groupNames=utilTestTemplates,testSuper
+model.templateGroup.groupNames=utilTestTemplates,testSuper,groupFile.stg
 model.templateGroup.attributeRenderersName=js
 model.view=simpleMacro
 model.errorView=errorMacro
@@ -17,4 +17,4 @@ controller.stringTemplateFilter.defaultGroup=${class:org.dcm4chee.xero.template.
 controller.stringTemplateFilter.defaultGroup.groupNames=utilTestTemplates,testSuper
 controller.model=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 controller.model.priority=-1
-controller.model.baseModel=${ref:model}
+

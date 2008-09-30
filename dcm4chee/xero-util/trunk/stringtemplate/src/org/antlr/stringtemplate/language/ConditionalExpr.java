@@ -42,9 +42,17 @@ public class ConditionalExpr extends ASTExpr {
 	List elseIfSubtemplates = null;
 	StringTemplate elseSubtemplate = null;
 
-	protected static class ElseIfClauseData {
+	public static class ElseIfClauseData {
 		ASTExpr expr;
 		StringTemplate st;
+		
+		public StringTemplate getSubtemplate() {
+		   return st;
+		}
+		
+		public ASTExpr getAST() {
+		   return expr;
+		}
 	}
 
 	public ConditionalExpr(StringTemplate enclosingTemplate, AST tree) {
@@ -72,6 +80,14 @@ public class ConditionalExpr extends ASTExpr {
 		return subtemplate;
 	}
 
+	/**
+	 * Get the list of else if subtemplate objects.
+	 * @return List<ElseIfClauseData>
+	 */
+	public List getElseIfSubtemplates() {
+	   return elseIfSubtemplates;
+	}
+	
 	public StringTemplate getElseSubtemplate() {
 		return elseSubtemplate;
 	}

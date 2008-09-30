@@ -83,6 +83,9 @@ public class StringTemplateGroup {
 	 */
 	protected String rootDir = null;
 
+	/** Define the root resource path to allow loading groups from a child resource path */
+	protected String rootResource = "";
+
 	/** Track all groups by name; maps name to StringTemplateGroup */
 	protected static Map nameToGroupMap = Collections.synchronizedMap(new HashMap());
 
@@ -375,6 +378,14 @@ public class StringTemplateGroup {
 		this.rootDir = rootDir;
 	}
 
+	public String getRootResource() {
+		return rootResource;
+	}
+
+	public void setRootResource(String rootResource) {
+		this.rootResource = rootResource;
+	}
+
 	/** StringTemplate object factory; each group can have its own. */
 	public StringTemplate createStringTemplate() {
 		StringTemplate st = new StringTemplate();
@@ -565,6 +576,7 @@ public class StringTemplateGroup {
 		// if no rootDir, try to load as a resource in CLASSPATH
 		if ( rootDir==null ) {
 			ClassLoader cl = Thread.currentThread().getContextClassLoader();
+			if( rootResource!=null ) fileName = rootResource+"/"+fileName;
 			InputStream is = cl.getResourceAsStream(fileName);
 			if ( is==null ) {
 				cl = this.getClass().getClassLoader();

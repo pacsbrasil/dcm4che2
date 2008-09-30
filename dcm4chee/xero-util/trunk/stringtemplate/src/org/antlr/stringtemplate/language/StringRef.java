@@ -60,4 +60,8 @@ public class StringRef extends Expr {
 		}
 		return "";
 	}
+	
+	public boolean getLeaf() {
+	   return true;
+	}
 }

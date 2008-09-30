@@ -78,6 +78,22 @@ public class ASTExpr extends Expr {
 		}
 	};
 
+	public String getSeparatorString() {
+	   return separatorString;
+	}
+
+    public String getFormatString() {
+       return formatString;
+    }
+    
+    public String getNullString() {
+       return nullValue;
+    }
+    
+    public String getWrapString() {
+       return wrapString;
+    }
+
 	AST exprTree = null;
 
     /** store separator etc... */
@@ -112,11 +128,17 @@ public class ASTExpr extends Expr {
 		super(enclosingTemplate);
         this.exprTree = exprTree;
         this.options = options;
+        this.handleExprOptions(enclosingTemplate);
     }
 
 	/** Return the tree interpreted when this template is written out. */
 	public AST getAST() {
 		return exprTree;
+	}
+
+	/** Indicate that this is not a leaf node. */
+	public boolean getLeaf() {
+	   return false;
 	}
 
     /** To write out the value of an ASTExpr, invoke the evaluator in eval.g
@@ -139,7 +161,8 @@ public class ASTExpr extends Expr {
 		if ( anchorAST!=null ) { // any non-empty expr means true; check presence
 			out.pushAnchorPoint();
 		}
-		handleExprOptions(self);
+		// Moved to constructor - makes it only work with a constant, but it really does that anyways.
+		// handleExprOptions(self);
 		//System.out.println("evaluating tree: "+exprTree.toStringList());
         ActionEvaluator eval =
                 new ActionEvaluator(self,this,out);

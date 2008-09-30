@@ -17,10 +17,16 @@
   <property name="version.base" value="${version.parent.base}" />
   <property name="version.increment" value="${version.parent.increment}" />
 
+  <!-- Define various integration test properties, useful for setting up servers for automated testing. -->
+  <property name="serverDir" value="//wtlswbw01/dcm4chee" />
+  <property name="userPasswordPropertyFile" value="../../server-setup/test-users.properties" />
+  <property name="dicomObjectsPropertyFile" value="../../server-setup/test-objects.properties" />
+
   <!-- Compound properties -->
   <property name="version.version" value="${version.base}.${version.increment}" />
   <propertyset id="childProperties">
      <propertyref prefix="version.parent" />
+     <propertyref prefix="serverDir" />
      <propertyref name="version.releaseProperties" />
      <propertyref name="version.svnexternals" />
   </propertyset>

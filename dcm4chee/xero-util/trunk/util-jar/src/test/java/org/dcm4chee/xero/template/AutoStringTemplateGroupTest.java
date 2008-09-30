@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.template;
 
+import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.servlet.StringSafeRenderer;
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
@@ -56,5 +57,31 @@ public class AutoStringTemplateGroupTest {
 		  assert stg.getSuperGroup().getName().equals("testSuper");
 		  // TODO - figure out a better test for this...
 		  assert stg.getAttributeRenderers()==StringSafeRenderer.JS_RENDERERS;
+	}
+
+	@Test
+	public void testTemplateGroupFile() {
+		  MetaDataBean root = StaticMetaData.getMetaData("util-test.metadata");
+		  MetaDataBean mdb = root.getChild("model");
+		  AutoStringTemplateGroup stg = (AutoStringTemplateGroup) mdb.getValue(StringTemplateFilter.TEMPLATE_GROUP);
+		  assert stg!=null;
+		  StringTemplate gt = stg.getInstanceOf("groupTemplate");
+		  assert gt!=null;
+		  String s = gt.toString();
+		  assert s.indexOf("The group template")!=-1;
+	}
+	
+	@Test
+	public void testTemplateGroupMap() {
+		  MetaDataBean root = StaticMetaData.getMetaData("util-test.metadata");
+		  MetaDataBean mdb = root.getChild("model");
+		  AutoStringTemplateGroup stg = (AutoStringTemplateGroup) mdb.getValue(StringTemplateFilter.TEMPLATE_GROUP);
+		  assert stg!=null;
+		  StringTemplate gt = stg.getInstanceOf("useMap");
+		  assert gt!=null;
+		  String s = gt.toString();
+		  assert s.indexOf("a=eh")!=-1;
+		  assert s.indexOf("one=1")!=-1;
+		  assert s.indexOf("other default=def")!=-1;
 	}
 }

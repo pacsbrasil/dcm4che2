@@ -17,6 +17,13 @@
       <artifactId>js</artifactId>
       <version>1.7R1</version>
     </dependency>
-  </dependencies>
+    <dependency>
+       <groupId>org.testng</groupId>
+       <artifactId>testng</artifactId>
+       <version>5.1</version>
+       <classifier>jdk15</classifier>
+       <scope>test</scope>
+   </dependency>
+ </dependencies>
   
 </project>
