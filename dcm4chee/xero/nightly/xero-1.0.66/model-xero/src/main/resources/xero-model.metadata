@@ -1,0 +1,45 @@
+# Define some meta-data about the dynamic portion of the model
+
+model=${factory:org.dcm4chee.xero.metadata.access.MapWithDefaults}
+
+model.nameJSTemplate=${class:org.antlr.stringtemplate.js.NameJSTemplate}
+
+# Static data is all the data to include both client and server 
+model.static.inherit=static
+model.shared.inherit=shared
+
+shared=${class:org.dcm4chee.xero.metadata.access.MapWithDefaults}
+shared.studyTrayItems=${class:org.dcm4chee.xero.metadata.access.ValueList}
+
+static.scripts=${class:org.dcm4chee.xero.metadata.access.ValueList}
+static.scripts.events=js/Events.js
+static.scripts.events.priority=900
+static.scripts.sarissa=js/sarissa.js
+static.scripts.sarissa.priority=1000
+static.scripts.xerojs=xerojs.jst
+
+# Define the template group that creates rendered objects such as JavaScript, and later on, views.
+# The SAME group is used throughout, only adding new group names to add content.
+templateGroup=${class:org.dcm4chee.xero.template.AutoStringTemplateGroup}
+templateGroup.refreshInterval=5
+templateGroup.attributeRenderersName=js
+templateGroup.groupNames=${class:org.dcm4chee.xero.metadata.access.ValueList}
+templateGroup.groupNames.xeroModel=xeroModel
+templateGroup.groupNames.jstemplate=jstemplate
+
+# Define the JavaScript templates to include to define the xero model data.  
+# The order can be set by defining priorities if needed.
+model.xeroModels=${class:org.dcm4chee.xero.metadata.access.ValueList}
+model.xeroModels.urlFactory=urlFactory
+model.xeroModels.xmlModel=xmlModel
+model.xeroModels.xmlModel.priority=75
+model.xeroModels.layout=layout
+model.xeroModels.sortPatient=sortPatient
+model.xeroModels.layout.priority=100
+model.xeroModels.imageLayout=imageLayout
+model.xeroModels.merged=merged
+model.xeroModels.navConversation=navConversation
+model.xeroModels.studyData=studyData
+model.xeroModels.navigation=navigation
+model.xeroModels.tabs=tabs
+model.xeroModels.studyTrayItems=model/studyTrayItems
