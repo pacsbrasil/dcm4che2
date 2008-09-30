@@ -161,17 +161,16 @@
 
 
   <target name="createSvnExternalsChildTags" if="version.tags">
-     <echo file="${version.svnexternals}" append="true">${ant.project.name} ${version.tags}/${ant.project.name}-${version.version}
+     <echo file="../svn.externals" append="true">${ant.project.name} ${version.tags}/${ant.project.name}-${version.version}
      </echo>
   </target>
 
-  <target name="createSvnExternalsChild" unless="version.ownVersion">
+  <target name="createSvnExternalsChild" if="childCall">
      <antcall target="createSvnExternalsChildTags" />
   </target>
 
-  <target name="createSvnExternalsTop" if="version.ownVersion">
-      <delete file="svn.externals"/>
-      <property name="version.svnexternals" value="svn.externals" />
+  <target name="createSvnExternalsTop">
+      <delete quiet="true" file="svn.externals"/>
   </target>
 
   <target name="createSvnExternals" depends="createSvnExternalsTop, createSvnExternalsChild">
@@ -184,6 +183,17 @@
      <exec executable="${svn}" failonerror="true">
         <arg line="commit release.properties --non-interactive -m 'Update the release.properties file.'" />
      </exec>
+  </target>
+
+  <target name="commitSvnExternals">
+     <available property="svn.externals.exists" file="svn.externals" />
+     <antcall target="commitSvnExternalsIfExist" />
+     <antcall target="recurseChildren">
+        <param name="childCall" value="commitSvnExternals" />
+     </antcall>
+  </target>
+
+  <target name="commitSvnExternalsIfExist" if="svn.externals.exists">
      <delete dir="${ant.project.name}" quiet="true"/>
      <exec executable="${svn}" failonerror="true">
         <arg line="checkout ${version.tags}/${ant.project.name}-${version.version} ${ant.project.name} -N" />
@@ -204,7 +214,7 @@
      </exec>
   </target>
 
-  <target name="releaseCommit" depends="copyToTag, createSvnExternals, commitReleaseProperties">
+  <target name="releaseCommit" depends="copyToTag, createSvnExternals, commitReleaseProperties,commitSvnExternals">
      <!-- Recursively enumerate over the child directories calling release commit. -->
      <antcall target="recurseChildren">
         <param name="childCall" value="releaseCommit" />
