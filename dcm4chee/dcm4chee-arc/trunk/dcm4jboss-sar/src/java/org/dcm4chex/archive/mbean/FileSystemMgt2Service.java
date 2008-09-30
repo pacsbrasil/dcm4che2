@@ -142,6 +142,8 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     private int deleteOrphanedPrivateFilesBatchSize;
 
+    private int updateStudiesBatchSize;
+
     private FileSystemDTO storageFileSystem;
 
     private Integer scheduleStudiesForDeletionListenerID;
@@ -602,6 +604,9 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public void setScheduleStudiesForDeletionBatchSize(int batchSize) {
+        if (batchSize <= 0) {
+            throw new IllegalArgumentException("batchSize: " + batchSize);
+        }
         this.scheduleStudiesForDeletionBatchSize = batchSize;
     }
 
@@ -610,11 +615,25 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public void setDeleteOrphanedPrivateFilesBatchSize(int batchSize) {
+        if (batchSize <= 0) {
+            throw new IllegalArgumentException("batchSize: " + batchSize);
+        }
         this.deleteOrphanedPrivateFilesBatchSize = batchSize;
     }
 
     public int getDeleteOrphanedPrivateFilesBatchSize() {
         return deleteOrphanedPrivateFilesBatchSize;
+    }
+
+    public int getUpdateStudiesBatchSize() {
+        return updateStudiesBatchSize;
+    }
+
+    public void setUpdateStudiesBatchSize(int batchSize) {
+        if (batchSize <= 0) {
+            throw new IllegalArgumentException("batchSize: " + batchSize);
+        }
+        this.updateStudiesBatchSize = batchSize;
     }
 
     public String listAllFileSystems() throws Exception {
@@ -661,6 +680,43 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
             throws Exception {
         return fileSystemMgt().updateFileSystemStatus(getFileSystemGroupID(),
                 dirPath, FileSystemStatus.toInt(status));
+    }
+
+    public FileSystemDTO updateFileSystemAvailability(String dirPath,
+            String availability) throws Exception {
+        FileSystemMgt2 fsmgt = fileSystemMgt();
+        FileSystemDTO fs = fsmgt.updateFileSystemAvailability(
+                        getFileSystemGroupID(), dirPath,
+                        Availability.toInt(availability));
+        updateDerivedFields(fsmgt, fs, false, true);
+        return fs;
+    }
+
+    public FileSystemDTO updateFileSystemRetrieveAETitle(String dirPath,
+            String aet) throws Exception {
+        FileSystemMgt2 fsmgt = fileSystemMgt();
+        FileSystemDTO fs = fsmgt.updateFileSystemRetrieveAET(
+                        getFileSystemGroupID(), dirPath, aet);
+        updateDerivedFields(fsmgt, fs, true, false);
+        return fs;
+    }
+
+    private void updateDerivedFields(FileSystemMgt2 fsmgt, FileSystemDTO fs,
+            boolean retrieveAETs, boolean availability) throws Exception {
+        int availabilityOfExtRetr = Availability.toInt(
+                deleteStudy.getAvailabilityOfExternalRetrieveable());
+        for (int offset = 0; ; offset += updateStudiesBatchSize) { 
+            Collection<Long> studyPks =
+                    fsmgt.selectStudiesWithFilesOnFileSystem(fs, offset,
+                            updateStudiesBatchSize);
+            if (studyPks.isEmpty()) {
+                break;
+            }
+            for (Long studyPk : studyPks) {
+                fsmgt.updateDerivedFieldsForStudy(studyPk, retrieveAETs,
+                        availability, availabilityOfExtRetr);
+            }
+        }
     }
 
     public FileSystemDTO selectStorageFileSystem() throws Exception { 

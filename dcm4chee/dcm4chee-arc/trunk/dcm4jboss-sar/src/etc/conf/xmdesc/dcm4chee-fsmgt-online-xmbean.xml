@@ -511,6 +511,22 @@
       </descriptors>
    </attribute>
 
+   <attribute access="read-write"
+      getMethod="getUpdateStudiesBatchSize"
+      setMethod="setUpdateStudiesBatchSize">
+      <description><![CDATA[Defines maximal number of studies fetched from the
+        data base in one transaction by operation
+        <i>updateFileSystemAvailability</i> and
+        <i>updateFileSystemRetrieveAETitle</i> for update of <i>Availability</i>
+        and <i>RetrieveAETs</i> values in Study, Series and Instance records.]]>
+      </description>
+      <name>UpdateStudiesBatchSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1000"/>
+      </descriptors>
+   </attribute>
+
   <attribute access="read-write"
     getMethod="getTimerIDScheduleStudiesForDeletion"
     setMethod="setTimerIDScheduleStudiesForDeletion">
@@ -630,6 +646,45 @@
       <description>New file system status. Enumerated values: "RW", "RW+","RO".
       </description>
       <name>status</name>
+      <type>java.lang.String</type>
+    </parameter>
+    <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
+  </operation>
+
+  <operation impact="ACTION">
+    <description><![CDATA[Update file system availability of the specified file
+      system.]]>
+    </description>
+    <name>updateFileSystemAvailability</name>
+    <parameter>
+      <description>Directory/Mount Point file system</description>
+      <name>dirPath</name>
+      <type>java.lang.String</type>
+    </parameter>
+    <parameter>
+      <description>New file system availability. Enumerated values: "ONLINE",
+        "NEARLINE","OFFLINE", "UNAVAILABLE".
+      </description>
+      <name>availability</name>
+      <type>java.lang.String</type>
+    </parameter>
+    <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
+  </operation>
+
+  <operation impact="ACTION">
+    <description><![CDATA[Update Retrieve AE Title associated to the specified
+      file system.]]>
+    </description>
+    <name>updateFileSystemRetrieveAETitle</name>
+    <parameter>
+      <description>Directory/Mount Point file system</description>
+      <name>dirPath</name>
+      <type>java.lang.String</type>
+    </parameter>
+    <parameter>
+      <description>New Retrieve AE Title.
+      </description>
+      <name>aet</name>
       <type>java.lang.String</type>
     </parameter>
     <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>

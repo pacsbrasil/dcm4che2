@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.archive.ejb.session;
 
+import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,6 +46,7 @@ import java.util.Iterator;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
+import javax.ejb.EJBObject;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
@@ -68,6 +70,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocal;
@@ -104,6 +107,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     private static final int[] IAN_PAT_TAGS = { Tags.SpecificCharacterSet,
             Tags.PatientName, Tags.PatientID };
 
+    private SessionContext ctx;
     private FileSystemLocalHome fileSystemHome;
     private StudyLocalHome studyHome;
     private StudyOnFileSystemLocalHome sofHome;
@@ -111,6 +115,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     private PrivateFileLocalHome privFileHome;
 
     public void setSessionContext(SessionContext ctx) {
+        this.ctx = ctx;
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
@@ -135,6 +140,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     }
 
     public void unsetSessionContext() {
+       ctx = null;
        fileSystemHome = null;
        studyHome = null;
        sofHome = null;
@@ -270,6 +276,73 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             fs.setStatus(status);
         }
         return fs.toDTO();
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public FileSystemDTO updateFileSystemAvailability(String groupID,
+            String dirPath, int availability)
+            throws FinderException {
+        FileSystemLocal fs = 
+                fileSystemHome.findByGroupIdAndDirectoryPath(groupID, dirPath);
+        fs.setAvailability(availability);
+        return fs.toDTO();
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public FileSystemDTO updateFileSystemRetrieveAET(String groupID,
+            String dirPath, String retrieveAET) throws FinderException {
+        FileSystemLocal fs =
+                fileSystemHome.findByGroupIdAndDirectoryPath(groupID, dirPath);
+        fs.setRetrieveAET(retrieveAET);
+        return fs.toDTO();
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Collection selectStudiesWithFilesOnFileSystem(FileSystemDTO fs,
+            int offset, int limit) throws FinderException {
+        return studyHome.selectStudiesWithFilesOnFileSystem(fs.getPk(),
+                offset, limit);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean updateDerivedFieldsForStudy(Long pk, boolean retrieveAETs,
+            boolean availability, int availabilityOfExtRetr)
+            throws FinderException {
+        StudyLocal study = studyHome.findByPrimaryKey(pk);
+        Collection series = study.getSeries();
+        boolean updated = false;
+        boolean updateStudy = false;
+        for (Iterator serit = series.iterator(); serit.hasNext();) {
+            SeriesLocal ser = (SeriesLocal) serit.next();
+            Collection insts = ser.getInstances();
+            boolean updateSeries = false;
+            for (Iterator instit = insts.iterator(); instit.hasNext();) {
+                InstanceLocal inst = (InstanceLocal) instit.next();
+                if (inst.updateDerivedFields(retrieveAETs, availability,
+                        availabilityOfExtRetr)) {
+                    updateSeries = updated = true;
+                }
+            }
+            if (updateSeries) {
+                if (ser.updateDerivedFields(false, retrieveAETs, false, false,
+                    availability)) {
+                    updateStudy = true;
+                }
+            }
+        }
+        if (updateStudy) {
+            study.updateDerivedFields(false, retrieveAETs, false, false,
+                    availability, false);
+        }
+        return updated;
     }
 
     /**

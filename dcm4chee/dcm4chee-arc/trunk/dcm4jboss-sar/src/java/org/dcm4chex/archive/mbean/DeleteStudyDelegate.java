@@ -70,4 +70,9 @@ public class DeleteStudyDelegate {
                 "scheduleDeleteOrder", new Object[] { order },
                 new String[] { DeleteStudyOrder.class.getName() });
     }
+
+    public String getAvailabilityOfExternalRetrieveable() throws Exception {
+        return (String) service.getServer().getAttribute(deleteStudyServiceName,
+                "AvailabilityOfExternalRetrieveable");
+    }
 }
