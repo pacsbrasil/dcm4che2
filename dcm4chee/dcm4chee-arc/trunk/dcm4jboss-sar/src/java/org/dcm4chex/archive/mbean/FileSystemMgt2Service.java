@@ -56,7 +56,6 @@ import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DeleterThresholds;
 import org.dcm4chex.archive.config.RetryIntervalls;
-import org.dcm4chex.archive.dcm.movescu.ForwardService2;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
