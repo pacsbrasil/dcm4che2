@@ -111,6 +111,14 @@
         <include>*.sar</include>
       </includes>
     </fileSet>
+<!-- XDS HTTP CFG -->
+    <fileSet>
+      <directory>../dcm4chee-xdscfg/dcm4chee-xdscfg-http/target</directory>
+      <outputDirectory>server/default/deploy</outputDirectory>
+      <includes>
+        <include>*.sar</include>
+      </includes>
+    </fileSet>
 <!-- Patches -->
     <fileSet>
       <directory>src/main/patches/</directory>
