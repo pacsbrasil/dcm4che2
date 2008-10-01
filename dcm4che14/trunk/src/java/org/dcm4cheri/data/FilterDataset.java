@@ -299,7 +299,7 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
         }
 
         protected boolean filter(int tag, int vr) {
-            long ltag = tag & 0xFFFFFFFF;
+            long ltag = tag & 0xFFFFFFFFL;
             return ltag >= fromTag && ltag < toTag;
         }
     } 
