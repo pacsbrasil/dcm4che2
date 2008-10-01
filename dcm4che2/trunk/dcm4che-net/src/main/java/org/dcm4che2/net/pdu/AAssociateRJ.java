@@ -139,6 +139,7 @@ public class AAssociateRJ extends IOException {
         msg.append(", source=");
         msg.append(source);
         msg.append(", reason=");
+        msg.append(reason);
         msg.append("]: ");
 
         if (result == 1) {
