@@ -683,39 +683,18 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     public FileSystemDTO updateFileSystemAvailability(String dirPath,
             String availability) throws Exception {
-        FileSystemMgt2 fsmgt = fileSystemMgt();
-        FileSystemDTO fs = fsmgt.updateFileSystemAvailability(
+        return fileSystemMgt().updateFileSystemAvailability(
                         getFileSystemGroupID(), dirPath,
-                        Availability.toInt(availability));
-        updateDerivedFields(fsmgt, fs, false, true);
-        return fs;
+                        Availability.toInt(availability), 
+                        Availability.toInt(deleteStudy
+                                .getAvailabilityOfExternalRetrieveable()), 
+                        updateStudiesBatchSize);
     }
 
     public FileSystemDTO updateFileSystemRetrieveAETitle(String dirPath,
             String aet) throws Exception {
-        FileSystemMgt2 fsmgt = fileSystemMgt();
-        FileSystemDTO fs = fsmgt.updateFileSystemRetrieveAET(
-                        getFileSystemGroupID(), dirPath, aet);
-        updateDerivedFields(fsmgt, fs, true, false);
-        return fs;
-    }
-
-    private void updateDerivedFields(FileSystemMgt2 fsmgt, FileSystemDTO fs,
-            boolean retrieveAETs, boolean availability) throws Exception {
-        int availabilityOfExtRetr = Availability.toInt(
-                deleteStudy.getAvailabilityOfExternalRetrieveable());
-        for (int offset = 0; ; offset += updateStudiesBatchSize) { 
-            Collection<Long> studyPks =
-                    fsmgt.selectStudiesWithFilesOnFileSystem(fs, offset,
-                            updateStudiesBatchSize);
-            if (studyPks.isEmpty()) {
-                break;
-            }
-            for (Long studyPk : studyPks) {
-                fsmgt.updateDerivedFieldsForStudy(studyPk, retrieveAETs,
-                        availability, availabilityOfExtRetr);
-            }
-        }
+        return fileSystemMgt().updateFileSystemRetrieveAET(
+                getFileSystemGroupID(), dirPath, aet, updateStudiesBatchSize);
     }
 
     public FileSystemDTO selectStorageFileSystem() throws Exception { 

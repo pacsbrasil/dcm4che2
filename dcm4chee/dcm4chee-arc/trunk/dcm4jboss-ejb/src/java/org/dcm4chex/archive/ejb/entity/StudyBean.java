@@ -118,6 +118,11 @@ import org.dcm4chex.archive.util.Convert;
  * @jboss.query signature="java.util.Collection findStudiesWithStatusFromAE(int status, java.lang.String sourceAET, int limit)"
  *              query="SELECT DISTINCT OBJECT(st) FROM Study AS st, IN(st.series) s WHERE (st.studyStatus = ?1) AND (s.sourceAET = ?2) LIMIT ?3"
  *
+ * @ejb.finder signature="java.util.Collection findStudiesWithFilesOnFileSystem(org.dcm4chex.archive.ejb.interfaces.FileSystemLocal fs, int offset, int limit)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findStudiesWithFilesOnFileSystem(org.dcm4chex.archive.ejb.interfaces.FileSystemLocal fs, int offset, int limit)"
+ *             query="SELECT DISTINCT OBJECT(st) FROM Study AS st, IN(st.series) s, IN(s.instances) i, IN(i.files) f WHERE f.fileSystem = ?1 ORDER BY st.pk OFFSET ?2 LIMIT ?3"
+  *
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedSeries(java.lang.Long pk)"
  * 	            query="SELECT COUNT(s) FROM Series s WHERE s.study.pk = ?1"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstances(java.lang.Long pk)"
@@ -136,10 +141,6 @@ import org.dcm4chex.archive.util.Convert;
  * 	            query="SELECT SUM(f.fileSize) FROM File f WHERE f.instance.series.study.pk = ?1 AND f.fileSystem.pk = ?2"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesForAvailability(java.lang.Long pk, int availability)"
  *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study.pk = ?1 AND f.fileSystem.availability = ?2"
- * @jboss.query signature="java.util.Collection ejbSelectStudiesWithFilesOnFileSystem(long fspk, int offset, int limit)"
- *             query="SELECT DISTINCT st.pk FROM Study AS st, IN(st.series) s, IN(s.instances) i, IN(i.files) f WHERE f.fileSystem.pk = ?1 ORDER BY st.pk OFFSET ?2 LIMIT ?3"
- *             transaction-type="Supports"
- *
  *
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  *
@@ -591,21 +592,6 @@ public abstract class StudyBean implements EntityBean {
      */
     public abstract int ejbSelectNumberOfStudyRelatedInstancesForAvailability(java.lang.Long pk, int availability)
             throws FinderException;
-
-    /**
-     * @ejb.select query=""
-     */
-    public abstract Collection ejbSelectStudiesWithFilesOnFileSystem(long fspk, int offset, int limit)
-            throws FinderException;
-
-    /**    
-     * @throws FinderException
-     * @ejb.home-method
-     */
-    public Collection ejbHomeSelectStudiesWithFilesOnFileSystem(long fspk, int offset, int limit)
-            throws FinderException {
-        return ejbSelectStudiesWithFilesOnFileSystem(fspk, offset, limit);
-    }
 
     /**    
      * @throws FinderException

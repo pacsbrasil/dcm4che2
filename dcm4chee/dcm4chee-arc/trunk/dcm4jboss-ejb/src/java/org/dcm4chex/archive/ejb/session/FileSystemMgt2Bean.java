@@ -37,7 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.archive.ejb.session;
 
-import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,7 +45,6 @@ import java.util.Iterator;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
-import javax.ejb.EJBObject;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
@@ -70,7 +68,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Local;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocal;
@@ -83,7 +81,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
 import org.dcm4chex.archive.exceptions.NoSuchStudyException;
 
 /**
- * @ejb.bean name="FileSystemMgt2" type="Stateless" view-type="remote"
+ * @ejb.bean name="FileSystemMgt2" type="Stateless" view-type="both"
  *     jndi-name="ejb/FileSystemMgt2"
  * @ejb.transaction-type type="Container"
  * @ejb.transaction type="Required"
@@ -280,43 +278,63 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
 
     /**
      * @ejb.interface-method
-     */
-    public FileSystemDTO updateFileSystemAvailability(String groupID,
-            String dirPath, int availability)
-            throws FinderException {
-        FileSystemLocal fs = 
-                fileSystemHome.findByGroupIdAndDirectoryPath(groupID, dirPath);
-        fs.setAvailability(availability);
-        return fs.toDTO();
-    }
-
-    /**
-     * @ejb.interface-method
+     * @ejb.transaction type="NotSupported"
      */
     public FileSystemDTO updateFileSystemRetrieveAET(String groupID,
-            String dirPath, String retrieveAET) throws FinderException {
+            String dirPath, String retrieveAET, int limit)
+            throws FinderException {
         FileSystemLocal fs =
                 fileSystemHome.findByGroupIdAndDirectoryPath(groupID, dirPath);
-        fs.setRetrieveAET(retrieveAET);
+        if (!retrieveAET.equals(fs.getRetrieveAET())) {
+            fs.setRetrieveAET(retrieveAET);
+            updateDerivedFieldsForStudyOnFileSystem(fs, true, false, 0, limit);
+        }
         return fs.toDTO();
     }
 
     /**
      * @ejb.interface-method
+     * @ejb.transaction type="NotSupported"
      */
-    public Collection selectStudiesWithFilesOnFileSystem(FileSystemDTO fs,
-            int offset, int limit) throws FinderException {
-        return studyHome.selectStudiesWithFilesOnFileSystem(fs.getPk(),
-                offset, limit);
+    public FileSystemDTO updateFileSystemAvailability(String groupID,
+            String dirPath, int availability, int availabilityOfExtRetr,
+            int limit) throws FinderException {
+        FileSystemLocal fs =
+                fileSystemHome.findByGroupIdAndDirectoryPath(groupID, dirPath);
+        if (fs.getAvailability() != availability) {
+            fs.setAvailability(availability);
+            updateDerivedFieldsForStudyOnFileSystem(fs, false, true,
+                    availabilityOfExtRetr, limit);
+        }
+        return fs.toDTO();
+    }
+
+    private void updateDerivedFieldsForStudyOnFileSystem(FileSystemLocal fs,
+            boolean retrieveAETs, boolean availability,
+            int availabilityOfExtRetr, int batchsize) throws FinderException {
+        for (int offset = 0; ; offset += batchsize) {
+            Collection studies = studyHome.findStudiesWithFilesOnFileSystem(fs,
+                    offset, batchsize);
+            if (studies.isEmpty()) {
+                break;
+            }
+            for (Iterator it = studies.iterator(); it.hasNext();) {
+                StudyLocal study = (StudyLocal) it.next();
+                FileSystemMgt2Local ejb =
+                    (FileSystemMgt2Local) ctx.getEJBLocalObject();
+                ejb.updateDerivedFieldsForStudy(study, retrieveAETs,
+                        availability, availabilityOfExtRetr);
+            }
+        }
     }
 
     /**
      * @ejb.interface-method
+     * @ejb.transaction type="RequiresNew"
      */
-    public boolean updateDerivedFieldsForStudy(Long pk, boolean retrieveAETs,
-            boolean availability, int availabilityOfExtRetr)
-            throws FinderException {
-        StudyLocal study = studyHome.findByPrimaryKey(pk);
+    public boolean updateDerivedFieldsForStudy(StudyLocal study,
+            boolean retrieveAETs, boolean availability,
+            int availabilityOfExtRetr) throws FinderException {
         Collection series = study.getSeries();
         boolean updated = false;
         boolean updateStudy = false;
