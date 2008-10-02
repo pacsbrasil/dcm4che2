@@ -83,13 +83,8 @@
      <delete file="release.properties" quiet="true"/>
      <property name="version.releaseProperties" value="release.properties" />
   </target>
-
-
-  <target name="updatePomRelease" description="Update the pom file versions to the next release version" depends="initReleaseProperties">
-     <echo>Update Pom Relase on ${ant.project.name} to version ${version.version}</echo>
-     <echo file="${version.releaseProperties}" append="true">
-        versions.${ant.project.name}=${version.version}
-     </echo>
+  
+  <target name="updateLocalPomVersions">
      <property file="${version.releaseProperties}" />
      <script language="JavaScript"><![CDATA[
         var fr = new java.io.FileReader(basedir+"/pom.xml");
@@ -132,6 +127,14 @@
         inp.close();
         outp.close();
      ]]> </script>
+  </target>
+
+  <target name="updatePomRelease" description="Update the pom file versions to the next release version" depends="initReleaseProperties">
+     <echo>Update Pom Relase on ${ant.project.name} to version ${version.version}</echo>
+     <echo file="${version.releaseProperties}" append="true">
+        versions.${ant.project.name}=${version.version}
+     </echo>
+     <antcall target="updateLocalPomVersions" />
      <antcall target="recurseChildren">
        <param name="childCall" value="updatePomRelease" />
      </antcall>
@@ -226,5 +229,14 @@
   <target name="releaseDeploy" depends="deploy,revertPomDevelop" />
 
   <target name="release" depends="prepareRelease,releaseDeploy" description="Release the overall project."/>
+
+  <target name="integration" description="Run the integration tests.">
+     <antcall target="recurseChildren">
+        <param name="childCall" value="integration" />
+     </antcall>
+  </target>
+
+  <target name="releaseIntegration" description="Run the integration tests on the latest release."
+     depends="updatePomRelease,integration,revertPomDevelop" />
 
 </project>
