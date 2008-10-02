@@ -17,6 +17,8 @@
   <property name="version.base" value="${version.parent.base}" />
   <property name="version.increment" value="${version.parent.increment}" />
 
+  <property name="jmeterhome" location="${integration.cdp}/../jmeter" />
+
   <!-- Define various integration test properties, useful for setting up servers for automated testing. -->
   <property name="userPasswordPropertyFile" value="../../server-setup/test-users.properties" />
   <property name="dicomObjectsPropertyFile" value="../../server-setup/test-objects.properties" />
@@ -238,5 +240,10 @@
 
   <target name="releaseIntegration" description="Run the integration tests on the latest release."
      depends="updatePomRelease,integration,revertPomDevelop" />
+
+  <target name="jmeter">
+     <copy file="${integration.cdp}/../jmeter/extras/ant-jmeter-1.0.9.jar" todir="${ant.home}/lib" preserveLastModified="true"/>
+     <taskdef name="jmeter" classname="org.programmerplanet.ant.taskdefs.jmeter.JMeterTask" />
+  </target>
 
 </project>
