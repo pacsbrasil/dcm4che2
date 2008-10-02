@@ -78,7 +78,6 @@ public class BlockedSearchFilter implements Filter<ServletResponseItem>, MetaDat
 
    /** Read all the available child filters */
 	@SuppressWarnings("unchecked")
-   @Override
    public void setMetaData(MetaDataBean metaDataBean) {
 		for(Map.Entry<String,Object> me : metaDataBean.entrySet()) {
 			Object v = ((MetaDataBean) me.getValue()).getValue();
