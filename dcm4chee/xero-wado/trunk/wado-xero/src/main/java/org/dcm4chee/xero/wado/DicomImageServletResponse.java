@@ -136,13 +136,13 @@ public class DicomImageServletResponse implements ServletResponseItem {
 	  try {
 		 if (this.frames != null) {
 			log.debug("Writing "+this.frames.size()+" images for sop "+sop);
-			for (int i : this.frames) {
-			   writeToSequence(diw, i-1);
+			for (int frameNumber : this.frames) {
+			   frameToSequence(diw, frameNumber);
 			}
 		 } else {
 			log.debug("Writing "+numberOfFrames+" images for sop "+sop);
-			for (int i = 0; i < numberOfFrames; i++) {
-			   writeToSequence(diw, i);
+			for (int frameNumber = 1; frameNumber <= numberOfFrames; frameNumber++) {
+			   frameToSequence(diw, frameNumber);
 			}
 		 }
 	  } catch (Exception e) {
@@ -159,13 +159,13 @@ public class DicomImageServletResponse implements ServletResponseItem {
    /**
      * Writes the given frame to the output sequence
      * 
-     * @param i
+     * @param frameNumber
      */
-   protected void writeToSequence(DicomImageWriter diw, int i) throws IOException {
-	  log.debug("Writing image " + sop+"["+i+"]");
-	  WadoImage img = readImage(i);
+   protected void frameToSequence(DicomImageWriter diw, int frameNumber) throws IOException {
+	  log.debug("Writing image " + sop+"["+frameNumber+"]");
+	  WadoImage img = readImage(frameNumber);
 	  if (img == null)
-		 throw new NullPointerException("Image " + i + " should not be null.");
+		 throw new NullPointerException("Image " + frameNumber + " should not be null.");
 	  if (img.getValue() != null) {
 		 WadoImage wi = (WadoImage) img;
 		 diw.writeToSequence(new IIOImage(wi.getValue(), null, null), null);
@@ -181,16 +181,16 @@ public class DicomImageServletResponse implements ServletResponseItem {
      * Reads the image from the filterItem. Tries to read it as raw bytes if the
      * transfer syntax matches, and there aren't any confounding parameters.
      * 
-     * @param i
+     * @param frameNumber
      * @return
      */
-   protected WadoImage readImage(int i) {
+   protected WadoImage readImage(int frameNumber) {
 	  if( readRaw ) {
 		 log.info("Reading raw bytes.");
-		 MemoryCacheFilter.addToQuery(params, WadoImage.FRAME_NUMBER, Integer.toString(i), WadoImage.IMG_AS_BYTES, "true");
+		 MemoryCacheFilter.addToQuery(params, WadoImage.FRAME_NUMBER, Integer.toString(frameNumber), WadoImage.IMG_AS_BYTES, "true");
 	  } else{
 		 log.info("Reading images.");
-		 MemoryCacheFilter.addToQuery(params, WadoImage.FRAME_NUMBER, Integer.toString(i));
+		 MemoryCacheFilter.addToQuery(params, WadoImage.FRAME_NUMBER, Integer.toString(frameNumber));
 	  }
 	  return wadoImageFilter.filter(null, params);
    }
