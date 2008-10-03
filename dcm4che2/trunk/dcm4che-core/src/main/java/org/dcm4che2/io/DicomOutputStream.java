@@ -193,7 +193,10 @@ public class DicomOutputStream extends FilterOutputStream {
         this.includeGroupLength = includeGroupLength;
     }
 
-    public void writeDicomObject(DicomObject attrs) throws IOException {
+    /**
+     * Only for internal use by {@link org.dcm4che2.data.DicomObjectSerializer}.
+     */
+    public void serializeDicomObject(DicomObject attrs) throws IOException {
         this.ts = TransferSyntax.ExplicitVRLittleEndian;
         writeElements(attrs.iterator(), false, null);
         writeHeader(Tag.ItemDelimitationItem, null, 0);

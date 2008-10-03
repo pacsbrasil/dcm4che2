@@ -65,7 +65,7 @@ class DicomObjectSerializer implements Serializable {
 			throws IOException {
 		s.defaultWriteObject();
 		DicomOutputStream dos = new DicomOutputStream((OutputStream) s);
-		dos.writeDicomObject(attrs);
+		dos.serializeDicomObject(attrs);
 	}
 
 	private void readObject(ObjectInputStream s)
