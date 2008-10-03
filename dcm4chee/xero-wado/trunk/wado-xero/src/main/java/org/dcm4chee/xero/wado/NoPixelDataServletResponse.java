@@ -50,6 +50,8 @@ import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.dcm4chee.xero.wado.WadoParams.*;
 /**
@@ -62,7 +64,7 @@ import static org.dcm4chee.xero.wado.WadoParams.*;
  * 
  */
 public class NoPixelDataServletResponse implements ServletResponseItem {
-
+   private static final Logger log = LoggerFactory.getLogger(NoPixelDataServletResponse.class);
    protected DicomObject ds;
 
    protected String tsuid;
@@ -79,6 +81,7 @@ public class NoPixelDataServletResponse implements ServletResponseItem {
 	  response.setContentType("application/dicom");
 	  response.setHeader(CONTENT_DISPOSITION, "attachment;filename="+ds.getString(Tag.SOPInstanceUID)+"-header.dcm");
 	  DicomObject fmiAttrs = getFileMetaInformation();
+	  log.debug("Using transfer syntax {} for no pixel data",tsuid);
 	  OutputStream os = response.getOutputStream();
 	  DicomOutputStream dos = new DicomOutputStream(os);
 	  dos.writeFileMetaInformation(fmiAttrs);
@@ -101,7 +104,7 @@ public class NoPixelDataServletResponse implements ServletResponseItem {
 	  DicomObject ret = new BasicDicomObject();
 	  ds.fileMetaInfo().copyTo(ret);
 	  ret.putString(Tag.TransferSyntaxUID, VR.UI, tsuid);
-	  return ds;
+	  return ret;
    }
 
 }
