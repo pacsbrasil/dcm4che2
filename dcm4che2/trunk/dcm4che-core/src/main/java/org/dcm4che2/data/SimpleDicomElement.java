@@ -155,8 +155,11 @@ class SimpleDicomElement extends AbstractDicomElement {
     }
 
     public short[] getShorts(boolean cache) {
-        if (cache && cachedValue instanceof short[])
-            return (short[]) cachedValue;
+        if (cache) {
+            Object tmp = cachedValue;
+            if (tmp instanceof short[])
+                return (short[]) tmp;
+        }
         short[] val = vr.toShorts(value, bigEndian);
         if (cache)
             cachedValue = val;
@@ -164,8 +167,11 @@ class SimpleDicomElement extends AbstractDicomElement {
     }
 
     public int getInt(boolean cache) {
-        if (cache && cachedValue instanceof Integer)
-            return ((Integer) cachedValue).intValue();
+        if (cache) {
+            Object tmp = cachedValue;
+            if (tmp instanceof Integer)
+                return ((Integer) tmp).intValue();
+        }
         int val = vr.toInt(value, bigEndian);
         if (cache)
             cachedValue = new Integer(val);
@@ -173,8 +179,11 @@ class SimpleDicomElement extends AbstractDicomElement {
     }
 
     public int[] getInts(boolean cache) {
-        if (cache && cachedValue instanceof int[])
-            return (int[]) cachedValue;
+        if (cache) {
+            Object tmp = cachedValue;
+            if (tmp instanceof int[])
+                return (int[]) tmp;
+        }
         int[] val = vr.toInts(value, bigEndian);
         if (cache)
             cachedValue = val;
@@ -182,8 +191,11 @@ class SimpleDicomElement extends AbstractDicomElement {
     }
 
     public float getFloat(boolean cache) {
-        if (cache && cachedValue instanceof Float)
-            return ((Float) cachedValue).floatValue();
+        if (cache) {
+            Object tmp = cachedValue;
+            if (tmp instanceof Float)
+                return ((Float) tmp).floatValue();
+        }
         float val = vr.toFloat(value, bigEndian);
         if (cache)
             cachedValue = new Float(val);
@@ -191,8 +203,11 @@ class SimpleDicomElement extends AbstractDicomElement {
     }
 
     public float[] getFloats(boolean cache) {
-        if (cache && cachedValue instanceof float[])
-            return (float[]) cachedValue;
+        if (cache) {
+            Object tmp = cachedValue;
+            if (tmp instanceof float[])
+                return (float[]) tmp;
+        }
         float[] val = vr.toFloats(value, bigEndian);
         if (cache)
             cachedValue = val;
@@ -200,8 +215,11 @@ class SimpleDicomElement extends AbstractDicomElement {
     }
 
     public double getDouble(boolean cache) {
-        if (cache && cachedValue instanceof Double)
-            return ((Double) cachedValue).doubleValue();
+        if (cache) {
+            Object tmp = cachedValue;
+            if (tmp instanceof Double)
+                return ((Double) tmp).doubleValue();
+        }
         double val = vr.toDouble(value, bigEndian);
         if (cache)
             cachedValue = new Double(val);
@@ -209,8 +227,11 @@ class SimpleDicomElement extends AbstractDicomElement {
     }
 
     public double[] getDoubles(boolean cache) {
-        if (cache && cachedValue instanceof double[])
-            return (double[]) cachedValue;
+        if (cache) {
+            Object tmp = cachedValue;
+            if (tmp instanceof double[])
+                return (double[]) tmp;
+        }
         double[] val = vr.toDoubles(value, bigEndian);
         if (cache)
             cachedValue = val;
@@ -218,8 +239,11 @@ class SimpleDicomElement extends AbstractDicomElement {
     }
 
     public String getString(SpecificCharacterSet cs, boolean cache) {
-        if (cache && cachedValue instanceof String)
-            return (String) cachedValue;
+        if (cache) {
+            Object tmp = cachedValue;
+            if (tmp instanceof String)
+                return (String) tmp;
+        }
         String val = vr.toString(value, bigEndian, cs);
         if (cache)
             cachedValue = val;
@@ -227,8 +251,11 @@ class SimpleDicomElement extends AbstractDicomElement {
     }
 
     public String[] getStrings(SpecificCharacterSet cs, boolean cache) {
-        if (cache && cachedValue instanceof String[])
-            return (String[]) cachedValue;
+        if (cache) {
+            Object tmp = cachedValue;
+            if (tmp instanceof String[])
+                return (String[]) tmp;
+        }
         String[] val = vr.toStrings(value, bigEndian, cs);
         if (cache)
             cachedValue = val;
@@ -236,8 +263,11 @@ class SimpleDicomElement extends AbstractDicomElement {
     }
 
     public Date getDate(boolean cache) {
-        if (cache && cachedValue instanceof Date)
-            return (Date) cachedValue;
+        if (cache) {
+            Object tmp = cachedValue;
+            if (tmp instanceof Date)
+                return (Date) tmp;
+        }
         Date val = vr.toDate(value);
         if (cache)
             cachedValue = val;
@@ -245,8 +275,11 @@ class SimpleDicomElement extends AbstractDicomElement {
     }
 
     public Date[] getDates(boolean cache) {
-        if (cache && cachedValue instanceof Date[])
-            return (Date[]) cachedValue;
+        if (cache) {
+            Object tmp = cachedValue;
+            if (tmp instanceof Date[])
+                return (Date[]) tmp;
+        }
         Date[] val = vr.toDates(value);
         if (cache)
             cachedValue = val;
@@ -254,8 +287,11 @@ class SimpleDicomElement extends AbstractDicomElement {
     }
     
     public DateRange getDateRange(boolean cache) {
-        if (cache && cachedValue instanceof DateRange)
-            return (DateRange) cachedValue;
+        if (cache) {
+            Object tmp = cachedValue;
+            if (tmp instanceof DateRange)
+                return (DateRange) tmp;
+        }
         DateRange val = vr.toDateRange(value);
         if (cache)
             cachedValue = val;
@@ -264,12 +300,13 @@ class SimpleDicomElement extends AbstractDicomElement {
 
     public Pattern getPattern(SpecificCharacterSet cs, boolean ignoreCase,
             boolean cache) {
-        if (cache && cachedValue instanceof Pattern) {
-            Pattern t = (Pattern) cachedValue;
-            if (t.flags() == (ignoreCase 
-                    ? (Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)
-                    : 0))
-                return t;
+        if (cache) {
+            Object tmp = cachedValue;
+            if (tmp instanceof Pattern
+                    && ((Pattern) tmp).flags() == (ignoreCase 
+                            ? (Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)
+                                    : 0))
+                return (Pattern) tmp;
         }
         Pattern val = vr.toPattern(value, bigEndian, cs, ignoreCase);
         if (cache)
