@@ -106,6 +106,7 @@
         var outp = new java.io.PrintWriter(fw);
         var line = inp.readLine();
         var inModule = false;
+        var inPlugin = false;
 
         var pos;
         while(line!=null) {
@@ -121,7 +122,7 @@
                   line = line.substring(0,pos+9) + newVersion+ line.substring(pos2);
                } else {
                   pos = line.indexOf("SNAPSHOT");
-                  if( pos>0 ) throw "SNAPSHOT Version of "+inModule+" is being used in "+project.getProperty("ant.project.name");
+                  if( pos>0 && !inPlugin) throw "SNAPSHOT Version of "+inModule+" is being used in "+project.getProperty("ant.project.name");
                }
                inModule = false;
             }
@@ -134,6 +135,9 @@
              inModule = line.substring(pos+12,pos2);
              java.lang.System.out.println("Found artifactId - looking for version for "+inModule);
           }
+
+          if( line.indexOf("<plugins>")>=0 ) inPlugin = true;
+          if( inPlugin && line.indexOf("</plugins>")>=0 ) inPlugin=false;
           outp.println(line);
           line = inp.readLine();
         };
@@ -244,7 +248,6 @@
   <target name="release" depends="prepareRelease,releaseDeploy" description="Release the overall project."/>
 
   <target name="integration" description="Run the integration tests.">
-     <echo>server=${integration.server} in ${ant.project.name}</echo>
      <antcall target="recurseChildren">
         <param name="childCall" value="integration" />
      </antcall>
