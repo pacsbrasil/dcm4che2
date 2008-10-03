@@ -1,0 +1,1 @@
+<div class="userMenu">$userName$ <a href="logout.jsp">Logout</a></div>
