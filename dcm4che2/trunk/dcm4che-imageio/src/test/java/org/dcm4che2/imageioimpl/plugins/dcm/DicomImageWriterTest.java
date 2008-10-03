@@ -43,6 +43,8 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -52,6 +54,8 @@ import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
+import junit.framework.TestCase;
+
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -59,8 +63,6 @@ import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.image.ColorModelFactory;
 import org.dcm4che2.imageio.plugins.dcm.DicomStreamMetaData;
-
-import junit.framework.TestCase;
 
 /**
  * Tests the DICOM Image Writer
@@ -87,6 +89,7 @@ public class DicomImageWriterTest extends TestCase {
         assert writer != null;
         assert writer instanceof DicomImageWriter;
     }
+    
 
     /**
      * Tests single frame lossless writing.
@@ -94,15 +97,49 @@ public class DicomImageWriterTest extends TestCase {
     public void testSingleFrameLossless() throws IOException {
         String name = "ct-write";
         DicomImageReader reader = createImageReader("ct.dcm");
-        BufferedImage bi = readRawBufferedImage(reader, 0);
+        BufferedImage bi = readRawBufferedImage(reader, 1);
         DicomStreamMetaData newMeta = copyMeta(reader, UID.JPEGLSLossless);
         ImageInputStream iis = writeImage(newMeta, bi, name);
         DicomImageReader readerNew = createImageReader(iis);
-        BufferedImage biNew = readRawBufferedImage(readerNew, 0);
+        BufferedImage biNew = readRawBufferedImage(readerNew, 1);
         ImageDiff diff = new ImageDiff(bi, biNew, name, 0);
         assert diff.getMaxDiff() == 0;
     }
+    
+    public void testColorMultiFrameLEI() throws IOException {
+        testColorMultiFrame("multicolorLEI", "multicolor.dcm", UID.ImplicitVRLittleEndian );
+    }
 
+    public void testColorMultiFrameJPEG() throws IOException {
+        testColorMultiFrame("multicolorJPEG", "multicolorjpeg.dcm", UID.JPEGLossless );
+    }
+    
+    private void testColorMultiFrame(String name, String objectName, String transferSyntax ) throws IOException {
+        DicomImageReader reader = createImageReader(objectName);
+
+        DicomStreamMetaData copyMeta = copyMeta(reader, transferSyntax);
+        int numberOfFrames = copyMeta.getDicomObject().getInt(Tag.NumberOfFrames);
+        List<BufferedImage> bufferedImages = new ArrayList<BufferedImage>();
+        
+        for( int frame = 1; frame <= numberOfFrames; frame++ )
+        {
+        	BufferedImage biNew = readRawBufferedImage(reader, frame);
+        	bufferedImages.add(biNew);
+        }
+
+        ImageInputStream inputStream =  writeImageFrames(copyMeta,
+        		bufferedImages,  name);        
+        DicomImageReader readerNew = createImageReader(inputStream);
+        
+        int frameNumber = 1;
+        for( BufferedImage bufferedImage : bufferedImages  )
+        {
+        	BufferedImage biNew = readRawBufferedImage(readerNew, frameNumber++);
+            ImageDiff diff = new ImageDiff(bufferedImage, biNew, name, 0 );
+            assertTrue("Color Frame "+frameNumber+" is different",diff.getMaxDiff() == 0);
+        }
+    }
+    
     /** Returns an input stream containing the written data */
     private ImageInputStream writeImage(DicomStreamMetaData newMeta,
             BufferedImage bi, String name) throws IOException {
@@ -119,6 +156,30 @@ public class DicomImageWriterTest extends TestCase {
         return new FileImageInputStream(f);
     }
 
+    /** Returns an input stream containing the written data */
+    private ImageInputStream writeImageFrames(DicomStreamMetaData newMeta,
+            List<BufferedImage> bis, String name) throws IOException {
+        File f = new File(name + ".dcm");
+        if (f.exists())
+            f.delete();
+        ImageOutputStream imageOutput = new FileImageOutputStream(f);
+        DicomImageWriter writer = (DicomImageWriter) new DicomImageWriterSpi()
+                .createWriterInstance();
+        
+        writer.setOutput(imageOutput);
+        writer.prepareWriteSequence(newMeta);
+        
+        for( BufferedImage bi : bis )
+        {
+	        IIOImage iioimage = new IIOImage(bi, null, null);
+	        writer.setOutput(imageOutput);
+	        writer.writeToSequence(iioimage, null);
+        }
+        
+        imageOutput.close();
+        return new FileImageInputStream(f);
+    }
+    
     private DicomStreamMetaData copyMeta(DicomImageReader reader, String tsuid)
             throws IOException {
         DicomStreamMetaData oldMeta = (DicomStreamMetaData) reader
@@ -133,8 +194,10 @@ public class DicomImageWriterTest extends TestCase {
     }
 
     public static BufferedImage readRawBufferedImage(DicomImageReader reader,
-            int frame) throws IOException {
-        WritableRaster raster = (WritableRaster) reader.readRaster(0, null);
+            int frameNumber) throws IOException {
+    	
+    	int imageIndexFromZero = frameNumber - 1;
+        WritableRaster raster = (WritableRaster) reader.readRaster(imageIndexFromZero, null);
         DicomObject ds = ((DicomStreamMetaData) reader.getStreamMetadata())
                 .getDicomObject();
         ColorModel cm = ColorModelFactory.createColorModel(ds);

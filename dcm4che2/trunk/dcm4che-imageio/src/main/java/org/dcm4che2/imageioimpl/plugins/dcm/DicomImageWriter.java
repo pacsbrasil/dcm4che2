@@ -270,7 +270,12 @@ public class DicomImageWriter extends ImageWriter {
 	 */
 	public void writeBytesToSequence(byte[] data, ImageWriteParam param)
 			throws IOException {
-		dos.writeHeader(Tag.Item, null, data.length);
+
+		if (encapsulated) 
+		{
+			dos.writeHeader(Tag.Item, null, data.length);
+		}
+		
 		dos.write(data);
 		// The flush allows any memory buffer to be cleared.
 		dos.flush();

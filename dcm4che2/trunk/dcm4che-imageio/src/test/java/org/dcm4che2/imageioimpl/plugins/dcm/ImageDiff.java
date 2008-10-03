@@ -1,6 +1,10 @@
 package org.dcm4che2.imageioimpl.plugins.dcm;
 
+import java.awt.color.CMMException;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -46,7 +50,17 @@ public class ImageDiff {
 		
 		BufferedImage i3 = null;
 		if (writeDiff) {
-			i3 = new BufferedImage(i1.getWidth(), i1.getHeight(), i1.getType());
+			if( i1.getType() != 0 ){
+				i3 = new BufferedImage(i1.getWidth(), i1.getHeight(), i1.getType());
+			}
+			else
+			{
+				WritableRaster newRaster = i1.getRaster().createCompatibleWritableRaster();
+				ColorModel cm =  i1.getColorModel();
+				
+				i3 = new BufferedImage(cm, newRaster, false, null);
+			}
+			
 			writeImage(i3, fileBase + "-diff");
 		}
 		if (writeInfo) {
@@ -92,7 +106,7 @@ public class ImageDiff {
 			computeDiffsGray(i1,i2,i3);
 		}
 		else {
-			throw new UnsupportedOperationException("TODO - implement RGB diff.");
+			computeDiffsColor(i1, i2, i3);
 		}
 	}
 
@@ -122,6 +136,34 @@ public class ImageDiff {
 		}
 	}
 
+	/** Compute differences for color */
+	private void computeDiffsColor(BufferedImage i1, BufferedImage i2, BufferedImage i3) {
+		int w = i1.getWidth();
+		int[] d1 = new int[w*3];
+		int[] d2 = new int[w*3];
+		int[] d3 = new int[w*3];
+		for(int y=0; y<i1.getHeight(); y++ ) {
+			
+			
+			d1 = i1.getRaster().getPixels(0,y,w,1,d1);
+			d2 = i2.getRaster().getPixels(0,y,w,1,d2);
+			for(int x=0; x<w; x++ ) {
+				d3[x] = Math.abs(d1[x]-d2[x]);
+				pixelCount++;
+				sumDifference += d3[x];
+				sumSqrDifference += d3[x]*d3[x];
+				if( d3[x]>maxDiff ) {
+					maxDiff = d3[x];
+					diffPos.append("Additional diff at ").append(x).append(",").append(y).append(" source ");
+					diffPos.append(d1[x]).append(" final ").append(d2[x]).append("\n");
+				}
+			}
+			if( i3!=null ) {
+				i3.getRaster().setPixels(0,y,w,1,d3);
+			}
+		}
+	}
+	
 	public long getMaxDiff() {
 		return maxDiff;
 	}
