@@ -17,7 +17,13 @@
   <property name="version.base" value="${version.parent.base}" />
   <property name="version.increment" value="${version.parent.increment}" />
 
-  <property name="jmeterhome" location="${integration.cdp}/../jmeter" />
+  <property name="integration.cdp" location="cdp-integration" />
+  <property name="integration.server" value="wtlswbw02" />
+  <property name="integration.path" value="${integration.cdp}/server-setup/${integration.server}" />
+  <property name="integration" location="${integration.path}/server.properties" />
+  <property name="integration.server.service" value="DCM4CHEE Image Archive" />
+
+  <property name="jmeterhome" location="${integration.cdp}/jmeter" />
 
   <!-- Define various integration test properties, useful for setting up servers for automated testing. -->
   <property name="userPasswordPropertyFile" value="../../server-setup/test-users.properties" />
@@ -29,6 +35,8 @@
      <propertyref prefix="version.parent" />
      <propertyref prefix="serverDir" />
      <propertyref name="version.releaseProperties" />
+     <propertyref name="integration.server" />
+     <propertyref name="integration.cdp" />
   </propertyset>
 
   <target name="install" description="Perform a Maven Install">
@@ -59,6 +67,9 @@
         <param name="version.parent.increment" value="${version.increment}" />
         <param name="childCall" value="${childCall}" />
         <param name="version.releaseProperties" value="../${version.releaseProperties}" />
+        <param name="integration.server" value="${integration.server}" />
+        <param name="integration.cdp" value="${integration.cdp}" />
+        <param name="integration" value="${integration}" />
      </antcall>
   </target>
 
@@ -233,6 +244,7 @@
   <target name="release" depends="prepareRelease,releaseDeploy" description="Release the overall project."/>
 
   <target name="integration" description="Run the integration tests.">
+     <echo>server=${integration.server} in ${ant.project.name}</echo>
      <antcall target="recurseChildren">
         <param name="childCall" value="integration" />
      </antcall>
@@ -242,8 +254,23 @@
      depends="updatePomRelease,integration,revertPomDevelop" />
 
   <target name="jmeter">
-     <copy file="${integration.cdp}/../jmeter/extras/ant-jmeter-1.0.9.jar" todir="${ant.home}/lib" preserveLastModified="true"/>
+     <copy file="${integration.cdp}/jmeter/extras/ant-jmeter-1.0.9.jar" todir="${ant.home}/lib" preserveLastModified="true"/>
      <taskdef name="jmeter" classname="org.programmerplanet.ant.taskdefs.jmeter.JMeterTask" />
+  </target>
+
+  <target name="runJMeter" depends="jmeter">
+     <delete dir="target" quiet="true" />
+     <mkdir dir="target" />
+     <jmeter jmeterhome="${jmeterhome}"
+        testplan="${basedir}/${ant.project.name}.jmx"
+        resultlogdir="${basedir}/target">
+        <property name="SERVER" value="${integration.server}" />
+     </jmeter>
+     <move todir="target">
+        <fileset dir="${jmeterhome}/bin" includes="**/*.jtl" />
+     </move>
+     <xslt style="${jmeterhome}/extras/jmeter-results-to-junit.xsl"
+        in="target/${ant.project.name}.jtl" out="target/${ant.project.name}-junit-jmeter.xml" />
   </target>
 
 </project>
