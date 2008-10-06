@@ -77,7 +77,7 @@ public class MacroItems {
    
    /** Adds an element to the set of macro items */
    public void addElement(Object obj) {
-     if( ojb==null ) return;
+     if( obj==null ) return;
 	  getMacros().add(obj);
    }
    
