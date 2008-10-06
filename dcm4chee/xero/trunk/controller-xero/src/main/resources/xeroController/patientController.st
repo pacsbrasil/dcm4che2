@@ -63,7 +63,8 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 XeroController.prototype.mergeExternal = function(external) {
 	var navigate = this.model.navigate;
 	if( !external ) external = navigate.external;
-	var i=2, queries;
+	// Have to allow 3 queries, top level, series and image.
+	var i=3, queries;
 	do { 
 		if( queries ) external.addQueries(queries);
 		console.warn("Delivering queries to mergeExternal.");
