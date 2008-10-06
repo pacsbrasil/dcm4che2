@@ -66,6 +66,7 @@ import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -76,7 +77,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  *           jndi-name="ejb/MPPSEmulator"
  * @ejb.transaction-type  type="Container"
  * @ejb.transaction type="Required"
- * @ejb.ejb-ref ejb-name="Series" view-type="local" ref-name="ejb/Series"
+ * @ejb.ejb-ref ejb-name="Study" view-type="local" ref-name="ejb/Study"
  * @ejb.ejb-ref ejb-name="Instance" view-type="local" ref-name="ejb/Instance" 
  */
 
@@ -96,15 +97,15 @@ public abstract class MPPSEmulatorBean implements SessionBean {
     private static final int[] SERIES_PPS_TAGS = {  
             Tags.PPSStartDate, Tags.PPSStartTime, Tags.PPSID };
 
-    private SeriesLocalHome seriesHome;
+    private StudyLocalHome studyHome;
     private InstanceLocalHome instanceHome;
 
     public void setSessionContext(SessionContext ctx) {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
-            seriesHome = 
-                (SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
+            studyHome = 
+                (StudyLocalHome) jndiCtx.lookup("java:comp/env/ejb/Study");
             instanceHome =
                 (InstanceLocalHome) jndiCtx.lookup("java:comp/env/ejb/Instance");
         } catch (NamingException e) {
@@ -120,19 +121,32 @@ public abstract class MPPSEmulatorBean implements SessionBean {
     }
 
     public void unsetSessionContext() {
-        seriesHome = null;
+        studyHome = null;
+        instanceHome = null;
     }
-
     /**
      * @ejb.interface-method
      */
-    public Dataset[] generateMPPS(String sourceAET, long delay)
-            throws FinderException {
-        Collection c = seriesHome.findWithNoPpsIuidFromSrcAETReceivedLastOfStudyBefore(
-                sourceAET, new Timestamp(System.currentTimeMillis() - delay));
-        HashMap mppsMap = new HashMap();
-        for (Iterator it = c.iterator(); it.hasNext();) {
-            addSeries((SeriesLocal) it.next(), mppsMap, sourceAET);
+    public Collection getStudiesWithMissingMPPS(String sourceAET, long delay) throws FinderException {
+        return studyHome.selectWithMissingPpsIuidFromSrcAETReceivedLastOfStudyBefore(sourceAET, 
+                new Timestamp(System.currentTimeMillis() - delay));
+    }
+
+    /**
+     * @throws FinderException 
+     * @ejb.interface-method
+     */
+    public Dataset[] generateMPPS(Long studyPk) throws FinderException {
+        StudyLocal study = studyHome.findByPrimaryKey(studyPk);
+        String suid = study.getStudyIuid();
+        SeriesLocal series;
+        //Study may contain series with other Modality and/or SourceAET. We create MPPS for all series without ppsIuid to finish whole study in one step.
+        HashMap mppsMap = new HashMap(); 
+        for ( Iterator iter = study.getSeries().iterator() ; iter.hasNext() ; ) {
+            series = (SeriesLocal) iter.next();
+            if ( series.getPpsIuid() == null ) {
+                addSeries(series, mppsMap, suid, study);
+            }
         }
         Dataset[] result = new Dataset[mppsMap.size()];
         Iterator it = mppsMap.values().iterator();
@@ -181,12 +195,11 @@ public abstract class MPPSEmulatorBean implements SessionBean {
         return mpps;
     }
     
-    private void addSeries(SeriesLocal series, HashMap mppsMap, String sourceAET) throws FinderException {
-        final StudyLocal study = series.getStudy();
-        final String suid = study.getStudyIuid();
-        final String md = series.getModality();
+    private void addSeries(SeriesLocal series, HashMap mppsMap, String suid, StudyLocal study) throws FinderException {
+        final String md = series.getModality() == null ? "OT" : series.getModality();
+        final String srcAet = series.getSourceAET();
         final Dataset seriesAttrs = series.getAttributes(false);
-        final String key = md + suid;
+        final String key = md + srcAet;
         List list = (List) mppsMap.get(key);
         if (list == null) {
             list = new ArrayList();
@@ -239,11 +252,11 @@ public abstract class MPPSEmulatorBean implements SessionBean {
             
             mpps.putUI(Tags.SOPInstanceUID, UIDGenerator.getInstance().createUID());
             mpps.putUI(Tags.SOPClassUID, UIDs.ModalityPerformedProcedureStep);
-            mpps.putAE(Tags.PerformedStationAET, sourceAET);
+            mpps.putAE(Tags.PerformedStationAET, srcAet);
             mpps.putSH(Tags.PerformedStationName, seriesAttrs
                     .getString(Tags.StationName));
             mpps.putSH(Tags.PerformedLocation);
-            mpps.putCS(Tags.Modality, seriesAttrs.getString(Tags.Modality));
+            mpps.putCS(Tags.Modality, md);
             mpps.putSH(Tags.PPSID, makePPSID(md, suid));
             mpps.putLO(Tags.PerformedProcedureTypeDescription, studyAttrs
                     .getString(Tags.StudyDescription));

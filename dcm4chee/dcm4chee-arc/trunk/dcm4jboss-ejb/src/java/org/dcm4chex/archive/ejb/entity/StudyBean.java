@@ -967,5 +967,16 @@ public abstract class StudyBean implements EntityBean {
         return ejbSelectInstancesNotOnMedia(getPk());
     }
     
-    
+    /**
+     * @ejb.select query="SELECT DISTINCT st.pk FROM Study AS st, IN(st.series) s WHERE s.ppsIuid IS NULL AND s.sourceAET = ?1 AND st.updatedTime < ?2"
+     *             transaction-type="Supports"
+     */
+    public abstract Collection ejbSelectWithMissingPpsIuidFromSrcAETReceivedLastOfStudyBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore) throws FinderException;
+
+    /**
+     * @ejb.home-method
+     */
+    public Collection ejbHomeSelectWithMissingPpsIuidFromSrcAETReceivedLastOfStudyBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore) throws FinderException {
+        return ejbSelectWithMissingPpsIuidFromSrcAETReceivedLastOfStudyBefore(srcAET, receivedBefore);
+    }
 }
