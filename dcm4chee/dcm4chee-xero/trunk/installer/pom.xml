@@ -8,7 +8,7 @@
   <packaging>pom</packaging>
 
   <build>
-    <finalName>dcm4jboss-xero-${version}</finalName>
+    <finalName>dcm4chee-xero-${version}</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
