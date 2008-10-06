@@ -84,14 +84,14 @@ public class EncodeImage implements Filter<ServletResponseItem> {
    protected static Map<String, EncodeResponseInfo> contentTypeMap = new HashMap<String, EncodeResponseInfo>();
    // TODO - replace the bit information with a set of additional params requested....
    static {
-	  new EncodeResponseInfo("image/jp12", "image/jpeg", true, 12, null, UID.JPEGExtended24);
+	  new EncodeResponseInfo("image/jp12", "image/jpeg", true, 12, "JPEG", UID.JPEGExtended24);
 	  new EncodeResponseInfo("image/jpls", "image/jpeg", false, 16, "JPEG-LS", UID.JPEGLSLossless, UID.JPEGLSLossyNearLossless);
 	  new EncodeResponseInfo("image/jpll", "image/jpeg", false, 16, "JPEG-LOSSLESS", UID.JPEGLossless);
 	  new EncodeResponseInfo("image/png", null, false, 0, null);
 	  new EncodeResponseInfo("image/png16", "image/png", false, 16, null);
 	  // image/jpeg is the default, so add a image/* as an additional mapping.
-	  new EncodeResponseInfo("image/jpeg", null, true, 0, null, UID.JPEGBaseline1, "image/*");
-	  new EncodeResponseInfo("image/jp2", null, false, 16, null, UID.JPEG2000, UID.JPEG2000LosslessOnly);
+	  new EncodeResponseInfo("image/jpeg", "image/jpeg", true, 0, "JPEG", UID.JPEGBaseline1, "image/*");
+	  new EncodeResponseInfo("image/jp2", null, false, 16, "JPEG2000", UID.JPEG2000, UID.JPEG2000LosslessOnly);
 	  new EncodeResponseInfo("image/gif", null, false, 0, null);
 	  new EncodeResponseInfo("image/bmp", null, false, 0, null);
    };

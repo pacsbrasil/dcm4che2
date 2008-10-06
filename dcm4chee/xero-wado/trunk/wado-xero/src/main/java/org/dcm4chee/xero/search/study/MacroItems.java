@@ -71,11 +71,13 @@ public class MacroItems {
    
    /** Adds a macro to this set of macro items.   */
    public void addMacro(Macro macro) {
+     if( macro==null ) return;
 	  getMacros().add(0,macro);
    }
    
    /** Adds an element to the set of macro items */
    public void addElement(Object obj) {
+     if( ojb==null ) return;
 	  getMacros().add(obj);
    }
    

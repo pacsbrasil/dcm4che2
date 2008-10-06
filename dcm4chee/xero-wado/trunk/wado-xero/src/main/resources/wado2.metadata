@@ -17,7 +17,7 @@ source.rename.priority=10000
 source.audit=${class:org.dcm4chee.xero.search.filter.QueryAudit}
 source.audit.priority=9000
 source.emptyFilter=${class:org.dcm4chee.xero.search.EmptyQueryParameterFilter}
-source.emptyFilter.priority=1000
+source.emptyFilter.priority=9500
 
 # Need to be able to find the files.  Returns a URL
 fileLocation=${class:org.dcm4chee.xero.metadata.filter.FilterList}
