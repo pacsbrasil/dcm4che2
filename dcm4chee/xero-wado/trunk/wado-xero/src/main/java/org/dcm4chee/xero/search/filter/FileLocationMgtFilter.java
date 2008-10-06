@@ -39,22 +39,23 @@ package org.dcm4chee.xero.search.filter;
 
 import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
 
-import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.management.MBeanServerConnection;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
+import org.dcm4chee.xero.search.AEProperties;
 import org.dcm4chee.xero.search.study.DicomObjectType;
-import org.jboss.mx.util.MBeanServerLocator;
+import org.dcm4chex.archive.ejb.interfaces.FileDTO;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,131 +67,136 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class FileLocationMgtFilter implements Filter<URL> {
-	private static final Logger log = LoggerFactory.getLogger(FileLocationMgtFilter.class);
+   private static final Logger log = LoggerFactory
+         .getLogger(FileLocationMgtFilter.class);
 
-	private ObjectName fileSystemMgtName;
+   private static MBeanServerConnection server;
 
-	private static MBeanServerConnection server;
-	
-	public FileLocationMgtFilter() {
-		try {
-			fileSystemMgtName = new ObjectName("dcm4chee.archive:service=FileSystemMgt");
-		} catch (MalformedObjectNameException e) {
-			e.printStackTrace();
-			fileSystemMgtName = null;
-		} catch (NullPointerException e) {
-			fileSystemMgtName = null;
-			e.printStackTrace();
-		}
-		try {
-			server = MBeanConnectionManager.getConnectionManager().getMBeanServerConnection();
-		} catch (IOException e) {
-			// Failed to connect to the remote server. Default to the local.
-			server = MBeanServerLocator.locate();
-		}
-	}
+   /**
+    * Returns the DICOM file <tt>URL</tt> for the given arguments.
+    * <p>
+    * Use the FileSystemMgt SessionBean to localize the DICOM file.
+    * 
+    * @param instanceUID
+    *           Unique identifier of the instance.
+    * 
+    * @return The file URL or null if not found.
+    * 
+    * @throws IOException
+    */
+   protected URL getDICOMFileURL(String host, String port, String instanceUID) throws IOException {
+      URL url = null;
+      try {
+         FileSystemMgtHome home = (FileSystemMgtHome) EJBServiceLocator
+               .getInstance().getRemoteHome(host, port, "ejb/FileSystemMgt",
+                     FileSystemMgtHome.class);
 
-	/**
-	 * Returns the DICOM file for given arguments.
-	 * <p>
-	 * Use the FileSystemMgtService MBean to localize the DICOM file.
-	 * 
-	 * @param studyUID
-	 *           Unique identifier of the study.
-	 * @param seriesUID
-	 *           Unique identifier of the series.
-	 * @param instanceUID
-	 *           Unique identifier of the instance.
-	 * 
-	 * @return The File object or null if not found.
-	 * 
-	 * @throws IOException
-	 */
-	protected File getDICOMFile(String instanceUID) throws IOException {
-		Object dicomObject = null;
-		try {
-			dicomObject = server.invoke(fileSystemMgtName, "locateInstance", new Object[] { instanceUID },
-			      new String[] { String.class.getName() });
+         FileSystemMgt fileMgt = home.create();
+         FileDTO[] dtos = fileMgt.getFilesOfInstance(instanceUID);
 
-		} catch (Exception e) {
-			log.error("Failed to get DICOM file", e);
-		}
-		if (dicomObject == null)
-			return null; // not found!
-		if (dicomObject instanceof File)
-			return (File) dicomObject; // We have the File!
-		if (dicomObject instanceof String) {
-			throw new RuntimeException("Need redirection?:" + (String) dicomObject);
-		}
-		return null;
-	}
+         if (dtos == null || dtos.length == 0)
+            return null; // not found!
+         
+         for (FileDTO dto : dtos) {
+            url = new URI("file:/" + dto.getDirectoryPath().replace("\\", "/")
+                  + "/" + dto.getFilePath()).toURL();
+         }
+      } catch (Exception e) {
+         log.error("Failed to get DICOM file URL", e);
+      }
 
-	/** Get the URL of the local file - may not be updated for DB changes etc */
-	public URL filter(FilterItem<URL> filterItem, Map<String, Object> params) {
-		if (fileSystemMgtName == null || server == null)
-			return filterItem.callNextFilter(params);
-		long start = System.nanoTime();
-		String objectUID = (String) params.get("objectUID");
-		File f;
-		try {
-			f = getDICOMFile(objectUID);
-			if (f == null) {
-				log.warn("File not found in local online cache.");
-				return filterItem.callNextFilter(params);
-			}
-			URL url = f.toURI().toURL();
-			int size = url.toString().length() * 2 + 64;
-			params.put(MemoryCacheFilter.CACHE_SIZE, size);
-			log.info("Time to read " + objectUID + " file location=" + nanoTimeToString(System.nanoTime() - start)
-			      + " size of URL=" + size);
-			return url;
-		} catch (RuntimeException e) {
-			throw e;
-		} catch (Exception e) {
-			log.warn("Caught exception getting dicom file location:" + e, e);
-			return filterItem.callNextFilter(params);
-		}
-	}
+      if (url != null)
+         return url;
 
-	/** Returns the URL of the local file for the given image bean */
-	public static URL findImageBeanUrl(DicomObjectType dot, Filter<URL> filter, Map<String, Object> params) {
-		Map<String, Object> newParams = new HashMap<String, Object>();
-		newParams.put("objectUID", dot.getObjectUID());
-		if ("true".equalsIgnoreCase((String) params.get(MemoryCacheFilter.NO_CACHE))) {
-			newParams.put("no-cache", "true");
-		}
-		URL location = filter.filter(null, newParams);
-		return location;
-	}
-
-	/** Finds the location of the given object by calling the fileLocation filter. */
-	public static URL filterURL(Filter<URL> filter, Map<String, Object> params, String uid) {
-		Map<String, Object> newParams = new HashMap<String, Object>();
-
-		// This request is used for filters where the request is for some other
-		// objects, and the
-		// UID is required.
-		if ("true".equalsIgnoreCase((String) params.get(MemoryCacheFilter.NO_CACHE))) {
-			newParams.put("no-cache", "true");
-		}
-		newParams.put("objectUID", uid);
-		URL ret = filter.filter(null, newParams);
-		return ret;
-	}
-
-   private Filter<URL> fileLocation;
-   
-   public Filter<URL> getFileLocation() {
-   	return fileLocation;
+      return null; // not found!
    }
 
-	/**
-	 * Sets the file location filter, that knows how to find files.
-	 * @param fileLocation
-	 */
-	@MetaData(out="${ref:fileLocation}")
-	public void setFileLocation(Filter<URL> fileLocation) {
-   	this.fileLocation = fileLocation;
+   /** Get the URL of the local file - may not be updated for DB changes etc */
+   public URL filter(FilterItem<URL> filterItem, Map<String, Object> params) {
+      long start = System.nanoTime();
+      String objectUID = (String) params.get("objectUID");
+      try {
+         URL url = null;
+         
+         if (params.get("ae") != null && AEProperties.getInstance().getAE((String)params.get("ae")) != null)   {
+            Map<String, Object> aeMap = AEProperties.getInstance().getAE((String)params.get("ae"));
+            
+            String hostname = (String) aeMap.get("host");
+            Integer port = (Integer) aeMap.get("ejbport");
+            url = getDICOMFileURL(hostname, port.toString(), objectUID);
+         } else {
+            Map<String, Object> aeMap = AEProperties.getInstance().getDefaultAE();
+
+            String hostname = (String) aeMap.get("host");
+            Integer port = (Integer) aeMap.get("ejbport");
+            url = getDICOMFileURL(hostname, port.toString(), objectUID);
+         }
+
+         if (url == null) {
+            log.warn("File not found in local online cache.");
+            return filterItem.callNextFilter(params);
+         }
+
+         int size = url.toString().length() * 2 + 64;
+         params.put(MemoryCacheFilter.CACHE_SIZE, size);
+         log.info("Time to read " + objectUID + " file location="
+               + nanoTimeToString(System.nanoTime() - start) + " size of URL="
+               + size);
+         return url;
+      } catch (RuntimeException e) {
+         throw e;
+      } catch (Exception e) {
+         log.warn("Caught exception getting dicom file location:" + e, e);
+         return filterItem.callNextFilter(params);
+      }
+   }
+
+   /** Returns the URL of the local file for the given image bean */
+   public static URL findImageBeanUrl(DicomObjectType dot, Filter<URL> filter,
+         Map<String, Object> params) {
+      Map<String, Object> newParams = new HashMap<String, Object>();
+      newParams.put("objectUID", dot.getObjectUID());
+      if ("true".equalsIgnoreCase((String) params
+            .get(MemoryCacheFilter.NO_CACHE))) {
+         newParams.put("no-cache", "true");
+      }
+      URL location = filter.filter(null, newParams);
+      return location;
+   }
+
+   /**
+    * Finds the location of the given object by calling the fileLocation filter.
+    */
+   public static URL filterURL(Filter<URL> filter, Map<String, Object> params,
+         String uid) {
+      Map<String, Object> newParams = new HashMap<String, Object>();
+
+      // This request is used for filters where the request is for some other
+      // objects, and the
+      // UID is required.
+      if ("true".equalsIgnoreCase((String) params
+            .get(MemoryCacheFilter.NO_CACHE))) {
+         newParams.put("no-cache", "true");
+      }
+      newParams.put("objectUID", uid);
+      URL ret = filter.filter(null, newParams);
+      return ret;
+   }
+
+   private Filter<URL> fileLocation;
+
+   public Filter<URL> getFileLocation() {
+      return fileLocation;
+   }
+
+   /**
+    * Sets the file location filter, that knows how to find files.
+    * 
+    * @param fileLocation
+    */
+   @MetaData(out = "${ref:fileLocation}")
+   public void setFileLocation(Filter<URL> fileLocation) {
+      this.fileLocation = fileLocation;
    }
 
 }
