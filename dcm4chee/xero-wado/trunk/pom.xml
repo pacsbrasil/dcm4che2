@@ -111,12 +111,7 @@
     <name>Dcm4che repository</name>
     <url>http://www.dcm4che.org/maven2/</url>
   </repository>
-    <repository>
-        <id>HAP</id>
-        <name>Agfa HAP</name>
-        <url>scp://hap.mitra.com/maven-repository</url>
-    </repository>
-  
+ 
  </repositories>
 
  <profiles>
