@@ -628,6 +628,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     private String getFnGn(DcmElement el) {
         try {
             String pn = el.getString(null);
+            if (pn == null) {
+            	return "";
+            }
             int pos = pn.indexOf('=');
             if (pos != -1)
                 pn = pn.substring(0, pos);
