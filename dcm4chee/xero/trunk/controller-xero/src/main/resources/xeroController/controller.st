@@ -71,7 +71,7 @@ XeroController.prototype.importHtml = function XC_importHtml(el, html) {
 	var oldEl = typeof el === "string" ? document.getElementById(el) : el;
 
 	var dp = new DOMParser();
-	var parsed = dp.parseFromString('<div xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink">'+html+"</div>","text/xml");
+	var parsed = dp.parseFromString('<div xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="http://www.w3.org/2000/svg" xmlns:v="urn:schemas-microsoft-com:vml">'+html+"</div>","text/xml");
 	this.debug("Parsed=%s",parsed);
 	//var parsed = dp.parseFromString(html,"text/xml");
 	if( !parsed ) {

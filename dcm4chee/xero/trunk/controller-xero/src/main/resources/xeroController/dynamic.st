@@ -4,7 +4,7 @@
  */
 
 /** Handle the image area mouse down */
-XeroController.prototype.imageMouseDown = function XC_imageMouseDown(event) {
+XeroController.prototype.imageMouseDown = function XC_imageMouseDown(layId,event) {
 	if( this.mousing ) return;
 	if( !event ) event = window.event;
 	if(!this.imageMouseHandler ) return; 
