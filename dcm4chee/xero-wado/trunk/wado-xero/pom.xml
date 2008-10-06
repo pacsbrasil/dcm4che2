@@ -44,16 +44,16 @@
   <build>
     <plugins>
        <plugin>
-	<groupId>org.jvnet.jaxb2.maven2</groupId>
-	<artifactId>maven-jaxb2-plugin</artifactId>
+    <groupId>org.jvnet.jaxb2.maven2</groupId>
+    <artifactId>maven-jaxb2-plugin</artifactId>
         <version>0.2</version>
-	<executions>
-		<execution>
-			<goals>
-				<goal>generate</goal>
-			</goals>
-		</execution>
-	</executions>
+    <executions>
+        <execution>
+            <goals>
+                <goal>generate</goal>
+            </goals>
+        </execution>
+    </executions>
         <configuration>
            <schemaIncludes>
               <value>org/**/*.xsd</value>
@@ -153,31 +153,37 @@
       <version>beta3</version>
       <scope>provided</scope>
     </dependency>
-	<dependency>
-		<groupId>org.easymock</groupId>
-		<artifactId>easymock</artifactId>
-		<version>2.4</version>
-		<scope>test</scope>
-	</dependency>
-	<dependency>
-    	<groupId>org.easymock</groupId>
-		<artifactId>easymockclassextension</artifactId>
-		<version>2.3</version>
-		<scope>test</scope>
-	</dependency>
+    <dependency>
+        <groupId>dcm4chee</groupId>
+        <artifactId>ejb-client</artifactId>
+        <version>2.13.6</version>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.easymock</groupId>
+        <artifactId>easymock</artifactId>
+        <version>2.4</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.easymock</groupId>
+        <artifactId>easymockclassextension</artifactId>
+        <version>2.3</version>
+        <scope>test</scope>
+    </dependency>
   </dependencies>
 <pluginRepositories>
-	<pluginRepository>
-		<id>maven2-repository.dev.java.net</id>
-		<name>Java.net Maven 2 Repository</name>
-		<url>http://download.java.net/maven/2</url>
-	</pluginRepository>
-	<pluginRepository>
-		<id>maven-repository.dev.java.net</id>
-		<name>Java.net Maven 1 Repository (legacy)</name>
-		<url>http://download.java.net/maven/1</url>
-		<layout>legacy</layout>
-	</pluginRepository>
+    <pluginRepository>
+        <id>maven2-repository.dev.java.net</id>
+        <name>Java.net Maven 2 Repository</name>
+        <url>http://download.java.net/maven/2</url>
+    </pluginRepository>
+    <pluginRepository>
+        <id>maven-repository.dev.java.net</id>
+        <name>Java.net Maven 1 Repository (legacy)</name>
+        <url>http://download.java.net/maven/1</url>
+        <layout>legacy</layout>
+    </pluginRepository>
 </pluginRepositories>
 
 </project>
