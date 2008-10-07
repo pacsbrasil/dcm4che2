@@ -78,14 +78,14 @@ public class EJBServiceLocator {
     * @throws NamingException
     */
    public static InitialContext getInitialContext(String host, String port) throws NamingException {
-      Properties p = new Properties();
-      p.put(Context.INITIAL_CONTEXT_FACTORY,
+      Properties prop = new Properties();
+      prop.put(Context.INITIAL_CONTEXT_FACTORY,
             "org.jnp.interfaces.NamingContextFactory");
-      p.put(Context.PROVIDER_URL, "jnp://" + host + ":" + port);
-      p
+      prop.put(Context.PROVIDER_URL, "jnp://" + host + ":" + port);
+      prop
             .put(Context.URL_PKG_PREFIXES,
-                  "org.jnp.interfaces.NamingContextFactory");
-      return new InitialContext(p);
+                  "jboss.naming:org.jnp.interfaces");
+      return new InitialContext(prop);
    }
 
    /**
@@ -96,7 +96,7 @@ public class EJBServiceLocator {
    }
 
    /**
-    * locate home intercate from cache if not lookup.
+    * locate home interface from cache if not lookup from context.
     * 
     * @param jndiHomeName
     * @param className

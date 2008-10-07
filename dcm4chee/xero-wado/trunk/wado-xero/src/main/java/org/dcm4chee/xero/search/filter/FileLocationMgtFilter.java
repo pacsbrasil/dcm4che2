@@ -40,12 +40,9 @@ package org.dcm4chee.xero.search.filter;
 import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.management.MBeanServerConnection;
 
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
@@ -69,8 +66,6 @@ import org.slf4j.LoggerFactory;
 public class FileLocationMgtFilter implements Filter<URL> {
    private static final Logger log = LoggerFactory
          .getLogger(FileLocationMgtFilter.class);
-
-   private static MBeanServerConnection server;
 
    /**
     * Returns the DICOM file <tt>URL</tt> for the given arguments.
@@ -98,8 +93,7 @@ public class FileLocationMgtFilter implements Filter<URL> {
             return null; // not found!
          
          for (FileDTO dto : dtos) {
-            url = new URI("file:/" + dto.getDirectoryPath().replace("\\", "/")
-                  + "/" + dto.getFilePath()).toURL();
+          url = new URL("file:///" + dto.getDirectoryPath().replace("\\", "/") + "/" + dto.getFilePath());
          }
       } catch (Exception e) {
          log.error("Failed to get DICOM file URL", e);
