@@ -422,11 +422,8 @@ abstract class StringElement extends ValueElement {
              }
              byte[] b = data.array();
              String s = trim.trim(cs == null ? new String(b) : cs.decode(b));
-             if (s.length() == 0) {
-                 return null;
-             }
              int end = s.indexOf('\\');
-             return end != -1 ? s.substring(0, end) : s;
+             return end != -1 ? s.substring(0, end) : s;             
          }
 
         public String getString(int index, SpecificCharacterSet cs)
@@ -445,7 +442,7 @@ abstract class StringElement extends ValueElement {
             }
             byte[] b = data.array();
             String s = trim.trim(cs == null ? new String(b) : cs.decode(b));
-            return s.length() > 0 ? StringUtils.split(s, '\\') : STRING0;
+            return StringUtils.split(s, '\\');
         }
     }
 
