@@ -4,6 +4,6 @@
 $if(layout.activeTab.tabMenu)$ $(layout.activeTab.tabMenu.template)(layout=layout.activeTab.tabMenu)$ $endif$
 $if(layout.tabMenu.template)$ $(layout.tabMenu.template)(layout=layout.tabMenu)$ $endif$
 </div>
-<div class="tabBody">
+<div class="tabBody" style="$layout.style$">
 $(layout.activeTab.template)(layout=layout.activeTab)$
 </div>

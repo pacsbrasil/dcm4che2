@@ -69,7 +69,7 @@ TabsLayout.resize = function TL_resize(width, height, style) {
 		this.activeTab.resize(width,height,style);
 	} else {
 		var ht = height-this.headerHeight;
-		this.style = "width: "+width+"px; height:"+ht+"px;";
+		this.style = "height:"+(ht/height)+"%;";
 		this.activeTab.resize(width,ht,this.style);
 	};
 };

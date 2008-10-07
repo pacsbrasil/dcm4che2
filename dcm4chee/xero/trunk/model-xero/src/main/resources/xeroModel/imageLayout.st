@@ -11,7 +11,7 @@ ImageLayout.prototype.baseConstructor = Layout;
 // Scale no smaller than fetchSize when fetching,
 // and fetch on fetchSize index boundaries 
 ImageLayout.prototype.fetchSize = 256;
-ImageLayout.prototype.isDebug = false;
+ImageLayout.prototype.isDebug = true;
 ImageLayout.prototype.MAGNIFY = "MAGNIFY";
 ImageLayout.prototype.SCALE_TO_FIT = "SCALE_TO_FIT";
 ImageLayout.prototype.TRUE_SIZE = "TRUE_SIZE";
@@ -35,6 +35,7 @@ ImageLayout.prototype.updatePosition = function ImageLayout_updatePosition() {
 	this.translateY = 0;
 	this.rotation = undefined;
 	this.flip = false;
+	this.aspectPercent = undefined;
 	
 	var tl = this.merged.get("topLeft");
 	if( tl ) {
@@ -52,19 +53,6 @@ ImageLayout.prototype.updatePosition = function ImageLayout_updatePosition() {
 	this.computeSpatialTransform();
 	this.computeScale();
 	this.computeTranslate();
-	this.computeIE();
-};
-
-/* Computes the IE specific translation/positioning values */
-ImageLayout.prototype.computeIE = function ImageLayout_computeIE() {
-	this.dblCols = this.image.Columns*2;
-	this.dblRows = this.image.Rows*2; 
-	this.dblColsDisp = this.dblCols * this.scale;
-	this.dblRowsDisp = this.dblRows * this.scaleY;
-	this.translateXIE = this.translateX - this.dblColsDisp/2;
-	this.translateYIE = this.translateY - this.dblRowsDisp/2;
-	console.info("IE settings: dbl cols/rows %f,%f  dbl cols/rows disp %f,%f translate IE %f,%f",this.dblCols,this.dblRows,
-	this.dblColsDisp, this.dblRowsDisp, this.translateXIE, this.translateYIE); 
 };
 
 /** Indicate if the image load is complete */
@@ -176,8 +164,14 @@ ImageLayout.prototype.computeTranslate = function ImageLayout_computeTranslate()
 	this.debug("imgX,Y = %d,%d", imgX, imgY);
 	this.translateX = dispX-imgX;
 	this.translateY = dispY-imgY;
+
 	if( this.translateX > -1 && this.translateX < 1 ) this.translateX = 0;
 	if( this.translateY > -1 && this.translateY < 1 ) this.translateY = 0;
+
+	// The XPercent is used for IE, and is the display percentage for the flipped/rotated top hand corner
+	this.translateXPercent = Math.floor(50*(this.width-Math.abs(imgBR[0]-imgTL[0]))/this.width);
+	this.translateYPercent = Math.floor(50*(this.height-Math.abs(imgBR[1]-imgTL[1]))/this.height);
+
 	console.info("ImageLayout translation %d,%d", this.translateX, this.translateY);
 };
 
@@ -189,6 +183,7 @@ ImageLayout.prototype.computeSpatialTransform = function ImageLayout_computeSpat
 	var flip = this.merged.get("horizontalFlip");
 	if( flip && flip=="TRUE" ) this.flip = true;
 	console.info("Flip %s rotation %d", this.flip, this.rotation); 
+	this.flipRotate = (this.flip || this.rotation);
 };
 
 /** Converts a display relative coordinate to an image relative one. */
@@ -275,48 +270,71 @@ ImageLayout.prototype.toDisplay = function ImageLayout_toDisplay(xy,offset) {
 	return [xd,yd];
 }; 
 
-
 /** Compute the scale to display the image at so that it all appears (or
  * for SCALE_TO_FIT, MAGNIFY or TRUE_SIZE, whatever scale is appropriate.)
  */
 ImageLayout.prototype.computeScale = function ImageLayout_computeScale() {
 	this.aspect = this.merged.get("aspect");
-	if(!this.aspect) this.aspect = 1;
+	if(this.aspect) {
+		this.scaleY = this.aspect;
+		this.aspectPercent = 100*this.scaleY;
+	} 
+	var imgTL = this.toDisplay(this.region,0);
+	var imgBR = this.toDisplay(this.region,2);
+	
+	// View box is computed post-flip/rotate, and pre-scale
+	// It sort of belongs as part of scale computation as the viewer itself computes the scale based on the same information as is here.
+	this.coordX = Math.min(imgTL[0],imgBR[0]);
+	this.coordY = Math.min(imgTL[1], imgBR[1]);
+	this.coordWidth = Math.abs(imgBR[0]-imgTL[0]);
+	this.coordHeight = Math.abs(imgBR[1]-imgTL[1]);
+	console.info("viewBox=%s %s %s %s", this.coordX, this.coordY, this.coordWidth, this.coordHeight);
+
+	var imageX = Math.abs(imgBR[0]-imgTL[0]);
+	var imageY = Math.abs(imgBR[1]-imgTL[1]);
+	
 	if( this.layoutType=="TRUE_SIZE") {
 		var spx = parseFloat(this.merged.get("spacingX"));
 		var dpi = screen.logicalXDPI;
 		if( !dpi ) dpi = screen.deviceXDPI;
 		if( !dpi ) {
 			dpi = 0.294;
-			console.warn("Using %f mm/pixel screen size - may not correspond to true screen size.",dpi);
-			console.dir(screen);
+			console.info("Using %f mm/pixel screen size - may not correspond to true screen size at fetch resolution.",dpi);
 		}
 		else {
 			dpi = 25.4/dpi;
 			console.info("Using %f mm/pixel screen size as provided by screen.", dpi);
 		}
 		this.scale = spx/dpi;
+
+		this.sameSize = true;
+		this.negHalfRealWidth = Math.floor(-imageX*spx/2)+"mm";
+		this.negHalfRealHeight = Math.floor(-imageY*spx/2)+"mm";
+		this.realWidth = Math.floor(imageX*spx)+"mm";
+		this.realHeight = Math.floor(imageY*spx)+"mm";		
 	} else if( this.layoutType=="MAGNIFY" ) {
 		this.scale = parseFloat(this.merged.get("magnify"));
+		this.sameSize = true;
+		this.negHalfRealWidth = Math.floor(-imageX*this.scale/2)+"px";
+		this.negHalfRealHeight = Math.floor(-imageY*this.scale/2)+"px";
+		this.realWidth = Math.floor(imageX*this.scale)+"px";
+		this.realHeight = Math.floor(imageY*this.scale)+"px";
 	} else {
+		this.sameSize = false;
 		console.info("Setting scale to fit type %s", this.layoutType);
-		var imgTL = this.toDisplay(this.region,0);
-		var imgBR = this.toDisplay(this.region,2);
 		console.info("imgTL = %s imgBR= %s region %s", imgTL, imgBR, this.region);
 	
-		var imageX = Math.abs(imgBR[0]-imgTL[0]);
-		var imageY = Math.abs(imgBR[1]-imgTL[1]);
-
 		var scaleX = this.width/imageX;
-		var scaleY = this.height/(imageY*this.aspect);
+		var scaleY = this.height/imageY;
 		console.info("scale %f,%f", scaleX,scaleY);
 		if( scaleX > scaleY ) scaleX = scaleY;
-		if( scaleX > 1 ) scaleX = 1;
 		this.scale = scaleX;
 	}
-	this.widthImg = this.width / this.scale;
-	this.heightImg = this.height / (this.scale * this.aspect);
-	this.scaleY = this.scale * this.aspect;
-	console.info("Computed scale %f,%f w,h=%f,%f",this.scale,this.scaleY, this.widthImg, this.heightImg);
+	this.scaleY = this.scale;
+	if( this.aspect ) this.scaleY = this.scale * this.aspect;
+	console.info("Computed scale %f,%f w,h=%f,%f",this.scale,this.scaleY);
+	if( this.sameSize ) {
+		console.info("same size x,y=%s,%s w,h=%s,%s", this.negHalfRealWidth, this.negHalfRealHeight, this.realWidth, this.realHeight);
+	}
 	return this.scale;	
 };

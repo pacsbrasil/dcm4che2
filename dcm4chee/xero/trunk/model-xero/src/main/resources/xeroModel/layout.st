@@ -67,17 +67,18 @@ Layout.prototype.resize = function Layout_resize(width,height,style) {
 					console.warn("Setting sub-width to infinity!");
 				}
 			}
+			// Always do width relative - it messes up the display otherwise.
+			style = "width:"+Math.floor(subWidth*100/this.width)+"%;";
 			
 			subHeight = layout.absHeight;
 			if(! subHeight ) {
 				subHeight = layout.relHeight;
 				if( !subHeight ) subHeight = 100;
 				subHeight = subHeight * height/sumRelHeight;
+				style = style+"height:"+Math.floor(subHeight*100/this.height)+"%;";
+			} else {
+				style = style+"height:"+subHeight+"px;";
 			}
-			// Would really prefer to be able to use percentage widths, but they aren't consistent
-			// enough to not get extremely different sizes in various browsers.
-			//style = "width:"+Math.floor(subWidth*100/this.width)+"%; height:"+Math.floor(subHeight*100/this.height)+"%;";
-			style = "width:"+Math.floor(subWidth)+"px; height:"+Math.floor(subHeight)+"px;";
 			layout.resize(subWidth, subHeight, style);
 		};
 	};

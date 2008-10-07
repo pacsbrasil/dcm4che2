@@ -46,14 +46,12 @@ XeroController.prototype.getBody = function XC_getBody() {
 XeroController.prototype.innerHtml = function XC_innerHtml(el, html) {
 	var oldEl = typeof el === "string" ? document.getElementById(el) : el;
 	oldEl.innerHTML = html;
-	/*@cc_on // Don't call fixWheelMouse in IE
-		return oldEl;
-	@*/
 	this.fixWheelMouse();
 	return oldEl;
 };
 
 XeroController.prototype.fixWheelMouse = function XC_fixWheelMouse(layouts) {
+	if( _SARISSA_IS_IE ) return;
 	if(!layouts ) layouts = this.model.layout.layouts;
 	var lay, i,n=layouts.length;
 	for(i=0; i<n; i++) {
@@ -68,6 +66,9 @@ XeroController.prototype.fixWheelMouse = function XC_fixWheelMouse(layouts) {
 
 XeroController.prototype.importHtml = function XC_importHtml(el, html) {
 	this.debug("importHTML.");
+	// Both Opera and Safari lose track of the new top-most element and can no longer find it, so
+	// using innerBody creates an extra instance, and then it can find the inner instance.
+	if( el=="body" ) el="innerBody";
 	var oldEl = typeof el === "string" ? document.getElementById(el) : el;
 
 	var dp = new DOMParser();
@@ -100,7 +101,7 @@ XeroController.prototype.importHtml = function XC_importHtml(el, html) {
 };
 
 XeroController.prototype.replaceHtml = function XC_replaceHtml(node,text) {
-	this.debug("Replacing %s with %s", node, text);
+	console.info("Replacing %s with %s", node, text);
 	if( _SARISSA_IS_OPERA || _SARISSA_IS_SAFARI ) {
 		this.importHtml(node, text);
 	} else {
@@ -120,7 +121,7 @@ XeroController.prototype.updateView = function XC_action(actionName) {
 	window._render = render;
 	
 	//console.info("Render: %s",render);
-	this.replaceHtml("innerBody", render);
+	this.replaceHtml("body", render);
 	console.timeEnd(actionName);
 };
 

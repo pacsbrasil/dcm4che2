@@ -1,4 +1,4 @@
-<div id="innerBody" style="width:100%; height: 100%;"  xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink">
+<div id="innerBody">
 $if(layout.template)$
 $(layout.template)()$
 $elseif(layout.template)$
