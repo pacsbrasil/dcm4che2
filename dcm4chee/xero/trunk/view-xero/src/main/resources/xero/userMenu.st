@@ -1,1 +1,1 @@
-<div class="userMenu">$userName$ <a href="logout.jsp">Logout</a></div>
+<div class="userMenu"><a target="displayTest" href="displayAreaTest">Display Test</a> $userName$ <a href="logout.jsp">Logout</a></div>

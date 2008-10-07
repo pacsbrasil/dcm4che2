@@ -1,3 +1,4 @@
+$if(IS_IE)$
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="http://www.w3.org/2000/svg" xmlns:v="urn:schemas-microsoft-com:vml">
    <head>
       <meta http-equiv="Content-Type" content="text/xhtml"/>
@@ -215,3 +216,189 @@ Section 6
    </div>
 </body>
 </html>
+$else$
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="http://www.w3.org/2000/svg" xmlns:v="urn:schemas-microsoft-com:vml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/xhtml"/>
+      <title>Display Area Tests</title>
+      <style type="text/css">
+.image {
+}
+      </style>
+   </head>
+
+<body style="margin: 0;width:100%; height:99%; overflow: hidden; background: red; position: absolute;">
+
+   <div style="width:100%; height:18px; overflow: hidden; background: red;">
+Section 1
+   </div>
+   <div style="width:100%; height:18px; overflow: hidden; background: green;">
+Section 2
+   </div>
+   <div style="width:100%; height:18px; overflow: hidden; background: white;">
+Section 3
+   </div>
+   <div style="width:100%; height:85%; overflow: hidden;">
+   <div style="width:15%; height:100%; overflow: auto; background: blue; float: left;">
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+         Left study tray <br />
+<p>This is a really long paragraph that should have to wrap somehow.  There is lots of text in it and it is more than 15% wide.  It isn't clear how to make this fit exactly, but it should work somehow.</p>
+      </div>
+      <div style="width:70%; height:100%; overflow: hidden; background: yellow; float: left;">
+         <div style="width:49.999%; height:50%; overflow: hidden; background: orange; float: left; ">
+           <svg class="image"  style="background: black;width:100%; height:100%;" xmlns="http://www.w3.org/2000/svg">
+             <svg viewBox="0 0 300 300" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+                <rect width="300" height="300" style="fill:yellow;" />
+                <rect width="100" height="100" x="100" y="100" style="fill:blue; stroke-width:4; stroke: red;" />
+                <text x="12" y="12" font-size="15">Normal text at the upper border.</text>
+             </svg>
+             <svg style="width:100%; height:100%;" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+                 <rect x="0" y="0" width="100" height="100" style="fill:green; stroke-width:4; stroke: gray;" />
+                 <rect x="900" y="0" width="100" height="100" style="fill:green; stroke-width:4; stroke: gray;" />
+                 <rect x="0" y="900" width="100" height="100" style="fill:green; stroke-width:4; stroke: gray;" />
+                 <rect x="900" y="900" width="100" height="100" style="fill:green; stroke-width:4; stroke: gray;" />
+                 <text x="150" y="200" font-size="55">Scale To Fit Example - full area.</text>
+             </svg>
+           </svg>
+         </div>
+         <div style="width:50%; height:50%; overflow: hidden; background: cyan; float: left;">
+           <svg style="width:100%; height:100%;" xmlns="http://www.w3.org/2000/svg">
+             <svg x="-75px" y="-75px" style="width:100%; overflow: visible;"  preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+             <svg x="50%" y="50%" width="150px" height="150px" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+                <rect width="300" height="300" style="fill:yellow;" />
+                <rect width="100" height="100" x="100" y="100" style="fill:blue; stroke-width:4; stroke: red;" />
+             </svg>
+             </svg>
+
+             <svg style="width:100%; height:100%;" viewBox="0 0 1000 1000" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                 <rect x="0" y="0" width="100" height="100" style="fill:green; stroke-width:4; stroke: gray;" />
+                 <rect x="900" y="0" width="100" height="100" style="fill:green; stroke-width:4; stroke: gray;" />
+                 <rect x="0" y="900" width="100" height="100" style="fill:green; stroke-width:4; stroke: gray;" />
+                 <rect x="900" y="900" width="100" height="100" style="fill:green; stroke-width:4; stroke: gray;" />
+                 <text x="150" y="100" font-size="55">Magnify Example - full area, m=0.5.</text>
+             </svg>
+           </svg>
+         </div>
+         <div style="width:49.999%; height:50%; overflow: hidden; background: pink; float: left;">
+           <svg class="image"  style="background: black;width:100%; height:100%;" xmlns="http://www.w3.org/2000/svg">
+             <svg style="display: block;" viewBox="100 100 100 100" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+                <rect width="300" height="300" style="fill:yellow;" />
+                <rect width="100" height="100" x="100" y="100" style="fill:blue; stroke-width:4; stroke: red;" />
+             </svg>
+             <svg style="width:100%; height:100%;" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+                 <rect x="0" y="0" width="100" height="100" style="fill:green; stroke-width:4; stroke: gray;" />
+                 <rect x="900" y="0" width="100" height="100" style="fill:green; stroke-width:4; stroke: gray;" />
+                 <rect x="0" y="900" width="100" height="100" style="fill:green; stroke-width:4; stroke: gray;" />
+                 <rect x="900" y="900" width="100" height="100" style="fill:green; stroke-width:4; stroke: gray;" />
+                 <text x="150" y="100" font-size="55">Scale To Fit Example - center 100 square pixels.</text>
+             </svg>
+           </svg>
+         </div>
+         <div style="width:50%; height:50%; overflow: hidden; background: purple; float: left;text-align: center;">
+           <svg style="width:100%; height:100%;" xmlns="http://www.w3.org/2000/svg">
+             <svg x="-1.5cm" y="-1.5cm" style="width:100%; overflow: visible;"  preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+             <svg x="50%" y="50%" width="3cm" height="3cm" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+                <rect width="300" height="300" style="fill:yellow;" />
+                <rect width="100" height="100" x="100" y="100" style="fill:blue; stroke-width:4; stroke: red;" />
+             </svg>
+             </svg>
+
+             <svg style="width:100%; height:100%;" viewBox="0 0 1000 1000" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                 <rect x="0" y="0" width="100" height="100" style="fill:green; stroke-width:4; stroke: gray;" />
+                 <rect x="900" y="0" width="100" height="100" style="fill:green; stroke-width:4; stroke: gray;" />
+                 <rect x="0" y="900" width="100" height="100" style="fill:green; stroke-width:4; stroke: gray;" />
+                 <rect x="900" y="900" width="100" height="100" style="fill:green; stroke-width:4; stroke: gray;" />
+                 <text x="150" y="100" font-size="55">True size Example - 3cm square with 1 cm blue center square.</text>
+             </svg>
+           </svg>
+         </div>
+      </div>
+      <div style="width:15%; height:100%; overflow: hidden; background: blue; float: left;">
+         Right Series Tray
+      </div>
+   </div>
+   <div style="width:100%; height:18px; overflow: hidden; background: white;">
+Section 4
+   </div>
+   <div style="width:100%; height:18px; overflow: hidden; background: green;">
+Section 5
+   </div>
+   <div style="width:100%; height:18px; overflow: hidden; background: red;">
+Section 6
+   </div>
+</body>
+</html>
+$endif$

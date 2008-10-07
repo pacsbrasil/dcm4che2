@@ -45,8 +45,7 @@ XeroController.prototype.getBody = function XC_getBody() {
 
 XeroController.prototype.innerHtml = function XC_innerHtml(el, html) {
 	var oldEl = typeof el === "string" ? document.getElementById(el) : el;
-	oldEl.innerHTML = html;
-	this.fixWheelMouse();
+	oldEl.outerHTML = html;
 	return oldEl;
 };
 
@@ -66,15 +65,11 @@ XeroController.prototype.fixWheelMouse = function XC_fixWheelMouse(layouts) {
 
 XeroController.prototype.importHtml = function XC_importHtml(el, html) {
 	this.debug("importHTML.");
-	// Both Opera and Safari lose track of the new top-most element and can no longer find it, so
-	// using innerBody creates an extra instance, and then it can find the inner instance.
-	if( el=="body" ) el="innerBody";
 	var oldEl = typeof el === "string" ? document.getElementById(el) : el;
 
 	var dp = new DOMParser();
 	var parsed = dp.parseFromString('<div xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="http://www.w3.org/2000/svg" xmlns:v="urn:schemas-microsoft-com:vml">'+html+"</div>","text/xml");
 	this.debug("Parsed=%s",parsed);
-	//var parsed = dp.parseFromString(html,"text/xml");
 	if( !parsed ) {
 		console.warn("No parsed value found - not changing display, source text %s", html);
 		return;
@@ -101,11 +96,11 @@ XeroController.prototype.importHtml = function XC_importHtml(el, html) {
 };
 
 XeroController.prototype.replaceHtml = function XC_replaceHtml(node,text) {
-	console.info("Replacing %s with %s", node, text);
-	if( _SARISSA_IS_OPERA || _SARISSA_IS_SAFARI ) {
-		this.importHtml(node, text);
-	} else {
+	//console.info("Replacing %s with %s", node, text);
+	if( _SARISSA_IS_IE ) {
 		this.innerHtml(node,text);
+	} else {
+		this.importHtml(node, text);
 	}
 }
 

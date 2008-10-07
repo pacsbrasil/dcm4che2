@@ -5,13 +5,14 @@ function ImageLayout(id,template) {
 	this.baseConstructor(id,template);
 };
 
+ImageLayout.prototype.isDebug = false;
+
 ImageLayout.prototype = new Layout("baseImage","image/image");
 ImageLayout.prototype.baseConstructor = Layout;
 
 // Scale no smaller than fetchSize when fetching,
 // and fetch on fetchSize index boundaries 
 ImageLayout.prototype.fetchSize = 256;
-ImageLayout.prototype.isDebug = true;
 ImageLayout.prototype.MAGNIFY = "MAGNIFY";
 ImageLayout.prototype.SCALE_TO_FIT = "SCALE_TO_FIT";
 ImageLayout.prototype.TRUE_SIZE = "TRUE_SIZE";
@@ -26,7 +27,7 @@ ImageLayout.prototype.updatePosition = function ImageLayout_updatePosition() {
 	
 	// Need to add layout & query information to make the image fit the displayed area.
 	this.layoutType = this.merged.get("size");
-	console.info("Found layout type %s", this.layoutType);
+	this.debug("Found layout type %s", this.layoutType);
 	if(!this.layoutType ) this.layoutType = this.SCALE_TO_FIT;
 	// Reset the positional information...
 	this.scale = 1;
@@ -42,7 +43,7 @@ ImageLayout.prototype.updatePosition = function ImageLayout_updatePosition() {
 	    // The points are all backwards and the first set are offset by 1 each as they are starting/ending points
 		var br = this.merged.get("bottomRight");
 		this.region = parsePoint(tl+","+br);
-		console.info("Using specified region %s", this.region);
+		this.debug("Using specified region %s", this.region);
 	} else {
 		this.region = [0,0,this.image.Columns, this.image.Rows];
 	}
@@ -136,11 +137,11 @@ ImageLayout.prototype.createFullUrl = function ImageLayout_createFullUrl(base) {
 	ret.top = ymin;
 	ret.left = xmin;
 	if( xmin!==0 || ymin!==0 || xmax!==this.image.Columns || ymax!==this.image.Rows ) {
-		console.info("Fetching sub-region %d,%d,%d,%d", xmin,ymin,xmax,ymax);
+		this.debug("Fetching sub-region %d,%d,%d,%d", xmin,ymin,xmax,ymax);
 		ret.imageUrl = ret.imageUrl + "&amp;region="+xmin/this.image.Columns+","+ymin/this.image.Rows+","+xmax/this.image.Columns+","+ymax/this.image.Rows;
 	}
 	if( ret.fetchScale!=1 ) {
-		console.info("Fetching at scale %d",ret.fetchScale);
+		this.debug("Fetching at scale %d",ret.fetchScale);
 		ret.imageUrl = ret.imageUrl + "&amp;rows=" + Math.floor((ymax-ymin)/ret.fetchScale);
 	}
 	return ret;
@@ -172,7 +173,7 @@ ImageLayout.prototype.computeTranslate = function ImageLayout_computeTranslate()
 	this.translateXPercent = Math.floor(50*(this.width-Math.abs(imgBR[0]-imgTL[0]))/this.width);
 	this.translateYPercent = Math.floor(50*(this.height-Math.abs(imgBR[1]-imgTL[1]))/this.height);
 
-	console.info("ImageLayout translation %d,%d", this.translateX, this.translateY);
+	this.debug("ImageLayout translation %d,%d", this.translateX, this.translateY);
 };
 
 /** 
@@ -182,7 +183,7 @@ ImageLayout.prototype.computeSpatialTransform = function ImageLayout_computeSpat
 	this.rotation = this.merged.get("rotation");
 	var flip = this.merged.get("horizontalFlip");
 	if( flip && flip=="TRUE" ) this.flip = true;
-	console.info("Flip %s rotation %d", this.flip, this.rotation); 
+	this.debug("Flip %s rotation %d", this.flip, this.rotation); 
 	this.flipRotate = (this.flip || this.rotation);
 };
 
@@ -288,7 +289,7 @@ ImageLayout.prototype.computeScale = function ImageLayout_computeScale() {
 	this.coordY = Math.min(imgTL[1], imgBR[1]);
 	this.coordWidth = Math.abs(imgBR[0]-imgTL[0]);
 	this.coordHeight = Math.abs(imgBR[1]-imgTL[1]);
-	console.info("viewBox=%s %s %s %s", this.coordX, this.coordY, this.coordWidth, this.coordHeight);
+	this.debug("viewBox=%s %s %s %s", this.coordX, this.coordY, this.coordWidth, this.coordHeight);
 
 	var imageX = Math.abs(imgBR[0]-imgTL[0]);
 	var imageY = Math.abs(imgBR[1]-imgTL[1]);
@@ -303,7 +304,7 @@ ImageLayout.prototype.computeScale = function ImageLayout_computeScale() {
 		}
 		else {
 			dpi = 25.4/dpi;
-			console.info("Using %f mm/pixel screen size as provided by screen.", dpi);
+			this.debug("Using %f mm/pixel screen size as provided by screen.", dpi);
 		}
 		this.scale = spx/dpi;
 
@@ -321,20 +322,20 @@ ImageLayout.prototype.computeScale = function ImageLayout_computeScale() {
 		this.realHeight = Math.floor(imageY*this.scale)+"px";
 	} else {
 		this.sameSize = false;
-		console.info("Setting scale to fit type %s", this.layoutType);
-		console.info("imgTL = %s imgBR= %s region %s", imgTL, imgBR, this.region);
+		this.debug("Setting scale to fit type %s", this.layoutType);
+		this.debug("imgTL = %s imgBR= %s region %s", imgTL, imgBR, this.region);
 	
 		var scaleX = this.width/imageX;
 		var scaleY = this.height/imageY;
-		console.info("scale %f,%f", scaleX,scaleY);
+		this.debug("scale %f,%f", scaleX,scaleY);
 		if( scaleX > scaleY ) scaleX = scaleY;
 		this.scale = scaleX;
 	}
 	this.scaleY = this.scale;
 	if( this.aspect ) this.scaleY = this.scale * this.aspect;
-	console.info("Computed scale %f,%f w,h=%f,%f",this.scale,this.scaleY);
+	this.debug("Computed scale %f,%f w,h=%f,%f",this.scale,this.scaleY);
 	if( this.sameSize ) {
-		console.info("same size x,y=%s,%s w,h=%s,%s", this.negHalfRealWidth, this.negHalfRealHeight, this.realWidth, this.realHeight);
+		this.debug("same size x,y=%s,%s w,h=%s,%s", this.negHalfRealWidth, this.negHalfRealHeight, this.realWidth, this.realHeight);
 	}
 	return this.scale;	
 };
