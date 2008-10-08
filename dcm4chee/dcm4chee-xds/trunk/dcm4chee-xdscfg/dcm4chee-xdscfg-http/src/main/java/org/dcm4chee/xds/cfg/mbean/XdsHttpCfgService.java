@@ -110,6 +110,7 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
 
     private int proxyPort;
     private int secureProxyPort;
+    private int socksProxyPort;
 
     private String keystoreURL = "resource:identity.p12";
     private String keystorePassword;
@@ -209,6 +210,28 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
         setOrRemoveAttribute(HTTPS_NON_PROXY_HOSTS, hosts);
     }
     
+    public String getSocksProxyHost() {
+        return System.getProperty(SOCKS_PROXY_HOST, NONE);
+    }
+    public void setSocksProxyHost(String proxyHost) {
+        if ( NONE.equals(proxyHost) ) {
+            System.getProperties().remove(SOCKS_PROXY_HOST);
+            System.getProperties().remove(SOCKS_PROXY_PORT);
+        } else {
+            System.setProperty(SOCKS_PROXY_HOST, proxyHost);
+            System.setProperty(SOCKS_PROXY_PORT, String.valueOf(socksProxyPort));
+        }
+    }
+    public int getSocksProxyPort() {
+        return socksProxyPort;
+    }
+    public void setSocksProxyPort(int port) {
+        if ( this.socksProxyPort != port ) {
+            this.socksProxyPort = port;
+            if (System.getProperty(SOCKS_PROXY_HOST) != null)
+                System.setProperty(SOCKS_PROXY_PORT, String.valueOf(port));
+        }
+    }
     
     public void setKeyStorePassword(String keyStorePassword) {
         if ( NONE.equals(keyStorePassword)) keyStorePassword = null;
@@ -320,6 +343,9 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
         sb.append("\n  ").append(HTTPS_PROXY_USER).append('=').append(System.getProperty(HTTPS_PROXY_USER, EMPTY));
         sb.append("\n  ").append(HTTPS_PROXY_PASSWD).append('=').append(System.getProperty(HTTPS_PROXY_PASSWD) == null ? EMPTY : HIDE_PASSWD);
         sb.append("\n  ").append(HTTPS_NON_PROXY_HOSTS).append('=').append(System.getProperty(HTTPS_NON_PROXY_HOSTS, EMPTY));
+        sb.append("\nSocks Proxy:");
+        sb.append("\n  ").append(SOCKS_PROXY_HOST).append('=').append(System.getProperty(SOCKS_PROXY_HOST, EMPTY));
+        sb.append("\n  ").append(SOCKS_PROXY_PORT).append('=').append(System.getProperty(SOCKS_PROXY_PORT, EMPTY));
         sb.append("\nSSL Configuration:");
         sb.append("\n  ").append(TRUST_STORE).append('=').append(System.getProperty(TRUST_STORE, EMPTY));
         sb.append("\n  ").append(TRUST_STORE_PASSWORD).append('=').append(System.getProperty(TRUST_STORE_PASSWORD) == null ? EMPTY : HIDE_PASSWD);
@@ -328,8 +354,6 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
         sb.append("\n  ").append(KEY_STORE_PASSWORD).append('=').append(System.getProperty(KEY_STORE_PASSWORD) == null ? EMPTY : HIDE_PASSWD);
         sb.append("\n======================================================================");
         sb.append("\nOther:");
-        sb.append("\n  ").append(SOCKS_PROXY_HOST).append('=').append(System.getProperty(SOCKS_PROXY_HOST, EMPTY));
-        sb.append("\n  ").append(SOCKS_PROXY_PORT).append('=').append(System.getProperty(SOCKS_PROXY_PORT, EMPTY));
         sb.append("\n  ").append(FTP_PROXY_HOST).append('=').append(System.getProperty(FTP_PROXY_HOST, EMPTY));
         sb.append("\n  ").append(FTP_PROXY_PORT).append('=').append(System.getProperty(FTP_PROXY_PORT, EMPTY));
         sb.append("\n  ").append(FTP_NON_PROXY_HOSTS).append('=').append(System.getProperty(FTP_NON_PROXY_HOSTS, EMPTY));

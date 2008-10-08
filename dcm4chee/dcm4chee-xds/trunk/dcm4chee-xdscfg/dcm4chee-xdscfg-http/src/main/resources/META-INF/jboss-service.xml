@@ -123,6 +123,27 @@
          <value value="NONE"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="getSocksProxyHost" setMethod="setSocksProxyHost">
+      <!-- Network -->     
+      <description><![CDATA[ Socks Proxy host if http access should use a socks proxy. NONE = no socks proxy.<br/>
+                    Note: SocksProxy is NOT used when a http proxy is configured!
+      ]]> </description>
+      <name>SocksProxyHost</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getSocksProxyPort" setMethod="setSocksProxyPort">
+      <!-- Network -->     
+      <description>Socks Proxy port if SocksProxy is configured.
+      </description>
+      <name>SocksProxyPort</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1080"/>
+      </descriptors>
+   </attribute>
 
    <attribute access="read-write" getMethod="getKeyStoreURL" setMethod="setKeyStoreURL">
       <!-- Security -->     
