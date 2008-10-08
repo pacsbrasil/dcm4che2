@@ -248,18 +248,32 @@
       <priority value="INFO"/>
    </category>
 
+   <!-- Limit the org.dcm4chex.rid to INFO --> 
+   <category name="org.dcm4chex.rid">
+      <priority value="INFO"/>
+   </category>
+
+   <!-- Limit the org.dcm4chex.xds to INFO --> 
+   <category name="org.dcm4chex.xds">
+      <priority value="INFO"/>
+   </category>
+
    <!-- Limit the org.dcm4cheri category to INFO -->
    <category name="org.dcm4cheri">
       <priority value="INFO"/>
    </category>
 
-   <!-- Limit the org.dcm4chee category to INFO -->
-   <category name="org.dcm4chee">
+   <!-- Limit the org.dcm4che2 category to INFO -->
+   <category name="org.dcm4che2">
       <priority value="INFO"/>
    </category>
 
-   <!-- Limit the org.freebxml category to INFO -->
-   <category name="org.freebxml">
+   <!-- Limit the org.dcm4che.util category to INFO -->
+   <category name="org.dcm4che.util">
+      <priority value="INFO"/>
+   </category>
+   <!-- Limit the org.dcm4chee category to INFO -->
+   <category name="org.dcm4chee">
       <priority value="INFO"/>
    </category>
 
@@ -300,6 +314,11 @@
    
    <!-- Limit the Hibernate categories -->
    <category name="org.hibernate">
+      <priority value="INFO"/>
+   </category>
+   
+   <!-- Limit the JSF categories -->
+   <category name="javax.enterprise.resource.webcontainer.jsf">
       <priority value="INFO"/>
    </category>
 
