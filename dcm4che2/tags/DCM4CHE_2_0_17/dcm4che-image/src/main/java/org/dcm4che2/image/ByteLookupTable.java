@@ -1,0 +1,331 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+ * Java(TM), available at http://sourceforge.net/projects/dcm4che.
+ *
+ * The Initial Developer of the Original Code is
+ * Gunter Zeilinger, Huetteldorferstr. 24/10, 1150 Vienna/Austria/Europe.
+ * Portions created by the Initial Developer are Copyright (C) 2003-2007
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ * See listed authors below.
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
+
+package org.dcm4che2.image;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class ByteLookupTable extends LookupTable {
+    private static final Logger log = 
+        LoggerFactory.getLogger(ByteLookupTable.class);
+    
+    private byte[] data;
+
+    public ByteLookupTable(int inBits, boolean signed, int off, int outBits,
+            byte[] data) {
+        this(inBits, signed, off, outBits, data, false);
+    }
+
+    public ByteLookupTable(int inBits, boolean signed, int off, int outBits,
+            byte[] data, boolean preserve) {
+        super(inBits, signed, off, outBits, preserve);
+        this.data = data;
+    }
+
+    @Override
+    public final int length() {
+        return data.length;
+    }
+
+    @Override
+    public final byte lookupByte(int in) {
+        int tmp = ((in & signbit) != 0 ? (in | ormask) : (in & andmask)) - off;
+        return tmp <= 0 ? data[0] : tmp >= data.length ? data[data.length - 1]
+                : data[tmp];
+    }
+
+    @Override
+    public final short lookupShort(int in) {
+        return (short) (lookupByte(in) & 0xff);
+    }
+
+    @Override
+    public final int lookup(int in) {
+        return lookupByte(in) & 0xff;
+    }
+
+    @Override
+    public final byte[] lookup(byte[] src, byte[] dst) {
+        if (dst == null) {
+            dst = new byte[src.length];
+        }
+        int len = src.length;
+        if( dst.length < len ) {
+        	log.warn("Destination length "+dst.length+" is shorter than src length "+src.length);
+        	len = dst.length;
+        }
+        for (int i = 0; i < len; i++) {
+            dst[i] = lookupByte(src[i]);
+        }
+        return dst;
+    }
+
+    @Override
+    public final short[] lookup(byte[] src, short[] dst) {
+        if (dst == null) {
+            dst = new short[src.length];
+        }
+        int len = src.length;
+        if( dst.length < len ) {
+        	log.warn("Destination length "+dst.length+" is shorter than src length "+src.length);
+        	len = dst.length;
+        }
+        for (int i = 0; i < len; i++) {
+            dst[i] = lookupShort(src[i]);
+        }
+        return dst;
+    }
+
+    @Override
+    public final int[] lookup(byte[] src, int[] dst, int alpha) {
+        if (dst == null) {
+            dst = new int[src.length];
+        }
+        int len = src.length;
+        if( dst.length < len ) {
+        	log.warn("Destination length "+dst.length+" is shorter than src length "+src.length);
+        	len = dst.length;
+        }
+        for (int i = 0; i < len; i++) {
+            int tmp = lookup(src[i]);
+            dst[i] = tmp | (tmp << 8) | (tmp << 16) | (alpha << 24);
+        }
+        return dst;
+    }
+    
+    @Override
+    public final byte[] lookup(short[] src, byte[] dst) {
+        if (dst == null) {
+            dst = new byte[src.length];
+        }
+        int len = src.length;
+        if( dst.length < len ) {
+        	log.warn("Destination length "+dst.length+" is shorter than src length "+src.length);
+        	len = dst.length;
+        }
+        for (int i = 0; i < len; i++) {
+            dst[i] = lookupByte(src[i]);
+        }
+        return dst;
+    }
+
+    @Override
+    public final short[] lookup(short[] src, short[] dst) {
+        if (dst == null) {
+            dst = new short[src.length];
+        }
+        int len = src.length;
+        if( dst.length < len ) {
+        	log.warn("Destination length "+dst.length+" is shorter than src length "+src.length);
+        	len = dst.length;
+        }
+        for (int i = 0; i < len; i++) {
+            dst[i] = lookupShort(src[i]);
+        }
+        return dst;
+    }
+
+    @Override
+    public final int[] lookup(short[] src, int[] dst, int alpha) {
+        if (dst == null) {
+            dst = new int[src.length];
+        }
+        for (int i = 0; i < src.length; i++) {
+            int tmp = lookup(src[i]);
+            dst[i] = tmp | (tmp << 8) | (tmp << 16) | (alpha << 24);
+        }
+        return dst;
+    }
+        
+    @Override
+    protected LookupTable scale(int outBits, boolean inverse,
+            short[] pval2out) {
+        if (outBits == this.outBits && !inverse && pval2out == null) {
+            return this;
+        }
+        int outBits1 = pval2out == null ? outBits : inBits(pval2out);
+        int shift = outBits1 - this.outBits;
+        int pval2outShift = 16 - outBits;
+        int outMax = (1 << outBits1) - 1;
+        if (outBits <= 8) {
+            byte[] newData = preserve ? new byte[data.length] : data;
+            for (int i = 0; i < newData.length; i++) {
+                int tmp = data[i] & 0xff;
+                if (shift < 0) {
+                    tmp >>>= -shift;
+                } else {
+                    tmp <<= shift;
+                }
+                if (inverse) {
+                    tmp = outMax - tmp;
+                }
+                if (pval2out != null) {
+                    tmp = (pval2out[tmp] & 0xffff) >>> pval2outShift;
+                }
+                newData[i] = (byte) tmp;
+            }
+            if (preserve) {
+                return new ByteLookupTable(inBits, signbit != 0, off, outBits,
+                        newData);
+            }
+            this.outBits = outBits;
+            return this;
+        }
+        short[] newData = new short[data.length];
+        for (int i = 0; i < newData.length; i++) {
+            int tmp = data[i] & 0xff;
+            if (shift < 0) {
+                tmp >>>= -shift;
+            } else {
+                tmp <<= shift;
+            }
+            if (inverse) {
+                tmp = outMax - tmp;
+            }
+            if (pval2out != null) {
+                tmp = (pval2out[tmp] & 0xffff) >>> pval2outShift;
+            }
+            newData[i] = (short) tmp;
+        }
+        return new ShortLookupTable(inBits, signbit != 0, off, outBits,
+                newData);
+    }
+
+    @Override
+    protected LookupTable combine(LookupTable other, int outBits,
+            boolean inverse, short[] pval2out) {
+        int shift1 = other.inBits - this.outBits;
+        int outBits1 = pval2out == null ? outBits : inBits(pval2out);
+        int shift2 = outBits1 - other.outBits;
+        int pval2outShift = 16 - outBits;
+        int outMax = (1 << outBits1) - 1;
+        if (outBits <= 8) {
+            byte[] newData = new byte[data.length];
+            for (int i = 0; i < newData.length; i++) {
+                int tmp = data[i] & 0xff;
+                tmp = other.lookup(
+                        shift1 < 0 ? tmp >>> -shift1 : tmp << shift1);
+                if (shift2 < 0) {
+                    tmp >>>= -shift2;
+                } else {
+                    tmp <<= shift2;
+                }
+                if (inverse) {
+                    tmp = outMax - tmp;
+                }
+                if (pval2out != null) {
+                    tmp = (pval2out[tmp] & 0xffff) >>> pval2outShift;
+                }
+                newData[i] = (byte) tmp;
+            }
+            return new ByteLookupTable(inBits, signbit != 0, off, outBits,
+                    newData);
+        }
+        short[] newData = new short[data.length];
+        for (int i = 0; i < newData.length; i++) {
+            int tmp = data[i] & 0xff;
+            tmp = other.lookup(
+                    shift1 < 0 ? tmp >>> -shift1 : tmp << shift1);
+            if (shift2 < 0) {
+                tmp >>>= -shift2;
+            } else {
+                tmp <<= shift2;
+            }
+            if (inverse) {
+                tmp = outMax - tmp;
+            }
+            if (pval2out != null) {
+                tmp = (pval2out[tmp] & 0xffff) >>> pval2outShift;
+            }
+            newData[i] = (short) tmp;
+        }
+        return new ShortLookupTable(inBits, signbit != 0, off, outBits,
+                newData);
+    }
+
+    @Override
+    protected LookupTable combine(LookupTable vlut, LookupTable plut,
+            int outBits, boolean inverse, short[] pval2out) {
+        int shift1 = plut.inBits - vlut.outBits;
+        int outBits1 = pval2out == null ? outBits : inBits(pval2out);
+        int shift2 = outBits - plut.outBits;
+        int pval2outShift = 16 - outBits;
+        int outMax = (1 << outBits1) - 1;
+        if (outBits <= 8) {
+            byte[] newData = new byte[data.length];
+            for (int i = 0; i < newData.length; i++) {
+                int tmp = vlut.lookup(data[i] & 0xff);
+                tmp = plut.lookup(shift1 < 0 ? tmp >>> -shift1 : tmp << shift1);
+                if (shift2 < 0) {
+                    tmp >>>= -shift2;
+                } else {
+                    tmp <<= shift2;
+                }
+                if (inverse) {
+                    tmp = outMax - tmp;
+                }
+                if (pval2out != null) {
+                    tmp = (pval2out[tmp] & 0xffff) >>> pval2outShift;
+                }
+                newData[i] = (byte) tmp;
+            }
+            return new ByteLookupTable(inBits, signbit != 0, off, outBits,
+                    newData);
+        }
+        short[] newData = new short[data.length];
+        for (int i = 0; i < newData.length; i++) {
+            int tmp = vlut.lookup(data[i] & 0xff);
+            tmp = plut.lookup(shift1 < 0 ? tmp >>> -shift1 : tmp << shift1);
+            if (shift2 < 0) {
+                tmp >>>= -shift2;
+            } else {
+                tmp <<= shift2;
+            }
+            if (inverse) {
+                tmp = outMax - tmp;
+            }
+            if (pval2out != null) {
+                tmp = (pval2out[tmp] & 0xffff) >>> pval2outShift;
+            }
+            newData[i] = (short) tmp;
+        }
+        return new ShortLookupTable(inBits, signbit != 0, off, outBits,
+                newData);
+    }
+}
