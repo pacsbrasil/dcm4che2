@@ -414,14 +414,6 @@ public class StoreScpService extends AbstractScpService {
         scp.setAcceptMismatchIUIDCallingAETs(aets);
     }
 
-    public String getUpdateStudyAccessTimeCallingAETs() {
-        return scp.getUpdateStudyAccessTimeCallingAETs();
-    }
-
-    public void setUpdateStudyAccessTimeCallingAETs(String aets) {
-        scp.setUpdateStudyAccessTimeCallingAETs(aets);
-    }
-
     public boolean isStoreDuplicateIfDiffHost() {
         return scp.isStoreDuplicateIfDiffHost();
     }

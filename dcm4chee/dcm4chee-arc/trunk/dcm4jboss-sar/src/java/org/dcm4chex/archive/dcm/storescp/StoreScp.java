@@ -186,8 +186,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private String[] acceptMismatchIUIDCallingAETs = {};
 
-    private String[] updateStudyAccessTimeAETs = {};
-
     private boolean checkIncorrectWorklistEntry = true;
 
     private String referencedDirectoryPath;
@@ -256,23 +254,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     public final void setAcceptMismatchIUIDCallingAETs(String aets) {
         acceptMismatchIUIDCallingAETs = StringUtils.split(aets, '\\');
-    }
-
-    public final String getUpdateStudyAccessTimeCallingAETs() {
-        return updateStudyAccessTimeAETs == null ? "ANY"
-                : updateStudyAccessTimeAETs.length == 0 ? "NONE" : StringUtils
-                        .toString(updateStudyAccessTimeAETs, '\\');
-    }
-
-    public final void setUpdateStudyAccessTimeCallingAETs(String aets) {
-        updateStudyAccessTimeAETs = aets.equalsIgnoreCase("ANY") ? null : aets
-                .equalsIgnoreCase("NONE") ? new String[0] : StringUtils.split(
-                aets, '\\');
-    }
-
-    private boolean isUpdateStudyAccessTimeFor(String aet) {
-        return updateStudyAccessTimeAETs == null
-                || Arrays.asList(updateStudyAccessTimeAETs).contains(aet);
     }
 
     public final boolean isStudyDateInFilePath() {
@@ -648,10 +629,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 coerced = merge(coerced, mergeMatchingMWLItem(assoc, ds,
                         seriuid, mwlFilter));
             }
+            boolean updateAccessTime = false;
             if (seriesStored == null) {
                 seriesStored = initSeriesStored(ds, callingAET,
                         fsDTO.getRetrieveAET());
                 assoc.putProperty(SERIES_STORED, seriesStored);
+                updateAccessTime = true;
             }
             appendInstanceToSeriesStored(seriesStored, ds, fsDTO);
             perfMon.start(activeAssoc, rq,
@@ -659,7 +642,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             long fileLength = file != null ? file.length() : 0L;
             Dataset coercedElements = updateDB(store, ds, fsDTO.getPk(),
                     filePath, fileLength, md5sum,
-                    isUpdateStudyAccessTimeFor(callingAET));
+                    updateAccessTime);
             ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
             coerced = merge(coerced, coercedElements);
             perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DATASET,
