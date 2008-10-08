@@ -8,8 +8,8 @@
   <packaging>pom</packaging>
 
   <modules>
-	  <module>dcm4che-test-image</module>
-  </module>
+	  <module>dcm4che2-test-image</module>
+  </modules>
 
    <scm>
       <developerConnection>scm:svn:https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4che2-test/trunk</developerConnection>
