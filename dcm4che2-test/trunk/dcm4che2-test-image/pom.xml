@@ -3,11 +3,11 @@
 
   <groupId>org.dcm4che.test</groupId>
   <artifactId>dcm4che2-image-test</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <name>Dicom Image Tests</name>
 
    <scm>
-      <developerConnection>scm:svn:https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4che2-test/dcm4che2-test-image</developerConnection>
+      <developerConnection>scm:svn:https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4che2-test/dcm4che2-test-image/tags/dcm4che2-image-test-1.0</developerConnection>
    </scm>
   
   <build>
