@@ -37,9 +37,9 @@ imageLayoutTests.scaleToFitTest = function ILT_scaleToFitTest() {
 	ilt = new ILTest(600,700, {"Rows":"512", "Columns":512});
 	il = ilt.imageLayout;
 	il.updatePosition();
-	$assert(test="il.scale==1",msg="Scale should be unused")$;
-	assertEquals(il.translateX,44,"Should translate 44 to center.");
-	assertEquals(il.translateY,94,"Should translate 94 to center.");
+	$assert(test="il.scale==600/512",msg="Scale should be 600/512")$;
+	assertEquals(il.translateX,0,"Should not translate  to center.");
+	assertEquals(il.translateY,50,"Should translate to center.");
 
 };
 
