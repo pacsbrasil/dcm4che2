@@ -6,16 +6,20 @@ tr.header {
 }
 
 div {
-	margin: 0px;
+	margin: 0;
+	border: 0;
+	padding: 0;
 }
 
 body {
-	margin: 2px;
+	margin: 0;
+	border: 0;
+	padding: 0.25%;
 	color: black;
 	position: absolute;
 	overflow: hidden;
-	width: 99.8%;
-	height: 99.8%;
+	width: 99.3%;
+	height: 99.3%;
 }
 
 #body {
@@ -66,8 +70,6 @@ div.userMenu {
 }
 
 .image {
-	margin: 0px;
-	border: 0px;
 	background: black;
 	overflow: hidden;
 	position: relative;
@@ -76,8 +78,9 @@ div.userMenu {
 }
 
 .imageDisplay {
-	margin: 0px;
-	border: 0px;
+	margin: 0;
+	border: 0;
+	padding: 0;
 	background: black;
 	color: white;
 	overflow: hidden;

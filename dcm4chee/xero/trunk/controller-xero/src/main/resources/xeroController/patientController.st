@@ -31,7 +31,7 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 
 	if( ! model.patientLayout ) {
 		model.navigate = new Navigation();
-		model.patientLayout = this.createPatientLayout(model.navigate,2,2,1,2,4,2);
+		model.patientLayout = this.createPatientLayout(model.navigate,2,1,2,2,2,2);
 		model.layout.removeTab("Display");
 		model.layout.addTab("Display", model.patientLayout);
 	}

@@ -68,7 +68,7 @@ Layout.prototype.resize = function Layout_resize(width,height,style) {
 				}
 			}
 			// Always do width relative - it messes up the display otherwise.
-			style = "width:"+Math.floor(subWidth*100/this.width)+"%;";
+			style = "width:"+Math.floor((subWidth)*99.4/this.width)+"%;";
 			
 			subHeight = layout.absHeight;
 			if(! subHeight ) {
