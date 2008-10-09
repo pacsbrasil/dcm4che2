@@ -13,9 +13,6 @@
      <ant dir="stringtemplate" target="${childCall}" inheritAll="false" antfile="build-util.xml">
       <propertyset refid="childProperties" />
      </ant>
-     <ant dir="dicomTest" target="${childCall}"  inheritAll="false">
-      <propertyset refid="childProperties" />
-     </ant>
      <ant dir="metadata" target="${childCall}"  inheritAll="false">
       <propertyset refid="childProperties" />
      </ant>
