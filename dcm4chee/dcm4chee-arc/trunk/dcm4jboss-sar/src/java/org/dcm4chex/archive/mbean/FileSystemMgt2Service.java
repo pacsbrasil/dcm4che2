@@ -43,6 +43,7 @@ import java.rmi.RemoteException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 
 import javax.ejb.FinderException;
 import javax.management.Attribute;
@@ -903,30 +904,31 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         long sizeToDel = threshold - usable;
         long minAccessTime = 0;
         int countStudies = 0;
-        while (sizeToDel > 0) {
+        if (sizeToDel > 0) {
             log.info("Try to free " + sizeToDel
                     + " of disk space on file system group "
                     + getFileSystemGroupID());
-            Collection<DeleteStudyOrder> orders = 
-                    fsMgt.createDeleteOrdersForStudiesOnFSGroup(
-                    fsGroup, minAccessTime, scheduleStudiesForDeletionBatchSize,
-                    externalRetrieveable, storageNotCommited, copyOnMedia,
-                    copyOnFSGroup, copyArchived, copyOnReadOnlyFS);
-            if (orders.isEmpty()) {
-                log.warn("Could not find any further study for deletion on file system group "
-                        + getFileSystemGroupID());
-                break;
-            }
-            log.info("Schedule " + orders.size()
-                    + " studies for deletion on file system group "
-                    + getFileSystemGroupID());
-            for (DeleteStudyOrder order : orders) {
-                deleteStudy.scheduleDeleteOrder(order);
-                fsMgt.removeStudyOnFSRecord(order);
-                minAccessTime = order.getAccessTime();
-                sizeToDel -= fsMgt.getStudySize(order);
-                countStudies++;
-            }
+            do {
+                Collection<DeleteStudyOrder> orders = 
+                        fsMgt.createDeleteOrdersForStudiesOnFSGroup(
+                        fsGroup, minAccessTime, scheduleStudiesForDeletionBatchSize,
+                        externalRetrieveable, storageNotCommited, copyOnMedia,
+                        copyOnFSGroup, copyArchived, copyOnReadOnlyFS);
+                if (orders.isEmpty()) {
+                    log.warn("Could not find any further study for deletion on file system group "
+                            + getFileSystemGroupID());
+                    break;
+                }
+                Iterator<DeleteStudyOrder> orderIter = orders.iterator();
+                do {
+                    DeleteStudyOrder order = orderIter.next();
+                    deleteStudy.scheduleDeleteOrder(order);
+                    fsMgt.removeStudyOnFSRecord(order);
+                    minAccessTime = order.getAccessTime();
+                    sizeToDel -= fsMgt.getStudySize(order);
+                    countStudies++;
+                } while (sizeToDel > 0 && orderIter.hasNext());
+            } while (sizeToDel > 0);
         }
         if (deleteStudiesNotAccessedFor > 0) {
             long notAccessedAfter = System.currentTimeMillis()
@@ -937,19 +939,17 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                 externalRetrieveable, storageNotCommited, copyOnMedia,
                 copyOnFSGroup, copyArchived, copyOnReadOnlyFS);
             if (!orders.isEmpty()) {
-                if (log.isInfoEnabled()) {
-                    log.info("Schedule " + orders.size()
-                            + " studies not accessed since "
-                            + new Date(notAccessedAfter)
-                            + " for deletion on file system group "
-                            + getFileSystemGroupID());
-                }
                 for (DeleteStudyOrder order : orders) {
                     deleteStudy.scheduleDeleteOrder(order);
                     fsMgt.removeStudyOnFSRecord(order);
                     countStudies++;
                 }
             }
+        }
+        if (countStudies > 0) {
+            log.info("Scheduled " + countStudies
+                    + " studies for deletion on file system group "
+                    + getFileSystemGroupID());
         }
         return countStudies;
     }
