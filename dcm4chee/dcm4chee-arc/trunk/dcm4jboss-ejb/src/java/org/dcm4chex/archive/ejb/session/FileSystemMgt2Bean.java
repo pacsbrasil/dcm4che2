@@ -315,9 +315,6 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         for (int offset = 0; ; offset += batchsize) {
             Collection studies = studyHome.findStudiesWithFilesOnFileSystem(fs,
                     offset, batchsize);
-            if (studies.isEmpty()) {
-                break;
-            }
             for (Iterator it = studies.iterator(); it.hasNext();) {
                 StudyLocal study = (StudyLocal) it.next();
                 FileSystemMgt2Local ejb =
@@ -325,11 +322,14 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                 ejb.updateDerivedFieldsForStudy(study, retrieveAETs,
                         availability, availabilityOfExtRetr);
             }
+            if (studies.size() < batchsize) {
+                break;
+            }
         }
     }
 
     /**
-     * @ejb.interface-method
+     * @ejb.interface-method view-type="local"
      * @ejb.transaction type="RequiresNew"
      */
     public boolean updateDerivedFieldsForStudy(StudyLocal study,
