@@ -551,9 +551,10 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                 f.remove();
             }
             if (delStudyFromDB && study.getAllFiles().isEmpty()) {
+                PatientLocal pat = study.getPatient();
                 study.remove();
                 if (delPatientWithoutObjects) {
-                    deletePatientWithoutObjects(study.getPatient());
+                    deletePatientWithoutObjects(pat);
                 }
             } else {
                 Collection seriess = study.getSeries();

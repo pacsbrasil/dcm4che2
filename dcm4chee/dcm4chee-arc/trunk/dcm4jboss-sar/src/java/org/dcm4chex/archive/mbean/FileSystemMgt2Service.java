@@ -922,10 +922,10 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                 Iterator<DeleteStudyOrder> orderIter = orders.iterator();
                 do {
                     DeleteStudyOrder order = orderIter.next();
+                    sizeToDel -= fsMgt.getStudySize(order);
                     deleteStudy.scheduleDeleteOrder(order);
                     fsMgt.removeStudyOnFSRecord(order);
                     minAccessTime = order.getAccessTime();
-                    sizeToDel -= fsMgt.getStudySize(order);
                     countStudies++;
                 } while (sizeToDel > 0 && orderIter.hasNext());
             } while (sizeToDel > 0);
