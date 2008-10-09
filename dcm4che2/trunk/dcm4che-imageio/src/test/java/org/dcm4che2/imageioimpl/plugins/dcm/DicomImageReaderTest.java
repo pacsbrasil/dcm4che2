@@ -67,7 +67,7 @@ public class DicomImageReaderTest extends TestCase {
 	 * Tests the reading of a regular MR instance.
 	 */
 	public void testReadMrAutoWindowing() throws Exception {
-		assertImage("mr.dcm", "mr", 0, null);
+		assertImage("/misc/mr", 0, null);
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class DicomImageReaderTest extends TestCase {
 	public void testReadCtNoAutoWindowing() throws Exception {
 		DicomImageReadParam param = new DicomImageReadParam();
 		param.setAutoWindowing(false);
-		assertImage("ct.dcm", "ct", 0, null);
+		assertImage("/misc/ct", 0, null);
 	}
 
 	/**
@@ -97,7 +97,7 @@ public class DicomImageReaderTest extends TestCase {
 		param.setWindowCenter(10);
 		param.setWindowWidth(100);
 
-		assertImage("ct.dcm", "ct-customwindow", 0, param);
+		assertImage("/misc/ct.dcm", "/misc/ct-customwindow", 0, param);
 	}
 
 	/**
@@ -111,7 +111,7 @@ public class DicomImageReaderTest extends TestCase {
 	 * frame (0).</em>
 	 */
 	public void testReadMultiframe() throws Exception {
-		assertImage("ct-multiframe.dcm", "ct-multiframe-frame2", 1,null);
+		assertImage("/misc/ct-multiframe.dcm", "/misc/ct-multiframe-frame2", 1,null);
 	}
 
 	/**
@@ -119,7 +119,7 @@ public class DicomImageReaderTest extends TestCase {
 	 * interpretation, with Window Center and Window With elements.
 	 */
 	public void testReadMonochrome1() throws Exception {
-		assertImage("cr-monochrome1.dcm", "cr-monochrome1", 0,null);
+		assertImage("/misc/cr-monochrome1", 0,null);
 	}
 
 	/**
@@ -128,8 +128,7 @@ public class DicomImageReaderTest extends TestCase {
 	 * elements.
 	 */
 	public void testReadMonochrome1NoWindow() throws Exception {
-		assertImage("cr-monochrome1-nowindow.dcm",
-				"cr-monochrome1-nowindow", 0, null);
+		assertImage("/misc/cr-monochrome1-nowindow", 0, null);
 	}
 
 	/**
@@ -149,8 +148,8 @@ public class DicomImageReaderTest extends TestCase {
 		param.setWindowCenter(10000);
 		param.setWindowWidth(27000);
 
-		assertImage("cr-monochrome1-nowindow.dcm",
-				"cr-monochrome1-nowindow-customwindow", 0,param);
+		assertImage("/misc/cr-monochrome1-nowindow.dcm",
+				"/misc/cr-monochrome1-nowindow-customwindow", 0,param);
 	}
 
 	/** Reads the default SMPTE image - mlut_01.dcm */
@@ -158,7 +157,7 @@ public class DicomImageReaderTest extends TestCase {
 		if (smpte != null)
 			return smpte;
 		smpte = ImageIO.read(DicomImageReaderTest.class
-				.getResourceAsStream("smpte.png"));
+				.getResourceAsStream("/misc/smpte.png"));
 		return smpte;
 	}
 
@@ -200,10 +199,10 @@ public class DicomImageReaderTest extends TestCase {
 			else if (i == 2)
 				allowedDiff = 2;
 			String imgNumber = String.format("%02d", Integer.valueOf(i));
-			String baseName = "mlut_" + imgNumber;
+			String baseName = "/imgconsistency/mlut_" + imgNumber;
 			String fileName = baseName + ".dcm";
-			BufferedImage img = readDicomImage(fileName, 0, null);
 			System.out.println("Testing image " + fileName);
+			BufferedImage img = readDicomImage(fileName, 0, null);
 			ImageDiff diff = new ImageDiff(getSmpte(), img, baseName,
 					allowedDiff);
 			if (diff.getMaxDiff() > allowedDiff) {
@@ -239,10 +238,10 @@ public class DicomImageReaderTest extends TestCase {
 			if( i==3 ) allowedDiff=3;
 			else if( i==8 ) allowedDiff=5;
 			String imgNumber = String.format("%02d", Integer.valueOf(i));
-			String baseName = "vlut_" + imgNumber;
+			String baseName = "/imgconsistency/vlut_" + imgNumber;
 			String fileName = baseName + ".dcm";
-			BufferedImage img = readDicomImage(fileName, 0, null);
 			System.out.println("Testing image " + fileName);
+			BufferedImage img = readDicomImage(fileName, 0, null);
 			ImageDiff diff = new ImageDiff(getSmpte(), img, baseName,
 					allowedDiff);
 			if (diff.getMaxDiff() > allowedDiff) {
@@ -259,6 +258,10 @@ public class DicomImageReaderTest extends TestCase {
 		}
 	}
 
+	public void assertImage(String baseName, int frameNumber, DicomImageReadParam param) throws Exception {
+		assertImage(baseName+".dcm",baseName, frameNumber, param);
+	}
+	
 	public void assertImage(String resourceLocation, String baseName,
 			int frameNumber, DicomImageReadParam param) throws Exception {
 		BufferedImage dcm = readDicomImage(resourceLocation, frameNumber, param);

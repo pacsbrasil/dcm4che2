@@ -96,7 +96,7 @@ public class DicomImageWriterTest extends TestCase {
      */
     public void testSingleFrameLossless() throws IOException {
         String name = "ct-write";
-        DicomImageReader reader = createImageReader("ct.dcm");
+        DicomImageReader reader = createImageReader("/misc/ct.dcm");
         BufferedImage bi = readRawBufferedImage(reader, 1);
         DicomStreamMetaData newMeta = copyMeta(reader, UID.JPEGLSLossless);
         ImageInputStream iis = writeImage(newMeta, bi, name);
@@ -107,11 +107,11 @@ public class DicomImageWriterTest extends TestCase {
     }
     
     public void testColorMultiFrameLEI() throws IOException {
-        testColorMultiFrame("multicolorLEI", "multicolor.dcm", UID.ImplicitVRLittleEndian );
+        testColorMultiFrame("multicolorLEI", "/misc/multicolor.dcm", UID.ImplicitVRLittleEndian );
     }
 
     public void testColorMultiFrameJPEG() throws IOException {
-        testColorMultiFrame("multicolorJPEG", "multicolorjpeg.dcm", UID.JPEGLossless );
+        testColorMultiFrame("multicolorJPEG", "/misc/multicolorjpeg.dcm", UID.JPEGLossless );
     }
     
     private void testColorMultiFrame(String name, String objectName, String transferSyntax ) throws IOException {
