@@ -39,9 +39,7 @@
 
 package org.dcm4chee.xds.cfg.mbean;
 
-
 import java.io.File;
-import java.util.Properties;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -52,7 +50,6 @@ import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  * A MBean service to manage configurations for XDS services.
@@ -123,10 +120,10 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
 
     static Logger log = LoggerFactory.getLogger(XdsHttpCfgService.class);
 
-    
     protected void startService() {
         XdsHttpCfgDelegate.setXdsRepositoryServiceName(this.getServiceName());
     }
+
     public String getProxyHost() {
         return System.getProperty(HTTP_PROXY_HOST, NONE);
     }
@@ -372,5 +369,4 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
         sb.append("\n  ").append(NW_ADDR_CACHE_NEGATIVE_TTL).append('=').append(System.getProperty(NW_ADDR_CACHE_NEGATIVE_TTL, EMPTY));
         return sb.toString();
     }
-
 }
