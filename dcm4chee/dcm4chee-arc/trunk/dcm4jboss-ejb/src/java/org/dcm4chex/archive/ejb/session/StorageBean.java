@@ -197,8 +197,7 @@ public abstract class StorageBean implements SessionBean {
                 instance = instHome.findBySopIuid(iuid);
                 coerceInstanceIdentity(instance, ds, coercedElements);
             } catch (ObjectNotFoundException onfe) {
-                instance = instHome.create(ds,
-                        getSeries(ds, coercedElements, fs));
+                instance = instHome.create(ds, getSeries(ds, coercedElements));
             }
             FileLocal file = fileHome.create(fileid, tsuid, size, md5, 0,
                     instance, fs);
@@ -377,15 +376,15 @@ public abstract class StorageBean implements SessionBean {
         fileHome.create(fileid, tsuid, size, md5, status, instance, fs);    	
     }
 
-    private SeriesLocal getSeries(Dataset ds, Dataset coercedElements,
-            FileSystemLocal fs) throws Exception {
+    private SeriesLocal getSeries(Dataset ds, Dataset coercedElements)
+            throws Exception {
         final String uid = ds.getString(Tags.SeriesInstanceUID);
         SeriesLocal series;
         try {
             series = findBySeriesIuid(uid);
         } catch (ObjectNotFoundException onfe) {
             try {
-                return seriesHome.create(ds, getStudy(ds, coercedElements, fs));
+                return seriesHome.create(ds, getStudy(ds, coercedElements));
             } catch (CreateException e1) {
                 // check if Series record was inserted by concurrent thread
                 try {
@@ -399,17 +398,14 @@ public abstract class StorageBean implements SessionBean {
         return series;
     }
 
-    private StudyLocal getStudy(Dataset ds, Dataset coercedElements,
-            FileSystemLocal fs) throws Exception {
+    private StudyLocal getStudy(Dataset ds, Dataset coercedElements) throws Exception {
         final String uid = ds.getString(Tags.StudyInstanceUID);
         StudyLocal study;
         try {
             study = studyHome.findByStudyIuid(uid);
         } catch (ObjectNotFoundException onfe) {
             try {
-                study = studyHome.create(ds, getPatient(ds, coercedElements));
-                sofHome.create(study, fs);
-                return study;
+                return studyHome.create(ds, getPatient(ds, coercedElements));
             } catch (CreateException e1) {
                 // check if Study record was inserted by concurrent thread
                 try {
