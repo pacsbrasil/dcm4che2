@@ -38,11 +38,13 @@
 
 package org.dcm4che2.io;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -57,9 +59,11 @@ import org.dcm4che2.media.FileMetaInformation;
 
 public class DicomOutputStreamTest extends TestCase {
 
-    private static File locateFile(String name) {
+    private static InputStream locateFile(String name) {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        return new File(cl.getResource(name).toString().substring(5));
+        InputStream is = cl.getResourceAsStream(name);
+        assert is!=null;
+        return new BufferedInputStream(is);
     }
 
     private static DicomObject load(String fname) throws IOException
@@ -99,7 +103,7 @@ public class DicomOutputStreamTest extends TestCase {
     }
 
     public void testWriteDatasetImplicitVRLE() throws IOException {
-        DicomObject attrs = load("sr_511_ct.dcm");
+        DicomObject attrs = load("sr/511/sr_511_ct.dcm");
         File ofile = new File("target/test-out/sr_511_ct_impl_vr_le.dcm");
         ofile.getParentFile().mkdirs();
         FileOutputStream fos = new FileOutputStream(ofile);
@@ -108,11 +112,11 @@ public class DicomOutputStreamTest extends TestCase {
         dos.setExplicitSequenceLengthIfZero(false);
         dos.writeDataset(attrs, TransferSyntax.ImplicitVRLittleEndian);
         dos.close();
-        assertEquals(locateFile("sr_511_ct.dcm"), ofile);
+        assertEquals(locateFile("sr/511/sr_511_ct.dcm"), ofile);
     }
 
     public void testWriteDatasetExplicitVRLE() throws IOException {
-        DicomObject attrs = load("sr_511_ct.dcm");
+        DicomObject attrs = load("sr/511/sr_511_ct.dcm");
         File ofile = new File("target/test-out/sr_511_ct_expl_vr_le.dcm");
         ofile.getParentFile().mkdirs();
         FileOutputStream fos = new FileOutputStream(ofile);
@@ -120,11 +124,11 @@ public class DicomOutputStreamTest extends TestCase {
         DicomOutputStream dos = new DicomOutputStream(bos);
         dos.writeDataset(attrs, TransferSyntax.ExplicitVRLittleEndian);
         dos.close();
-        assertEquals(locateFile("sr_511_ct_expl_vr_le.dcm"), ofile);
+        assertEquals(locateFile("misc/sr_511_ct_expl_vr_le.dcm"), ofile);
     }
 
     public void testWriteFile() throws IOException {
-        DicomObject attrs = load("sr_511_ct.dcm");
+        DicomObject attrs = load("sr/511/sr_511_ct.dcm");
         File ofile = new File("target/test-out/sr_511_ct_file.dcm");
         ofile.getParentFile().mkdirs();
         FileOutputStream fos = new FileOutputStream(ofile);
@@ -133,11 +137,11 @@ public class DicomOutputStreamTest extends TestCase {
         new FileMetaInformation(attrs).init();
         dos.writeDicomFile(attrs);
         dos.close();
-        assertEquals(locateFile("sr_511_ct_file.dcm"), ofile);
+        assertEquals(locateFile("misc/sr_511_ct_file.dcm"), ofile);
     }
 
     public void testWriteDeflatedFileWithoutPreamble() throws IOException {
-        DicomObject attrs = load("sr_511_ct.dcm");
+        DicomObject attrs = load("sr/511/sr_511_ct.dcm");
         File ofile = new File("target/test-out/sr_511_ct_deflated.dcm");
         ofile.getParentFile().mkdirs();
         FileOutputStream fos = new FileOutputStream(ofile);
@@ -148,10 +152,10 @@ public class DicomOutputStreamTest extends TestCase {
         dos.setPreamble(null);
         dos.writeDicomFile(attrs);
         dos.close();
-        assertEquals(locateFile("sr_511_ct_deflated.dcm"), ofile);
+        assertEquals(locateFile("misc/sr_511_ct_deflated.dcm"), ofile);
     }
 
-    private void assertEquals(File expected, File actual) throws IOException {
+    private void assertEquals(InputStream expected, File actual) throws IOException {
         assertEquals(loadBytes(expected), loadBytes(actual));
     }
 
@@ -163,9 +167,12 @@ public class DicomOutputStreamTest extends TestCase {
     }
 
     private byte[] loadBytes(File f) throws IOException {
-        int remain = (int) f.length();
+    	return loadBytes(new FileInputStream(f));
+    }
+    
+    private byte[] loadBytes(InputStream in) throws IOException {
+        int remain = (int) in.available();
         byte[] b = new byte[remain];
-        FileInputStream in = new FileInputStream(f);
         try {
             while (remain > 0) {
                 remain -= in.read(b, b.length - remain, remain);

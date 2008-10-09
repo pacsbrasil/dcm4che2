@@ -38,8 +38,9 @@
 
 package org.dcm4che2.io;
 
-import java.io.File;
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import junit.framework.TestCase;
 
@@ -48,9 +49,11 @@ import org.dcm4che2.data.DicomObject;
 
 public class DicomInputStreamTest extends TestCase {
 
-    private static File locateFile(String name) {
+    private static InputStream locateFile(String name) {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        return new File(cl.getResource(name).toString().substring(5));
+        InputStream is = cl.getResourceAsStream(name);
+        assert is!=null;
+        return new BufferedInputStream(is);
     }
 
     private static DicomObject load(String fname) throws IOException
@@ -74,7 +77,7 @@ public class DicomInputStreamTest extends TestCase {
 	}
 
     public final void testReadImplicitVRLE() throws IOException {
-        DicomObject attrs = load("view400.dcm");
+        DicomObject attrs = load("misc/view400.dcm");
         assertEquals(37, attrs.size());
     }
     

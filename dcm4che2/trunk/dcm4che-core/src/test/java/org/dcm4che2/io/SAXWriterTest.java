@@ -38,8 +38,10 @@
 
 package org.dcm4che2.io;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerConfigurationException;
@@ -57,9 +59,11 @@ import org.xml.sax.SAXException;
 
 public class SAXWriterTest extends TestCase {
 
-    private static File locateFile(String name) {
+    private static InputStream locateFile(String name) {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        return new File(cl.getResource(name).toString().substring(5));
+        InputStream is = cl.getResourceAsStream(name);
+        assert is!=null;
+        return new BufferedInputStream(is);
     }
 
     private static DicomObject load(String fname) throws IOException
@@ -79,7 +83,7 @@ public class SAXWriterTest extends TestCase {
     public final void testWrite() 
             throws IOException, TransformerConfigurationException, 
             TransformerFactoryConfigurationError, SAXException {
-        DicomObject attrs = load("sr_511_ct.dcm");
+        DicomObject attrs = load("sr/511/sr_511_ct.dcm");
         File ofile = new File("target/test-out/sr_511_ct-1.xml");
         ofile.getParentFile().mkdirs();
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
@@ -100,7 +104,7 @@ public class SAXWriterTest extends TestCase {
         th.getTransformer().setOutputProperty(OutputKeys.INDENT, "yes");
         th.setResult(new StreamResult(ofile));
         SAXWriter w = new SAXWriter(th, th);
-        DicomInputStream dis = new DicomInputStream(locateFile("sr_511_ct.dcm"));
+        DicomInputStream dis = new DicomInputStream(locateFile("sr/511/sr_511_ct.dcm"));
         dis.setHandler(w);
         DicomObject attrs = new BasicDicomObject();
         dis.readDicomObject(attrs, -1);
@@ -119,7 +123,7 @@ public class SAXWriterTest extends TestCase {
         th.getTransformer().setOutputProperty(OutputKeys.INDENT, "yes");
         th.setResult(new StreamResult(ofile));
         SAXWriter w = new SAXWriter(th, th);
-        DicomInputStream dis = new DicomInputStream(locateFile("view400.dcm"));
+        DicomInputStream dis = new DicomInputStream(locateFile("misc/view400.dcm"));
         dis.setHandler(w);
         DicomObject attrs = new BasicDicomObject();
         dis.readDicomObject(attrs, -1);
