@@ -19,7 +19,7 @@
 
    <constructor>
       <description>The default constructor</description>
-      <name>XdsCfgService</name>
+      <name>XdsHttpCfgService</name>
    </constructor>
 
    <attribute access="read-write" getMethod="getProxyHost" setMethod="setProxyHost">
