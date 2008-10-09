@@ -50,3 +50,6 @@ Installation Procedure:
    which requires internet access. If you need a http proxy for internet access
    you can configure http.proxyHost! (see run.conf or run.bat)
 
+8. Only applicable in JDK6 environment:
+   Execute the patch_jdk6_jbossws.bat or patch_jdk6_jbossws.sh script, as appropriate for your operating system.
+   This copies several jar files to JBOSS endorsed directory to avoid conflicts between JDK Webservice Stack and JBOSS WS.
