@@ -1,14 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.dcm4che.test</groupId>
+  <groupId>dcm4che</groupId>
   <artifactId>dcm4che2-test</artifactId>
-  <version>1.2-SNAPSHOT</version>
-  <name>Dicom Image Tests</name>
+  <version>2.0-SNAPSHOT</version>
+  <name>DCM4CHE Test Data and Libraries</name>
   <packaging>pom</packaging>
 
   <modules>
-	  <module>dcm4che2-test-image</module>
+	  <module>dcm4che-test-image</module>
   </modules>
 
    <scm>
