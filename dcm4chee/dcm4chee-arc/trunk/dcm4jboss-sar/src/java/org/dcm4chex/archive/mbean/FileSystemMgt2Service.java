@@ -244,7 +244,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                 deleteOrphanedPrivateFilesInterval,
                 deleteOrphanedPrivateFilesListener);
         server.addNotificationListener(storeScpServiceName,
-                scheduleStudiesForDeletionListener,
+                scheduleStudiesForDeletionOnSeriesStoredListener,
                 SeriesStored.NOTIF_FILTER, null);
     }
 
@@ -256,23 +256,36 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                 deleteOrphanedPrivateFilesListenerID,
                 deleteOrphanedPrivateFilesListener);
         server.removeNotificationListener(storeScpServiceName,
-                scheduleStudiesForDeletionListener,
+                scheduleStudiesForDeletionOnSeriesStoredListener,
                 SeriesStored.NOTIF_FILTER, null);
     }
 
     private final NotificationListener scheduleStudiesForDeletionListener =
             new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
-            new Thread(new Runnable(){
-                public void run() {
-                    try {
-                        scheduleStudiesForDeletion();
-                    } catch (Exception e) {
-                        log.error("Free Disk Space failed:", e);
-                    }
-                }}).start();
+            startScheduleStudiesForDeletion();
         }
     };
+
+    private final NotificationListener scheduleStudiesForDeletionOnSeriesStoredListener =
+            new NotificationListener() {
+    public void handleNotification(Notification notif, Object handback) {
+        if (scheduleStudiesForDeletionOnSeriesStored) {
+            startScheduleStudiesForDeletion();
+        }
+    }
+};
+
+    private void startScheduleStudiesForDeletion() {
+        new Thread(new Runnable(){
+            public void run() {
+                try {
+                    scheduleStudiesForDeletion();
+                } catch (Exception e) {
+                    log.error("Schedule Studies for deletion failed:", e);
+                }
+            }}).start();
+    }
 
     private NotificationListener deleteOrphanedPrivateFilesListener =
             new NotificationListener() {
