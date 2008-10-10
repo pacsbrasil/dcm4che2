@@ -46,6 +46,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
 
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
@@ -57,7 +58,6 @@ import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.Device;
 import org.dcm4che2.net.DimseRSP;
-import org.dcm4che2.net.Executor;
 import org.dcm4che2.net.ExtQueryTransferCapability;
 import org.dcm4che2.net.NetworkApplicationEntity;
 import org.dcm4che2.net.NetworkConnection;

@@ -99,7 +99,7 @@ public class BlockedServletResponseItem implements ServletResponseItem, ResultFr
 		 if( uid==null ) uid = data.getString(Tag.PatientID);
 		 log.info("Adding cfind result "+uid);
 		 dos.writeHeader(Tag.Item, null, -1);
-		 dos.writeDicomObject(data);
+		 dos.writeDicomFile(data);
 		 dos.writeHeader(Tag.ItemDelimitationItem, null, 0);
 	  } 
 	  catch (IOException e) {
