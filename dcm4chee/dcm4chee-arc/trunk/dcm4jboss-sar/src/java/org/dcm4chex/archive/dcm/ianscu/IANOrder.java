@@ -51,7 +51,7 @@ import org.dcm4che.dict.Tags;
  * @since 28.08.2004
  * 
  */
-class IANOrder implements Serializable {
+public class IANOrder implements Serializable {
 
     private static final long serialVersionUID = -9036249052896177876L;
 
