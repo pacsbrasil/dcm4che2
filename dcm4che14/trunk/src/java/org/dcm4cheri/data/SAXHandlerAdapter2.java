@@ -82,7 +82,7 @@ class SAXHandlerAdapter2 extends DefaultHandler {
 
     private final Stack idStack = new Stack();
     
-    private final DcmHandler handler;
+    private final DcmObjectHandlerImpl handler;
     
     private final File baseDir;
 
@@ -93,7 +93,7 @@ class SAXHandlerAdapter2 extends DefaultHandler {
     private String src;
 
     public SAXHandlerAdapter2(final DcmHandler handler, File baseDir) {
-        this.handler = handler;
+        this.handler = (DcmObjectHandlerImpl) handler;
         this.baseDir = baseDir;
     }
 
@@ -170,9 +170,12 @@ class SAXHandlerAdapter2 extends DefaultHandler {
             if (vr == VRs.SQ) {
                 handler.startSequence(0);
                 handler.endSequence(0);
+            } else if (src != null) {
+                handler.value(readData());
+            } else if (parse(true)) {
+                handler.value(getByteData());
             } else {
-	            byte[] data = src != null ? readData() : getData();
-	            handler.value(data, 0, data.length);
+                handler.value(getStringData());
             }
             break;
         case EXPECT_NEXT_ITEM:
@@ -210,7 +213,13 @@ class SAXHandlerAdapter2 extends DefaultHandler {
             handler.endItem(-1);
             break;
         case EXPECT_FRAG:
-            byte[] data =  src != null ? readData() : getData();
+            byte[] data;
+            if (src != null) {
+                data = readData();
+            } else {
+                parse(true);
+                data = getByteData();
+            }
             handler.fragment(id, -1, data, 0, data.length);
             break;
         default:
@@ -238,70 +247,55 @@ class SAXHandlerAdapter2 extends DefaultHandler {
         }
     }
 
-    private void parse(boolean last) {
+    private boolean parse(boolean last) {
         switch (vr) {
         case VRs.AT:
             parseAT(last);
-            break;
+            return true;
         case VRs.FL:
         case VRs.OF:
             parseFL_OF(last);
-            break;
+            return true;
         case VRs.FD:
             parseFD(last);
-            break;
+            return true;
         case VRs.OB:
             parseOB(last);
-            break;
+            return true;
         case VRs.OW:
         case VRs.SS:
         case VRs.US:
             parseOW_SS_US(last);
-            break;
+            return true;
         case VRs.SL:
         case VRs.UL:
             parseSL_UL(last);
-        	break;
+            return true;
         case VRs.UN:
             parseUN(last);
-        	break;
+            return true;
+        }
+        return false;
+    }
+
+    private byte[] getByteData() {
+        if ((out.size() & 1) != 0)
+            out.write(0);
+        try {
+            return out.toByteArray();
+        } finally {
+            out.reset();
         }
     }
 
-    private byte[] getData() {
-        parse(true);
-        byte[] data;
-        switch (vr) {
-        case VRs.SQ:
-            throw new IllegalStateException("vr:SQ");
-        case VRs.AT:
-        case VRs.FL:
-        case VRs.OF:
-        case VRs.FD:
-        case VRs.OB:
-        case VRs.UN:
-        case VRs.OW:
-        case VRs.SS:
-        case VRs.US:
-        case VRs.SL:
-        case VRs.UL:
-            if ((out.size() & 1) != 0) out.write(0);
-	        data = out.toByteArray();
-	        out.reset();
-	        break;
-        default:
-            if ((sb.length() & 1) != 0)
-                    sb.append(vr == VRs.UI ? '\0' : ' ');
-            try {
-                data = sb.toString().getBytes("ISO-8859-1");
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
+    private String getStringData() {
+        try {
+            return sb.toString();
+        } finally {
             sb.setLength(0);
         }
-        return data;
     }
-    
+
     private void parseAT(boolean last) {
         if (sb.length() == 0) return;
         int begin = 0;

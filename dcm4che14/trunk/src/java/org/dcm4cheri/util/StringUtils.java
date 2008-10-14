@@ -259,13 +259,10 @@ public class StringUtils {
     }
 
     static final byte[] b0 = {};
-    public static byte[] parseValue(int vr, String str, Charset cs) {
+    public static byte[] parseValue(int vr, String str) {
         if (str.length() == 0)
             return b0;
         
-        if (VRs.isStringValue(vr)) {
-            return cs.encode(CharBuffer.wrap(str)).array();
-        }
         switch (vr) {
             case VRs.AT:
                 return parseAT(str);

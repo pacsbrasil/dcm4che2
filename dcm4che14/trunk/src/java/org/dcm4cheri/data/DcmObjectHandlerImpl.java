@@ -148,6 +148,15 @@ class DcmObjectHandlerImpl implements org.dcm4che.data.DcmHandler {
                 .setStreamPosition(pos);
     }
     
+
+    void value(byte[] data) throws IOException {
+        value(data, 0, data.length);
+    }
+
+    void value(String data) throws IOException {
+        curDcmObject.putXX(tag, vr, data).setStreamPosition(pos);
+    }
+    
     public void fragment(int id, long pos, byte[] data, int start, int length)
             throws IOException {
         ((DcmElement)seqStack.getLast()).addDataFragment(
@@ -161,5 +170,5 @@ class DcmObjectHandlerImpl implements org.dcm4che.data.DcmHandler {
     
     public void endItem(int len) throws IOException {
         curDcmObject = ((Dataset)curDcmObject).getParent();
-    }    
+    }
 }

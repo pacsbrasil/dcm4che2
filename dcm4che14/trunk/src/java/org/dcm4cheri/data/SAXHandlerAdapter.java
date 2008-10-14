@@ -59,13 +59,13 @@ import org.dcm4cheri.util.StringUtils;
 class SAXHandlerAdapter extends org.xml.sax.helpers.DefaultHandler {
     private static Logger log = Logger.getLogger(SAXHandlerAdapter.class);
 
-    private final DcmHandler handler;
+    private final DcmObjectHandlerImpl handler;
     
     private int vr;
     
     /** Creates a new instance of DatasetXMLAdapter */
     public SAXHandlerAdapter(DcmHandler handler) {
-        this.handler = handler;
+        this.handler = (DcmObjectHandlerImpl) handler;
     }
     
     public void startDocument() throws SAXException
@@ -132,7 +132,7 @@ class SAXHandlerAdapter extends org.xml.sax.helpers.DefaultHandler {
         }
     }
 
-    static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");         
+//    static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");         
     private void element(String tag, String vrStr, String pos)
              throws IOException {
         handler.startElement(
@@ -144,8 +144,11 @@ class SAXHandlerAdapter extends org.xml.sax.helpers.DefaultHandler {
     private void value(String len, String val)
             throws IOException {
         int l = Integer.parseInt(len);
-        byte[] b = StringUtils.parseValue(vr, val, ISO_8859_1);
-        handler.value(b, 0, b.length);
+        if (VRs.isStringValue(vr)) {
+            handler.value(val);
+        } else {
+            handler.value(StringUtils.parseValue(vr, val));
+        }
     }
 
     private void sequence(String tag) throws IOException {
@@ -160,7 +163,7 @@ class SAXHandlerAdapter extends org.xml.sax.helpers.DefaultHandler {
     private void fragment(String id, String pos, String len, String val)
             throws IOException {
         int l = Integer.parseInt(len);
-        byte[] b = StringUtils.parseValue(vr, val, null);
+        byte[] b = StringUtils.parseValue(vr, val);
         handler.fragment(Integer.parseInt(id),
                 pos != null ? Integer.parseInt(pos) : -1, b, 0, l);
     }
