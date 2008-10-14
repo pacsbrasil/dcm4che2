@@ -38,18 +38,15 @@
 
 package org.dcm4cheri.data;
 
+import java.io.IOException;
+
 import org.apache.log4j.Logger;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmHandler;
 import org.dcm4che.dict.VRs;
-
+import org.dcm4cheri.util.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-
-import java.io.IOException;
-import java.nio.charset.Charset;
-
-import org.dcm4cheri.util.StringUtils;
 
 /**
  *
