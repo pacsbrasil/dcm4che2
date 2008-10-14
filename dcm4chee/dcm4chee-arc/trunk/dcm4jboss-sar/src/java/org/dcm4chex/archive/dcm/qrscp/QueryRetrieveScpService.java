@@ -1226,6 +1226,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 DatasetUtils.fromByteArray(info.studyAttrs, DatasetUtils
                         .fromByteArray(info.seriesAttrs, DatasetUtils
                                 .fromByteArray(info.instAttrs))));
+        coerceOutboundCStoreRQ(mergeAttrs);
         byte[] buf = (byte[]) assoc.getProperty(SEND_BUFFER);
         if (buf == null) {
             buf = new byte[bufferSize];
@@ -1240,7 +1241,14 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
         return rq;
     }
-
+    /**
+     * Stub for manipulation of the dataset prior to issuing 
+     * C-STORE rq
+     * @param ds
+     *              the current dataset
+     */
+    protected void coerceOutboundCStoreRQ(Dataset ds){}
+    
     private PresContext selectAcceptedPresContext(Association a, FileInfo info) {
         String[] tsuids = { UIDs.NoPixelDataDeflate, UIDs.NoPixelData,
                 info.tsUID, UIDs.ExplicitVRLittleEndian,
