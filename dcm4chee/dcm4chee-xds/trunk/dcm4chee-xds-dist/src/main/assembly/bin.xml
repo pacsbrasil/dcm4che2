@@ -66,6 +66,13 @@
       </includes>
     </fileSet>
     <fileSet>
+      <directory>../dcm4chee-xdsb-repo/dcm4chee-xdsb-repo-retrieve/target</directory>
+      <outputDirectory>server/default/deploy</outputDirectory>
+      <includes>
+        <include>*.sar</include>
+      </includes>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4chee-xdsb-repo/dcm4chee-xdsb-repo-ws/target</directory>
       <outputDirectory>server/default/deploy</outputDirectory>
       <includes>
