@@ -18,16 +18,20 @@
   </dl>
   </p>]]>
   </description>
+
   <descriptors>
     <persistence persistPolicy="OnUpdate" />
     <persistence-manager
       value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
   </descriptors>
+
   <class>org.dcm4chex.wado.mbean.WADOService</class>
+
   <constructor>
     <description>The default constructor</description>
     <name>WADOService</name>
   </constructor>
+
   <attribute access="read-write" getMethod="getCacheRoot"
     setMethod="setCacheRoot">
     <description>Root directory where jpegs are stored for caching. 
