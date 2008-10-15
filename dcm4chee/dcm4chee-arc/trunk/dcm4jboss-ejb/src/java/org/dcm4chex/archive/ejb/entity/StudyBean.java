@@ -69,7 +69,9 @@ import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
+import org.dcm4chex.archive.util.AETs;
 import org.dcm4chex.archive.util.Convert;
 
 /**
@@ -762,7 +764,18 @@ public abstract class StudyBean implements EntityBean {
 			if (updateModalitiesInStudy(pk, numI)) updated = true;
 		return updated;
     }
-     
+
+    /** 
+     * @ejb.interface-method
+     */
+    public void updateRetrieveAETs(String oldAET, String newAET) {
+        Collection series = getSeries();
+        for (Iterator it = series.iterator(); it.hasNext();) {
+            ((SeriesLocal) it.next()).updateRetrieveAETs(oldAET, newAET);
+        }
+        setRetrieveAETs(AETs.update(getRetrieveAETs(), oldAET, newAET));
+    }
+
     /**
      * @ejb.interface-method
      */

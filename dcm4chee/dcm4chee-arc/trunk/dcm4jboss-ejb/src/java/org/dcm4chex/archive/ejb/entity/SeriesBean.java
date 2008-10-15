@@ -66,6 +66,7 @@ import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
+import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
@@ -75,6 +76,7 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesRequestLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesRequestLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
+import org.dcm4chex.archive.util.AETs;
 import org.dcm4chex.archive.util.Convert;
 
 /**
@@ -786,7 +788,17 @@ public abstract class SeriesBean implements EntityBean {
 			if (updateAvailability(pk, numI)) updated = true;
 		return updated;
     }
-    
+
+    /** 
+     * @ejb.interface-method
+     */
+    public void updateRetrieveAETs(String oldAET, String newAET) {
+        Collection insts = getInstances();
+        for (Iterator it = insts.iterator(); it.hasNext();) {
+            ((InstanceLocal) it.next()).updateRetrieveAETs(oldAET, newAET);
+        }
+        setRetrieveAETs(AETs.update(getRetrieveAETs(), oldAET, newAET));
+    }
 
     private void updateMpps() {
         final String ppsiuid = getPpsIuid();

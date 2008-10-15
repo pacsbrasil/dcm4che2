@@ -285,11 +285,47 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             throws FinderException {
         FileSystemLocal fs =
                 fileSystemHome.findByGroupIdAndDirectoryPath(groupID, dirPath);
-        if (!retrieveAET.equals(fs.getRetrieveAET())) {
+        String oldAET = fs.getRetrieveAET();
+        if (!retrieveAET.equals(oldAET)) {
             fs.setRetrieveAET(retrieveAET);
-            updateDerivedFieldsForStudyOnFileSystem(fs, true, false, 0, limit);
+            updateRetrieveAETForStudyOnFileSystem(fs, oldAET, retrieveAET, limit);
         }
         return fs.toDTO();
+    }
+
+    /**
+     * @ejb.interface-method
+     * @ejb.transaction type="NotSupported"
+     */
+    public int updateFileSystemRetrieveAET(String oldAET, String newAET,
+            int limit) throws FinderException {
+        if (oldAET.equals(newAET)) {
+            return 0;
+        }
+        Collection fss = fileSystemHome.findByRetrieveAET(oldAET);
+        for (Iterator it = fss.iterator(); it.hasNext();) {
+            FileSystemLocal fs = (FileSystemLocal) it.next();
+            fs.setRetrieveAET(newAET);
+            updateRetrieveAETForStudyOnFileSystem(fs, oldAET, newAET, limit);
+        }
+        return fss.size();
+    }
+
+    private void updateRetrieveAETForStudyOnFileSystem(FileSystemLocal fs,
+            String oldAET, String newAET, int batchsize) throws FinderException {
+        for (int offset = 0; ; offset += batchsize) {
+            Collection studies = studyHome.findStudiesWithFilesOnFileSystem(fs,
+                    offset, batchsize);
+            for (Iterator it = studies.iterator(); it.hasNext();) {
+                StudyLocal study = (StudyLocal) it.next();
+                FileSystemMgt2Local ejb =
+                    (FileSystemMgt2Local) ctx.getEJBLocalObject();
+                study.updateRetrieveAETs(oldAET, newAET);
+            }
+            if (studies.size() < batchsize) {
+                break;
+            }
+        }
     }
 
     /**
@@ -303,14 +339,13 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                 fileSystemHome.findByGroupIdAndDirectoryPath(groupID, dirPath);
         if (fs.getAvailability() != availability) {
             fs.setAvailability(availability);
-            updateDerivedFieldsForStudyOnFileSystem(fs, false, true,
-                    availabilityOfExtRetr, limit);
+            updateAvailabilityForStudyOnFileSystem(fs, availabilityOfExtRetr,
+                    limit);
         }
         return fs.toDTO();
     }
 
-    private void updateDerivedFieldsForStudyOnFileSystem(FileSystemLocal fs,
-            boolean retrieveAETs, boolean availability,
+    private void updateAvailabilityForStudyOnFileSystem(FileSystemLocal fs,
             int availabilityOfExtRetr, int batchsize) throws FinderException {
         for (int offset = 0; ; offset += batchsize) {
             Collection studies = studyHome.findStudiesWithFilesOnFileSystem(fs,
@@ -319,8 +354,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                 StudyLocal study = (StudyLocal) it.next();
                 FileSystemMgt2Local ejb =
                     (FileSystemMgt2Local) ctx.getEJBLocalObject();
-                ejb.updateDerivedFieldsForStudy(study, retrieveAETs,
-                        availability, availabilityOfExtRetr);
+                ejb.updateAvailabilityForStudy(study, availabilityOfExtRetr);
             }
             if (studies.size() < batchsize) {
                 break;
@@ -332,8 +366,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
      * @ejb.interface-method view-type="local"
      * @ejb.transaction type="RequiresNew"
      */
-    public boolean updateDerivedFieldsForStudy(StudyLocal study,
-            boolean retrieveAETs, boolean availability,
+    public boolean updateAvailabilityForStudy(StudyLocal study,
             int availabilityOfExtRetr) throws FinderException {
         Collection series = study.getSeries();
         boolean updated = false;
@@ -344,21 +377,19 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             boolean updateSeries = false;
             for (Iterator instit = insts.iterator(); instit.hasNext();) {
                 InstanceLocal inst = (InstanceLocal) instit.next();
-                if (inst.updateDerivedFields(retrieveAETs, availability,
+                if (inst.updateDerivedFields(false, true,
                         availabilityOfExtRetr)) {
                     updateSeries = updated = true;
                 }
             }
             if (updateSeries) {
-                if (ser.updateDerivedFields(false, retrieveAETs, false, false,
-                    availability)) {
+                if (ser.updateDerivedFields(false, false, false, false, true)) {
                     updateStudy = true;
                 }
             }
         }
         if (updateStudy) {
-            study.updateDerivedFields(false, retrieveAETs, false, false,
-                    availability, false);
+            study.updateDerivedFields(false, false, false, false, true, false);
         }
         return updated;
     }
