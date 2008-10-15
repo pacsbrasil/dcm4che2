@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 
 import javax.ejb.FinderException;
@@ -52,8 +51,8 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import org.dcm4chex.archive.common.Availability;
-import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
+import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DeleterThresholds;
 import org.dcm4chex.archive.config.RetryIntervalls;
