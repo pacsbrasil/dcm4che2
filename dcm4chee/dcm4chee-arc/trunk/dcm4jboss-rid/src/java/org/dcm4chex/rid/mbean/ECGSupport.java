@@ -74,189 +74,247 @@ import org.dcm4chex.rid.mbean.ecg.xml.SVGCreator;
 
 /**
  * @author franz.willer
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * 
+ *         TODO To change the template for this generated type comment go to
+ *         Window - Preferences - Java - Code Style - Code Templates
  */
 public class ECGSupport {
 
-	public static final String CONTENT_TYPE_SVGXML = "image/svg+xml";
-	private static Logger log = Logger.getLogger( ECGSupport.class.getName() );
-	
-    private static final DcmObjectFactory factory = DcmObjectFactory.getInstance();
-	private RIDSupport ridSupport;
-	
-    private final Driver fop = new Driver();
-	
-	private RIDStorageDelegate storage = RIDStorageDelegate.getInstance();
+    public static final String CONTENT_TYPE_SVGXML = "image/svg+xml";
+    private static Logger log = Logger.getLogger(ECGSupport.class.getName());
 
-    public ECGSupport( RIDSupport ridSupport ) {
-    	this.ridSupport = ridSupport;
+    private static final DcmObjectFactory factory = DcmObjectFactory
+            .getInstance();
+    private RIDSupport ridSupport;
+
+    private final Driver fop = new Driver();
+
+    private RIDStorageDelegate storage = RIDStorageDelegate.getInstance();
+
+    public ECGSupport(RIDSupport ridSupport) {
+        this.ridSupport = ridSupport;
     }
-	/**
-	 * @param reqObj
-	 * @param ds
-	 * @return
-	 */
-	public RIDResponseObject getECGDocument(RIDRequestObject reqObj, Dataset ds) {
-		String contentType = reqObj.getParam("preferredContentType");
-		if ( contentType.equals( CONTENT_TYPE_SVGXML ) || contentType.equals( "image/svg" )) {
-			contentType = CONTENT_TYPE_SVGXML;
-			if ( ridSupport.checkContentType( reqObj, new String[]{ CONTENT_TYPE_SVGXML } ) == null ) {
-				return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
-			}
-		} else if ( contentType.equals( RIDSupport.CONTENT_TYPE_PDF) ) {
-			if ( ridSupport.checkContentType( reqObj, new String[]{ RIDSupport.CONTENT_TYPE_PDF } ) == null ) {
-				return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_BAD_REQUEST, "Display actor doesnt accept preferred content type!");
-			}
-		} else {
-			return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_ACCEPTABLE, "preferredContentType '"+contentType+"' is not supported! Only 'application/pdf' and 'image/svg+xml' are supported !");
-		}
-		String docUID = reqObj.getParam("documentUID");
-		log.info("get ECG document! docUID:"+docUID);
-		BaseDocument doc = storage.getDocument( docUID, contentType );
-		try {
-			if ( doc != null ) {
-				return new RIDStreamResponseObjectImpl( doc.getInputStream(), contentType, HttpServletResponse.SC_OK, null);
-			}
-		} catch (Exception x) {
-			log.error("Getting InputStream for RID Response of document "+docUID+" failed!",x);
-		}
-		try {
-			Dataset fullDS = getDataset( ds );
-			doc = storage.createDocument( docUID, contentType );
-			if ( fullDS == null ) {
-				return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Requested document not found::"+ds.getString( Tags.SOPClassUID ) );
-			} else {
-				if ( contentType.equals( RIDSupport.CONTENT_TYPE_PDF ) ) {
-					return handlePDF( fullDS, doc );
-				} else {
-					return handleSVG( fullDS, doc );
-				}
-			}
-		} catch (Exception e) {
-			return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error:"+e.getMessage() );
-		} 
-	}
-	
-	/**
-	 * @param string
-	 * @return
+
+    /**
+     * @param reqObj
+     * @param ds
+     * @return
+     */
+    public RIDResponseObject getECGDocument(RIDRequestObject reqObj, Dataset ds) {
+        String contentType = reqObj.getParam("preferredContentType");
+        if (contentType.equals(CONTENT_TYPE_SVGXML)
+                || contentType.equals("image/svg")) {
+            contentType = CONTENT_TYPE_SVGXML;
+            if (ridSupport.checkContentType(reqObj,
+                    new String[] { CONTENT_TYPE_SVGXML }) == null) {
+                return new RIDStreamResponseObjectImpl(null,
+                        RIDSupport.CONTENT_TYPE_HTML,
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "Display actor doesnt accept preferred content type!");
+            }
+        } else if (contentType.equals(RIDSupport.CONTENT_TYPE_PDF)) {
+            if (ridSupport.checkContentType(reqObj,
+                    new String[] { RIDSupport.CONTENT_TYPE_PDF }) == null) {
+                return new RIDStreamResponseObjectImpl(null,
+                        RIDSupport.CONTENT_TYPE_HTML,
+                        HttpServletResponse.SC_BAD_REQUEST,
+                        "Display actor doesnt accept preferred content type!");
+            }
+        } else {
+            return new RIDStreamResponseObjectImpl(
+                    null,
+                    RIDSupport.CONTENT_TYPE_HTML,
+                    HttpServletResponse.SC_NOT_ACCEPTABLE,
+                    "preferredContentType '"
+                            + contentType
+                            + "' is not supported! Only 'application/pdf' and 'image/svg+xml' are supported !");
+        }
+        String docUID = reqObj.getParam("documentUID");
+        log.info("get ECG document! docUID:" + docUID);
+        BaseDocument doc = storage.getDocument(docUID, contentType);
+        try {
+            if (doc != null) {
+                return new RIDStreamResponseObjectImpl(doc.getInputStream(),
+                        contentType, HttpServletResponse.SC_OK, null);
+            }
+        } catch (Exception x) {
+            log.error("Getting InputStream for RID Response of document "
+                    + docUID + " failed!", x);
+        }
+        try {
+            Dataset fullDS = getDataset(ds);
+            doc = storage.createDocument(docUID, contentType);
+            if (fullDS == null) {
+                return new RIDStreamResponseObjectImpl(null,
+                        RIDSupport.CONTENT_TYPE_HTML,
+                        HttpServletResponse.SC_NOT_FOUND,
+                        "Requested document not found::"
+                                + ds.getString(Tags.SOPClassUID));
+            } else {
+                if (contentType.equals(RIDSupport.CONTENT_TYPE_PDF)) {
+                    return handlePDF(fullDS, doc);
+                } else {
+                    return handleSVG(fullDS, doc);
+                }
+            }
+        } catch (Exception e) {
+            return new RIDStreamResponseObjectImpl(null,
+                    RIDSupport.CONTENT_TYPE_HTML,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Internal server error:" + e.getMessage());
+        }
+    }
+
+    /**
+     * @param string
+     * @return
      * @throws NeedRedirectionException
      * @throws IOException
-	 */
-	private Dataset getDataset(Dataset ds) throws IOException {
-		String iuid = ds.getString( Tags.SOPInstanceUID );
-		File file = ridSupport.getDICOMFile( iuid );
-		if ( log.isDebugEnabled() ) log.debug("DCM file for "+ds.getString( Tags.SOPInstanceUID )+":"+file);
-		if ( file == null ) return null;
-		Dataset dsFile;
-		if ( ! ridSupport.isUseOrigFile()   ) {
-			
-				DataSource dsrc = null;
-				try {
-					dsrc = (DataSource) ridSupport.getMBeanServer().invoke(ridSupport.getFileSystemMgtName(),
-			                "getDatasourceOfInstance",
-			                new Object[] { iuid },
-			                new String[] { String.class.getName() } );
-			        
-			    } catch (Exception e) {
-			        log.error("Failed to get updated DICOM file", e);
-			    }
-			    file = new File( file + ".dcm" );
-			    file.deleteOnExit();
-			    OutputStream os = new BufferedOutputStream( new FileOutputStream( file ) );
-			    dsrc.writeTo( os, null);
-			    os.close();
-			    dsFile =loadDataset(file);
-			    file.delete();
-			}
-		else {
-			dsFile = loadDataset(file);
-		}
-		return dsFile;
-	}
-	private Dataset loadDataset(File file) throws IOException {
-	    BufferedInputStream bis = new BufferedInputStream( new FileInputStream(file));
-	    Dataset ds = factory.newDataset();
-	    try {
-	        ds.readFile(bis, null, -1); 
-	    } finally {
-	        try {
-	            bis.close();
-	        } catch (IOException ignore) {
-	        }
-	    }
-	    if ( log.isDebugEnabled() ) log.debug("Dataset for file "+file+" :"+ds);
-	    return ds;
+     */
+    private Dataset getDataset(Dataset ds) throws IOException {
+        String iuid = ds.getString(Tags.SOPInstanceUID);
+        File file = ridSupport.getDICOMFile(iuid);
+        if (log.isDebugEnabled())
+            log.debug("DCM file for " + ds.getString(Tags.SOPInstanceUID) + ":"
+                    + file);
+        if (file == null)
+            return null;
+        Dataset dsFile;
+        if (!ridSupport.isUseOrigFile()) {
+            DataSource dsrc = null;
+            try {
+                dsrc = (DataSource) ridSupport.getMBeanServer().invoke(
+                        ridSupport.getFileSystemMgtName(),
+                        "getDatasourceOfInstance", new Object[] { iuid },
+                        new String[] { String.class.getName() });
+            } catch (Exception e) {
+                log.error("Failed to get updated DICOM file", e);
+            }
+            file = new File(file + ".dcm");
+            file.deleteOnExit();
+            OutputStream os = new BufferedOutputStream(new FileOutputStream(
+                    file));
+            dsrc.writeTo(os, null);
+            os.close();
+            dsFile = loadDataset(file);
+            file.delete();
+        } else {
+            dsFile = loadDataset(file);
+        }
+        return dsFile;
     }
-	
+
+    private Dataset loadDataset(File file) throws IOException {
+        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(
+                file));
+        Dataset ds = factory.newDataset();
+        try {
+            ds.readFile(bis, null, -1);
+        } finally {
+            try {
+                bis.close();
+            } catch (IOException ignore) {
+            }
+        }
+        if (log.isDebugEnabled())
+            log.debug("Dataset for file " + file + " :" + ds);
+        return ds;
+    }
+
     /**
-	 * @param ds
+     * @param ds
      * @param outFile
-	 * @return
-     * @throws IOException 
-	 */
-	private RIDResponseObject handleSVG(Dataset ds, BaseDocument doc) throws IOException {
-		OutputStream out = doc.getOutputStream();
-		try { 
-			DcmElement elem = ds.get( Tags.WaveformSeq);
-			WaveformGroup wfgrp = new WaveformGroup( ds.getString(Tags.SOPClassUID), elem, 0, 
-					ridSupport.getWaveformCorrection() );//TODO all groups
-			if ( log.isDebugEnabled() ) log.debug( wfgrp );
-			WaveformInfo wfInfo = new WaveformInfo( ds );
+     * @return
+     * @throws IOException
+     */
+    private RIDResponseObject handleSVG(Dataset ds, BaseDocument doc)
+            throws IOException {
+        OutputStream out = doc.getOutputStream();
+        try {
+            DcmElement elem = ds.get(Tags.WaveformSeq);
+            WaveformGroup wfgrp = new WaveformGroup(ds
+                    .getString(Tags.SOPClassUID), elem, 0, ridSupport
+                    .getWaveformCorrection());// TODO all groups
+            if (log.isDebugEnabled())
+                log.debug(wfgrp);
+            WaveformInfo wfInfo = new WaveformInfo(ds);
 
-			SVGCreator svgCreator = new SVGCreator( wfgrp, wfInfo, new Float( 27.6f ), new Float(20.3f) );
-			svgCreator.toXML( out );
-			out.close();
-			return new RIDStreamResponseObjectImpl( doc.getInputStream(), CONTENT_TYPE_SVGXML, HttpServletResponse.SC_OK, null);
-		} catch ( Throwable t ) {
-			if ( out != null )
-				try {
-					out.close();
-				} catch (IOException e) {}
-			log.error("Cant create SVG for Waveform!", t);
-			log.error("Waveform Dataset:");log.error(ds);
-			return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error while creating waveform SVG! Reason:"+t.getMessage());
-		}
-	}
-	
-	private RIDResponseObject handlePDF(Dataset ds, BaseDocument doc) throws IOException {
-		OutputStream out = doc.getOutputStream();
-		OutputStream tmpOut = null;
-		File tmpFile = null;
-		try { 
-	        tmpFile = File.createTempFile("fop_", null);
-	        tmpFile.deleteOnExit();
-	        tmpOut = new FileOutputStream( tmpFile);
-	        
-			DcmElement elem = ds.get( Tags.WaveformSeq);
-			WaveformGroup[] wfgrps = getWaveformGroups(elem, ds.getString(Tags.SOPClassUID));
-			WaveformInfo wfInfo = new WaveformInfo( ds );
+            SVGCreator svgCreator = new SVGCreator(wfgrp, wfInfo, new Float(
+                    27.6f), new Float(20.3f));
+            svgCreator.toXML(out);
+            out.close();
+            return new RIDStreamResponseObjectImpl(doc.getInputStream(),
+                    CONTENT_TYPE_SVGXML, HttpServletResponse.SC_OK, null);
+        } catch (Throwable t) {
+            if (out != null)
+                try {
+                    out.close();
+                } catch (IOException e) {
+                }
+            log.error("Cant create SVG for Waveform!", t);
+            log.error("Waveform Dataset:");
+            log.error(ds);
+            return new RIDStreamResponseObjectImpl(null,
+                    RIDSupport.CONTENT_TYPE_HTML,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Error while creating waveform SVG! Reason:"
+                            + t.getMessage());
+        }
+    }
 
-			FOPCreator fopCreator = new FOPCreator( wfgrps, wfInfo, new Float( 28.6f ), new Float(20.3f) );
-			fopCreator.toXML( tmpOut );
-	        tmpOut.close();
-	        fop.setRenderer(Driver.RENDER_PDF);
-	        fop.setOutputStream( out );
-			SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
-	        Transformer t = tf.newTransformer();
-	        t.transform(new StreamSource( new FileInputStream(tmpFile)), new SAXResult( fop.getContentHandler() ) );
-	        out.close();
-			tmpFile.delete();
-			InputStream in = doc.getInputStream();
-			return new RIDStreamResponseObjectImpl(in, in.available(), RIDSupport.CONTENT_TYPE_PDF, HttpServletResponse.SC_OK, null);
-		} catch ( Throwable t ) {
-			try {
-				if ( out != null ) out.close();
-				if ( tmpOut != null ) tmpOut.close();
-			} catch (IOException e) {}
- 			if ( tmpFile.exists() ) tmpFile.delete();
-			log.error("Cant create PDF for Waveform!", t);
-			log.error("Waveform Dataset:");log.error(ds);
-			return new RIDStreamResponseObjectImpl( null, RIDSupport.CONTENT_TYPE_HTML, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error while creating waveform PDF! Reason:"+t.getMessage());
-		}
-	}
+    private RIDResponseObject handlePDF(Dataset ds, BaseDocument doc)
+            throws IOException {
+        OutputStream out = doc.getOutputStream();
+        OutputStream tmpOut = null;
+        File tmpFile = null;
+        try {
+            tmpFile = File.createTempFile("fop_", null);
+            tmpFile.deleteOnExit();
+            tmpOut = new FileOutputStream(tmpFile);
+
+            DcmElement elem = ds.get(Tags.WaveformSeq);
+            WaveformGroup[] wfgrps = getWaveformGroups(elem, ds
+                    .getString(Tags.SOPClassUID));
+            WaveformInfo wfInfo = new WaveformInfo(ds);
+
+            FOPCreator fopCreator = new FOPCreator(wfgrps, wfInfo, new Float(
+                    28.6f), new Float(20.3f));
+            fopCreator.toXML(tmpOut);
+            tmpOut.close();
+            fop.setRenderer(Driver.RENDER_PDF);
+            fop.setOutputStream(out);
+            SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory
+                    .newInstance();
+            Transformer t = tf.newTransformer();
+            t.transform(new StreamSource(new FileInputStream(tmpFile)),
+                    new SAXResult(fop.getContentHandler()));
+            out.close();
+            tmpFile.delete();
+            InputStream in = doc.getInputStream();
+            return new RIDStreamResponseObjectImpl(in, in.available(),
+                    RIDSupport.CONTENT_TYPE_PDF, HttpServletResponse.SC_OK,
+                    null);
+        } catch (Throwable t) {
+            try {
+                if (out != null)
+                    out.close();
+                if (tmpOut != null)
+                    tmpOut.close();
+            } catch (IOException e) {
+            }
+            if (tmpFile.exists())
+                tmpFile.delete();
+            log.error("Cant create PDF for Waveform!", t);
+            log.error("Waveform Dataset:");
+            log.error(ds);
+            return new RIDStreamResponseObjectImpl(null,
+                    RIDSupport.CONTENT_TYPE_HTML,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Error while creating waveform PDF! Reason:"
+                            + t.getMessage());
+        }
+    }
+
     /**
      * @param cuid
      * @param elem
@@ -265,19 +323,23 @@ public class ECGSupport {
     private WaveformGroup[] getWaveformGroups(DcmElement elem, String cuid) {
         float corr = ridSupport.getWaveformCorrection();
         int nrOfWFGroups = elem.countItems();
-        if ( nrOfWFGroups == 1) 
-            return new WaveformGroup[]{new WaveformGroup( cuid,elem, 0, corr)};//dont check the only one
-        
+        if (nrOfWFGroups == 1)
+            return new WaveformGroup[] { new WaveformGroup(cuid, elem, 0, corr) };// dont
+                                                                                  // check
+                                                                                  // the
+                                                                                  // only
+                                                                                  // one
+
         ArrayList l = new ArrayList(nrOfWFGroups);
-        for ( int i = 0 ; i < nrOfWFGroups ; i++ ) {
+        for (int i = 0; i < nrOfWFGroups; i++) {
             try {
-                l.add( new WaveformGroup( cuid,elem, i, corr) );
+                l.add(new WaveformGroup(cuid, elem, i, corr));
             } catch (Exception x) {
-                log.warn("Item "+i+" in Waveform Sequence is not valid! Ignored!!");
+                log.warn("Item " + i
+                        + " in Waveform Sequence is not valid! Ignored!!");
             }
         }
         return (WaveformGroup[]) l.toArray(new WaveformGroup[l.size()]);
     }
-	
-	
+
 }
