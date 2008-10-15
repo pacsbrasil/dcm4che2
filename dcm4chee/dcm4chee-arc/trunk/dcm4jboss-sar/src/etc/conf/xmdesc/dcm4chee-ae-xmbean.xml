@@ -68,6 +68,104 @@
       <name>CacheSize</name>
       <type>int</type>
    </attribute>
+
+   <attribute access="read-write"
+      getMethod="getUpdateStudiesBatchSize"
+      setMethod="setUpdateStudiesBatchSize">
+      <description><![CDATA[Defines maximal number of studies fetched from the
+        data base in one transaction by operation <i>updateAETitle</i>
+        for update of <i>RetrieveAETs</i> values in Study, Series and Instance
+        records.]]>
+      </description>
+      <name>UpdateStudiesBatchSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1000"/>
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getOtherServiceAETAttrs"
+      setMethod="setOtherServiceAETAttrs">
+      <description><![CDATA[List of AE Title attributes of other services
+      which are updated by operation updateAETitle.
+       ]]>
+      </description>
+      <name>OtherServiceAETitleAttributesToUpdate</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="
+         dcm4chee.archive:service=AuditLogger#SupressLogForAETitles
+         dcm4chee.archive:service=AuditLogger#LocalAETitles
+         dcm4chee.archive:service=CheckStudyPatientService#SourceAET
+         dcm4chee.archive:service=ContentEditService#CalledAETitle
+         dcm4chee.archive:service=ContentEditService#CallingAETitle
+         dcm4chee.archive:service=ECHOService#CallingAETitle
+         dcm4chee.archive:service=ExportManager#CallingAETitle
+         dcm4chee.archive:service=Forward#ForwardModifiedToAETitles
+         dcm4chee.archive:service=FileSystemMgt,group=ONLINE_STORAGE#DefaultRetrieveAETitle
+         dcm4chee.archive:service=FileSystemMgt#RetrieveAETitle
+         dcm4chee.archive:service=GPWLScp#CalledAETitles
+         dcm4chee.archive:service=GPWLScp#CallingAETitles
+         dcm4chee.archive:service=GPWLScu#CallingAETitle
+         dcm4chee.archive:service=GPWLScu#CalledAETitle
+         dcm4chee.archive:service=HPScp#CalledAETitles
+         dcm4chee.archive:service=HPScp#CallingAETitles
+         dcm4chee.archive:service=IANScu#NotifiedAETitles
+         dcm4chee.archive:service=IANScu#CallingAETitle
+         dcm4chee.archive:service=MCMScu#CallingAETitle
+         dcm4chee.archive:service=MCMScu#RetrieveAETitle
+         dcm4chee.archive:service=MCMScu#MoveDestinationAETitle
+         dcm4chee.archive:service=MCMScu#McmScpAETitle
+         dcm4chee.archive:service=MoveScu#CallingAETitle
+         dcm4chee.archive:service=MoveScu#CalledAETitle
+         dcm4chee.archive:service=MPPSEmulator#ModalityAETitles
+         dcm4chee.archive:service=MPPSEmulator#CalledAETitle
+         dcm4chee.archive:service=MPPSScp#CalledAETitles
+         dcm4chee.archive:service=MPPSScp#CallingAETitles
+         dcm4chee.archive:service=MPPSScu#ForwardAETitles
+         dcm4chee.archive:service=MPPSScu#CallingAETitle
+         dcm4chee.archive:service=MWLFindScp#CalledAETitles
+         dcm4chee.archive:service=MWLFindScp#CallingAETitles
+         dcm4chee.archive:service=MWLFindScp#LogAETitles
+         dcm4chee.archive:service=MWLScu#CallingAETitle
+         dcm4chee.archive:service=MWLScu#CalledAETitle
+         dcm4chee.archive:service=PPSScu#DestinationAETitles
+         dcm4chee.archive:service=PPSScu#CallingAETitle
+         dcm4chee.archive:service=Prefetch#PrefetchSourceAETitle
+         dcm4chee.archive:service=Prefetch#DestinationQueryAETitle
+         dcm4chee.archive:service=Prefetch#DestinationStorageAETitle
+         dcm4chee.archive:service=Prefetch#CallingAETitle
+         dcm4chee.archive:service=QueryRetrieveScp#CalledAETitles
+         dcm4chee.archive:service=QueryRetrieveScp#CallingAETitles
+         dcm4chee.archive:service=QueryRetrieveScp#SendWithDefaultTransferSyntaxToAETitles
+         dcm4chee.archive:service=QueryRetrieveScp#SendNoPixelDataToAETitles
+         dcm4chee.archive:service=QueryRetrieveScp#IgnoreUnsupportedSOPClassFailures
+         dcm4chee.archive:service=QueryRetrieveScp#PIXQueryCallingAETitles
+         dcm4chee.archive:service=QueryRetrieveScp#CoerceRequestPatientIdsAETitles
+         dcm4chee.archive:service=QueryRetrieveScp#UnrestrictedQueryPermissionsToAETitles
+         dcm4chee.archive:service=QueryRetrieveScp#UnrestrictedReadPermissionsToAETitles
+         dcm4chee.archive:service=QueryRetrieveScp#UnrestrictedExportPermissionsToAETitles
+         dcm4chee.archive:service=QueryRetrieveScp#RequestStorageCommitFromAETitles
+         dcm4chee.archive:service=QueryRetrieveScp#LogAETitles
+         dcm4chee.archive:service=StgCmtScuScp#CalledAETitles
+         dcm4chee.archive:service=StgCmtScuScp#CallingAETitles
+         dcm4chee.archive:service=StoreScp#CalledAETitles
+         dcm4chee.archive:service=StoreScp#CallingAETitles
+         dcm4chee.archive:service=StoreScp#UnrestrictedAppendPermissionsToAETitles
+         dcm4chee.archive:service=StoreScp#WarnForCoercedAETitles
+         dcm4chee.archive:service=StoreScp#IgnorePatientIDAETitles
+         dcm4chee.archive:service=StoreScp#LogAETitles
+         dcm4chee.archive:service=StudyReconciliation#FindSCPAETitle
+         dcm4chee.archive:service=StudyReconciliation#CallingAETitle
+         dcm4chee.archive:service=StudyMgtScp#CalledAETitles
+         dcm4chee.archive:service=StudyMgtScp#CallingAETitles
+         dcm4chee.archive:service=StudyMgtScu#CallingAETitle
+         dcm4chee.archive:service=XDS-I#DocRepositoryAET
+         " />
+      </descriptors>
+   </attribute>
+
    <attribute access="read-write" getMethod="getAuditLoggerName" setMethod="setAuditLoggerName">
       <description>Used internally. Do not modify.
       </description>
@@ -266,26 +364,35 @@
      </parameter>
      <return-type>void</return-type>
 	</operation>
-  <operation impact="ACTION">
-     <description>Update AE Title of existing AE configuration</description>
-     <name>updateAETitle</name>
-     <parameter>
-       <description>AE Title to change</description>
-       <name>prevAET</name>
-       <type>java.lang.String</type>
-     </parameter>
-     <parameter>
-       <description>new AE Title</description>
-       <name>newAET</name>
-       <type>java.lang.String</type>
-     </parameter>
-     <return-type>boolean</return-type>
-	</operation>
 	
+   <operation impact="ACTION">
+      <description><![CDATA[Update specified AE Title to new value in AE
+        Configuration and in all service attributes listed by attribute
+        <b>OtherServiceAETitleAttributesToUpdate</b>. If the specified AE Title
+        is associated with a file system, also the Retrieve AE Title of the
+        file system is updated to the new value as the Retrieve AE Titles
+        associated with Instances, Series and Studies that have files on these
+        files systems.]]>
+      </description>
+      <name>updateAETitle</name>
+      <parameter>
+        <description>AE Title to update.</description>
+        <name>prevAET</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>new AE Title.</description>
+        <name>newAET</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+
   <operation impact="ACTION">
      <description>Clear AE Cache</description>
      <name>clearCache</name>
   </operation>
-	&defaultOperations;
+
+  &defaultOperations;
 </mbean>
 

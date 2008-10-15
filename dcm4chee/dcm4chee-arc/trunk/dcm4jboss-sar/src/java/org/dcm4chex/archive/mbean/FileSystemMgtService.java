@@ -65,7 +65,6 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.management.Attribute;
-import javax.management.AttributeNotFoundException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
@@ -205,10 +204,6 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     private String timerIDCheckFilesToPurge;
 
     private String timerIDCheckFreeDiskSpace;
-    
-    private ObjectName[] otherServiceNames = {};
-
-    private String[] otherServiceAETAttrs = {};
 
     private final NotificationListener purgeFilesListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
@@ -716,36 +711,6 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     public void setTimerIDCheckFreeDiskSpace(String timerIDCheckFreeDiskSpace) {
         this.timerIDCheckFreeDiskSpace = timerIDCheckFreeDiskSpace;
-    }
-   
-    public final String getOtherServiceAETAttrs() {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < otherServiceNames.length; i++) {
-            sb.append(otherServiceNames[i].toString()).append('#').append(
-                    otherServiceAETAttrs[i]).append("\r\n");
-        }
-        return sb.toString();
-    }
-
-    public final void setOtherServiceAETAttrs(String s) {
-        StringTokenizer stk = new StringTokenizer(s, "\r\n\t ");
-        int count = stk.countTokens();
-        ObjectName[] names = new ObjectName[count];
-        String[] attrs = new String[count];
-        String tk = null;
-        try {
-            int endName;
-            for (int i = 0; i < names.length; i++) {
-                tk = stk.nextToken();
-                endName = tk.indexOf('#');
-                names[i] = new ObjectName(tk.substring(0, endName));
-                attrs[i] = tk.substring(endName+1);
-            }
-        } catch (Exception e) {
-            throw new IllegalArgumentException(tk);
-        }
-        otherServiceNames = names;
-        otherServiceAETAttrs = attrs;
     }
 
     protected void startService() throws Exception {
@@ -1571,67 +1536,6 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         } else {
             return false;
         }
-
-    }
-    
-    public int updateAETitle(String prevAET, String newAET) 
-            throws Exception {
-        int count = 0;
-        for (int i = 0; i < otherServiceNames.length; i++) {
-            if (server.isRegistered(otherServiceNames[i])) {
-                if (updateAETitle(otherServiceNames[i], otherServiceAETAttrs[i],
-                        prevAET, newAET)) {
-                    ++count;
-                }
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Service: " + otherServiceNames[i]
-                      + " not registered -> cannot update AETitle in attribute: "
-                      + otherServiceNames[i] + "#" + otherServiceAETAttrs[i]);
-                }
-            }
-        }
-        server.invoke(aeServiceName, "updateAETitle", 
-                new Object[]{ prevAET, newAET },
-                new String[]{ 
-                    String.class.getName(), 
-                    String.class.getName()});
-        return count;
-    }
-    
-    private boolean updateAETitle(ObjectName name, String attr,
-            String prevAET, String newAET) throws Exception {
-        try {
-            String val = (String) server.getAttribute(name, attr);
-            String[] aets = StringUtils.split(val, '\\');
-            boolean modified = false;
-            for (int i = 0; i < aets.length; i++) {
-                if (aets[i].equals(prevAET)) {
-                    aets[i] = newAET;
-                    modified = true;
-                }
-            }
-            if (modified) {
-                server.setAttribute(name, 
-                        new Attribute(attr, StringUtils.toString(aets, '\\')));
-                log.info("Update AETitle in attribute: " + name + "#" + attr);
-            }
-            return modified;
-        } catch (AttributeNotFoundException e) {
-            log.info("No such attribute: " + name + "#" + attr);
-            return false;
-        }
-    }
-
-    public boolean updateRetrieveAETitle(String newAET) throws Exception {
-        if ( newAET.equals(retrieveAET)) return false;
-        FileSystemMgt mgt = newFileSystemMgt();
-        FileSystemDTO[] dtos = mgt.findFileSystems(retrieveAET);
-        for ( int i = 0 ; i < dtos.length ; i++ ) {
-            updateFileSystemRetrieveAET( dtos[i].getDirectoryPath(), newAET, mgt);
-        }
-        updateAETitle(retrieveAET, newAET);
-        return true;
     }
 
     public boolean updateFileSystemRetrieveAET(String dirPath, String retrieveAET)

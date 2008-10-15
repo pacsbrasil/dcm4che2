@@ -47,6 +47,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import javax.management.Attribute;
+import javax.management.AttributeNotFoundException;
 import javax.management.Notification;
 import javax.management.ObjectName;
 
@@ -54,9 +56,12 @@ import org.apache.log4j.Logger;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.SecurityAlertMessage;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.exceptions.UnknownAETException;
 import org.dcm4chex.archive.notif.AetChanged;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -83,6 +88,12 @@ public class AEService extends ServiceMBeanSupport {
     private int[] portNumbers;
 
     private int maxCacheSize;
+
+    private int updateStudiesBatchSize;
+
+    private ObjectName[] otherServiceNames = {};
+
+    private String[] otherServiceAETAttrs = {};
 
     /**
      * @return Returns the echoServiceName.
@@ -172,6 +183,47 @@ public class AEService extends ServiceMBeanSupport {
         }
     }
 
+    public int getUpdateStudiesBatchSize() {
+        return updateStudiesBatchSize;
+    }
+
+    public void setUpdateStudiesBatchSize(int batchSize) {
+        if (batchSize <= 0) {
+            throw new IllegalArgumentException("batchSize: " + batchSize);
+        }
+        this.updateStudiesBatchSize = batchSize;
+    }
+
+    public final String getOtherServiceAETAttrs() {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < otherServiceNames.length; i++) {
+            sb.append(otherServiceNames[i].toString()).append('#').append(
+                    otherServiceAETAttrs[i]).append("\r\n");
+        }
+        return sb.toString();
+    }
+
+    public final void setOtherServiceAETAttrs(String s) {
+        StringTokenizer stk = new StringTokenizer(s, "\r\n\t ");
+        int count = stk.countTokens();
+        ObjectName[] names = new ObjectName[count];
+        String[] attrs = new String[count];
+        String tk = null;
+        try {
+            int endName;
+            for (int i = 0; i < names.length; i++) {
+                tk = stk.nextToken();
+                endName = tk.indexOf('#');
+                names[i] = new ObjectName(tk.substring(0, endName));
+                attrs[i] = tk.substring(endName+1);
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException(tk);
+        }
+        otherServiceNames = names;
+        otherServiceAETAttrs = attrs;
+    }
+
     public void clearCache() throws Exception {
         aeMgr().clearCache();
     }
@@ -196,10 +248,31 @@ public class AEService extends ServiceMBeanSupport {
         return aeMgr().findByAET(title);
     }
 
-    public boolean updateAETitle(String prevAET, String newAET)
-    throws Exception {
+    static FileSystemMgt2 fileSystemMgt() throws Exception {
+        FileSystemMgt2Home home = (FileSystemMgt2Home) EJBHomeFactory
+                .getFactory().lookup(FileSystemMgt2Home.class,
+                        FileSystemMgt2Home.JNDI_NAME);
+        return home.create();
+    }
+
+    public void updateAETitle(String prevAET, String newAET)
+            throws Exception {
         if (prevAET.equals(newAET)) {
-            return false;
+            return;
+        }
+        fileSystemMgt().updateFileSystemRetrieveAET(prevAET, newAET,
+                updateStudiesBatchSize);
+        for (int i = 0; i < otherServiceNames.length; i++) {
+            if (server.isRegistered(otherServiceNames[i])) {
+                updateAETitle(otherServiceNames[i], otherServiceAETAttrs[i],
+                        prevAET, newAET);
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Service: " + otherServiceNames[i]
+                      + " not registered -> cannot update AETitle in attribute: "
+                      + otherServiceNames[i] + "#" + otherServiceAETAttrs[i]);
+                }
+            }
         }
         AEManager aeManager = aeMgr();
         try {
@@ -207,8 +280,29 @@ public class AEService extends ServiceMBeanSupport {
             ae.setTitle(newAET);
             aeManager.updateAE(ae);
             notifyAETchange(prevAET, newAET);
-            return true;
-        } catch (UnknownAETException e) {
+        } catch (UnknownAETException e) {}
+    }
+
+    private boolean updateAETitle(ObjectName name, String attr,
+            String prevAET, String newAET) throws Exception {
+        try {
+            String val = (String) server.getAttribute(name, attr);
+            String[] aets = StringUtils.split(val, '\\');
+            boolean modified = false;
+            for (int i = 0; i < aets.length; i++) {
+                if (aets[i].equals(prevAET)) {
+                    aets[i] = newAET;
+                    modified = true;
+                }
+            }
+            if (modified) {
+                server.setAttribute(name, 
+                        new Attribute(attr, StringUtils.toString(aets, '\\')));
+                log.info("Update AETitle in attribute: " + name + "#" + attr);
+            }
+            return modified;
+        } catch (AttributeNotFoundException e) {
+            log.info("No such attribute: " + name + "#" + attr);
             return false;
         }
     }
