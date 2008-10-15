@@ -369,10 +369,10 @@
       <description><![CDATA[Update specified AE Title to new value in AE
         Configuration and in all service attributes listed by attribute
         <b>OtherServiceAETitleAttributesToUpdate</b>. If the specified AE Title
-        is associated with a file system, also the Retrieve AE Title of the
-        file system is updated to the new value as the Retrieve AE Titles
-        associated with Instances, Series and Studies that have files on these
-        files systems.]]>
+        is associated with file systems, also the Retrieve AE Title of these
+        file systems is updated to the new value as the Retrieve AE Titles
+        associated with Instances, Series and Studies that have files on this
+        file systems.]]>
       </description>
       <name>updateAETitle</name>
       <parameter>
