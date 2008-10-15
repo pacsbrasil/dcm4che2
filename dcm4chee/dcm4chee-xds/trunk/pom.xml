@@ -7,9 +7,10 @@
   <packaging>pom</packaging>
   <name>Implementation of XDS Actors</name>
   <modules>
+    <module>dcm4chee-xds-infoset</module> 
+    <module>dcm4chee-xdscfg</module>
     <!--  XDS.a Modules -->
       <module>dcm4chee-xdsa-repository</module> 
-      <module>dcm4chee-xdscfg</module>
     <!--  <module>dcm4chee-xds-store2dcm</module> --><!-- Obsolete! replaced with dcm4chee-xds-store -->
     <!-- XDS.b Modules -->
       <module>dcm4chee-xds-common</module> 
@@ -17,6 +18,7 @@
       <module>dcm4chee-xdsb-repo</module>
       <module>dcm4chee-xdsb-src</module>
       <module>dcm4chee-xds-store</module>
+      <module>dcm4chee-xds-registry</module>
   </modules>
   <build>
     <plugins>
@@ -61,9 +63,16 @@
       <url>http://snapshots.repository.codehaus.org/</url>
     </repository>
     <repository>
-      <id>java.net</id>
+      <id>maven2-repository.dev.java.net</id>
+	<name>Java.net Repository for Maven 2</name>
       <url>http://download.java.net/maven/2</url>
     </repository>
+     <repository>
+       <id>maven-repository.dev.java.net</id>
+       <name>Java.net Repository for Maven 1</name>
+       <url>http://download.java.net/maven/1/</url>
+       <layout>legacy</layout>
+     </repository>  
   </repositories>
   <pluginRepositories>
     <pluginRepository>
@@ -76,6 +85,10 @@
         <enabled>false</enabled>
       </releases>
     </pluginRepository>
+     <pluginRepository>
+       <id>maven2-repository.dev.java.net</id>
+       <url>http://download.java.net/maven/2/</url>
+     </pluginRepository>
   </pluginRepositories>
   <distributionManagement>
     <repository>
