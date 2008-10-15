@@ -2,6 +2,7 @@ package org.dcm4chee.xds.infoset.v30.util;
 
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -13,14 +14,16 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.util.JAXBResult;
-import javax.xml.transform.Result;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.dcm4chee.xds.infoset.v30.ClassificationType;
 import org.dcm4chee.xds.infoset.v30.ExternalIdentifierType;
 import org.dcm4chee.xds.infoset.v30.ExtrinsicObjectType;
+import org.dcm4chee.xds.infoset.v30.InternationalStringType;
+import org.dcm4chee.xds.infoset.v30.LocalizedStringType;
 import org.dcm4chee.xds.infoset.v30.ProvideAndRegisterDocumentSetRequestType;
 import org.dcm4chee.xds.infoset.v30.RegistryObjectType;
 import org.dcm4chee.xds.infoset.v30.RegistryPackageType;
@@ -33,17 +36,26 @@ public class InfoSetUtil {
 
     private static JAXBContext jaxbContext;
 
-    public static Map getSlotsFromRegistryObject(RegistryObjectType ro) throws JAXBException {
-        List slots = ro.getSlot();
-        Map slotByName = new HashMap(slots.size());
+    public static Map<String, SlotType1> getSlotsFromRegistryObject(RegistryObjectType ro) {
+        List<SlotType1> slots = ro.getSlot();
+        Map<String, SlotType1> slotByName = new HashMap<String, SlotType1>(slots.size());
         if (slots != null) {
-            for (Iterator iter = slots.iterator() ; iter.hasNext() ;) {
-                SlotType1 slot = (SlotType1)iter.next();
+            for (SlotType1 slot : slots) {
                 String slotName = slot.getName();
                 slotByName.put(slotName, slot);
             }
         }
         return slotByName;
+    }
+    public static Map<String, ClassificationType> getClassificationsFromRegistryObject(RegistryObjectType ro) {
+        List<ClassificationType> classifications = ro.getClassification();
+        Map<String, ClassificationType> clBySchema = new HashMap<String, ClassificationType>(classifications.size());
+        if (classifications != null) {
+            for (ClassificationType cl : classifications) {
+                clBySchema.put(cl.getClassificationScheme(), cl);
+            }
+        }
+        return clBySchema;
     }
 
     public static String getExternalIdentifierValue(String urn, RegistryObjectType ro) {
@@ -133,6 +145,21 @@ public class InfoSetUtil {
         m.marshal(o, res);
         return res.getNode();
     }
+    public static org.w3c.dom.Document getDocumentForObject(Object o) throws JAXBException {
+        Node node = InfoSetUtil.getNodeForObject(o);
+        return node == null ? null :
+              (node instanceof org.w3c.dom.Document) ? (org.w3c.dom.Document) node : node.getOwnerDocument();
+    }
+    
+    public static Object node2Object(Node node) throws JAXBException {
+        Unmarshaller um=getJAXBContext().createUnmarshaller();
+        return um.unmarshal(node);
+    }
+
+    public static Object unmarshal(File f) throws JAXBException {
+        Unmarshaller um=getJAXBContext().createUnmarshaller();
+        return um.unmarshal(f);
+    }
 
     public static void writeObject(Object o, OutputStream os, boolean indent) throws JAXBException {
         Marshaller m = getJAXBContext().createMarshaller();
@@ -142,9 +169,63 @@ public class InfoSetUtil {
 
     public static JAXBContext getJAXBContext() throws JAXBException {
         if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance("org.dcm4chee.xds.infoset.v30");
+            jaxbContext = JAXBContext.newInstance("org.dcm4chee.xds.infoset.v30:org.dcm4chee.xds.infoset.v21");
         }
         return jaxbContext;
     }
 
+    public static String getLongSlotValue(List<String> values) {
+        if ( values == null ) { 
+            return null;
+        }
+        if (values.size() == 1 ) {
+            String s = values.get(0);
+            if (Character.isDigit(s.charAt(0)) ) {
+                s = s.substring(2);
+            }
+            return s;
+        }
+        String[] sa = new String[values.size()];
+        StringBuffer sb = new StringBuffer();
+            for ( String s : values ) {
+                try {
+                    sa[(int) s.charAt(0)-0x31] = s.substring(2);
+                } catch ( Exception x) {
+                    throw new IllegalArgumentException("LONG Slot Value contains Invalid Value: :"+s);
+                }
+            }
+            for ( int i = 0 ; i < sa.length ; i++) {
+                sb.append(sa[i]);
+            }
+        return sb.toString();
+    }
+    
+    public static String getSlotValue(List<SlotType1> slots, String slotName, String def) {
+        for (SlotType1 slot : slots) {
+            if ( slot.getName().equals(slotName)) {
+                List<String> l = slot.getValueList().getValue();
+                return l.isEmpty() ? def : l.get(0);
+            }
+        }
+        return def;
+    }
+
+    public static String getString(InternationalStringType is, String def) {
+        if ( is == null ) return def;
+        List<LocalizedStringType> ls = is.getLocalizedString();
+        return ls.isEmpty() ? def : ls.get(0).getValue();
+    }
+    
+    public static String getLocalizedString(List<LocalizedStringType> lst, String lang, String def) {
+        if ( lst != null ) {
+            for ( LocalizedStringType ls : lst ) {
+                if ( lang == null || lang.equals(ls.getLang()) ) {
+                    return ls.getValue();
+                } else {
+                    def = ls.getValue();
+                }
+            }
+        }
+        return def;
+    }
 }
