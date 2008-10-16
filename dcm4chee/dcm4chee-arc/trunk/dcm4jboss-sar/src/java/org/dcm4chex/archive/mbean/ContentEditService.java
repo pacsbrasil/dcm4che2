@@ -81,7 +81,7 @@ import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author franz.willer@tiani.com
- * @version $Revision$ $Date::           $
+ * @version $Revision$ $Date::            $
  * @since 17.02.2005
  */
 public class ContentEditService extends ServiceMBeanSupport {
