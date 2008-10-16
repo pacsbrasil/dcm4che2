@@ -65,6 +65,7 @@ import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
+import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
@@ -88,6 +89,7 @@ import org.dcm4chex.archive.exceptions.NoSuchStudyException;
  * 
  * @ejb.ejb-ref ejb-name="FileSystem" view-type="local"
  *              ref-name="ejb/FileSystem"
+ * @ejb.ejb-ref ejb-name="File" view-type="local" ref-name="ejb/File"
  * @ejb.ejb-ref ejb-name="PrivateFile" view-type="local"
  *              ref-name="ejb/PrivateFile"
  * @ejb.ejb-ref ejb-name="Study" ref-name="ejb/Study" view-type="local"
@@ -109,7 +111,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     private FileSystemLocalHome fileSystemHome;
     private StudyLocalHome studyHome;
     private StudyOnFileSystemLocalHome sofHome;
-
+    private FileLocalHome fileHome;
     private PrivateFileLocalHome privFileHome;
 
     public void setSessionContext(SessionContext ctx) {
@@ -123,6 +125,8 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                     .lookup("java:comp/env/ejb/Study");
             this.sofHome = (StudyOnFileSystemLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/StudyOnFileSystem");
+            this.fileHome = (FileLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/File");
             this.privFileHome = (PrivateFileLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/PrivateFile");
         } catch (NamingException e) {
@@ -142,6 +146,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
        fileSystemHome = null;
        studyHome = null;
        sofHome = null;
+       fileHome = null;
        privFileHome = null;
     }
 
@@ -213,6 +218,14 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     public FileSystemDTO[] getFileSystemsOfGroup(String groupId)
             throws FinderException {
         return toDTO(fileSystemHome.findByGroupId(groupId));
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public FileSystemDTO[] getRWFileSystemsOfGroup(String groupId)
+            throws FinderException {
+        return toDTO(fileSystemHome.findRWByGroupId(groupId));
     }
 
     /**
@@ -618,6 +631,50 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                 patient.getGppps().isEmpty() ) {
             patient.remove();
         }
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public FileDTO[] findFilesToCompress(FileSystemDTO fsDTO, String cuid,
+            Timestamp before, int limit) throws FinderException {
+        if (log.isDebugEnabled())
+            log.debug("Querying for files to compress in "
+                    + fsDTO.getDirectoryPath());
+        Collection c = fileHome.findFilesToCompress(fsDTO.getPk(), cuid,
+                before, limit);
+        if (log.isDebugEnabled())
+            log.debug("Found " + c.size() + " files to compress in "
+                    + fsDTO.getDirectoryPath());
+        return toFileDTOs(c);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void replaceFile(long pk, String path, String tsuid, long size,
+            byte[] md5) throws FinderException {
+        FileLocal oldFile = fileHome.findByPrimaryKey(pk);
+        oldFile.setFilePath(path);
+        oldFile.setFileTsuid(tsuid);
+        oldFile.setFileSize(size);
+        oldFile.setFileMd5(md5);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void setFileStatus(long pk, int status) throws FinderException {
+        fileHome.findByPrimaryKey(pk).setFileStatus(status);
+    }
+
+    private FileDTO[] toFileDTOs(Collection c) {
+        FileDTO[] dto = new FileDTO[c.size()];
+        Iterator it = c.iterator();
+        for (int i = 0; i < dto.length; ++i) {
+            dto[i] = ((FileLocal) it.next()).getFileDTO();
+        }
+        return dto;
     }
 
     /**

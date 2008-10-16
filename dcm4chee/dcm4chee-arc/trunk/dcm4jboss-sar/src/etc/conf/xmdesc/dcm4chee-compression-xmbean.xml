@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+<!DOCTYPE mbean PUBLIC 
+    "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" 
+    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
    <description><![CDATA[
@@ -45,6 +47,20 @@ configured -Xmx value in the $DCM4CHEE_HOME/bin/run.conf file).
      <type>int</type>
      <descriptors>
        <value value="1" />
+     </descriptors>
+   </attribute>
+
+   <attribute access="read-write" getMethod="getFileSystemGroupIDs"
+     setMethod="setFileSystemGroupIDs">
+     <description><![CDATA[Group IDs of writable file systems which are scanned
+     for image files to compress in configured <b>TaskInterval</b>. Separate
+     multiple values by comma (',').
+     ]]>
+     </description>
+     <name>FileSystemGroupIDs</name>
+     <type>java.lang.String</type>
+     <descriptors>
+       <value value="ONLINE_STORAGE" />
      </descriptors>
    </attribute>
 
@@ -117,7 +133,9 @@ objects.
    </attribute>
 
    <attribute access="read-write" getMethod="getTaskInterval" setMethod="setTaskInterval">
-      <description><![CDATA[Interval in which the database is checked for images to compress.
+      <description><![CDATA[Interval in which the database is checked for image
+      files located on writeable file systems with one of the configured
+      <b>FileSystemGroupIDs</b> to compress.
           <br>Format: 
 			 <br><i>interval</i>!<i>from</i>-<i>to</i> or NEVER
           <br><i>interval</i> = ##s (in seconds), ##m (in minutes), ##h (in hours).
@@ -148,13 +166,14 @@ objects.
         <br>JPLL -JPEG lossless
         <br>JLSL - JPEG-LS lossless
         <br>J2KR - JPEG 2000 lossless
-        <br><i>delay</i> = ##d (in days) <br>Example:<br>ComputedRadiographyImageStorage:JLSL:5d means for the Computed Radiography Image Storage SOP class, compress with JPEG-LS lossless compression every 5 days.
+        <br><i>delay</i> = ##d (in days) <br>Example:<br>ComputedRadiographyImageStorage:JLSL:5d means compress Computed Radiography Images with JPEG-LS lossless compression after 5 days.
       ]]>
       </description>
       <name>CompressionRules</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="ComputedRadiographyImageStorage:JLSL:5d,DigitalXRayImageStorageForPresentation:JLSL:5d,DigitalXRayImageStorageForProcessing:JLSL:5d,DigitalMammographyXRayImageStorageForPresentation:JLSL:5d,DigitalMammographyXRayImageStorageForProcessing:JLSL:5d,CTImageStorage:JLSL:5d,MRImageStorage:JLSL:5d,UltrasoundImageStorage:JLSL:5d,UltrasoundMultiframeImageStorage:JLSL:5d,UltrasoundImageStorageRetired:JLSL:5d,UltrasoundMultiframeImageStorageRetired:JLSL:5d,SecondaryCaptureImageStorage:JLSL:5d,XRayAngiographicImageStorage:JLSL:5d,XRayRadiofluoroscopicImageStorage:JLSL:5d,NuclearMedicineImageStorage:JLSL:5d"/>
+         <value value="
+         ComputedRadiographyImageStorage:JLSL:5d,DigitalXRayImageStorageForPresentation:JLSL:5d,DigitalXRayImageStorageForProcessing:JLSL:5d,DigitalMammographyXRayImageStorageForPresentation:JLSL:5d,DigitalMammographyXRayImageStorageForProcessing:JLSL:5d,CTImageStorage:JLSL:5d,MRImageStorage:JLSL:5d,UltrasoundImageStorage:JLSL:5d,UltrasoundMultiframeImageStorage:JLSL:5d,UltrasoundImageStorageRetired:JLSL:5d,UltrasoundMultiframeImageStorageRetired:JLSL:5d,SecondaryCaptureImageStorage:JLSL:5d,XRayAngiographicImageStorage:JLSL:5d,XRayRadiofluoroscopicImageStorage:JLSL:5d,NuclearMedicineImageStorage:JLSL:5d"/>
       </descriptors>
    </attribute>
 
@@ -201,14 +220,6 @@ objects.
       <descriptors>
          <value value="8192"/>
       </descriptors>
-   </attribute>
-   <attribute access="read-write" 
-      getMethod="getFileSystemMgtName"
-      setMethod="setFileSystemMgtName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>FileSystemMgtName</name>
-      <type>javax.management.ObjectName</type>
    </attribute>
    <attribute access="read-write"
       getMethod="getSchedulerServiceName"

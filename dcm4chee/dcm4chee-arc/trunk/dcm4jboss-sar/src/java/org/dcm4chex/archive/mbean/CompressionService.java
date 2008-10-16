@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.ejb.FinderException;
-import javax.management.JMException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
@@ -65,8 +64,8 @@ import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
@@ -89,13 +88,13 @@ public class CompressionService extends ServiceMBeanSupport {
 
     private int disabledEndHour;
 
+    private String[] fileSystemGroupIDs;
+
     private int limitNumberOfFilesPerTask;
 
     private boolean verifyCompression;
 
     private Integer listenerID;
-
-    private ObjectName fileSystemMgtName;
 
     private File tmpDir = new File("tmp");
 
@@ -133,20 +132,25 @@ public class CompressionService extends ServiceMBeanSupport {
         }
     };
 
+    public String getFileSystemGroupIDs() {
+        return StringUtils.toString(fileSystemGroupIDs, ',');
+    }
+
+    public void setFileSystemGroupIDs(String fileSystemGroupIDs) {
+        StringTokenizer st = new StringTokenizer(fileSystemGroupIDs,
+                ",;\n\r\t ");
+        this.fileSystemGroupIDs = new String[st.countTokens()];
+        for (int i = 0; i < this.fileSystemGroupIDs.length; i++) {
+            this.fileSystemGroupIDs[i] = st.nextToken();
+        }
+    }
+
     public final int getBufferSize() {
         return bufferSize;
     }
 
     public final void setBufferSize(int bufferSize) {
         this.bufferSize = bufferSize;
-    }
-
-    public final ObjectName getFileSystemMgtName() {
-        return fileSystemMgtName;
-    }
-
-    public final void setFileSystemMgtName(ObjectName fileSystemMgtName) {
-        this.fileSystemMgtName = fileSystemMgtName;
     }
 
     public ObjectName getSchedulerServiceName() {
@@ -302,22 +306,22 @@ public class CompressionService extends ServiceMBeanSupport {
 
     public void checkForFilesToCompress() throws FinderException, IOException {
         log.info("Check For Files To Compress on attached filesystems!");
-        long minDiskFree = getMinDiskFreeFromFsmgt();
         String cuid;
         Timestamp before;
         CompressionRule info;
         FileDTO[] files;
         int limit = limitNumberOfFilesPerTask;
-        FileSystemDTO[] fsDTOs = listLocalOnlineRWFileSystems();
-        FileSystemMgt fsMgt = newFileSystemMgt();
         byte[] buffer = null;
+        FileSystemMgt2 fsMgt = newFileSystemMgt();
+        for (int g = 0; g < fileSystemGroupIDs.length; g++) {
+        FileSystemDTO[] fsDTOs = fsMgt.getRWFileSystemsOfGroup(fileSystemGroupIDs[g]);
         for (int i = 0, len = compressionRuleList.size(); i < len && limit > 0; i++) {
             info = (CompressionRule) compressionRuleList.get(i);
             cuid = info.getCUID();
             before = new Timestamp(System.currentTimeMillis() - info.getDelay());
             for (int j = 0; j < fsDTOs.length; j++) {
-                files = fsMgt.findFilesToCompress(fsDTOs[j].getDirectoryPath(),
-                        cuid, before, limit);
+                files = fsMgt.findFilesToCompress(fsDTOs[j], cuid,
+                        before, limit);
                 if (files.length > 0) {
                     if (buffer == null)
                         buffer = new byte[bufferSize];
@@ -331,26 +335,7 @@ public class CompressionService extends ServiceMBeanSupport {
                 }
             }
         }
-    }
-
-    private FileSystemDTO[] listLocalOnlineRWFileSystems() {
-        try {
-            return (FileSystemDTO[]) server.invoke(fileSystemMgtName,
-                    "listLocalOnlineRWFileSystems", null, null);
-        } catch (JMException e) {
-            throw new RuntimeException(
-                    "Failed to invoke listLocalOnlineRWFileSystems", e);
         }
-    }
-
-    private long getMinDiskFreeFromFsmgt() {
-        try {
-            return FileUtils.parseSize((String) server.getAttribute(
-                    fileSystemMgtName, "MinimumFreeDiskSpace"), -1);
-        } catch (JMException e) {
-            throw new RuntimeException("Failed to invoke getMinDiskFree", e);
-        }
-
     }
 
     public boolean compress(FileDTO fileDTO) throws IOException {
@@ -385,7 +370,7 @@ public class CompressionService extends ServiceMBeanSupport {
                 || tsuid.equals(UIDs.ImplicitVRLittleEndian);
     }
 
-    private void doCompress(FileSystemMgt fsMgt, FileDTO fileDTO,
+    private void doCompress(FileSystemMgt2 fsMgt, FileDTO fileDTO,
             CompressionRule info, byte[] buffer) {
         File baseDir = FileUtils.toFile(fileDTO.getDirectoryPath());
         File srcFile = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO
@@ -433,8 +418,8 @@ public class CompressionService extends ServiceMBeanSupport {
                     baseDirPathLength + 1).replace(File.separatorChar, '/');
             if (log.isDebugEnabled())
                 log.debug("replace File " + srcFile + " with " + destFile);
-            fsMgt.replaceFile(fileDTO.getPk(), destFilePath, info
-                    .getTransferSyntax(), (int) destFile.length(), md5);
+            fsMgt.replaceFile(fileDTO.getPk(), destFilePath,
+                    info.getTransferSyntax(), destFile.length(), md5);
             fileDTO.setPk(0);
             fileDTO.setFilePath(destFilePath);
             fileDTO.setFileSize((int) destFile.length());
@@ -446,8 +431,7 @@ public class CompressionService extends ServiceMBeanSupport {
             if (destFile != null && destFile.exists())
                 destFile.delete();
             try {
-                fsMgt
-                        .setFileStatus(fileDTO.getPk(),
+                fsMgt.setFileStatus(fileDTO.getPk(),
                                 FileStatus.COMPRESS_FAILED);
             } catch (Exception x1) {
                 log.error("Failed to set FAILED_TO_COMPRESS for file "
@@ -475,11 +459,11 @@ public class CompressionService extends ServiceMBeanSupport {
         super.stopService();
     }
 
-    private FileSystemMgt newFileSystemMgt() {
+    private FileSystemMgt2 newFileSystemMgt() {
         try {
-            FileSystemMgtHome home = (FileSystemMgtHome) EJBHomeFactory
-                    .getFactory().lookup(FileSystemMgtHome.class,
-                            FileSystemMgtHome.JNDI_NAME);
+            FileSystemMgt2Home home = (FileSystemMgt2Home) EJBHomeFactory
+                    .getFactory().lookup(FileSystemMgt2Home.class,
+                            FileSystemMgt2Home.JNDI_NAME);
             return home.create();
         } catch (Exception e) {
             throw new RuntimeException("Failed to access File System Mgt EJB:",

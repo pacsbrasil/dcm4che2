@@ -96,7 +96,11 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  * @ejb.finder signature="java.util.Collection findByGroupIdAndStatus(java.lang.String groupID, int status)"
  *             query="SELECT OBJECT(fs) FROM FileSystem AS fs WHERE fs.groupID = ?1 AND fs.status = ?2"
  *             transaction-type="Supports"
- *             
+ *
+ * @ejb.finder signature="java.util.Collection findRWByGroupId(java.lang.String groupID)"
+ *             query="SELECT OBJECT(fs) FROM FileSystem AS fs WHERE fs.groupID = ?1 AND fs.status IN (0,1)"
+ *             transaction-type="Supports"
+ *
  * @ejb.finder signature="java.util.Collection findByRetrieveAET(java.lang.String aet)"
  *             query="SELECT OBJECT(fs) FROM FileSystem AS fs WHERE fs.retrieveAET = ?1"
  *             transaction-type="Supports"
