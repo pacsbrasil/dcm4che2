@@ -24,15 +24,6 @@
 		</init-param>
 		
 		<!-- 
-			Used by dcm4chee-web application to find FileSystemMgtService MBean.
-			Value must match mbean name in configured in
-			deploy/dcm4chee-auditlog-service.xml.
-		-->
-		<init-param>
-			<param-name>fileSystemMgtName</param-name>
-			<param-value>dcm4chee.archive:service=FileSystemMgt</param-value>
-		</init-param>
-		<!-- 
 		 Enable/Disable StudyPermissionCheck for WADO retrieve
 		 true: restrict WADO retrieve of objects according Study Read permission of remote user. 
 		         denied access if no remote user information is associated with the request
