@@ -17,36 +17,38 @@ import java.io.Serializable;
  * @since Nov 9, 2005
  */
 public class SeriesUpdated implements Serializable {
-	
-	private static final long serialVersionUID = 3689069551690199604L;
 
-	private String seriesIUID;
-	private String description;
-	private String retrieveAET;
+    private static final long serialVersionUID = 3689069551690199604L;
 
-	public SeriesUpdated(String seriesIUID, String description, String retrieveAET) {
-		this.seriesIUID = seriesIUID;
-		this.description = description;
-		this.retrieveAET = retrieveAET;
-	}
+    private String seriesIUID;
+    private String description;
+    private String retrieveAET;
 
-	/**
-	 * @return Returns the seriesIUID.
-	 */
-	public String getSeriesIUID() {
-		return seriesIUID;
-	}
-	
-	/**
-	 * @return Returns the description.
-	 */
-	public String getDescription() {
-		return description;
-	}
-	/**
-	 * @return Returns the retrieveAET.
-	 */
-	public String getRetrieveAET() {
-		return retrieveAET;
-	}
+    public SeriesUpdated(String seriesIUID, String description,
+            String retrieveAET) {
+        this.seriesIUID = seriesIUID;
+        this.description = description;
+        this.retrieveAET = retrieveAET;
+    }
+
+    /**
+     * @return Returns the seriesIUID.
+     */
+    public String getSeriesIUID() {
+        return seriesIUID;
+    }
+
+    /**
+     * @return Returns the description.
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @return Returns the retrieveAET.
+     */
+    public String getRetrieveAET() {
+        return retrieveAET;
+    }
 }

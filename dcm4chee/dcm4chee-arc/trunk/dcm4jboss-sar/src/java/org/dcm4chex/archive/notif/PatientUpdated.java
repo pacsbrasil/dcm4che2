@@ -17,38 +17,41 @@ import java.io.Serializable;
  * @since Nov 9, 2005
  */
 public class PatientUpdated implements Serializable {
-	
-	private static final long serialVersionUID = 3689069551690199604L;
 
-	private String patientID;
+    private static final long serialVersionUID = 3689069551690199604L;
 
-	private String description;
+    private String patientID;
 
-	private String retrieveAET;
+    private String description;
 
-	public PatientUpdated(String patientID, String description, String retrieveAET) {
-		this.patientID = patientID;
-		this.description = description;
-		this.retrieveAET = retrieveAET;
-		
-	}
+    private String retrieveAET;
 
-	/**
-	 * @return Returns the patientID.
-	 */
-	public String getPatientID() {
-		return patientID;
-	}
-	/**
-	 * @return Returns the description.
-	 */
-	public String getDescription() {
-		return description;
-	}
-	/**
-	 * @return Returns the retrieveAET.
-	 */
-	public String getRetrieveAET() {
-		return retrieveAET;
-	}
+    public PatientUpdated(String patientID, String description,
+            String retrieveAET) {
+        this.patientID = patientID;
+        this.description = description;
+        this.retrieveAET = retrieveAET;
+
+    }
+
+    /**
+     * @return Returns the patientID.
+     */
+    public String getPatientID() {
+        return patientID;
+    }
+
+    /**
+     * @return Returns the description.
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @return Returns the retrieveAET.
+     */
+    public String getRetrieveAET() {
+        return retrieveAET;
+    }
 }
