@@ -110,6 +110,14 @@
         <include>*.war</include>
       </includes>
     </fileSet>
+<!-- XDS Stored Query Client Service -->
+    <fileSet>
+      <directory>../dcm4chee-xds-consumer/dcm4chee-xds-consumer-query/target</directory>
+      <outputDirectory>server/default/deploy</outputDirectory>
+      <includes>
+        <include>*.sar</include>
+      </includes>
+    </fileSet>
 <!-- XDS.a Repository -->
     <fileSet>
       <directory>../dcm4chee-xdsa-repository/dcm4chee-xdsa-repository-mbean/target</directory>
