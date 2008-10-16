@@ -402,18 +402,6 @@ accessed studies.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isWADOExcludePrivateAttributes"
-      setMethod="setWADOExcludePrivateAttributes">
-      <description><![CDATA[Excludes private Attributes from Datasets returned
-      by WADO Service]]>
-      </description>
-      <name>WADOExcludePrivateAttributes</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="false"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getOnSwitchStorageFilesystemInvoke"
       setMethod="setOnSwitchStorageFilesystemInvoke">
       <description><![CDATA[Executes specified command when the current
@@ -497,22 +485,6 @@ accessed studies.</description>
       <name>PurgeStudyQueueName</name>
       <type>java.lang.String</type>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getTarRetrieverName"
-      setMethod="setTarRetrieverName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>TarRetrieverName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getAEServiceName"
-      setMethod="setAEServiceName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>AEServiceName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>   
    <attribute access="read-write"
       getMethod="getJmsServiceName"
       setMethod="setJmsServiceName">
@@ -850,29 +822,6 @@ accessed studies.</description>
       </parameter>
       <return-type>int</return-type>
    </operation>   
-   <operation impact="INFO">
-      <description>Locate SOP Instance. Return a File object, if the instance
-      is locally available, or the hostname as String object if a file
-      of the instance is located on another host.</description>
-      <name>locateInstance</name>
-      <parameter>
-        <description>SOP Instance UID</description>
-        <name>iuid</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>java.lang.Object</return-type>
-   </operation>
-   <operation impact="INFO">
-      <description>Locate SOP Instance. Return a Dataset object, if the instance
-      is locally available. The attributes of the dataset are updated with the attributes from database.</description>
-      <name>getDatasourceOfInstance</name>
-      <parameter>
-        <description>SOP Instance UID</description>
-        <name>iuid</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>org.dcm4che.net.DataSource</return-type>
-   </operation>
    <operation impact="ACTION">
       <description>Free disk space by deleting old studies.
       Deletes all older files on study level that fullfill the freeDiskSpacePolicy.

@@ -55,7 +55,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
@@ -70,34 +69,24 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.dict.Tags;
-import org.dcm4che.net.DataSource;
 import org.dcm4che.util.Executer;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.ActionOrder;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.BaseJmsOrder;
-import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DeleterThresholds;
 import org.dcm4chex.archive.config.RetryIntervalls;
-import org.dcm4chex.archive.ejb.interfaces.AEDTO;
-import org.dcm4chex.archive.ejb.interfaces.AEManager;
-import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
-import org.dcm4chex.archive.ejb.jdbc.FileInfo;
-import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileSystemUtils;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
@@ -128,10 +117,6 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
     private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;
-    
-    private ObjectName tarRetrieverName;
-
-    private ObjectName aeServiceName;
     
     private long minFreeDiskSpace = MIN_FREE_DISK_SPACE;
 
@@ -195,8 +180,6 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     protected RetryIntervalls retryIntervalsForJmsOrder = new RetryIntervalls();
 
-    private boolean excludePrivate;
-
     private boolean deleteFilesWhenUnavailable;
 
     private String[] onSwitchStorageFSCmd;
@@ -219,22 +202,6 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
 
-    public final ObjectName getTarRetrieverName() {
-        return tarRetrieverName;
-    }
-
-    public final void setTarRetrieverName(ObjectName tarRetrieverName) {
-        this.tarRetrieverName = tarRetrieverName;
-    }
-    
-    public final ObjectName getAEServiceName() {
-        return aeServiceName;
-    }
-
-    public final void setAEServiceName(ObjectName aeServiceName) {
-        this.aeServiceName = aeServiceName;
-    }
-    
     public final ObjectName getJmsServiceName() {
         return jmsDelegate.getJmsServiceName();
     }
@@ -627,14 +594,6 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
 
     public void setPurgeStudyQueueName(String purgeStudyQueueName) {
         this.purgeStudyQueueName = purgeStudyQueueName;
-    }
-
-    public boolean isWADOExcludePrivateAttributes() {
-        return excludePrivate;
-    }
-
-    public void setWADOExcludePrivateAttributes(boolean excludePrivate) {
-        this.excludePrivate = excludePrivate;
     }
 
     public final String getOnSwitchStorageFilesystemInvoke() {
@@ -1034,77 +993,6 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             seriesDir.getParentFile().delete();
         }
         return true;
-    }
-
-    File retrieveFileFromTAR(String fsID, String fileID) throws Exception {
-        return (File) server.invoke(tarRetrieverName, "retrieveFileFromTAR",
-                new Object[] { fsID, fileID }, new String[] {
-                        String.class.getName(), String.class.getName() });
-    }
-    
-    protected File getFile(String fsID, String fileID) throws Exception {
-    	return fsID.startsWith("tar:") ? retrieveFileFromTAR(fsID, fileID)
-    			: FileUtils.toFile(fsID, fileID);
-    }    
-    
-    public Object locateInstance(String iuid) throws Exception {
-        FileDTO[] fileDTOs = null;
-        String aet = null;
-        try {
-            fileDTOs = newFileSystemMgt().getFilesOfInstance(iuid);
-            if (fileDTOs.length == 0) {
-                aet = newFileSystemMgt().getExternalRetrieveAET(iuid);
-            } else {
-                FileDTO dto;
-                for (int i = 0; i < fileDTOs.length; ++i) {
-                    dto = fileDTOs[i];
-                    if (retrieveAET.equals(dto.getRetrieveAET()))
-                        return getFile(dto.getDirectoryPath(),
-                                dto.getFilePath());
-                }
-                aet = fileDTOs[0].getRetrieveAET();
-            }
-        } catch (FinderException ignore) {}
-        if ( aet == null ) return null;
-        AEDTO aeData = aeMgt().findByAET(aet);
-        return aeData;
-    }
-
-    private AEManager aeMgt() throws Exception {
-        AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
-                .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
-        return home.create();
-    }
-    
-    public DataSource getDatasourceOfInstance(String iuid) throws Exception {
-        Dataset dsQ = DcmObjectFactory.getInstance().newDataset();
-        dsQ.putUI(Tags.SOPInstanceUID, iuid);
-        dsQ.putCS(Tags.QueryRetrieveLevel, "IMAGE");
-        RetrieveCmd retrieveCmd = RetrieveCmd.create(dsQ);
-        FileInfo infoList[][] = retrieveCmd.getFileInfos();
-        if (infoList.length == 0)
-            return null;
-        FileInfo[] fileInfos = infoList[0];
-        for (int i = 0; i < fileInfos.length; ++i) {
-            final FileInfo info = fileInfos[i];
-            if (retrieveAET.equals(info.fileRetrieveAET)) {
-                File f = getFile(info.basedir, info.fileID);
-                Dataset mergeAttrs = DatasetUtils.fromByteArray(
-                        info.patAttrs,
-                        DatasetUtils .fromByteArray(
-                                info.studyAttrs,
-                                DatasetUtils .fromByteArray(
-                                        info.seriesAttrs,
-                                        DatasetUtils .fromByteArray(
-                                                info.instAttrs))));
-                FileDataSource ds = new FileDataSource(f, mergeAttrs,
-                        new byte[bufferSize]);
-                ds.setWriteFile(true);// write FileMetaInfo!
-                ds.setExcludePrivate(excludePrivate);
-                return ds;
-            }
-        }
-        return null;
     }
 
     /**

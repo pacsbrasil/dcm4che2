@@ -168,7 +168,7 @@ public class WADOSupport {
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
-    private ObjectName fileSystemMgtName = null;
+    private ObjectName queryRetrieveScpName = null;
 
     private ObjectName auditLogName = null;
     private ObjectName storeScpServiceName = null;
@@ -569,10 +569,11 @@ public class WADOSupport {
         String iuid = req.getObjectUID();
         FileDataSource ds = null;
         try {
-            ds = (FileDataSource) server.invoke(fileSystemMgtName,
+            ds = (FileDataSource) server.invoke(queryRetrieveScpName,
                     "getDatasourceOfInstance", new Object[] { iuid },
                     new String[] { String.class.getName() });
             Dataset d = ds.getMergeAttrs();
+            ds.setWriteFile(true);
             ds.setExcludePrivate(req.isExcludePrivate());
             try {
                 ds.setSimpleFrameList(parseInts(req.getSimpleFrameList()));
@@ -912,7 +913,7 @@ public class WADOSupport {
             String instanceUID) throws IOException, NeedRedirectionException {
         Object dicomObject = null;
         try {
-            dicomObject = server.invoke(fileSystemMgtName, "locateInstance",
+            dicomObject = server.invoke(queryRetrieveScpName, "locateInstance",
                     new Object[] { instanceUID }, new String[] { String.class
                     .getName() });
 
@@ -1157,27 +1158,12 @@ public class WADOSupport {
         }
     }
 
-    /**
-     * Set the name of the FileSystemMgtBean.
-     * <p>
-     * This bean is used to retrieve the DICOM object.
-     * 
-     * @param fileSystemMgtName
-     *                The fileSystemMgtName to set.
-     */
-    public void setFileSystemMgtName(ObjectName fileSystemMgtName) {
-        this.fileSystemMgtName = fileSystemMgtName;
+    public ObjectName getQueryRetrieveScpName() {
+        return queryRetrieveScpName;
     }
 
-    /**
-     * Get the name of the FileSystemMgtBean.
-     * <p>
-     * This bean is used to retrieve the DICOM object.
-     * 
-     * @return Returns the fileSystemMgtName.
-     */
-    public ObjectName getFileSystemMgtName() {
-        return fileSystemMgtName;
+    public void setQueryRetrieveScpName(ObjectName name) {
+        this.queryRetrieveScpName = name;
     }
 
     /**

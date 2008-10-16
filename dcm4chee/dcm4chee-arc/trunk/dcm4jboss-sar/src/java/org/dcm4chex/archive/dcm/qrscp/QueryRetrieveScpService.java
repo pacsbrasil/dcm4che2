@@ -54,6 +54,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Map.Entry;
 
+import javax.ejb.FinderException;
 import javax.management.JMException;
 import javax.management.ObjectName;
 import javax.xml.parsers.SAXParser;
@@ -73,6 +74,7 @@ import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
+import org.dcm4che.net.DataSource;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.Dimse;
@@ -89,6 +91,7 @@ import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
+import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
@@ -1085,14 +1088,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return tlsConfig.createSocket(aeMgr().findByAET(moveCalledAET), destAE);
     }
 
-
-    private AEManager aeMgr() throws Exception {
-        AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
-                .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
-        return home.create();
-    }
-
-
     public void queueStgCmtOrder(String calling, String called,
             Dataset actionInfo) {
         try {
@@ -1221,7 +1216,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
             storeRqCmd.putUS(Tags.MoveOriginatorMessageID, moveRqMsgID);
             storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
         }
-        File f = getFile(info);
+        File f = getFile(info.basedir, info.fileID);
         Dataset mergeAttrs = DatasetUtils.fromByteArray(info.patAttrs,
                 DatasetUtils.fromByteArray(info.studyAttrs, DatasetUtils
                         .fromByteArray(info.seriesAttrs, DatasetUtils
@@ -1261,9 +1256,59 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return presCtx;
     }
 
-    protected File getFile(FileInfo info) throws Exception {
-        return info.basedir.startsWith("tar:") 
-                ? retrieveFileFromTAR(info.basedir, info.fileID)
-                : FileUtils.toFile(info.basedir, info.fileID);
+    protected File getFile(String fsID, String fileID) throws Exception {
+        return fsID.startsWith("tar:") ? retrieveFileFromTAR(fsID, fileID)
+                        : FileUtils.toFile(fsID, fileID);
+    }    
+
+    public Object locateInstance(String iuid) throws Exception {
+        FileDTO[] fileDTOs = null;
+        String aet = null;
+        FileSystemMgt fsMgt = getFileSystemMgtHome().create();
+        try {
+            fileDTOs = fsMgt.getFilesOfInstance(iuid);
+            if (fileDTOs.length == 0) {
+                aet = fsMgt.getExternalRetrieveAET(iuid);
+            } else {
+                FileDTO dto;
+                for (int i = 0; i < fileDTOs.length; ++i) {
+                    dto = fileDTOs[i];
+                    if (isLocalRetrieveAET(dto.getRetrieveAET()))
+                        return getFile(dto.getDirectoryPath(),
+                                dto.getFilePath());
+                }
+                aet = fileDTOs[0].getRetrieveAET();
+            }
+        } catch (FinderException ignore) {}
+        if ( aet == null ) return null;
+        AEDTO aeData = aeMgr().findByAET(aet);
+        return aeData;
+    }
+
+    public DataSource getDatasourceOfInstance(String iuid) throws Exception {
+        Dataset dsQ = DcmObjectFactory.getInstance().newDataset();
+        dsQ.putUI(Tags.SOPInstanceUID, iuid);
+        dsQ.putCS(Tags.QueryRetrieveLevel, "IMAGE");
+        RetrieveCmd retrieveCmd = RetrieveCmd.create(dsQ);
+        FileInfo infoList[][] = retrieveCmd.getFileInfos();
+        if (infoList.length == 0)
+            return null;
+        FileInfo[] fileInfos = infoList[0];
+        for (int i = 0; i < fileInfos.length; ++i) {
+            final FileInfo info = fileInfos[i];
+            if (isLocalRetrieveAET(info.fileRetrieveAET)) {
+                File f = getFile(info.basedir, info.fileID);
+                Dataset mergeAttrs = DatasetUtils.fromByteArray(
+                        info.patAttrs,
+                        DatasetUtils .fromByteArray(
+                                info.studyAttrs,
+                                DatasetUtils .fromByteArray(
+                                        info.seriesAttrs,
+                                        DatasetUtils .fromByteArray(
+                                                info.instAttrs))));
+                return new FileDataSource(f, mergeAttrs, new byte[bufferSize]);
+            }
+        }
+        return null;
     }
 }

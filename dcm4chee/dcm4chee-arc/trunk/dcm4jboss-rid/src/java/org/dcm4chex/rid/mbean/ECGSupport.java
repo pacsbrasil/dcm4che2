@@ -65,6 +65,7 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DataSource;
 import org.dcm4chee.docstore.BaseDocument;
+import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.rid.common.RIDRequestObject;
 import org.dcm4chex.rid.common.RIDResponseObject;
 import org.dcm4chex.rid.mbean.ecg.WaveformGroup;
@@ -181,10 +182,10 @@ public class ECGSupport {
             return null;
         Dataset dsFile;
         if (!ridSupport.isUseOrigFile()) {
-            DataSource dsrc = null;
+            FileDataSource dsrc = null;
             try {
-                dsrc = (DataSource) ridSupport.getMBeanServer().invoke(
-                        ridSupport.getFileSystemMgtName(),
+                dsrc = (FileDataSource) ridSupport.getMBeanServer().invoke(
+                        ridSupport.getQueryRetrieveScpName(),
                         "getDatasourceOfInstance", new Object[] { iuid },
                         new String[] { String.class.getName() });
             } catch (Exception e) {
@@ -194,6 +195,7 @@ public class ECGSupport {
             file.deleteOnExit();
             OutputStream os = new BufferedOutputStream(new FileOutputStream(
                     file));
+            dsrc.isWriteFile();
             dsrc.writeTo(os, null);
             os.close();
             dsFile = loadDataset(file);

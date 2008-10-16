@@ -867,16 +867,6 @@ public class StoreScpService extends AbstractScpService {
         return defFileSystemGroupID;
     }
 
-    static AEManager aeMgr() {
-        try {
-            return ((AEManagerHome) EJBHomeFactory.getFactory()
-                    .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME))
-                    .create();
-        } catch (Exception e) {
-            throw new ConfigurationException(e);
-        }
-    }
-
     boolean isFileSystemGroupLocalAccessable(String fsgrpid) {
         return fsmgt.isFileSystemGroupLocalAccessable(fsgrpid);
     }

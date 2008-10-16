@@ -334,17 +334,6 @@ public class WADOService extends AbstractCacheService {
     }
 
     /**
-     * Getter for the name of the FileSystemMgt MBean.
-     * <p>
-     * This bean is used to locate the DICOM file.
-     * 
-     * @return Name of the MBean
-     */
-    public ObjectName getFileSystemMgtName() {
-        return support.getFileSystemMgtName();
-    }
-
-    /**
      * Set the name of the AuditLogger MBean.
      * <p>
      * This bean is used to create Audit Logs.
@@ -365,6 +354,14 @@ public class WADOService extends AbstractCacheService {
      */
     public ObjectName getAuditLoggerName() {
         return support.getAuditLoggerName();
+    }
+
+    public ObjectName getQueryRetrieveScpName() {
+        return support.getQueryRetrieveScpName();
+    }
+
+    public void setQueryRetrieveScpName(ObjectName name) {
+        support.setQueryRetrieveScpName(name);
     }
 
     public String getDisabledAuditLogHosts() {
@@ -407,18 +404,6 @@ public class WADOService extends AbstractCacheService {
      */
     public void setDisableDNS(boolean disableDNS) {
         support.setDisableDNS(disableDNS);
-    }
-
-    /**
-     * Setter for the name of the FileSystemMgt MBean.
-     * <p>
-     * This bean is used to locate the DICOM file.
-     * 
-     * @param Name
-     *            of the MBean
-     */
-    public void setFileSystemMgtName(ObjectName name) {
-        support.setFileSystemMgtName(name);
     }
 
     /**

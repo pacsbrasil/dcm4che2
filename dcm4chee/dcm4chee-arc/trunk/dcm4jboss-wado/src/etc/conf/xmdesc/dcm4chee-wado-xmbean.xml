@@ -295,10 +295,10 @@
     <type>java.lang.String</type>
   </attribute>
 
-  <attribute access="read-write" getMethod="getFileSystemMgtName"
-    setMethod="setFileSystemMgtName">
-    <description>Used internally. Do NOT modify. </description>
-    <name>FileSystemMgtName</name>
+  <attribute access="read-write" getMethod="getQueryRetrieveScpName"
+    setMethod="setQueryRetrieveScpName">
+    <description>Used internally. Do NOT modify.</description>
+    <name>QueryRetrieveScpName</name>
     <type>javax.management.ObjectName</type>
   </attribute>
 

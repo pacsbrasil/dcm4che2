@@ -283,13 +283,6 @@ public class StgCmtScuScpService extends AbstractScpService implements
         policy.removeRoleSelection(UIDs.StorageCommitmentPushModel);
     }
 
-    private AEManager aeMgr() throws Exception {
-        AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
-                .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
-        return home.create();
-    }
-    
-
     boolean isLocalRetrieveAET(String aet) {
         try {
             return aet.equals(server.getAttribute(fileSystemMgtName,

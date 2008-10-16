@@ -258,10 +258,10 @@
     </descriptors>
   </attribute>
 
-  <attribute access="read-write" getMethod="getFileSystemMgtName"
-    setMethod="setFileSystemMgtName">
+  <attribute access="read-write" getMethod="getQueryRetrieveScpName"
+    setMethod="setQueryRetrieveScpName">
     <description>Used internally. Do NOT modify.</description>
-    <name>FileSystemMgtName</name>
+    <name>QueryRetrieveScpName</name>
     <type>javax.management.ObjectName</type>
   </attribute>
 

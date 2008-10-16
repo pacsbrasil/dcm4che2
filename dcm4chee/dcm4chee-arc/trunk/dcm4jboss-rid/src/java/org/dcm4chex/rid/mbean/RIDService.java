@@ -39,14 +39,10 @@
 
 package org.dcm4chex.rid.mbean;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -358,28 +354,6 @@ public class RIDService extends ServiceMBeanSupport  {
     }
 
     /**
-     * Getter for the name of the FileSystemMgt MBean.
-     * <p>
-     * This bean is used to locate the DICOM file.
-     *  
-     * @return Name of the MBean
-     */
-    public ObjectName getFileSystemMgtName() {
-        return support.getFileSystemMgtName();
-    }
-
-    /**
-     * Setter for the name of the FileSystemMgt MBean.
-     * <p>
-     * This bean is used to locate the DICOM file.
-     *  
-     * @param Name of the MBean
-     */
-    public void setFileSystemMgtName( ObjectName name ) {
-        support.setFileSystemMgtName( name );
-    }
-
-    /**
      * Set the name of the AuditLogger MBean.
      * <p>
      * This bean is used to create Audit Logs.
@@ -388,6 +362,14 @@ public class RIDService extends ServiceMBeanSupport  {
      */
     public void setAuditLoggerName( ObjectName name ) {
         support.setAuditLoggerName( name );
+    }
+
+    public ObjectName getQueryRetrieveScpName() {
+        return support.getQueryRetrieveScpName();
+    }
+
+    public void setQueryRetrieveScpName(ObjectName name) {
+        support.setQueryRetrieveScpName(name);
     }
 
     /**

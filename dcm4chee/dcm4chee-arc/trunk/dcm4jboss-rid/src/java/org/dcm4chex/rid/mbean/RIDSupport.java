@@ -169,7 +169,7 @@ public class RIDSupport {
     private boolean useXSLInstruction;
     private String wadoURL;
 
-    private ObjectName fileSystemMgtName;
+    private ObjectName queryRetrieveScpName;
     private ObjectName auditLogName;
     private Boolean auditLogIHEYr4;
 
@@ -366,27 +366,12 @@ public class RIDSupport {
         this.srImageRows = srImageRows;
     }
 
-
-    /**
-     * Set the name of the FileSystemMgtBean.
-     * <p>
-     * This bean is used to retrieve the DICOM object.
-     * 
-     * @param fileSystemMgtName The fileSystemMgtName to set.
-     */
-    public void setFileSystemMgtName(ObjectName fileSystemMgtName) {
-        this.fileSystemMgtName = fileSystemMgtName;
+    public ObjectName getQueryRetrieveScpName() {
+        return queryRetrieveScpName;
     }
 
-    /**
-     * Get the name of the FileSystemMgtBean.
-     * <p>
-     * This bean is used to retrieve the DICOM object.
-     * 
-     * @return Returns the fileSystemMgtName.
-     */
-    public ObjectName getFileSystemMgtName() {
-        return fileSystemMgtName;
+    public void setQueryRetrieveScpName(ObjectName name) {
+        this.queryRetrieveScpName = name;
     }
 
     protected MBeanServer getMBeanServer() {
@@ -771,9 +756,9 @@ public class RIDSupport {
                     return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Object with documentUID="+docUID+ "not found!");
                 }
                 if ( ! useOrigFile   ) {
-                    DataSource ds = null;
+                    FileDataSource ds = null;
                     try {
-                        ds = (DataSource) server.invoke(fileSystemMgtName,
+                        ds = (FileDataSource) server.invoke(queryRetrieveScpName,
                                 "getDatasourceOfInstance",
                                 new Object[] { docUID },
                                 new String[] { String.class.getName() } );
@@ -786,6 +771,7 @@ public class RIDSupport {
                     tmpFile.deleteOnExit();
                     log.debug("Temporary coerced dicom file:"+tmpFile);
                     OutputStream os = new BufferedOutputStream( new FileOutputStream( tmpFile ));
+                    ds.setWriteFile(true);
                     ds.writeTo( os, null);
                     os.close();
                     renderSRFile( new FileInputStream(tmpFile), out );
@@ -894,7 +880,7 @@ public class RIDSupport {
         File file;
         Object dicomObject = null;
         try {
-            dicomObject = server.invoke(fileSystemMgtName,
+            dicomObject = server.invoke(queryRetrieveScpName,
                     "locateInstance",
                     new Object[] { instanceUID },
                     new String[] { String.class.getName() } );
@@ -913,7 +899,7 @@ public class RIDSupport {
     private RIDResponseObject getEncapsulatedDocument( RIDRequestObject reqObj ) {
 
         try {
-            FileDataSource fds = (FileDataSource) server.invoke(fileSystemMgtName,
+            FileDataSource fds = (FileDataSource) server.invoke(queryRetrieveScpName,
                     "getDatasourceOfInstance",
                     new Object[] { reqObj.getParam("documentUID") },
                     new String[] { String.class.getName() } );

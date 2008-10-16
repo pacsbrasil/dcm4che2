@@ -205,12 +205,6 @@ public class HPScpService extends AbstractScpService {
     }
 
 
-    private AEManager aeMgr() throws Exception {
-        AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
-                .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
-        return home.create();
-    }
-    
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.HangingProtocolStorage, hpStoreScp);
         services.bind(UIDs.HangingProtocolInformationModelFIND, hpFindScp);

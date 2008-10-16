@@ -937,7 +937,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         }
     }
 
-    private AEManager aeMgr() throws Exception {
+    protected AEManager aeMgr() throws Exception {
         AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
                 .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
         return home.create();
