@@ -75,12 +75,12 @@ import org.jboss.system.ServiceMBeanSupport;
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since 12.09.2004
- *
+ * 
  */
 public class CompressionService extends ServiceMBeanSupport {
-    
+
     private static final String _DCM = ".dcm";
-    
+
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
     private long taskInterval = 0L;
@@ -99,14 +99,14 @@ public class CompressionService extends ServiceMBeanSupport {
 
     private File tmpDir = new File("tmp");
 
-    private long keepTempFileIfVerificationFails = 0L;    
+    private long keepTempFileIfVerificationFails = 0L;
 
     private List compressionRuleList = new ArrayList();
-    
+
     private int bufferSize = 8192;
-    
+
     private String timerIDCheckFilesToCompress;
-    
+
     private static final String[] CODEC_NAMES = new String[] { "JPLL", "JLSL",
             "J2KR" };
 
@@ -134,13 +134,13 @@ public class CompressionService extends ServiceMBeanSupport {
     };
 
     public final int getBufferSize() {
-        return bufferSize ;
+        return bufferSize;
     }
 
     public final void setBufferSize(int bufferSize) {
         this.bufferSize = bufferSize;
     }
-	
+
     public final ObjectName getFileSystemMgtName() {
         return fileSystemMgtName;
     }
@@ -156,16 +156,16 @@ public class CompressionService extends ServiceMBeanSupport {
     public void setSchedulerServiceName(ObjectName schedulerServiceName) {
         scheduler.setSchedulerServiceName(schedulerServiceName);
     }
-        
+
     public final String getKeepTempFileIfVerificationFails() {
         return RetryIntervalls.formatInterval(keepTempFileIfVerificationFails);
     }
-    
+
     public final void setKeepTempFileIfVerificationFails(String interval) {
-        this.keepTempFileIfVerificationFails = 
-                RetryIntervalls.parseInterval(interval);
+        this.keepTempFileIfVerificationFails = RetryIntervalls
+                .parseInterval(interval);
     }
-    
+
     public final String getTaskInterval() {
         String s = RetryIntervalls.formatIntervalZeroAsNever(taskInterval);
         return (disabledEndHour == -1) ? s : s + "!" + disabledStartHour + "-"
@@ -187,9 +187,10 @@ public class CompressionService extends ServiceMBeanSupport {
             disabledEndHour = Integer.parseInt(interval.substring(pos1 + 1));
         }
         if (getState() == STARTED && oldInterval != taskInterval) {
-            scheduler.stopScheduler(timerIDCheckFilesToCompress, listenerID, delayedCompressionListener);
-            listenerID = scheduler.startScheduler(timerIDCheckFilesToCompress, 
-            		taskInterval, delayedCompressionListener);
+            scheduler.stopScheduler(timerIDCheckFilesToCompress, listenerID,
+                    delayedCompressionListener);
+            listenerID = scheduler.startScheduler(timerIDCheckFilesToCompress,
+                    taskInterval, delayedCompressionListener);
         }
     }
 
@@ -253,13 +254,13 @@ public class CompressionService extends ServiceMBeanSupport {
     }
 
     public final void setMaxBufferedImagePoolMemory(String maxMemory) {
-        CodecCmd.setMaxBufferedImagePoolMemory(
-                FileUtils.parseSize(maxMemory, 0L));
+        CodecCmd.setMaxBufferedImagePoolMemory(FileUtils.parseSize(maxMemory,
+                0L));
     }
 
     public final String getCurrentBufferedImagePoolMemory() {
-        return FileUtils.formatSize(
-                CodecCmd.getCurrentBufferedImagePoolMemory());
+        return FileUtils.formatSize(CodecCmd
+                .getCurrentBufferedImagePoolMemory());
     }
 
     public final float getBufferedImagePoolHitRate() {
@@ -270,36 +271,38 @@ public class CompressionService extends ServiceMBeanSupport {
         CodecCmd.resetBufferedImagePoolHitRate();
     }
 
-    public final void setTempDir( String dirPath ) {
+    public final void setTempDir(String dirPath) {
         tmpDir = new File(dirPath);
     }
-    
+
     public final String getTempDir() {
         return tmpDir.toString();
     }
-        
+
     public void checkForTempFilesToDelete() {
         if (keepTempFileIfVerificationFails <= 0)
             return;
         File absTmpDir = FileUtils.resolve(tmpDir);
         if (!absTmpDir.isDirectory())
             return;
-        final long before = System.currentTimeMillis() - keepTempFileIfVerificationFails;
-        File[] files = absTmpDir.listFiles(new FileFilter(){
+        final long before = System.currentTimeMillis()
+                - keepTempFileIfVerificationFails;
+        File[] files = absTmpDir.listFiles(new FileFilter() {
             public boolean accept(File f) {
                 return f.getName().endsWith(_DCM) && f.lastModified() < before;
-            }});
+            }
+        });
         for (int i = 0; i < files.length; i++) {
             if (log.isDebugEnabled())
                 log.debug("M-DELETE " + files[i]);
             if (!files[i].delete())
                 log.warn("Failed to M-DELETE " + files[i]);
-        }        
+        }
     }
-    
+
     public void checkForFilesToCompress() throws FinderException, IOException {
         log.info("Check For Files To Compress on attached filesystems!");
-		long minDiskFree = getMinDiskFreeFromFsmgt();
+        long minDiskFree = getMinDiskFreeFromFsmgt();
         String cuid;
         Timestamp before;
         CompressionRule info;
@@ -316,10 +319,11 @@ public class CompressionService extends ServiceMBeanSupport {
                 files = fsMgt.findFilesToCompress(fsDTOs[j].getDirectoryPath(),
                         cuid, before, limit);
                 if (files.length > 0) {
-                	if (buffer == null)
-                		buffer = new byte[bufferSize];
-                    log.debug("Compress " + files.length + " files on filesystem "
-                            + fsDTOs[j] + " triggered by " + info);
+                    if (buffer == null)
+                        buffer = new byte[bufferSize];
+                    log.debug("Compress " + files.length
+                            + " files on filesystem " + fsDTOs[j]
+                            + " triggered by " + info);
                     for (int k = 0; k < files.length; k++) {
                         doCompress(fsMgt, files[k], info, buffer);
                     }
@@ -329,7 +333,7 @@ public class CompressionService extends ServiceMBeanSupport {
         }
     }
 
-	private FileSystemDTO[] listLocalOnlineRWFileSystems() {
+    private FileSystemDTO[] listLocalOnlineRWFileSystems() {
         try {
             return (FileSystemDTO[]) server.invoke(fileSystemMgtName,
                     "listLocalOnlineRWFileSystems", null, null);
@@ -338,31 +342,33 @@ public class CompressionService extends ServiceMBeanSupport {
                     "Failed to invoke listLocalOnlineRWFileSystems", e);
         }
     }
-    
+
     private long getMinDiskFreeFromFsmgt() {
         try {
-            return FileUtils.parseSize((String) server.getAttribute(fileSystemMgtName,"MinimumFreeDiskSpace"),-1);
-        } catch (JMException e) { 
-            throw new RuntimeException(
-                    "Failed to invoke getMinDiskFree", e);
+            return FileUtils.parseSize((String) server.getAttribute(
+                    fileSystemMgtName, "MinimumFreeDiskSpace"), -1);
+        } catch (JMException e) {
+            throw new RuntimeException("Failed to invoke getMinDiskFree", e);
         }
-    	
+
     }
 
     public boolean compress(FileDTO fileDTO) throws IOException {
         if (!isUncompressed(fileDTO.getFileTsuid())) {
-            log.debug( "The image is already compressed, file = " + fileDTO.getFilePath() );
+            log.debug("The image is already compressed, file = "
+                    + fileDTO.getFilePath());
             return false;
         }
         CompressionRule rule = getCompressionRule(fileDTO.getSopClassUID());
         if (rule == null) {
-            log.debug( "There is no compression rule for this image SOP Class: " + fileDTO.getSopClassUID() );
+            log.debug("There is no compression rule for this image SOP Class: "
+                    + fileDTO.getSopClassUID());
             return false;
         }
         doCompress(newFileSystemMgt(), fileDTO, rule, new byte[bufferSize]);
         return true;
     }
-    
+
     private CompressionRule getCompressionRule(String cuid) {
         for (Iterator iter = compressionRuleList.iterator(); iter.hasNext();) {
             CompressionRule rule = (CompressionRule) iter.next();
@@ -384,36 +390,37 @@ public class CompressionService extends ServiceMBeanSupport {
         File baseDir = FileUtils.toFile(fileDTO.getDirectoryPath());
         File srcFile = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO
                 .getFilePath());
-		File destFile = null;
+        File destFile = null;
         try {
-	        destFile = FileUtils.createNewFile(srcFile.getParentFile(),
-					(int) Long.parseLong(srcFile.getName(), 16)+1);
-	        if (log.isDebugEnabled())
-	            log.debug("Compress file " + srcFile + " to " + destFile
-	                    + " with CODEC:" + info.getCodec() + "("
-	                    + info.getTransferSyntax() + ")");
+            destFile = FileUtils.createNewFile(srcFile.getParentFile(),
+                    (int) Long.parseLong(srcFile.getName(), 16) + 1);
+            if (log.isDebugEnabled())
+                log.debug("Compress file " + srcFile + " to " + destFile
+                        + " with CODEC:" + info.getCodec() + "("
+                        + info.getTransferSyntax() + ")");
             int[] pxvalVR = new int[1];
-			byte[] md5 = CompressCmd.compressFile(srcFile, destFile, info
+            byte[] md5 = CompressCmd.compressFile(srcFile, destFile, info
                     .getTransferSyntax(), pxvalVR, buffer);
             if (verifyCompression && fileDTO.getFileMd5() != null) {
                 File absTmpDir = FileUtils.resolve(tmpDir);
                 if (absTmpDir.mkdirs())
                     log.info("Create directory for decompressed files");
-                File decFile = new File(absTmpDir,
-                		fileDTO.getFilePath().replace('/', '-') 
-                		+ _DCM);
+                File decFile = new File(absTmpDir, fileDTO.getFilePath()
+                        .replace('/', '-')
+                        + _DCM);
                 byte[] dec_md5 = DecompressCmd.decompressFile(destFile,
                         decFile, fileDTO.getFileTsuid(), pxvalVR[0], buffer);
                 if (!Arrays.equals(dec_md5, fileDTO.getFileMd5())) {
-                    log.info("MD5 sum after compression+decompression of " + srcFile
-                            + " differs - compare pixel matrix");
+                    log.info("MD5 sum after compression+decompression of "
+                            + srcFile + " differs - compare pixel matrix");
                     if (!FileUtils.equalsPixelData(srcFile, decFile)) {
-                        log.warn("Pixel matrix after decompression differs from original file "
+                        log
+                                .warn("Pixel matrix after decompression differs from original file "
                                         + srcFile
                                         + "! Keep original uncompressed file.");
                         destFile.delete();
                         fsMgt.setFileStatus(fileDTO.getPk(),
-                        		FileStatus.VERIFY_COMPRESS_FAILED);
+                                FileStatus.VERIFY_COMPRESS_FAILED);
                         if (keepTempFileIfVerificationFails <= 0L)
                             decFile.delete();
                         return;
@@ -428,9 +435,9 @@ public class CompressionService extends ServiceMBeanSupport {
                 log.debug("replace File " + srcFile + " with " + destFile);
             fsMgt.replaceFile(fileDTO.getPk(), destFilePath, info
                     .getTransferSyntax(), (int) destFile.length(), md5);
-            fileDTO.setPk( 0 );
-            fileDTO.setFilePath(destFilePath );
-            fileDTO.setFileSize((int)destFile.length());
+            fileDTO.setPk(0);
+            fileDTO.setFilePath(destFilePath);
+            fileDTO.setFileSize((int) destFile.length());
             fileDTO.setFileMd5(md5);
             fileDTO.setFileTsuid(info.getTransferSyntax());
             srcFile.delete();
@@ -439,7 +446,9 @@ public class CompressionService extends ServiceMBeanSupport {
             if (destFile != null && destFile.exists())
                 destFile.delete();
             try {
-                fsMgt.setFileStatus(fileDTO.getPk(), FileStatus.COMPRESS_FAILED);
+                fsMgt
+                        .setFileStatus(fileDTO.getPk(),
+                                FileStatus.COMPRESS_FAILED);
             } catch (Exception x1) {
                 log.error("Failed to set FAILED_TO_COMPRESS for file "
                         + srcFile);
@@ -448,20 +457,21 @@ public class CompressionService extends ServiceMBeanSupport {
     }
 
     private boolean isDisabled(int hour) {
-        if (disabledEndHour == -1) return false;
+        if (disabledEndHour == -1)
+            return false;
         boolean sameday = disabledStartHour <= disabledEndHour;
-        boolean inside = hour >= disabledStartHour && hour < disabledEndHour; 
+        boolean inside = hour >= disabledStartHour && hour < disabledEndHour;
         return sameday ? inside : !inside;
     }
 
     protected void startService() throws Exception {
-        listenerID = scheduler.startScheduler(timerIDCheckFilesToCompress, taskInterval,
-        		delayedCompressionListener);
+        listenerID = scheduler.startScheduler(timerIDCheckFilesToCompress,
+                taskInterval, delayedCompressionListener);
     }
 
     protected void stopService() throws Exception {
         scheduler.stopScheduler(timerIDCheckFilesToCompress, listenerID,
-        		delayedCompressionListener);
+                delayedCompressionListener);
         super.stopService();
     }
 
@@ -481,6 +491,7 @@ public class CompressionService extends ServiceMBeanSupport {
         String cuid;
         int codec;
         long delay;
+
         public CompressionRule(String s) {
             String[] a = StringUtils.split(s, ':');
             if (a.length != 3)
@@ -489,7 +500,8 @@ public class CompressionService extends ServiceMBeanSupport {
             getCUID(); // check cuid
             codec = Arrays.asList(CODEC_NAMES).indexOf(a[1]);
             if (codec == -1)
-                throw new IllegalArgumentException("Unrecognized codec - " + a[1]);
+                throw new IllegalArgumentException("Unrecognized codec - "
+                        + a[1]);
             delay = RetryIntervalls.parseInterval(a[2]);
         }
 
@@ -504,7 +516,8 @@ public class CompressionService extends ServiceMBeanSupport {
          * @return
          */
         public String getCUID() {
-            return Character.isDigit(cuid.charAt(0)) ? cuid : UIDs.forName(cuid);
+            return Character.isDigit(cuid.charAt(0)) ? cuid : UIDs
+                    .forName(cuid);
         }
 
         /**
@@ -527,11 +540,12 @@ public class CompressionService extends ServiceMBeanSupport {
         }
     }
 
-	public String getTimerIDCheckFilesToCompress() {
-		return timerIDCheckFilesToCompress;
-	}
+    public String getTimerIDCheckFilesToCompress() {
+        return timerIDCheckFilesToCompress;
+    }
 
-	public void setTimerIDCheckFilesToCompress(String timerIDCheckFilesToCompress) {
-		this.timerIDCheckFilesToCompress = timerIDCheckFilesToCompress;
-	}
+    public void setTimerIDCheckFilesToCompress(
+            String timerIDCheckFilesToCompress) {
+        this.timerIDCheckFilesToCompress = timerIDCheckFilesToCompress;
+    }
 }
