@@ -6,7 +6,6 @@
   <mbean code="org.dcm4chee.xds.store.mbean.XDSStoreService" 
          name="dcm4chee.xds:service=XDSStoreService"
          xmbean-dd="">
-    <depends>dcm4chee.archive:service=dfcmd</depends>
     <xmbean>
       <description><![CDATA[<b>Document Store Service for XDS documents</b><br/>
 		Provides a store/retrieve service.<br/>.
