@@ -18,19 +18,15 @@ import java.io.Serializable;
  */
 public class PatientUpdated implements Serializable {
 
-    private static final long serialVersionUID = 3689069551690199604L;
+    private static final long serialVersionUID = -829912804804286932L;
 
     private String patientID;
 
     private String description;
 
-    private String retrieveAET;
-
-    public PatientUpdated(String patientID, String description,
-            String retrieveAET) {
+    public PatientUpdated(String patientID, String description) {
         this.patientID = patientID;
         this.description = description;
-        this.retrieveAET = retrieveAET;
 
     }
 
@@ -46,12 +42,5 @@ public class PatientUpdated implements Serializable {
      */
     public String getDescription() {
         return description;
-    }
-
-    /**
-     * @return Returns the retrieveAET.
-     */
-    public String getRetrieveAET() {
-        return retrieveAET;
     }
 }

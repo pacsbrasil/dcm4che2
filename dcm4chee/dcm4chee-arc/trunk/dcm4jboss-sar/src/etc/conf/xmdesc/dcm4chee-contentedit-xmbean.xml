@@ -123,14 +123,6 @@
    </attribute>
 
    <attribute access="read-write"
-      getMethod="getFileSystemMgtName"
-      setMethod="setFileSystemMgtName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>FileSystemMgtName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getHL7SendServiceName"
       setMethod="setHL7SendServiceName">
       <description>Used internally. Do NOT modify.

@@ -101,7 +101,6 @@ public class ContentEditService extends ServiceMBeanSupport {
     private String receivingFacility;
 
     private ObjectName studyMgtScuServiceName;
-    private ObjectName fileSystemMgtName;
     private ObjectName storeScpServiceName;
     private ObjectName mppsScpServiceName;
 
@@ -135,21 +134,6 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     public boolean getAuditEnabled() {
         return auditEnabled;
-    }
-
-    /**
-     * @return Returns the fileSystemMgtName.
-     */
-    public ObjectName getFileSystemMgtName() {
-        return fileSystemMgtName;
-    }
-
-    /**
-     * @param fileSystemMgtName
-     *            The fileSystemMgtName to set.
-     */
-    public void setFileSystemMgtName(ObjectName fileSystemMgtName) {
-        this.fileSystemMgtName = fileSystemMgtName;
     }
 
     public final ObjectName getHL7SendServiceName() {
@@ -317,8 +301,7 @@ public class ContentEditService extends ServiceMBeanSupport {
                     .get("MERGED"));
             String patID = ((Dataset) map.get("DOMINANT"))
                     .getString(Tags.PatientID);
-            sendJMXNotification(new PatientUpdated(patID, "Patient merge",
-                    getRetrieveAET()));
+            sendJMXNotification(new PatientUpdated(patID, "Patient merge"));
         }
         return map;
     }
@@ -354,8 +337,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         sendHL7PatientXXX(ds, "ADT^A08");
 
         String patID = ds.getString(Tags.PatientID);
-        sendJMXNotification(new PatientUpdated(patID, "Patient update",
-                getRetrieveAET()));
+        sendJMXNotification(new PatientUpdated(patID, "Patient update"));
         logPatientRecord(ds, PatientRecordMessage.UPDATE);
     }
 
@@ -387,17 +369,6 @@ public class ContentEditService extends ServiceMBeanSupport {
             return null;
         }
 
-    }
-
-    private String getRetrieveAET() {
-        try {
-            return (String) server.getAttribute(fileSystemMgtName,
-                    "RetrieveAETitle");
-        } catch (Exception e) {
-            log.error("Failed to get RetrieveAET from FilesystemMgtService:"
-                    + fileSystemMgtName, e);
-            return null;
-        }
     }
 
     private void sendStudyMgt(String iuid, int commandField, int actionTypeID,
@@ -799,10 +770,9 @@ public class ContentEditService extends ServiceMBeanSupport {
     private void sendSeriesUpdatedNotifications(Dataset studyMgtDS,
             String description) {
         DcmElement sq = studyMgtDS.get(Tags.RefSeriesSeq);
-        String aet = getRetrieveAET();
         for (int i = 0, len = sq.countItems(); i < len; i++) {
             sendJMXNotification(new SeriesUpdated(sq.getItem(i).getString(
-                    Tags.SeriesInstanceUID), description, aet));
+                    Tags.SeriesInstanceUID), description));
         }
 
     }

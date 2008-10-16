@@ -62,7 +62,6 @@ import org.jboss.system.ServiceMBeanSupport;
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since 27.08.2004
- * 
  */
 public class ForwardService extends ServiceMBeanSupport {
 
@@ -116,8 +115,7 @@ public class ForwardService extends ServiceMBeanSupport {
             log.info("seriesUpdatedListener: series updated:"
                     + seriesUpdated.getSeriesIUID() + " Description:"
                     + seriesUpdated.getDescription());
-            sendUpdatedNotification(seriesUpdated.getRetrieveAET(), null, null,
-                    seriesUpdated.getSeriesIUID());
+            sendUpdatedNotification(null, null, seriesUpdated.getSeriesIUID());
         }
     };
 
@@ -128,8 +126,7 @@ public class ForwardService extends ServiceMBeanSupport {
             log.info("patientUpdatedListener: updated for patient "
                     + patientUpdated.getPatientID() + " Description:"
                     + patientUpdated.getDescription());
-            sendUpdatedNotification(patientUpdated.getRetrieveAET(),
-                    patientUpdated.getPatientID(), null, null);
+            sendUpdatedNotification(patientUpdated.getPatientID(), null, null);
         }
     };
 
@@ -307,11 +304,11 @@ public class ForwardService extends ServiceMBeanSupport {
         }
     }
 
-    private void sendUpdatedNotification(String retrieveAET, String patientID,
-            String studyIUID, String seriesIUID) {
+    private void sendUpdatedNotification(String patientID, String studyIUID,
+            String seriesIUID) {
         for (int i = 0; i < forwardModifiedToAETs.length; i++) {
-            scheduleMove(retrieveAET, forwardModifiedToAETs[i],
-                    forwardPriority, patientID, studyIUID, seriesIUID, null, 0l);
+            scheduleMove(null, forwardModifiedToAETs[i], forwardPriority,
+                    patientID, studyIUID, seriesIUID, null, 0l);
         }
     }
 

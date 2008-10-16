@@ -18,17 +18,14 @@ import java.io.Serializable;
  */
 public class SeriesUpdated implements Serializable {
 
-    private static final long serialVersionUID = 3689069551690199604L;
+    private static final long serialVersionUID = 5159325389425583L;
 
     private String seriesIUID;
     private String description;
-    private String retrieveAET;
 
-    public SeriesUpdated(String seriesIUID, String description,
-            String retrieveAET) {
+    public SeriesUpdated(String seriesIUID, String description) {
         this.seriesIUID = seriesIUID;
         this.description = description;
-        this.retrieveAET = retrieveAET;
     }
 
     /**
@@ -43,12 +40,5 @@ public class SeriesUpdated implements Serializable {
      */
     public String getDescription() {
         return description;
-    }
-
-    /**
-     * @return Returns the retrieveAET.
-     */
-    public String getRetrieveAET() {
-        return retrieveAET;
     }
 }
