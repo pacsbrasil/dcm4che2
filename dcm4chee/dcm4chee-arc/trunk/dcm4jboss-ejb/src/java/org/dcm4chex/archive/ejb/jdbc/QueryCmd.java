@@ -426,7 +426,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         sqlBuilder.addWildCardMatch(null, "Series.seriesNumber", type2, keys
                 .getStrings(Tags.SeriesNumber));
         String[] modality = keys.getStrings(Tags.Modality);
-        if (modality == null)
+        if (modality == null || modality.length < 1)
             modality = keys.getStrings(Tags.ModalitiesInStudy);
         sqlBuilder.addWildCardMatch(null, "Series.modality", SqlBuilder.TYPE1,
                 modality);
