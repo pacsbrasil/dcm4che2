@@ -912,9 +912,6 @@ StoreSCP service.
       </description>
       <name>FileSystemMgtServiceNamePrefix</name>
       <type>java.lang.String</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=FileSystemMgt,group="/>
-      </descriptors>
    </attribute>
    <attribute access="read-write" 
       getMethod="getMwlScuServiceName"

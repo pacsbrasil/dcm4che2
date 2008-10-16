@@ -5,6 +5,10 @@
   <mbean code="org.dcm4chex.archive.dcm.storescp.StoreScpService"
     name="dcm4chee.archive:service=StoreScp"
     xmbean-dd="xmdesc/dcm4chee-storescp-xmbean.xml">
+    <attribute name="FileSystemMgtServiceNamePrefix"
+      >dcm4chee.archive:service=FileSystemMgt,group=</attribute>
+    <attribute name="TimerIDCheckPendingSeriesStored"
+      >CheckPendingSeriesStored</attribute>
     <depends optional-attribute-name="AEServiceName"
       >dcm4chee.archive:service=AE</depends>
     <depends optional-attribute-name="AuditLoggerName"
@@ -17,7 +21,5 @@
       >dcm4chee.archive:service=Scheduler</depends>
     <depends optional-attribute-name="TemplatesServiceName"
       >dcm4chee.archive:service=Templates</depends>
-    <attribute name="TimerIDCheckPendingSeriesStored"
-      >CheckPendingSeriesStored</attribute>
   </mbean>
 </server>
