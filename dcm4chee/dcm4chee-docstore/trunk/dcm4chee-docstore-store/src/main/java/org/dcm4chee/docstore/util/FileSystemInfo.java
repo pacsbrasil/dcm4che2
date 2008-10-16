@@ -46,9 +46,13 @@ public class FileSystemInfo {
             return Availability.UNAVAILABLE;
         } else {
             try {
-                long free = freeSpace(baseDir.getPath());
-                log.debug("check Filesystem availability for doc store! path:"+baseDir.getPath()+ " free:"+free);
-                return free < minFree ? Availability.UNAVAILABLE : Availability.ONLINE;
+                if ( getServer().isRegistered(dfCmdName) ) {
+                    long free = freeSpace(baseDir.getPath());
+                    log.debug("check Filesystem availability for doc store! path:"+baseDir.getPath()+ " free:"+free);
+                    return free < minFree ? Availability.UNAVAILABLE : Availability.ONLINE;
+                }
+                log.warn("Availability can't be checked! Set to ONLINE anyway!");
+                return Availability.ONLINE;
             } catch (Exception x) {
                 log.error("Can not get free space for "+baseDir+" ! Set Availability to UNAVAILABLE!",x);
                 return Availability.UNAVAILABLE;
