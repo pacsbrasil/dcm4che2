@@ -101,7 +101,7 @@ public class XdsCfgService extends ServiceMBeanSupport {
     }
 
     public void setAttributesToStore(String attributesToStore) {
-        this.attributesToStore = toMap(attributesToStore);
+        this.attributesToStore = toMap(attributesToStore.trim());
     }
     
     public String getVersionPrefix() {
@@ -109,7 +109,7 @@ public class XdsCfgService extends ServiceMBeanSupport {
     }
 
     public void setVersionPrefix(String versionPrefix) {
-        this.versionPrefix = versionPrefix;
+        this.versionPrefix = versionPrefix.trim();
     }
 
     /**
@@ -125,7 +125,7 @@ public class XdsCfgService extends ServiceMBeanSupport {
     }
 
     public void setServiceDomainPrefix(String serviceDomainPrefix) {
-	this.serviceDomainPrefix = serviceDomainPrefix;
+	this.serviceDomainPrefix = serviceDomainPrefix.trim();
     }
 
     protected String toString(Map map) {

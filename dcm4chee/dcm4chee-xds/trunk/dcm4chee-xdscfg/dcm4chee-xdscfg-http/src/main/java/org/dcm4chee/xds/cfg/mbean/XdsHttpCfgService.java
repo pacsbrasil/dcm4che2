@@ -132,7 +132,7 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
             System.getProperties().remove(HTTP_PROXY_HOST);
             System.getProperties().remove(HTTP_PROXY_PORT);
         } else {
-            System.setProperty(HTTP_PROXY_HOST, proxyHost);
+            System.setProperty(HTTP_PROXY_HOST, proxyHost.trim());
             System.setProperty(HTTP_PROXY_PORT, String.valueOf(proxyPort));
         }
     }
@@ -151,19 +151,19 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
         return System.getProperty(HTTP_PROXY_USER, NONE);
     }
     public void setProxyUser(String user) {
-        setOrRemoveAttribute(HTTP_PROXY_USER, user);
+        setOrRemoveAttribute(HTTP_PROXY_USER, user.trim());
     }
     public String getProxyPasswd() {
         return System.getProperty(HTTP_PROXY_PASSWD);
     }
     public void setProxyPasswd(String passwd) {
-        setOrRemoveAttribute(HTTP_PROXY_PASSWD, passwd);
+        setOrRemoveAttribute(HTTP_PROXY_PASSWD, passwd.trim());
     }
     public String getNonProxyHosts() {
         return System.getProperty(HTTP_NON_PROXY_HOSTS, NONE);
     }
     public void setNonProxyHosts(String hosts) {
-        setOrRemoveAttribute(HTTP_NON_PROXY_HOSTS, hosts);
+        setOrRemoveAttribute(HTTP_NON_PROXY_HOSTS, hosts.trim());
     }
 
     public String getSecureProxyHost() {
@@ -174,7 +174,7 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
             System.getProperties().remove(HTTPS_PROXY_HOST);
             System.getProperties().remove(HTTPS_PROXY_PORT);
         } else {
-            System.setProperty(HTTPS_PROXY_HOST, proxyHost);
+            System.setProperty(HTTPS_PROXY_HOST, proxyHost.trim());
             System.setProperty(HTTPS_PROXY_PORT, String.valueOf(secureProxyPort));
         }
     }
@@ -192,19 +192,19 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
         return System.getProperty(HTTPS_PROXY_USER, NONE);
     }
     public void setSecureProxyUser(String user) {
-        setOrRemoveAttribute(HTTPS_PROXY_USER, user);
+        setOrRemoveAttribute(HTTPS_PROXY_USER, user.trim());
     }
     public String getSecureProxyPasswd() {
         return System.getProperty(HTTPS_PROXY_PASSWD);
     }
     public void setSecureProxyPasswd(String passwd) {
-        setOrRemoveAttribute(HTTPS_PROXY_PASSWD, passwd);
+        setOrRemoveAttribute(HTTPS_PROXY_PASSWD, passwd.trim());
     }
     public String getSecureNonProxyHosts() {
         return System.getProperty(HTTPS_NON_PROXY_HOSTS, NONE);
     }
     public void setSecureNonProxyHosts(String hosts) {
-        setOrRemoveAttribute(HTTPS_NON_PROXY_HOSTS, hosts);
+        setOrRemoveAttribute(HTTPS_NON_PROXY_HOSTS, hosts.trim());
     }
     
     public String getSocksProxyHost() {
@@ -215,7 +215,7 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
             System.getProperties().remove(SOCKS_PROXY_HOST);
             System.getProperties().remove(SOCKS_PROXY_PORT);
         } else {
-            System.setProperty(SOCKS_PROXY_HOST, proxyHost);
+            System.setProperty(SOCKS_PROXY_HOST, proxyHost.trim());
             System.setProperty(SOCKS_PROXY_PORT, String.valueOf(socksProxyPort));
         }
     }
@@ -232,13 +232,13 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
     
     public void setKeyStorePassword(String keyStorePassword) {
         if ( NONE.equals(keyStorePassword)) keyStorePassword = null;
-        this.keystorePassword = keyStorePassword;
+        this.keystorePassword = keyStorePassword.trim();
     }
     public String getKeyStoreURL() {
         return keystoreURL;
     }
     public void setKeyStoreURL(String keyStoreURL) {
-        this.keystoreURL = keyStoreURL;
+        this.keystoreURL = keyStoreURL.trim();
     }
     public String getTrustStoreURL() {
         return trustStoreURL == null ? NONE : trustStoreURL;
@@ -247,7 +247,7 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
         if ( NONE.equals(trustStoreURL ) ) {
             this.trustStoreURL = null;
         } else {
-            this.trustStoreURL = trustStoreURL;
+            this.trustStoreURL = trustStoreURL.trim();
         }
     }
     public void setTrustStorePassword(String trustStorePassword) {
@@ -258,7 +258,7 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
         return allowedUrlHost == null ? CERT : allowedUrlHost;
     }
     public void setAllowedUrlHost(String allowedUrlHost) {
-        this.allowedUrlHost = CERT.equals(allowedUrlHost) ? null : allowedUrlHost;
+        this.allowedUrlHost = CERT.equals(allowedUrlHost) ? null : allowedUrlHost.trim();
     }
 
     public int configTLS(String url) {
