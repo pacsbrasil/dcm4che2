@@ -115,7 +115,7 @@ public class XDSQueryService extends ServiceMBeanSupport {
      * @param xdsQueryURI the xdsQueryURI to set
      */
     public void setXDSQueryURI(String xdsQueryURI) {
-        this.xdsQueryURI = xdsQueryURI;
+        this.xdsQueryURI = xdsQueryURI.trim();
     }
 
     public String getAffinityDomain() {
@@ -123,7 +123,7 @@ public class XDSQueryService extends ServiceMBeanSupport {
     }
 
     public void setAffinityDomain(String affinityDomain) {
-        this.affinityDomain = affinityDomain;
+        this.affinityDomain = affinityDomain.trim();
     }
 
     public boolean isUseSoap() {
