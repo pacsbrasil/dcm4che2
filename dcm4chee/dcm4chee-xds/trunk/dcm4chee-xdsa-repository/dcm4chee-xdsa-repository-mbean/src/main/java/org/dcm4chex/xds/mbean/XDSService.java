@@ -156,7 +156,7 @@ public class XDSService extends ServiceMBeanSupport {
      * @param docRepositoryURI The docRepositoryURI to set.
      */
     public void setXDSRegistryURI(String xdsRegistryURI) {
-        this.xdsRegistryURI = xdsRegistryURI;
+        this.xdsRegistryURI = xdsRegistryURI.trim();
     }
 
     /**
@@ -169,7 +169,7 @@ public class XDSService extends ServiceMBeanSupport {
      * @param xdsQueryURI the xdsQueryURI to set
      */
     public void setXDSQueryURI(String xdsQueryURI) {
-        this.xdsQueryURI = xdsQueryURI;
+        this.xdsQueryURI = xdsQueryURI.trim();
     }
     /**
      * @return the forceSQLQuery
@@ -202,7 +202,7 @@ public class XDSService extends ServiceMBeanSupport {
      * @param retrieveURI The retrieveURI to set.
      */
     public void setRetrieveURI(String retrieveURI) {
-        this.retrieveURI = retrieveURI;
+        this.retrieveURI = retrieveURI.trim();
     }
 
     /**
@@ -252,14 +252,14 @@ public class XDSService extends ServiceMBeanSupport {
      * @param filterSlots the filterSlots to set
      */
     public void setFilteredSlots(String filterSlots) {
-        this.filteredSlots = setListString(filterSlots);
+        this.filteredSlots = setListString(filterSlots.trim());
     }
 
     public String getRimPrefix() {
         return rimPrefix == null ? NONE : rimPrefix;
     }
     public void setRimPrefix(String rimPrefix) {
-        this.rimPrefix = NONE.equals(rimPrefix) ? null : rimPrefix;
+        this.rimPrefix = NONE.equals(rimPrefix) ? null : rimPrefix.trim();
     }
     /**
      * @return Returns the fetchNewPatIDURL.
@@ -271,7 +271,7 @@ public class XDSService extends ServiceMBeanSupport {
      * @param fetchNewPatIDURL The fetchNewPatIDURL to set.
      */
     public void setFetchNewPatIDURL(String fetchNewPatIDURL) {
-        this.fetchNewPatIDURL = fetchNewPatIDURL;
+        this.fetchNewPatIDURL = fetchNewPatIDURL.trim();
     }
 
     private List setListString(String s) {
