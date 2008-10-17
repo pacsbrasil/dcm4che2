@@ -41,7 +41,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
 
-import javax.ejb.ObjectNotFoundException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
