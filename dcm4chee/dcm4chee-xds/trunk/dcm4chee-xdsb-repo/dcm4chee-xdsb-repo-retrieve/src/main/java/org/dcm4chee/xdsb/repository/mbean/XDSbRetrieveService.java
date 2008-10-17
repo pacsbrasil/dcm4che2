@@ -127,7 +127,7 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
             mapExternalRepositories = new HashMap<String,String>();
             StringTokenizer st = new StringTokenizer(s, "\r\n;=");
             while ( st.hasMoreElements() ) {
-                mapExternalRepositories.put( st.nextToken(), st.nextToken());
+                mapExternalRepositories.put( st.nextToken().trim(), st.nextToken().trim());
             }
         }
     }

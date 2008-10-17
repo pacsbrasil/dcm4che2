@@ -145,7 +145,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         return repositoryUniqueId;
     }
     public void setRepositoryUniqueId(String repositoryUniqueId) {
-        this.repositoryUniqueId = repositoryUniqueId;
+        this.repositoryUniqueId = repositoryUniqueId.trim();
     }
 
     /**
@@ -158,7 +158,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
      * @param docRepositoryURI The docRepositoryURI to set.
      */
     public void setXDSRegistryURI(String xdsRegistryURI) {
-        this.xdsRegistryURI = xdsRegistryURI;
+        this.xdsRegistryURI = xdsRegistryURI.trim();
     }
 
     /**
@@ -171,7 +171,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
      * @param retrieveURI The retrieveURI to set.
      */
     public void setRetrieveURI(String retrieveURI) {
-        this.retrieveURI = NONE.equals(retrieveURI) ? null : retrieveURI;
+        this.retrieveURI = NONE.equals(retrieveURI) ? null : retrieveURI.trim();
     }
 
     public boolean isLogRegisterMessage() {
@@ -218,7 +218,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         return mockError == null ? NONE : mockError;
     }
     public void setMockError(String mockError) {
-        this.mockError = NONE.equals(mockError) ? null : mockError;
+        this.mockError = NONE.equals(mockError) ? null : mockError.trim();
     }
 
     public ObjectName getDocumentStoreService() {
