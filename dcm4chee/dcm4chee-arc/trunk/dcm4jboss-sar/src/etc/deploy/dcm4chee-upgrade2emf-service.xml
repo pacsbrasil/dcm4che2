@@ -10,8 +10,8 @@
   <mbean code="org.dcm4chex.archive.emf.UpgradeToEnhancedMFService"
     name="dcm4chee.archive:service=UpgradeToEnhancedMF"
     xmbean-dd="xmdesc/dcm4chee-upgrade2emf-xmbean.xml">
-    <depends optional-attribute-name="FileSystemMgtName"
-      >dcm4chee.archive:service=FileSystemMgt</depends>
+    <depends optional-attribute-name="QueryRetrieveScpServiceName"
+      >dcm4chee.archive:service=QueryRetrieveScp</depends>
     <depends optional-attribute-name="StoreScpServiceName"
       >dcm4chee.archive:service=StoreScp</depends>
     <depends optional-attribute-name="JMSServiceName"

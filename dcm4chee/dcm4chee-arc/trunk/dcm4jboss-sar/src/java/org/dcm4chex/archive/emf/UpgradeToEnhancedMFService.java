@@ -63,8 +63,11 @@ import org.dcm4che.dict.VRs;
 import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.mbean.JMSDelegate;
+import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -89,7 +92,7 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
 
     private ObjectName storeScpServiceName;
 
-    private ObjectName fileSystemMgtName;
+    private ObjectName queryRetrieveScpServiceName;
 
     private String queueName;
 
@@ -125,12 +128,12 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
         this.storeScpServiceName = storeScpServiceName;
     }
 
-    public final ObjectName getFileSystemMgtName() {
-        return fileSystemMgtName;
+    public final ObjectName getQueryRetrieveScpServiceName() {
+        return queryRetrieveScpServiceName;
     }
 
-    public final void setFileSystemMgtName(ObjectName fileSystemMgtName) {
-        this.fileSystemMgtName = fileSystemMgtName;
+    public final void setQueryRetrieveScpServiceName(ObjectName name) {
+        this.queryRetrieveScpServiceName = name;
     }
 
     public final String getQueueName() {
@@ -441,15 +444,30 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
     }
 
     private File locateInstance(String iuid) throws Exception {
-        return (File) server.invoke(fileSystemMgtName, "locateInstance",
-                new Object[] { iuid },
+        return (File) server.invoke(queryRetrieveScpServiceName,
+                "locateInstance", new Object[] { iuid },
                 new String[] { String.class.getName() });
+    }
+
+    protected FileSystemMgt newFileSystemMgt() {
+        try {
+            FileSystemMgtHome home = (FileSystemMgtHome) EJBHomeFactory
+                    .getFactory().lookup(FileSystemMgtHome.class,
+                            FileSystemMgtHome.JNDI_NAME);
+            return home.create();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to access File System Mgt EJB:",
+                    e);
+        }
     }
 
     private void deleteStoredSeries(SeriesStored seriesStored)
             throws Exception {
-        server.invoke(fileSystemMgtName, "deleteStoredSeries",
-                new Object[] { seriesStored },
-                new String[] { SeriesStored.class.getName() });
+        FileDTO[] fileDTOs = newFileSystemMgt()
+                .deleteStoredSeries(seriesStored);
+        for (FileDTO fileDTO : fileDTOs) {
+            FileUtils.delete(FileUtils.toFile(fileDTO.getDirectoryPath(),
+                    fileDTO.getFilePath()), true);
+        }
     }
 }
