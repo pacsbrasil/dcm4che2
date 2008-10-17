@@ -77,15 +77,15 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
     private Timestamp updatedAfter;
     private int availability;
     private int maximalNumberOfSeriesToUpdateByOneTask;
-    private ObjectName fileSystemMgtName;
+    private ObjectName queryRetrieveScpServiceName;
     private ObjectName tarRetrieverName;
 
-    public final ObjectName getFileSystemMgtName() {
-        return fileSystemMgtName;
+    public final ObjectName getQueryRetrieveScpServiceName() {
+        return queryRetrieveScpServiceName;
     }
 
-    public final void setFileSystemMgtName(ObjectName fileSystemMgtName) {
-        this.fileSystemMgtName = fileSystemMgtName;
+    public final void setQueryRetrieveScpServiceName(ObjectName name) {
+        this.queryRetrieveScpServiceName = name;
     }
 
     public final ObjectName getTarRetrieverName() {
@@ -255,11 +255,13 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
 
     boolean isLocalRetrieveAET(String aet) {
         try {
-            return aet.equals(server.getAttribute(fileSystemMgtName,
-                    "RetrieveAETitle"));
+            return (Boolean) server.invoke(queryRetrieveScpServiceName,
+                    "isLocalRetrieveAET", new Object[]{ aet },
+                    new String[]{ String.class.getName() });
         } catch (JMException e) {
             throw new RuntimeException(
-                    "Failed to invoke getAttribute 'RetrieveAETitle'", e);
+                    "Failed to invoke isLocalRetrieveAET() on "
+                    + queryRetrieveScpServiceName, e);
         }
     }
 
