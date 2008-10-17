@@ -43,8 +43,8 @@ import java.util.Map;
  * 
  * @author bwallace
  */
-public interface MapFactory {
+public interface MapFactory<T> {
 
    /** Create a computed value from the src value */
-   public Object create(Map<String,Object> src);
+   public T create(Map<String,Object> src);
 }

@@ -90,7 +90,9 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("serial")
 public class MetaDataServlet extends HttpServlet {
-   public static final String REQUEST_TYPE = "requestType";
+   public static final String MODEL_KEY = "model";
+
+	public static final String REQUEST_TYPE = "requestType";
 
 	private static Logger log = LoggerFactory.getLogger(MetaDataServlet.class.getName());
 
@@ -141,7 +143,7 @@ public class MetaDataServlet extends HttpServlet {
    protected void doFilter(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	  try {
 		 String requestType = request.getParameter(REQUEST_TYPE);
-		 Map<String, Object> params = computeParameterMap(request);
+		 Map<String, Object> params = computeParameterMap(request, response);
 		 FilterItem useFilterItem;
 		 if (requestType != null) {
 			useFilterItem = filter.getNamedFilter(filterItem, requestType);
@@ -183,7 +185,7 @@ public class MetaDataServlet extends HttpServlet {
     *         case where there is only 1 possible value.
     */
    @SuppressWarnings("unchecked")
-   protected Map<String, Object> computeParameterMap(HttpServletRequest request) {
+   protected Map<String, Object> computeParameterMap(HttpServletRequest request, HttpServletResponse response) {
 	  Map<String, String[]> parameters = request.getParameterMap();
 	  Map<String, Object> ret = new HashMap<String, Object>();
 	  for (Map.Entry<String, String[]> me : parameters.entrySet()) {
@@ -200,6 +202,8 @@ public class MetaDataServlet extends HttpServlet {
 	  // needs it - eg for auditing.
 	  ret.put(REQUEST,request);
 	  ret.put(USER_KEY, request.getRemoteUser());
+	  ret.put(UrlUriResolver.URIRESOLVER, new UrlUriResolver(request,response,getServletContext()));
+
 	  return ret;
    }
 
@@ -271,7 +275,7 @@ public class MetaDataServlet extends HttpServlet {
    protected long getModifiedTimeAllowed() {
 	  return modifiedTimeAllowed;
    }
-
+   
    /**
     * Post responses always return new data - so just call doFilter directly.
     */

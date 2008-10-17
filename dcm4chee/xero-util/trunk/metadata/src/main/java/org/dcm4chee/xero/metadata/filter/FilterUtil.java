@@ -37,7 +37,16 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.metadata.filter;
 
+import java.util.HashMap;
 import java.util.Map;
+
+import javax.xml.transform.URIResolver;
+
+import org.dcm4chee.xero.metadata.MetaDataBean;
+import org.dcm4chee.xero.metadata.servlet.MetaDataServlet;
+import org.dcm4chee.xero.metadata.servlet.UrlUriResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Provides static utilities to get access to various elements from the params
@@ -48,13 +57,19 @@ import java.util.Map;
  */
 public class FilterUtil {
 
-   public static String getString(Map<String,Object> params, String key, String def) {
-	  Object v = params.get(key);
+	private static final Logger log = LoggerFactory.getLogger(FilterUtil.class);
+	
+   public static String getString(Map<?,?> params, String key, String def) {
+	  Object v = getPath(params,key);
 	  if (v == null)
 		 return def;
 	  if (v instanceof String)
 		 return (String) v;
 	  throw new IllegalArgumentException("Expected String value for " + key + " got class " + v.getClass() + " value " + v);
+   }
+   
+   public static String getString(Map<?,?> params, String key) {
+   	return getString(params,key,null);
    }
    
    public static boolean getBoolean(Map<String,Object> params, String key) {
@@ -161,4 +176,51 @@ public class FilterUtil {
 		 throw new IllegalArgumentException("Too many arguments in " + region);
 	  return ret;
    }
+
+	/** Creates/gets the model to use 
+    * @return */
+   @SuppressWarnings("unchecked")
+   public static Map<String, Object> getModel(Map<String,Object> params, MetaDataBean defaultModel) {
+   	Map<String,Object> model = (Map<String, Object>) params.get(MetaDataServlet.MODEL_KEY);
+   	if( model!=null ) return model;
+   	if( defaultModel!=null ) model = (Map<String, Object>) defaultModel.getValue();
+   	else model = new HashMap<String,Object>();
+   	params.put(MetaDataServlet.MODEL_KEY, model);
+   	return model;
+   }
+
+	/** Creates/gets the model to use */
+   public static Map<String, Object> getModel(Map<String,Object> params) {
+   	return getModel(params,null);
+   }
+
+   /** Gets a map object from the named parameter value */
+   @SuppressWarnings("unchecked")
+   public static Map<String,Object> getMap(Map<?,?> params, String key) {
+   	return (Map<String,Object>) getPath(params,key);
+   }
+   
+   /** Gets the URI Resolver from the parameter map */
+   public static URIResolver getURIResolver(Map<?,?> params) {
+		 URIResolver resolver = (URIResolver) params.get(UrlUriResolver.URIRESOLVER);
+		 return resolver;
+   }
+   
+   /** Gets a value in a dot-separated path key, assuming each child element other than the
+    * last is a Map.
+    * @param map
+    * @param key
+    * @return
+    */
+   public static Object getPath(Map<?,?> map, String key) {
+  	  int nextDot = key.indexOf('.');
+ 	  if (nextDot < 0) return map.get(key);
+ 	  Map<?,?> nextMap = (Map<?,?>) map.get(key.substring(0,nextDot));
+ 	  if( nextMap==null ) {
+ 		  log.info("Unable to find child path "+key.substring(0,nextDot)+" in key "+key);
+ 		  return null;
+ 	  }
+ 	  return getPath(nextMap,key.substring(nextDot+1));
+    }
+
 }

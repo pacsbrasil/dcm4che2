@@ -617,7 +617,6 @@ public class StringTemplate {
 		String propString = aggrSpec.substring(dot+1, aggrSpec.length());
 		boolean error = true;
 		StringTokenizer tokenizer = new StringTokenizer(propString, "{,}", true);
-		match:
 		if ( tokenizer.hasMoreTokens() ) {
 			String token = tokenizer.nextToken(); // advance to {
 			token = token.trim();

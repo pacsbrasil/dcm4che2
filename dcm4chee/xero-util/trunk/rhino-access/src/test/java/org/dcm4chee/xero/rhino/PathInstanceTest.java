@@ -35,66 +35,52 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.metadata.access;
+package org.dcm4chee.xero.rhino;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
 
-import org.dcm4chee.xero.metadata.MetaDataBean;
-import org.dcm4chee.xero.metadata.MetaDataUser;
+import org.dcm4chee.xero.metadata.access.LazyMap;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
-/**
- * A MapWithDefaults is a map of values, where it can ask some pre-configured meta-data about what
- * defaults it should use coming from the meta-data bean.
- * This is closely related to a lazy map that knows how to create objects from a factory if needed.
- * 
- * @author bwallace
- *
- */
-@SuppressWarnings("serial")
-public class MapWithDefaults extends LazyMap implements MetaDataUser {
-   MetaDataBean mdb;
-   boolean wasEager = false;
-   
-   public MapWithDefaults() {   
-   }
-   
-   public MapWithDefaults(MetaDataBean mdb) {
-	  super(mdb);
-	  this.mdb = mdb;
-   }
-   
-   public MapWithDefaults(MetaDataBean mdb, Map<String,Object> lazy) {
-	  super(lazy);
-	  this.mdb = mdb;
-   }
+public class PathInstanceTest {
 
-   /** Get the lazy object from the meta-data object associated with this map. */
-   public Object getLazy(Object key) {
-	  Object v = mdb.getValue((String) key);
-	  if( v!=null ) return v;
-	  return super.getLazy(key);
-   }
-   
-   /** Does an eager load of all values - this can be useful for configuration where runtime safety is important. */
-   public void eager() {
-	   for(Map.Entry<String,MetaDataBean> me : mdb.metaDataEntrySet()) {
-		   this.get(me.getKey());
-	   }
-	   wasEager = true;
-   }
+	Map<String,Object> src;
+	Map<String,Object> lazy;
+	
+	PathInstance<Integer> pii;
+	PathInstance<String> pix;
+	
+	static final String STATIC_SCRIPT = ""+
+	  "function MyType(x) { this.x = x; };\n"+
+	  "MyType.prototype.i=3;\n"+
+	  "MyType.prototype.s='string';\n"+
+	  "MyType.prototype.setX = function MyType_setX(x) { this.x = x; };\n"+
+	  "var myUnmodifiable=new MyType('Hello, World.');\n"
+	;
+	
+   @BeforeMethod
+	public void init() {
+		lazy = new HashMap<String,Object>();
+		JavaScriptMapFactory jsmf = new JavaScriptMapFactory();
+		jsmf.setScript(STATIC_SCRIPT);
+		lazy.put("js",jsmf);
+		pii = new PathInstance<Integer>();
+		pii.setVar("js.myUnmodifiable.i");
+		lazy.put("pii", pii);
+		pix = new PathInstance<String>();
+		pix.setVar("js.myUnmodifiable.x");
+		lazy.put("pix", pix);
+		src = new LazyMap(lazy);
+	}
 
-   /** Ensure that all values are in the entry set if it is used. */
-   @Override
-   public Set<Entry<String, Object>> entrySet() {
-   	if(!wasEager) eager();
-	   return super.entrySet();
-   }
-
-	/** Sets the meta data to use. */
-   public void setMetaData(MetaDataBean metaDataBean) {
-	   this.lazy = metaDataBean;
-	   this.mdb = metaDataBean;
-   }
+	@Test
+	public void test_instance() {
+		int i = (Integer) src.get("pii");
+		assert i==3;
+		String x = (String) src.get("pix");
+		assert x.equals("Hello, World.");
+	}
+	
 }

@@ -88,7 +88,7 @@ public class LazyMap extends HashMap<String, Object> {
 	  if (v == null)
 		 return null;
 	  if (v instanceof MapFactory) {
-		 v = ((MapFactory) v).create(this);
+		 v = ((MapFactory<?>) v).create(this);
 		 if( v!=null ) log.info("Created lazy {} of class {}", key,v.getClass());
 	  }
 	  this.put((String) key, v);
@@ -105,5 +105,12 @@ public class LazyMap extends HashMap<String, Object> {
 	  if (lazy == null)
 		 return null;
 	  return lazy.get(key);
+   }
+   
+   public static Object getPath(Map<?,?> map, String key) {
+ 	  int nextDot = key.indexOf('.');
+	  if (nextDot < 0) return map.get(key);
+	  Map<?,?> nextMap = (Map<?,?>) map.get(key.substring(0,nextDot));
+	  return getPath(nextMap,key.substring(nextDot+1));
    }
 }

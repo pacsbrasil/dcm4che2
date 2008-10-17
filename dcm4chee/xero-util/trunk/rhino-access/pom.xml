@@ -18,6 +18,11 @@
       <version>1.7R1</version>
     </dependency>
     <dependency>
+      <groupId>org.dcm4chee.xero</groupId>
+      <artifactId>metadata</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
        <groupId>org.testng</groupId>
        <artifactId>testng</artifactId>
        <version>5.1</version>

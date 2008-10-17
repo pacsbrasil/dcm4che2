@@ -60,7 +60,7 @@ import org.antlr.stringtemplate.servlet.FindAllTemplates;
  * @author bwallace
  *
  */
-public class AllTemplatesMap implements MetaDataUser, MapFactory {
+public class AllTemplatesMap implements MetaDataUser, MapFactory<Map<String,StringTemplate>> {
 	private static final Logger log = LoggerFactory.getLogger(AllTemplatesMap.class);
 	
 	List<String> startingTemplates;
