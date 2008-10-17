@@ -60,6 +60,7 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
+import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -75,6 +76,8 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
 
     protected ObjectName storeScpServiceName;
 
+    protected ObjectName queryRetrieveScpServiceName;
+
     protected String queueName;
 
     protected int concurrency = 1;
@@ -88,8 +91,6 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
     protected String destination = null;
 
     protected RetryIntervalls retryIntervalls = new RetryIntervalls();
-
-    protected ObjectName fileSystemMgtName;
 
     protected int bufferSize = 8192;
 
@@ -111,30 +112,31 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
         this.bufferSize = bufferSize;
     }
 
-    public final ObjectName getFileSystemMgtName() {
-        return fileSystemMgtName;
-    }
-
-    public final void setFileSystemMgtName(ObjectName fileSystemMgtName) {
-        this.fileSystemMgtName = fileSystemMgtName;
-    }
-
-    protected String getRetrieveAET() {
-        try {
-            return (String) server.getAttribute(fileSystemMgtName,
-                    "RetrieveAETitle");
-        } catch (Exception e) {
-            log.error("JMX error: ", e);
-            return null;
-        }
-    }
-
     public final ObjectName getStoreScpServiceName() {
         return storeScpServiceName;
     }
 
     public final void setStoreScpServiceName(ObjectName storeScpServiceName) {
         this.storeScpServiceName = storeScpServiceName;
+    }
+
+    public ObjectName getQueryRetrieveScpServiceName() {
+        return queryRetrieveScpServiceName;
+    }
+
+    public void setQueryRetrieveScpServiceName(ObjectName name) {
+        this.queryRetrieveScpServiceName = name;
+    }
+
+    protected String getRetrieveAETs() {
+        try {
+            return (String) server.getAttribute(queryRetrieveScpServiceName,
+                    "CalledAETitles");
+        } catch (Exception e) {
+            throw new ConfigurationException(
+                    "Failed to access CalledAETitles from "
+                    + queryRetrieveScpServiceName, e);
+        }
     }
 
     public final int getConcurrency() {
@@ -246,7 +248,7 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
         schedule(createOrder(seriesStored.getIAN()), 
         		ForwardingRules.toScheduledTime(destination));
     }
-        
+
     protected void schedule(BaseJmsOrder order, long scheduledTime) {
         try {
             log.info("Scheduling " + order.toIdString());

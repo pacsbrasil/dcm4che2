@@ -185,12 +185,14 @@ public class FileCopyService extends AbstractFileCopyService {
     }
     
     protected BaseJmsOrder createOrder(Dataset ian) {
-        return new FileCopyOrder(ian, ForwardingRules.toAET(destination), getRetrieveAET());
+        return new FileCopyOrder(ian, ForwardingRules.toAET(destination),
+                getRetrieveAETs());
     }
 
     protected void process(BaseJmsOrder order) throws Exception {
-        String destPath = ((FileCopyOrder)order).getDestinationFileSystemPath();
-        List fileInfos = ((FileCopyOrder)order).getFileInfos();
+        FileCopyOrder fileCopyOrder = (FileCopyOrder)order;
+        String destPath = fileCopyOrder.getDestinationFileSystemPath();
+        List<FileInfo> fileInfos = fileCopyOrder.getFileInfos();
         int removed = removeSourceTarFiles(fileInfos);
         if ( removed > 0 ) 
             log.info(removed+" Files on tar FS removed from FileCopy Order!"+
@@ -206,7 +208,7 @@ public class FileCopyService extends AbstractFileCopyService {
         }
     }
 
-    private void copyFiles(List fileInfos, String destPath)
+    private void copyFiles(List<FileInfo> fileInfos, String destPath)
             throws Exception {
         byte[] buffer = new byte[bufferSize];
         Storage storage = getStorageHome().create();
@@ -214,8 +216,8 @@ public class FileCopyService extends AbstractFileCopyService {
         MessageDigest digest = null;
         if (verifyCopy)
             digest = MessageDigest.getInstance("MD5");
-        for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
-            FileInfo finfo = (FileInfo) iter.next();
+        for (Iterator<FileInfo> iter = fileInfos.iterator(); iter.hasNext();) {
+            FileInfo finfo = iter.next();
             File src = FileUtils.toFile(finfo.basedir + '/' + finfo.fileID);
             File dst = FileUtils.toFile(destPath + '/' + finfo.fileID);
             try {
@@ -266,7 +268,7 @@ public class FileCopyService extends AbstractFileCopyService {
         }
     }
 
-    private void copyTar(List fileInfos, String destPath) throws Exception {
+    private void copyTar(List<FileInfo> fileInfos, String destPath) throws Exception {
         FileInfo file1Info = (FileInfo) fileInfos.get(0);
         String tarPath = mkTarPath(file1Info.fileID);
         if (tarCopyCmd == null) {
@@ -278,7 +280,6 @@ public class FileCopyService extends AbstractFileCopyService {
             if (absTarOutgoingDir.mkdirs()) {
                 log.info("M-WRITE " + absTarOutgoingDir);
             }
-            int tarPathLen = tarPath.length();
             File tarFile = new File(absTarOutgoingDir,
                     new File(tarPath).getName());
             try {
@@ -298,22 +299,21 @@ public class FileCopyService extends AbstractFileCopyService {
             }
         }
         Storage storage = getStorageHome().create();
-        for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
-            FileInfo finfo = (FileInfo) iter.next();
+        for (FileInfo finfo : fileInfos) {
             String fileId = tarPath + '!' + mkTarEntryName(finfo.fileID);
             storage.storeFile(finfo.sopIUID, finfo.tsUID, destPath, fileId,
                     (int) finfo.size, MD5.toBytes(finfo.md5), fileStatus);
         }
     }
     
-    private void mkTar(List fileInfos, File tarFile) throws Exception {
+    private void mkTar(List<FileInfo> fileInfos, File tarFile) throws Exception {
         try {
             TarOutputStream tar = new TarOutputStream(
                     new FileOutputStream(tarFile));
             try {
                 writeMD5SUM(tar, fileInfos);
-                for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
-                    writeFile(tar, (FileInfo) iter.next());
+                for (FileInfo finfo : fileInfos) {
+                    writeFile(tar, finfo);
                 }
             } finally {
                 tar.close();
@@ -327,11 +327,11 @@ public class FileCopyService extends AbstractFileCopyService {
         }
     }
 
-    private int removeSourceTarFiles(List fileInfos) {
+    private int removeSourceTarFiles(List<FileInfo> fileInfos) {
         int removed = 0;
         FileInfo fi;
-        for (Iterator iter = fileInfos.iterator(); iter.hasNext();) {
-            fi = (FileInfo) iter.next();
+        for (Iterator<FileInfo> iter = fileInfos.iterator(); iter.hasNext();) {
+            fi = iter.next();
             if ( fi.basedir.startsWith("tar:")) {
                 removed++;
                 iter.remove();
@@ -340,7 +340,7 @@ public class FileCopyService extends AbstractFileCopyService {
         return removed;
     }
 
-    private void writeMD5SUM(TarOutputStream tar, List fileInfos)
+    private void writeMD5SUM(TarOutputStream tar, List<FileInfo> fileInfos)
             throws IOException {
         byte[] md5sum = new byte[fileInfos.size() * MD5SUM_ENTRY_LEN];
         final TarEntry tarEntry = new TarEntry("MD5SUM");
@@ -348,9 +348,7 @@ public class FileCopyService extends AbstractFileCopyService {
         tar.putNextEntry(tarEntry);
         
         int i = 0;
-        for (Iterator iter = fileInfos.iterator(); iter.hasNext(); 
-                i += MD5SUM_ENTRY_LEN) {
-            FileInfo fileInfo = (FileInfo) iter.next();
+        for (FileInfo fileInfo : fileInfos) {
             MD5Utils.toHexChars(MD5.toBytes(fileInfo.md5), md5sum, i);
             
             md5sum[i+32] = ' ';
@@ -359,6 +357,7 @@ public class FileCopyService extends AbstractFileCopyService {
                     mkTarEntryName(fileInfo.fileID).getBytes("US-ASCII"), 0, 
                     md5sum, i+34, 17);
             md5sum[i+51] = '\n';
+            i += MD5SUM_ENTRY_LEN;
         }
         tar.write(md5sum);
         tar.closeEntry();

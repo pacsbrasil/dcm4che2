@@ -60,21 +60,21 @@ public class FileCopyOrder extends BaseJmsOrder {
 
     private static final long serialVersionUID = 3258409538737550129L;
 
-    protected ArrayList fileInfos = null;
+    protected List<FileInfo> fileInfos = null;
 
     protected final String dstFsPath;
 
-    protected final String retrieveAET;
+    protected final String retrieveAETs;
 
     protected Dataset ian = null;
 
-    public FileCopyOrder(Dataset ian, String dstFsPath, String retrieveAET) {
+    public FileCopyOrder(Dataset ian, String dstFsPath, String retrieveAETs) {
         this.ian = ian;
         this.dstFsPath = dstFsPath;
-        this.retrieveAET = retrieveAET;
+        this.retrieveAETs = retrieveAETs;
     }
 
-    public List getFileInfos() throws Exception {
+    public List<FileInfo> getFileInfos() throws Exception {
         if (fileInfos == null)
             convertFromIAN();
 
@@ -90,16 +90,22 @@ public class FileCopyOrder extends BaseJmsOrder {
         Dataset refSeriesSeq = ian.getItem(Tags.RefSeriesSeq);
         DcmElement refSOPSeq = refSeriesSeq.get(Tags.RefSOPSeq);
         FileInfo[][] aa = RetrieveCmd.create(refSOPSeq).getFileInfos();
-        fileInfos = new ArrayList(aa.length);
-        for (int i = 0; i < aa.length; i++) {
-            FileInfo[] a = aa[i];
-            for (int j = 0; j < a.length; j++) {
-                if (a[j].fileRetrieveAET.equals(retrieveAET)) {
-                    fileInfos.add(a[j]);
+        fileInfos = new ArrayList<FileInfo>(aa.length);
+        for (FileInfo[] a : aa) {
+            for (FileInfo fi : a) {
+                if (isLocalRetrieveAET(fi.fileRetrieveAET)) {
+                    fileInfos.add(fi);
                     break;
                 }
             }
         }
+    }
+
+    private boolean isLocalRetrieveAET(String aet) {
+        int pos = retrieveAETs.indexOf(aet);
+        int end = pos + aet.length();
+        return pos != -1 && (pos == 0 || retrieveAETs.charAt(pos-1) == '\\')
+            && (end == retrieveAETs.length() || retrieveAETs.charAt(end) == '\\');
     }
 
     public final String getDestinationFileSystemPath() {
@@ -109,7 +115,7 @@ public class FileCopyOrder extends BaseJmsOrder {
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append(super.toString());
-        sb.append("\tRetrieveAET: ").append(retrieveAET).append("\n");
+        sb.append("\tRetrieveAETs: ").append(retrieveAETs).append("\n");
         sb.append("\tDestination: ").append(dstFsPath).append("\n");
         if (fileInfos != null) {
             sb.append("\n\tSource files: \n");
@@ -121,7 +127,6 @@ public class FileCopyOrder extends BaseJmsOrder {
         } else if (ian != null) {
             sb.append("\n\tIAN Dataset: \n");
             StringWriter sw = new StringWriter();
-
             try {
                 ian.dumpDataset(sw, null);
                 sb.append(sw.toString());

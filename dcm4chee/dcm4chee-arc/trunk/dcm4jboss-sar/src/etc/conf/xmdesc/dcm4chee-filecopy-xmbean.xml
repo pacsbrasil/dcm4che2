@@ -166,11 +166,11 @@
       <type>javax.management.ObjectName</type>
    </attribute>   
    <attribute access="read-write"
-      getMethod="getFileSystemMgtName"
-      setMethod="setFileSystemMgtName">
+      getMethod="getQueryRetrieveScpServiceName"
+      setMethod="setQueryRetrieveScpServiceName">
       <description>Used internally. Do NOT modify.
       </description>
-      <name>FileSystemMgtName</name>
+      <name>QueryRetrieveScpServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
    &defaultAttributes;
