@@ -132,7 +132,7 @@ public class XDSbSourceService extends ServiceMBeanSupport {
         return sourceID;
     }
     public void setSourceId(String id) {
-        this.sourceID = id;
+        this.sourceID = id.trim();
     }
 
     /**
@@ -145,7 +145,7 @@ public class XDSbSourceService extends ServiceMBeanSupport {
      * @param docRepositoryURI The docRepositoryURI to set.
      */
     public void setXDSRepositoryURI(String uri) {
-        this.xdsRepositoryURI = uri;
+        this.xdsRepositoryURI = uri.trim();
     }
 
     /**
@@ -179,14 +179,14 @@ public class XDSbSourceService extends ServiceMBeanSupport {
         return v2Tov3Xslt == null ? "DEFAULT" : v2Tov3Xslt;
     }
     public void setV2Tov3Xslt(String tov3Xslt) {
-        v2Tov3Xslt = "DEFAULT".equals(tov3Xslt) ? null : tov3Xslt;
+        v2Tov3Xslt = "DEFAULT".equals(tov3Xslt) ? null : tov3Xslt.trim();
         v2toV3tpl = null;
     }
     public String getV3Tov2Xslt() {
         return v3Tov2Xslt == null ? "DEFAULT" : v3Tov2Xslt;
     }
     public void setV3Tov2Xslt(String tov2Xslt) {
-        v3Tov2Xslt = "DEFAULT".equals(tov2Xslt) ? null : tov2Xslt;
+        v3Tov2Xslt = "DEFAULT".equals(tov2Xslt) ? null : tov2Xslt.trim();
         v3toV2tpl = null;
     }
     private Templates getV2toV3Template() throws TransformerConfigurationException, TransformerFactoryConfigurationError, IOException {
