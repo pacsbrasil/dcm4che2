@@ -463,7 +463,7 @@
     <name>ScheduleStudiesForDeletionInterval</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="NEVER" />
+      <value value="5m" />
     </descriptors>
   </attribute>
  
@@ -496,7 +496,7 @@
     <name>DeleteOrphanedPrivateFilesInterval</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="NEVER" />
+      <value value="1m" />
     </descriptors>
   </attribute>
 
