@@ -46,6 +46,7 @@ import javax.xml.transform.URIResolver;
 
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.access.MapFactory;
+import org.dcm4chee.xero.metadata.servlet.UrlUriResolver;
 import org.dcm4chee.xero.model.XmlModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,21 +60,18 @@ import org.xml.sax.SAXException;
  * @author bwallace
  * 
  */
-public class XmlModelFactory implements MapFactory {
+public class XmlModelFactory implements MapFactory<XmlModel> {
    private static final Logger log = LoggerFactory.getLogger(XmlModelFactory.class);
    
-   public static final String URIRESOLVER = "_URIResolver";
-
    String urlKey = "url";
-
+   
    /** Get the URL and from that construct the return XML object */
-   @SuppressWarnings("unchecked")
-   public Object create(Map<String, Object> src) {
-	  String url = (String) ((Map<String,Object>) src.get(urlKey)).get("url");
+   public XmlModel create(Map<String, Object> src) {
+	  String url = (String) ((Map<?,?>) src.get(urlKey)).get("url");
 	  if (url != null) {
 		 XmlModel ret = new XmlModel();
 		 log.info("Getting XML model from " + url);
-		 URIResolver resolver = (URIResolver) src.get(URIRESOLVER);
+		 URIResolver resolver = (URIResolver) src.get(UrlUriResolver.URIRESOLVER);
 		 try {
 			Source source = resolver.resolve(url, "");
 			log.info("Resolved "+url+" to "+source);

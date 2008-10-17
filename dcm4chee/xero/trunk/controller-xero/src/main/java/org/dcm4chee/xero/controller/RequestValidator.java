@@ -44,6 +44,9 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.MetaDataUser;
 import org.dcm4chee.xero.metadata.access.LazyMap;
 import org.dcm4chee.xero.metadata.access.MapFactory;
+import org.dcm4chee.xero.metadata.filter.Filter;
+import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.parsers.Parser;
 import org.dcm4chee.xero.parsers.ParserException;
 import org.dcm4chee.xero.parsers.StringParser;
@@ -51,7 +54,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This controller takes an http request obect, along with the definitions for parameters, and
+ * This controller takes an http request object, along with the definitions for parameters, and
  * creates or updates a map containing parsed/validated request parameters.  
  * If the parsing or validation fails, it can create an alternative map that contains safe strings with
  * the values, plus an indication per-item of the error (or that this item is ok).
@@ -60,7 +63,7 @@ import org.slf4j.LoggerFactory;
  * @author bwallace
  *
  */
-public class RequestValidator implements MetaDataUser, MapFactory {
+public class RequestValidator<T> implements MetaDataUser, Filter<T> {
    private static final Logger log = LoggerFactory.getLogger(RequestValidator.class);
    Map<String,Parser> parsers = new HashMap<String,Parser>();
    Map<String,Object> factories;
@@ -71,47 +74,38 @@ public class RequestValidator implements MetaDataUser, MapFactory {
    public static final String PARAMETERS = "_parameters";
    public static final String PARSERS_KEY = "_parsers";
    
-   /** Creates the validated request object */
-   public Object create(Map<String,Object> src) {
-	  // We actually want the request map itself, not the root map.
-	  Map<String,Object> requestMap = getParameters(src);
-	  if( requestMap==null ) throw new IllegalArgumentException("src map must have a parameters map containing the http request parameters when creating "+variable);
-	  Object ret = lookupInstanceValue();
-	  Map<String,Object> map = getMapView(ret);
-	  log.info("Creating validated request object.");
+   /** Creates the validated request object.
+    * The params list is the set of parameter values, while the
+    * model is inside that as the model element.
+    * The created validated object is the same name as this filter object.
+    */
+   public T filter(FilterItem<T> filterItem, Map<String,Object> params) {
+ 	  log.info("Creating validated request object for {}", variable);
+	  Map<String,Object> validated = lookupInstanceValue();
 	  for(Map.Entry<String,Parser> me : parsers.entrySet()) {
 		 Parser p = me.getValue();
 		 log.info("Looking for value "+me.getKey());
 		 Object v = null;
 		 try {
-			v = p.parse(requestMap);
+			v = p.parse(params);
 		 } catch (ParserException e) {
 			// TODO - handle this exception somehow in the return object....
 			e.printStackTrace();
 			continue;
 		 }
-		 map.put(me.getKey(),v);
+		 validated.put(me.getKey(),v);
 	  }
-	  return ret;
+	  Map<String,Object> model = FilterUtil.getModel(params);
+	  model.put(variable, validated);
+	  return filterItem.callNextFilter(params);
    }
 
-   /** Gets an instance value for this object.  Just creates a hashmap by default for now.
+   /** Gets an instance value for this object.  Returns a lazy map on the factories child
+    * object - this allows created additional computed attributes on the validated result.
     */
-   protected Object lookupInstanceValue() {
+   protected Map<String,Object> lookupInstanceValue() {
 	  return new LazyMap(factories);
-   }
-   
-   /**
-    * Creates a map view over the given object, supporting set/get and contains.  Currently
-    * assumes a Map of some type is directly returned, but in the future can do something else to support
-    * JavaBeans etc.
-    * @param ret
-    * @return
-    */
-   @SuppressWarnings("unchecked")
-   protected Map<String,Object> getMapView(Object ret) {
-	  return (Map<String,Object>) ret;
-   }
+   }   
 
    /**
     * Search the meta-data for parsers and factories
@@ -130,7 +124,7 @@ public class RequestValidator implements MetaDataUser, MapFactory {
 			   factories = new HashMap<String,Object>();
 			}
 			log.info("Putting factory "+me.getKey());
-			factories.put(me.getKey(), (MapFactory) value);
+			factories.put(me.getKey(), (MapFactory<?>) value);
 		 }
 	  }
 	  this.variable = mdb.getChildName();

@@ -48,7 +48,7 @@ import org.dcm4chee.xero.metadata.access.MapFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UrlFactory implements MapFactory, MetaDataUser {
+public class UrlFactory implements MapFactory<String>, MetaDataUser {
    private static final Logger log = LoggerFactory.getLogger(UrlFactory.class);
    
    /** The base of the URL */
@@ -58,7 +58,7 @@ public class UrlFactory implements MapFactory, MetaDataUser {
    /** Create a URL from the base query, plus the set of keys used to search on.
     * TODO implement this to return something dynamic instead of the static version it has right now.
     */
-   public Object create(Map<String, Object> src) {
+   public String create(Map<String, Object> src) {
 	  StringBuffer ret = new StringBuffer(base);
 	  boolean first = true;
 	  log.info("Creating a URL starting from "+base);

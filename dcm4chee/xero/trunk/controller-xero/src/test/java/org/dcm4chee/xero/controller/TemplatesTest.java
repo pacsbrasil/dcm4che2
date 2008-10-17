@@ -32,9 +32,9 @@ public class TemplatesTest {
 	@Test
 	public void renderAllTemplatesTest() {
 		assert mdb.getChild("jscontroller")!=null;
-		assert mdb.getChild("jscontroller").getChild("stringTemplateFilter")!=null;
-		assert mdb.getChild("jscontroller").getChild("stringTemplateFilter").getChild("model")!=null;
-		MetaDataBean templatesMdb = mdb.getChild("jscontroller").getChild("stringTemplateFilter").getChild("model").getChild("templates");
+		assert mdb.getChild("jscontroller").getChild("stringTemplate")!=null;
+		assert mdb.getChild("jscontroller").getChild("stringTemplate").getChild("model")!=null;
+		MetaDataBean templatesMdb = mdb.getChild("jscontroller").getChild("stringTemplate").getChild("model").getChild("templates");
 		assert templatesMdb!=null;
 		assert templatesMdb.getValue()!=null;
 		Map<?,?> mapModel = (Map<?,?>) model.getValue();
