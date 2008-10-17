@@ -82,58 +82,58 @@ import org.jboss.mx.util.MBeanServerLocator;
  * @since 28.01.2004
  */
 public class FolderSubmitCtrl extends FolderCtrl {
-    
-	public static final String LOGOUT = "logout";
-	private static final String EXPORT_SELECTOR = "exportSelector";
-	private static final String XDSI_EXPORT = "xdsi_export";
-	
+
+    public static final String LOGOUT = "logout";
+    private static final String EXPORT_SELECTOR = "exportSelector";
+    private static final String XDSI_EXPORT = "xdsi_export";
+
     private static final int MOVE_PRIOR = 0;
     private static final String SUBJECT_CONTEXT_KEY = "javax.security.auth.Subject.container";
-    
-    private static ContentEditDelegate delegate = null;
-	private static AEDelegate aeDelegate = null;
-    
-    private FolderMoveDelegate moveDelegate = null;
-	private TeachingFileDelegate tfDelegate;
-	private XDSIExportDelegate xdsiDelegate;
 
-	private StudyPermissionDelegate studyPermissionDelegate;
+    private static ContentEditDelegate delegate = null;
+    private static AEDelegate aeDelegate = null;
+
+    private FolderMoveDelegate moveDelegate = null;
+    private TeachingFileDelegate tfDelegate;
+    private XDSIExportDelegate xdsiDelegate;
+
+    private StudyPermissionDelegate studyPermissionDelegate;
 
 
     public static ContentEditDelegate getDelegate() {
-    	return delegate;
+        return delegate;
     }
     public static ContentEditDelegate getDelegate(ControllerContext ctx) {
         if ( delegate == null ) {
-        	delegate = new ContentEditDelegate();
-        	try {
-        		delegate.init( ctx );
-        	} catch( Exception x ) {
-        		log.error("Cant make form bean!", x );
-        	}
-        	StudyModel.setHttpRoot(ctx.getServletContext().getRealPath("/"));//set http root to check if a studyStatus image is available.
+            delegate = new ContentEditDelegate();
+            try {
+                delegate.init( ctx );
+            } catch( Exception x ) {
+                log.error("Cant make form bean!", x );
+            }
+            StudyModel.setHttpRoot(ctx.getServletContext().getRealPath("/"));//set http root to check if a studyStatus image is available.
             PatientModel.setConsumerModel(XDSConsumerModel.getModel(ctx.getRequest()));
         }
-    	return delegate;
+        return delegate;
     }
-    
-	/**
-	 * Get the model for the view.
-	 * @throws 
-	 */
+
+    /**
+     * Get the model for the view.
+     * @throws 
+     */
     protected Object makeFormBean() {
-		getDelegate( getCtx() );
-		return super.makeFormBean();
+        getDelegate( getCtx() );
+        return super.makeFormBean();
     }
-    
+
     protected String perform() throws Exception {
         try {
             FolderForm folderForm = (FolderForm) getForm();
-    		folderForm.clearPopupMsg();
+            folderForm.clearPopupMsg();
             HttpServletRequest rq = getCtx().getRequest();
             if ( rq.getParameter("accNr") != null ) {
-            	log.warn("Somebody tried AutoLogin for web folder! Denied!");
-            	return logout();
+                log.warn("Somebody tried AutoLogin for web folder! Denied!");
+                return logout();
             }
             setSticky(folderForm.getStickyPatients(), "stickyPat");
             setSticky(folderForm.getStickyStudies(), "stickyStudy");
@@ -145,14 +145,14 @@ public class FolderSubmitCtrl extends FolderCtrl {
                 folderForm.setFilterAET( "true".equals( rq.getParameter("filterAET")));
             }
             if (rq.getParameter("logout") != null || rq.getParameter("logout.x") != null ) 
-            	return logout();
+                return logout();
             rq.getSession().setAttribute("dcm4chee-session", "ACTIVE");
             if ( (folderForm.getTotal() < 1 && !"true".equals(getCtx().getServletConfig().getInitParameter("startWithoutQuery" ) ) )
                     || rq.getParameter("filter") != null
                     || rq.getParameter("filter.x") != null) { 
                 return query(true); 
             } else if ( folderForm.getAets() == null ) { 
-                    queryAETList(folderForm);
+                queryAETList(folderForm);
             }
             if (rq.getParameter("prev") != null
                     || rq.getParameter("prev.x") != null
@@ -162,28 +162,28 @@ public class FolderSubmitCtrl extends FolderCtrl {
                     || rq.getParameter("send.x") != null) { return send(); }
             Set allowedMethods = getPermissions().getPermissionsForApp("folder");
             if ( allowedMethods.contains("folder.delete") ) {
-	            if (rq.getParameter("del") != null
-	                    || rq.getParameter("del.x") != null) { return delete(); }
+                if (rq.getParameter("del") != null
+                        || rq.getParameter("del.x") != null) { return delete(); }
             }
             if ( allowedMethods.contains("folder.edit") ) {
-	            if (rq.getParameter("merge") != null
-	                    || rq.getParameter("merge.x") != null) { return merge(); }
+                if (rq.getParameter("merge") != null
+                        || rq.getParameter("merge.x") != null) { return merge(); }
             }
             if ( allowedMethods.contains("folder.move") ) {
-            	if (rq.getParameter("move") != null
-	                    || rq.getParameter("move.x") != null) { return move(); }
+                if (rq.getParameter("move") != null
+                        || rq.getParameter("move.x") != null) { return move(); }
             }
             if ( allowedMethods.contains("folder.export_tf") ) {
-	            if (rq.getParameter("exportTF") != null
-	                    || rq.getParameter("exportTF.x") != null) { return exportTF(); }
+                if (rq.getParameter("exportTF") != null
+                        || rq.getParameter("exportTF.x") != null) { return exportTF(); }
             }
             if ( allowedMethods.contains("folder.export_xds") ) {
-	            if (rq.getParameter("exportXDSI") != null
-	                    || rq.getParameter("exportXDSI.x") != null) { return exportXDSI(); }
+                if (rq.getParameter("exportXDSI") != null
+                        || rq.getParameter("exportXDSI.x") != null) { return exportXDSI(); }
             }
             if (rq.getParameter("showStudyIUID") != null ) folderForm.setShowStudyIUID( "true".equals( rq.getParameter("showStudyIUID") ) ); 
             if (rq.getParameter("showSeriesIUID") != null ) folderForm.setShowSeriesIUID( "true".equals( rq.getParameter("showSeriesIUID") ) );
-            
+
             if (rq.getParameter("addWorklist") != null ) return "worklist";
 
             return FOLDER;
@@ -200,39 +200,39 @@ public class FolderSubmitCtrl extends FolderCtrl {
         try {
             filter = folderForm.getStudyFilter();
             if ( ! folderForm.isFilterAET() ) { //only if not filter a single AET!
-            	filter.setCallingAETs( allowedAets );
+                filter.setCallingAETs( allowedAets );
             }
         } catch ( NumberFormatException x ) {
             folderForm.setPopupMsg("folder.err_date", new String[]{folderForm.getStudyDateRange(),"yyyy/mm/dd"} );
             return FOLDER;
         }
         Subject subject = isStudyPermissionCheckDisabled() ? null : 
-                (Subject) PolicyContext.getContext(SUBJECT_CONTEXT_KEY);
+            (Subject) PolicyContext.getContext(SUBJECT_CONTEXT_KEY);
         if (newQuery) {
-                folderForm.setTotal( new QueryStudiesCmd(filter.toDataset(), 
-                        !folderForm.isShowWithoutStudies(), subject).count() );
-                queryAETList(folderForm);
+            folderForm.setTotal( new QueryStudiesCmd(filter.toDataset(), 
+                    !folderForm.isShowWithoutStudies(), subject).count() );
+            queryAETList(folderForm);
         }
         List studyList = new QueryStudiesCmd(filter.toDataset(), 
-                    !folderForm.isShowWithoutStudies(), 
-                    folderForm.isNoMatchForNoValue(), 
-                    subject).list(folderForm.getOffset(), folderForm.getLimit());
+                !folderForm.isShowWithoutStudies(), 
+                folderForm.isNoMatchForNoValue(), 
+                subject).list(folderForm.getOffset(), folderForm.getLimit());
         if (subject != null) {
-        	folderForm.setGrantedStudyActions(queryGrantedStudyActions(studyList,subject));
+            folderForm.setGrantedStudyActions(queryGrantedStudyActions(studyList,subject));
         }
         folderForm.setStudies(studyList);
         return FOLDER;
     }
-    
+
     private Map queryGrantedStudyActions(List studyList, Subject subject) throws Exception {
-    	String[] studyIUIDs = new String[studyList.size()];
-    	int i = 0;
-    	for ( Iterator iter = studyList.iterator() ; iter.hasNext() ; i++) {
-    		studyIUIDs[i] = ((Dataset) iter.next() ).getString(Tags.StudyInstanceUID);
-    	}
-		return new QueryStudyPermissionCmd().getGrantedActionsForStudies(studyIUIDs, subject);
-	}
-	/**
+        String[] studyIUIDs = new String[studyList.size()];
+        int i = 0;
+        for ( Iterator iter = studyList.iterator() ; iter.hasNext() ; i++) {
+            studyIUIDs[i] = ((Dataset) iter.next() ).getString(Tags.StudyInstanceUID);
+        }
+        return new QueryStudyPermissionCmd().getGrantedActionsForStudies(studyIUIDs, subject);
+    }
+    /**
      * @param folderForm
      * @param allowedAets
      */
@@ -240,25 +240,25 @@ public class FolderSubmitCtrl extends FolderCtrl {
         String[] allowedAets = getAEFilterPermissions();
         List aes;
         if ( allowedAets == null ) {
-        	aes = getAEDelegate().getAEs();
+            aes = getAEDelegate().getAEs();
         } else {
-        	Object ae;
-        	aes = new ArrayList();
-        	for ( int i = 0 ; i < allowedAets.length ; i++ ) {
-        		ae = getAEDelegate().getAE(allowedAets[i]);
-        		if ( ae != null ) 
-        			aes.add( getAEDelegate().getAE(allowedAets[i]));
-        	}
+            Object ae;
+            aes = new ArrayList();
+            for ( int i = 0 ; i < allowedAets.length ; i++ ) {
+                ae = getAEDelegate().getAE(allowedAets[i]);
+                if ( ae != null ) 
+                    aes.add( getAEDelegate().getAE(allowedAets[i]));
+            }
         }
         folderForm.setAets(aes);
     }
 
-	private String send() throws Exception {
+    private String send() throws Exception {
         FolderForm folderForm = (FolderForm) getForm();
-		if ( !checkStickiesForStudyPermission(StudyPermissionDTO.EXPORT_ACTION, true) ) {
-    		folderForm.setPopupMsg("folder.export_denied",(String)null);
-    		return FOLDER;
-		}
+        if ( !checkStickiesForStudyPermission(StudyPermissionDTO.EXPORT_ACTION, true) ) {
+            folderForm.setPopupMsg("folder.export_denied",(String)null);
+            return FOLDER;
+        }
         List patients = folderForm.getPatients();
         for (int i = 0, n = patients.size(); i < n; i++) {
             PatientModel pat = (PatientModel) patients.get(i);
@@ -351,25 +351,25 @@ public class FolderSubmitCtrl extends FolderCtrl {
 
     private String delete() throws Exception {
         FolderForm folderForm = (FolderForm) getForm();
-		if ( !checkStickiesForStudyPermission(StudyPermissionDTO.DELETE_ACTION, true) ) {
-    		folderForm.setPopupMsg("folder.deletion_denied",(String)null);
-    		return FOLDER;
-		}
+        if ( !checkStickiesForStudyPermission(StudyPermissionDTO.DELETE_ACTION, true) ) {
+            folderForm.setPopupMsg("folder.deletion_denied",(String)null);
+            return FOLDER;
+        }
         deletePatients(folderForm.getPatients());
         folderForm.removeStickies();
         query(true);
-        
+
         return FOLDER;
     }
 
     private void deletePatients(List patients)
-            throws Exception {
+    throws Exception {
         FolderForm folderForm = (FolderForm) getForm();
         pat_loop: for (int i = 0, n = patients.size(); i < n; i++) {
             PatientModel pat = (PatientModel) patients.get(i);
             if (folderForm.isSticky(pat)) {
                 List studies = listStudiesOfPatient(pat.getPk());
-            	delegate.movePatientToTrash(pat.getPk());
+                delegate.movePatientToTrash(pat.getPk());
                 for (int j = 0, m = studies.size(); j < m; j++) {
                     Dataset study = (Dataset) studies.get(j);
                     AuditLoggerDelegate.logStudyDeleted(getCtx(), pat
@@ -387,13 +387,13 @@ public class FolderSubmitCtrl extends FolderCtrl {
     }
 
     private void deleteStudies( PatientModel pat )
-            throws Exception {
+    throws Exception {
         List studies = pat.getStudies();
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = studies.size(); i < n; i++) {
             StudyModel study = (StudyModel) studies.get(i);
             if (folderForm.isSticky(study)) {
-            	delegate.moveStudyToTrash(study.getPk());
+                delegate.moveStudyToTrash(study.getPk());
                 AuditLoggerDelegate.logStudyDeleted(getCtx(),
                         pat.getPatientID(),
                         pat.getPatientName(),
@@ -411,19 +411,19 @@ public class FolderSubmitCtrl extends FolderCtrl {
                             deletedInstances,
                             AuditLoggerDelegate.trim(sb));
                 }
-                    
+
             }
         }
     }
 
     private int deleteSeries(List series, StringBuffer sb)
-    		throws Exception {
+    throws Exception {
         int numInsts = 0;
         FolderForm folderForm = (FolderForm) getForm();
         for (int i = 0, n = series.size(); i < n; i++) {
             SeriesModel serie = (SeriesModel) series.get(i);
             if (folderForm.isSticky(serie)) {
-               	delegate.moveSeriesToTrash(serie.getPk());
+                delegate.moveSeriesToTrash(serie.getPk());
                 numInsts += serie.getNumberOfInstances();
                 sb.append("Series[");
                 sb.append(serie.getSeriesIUID());
@@ -441,7 +441,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
         for (int i = 0, n = instances.size(); i < n; i++) {
             InstanceModel instance = (InstanceModel) instances.get(i);
             if (folderForm.isSticky(instance)) {
-               	delegate.moveInstanceToTrash(instance.getPk());
+                delegate.moveInstanceToTrash(instance.getPk());
                 ++numInsts;
                 sb.append("Object[");
                 sb.append(instance.getSopIUID());
@@ -461,15 +461,15 @@ public class FolderSubmitCtrl extends FolderCtrl {
 
     private ContentManager lookupContentManager() throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-                .getFactory().lookup(ContentManagerHome.class,
-                        ContentManagerHome.JNDI_NAME);
+        .getFactory().lookup(ContentManagerHome.class,
+                ContentManagerHome.JNDI_NAME);
         return home.create();
     }
 
     private List listStudiesOfPatient(long patPk) throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-                .getFactory().lookup(ContentManagerHome.class,
-                        ContentManagerHome.JNDI_NAME);
+        .getFactory().lookup(ContentManagerHome.class,
+                ContentManagerHome.JNDI_NAME);
         ContentManager cm = home.create();
         try {
             return cm.listStudiesOfPatient(patPk);
@@ -480,10 +480,10 @@ public class FolderSubmitCtrl extends FolderCtrl {
             }
         }
     }
- 
+
 
     private String merge() {
-    	return MERGE;
+        return MERGE;
     }
 
     /**
@@ -498,15 +498,15 @@ public class FolderSubmitCtrl extends FolderCtrl {
      * @return the name of the next view.
      */
     private String move() {
-    	try {
-    		if ( moveDelegate == null ) moveDelegate = new FolderMoveDelegate( this );
-    		moveDelegate.move(); 
-    	} catch ( Exception x ) {
-    		log.error("Error in folder move:", x);
-    	}
-		return FOLDER;
+        try {
+            if ( moveDelegate == null ) moveDelegate = new FolderMoveDelegate( this );
+            moveDelegate.move(); 
+        } catch ( Exception x ) {
+            log.error("Error in folder move:", x);
+        }
+        return FOLDER;
     }
-    
+
     /**
      * Export selected instance to a Teaching Filesystem.
      * <p>
@@ -514,32 +514,32 @@ public class FolderSubmitCtrl extends FolderCtrl {
      * @return the name of the next view.
      */
     private String exportTF() {
-		FolderForm folderForm = (FolderForm) getForm();
-    	try {
-    		if ( !checkStickiesForStudyPermission(StudyPermissionDTO.EXPORT_ACTION, true) ) {
-        		folderForm.setPopupMsg("folder.export_denied",(String)null);
-        		return FOLDER;
-    		}
-    		if ( tfDelegate == null ) {
-    			tfDelegate = new TeachingFileDelegate();
-    			tfDelegate.init(getCtx());
-    			getCtx().getRequest().getSession().setAttribute(TeachingFileDelegate.TF_ATTRNAME, tfDelegate);
-    		}
-        	Set instances = FolderUtil.getSelectedInstances(folderForm.getStickyPatients(),
-					 folderForm.getStickyStudies(),
-					 folderForm.getStickySeries(),
-					 folderForm.getStickyInstances());
-        	if ( log.isDebugEnabled() ) log.debug("Selected Instances:"+instances);
+        FolderForm folderForm = (FolderForm) getForm();
+        try {
+            if ( !checkStickiesForStudyPermission(StudyPermissionDTO.EXPORT_ACTION, true) ) {
+                folderForm.setPopupMsg("folder.export_denied",(String)null);
+                return FOLDER;
+            }
+            if ( tfDelegate == null ) {
+                tfDelegate = new TeachingFileDelegate();
+                tfDelegate.init(getCtx());
+                getCtx().getRequest().getSession().setAttribute(TeachingFileDelegate.TF_ATTRNAME, tfDelegate);
+            }
+            Set instances = FolderUtil.getSelectedInstances(folderForm.getStickyPatients(),
+                    folderForm.getStickyStudies(),
+                    folderForm.getStickySeries(),
+                    folderForm.getStickyInstances());
+            if ( log.isDebugEnabled() ) log.debug("Selected Instances:"+instances);
 
-    		TFModel.getModel( getCtx().getRequest() ).setInstances(instances); 
-    	} catch ( Exception x ) {
-    		log.error("Error in export Teaching File:", x);
-    		folderForm.setPopupMsg("folder.err_tf",x.getMessage());
-    		return FOLDER;
-    	}
-		return EXPORT_SELECTOR;
+            TFModel.getModel( getCtx().getRequest() ).setInstances(instances); 
+        } catch ( Exception x ) {
+            log.error("Error in export Teaching File:", x);
+            folderForm.setPopupMsg("folder.err_tf",x.getMessage());
+            return FOLDER;
+        }
+        return EXPORT_SELECTOR;
     }
-   
+
     /**
      * Export selected instances to a XDS Repository.
      * <p>
@@ -547,33 +547,33 @@ public class FolderSubmitCtrl extends FolderCtrl {
      * @return the name of the next view.
      */
     private String exportXDSI() {
-		FolderForm folderForm = (FolderForm) getForm();
-    	try {
-    		if ( !checkStickiesForStudyPermission(StudyPermissionDTO.EXPORT_ACTION, true) ) {
-        		folderForm.setPopupMsg("folder.export_denied",(String)null);
-        		return FOLDER;
-    		}
-    		xdsiDelegate = XDSIExportDelegate.getInstance(getCtx());
-        	Set instances = FolderUtil.getSelectedInstances(folderForm.getStickyPatients(),
-					 folderForm.getStickyStudies(),
-					 folderForm.getStickySeries(),
-					 folderForm.getStickyInstances());
-        	if ( log.isDebugEnabled() ) log.debug("Selected Instances:"+instances);
+        FolderForm folderForm = (FolderForm) getForm();
+        try {
+            if ( !checkStickiesForStudyPermission(StudyPermissionDTO.EXPORT_ACTION, true) ) {
+                folderForm.setPopupMsg("folder.export_denied",(String)null);
+                return FOLDER;
+            }
+            xdsiDelegate = XDSIExportDelegate.getInstance(getCtx());
+            Set instances = FolderUtil.getSelectedInstances(folderForm.getStickyPatients(),
+                    folderForm.getStickyStudies(),
+                    folderForm.getStickySeries(),
+                    folderForm.getStickyInstances());
+            if ( log.isDebugEnabled() ) log.debug("Selected Instances:"+instances);
             XDSIModel xdsiModel = XDSIModel.getModel( getCtx().getRequest() );
             xdsiModel.setInstances(instances);
             xdsiModel.setSourcePatient( FolderUtil.getInstanceInfo((String)instances.iterator().next()));
-    	} catch ( Exception x ) {
-    		log.error("Error in XDSI export! :", x);
-    		folderForm.setPopupMsg("folder.err_xdsi",x.getMessage());
-    		return FOLDER;
-    	}
-		return XDSI_EXPORT;
+        } catch ( Exception x ) {
+            log.error("Error in XDSI export! :", x);
+            folderForm.setPopupMsg("folder.err_xdsi",x.getMessage());
+            return FOLDER;
+        }
+        return XDSI_EXPORT;
     }
-    
+
     private boolean checkStickiesForStudyPermission(String action, boolean updateStickies) throws Exception {
-    	if ( this.isStudyPermissionCheckDisabled() )
-    		return true;
-    	boolean allPermitted = true;
+        if ( this.isStudyPermissionCheckDisabled() )
+            return true;
+        boolean allPermitted = true;
         FolderForm folderForm = (FolderForm) getForm();
         pat_loop: for (Iterator iter = folderForm.getPatients().iterator() ; iter.hasNext() ;) {
             PatientModel pat = (PatientModel) iter.next();
@@ -582,14 +582,14 @@ public class FolderSubmitCtrl extends FolderCtrl {
                 for (int j = 0, m = studies.size(); j < m; j++) {
                     Dataset study = (Dataset) studies.get(j);
                     if ( !folderForm.hasPermission(study.getString(Tags.StudyInstanceUID), action)) {
-                    	log.warn("sticky of patient "+pat.getPatientID()+" not allowed! Action:"+action+" denied for study "+study.getString(Tags.StudyInstanceUID));
-                    	if ( updateStickies ) {
-                    		folderForm.getStickyPatients().remove(String.valueOf(pat.getPk()));
-                    		allPermitted = false;
-                    		continue pat_loop;
-                    	} else { 
-                    		return false;
-                    	}
+                        log.warn("sticky of patient "+pat.getPatientID()+" not allowed! Action:"+action+" denied for study "+study.getString(Tags.StudyInstanceUID));
+                        if ( updateStickies ) {
+                            folderForm.getStickyPatients().remove(String.valueOf(pat.getPk()));
+                            allPermitted = false;
+                            continue pat_loop;
+                        } else { 
+                            return false;
+                        }
                     }
                 }
             } else {
@@ -598,52 +598,52 @@ public class FolderSubmitCtrl extends FolderCtrl {
                     StudyModel study = (StudyModel) studies.get(i);
                     if (folderForm.isSticky(study) || isChildChecked(study, folderForm) ) {
                         if ( !folderForm.hasPermission(study.getStudyIUID(), action)) {
-                        	log.warn("Deletion of study "+study.getStudyIUID()+ "denied!");
-                        	if ( updateStickies ) {
-                        		folderForm.removeStickies(study);
-                        		allPermitted = false;
-                        	} else {
-                        		return false;
-                        	}
+                            log.warn("Deletion of study "+study.getStudyIUID()+ "denied!");
+                            if ( updateStickies ) {
+                                folderForm.removeStickies(study);
+                                allPermitted = false;
+                            } else {
+                                return false;
+                            }
                         }
                     }
                 }
-            	
+
             }
         }
         return allPermitted;
-    	
+
     }
 
     private boolean isChildChecked(StudyModel study, FolderForm folderForm) {
         for (Iterator iter = study.getSeries().iterator() ; iter.hasNext() ;) {
-        	SeriesModel series = (SeriesModel) iter.next();
+            SeriesModel series = (SeriesModel) iter.next();
             if (folderForm.isSticky( series ) ) {
-            	return true;
+                return true;
             }
             for ( Iterator iter2 = series.getInstances().iterator() ; iter2.hasNext() ; ) {
                 if (folderForm.isSticky( (InstanceModel) iter2.next() ) ) {
-                	return true;
+                    return true;
                 }
             }
         }
-		return false;
-	}
+        return false;
+    }
 
     /**
-	 * 
-	 */
-	public void clearSticky() {
-		FolderForm folderForm = (FolderForm) getForm();
-       	folderForm.getStickyPatients().clear();		
-       	folderForm.getStickyStudies().clear();		
-       	folderForm.getStickySeries().clear();		
-       	folderForm.getStickyInstances().clear();		
-	}
+     * 
+     */
+    public void clearSticky() {
+        FolderForm folderForm = (FolderForm) getForm();
+        folderForm.getStickyPatients().clear();		
+        folderForm.getStickyStudies().clear();		
+        folderForm.getStickySeries().clear();		
+        folderForm.getStickyInstances().clear();		
+    }
 
-	
-	protected void logProcedureRecord( PatientModel pat, StudyModel study, String desc ) {
-		AuditLoggerDelegate.logProcedureRecord(getCtx(),
+
+    protected void logProcedureRecord( PatientModel pat, StudyModel study, String desc ) {
+        AuditLoggerDelegate.logProcedureRecord(getCtx(),
                 AuditLoggerDelegate.MODIFY,
                 pat.getPatientID(),
                 pat.getPatientName(),
@@ -652,17 +652,17 @@ public class FolderSubmitCtrl extends FolderCtrl {
                 study.getStudyIUID(),
                 study.getAccessionNumber(),
                 desc );
-	}
-	
-	private String logout() {
-    	getCtx().getRequest().getSession().invalidate();
-    	return LOGOUT;
-	}
+    }
+
+    private String logout() {
+        getCtx().getRequest().getSession().invalidate();
+        return LOGOUT;
+    }
 
     public AEDelegate getAEDelegate() {
         if ( aeDelegate == null ) {
-        	aeDelegate = new AEDelegate();
-        	aeDelegate.init( getCtx().getServletConfig() );
+            aeDelegate = new AEDelegate();
+            aeDelegate.init( getCtx().getServletConfig() );
         }
         return aeDelegate;
     }
