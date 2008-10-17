@@ -1085,7 +1085,20 @@ QueryRetrieveScp service.</description>
       </parameter>
       <return-type>org.dcm4che.net.DataSource</return-type>
    </operation>
-   
+
+   <operation impact="INFO">
+      <description><![CDATA[Determines if specified AE Title is one of the
+        configured <b>CalledAETitles</b>.]]>
+      </description>
+      <name>isLocalRetrieveAET</name>
+      <parameter>
+        <description>AE Title</description>
+        <name>aet</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+
    <!-- Notifications -->
 </mbean>
 

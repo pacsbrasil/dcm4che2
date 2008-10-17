@@ -957,7 +957,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }        
     }
     
-    boolean isLocalRetrieveAET(String aet) {
+    public boolean isLocalRetrieveAET(String aet) {
         for (int i = 0; i < calledAETs.length; i++) {
             if (aet.equals(calledAETs[i]))
                 return true;

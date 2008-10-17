@@ -89,7 +89,6 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
-import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.MD5;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
@@ -117,7 +116,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
     private static final int PCID_STGCMT = 1;
 
-    private ObjectName fileSystemMgtName;
+    private ObjectName queryRetrieveScpServiceName;
 
     private String queueName = "StgCmtScuScp";
 
@@ -222,12 +221,12 @@ public class StgCmtScuScpService extends AbstractScpService implements
         this.queueName = queueName;
     }
 
-    public final ObjectName getFileSystemMgtName() {
-        return fileSystemMgtName;
+    public final ObjectName getQueryRetrieveScpServiceName() {
+        return queryRetrieveScpServiceName;
     }
 
-    public final void setFileSystemMgtName(ObjectName fileSystemMgtName) {
-        this.fileSystemMgtName = fileSystemMgtName;
+    public final void setQueryRetrieveScpServiceName(ObjectName name) {
+        this.queryRetrieveScpServiceName = name;
     }
 
     public final int getAcTimeout() {
@@ -285,11 +284,13 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
     boolean isLocalRetrieveAET(String aet) {
         try {
-            return aet.equals(server.getAttribute(fileSystemMgtName,
-                    "RetrieveAETitle"));
+            return (Boolean) server.invoke(queryRetrieveScpServiceName,
+                    "isLocalRetrieveAET", new Object[]{ aet },
+                    new String[]{ String.class.getName() });
         } catch (JMException e) {
             throw new RuntimeException(
-                    "Failed to invoke getAttribute 'RetrieveAETitle'", e);
+                    "Failed to invoke isLocalRetrieveAET() on "
+                    + queryRetrieveScpServiceName, e);
         }
     }
 
