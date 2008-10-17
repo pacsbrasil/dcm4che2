@@ -80,8 +80,7 @@ import org.dcm4chex.archive.util.HomeFactoryException;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision$ $Date: 2007-10-18 11:26:00 +0200 (Thu, 18 Oct
- *          2007) $
+ * @version $Revision$ $Date$
  * @since 27.08.2004
  */
 public class IANScuService extends AbstractScuService implements
@@ -141,7 +140,7 @@ public class IANScuService extends AbstractScuService implements
 
     private ObjectName mppsScpServiceName;
 
-    private ObjectName fileSystemMgtName;
+    private ObjectName deleteStudyServiceName;
 
     private String queueName;
 
@@ -154,8 +153,6 @@ public class IANScuService extends AbstractScuService implements
     private String[] notifiedAETs = EMPTY;
 
     private boolean notifyOtherServices;
-
-    private boolean onStudyDeleted;
 
     private RetryIntervalls retryIntervalls = new RetryIntervalls();
 
@@ -206,14 +203,6 @@ public class IANScuService extends AbstractScuService implements
 
     public final boolean isNotifyOtherServices() {
         return notifyOtherServices;
-    }
-
-    public final boolean isOnStudyDeleted() {
-        return onStudyDeleted;
-    }
-
-    public final void setOnStudyDeleted(boolean onStudyDeleted) {
-        this.onStudyDeleted = onStudyDeleted;
     }
 
     public final boolean isSendOneIANforEachMPPS() {
@@ -272,12 +261,12 @@ public class IANScuService extends AbstractScuService implements
         this.mppsScpServiceName = name;
     }
 
-    public ObjectName getFileSystemMgtName() {
-        return fileSystemMgtName;
+    public ObjectName getDeleteStudyServiceName() {
+        return deleteStudyServiceName;
     }
 
-    public void setFileSystemMgtName(ObjectName fileSystemMgtName) {
-        this.fileSystemMgtName = fileSystemMgtName;
+    public void setDeleteStudyServiceName(ObjectName name) {
+        this.deleteStudyServiceName = name;
     }
 
     public final String getQueueName() {
@@ -292,7 +281,7 @@ public class IANScuService extends AbstractScuService implements
         jmsDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(storeScpServiceName,
                 seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
-        server.addNotificationListener(fileSystemMgtName, studyDeletedListener,
+        server.addNotificationListener(deleteStudyServiceName, studyDeletedListener,
                 StudyDeleted.NOTIF_FILTER, null);
         server.addNotificationListener(mppsScpServiceName,
                 mppsReceivedListener, MPPSScpService.NOTIF_FILTER, null);
@@ -302,7 +291,7 @@ public class IANScuService extends AbstractScuService implements
     protected void stopService() throws Exception {
         server.removeNotificationListener(storeScpServiceName,
                 seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
-        server.removeNotificationListener(fileSystemMgtName,
+        server.removeNotificationListener(deleteStudyServiceName,
                 studyDeletedListener, StudyDeleted.NOTIF_FILTER, null);
         server.removeNotificationListener(mppsScpServiceName,
                 mppsReceivedListener, MPPSScpService.NOTIF_FILTER, null);
@@ -386,9 +375,8 @@ public class IANScuService extends AbstractScuService implements
     private void onStudyDeleted(StudyDeleted deleted) {
         if (notifiedAETs.length == 0)
             return;
-        if (onStudyDeleted)
-            schedule(null, null, null,
-                    deleted.getInstanceAvailabilityNotification());
+        schedule(null, null, null,
+                deleted.getInstanceAvailabilityNotification());
     }
 
     private void schedule(String patid, String patname, String studyid,
