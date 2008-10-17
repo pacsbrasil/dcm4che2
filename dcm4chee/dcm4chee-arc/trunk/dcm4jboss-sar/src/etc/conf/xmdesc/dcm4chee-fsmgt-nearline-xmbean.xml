@@ -51,7 +51,7 @@
     <name>DefaultAvailability</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="ONLINE" />
+      <value value="NEARLINE" />
     </descriptors>
   </attribute>
 
@@ -76,7 +76,7 @@
     <name>DefaultStorageDirectory</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="archive" />
+      <value value="NONE" />
     </descriptors>
   </attribute>
 
@@ -108,7 +108,7 @@
     <name>MakeStorageDirectory</name>
     <type>boolean</type>
     <descriptors>
-      <value value="true" />
+      <value value="false" />
     </descriptors>
   </attribute>
 
@@ -130,12 +130,12 @@
       space on the current storage file system falls below this value, the next
       configured file system becomes the current storage system.
       1MB = 1000000 bytes, 1GB = 1000MB.
-      NONE = disable check for minimal free available disk space.]]>
+      NONE = disable check for minimal free available disk space. ]]>
     </description>
     <name>MinimumFreeDiskSpace</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="50MB" />
+      <value value="NONE" />
     </descriptors>
   </attribute>
 
@@ -264,7 +264,7 @@
     <name>DeleterThresholds</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="7:1h;19:24h" />
+      <value value="NONE" />
     </descriptors>
   </attribute>
 
@@ -388,7 +388,7 @@
     <name>DeleteStudyOnlyIfCopyOnFileSystemOfFileSystemGroup</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="NEARLINE_STORAGE" />
+      <value value="NONE" />
     </descriptors>
   </attribute>
 

@@ -114,8 +114,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     private long checkFreeDiskSpaceTime;
 
-    private DeleterThresholds deleterThresholds = new DeleterThresholds(
-            "7:1h;19:24h", true);
+    private DeleterThresholds deleterThresholds;
 
     private long expectedDataVolumePerDay = 100000L;
 
@@ -372,15 +371,17 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public final String getMinFreeDiskSpace() {
-        return FileUtils.formatSize(minFreeDiskSpace);
+        return minFreeDiskSpace == 0 ? NONE
+                : FileUtils.formatSize(minFreeDiskSpace);
     }
 
     public final void setMinFreeDiskSpace(String str) {
-        this.minFreeDiskSpace = FileUtils.parseSize(str, MIN_FREE_DISK_SPACE);
+        this.minFreeDiskSpace = str.equalsIgnoreCase(NONE) ? 0
+                : FileUtils.parseSize(str, MIN_FREE_DISK_SPACE);
     }
 
     public long getFreeDiskSpaceOnCurFS() throws IOException {
-        if (storageFileSystem == null)
+        if (storageFileSystem == null || minFreeDiskSpace == 0)
             return -1L;
         File dir = FileUtils.toFile(storageFileSystem.getDirectoryPath());
         return dir.isDirectory() ? FileSystemUtils.freeSpace(dir.getPath())
@@ -401,6 +402,9 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public long getFreeDiskSpace() throws Exception {
+        if (minFreeDiskSpace == 0) {
+            return -1L;
+        }
         FileSystemDTO[] fsDTOs =
             fileSystemMgt().getFileSystemsOfGroup(getFileSystemGroupID());
         long free = 0L;
@@ -422,6 +426,9 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public long getUsableDiskSpace() throws Exception {
+        if (minFreeDiskSpace == 0) {
+            return -1L;
+        }
         return calcUsableDiskSpace(fileSystemMgt()
                 .getFileSystemsOfGroup(getFileSystemGroupID()));
     }
@@ -464,11 +471,12 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public final String getDeleterThresholds() {
-        return deleterThresholds.toString();
+        return deleterThresholds == null ? NONE : deleterThresholds.toString();
     }
 
     public final void setDeleterThresholds(String s) {
-        this.deleterThresholds = new DeleterThresholds(s, true);
+        this.deleterThresholds = s.equalsIgnoreCase(NONE) ? null
+                : new DeleterThresholds(s, true);
     }
 
     public final String getExpectedDataVolumePerDay() {
@@ -520,6 +528,9 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public long getCurrentDeleterThreshold() throws Exception {
+        if (deleterThresholds == null) {
+            return -1L;
+        }
         FileSystemMgt2 fsMgt = fileSystemMgt();
         return getCurrentDeleterThreshold(fsMgt,
                 fsMgt.getFileSystemsOfGroup(getFileSystemGroupID()));
@@ -792,6 +803,9 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                     + " seems broken - try to switch to next configured storage directory");
             return false;
         }
+        if (minFreeDiskSpace == 0) {
+            return true;
+        }
         final long freeSpace = FileSystemUtils.freeSpace(dir.getPath());
         log.info("Free disk space on " + dir + ": "
                 + FileUtils.formatSize(freeSpace));
@@ -906,6 +920,9 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public int scheduleStudiesForDeletion() throws Exception {
+        if (deleterThresholds == null) {
+            return 0;
+        }
         log.info("Check file system group " + getFileSystemGroupID()
                 + " for deletion of studies");
         FileSystemMgt2 fsMgt = fileSystemMgt();
