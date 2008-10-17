@@ -122,17 +122,17 @@ public class XDSRegistryService extends ServiceMBeanSupport {
         return savePath;
     }
     public void setSavePath(String savePath) {
-        this.savePath = savePath;
+        this.savePath = savePath.trim();
     }
     public String getMockError() {
         return mockError == null ? NONE : mockError;
     }
     public void setMockError(String mockError) {
-        this.mockError = NONE.equals(mockError) ? null : mockError;
+        this.mockError = NONE.equals(mockError) ? null : mockError.trim();
     }
 
     public String getMockQueryResponseFile() {
-        return mockQueryResponseFile == null ? NONE : mockQueryResponseFile;
+        return mockQueryResponseFile == null ? NONE : mockQueryResponseFile.trim();
     }
     public void setMockQueryResponseFile(String fn) {
         this.mockQueryResponseFile = (fn != null && !NONE.equals(fn) && fn.trim().length() > 0) ? fn : null;
@@ -309,7 +309,7 @@ public class XDSRegistryService extends ServiceMBeanSupport {
         perfLogger.endSubEvent();
         return rsp;
     }
-    
+
     public static String resolvePath(String fn) {
         File f = new File(fn);
         if (f.isAbsolute()) return f.getAbsolutePath();
