@@ -955,14 +955,6 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getFileSystemMgtName"
-      setMethod="setFileSystemMgtName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>FileSystemMgtName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getDcmServerName"
       setMethod="setDcmServerName">
       <description>Used internally. Do NOT modify.

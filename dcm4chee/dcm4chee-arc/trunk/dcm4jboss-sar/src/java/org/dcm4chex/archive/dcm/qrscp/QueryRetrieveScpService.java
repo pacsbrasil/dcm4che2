@@ -89,8 +89,6 @@ import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
-import org.dcm4chex.archive.ejb.interfaces.AEManager;
-import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
@@ -149,8 +147,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private Map ignorableSOPClasses = new LinkedHashMap();
 
     private LinkedHashMap requestStgCmtFromAETs = new LinkedHashMap();
-
-    private ObjectName fileSystemMgtName;
 
     private ObjectName stgCmtScuScpName;
 
@@ -597,14 +593,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
     public final void setRetrieveWithoutLeftJoins(boolean noLeftJoin) {
         RetrieveCmd.setNoLeftJoin(noLeftJoin);
     }    
-
-    public final ObjectName getFileSystemMgtName() {
-        return fileSystemMgtName;
-    }
-
-    public final void setFileSystemMgtName(ObjectName fileSystemMgtName) {
-        this.fileSystemMgtName = fileSystemMgtName;
-    }
 
     public String getAcceptedPrivateSOPClasses() {
         return toString(privateCuidMap);
