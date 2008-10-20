@@ -155,6 +155,7 @@
   <element tag="(0008,0058)" name="Failed SOP Instance UID List" vr="UI" vm="1-n" key="FailedSOPInstanceUIDList" />
   <element tag="(0008,0060)" name="Modality" vr="CS" vm="1" key="Modality" />
   <element tag="(0008,0061)" name="Modalities in Study" vr="CS" vm="1-n" key="ModalitiesInStudy" />
+  <element tag="(0008,0062)" name="SOP Classes in Study" vr="UI" vm="1-n" key="SOPClassesInStudy" />
   <element tag="(0008,0064)" name="Conversion Type" vr="CS" vm="1" key="ConversionType" />
   <element tag="(0008,0068)" name="Presentation Intent Type" vr="CS" vm="1" key="PresentationIntentType" />
   <element tag="(0008,0070)" name="Manufacturer" vr="LO" vm="1" key="Manufacturer" />
