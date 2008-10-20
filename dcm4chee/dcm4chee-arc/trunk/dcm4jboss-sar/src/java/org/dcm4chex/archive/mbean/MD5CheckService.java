@@ -57,8 +57,8 @@ import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
@@ -178,14 +178,14 @@ public class MD5CheckService extends ServiceMBeanSupport {
         this.maxCheckedBefore = RetryIntervalls.parseInterval(maxCheckedBefore);
     }
     
-    public String check() throws FinderException, IOException, NoSuchAlgorithmException {
+    public String check() throws Exception {
     	if ( log.isDebugEnabled() ) log.debug("MD5 check started!");
     	int corrupted = 0;
     	int total = 0;
         Timestamp before = new Timestamp( System.currentTimeMillis() - this.maxCheckedBefore );
         FileDTO[] files;
         int limit = limitNumberOfFilesPerTask;
-        FileSystemMgt fsMgt = newFileSystemMgt();
+        FileSystemMgt2 fsMgt = newFileSystemMgt();
         FileSystemDTO[] fsdirs =fsMgt.getAllFileSystems();
         byte[] buffer = null;
         for (int j = 0; j < fsdirs.length; j++) {
@@ -215,7 +215,7 @@ public class MD5CheckService extends ServiceMBeanSupport {
      * @throws NoSuchAlgorithmException
      * @throws FinderException
 	 */
-	private boolean doCheck(FileSystemMgt fsMgt, FileDTO fileDTO, byte[] buffer)
+	private boolean doCheck(FileSystemMgt2 fsMgt, FileDTO fileDTO, byte[] buffer)
 	throws IOException, NoSuchAlgorithmException, FinderException {
 		if ( log.isDebugEnabled() ) log.debug("check md5 for file "+fileDTO );
         char[] storedMD5 = MD5Utils.toHexChars(fileDTO.getFileMd5());
@@ -251,17 +251,10 @@ public class MD5CheckService extends ServiceMBeanSupport {
         scheduler.stopScheduler(timerIDCheckMD5, listenerID, timerListener);
         super.stopService();
     }
-    
-    private FileSystemMgt newFileSystemMgt() {
-        try {
-            FileSystemMgtHome home = (FileSystemMgtHome) EJBHomeFactory
-                    .getFactory().lookup(FileSystemMgtHome.class,
-                            FileSystemMgtHome.JNDI_NAME);
-            return home.create();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to access File System Mgt EJB:",
-                    e);
-        }
+
+    protected FileSystemMgt2 newFileSystemMgt() throws Exception {
+        return ((FileSystemMgt2Home) EJBHomeFactory.getFactory().lookup(
+                FileSystemMgt2Home.class, FileSystemMgt2Home.JNDI_NAME)).create();
     }
 
 	public String getTimerIDCheckMD5() {

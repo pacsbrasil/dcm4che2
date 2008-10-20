@@ -63,8 +63,8 @@ import org.dcm4che.dict.VRs;
 import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -449,16 +449,9 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
                 new String[] { String.class.getName() });
     }
 
-    protected FileSystemMgt newFileSystemMgt() {
-        try {
-            FileSystemMgtHome home = (FileSystemMgtHome) EJBHomeFactory
-                    .getFactory().lookup(FileSystemMgtHome.class,
-                            FileSystemMgtHome.JNDI_NAME);
-            return home.create();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to access File System Mgt EJB:",
-                    e);
-        }
+    protected FileSystemMgt2 newFileSystemMgt() throws Exception {
+        return ((FileSystemMgt2Home) EJBHomeFactory.getFactory().lookup(
+                FileSystemMgt2Home.class, FileSystemMgt2Home.JNDI_NAME)).create();
     }
 
     private void deleteStoredSeries(SeriesStored seriesStored)

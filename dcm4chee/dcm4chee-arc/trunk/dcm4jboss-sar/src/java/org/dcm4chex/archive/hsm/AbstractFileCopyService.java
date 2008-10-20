@@ -42,7 +42,6 @@ package org.dcm4chex.archive.hsm;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ejb.ObjectNotFoundException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
@@ -57,8 +56,6 @@ import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.Condition;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.mbean.JMSDelegate;
@@ -159,17 +156,6 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
         if (startDest != -1) {
             newCondition = new Condition(destination.substring(0, startDest+1));
             destination = destination.substring(startDest+1);
-        }
-        // skip check for existing file system configuration, if called
-        // on service creation (EJB will not yet be bound!) 
-        if (getState() == STARTED) {
-            String fsid = ForwardingRules.toAET(destination);
-            try {
-                getFileSystemMgt().getFileSystem(fsid);
-            } catch (ObjectNotFoundException e) {
-                throw new IllegalArgumentException(
-                        "No such file system configured: " + fsid);
-            }
         }
         this.condition = newCondition;
         this.destination = destination;
@@ -299,11 +285,5 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
     protected static StorageHome getStorageHome() throws HomeFactoryException {
         return (StorageHome) EJBHomeFactory.getFactory().lookup(
                 StorageHome.class, StorageHome.JNDI_NAME);
-    }
-
-
-    protected static FileSystemMgt getFileSystemMgt() throws Exception {
-        return ((FileSystemMgtHome) EJBHomeFactory.getFactory().lookup(
-                FileSystemMgtHome.class, FileSystemMgtHome.JNDI_NAME)).create();
     }
 }

@@ -39,7 +39,9 @@ package org.dcm4chex.archive.ejb.session;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -63,6 +65,7 @@ import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.common.FileSystemStatus;
+import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
@@ -71,10 +74,12 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Local;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
+import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocal;
 import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
@@ -93,6 +98,8 @@ import org.dcm4chex.archive.exceptions.NoSuchStudyException;
  * @ejb.ejb-ref ejb-name="PrivateFile" view-type="local"
  *              ref-name="ejb/PrivateFile"
  * @ejb.ejb-ref ejb-name="Study" ref-name="ejb/Study" view-type="local"
+ * @ejb.ejb-ref ejb-name="Series" ref-name="ejb/Series" view-type="local"
+ * @ejb.ejb-ref ejb-name="Instance" ref-name="ejb/Instance" view-type="local"
  * @ejb.ejb-ref ejb-name="StudyOnFileSystem" ref-name="ejb/StudyOnFileSystem"
  *              view-type="local"
  * 
@@ -109,10 +116,12 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
 
     private SessionContext ctx;
     private FileSystemLocalHome fileSystemHome;
-    private StudyLocalHome studyHome;
-    private StudyOnFileSystemLocalHome sofHome;
     private FileLocalHome fileHome;
     private PrivateFileLocalHome privFileHome;
+    private StudyLocalHome studyHome;
+    private SeriesLocalHome seriesHome;
+    private InstanceLocalHome instHome;
+    private StudyOnFileSystemLocalHome sofHome;
 
     public void setSessionContext(SessionContext ctx) {
         this.ctx = ctx;
@@ -121,14 +130,18 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             jndiCtx = new InitialContext();
             this.fileSystemHome = (FileSystemLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/FileSystem");
-            this.studyHome = (StudyLocalHome) jndiCtx
-                    .lookup("java:comp/env/ejb/Study");
-            this.sofHome = (StudyOnFileSystemLocalHome) jndiCtx
-                    .lookup("java:comp/env/ejb/StudyOnFileSystem");
             this.fileHome = (FileLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/File");
             this.privFileHome = (PrivateFileLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/PrivateFile");
+            this.studyHome = (StudyLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/Study");
+            this.seriesHome = (SeriesLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/Series");
+            this.instHome = (InstanceLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/Instance");
+            this.sofHome = (StudyOnFileSystemLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/StudyOnFileSystem");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -144,10 +157,12 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     public void unsetSessionContext() {
        ctx = null;
        fileSystemHome = null;
-       studyHome = null;
-       sofHome = null;
        fileHome = null;
        privFileHome = null;
+       studyHome = null;
+       seriesHome = null;
+       instHome = null;
+       sofHome = null;
     }
 
     /**
@@ -652,6 +667,47 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**
      * @ejb.interface-method
      */
+    public FileDTO[] findFilesForMD5Check(String dirPath, Timestamp before,
+            int limit) throws FinderException {
+        if (log.isDebugEnabled())
+            log.debug("Querying for files to check md5 in " + dirPath);
+        Collection c = fileHome.findToCheckMd5(dirPath, before, limit);
+        if (log.isDebugEnabled())
+            log.debug("Found " + c.size() + " files to check md5 in "
+                    + dirPath);
+        return toFileDTOs(c);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public FileDTO[] findFilesByStatusAndFileSystem(String dirPath, int status,
+            Timestamp before, int limit) throws FinderException {
+        if (log.isDebugEnabled())
+            log.debug("Querying for files with status " + status + " in "
+                    + dirPath);
+        Collection c = fileHome.findByStatusAndFileSystem(dirPath, status,
+                before, limit);
+        if (log.isDebugEnabled())
+            log.debug("Found " + c.size() + " files with status " + status
+                    + " in " + dirPath);
+        return toFileDTOs(c);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void updateTimeOfLastMd5Check(long pk) throws FinderException {
+        Timestamp ts = new Timestamp(System.currentTimeMillis());
+        if (log.isDebugEnabled())
+            log.debug("update time of last md5 check to " + ts);
+        FileLocal fl = fileHome.findByPrimaryKey(new Long(pk));
+        fl.setTimeOfLastMd5Check(ts);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
     public void replaceFile(long pk, String path, String tsuid, long size,
             byte[] md5) throws FinderException {
         FileLocal oldFile = fileHome.findByPrimaryKey(pk);
@@ -700,5 +756,104 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
      */
     public void deletePrivateFile(long file_pk) throws RemoveException {
         privFileHome.remove(file_pk);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void touchStudyOnFileSystem(String siud, String dirPath)
+            throws FinderException, CreateException {
+        try {
+            sofHome.findByStudyAndFileSystem(siud, dirPath).touch();
+        } catch (ObjectNotFoundException e) {
+            try {
+                sofHome.create(studyHome.findByStudyIuid(siud), fileSystemHome
+                        .findByDirectoryPath(dirPath));
+            } catch (CreateException ignore) {
+                // Check if concurrent create
+                sofHome.findByStudyAndFileSystem(siud, dirPath).touch();
+            }
+        }
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public FileDTO[] deleteStoredSeries(SeriesStored seriesStored) {
+        try {
+            SeriesLocal series = seriesHome.findBySeriesIuid(
+                    seriesStored.getSeriesInstanceUID());
+            StudyLocal study = series.getStudy();
+            Collection instances = series.getInstances();
+            ArrayList fileDTOs = new ArrayList(instances.size());
+            DcmElement refSopSeq = seriesStored.getIAN()
+                .getItem(Tags.RefSeriesSeq).get(Tags.RefSOPSeq);
+            int numRefInst = refSopSeq.countItems();
+            HashSet iuids = new HashSet(numRefInst * 4 / 3 + 1);
+            for (int i = 0; i < numRefInst; i++) {
+                iuids.add(refSopSeq.getItem(i)
+                        .getString(Tags.RefSOPInstanceUID));
+            }
+            ArrayList toRemove = new ArrayList(numRefInst);
+            for (Iterator itInst = instances.iterator(); itInst.hasNext();) {
+                InstanceLocal inst = (InstanceLocal) itInst.next();
+                if (iuids.contains(inst.getSopIuid())) {
+                    Collection files = inst.getFiles();
+                    for (Iterator itFiles = files.iterator();
+                            itFiles.hasNext();) {
+                        FileLocal file = (FileLocal) itFiles.next();
+                        fileDTOs.add(file.getFileDTO());
+                    }
+                    toRemove.add(inst);
+                }
+            }
+            if (toRemove.size() == instances.size()) {
+                series.remove();
+            } else {
+                for (Iterator itInst = toRemove.iterator(); itInst.hasNext();) {
+                    InstanceLocal inst = (InstanceLocal) itInst.next();
+                    inst.remove();
+                }
+                series.updateDerivedFields(true, true, true, true, true);
+            }
+            study.updateDerivedFields(true, true, true, true, true, true);
+            study.updateSOPClassesInStudy();
+            return (FileDTO[]) fileDTOs.toArray(new FileDTO[fileDTOs.size()]);
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        } catch (RemoveException e) {
+            throw new EJBException(e);
+        }
+    }
+
+    private static final Comparator DESC_FILE_PK = new Comparator() {
+
+        /**
+         * This will make sure the most available file will be listed first
+         */
+        public int compare(Object o1, Object o2) {
+            FileDTO dto1 = (FileDTO) o1;
+            FileDTO dto2 = (FileDTO) o2;
+            int diffAvail = dto1.getAvailability() - dto2.getAvailability();
+            long diffPk = dto2.getPk() - dto1.getPk();
+            return diffAvail != 0 ? diffAvail 
+                        : diffPk == 0 ? 0 : diffPk < 0 ? -1 : 1;
+        }
+    };
+
+    /**
+     * @ejb.interface-method
+     */
+    public FileDTO[] getFilesOfInstance(String iuid) throws FinderException {
+        FileDTO[] dtos = toFileDTOs(instHome.findBySopIuid(iuid).getFiles());
+        Arrays.sort(dtos, DESC_FILE_PK);
+                return dtos;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public String getExternalRetrieveAET(String iuid) throws FinderException {
+        return instHome.findBySopIuid(iuid).getExternalRetrieveAET();
     }
 }

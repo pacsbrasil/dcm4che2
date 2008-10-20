@@ -24,8 +24,8 @@ import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.mbean.SchedulerDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.jboss.system.ServiceMBeanSupport;
@@ -266,7 +266,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         if (fileSystem == null) {
             return 0;
         }
-        FileSystemMgt fsmgt = newFileSystemMgt();
+        FileSystemMgt2 fsmgt = newFileSystemMgt();
         FileDTO[] c = fsmgt.findFilesByStatusAndFileSystem(fileSystem,
                 checkFileStatus, new Timestamp(System.currentTimeMillis()
                         - minFileAge), limitNumberOfFilesPerTask);
@@ -282,7 +282,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         return count;
     }
 
-    private boolean check(FileSystemMgt fsmgt, FileDTO fileDTO,
+    private boolean check(FileSystemMgt2 fsmgt, FileDTO fileDTO,
             HashMap checkedTars) {
         String dirpath = fileDTO.getDirectoryPath();
         String filePath = fileDTO.getFilePath();
@@ -303,7 +303,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         return updateFileStatus(fsmgt, fileDTO, status);
     }
 
-    private boolean updateFileStatus(FileSystemMgt fsmgt, FileDTO fileDTO,
+    private boolean updateFileStatus(FileSystemMgt2 fsmgt, FileDTO fileDTO,
             int status) {
         if (fileDTO.getFileStatus() != status) {
             log.info("Change status of " + fileDTO + " to " + status);
@@ -338,16 +338,9 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         }
     }
 
-    private FileSystemMgt newFileSystemMgt() {
-        try {
-            FileSystemMgtHome home = (FileSystemMgtHome) EJBHomeFactory
-                    .getFactory().lookup(FileSystemMgtHome.class,
-                            FileSystemMgtHome.JNDI_NAME);
-            return home.create();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to access File System Mgt EJB:",
-                    e);
-        }
+    protected FileSystemMgt2 newFileSystemMgt() throws Exception {
+        return ((FileSystemMgt2Home) EJBHomeFactory.getFactory().lookup(
+                FileSystemMgt2Home.class, FileSystemMgt2Home.JNDI_NAME)).create();
     }
 
     public String getTimerIDCheckSyncFileStatus() {

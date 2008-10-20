@@ -42,6 +42,7 @@ package org.dcm4chex.archive.dcm.qrscp;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.rmi.RemoteException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,6 +55,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Map.Entry;
 
+import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 import javax.management.JMException;
 import javax.management.ObjectName;
@@ -90,8 +92,8 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
@@ -1094,18 +1096,18 @@ public class QueryRetrieveScpService extends AbstractScpService {
                         String.class.getName(), String.class.getName() });
     }
 
-    FileSystemMgtHome getFileSystemMgtHome() throws HomeFactoryException {
-        return (FileSystemMgtHome) EJBHomeFactory.getFactory().lookup(
-                FileSystemMgtHome.class, FileSystemMgtHome.JNDI_NAME);
+    private FileSystemMgt2 getFileSystemMgt() throws Exception {
+        return ((FileSystemMgt2Home) EJBHomeFactory.getFactory().lookup(
+                FileSystemMgt2Home.class, FileSystemMgt2Home.JNDI_NAME)).create();
     }
 
     void updateStudyAccessTime(Set<StudyInstanceUIDAndDirPath> studyInfos) {
         if (!recordStudyAccessTime)
             return;
 
-        FileSystemMgt fsMgt;
+        FileSystemMgt2 fsMgt;
         try {
-            fsMgt = getFileSystemMgtHome().create();
+            fsMgt = getFileSystemMgt();
         } catch (Exception e) {
             log.fatal("Failed to access FileSystemMgt EJB");
             return;
@@ -1252,7 +1254,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     public Object locateInstance(String iuid) throws Exception {
         FileDTO[] fileDTOs = null;
         String aet = null;
-        FileSystemMgt fsMgt = getFileSystemMgtHome().create();
+        FileSystemMgt2 fsMgt = getFileSystemMgt();
         try {
             fileDTOs = fsMgt.getFilesOfInstance(iuid);
             if (fileDTOs.length == 0) {
