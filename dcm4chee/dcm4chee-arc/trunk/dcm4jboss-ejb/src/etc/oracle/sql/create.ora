@@ -88,6 +88,7 @@ CREATE TABLE study (
 	study_custom3	VARCHAR2(255),
 	study_status_id VARCHAR2(255),
 	mods_in_study	VARCHAR2(255),
+    cuids_in_study  VARCHAR2(255),
 	num_series		NUMBER(38,0),
 	num_instances	NUMBER(38,0),
 	ext_retr_aet	VARCHAR2(255),

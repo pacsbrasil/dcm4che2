@@ -701,6 +701,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     blobAccessType,     // Patient.encodedAttributes
                     blobAccessType,     // Study.encodedAttributes
                     Types.VARCHAR,      // Study.modalitiesInStudy
+                    Types.VARCHAR,      // Study.sopClassesInStudy
                     Types.VARCHAR,      // Study.studyStatusId
                     Types.INTEGER,      // Study.numberOfStudyRelatedSeries
                     Types.INTEGER,      // Study.numberOfStudyRelatedInstances
@@ -726,14 +727,15 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     "Patient.encodedAttributes",                // (1)
                     "Study.encodedAttributes",                  // (2)
                     "Study.modalitiesInStudy",                  // (3)
-                    "Study.studyStatusId",                      // (4)
-                    "Study.numberOfStudyRelatedSeries",         // (5)
-                    "Study.numberOfStudyRelatedInstances",      // (6)
-                    "Study.filesetId",                          // (7)
-                    "Study.filesetIuid",                        // (8)
-                    "Study.retrieveAETs",                       // (9)
-                    "Study.externalRetrieveAET",                // (10)
-                    "Study.availability",                       // (11)
+                    "Study.sopClassesInStudy",                  // (4)
+                    "Study.studyStatusId",                      // (5)
+                    "Study.numberOfStudyRelatedSeries",         // (6)
+                    "Study.numberOfStudyRelatedInstances",      // (7)
+                    "Study.filesetId",                          // (8)
+                    "Study.filesetIuid",                        // (9)
+                    "Study.retrieveAETs",                       // (10)
+                    "Study.externalRetrieveAET",                // (11)
+                    "Study.availability",                       // (12)
                     };
         }
 
@@ -755,13 +757,15 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             fillDataset(ds, 2);
             ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(rs.getString(3),
                     '\\'));
-            ds.putCS(Tags.StudyStatusID, rs.getString(4));
-            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(5));
-            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(6));
-            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(7));
-            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(8));
-            DatasetUtils.putRetrieveAET(ds, rs.getString(9), rs.getString(10));
-            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(11)]);
+            ds.putUI(Tags.SOPClassesInStudy, StringUtils.split(rs.getString(4),
+                    '\\'));
+            ds.putCS(Tags.StudyStatusID, rs.getString(5));
+            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(6));
+            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(7));
+            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(8));
+            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(9));
+            DatasetUtils.putRetrieveAET(ds, rs.getString(10), rs.getString(11));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(12)]);
             ds.putCS(Tags.QueryRetrieveLevel, "STUDY");
         }
 
@@ -778,6 +782,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     blobAccessType,     // Study.encodedAttributes
                     blobAccessType,     // Series.encodedAttributes
                     Types.VARCHAR,      // Study.modalitiesInStudy
+                    Types.VARCHAR,      // Study.sopClassesInStudy
                     Types.VARCHAR,      // Study.studyStatusId
                     Types.INTEGER,      // Study.numberOfStudyRelatedSeries
                     Types.INTEGER,      // Study.numberOfStudyRelatedInstances
@@ -805,15 +810,16 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     "Study.encodedAttributes",                  // (2)
                     "Series.encodedAttributes",                 // (3)
                     "Study.modalitiesInStudy",                  // (4)
-                    "Study.studyStatusId",                      // (5)
-                    "Study.numberOfStudyRelatedSeries",         // (6)
-                    "Study.numberOfStudyRelatedInstances",      // (7)
-                    "Series.numberOfSeriesRelatedInstances",    // (8)
-                    "Series.filesetId",                         // (9)
-                    "Series.filesetIuid",                       // (10)
-                    "Series.retrieveAETs",                      // (11)
-                    "Series.externalRetrieveAET",               // (12)
-                    "Series.availability",                      // (13)
+                    "Study.sopClassesInStudy",                  // (5)
+                    "Study.studyStatusId",                      // (6)
+                    "Study.numberOfStudyRelatedSeries",         // (7)
+                    "Study.numberOfStudyRelatedInstances",      // (8)
+                    "Series.numberOfSeriesRelatedInstances",    // (9)
+                    "Series.filesetId",                         // (10)
+                    "Series.filesetIuid",                       // (11)
+                    "Series.retrieveAETs",                      // (12)
+                    "Series.externalRetrieveAET",               // (13)
+                    "Series.availability",                      // (14)
                     };
         }
 
@@ -843,14 +849,16 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             fillDataset(ds, 3);
             ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(rs.getString(4),
                     '\\'));
-            ds.putCS(Tags.StudyStatusID, rs.getString(5));
-            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(6));
-            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(7));
-            ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(8));
-            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(9));
-            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(10));
-            DatasetUtils.putRetrieveAET(ds, rs.getString(11), rs.getString(12));
-            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(13)]);
+            ds.putUI(Tags.SOPClassesInStudy, StringUtils.split(rs.getString(5),
+                    '\\'));
+            ds.putCS(Tags.StudyStatusID, rs.getString(6));
+            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(7));
+            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(8));
+            ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(9));
+            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(10));
+            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(11));
+            DatasetUtils.putRetrieveAET(ds, rs.getString(12), rs.getString(13));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(14)]);
             ds.putCS(Tags.QueryRetrieveLevel, "SERIES");
         }
     }
@@ -880,6 +888,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                             blobAccessType,     // Study.encodedAttributes
                             blobAccessType,     // Series.encodedAttributes
                             Types.VARCHAR,      // Study.modalitiesInStudy
+                            Types.VARCHAR,      // Study.sopClassesInStudy
                             Types.VARCHAR,      // Study.studyStatusId
                             Types.INTEGER,      // Study.numberOfStudyRelatedSeries
                             Types.INTEGER,      // Study.numberOfStudyRelatedInstances
@@ -920,15 +929,16 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                             "Study.encodedAttributes",                  // (4)
                             "Series.encodedAttributes",                 // (5)
                             "Study.modalitiesInStudy",                  // (6)
-                            "Study.studyStatusId",                      // (7)
-                            "Study.numberOfStudyRelatedSeries",         // (8)
-                            "Study.numberOfStudyRelatedInstances",      // (9)
-                            "Series.numberOfSeriesRelatedInstances",    // (10)
-                            "Instance.retrieveAETs",                    // (11)
-                            "Instance.externalRetrieveAET",             // (12)
-                            "Instance.availability",                    // (13)
-                            "Media.filesetId",                          // (14)
-                            "Media.filesetIuid",                        // (15)
+                            "Study.sopClassesInStudy",                  // (7)
+                            "Study.studyStatusId",                      // (8)
+                            "Study.numberOfStudyRelatedSeries",         // (9)
+                            "Study.numberOfStudyRelatedInstances",      // (10)
+                            "Series.numberOfSeriesRelatedInstances",    // (11)
+                            "Instance.retrieveAETs",                    // (12)
+                            "Instance.externalRetrieveAET",             // (13)
+                            "Instance.availability",                    // (14)
+                            "Media.filesetId",                          // (15)
+                            "Media.filesetIuid",                        // (16)
                             };
         }
 
@@ -1033,14 +1043,16 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             }
             ds.putCS(Tags.ModalitiesInStudy,
                     StringUtils.split(rs.getString(6), '\\'));
-            ds.putCS(Tags.StudyStatusID, rs.getString(7));
-            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(8));
-            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(9));
-            ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(10));
-            DatasetUtils.putRetrieveAET(ds, rs.getString(11), rs.getString(12));
-            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(13)]);
-            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(14));
-            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(15));
+            ds.putUI(Tags.SOPClassesInStudy,
+                    StringUtils.split(rs.getString(7), '\\'));
+            ds.putCS(Tags.StudyStatusID, rs.getString(8));
+            ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(9));
+            ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(10));
+            ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(11));
+            DatasetUtils.putRetrieveAET(ds, rs.getString(12), rs.getString(13));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(14)]);
+            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(15));
+            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(16));
             ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
         }
     }

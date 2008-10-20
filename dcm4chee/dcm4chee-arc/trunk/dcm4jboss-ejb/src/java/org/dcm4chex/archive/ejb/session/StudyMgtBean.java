@@ -249,6 +249,7 @@ public abstract class StudyMgtBean implements SessionBean {
             String iuid = (String) it.next();
             StudyLocal study = studyHome.findByStudyIuid(iuid);
             study.updateDerivedFields(true, true, true, true, true, true);
+            study.updateSOPClassesInStudy();
         }
     }
 

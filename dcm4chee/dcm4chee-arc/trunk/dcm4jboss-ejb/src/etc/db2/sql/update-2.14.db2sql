@@ -9,6 +9,8 @@ CREATE INDEX mpps_drcode_fk ON mpps(drcode_fk);
 DROP INDEX code_value;
 CREATE UNIQUE INDEX code_value ON code(code_value,code_designator,code_version);
 
+ALTER TABLE study ADD cuids_in_study VARCHAR(254);
+
 ALTER TABLE ae
   ALTER pk DROP IDENTITY;
 

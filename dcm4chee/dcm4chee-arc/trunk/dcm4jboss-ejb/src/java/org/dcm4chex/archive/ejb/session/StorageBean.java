@@ -360,7 +360,9 @@ public abstract class StorageBean implements SessionBean {
             throws FinderException {
         SeriesLocal series = findBySeriesIuid(seriuid);
         series.updateDerivedFields(true, true, false, true, true);
-        series.getStudy().updateDerivedFields(true, true, false, true, true, true);
+        StudyLocal study = series.getStudy();
+        study.updateDerivedFields(true, true, false, true, true, true);
+        study.updateSOPClassesInStudy();
     }
 
     /**
@@ -538,6 +540,7 @@ public abstract class StorageBean implements SessionBean {
             if (deleteSeries && series.getNumberOfSeriesRelatedInstances() == 0)
                 series.remove();	    	
             study.updateDerivedFields(true, true, true, true, true, true);
+            study.updateSOPClassesInStudy();
             if (deleteStudy && study.getNumberOfStudyRelatedSeries() == 0)
                 study.remove();
         }

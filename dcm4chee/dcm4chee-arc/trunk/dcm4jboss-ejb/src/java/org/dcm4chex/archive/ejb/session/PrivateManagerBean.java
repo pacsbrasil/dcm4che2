@@ -412,6 +412,7 @@ public abstract class PrivateManagerBean implements SessionBean {
 		    	}
 		    	else
 		    		study.updateDerivedFields(true, true, true, true, true, true);
+		    	study.updateSOPClassesInStudy();
 	    	}
 	    	
 	    	return dss;
@@ -442,7 +443,9 @@ public abstract class PrivateManagerBean implements SessionBean {
             getPrivateInstance( instance, DELETED, null );
             instance.remove();
             series.updateDerivedFields(true, true, true, true, true);
-            series.getStudy().updateDerivedFields(true, true, true, true, true, true);
+            StudyLocal study = series.getStudy();
+            study.updateDerivedFields(true, true, true, true, true, true);
+            study.updateSOPClassesInStudy();
             return ds;
         } catch (CreateException e) {
             throw new RemoteException(e.getMessage());
@@ -468,6 +471,7 @@ public abstract class PrivateManagerBean implements SessionBean {
             getPrivateSeries( series, DELETED, null, true );
             series.remove();
             study.updateDerivedFields(true, true, true, true, true, true);
+            study.updateSOPClassesInStudy();
             return ds;
         } catch (CreateException e) {
             throw new RemoteException(e.getMessage());
@@ -499,6 +503,7 @@ public abstract class PrivateManagerBean implements SessionBean {
         			study.remove();
 	        	} else {
 	        		study.updateDerivedFields(true,true,true,true,true,true);
+	        		study.updateSOPClassesInStudy();
 	        	}
         	}
         } catch (FinderException ignore) {

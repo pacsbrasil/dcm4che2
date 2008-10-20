@@ -208,6 +208,7 @@ public abstract class StudyReconciliationBean implements SessionBean {
    			ds.putAll(dsOrig); 
    			study.setAttributes(ds); 
    			study.updateDerivedFields(false,false,false,false,false,true);
+   			study.updateSOPClassesInStudy();
    		}
     }
     

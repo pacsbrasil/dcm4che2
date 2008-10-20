@@ -39,8 +39,11 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
+import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -413,6 +416,16 @@ public abstract class StudyBean implements EntityBean {
     public abstract void setModalitiesInStudy(String mds);
 
     /**
+     * SOP Classes In Study
+     *
+     * @ejb.interface-method
+     * @ejb.persistence column-name="cuids_in_study"
+     */
+    public abstract String getSopClassesInStudy();
+    
+    public abstract void setSopClassesInStudy(String uids);
+
+    /**
      * @ejb.interface-method
      * @ejb.persistence column-name="checked_time"
      */
@@ -739,6 +752,42 @@ public abstract class StudyBean implements EntityBean {
         }
     	return updated;
     }
+
+    /** 
+     * @ejb.interface-method
+     */
+    public boolean updateSOPClassesInStudy() {
+        Set newSet;
+        try {
+            newSet = ejbSelectSOPClassesInStudies(getPk());
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+        String oldStr = getSopClassesInStudy();
+        if (oldStr == null) {
+            if (newSet.isEmpty()) {
+                return false;
+            }
+        } else {
+            Set oldSet = new HashSet(
+                    Arrays.asList(StringUtils.split(oldStr, '\\')));
+            if (newSet.equals(oldSet)) {
+                return false;
+            }
+            if (newSet.isEmpty()) {
+                setSopClassesInStudy(null);
+                return true;
+            }
+        }
+        String [] newStrs = (String[]) newSet.toArray(new String[newSet.size()]);
+        setSopClassesInStudy(StringUtils.toString(newStrs, '\\'));
+        return true;
+    }
+
+    /**
+     * @ejb.select query="SELECT DISTINCT i.sopCuid FROM Study st, IN(st.series) s, IN(s.instances) i WHERE st.pk = ?1"
+     */
+    public abstract Set ejbSelectSOPClassesInStudies(Long pk) throws FinderException;
     
     /**
      * @ejb.interface-method

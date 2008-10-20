@@ -13,6 +13,7 @@ ALTER TABLE gppps ADD pps_status INTEGER NOT NULL;
 
 ALTER TABLE patient ALTER pat_birthdate TYPE DATE;
 
+ALTER TABLE study ADD cuids_in_study VARCHAR(255);
 
 --
 -- Emulate ALTER TABLE ae

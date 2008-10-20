@@ -83,6 +83,7 @@ CREATE TABLE study (
 	study_custom3	TEXT,
 	study_status_id TEXT,
 	mods_in_study	TEXT,
+    cuids_in_study  TEXT,
 	num_series		INTEGER NOT NULL,
 	num_instances	INTEGER NOT NULL,
 	ext_retr_aet	TEXT,

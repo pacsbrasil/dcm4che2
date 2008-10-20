@@ -186,6 +186,10 @@ public abstract class ConsistencyCheckBean implements SessionBean {
                 log.info("Study " + study.getStudyIuid() + " updated!");
                 updated = true;
             }
+            if (study.updateSOPClassesInStudy()) {
+                log.info("SOP Classes in Study " + study.getStudyIuid() + " updated!");
+                updated = true;
+            }
             study.setTimeOfLastConsistencyCheck(new Timestamp(System
                     .currentTimeMillis()));
             return updated;

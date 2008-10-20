@@ -310,6 +310,7 @@ public abstract class ContentEditBean implements SessionBean {
 	        series.setAttributes(ds);
             StudyLocal study = series.getStudy();
             study.updateDerivedFields(false, false, false, false, false, true);
+            study.updateSOPClassesInStudy();
             Collection col = new ArrayList();
             col.add( series );
             return getStudyMgtDataset( study, col, null, CHANGE_MODE_SERIES,
@@ -361,6 +362,7 @@ public abstract class ContentEditBean implements SessionBean {
             seriess.add(series);                
             movedSeriess.add( series );
             oldStudy.updateDerivedFields(true, true, true, true, true, true);
+            oldStudy.updateSOPClassesInStudy();
         }
         study.updateDerivedFields(true, true, true, true, true, true);
         return getStudyMgtDataset( study, movedSeriess, null );
@@ -381,10 +383,14 @@ public abstract class ContentEditBean implements SessionBean {
             if (oldSeries.isIdentical(series)) continue;
             instances.add(instance);                
             oldSeries.updateDerivedFields(true, true, true, true, true);
-            oldSeries.getStudy().updateDerivedFields(true, true, true, true, true, true);
+            StudyLocal oldStudy = oldSeries.getStudy();
+            oldStudy.updateDerivedFields(true, true, true, true, true, true);
+            oldStudy.updateSOPClassesInStudy();
         }
         series.updateDerivedFields(true, true, true, true, true);
-        series.getStudy().updateDerivedFields(true, true, true, true, true, true);
+        StudyLocal newStudy = series.getStudy();
+        newStudy.updateDerivedFields(true, true, true, true, true, true);
+        newStudy.updateSOPClassesInStudy();
         Collection col = new ArrayList(); col.add( series );
         return getStudyMgtDataset( series.getStudy(), col, instances );
     }

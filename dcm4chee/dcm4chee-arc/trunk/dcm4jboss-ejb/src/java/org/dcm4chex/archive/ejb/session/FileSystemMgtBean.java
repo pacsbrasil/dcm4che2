@@ -838,6 +838,7 @@ public abstract class FileSystemMgtBean implements SessionBean {
                 series.updateDerivedFields(true, true, true, true, true);
             }
             study.updateDerivedFields(true, true, true, true, true, true);
+            study.updateSOPClassesInStudy();
             return (FileDTO[]) fileDTOs.toArray(new FileDTO[fileDTOs.size()]);
         } catch (FinderException e) {
             throw new EJBException(e);
