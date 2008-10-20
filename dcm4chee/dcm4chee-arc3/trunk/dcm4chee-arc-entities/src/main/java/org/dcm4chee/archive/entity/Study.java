@@ -97,6 +97,8 @@ public class Study implements Serializable {
 
     private String modalitiesInStudy;
 
+    private String sopClassesInStudy;
+
     private String retrieveAETs;
 
     private String externalRetrieveAET;
@@ -202,6 +204,14 @@ public class Study implements Serializable {
         this.modalitiesInStudy = modalitiesInStudy;
     }
 
+    public String getSopClassesInStudy() {
+        return sopClassesInStudy;
+    }
+
+    public void setSopClassesInStudy(String sopClassesInStudy) {
+        this.sopClassesInStudy = sopClassesInStudy;
+    }
+
     public String getRetrieveAETs() {
         return retrieveAETs;
     }
@@ -291,6 +301,7 @@ public class Study implements Serializable {
         + ", date=" + studyDateTime
         + ", desc=" + studyDescription
         + ", mods=" + modalitiesInStudy
+        + ", cuids=" + sopClassesInStudy
         + ", procs=" + procedureCodes
         + ", refphys=" + referringPhysicianName
         + ", numseries=" + numberOfStudyRelatedSeries

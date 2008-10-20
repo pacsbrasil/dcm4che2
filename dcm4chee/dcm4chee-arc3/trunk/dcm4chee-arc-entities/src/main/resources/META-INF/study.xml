@@ -64,6 +64,9 @@
       <basic name="modalitiesInStudy">
         <column name="mods_in_study" />
       </basic>
+      <basic name="sopClassesInStudy">
+        <column name="cuids_in_study" />
+      </basic>
       <basic name="retrieveAETs">
         <column name="retrieve_aets" />
       </basic>
