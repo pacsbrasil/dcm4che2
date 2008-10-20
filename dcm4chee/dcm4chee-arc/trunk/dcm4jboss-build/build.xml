@@ -310,9 +310,21 @@
     </antcall>
     <antcall target="xslt">
       <param name="in"
+             value="${dcm4jboss-sar.xmdesc}/dcm4chee-delstudy-xmbean.xml" />
+      <param name="out" value="delstudy-xmbean.xml" />
+      <param name="mbean" value="dcm4chee.archive:service=DeleteStudy" />
+    </antcall>
+    <antcall target="xslt">
+      <param name="in"
              value="${dcm4jboss-sar.xmdesc}/dcm4chee-device-xmbean.xml" />
       <param name="out" value="device-xmbean.xml" />
       <param name="mbean" value="dcm4chee.archive:service=DeviceService" />
+    </antcall>
+    <antcall target="xslt">
+      <param name="in"
+             value="${dcm4jboss-sar.xmdesc}/dcm4chee-dfcmd-xmbean.xml" />
+      <param name="out" value="dfcmd-xmbean.xml" />
+      <param name="mbean" value="dcm4chee.archive:service=dfcmd" />
     </antcall>
     <antcall target="xslt">
       <param name="in"
@@ -353,9 +365,15 @@
     </antcall>
     <antcall target="xslt">
       <param name="in"
-             value="${dcm4jboss-sar.xmdesc}/dcm4chee-fsmgt-xmbean.xml" />
-      <param name="out" value="fsmgt-xmbean.xml" />
-      <param name="mbean" value="dcm4chee.archive:service=FileSystemMgt" />
+             value="${dcm4jboss-sar.xmdesc}/dcm4chee-fsmgt-nearline-xmbean.xml" />
+      <param name="out" value="fsmgt-nearline-xmbean.xml" />
+      <param name="mbean" value="dcm4chee.archive:service=FileSystemMgt,group=NEARLINE_STORAGE" />
+    </antcall>
+    <antcall target="xslt">
+      <param name="in"
+             value="${dcm4jboss-sar.xmdesc}/dcm4chee-fsmgt-online-xmbean.xml" />
+      <param name="out" value="fsmgt-online-xmbean.xml" />
+      <param name="mbean" value="dcm4chee.archive:service=FileSystemMgt,group=ONLINE_STORAGE" />
     </antcall>
     <antcall target="xslt">
       <param name="in"
