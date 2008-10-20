@@ -1,0 +1,57 @@
+# Defines the overall Xero metadata, including the view and model metadata components.
+metaDataProvider.propertyXeroView=${class:org.dcm4chee.xero.metadata.PropertyProvider}
+metaDataProvider.propertyXeroView.model=xero-view.metadata
+
+# The model is defined by the child values and factories registered in the model.
+model=${factory:org.dcm4chee.xero.metadata.access.MapWithDefaults}
+
+
+# This defines the controller plugin components for JavaScript - NOT the dynamic instances
+model.xeroControllers=${class:org.dcm4chee.xero.metadata.access.ValueList}
+model.xeroControllers.patientController=patientController
+model.xeroControllers.reportController=reportController
+model.xeroControllers.dynamic=dynamic
+model.xeroControllers.searchController=searchController
+model.xeroControllers.tabsController=tabsController
+
+# Define the template groups to include the controller components now.
+templateGroup.groupNames.xeroController=xeroController
+
+# Define the regular controller used for rendering Xero XHTML pages.
+controller=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+controller.stringTemplate=${class:org.dcm4chee.xero.template.StringTemplateFilter}
+controller.stringTemplate.defaultGroup=${ref:templateGroup}
+controller.stringTemplate.model.inherit=model
+controller.stringTemplate.priority=10000
+
+# Defines a URL query factory - something that knows how to produce a query result from
+# one or more parameters. 
+controller.query=${class:org.dcm4chee.xero.controller.RequestValidator}
+controller.query.priority=6000
+controller.query.PatientID=${class:org.dcm4chee.xero.parsers.StringParser}
+controller.query.AccessionNumber=${class:org.dcm4chee.xero.parsers.StringParser}
+controller.query.PatientName=${class:org.dcm4chee.xero.parsers.StringParser}
+controller.query.StudyID=${class:org.dcm4chee.xero.parsers.StringParser}
+controller.query.StudyDateTime=${class:org.dcm4chee.xero.parsers.StringParser}
+controller.query.ModalitiesInStudy=${class:org.dcm4chee.xero.parsers.StringParser}
+controller.query.url=${class:org.dcm4chee.xero.controller.UrlFactory}
+controller.query.url.base=/wado2/study.xml
+controller.query.url.ModalitiesInStudy=query
+controller.query.url.PatientID=query
+controller.query.url.PatientName=query
+controller.query.url.AccessionNumber=query
+controller.query.url.StudyDateTime=query
+
+# Contains the query components for initial display - relies on query validation having been done.
+controller.queryController=${class:org.dcm4chee.xero.controller.QueryController}
+controller.queryController.priority=5000
+
+# Define the JSController - the controller that handles the JavaScript generation/creation.
+jscontroller=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+jscontroller.stringTemplate=${class:org.dcm4chee.xero.template.StringTemplateFilter}
+jscontroller.stringTemplate.defaultContentType=text/javascript
+jscontroller.stringTemplate.defaultGroup=${ref:templateGroup}
+jscontroller.stringTemplate.model.inherit=model
+jscontroller.stringTemplate.priority=10000
+
+
