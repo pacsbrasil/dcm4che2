@@ -44,7 +44,9 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.ejb.CreateException;
 import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
 import javax.management.Attribute;
 import javax.management.Notification;
 import javax.management.NotificationListener;
@@ -952,8 +954,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                 do {
                     DeleteStudyOrder order = orderIter.next();
                     sizeToDel -= fsMgt.getStudySize(order);
-                    fsMgt.removeStudyOnFSRecord(order);
-                    deleteStudy.scheduleDeleteOrder(order);
+                    scheduleDeleteOrder(fsMgt, order);
                     minAccessTime = order.getAccessTime();
                     countStudies++;
                 } while (sizeToDel > 0 && orderIter.hasNext());
@@ -969,8 +970,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                 copyOnFSGroup, copyArchived, copyOnReadOnlyFS);
             if (!orders.isEmpty()) {
                 for (DeleteStudyOrder order : orders) {
-                    fsMgt.removeStudyOnFSRecord(order);
-                    deleteStudy.scheduleDeleteOrder(order);
+                    scheduleDeleteOrder(fsMgt, order);
                     countStudies++;
                 }
             }
@@ -981,6 +981,18 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                     + getFileSystemGroupID());
         }
         return countStudies;
+    }
+
+    private void scheduleDeleteOrder(FileSystemMgt2 fsMgt,
+            DeleteStudyOrder order) throws Exception {
+        fsMgt.removeStudyOnFSRecord(order);
+        try {
+            deleteStudy.scheduleDeleteOrder(order);
+        } catch (Exception e) {
+            // re-insert SOF record, so the deleter keeps track for deletion of the study
+            fsMgt.createStudyOnFSRecord(order);
+            throw e;
+        }
     }
 
     public int deleteOrphanedPrivateFiles() throws Exception {

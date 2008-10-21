@@ -497,6 +497,15 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         sofHome.remove(order.getSoFsPk());
     }
 
+    /**
+     * @ejb.interface-method
+     */
+    public void createStudyOnFSRecord(DeleteStudyOrder order)
+            throws CreateException, FinderException {
+        sofHome.create(studyHome.findByPrimaryKey(order.getStudyPk()),
+                fileSystemHome.findByPrimaryKey(order.getFsPk()));
+    }
+
     /**    
      * @ejb.interface-method
      */
