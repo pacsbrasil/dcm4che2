@@ -9,7 +9,7 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.util.StringUtil;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
-import org.mozilla.javascript.EcmaError;
+import org.mozilla.javascript.RhinoException;
 import org.mozilla.javascript.ScriptableObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,7 +91,7 @@ public class JSTemplate {
 		}
 	  try {
 		 cx.evaluateString(scope, js, "<cmd>", 1, null);
-	  } catch (EcmaError e) {
+	  } catch (RhinoException e) {
 		 log.warn("Caught exception {} on line {}", e.getMessage(), e.lineNumber());
 		 int line = e.lineNumber();
 		 String[] splits = StringUtil.split(js, '\n', true);

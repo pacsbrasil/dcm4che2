@@ -1,2 +1,2 @@
 $! Generates the script includes !$
-$static.scripts.value:{<script src="$it$" type="text/ecmascript"> </script>}$
+$scripts:{<script src="$it$" type="text/ecmascript"> </script>}$

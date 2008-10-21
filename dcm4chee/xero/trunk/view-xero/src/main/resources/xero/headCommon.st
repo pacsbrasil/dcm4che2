@@ -15,6 +15,6 @@
   $model/scripts()$
   <script>
 /** Define per-user information as required TODO - move this to a child script */
-xeroModel.userName = "$userName$";  
+model.userName = "$userName$";  
   </script>
 </head>

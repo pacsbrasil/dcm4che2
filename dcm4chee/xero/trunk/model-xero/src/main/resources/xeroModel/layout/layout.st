@@ -11,11 +11,19 @@ function Layout(id, template) {
 	this.idCount[id] = idcnt+1;
 	this.id = id +"-"+ idcnt;
 	if( template ) this.template = template;
-	if( this.isDebug ) this.debug = console.debug;
+	if( this.isDebug ) this.debug = console.info;
 };
 
 Layout.prototype.idCount = new Object();
 Layout.prototype.isDebug = false;
+Layout.EAST = "east";
+Layout.WEST = "west";
+Layout.NORTH = "north";
+Layout.SOUTH = "south";
+Layout.prototype.widthEdge = 0;
+Layout.prototype.heightEdge = 0;
+Layout.prototype.extraStyle = "";
+
 Layout.prototype.debug = function() {};
 Layout.prototype.template = "html/layout";
 // Some things don't quite get setup right without an initial size, even though it is wrong.
@@ -27,6 +35,31 @@ Layout.prototype.setGrid = function Layout_setGrid(x,y) {
 
 Layout.prototype.used = true;
 
+/** Resizes the edge components */
+Layout.prototype.resizeEdge = function Layout_resizeExtra() {
+	var edge = this.layouts.north;
+	var style;
+	if( edge ) {
+		style = "width: 100%; height: "+(edge.absHeight*100/this.height-0.1)+"%;";
+		edge.resize(this.width, edge.absHeight,style);
+	}
+	edge = this.layouts.west;
+	if( edge ) {
+		style = "width: "+(edge.absWidth*100/this.width-0.1)+"%; height: "+((this.height-this.deltaHeight)/this.height-0.1)+"%;";
+		edge.resize(this.width, edge.absHeight,style);
+	}
+	edge = this.layouts.east;
+	if( edge ) {
+		style = "width: "+(edge.absWidth*100/this.width-0.1)+"%; height: "+((this.height-this.deltaHeight)/this.height-0.1)+"%;";
+		edge.resize(this.width, edge.absHeight,style);
+	}
+	edge = this.layouts.south;
+	if( edge ) {
+		style = "width: 100%; height: "+(edge.absHeight*100/this.height-0.1)+"%;";
+		edge.resize(this.width, edge.absHeight,style);
+	}
+};
+
 /**
  * Resizes the objects to display in the correct area
  */
@@ -35,7 +68,8 @@ Layout.prototype.resize = function Layout_resize(width,height,style) {
 	var changed = this.resizeListener && ((this.width!=Math.floor(width)) || (this.height!=Math.floor(height)));
 	this.width = Math.floor(width);
 	this.height = Math.floor(height);
-	this.style = style;
+	
+	this.style = style+this.extraStyle;
 	if( changed ) {
 		this.resizeListener();
 	}
@@ -48,8 +82,8 @@ Layout.prototype.resize = function Layout_resize(width,height,style) {
 	var sumRelWidth = this.sumRelWidth(usedLay);
 	var sumRelHeight = this.sumRelHeight(usedLay);
 	this.debug("sum rel x,y=%f,%f on %s,%d,%d", sumRelWidth, sumRelHeight, this.template,this.gridX, this.gridY);
-	width = width-absWidth;
-	height = height-absHeight;
+	width = width-absWidth-this.widthEdge;
+	height = height-absHeight-this.heightEdge;
 	
 	var i,j;
 	var subWidth, subHeight;
@@ -68,14 +102,15 @@ Layout.prototype.resize = function Layout_resize(width,height,style) {
 				}
 			}
 			// Always do width relative - it messes up the display otherwise.
-			style = "width:"+Math.floor((subWidth)*99.4/this.width)+"%;";
+			style = "width:"+Math.floor((subWidth)*998/this.width)/10+"%;";
 			
 			subHeight = layout.absHeight;
 			if(! subHeight ) {
+				this.debug("Didn't find subHeight - computing it from height %d and sumRelHeight %d",height, sumRelHeight);
 				subHeight = layout.relHeight;
 				if( !subHeight ) subHeight = 100;
 				subHeight = subHeight * height/sumRelHeight;
-				style = style+"height:"+Math.floor(subHeight*100/this.height)+"%;";
+				style = style+"height:"+Math.floor(subHeight*998/this.height)/10+"%;";
 			} else {
 				style = style+"height:"+subHeight+"px;";
 			}
@@ -178,8 +213,29 @@ Layout.prototype.sumRelHeight = function Layout_sumRelHeight(usedLay) {
 	return ret;
 };
 
+/** Add a named child - assumes already set in layouts. */
+Layout.prototype.addNamed = function Layout_addNamed(child,name) {
+	if( name===Layout.EAST || name===Layout.WEST) {
+		this.widthEdge = this.widthEdge+child.absWidth;
+	} else if( name===Layout.NORTH || name===Layout.SOUTH ) {
+		this.heightEdge = this.heightEdge+child.absHeight;
+	}
+};
+
 /** Add another child object */
-Layout.prototype.add = function Layout_add(child) {
+Layout.prototype.add = function Layout_add(child,name) {
 	if( !this.layouts ) this.layouts =new Array();
-	this.layouts.push(child);
+	if( name ) {
+		this.layouts[name] = child;
+		this.addNamed(child,name);
+	} else {
+		this.layouts.push(child);
+	}
+};
+
+/** Initialize/create the child elements - no op in default class.
+ * @return false if unable to initialize yet, and true if initialized successfully. 
+ */
+Layout.prototype.init = function Layout_init() {
+	return true;
 };

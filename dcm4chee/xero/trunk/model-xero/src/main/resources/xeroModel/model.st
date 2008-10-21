@@ -6,7 +6,25 @@
   * 3. search results - the information from the XML file that defines the results for the search.
   * 4. Image display information - TODO still.
   */
-function XeroModel() {
+function XeroModel(is_ie) {
+	this.queryBox = new Layout("query","query/query");
+	this.queryBox.query = new UrlFactory("/wado2/study.xml","query"); 
+	this.searchLayout = new Layout("results","query/studyTable");
+	this.searchLayout.columns = XeroStudyColumns;
+	this.searchLayout.query = this.queryBox.query;
+	this.searchLayout.sortPatient = new SortPatient(this.searchLayout)
+
+	this.findLayout = new Layout("Find");
+	this.findLayout.add(this.queryBox);
+	this.findLayout.add(this.searchLayout);
+
+	this.layout = new TabsLayout("XeroRootTab");
+	this.layout.tabMenu = new Layout("userMenu","userMenu"); 
+	this.layout.addTab("Find", this.findLayout);
+	this.patientLayout = new PatientLayout();
+	this.layout.addTab("Display", this.patientLayout);
+
+	this.IS_IE = is_ie;
 };
 
 if( !console.info ) {
@@ -28,7 +46,6 @@ if( !console.info ) {
     console.timeMap = new Object();
 };
 
-var xeroModel = new XeroModel();
 /** Shared data is the static data that is shared between server and client. */
 XeroModel.prototype.shared = new Object();
 
@@ -55,23 +72,8 @@ var XeroStudyColumns = {
 	]
 };
 
-xeroModel.queryBox = new Layout("query","query/query");
-xeroModel.queryBox.query = new UrlFactory("/wado2/study.xml","query"); 
-xeroModel.searchLayout = new Layout("results","query/studyTable");
-xeroModel.searchLayout.columns = XeroStudyColumns;
-xeroModel.searchLayout.query = xeroModel.queryBox.query;
-xeroModel.searchLayout.sortPatient = new SortPatient(xeroModel.searchLayout)
-xeroModel.findLayout = new Layout("Find");
-xeroModel.findLayout.add(xeroModel.queryBox);
-xeroModel.findLayout.add(xeroModel.searchLayout);
-
-xeroModel.layout = new TabsLayout("XeroRootTab");
-xeroModel.layout.tabMenu = new Layout("userMenu","userMenu"); 
-xeroModel.layout.addTab("Find", xeroModel.findLayout);
-xeroModel.layout.addTab("Display");
-
-
-xeroModel.IS_IE = _SARISSA_IS_IE;
+// TODO - remove this - it is a bit of test code being used temporarily.
+var i=3;
 
 var STUDY_QUERY="/wado2/study.xml";
 var IMAGE_QUERY="/wado2/image.xml";

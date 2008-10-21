@@ -7,12 +7,12 @@ model=${factory:org.dcm4chee.xero.metadata.access.MapWithDefaults}
 
 
 # This defines the controller plugin components for JavaScript - NOT the dynamic instances
-model.xeroControllers=${class:org.dcm4chee.xero.metadata.access.ValueList}
-model.xeroControllers.patientController=patientController
-model.xeroControllers.reportController=reportController
-model.xeroControllers.dynamic=dynamic
-model.xeroControllers.searchController=searchController
-model.xeroControllers.tabsController=tabsController
+static.xeroControllers=${class:org.dcm4chee.xero.metadata.access.ValueList}
+static.xeroControllers.displayController=displayController
+static.xeroControllers.reportController=reportController
+static.xeroControllers.dynamic=dynamic
+static.xeroControllers.findController=findController
+static.xeroControllers.tabsController=tabsController
 
 # Define the template groups to include the controller components now.
 templateGroup.groupNames.xeroController=xeroController
@@ -23,6 +23,9 @@ controller.stringTemplate=${class:org.dcm4chee.xero.template.StringTemplateFilte
 controller.stringTemplate.defaultGroup=${ref:templateGroup}
 controller.stringTemplate.model.inherit=model
 controller.stringTemplate.priority=10000
+
+controller.browser=${class:org.dcm4chee.xero.controller.BrowserVersion}
+controller.browser.priority=9900
 
 # Defines a URL query factory - something that knows how to produce a query result from
 # one or more parameters. 
@@ -51,7 +54,12 @@ jscontroller=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 jscontroller.stringTemplate=${class:org.dcm4chee.xero.template.StringTemplateFilter}
 jscontroller.stringTemplate.defaultContentType=text/javascript
 jscontroller.stringTemplate.defaultGroup=${ref:templateGroup}
-jscontroller.stringTemplate.model.inherit=model
+# Don't use the static instance directly as that isn't thread safe, and at least a few
+# attributes are changed per-call.  In this case, load a new instance set every call - this is
+# definitely slower, but has the advantage of re-loading the javascript attributes when required.
+jscontroller.stringTemplate.model.inherit=static
+jscontroller.stringTemplate.model=${factory:org.dcm4chee.xero.metadata.access.MapWithDefaults}
 jscontroller.stringTemplate.priority=10000
 
-
+jscontroller.browser=${class:org.dcm4chee.xero.controller.BrowserVersion}
+jscontroller.browser.priority=9900

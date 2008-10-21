@@ -37,70 +37,46 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.controller;
 
-import java.io.IOException;
 import java.util.Map;
 
-import javax.xml.transform.Source;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.URIResolver;
-
-import org.dcm4chee.xero.metadata.MetaData;
-import org.dcm4chee.xero.metadata.access.MapFactory;
-import org.dcm4chee.xero.metadata.servlet.UrlUriResolver;
-import org.dcm4chee.xero.model.XmlModel;
+import org.dcm4chee.xero.metadata.filter.Filter;
+import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
+import org.dcm4chee.xero.metadata.servlet.MetaDataServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
-/**
- * Given a url, this factory knows how to create an XmlModel that has the
- * contents of the URL. Also needs the request in order to allow getting the URL
- * information.
+/** 
+ * Adds the IS_X browser identifications.
+ * Also adds firebug on/off flag.
  * 
  * @author bwallace
- * 
+ * @param <T>
  */
-public class XmlModelFactory implements MapFactory<XmlModel> {
-   private static final Logger log = LoggerFactory.getLogger(XmlModelFactory.class);
-   
-   String urlKey = "url";
-   
-   /** Get the URL and from that construct the return XML object */
-   public XmlModel create(Map<String, Object> src) {
-	  String url = (String) ((Map<?,?>) src.get(urlKey)).get("url");
-	  if (url != null) {
-		 XmlModel ret = new XmlModel();
-		 log.info("Getting XML model from " + url);
-		 URIResolver resolver = (URIResolver) src.get(UrlUriResolver.URIRESOLVER);
-		 try {
-			Source source = resolver.resolve(url, "");
-			log.info("Resolved "+url+" to "+source);
-			ret.setSource(source);
-			return ret;
-		 } catch (TransformerException e) {
-			log.warn("Failed to resolve " + url + " reason:" + e, e);
-			return null;
-		 }
-		 catch(IOException e) {
-			log.warn("Failed to read "+url+" reason:"+e,e);
-			return null;
-		 }
-		 catch(SAXException e) {
-			log.warn("Failed to parse "+url+" reason:"+e,e);
-			return null;
-		 }
-	  }
-	  log.info("No url found for " + urlKey);
-	  return null;
+public class BrowserVersion<T> implements Filter<T> {
+	private static Logger log = LoggerFactory.getLogger(BrowserVersion.class);
+
+	/** Adds browser identification information */
+   public T filter(FilterItem<T> filterItem, Map<String, Object> params) {
+ 	  String userAgent = MetaDataServlet.getUserAgent(params);
+ 	  Map<String,Object> model = FilterUtil.getModel(params);
+ 	  if( (userAgent.indexOf("msie")>=0) && (userAgent.indexOf("opera")==-1) ) {
+ 	 	  log.info("User agent is IE {}", userAgent);
+ 		  model.put("IS_IE", true);
+ 		  model.put("HAS_SVG", false);
+ 		  model.put("HAS_VML", true);
+ 	  }
+ 	  else {
+ 	 	  log.info("User agent is not IE {}", userAgent);
+ 		  model.put("HAS_SVG", true);
+ 		  model.put("HAS_VML", false);
+ 		  // As needed, add more browser identifications.
+ 	  }
+ 	  
+ 	  if( params.containsKey("firebug") ) model.put("firebug", params.get("firebug"));
+ 	  model.put("userName", params.get("userName"));
+ 	  if( filterItem==null ) return null;
+ 	  return filterItem.callNextFilter(params);
    }
 
-   /**
-    * Sets the key to look for the query URL string from.
-    * 
-    * @param urlKey
-    */
-   @MetaData
-   public void setUrl(String urlKey) {
-	  this.urlKey = urlKey;
-   }
 }

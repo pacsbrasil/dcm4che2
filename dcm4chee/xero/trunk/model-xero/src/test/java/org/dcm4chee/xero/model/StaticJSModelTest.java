@@ -1,10 +1,10 @@
 package org.dcm4chee.xero.model;
 
+import java.util.List;
 import java.util.Map;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
-import org.dcm4chee.xero.metadata.access.ValueList;
 import org.testng.annotations.Test;
 
 /**
@@ -18,7 +18,7 @@ import org.testng.annotations.Test;
 public class StaticJSModelTest {
 
 	MetaDataBean mdb = StaticMetaData.getMetaData("test-model.metadata");
-	MetaDataBean stat = mdb.getChild("model");
+	MetaDataBean stat = mdb.getChild("static");
 	JSTemplate jst = new JSTemplate(stat,"xeroModelTests", "xeroModel");
 
 	/**
@@ -31,13 +31,10 @@ public class StaticJSModelTest {
 		
 		Map<String,Object> model = jst.getModel();
 		assert model!=null;
-		model = (Map<String, Object>) model.get("static");
 		
-		MetaDataBean scripts = (MetaDataBean) model.get("scripts");
+		List<?> scripts = (List<?>) model.get("scripts");
 		assert scripts!=null;
-		ValueList scriptsV = (ValueList) scripts.get("value");
-		assert scriptsV!=null;
-		assert scriptsV.contains("js/sarissa.js");
+		assert scripts.contains("js/sarissa.js");
 	}
 	
 	/**
@@ -49,6 +46,22 @@ public class StaticJSModelTest {
 		runTest("staticPluginTest");
 	}
 	
+	@Test
+	public void modelInterpretTest() {
+		runTest("modelInterpretTest");
+	}
+	
+	@Test
+	public void js_variable_accessible() {
+		Map<?,?> model = (Map<?,?>) stat.getValue();
+		//AutoStringTemplateGroup astg = (AutoStringTemplateGroup) stat.getChild("js_static").getValue("script");
+		//System.out.println("script template="+astg.getTemplate());
+		//System.out.println("script="+stat.getChild("js_static").getValue("script"));
+		assert model.get("js_static")!=null;
+		assert model.get("i")!=null;
+		System.out.println("i="+model.get("i"));
+		assert model.get("i").equals(3);
+	}
 	
 	/** Uses the static meta-data as the model and then just calls the generic  
 	 * runTest for JavaScript.

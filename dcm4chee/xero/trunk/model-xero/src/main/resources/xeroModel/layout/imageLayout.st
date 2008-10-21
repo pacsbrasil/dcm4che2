@@ -5,9 +5,10 @@ function ImageLayout(id,template) {
 	this.baseConstructor(id,template);
 };
 
+ImageLayout.prototype = new Layout("baseImage","image/image");
+
 ImageLayout.prototype.isDebug = false;
 
-ImageLayout.prototype = new Layout("baseImage","image/image");
 ImageLayout.prototype.baseConstructor = Layout;
 
 // Scale no smaller than fetchSize when fetching,

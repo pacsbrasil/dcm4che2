@@ -1,6 +1,6 @@
 $unittest(unittest="imageLayoutTests")$
-$layout()$
-$imageLayout()$
+$layout/layout()$
+$layout/imageLayout()$
 
 /** A test object that pretends to be a "merged" object, and contains imageLayout as a child element for testing. */
 function ILTest(width,height, presets) {

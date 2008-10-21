@@ -2,13 +2,9 @@
 metaDataProvider.propertyXeroModel=${class:org.dcm4chee.xero.metadata.PropertyProvider}
 metaDataProvider.propertyXeroModel.model=xero-model.metadata
 
-# The static study columns information - this can't be auto-discovered if it is packaged as a war file instead of a dir.
-# The study columns is view data, so is declared here.
-model.studyColumns=${class:org.dcm4chee.xero.model.XmlModel}
-model.studyColumns.resource=studyColumns.xml
-
 # This defines the study tray items to include - this is an ordered list, so in this case the 
 # numbering is included to define the ordering
+shared.studyTrayItems=${class:org.dcm4chee.xero.metadata.access.ValueList}
 shared.studyTrayItems.1000nextPrevSeries=image/nextPrevSeries	
 shared.studyTrayItems.1250reports=series/reports
 shared.studyTrayItems.1500keyObjects=series/keyObjects
@@ -17,11 +13,11 @@ shared.studyTrayItems.2000thumbnails=series/thumbnails
 
 
 # The Templates for Xero
-model.templateGroup=${ref:templateGroup}
-model.templates=${ref:allTemplates}
+static.templateGroup=${ref:templateGroup}
+static.templates=${ref:allTemplates}
 model.view=xero
 
-model.static.allTemplates=${ref:allTemplates}
+static.allTemplates=${ref:allTemplates}
 
 # Add the xero group to the overall templates list.
 templateGroup.groupNames.xero=xero
@@ -65,6 +61,3 @@ allTemplates.queryTemplates=${ref:queryTemplates}
 allTemplates.displayTemplates=${ref:displayTemplates}
 allTemplates.xeroBody=xeroBody
 allTemplates.userMenu=userMenu
-
-
-

@@ -4,7 +4,7 @@
 $unittest()$
 $xmlModel()$
 $studyData()$
-$layout()$
+$layout/layout()$
 $sortPatient()$
 
 var studyDataTests = new Object();

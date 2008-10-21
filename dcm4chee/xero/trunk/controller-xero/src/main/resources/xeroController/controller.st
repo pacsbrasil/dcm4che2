@@ -21,17 +21,16 @@
  */
 
 /** Creates a XeroController object, typically called xeroController */
-function XeroController(model, view) {
-	this.model = model;
+function XeroController(view) {
+	this.model = new XeroModel(_SARISSA_IS_IE);
 	this.view = view;
 	
 	if( this.isDebug ) this.debug = console.debug;
-	
 };
 
 $xeroControllers:{ $(it)()$ }$
 
-var xeroController = new XeroController(xeroModel, xeroView);
+var xeroController = new XeroController(xeroView);
 
 XeroController.prototype.isDebug = false;
 XeroController.prototype.debug = function() {};
@@ -193,5 +192,5 @@ XeroController.prototype.switchTab = function XC_switchTab(src,tabName) {
 
 // Define short versions of the MVC components.
 var controller = xeroController;
-var model = xeroModel;
+var model = controller.model;
 var view = xeroView;

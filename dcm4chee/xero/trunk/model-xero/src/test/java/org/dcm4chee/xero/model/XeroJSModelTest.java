@@ -77,7 +77,7 @@ public class XeroJSModelTest {
 	public void studyDataTest() {
 		runTest("studyDataTests",false);
 	}
-
+	
 	
 	/** Run the named javascript object test */
 	public static void runTest(String jsName) {

@@ -1,5 +1,6 @@
 package org.dcm4chee.xero.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import org.antlr.stringtemplate.StringTemplate;
@@ -13,7 +14,7 @@ import org.testng.annotations.Test;
 public class TemplatesTest {
    private static final Logger log = LoggerFactory.getLogger(TemplatesTest.class);
    MetaDataBean mdb = StaticMetaData.getMetaData("xero.metadata");
-   MetaDataBean model = mdb.getChild("model");
+   MetaDataBean model = mdb.getChild("static");
 
 	@Test
 	public void allTemplatesTest() {
@@ -30,13 +31,18 @@ public class TemplatesTest {
 	}
 	
 	@Test
+	public void scriptsInModelTest() {
+		Map<?,?> model = (Map<?,?>) mdb.getValue("model");
+		assert model!=null;
+		List<?> l = (List<?>) model.get("scripts");
+		assert l!=null;
+	}
+	
+	@Test
 	public void renderAllTemplatesTest() {
 		assert mdb.getChild("jscontroller")!=null;
 		assert mdb.getChild("jscontroller").getChild("stringTemplate")!=null;
 		assert mdb.getChild("jscontroller").getChild("stringTemplate").getChild("model")!=null;
-		MetaDataBean templatesMdb = mdb.getChild("jscontroller").getChild("stringTemplate").getChild("model").getChild("templates");
-		assert templatesMdb!=null;
-		assert templatesMdb.getValue()!=null;
 		Map<?,?> mapModel = (Map<?,?>) model.getValue();
 		
 		StringTemplateGroup stg = (StringTemplateGroup) model.getValue("templateGroup");
