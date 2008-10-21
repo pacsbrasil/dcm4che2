@@ -288,6 +288,9 @@ StringTemplate.prototype[24] = function ST_concat(chunk,model) {
 /** Handle the dot object */
 StringTemplate.prototype[25] = function ST_dot(chunk,model) {
 	var root = this.call(chunk.ast[0],model);
+	if( root==undefined ) {
+		return undefined;
+	}
 	var child = chunk.ast[1];
 	if( child.type==20 ) {
 		var val= this.get(root,child.text);

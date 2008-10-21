@@ -43,9 +43,12 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
+import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.StringTemplateGroup;
 import org.antlr.stringtemplate.servlet.StringSafeRenderer;
 import org.dcm4chee.xero.metadata.MetaData;
+import org.dcm4chee.xero.metadata.MetaDataBean;
+import org.dcm4chee.xero.metadata.MetaDataUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,9 +61,12 @@ import org.slf4j.LoggerFactory;
  * @author bwallace
  * 
  */
-public class AutoStringTemplateGroup extends StringTemplateGroup {
+public class AutoStringTemplateGroup extends StringTemplateGroup implements MetaDataUser {
 	private static final Logger log = LoggerFactory.getLogger(AutoStringTemplateGroup.class);
 	StringTemplateGroup[] stgParents;
+	private String template;
+	
+	MetaDataBean modelMdb;
 
 	/** Create a StringTempalteGroup */
 	public AutoStringTemplateGroup() {
@@ -179,4 +185,36 @@ public class AutoStringTemplateGroup extends StringTemplateGroup {
 			throw new IllegalArgumentException("Unknown renderers name - TODO implement a pluggable mechanism, name:"
 			      + name);
 	}
+
+	@MetaData(required=false)
+	public void setTemplate(String template) {
+		this.template = template;
+	}
+
+	/** Gets the default template name to render */
+	public String getTemplate() {
+		return this.template;
+	}
+	
+	/** Render the template/model object and return the result */
+	@Override
+	public String toString() {
+		if( this.template==null ) {
+			return super.toString();
+		}
+
+		Map<?,?> model = null;
+		if( modelMdb!=null ) {
+			model = (Map<?,?>) modelMdb.getValue();
+		}
+		StringTemplate st = this.getInstanceOf(this.template,model);
+		String ret = st.toString();
+		log.debug("Return script:{}",ret);
+		return ret;
+	}
+
+	/** Sets the meta-data so that the model provider can be retrieved */
+   public void setMetaData(MetaDataBean mdb) {
+		modelMdb = mdb.getChild("model"); 
+   }
 }

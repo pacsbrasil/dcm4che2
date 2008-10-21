@@ -132,6 +132,7 @@ public class StringTemplateFilter implements Filter<ServletResponseItem>, MetaDa
 				template = defaultView;
 				if (template == null)
 					template = templateFromParams(params);
+				log.debug("Model template {} default was {}", template, defaultView);
 				if (template == null) {
 					log.warn("View {} not found - returning 404", template);
 					return new ErrorResponseItem(404, "View name not defined.");

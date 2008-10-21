@@ -38,97 +38,196 @@
 package org.dcm4chee.xero.rhino;
 
 import java.util.AbstractMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
+import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.UniqueTag;
 
 /**
- * Wraps JavaScript objects to make them look like a Map - also see the JavaScriptArrayWrapper to
- * wrap JS arrays.
+ * Wraps JavaScript objects to make them look like a Map - also see the
+ * JavaScriptArrayWrapper to wrap JS arrays.
+ * 
  * @author bwallace
- *
+ * 
  */
-public class JavaScriptObjectWrapper extends AbstractMap<String,Object> {
+public class JavaScriptObjectWrapper extends AbstractMap<String, Object> {
 	protected Scriptable scriptable;
-	
-	private static final ContextFactory contextFactory = new ContextFactory();
+	protected boolean isArray = false;
+
+	private static final ContextFactory contextFactory = JavaScriptMapFactory.contextFactory;
 
 	public JavaScriptObjectWrapper(Scriptable scriptable) {
 		this.scriptable = scriptable;
+		this.isArray = scriptable instanceof NativeArray;
 	}
-	
-	/** Returns the element key from the underlying JavaScript object.
-	 * JS Strings are returned as Java Strings, js integers as Integer, floating as Double,
+
+	protected int intKey(Object key) {
+		int index = Integer.MIN_VALUE;
+		if (this.isArray) {
+			if (key instanceof Integer) {
+				index = ((Integer) key).intValue();
+			} else {
+				String s = (String) key;
+				int sl = s.length();
+				boolean isInt = true;
+				for(int i=0; i<sl; i++) {
+					if( ! Character.isDigit(s.charAt(i)) ) {
+						isInt = false;
+						break;
+					}
+				}
+				if( isInt ) {
+					index = Integer.parseInt(s);
+				}
+			}
+		}
+		return index;
+	}
+	/**
+	 * Returns the element key from the underlying JavaScript object. JS Strings
+	 * are returned as Java Strings, js integers as Integer, floating as Double,
 	 * and everything else as a Map or List implementation.
+	 * 
 	 * @param key
 	 * @return
 	 */
 	public Object get(Object key) {
-		Object ret = ScriptableObject.getProperty(scriptable,(String) key);
+		if( isArray ) {
+			int index = intKey(key);
+			if( index>=0 ) {
+				Object ret = ScriptableObject.getProperty(scriptable, index);
+				return wrapScriptable(ret);
+			}
+		}
+		Object ret = ScriptableObject.getProperty(scriptable, (String) key);
 		return wrapScriptable(ret);
 	}
-	
-	/** Returns an object - that is a JavaScriptObjectWraper for the named property */
+
+	/**
+	 * Returns an object - that is a JavaScriptObjectWraper for the named
+	 * property
+	 */
 	public JavaScriptObjectWrapper getObject(String key) {
 		return (JavaScriptObjectWrapper) get(key);
 	}
-	
+
 	/** Returns a String */
 	public String getString(String key) {
 		return (String) get(key);
 	}
-	
+
 	/** Calls the named method, and returns the result, if any. */
 	public Object callMethod(String methodName, Object... args) {
-		return ScriptableObject.callMethod(scriptable,methodName,args);
+		return ScriptableObject.callMethod(scriptable, methodName, args);
 	}
-	
-	/** Executes the given script, returning the return value (wrapped appropriately) */
+
+	/**
+	 * Executes the given script, returning the return value (wrapped
+	 * appropriately)
+	 */
 	public Object call(String script) {
 		Context ctx = contextFactory.enterContext();
 		ctx.setWrapFactory(JavaScriptMapFactory.SUGAR_WRAP_FACTORY);
 		return wrapScriptable(ctx.evaluateString(scriptable, script, "<script>", 1, null));
 	}
-	
+
 	/** Indicates if the given property exists */
 	@Override
 	public boolean containsKey(Object key) {
 		return ScriptableObject.hasProperty(scriptable, (String) key);
 	}
-	
-	/** Sets the given value, returning null - NOT the previous value.
-	 * Puts wrapped objects as their base, underlying values, NOT as the JSOW object.
+
+	/**
+	 * Sets the given value, returning null - NOT the previous value. Puts
+	 * wrapped objects as their base, underlying values, NOT as the JSOW object.
 	 */
 	@Override
 	public Object put(String key, Object value) {
 		value = unwrap(value);
-		ScriptableObject.putProperty(scriptable,key, value);
+		if( isArray ) {
+			int index = intKey(key);
+			if( index>=0 ) {
+				ScriptableObject.putProperty(scriptable, index, value);
+				return null;
+			}
+		}
+		ScriptableObject.putProperty(scriptable, key, value);
 		return null;
 	}
-	
-	/** Wrap an object with a wrapper to make it look like a Java Map, Array or regular (non-Rhino)
-	 * Java object.
+
+	/**
+	 * Wrap an object with a wrapper to make it look like a Java Map, Array or
+	 * regular (non-Rhino) Java object.
+	 * 
 	 * @param s
 	 * @return
 	 */
 	public static Object wrapScriptable(Object s) {
-		if(s==null || !( s instanceof Scriptable) ) {
+		if (s == null || !(s instanceof Scriptable)) {
+			if (s == UniqueTag.NOT_FOUND)
+				return null;
+			if (s == UniqueTag.NULL_VALUE)
+				return null;
 			return s;
 		}
 		return new JavaScriptObjectWrapper((Scriptable) s);
 	}
-	
+
 	/** Unwraps a wrapped object to return the original value */
 	public static Object unwrap(Object s) {
-		if(s==null || !(s instanceof JavaScriptObjectWrapper) ) return s;
+		if (s == null || !(s instanceof JavaScriptObjectWrapper))
+			return s;
 		return ((JavaScriptObjectWrapper) s).scriptable;
 	}
 
 	@Override
-   public Set<java.util.Map.Entry<String, Object>> entrySet() {
-		throw new UnsupportedOperationException("Entry set not yet defined.");
-   }
+	public Set<Map.Entry<String, Object>> entrySet() {
+		Object[] ids = scriptable.getIds();
+		Set<Map.Entry<String, Object>> ret;
+		if( isArray ) {
+			ret = new LinkedHashSet<Map.Entry<String, Object>>(ids.length);
+		} else {
+			ret = new HashSet<Map.Entry<String, Object>>(ids.length);
+		}
+		for (Object id : ids) {
+			ret.add(new ReferenceEntry(id));
+		}
+		return ret;
+	}
+
+	/**
+	 * A reference entry is a simple map entry implementation that looks up the
+	 * value when requested.  This is reasonably efficient for arrays in avoiding string conversions.
+	 * 
+	 * @author bwallace
+	 * 
+	 */
+	class ReferenceEntry implements Map.Entry<String, Object> {
+		Object key;
+
+		public ReferenceEntry(Object id) {
+			this.key = id;
+		}
+
+		public String getKey() {
+			return key.toString();
+		}
+
+		public Object getValue() {
+			return get(key);
+		}
+
+		public Object setValue(Object value) {
+			put(key.toString(), value);
+			return null;
+		}
+
+	}
 }

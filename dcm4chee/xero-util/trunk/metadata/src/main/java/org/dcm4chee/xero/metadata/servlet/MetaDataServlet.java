@@ -99,7 +99,7 @@ public class MetaDataServlet extends HttpServlet {
    /** A key value to use to fetch the full request URI - t */
    public static final String REQUEST_URI = "_requestURI";
    public static final String REQUEST = "_request";
-   public static final String USER_KEY = "user";
+   public static final String USER_KEY = "userName";
    
    /** The meta data needs to be read from the appropriate location. */
    MetaDataBean metaData;
@@ -284,5 +284,12 @@ public class MetaDataServlet extends HttpServlet {
 	  log.debug("MetaData Servlet as post for {}  with parameters  {}", req.getRequestURI(), req.getQueryString());
 	  doFilter(req, resp);
    }
+
+   /** Gets the browser version string, all lower case */
+   public static String getUserAgent(Map<?,?> params) {
+   	HttpServletRequest req = (HttpServletRequest) params.get(REQUEST);
+   	return req.getHeader("USER-AGENT").toLowerCase();
+   }
+   
 
 }

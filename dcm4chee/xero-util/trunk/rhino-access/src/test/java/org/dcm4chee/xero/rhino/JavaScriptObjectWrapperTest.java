@@ -17,7 +17,8 @@ import org.testng.annotations.Test;
 public class JavaScriptObjectWrapperTest {
 	private static final Logger log = LoggerFactory.getLogger(JavaScriptObjectWrapperTest.class);
 	
-	ContextFactory cf;
+	public static final ContextFactory cf = JavaScriptMapFactory.contextFactory;
+	
 	Context cx;
 	static final String jsFixed = ""
 		+"var simpleString='Simple String';\n"
@@ -30,10 +31,15 @@ public class JavaScriptObjectWrapperTest {
 		+"TestObj.prototype.dbl = 1.1;\n"
 		+"TestObj.prototype.f = function(x,y) { return x+y+this.b; };\n"
 		+"var statObj = new TestObj('eh',3);\n"
+		//+"var shared=16;\n"
+		+"function f() { return shared; };\n"
 		;
 	static final String jsDynamic = ""
 		+"var dynamicString='dynamic';\n"
 		+"var dynObj = new TestObj('ay',-3);\n"
+		+"var shared=32;\n"
+		+"var testArr = [1,2,3];\n"
+		+"testArr.fred=4;\n"
 		;
 	ScriptableObject scopeFixed;
 	Scriptable scopeDynamic;
@@ -42,7 +48,6 @@ public class JavaScriptObjectWrapperTest {
 	
    @BeforeMethod
 	void init() {
-	   cf = new ContextFactory();
 	   cx = cf.enterContext();
 	   scopeFixed = cx.initStandardObjects();
 	   cx.evaluateString(scopeFixed, jsFixed, "<jsFixed>", 1, null);
@@ -54,6 +59,19 @@ public class JavaScriptObjectWrapperTest {
 	   jsow = new JavaScriptObjectWrapper(scopeDynamic);
    }
 
+   /**
+    * This test will fail - the dynamic scope doesn't quite work as expected as it only applies
+    * to function prototype chains, not variables themselves.
+    */
+   public void test_f_returnsDynamicScope_32() {
+   	assert cx.hasFeature(Context.FEATURE_DYNAMIC_SCOPE);
+   	assert jsow.get("shared").equals(32);
+   	Object f = jsow.call("f");
+   	assert f!=null;
+   	System.out.println("f="+f);
+   	assert f.equals(32);
+   }
+   
    @Test 
    public void test_get_returnValues() {
    	assert "Simple String".equals(jsow.get("simpleString"));
@@ -114,5 +132,14 @@ public class JavaScriptObjectWrapperTest {
    	Scriptable dynObj = (Scriptable) ScriptableObject.getProperty(scopeDynamic,"dynObj");
    	assert dynObj!=null;
    }
-   
+ 
+   @Test
+   public void testArray_access() {
+   	JavaScriptObjectWrapper arr = (JavaScriptObjectWrapper) jsow.get("testArr");
+   	assert arr!=null;
+   	Object one = arr.get("1");
+   	assert one!=null;
+   	assert one.equals(2);
+   	assert arr.get("fred").equals(4);
+   }
 }

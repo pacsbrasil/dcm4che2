@@ -47,25 +47,40 @@ import org.testng.annotations.Test;
 
 public class JavaScriptMapFactoryTest {
 
-	Map<String,Object> src;
-	Map<String,Object> lazy;
-	
+	Map<String, Object> src;
+	Map<String, Object> lazy;
+
+	static Map<String, String> imported = new HashMap<String, String>();
+	static {
+		imported.put("_SARISSA_IS_IE", "IS_IE");
+		imported.put("_SARISSA_IS_FIREFOX", "IS_FIREFOX");
+	};
+
 	JavaScriptMapFactory javascript;
-	
-	static final String STATIC_SCRIPT = ""+
-	  "function MyType(x) { this.x = x; };\n"+
-	  "MyType.prototype.i=3;\n"+
-	  "MyType.prototype.s='string';\n"+
-	  "MyType.prototype.setX = function MyType_setX(x) { this.x = x; };\n"+
-	  "var myUnmodifiable=new MyType('Hello, World.');\n"
-	;
-	
-   @BeforeMethod
+
+	static final String STATIC_SCRIPT = "" + "function MyType(x) { this.x = x; };\n" + "MyType.prototype.i=3;\n"
+	      + "MyType.prototype.s='string';\n" + "MyType.prototype.setX = function MyType_setX(x) { this.x = x; };\n"
+	      + "var myUnmodifiable=new MyType('Hello, World.');\n";
+
+	@BeforeMethod
 	public void init() {
-		lazy = new HashMap<String,Object>();
+		lazy = new HashMap<String, Object>();
 		javascript = new JavaScriptMapFactory();
-		lazy.put("javascript",javascript);
+		lazy.put("javascript", javascript);
 		src = new LazyMap(lazy);
+	}
+
+	@Test
+	public void test_imported_availableInScript() {
+		lazy.put("IS_IE", true);
+		javascript.setImported(imported);
+		javascript.setScript("var testIE = _SARISSA_IS_IE;\nvar testFirefox=_SARISSA_IS_FIREFOX;\n");
+		JavaScriptObjectWrapper jsow = (JavaScriptObjectWrapper) src.get("javascript");
+		assert jsow != null;
+		System.out.println("testIE=" + jsow.get("testIE"));
+		assert jsow.get("testIE").equals(true);
+		assert jsow.get("_SARISSA_IS_IE").equals(true);
+		assert jsow.get("_SARISSA_IS_FIREFOX")==null;
 	}
 	
 	@Test
@@ -73,17 +88,17 @@ public class JavaScriptMapFactoryTest {
 		System.out.println(STATIC_SCRIPT);
 		javascript.setScript(STATIC_SCRIPT);
 		JavaScriptObjectWrapper jsow = (JavaScriptObjectWrapper) src.get("javascript");
-		assert jsow!=null;
-		assert LazyMap.getPath(jsow,"myUnmodifiable.i").equals(3);
+		assert jsow != null;
+		assert LazyMap.getPath(jsow, "myUnmodifiable.i").equals(3);
 	}
-	
+
 	@Test
 	public void test_unmodifiableContext() {
 		javascript.setScript(STATIC_SCRIPT);
 		javascript.setModifiable(false);
 		JavaScriptObjectWrapper jsow = (JavaScriptObjectWrapper) src.get("javascript");
 		assert ((ScriptableObject) jsow.scriptable).isSealed();
-		assert LazyMap.getPath(jsow,"myUnmodifiable.i").equals(3);
+		assert LazyMap.getPath(jsow, "myUnmodifiable.i").equals(3);
 	}
-	
+
 }

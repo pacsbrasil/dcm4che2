@@ -158,6 +158,7 @@ public class ValueList<T> extends ArrayList<T> implements MetaDataUser {
 		}
 		Collections.sort(list);
 		for(ValueListItem<T> vli : list) {
+			//System.out.println("Adding vli "+vli.key+"="+vli.values.get(0)+" pri "+vli.priority);
 			this.addAll(vli.getValues());
 		}
 	}

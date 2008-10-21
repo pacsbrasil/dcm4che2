@@ -35,7 +35,7 @@ public class FindAllTemplates {
    /** Add the given template and all child templates to the template map */
    static void addAllTemplates(StringTemplateGroup stg, String name, Map<String,StringTemplate> templates) {
 	  if( templates.containsKey(name) ) return;
-	  log.info("Adding template "+name);
+	  log.debug("Adding template {}",name);
 	  StringTemplate st = stg.getInstanceOf(name);
 	  templates.put(name,st);
 	  addAllTemplates(stg,st,templates);

@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.MetaDataUser;
 
@@ -61,7 +62,7 @@ public class MapWithDefaults extends LazyMap implements MetaDataUser {
    }
    
    public MapWithDefaults(MetaDataBean mdb) {
-	  super(mdb);
+	  super();
 	  this.mdb = mdb;
    }
    
@@ -72,9 +73,11 @@ public class MapWithDefaults extends LazyMap implements MetaDataUser {
 
    /** Get the lazy object from the meta-data object associated with this map. */
    public Object getLazy(Object key) {
-	  Object v = mdb.getValue((String) key);
+     MetaDataBean child = mdb.getChild((String) key);
+     if( child==null ) return super.getLazy(key);
+	  Object v = child.getValue();
 	  if( v!=null ) return v;
-	  return super.getLazy(key);
+	  return child;
    }
    
    /** Does an eager load of all values - this can be useful for configuration where runtime safety is important. */
@@ -94,7 +97,12 @@ public class MapWithDefaults extends LazyMap implements MetaDataUser {
 
 	/** Sets the meta data to use. */
    public void setMetaData(MetaDataBean metaDataBean) {
-	   this.lazy = metaDataBean;
 	   this.mdb = metaDataBean;
+   }
+   
+   /** Sets the lazy map */
+   @MetaData(required=false)
+   public void setLazy(Map<String,Object> lazy) {
+   	this.lazy = lazy;
    }
 }

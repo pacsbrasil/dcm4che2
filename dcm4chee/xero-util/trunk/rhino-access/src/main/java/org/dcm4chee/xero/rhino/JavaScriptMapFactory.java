@@ -44,100 +44,146 @@ import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.access.MapFactory;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
+import org.mozilla.javascript.Script;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
 /**
- * A JavaScriptMapFactory is an object that knows how to export a JavaScript execution environment
- * into a MapWithDefaults.  Execution context for the JavaScript can be multi-layered.  The parent
- * layer is specified by name.
+ * A JavaScriptMapFactory is an object that knows how to export a JavaScript
+ * execution environment into a MapWithDefaults. Execution context for the
+ * JavaScript can be multi-layered. The parent layer is specified by name.
  * 
- * Additionally, the child script is executed with the current src model available as
- * JavaScriptMapFactory.  This allows variables from other contexts to be used.
- *
- * The base context that is created includes by default the Struts Sugar access.  This can be
- * turned off if required. 
- *  
+ * Additionally, the child script is executed with the current src model
+ * available as JavaScriptMapFactory. This allows variables from other contexts
+ * to be used.
+ * 
+ * The base context that is created includes by default the Struts Sugar access.
+ * This can be turned off if required.
+ * 
  * @author bwallace
- *
+ * 
  */
 public class JavaScriptMapFactory implements MapFactory<JavaScriptObjectWrapper> {
-	
+
 	boolean useSugarWrap = true;
-	
+
 	String parentScopeName;
-	
+
 	boolean modifiable = true;
-	
+
 	String script;
-	
-	ContextFactory contextFactory = new ContextFactory();
-	
+	Script mscript;
+
+	boolean compile = true;
+
+	/** Declare a context factory that has the dynamic scope feature */
+	public static final ContextFactory contextFactory = new ContextFactory() {
+		@Override
+		protected boolean hasFeature(Context cx, int featureIndex) {
+			if (featureIndex == Context.FEATURE_DYNAMIC_SCOPE) {
+				return true;
+			}
+			return super.hasFeature(cx, featureIndex);
+		}
+	};
+
+	Map<String, String> imported;
+
 	public static final SugarWrapFactory SUGAR_WRAP_FACTORY = new SugarWrapFactory();
-	
-	
-	/** Creates a JavaScriptObjectWrapper containing a new scope in which the given script has 
-	 * been executed (if provided), and for which the parent scope has been set.
-	 * Adds the sugar wrap if the setting is true. 
+
+	/**
+	 * Creates a JavaScriptObjectWrapper containing a new scope in which the
+	 * given script has been executed (if provided), and for which the parent
+	 * scope has been set. Adds the sugar wrap if the setting is true.
 	 */
 	public JavaScriptObjectWrapper create(Map<String, Object> src) {
-	   Context cx = contextFactory.enterContext();
-	   if( useSugarWrap ) cx.setWrapFactory(SUGAR_WRAP_FACTORY);
-	   Scriptable scope;
-	   if( parentScopeName!=null ) {
-	   	Scriptable parentScope = getParentScope(src);
-	   	scope = cx.newObject(parentScope);
-		   scope.setPrototype(parentScope);
-	   } else {
-	   	scope = cx.initStandardObjects();
-	   }
-	   
-	   if( script!=null ) cx.evaluateString(scope, script, "<script>", 1, null);
-	   if( !modifiable ) ((ScriptableObject)scope).sealObject();
-	   return new JavaScriptObjectWrapper(scope);
-   }
+		Context cx = contextFactory.enterContext();
+		if (useSugarWrap)
+			cx.setWrapFactory(SUGAR_WRAP_FACTORY);
+		Scriptable scope;
+		if (parentScopeName != null) {
+			Scriptable parentScope = getParentScope(src);
+			scope = cx.newObject(parentScope);
+			scope.setPrototype(parentScope);
+		} else {
+			scope = cx.initStandardObjects();
+		}
+
+		JavaScriptObjectWrapper ret = new JavaScriptObjectWrapper(scope);
+		if (imported != null) {
+			for (Map.Entry<String, String> me : imported.entrySet()) {
+				Object value = src.get(me.getValue());
+				ret.put(me.getKey(), value);
+			}
+		}
+
+		if (mscript!=null) {
+			mscript.exec(cx, scope);
+		} else if( script!=null) {
+			cx.evaluateString(scope, script, "<script>", 1, null);
+		}
+		
+		if (!modifiable)
+			((ScriptableObject) scope).sealObject();
+		return ret;
+	}
 
 	/** Gets the parent context */
 	protected Scriptable getParentScope(Map<String, Object> src) {
 		Object ret = src.get(parentScopeName);
-		if( ret instanceof JavaScriptObjectWrapper ) return ((JavaScriptObjectWrapper) ret).scriptable;
-		return (Scriptable) ret;		
-   }
+		if (ret instanceof JavaScriptObjectWrapper)
+			return ((JavaScriptObjectWrapper) ret).scriptable;
+		return (Scriptable) ret;
+	}
 
 	public boolean isUseSugarWrap() {
-   	return useSugarWrap;
-   }
+		return useSugarWrap;
+	}
 
-	@MetaData(required=false)
+	@MetaData(required = false)
 	public void setUseSugarWrap(boolean useSugarWrap) {
-   	this.useSugarWrap = useSugarWrap;
-   }
+		this.useSugarWrap = useSugarWrap;
+	}
 
 	public String getParentScopeName() {
-   	return parentScopeName;
-   }
+		return parentScopeName;
+	}
 
-	@MetaData(required=false)
+	@MetaData(required = false)
 	public void setParentScopeName(String parentScopeName) {
-   	this.parentScopeName = parentScopeName;
-   }
+		this.parentScopeName = parentScopeName;
+	}
 
 	public boolean isModifiable() {
-   	return modifiable;
-   }
+		return modifiable;
+	}
 
-	@MetaData(required=false)
+	@MetaData(required = false)
 	public void setModifiable(boolean modifiable) {
-   	this.modifiable = modifiable;
-   }
+		this.modifiable = modifiable;
+	}
 
 	public String getScript() {
-   	return script;
-   }
+		return script;
+	}
 
-	@MetaData(required=false)
+	@MetaData(required = false)
 	public void setScript(String script) {
-   	this.script = script;
-   }
+		this.script = script;
+		if (compile) {
+			Context cx = contextFactory.enterContext();
+			cx.setWrapFactory(SUGAR_WRAP_FACTORY);
+			mscript = cx.compileString(script, "<script>", 1, null);
+		}
+	}
 
+	/**
+	 * Sets the values to be imported from the src map before executing the
+	 * script. WARNING: The imported values MUST not depend on this object - that
+	 * is, you can't successfully create a circular reference.
+	 */
+	@MetaData(required = false)
+	public void setImported(Map<String, String> imported) {
+		this.imported = imported;
+	}
 }
