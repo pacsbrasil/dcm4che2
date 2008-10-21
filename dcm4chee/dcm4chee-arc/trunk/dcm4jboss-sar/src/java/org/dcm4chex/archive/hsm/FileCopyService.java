@@ -383,15 +383,9 @@ public class FileCopyService extends AbstractFileCopyService {
     }
 
     private String mkTarPath(String filePath) {
-        int len = filePath.length();
-        StringBuffer sb = new StringBuffer(len + 4);
-//Fix for shorter filenames! 
-//TODO: Fix reason of shortened filename! should be 8 chars!
-        sb.append(filePath).append(".tar");
-        int pos = len - 9;
-        if ( sb.charAt(pos) != '/') 
-            pos = sb.lastIndexOf("/");
-        sb.setCharAt(pos, '-');
+        StringBuffer sb = new StringBuffer(filePath);
+        sb.setLength(filePath.lastIndexOf('/'));
+        sb.append('-').append(System.currentTimeMillis()%3600000).append(".tar");
         return sb.toString();
     }
 }
