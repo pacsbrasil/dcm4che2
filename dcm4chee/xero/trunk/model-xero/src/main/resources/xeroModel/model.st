@@ -23,6 +23,8 @@ function XeroModel(is_ie) {
 	this.layout.addTab("Find", this.findLayout);
 	this.patientLayout = new PatientLayout();
 	this.layout.addTab("Display", this.patientLayout);
+	
+	this.layout.computeId();
 
 	this.IS_IE = is_ie;
 };

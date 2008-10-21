@@ -4,12 +4,8 @@
  */
 function Layout(id, template) {
 	if( !id ) id = "unspecified";
-	var idcnt = this.idCount[id];
-	if(idcnt===undefined) {
-		idcnt = 1;
-	}
-	this.idCount[id] = idcnt+1;
-	this.id = id +"-"+ idcnt;
+	this.idBase = id;
+	this.id = id;
 	if( template ) this.template = template;
 	if( this.isDebug ) this.debug = console.info;
 };
@@ -31,6 +27,29 @@ Layout.prototype.setGrid = function Layout_setGrid(x,y) {
 	this.gridX = x;
 	this.gridY = y;
 	if(! this.layouts) this.layouts = new Array();
+};
+
+Layout.prototype.computeId = function Layout_computeId(idMap) {
+	if(!idMap ) {
+		idMap = new Object();
+		idMap.counter = new Object();
+	}
+	this.idMap = idMap;
+	if( !idMap[this.id] ) idMap[this.id] = this;
+	else {
+		this.id = this.idBase;
+		var cnt = idMap.counter[this.id];
+		if(! cnt ) {
+			idMap.counter[this.id]=1;
+			cnt = 1;
+		}
+		this.id = this.id+"-"+idMap
+		idMap.counter[this.id] = 1+cnt;
+	}
+	var i;
+	for(i in this.layouts ) {
+		this.layouts[i].computeId(idMap);
+	};
 };
 
 Layout.prototype.used = true;
@@ -224,13 +243,15 @@ Layout.prototype.addNamed = function Layout_addNamed(child,name) {
 
 /** Add another child object */
 Layout.prototype.add = function Layout_add(child,name) {
-	if( !this.layouts ) this.layouts =new Array();
 	if( name ) {
-		this.layouts[name] = child;
+		if( !this.named ) this.named = new Object();
+		this.named[name] = child;
 		this.addNamed(child,name);
 	} else {
+		if( !this.layouts ) this.layouts =new Array();
 		this.layouts.push(child);
 	}
+	if( this.idMap ) child.computeId(this.idMap);
 };
 
 /** Initialize/create the child elements - no op in default class.
