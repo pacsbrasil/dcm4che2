@@ -55,7 +55,7 @@ public class MacroItems {
    private List<Object> macros;
 
    /** Returns a map containing all the attributes provided by the macros. */
-   public Map<QName,String> getAnyAttributes() {
+   public synchronized Map<QName,String> getAnyAttributes() {
 	  if( macros==null || macros.size()==0) return null;
 	  Map<QName, String> attrs = new HashMap<QName,String>();
 	  int count = 0;
@@ -70,25 +70,25 @@ public class MacroItems {
    }
    
    /** Adds a macro to this set of macro items.   */
-   public void addMacro(Macro macro) {
+   public synchronized void addMacro(Macro macro) {
      if( macro==null ) return;
 	  getMacros().add(0,macro);
    }
    
    /** Adds an element to the set of macro items */
-   public void addElement(Object obj) {
+   public synchronized void addElement(Object obj) {
      if( obj==null ) return;
 	  getMacros().add(obj);
    }
    
    /** Removes the given macro */
-   public void removeMacro(Macro macro) {
+   public synchronized void removeMacro(Macro macro) {
 	  if( macros==null ) return;
 	  macros.remove(macro);
    }
    
    /** Finds the macro by class */
-   public Macro findMacro(Class<? extends Macro> clazz) {
+   public synchronized Macro findMacro(Class<? extends Macro> clazz) {
 	  if( macros==null ) return null;
 	  for(Object m : macros) {
 		 if( clazz.isInstance(m) ) return (Macro) m;
@@ -102,7 +102,7 @@ public class MacroItems {
     * children exist.
     * @return boolean true if this object provides no attributes or children.
     */
-   public boolean clearEmpty() {
+   public synchronized boolean clearEmpty() {
 	  if( macros==null || macros.size()==0 ) {
 		 macros = null;
 		 return true;
@@ -111,7 +111,7 @@ public class MacroItems {
    }
 
    /** Get the underlying list of macros - this is a live list that modifies the internal representation */
-   public List<Object> getMacros() {
+   public synchronized List<Object> getMacros() {
 	  if( macros==null ) macros = new ArrayList<Object>(1);
 	  return macros;
    }
@@ -120,7 +120,7 @@ public class MacroItems {
     * Returns the list of objects that are appended to the parent element by macro items (eg svg:use items etc).
     * @return list of JAXB or DOM elements.
     */
-   public List<Object> getOtherElements() {
+   public synchronized List<Object> getOtherElements() {
 	  if( macros==null || macros.size()==0) return null;
 	  List<Object> ret = new ArrayList<Object>();
 	  for(Object m : macros) {
