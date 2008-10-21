@@ -40,11 +40,9 @@
 package org.dcm4chex.archive.ejb.entity;
 
 import java.sql.Timestamp;
-import java.util.Collection;
 
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
-import javax.ejb.EntityContext;
 import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
@@ -72,6 +70,8 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * @jboss.query signature="org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal findByStudyAndFileSystem(java.lang.String suid, java.lang.String dirPath)"
  *             query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.study.studyIuid=?1 AND sof.fileSystem.directoryPath=?2"
  *             strategy="on-find" eager-load-group="*"
+ * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal findByStudyAndFileSystem(org.dcm4chex.archive.ejb.interfaces.StudyLocal study, org.dcm4chex.archive.ejb.interfaces.FileSystemLocal filesystem)"
+ *             query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.study=?1 AND sof.fileSystem=?2" transaction-type="Supports"
  * @ejb.finder signature="java.util.Collection findByRetrieveAETAndAccessBefore(java.lang.String aet, java.sql.Timestamp tsBefore)"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findByRetrieveAETAndAccessBefore(java.lang.String aet, java.sql.Timestamp tsBefore)"

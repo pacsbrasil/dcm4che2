@@ -56,6 +56,7 @@ import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
+import org.dcm4chex.archive.exceptions.ConcurrentStudyStorageException;
 import org.dcm4chex.archive.exceptions.NoSuchStudyException;
 import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -188,7 +189,11 @@ public class DeleteStudyService extends ServiceMBeanSupport
                             new Class[] { Object.class });
                     m.invoke(this, new Object[] { actionOrder.getData() });
                 } else if (order instanceof DeleteStudyOrder) {
-                    deleteStudy((DeleteStudyOrder) order);
+                    try {
+                        deleteStudy((DeleteStudyOrder) order);
+                    } catch (ConcurrentStudyStorageException e) {
+                        log.info(e.getMessage());
+                    } 
                 }
                 if (log.isDebugEnabled())
                     log.debug("Finished processing " + order.toIdString());

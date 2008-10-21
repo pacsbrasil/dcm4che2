@@ -84,6 +84,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
+import org.dcm4chex.archive.exceptions.ConcurrentStudyStorageException;
 import org.dcm4chex.archive.exceptions.NoSuchStudyException;
 
 /**
@@ -595,11 +596,22 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
      */
     public String[] deleteStudy(DeleteStudyOrder order,
             int availabilityOfExtRetr, boolean delStudyFromDB,
-            boolean delPatientWithoutObjects) {
+            boolean delPatientWithoutObjects)
+            throws ConcurrentStudyStorageException {
         try {
             long fsPk = order.getFsPk();
             StudyLocal study = studyHome.findByPrimaryKey(order.getStudyPk());
             FileSystemLocal fs = fileSystemHome.findByPrimaryKey(fsPk);
+            try {
+                // check if new objects belonging to the study were stored
+                // after this DeleteStudyOrder was scheduled
+                sofHome.findByStudyAndFileSystem(study, fs);
+                throw new ConcurrentStudyStorageException(
+                        "Concurrent storage of study[uid="
+                        + study.getStudyIuid() + "] on file system[dir="
+                        + fs.getDirectoryPath() + "] - do not delete study");
+            } catch (ObjectNotFoundException onfe) {
+            }
             String fsPath = fs.getDirectoryPath();
             Collection files = study.getFiles(order.getFsPk());
             String[] fpaths = new String[files.size()];
