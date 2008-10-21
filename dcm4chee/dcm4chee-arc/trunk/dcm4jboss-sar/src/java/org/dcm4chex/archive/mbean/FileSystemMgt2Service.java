@@ -952,8 +952,8 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                 do {
                     DeleteStudyOrder order = orderIter.next();
                     sizeToDel -= fsMgt.getStudySize(order);
-                    deleteStudy.scheduleDeleteOrder(order);
                     fsMgt.removeStudyOnFSRecord(order);
+                    deleteStudy.scheduleDeleteOrder(order);
                     minAccessTime = order.getAccessTime();
                     countStudies++;
                 } while (sizeToDel > 0 && orderIter.hasNext());
@@ -969,8 +969,8 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                 copyOnFSGroup, copyArchived, copyOnReadOnlyFS);
             if (!orders.isEmpty()) {
                 for (DeleteStudyOrder order : orders) {
-                    deleteStudy.scheduleDeleteOrder(order);
                     fsMgt.removeStudyOnFSRecord(order);
+                    deleteStudy.scheduleDeleteOrder(order);
                     countStudies++;
                 }
             }
