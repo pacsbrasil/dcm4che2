@@ -25,7 +25,8 @@ public class FileStatus {
     	"COMPRESS_FAILED",
     	"DEFAULT", 
     	"TO_ARCHIVE",
-    	"ARCHIVED"
+    	"ARCHIVED",
+        "COMPRESSING", 
     };
 
     public static final int QUERY_HSM_FAILED = -4;
@@ -35,6 +36,7 @@ public class FileStatus {
     public static final int DEFAULT = 0;    
     public static final int TO_ARCHIVE = 1;    
     public static final int ARCHIVED = 2;
+    public static final int COMPRESSING = 3;
     
     private static final int OFFSET = -QUERY_HSM_FAILED;
 

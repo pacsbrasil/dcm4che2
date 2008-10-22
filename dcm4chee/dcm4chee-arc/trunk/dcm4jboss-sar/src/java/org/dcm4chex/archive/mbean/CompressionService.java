@@ -377,6 +377,11 @@ public class CompressionService extends ServiceMBeanSupport {
                 .getFilePath());
         File destFile = null;
         try {
+            if (!fsMgt.setFileStatusToCompressing(fileDTO.getPk())) {
+                log.info("File " + srcFile
+                        + " already compressed by concurrent thread!");
+                return;
+            }
             destFile = FileUtils.createNewFile(srcFile.getParentFile(),
                     (int) Long.parseLong(srcFile.getName(), 16) + 1);
             if (log.isDebugEnabled())
@@ -419,7 +424,8 @@ public class CompressionService extends ServiceMBeanSupport {
             if (log.isDebugEnabled())
                 log.debug("replace File " + srcFile + " with " + destFile);
             fsMgt.replaceFile(fileDTO.getPk(), destFilePath,
-                    info.getTransferSyntax(), destFile.length(), md5);
+                    info.getTransferSyntax(), destFile.length(), md5,
+                    FileStatus.DEFAULT);
             fileDTO.setPk(0);
             fileDTO.setFilePath(destFilePath);
             fileDTO.setFileSize((int) destFile.length());

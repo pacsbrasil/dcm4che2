@@ -61,9 +61,11 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
+import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
@@ -725,12 +727,13 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
      * @ejb.interface-method
      */
     public void replaceFile(long pk, String path, String tsuid, long size,
-            byte[] md5) throws FinderException {
+            byte[] md5, int status) throws FinderException {
         FileLocal oldFile = fileHome.findByPrimaryKey(pk);
         oldFile.setFilePath(path);
         oldFile.setFileTsuid(tsuid);
         oldFile.setFileSize(size);
         oldFile.setFileMd5(md5);
+        oldFile.setFileStatus(status);
     }
 
     /**
@@ -738,6 +741,25 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
      */
     public void setFileStatus(long pk, int status) throws FinderException {
         fileHome.findByPrimaryKey(pk).setFileStatus(status);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean setFileStatusToCompressing(long pk) throws FinderException {
+        FileLocal f = fileHome.findByPrimaryKey(pk);
+        if (f.getFileStatus() != FileStatus.DEFAULT
+                || !isUncompressed(f.getFileTsuid())) {
+            return false;
+        }
+        f.setFileStatus(FileStatus.COMPRESSING);
+        return true;
+    }
+
+    private boolean isUncompressed(String tsuid) {
+        return tsuid.equals(UIDs.ExplicitVRLittleEndian)
+                || tsuid.equals(UIDs.ExplicitVRBigEndian)
+                || tsuid.equals(UIDs.ImplicitVRLittleEndian);
     }
 
     private FileDTO[] toFileDTOs(Collection c) {
