@@ -60,6 +60,7 @@ import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4che.util.Executer;
 import org.dcm4che.util.MD5Utils;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.BaseJmsOrder;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.ejb.interfaces.MD5;
@@ -193,9 +194,9 @@ public class FileCopyService extends AbstractFileCopyService {
         FileCopyOrder fileCopyOrder = (FileCopyOrder)order;
         String destPath = fileCopyOrder.getDestinationFileSystemPath();
         List<FileInfo> fileInfos = fileCopyOrder.getFileInfos();
-        int removed = removeSourceTarFiles(fileInfos);
+        int removed = removeOfflineOrTarSourceFiles(fileInfos);
         if ( removed > 0 ) 
-            log.info(removed+" Files on tar FS removed from FileCopy Order!"+
+            log.info(removed+" Files (Offline or on tar FS) removed from FileCopy Order!"+
                     "\nRemaining files to copy:"+fileInfos.size());
         if ( fileInfos.isEmpty() ) {
             log.info("Skip FileCopy Order! No files to copy!");
@@ -327,12 +328,12 @@ public class FileCopyService extends AbstractFileCopyService {
         }
     }
 
-    private int removeSourceTarFiles(List<FileInfo> fileInfos) {
+    private int removeOfflineOrTarSourceFiles(List<FileInfo> fileInfos) {
         int removed = 0;
         FileInfo fi;
         for (Iterator<FileInfo> iter = fileInfos.iterator(); iter.hasNext();) {
             fi = iter.next();
-            if ( fi.basedir.startsWith("tar:")) {
+            if ( fi.availability != Availability.ONLINE || fi.basedir.startsWith("tar:")) {
                 removed++;
                 iter.remove();
             }
