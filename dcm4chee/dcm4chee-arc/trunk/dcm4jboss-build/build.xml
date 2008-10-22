@@ -37,7 +37,6 @@
     <ant inheritAll="false" dir="../dcm4jboss-wado" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-rid" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-web" target="clean"/>
-    <ant inheritAll="false" dir="../dcm4jboss-xds-consumer" target="clean"/>
   </target>
   <target name="jar">
     <ant inheritAll="false" dir="../dcm4jboss-ejb" target="jar"/>
@@ -50,7 +49,6 @@
     <ant inheritAll="false" dir="../dcm4jboss-web" target="war">
       <property name="version" value="${version}" />
     </ant>
-    <ant inheritAll="false" dir="../dcm4jboss-xds-consumer" target="sar"/>
   </target>
 
   <target name="fixcrlf">
@@ -235,10 +233,6 @@
       <zipfileset dir="../dcm4jboss-web/src/etc" prefix="${dist.db.config}">
         <include name="conf/**"/>
       </zipfileset>
-      <zipfileset dir="../dcm4jboss-xds-consumer/target"
-        prefix="${dist.db.config}">
-        <include name="deploy/*"/>
-      </zipfileset>
       <zipfileset dir="${fop.home}/build" prefix="${dist.db.config}/lib">
         <include name="fop.jar"/>
       </zipfileset>
@@ -258,8 +252,6 @@
               value="../dcm4jboss-wado/src/etc/conf/xmdesc" />
     <property name="dcm4jboss-rid.xmdesc"
               value="../dcm4jboss-rid/src/etc/conf/xmdesc" />
-    <property name="dcm4jboss-xds-consumer.xmdesc"
-              value="../dcm4jboss-xds-consumer/src/etc/META-INF" />
     <antcall target="xslt">
       <param name="in"
              value="${dcm4jboss-sar.xmdesc}/dcm4chee-auditlog-xmbean.xml" />
@@ -655,12 +647,6 @@
              value="${dcm4jboss-wado.xmdesc}/dcm4chee-wado-xmbean.xml" />
       <param name="out" value="wado-xmbean.xml" />
       <param name="mbean" value="dcm4chee.archive:service=WADOService" />
-    </antcall>
-    <antcall target="xslt">
-      <param name="in"
-             value="${dcm4jboss-xds-consumer.xmdesc}/jboss-service.xml" />
-      <param name="out" value="xds-consumer-xmbean.xml" />
-      <param name="mbean" value="dcm4chee.archive:service=XDSQueryService" />
     </antcall>
   </target>
 

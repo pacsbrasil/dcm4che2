@@ -22,15 +22,7 @@ fi
 
 cp -v -R "$XDS_SERV/deploy/dcm4che*" "$DCM4CHEE_SERV/deploy"
 cp -v "$XDS_SERV/conf/xmdesc/dcm4chee-xds-xmbean.xml" "$DCM4CHEE_SERV/conf/xmdesc"
-cp -v "$XDS_SERV/lib/dcm4chee-xdsa-repository-mbean-0.0.2-SNAPSHOT.jar" \
-  "$XDS_SERV/lib/dcm4chee-xds-common-0.0.2-SNAPSHOT.jar" \
-  "$XDS_SERV/lib/dcm4che-core-2.0.14.jar" \
-  "$XDS_SERV/lib/dcm4che-net-2.0.14.jar" \
-  "$DCM4CHEE_SERV/lib"
-cp -v "$XDS_HOME/bin/upgrade_jbossws.sh" \
-  "$XDS_HOME/bin/upgrade_jbossws.bat" \
-  "$XDS_HOME/bin/patch_jbossws.sh" \
-  "$XDS_HOME/bin/patch_jbossws.bat" \
-  "$DCM4CHEE_HOME/bin"
+cp -v "$XDS_SERV/lib/*" "$DCM4CHEE_SERV/lib"
+cp -v "$XDS_HOME/bin/*" "$DCM4CHEE_HOME/bin"
 
 echo XDS components installed!
