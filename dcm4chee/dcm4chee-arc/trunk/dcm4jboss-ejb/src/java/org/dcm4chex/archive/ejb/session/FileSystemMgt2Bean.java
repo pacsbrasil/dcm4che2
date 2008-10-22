@@ -611,6 +611,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             long fsPk = order.getFsPk();
             StudyLocal study = studyHome.findByPrimaryKey(order.getStudyPk());
             FileSystemLocal fs = fileSystemHome.findByPrimaryKey(fsPk);
+            Collection files = study.getFiles(fsPk);
             try {
                 // check if new objects belonging to the study were stored
                 // after this DeleteStudyOrder was scheduled
@@ -622,7 +623,6 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             } catch (ObjectNotFoundException onfe) {
             }
             String fsPath = fs.getDirectoryPath();
-            Collection files = study.getFiles(order.getFsPk());
             String[] fpaths = new String[files.size()];
             int i = 0;
             for (Iterator iter = files.iterator(); iter.hasNext(); i++) {
