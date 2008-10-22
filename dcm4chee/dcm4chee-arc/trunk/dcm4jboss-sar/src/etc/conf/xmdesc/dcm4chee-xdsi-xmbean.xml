@@ -59,89 +59,6 @@
       </descriptors>
    </attribute>
 
-   <attribute access="read-write" getMethod="getProxyHost" setMethod="setProxyHost">
-      <!-- Network -->     
-      <description>Proxy host if http access use http proxy.
-      </description>
-      <name>ProxyHost</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="NONE"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write" getMethod="getProxyPort" setMethod="setProxyPort">
-      <!-- Network -->     
-      <description>Proxy port if http access use http proxy.
-      </description>
-      <name>ProxyPort</name>
-      <type>int</type>
-      <descriptors>
-         <value value="3128"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getKeyStoreURL"
-      setMethod="setKeyStoreURL">
-      <!-- Security -->     
-      <description>URL of keystore containing certificate to identify this Document Source,
-         when running in TLS mode.
-      </description>
-      <name>KeyStoreURL</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="conf/identity.p12" />
-      </descriptors>
-   </attribute>
-   <attribute access="write-only"
-      setMethod="setKeyStorePassword">
-      <!-- Security -->     
-      <description>The password for access to keystore,
-      specified by attribute TrustStoreURL.
-      </description>
-      <name>KeyStorePassword</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="secret" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getTrustStoreURL"
-      setMethod="setTrustStoreURL">
-      <!-- Security -->     
-      <description>URL of trust store containing accepted certificates,
-         when running in TLS mode.
-      </description>
-      <name>TrustStoreURL</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="conf/cacerts.jks" />
-      </descriptors>
-   </attribute>
-   <attribute access="write-only"
-      setMethod="setTrustStorePassword">
-      <!-- Security -->     
-      <description>The password for access to trust store,
-      specified by attribute TrustStoreURL.
-      </description>
-      <name>TrustStorePassword</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="secret" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getAllowedUrlHost"
-      setMethod="setAllowedUrlHost">
-      <description>URL Hostname for HTTPS Hostname checking. CERT (from Certificate (standard)), 
-      		* (no Check), hostname (only this URL Hostname).
-      </description>
-      <name>AllowedUrlHost</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="CERT" />
-      </descriptors>
-   </attribute>
- 
    <attribute access="read-write" getMethod="getPropertyFile" setMethod="setPropertyFile">
       <description>Metadata Property File. 
       		A relative path name is resolved relative to dcm4chee_home/server/default/.
@@ -363,6 +280,19 @@
       </description>
       <name>KeyObjectServiceName</name>
       <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
+     getMethod="getXdsHttpCfgServiceName"
+     setMethod="setXdsHttpCfgServiceName">
+      <description><![CDATA[ internally. Do not modify. (dcm4chee.xds:service=XdsHttpCfgService)<br/>
+                   This service is part of dcm4chee-xds and you have to set proxy and ssl configuration in 
+                   start script when it is not installed! 
+      ]]></description>
+      <name>XdsHttpCfgServiceName</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="isUseXDSb"
