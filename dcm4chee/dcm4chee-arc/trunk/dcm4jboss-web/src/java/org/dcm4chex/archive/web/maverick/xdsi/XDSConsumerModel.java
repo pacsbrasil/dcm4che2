@@ -55,43 +55,43 @@ import org.dcm4chex.archive.web.maverick.BasicFormModel;
 public class XDSConsumerModel extends BasicFormModel {
 
     /** The session attribute name to store the model in http session. */
-	public static final String XDS_CONSUMER_ATTR_NAME = "xdsConsumerModel";
-	
+    public static final String XDS_CONSUMER_ATTR_NAME = "xdsConsumerModel";
+
     private static Logger log = Logger.getLogger( XDSConsumerModel.class.getName() );
 
     private Map patDocuments = new HashMap();
     private Map patFolders = new HashMap();
-    
-    /**
-	 * Creates the model.
-	 * <p>
-	 */
-	private XDSConsumerModel(String user, HttpServletRequest request) {
-		super(request);
-	}
-	
-	/**
-	 * Get the model for an http request.
-	 * <p>
-	 * Look in the session for an associated model via <code>XDS_CONSUMER_ATTR_NAME</code><br>
-	 * If there is no model stored in session (first request) a new model is created and stored in session.
-	 * 
-	 * @param request A http request.
-	 * 
-	 * @return The model for given request.
-	 */
-	public static final XDSConsumerModel getModel( HttpServletRequest request ) {
-		XDSConsumerModel model = (XDSConsumerModel) request.getSession().getAttribute(XDS_CONSUMER_ATTR_NAME);
-		if (model == null) {
-				model = new XDSConsumerModel(request.getUserPrincipal().getName(), request);
-				request.getSession().setAttribute(XDS_CONSUMER_ATTR_NAME, model);
-		}
-		return model;
-	}
 
-	public String getModelName() { return "XDSConsumer"; }
-	
-    
+    /**
+     * Creates the model.
+     * <p>
+     */
+    private XDSConsumerModel(String user, HttpServletRequest request) {
+        super(request);
+    }
+
+    /**
+     * Get the model for an http request.
+     * <p>
+     * Look in the session for an associated model via <code>XDS_CONSUMER_ATTR_NAME</code><br>
+     * If there is no model stored in session (first request) a new model is created and stored in session.
+     * 
+     * @param request A http request.
+     * 
+     * @return The model for given request.
+     */
+    public static final XDSConsumerModel getModel( HttpServletRequest request ) {
+        XDSConsumerModel model = (XDSConsumerModel) request.getSession().getAttribute(XDS_CONSUMER_ATTR_NAME);
+        if (model == null) {
+            model = new XDSConsumerModel(request.getUserPrincipal().getName(), request);
+            request.getSession().setAttribute(XDS_CONSUMER_ATTR_NAME, model);
+        }
+        return model;
+    }
+
+    public String getModelName() { return "XDSConsumer"; }
+
+
     public List getDocuments(String patId) {
         return (List) patDocuments.get(patId);
     }
@@ -104,7 +104,7 @@ public class XDSConsumerModel extends BasicFormModel {
     public void addFolders(String patId, List folders) {
         patFolders.put(patId, folders);
     }
-    
+
     public String toString() {
         return "XDSConsumerModel: documents:"+patDocuments+"\nfolders:"+patFolders;
     }

@@ -63,9 +63,9 @@ public class ExpandXDSCtrl extends Dcm4cheeFormController {
     public final void setPatPk(long patPk) {
         this.patPk = patPk;
     }
-    
+
     public final void setExpand( boolean expand ) {
-    	this.expand = expand;
+        this.expand = expand;
     }
 
     protected String perform() throws Exception {

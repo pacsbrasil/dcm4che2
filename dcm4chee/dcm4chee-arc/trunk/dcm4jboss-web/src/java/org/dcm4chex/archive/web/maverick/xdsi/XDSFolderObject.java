@@ -1,31 +1,26 @@
 package org.dcm4chex.archive.web.maverick.xdsi;
 
-import javax.xml.registry.JAXRException;
-import javax.xml.registry.infomodel.RegistryPackage;
+import org.dcm4chee.xds.infoset.v30.RegistryPackageType;
+import org.dcm4chee.xds.infoset.v30.util.InfoSetUtil;
 
 public class XDSFolderObject implements XDSRegistryObject {
-    private RegistryPackage rp;
+    private RegistryPackageType rp;
 
-    public XDSFolderObject( RegistryPackage rp ) {
-        this.rp = rp;
+    public XDSFolderObject( RegistryPackageType registryPackageType ) {
+        this.rp = registryPackageType;
     }
 
-    public String getId() throws JAXRException {
-        return rp.getKey().getId();
+    public String getId() {
+        return rp.getId();
     }
-    public String getName() throws JAXRException {
-        return rp.getName().getValue();
+    public String getName() {
+        return InfoSetUtil.getString(rp.getName(), null);
     }
-    public int getStatus() throws JAXRException {
+    public String getStatus() {
         return rp.getStatus();
     }
-    /**
-     * Get status of document as String.
-     * 
-     * @return
-     * @throws JAXRException
-     */
-    public String getStatusAsString() throws JAXRException {
-        return XDSStatus.getStatusAsString(rp.getStatus());
+    
+    public RegistryPackageType getRegistryPackage() {
+        return rp;
     }
 }

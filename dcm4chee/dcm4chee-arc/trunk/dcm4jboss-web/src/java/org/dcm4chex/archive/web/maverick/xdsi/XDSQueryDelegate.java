@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
@@ -50,14 +51,18 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import javax.servlet.http.HttpSession;
-import javax.xml.registry.BulkResponse;
-import javax.xml.registry.JAXRException;
-import javax.xml.registry.infomodel.ExtrinsicObject;
-import javax.xml.registry.infomodel.RegistryPackage;
-import javax.xml.registry.infomodel.Slot;
+import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4chee.xds.infoset.v30.AdhocQueryResponse;
+import org.dcm4chee.xds.infoset.v30.ExtrinsicObjectType;
+import org.dcm4chee.xds.infoset.v30.IdentifiableType;
+import org.dcm4chee.xds.infoset.v30.ObjectRefType;
+import org.dcm4chee.xds.infoset.v30.RegistryObjectListType;
+import org.dcm4chee.xds.infoset.v30.RegistryPackageType;
+import org.dcm4chee.xds.infoset.v30.SlotType1;
+import org.dcm4chee.xds.infoset.v30.util.InfoSetUtil;
 import org.infohazard.maverick.flow.ControllerContext;
 import org.jboss.mx.util.MBeanServerLocator;
 
@@ -68,19 +73,19 @@ import org.jboss.mx.util.MBeanServerLocator;
 public class XDSQueryDelegate {
 
     private static MBeanServer server;
-	private static ObjectName xdsQueryServiceName;
+    private static ObjectName xdsQueryServiceName;
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     private static Logger log = Logger.getLogger( XDSQueryDelegate.class.getName() );
 
     private static final String XDS_QUERY_DELEGATE_ATTR_NAME = "xdsQueryDelegate";
-    
-	private boolean useLeafFind = true;
-	
-	public XDSQueryDelegate() {
-	}
-	
+
+    private boolean useLeafFind = true;
+
+    public XDSQueryDelegate() {
+    }
+
     public static final XDSQueryDelegate getInstance(ControllerContext ctx) {
         HttpSession session = ctx.getRequest().getSession();
         XDSQueryDelegate delegate = (XDSQueryDelegate) session.getAttribute(XDS_QUERY_DELEGATE_ATTR_NAME);
@@ -100,16 +105,16 @@ public class XDSQueryDelegate {
         String s = ctx.getServletConfig().getInitParameter("xdsQueryServiceName");
         xdsQueryServiceName = new ObjectName(s);
     }
-	
+
     public void findDocuments(String patId, String issuer, XDSConsumerModel consumerModel) throws Exception {
-    	String patWithIssuer;
-    	if (issuer != null && issuer.length() > 0){
-    		patWithIssuer=patId+"^^^"+issuer;
+        String patWithIssuer;
+        if (issuer != null && issuer.length() > 0){
+            patWithIssuer=patId+"^^^"+issuer;
         } else {
-        	patWithIssuer = patId;
+            patWithIssuer = patId;
         }
 
-    	BulkResponse resp = performFindXXX(patWithIssuer, "findDocuments", useLeafFind);
+        AdhocQueryResponse resp = performFindXXX(patWithIssuer, "findDocuments", useLeafFind);
         List docs = useLeafFind ? buildList(resp) : ensureLeafResult(resp, "getDocuments");
         consumerModel.addDocuments(patId,docs);
     }
@@ -117,7 +122,7 @@ public class XDSQueryDelegate {
     public void findDocuments(XDSIModel model) throws Exception {
         String patId = model.getSourcePatientId();
         try {
-            BulkResponse resp = performFindXXX(patId, "findDocuments", useLeafFind);
+            AdhocQueryResponse resp = performFindXXX(patId, "findDocuments", useLeafFind);
             List docs = useLeafFind ? buildList(resp) : ensureLeafResult(resp, "getDocuments");
             model.setDocuments(docs);
         } catch (Exception e) {
@@ -127,50 +132,50 @@ public class XDSQueryDelegate {
     }
 
     public void findFolders(String patId, XDSConsumerModel consumerModel) throws Exception {
-         BulkResponse resp = performFindXXX(patId, "findFolders", false);
-         List folders = ensureLeafResult(resp, "getFolders");
-         consumerModel.addFolders(patId,folders);
+        AdhocQueryResponse resp = performFindXXX(patId, "findFolders", true);
+        List folders = ensureLeafResult(resp, "getFolders");
+        consumerModel.addFolders(patId,folders);
     }
     public void findFolders(XDSIModel model) throws Exception{
-         String patId = model.getSourcePatientId();
-         try {
-             BulkResponse resp = performFindXXX(patId, "findFolders",false);
-             List folders = ensureLeafResult(resp, "getFolders");
-             model.setFolders( folders );
-         } catch (Exception e) {
-             log.warn("Failed to find folders for:"+patId, e);
-             throw e;
-         }
+        String patId = model.getSourcePatientId();
+        try {
+            AdhocQueryResponse resp = performFindXXX(patId, "findFolders",true);
+            List folders = ensureLeafResult(resp, "getFolders");
+            model.setFolders( folders );
+        } catch (Exception e) {
+            log.warn("Failed to find folders for:"+patId, e);
+            throw e;
+        }
     }
 
-    private BulkResponse performFindXXX(String patId, String type, boolean useLeaf ) throws InstanceNotFoundException, MBeanException, ReflectionException, JAXRException {
+    private AdhocQueryResponse performFindXXX(String patId, String type, boolean useLeaf ) throws InstanceNotFoundException, MBeanException, ReflectionException {
         log.info("Perform (Find) Query "+type+" with patId:"+patId);
-        BulkResponse resp = (BulkResponse) server.invoke(xdsQueryServiceName, type,
-                    new Object[] { patId, null, new Boolean(useLeaf) },
-                    new String[] { String.class.getName(), String.class.getName(), boolean.class.getName() });
+        AdhocQueryResponse resp = (AdhocQueryResponse) server.invoke(xdsQueryServiceName, type,
+                new Object[] { patId, null, new Boolean(useLeaf) },
+                new String[] { String.class.getName(), String.class.getName(), boolean.class.getName() });
         log.info("Query response:"+resp);
         if ( resp != null ) {
             log.info("Resp status:"+resp.getStatus() );
-            log.info("Resp collection:"+resp.getCollection() );
-            log.info("Resp Exceptions:"+resp.getExceptions() );
+            log.info("Resp RegistryObjectList:"+resp.getRegistryObjectList() );
+            log.info("Resp RegistryErrorList:"+resp.getRegistryErrorList() );
         }
         return resp;
     }
 
-    private BulkResponse performGetXXX(List uuids, String type) throws InstanceNotFoundException, MBeanException, ReflectionException, JAXRException {
+    private AdhocQueryResponse performGetXXX(List uuids, String type) throws InstanceNotFoundException, MBeanException, ReflectionException {
         log.info("Perform (Get) Query "+type+" with uuids:"+uuids);
-        BulkResponse resp = (BulkResponse) server.invoke(xdsQueryServiceName, type,
-                    new Object[] { uuids },
-                    new String[] { List.class.getName() });
+        AdhocQueryResponse resp = (AdhocQueryResponse) server.invoke(xdsQueryServiceName, type,
+                new Object[] { uuids },
+                new String[] { List.class.getName() });
         log.info("Query response:"+resp);
         if ( resp != null ) {
             log.info("Resp status:"+resp.getStatus() );
-            log.info("Resp collection:"+resp.getCollection() );
-            log.info("Resp Exceptions:"+resp.getExceptions() );
+            log.info("Resp RegistryObjectList:"+resp.getRegistryObjectList() );
+            log.info("Resp RegistryErrorList:"+resp.getRegistryErrorList() );
         }
         return resp;
     }
-    private List ensureLeafResult(BulkResponse resp, String methodName) throws Exception, InstanceNotFoundException, MBeanException, ReflectionException, JAXRException {
+    private List ensureLeafResult(AdhocQueryResponse resp, String methodName) throws Exception, InstanceNotFoundException, MBeanException, ReflectionException {
         List docs = buildList(resp);
         if ( !docs.isEmpty() && (docs.get(0) instanceof String) ) {
             log.info("List of uuids:"+docs);
@@ -179,22 +184,24 @@ public class XDSQueryDelegate {
         return docs;
     }
 
-    private List buildList(BulkResponse resp) throws Exception {
-        Collection col = resp.getCollection();
+    private List buildList(AdhocQueryResponse resp) throws Exception {
+        RegistryObjectListType objList = resp.getRegistryObjectList();
         List uuids = new ArrayList();
+        List col = objList.getIdentifiable();
         if ( col == null || col.isEmpty() ) return uuids;
         Object o;
         for ( Iterator iter = col.iterator() ; iter.hasNext() ; ) {
-            o = iter.next();
+            o = ((JAXBElement)iter.next()).getValue();
             log.info("add Entry to result list: "+o);
             if ( o instanceof String ) {
                 uuids.add(o);
-            } else if ( o instanceof ExtrinsicObject ) {
-                uuids.add( new XDSDocumentObject((ExtrinsicObject)o));
-            } else if ( o instanceof RegistryPackage ) {
-                uuids.add(new XDSFolderObject((RegistryPackage)o));
+            } else if ( o instanceof ExtrinsicObjectType ) {
+                uuids.add( new XDSDocumentObject((ExtrinsicObjectType)o));
+            } else if ( o instanceof RegistryPackageType ) {
+                uuids.add(new XDSFolderObject((RegistryPackageType)o));
+            } else if ( o instanceof IdentifiableType ) { //ignore other entries of type Identifiable
             } else {
-            	log.error("Unexpected result type found ("+
+                log.info("Unexpected result type found ("+
                         o.getClass().getName()+")! (should be String (ObjectRef) or ExtrinsicObject (LeafClass))");
                 throw new IllegalArgumentException("Unexpected result type found ("+
                         o.getClass().getName()+")! (should be String (ObjectRef) or ExtrinsicObject (LeafClass))");
@@ -204,39 +211,16 @@ public class XDSQueryDelegate {
         return uuids;
     }
 
-    public String getDocumentURI(String uuid) throws Exception {
-        try {
-            String uri = null;
-            BulkResponse resp = (BulkResponse) server.invoke(xdsQueryServiceName,
-                        "getDocuments",
-                        new Object[] { uuid },
-                        new String[] { String.class.getName() });
-            log.info("Query response:"+resp);
-            if ( resp != null ) {
-                if ( resp.getCollection().size() > 0 ) {
-                    ExtrinsicObject extr =(ExtrinsicObject) resp.getCollection().iterator().next();
-                    Slot slot = extr.getSlot("URI");
-                    log.info("slot:"+slot );
-                    log.info("URL:"+slot.getValues().iterator().next() );
-                    uri = (String)slot.getValues().iterator().next();
-                }
-            }
-            return uri;
-        } catch (Exception e) {
-            log.warn("Failed to find URL for given document:"+uuid, e);
-            throw e;
-        }
+
+    public void setUseLeafFind(boolean b) {
+        this.useLeafFind = b;
     }
 
-	public void setUseLeafFind(boolean b) {
-		this.useLeafFind = b;
-	}
+    public void clearDocumentList(String patId, String issuer,
+            XDSConsumerModel model) {
+        List l = model.getDocuments(patId);
+        if ( l != null ) 
+            l.clear();
 
-	public void clearDocumentList(String patId, String issuer,
-			XDSConsumerModel model) {
-		List l = model.getDocuments(patId);
-		if ( l != null ) 
-			l.clear();
-		
-	}
+    }
 }

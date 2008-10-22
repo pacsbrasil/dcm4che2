@@ -68,20 +68,20 @@ import org.jboss.mx.util.MBeanServerLocator;
 public class XDSIExportDelegate {
 
     private static final String XDSI_DELEGATE_ATTR_NAME = "xdsiDelegate";
-	
+
     private static MBeanServer server;
-	private static ObjectName keyObjectServiceName;
-	private static ObjectName xdsiServiceName;
+    private static ObjectName keyObjectServiceName;
+    private static ObjectName xdsiServiceName;
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     private static Logger log = Logger.getLogger( XDSIExportDelegate.class.getName() );
 
-    
-	
-	public XDSIExportDelegate() {
-	}
-    
+
+
+    public XDSIExportDelegate() {
+    }
+
     public static final XDSIExportDelegate getInstance( ControllerContext ctx ) {
         HttpSession session = ctx.getRequest().getSession();
         XDSIExportDelegate delegate = (XDSIExportDelegate) session.getAttribute(XDSI_DELEGATE_ATTR_NAME);
@@ -96,7 +96,7 @@ public class XDSIExportDelegate {
         }
         return delegate;
     }
-	
+
     public void init(ControllerContext ctx) throws Exception {
         if (keyObjectServiceName != null) return;
         server = MBeanServerLocator.locate();
@@ -105,25 +105,25 @@ public class XDSIExportDelegate {
         s = ctx.getServletConfig().getInitParameter("xdsiServiceName");
         xdsiServiceName = new ObjectName(s);
     }
-	
-     public boolean exportXDSI(XDSIModel xdsiModel) throws Exception{
-    	if ( xdsiModel.getNumberOfInstances() < 1 ) {
-    		throw new IllegalArgumentException("No Instances selected!");
-    	}
-    	Collection items = getObserverContextItems(getAuthorPerson(xdsiModel.getUser()));
-    	Dataset rootInfo = getRootInfo(xdsiModel);
-    	List contentItems = getContentItems( xdsiModel );
-    	contentItems.addAll(items);
+
+    public boolean exportXDSI(XDSIModel xdsiModel) throws Exception{
+        if ( xdsiModel.getNumberOfInstances() < 1 ) {
+            throw new IllegalArgumentException("No Instances selected!");
+        }
+        Collection items = getObserverContextItems(getAuthorPerson(xdsiModel.getUser()));
+        Dataset rootInfo = getRootInfo(xdsiModel);
+        List contentItems = getContentItems( xdsiModel );
+        contentItems.addAll(items);
         try {
-        	Boolean b;
-        	if ( ! xdsiModel.isPdfExport() ) {
-	        	Dataset keyObjectDS = getKeyObject( xdsiModel.getInstances(), rootInfo, contentItems);
-	            b = (Boolean) server.invoke(xdsiServiceName,
-	                    "sendSOAP",
-	                    new Object[] { keyObjectDS, xdsiModel.listMetadataProperties() },
-	                    new String[] { Dataset.class.getName(), Properties.class.getName() });
-        	} else {
-            	String docUID = (String) xdsiModel.getInstances().iterator().next();
+            Boolean b;
+            if ( ! xdsiModel.isPdfExport() ) {
+                Dataset keyObjectDS = getKeyObject( xdsiModel.getInstances(), rootInfo, contentItems);
+                b = (Boolean) server.invoke(xdsiServiceName,
+                        "sendSOAP",
+                        new Object[] { keyObjectDS, xdsiModel.listMetadataProperties() },
+                        new String[] { Dataset.class.getName(), Properties.class.getName() });
+            } else {
+                String docUID = (String) xdsiModel.getInstances().iterator().next();
                 b = (Boolean) server.invoke(xdsiServiceName,
                         "exportPDF",
                         new Object[] { docUID, xdsiModel.listMetadataProperties() },
@@ -136,15 +136,15 @@ public class XDSIExportDelegate {
         }
     }
 
-     public boolean exportPDF(XDSIModel xdsiModel) throws Exception{
-    	if ( xdsiModel.getNumberOfInstances() < 1 ) {
-    		throw new IllegalArgumentException("No Instances selected!");
-    	}
-    	Collection items = getObserverContextItems(getAuthorPerson(xdsiModel.getUser()));
-    	Dataset rootInfo = getRootInfo(xdsiModel);
-    	List contentItems = getContentItems( xdsiModel );
-    	contentItems.addAll(items);
-    	String docUID = (String) xdsiModel.getInstances().iterator().next();
+    public boolean exportPDF(XDSIModel xdsiModel) throws Exception{
+        if ( xdsiModel.getNumberOfInstances() < 1 ) {
+            throw new IllegalArgumentException("No Instances selected!");
+        }
+        Collection items = getObserverContextItems(getAuthorPerson(xdsiModel.getUser()));
+        Dataset rootInfo = getRootInfo(xdsiModel);
+        List contentItems = getContentItems( xdsiModel );
+        contentItems.addAll(items);
+        String docUID = (String) xdsiModel.getInstances().iterator().next();
         try {
             Boolean b = (Boolean) server.invoke(xdsiServiceName,
                     "exportPDF",
@@ -157,54 +157,54 @@ public class XDSIExportDelegate {
         }
     }
 
-     public boolean createFolder(XDSIModel model) throws Exception{
-         try {
-             Boolean b = (Boolean) server.invoke(xdsiServiceName,
-                     "createFolder",
-                     new Object[] { model.listMetadataProperties() },
-                     new String[] { Properties.class.getName() });
-             return b.booleanValue();
-         } catch (Exception e) {
-             log.warn("Failed to create Folder:", e);
-             throw e;
-         }
-     }
-     
-	private Collection getObserverContextItems(String personName) {
-		Dataset ds = dof.newDataset();
-		ds.putCS(Tags.RelationshipType, "HAS OBS CONTEXT");
-		ds.putCS(Tags.ValueType,"CODE");
-		DcmElement cnSq = ds.putSQ(Tags.ConceptNameCodeSeq);
-		Dataset cnDS = cnSq.addNewItem();
-		cnDS.putSH(Tags.CodeValue, "121005");
-		cnDS.putSH(Tags.CodingSchemeDesignator, "DCM");
-		cnDS.putLO(Tags.CodeMeaning, "ObserverType");
-		DcmElement ccSq = ds.putSQ(Tags.ConceptCodeSeq);
-		Dataset ccDS = ccSq.addNewItem();
-		ccDS.putSH(Tags.CodeValue, "121006");
-		ccDS.putSH(Tags.CodingSchemeDesignator, "DCM");
-		ccDS.putLO(Tags.CodeMeaning, "Person");
+    public boolean createFolder(XDSIModel model) throws Exception{
+        try {
+            Boolean b = (Boolean) server.invoke(xdsiServiceName,
+                    "createFolder",
+                    new Object[] { model.listMetadataProperties() },
+                    new String[] { Properties.class.getName() });
+            return b.booleanValue();
+        } catch (Exception e) {
+            log.warn("Failed to create Folder:", e);
+            throw e;
+        }
+    }
 
-		Dataset ds1 = dof.newDataset();
-		ds1.putCS(Tags.RelationshipType, "HAS OBS CONTEXT");
-		ds1.putCS(Tags.ValueType,"PNAME");
-		DcmElement cnSq1 = ds1.putSQ(Tags.ConceptNameCodeSeq);
-		Dataset cnDS1 = cnSq1.addNewItem();
-		cnDS1.putSH(Tags.CodeValue, "121008");
-		cnDS1.putSH(Tags.CodingSchemeDesignator, "DCM");
-		cnDS1.putLO(Tags.CodeMeaning, "Person Observer Name");
-		ds1.putPN(Tags.PersonName, personName);
-		ArrayList col = new ArrayList();
-		col.add(ds);
-		col.add(ds1);
-		return col;
-	}
-    
+    private Collection getObserverContextItems(String personName) {
+        Dataset ds = dof.newDataset();
+        ds.putCS(Tags.RelationshipType, "HAS OBS CONTEXT");
+        ds.putCS(Tags.ValueType,"CODE");
+        DcmElement cnSq = ds.putSQ(Tags.ConceptNameCodeSeq);
+        Dataset cnDS = cnSq.addNewItem();
+        cnDS.putSH(Tags.CodeValue, "121005");
+        cnDS.putSH(Tags.CodingSchemeDesignator, "DCM");
+        cnDS.putLO(Tags.CodeMeaning, "ObserverType");
+        DcmElement ccSq = ds.putSQ(Tags.ConceptCodeSeq);
+        Dataset ccDS = ccSq.addNewItem();
+        ccDS.putSH(Tags.CodeValue, "121006");
+        ccDS.putSH(Tags.CodingSchemeDesignator, "DCM");
+        ccDS.putLO(Tags.CodeMeaning, "Person");
+
+        Dataset ds1 = dof.newDataset();
+        ds1.putCS(Tags.RelationshipType, "HAS OBS CONTEXT");
+        ds1.putCS(Tags.ValueType,"PNAME");
+        DcmElement cnSq1 = ds1.putSQ(Tags.ConceptNameCodeSeq);
+        Dataset cnDS1 = cnSq1.addNewItem();
+        cnDS1.putSH(Tags.CodeValue, "121008");
+        cnDS1.putSH(Tags.CodingSchemeDesignator, "DCM");
+        cnDS1.putLO(Tags.CodeMeaning, "Person Observer Name");
+        ds1.putPN(Tags.PersonName, personName);
+        ArrayList col = new ArrayList();
+        col.add(ds);
+        col.add(ds1);
+        return col;
+    }
+
     /**
-	 * @param user
-	 * @return
-	 */
-	public String getAuthorPerson(String user) {
+     * @param user
+     * @return
+     */
+    public String getAuthorPerson(String user) {
         try {
             return (String) server.invoke(xdsiServiceName,
                     "getAuthorPerson",
@@ -214,42 +214,42 @@ public class XDSIExportDelegate {
             log.warn("Failed to get author person for user "+user+" ! Reason:"+ e.getCause());
             return null;
         }
-	}
+    }
 
-	/**
-	 * @param xdsiModel
-	 * @return
-	 */
-	private List getContentItems(XDSIModel xdsiModel) {
-		List items = new ArrayList();
-		return items;
-	}
+    /**
+     * @param xdsiModel
+     * @return
+     */
+    private List getContentItems(XDSIModel xdsiModel) {
+        List items = new ArrayList();
+        return items;
+    }
 
-	/**
-	 * @param xdsiModel
-	 * @return
-	 */
-	private Dataset getRootInfo(XDSIModel xdsiModel) {
-		Dataset rootInfo = DcmObjectFactory.getInstance().newDataset();
-    	DcmElement sq = rootInfo.putSQ(Tags.ConceptNameCodeSeq);
-    	Dataset item = sq.addNewItem();
-    	CodeItem selectedDocTitle = xdsiModel.selectedDocTitle();
-    	item.putSH(Tags.CodeValue,selectedDocTitle.getCodeValue());
-    	item.putSH(Tags.CodingSchemeDesignator,selectedDocTitle.getCodeDesignator());
-		item.putLO(Tags.CodeMeaning, selectedDocTitle.getCodeMeaning());
-		return rootInfo;
-	}
-	
+    /**
+     * @param xdsiModel
+     * @return
+     */
+    private Dataset getRootInfo(XDSIModel xdsiModel) {
+        Dataset rootInfo = DcmObjectFactory.getInstance().newDataset();
+        DcmElement sq = rootInfo.putSQ(Tags.ConceptNameCodeSeq);
+        Dataset item = sq.addNewItem();
+        CodeItem selectedDocTitle = xdsiModel.selectedDocTitle();
+        item.putSH(Tags.CodeValue,selectedDocTitle.getCodeValue());
+        item.putSH(Tags.CodingSchemeDesignator,selectedDocTitle.getCodeDesignator());
+        item.putLO(Tags.CodeMeaning, selectedDocTitle.getCodeMeaning());
+        return rootInfo;
+    }
+
     public Dataset getKeyObject(Collection iuids, Dataset rootInfo, List contentItems) {
-    	Object o = null;
+        Object o = null;
         try {
             o = server.invoke(keyObjectServiceName,
                     "getKeyObject",
                     new Object[] { iuids, rootInfo, contentItems },
                     new String[] { Collection.class.getName(), Dataset.class.getName(), Collection.class.getName() });
         } catch (RuntimeMBeanException x) {
-        	 log.warn("RuntimeException thrown in KeyObject Service:"+x.getCause());
-        	throw new IllegalArgumentException(x.getCause().getMessage());
+            log.warn("RuntimeException thrown in KeyObject Service:"+x.getCause());
+            throw new IllegalArgumentException(x.getCause().getMessage());
         } catch (Exception e) {
             log.warn("Failed to create Key Object:", e);
             throw new IllegalArgumentException("Error: KeyObject Service cant create manifest Key Object! Reason:"+e.getClass().getName());
@@ -257,63 +257,63 @@ public class XDSIExportDelegate {
         return (Dataset) o;
     }
 
-	
-	private ContentManager lookupContentManager() throws Exception {
+
+    private ContentManager lookupContentManager() throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-                .getFactory().lookup(ContentManagerHome.class,
-                        ContentManagerHome.JNDI_NAME);
+        .getFactory().lookup(ContentManagerHome.class,
+                ContentManagerHome.JNDI_NAME);
         return home.create();
     }
 
-	/**
-	 * @return
-	 */
-	public CodeItem[] getConfiguredAuthorRoles() {
-		return getCodeItems("listAuthorRoles");
-	}
+    /**
+     * @return
+     */
+    public CodeItem[] getConfiguredAuthorRoles() {
+        return getCodeItems("listAuthorRoles");
+    }
 
-	public CodeItem[] getConfiguredClassCodes() {
-		return getCodeItems("listClassCodes");
-	}
-	public CodeItem[] getConfiguredContentTypeCodes() {
-		return getCodeItems("listContentTypeCodes");
-	}
-	public CodeItem[] getConfiguredHealthCareFacilityTypeCodes() {
-		return getCodeItems("listHealthCareFacilityTypeCodes");
-	}
+    public CodeItem[] getConfiguredClassCodes() {
+        return getCodeItems("listClassCodes");
+    }
+    public CodeItem[] getConfiguredContentTypeCodes() {
+        return getCodeItems("listContentTypeCodes");
+    }
+    public CodeItem[] getConfiguredHealthCareFacilityTypeCodes() {
+        return getCodeItems("listHealthCareFacilityTypeCodes");
+    }
 
-	public CodeItem[] getConfiguredEventCodes() {
-		return getCodeItems("listEventCodes");
-	}
+    public CodeItem[] getConfiguredEventCodes() {
+        return getCodeItems("listEventCodes");
+    }
 
-	public CodeItem[] getConfiguredDocTitles() {
-		return getCodeItems("listDocTitleCodes");
-	}
-	public CodeItem[] getConfiguredConfidentialityCodes() {
-		return getCodeItems("listConfidentialityCodes");
-	}
-	
-	private CodeItem[] getCodeItems(String methodName) {
+    public CodeItem[] getConfiguredDocTitles() {
+        return getCodeItems("listDocTitleCodes");
+    }
+    public CodeItem[] getConfiguredConfidentialityCodes() {
+        return getCodeItems("listConfidentialityCodes");
+    }
+
+    private CodeItem[] getCodeItems(String methodName) {
         try {
-        	List l = (List) server.invoke(xdsiServiceName,
-        			methodName,
+            List l = (List) server.invoke(xdsiServiceName,
+                    methodName,
                     new Object[] {},
                     new String[] {});
             CodeItem[] items = new CodeItem[l.size()];
             for ( int i = 0, len = l.size() ; i < len ; i++ ) {
-            	items[i] = CodeItem.valueofDCM( l.get(i).toString());//DCM (D)esignator(C)odevalue(M)eaning
+                items[i] = CodeItem.valueofDCM( l.get(i).toString());//DCM (D)esignator(C)odevalue(M)eaning
             }
             return items;
         } catch (Exception e) {
             log.error("Failed to get list of configured Codes! method:"+methodName, e);
             return null;
         }
-	}
-	
-	/**
-	 * @return
-	 */
-	public Properties joinMetadataProperties(Properties props) {
+    }
+
+    /**
+     * @return
+     */
+    public Properties joinMetadataProperties(Properties props) {
         try {
             return (Properties) server.invoke(xdsiServiceName,
                     "joinMetadataProperties",
@@ -323,6 +323,6 @@ public class XDSIExportDelegate {
             log.error("Failed to get XDS-I Metadata Properties:", e);
             return null;
         }
-	}
-	
+    }
+
 }

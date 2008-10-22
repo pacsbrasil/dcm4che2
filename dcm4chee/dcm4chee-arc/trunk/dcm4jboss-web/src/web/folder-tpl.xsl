@@ -544,7 +544,7 @@
    </td>
    <td>&#160;</td>
    <td class="patient_mark" align="right">
-    <xsl:if test="$folder.xds_consumer='true'">
+    <xsl:if test="$folder.xds_consumer='true' and /model/XDSConsumer='true'">
      <xsl:text>&XDS;
      </xsl:text>
      <xsl:choose>
@@ -959,7 +959,7 @@
    </td>
    <td class="instance_mark" align="right">
     <xsl:choose>
-     <xsl:when test="availability='ONLINE'">
+     <xsl:when test="availability='ONLINE' or availability='NEARLINE'">
       <a
        href="{/model/wadoBaseURL}wado?requestType=WADO&amp;studyUID={../../../../studyIUID}&amp;seriesUID={../../seriesIUID}&amp;objectUID={sopIUID}"
        target="imageview">

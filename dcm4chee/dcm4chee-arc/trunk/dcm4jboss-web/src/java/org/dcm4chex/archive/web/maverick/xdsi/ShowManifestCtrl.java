@@ -80,13 +80,13 @@ public class ShowManifestCtrl extends Dcm4cheeFormController {
     private String repositoryUID;
 
     List wadoUrls = new ArrayList();
-    
+
     private static Properties repositoryHostMapping;
     private static Properties aet2wado;
     private static Properties cuidTypes;
-    
+
     private static Logger log = Logger.getLogger( ShowManifestCtrl.class.getName() );
-    
+
     public final void setDocumentID(String id) {
         this.documentID = id;
     }
@@ -96,18 +96,18 @@ public class ShowManifestCtrl extends Dcm4cheeFormController {
     public final void setUrl(String url) {
         this.url = url;
     }
-    
+
     public void setRepositoryUID(String repositoryUID) {
-		this.repositoryUID = repositoryUID;
-	}
-	protected String perform() throws Exception {
+        this.repositoryUID = repositoryUID;
+    }
+    protected String perform() throws Exception {
         if ( getCtx().getRequest().getParameter("clear") != null ) {
             repositoryHostMapping = null;
             aet2wado = null;
             cuidTypes = null;
         }
         return url != null ? showManifestPage(loadDataset(new URL(url))) : 
-        	   repositoryUID != null ? showManifestPage(null) : SUCCESS;
+            repositoryUID != null ? showManifestPage(null) : SUCCESS;
     }
 
     private String showManifestPage(Dataset ds) throws Exception {
@@ -136,17 +136,17 @@ public class ShowManifestCtrl extends Dcm4cheeFormController {
                     wadoUrl = getWadoUrl(aet, studyIUID, seriesIUID, iuid);
                     wadoUrls.add( new ManifestInstance( iuid, cuid, wadoUrl));
                 }
-                
+
             }
         }
         return SUCCESS;
     }
-    
+
     public List getWadoUrls() {
         return wadoUrls;
     }
-    
-    
+
+
     /**
      * Read a Dataset object from given URL.
      * 
@@ -161,7 +161,7 @@ public class ShowManifestCtrl extends Dcm4cheeFormController {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
         try {
             ds.readFile(bis, FileFormat.DICOM_FILE, -1);
-       } finally {
+        } finally {
             try {
                 bis.close();
             } catch (IOException ignore) {
@@ -169,7 +169,7 @@ public class ShowManifestCtrl extends Dcm4cheeFormController {
         }
         return ds;
     }
-    
+
     /**
      * Check if host of given url has to be changed.
      * <p>
@@ -203,7 +203,7 @@ public class ShowManifestCtrl extends Dcm4cheeFormController {
         }
         return url;
     }
- 
+
     /**
      * Get WADO URL for given retrieveAET and uids.
      * <p>
@@ -222,7 +222,7 @@ public class ShowManifestCtrl extends Dcm4cheeFormController {
         sb.append("&amp;objectUID=").append(iuid);
         return sb.toString();
     }
-    
+
     /**
      * Get the Base WADO URL for given AET.
      * <p>
@@ -255,13 +255,13 @@ public class ShowManifestCtrl extends Dcm4cheeFormController {
         }
         return url;
     }
-    
+
     public class ManifestInstance {
         private String url;
         private String iuid;
         private String cuid;
         private String type;
-        
+
         public ManifestInstance( String iuid, String cuid, String url) {
             this.url = url;
             this.iuid = iuid;
@@ -309,7 +309,7 @@ public class ShowManifestCtrl extends Dcm4cheeFormController {
         public String getUrl() {
             return url;
         }
-        
+
         public String getType() {
             return type;
         }

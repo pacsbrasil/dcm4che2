@@ -1,25 +1,23 @@
 package org.dcm4chex.archive.web.maverick.xdsi;
 
-import javax.xml.registry.JAXRException;
-
 public class XDSAssociation implements XDSRegistryObject {
 
     private XDSRegistryObject source;
     private XDSRegistryObject target;
     private String type;
-    private int status;
+    private String status;
 
-    public XDSAssociation(XDSRegistryObject source, XDSRegistryObject target, String type, int status) {
+    public XDSAssociation(XDSRegistryObject source, XDSRegistryObject target, String type, String status) {
         this.source = source;
         this.target = target;
         this.type = type;
         this.status = status;
     }
-    public String getId() throws JAXRException {
+    public String getId() {
         return null;
     }
 
-    public String getName() throws JAXRException {
+    public String getName() {
         return null;
     }
 
@@ -29,17 +27,8 @@ public class XDSAssociation implements XDSRegistryObject {
      * @return
      * @throws JAXRException
      */
-    public int getStatus() throws JAXRException {
+    public String getStatus() {
         return status;
-    }
-    /**
-     * Get status of Association as String.
-     * 
-     * @return
-     * @throws JAXRException
-     */
-    public String getStatusAsString() throws JAXRException {
-        return XDSStatus.getStatusAsString(status);
     }
 
     public XDSRegistryObject getSource() {

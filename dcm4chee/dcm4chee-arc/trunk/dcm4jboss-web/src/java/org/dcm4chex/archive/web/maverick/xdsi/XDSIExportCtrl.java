@@ -76,68 +76,68 @@ public class XDSIExportCtrl extends Dcm4cheeFormController {
 
     private XDSIExportDelegate delegate = null;
     private XDSQueryDelegate qryDelegate = null;
-    
+
     private static final String XDSI_EXPORT = "xdsi_export";
-	private static final String CANCEL = "cancel";
-    
+    private static final String CANCEL = "cancel";
+
     private static final Logger log = Logger.getLogger( XDSIExportCtrl.class.getName() );
 
     protected Object makeFormBean() {
-    	HttpServletRequest rq = getCtx().getRequest();
-    	XDSIModel model = XDSIModel.getModel(rq);
+        HttpServletRequest rq = getCtx().getRequest();
+        XDSIModel model = XDSIModel.getModel(rq);
         model.setConsumerModel( XDSConsumerModel.getModel(rq));
-    	delegate = XDSIExportDelegate.getInstance(getCtx());
+        delegate = XDSIExportDelegate.getInstance(getCtx());
         qryDelegate = XDSQueryDelegate.getInstance(getCtx());
         if ( model.getAuthorRoles() == null ) 
             this.clear(model, true);
-    	return model;
+        return model;
     }
     protected String perform() {
-    	XDSIModel model = (XDSIModel) getForm();
+        XDSIModel model = (XDSIModel) getForm();
         try {
-        	HttpServletRequest rq = getCtx().getRequest();
-        	if ( rq.getParameter("docUID") != null ) {
-    			Set set = new HashSet();
-    			set.add(rq.getParameter("docUID"));
-    			model.setInstances(set);
-    			model.setPdfExport(true);
+            HttpServletRequest rq = getCtx().getRequest();
+            if ( rq.getParameter("docUID") != null ) {
+                Set set = new HashSet();
+                set.add(rq.getParameter("docUID"));
+                model.setInstances(set);
+                model.setPdfExport(true);
             } else if (rq.getParameter("export") == null) {
-            	if ( rq.getParameter("pdfUID") != null ) {
-        			Set set = new HashSet();
-        			set.add(rq.getParameter("docUID"));
-        			model.setPdfUID(rq.getParameter("pdfUID"));
-        			model.setPdfExport(false);
+                if ( rq.getParameter("pdfUID") != null ) {
+                    Set set = new HashSet();
+                    set.add(rq.getParameter("docUID"));
+                    model.setPdfUID(rq.getParameter("pdfUID"));
+                    model.setPdfExport(false);
                 }
                 model.setPdfExport(false);
             }
-        	if ( model.getNumberOfInstances() < 1) {
-    			FolderForm.setExternalPopupMsg(this.getCtx(),"xdsi.err_selection", null);
-    			return CANCEL;
-        	}
-        	model.clearPopupMsg();
-        	if ( rq.getParameter("cancel") != null || rq.getParameter("cancel.x") != null ) {
-        		return CANCEL;
-        	}
-        	if ( rq.getParameter("clear") != null || rq.getParameter("clear.x") != null ) {
-        		clear(model, true);
-        		return XDSI_EXPORT;
-        	}
-        	if ( rq.getParameter("addEventCode") != null || rq.getParameter("addEventCode.x") != null ) {
-        		model.addSelectedEventCode();
-        		return XDSI_EXPORT;
-        	}
-        	if ( rq.getParameter("delEventCode") != null || rq.getParameter("delEventCode.x") != null ) {
-        		model.removeSelectedEventCode();
-        		return XDSI_EXPORT;
-        	}
-        	if ( rq.getParameter("deselectAllEventCodes") != null || rq.getParameter("deselectAllEventCodes.x") != null ) {
-        		model.deselectAllEventCodes();
-        		return XDSI_EXPORT;
-        	}
+            if ( model.getNumberOfInstances() < 1) {
+                FolderForm.setExternalPopupMsg(this.getCtx(),"xdsi.err_selection", null);
+                return CANCEL;
+            }
+            model.clearPopupMsg();
+            if ( rq.getParameter("cancel") != null || rq.getParameter("cancel.x") != null ) {
+                return CANCEL;
+            }
+            if ( rq.getParameter("clear") != null || rq.getParameter("clear.x") != null ) {
+                clear(model, true);
+                return XDSI_EXPORT;
+            }
+            if ( rq.getParameter("addEventCode") != null || rq.getParameter("addEventCode.x") != null ) {
+                model.addSelectedEventCode();
+                return XDSI_EXPORT;
+            }
+            if ( rq.getParameter("delEventCode") != null || rq.getParameter("delEventCode.x") != null ) {
+                model.removeSelectedEventCode();
+                return XDSI_EXPORT;
+            }
+            if ( rq.getParameter("deselectAllEventCodes") != null || rq.getParameter("deselectAllEventCodes.x") != null ) {
+                model.deselectAllEventCodes();
+                return XDSI_EXPORT;
+            }
 
             if ( rq.getParameter("export") != null || rq.getParameter("export.x") != null ) {
                 return export(model);
-        	}
+            }
 
             if ( rq.getParameter("query") != null || rq.getParameter("query.x") != null ) {
                 qryDelegate.findDocuments(model);
@@ -147,7 +147,7 @@ public class XDSIExportCtrl extends Dcm4cheeFormController {
                 qryDelegate.findFolders(model);
                 return XDSI_EXPORT;
             }
-            
+
             if ( rq.getParameter("addAssociation") != null || rq.getParameter("addAssociation.x") != null ) {
                 model.addAssociation( null, model.getDocument( Integer.parseInt(rq.getParameter("selectedDocument"))), 
                         rq.getParameter("assocType"), rq.getParameter("assocStatus"));
@@ -180,14 +180,14 @@ public class XDSIExportCtrl extends Dcm4cheeFormController {
             if ( rq.getParameter("submitAndCreateFolder") != null || rq.getParameter("submitAndCreateFolder.x") != null ) {
                 return submitAndCreateFolder(rq, model);
             }
-             
+
             return XDSI_EXPORT;//Show selection page for authorRole, ... selection
         } catch (Exception x) {
-        	model.setPopupMsg("xdsi.err",x.getMessage());
-        	return ERROR;
+            model.setPopupMsg("xdsi.err",x.getMessage());
+            return ERROR;
         }
     }
-    
+
     private String submitAndCreateFolder(HttpServletRequest rq, XDSIModel model) throws Exception {
         Properties props = model.listMetadataProperties();
         try {
@@ -205,7 +205,7 @@ public class XDSIExportCtrl extends Dcm4cheeFormController {
             props.remove("folder.comment");
         }
     }
-    
+
     private String export(XDSIModel model) throws Exception {
         if ( !model.getLinkFolders().isEmpty() ) {
             Iterator iter = model.getLinkFolders().iterator();
@@ -219,14 +219,14 @@ public class XDSIExportCtrl extends Dcm4cheeFormController {
             model.listMetadataProperties().remove("folder_assoc.uniqueId");
         }
         if ( ! delegate.exportXDSI(model) ) {
-        	model.setPopupMsg("xdsi.err_failed","");
-        	return XDSI_EXPORT;
+            model.setPopupMsg("xdsi.err_failed","");
+            return XDSI_EXPORT;
         }
         clear(model, false);
         FolderForm.setExternalPopupMsg(getCtx(), "xdsi.done", null);
         return SUCCESS;//export done
     }
-    
+
     private String createFolder(HttpServletRequest rq, XDSIModel model) throws JAXRException {
         Properties props = model.listMetadataProperties();
         try {
@@ -239,7 +239,7 @@ public class XDSIExportCtrl extends Dcm4cheeFormController {
             if ( ! delegate.createFolder(model) ) {
                 model.setPopupMsg("xdsi.err_failed","");
             } else {
-                
+
             }
         } catch (Exception x) {
             model.setPopupMsg("xdsi.err",x.getMessage());
@@ -252,18 +252,18 @@ public class XDSIExportCtrl extends Dcm4cheeFormController {
         }
         return XDSI_EXPORT;
     }
-    
+
     private void clear(XDSIModel model, boolean reload) {
-		model.clear();
-		model.setMetadataProperties(delegate.joinMetadataProperties(new Properties()));
-		if ( reload ) {
-			model.setDocTitles(delegate.getConfiguredDocTitles());
-			model.setAuthorRoles(delegate.getConfiguredAuthorRoles());
-			model.setEventCodes(delegate.getConfiguredEventCodes());
-			model.setClassCodes(delegate.getConfiguredClassCodes());
-			model.setContentTypeCodes( delegate.getConfiguredContentTypeCodes());
-			model.setHealthCareFacilityTypeCodes( delegate.getConfiguredHealthCareFacilityTypeCodes());
-		}    	
+        model.clear();
+        model.setMetadataProperties(delegate.joinMetadataProperties(new Properties()));
+        if ( reload ) {
+            model.setDocTitles(delegate.getConfiguredDocTitles());
+            model.setAuthorRoles(delegate.getConfiguredAuthorRoles());
+            model.setEventCodes(delegate.getConfiguredEventCodes());
+            model.setClassCodes(delegate.getConfiguredClassCodes());
+            model.setContentTypeCodes( delegate.getConfiguredContentTypeCodes());
+            model.setHealthCareFacilityTypeCodes( delegate.getConfiguredHealthCareFacilityTypeCodes());
+        }    	
     }
 
 

@@ -111,93 +111,95 @@
 			<tr>
 		   		<td>&#160;</td>
         	</tr>
-			<tr>
-		   		<td align="right" >
-		   			<table>
-		   				<tr><td>Existing Documents:</td></tr>
-			   			<tr><td align="center"><input type="submit" name="query" value="Query"/></td></tr>
-		   			</table>
-		   		</td>
-		        <td title="Existing Documents" >
-					<select name="selectedDocument" size="10" class="xdsiListSelection">
-						<xsl:apply-templates select="documents/item">
-						    <xsl:with-param name="selectedPos" select="/model/selectedDocument" />
-						</xsl:apply-templates>
-					</select>
-		        </td>
-		        <td>
-		        	<table>
-		   				<tr><td align="center">Add Document Association</td></tr>
-		   				<tr><td align="center">Association Type:</td></tr>
-						<tr><td align="center">
-							<select name="assocType" >
-								<option value="HasMember" selected="true">HasMember</option>
-								<option value="RPLC">RPLC</option>
-								<option value="APND">APND</option>
-								<option value="XFRM">XFRM</option>
-							</select></td></tr>
-						<tr><td align="center">Association Status:</td></tr>
-						<tr><td align="center">
-							<select name="assocStatus" >
-								<option value="Approved" selected="true">Approved</option>
-								<option value="Deprecated">Deprecated</option>
-								<option value="Reference">Reference</option>
-							</select>
-						</td></tr>
-		   				<tr><td align="center">
-		   					<input type="submit" name="addAssociation" value="&gt;"/>
-		   					<input type="submit" name="delAssociation" value="&lt;"/>
-		   					<input type="submit" name="deselectAllAssociations" value="&lt;&lt;"/>
-		   				</td></tr>
-		   			</table>
-		   		</td>
-		        <td title="Associations">
-					<select name="selectedAssociation" size="10" class="xdsiListSelection">
-						<xsl:apply-templates select="associations/item">
-						    <xsl:with-param name="selectedPos" select="/model/selectedAssociation" />
-						</xsl:apply-templates>
-					</select>
-		        </td>
-        	</tr>
-			<tr>
-		   		<td>&#160;</td>
-        	</tr>
-			<tr>
-		   		<td align="right" >
-		   			<table>
-		   				<tr><td>Existing Folders:&#160;</td></tr>
-		   				<tr><td align="center"><input type="submit" name="queryFolder"  value="Query "/></td></tr>
-		   				<tr><td>Folder Name:</td></tr>
-		   				<tr><td><input type="text" name="folderName" value="Create" size="13"/></td></tr>
-		   				<tr><td>Comment</td></tr>
-		   				<tr><td><input type="text" name="folderComment" value="Create" size="13"/></td></tr>
-		   				<tr><td align="center"><input type="submit" name="createFolder" value="Create"/></td></tr>
-		   			</table>
-		   		</td>
-		        <td title="Existing Folders">
-					<select name="selectedFolder" size="10" class="xdsiListSelection">
-						<xsl:apply-templates select="folders/item">
-						    <xsl:with-param name="selectedPos" select="/model/selectedFolder" />
-						</xsl:apply-templates>
-					</select>
-		        </td>
-		        <td>
-		        	<table>
-				   		<tr><td align="center" >						
-				   			<input type="submit" name="addFolder" value="&gt;"/>
-				   			<input type="submit" name="delFolder" value="&lt;"/>
-				   			<input type="submit" name="deselectAllFolders" value="&lt;&lt;"/>
-		   				</td></tr>
-		   			</table>
-		   		</td>
- 		        <td title="LinkFolders">
-					<select name="selectedLinkFolder" size="10" class="xdsiListSelection">
-						<xsl:apply-templates select="linkFolders/item">
-						    <xsl:with-param name="selectedPos" select="/model/selectedLinkFolder" />
-						</xsl:apply-templates>
-					</select>
-		        </td>
-        	</tr>
+            <xsl:if test="/model/XDSQuery='true'">
+				<tr>
+			   		<td align="right" >
+			   			<table>
+			   				<tr><td>Existing Documents:</td></tr>
+				   			<tr><td align="center"><input type="submit" name="query" value="Query"/></td></tr>
+			   			</table>
+			   		</td>
+			        <td title="Existing Documents" >
+						<select name="selectedDocument" size="10" class="xdsiListSelection">
+							<xsl:apply-templates select="documents/item">
+							    <xsl:with-param name="selectedPos" select="/model/selectedDocument" />
+							</xsl:apply-templates>
+						</select>
+			        </td>
+			        <td>
+			        	<table>
+			   				<tr><td align="center">Add Document Association</td></tr>
+			   				<tr><td align="center">Association Type:</td></tr>
+							<tr><td align="center">
+								<select name="assocType" >
+									<option value="HasMember" selected="true">HasMember</option>
+									<option value="RPLC">RPLC</option>
+									<option value="APND">APND</option>
+									<option value="XFRM">XFRM</option>
+								</select></td></tr>
+							<tr><td align="center">Association Status:</td></tr>
+							<tr><td align="center">
+								<select name="assocStatus" >
+									<option value="Approved" selected="true">Approved</option>
+									<option value="Deprecated">Deprecated</option>
+									<option value="Reference">Reference</option>
+								</select>
+							</td></tr>
+			   				<tr><td align="center">
+			   					<input type="submit" name="addAssociation" value="&gt;"/>
+			   					<input type="submit" name="delAssociation" value="&lt;"/>
+			   					<input type="submit" name="deselectAllAssociations" value="&lt;&lt;"/>
+			   				</td></tr>
+			   			</table>
+			   		</td>
+			        <td title="Associations">
+						<select name="selectedAssociation" size="10" class="xdsiListSelection">
+							<xsl:apply-templates select="associations/item">
+							    <xsl:with-param name="selectedPos" select="/model/selectedAssociation" />
+							</xsl:apply-templates>
+						</select>
+			        </td>
+	        	</tr>
+				<tr>
+			   		<td>&#160;</td>
+	        	</tr>
+				<tr>
+			   		<td align="right" >
+			   			<table>
+			   				<tr><td>Existing Folders:&#160;</td></tr>
+			   				<tr><td align="center"><input type="submit" name="queryFolder"  value="Query "/></td></tr>
+			   				<tr><td>Folder Name:</td></tr>
+			   				<tr><td><input type="text" name="folderName" value="Create" size="13"/></td></tr>
+			   				<tr><td>Comment</td></tr>
+			   				<tr><td><input type="text" name="folderComment" value="Create" size="13"/></td></tr>
+			   				<tr><td align="center"><input type="submit" name="createFolder" value="Create"/></td></tr>
+			   			</table>
+			   		</td>
+			        <td title="Existing Folders">
+						<select name="selectedFolder" size="10" class="xdsiListSelection">
+							<xsl:apply-templates select="folders/item">
+							    <xsl:with-param name="selectedPos" select="/model/selectedFolder" />
+							</xsl:apply-templates>
+						</select>
+			        </td>
+			        <td>
+			        	<table>
+					   		<tr><td align="center" >						
+					   			<input type="submit" name="addFolder" value="&gt;"/>
+					   			<input type="submit" name="delFolder" value="&lt;"/>
+					   			<input type="submit" name="deselectAllFolders" value="&lt;&lt;"/>
+			   				</td></tr>
+			   			</table>
+			   		</td>
+	 		        <td title="LinkFolders">
+						<select name="selectedLinkFolder" size="10" class="xdsiListSelection">
+							<xsl:apply-templates select="linkFolders/item">
+							    <xsl:with-param name="selectedPos" select="/model/selectedLinkFolder" />
+							</xsl:apply-templates>
+						</select>
+			        </td>
+	        	</tr>
+	        </xsl:if>
 			<tr>
 		   		<td>&#160;</td>
         	</tr>
@@ -260,7 +262,7 @@
 		<xsl:if test="$selectedPos=position()-1">
 			<xsl:attribute name="selected">true</xsl:attribute>
 		</xsl:if>
-		<xsl:value-of select="name"/> (<xsl:value-of select="creationTime"/>):<xsl:value-of select="statusAsString"/>
+		<xsl:value-of select="name"/> (<xsl:value-of select="creationTime"/>):<xsl:value-of select="status"/>
 	</option>
 </xsl:template>
 <xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.xdsi.XDSFolderObject']">
