@@ -1206,7 +1206,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
             storeRqCmd.putUS(Tags.MoveOriginatorMessageID, moveRqMsgID);
             storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
         }
-        File f = getFile(info.basedir, info.fileID);
+        File f = getFile(info);
         Dataset mergeAttrs = DatasetUtils.fromByteArray(info.patAttrs,
                 DatasetUtils.fromByteArray(info.studyAttrs, DatasetUtils
                         .fromByteArray(info.seriesAttrs, DatasetUtils
@@ -1246,10 +1246,18 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return presCtx;
     }
 
+    protected File getFile(FileInfo info) throws Exception {
+        return getFile(info.basedir, info.fileID);
+    }
+
+    protected File getFile(FileDTO dto) throws Exception {
+        return getFile(dto.getDirectoryPath(), dto.getFilePath());
+    }
+
     protected File getFile(String fsID, String fileID) throws Exception {
         return fsID.startsWith("tar:") ? retrieveFileFromTAR(fsID, fileID)
                         : FileUtils.toFile(fsID, fileID);
-    }    
+    }
 
     public Object locateInstance(String iuid) throws Exception {
         FileDTO[] fileDTOs = null;
@@ -1264,8 +1272,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 for (int i = 0; i < fileDTOs.length; ++i) {
                     dto = fileDTOs[i];
                     if (isLocalRetrieveAET(dto.getRetrieveAET()))
-                        return getFile(dto.getDirectoryPath(),
-                                dto.getFilePath());
+                        return getFile(dto);
                 }
                 aet = fileDTOs[0].getRetrieveAET();
             }
@@ -1287,7 +1294,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         for (int i = 0; i < fileInfos.length; ++i) {
             final FileInfo info = fileInfos[i];
             if (isLocalRetrieveAET(info.fileRetrieveAET)) {
-                File f = getFile(info.basedir, info.fileID);
+                File f = getFile(info);
                 Dataset mergeAttrs = DatasetUtils.fromByteArray(
                         info.patAttrs,
                         DatasetUtils .fromByteArray(
