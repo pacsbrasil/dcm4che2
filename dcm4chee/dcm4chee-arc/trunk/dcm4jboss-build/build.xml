@@ -473,6 +473,12 @@
     </antcall>
     <antcall target="xslt">
       <param name="in"
+             value="${dcm4jboss-sar.xmdesc}/dcm4chee-onswitchfs-xmbean.xml" />
+      <param name="out" value="onswitchfs-xmbean.xml" />
+      <param name="mbean" value="dcm4chee.archive:service=OnSwitchStorageFileSystem" />
+    </antcall>
+    <antcall target="xslt">
+      <param name="in"
              value="${dcm4jboss-sar.xmdesc}/dcm4chee-pixquery-xmbean.xml" />
       <param name="out" value="pixquery-xmbean.xml" />
       <param name="mbean" value="dcm4chee.archive:service=PIXQuery" />
