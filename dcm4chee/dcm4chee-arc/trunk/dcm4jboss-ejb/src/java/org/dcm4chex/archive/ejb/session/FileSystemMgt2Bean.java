@@ -518,29 +518,15 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**    
      * @ejb.interface-method
      */
-    public Collection createDeleteOrdersForStudiesOnFSGroupNotAccessedAfter(
-            String fsGroup, long notAccessedAfter,
-            boolean externalRetrieveable, boolean storageNotCommited,
-            boolean copyOnMedia, String copyOnFSGroup, boolean copyArchived,
-            boolean copyOnReadOnlyFS) throws FinderException {
-        return createDeleteOrders(sofHome.findByFSGroupAndAccessBefore(fsGroup,
-                new Timestamp(notAccessedAfter)), externalRetrieveable,
-                storageNotCommited, copyOnMedia, copyOnFSGroup, copyArchived,
-                copyOnReadOnlyFS);
-    }
-
-    /**    
-     * @ejb.interface-method
-     */
     public Collection createDeleteOrdersForStudiesOnFSGroup(
-            String fsGroup, long minAccessTime, int limit,
+            String fsGroup, long minAccessTime, long maxAccessTime, int limit,
             boolean externalRetrieveable, boolean storageNotCommited,
             boolean copyOnMedia, String copyOnFSGroup, boolean copyArchived,
             boolean copyOnReadOnlyFS) throws FinderException {
-        return createDeleteOrders(sofHome.findByFSGroupAndAccessAfter(fsGroup,
-                new Timestamp(minAccessTime), limit), externalRetrieveable,
-                storageNotCommited, copyOnMedia, copyOnFSGroup, copyArchived,
-                copyOnReadOnlyFS);
+        return createDeleteOrders(sofHome.findByFSGroupAndAccessedBetween(fsGroup,
+                new Timestamp(minAccessTime), new Timestamp(maxAccessTime), limit),
+                externalRetrieveable, storageNotCommited, copyOnMedia,
+                copyOnFSGroup, copyArchived, copyOnReadOnlyFS);
     }
 
     private Collection createDeleteOrders(

@@ -122,7 +122,9 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     private long adjustExpectedDataVolumePerDay = 0;
 
-    private long deleteStudiesNotAccessedFor = 0;
+    private long maxNotAccessedFor = 0;
+
+    private long minNotAccessedFor = 0;
 
     private boolean externalRetrieveable;
 
@@ -550,14 +552,20 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                 .getFreeSize(expectedDataVolumePerDay);
     }
 
-    public String getDeleteStudiesNotAccessedFor() {
-        return RetryIntervalls.formatIntervalZeroAsNever(
-                deleteStudiesNotAccessedFor);
+    public String getDeleteStudyIfNotAccessedFor() {
+        return RetryIntervalls.formatIntervalZeroAsNever(maxNotAccessedFor);
     }
 
-    public void setDeleteStudiesNotAccessedFor(String interval) {
-        this.deleteStudiesNotAccessedFor =
-                RetryIntervalls.parseIntervalOrNever(interval);
+    public void setDeleteStudyIfNotAccessedFor(String interval) {
+        this.maxNotAccessedFor = RetryIntervalls.parseIntervalOrNever(interval);
+    }
+
+    public String getDeleteStudyOnlyIfNotAccessedFor() {
+        return RetryIntervalls.formatInterval(minNotAccessedFor);
+    }
+
+    public void setDeleteStudyOnlyIfNotAccessedFor(String interval) {
+        this.minNotAccessedFor = RetryIntervalls.parseInterval(interval);
     }
 
     public boolean isDeleteStudyOnlyIfStorageNotCommited() {
@@ -922,59 +930,31 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public int scheduleStudiesForDeletion() throws Exception {
-        if (deleterThresholds == null) {
+        if (maxNotAccessedFor == 0 && deleterThresholds == null) {
             return 0;
         }
         log.info("Check file system group " + getFileSystemGroupID()
                 + " for deletion of studies");
-        FileSystemMgt2 fsMgt = fileSystemMgt();
-        String fsGroup = getFileSystemGroupID();
-        FileSystemDTO[] fsDTOs = fsMgt.getFileSystemsOfGroup(fsGroup);
-        long usable = calcUsableDiskSpace(fsDTOs);
-        long threshold = getCurrentDeleterThreshold(fsMgt, fsDTOs);
-        long sizeToDel = threshold - usable;
-        long minAccessTime = 0;
         int countStudies = 0;
-        if (sizeToDel > 0) {
-            log.info("Try to free " + sizeToDel
-                    + " of disk space on file system group "
-                    + getFileSystemGroupID());
-            do {
-                Collection<DeleteStudyOrder> orders = 
-                        fsMgt.createDeleteOrdersForStudiesOnFSGroup(
-                        fsGroup, minAccessTime, scheduleStudiesForDeletionBatchSize,
-                        externalRetrieveable, storageNotCommited, copyOnMedia,
-                        copyOnFSGroup, copyArchived, copyOnReadOnlyFS);
-                if (orders.isEmpty()) {
-                    log.warn("Could not find any further study for deletion on file system group "
-                            + getFileSystemGroupID());
-                    break;
-                }
-                Iterator<DeleteStudyOrder> orderIter = orders.iterator();
-                do {
-                    DeleteStudyOrder order = orderIter.next();
-                    if (scheduleDeleteOrder(fsMgt, order)) {
-                        sizeToDel -= fsMgt.getStudySize(order);
-                        countStudies++;
-                    }
-                    minAccessTime = order.getAccessTime();
-                } while (sizeToDel > 0 && orderIter.hasNext());
-            } while (sizeToDel > 0);
+        FileSystemMgt2 fsMgt = fileSystemMgt();
+        if (maxNotAccessedFor > 0) {
+            countStudies = scheduleStudiesForDeletion(fsMgt,
+                    System.currentTimeMillis() - maxNotAccessedFor,
+                    Long.MAX_VALUE);
         }
-        if (deleteStudiesNotAccessedFor > 0) {
-            long notAccessedAfter = System.currentTimeMillis()
-                    - deleteStudiesNotAccessedFor;
-            Collection<DeleteStudyOrder> orders = 
-                fsMgt.createDeleteOrdersForStudiesOnFSGroupNotAccessedAfter(
-                fsGroup, notAccessedAfter,
-                externalRetrieveable, storageNotCommited, copyOnMedia,
-                copyOnFSGroup, copyArchived, copyOnReadOnlyFS);
-            if (!orders.isEmpty()) {
-                for (DeleteStudyOrder order : orders) {
-                    if (scheduleDeleteOrder(fsMgt, order)) {
-                        countStudies++;
-                    }
-                }
+        if (deleterThresholds != null) {
+            FileSystemDTO[] fsDTOs = fsMgt.getFileSystemsOfGroup(
+                    getFileSystemGroupID());
+            long threshold = getCurrentDeleterThreshold(fsMgt, fsDTOs);
+            long usable = calcUsableDiskSpace(fsDTOs);
+            long sizeToDel = threshold - usable;
+            if (sizeToDel > 0) {
+                log.info("Try to free " + sizeToDel
+                        + " of disk space on file system group "
+                        + getFileSystemGroupID());
+                countStudies += scheduleStudiesForDeletion(fsMgt,
+                        System.currentTimeMillis() - minNotAccessedFor,
+                        sizeToDel);
             }
         }
         if (countStudies > 0) {
@@ -985,19 +965,46 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         return countStudies;
     }
 
-    private boolean scheduleDeleteOrder(FileSystemMgt2 fsMgt,
-            DeleteStudyOrder order) throws Exception {
-        if (!fsMgt.removeStudyOnFSRecord(order)) {
-            return false;
-        }
-        try {
-            deleteStudy.scheduleDeleteOrder(order);
-            return true;
-        } catch (Exception e) {
-            // re-insert SOF record, so the deleter keeps track for deletion of the study
-            fsMgt.createStudyOnFSRecord(order);
-            throw e;
-        }
+    private int scheduleStudiesForDeletion(FileSystemMgt2 fsMgt,
+            long notAccessedAfter, long sizeToDel0) throws Exception {
+        int countStudies = 0;
+        long minAccessTime = 0;
+        long sizeToDel = sizeToDel0;
+        do {
+            Collection<DeleteStudyOrder> orders = 
+                    fsMgt.createDeleteOrdersForStudiesOnFSGroup(
+                            getFileSystemGroupID(), minAccessTime,
+                            notAccessedAfter,
+                            scheduleStudiesForDeletionBatchSize,
+                            externalRetrieveable, storageNotCommited,
+                            copyOnMedia, copyOnFSGroup, copyArchived,
+                            copyOnReadOnlyFS);
+            if (orders.isEmpty()) {
+                if (sizeToDel0 != Long.MAX_VALUE) {
+                    log.warn("Could not find any further study for deletion on "
+                            + "file system group " + getFileSystemGroupID());
+                }
+                break;
+            }
+            Iterator<DeleteStudyOrder> orderIter = orders.iterator();
+            do {
+                DeleteStudyOrder order = orderIter.next();
+                if (fsMgt.removeStudyOnFSRecord(order)) {
+                    try {
+                        deleteStudy.scheduleDeleteOrder(order);
+                    } catch (Exception e) {
+                        // re-insert SOF record, so the deleter keeps track 
+                        // for deletion of the study
+                        fsMgt.createStudyOnFSRecord(order);
+                        throw e;
+                    }
+                    sizeToDel -= fsMgt.getStudySize(order);
+                    countStudies++;
+                }
+                minAccessTime = order.getAccessTime();
+            } while (sizeToDel > 0 && orderIter.hasNext());
+        } while (sizeToDel > 0);
+        return countStudies;
     }
 
     public int deleteOrphanedPrivateFiles() throws Exception {

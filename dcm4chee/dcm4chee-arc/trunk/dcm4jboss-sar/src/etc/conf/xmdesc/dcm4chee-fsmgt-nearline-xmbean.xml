@@ -306,8 +306,8 @@
     <type>long</type>
   </attribute>
 
-  <attribute access="read-write" getMethod="getDeleteStudiesNotAccessedFor"
-    setMethod="setDeleteStudiesNotAccessedFor">
+  <attribute access="read-write" getMethod="getDeleteStudyIfNotAccessedFor"
+    setMethod="setDeleteStudyIfNotAccessedFor">
     <description><![CDATA[Defines when a study not accessed for the specified
       time will be deleted from file systems of the file system group managed
       my this service, if it satisfies the configured set of constraints.
@@ -319,10 +319,24 @@
       <br>52w = any studies that have not been accessed for 52 weeks or more
       can be deleted if they satisfies the configured set of constraints.]]>
     </description>
-    <name>DeleteStudiesNotAccessedFor</name>
+    <name>DeleteStudyIfNotAccessedFor</name>
     <type>java.lang.String</type>
     <descriptors>
       <value value="NEVER" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write" getMethod="getDeleteStudyOnlyIfNotAccessedFor"
+    setMethod="setDeleteStudyOnlyIfNotAccessedFor">
+    <description><![CDATA[Defines minimal time a study must not be accessed
+      before it becomes a candidate for deletion.
+      <p>Format: 
+      <br>##h (in hours) | ##d (in days) | ##w (in weeks)]]>
+    </description>
+    <name>DeleteStudyOnlyIfNotAccessedFor</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="1d" />
     </descriptors>
   </attribute>
 
