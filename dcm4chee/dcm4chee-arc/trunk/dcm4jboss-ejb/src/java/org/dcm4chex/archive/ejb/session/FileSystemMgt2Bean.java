@@ -492,9 +492,18 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void removeStudyOnFSRecord(DeleteStudyOrder order)
-            throws RemoveException {
-        sofHome.remove(order.getSoFsPk());
+    public boolean removeStudyOnFSRecord(DeleteStudyOrder order)
+            throws RemoveException, FinderException {
+        StudyOnFileSystemLocal sof = sofHome.findByPrimaryKey(order.getSoFsPk());
+        if (sof.getAccessTime().getTime() > order.getAccessTime()) {
+            log.info("Study[pk=" + order.getStudyPk() + "] on FileSystem[pk="
+                    + order.getFsPk()
+                    + "] may have updated after check of deletion constraints"
+                    + " -> do not schedule study for deletion.");
+            return false;
+        }
+        sof.remove();
+        return true;
     }
 
     /**

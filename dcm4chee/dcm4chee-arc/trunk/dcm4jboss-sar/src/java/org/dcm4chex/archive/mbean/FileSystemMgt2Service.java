@@ -953,10 +953,11 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                 Iterator<DeleteStudyOrder> orderIter = orders.iterator();
                 do {
                     DeleteStudyOrder order = orderIter.next();
-                    sizeToDel -= fsMgt.getStudySize(order);
-                    scheduleDeleteOrder(fsMgt, order);
+                    if (scheduleDeleteOrder(fsMgt, order)) {
+                        sizeToDel -= fsMgt.getStudySize(order);
+                        countStudies++;
+                    }
                     minAccessTime = order.getAccessTime();
-                    countStudies++;
                 } while (sizeToDel > 0 && orderIter.hasNext());
             } while (sizeToDel > 0);
         }
@@ -970,8 +971,9 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                 copyOnFSGroup, copyArchived, copyOnReadOnlyFS);
             if (!orders.isEmpty()) {
                 for (DeleteStudyOrder order : orders) {
-                    scheduleDeleteOrder(fsMgt, order);
-                    countStudies++;
+                    if (scheduleDeleteOrder(fsMgt, order)) {
+                        countStudies++;
+                    }
                 }
             }
         }
@@ -983,11 +985,14 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         return countStudies;
     }
 
-    private void scheduleDeleteOrder(FileSystemMgt2 fsMgt,
+    private boolean scheduleDeleteOrder(FileSystemMgt2 fsMgt,
             DeleteStudyOrder order) throws Exception {
-        fsMgt.removeStudyOnFSRecord(order);
+        if (!fsMgt.removeStudyOnFSRecord(order)) {
+            return false;
+        }
         try {
             deleteStudy.scheduleDeleteOrder(order);
+            return true;
         } catch (Exception e) {
             // re-insert SOF record, so the deleter keeps track for deletion of the study
             fsMgt.createStudyOnFSRecord(order);
