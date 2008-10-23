@@ -66,6 +66,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
+import org.dcm4chex.archive.ejb.jdbc.ClaimCompressingFileCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
@@ -377,7 +378,7 @@ public class CompressionService extends ServiceMBeanSupport {
                 .getFilePath());
         File destFile = null;
         try {
-            if (!fsMgt.setFileStatusToCompressing(fileDTO.getPk())) {
+            if (!ClaimCompressingFileCmd.claim(fileDTO.getPk())) {
                 log.info("File " + srcFile
                         + " already compressed by concurrent thread!");
                 return;
