@@ -161,6 +161,9 @@ public class XDSStoreService extends ServiceMBeanSupport {
     }	
     public XDSDocument storeDocument(XDSDocument xdsDoc, Source metadata) throws XDSException {
         String documentUID = xdsDoc.getDocumentUID();
+        if ( docStore.getDocument(documentUID, null) != null )
+            return null;//Document with given documentUID already exists!
+        
         log.info("#### Store Document:"+documentUID+" to pool "+storeBeforeRegisterPool+"\nmetadata:"+metadata);
         boolean error = false;
         try {
