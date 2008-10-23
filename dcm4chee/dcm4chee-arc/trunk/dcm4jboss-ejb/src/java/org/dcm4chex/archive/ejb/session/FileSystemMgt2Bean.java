@@ -743,25 +743,6 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         fileHome.findByPrimaryKey(pk).setFileStatus(status);
     }
 
-    /**
-     * @ejb.interface-method
-     */
-    public boolean setFileStatusToCompressing(long pk) throws FinderException {
-        FileLocal f = fileHome.findByPrimaryKey(pk);
-        if (f.getFileStatus() != FileStatus.DEFAULT
-                || !isUncompressed(f.getFileTsuid())) {
-            return false;
-        }
-        f.setFileStatus(FileStatus.COMPRESSING);
-        return true;
-    }
-
-    private boolean isUncompressed(String tsuid) {
-        return tsuid.equals(UIDs.ExplicitVRLittleEndian)
-                || tsuid.equals(UIDs.ExplicitVRBigEndian)
-                || tsuid.equals(UIDs.ImplicitVRLittleEndian);
-    }
-
     private FileDTO[] toFileDTOs(Collection c) {
         FileDTO[] dto = new FileDTO[c.size()];
         Iterator it = c.iterator();

@@ -25,6 +25,7 @@ QuerySeriesAttrsForQueryCmd=SELECT patient.pat_attrs,study.study_attrs,series.se
 QuerySeriesAttrsForRetrieveCmd=SELECT patient.pat_attrs,study.study_attrs,series.series_attrs,patient.pat_id,patient.pat_name,study.study_iuid FROM patient INNER JOIN study ON (patient.pk=study.patient_fk) INNER JOIN series ON (study.pk=series.study_fk) WHERE series.series_iuid=?
 QueryOldARRCmd=SELECT TOP ? pk,xml_data FROM audit_record_old WHERE pk>? ORDER BY pk
 QueryOldARRCmdLimitPos=1
+ClaimCompressingFileCmd=UPDATE files SET file_status=3 WHERE pk=? AND file_status=0 AND file_tsuid IN ('1.2.840.10008.1.2','1.2.840.10008.1.2.1','1.2.840.10008.1.2.2')
 </xsl:text>
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'Patient']" mode="fk">
 <xsl:with-param name="fk" select="'merge_fk'"/>
