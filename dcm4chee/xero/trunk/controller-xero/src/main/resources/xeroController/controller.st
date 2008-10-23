@@ -122,7 +122,7 @@ XeroController.prototype.updateView = function XC_action(actionName) {
 /** Performs a delayed update */
 XeroController.prototype.waitUpdate = function XC_waitUpdate(actionName, cnt) {
 	if( cnt===undefined ) cnt = 5;
-	var missing = this.renderComplete(this.model.layout.layouts);
+	var missing = this.renderComplete([this.model.layout]);
 	if( missing===0 ) return 0;
 	if( cnt===0 ) {
 		this.debug("Rendering with cnt=%d with %d missing", cnt, missing);
@@ -138,9 +138,10 @@ XeroController.prototype.waitUpdate = function XC_waitUpdate(actionName, cnt) {
 
 /** Renders all components that have relayout set and are complete.  Returns a count of required items. */
 XeroController.prototype.renderComplete = function XC_renderComplete(layouts,incomplete) {
+	if(! layouts ) return 0;
 	var render, origLay,lay,i,n=layouts.length;
 	var ret = 0;
-	for(i=0; i<n;i++) {
+	for(i=0; i<n; i++) {
 		lay = layouts[i];
 		if( !lay.used ) continue;
 		if( lay.relayout ) {
@@ -159,7 +160,9 @@ XeroController.prototype.renderComplete = function XC_renderComplete(layouts,inc
 				ret++;
 			} 
 		}
-		else if( lay.layouts ) ret += this.renderComplete(lay.layouts, incomplete);
+		else {
+			ret += this.renderComplete(lay.children,incomplete);
+		}
 	}
 	return ret;
 };

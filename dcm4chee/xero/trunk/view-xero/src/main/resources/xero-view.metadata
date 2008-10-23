@@ -43,7 +43,6 @@ displayTemplates.patientNameSel=image/patientNameSel
 displayTemplates.studyDescriptionSel=image/studyDescriptionSel
 displayTemplates.patientMenu=image/patientMenu
 displayTemplates.imageImage=image/image
-displayTemplates.imageArea=image/imageArea
 displayTemplates.studyTra=image/studyTray
 displayTemplates.seriesToolbar=image/seriesToolbar
 displayTemplates.layoutMenu=image/layoutMenu

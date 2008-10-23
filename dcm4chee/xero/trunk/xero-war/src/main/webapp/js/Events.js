@@ -183,10 +183,12 @@ function hookEvent(element, eventName, callback)
   {
     if(eventName == 'mousewheel')
     {
+      // This is idempotent so it doesn't matter if the same element is hooked up multiple times.
       element.addEventListener('DOMMouseScroll',
         callback, false); 
+    } else {
+    	element.addEventListener(eventName, callback, false);
     }
-    element.addEventListener(eventName, callback, false);
   }
   else if(element.attachEvent)
     element.attachEvent("on" + eventName, callback);

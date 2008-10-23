@@ -41,24 +41,20 @@ PatientLayout.prototype.init = function PatientLayout_init() {
 
 /** Create the study layouts containing the study tray and the image area.  Not lazy. */
 function StudyAreaLayout(navigate,nth) {
-	this.baseConstructor("studyArea"+nth);
+	var suffix = "S"+nth;
+	this.baseConstructor("StudyArea"+suffix);
 
-	var studyTray = new Layout("studyTray-"+nth,"image/studyTray" );
+	var studyTray = new Layout("StudyTray"+suffix,"image/studyTray" );
 	var childMerged = navigate.addChildListener(studyTray,StudyMergedListener,nth);
 	navigate.addChildListener(this,StudyMergedListener,nth);
 	studyTray.absWidth = 135;
-	var seriesAreas = new SeriesAreasLayout(childMerged,nth);
+	var seriesAreas = new SeriesAreasLayout(childMerged,suffix);
 	studyTray.nth=nth;
 	
 	// TODO - compute east/west addition point.
 	var even = ((nth %2)==0);
-	if( even ) {
-		this.add(studyTray);
-	}
+	this.add(studyTray,(even?Layout.WEST:Layout.EAST));
 	this.add(seriesAreas);
-	if( !even ) {
-		this.add(studyTray);
-	}
 };
 
 StudyAreaLayout.prototype = new Layout();
@@ -67,26 +63,23 @@ StudyAreaLayout.prototype.gridX = 2;
 StudyAreaLayout.prototype.gridY = 2;
 StudyAreaLayout.prototype.displayClass="studyArea";
 
-function SeriesAreasLayout(navigate,nth) {
-	this.baseConstructor("seriesAreas"+nth);
+function SeriesAreasLayout(navigate,suffix) {
+	this.baseConstructor("SeriesArea"+suffix);
 	navigate.addListener(this,StudyMergedListener);
-	this.nth = nth;
 	
-	var i,j,toolbar, imageArea, seriesArea;
+	var i,j,toolbar, imageArea, seriesArea, seriesSuffix;
 	for(j=0; j<this.gridY; j++) {
 		for(i=0; i<this.gridX; i++) {
 			nth = j*this.gridX+i;
-			seriesArea = new Layout("seriesArea","html/layout");
-			this.add(seriesArea);
-			seriesArea.setGrid(1,2);
-			toolbar = new Layout("seriesToolbar-"+nth,"image/seriesToolbar");
+			seriesSuffix = suffix+"Se"+nth;
+			toolbar = new Layout("SeriesToolbar"+seriesSuffix,"image/seriesToolbar");
 			toolbar.parent = seriesArea;
 			navigate.addChildListener(toolbar,SeriesMergedListener,nth);
 			toolbar.absHeight = 25;
-			imageAreas = new ImageAreasLayout(toolbar.navigate);
+			imageAreas = new ImageAreasLayout(toolbar.navigate, seriesSuffix);
 			toolbar.imageAreas = imageAreas;
-			seriesArea.add(toolbar);
-			seriesArea.add(imageAreas);
+			this.add(imageAreas);
+			imageAreas.add(toolbar,Layout.NORTH);
 		};
 	};
 };
@@ -98,8 +91,8 @@ SeriesAreasLayout.prototype.gridY = 2;
 
 
 /** Create an images areas object */
-function ImageAreasLayout(navigate) {
-	this.baseConstructor("imagesAreas");
+function ImageAreasLayout(navigate, suffix) {
+	this.baseConstructor("ImageAreas"+suffix);
 	navigate.addListener(this,ImageAreaMergedListener);
 	this.used = false;
 	this.origGridX = this.gridX;
@@ -111,11 +104,13 @@ function ImageAreasLayout(navigate) {
 		return controller.navWheelImg(useThis,evt);
 	};
 	
-	var i,j,layout;
+	var i,j,layout, imageSuffix;
 	for(j=0; j<this.gridY; j++) {
 		for(i=0; i<this.gridX; i++) {
-			layout = new ImageLayout("imageLay-"+i+","+j);
-			navigate.addChildListener(layout,ImageMergedListener,j*this.gridX+i);
+			var nth = j*this.gridX+i;
+			imageSuffix = suffix+"I"+nth;
+			layout = new ImageLayout("ImageLay"+imageSuffix);
+			navigate.addChildListener(layout,ImageMergedListener,nth);
 			layout.resizeListener = ImageResizeListener;
 			layout.x = i;
 			layout.y = j;
@@ -124,11 +119,11 @@ function ImageAreasLayout(navigate) {
 	};
 };
 
-ImageAreasLayout.prototype = new Layout(null,"image/imageArea");
+ImageAreasLayout.prototype = new Layout();
 ImageAreasLayout.prototype.baseConstructor = Layout;
 ImageAreasLayout.prototype.gridX = 2;
 ImageAreasLayout.prototype.gridY = 2;
-
+ImageAreasLayout.prototype.onmousewheel="controller.navWheelImg";
 
 /** The listener for the patient information */
 function PatientMergedListener(navigate) {
@@ -149,12 +144,13 @@ function StudyMergedListener(navigate) {
 
 /** This defines the listeners for navigate changes to the layout */
 function SeriesMergedListener(navigate) {
+	console.info("series merged listener called.");
 	this.navigate = navigate;
 	var changed = this.used;
 	this.used = (navigate!=null && navigate.external!=null);
 	changed = (changed!=this.used);
 	if( navigate ) console.info("Changing series on %s to %d",this.id, navigate.id);
-	if( changed && this.parent) {
+	if( changed && this.parent ) {
 		this.parent.relayout = true;
 	}
 	if( navigate ) {

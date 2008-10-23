@@ -165,13 +165,13 @@ XeroController.prototype.navImg = function XC_navImg(id,dir) {
 
 /** Navigates the series using the mouse wheel */
 XeroController.prototype.navWheelImg = function XC_navWheelImg(id,e) {
-	this.debug("Wheel mouse navigation called on %s.", id);
 	id = this.model.patientLayout.findLayout(id);
+	console.info("Wheel mouse navigation called on %s", id.id);
 	var wheelData = e.detail ? e.detail : e.wheelDelta/-40;
 	wheelData = (wheelData * id.gridX * id.gridY)/-3;
-	this.debug("Trying to navigate %d", wheelData);
+	console.info("Trying to navigate %d", wheelData);
 	this.navImg(id,wheelData);
-	console.info("isComplete=%s",id.isComplete());
+	console.info("Wheel isComplete=%s",id.isComplete());
 	return cancelEvent(e);
 };
 

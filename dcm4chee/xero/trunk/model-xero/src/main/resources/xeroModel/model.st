@@ -24,7 +24,9 @@ function XeroModel(is_ie) {
 	this.patientLayout = new PatientLayout();
 	this.layout.addTab("Display", this.patientLayout);
 	
-	this.layout.computeId();
+	// Make the idMap global - in case there end up being multiple display areas...
+	this.idMap = new LayoutIdMap();
+	this.layout.computeId(this.idMap);
 
 	this.IS_IE = is_ie;
 };

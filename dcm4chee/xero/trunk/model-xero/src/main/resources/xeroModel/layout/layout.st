@@ -29,26 +29,33 @@ Layout.prototype.setGrid = function Layout_setGrid(x,y) {
 	if(! this.layouts) this.layouts = new Array();
 };
 
+function LayoutIdMap() {
+	this.counter = new Object();
+};
+
 Layout.prototype.computeId = function Layout_computeId(idMap) {
 	if(!idMap ) {
-		idMap = new Object();
-		idMap.counter = new Object();
+		idMap = new LayoutIdMap();
 	}
 	this.idMap = idMap;
-	if( !idMap[this.id] ) idMap[this.id] = this;
-	else {
-		this.id = this.idBase;
-		var cnt = idMap.counter[this.id];
+	if( !idMap[this.id] ) {
+		idMap[this.id] = this;
+	} else if( idMap[this.id]===this ) {
+	  // No-op
+	} else {
+		var cnt = idMap.counter[this.idBase];
 		if(! cnt ) {
-			idMap.counter[this.id]=1;
+			idMap.counter[this.idBase]=1;
 			cnt = 1;
 		}
-		this.id = this.id+"-"+idMap
-		idMap.counter[this.id] = 1+cnt;
+		this.id = this.idBase+"-"+cnt;
+		idMap.counter[this.idBase] = 1+cnt;
+		idMap[this.id] = this;
 	}
-	var i;
-	for(i in this.layouts ) {
-		this.layouts[i].computeId(idMap);
+	if( !this.children ) return;
+	var i, n=this.children.length;
+	for(i=0; i<n; i++) {
+		this.children[i].computeId(idMap);
 	};
 };
 
@@ -56,23 +63,23 @@ Layout.prototype.used = true;
 
 /** Resizes the edge components */
 Layout.prototype.resizeEdge = function Layout_resizeExtra() {
-	var edge = this.layouts.north;
+	var edge = this.named.north;
 	var style;
 	if( edge ) {
 		style = "width: 100%; height: "+(edge.absHeight*100/this.height-0.1)+"%;";
 		edge.resize(this.width, edge.absHeight,style);
 	}
-	edge = this.layouts.west;
+	edge = this.named.west;
 	if( edge ) {
 		style = "width: "+(edge.absWidth*100/this.width-0.1)+"%; height: "+((this.height-this.deltaHeight)/this.height-0.1)+"%;";
 		edge.resize(this.width, edge.absHeight,style);
 	}
-	edge = this.layouts.east;
+	edge = this.named.east;
 	if( edge ) {
 		style = "width: "+(edge.absWidth*100/this.width-0.1)+"%; height: "+((this.height-this.deltaHeight)/this.height-0.1)+"%;";
 		edge.resize(this.width, edge.absHeight,style);
 	}
-	edge = this.layouts.south;
+	edge = this.named.south;
 	if( edge ) {
 		style = "width: 100%; height: "+(edge.absHeight*100/this.height-0.1)+"%;";
 		edge.resize(this.width, edge.absHeight,style);
@@ -140,10 +147,10 @@ Layout.prototype.resize = function Layout_resize(width,height,style) {
 
 /** Checks to see if the layout information is complete */
 Layout.prototype.isComplete = function Layout_isComplete() {
-	if( !this.layouts ) return true;
-	var lay,i,n=this.layouts.length;
+	if( !this.children ) return true;
+	var lay,i,n=this.children.length;
 	for(i=0;i<n;i++){
-		lay = this.layouts[i];
+		lay = this.children[i];
 		if( !lay.used ) continue;
 		if( !lay.isComplete() ) return false;
 	};
@@ -153,10 +160,10 @@ Layout.prototype.isComplete = function Layout_isComplete() {
 /** Clears an relayout flags that have been set for this object and all child objects */
 Layout.prototype.clearRelayout = function Layout_clearRelayout() {
 	this.relayout = false;
-	if(! this.layouts ) return;
-	var i,n=this.layouts.length;
+	if(! this.children ) return;
+	var i,n=this.children.length;
 	for(i=0; i<n; i++) {
-		this.layouts[i].clearRelayout();
+		this.children[i].clearRelayout();
 	}
 };
 
@@ -175,13 +182,7 @@ Layout.prototype.getUsedLayouts = function Layout_getUsedLayouts() {
 /** Finds the given layout object.  Can be passed a layout object directly or the id of one. */
 Layout.prototype.findLayout = function findLayout(id) {
 	if( typeof(id)!=="string" ) return id;
-	if( this.id===id ) return this;
-	if( !this.layouts ) return;
-	var ret,i,n=this.layouts.length;
-	for(i=0; i<n;i++) {
-		ret = this.layouts[i].findLayout(id);
-		if( ret ) return ret;
-	}
+	return this.idMap[id];
 }; 
 
 /** Sum all of the widths of the absolute width items */
@@ -251,6 +252,9 @@ Layout.prototype.add = function Layout_add(child,name) {
 		if( !this.layouts ) this.layouts =new Array();
 		this.layouts.push(child);
 	}
+	if( this.children==null ) this.children = new Array();
+	this.children.push(child);
+	child.parent = this;
 	if( this.idMap ) child.computeId(this.idMap);
 };
 

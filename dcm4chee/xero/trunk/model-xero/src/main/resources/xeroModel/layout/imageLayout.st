@@ -1,8 +1,8 @@
 /**
  * This section defines some special image layout handling
  */
-function ImageLayout(id,template) {
-	this.baseConstructor(id,template);
+function ImageLayout(id) {
+	this.baseConstructor(id);
 };
 
 ImageLayout.prototype = new Layout("baseImage","image/image");
