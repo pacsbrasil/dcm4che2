@@ -120,7 +120,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 
     private static final String CERT = "CERT";
     private static final String NONE = "NONE";
-    
+
     private String repositoryUniqueId;
     private String xdsRegistryURI;
 
@@ -137,7 +137,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
     private DocumentStoreDelegate docStoreDelegate = new DocumentStoreDelegate();
     private XDSbServiceDelegate xdsbServiceDelegate = new XDSbServiceDelegate();
     private XdsHttpCfgDelegate httpCfgDelegate = new XdsHttpCfgDelegate();
-    
+
     private ObjectFactory objFac = new ObjectFactory();
     private XDSDocumentWriterFactory wrFac = XDSDocumentWriterFactory.getInstance();
 
@@ -236,7 +236,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
     public void setXDSbRetrieveService(ObjectName name) {
         XDSbServiceDelegate.setXdsRetrieveServiceName(name);
     }
-    
+
     protected void startService() throws Exception {
         XDSbServiceDelegate.setXdsRepositoryServiceName(this.getServiceName());
     }
@@ -297,15 +297,15 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
             throw x;
         } catch (Throwable t) {
             throw new XDSException(XDSConstants.XDS_ERR_REPOSITORY_ERROR,"Provide And Register failed!",t);
-       } finally {
-           perfLogger.startSubEvent("PostProcess");
-           perfLogger.setSubEventProperty("Success", String.valueOf(success));
-           if ( storedDocuments != null ) {
-               postProcessStorage(storedDocuments, success);
-           }
-           perfLogger.endSubEvent();
-           perfLogger.flush();
-       }
+        } finally {
+            perfLogger.startSubEvent("PostProcess");
+            perfLogger.setSubEventProperty("Success", String.valueOf(success));
+            if ( storedDocuments != null ) {
+                postProcessStorage(storedDocuments, success);
+            }
+            perfLogger.endSubEvent();
+            perfLogger.flush();
+        }
     }
     private RegistryResponseType dispatchSubmitObjectsRequest(
             SubmitObjectsRequest submitRequest, XDSPerformanceLogger perfLogger) throws MalformedURLException,
@@ -425,7 +425,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
                     xdsDoc = new XDSbDocument(extrObj, wrFac.getDocumentWriter(document.getValue(), -1));
                     perfLogger.setSubEventProperty("DocumentUUID", xdsDoc.getDocumentUID());
                     Node n = InfoSetUtil.getNodeForObject(elem);
-                    doc = docStoreDelegate.storeDocument(xdsDoc,new DOMSource(n) );
+                    doc = docStoreDelegate.storeDocument(xdsDoc, new DOMSource(n) );
                     if ( doc != null ) {
                         perfLogger.setSubEventProperty("DocumentSize", String.valueOf(doc.getSize()));
                         storedDocuments.put(extrObj.getId(),doc);
@@ -563,7 +563,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         rq.getDocumentRequest().add( createDocRequest(docUid, repositoryUID, homeUid) );
         return retrieveDocumentSet(rq, useLocalRepo ? repositoryUniqueId : null);
     }
-    
+
     public DataHandler retrieveDocument(String docUid, String repositoryUID, String homeUid, boolean useLocalRepo) throws XDSException {
         RetrieveDocumentSetResponseType rsp = retrieveDocumentSet(docUid, repositoryUID, homeUid, useLocalRepo);
         try {
@@ -609,7 +609,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
                 w.close();
         }
     }
-    
+
     private DocumentRequest createDocRequest(String docUid,
             String repositoryUID, String homeUid) {
         DocumentRequest docRq = objFac.createRetrieveDocumentSetRequestTypeDocumentRequest();
@@ -620,7 +620,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
             docRq.setHomeCommunityId(homeUid);
         return docRq;
     }
-    
+
 
     public class XdsDataHandler extends DataHandler {
         private XDSDocumentWriter writer;
