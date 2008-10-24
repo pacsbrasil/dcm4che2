@@ -163,7 +163,7 @@ public class XDSStoreService extends ServiceMBeanSupport {
         String documentUID = xdsDoc.getDocumentUID();
         if ( docStore.getDocument(documentUID, null) != null )
             return null;//Document with given documentUID already exists!
-        
+
         log.info("#### Store Document:"+documentUID+" to pool "+storeBeforeRegisterPool+"\nmetadata:"+metadata);
         boolean error = false;
         boolean docAdded = false;
@@ -172,26 +172,26 @@ public class XDSStoreService extends ServiceMBeanSupport {
             BaseDocument doc = docStore.createDocument(storeBeforeRegisterPool, 
                     xdsDoc.getDocumentUID(), xdsDoc.getMimeType());
             if ( doc != null ) {
-            	docAdded = true;
+                docAdded = true;
                 storedDoc = writeDocument(doc, xdsDoc.getXdsDocWriter());
             } else { //DocumentStorage does not support createDocument! (trust to get correct SHA1 hash)
                 log.debug("DocumentStorage does not support createDocument! Use storeDocument with DataHandler and trust to get SHA1 cache!");
                 doc = docStore.storeDocument(storeBeforeRegisterPool, 
                         documentUID, xdsDoc.getXdsDocWriter().getDataHandler());
                 if (doc != null) {
-					docAdded = true;
-	                if (doc.getHash() == null) {
-	                    throw new XDSException(XDSConstants.XDS_ERR_REPOSITORY_ERROR, 
-	                            "SHA1 hash value missing! Storage does not support SHA1 hash! docUID:"+documentUID, null);
-	
-	                }
-	                if ( doc.getDataHandler() != null ) {
-	                    storedDoc = new XDSDocument( doc.getDocumentUID(), doc.getMimeType(), 
-	                            getXdsDocWriter(doc), doc.getHash(), null);
-	                } else {
-	                    storedDoc = new XDSDocument(doc.getDocumentUID(), doc.getMimeType(), 
-	                            doc.getSize(), doc.getHash(), "StoredDocument(no content provider)");
-	                }
+                    docAdded = true;
+                    if (doc.getHash() == null) {
+                        throw new XDSException(XDSConstants.XDS_ERR_REPOSITORY_ERROR, 
+                                "SHA1 hash value missing! Storage does not support SHA1 hash! docUID:"+documentUID, null);
+
+                    }
+                    if ( doc.getDataHandler() != null ) {
+                        storedDoc = new XDSDocument( doc.getDocumentUID(), doc.getMimeType(), 
+                                getXdsDocWriter(doc), doc.getHash(), null);
+                    } else {
+                        storedDoc = new XDSDocument(doc.getDocumentUID(), doc.getMimeType(), 
+                                doc.getSize(), doc.getHash(), "StoredDocument(no content provider)");
+                    }
                 }
             }
 
@@ -199,15 +199,12 @@ public class XDSStoreService extends ServiceMBeanSupport {
                 storeMetadata(metadata, doc);
             }
             return storedDoc;
-        } catch ( XDSException x ) {
-			log.error("Storage of document failed:"+documentUID, x);
-			error = true;
-            throw x;
         } catch ( Throwable x ) {
             log.error("Storage of document failed:"+documentUID, x);
             error = true;
-            throw new XDSException(XDSConstants.XDS_ERR_REPOSITORY_ERROR, 
-                    "Storage of document failed:"+documentUID, x);
+            throw (x instanceof XDSException) ? (XDSException)x : 
+                new XDSException(XDSConstants.XDS_ERR_REPOSITORY_ERROR, 
+                        "Storage of document failed:"+documentUID, x);
         } finally {
             try {
                 xdsDoc.getXdsDocWriter().close();
@@ -215,7 +212,7 @@ public class XDSStoreService extends ServiceMBeanSupport {
                 log.warn("Error closing XDS Document Writer! Ignored",ignore );
             }
             if (error && docAdded) {
-            	docStore.deleteDocument(documentUID);
+                docStore.deleteDocument(documentUID);
             }
         }
     }
