@@ -40,10 +40,8 @@
 package org.dcm4chex.archive.ejb.entity;
 
 import java.lang.reflect.Method;
-import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
@@ -123,9 +121,9 @@ import org.dcm4chex.archive.util.Convert;
  *             WHERE p.patientId = ?1 AND p.patientName LIKE ?2"
  *             strategy="on-find" eager-load-group="*"
  *
- * @ejb.finder signature="java.util.Collection findByPatientIdAndNameAndBirthDate(java.lang.String pid, java.lang.String pn, java.sql.Timestamp birthdate)"
+ * @ejb.finder signature="java.util.Collection findByPatientIdAndNameAndBirthDate(java.lang.String pid, java.lang.String pn, java.lang.String birthdate)"
  *             query="" transaction-type="Supports"
- * @jboss.query signature="java.util.Collection findByPatientIdAndNameAndBirthDate(java.lang.String pid, java.lang.String pn, java.sql.Timestamp birthdate)"
+ * @jboss.query signature="java.util.Collection findByPatientIdAndNameAndBirthDate(java.lang.String pid, java.lang.String pn, java.lang.String birthdate)"
  *             query="SELECT OBJECT(p) FROM Patient AS p
  *             WHERE p.patientId = ?1 AND p.patientName LIKE ?2
  *             AND (p.patientBirthDate IS NULL or p.patientBirthDate = ?3)"
@@ -138,9 +136,9 @@ import org.dcm4chex.archive.util.Convert;
  *             WHERE p.patientName LIKE ?1"
  *             strategy="on-find" eager-load-group="*"
  *
- * @ejb.finder signature="java.util.Collection findByPatientNameAndBirthDate(java.lang.String pn, java.sql.Timestamp birthdate)"
+ * @ejb.finder signature="java.util.Collection findByPatientNameAndBirthDate(java.lang.String pn, java.lang.String birthdate)"
  *             query="" transaction-type="Supports"
- * @jboss.query signature="java.util.Collection findByPatientNameAndBirthDate(java.lang.String pn, java.sql.Timestamp birthdate)"
+ * @jboss.query signature="java.util.Collection findByPatientNameAndBirthDate(java.lang.String pn, java.lang.String birthdate)"
  *             query="SELECT OBJECT(p) FROM Patient AS p
  *             WHERE p.patientName LIKE ?1
  *             AND (p.patientBirthDate IS NULL or p.patientBirthDate = ?2)"
@@ -325,12 +323,12 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_birthdate"
      */
-    public abstract java.sql.Timestamp getPatientBirthDate();
+    public abstract String getPatientBirthDate();
 
     /**
      * @ejb.interface-method
      */
-    public abstract void setPatientBirthDate(java.sql.Timestamp date);
+    public abstract void setPatientBirthDate(String dateString);
 
     /**
      * Patient Sex
@@ -548,21 +546,17 @@ public abstract class PatientBean implements EntityBean {
             PersonName pn = trustPatientID ? null : ds.getPersonName(Tags.PatientName);
             if (pn != null) {
                 String pnLike = toLike(pn);
-                Date birthdate = null;
-                try {
-                    birthdate = ds.getDate(Tags.PatientBirthDate);
-                } catch (Exception ignore) {}
+                String birthdate = normalizeDA(ds.getString(Tags.PatientBirthDate));
                 if (birthdate != null) {
-                    Timestamp ts = new Timestamp(birthdate.getTime());
                     if (pid != null) {
                         c = patHome.findByPatientIdAndNameAndBirthDate(pid,
-                                pnLike, ts);
+                                pnLike, birthdate);
                     } else { // pid == null
-                        c = patHome.findByPatientNameAndBirthDate(pnLike, ts);
+                        c = patHome.findByPatientNameAndBirthDate(pnLike, birthdate);
                     }
                 } else { // birthdate == null
                     if (pid != null) {
-                        c = patHome.findByPatientIdAndName(pid, pnLike);       			
+                        c = patHome.findByPatientIdAndName(pid, pnLike);
                     } else { // pid == null
                         c = patHome.findByPatientName(pnLike);
                     }
@@ -671,11 +665,7 @@ public abstract class PatientBean implements EntityBean {
                 setPatientPhoneticName(ppn.toComponentGroupString(false));
             }
         }
-        try {
-	        setPatientBirthDate(ds.getDate(Tags.PatientBirthDate));
-	    } catch (IllegalArgumentException e) {
-	        log.warn("Illegal Patient Birth Date format: " + e.getMessage());
-	    }
+        setPatientBirthDate(normalizeDA(ds.getString(Tags.PatientBirthDate)));
         setPatientSex(ds.getString(Tags.PatientSex));
         byte[] b = DatasetUtils.toByteArray(ds, tsuid);
         if (log.isDebugEnabled()) {
@@ -832,12 +822,23 @@ public abstract class PatientBean implements EntityBean {
         return s != null ? s.toUpperCase() : null;
     }
 
-    /**
-     * @ejb.interface-method
-     */
-    public void setPatientBirthDate(java.util.Date date) {
-        setPatientBirthDate(date != null ? new java.sql.Timestamp(date
-                .getTime()) : null);
+    private static String normalizeDA(String s) {
+        if (s == null) {
+            return null;
+        }
+        String trim = s.trim();
+        int l = trim.length();
+        if (l == 0) {
+            return null;
+        }
+        if (l == 10 && trim.charAt(4) == '-' && trim.charAt(7) == '-') {
+            StringBuilder sb = new StringBuilder(8);
+            sb.append(trim.substring(0, 4));
+            sb.append(trim.substring(5, 7));
+            sb.append(trim.substring(8));
+            return sb.toString();
+        }
+        return trim;
     }
 
     /**

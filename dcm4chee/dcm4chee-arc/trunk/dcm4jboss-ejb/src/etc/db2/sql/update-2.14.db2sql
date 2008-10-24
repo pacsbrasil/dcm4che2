@@ -9,6 +9,23 @@ CREATE INDEX mpps_drcode_fk ON mpps(drcode_fk);
 DROP INDEX code_value;
 CREATE UNIQUE INDEX code_value ON code(code_value,code_designator,code_version);
 
+-- MODIFY patient.pat_birthdate from DATE to VARCHAR
+ALTER TABLE patient ADD pat_birthdate_varchar VARCHAR(254);
+UPDATE patient SET pat_birthdate_varchar = CHAR(pat_birthdate,ISO)
+  WHERE pat_birthdate IS NOT NULL;
+DROP INDEX pat_birthdate;
+ALTER TABLE patient DROP pat_birthdate;
+ALTER TABLE patient ADD pat_birthdate VARCHAR(254);
+REORG TABLE patient;
+UPDATE patient SET pat_birthdate  = (
+  SUBSTR(pat_birthdate_varchar,1,4) ||
+  SUBSTR(pat_birthdate_varchar,6,2) ||
+  SUBSTR(pat_birthdate_varchar,9,2) )
+  WHERE pat_birthdate_varchar IS NOT NULL;
+ALTER TABLE patient DROP pat_birthdate_varchar;
+REORG TABLE patient;
+CREATE INDEX pat_birthdate ON patient(pat_birthdate);
+
 ALTER TABLE study ADD cuids_in_study VARCHAR(254);
 
 ALTER TABLE ae

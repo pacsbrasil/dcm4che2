@@ -288,9 +288,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                         "Patient.patientPhoneticName" }, type2, keys
                         .getString(Tags.PatientName));
         sqlBuilder
-                .addRangeMatch(null, "Patient.patientBirthDate", type2, keys
-                        .getDateTimeRange(Tags.PatientBirthDate,
-                                Tags.PatientBirthTime));
+                .addRangeMatch(null, "Patient.patientBirthDate", type2,
+                        keys.getString(Tags.PatientBirthDate));
         sqlBuilder.addWildCardMatch(null, "Patient.patientSex", type2, keys
                 .getStrings(Tags.PatientSex));
         AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();

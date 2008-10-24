@@ -381,6 +381,43 @@ abstract class Match
 
     }
 
+    static class StringRange extends Match
+    {
+        private final String[] range;
+        public StringRange(String alias, String field, boolean type2,
+                String[] range)
+        {
+            super(alias, field, type2);
+            this.range = range != null ? (String[]) range.clone() : null;
+        }
+
+        public boolean isUniveralMatch()
+        {
+            return range == null;
+        }
+
+        protected void appendBodyTo(StringBuffer sb)
+        {
+            sb.append(column);
+            if (range[0] == null)
+            {
+                sb.append(" <= ");
+                sb.append(range[1]);
+            } else if (range[1] == null)
+            {
+                sb.append(" >= ");
+                sb.append(range[0]);
+            } else
+            {
+                sb.append(" BETWEEN ");
+                sb.append(range[0]);
+                sb.append(" AND ");
+                sb.append(range[1]);
+            }
+
+        }
+
+    }
     static class ModalitiesInStudyMultiNestedMatch extends Match
     {
         private final String[] mds;

@@ -11,7 +11,19 @@ CREATE UNIQUE INDEX code_value ON code(code_value,code_designator,code_version);
 ALTER TABLE gppps DROP pps_status;
 ALTER TABLE gppps ADD pps_status INTEGER NOT NULL;
 
-ALTER TABLE patient ALTER pat_birthdate TYPE DATE;
+-- MODIFY patient.pat_birthdate from DATE to VARCHAR
+ALTER TABLE patient ADD pat_birthdate_varchar VARCHAR(255);
+UPDATE patient SET pat_birthdate_varchar = CAST(pat_birthdate AS VARCHAR(255))
+  WHERE pat_birthdate IS NOT NULL;
+UPDATE patient SET pat_birthdate_varchar = 
+  SUBSTRING(pat_birthdate_varchar FROM 1 FOR 4) ||
+  SUBSTRING(pat_birthdate_varchar FROM 6 FOR 2) ||
+  SUBSTRING(pat_birthdate_varchar FROM 9 FOR 2)
+  WHERE pat_birthdate_varchar IS NOT NULL;
+DROP INDEX pat_birthdate;
+ALTER TABLE patient DROP pat_birthdate;
+ALTER TABLE patient ALTER COLUMN pat_birthdate_varchar TO pat_birthdate;
+CREATE INDEX pat_birthdate ON patient(pat_birthdate);
 
 ALTER TABLE study ADD cuids_in_study VARCHAR(255);
 

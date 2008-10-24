@@ -328,6 +328,21 @@ class SqlBuilder {
         				ORA_DATE_FORMAT : DATE_FORMAT);
     }
     
+    public Match addRangeMatch(String alias, String field, boolean type2,
+            String range) {
+        if (range == null) {
+            return null;
+        }
+        int hypen = range.indexOf('-');
+        if (hypen == -1) {
+            return addWildCardMatch(alias, field, type2, range);
+        }
+        return addMatch(new Match.StringRange(alias, field, type2, new String[]{
+                hypen != 0 ? range.substring(0, hypen) : null,
+                hypen+1 < range.length() ? range.substring(hypen+1) : null
+        }) );
+    }
+
     public Match addModalitiesInStudyNestedMatch(String alias, String[] mds) {
         return ( mds != null && mds.length == 1 )  
            ? addMatch(new Match.ModalitiesInStudyNestedMatch(alias, mds[0]))

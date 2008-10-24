@@ -8,6 +8,14 @@ CREATE INDEX mpps_drcode_fk ON mpps(drcode_fk);
 ALTER TABLE code DROP INDEX code_value;
 CREATE UNIQUE INDEX code_value ON code(code_value(64),code_designator(64),code_version(64));
 
+-- MODIFY patient.pat_birthdate from DATE to VARCHAR
+ALTER TABLE patient ADD pat_birthdate_varchar VARCHAR(250) BINARY;
+UPDATE patient SET pat_birthdate_varchar = DATE_FORMAT(pat_birthdate,'%Y%m%d') WHERE pat_birthdate IS NOT NULL;
+ALTER TABLE patient DROP INDEX pat_birthdate;
+ALTER TABLE patient DROP COLUMN pat_birthdate;
+ALTER TABLE patient RENAME COLUMN pat_birthdate_varchar TO pat_birthdate;
+CREATE INDEX pat_birthdate ON patient(pat_birthdate(8));
+
 ALTER TABLE study ADD cuids_in_study VARCHAR(250) BINARY;
 
 ALTER TABLE ae ADD wado_url VARCHAR(250) BINARY;

@@ -30,7 +30,7 @@ CREATE TABLE patient (
 	pat_name    	TEXT,
 	pat_i_name    	TEXT,
 	pat_p_name    	TEXT,
-	pat_birthdate  	DATE,
+	pat_birthdate  	TEXT,
 	pat_sex		  	TEXT,
 	pat_custom1		TEXT,
 	pat_custom2		TEXT,

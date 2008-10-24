@@ -30,7 +30,7 @@ CREATE TABLE patient (
 	pat_name    	VARCHAR(250) BINARY,
 	pat_i_name    	VARCHAR(250) BINARY,
 	pat_p_name    	VARCHAR(250) BINARY,
-	pat_birthdate  	DATE,
+	pat_birthdate  	VARCHAR(250) BINARY,
 	pat_sex		  	VARCHAR(250) BINARY,
 	pat_custom1		VARCHAR(250) BINARY,
 	pat_custom2		VARCHAR(250) BINARY,
@@ -45,7 +45,7 @@ CREATE INDEX pat_id ON patient(pat_id(64), pat_id_issuer(64));
 CREATE INDEX pat_name ON patient(pat_name(64));
 CREATE INDEX pat_i_name ON patient(pat_i_name(64));
 CREATE INDEX pat_p_name ON patient(pat_p_name(64));
-CREATE INDEX pat_birthdate ON patient(pat_birthdate);
+CREATE INDEX pat_birthdate ON patient(pat_birthdate(8));
 CREATE INDEX pat_sex ON patient(pat_sex(1));
 CREATE INDEX pat_custom1 ON patient(pat_custom1(64));
 CREATE INDEX pat_custom2 ON patient(pat_custom2(64));
