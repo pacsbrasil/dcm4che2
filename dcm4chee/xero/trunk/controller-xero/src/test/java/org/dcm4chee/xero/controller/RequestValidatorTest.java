@@ -25,7 +25,6 @@ public class RequestValidatorTest {
    /**
     * Tests that the default study query tests succeeds on valid data.
     */
-   @SuppressWarnings("unchecked")
    @Test
    public void succeedQueryTest() {
 	  assert mdb!=null;
@@ -51,5 +50,11 @@ public class RequestValidatorTest {
 	  assert url!=null;
 	  log.info("URL for request validator="+url);
 	  assert "/wado2/study.xml?ModalitiesInStudy=CT".equals(url);
+   }
+   
+   @Test
+   public void test_queryLayout_isAvailable() {
+	   Map<?,?> map = (Map<?, ?>) model.getValue();
+	   assert FilterUtil.getMap(map,"queryLayout")!=null;
    }
 }

@@ -25,13 +25,13 @@ PatientLayout.prototype.init = function PatientLayout_init() {
 	if( this.layouts && this.layouts.length>0 ) return true;
 	if( model.IS_IE ) this.widthEdge = 12;
 	var patientMenu = new Layout("patientMenu", "image/patientMenu");
-	var childMerged = this.navigate.addChildListener(patientMenu,PatientMergedListener,0); 
-	this.tabMenu = patientMenu;
+	var patientNav = this.navigate.addChildListener(patientMenu,PatientMergedListener,0); 
+	this.add(patientMenu, TabsLayout.TabMenu);
 	
 	for(j=0; j<this.gridY; j++) {
 		for(i=0; i<this.gridX; i++) {
 			var nth = j*this.gridX+i;
-			var studyArea = new StudyAreaLayout(childMerged, nth);
+			var studyArea = new StudyAreaLayout(patientNav, nth);
 			this.add(studyArea);
 		}
 	}
@@ -44,17 +44,24 @@ function StudyAreaLayout(navigate,nth) {
 	var suffix = "S"+nth;
 	this.baseConstructor("StudyArea"+suffix);
 
-	var studyTray = new Layout("StudyTray"+suffix,"image/studyTray" );
-	var childMerged = navigate.addChildListener(studyTray,StudyMergedListener,nth);
-	navigate.addChildListener(this,StudyMergedListener,nth);
-	studyTray.absWidth = 135;
-	var seriesAreas = new SeriesAreasLayout(childMerged,suffix);
-	studyTray.nth=nth;
-	
-	// TODO - compute east/west addition point.
+	var studyNav = navigate.addChildListener(this,StudyMergedListener,nth);
+	var studyTray = new StudyTrayLayout(suffix, studyNav);
 	var even = ((nth %2)==0);
-	this.add(studyTray,(even?Layout.WEST:Layout.EAST));
-	this.add(seriesAreas);
+	if( studyTray.absWidth ) {
+		this.add(studyTray,(even?Layout.WEST:Layout.EAST));
+	} else {
+		this.add(studyTray,Layout.NORTH);
+	}
+
+	var i,j,toolbar, imageArea, seriesArea, seriesSuffix;
+	for(j=0; j<this.gridY; j++) {
+		for(i=0; i<this.gridX; i++) {
+			nth = j*this.gridX+i;
+			seriesSuffix = suffix+"Se"+nth;
+			imageAreas = new ImageAreasLayout(studyNav, seriesSuffix, nth);
+			this.add(imageAreas);
+		};
+	};
 };
 
 StudyAreaLayout.prototype = new Layout();
@@ -63,37 +70,30 @@ StudyAreaLayout.prototype.gridX = 2;
 StudyAreaLayout.prototype.gridY = 2;
 StudyAreaLayout.prototype.displayClass="studyArea";
 
-function SeriesAreasLayout(navigate,suffix) {
-	this.baseConstructor("SeriesArea"+suffix);
-	navigate.addListener(this,StudyMergedListener);
+/** Handle the study tray layout */
+function StudyTrayLayout(suffix,studyNav) {
+	this.baseConstructor("StudyTray"+suffix);
+	studyNav.addListener(this,StudyMergedListener);
+
+$layout/addChildren(children=studyTrayLayout.children)$
 	
-	var i,j,toolbar, imageArea, seriesArea, seriesSuffix;
-	for(j=0; j<this.gridY; j++) {
-		for(i=0; i<this.gridX; i++) {
-			nth = j*this.gridX+i;
-			seriesSuffix = suffix+"Se"+nth;
-			toolbar = new Layout("SeriesToolbar"+seriesSuffix,"image/seriesToolbar");
-			toolbar.parent = seriesArea;
-			navigate.addChildListener(toolbar,SeriesMergedListener,nth);
-			toolbar.absHeight = 25;
-			imageAreas = new ImageAreasLayout(toolbar.navigate, seriesSuffix);
-			toolbar.imageAreas = imageAreas;
-			this.add(imageAreas);
-			imageAreas.add(toolbar,Layout.NORTH);
-		};
-	};
 };
 
-SeriesAreasLayout.prototype = new Layout();
-SeriesAreasLayout.prototype.baseConstructor = Layout;
-SeriesAreasLayout.prototype.gridX = 2;
-SeriesAreasLayout.prototype.gridY = 2;
-
+StudyTrayLayout.prototype = new Layout("StudyTray", "image/studyTray");
+StudyTrayLayout.prototype.baseConstructor = Layout;
+StudyTrayLayout.prototype.absWidth = 135;
 
 /** Create an images areas object */
-function ImageAreasLayout(navigate, suffix) {
+function ImageAreasLayout(navigate, suffix, nth) {
 	this.baseConstructor("ImageAreas"+suffix);
-	navigate.addListener(this,ImageAreaMergedListener);
+	var seriesNav = navigate.addChildListener(this,ImageAreaMergedListener, nth);
+
+	var toolbar = new Layout("ImagesToolbar"+suffix,"image/seriesToolbar");
+	seriesNav.addListener(toolbar,SeriesMergedListener);
+	toolbar.absHeight = 25;
+	toolbar.imageAreas = this;
+	this.add(toolbar,Layout.NORTH);
+
 	this.used = false;
 	this.origGridX = this.gridX;
 	this.origGridY = this.gridY;
@@ -110,7 +110,7 @@ function ImageAreasLayout(navigate, suffix) {
 			var nth = j*this.gridX+i;
 			imageSuffix = suffix+"I"+nth;
 			layout = new ImageLayout("ImageLay"+imageSuffix);
-			navigate.addChildListener(layout,ImageMergedListener,nth);
+			seriesNav.addChildListener(layout,ImageMergedListener,nth);
 			layout.resizeListener = ImageResizeListener;
 			layout.x = i;
 			layout.y = j;

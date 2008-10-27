@@ -9,7 +9,7 @@ TabsLayout.prototype.baseConstructor = Layout;
 
 /** The height of the header section */
 TabsLayout.prototype.headerHeight = 22;
-
+TabsLayout.TabMenu="tabMenu";
 
 /** Adds the given tab/Layout  to the display */
 TabsLayout.prototype.addTab = function TV_addTab(name,layout) {

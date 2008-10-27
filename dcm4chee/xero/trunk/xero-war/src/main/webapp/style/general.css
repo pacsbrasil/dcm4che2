@@ -65,8 +65,12 @@ div.studyTray, div.seriesToolbar {
 	float: left;
 }
 
-div.userMenu {
+div.rootMenu {
 	float: right;
+}
+
+.toolItem {
+	display: block;
 }
 
 .image {
@@ -126,7 +130,7 @@ li.thumbnail span {
 }
 	
 li.thumbnail img {
-	width:92px;
+	width:100%;
 	height: auto;
 	display: block;
 }

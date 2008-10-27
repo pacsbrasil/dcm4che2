@@ -16,6 +16,28 @@ static.js_static.script.model=${ref:static}
 static.js_static.script.template=serverjs
 static.js_static.modifiable=false
 
+# A default layout toolbar item
+toolItem=${class:org.dcm4chee.xero.metadata.access.MapWithDefaults}
+
+toolbar=${class:org.dcm4chee.xero.metadata.access.MapWithDefaults}
+toolbar.children=${class:org.dcm4chee.xero.metadata.access.ValueList}
+
+# Define the static find menu
+static.findMenuLayout.inherit=toolbar
+
+static.studyTrayLayout.inherit=toolbar
+
+
+static.overallMenuLayout.inherit=toolbar
+static.overallMenuLayout.children.userName.inherit=toolItem
+static.overallMenuLayout.children.userName.template=html/userName
+static.overallMenuLayout.children.userName.priority=950
+
+static.overallMenuLayout.children.logout.inherit=toolItem
+static.overallMenuLayout.children.logout.href=logout.jsp
+static.overallMenuLayout.children.logout.label=Logout
+static.overallMenuLayout.children.logout.priority=1000
+
 # Define the javascript model
 model.js=${class:org.dcm4chee.xero.rhino.JavaScriptMapFactory}
 model.js.script=var model=new XeroModel(_SARISSA_IS_IE);
@@ -27,16 +49,16 @@ model.layout=${class:org.dcm4chee.xero.rhino.PathInstance}
 model.layout.var=js.model.layout
 
 model.findLayout=${class:org.dcm4chee.xero.rhino.PathInstance}
-model.findLayout.var=js.model.findLayout
+model.findLayout.var=js.model.idMap.Find
 
 model.layout=${class:org.dcm4chee.xero.rhino.PathInstance}
 model.layout.var=js.model.layout
 
 model.searchLayout=${class:org.dcm4chee.xero.rhino.PathInstance}
-model.searchLayout.var=js.model.searchLayout
+model.searchLayout.var=js.model.idMap.SearchLayout
 
-model.queryBox=${class:org.dcm4chee.xero.rhino.PathInstance}
-model.queryBox.var=js.model.queryBox
+model.queryLayout=${class:org.dcm4chee.xero.rhino.PathInstance}
+model.queryLayout.var=js.model.idMap.QueryLayout
 
 static.i=${class:org.dcm4chee.xero.rhino.PathInstance}
 static.i.var=js_static.i
@@ -73,6 +95,10 @@ static.xeroModels.sortPatient=sortPatient
 static.xeroModels.imageLayout=layout/imageLayout
 static.xeroModels.displayLayout=layout/displayLayout
 static.xeroModels.displayLayout.priority=200
+static.xeroModels.findLayout=layout/findLayout
+static.xeroModels.findLayout.priority=250
+static.xeroModels.xeroTabsLayout=layout/xeroTabsLayout
+static.xeroModels.xeroTabsLayout.priority=300
 static.xeroModels.merged=merged
 static.xeroModels.navConversation=navConversation
 static.xeroModels.studyData=studyData

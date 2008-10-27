@@ -67,8 +67,14 @@ public class QueryController<T> implements Filter<T> {
 	public T filter(FilterItem<T> filterItem, Map<String, Object> params) {
 		Map<String, Object> model = FilterUtil.getModel(params);
 		log.info("QueryController is creating the layout with query URL and search XML results.");
-		Map<String,Object> queryBox = FilterUtil.getMap(model, "queryBox");
-		Map<String,Object> searchLayout = FilterUtil.getMap(model, "searchLayout");
+		assertNotNull(model,"js");
+		assertNotNull(model,"js.model");
+		Map<String,Object> idMap = (Map<String, Object>) assertNotNull(model,"js.model.idMap");
+		for(Map.Entry<String,Object> me : idMap.entrySet() ) {
+			log.info("idMap entry {}", me.getKey());
+		}
+		Map<String,Object> queryBox = assertNotNull(model, "js.model.idMap.QueryLayout");
+		Map<String,Object> searchLayout = assertNotNull(model, "js.model.idMap.SearchLayout");
 
 		LazyMap query = (LazyMap) model.get("query");
 
@@ -87,4 +93,10 @@ public class QueryController<T> implements Filter<T> {
 		return filterItem.callNextFilter(params);
 	}
 
+	/** Gets the given map isn't null */
+	public static Map<String,Object> assertNotNull(Map<?,?> map, String key) {
+		Map<String,Object> ret = FilterUtil.getMap(map, key);
+		if( ret==null ) throw new NullPointerException("The path "+key+" was null.");
+		return ret;
+	}
 }

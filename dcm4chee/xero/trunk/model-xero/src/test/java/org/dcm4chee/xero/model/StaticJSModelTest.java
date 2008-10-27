@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.testng.annotations.Test;
 
 /**
@@ -48,7 +49,15 @@ public class StaticJSModelTest {
 	
 	@Test
 	public void modelInterpretTest() {
-		runTest("modelInterpretTest");
+		runTestD("modelInterpretTest");
+	}
+
+	@Test
+	public void test_overallMenuLayout_children_available() {
+		Map<?,?> model = (Map<?,?>) stat.getValue();
+		assert FilterUtil.getPath(model,"overallMenuLayout")!=null;
+		List<?> children = (List<?>) FilterUtil.getPath(model,"overallMenuLayout.children");
+		assert children.get(0)!=null;
 	}
 	
 	@Test

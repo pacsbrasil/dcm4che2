@@ -63,23 +63,24 @@ Layout.prototype.used = true;
 
 /** Resizes the edge components */
 Layout.prototype.resizeEdge = function Layout_resizeExtra() {
-	var edge = this.named.north;
+	if( !this.children ) return;
+	var edge = this.north;
 	var style;
 	if( edge ) {
 		style = "width: 100%; height: "+(edge.absHeight*100/this.height-0.1)+"%;";
 		edge.resize(this.width, edge.absHeight,style);
 	}
-	edge = this.named.west;
+	edge = this.west;
 	if( edge ) {
 		style = "width: "+(edge.absWidth*100/this.width-0.1)+"%; height: "+((this.height-this.deltaHeight)/this.height-0.1)+"%;";
 		edge.resize(this.width, edge.absHeight,style);
 	}
-	edge = this.named.east;
+	edge = this.east;
 	if( edge ) {
 		style = "width: "+(edge.absWidth*100/this.width-0.1)+"%; height: "+((this.height-this.deltaHeight)/this.height-0.1)+"%;";
 		edge.resize(this.width, edge.absHeight,style);
 	}
-	edge = this.named.south;
+	edge = this.south;
 	if( edge ) {
 		style = "width: 100%; height: "+(edge.absHeight*100/this.height-0.1)+"%;";
 		edge.resize(this.width, edge.absHeight,style);
@@ -90,7 +91,7 @@ Layout.prototype.resizeEdge = function Layout_resizeExtra() {
  * Resizes the objects to display in the correct area
  */
 Layout.prototype.resize = function Layout_resize(width,height,style) {
-	this.debug("resize %s to %d,%d",this.id,width,height);
+	console.info("resize %s to %d,%d style %s",this.id,width,height,style);
 	var changed = this.resizeListener && ((this.width!=Math.floor(width)) || (this.height!=Math.floor(height)));
 	this.width = Math.floor(width);
 	this.height = Math.floor(height);
@@ -99,6 +100,7 @@ Layout.prototype.resize = function Layout_resize(width,height,style) {
 	if( changed ) {
 		this.resizeListener();
 	}
+	this.resizeEdge();
 	if( ! this.gridX ) return;
 	if( ! this.gridY ) return;
 	
@@ -244,9 +246,9 @@ Layout.prototype.addNamed = function Layout_addNamed(child,name) {
 
 /** Add another child object */
 Layout.prototype.add = function Layout_add(child,name) {
+	if( !child ) throw "Child being added to "+this.id+" is undefined.";
 	if( name ) {
-		if( !this.named ) this.named = new Object();
-		this.named[name] = child;
+		this[name] = child;
 		this.addNamed(child,name);
 	} else {
 		if( !this.layouts ) this.layouts =new Array();
@@ -264,3 +266,19 @@ Layout.prototype.add = function Layout_add(child,name) {
 Layout.prototype.init = function Layout_init() {
 	return true;
 };
+
+
+/** Some exemplar layout types */
+function LabelLayout(id,  label, i18n, icon, action, href) {
+	this.baseConstructor(id);
+	this.label = label;
+	
+	if( i18n && i18n!="" ) this.i18n = i18n;
+	if( action && action!="" ) this.action = action;
+	if( icon && icon!="" ) this.icon = icon;
+	if( href && href!="" ) this.href = href;
+};
+
+LabelLayout.prototype = new Layout("Label", "html/toolItem");
+LabelLayout.prototype.baseConstructor = Layout;
+LabelLayout.prototype.i18n = null;

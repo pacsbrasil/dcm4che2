@@ -60,3 +60,6 @@ allTemplates.queryTemplates=${ref:queryTemplates}
 allTemplates.displayTemplates=${ref:displayTemplates}
 allTemplates.xeroBody=xeroBody
 allTemplates.userMenu=userMenu
+allTemplates.menu=html/menu
+allTemplates.toolItem=html/toolItem
+allTemplates.userName=html/userName

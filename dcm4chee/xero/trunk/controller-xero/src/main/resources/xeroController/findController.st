@@ -5,12 +5,14 @@ XeroController.prototype.performSearch = function XC_performSearch(src) {
 	console.info("Passed src %s", src);
     var model = this.model;
 	console.info("Starting to perform search");
-	model.queryBox.query.updateUrl();
-	console.info("Updated URL to %s", model.queryBox.query.url);
+	var queryLayout = model.idMap.QueryLayout;
+	queryLayout.query.updateUrl();
+	console.info("Updated URL to %s", queryLayout.query.url);
 
 	console.time("SearchQuery");
-	model.searchLayout.search = new XmlModel(model.searchLayout.query);
-	model.searchLayout.search.request();
+	var searchLayout = model.idMap.SearchLayout;
+	searchLayout.search = new XmlModel(queryLayout.query);
+	searchLayout.search.request();
 	console.timeEnd("SearchQuery");
 };
 
@@ -22,7 +24,7 @@ XeroController.prototype.findAction = function XC_findAction(src) {
 
 /** Sort the selected columns */
 XeroController.prototype.sortQuery = function SC_sortQuery(src,col) {
-  var lay = model.searchLayout
+  var lay = model.idMap.SearchLayout
   console.info("Found sort layout %s",lay);
   if(! lay.search ) {
 	this.performSearch();

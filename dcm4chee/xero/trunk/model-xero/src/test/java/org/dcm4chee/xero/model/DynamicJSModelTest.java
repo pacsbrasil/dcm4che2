@@ -37,8 +37,9 @@ public class DynamicJSModelTest {
 
 	@Test
 	public void test_js_other_layouts_available() {
-		assert FilterUtil.getPath(model,"queryBox.template").equals("query/query");
+		assert FilterUtil.getPath(model,"queryLayout.template").equals("query/query");
 		assert FilterUtil.getPath(model,"searchLayout.template").equals("query/studyTable");
 		assert FilterUtil.getPath(model,"findLayout.template").equals("html/layout");
 	}
+	
 }

@@ -9,12 +9,12 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 	
 	console.time("Load Patient Data");
 	var model = this.model;
-	
-	if(! model.searchLayout.search ) {
+	var searchLayout = model.idMap.SearchLayout;
+	if(! searchLayout.search ) {
 		this.performSearch();
 	};
 	
-	var patient = model.searchLayout.search.find("patient","PatientIdentifier", patientId);
+	var patient = searchLayout.search.find("patient","PatientIdentifier", patientId);
 	var study = patient.study;
 	var i,n=study.length;
 	model.studies = new Object();

@@ -47,6 +47,7 @@
                              <copy todir="${developmentServer}/server/default/deploy/xero.war" preserveLastModified="true">
                                 <fileset dir="target/xero" includes="**/*" />
                              </copy>
+			     <echo>Hudson-External-Artifact: xero.war=https://hap.mitra.com/maven-repository/org/dcm4chee/xero/xero-war/${project.version}/xero-war-${project.version}.war</echo>
                           </tasks>
                        </configuration>
                        <goals><goal>run</goal></goals>

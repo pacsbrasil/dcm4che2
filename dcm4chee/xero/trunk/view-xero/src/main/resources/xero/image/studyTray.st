@@ -1,9 +1,9 @@
 <!-- This is the per-study control containing the series thumbnails and controls within this study. -->
 <div class="studyTray" $html/style()$>
 $if(layout.study)$
-	$layout.study.StudyDescription$ <br />
-	Study ID: $layout.study.StudyID$ <br />
-	Acc#: $layout.study.AccessionNumber$ <br />
+	<span class="studyDescription toolItem">$layout.study.StudyDescription$ </span>
+	<span class="studyid toolItem">Study ID: $layout.study.StudyID$ </span>
+	<span class="accNum toolItem">Acc#: $layout.study.AccessionNumber$ </span>
 	$shared.studyTrayItems:{$(it)()$}$
 
 $else$

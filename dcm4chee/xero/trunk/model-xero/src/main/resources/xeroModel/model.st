@@ -7,20 +7,12 @@
   * 4. Image display information - TODO still.
   */
 function XeroModel(is_ie) {
-	this.queryBox = new Layout("query","query/query");
-	this.queryBox.query = new UrlFactory("/wado2/study.xml","query"); 
-	this.searchLayout = new Layout("results","query/studyTable");
-	this.searchLayout.columns = XeroStudyColumns;
-	this.searchLayout.query = this.queryBox.query;
-	this.searchLayout.sortPatient = new SortPatient(this.searchLayout)
-
-	this.findLayout = new Layout("Find");
-	this.findLayout.add(this.queryBox);
-	this.findLayout.add(this.searchLayout);
+	var findLayout = new FindLayout();
 
 	this.layout = new TabsLayout("XeroRootTab");
-	this.layout.tabMenu = new Layout("userMenu","userMenu"); 
-	this.layout.addTab("Find", this.findLayout);
+	this.layout.add(new XeroRootMenu(),"tabMenu");
+	 
+	this.layout.addTab("Find", findLayout);
 	this.patientLayout = new PatientLayout();
 	this.layout.addTab("Display", this.patientLayout);
 	
@@ -28,6 +20,8 @@ function XeroModel(is_ie) {
 	this.idMap = new LayoutIdMap();
 	this.layout.computeId(this.idMap);
 
+	if( ! this.idMap.QueryLayout ) throw "Query Layout is null";
+	 	
 	this.IS_IE = is_ie;
 };
 
