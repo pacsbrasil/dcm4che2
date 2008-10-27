@@ -1,0 +1,1 @@
+ <a href="$layout.href$" $if(layout.target)$target="$layout.target$"$endif$ class="toolItem">$html/labelBody()$</a>
