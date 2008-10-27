@@ -7,7 +7,6 @@
   <packaging>pom</packaging>
   <name>Implementation of XDS Actors</name>
   <modules>
-    <module>dcm4chee-xds-infoset</module> 
     <module>dcm4chee-xdscfg</module>
     <!--  XDS.a Modules -->
       <module>dcm4chee-xdsa-repository</module> 
