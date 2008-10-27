@@ -63,8 +63,8 @@ final class UnparsedPDUImpl {
                 | ((buf[3] & 0xff) << 16)
                 | ((buf[4] & 0xff) << 8)
                 | ((buf[5] & 0xff) << 0);
-        if ((len & 0xFFFFFFFF) > MAX_LENGTH) {
-            skipFully(in, len & 0xFFFFFFFFL);
+        if ((len & 0xFFFFFFFFL) > Math.max(buf.length, MAX_LENGTH)) {
+//            skipFully(in, len & 0xFFFFFFFFL);
             this.buf = null;
             return;
         }
@@ -94,7 +94,7 @@ final class UnparsedPDUImpl {
                 + ", length=" + (len & 0xFFFFFFFFL)
                 + "]";
     }
-
+/*
     static void skipFully(InputStream in, long len)
             throws IOException {
 	long n = 0;
@@ -105,7 +105,7 @@ final class UnparsedPDUImpl {
 	    n += count;
 	}
     }
-
+*/
     static void readFully(InputStream in, byte b[], int off, int len)
             throws IOException {
 	int n = 0;
