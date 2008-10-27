@@ -330,7 +330,11 @@ public class CompressionService extends ServiceMBeanSupport {
                             + " files on filesystem " + fsDTOs[j]
                             + " triggered by " + info);
                     for (int k = 0; k < files.length; k++) {
-                        doCompress(fsMgt, files[k], info, buffer);
+                        try {
+                            doCompress(fsMgt, files[k], info, buffer);
+                        } catch (CompressionFailedException e) {
+                            log.error(e.getMessage(), e);
+                        }
                     }
                     limit -= files.length;
                 }
@@ -339,7 +343,8 @@ public class CompressionService extends ServiceMBeanSupport {
         }
     }
 
-    public boolean compress(FileDTO fileDTO) throws IOException {
+    public boolean compress(FileDTO fileDTO)
+            throws IOException, CompressionFailedException {
         if (!isUncompressed(fileDTO.getFileTsuid())) {
             log.debug("The image is already compressed, file = "
                     + fileDTO.getFilePath());
@@ -351,8 +356,7 @@ public class CompressionService extends ServiceMBeanSupport {
                     + fileDTO.getSopClassUID());
             return false;
         }
-        doCompress(newFileSystemMgt(), fileDTO, rule, new byte[bufferSize]);
-        return true;
+        return doCompress(newFileSystemMgt(), fileDTO, rule, new byte[bufferSize]);
     }
 
     private CompressionRule getCompressionRule(String cuid) {
@@ -371,8 +375,9 @@ public class CompressionService extends ServiceMBeanSupport {
                 || tsuid.equals(UIDs.ImplicitVRLittleEndian);
     }
 
-    private void doCompress(FileSystemMgt2 fsMgt, FileDTO fileDTO,
-            CompressionRule info, byte[] buffer) {
+    private boolean doCompress(FileSystemMgt2 fsMgt, FileDTO fileDTO,
+            CompressionRule info, byte[] buffer)
+            throws CompressionFailedException {
         File baseDir = FileUtils.toFile(fileDTO.getDirectoryPath());
         File srcFile = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO
                 .getFilePath());
@@ -381,7 +386,7 @@ public class CompressionService extends ServiceMBeanSupport {
             if (!ClaimCompressingFileCmd.claim(fileDTO.getPk())) {
                 log.info("File " + srcFile
                         + " already compressed by concurrent thread!");
-                return;
+                return false;
             }
             destFile = FileUtils.createNewFile(srcFile.getParentFile(),
                     (int) Long.parseLong(srcFile.getName(), 16) + 1);
@@ -405,16 +410,15 @@ public class CompressionService extends ServiceMBeanSupport {
                     log.info("MD5 sum after compression+decompression of "
                             + srcFile + " differs - compare pixel matrix");
                     if (!FileUtils.equalsPixelData(srcFile, decFile)) {
-                        log
-                                .warn("Pixel matrix after decompression differs from original file "
-                                        + srcFile
-                                        + "! Keep original uncompressed file.");
+                        String errmsg = "Pixel matrix after decompression differs from original file "
+                                + srcFile + "! Keep original uncompressed file.";
+                        log.warn(errmsg);
                         destFile.delete();
                         fsMgt.setFileStatus(fileDTO.getPk(),
                                 FileStatus.VERIFY_COMPRESS_FAILED);
                         if (keepTempFileIfVerificationFails <= 0L)
                             decFile.delete();
-                        return;
+                        throw new CompressionFailedException(errmsg);
                     }
                 }
                 decFile.delete();
@@ -433,8 +437,12 @@ public class CompressionService extends ServiceMBeanSupport {
             fileDTO.setFileMd5(md5);
             fileDTO.setFileTsuid(info.getTransferSyntax());
             srcFile.delete();
-        } catch (Exception x) {
-            log.error("Can't compress file:" + srcFile, x);
+            return true;
+        } catch (CompressionFailedException e) {
+            throw e;
+        } catch (Exception e) {
+            String errmsg = "Can't compress file:" + srcFile;
+            log.error(errmsg, e);
             if (destFile != null && destFile.exists())
                 destFile.delete();
             try {
@@ -444,6 +452,7 @@ public class CompressionService extends ServiceMBeanSupport {
                 log.error("Failed to set FAILED_TO_COMPRESS for file "
                         + srcFile);
             }
+            throw new CompressionFailedException(errmsg, e);
         }
     }
 
