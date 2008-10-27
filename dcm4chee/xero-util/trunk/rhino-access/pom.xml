@@ -29,6 +29,11 @@
        <classifier>jdk15</classifier>
        <scope>test</scope>
    </dependency>
+   <dependency>
+      <groupId>org.dcm4chee.xero</groupId>
+      <artifactId>util-jar</artifactId>
+      <version>${project.version}</version>
+    </dependency>
  </dependencies>
   
 </project>

@@ -42,11 +42,15 @@ import java.util.Map;
 import org.apache.struts.flow.sugar.SugarWrapFactory;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.access.MapFactory;
+import org.dcm4chee.xero.util.StringUtil;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
+import org.mozilla.javascript.RhinoException;
 import org.mozilla.javascript.Script;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A JavaScriptMapFactory is an object that knows how to export a JavaScript
@@ -64,6 +68,7 @@ import org.mozilla.javascript.ScriptableObject;
  * 
  */
 public class JavaScriptMapFactory implements MapFactory<JavaScriptObjectWrapper> {
+	private static final Logger log = LoggerFactory.getLogger(JavaScriptMapFactory.class);
 
 	boolean useSugarWrap = true;
 
@@ -73,6 +78,12 @@ public class JavaScriptMapFactory implements MapFactory<JavaScriptObjectWrapper>
 
 	String script;
 	Script mscript;
+
+	/**
+	 * The name of the script being executed - defaults to the path of the
+	 * element
+	 */
+	String scriptName = "<script>";
 
 	boolean compile = true;
 
@@ -109,7 +120,7 @@ public class JavaScriptMapFactory implements MapFactory<JavaScriptObjectWrapper>
 			scope = cx.initStandardObjects();
 		}
 
-		JavaScriptObjectWrapper ret = new JavaScriptObjectWrapper(scope);
+		JavaScriptObjectWrapper ret = new ParentScripter(scope,script,scriptName);
 		if (imported != null) {
 			for (Map.Entry<String, String> me : imported.entrySet()) {
 				Object value = src.get(me.getValue());
@@ -117,15 +128,43 @@ public class JavaScriptMapFactory implements MapFactory<JavaScriptObjectWrapper>
 			}
 		}
 
-		if (mscript!=null) {
-			mscript.exec(cx, scope);
-		} else if( script!=null) {
-			cx.evaluateString(scope, script, "<script>", 1, null);
+		try {
+			if (compile) {
+				synchronized (script) {
+					if (mscript != null) {
+						cx.setWrapFactory(SUGAR_WRAP_FACTORY);
+						mscript = cx.compileString(script, scriptName, 1, null);
+					}
+				}
+			}
+			if (mscript != null) {
+				mscript.exec(cx, scope);
+			} else if (script != null) {
+				cx.evaluateString(scope, script, scriptName, 1, null);
+			}
+		} catch (RhinoException e) {
+			String errorScript = getNamedScript(src,e.sourceName());
+			if( errorScript==null ) {
+				log.warn("Unable to find script "+e.sourceName());
+				throw e;
+			}
+			displayRhinoException(log, e, errorScript);
 		}
-		
+
 		if (!modifiable)
 			((ScriptableObject) scope).sealObject();
 		return ret;
+	}
+
+	/** Displays the line number that is problematic in the rhino script */
+	public static void displayRhinoException(Logger log, RhinoException e, String script) {
+		int line = e.lineNumber();
+		log.warn("Caught Rhino exception {}", e.getMessage(), line);
+		String[] splits = StringUtil.split(script, '\n', true);
+		for (int i = Math.max(0, line - 5), n = Math.min(splits.length - 1, line + 5); i < n; i++) {
+			log.warn("{}: {}", i + 1, splits[i]);
+		}
+		throw e;
 	}
 
 	/** Gets the parent context */
@@ -134,6 +173,19 @@ public class JavaScriptMapFactory implements MapFactory<JavaScriptObjectWrapper>
 		if (ret instanceof JavaScriptObjectWrapper)
 			return ((JavaScriptObjectWrapper) ret).scriptable;
 		return (Scriptable) ret;
+	}
+	
+	/**
+	 * Gets the script text for the named script, or null if it can't be found.
+	 */
+	protected String getNamedScript(Map<String, Object> src, String namedScript) {
+		if( namedScript.equals(this.scriptName) ) return script;
+		Object parent = src.get(parentScopeName);
+		if( parent instanceof ParentScripter ) {
+			ParentScripter ps = (ParentScripter) parent;
+			if( ps.scriptName.equals(namedScript) ) return ps.script;
+		}
+		return null;
 	}
 
 	public boolean isUseSugarWrap() {
@@ -170,11 +222,11 @@ public class JavaScriptMapFactory implements MapFactory<JavaScriptObjectWrapper>
 	@MetaData(required = false)
 	public void setScript(String script) {
 		this.script = script;
-		if (compile) {
-			Context cx = contextFactory.enterContext();
-			cx.setWrapFactory(SUGAR_WRAP_FACTORY);
-			mscript = cx.compileString(script, "<script>", 1, null);
-		}
+	}
+
+	@MetaData(value = "_path")
+	public void setScriptName(String path) {
+		this.scriptName = path;
 	}
 
 	/**
@@ -185,5 +237,15 @@ public class JavaScriptMapFactory implements MapFactory<JavaScriptObjectWrapper>
 	@MetaData(required = false)
 	public void setImported(Map<String, String> imported) {
 		this.imported = imported;
+	}
+	
+	static class ParentScripter extends JavaScriptObjectWrapper {
+		public ParentScripter(Scriptable scriptable, String script, String scriptName) {
+			super(scriptable);
+			this.script = script;
+			this.scriptName = scriptName;
+      }
+		public String script;
+		public String scriptName;
 	}
 }

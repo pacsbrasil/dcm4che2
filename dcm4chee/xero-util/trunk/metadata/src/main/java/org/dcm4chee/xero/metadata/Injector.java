@@ -126,7 +126,10 @@ public class Injector implements MetaDataProvider {
 		 return;
 	  for (Map.Entry<Method, String> ent : metaDataItems.entrySet()) {
 		 String key = ent.getValue();
-		 Object value = mdb.getValue(key);
+		 Object value;
+		 if( key.equals("_childName") ) value=mdb.getChildName();
+		 if( key.equals("_path") ) value=mdb.getPath();
+		 else value = mdb.getValue(key);
 		 try {
 			Method m = ent.getKey();
 			Class<?>[] argTypes = m.getParameterTypes();

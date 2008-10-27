@@ -138,10 +138,13 @@ public class JavaScriptObjectWrapper extends AbstractMap<String, Object> {
 		return wrapScriptable(ctx.evaluateString(scriptable, script, "<script>", 1, null));
 	}
 
-	/** Indicates if the given property exists */
+	/** Indicates if the given property exists - currently ALWAYS returns true to match JavaScript behaviour
+	 * elsehwere.
+	 */
 	@Override
 	public boolean containsKey(Object key) {
-		return ScriptableObject.hasProperty(scriptable, (String) key);
+		return true;
+		//return ScriptableObject.hasProperty(scriptable, (String) key);
 	}
 
 	/**
