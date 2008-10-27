@@ -302,7 +302,9 @@ final class FsmImpl
         if (ac == null || rq == null) {
             throw new IllegalStateException(state.toString());
         }
-        return requestor ? ac.getMaxPDULength() : rq.getMaxPDULength();
+        int maxLen = requestor ? ac.getMaxPDULength() : rq.getMaxPDULength();
+        return maxLen == 0 || maxLen > UnparsedPDUImpl.MAX_LENGTH 
+                ? UnparsedPDUImpl.MAX_LENGTH : maxLen;
     }
 
 

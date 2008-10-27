@@ -47,7 +47,7 @@ import java.io.*;
  */
 final class UnparsedPDUImpl {
     
-    static final long MAX_LENGTH = 1048576L; // 1 MB
+    static final int MAX_LENGTH = 1048576; // 1 MB
     private final byte[] buf;
     private final int type;
     private final int len;
