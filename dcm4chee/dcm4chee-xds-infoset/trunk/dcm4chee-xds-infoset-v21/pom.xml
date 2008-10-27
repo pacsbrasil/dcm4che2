@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<model>
+<project>
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>dcm4che</groupId>
@@ -40,4 +40,4 @@
       </plugin>
     </plugins>
   </build>
-</model>
+</project>
