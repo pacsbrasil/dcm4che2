@@ -81,7 +81,13 @@ public class IndexedImageSource implements Filter<WadoImage> {
 		DicomObject ds;
 		WadoImage orig = null;
 		if (needOriginalImage) {
+			Object rows = params.remove(ROWS);
+			Object cols = params.remove(COLUMNS);
+			Object region = params.remove(REGION);
 			orig = wadoImageFilter.filter(null, params);
+			if( rows!=null ) params.put(ROWS,rows);
+			if( cols!=null ) params.put(COLUMNS, cols);
+			if( region!=null ) params.put(REGION, region);
 			ds = orig.getDicomObject();
 		} else {
 			ds = dicomImageHeader.filter(null, params);

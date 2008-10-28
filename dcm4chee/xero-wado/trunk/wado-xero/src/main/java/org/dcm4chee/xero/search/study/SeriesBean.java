@@ -115,6 +115,8 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	  setSeriesDescription(data.getString(Tag.SeriesDescription));
 	  setSeriesUID(data.getString(Tag.SeriesInstanceUID));
 	  setNumberOfSeriesRelatedInstances(data.getInt(Tag.NumberOfSeriesRelatedInstances));
+	  setBodyPartExamined(data.getString(Tag.BodyPartExamined));
+	  setLaterality(data.getString(Tag.Laterality));
 	  try {
 		 setSeriesNumber(data.getInt(Tag.SeriesNumber));
 	  } catch (NumberFormatException nfe) {

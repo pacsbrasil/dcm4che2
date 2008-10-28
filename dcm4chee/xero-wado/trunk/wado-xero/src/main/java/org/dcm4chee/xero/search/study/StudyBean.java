@@ -160,6 +160,9 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 	  setStudyID(data.getString(Tag.StudyID));
 	  setStudyUID(data.getString(Tag.StudyInstanceUID));
 	  setStudyStatusID(data.getString(Tag.StudyStatusIDRET));
+	  
+	  setPhysiciansOfRecord(data.getString(Tag.PhysiciansOfRecord));
+	  setNameOfPhysiciansReadingStudy(data.getString(Tag.NameOfPhysiciansReadingStudy));
    }
 
    /** Turn an array of strings into a comma separated string. */

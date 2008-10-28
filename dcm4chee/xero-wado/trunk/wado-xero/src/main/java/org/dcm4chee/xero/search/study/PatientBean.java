@@ -37,11 +37,13 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -57,12 +59,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Represents a patient object, plus any macros and other customizations.
+ * 
  * @author bwallace
  */
 @XmlRootElement(namespace = "http://www.dcm4chee.org/xero/search/study/", name = "patient")
 public class PatientBean extends PatientType implements Patient,
 		ResultFromDicom, CacheItem, LocalModel<PatientIdentifier> {
-   private static final Logger log = LoggerFactory.getLogger(PatientBean.class);
+	private static final Logger log = LoggerFactory
+			.getLogger(PatientBean.class);
 	static DatatypeFactory datatypeFactory;
 	static {
 		try {
@@ -106,10 +110,9 @@ public class PatientBean extends PatientType implements Patient,
 	public PatientBean(Map<Object, Object> children, PatientType patient) {
 		this.children = children;
 		setPatientID(patient.getPatientID());
-		if( patient instanceof PatientBean ) {
-			setId( ((PatientBean) patient).getId() );			
-		}
-		else {
+		if (patient instanceof PatientBean) {
+			setId(((PatientBean) patient).getId());
+		} else {
 			setPatientIdentifier(patient.getPatientIdentifier());
 		}
 		setPatientName(patient.getPatientName());
@@ -139,32 +142,36 @@ public class PatientBean extends PatientType implements Patient,
 		setPatientName(excludeZeroEnd(cmd.getString(Tag.PatientName)));
 		String strSex = cmd.getString(Tag.PatientSex);
 		if (strSex != null) {
-		   try {
-			setPatientSex(SexEnum.fromValue(strSex.toUpperCase()));
-		   }
-		   catch(IllegalArgumentException e) {
-			  log.warn("Caught illegal sex value "+strSex);
-			  setPatientSex(SexEnum.O);
-		   }
+			try {
+				setPatientSex(SexEnum.fromValue(strSex.toUpperCase()));
+			} catch (IllegalArgumentException e) {
+				log.warn("Caught illegal sex value " + strSex);
+				setPatientSex(SexEnum.O);
+			}
 		}
 		Date date;
 		try {
-		   date = cmd.getDate(Tag.PatientBirthDate);
-		}
-		catch(Exception e) {
-		   date = null;
+			date = cmd.getDate(Tag.PatientBirthDate);
+		} catch (Exception e) {
+			date = null;
 		}
 		if (date != null) {
 			GregorianCalendar cal = new GregorianCalendar();
 			cal.setTime(date);
 			setPatientBirthDate(datatypeFactory.newXMLGregorianCalendar(cal));
 		}
+
+		String patComments = cmd.getString(Tag.PatientComments);
+		if (patComments != null)
+			setPatientComments(patComments);
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.dcm4chee.xero.search.study.ResultFromDicom#addResult(org.dcm4che2.data.DicomObject)
+	 * @see
+	 * org.dcm4chee.xero.search.study.ResultFromDicom#addResult(org.dcm4che2
+	 * .data.DicomObject)
 	 */
 	public void addResult(DicomObject data) {
 		String key = StudyBean.key(data.getString(Tag.StudyInstanceUID));
@@ -185,6 +192,21 @@ public class PatientBean extends PatientType implements Patient,
 			ret += ((CacheItem) study).getSize();
 		}
 		return ret;
+	}
+
+	@XmlAttribute(name = "patientNameF")
+	public String getPatientNameF() {
+		return ResultsBean.formatDicomName(this.patientName);
+	}
+
+	@XmlAttribute(name = "birthDateF")
+	public String getBirthDateFormatted() {
+		if (this.patientBirthDate == null)
+			return null;
+		GregorianCalendar gc = patientBirthDate.toGregorianCalendar();
+		Date time = gc.getTime();
+		DateFormat df = DateFormat.getDateInstance();
+		return df.format(time);
 	}
 
 	/**
@@ -213,13 +235,17 @@ public class PatientBean extends PatientType implements Patient,
 		idPatientIdentifier = new PatientIdentifier(value);
 	}
 
-	/** Use the idPatientIdentifier primarily, and otherwise use the regular patient identifier 
-	 * or finally the patient ID if none of the above are available.
+	/**
+	 * Use the idPatientIdentifier primarily, and otherwise use the regular
+	 * patient identifier or finally the patient ID if none of the above are
+	 * available.
 	 */
 	@Override
 	public String getPatientIdentifier() {
-		if( idPatientIdentifier!=null ) return idPatientIdentifier.toString(); 
-		if( super.getPatientIdentifier()!=null ) return super.getPatientIdentifier();
+		if (idPatientIdentifier != null)
+			return idPatientIdentifier.toString();
+		if (super.getPatientIdentifier() != null)
+			return super.getPatientIdentifier();
 		return getPatientID();
 	}
 
