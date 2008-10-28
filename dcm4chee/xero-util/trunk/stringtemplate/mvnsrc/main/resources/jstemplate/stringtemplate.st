@@ -289,6 +289,7 @@ StringTemplate.prototype[24] = function ST_concat(chunk,model) {
 StringTemplate.prototype[25] = function ST_dot(chunk,model) {
 	var root = this.call(chunk.ast[0],model);
 	if( root==undefined ) {
+		console.warn("Unable to find parent %s", chunk.ast[0]); 
 		return undefined;
 	}
 	var child = chunk.ast[1];
