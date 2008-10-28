@@ -1,1 +1,1 @@
-<li class="label toolItem">X of $layout.parent.study.NumberOfStudyRelatedSeries$</li>
+<li class="label toolItem">X $i18n.Of$ $layout.parent.study.NumberOfStudyRelatedSeries$</li>

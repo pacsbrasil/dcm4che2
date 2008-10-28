@@ -63,6 +63,7 @@ iframe {
 
 div.studyTray, div.seriesToolbar {
 	float: left;
+	height: 100%;
 }
 
 div.rootMenu {
@@ -130,9 +131,9 @@ li.thumbnail span {
 }
 	
 li.thumbnail img {
-	width:100%;
+	width:96px;
 	height: auto;
-	display: block;
+	margin: 2px;
 }
 
 span.thumbnail, span.report, span.gsps, span.keyObject {
@@ -201,6 +202,7 @@ div.tabHeader {
 	border:0;
 	font-size:12px;         /* this (and also below) sets the menu's font size */
 	padding-left: 1em;
+	z-index:50;
 }
 
 .menu img {
@@ -277,7 +279,7 @@ div.tabHeader {
 	top:18px;              /* place us just up underneath the top-level images */
 	left:-1px;       /* left-align our drop-down to the previous button border */
 	height:auto;      /* the drop-down height will be determiend by line count */
-	width:13.5em;
+	width:22.5em;
 	color:black;                        /* this sets the unselected-text color */
 	background:white;         /* this sets our menu's effective "border" color */
 }
@@ -311,7 +313,7 @@ div.tabHeader {
 	height:auto;
 	color:black;               /* this sets the unselected drop-down text color */
 	background:white;       /* this sets the drop-down menu background color */
-	width:13.5em;
+	width:22.5em;
 }
 
 .menu ul li:hover ul li:hover a,
@@ -356,4 +358,7 @@ div.tabHeader {
 	background:white;
 }
 
-
+/* Need to change the root menu z-index so later indices are hidden under it */
+div.rootMenu {
+	z-index: 100;
+}

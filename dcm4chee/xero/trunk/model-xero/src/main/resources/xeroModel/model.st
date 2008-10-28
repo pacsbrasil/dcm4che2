@@ -6,11 +6,13 @@
   * 3. search results - the information from the XML file that defines the results for the search.
   * 4. Image display information - TODO still.
   */
-function XeroModel(is_ie) {
+function XeroModel(is_ie,i18n) {
 	var findLayout = new FindLayout();
 
 	this.layout = new TabsLayout("XeroRootTab");
 	this.layout.add(new XeroRootMenu(),"tabMenu");
+	
+	if( i18n ) this.i18n = i18n;
 	 
 	this.layout.addTab("Find", findLayout);
 	this.patientLayout = new PatientLayout();
@@ -59,12 +61,12 @@ $xeroModels:{ $(it)()$ }$
 var XeroStudyColumns = {
 	"template":"xeroStudyColumns",
 	"header":[
-		{"name":"Patient Name", "var":"PatientName",  "sort":"PatientName", "template":"image/patientNameSel","action":"controller.sortQuery" },
-		{"name":"Patient ID", "var":"PatientID", "sort":"PatientID", "template":"html/displayFirst","action":"controller.sortQuery" },
-		{"name":"Study Description", "var":"StudyDescription", "sort":"StudyDescription", "template":"image/studyDescriptionSel","action":"controller.sortQuery" },
-		{"name":"Modality", "var":"ModalitiesInStudy", "sort":"ModalitiesInStudy", "template":"html/displayIt","action":"controller.sortQuery" },
-		{"name":"Acc#", "var":"AccessionNumber", "sort":"AccessionNumber", "template":"html/displayIt","action":"controller.sortQuery" },
-		{"name":"Study Date", "var":"StudyDateF", "sort":"StudyDateTime", "template":"html/displayIt","action":"controller.sortQuery" },
+		{"i18n":"PatientName", "var":"PatientName",  "sort":"PatientName", "template":"image/patientNameSel","action":"controller.sortQuery" },
+		{"i18n":"PatientID", "var":"PatientID", "sort":"PatientID", "template":"html/displayFirst","action":"controller.sortQuery" },
+		{"i18n":"StudyDescription", "var":"StudyDescription", "sort":"StudyDescription", "template":"image/studyDescriptionSel","action":"controller.sortQuery" },
+		{"i18n":"Modality", "var":"ModalitiesInStudy", "sort":"ModalitiesInStudy", "template":"html/displayIt","action":"controller.sortQuery" },
+		{"i18n":"AccessionNumber", "var":"AccessionNumber", "sort":"AccessionNumber", "template":"html/displayIt","action":"controller.sortQuery" },
+		{"i18n":"StudyDateTimeF", "var":"StudyDateF", "sort":"StudyDateTime", "template":"html/displayIt","action":"controller.sortQuery" },
 		{"name":"# Series", "var":"NumberOfStudyRelatedSeries", "sort":"NumberOfStudyRelatedSeries", "template":"html/displayIt","action":"controller.sortQuery" },
 		{"name":"# Objects", "var":"NumberOfStudyRelatedInstances", "sort":"NumberOfStudyRelatedInstances", "template":"html/displayIt","action":"controller.sortQuery" }
 	]

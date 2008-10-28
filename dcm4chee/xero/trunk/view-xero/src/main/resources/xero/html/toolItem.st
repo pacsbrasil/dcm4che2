@@ -1,7 +1,1 @@
-$if(layout.action)$
-$html/actionItem()$
-$elseif(layout.href)$
-$html/aItem()$
-$else$
-$html/labelItem()$
-$endif$
+<li class="label toolItem">$html/labelBody()$</li>

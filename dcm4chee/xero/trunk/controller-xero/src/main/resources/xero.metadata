@@ -24,6 +24,9 @@ controller.stringTemplate.defaultGroup=${ref:templateGroup}
 controller.stringTemplate.model.inherit=model
 controller.stringTemplate.priority=10000
 
+controller.languageTheme=${class:org.dcm4chee.xero.controller.LanguageThemeController}
+controller.languageTheme.priority=9500
+
 controller.browser=${class:org.dcm4chee.xero.controller.BrowserVersion}
 controller.browser.priority=9900
 
@@ -63,3 +66,7 @@ jscontroller.stringTemplate.priority=10000
 
 jscontroller.browser=${class:org.dcm4chee.xero.controller.BrowserVersion}
 jscontroller.browser.priority=9900
+
+jscontroller.languageTheme=${class:org.dcm4chee.xero.controller.LanguageThemeController}
+jscontroller.languageTheme.priority=9500
+

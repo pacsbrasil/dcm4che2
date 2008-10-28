@@ -1,1 +1,1 @@
-<span class="userName toolItem">$userName$</span>
+<li><a class="userName toolItem">$userName$</a></li>

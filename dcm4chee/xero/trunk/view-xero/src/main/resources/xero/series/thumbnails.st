@@ -1,6 +1,6 @@
 <!-- Defines the series tray items - currently just creates an unordered list of
   class seriesTray, with list items each containing a link to a given series. -->
-<span class="thumbnail toolItem">Series</span>
+<li><a class="thumbnail toolItem">Series</a>
 <ul class="thumbnail">
 $layout.study.series:{$if(it.image)$
 	<li class="thumbnail">
@@ -10,3 +10,4 @@ $layout.study.series:{$if(it.image)$
 $endif$
 }$
 </ul>
+</li>

@@ -1,1 +1,1 @@
-<li class="label toolItem">$layout.parent.imageAreas.layouts.("0").Position1$ of $layout.parent.series.Viewable$</li> 
+<li class="label toolItem">$layout.parent.imageAreas.layouts.("0").Position1$ $i18n.Of$ $layout.parent.series.Viewable$</li> 

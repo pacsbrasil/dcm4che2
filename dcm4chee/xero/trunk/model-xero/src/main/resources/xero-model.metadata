@@ -65,51 +65,78 @@ static.patientMenu.inherit=toolbar
 static.wlMenu.inherit=toolbar
 
 static.wlMenu.children.wl.inherit=toolItem
-static.wlMenu.children.wl.label=Window Level
-
-static.wlMenu.children.wlreset.inherit=toolItem
-static.wlMenu.children.wlreset.label=WindowLevelReset
+static.wlMenu.children.wl.priority=250
+static.wlMenu.children.wl.i18n=WindowLevel
+static.wlMenu.children.wl.showLabel=true
+static.wlMenu.children.wl.icon=WindowLevelIcon
 
 static.wlMenu.children.invert.inherit=toolItem
-static.wlMenu.children.invert.label=WLInvert
+static.wlMenu.children.invert.i18n=WLInvert
+static.wlMenu.children.invert.showLabel=true
+static.wlMenu.children.invert.icon=WLInvertIcon
+static.wlMenu.children.invert.priority=300
+
+static.wlMenu.children.wlreset.inherit=toolItem
+static.wlMenu.children.wlreset.i18n=WLReset
+static.wlMenu.children.wlreset.priority=500
+static.wlMenu.children.wlreset.icon=WLResetIcon
+static.wlMenu.children.wlreset.showLabel=true
+
 
 ######## Spatial Transform Menu
 static.spatMenu.inherit=toolbar
 
 static.spatMenu.children.rotateRight.inherit=toolItem
 static.spatMenu.children.rotateRight.priority=500
-static.spatMenu.children.rotateRight.label=Rotate Right
-static.spatMenu.children.rotateRight.icon=icon/rotateRight.png
+static.spatMenu.children.rotateRight.i18n=RotateRight
+static.spatMenu.children.rotateRight.showLabel=true
+static.spatMenu.children.rotateRight.icon=RotateRightIcon
 
 static.spatMenu.children.rotateLeft.inherit=toolItem
 static.spatMenu.children.rotateLeft.priority=1000
-static.spatMenu.children.rotateLeft.label=Rotate Left
-static.spatMenu.children.rotateLeft.icon=icon/rotateLeft.png
+static.spatMenu.children.rotateLeft.i18n=RotateLeft
+static.spatMenu.children.rotateLeft.showLabel=true
+static.spatMenu.children.rotateLeft.icon=RotateLeftIcon
 
 static.spatMenu.children.flip.inherit=toolItem
 static.spatMenu.children.flip.priority=1500
-static.spatMenu.children.flip.label=Flip
-static.spatMenu.children.flip.icon=icon/flip.png
+static.spatMenu.children.flip.i18n=FlipHorizontal
+static.spatMenu.children.flip.icon=FlipHorizontalIcon
+static.spatMenu.children.flip.showLabel=true
 
 static.spatMenu.children.reset.inherit=toolItem
 static.spatMenu.children.reset.priority=2000
-static.spatMenu.children.reset.label=Reset
+static.spatMenu.children.reset.i18n=SpatReset
+static.spatMenu.children.reset.icon=SpatResetIcon
+static.spatMenu.children.reset.showLabel=true
 
 ######## Zoom Menu
 
 static.zoomMenu.inherit=toolbar
 
-static.zoomMenu.children.scaleToFit.inherit=toolItem
-static.zoomMenu.children.scaleToFit.label=ScaleToFit
+static.zoomMenu.children.magnify.inherit=toolItem
+static.zoomMenu.children.magnify.priority=200
+static.zoomMenu.children.magnify.i18n=Magnify
+static.zoomMenu.children.magnify.showLabel=true
+static.zoomMenu.children.magnify.icon=MagnifyIcon
 
-static.zoomMenu.children.zoom.inherit=toolItem
-static.zoomMenu.children.zoom.label=Zoom
+static.zoomMenu.children.scaleToFit.inherit=toolItem
+static.zoomMenu.children.scaleToFit.i18n=Zoom
+static.zoomMenu.children.scaleToFit.priority=100
+static.zoomMenu.children.scaleToFit.showLabel=true
+static.zoomMenu.children.scaleToFit.icon=ZoomIcon
 
 static.zoomMenu.children.trueSize.inherit=toolItem
-static.zoomMenu.children.trueSize.label=TrueSize
+static.zoomMenu.children.trueSize.priority=400
+static.zoomMenu.children.trueSize.i18n=TrueSize
+static.zoomMenu.children.trueSize.showLabel=true
+static.zoomMenu.children.trueSize.icon=TrueSizeIcon
 
 static.zoomMenu.children.reset.inherit=toolItem
-static.zoomMenu.children.reset.label=ZoomReset
+static.zoomMenu.children.reset.priority=300
+static.zoomMenu.children.reset.i18n=ZoomReset
+static.zoomMenu.children.reset.showLabel=true
+static.zoomMenu.children.reset.icon=ZoomResetIcon
 
 ######## Patient Display Area Menu
 static.patientMenu.children.wl.inherit=toolItem
@@ -132,8 +159,8 @@ static.patientMenu.children.zoomPan.layout=ZoomMenu
 ######## Study Tray Layout Menu
 static.studyTrayLayout.children.prev.inherit=toolItem
 static.studyTrayLayout.children.prev.priority=500
-static.studyTrayLayout.children.prev.label=Previous Series
-static.studyTrayLayout.children.prev.icon=icon/prev.png
+static.studyTrayLayout.children.prev.i18n=PreviousSeries
+static.studyTrayLayout.children.prev.icon=PreviousSeriesIcon
 
 static.studyTrayLayout.children.seriesNumber.inherit=toolItem
 static.studyTrayLayout.children.seriesNumber.priority=1000
@@ -142,8 +169,8 @@ static.studyTrayLayout.children.seriesNumber.name=SeriesNumber
 
 static.studyTrayLayout.children.next.inherit=toolItem
 static.studyTrayLayout.children.next.priority=1500
-static.studyTrayLayout.children.next.label=Next Series
-static.studyTrayLayout.children.next.icon=icon/next.png
+static.studyTrayLayout.children.next.i18n=NextSeries
+static.studyTrayLayout.children.next.icon=NextSeriesIcon
 
 static.overallMenuLayout.inherit=toolbar
 static.overallMenuLayout.children.userName.inherit=toolItem
@@ -152,15 +179,16 @@ static.overallMenuLayout.children.userName.priority=950
 
 static.overallMenuLayout.children.logout.inherit=toolItem
 static.overallMenuLayout.children.logout.href=logout.jsp
-static.overallMenuLayout.children.logout.label=Logout
+static.overallMenuLayout.children.logout.i18n=Logout
 static.overallMenuLayout.children.logout.priority=1000
 
 # Define the javascript model
 model.js=${class:org.dcm4chee.xero.rhino.JavaScriptMapFactory}
-model.js.script=var model=new XeroModel(_SARISSA_IS_IE);
+model.js.script=var model=new XeroModel(_SARISSA_IS_IE,i18n);
 model.js.parentScopeName=js_static
 model.js.imported=${class:org.dcm4chee.xero.metadata.access.MapWithDefaults}
 model.js.imported._SARISSA_IS_IE=IS_IE
+model.js.imported.i18n=i18n
 
 model.layout=${class:org.dcm4chee.xero.rhino.PathInstance}
 model.layout.var=js.model.layout

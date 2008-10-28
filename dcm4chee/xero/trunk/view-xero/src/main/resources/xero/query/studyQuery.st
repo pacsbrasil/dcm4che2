@@ -1,15 +1,15 @@
 <div style="float: left;"><table>
 
-<tr><td>Patient Name</td><td><input type="text" name="PatientName" value="$query.PatientName$"/></td></tr>
-<tr><td>Patient ID</td><td><input type="text" name="PatientID" value="$query.PatientID$"/></td></tr>
+<tr><td>$i18n.PatientName$</td><td><input type="text" name="PatientName" value="$query.PatientName$"/></td></tr>
+<tr><td>$i18n.PatientID$</td><td><input type="text" name="PatientID" value="$query.PatientID$"/></td></tr>
 
 </table></div>
 
 <div style="float: left;"><table>
 
-<tr><td>Accession Number</td><td><input type="text" name="AccessionNumber" value="$query.AccessionNumber$"/></td></tr>
+<tr><td>$i18n.AccessionNumber$</td><td><input type="text" name="AccessionNumber" value="$query.AccessionNumber$"/></td></tr>
 
-<tr><td>Study Date</td><td>
+<tr><td>$i18n.StudyDateTimeF$</td><td>
   <select name="StudyDateTime">
 	$if(query.StudyDateTime)$<option selected="true" value="$query.StudyDateTime$">$query.StudyDateTime$</option>$endif$
 	<option value=""> </option>
@@ -27,7 +27,7 @@
   </select>
 </td></tr>
 
-<tr><td>Modality</td><td>
+<tr><td>$i18n.Modality$</td><td>
   <select name="ModalitiesInStudy">
 	$if(query.ModalitiesInStudy)$<option selected="true" value="$query.ModalitiesInStudy$">$query.ModalitiesInStudy$</option>$endif$
 	<option value=""> </option>

@@ -13,6 +13,7 @@
   $endif$
   <title>Xero Query</title>
   $model/scripts()$
+  <script type="text/javascript" src="modelI18n.jst?language=$locale;format="xml"$&amp;theme=$i18n.theme$"> </script>
   <script>
 /** Define per-user information as required TODO - move this to a child script */
 model.userName = "$userName$";  

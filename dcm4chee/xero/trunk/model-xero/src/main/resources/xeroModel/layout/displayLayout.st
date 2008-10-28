@@ -102,7 +102,7 @@ function WLMenu(suffix) {
 $layout/addChildren(children=wlMenu.children)$	
 };
 
-WLMenu.prototype = new Layout("WLMenuPrototype", "html/labelItem");
+WLMenu.prototype = new Layout("WLMenuPrototype", "html/toolItem");
 WLMenu.prototype.baseConstructor = Layout;
 WLMenu.prototype.icon="icon/wl.png";
 WLMenu.prototype.label="Window Level";
@@ -114,7 +114,7 @@ function ZoomMenu(suffix) {
 $layout/addChildren(children=zoomMenu.children)$	
 };
 
-ZoomMenu.prototype = new Layout("ZoomMenuPrototype", "html/labelItem");
+ZoomMenu.prototype = new Layout("ZoomMenuPrototype", "html/toolItem");
 ZoomMenu.prototype.baseConstructor = Layout;
 ZoomMenu.prototype.icon="icon/zoomPan.png";
 ZoomMenu.prototype.label="Zoom";
@@ -126,7 +126,7 @@ function SpatMenu(suffix,studyNav) {
 $layout/addChildren(children=spatMenu.children)$	
 };
 
-SpatMenu.prototype = new Layout("SpatMenuPrototype", "html/labelItem");
+SpatMenu.prototype = new Layout("SpatMenuPrototype", "html/toolItem");
 SpatMenu.prototype.baseConstructor = Layout;
 SpatMenu.prototype.icon="icon/rotateRight.png";
 SpatMenu.prototype.label="Rotate Right";
@@ -184,7 +184,7 @@ $layout/addChildren(children=imageAreasMenu.children)$
 
 ImageAreasMenu.prototype = new Layout("ImageAreasMenuPrototype","html/menu");
 ImageAreasMenu.prototype.baseConstructor=Layout;
-ImageAreasMenu.prototype.absHeight = 1;
+ImageAreasMenu.prototype.absHeight = 22;
 
 /** The listener for the patient information */
 function PatientMergedListener(navigate) {
