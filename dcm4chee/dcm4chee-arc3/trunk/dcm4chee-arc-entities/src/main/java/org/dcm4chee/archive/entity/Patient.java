@@ -76,7 +76,7 @@ public class Patient implements Serializable {
 
     private String patientPhoneticName;
 
-    private Date patientBirthDate;
+    private String patientBirthDate;
 
     private String patientSex;
 
@@ -136,7 +136,7 @@ public class Patient implements Serializable {
         return patientPhoneticName;
     }
 
-    public Date getPatientBirthDate() {
+    public String getPatientBirthDate() {
         return patientBirthDate;
     }
 
@@ -250,7 +250,7 @@ public class Patient implements Serializable {
                 PersonName.IDEOGRAPHIC, false);
         this.patientPhoneticName = pn.componentGroupString(PersonName.PHONETIC,
                 false);
-        this.patientBirthDate = attrs.getDate(Tag.PatientBirthDate);
+        this.patientBirthDate = normalizeDA(attrs.getString(Tag.PatientBirthDate));
         this.patientSex = attrs.getString(Tag.PatientSex, "");
         AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
         int[] fieldTags = filter.getFieldTags();
@@ -264,6 +264,25 @@ public class Patient implements Serializable {
         }
         this.encodedAttributes = DicomObjectUtils.encode(filter.filter(attrs),
                 filter.getTransferSyntaxUID());
+    }
+
+    private static String normalizeDA(String s) {
+        if (s == null) {
+            return null;
+        }
+        String trim = s.trim();
+        int l = trim.length();
+        if (l == 0) {
+            return null;
+        }
+        if (l == 10 && trim.charAt(4) == '-' && trim.charAt(7) == '-') {
+            StringBuilder sb = new StringBuilder(8);
+            sb.append(trim.substring(0, 4));
+            sb.append(trim.substring(5, 7));
+            sb.append(trim.substring(8));
+            return sb.toString();
+        }
+        return trim;
     }
 
 }

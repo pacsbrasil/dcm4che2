@@ -36,7 +36,6 @@
       </basic>
       <basic name="patientBirthDate">
         <column name="pat_birthdate" />
-        <temporal>DATE</temporal>
       </basic>
       <basic name="patientSex">
         <column name="pat_sex" />
