@@ -399,12 +399,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     }
 
 
-    protected void addStudyPermissionMatch() {
+    protected void addStudyPermissionMatch(boolean patientLevel) {
         if (subject != null) {
-            sqlBuilder.addSingleValueMatch(null, "StudyPermission.action",
-                    false, StudyPermissionDTO.QUERY_ACTION);
-            sqlBuilder.addListOfStringMatch(null, "StudyPermission.role",
-                    false, SecurityUtils.rolesOf(subject));
+            sqlBuilder.addQueryPermissionNestedMatch(patientLevel,
+                    SecurityUtils.rolesOf(subject));
         }
     }
 
@@ -669,10 +667,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         protected void init() {
             super.init();
             addPatientMatch();
-            if (subject != null) {
-                sqlBuilder.addQueryPermissionNestedMatch(
-                        SecurityUtils.rolesOf(subject));
-            }
+            addStudyPermissionMatch(true);
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
@@ -717,7 +712,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             super.init();
             addPatientMatch();
             addStudyMatch();
-            addStudyPermissionMatch();
+            addStudyPermissionMatch(false);
             addNestedSeriesMatch();
         }
 
@@ -739,16 +734,11 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected String[] getTables() {
-            return subject == null
-                    ? new String[] { "Patient", "Study" }
-                    : new String[] { "Patient", "Study", "StudyPermission" };
+            return new String[] { "Patient", "Study" };
         }
 
         protected String[] getRelations() {
-            return subject == null 
-                    ? new String[] { "Patient.pk", "Study.patient_fk" }
-                    : new String[] { "Patient.pk", "Study.patient_fk",
-                            "Study.studyIuid", "StudyPermission.studyIuid"};
+            return new String[] { "Patient.pk", "Study.patient_fk" };
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {
@@ -799,7 +789,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             super.init();
             addPatientMatch();
             addStudyMatch();
-            addStudyPermissionMatch();
+            addStudyPermissionMatch(false);
             addSeriesMatch();
         }
 
@@ -823,19 +813,12 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected String[] getTables() {
-            return subject == null
-                    ? new String[] { "Patient", "Study", "Series" }
-                    : new String[] { "Patient", "Study", "StudyPermission",
-                            "Series" };
+            return new String[] { "Patient", "Study", "Series" };
         }
 
         protected String[] getRelations() {
-            return subject == null 
-                    ? new String[] { "Patient.pk", "Study.patient_fk",
-                            "Study.pk", "Series.study_fk" }
-                    : new String[] { "Patient.pk", "Study.patient_fk",
-                            "Study.studyIuid", "StudyPermission.studyIuid",
-                            "Study.pk", "Series.study_fk"};
+            return new String[] { "Patient.pk", "Study.patient_fk",
+                            "Study.pk", "Series.study_fk" };
         }
 
         protected String[] getLeftJoin() {
@@ -905,7 +888,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             super.init();
             addPatientMatch();
             addStudyMatch();
-            addStudyPermissionMatch();
+            addStudyPermissionMatch(false);
             addSeriesMatch();
             addInstanceMatch();
         }
@@ -942,10 +925,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected String[] getTables() {
-            return subject == null
-                    ? new String[] { "Patient", "Study", "Series", "Instance" }
-                    : new String[] { "Patient", "Study", "StudyPermission",
-                                "Series", "Instance" };
+            return new String[] { "Patient", "Study", "Series", "Instance" };
         }
 
         protected String[] getLeftJoin() {
@@ -964,14 +944,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected String[] getRelations() {
-            return subject == null 
-                    ? new String[] { "Patient.pk", "Study.patient_fk",
+            return new String[] { "Patient.pk", "Study.patient_fk",
                             "Study.pk", "Series.study_fk", "Series.pk",
-                            "Instance.series_fk" }
-                    : new String[] { "Patient.pk", "Study.patient_fk",
-                            "Study.studyIuid", "StudyPermission.studyIuid",
-                            "Study.pk", "Series.study_fk", "Series.pk",
-                            "Instance.series_fk"};
+                            "Instance.series_fk" };
         }
 
         protected void fillDataset(Dataset ds) throws SQLException {

@@ -353,8 +353,8 @@ class SqlBuilder {
         return addMatch(new Match.CallingAETsNestedMatch( privateTables, callingAETs));
     }
     
-    public Match addQueryPermissionNestedMatch(String[] roles) {
-        return addMatch(new Match.QueryPermissionNestedMatch(roles));
+    public Match addQueryPermissionNestedMatch(boolean patientLevel, String[] roles) {
+        return addMatch(new Match.QueryPermissionNestedMatch(patientLevel, roles));
     }
     
     public Match.Node addNodeMatch(String orORand, boolean invert) {
