@@ -27,6 +27,123 @@ static.findMenuLayout.inherit=toolbar
 
 static.studyTrayLayout.inherit=toolbar
 
+######## Image Areas Menu (1 per series)
+static.imageAreasMenu.inherit=toolbar
+static.imageAreasMenu.children.imageNumber.inherit=toolItem
+static.imageAreasMenu.children.imageNumber.priority=1000
+static.imageAreasMenu.children.imageNumber.name=ImageNumber
+static.imageAreasMenu.children.imageNumber.template=image/imageNumber
+
+static.imageAreasMenu.children.prev.inherit=toolItem
+static.imageAreasMenu.children.prev.priority=500
+static.imageAreasMenu.children.prev.label=Previous Image
+static.imageAreasMenu.children.prev.icon=icon/prev.png
+
+static.imageAreasMenu.children.next.inherit=toolItem
+static.imageAreasMenu.children.next.label=Next Image
+static.imageAreasMenu.children.next.priority=1500
+static.imageAreasMenu.children.next.icon=icon/next.png
+
+static.imageAreasMenu.children.first.inherit=toolItem
+static.imageAreasMenu.children.first.priority=250
+static.imageAreasMenu.children.first.label=First Image
+static.imageAreasMenu.children.first.icon=icon/first.png
+
+static.imageAreasMenu.children.last.inherit=toolItem
+static.imageAreasMenu.children.last.priority=1750
+static.imageAreasMenu.children.last.label=Last Image
+static.imageAreasMenu.children.last.icon=icon/last.png
+
+static.imageAreasMenu.children.seriesDescription.inherit=toolItem
+static.imageAreasMenu.children.seriesDescription.priority=1900
+static.imageAreasMenu.children.seriesDescription.template=image/seriesDescription
+static.imageAreasMenu.children.seriesDescription.name=SeriesDescription
+
+static.patientMenu.inherit=toolbar
+
+######## Window Level Menu
+static.wlMenu.inherit=toolbar
+
+static.wlMenu.children.wl.inherit=toolItem
+static.wlMenu.children.wl.label=Window Level
+
+static.wlMenu.children.wlreset.inherit=toolItem
+static.wlMenu.children.wlreset.label=WindowLevelReset
+
+static.wlMenu.children.invert.inherit=toolItem
+static.wlMenu.children.invert.label=WLInvert
+
+######## Spatial Transform Menu
+static.spatMenu.inherit=toolbar
+
+static.spatMenu.children.rotateRight.inherit=toolItem
+static.spatMenu.children.rotateRight.priority=500
+static.spatMenu.children.rotateRight.label=Rotate Right
+static.spatMenu.children.rotateRight.icon=icon/rotateRight.png
+
+static.spatMenu.children.rotateLeft.inherit=toolItem
+static.spatMenu.children.rotateLeft.priority=1000
+static.spatMenu.children.rotateLeft.label=Rotate Left
+static.spatMenu.children.rotateLeft.icon=icon/rotateLeft.png
+
+static.spatMenu.children.flip.inherit=toolItem
+static.spatMenu.children.flip.priority=1500
+static.spatMenu.children.flip.label=Flip
+static.spatMenu.children.flip.icon=icon/flip.png
+
+static.spatMenu.children.reset.inherit=toolItem
+static.spatMenu.children.reset.priority=2000
+static.spatMenu.children.reset.label=Reset
+
+######## Zoom Menu
+
+static.zoomMenu.inherit=toolbar
+
+static.zoomMenu.children.scaleToFit.inherit=toolItem
+static.zoomMenu.children.scaleToFit.label=ScaleToFit
+
+static.zoomMenu.children.zoom.inherit=toolItem
+static.zoomMenu.children.zoom.label=Zoom
+
+static.zoomMenu.children.trueSize.inherit=toolItem
+static.zoomMenu.children.trueSize.label=TrueSize
+
+static.zoomMenu.children.reset.inherit=toolItem
+static.zoomMenu.children.reset.label=ZoomReset
+
+######## Patient Display Area Menu
+static.patientMenu.children.wl.inherit=toolItem
+static.patientMenu.children.wl.priority=100
+static.patientMenu.children.wl.layout=WLMenu
+
+static.patientMenu.children.compareStudy.inherit=toolItem
+static.patientMenu.children.compareStudy.priority=2000
+static.patientMenu.children.compareStudy.label=Compare Study
+static.patientMenu.children.compareStudy.icon=icon/compareStudy.png
+
+static.patientMenu.children.rotateRight.inherit=toolItem
+static.patientMenu.children.rotateRight.priority=1500
+static.patientMenu.children.rotateRight.layout=SpatMenu
+
+static.patientMenu.children.zoomPan.inherit=toolItem
+static.patientMenu.children.zoomPan.priority=1000
+static.patientMenu.children.zoomPan.layout=ZoomMenu
+
+######## Study Tray Layout Menu
+static.studyTrayLayout.children.prev.inherit=toolItem
+static.studyTrayLayout.children.prev.priority=500
+static.studyTrayLayout.children.prev.label=Previous Series
+static.studyTrayLayout.children.prev.icon=icon/prev.png
+
+static.studyTrayLayout.children.seriesNumber.inherit=toolItem
+static.studyTrayLayout.children.seriesNumber.priority=1000
+static.studyTrayLayout.children.seriesNumber.template=image/seriesNumber
+static.studyTrayLayout.children.seriesNumber.name=SeriesNumber
+
+static.studyTrayLayout.children.next.inherit=toolItem
+static.studyTrayLayout.children.next.priority=1500
+static.studyTrayLayout.children.next.label=Next Series
+static.studyTrayLayout.children.next.icon=icon/next.png
 
 static.overallMenuLayout.inherit=toolbar
 static.overallMenuLayout.children.userName.inherit=toolItem

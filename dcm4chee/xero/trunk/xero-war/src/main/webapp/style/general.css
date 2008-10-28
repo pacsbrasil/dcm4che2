@@ -254,6 +254,7 @@ div.tabHeader {
 }
 
 .menu ul li a,
+.menu ul li span,
 .menu ul li a:visited {                    /* unselected top-level menu items */
 	display:block;
 	float:left;
@@ -302,6 +303,7 @@ div.tabHeader {
 }
 
 .menu ul li:hover ul li a,
+.menu ul li:hover ul li span,
 .menu ul li a:hover ul li a {                   /* 2nd level unselected items */
 	border:0;
 	margin:0;

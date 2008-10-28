@@ -24,7 +24,7 @@ PatientLayout.prototype.init = function PatientLayout_init() {
 	if( this.navigate==null ) return false;
 	if( this.layouts && this.layouts.length>0 ) return true;
 	if( model.IS_IE ) this.widthEdge = 12;
-	var patientMenu = new Layout("patientMenu", "image/patientMenu");
+	var patientMenu = new PatientMenu();
 	var patientNav = this.navigate.addChildListener(patientMenu,PatientMergedListener,0); 
 	this.add(patientMenu, TabsLayout.TabMenu);
 	
@@ -38,6 +38,19 @@ PatientLayout.prototype.init = function PatientLayout_init() {
 
 	return true;
 };
+
+/** The menu for patient tab control */
+function PatientMenu() {
+	// The suffix is empty as there should only be 1 instance of this menu.
+	var suffix = "";
+	this.baseConstructor("PatientMenu");
+	
+$layout/addChildren(children=patientMenu.children)$
+};
+
+PatientMenu.prototype = new Layout("PatientMenuPrototype","image/patientMenu");
+PatientMenu.prototype.baseConstructor=Layout;
+
 
 /** Create the study layouts containing the study tray and the image area.  Not lazy. */
 function StudyAreaLayout(navigate,nth) {
@@ -53,7 +66,7 @@ function StudyAreaLayout(navigate,nth) {
 		this.add(studyTray,Layout.NORTH);
 	}
 
-	var i,j,toolbar, imageArea, seriesArea, seriesSuffix;
+	var i,j, imageArea, seriesArea, seriesSuffix;
 	for(j=0; j<this.gridY; j++) {
 		for(i=0; i<this.gridX; i++) {
 			nth = j*this.gridX+i;
@@ -83,14 +96,50 @@ StudyTrayLayout.prototype = new Layout("StudyTray", "image/studyTray");
 StudyTrayLayout.prototype.baseConstructor = Layout;
 StudyTrayLayout.prototype.absWidth = 135;
 
+/** Handle the window level menu layout */
+function WLMenu(suffix) {
+	this.baseConstructor("WLMenu"+suffix);
+$layout/addChildren(children=wlMenu.children)$	
+};
+
+WLMenu.prototype = new Layout("WLMenuPrototype", "html/labelItem");
+WLMenu.prototype.baseConstructor = Layout;
+WLMenu.prototype.icon="icon/wl.png";
+WLMenu.prototype.label="Window Level";
+
+
+/** Handle the zoom menu layout */
+function ZoomMenu(suffix) {
+	this.baseConstructor("ZoomMenu"+suffix);
+$layout/addChildren(children=zoomMenu.children)$	
+};
+
+ZoomMenu.prototype = new Layout("ZoomMenuPrototype", "html/labelItem");
+ZoomMenu.prototype.baseConstructor = Layout;
+ZoomMenu.prototype.icon="icon/zoomPan.png";
+ZoomMenu.prototype.label="Zoom";
+
+
+/** Create the Spatial transforms menu layout */
+function SpatMenu(suffix,studyNav) {
+	this.baseConstructor("SpatMenu"+suffix);
+$layout/addChildren(children=spatMenu.children)$	
+};
+
+SpatMenu.prototype = new Layout("SpatMenuPrototype", "html/labelItem");
+SpatMenu.prototype.baseConstructor = Layout;
+SpatMenu.prototype.icon="icon/rotateRight.png";
+SpatMenu.prototype.label="Rotate Right";
+
+
+
 /** Create an images areas object */
 function ImageAreasLayout(navigate, suffix, nth) {
 	this.baseConstructor("ImageAreas"+suffix);
 	var seriesNav = navigate.addChildListener(this,ImageAreaMergedListener, nth);
 
-	var toolbar = new Layout("ImagesToolbar"+suffix,"image/seriesToolbar");
+	var toolbar = new ImageAreasMenu(suffix);
 	seriesNav.addListener(toolbar,SeriesMergedListener);
-	toolbar.absHeight = 25;
 	toolbar.imageAreas = this;
 	this.add(toolbar,Layout.NORTH);
 
@@ -124,6 +173,18 @@ ImageAreasLayout.prototype.baseConstructor = Layout;
 ImageAreasLayout.prototype.gridX = 2;
 ImageAreasLayout.prototype.gridY = 2;
 ImageAreasLayout.prototype.onmousewheel="controller.navWheelImg";
+
+
+/** The menu for image level control */
+function ImageAreasMenu(suffix) {
+	this.baseConstructor("ImageAreasMenu"+suffix);
+	
+$layout/addChildren(children=imageAreasMenu.children)$
+};
+
+ImageAreasMenu.prototype = new Layout("ImageAreasMenuPrototype","html/menu");
+ImageAreasMenu.prototype.baseConstructor=Layout;
+ImageAreasMenu.prototype.absHeight = 1;
 
 /** The listener for the patient information */
 function PatientMergedListener(navigate) {

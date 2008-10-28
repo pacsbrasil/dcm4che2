@@ -1,1 +1,1 @@
-<span class="jslink toolItem" onclick="return $layout.action$('$layout.id$');">$html/labelBody()$</span>
+<li class="jslink toolItem" onclick="return $layout.action$('$layout.id$');">$html/labelBody()$</li>
