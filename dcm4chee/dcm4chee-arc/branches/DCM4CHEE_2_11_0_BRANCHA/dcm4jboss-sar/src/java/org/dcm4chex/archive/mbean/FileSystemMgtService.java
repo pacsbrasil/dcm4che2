@@ -1241,7 +1241,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
         int minimumAge = 24;
         try {
         	minimumAge = Integer.parseInt(System.getProperty("deleter.minimumAge"));
-        } catch (Throwable e) {
+        } catch (Throwable ignore) {
         }
     	
     	if (log.isDebugEnabled()) {
