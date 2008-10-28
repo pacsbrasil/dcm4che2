@@ -1237,7 +1237,14 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             boolean checkUncommited, boolean checkOnMedia,
             boolean checkExternal, boolean checkOnNearline, boolean checkOnRO, int validFileStatus,
             long maxSizeToDel, int deleteStudiesLimit) throws Exception {
-        if (log.isDebugEnabled()) {
+
+        int minimumAge = 24;
+        try {
+        	minimumAge = Integer.parseInt(System.getProperty("deleter.minimumAge"));
+        } catch (Throwable e) {
+        }
+    	
+    	if (log.isDebugEnabled()) {
             log.debug("Release oldest studies on " + retrieveAET);
             log.debug(" checkUncommited: " + checkUncommited);
             log.debug(" checkOnMedia: " + checkOnMedia);
@@ -1246,6 +1253,7 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
             log.debug(" checkCopyAvailable: " + checkOnRO);
             log.debug(" maxSizeToDel: " + maxSizeToDel);
             log.debug(" deleteStudyBatchSize: " + deleteStudiesLimit);
+            log.debug(" minimumAge: " + minimumAge);
         }
 
         // Latest StudyOnFs record ineligible for deletion
@@ -1268,6 +1276,10 @@ public class FileSystemMgtService extends ServiceMBeanSupport implements
                     && sizeDeleted < maxSizeToDel;) {
                 StudyOnFileSystemLocal studyOnFs = (StudyOnFileSystemLocal) iter
                         .next();
+                if (System.currentTimeMillis() - studyOnFs.getAccessTime().getTime() < minimumAge * 3600 * 1000 ) {
+                	log.info("Released " + (sizeDeleted / 1000000.f) + "MB of DiskSpace and cannot release any more because remaining studies to consider for deletion have not reached the minimum age of " + minimumAge + " hour(s)");
+                    return sizeDeleted;
+                }
                 long size = releaseStudy(studyOnFs, checkUncommited,
                         checkOnMedia, checkExternal, checkOnNearline, checkOnRO, validFileStatus);
                 if (size != 0)
