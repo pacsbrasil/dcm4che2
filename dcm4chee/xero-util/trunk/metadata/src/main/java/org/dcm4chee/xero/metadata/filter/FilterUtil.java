@@ -38,6 +38,7 @@
 package org.dcm4chee.xero.metadata.filter;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.xml.transform.URIResolver;
@@ -222,5 +223,11 @@ public class FilterUtil {
  	  }
  	  return getPath(nextMap,key.substring(nextDot+1));
     }
+
+   /** Returns the locale from the parameters */
+   public static Locale getLocale(Map<?,?> params) {
+	   Locale loc = (Locale) params.get("locale");
+	   return loc;
+   }
 
 }

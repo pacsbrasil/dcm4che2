@@ -82,11 +82,20 @@ public class MapWithDefaults extends LazyMap implements MetaDataUser {
    
    /** Does an eager load of all values - this can be useful for configuration where runtime safety is important. */
    public void eager() {
+	   if( wasEager ) return;
+	   this.addAllLazy();
+	   wasEager = true;
+   }
+
+   /** Adds all the lazy information to the map */
+   public boolean addAllLazy() {
+	   if( super.addAllLazy() ) return true;
 	   for(Map.Entry<String,MetaDataBean> me : mdb.metaDataEntrySet()) {
 		   this.get(me.getKey());
 	   }
-	   wasEager = true;
+	   return false;
    }
+
 
    /** Ensure that all values are in the entry set if it is used. */
    @Override

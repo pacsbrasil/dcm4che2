@@ -40,6 +40,7 @@ package org.dcm4chee.xero.metadata.servlet;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -68,228 +69,272 @@ import org.slf4j.LoggerFactory;
  * filters.
  * 
  * Usage in web.xml:
+ * 
  * <pre>
- *  &lt;servlet>
- *     &lt;servlet-name>WADO&lt;/servlet-name>
- *     &lt;servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet&lt;/servlet-class>
- *     &lt;init-param>
- *        &lt;param-name>metaData&lt;/param-name>
- *        &lt;param-value>/wado2.metadata&lt;/param-value>
- *     &lt;/init-param>
- *     &lt;init-param>
- *        &lt;param-name>filter&lt;/param-name>
- *        &lt;param-value>wado&lt;/param-value>
- *     &lt;/init-param>
- *  &lt;/servlet>
- *  &lt;servlet-mapping>
- *     &lt;servlet-name>WADO&lt;/servlet-name>
- *     &lt;url-pattern>/wado&lt;/url-pattern>
- *  &lt;/servlet-mapping>
- *
+ *  &lt;servlet&gt;
+ *     &lt;servlet-name&gt;WADO&lt;/servlet-name&gt;
+ *     &lt;servlet-class&gt;org.dcm4chee.xero.metadata.servlet.MetaDataServlet&lt;/servlet-class&gt;
+ *     &lt;init-param&gt;
+ *        &lt;param-name&gt;metaData&lt;/param-name&gt;
+ *        &lt;param-value&gt;/wado2.metadata&lt;/param-value&gt;
+ *     &lt;/init-param&gt;
+ *     &lt;init-param&gt;
+ *        &lt;param-name&gt;filter&lt;/param-name&gt;
+ *        &lt;param-value&gt;wado&lt;/param-value&gt;
+ *     &lt;/init-param&gt;
+ *  &lt;/servlet&gt;
+ *  &lt;servlet-mapping&gt;
+ *     &lt;servlet-name&gt;WADO&lt;/servlet-name&gt;
+ *     &lt;url-pattern&gt;/wado&lt;/url-pattern&gt;
+ *  &lt;/servlet-mapping&gt;
+ * 
  * </pre>
  */
 @SuppressWarnings("serial")
 public class MetaDataServlet extends HttpServlet {
-   public static final String MODEL_KEY = "model";
+	public static final String MODEL_KEY = "model";
 
 	public static final String REQUEST_TYPE = "requestType";
 
-	private static Logger log = LoggerFactory.getLogger(MetaDataServlet.class.getName());
+	private static Logger log = LoggerFactory.getLogger(MetaDataServlet.class
+			.getName());
 
-   /** A key value to use to fetch the full request URI - t */
-   public static final String REQUEST_URI = "_requestURI";
-   public static final String REQUEST = "_request";
-   public static final String USER_KEY = "userName";
-   
-   /** The meta data needs to be read from the appropriate location. */
-   MetaDataBean metaData;
+	/** A key value to use to fetch the full request URI - t */
+	public static final String REQUEST_URI = "_requestURI";
+	public static final String REQUEST = "_request";
+	public static final String USER_KEY = "userName";
 
-   /**
-    * The filterItem contains the fixed information about how to handle this
-    * request
-    */
-   FilterItem<ServletResponseItem> filterItem;
+	/** The meta data needs to be read from the appropriate location. */
+	MetaDataBean metaData;
 
-   /**
-    * The filter needs to supply a type and a stream/byte array/data object to
-    * send
-    */
-   FilterList<ServletResponseItem> filter;
+	/**
+	 * The filterItem contains the fixed information about how to handle this
+	 * request
+	 */
+	FilterItem<ServletResponseItem> filterItem;
 
-   /**
-    * The time between refreshes of filtered response - this is set to an hour
-    * as it isn't expected that new data arrives all that often. This does NOT
-    * affect a user hitting refresh in the browser - that will directly reload
-    * the data.
-    */
-   private long modifiedTimeAllowed = 60 * 60 * 1000; // 1 hour default.
+	/**
+	 * The filter needs to supply a type and a stream/byte array/data object to
+	 * send
+	 */
+	FilterList<ServletResponseItem> filter;
 
-   // Refresh screen
-   // refreshes list.
+	/**
+	 * The time between refreshes of filtered response - this is set to an hour
+	 * as it isn't expected that new data arrives all that often. This does NOT
+	 * affect a user hitting refresh in the browser - that will directly reload
+	 * the data.
+	 */
+	private long modifiedTimeAllowed = 60 * 60 * 1000; // 1 hour default.
 
-   /**
-    * Filter the items to get a return response by calling the first filter in
-    * the list.
-    * 
-    * @param request
-    *            used to determine the parameters for the filter
-    * @param response
-    *            used to write the filtered data.
-    * @throws ServletException
-    * @throws IOException
-    *             Sets SC_NO_CONTENT on a null return element.
-    */
-   @SuppressWarnings("unchecked")
-   protected void doFilter(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-	  try {
-		 String requestType = request.getParameter(REQUEST_TYPE);
-		 Map<String, Object> params = computeParameterMap(request, response);
-		 FilterItem useFilterItem;
-		 if (requestType != null) {
-			useFilterItem = filter.getNamedFilter(filterItem, requestType);
-		 } else {
-			useFilterItem = filter.getFirstFilter(filterItem);
-		 }
-		 if (useFilterItem == null) {
-			throw new ServletException("Didn't find requestType=" + requestType + " from " + filter + " in " + metaData.getPath());
-		 }
-		 log.debug("Found request type " + requestType + " = " + useFilterItem);
-		 ServletResponseItem sri = (ServletResponseItem) useFilterItem.callThisFilter(params);
-		 response.setCharacterEncoding("UTF-8");
-		 if (sri == null) {
-			response.sendError(HttpServletResponse.SC_NO_CONTENT, "No content found for this request.");
-			return;
-		 }
-		 sri.writeResponse(request, response);
-	  } catch (Exception e) {
-		 log.error("Caught error " + e + " for URI " + request.getRequestURI() + " with parameters " + request.getQueryString(), e);
-		 try {
-			 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Internal server error:"+e);
-		 }
-		 catch(Exception e2) {
-			 // No-op
-		 }
-	  }
-   }
+	// Refresh screen
+	// refreshes list.
 
-   /**
-    * Computes a parameter map that maps single valued items to Strings and
-    * multi-valued items to String[]. This is handy for the normal case where
-    * only a single item is expected - if the type is wrong, then it is usually
-    * an error, so it is ok to just throw an exception.
-    * 
-    * @param request
-    *            contains the parameter map to convert to a simple map.
-    * @return A Map to String where only 1 value is present, and to String[] for
-    *         multiple values. This break down makes the most sense in the usual
-    *         case where there is only 1 possible value.
-    */
-   @SuppressWarnings("unchecked")
-   protected Map<String, Object> computeParameterMap(HttpServletRequest request, HttpServletResponse response) {
-	  Map<String, String[]> parameters = request.getParameterMap();
-	  Map<String, Object> ret = new HashMap<String, Object>();
-	  for (Map.Entry<String, String[]> me : parameters.entrySet()) {
-		 if (me.getValue().length == 0)
-			continue;
-		 if (me.getValue().length == 1)
-			ret.put(me.getKey(), me.getValue()[0]);
-		 else
-			ret.put(me.getKey(), me.getValue());
-	  }
-	  ret.put(MemoryCacheFilter.KEY_NAME, request.getQueryString());
-	  ret.put(REQUEST_URI,request.getRequestURI());
-	  // This is a bit ugly, but it does allow full access to the request if a filter really
-	  // needs it - eg for auditing.
-	  ret.put(REQUEST,request);
-	  ret.put(USER_KEY, request.getRemoteUser());
-	  ret.put(UrlUriResolver.URIRESOLVER, new UrlUriResolver(request,response,getServletContext()));
+	/**
+	 * Filter the items to get a return response by calling the first filter in
+	 * the list.
+	 * 
+	 * @param request
+	 *            used to determine the parameters for the filter
+	 * @param response
+	 *            used to write the filtered data.
+	 * @throws ServletException
+	 * @throws IOException
+	 *             Sets SC_NO_CONTENT on a null return element.
+	 */
+	@SuppressWarnings("unchecked")
+	protected void doFilter(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		try {
+			String requestType = request.getParameter(REQUEST_TYPE);
+			Map<String, Object> params = computeParameterMap(request, response);
+			FilterItem useFilterItem;
+			if (requestType != null) {
+				useFilterItem = filter.getNamedFilter(filterItem, requestType);
+			} else {
+				useFilterItem = filter.getFirstFilter(filterItem);
+			}
+			if (useFilterItem == null) {
+				throw new ServletException("Didn't find requestType="
+						+ requestType + " from " + filter + " in "
+						+ metaData.getPath());
+			}
+			log.debug("Found request type " + requestType + " = "
+					+ useFilterItem);
+			ServletResponseItem sri = (ServletResponseItem) useFilterItem
+					.callThisFilter(params);
+			response.setCharacterEncoding("UTF-8");
+			if (sri == null) {
+				response.sendError(HttpServletResponse.SC_NO_CONTENT,
+						"No content found for this request.");
+				return;
+			}
+			sri.writeResponse(request, response);
+		} catch (Exception e) {
+			log.error("Caught error " + e + " for URI "
+					+ request.getRequestURI() + " with parameters "
+					+ request.getQueryString(), e);
+			try {
+				response.sendError(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+						"Internal server error:" + e);
+			} catch (Exception e2) {
+				// No-op
+			}
+		}
+	}
 
-	  return ret;
-   }
+	/**
+	 * Computes a parameter map that maps single valued items to Strings and
+	 * multi-valued items to String[]. This is handy for the normal case where
+	 * only a single item is expected - if the type is wrong, then it is usually
+	 * an error, so it is ok to just throw an exception.
+	 * 
+	 * @param request
+	 *            contains the parameter map to convert to a simple map.
+	 * @return A Map to String where only 1 value is present, and to String[]
+	 *         for multiple values. This break down makes the most sense in the
+	 *         usual case where there is only 1 possible value.
+	 */
+	@SuppressWarnings("unchecked")
+	protected Map<String, Object> computeParameterMap(
+			HttpServletRequest request, HttpServletResponse response) {
+		Map<String, String[]> parameters = request.getParameterMap();
+		Map<String, Object> ret = new HashMap<String, Object>();
+		for (Map.Entry<String, String[]> me : parameters.entrySet()) {
+			if (me.getValue().length == 0)
+				continue;
+			if (me.getValue().length == 1)
+				ret.put(me.getKey(), me.getValue()[0]);
+			else
+				ret.put(me.getKey(), me.getValue());
+		}
+		ret.put(MemoryCacheFilter.KEY_NAME, request.getQueryString());
+		ret.put(REQUEST_URI, request.getRequestURI());
+		// This is a bit ugly, but it does allow full access to the request if a
+		// filter really
+		// needs it - eg for auditing.
+		ret.put(REQUEST, request);
+		ret.put(USER_KEY, request.getRemoteUser());
+		ret.put(UrlUriResolver.URIRESOLVER, new UrlUriResolver(request,
+				response, getServletContext()));
 
-   /**
-    * The initialization needs to read the meta data object in from 
-    * the StaticMetaData coming from a file or resource with the name specified
-    * by the metaData property to the servlet, eg:
-    * <pre>
-    * &lt;init-param>
-	*  &lt;param-name>metaData&lt;/param-name>
-    *  &lt;param-value>wado2.metadata&lt;/param-value>
-    * &lt;/init-param>
-    * </pre>
-    * 
-    * The FILTER used for this object is the filter list named by the filter servlet
-    * parameter found in the above MetaData file (or in anything referenced/used by that file)
-    * 
-    * @throws MalformedURLException
-    */
-   @SuppressWarnings("unchecked")
-   @Override
-   public void init() throws ServletException {
-	  String name = this.getInitParameter("metaData");
-	  log.debug("Loading meta-data from {} for servlet.", name);
-	  MetaDataBean root = StaticMetaData.getMetaData(name);
-	  String filterName = getInitParameter("filter");
-	  if (filterName == null)
-		 throw new IllegalArgumentException("Filter name not provided to meta-data servlet.");
-	  metaData = root.getForPath(filterName);
-	  if (metaData == null)
-		 throw new IllegalArgumentException("Filter/meta-data information not found for " + filterName);
-	  filter = (FilterList<ServletResponseItem>) metaData.getValue();
-	  if (filter == null)
-		 throw new IllegalArgumentException("Filter not found for " + filterName);
-	  filterItem = new FilterItem(metaData);
-   }
+		Locale loc = request.getLocale();
+		if (ret.containsKey("language")) {
+			String language = (String) ret.get("language");
+			int split = language.indexOf("_");
+			String country = "";
+			String variant = "";
+			if (split > 0) {
+				country = language.substring(split + 1);
+				language = language.substring(0, split);
+				split = country.indexOf("_");
+				if (split >= 0) {
+					variant = country.substring(split + 1);
+					language = country.substring(0, split);
+				}
+			}
+			log.info("Requested language " + language + "_" + country + "_"
+					+ variant);
+			loc = new Locale(language,country,variant);
+		}
+		ret.put("locale", loc);
+		return ret;
+	}
 
-   /**
-    * Get requests can return last modified information. so add the cache
-    * control headings and then proceed with a doFilter.
-    */
-   @Override
-   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-	  long modifiedTime = getModifiedTimeAllowed() / 1000;
-	  long startTime = System.nanoTime();
-	  try {
-		 resp.setHeader("Cache-Control", "max-age=" + Long.toString(modifiedTime));
-		 // Seems to break IE resp.addHeader("Cache-Control", "private");
-		 doFilter(req, resp);
-	  } finally {
-		 if (log.isDebugEnabled())
-			log.debug("MetaData Servlet with expiry " + modifiedTime + " s called for " + req.getRequestURI() + " with parameters "
-				  + req.getQueryString() + " took " + nanoTimeToString(System.nanoTime() - startTime));
-	  }
-   }
+	/**
+	 * The initialization needs to read the meta data object in from the
+	 * StaticMetaData coming from a file or resource with the name specified by
+	 * the metaData property to the servlet, eg:
+	 * 
+	 * <pre>
+	 * &lt;init-param&gt;
+	 *  &lt;param-name&gt;metaData&lt;/param-name&gt;
+	 *  &lt;param-value&gt;wado2.metadata&lt;/param-value&gt;
+	 * &lt;/init-param&gt;
+	 * </pre>
+	 * 
+	 * The FILTER used for this object is the filter list named by the filter
+	 * servlet parameter found in the above MetaData file (or in anything
+	 * referenced/used by that file)
+	 * 
+	 * @throws MalformedURLException
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public void init() throws ServletException {
+		String name = this.getInitParameter("metaData");
+		log.debug("Loading meta-data from {} for servlet.", name);
+		MetaDataBean root = StaticMetaData.getMetaData(name);
+		String filterName = getInitParameter("filter");
+		if (filterName == null)
+			throw new IllegalArgumentException(
+					"Filter name not provided to meta-data servlet.");
+		metaData = root.getForPath(filterName);
+		if (metaData == null)
+			throw new IllegalArgumentException(
+					"Filter/meta-data information not found for " + filterName);
+		filter = (FilterList<ServletResponseItem>) metaData.getValue();
+		if (filter == null)
+			throw new IllegalArgumentException("Filter not found for "
+					+ filterName);
+		filterItem = new FilterItem(metaData);
+	}
 
-   /** Returns a string representation of the time duration dur */
-   public static String nanoTimeToString(long dur) {
-	  if (dur <= 5e3)
-		 return dur + " ns";
-	  if (dur <= 5e6)
-		 return (dur / 1000) + " us";
-	  if (dur <= 5e9)
-		 return (dur / 1000000) + " ms";
-	  return (dur / 1000000000) + " s";
-   }
+	/**
+	 * Get requests can return last modified information. so add the cache
+	 * control headings and then proceed with a doFilter.
+	 */
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		long modifiedTime = getModifiedTimeAllowed() / 1000;
+		long startTime = System.nanoTime();
+		try {
+			resp.setHeader("Cache-Control", "max-age="
+					+ Long.toString(modifiedTime));
+			// Seems to break IE resp.addHeader("Cache-Control", "private");
+			doFilter(req, resp);
+		} finally {
+			if (log.isDebugEnabled())
+				log.debug("MetaData Servlet with expiry " + modifiedTime
+						+ " s called for " + req.getRequestURI()
+						+ " with parameters " + req.getQueryString() + " took "
+						+ nanoTimeToString(System.nanoTime() - startTime));
+		}
+	}
 
-   /** Returns the amount of time allowed for modifications. */
-   protected long getModifiedTimeAllowed() {
-	  return modifiedTimeAllowed;
-   }
-   
-   /**
-    * Post responses always return new data - so just call doFilter directly.
-    */
-   @Override
-   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-	  log.debug("MetaData Servlet as post for {}  with parameters  {}", req.getRequestURI(), req.getQueryString());
-	  doFilter(req, resp);
-   }
+	/** Returns a string representation of the time duration dur */
+	public static String nanoTimeToString(long dur) {
+		if (dur <= 5e3)
+			return dur + " ns";
+		if (dur <= 5e6)
+			return (dur / 1000) + " us";
+		if (dur <= 5e9)
+			return (dur / 1000000) + " ms";
+		return (dur / 1000000000) + " s";
+	}
 
-   /** Gets the browser version string, all lower case */
-   public static String getUserAgent(Map<?,?> params) {
-   	HttpServletRequest req = (HttpServletRequest) params.get(REQUEST);
-   	return req.getHeader("USER-AGENT").toLowerCase();
-   }
-   
+	/** Returns the amount of time allowed for modifications. */
+	protected long getModifiedTimeAllowed() {
+		return modifiedTimeAllowed;
+	}
+
+	/**
+	 * Post responses always return new data - so just call doFilter directly.
+	 */
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		log.debug("MetaData Servlet as post for {}  with parameters  {}", req
+				.getRequestURI(), req.getQueryString());
+		doFilter(req, resp);
+	}
+
+	/** Gets the browser version string, all lower case */
+	public static String getUserAgent(Map<?, ?> params) {
+		HttpServletRequest req = (HttpServletRequest) params.get(REQUEST);
+		return req.getHeader("USER-AGENT").toLowerCase();
+	}
 
 }

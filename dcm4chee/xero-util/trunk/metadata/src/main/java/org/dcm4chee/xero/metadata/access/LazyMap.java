@@ -39,6 +39,7 @@ package org.dcm4chee.xero.metadata.access;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,7 @@ import org.slf4j.LoggerFactory;
 public class LazyMap extends HashMap<String, Object> {
    private static final Logger log = LoggerFactory.getLogger(LazyMap.class); 
    Map<String, Object> lazy;
+   boolean wasEager = false;
 
    public LazyMap(Map<String, Object> lazy) {
 	  this.lazy = lazy;
@@ -113,4 +115,30 @@ public class LazyMap extends HashMap<String, Object> {
 	  Map<?,?> nextMap = (Map<?,?>) map.get(key.substring(0,nextDot));
 	  return getPath(nextMap,key.substring(nextDot+1));
    }
+   
+	@Override
+	public Set<java.util.Map.Entry<String, Object>> entrySet() {
+		addAllLazy();
+		return super.entrySet();
+	}
+
+	@Override
+	public Set<String> keySet() {
+		addAllLazy();
+		return super.keySet();
+	}
+
+	/** Adds all the lazy elements to this map -override to get entrySet and keySet 
+	 * working correctly.
+	 * @return false if over-riding elements should initialize
+	 */
+	protected boolean addAllLazy() {
+		if( wasEager ) return true;
+		wasEager = true;
+		if( lazy==null ) return false;
+		for(Map.Entry<String,Object> me : lazy.entrySet()) {
+			this.get(me.getKey());
+		}
+		return false;
+	}
 }
