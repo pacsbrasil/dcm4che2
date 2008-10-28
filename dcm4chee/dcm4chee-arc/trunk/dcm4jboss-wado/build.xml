@@ -58,7 +58,7 @@
 		<pathelement location="${dcm4chee-ejb-client.jar}"/>
 		<pathelement location="${dcm4chee-ejb-server.jar}"/>
 		<pathelement location="${dcm4chee.jar}"/>
-		<pathelement location="${dcm4chee-sar.lib}/dcm4che-audit-2.0.14.jar"/>		
+		<pathelement location="${dcm4chee-sar.lib}/dcm4che-audit-2.0.17.jar"/>		
 		<fileset dir="${jboss.lib}">
 			<include name="*.jar"/>
 		</fileset>
