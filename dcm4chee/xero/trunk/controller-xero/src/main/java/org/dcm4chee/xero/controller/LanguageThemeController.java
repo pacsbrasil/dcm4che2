@@ -84,7 +84,7 @@ public class LanguageThemeController<T> implements Filter<T> {
 		Map<String, Object> model = FilterUtil.getModel(params);
 
 		String sTheme = FilterUtil.getString(params, THEME_KEY,
-				"theme")+".properties";
+				"theme");
 		Properties theme = getTheme(sTheme);
 		if (theme == null) {
 			log.warn("Theme {} not found, using default theme.", sTheme);
@@ -102,18 +102,32 @@ public class LanguageThemeController<T> implements Filter<T> {
 		return filterItem.callNextFilter(params);
 	}
 
-	/** Returns the theme associated with the given string */
+	/** Returns the theme associated with the given string.
+	 * If the theme contains theme.inherit then that theme will
+	 * be used as the parent theme that provides default values.
+	 */
 	public Properties getTheme(String sTheme) {
 		Properties theme = themes.get(sTheme);
 		if (theme != null)
 			return theme;
 		try {
-			InputStream is = cl.getResourceAsStream(sTheme);
+			InputStream is = cl.getResourceAsStream(sTheme+".properties");
 			if (is == null)
 				return null;
 			theme = new Properties();
 			theme.load(is);
 			is.close();
+			String sParent = theme.getProperty("theme.inherit");
+			if( sParent!=null ) {
+				Properties parent = getTheme(sParent);
+				if( parent==null ) log.error("Parent theme "+sParent+" not found.");
+				else log.info("Inheriting from parent {} into {}", sParent, sTheme);
+				theme = new Properties();
+				theme.putAll(parent);
+				is = cl.getResourceAsStream(sTheme+".properties");
+				theme.load(is);
+				is.close();
+			}
 			themes.putIfAbsent(sTheme, theme);
 		} catch (IOException e) {
 			return null;

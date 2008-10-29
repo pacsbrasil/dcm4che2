@@ -3,6 +3,9 @@
   <meta content="initial-scale=1.0" name="viewport"/>
   <link type="text/css" rel="stylesheet" href="style/general.css"> </link>
   <link type="text/css" rel="stylesheet" href="local/style.css"> </link>
+  $if(i18n.cssTheme)$
+  <link type="text/css" rel="stylesheet" href="$i18n.cssTheme$"> </link>
+  $endif$
   $if(firebug)$
    <script type='text/javascript' src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script>
   $else$
