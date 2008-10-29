@@ -3,7 +3,7 @@ $! This template allows rendering of the HTML version of a report. !$
 <head><title>$ds.ConceptNameCodeSequence.dicomObjects:{$it.CodeMeaning.value$} $</title></head>
 <body>
 <font size="-1">
-By $ds.("0x80080").value$, Ref. Phys. $ds.("0x80090").value$</font><br />
+$if(not ds.("0x80080").empty)$By $ds.("0x80080").value$, $endif$Ref. Phys. $ds.("0x80090").value$</font><br />
 <table border="0">
   <tr><td>Patient Name:</td><td>$ds.PatientName$</td></tr>
   <tr><td>Patient Id:</td><td>$ds.("0x00100020")$</td></tr>
