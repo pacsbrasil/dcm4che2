@@ -614,13 +614,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 doAfterSeriesIsStored(store, assoc, seriesStored);
                 seriesStored = null;
             }
-            Dataset mwlFilter = service.getCoercionAttributesFor(assoc,
-                    STORE2MWL_XSL, ds);
             boolean newSeries = seriesStored == null;
             if (newSeries) {
                 seriesStored = initSeriesStored(ds, callingAET,
                         fsDTO.getRetrieveAET());
                 assoc.putProperty(SERIES_STORED, seriesStored);
+                Dataset mwlFilter = service.getCoercionAttributesFor(assoc,
+                        STORE2MWL_XSL, ds);
                 if (mwlFilter != null) {
                     coerced = merge(coerced, mergeMatchingMWLItem(assoc, ds,
                             seriuid, mwlFilter));
