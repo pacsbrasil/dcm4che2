@@ -3,37 +3,38 @@
 <body>
    <h1>Xero WADO and External Model Components</h1>
    <p>This library contains the code to implement WADO, as well as the additional calls to get information about 
-   patients, studies and images.  It is important to understand the Xero MetaData and Filter mechanism as the entire
-   WADO service is based on that mechanism.</p>
+   patients, studies and images. It is important to understand the Xero MetaData and Filter mechanism as the entire
+   WADO service is based on that mechanism.  A graphical overview of Xero WADO (representing wado2.metadata can be 
+   found <a href="wado2metadata.png">here</a>, and <a href="Filter overview.htm">this</a> contains the corresponding list of classes.</p>
    
    <h2>Background</h2>
-   <p>The Xero WADO services were written as an alternative to the existing DCM4CHE WADO services.  The problem with the
+   <p>The Xero WADO services were written as an alternative to the existing DCM4CHE WADO services. The problem with the
    existing services was encapsulation and separation of information.  It was becoming very difficult to understand
    how to manage adding new features and functionality when all the arguments/data was being handled by a single class.
-   This made addition of any cached image data require adding a new paramter to an already long list for method calls,
+   This made addition of any cached image data require adding a new parameter to an already long list for method calls,
    and required the root class to know about all the details of the extensions.  Instead, a pipe and filter architecture
    was deemed to be more extensible and encapsulated.  Thus, each filter is supposed to know about itself, plus a little
-   bit about the things it directly relies on, but to keep that knowledge at a minimum.  Thus, most image filters only
+   bit about the things it directly relies on, but to keep that knowledge at a minimum. Thus, most image filters only
    need deal with a next image filter.  Some image filters also need to know about the DICOM header information, or
    about file locations and being able to read an image etc.</p>
    
    <p>Overall, the Xero WADO services thus have a small number of primary filters that they go through - image filters
    are one type, DICOM header data a second time, and then Study Data and C-FIND filters are a third type.  The last
-   two types have a few sub-types depening on the level of data - study, series or image(object) data.  There is a section
-   below for each of the major types, along with documenation on options/availability of the requests from the top level.</p>
+   two types have a few sub-types depending on the level of data - study, series or image(object) data.  There is a section
+   below for each of the major types, along with documentation on options/availability of the requests from the top level.</p>
    
    <h2>Packaging</h2>
-   <p>The actual WAR packaging for the Xero WADO services is contained in wado2-war.  This design allows re-use of the
+   <p>The actual WAR packaging for the Xero WADO services is contained in wado2-war. This design allows re-use of the
    classes and information here in a separate WAR design if required for customization or other purposes.  Thus,
    custom packaging could be provided that includes RID services or other back-end services not provided here.</p>
    
    <h2>WADO Web Service Summary</h2>
-   <p>The WADO services support all the required WADO functionality, a signicant amount of the recommended functionality,
+   <p>The WADO services support all the required WADO functionality, a significant amount of the recommended functionality,
    plus some significant extensions to the base functionality.  See <a href="http://medical.nema.org/dicom/2007/07_18pu.pdf">http://medical.nema.org/dicom/2007/07_18pu.pdf</a>
    When specifying a contentType or any object with a forward slash, encode the slash as %2f</p>
    
-   <h3>Xero Custom Verison</h3>
-   <p>There is a custom version of the WADO service that prevents certain operaitons from occuring such as some scaling,
+   <h3>Xero Custom Version</h3>
+   <p>There is a custom version of the WADO service that prevents certain operations from occurring such as some scaling,
    and colour burn-in of GSPS objects.  This can be used by requesting requestType=XERO instead of the default, or
    using requestType=WADO.</p>
    
@@ -47,13 +48,13 @@
    </p>
     
    <h4>Overlays</h4>
-   <p>The overlay for a GSPS or Image can be retrieved using the overlay=&lt;overlay#> option or overlay=all,burn-in,separate to allow all
-   overlays to be returned, in a single object, all overlays to be returned burned into the image, or all overlays to be returned as separate
-   objects (multi-part mime only.)  (TODO -change from frameNumber to overlay=)</p>
+   <p>The overlay for a GSPS or Image can be retrieved using the overlay=&lt;overlay#> option or overlay=all,burn-in,separate 
+   to allow all overlays to be returned, in a single object, all overlays to be returned burned into the image, or all overlays 
+   to be returned as separate objects (multi-part mime only.)  (TODO -change from frameNumber to overlay=)</p>
    
    <h4>Pixel Padding</h4>
    <p>For non-rectangular images, the base image is encoded as a rectangle, with a specified value meaning to avoid fetching
-   the image.  This value is usually replaced by some fixed value and does not participate in window levelling etc.
+   the image.  This value is usually replaced by some fixed value and does not participate in window leveling etc.
    To retrieve the pixel padding, use pixelPadding=&lt;true,burn-in> to return the pixel padding or burn it into the
    returned image. (TODO implement this.)</p>
    
@@ -63,14 +64,14 @@
    cause the markup to be burned into the image.</p>
    
    <h4>Spatial Transformations</h4>
-   <p>rotation=degress of rotation and flip=true can be used to perform a horizontal flip followed by the amount of rotation.
+   <p>rotation=degrees of rotation and flip=true can be used to perform a horizontal flip followed by the amount of rotation.
    This may change the displayed area in order to encompass the entire specified region.</p>
    
    <h4>Additional Pixel Transformation</h4>
    <p>Currently, the only additional pixel lookup table option included is invert=true to cause the image to be inverted.
    At some point, a generalized colour map will likely be available, as well as post-GSPS window level transformations,
    for example to allow the GSPS Modality LUT to be applied to the image, followed by a custom window level.  The window
-   level type should also be settablem and window level should be applicable to colour images (applying only to the 
+   level type should also be settable and window level should be applicable to colour images (applying only to the 
    grayscale component).</p>
    
    <h4>Reduced Bits Images</h4>
@@ -79,7 +80,7 @@
    of bits.  This is done WITHOUT applying any modality or other LUTs to the image so that the images can be processed
    client side.</p>
    
-   <h3>Repots</h3>
+   <h3>Reports</h3>
    <p>Reports can be retrieved in XML or HTML, just by retrieving a report object UID and selecting the content type.
    Additionally, adding format=NAMED_FORMAT allows adding custom report formats, for example, to include Xero components
    in the displayed format (TODO - implement this).</p>
@@ -90,7 +91,7 @@
    with backslashes, or the objectUID or seriesUID can be omitted and all objects at the given level retrieved.
    (TODO - extend this section with the full description.)</p>
    
-   <h3>DICOM Object Retreival</h3>
+   <h3>DICOM Object Retrieval</h3>
    <p>Objects can be retrieved as DICOM by using contentType=application/dicom.  This is per the standard,
    but there are several extensions available for custom retrieval.</p>
    
@@ -209,7 +210,7 @@
     
    <h3>GSPS XML</h3>
    <p>TODO - describe the way that the GSPS splits the markup/annotations based on whether it is display or image
-   relative, and the incluseion of some VML attributes required to display some types of SVG.</p>
+   relative, and the inclusion of some VML attributes required to display some types of SVG.</p>
    
    <h3>Paged Image Data</h3>
    <p>Since there can easily be tens of thousands of images, and there are often thousands of images, it is possible
@@ -219,10 +220,10 @@
     
    <h3>Suggested Study Data Alternative Services</h3>
    <p>It would be quite easy to create an additional set of services that provide non-XML formatted services, such
-   as direct study quieres and information.  For example, an HTML file containing a table could fairly easily be created
-   It is recommeded that these services be provided on TOP of the existing study data services by adding an additional
+   as direct study queries and information.  For example, an HTML file containing a table could fairly easily be created
+   It is recommended that these services be provided on TOP of the existing study data services by adding an additional
    StringTemplateFilter response converter that converts the existing object types into HTML instead of XML.  This allows
-   future changes and extensions to the objects to continue to be used rather than requiring going throught the C-FIND
+   future changes and extensions to the objects to continue to be used rather than requiring going through the C-FIND
    services.  Alternatively, if it is known that ONLY the C-FIND response data is required, it would be possible to
    go through the C-FIND services directly.</p>
    
