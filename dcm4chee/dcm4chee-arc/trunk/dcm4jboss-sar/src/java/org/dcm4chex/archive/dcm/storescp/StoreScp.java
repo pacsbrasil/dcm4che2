@@ -616,16 +616,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
             Dataset mwlFilter = service.getCoercionAttributesFor(assoc,
                     STORE2MWL_XSL, ds);
-            if (mwlFilter != null) {
-                coerced = merge(coerced, mergeMatchingMWLItem(assoc, ds,
-                        seriuid, mwlFilter));
-            }
-            boolean updateAccessTime = false;
-            if (seriesStored == null) {
+            boolean newSeries = seriesStored == null;
+            if (newSeries) {
                 seriesStored = initSeriesStored(ds, callingAET,
                         fsDTO.getRetrieveAET());
                 assoc.putProperty(SERIES_STORED, seriesStored);
-                updateAccessTime = true;
+                if (mwlFilter != null) {
+                    coerced = merge(coerced, mergeMatchingMWLItem(assoc, ds,
+                            seriuid, mwlFilter));
+                }
             }
             appendInstanceToSeriesStored(seriesStored, ds, fsDTO);
             perfMon.start(activeAssoc, rq,
@@ -633,7 +632,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             long fileLength = file != null ? file.length() : 0L;
             Dataset coercedElements = updateDB(store, ds, fsDTO.getPk(),
                     filePath, fileLength, md5sum,
-                    updateAccessTime);
+                    newSeries);
             ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
             coerced = merge(coerced, coercedElements);
             perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DATASET,
