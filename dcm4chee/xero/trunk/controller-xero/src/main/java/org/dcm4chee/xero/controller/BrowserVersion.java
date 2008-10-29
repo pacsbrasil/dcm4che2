@@ -68,6 +68,7 @@ public class BrowserVersion<T> implements Filter<T> {
  	  }
  	  else {
  	 	  log.info("User agent is not IE {}", userAgent);
+ 	 	  model.put("IS_IE", false);
  		  model.put("HAS_SVG", true);
  		  model.put("HAS_VML", false);
  		  // As needed, add more browser identifications.
