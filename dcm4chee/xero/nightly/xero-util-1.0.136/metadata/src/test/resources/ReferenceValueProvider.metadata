@@ -1,0 +1,11 @@
+value1=Some Value
+valueSameAs1=${ref:value1}
+
+value.two=${class:org.dcm4chee.xero.metadata.ReferenceValueProvider}
+valueSameAsTwo=${ref:value.two}
+
+valueDifferentFromTwo=${class:org.dcm4chee.xero.metadata.ReferenceValueProvider}
+
+valueSameAs1H.inherit=valueSameAs1
+
+valueSimpleInherit.inherit=value1
