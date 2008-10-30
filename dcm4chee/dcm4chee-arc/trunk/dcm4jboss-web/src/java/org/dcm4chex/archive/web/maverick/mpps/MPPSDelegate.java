@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.web.maverick.mpps;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +48,9 @@ import javax.management.ObjectName;
 import javax.servlet.ServletConfig;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.ejb.jdbc.MPPSQueryCmd;
+import org.dcm4chex.archive.web.maverick.mpps.MPPSFilter;
 import org.jboss.mx.util.MBeanServerLocator;
 
 /**
@@ -57,101 +60,101 @@ import org.jboss.mx.util.MBeanServerLocator;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class MPPSDelegate {
-		
-
-	private static MBeanServer server;
-
-	private static Logger log = Logger.getLogger( MPPSDelegate.class.getName() );
-
-	private ObjectName mppsScpServiceName;
 
 
-	public Logger getLogger() {
-		return log;
-	}
-	
-	/**
-	 * Iinitialize the MPPS service delegator.
-	 * <p>
-	 * Set the name of the MppsService MBean with the servlet config param
-	 * 'mppsScpServiceName'.
-	 * 
-	 * @param config
-	 *            The ServletConfig object.
-	 */
-	public void init(ServletConfig config) {
-		if (server != null)
-			return;
-		server = MBeanServerLocator.locate();
-		String s = config.getInitParameter("mppsScpServiceName");
-		try {
-			mppsScpServiceName = new ObjectName(s);
-		} catch (Exception e) {
-			log.error("Exception in init! ", e);
-		}
+    private static MBeanServer server;
 
-	}
-	
-		
-		/**
-		 * Makes the MBean call to get the list of worklist entries for given filter (ds).
-		 * 
-		 * @param filter	The WADO request.
-		 * 
-		 * @return The list of worklist entries ( Each item in the list is a Dataset of one scheduled procedure step).
-		 */
-		public List findMppsEntries( MPPSFilter filter ) {
-			List resp = null;
-			MPPSQueryCmd cmd = null;
-			try {
-				resp = new ArrayList();
-				cmd = new MPPSQueryCmd( filter.toDataset(), filter.isEmptyAccNo() );
-				cmd.execute();
-				while ( cmd.next() ) {
-					resp.add( cmd.getDataset() );
-				}
-			} catch ( Exception x ) {
-				log.error( "Exception occured in getMWLEntries: "+x.getMessage(), x );
-			}
-			if ( cmd != null ) cmd.close();
-	        return resp;
-		}
-		
-		
-		/**
-		 * Deletes MPPS entries specified by an array of MPPS IUIDs.
-		 * <p>
-		 * 
-		 * @param iuids  The List of Instance UIDs of the MPPS Entries to delete.
-		 * @return
-		 */
-		public boolean deleteMPPSEntries(String[] iuids) {
-			try {
-				Object o = server.invoke(mppsScpServiceName, "deleteMPPSEntries",
-						new Object[] { iuids }, new String[] { String[].class
-								.getName() });
-				return ((Boolean) o).booleanValue();
-			} catch (Exception x) {
-				log.error("Exception occured in deleteMPPSEntries: " + x.getMessage(),
-						x);
-			}
-			return false;
-		}
+    private static Logger log = Logger.getLogger( MPPSDelegate.class.getName() );
 
-		/**
-		 * @param mppsIUIDs
-		 */
-		public boolean unlinkMPPS(String[] mppsIUIDs) {
-			try {
-				for ( int i = 0 ; i < mppsIUIDs.length ; i++ ) {
-					server.invoke(mppsScpServiceName, "unlinkMpps",
-							new Object[] { mppsIUIDs[i] }, new String[] { String.class.getName() });
-				}
-				return true;
-			} catch (Exception x) {
-				log.error("Exception occured in unlinkMPPS: " + x.getMessage(),x);
-				return false;
-			}
-		}
+    private ObjectName mppsScpServiceName;
 
+    private MPPSQueryCmd cmd = null;
+
+    public Logger getLogger() {
+        return log;
+    }
+
+    /**
+     * Iinitialize the MPPS service delegator.
+     * <p>
+     * Set the name of the MppsService MBean with the servlet config param
+     * 'mppsScpServiceName'.
+     * 
+     * @param config
+     *            The ServletConfig object.
+     */
+    public void init(ServletConfig config) {
+        if (server != null)
+            return;
+        server = MBeanServerLocator.locate();
+        String s = config.getInitParameter("mppsScpServiceName");
+        try {
+            mppsScpServiceName = new ObjectName(s);
+        } catch (Exception e) {
+            log.error("Exception in init! ", e);
+        }
+
+    }
+
+    public int countMppsEntries(MPPSFilter filter) {
+        try {
+            cmd = new MPPSQueryCmd( filter.toDataset(), filter.isEmptyAccNo() );
+            return cmd.count();
+        } catch (SQLException x) {
+            log.error( "Exception occured in countMppsEntries: "+x.getMessage(), x );
+            return -1;
+        }
+    }
+
+    public List<Dataset> findMppsEntries( MPPSFilter filter, int offset, int limit ) {
+        try {
+            if ( cmd == null ) {
+                log.warn("findMppsEntries called before countMppsEntries!");
+                cmd = new MPPSQueryCmd( filter.toDataset(), filter.isEmptyAccNo() );
+            } else {
+                cmd.open();
+            }
+            return cmd.list(offset, limit);
+        } catch (SQLException x) {
+            log.error( "Exception occured in findMppsEntries: "+x.getMessage(), x );
+            return null;
+        }
+    }
+
+
+    /**
+     * Deletes MPPS entries specified by an array of MPPS IUIDs.
+     * <p>
+     * 
+     * @param iuids  The List of Instance UIDs of the MPPS Entries to delete.
+     * @return
+     */
+    public boolean deleteMPPSEntries(String[] iuids) {
+        try {
+            Object o = server.invoke(mppsScpServiceName, "deleteMPPSEntries",
+                    new Object[] { iuids }, new String[] { String[].class
+                    .getName() });
+            return ((Boolean) o).booleanValue();
+        } catch (Exception x) {
+            log.error("Exception occured in deleteMPPSEntries: " + x.getMessage(),
+                    x);
+        }
+        return false;
+    }
+
+    /**
+     * @param mppsIUIDs
+     */
+    public boolean unlinkMPPS(String[] mppsIUIDs) {
+        try {
+            for ( int i = 0 ; i < mppsIUIDs.length ; i++ ) {
+                server.invoke(mppsScpServiceName, "unlinkMpps",
+                        new Object[] { mppsIUIDs[i] }, new String[] { String.class.getName() });
+            }
+            return true;
+        } catch (Exception x) {
+            log.error("Exception occured in unlinkMPPS: " + x.getMessage(),x);
+            return false;
+        }
+    }
 }

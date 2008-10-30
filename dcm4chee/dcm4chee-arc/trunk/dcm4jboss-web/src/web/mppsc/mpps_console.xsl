@@ -176,7 +176,9 @@
 			</td>
 		</table>
 		<xsl:call-template name="tableheader"/>
-		<xsl:apply-templates select="mppsEntries/item" />
+		<xsl:apply-templates select="mppsEntries/item">
+		  <xsl:sort data-type="text" order="descending" select="ppsStartDateTime" />
+		</xsl:apply-templates>
 	</form>
 </xsl:template>
 
