@@ -3,7 +3,6 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
 xmlns="http://www.w3.org/TR/REC-html40">
 
 <head>
-<meta name="Excel Workbook Frameset">
 <meta http-equiv=Content-Type content="text/html; charset=windows-1252">
 <meta name=ProgId content=Excel.Sheet>
 <meta name=Generator content="Microsoft Excel 11">
@@ -14,333 +13,629 @@ xmlns="http://www.w3.org/TR/REC-html40">
  <o:DocumentProperties>
   <o:Author>lpeters</o:Author>
   <o:LastAuthor>lpeters</o:LastAuthor>
-  <o:Created>2008-10-01T13:11:14Z</o:Created>
-  <o:LastSaved>2008-10-29T14:56:31Z</o:LastSaved>
+  <o:Created>2008-10-07T12:42:38Z</o:Created>
+  <o:LastSaved>2008-10-30T13:50:49Z</o:LastSaved>
   <o:Company>Agfa Gevaert AG</o:Company>
   <o:Version>11.9999</o:Version>
  </o:DocumentProperties>
-</xml><![endif]--><![if !supportTabStrip]>
-<link id="shLink" href="Filter%20overview_files/sheet001.htm">
-<link id="shLink" href="Filter%20overview_files/sheet002.htm">
-<link id="shLink" href="Filter%20overview_files/sheet003.htm">
-
-<link id="shLink">
-
-<script language="JavaScript">
-<!--
- var c_lTabs=3;
-
- var c_rgszSh=new Array(c_lTabs);
- c_rgszSh[0] = "Sheet1";
- c_rgszSh[1] = "Sheet2";
- c_rgszSh[2] = "Sheet3";
-
-
-
- var c_rgszClr=new Array(8);
- c_rgszClr[0]="window";
- c_rgszClr[1]="buttonface";
- c_rgszClr[2]="windowframe";
- c_rgszClr[3]="windowtext";
- c_rgszClr[4]="threedlightshadow";
- c_rgszClr[5]="threedhighlight";
- c_rgszClr[6]="threeddarkshadow";
- c_rgszClr[7]="threedshadow";
-
- var g_iShCur;
- var g_rglTabX=new Array(c_lTabs);
-
-function fnGetIEVer()
-{
- var ua=window.navigator.userAgent
- var msie=ua.indexOf("MSIE")
- if (msie>0 && window.navigator.platform=="Win32")
-  return parseInt(ua.substring(msie+5,ua.indexOf(".", msie)));
- else
-  return 0;
-}
-
-function fnBuildFrameset()
-{
- var szHTML="<frameset rows=\"*,18\" border=0 width=0 frameborder=no framespacing=0>"+
-  "<frame src=\""+document.all.item("shLink")[0].href+"\" name=\"frSheet\" noresize>"+
-  "<frameset cols=\"54,*\" border=0 width=0 frameborder=no framespacing=0>"+
-  "<frame src=\"\" name=\"frScroll\" marginwidth=0 marginheight=0 scrolling=no>"+
-  "<frame src=\"\" name=\"frTabs\" marginwidth=0 marginheight=0 scrolling=no>"+
-  "</frameset></frameset><plaintext>";
-
- with (document) {
-  open("text/html","replace");
-  write(szHTML);
-  close();
- }
-
- fnBuildTabStrip();
-}
-
-function fnBuildTabStrip()
-{
- var szHTML=
-  "<html><head><style>.clScroll {font:8pt Courier New;color:"+c_rgszClr[6]+";cursor:default;line-height:10pt;}"+
-  ".clScroll2 {font:10pt Arial;color:"+c_rgszClr[6]+";cursor:default;line-height:11pt;}</style></head>"+
-  "<body onclick=\"event.returnValue=false;\" ondragstart=\"event.returnValue=false;\" onselectstart=\"event.returnValue=false;\" bgcolor="+c_rgszClr[4]+" topmargin=0 leftmargin=0><table cellpadding=0 cellspacing=0 width=100%>"+
-  "<tr><td colspan=6 height=1 bgcolor="+c_rgszClr[2]+"></td></tr>"+
-  "<tr><td style=\"font:1pt\">&nbsp;<td>"+
-  "<td valign=top id=tdScroll class=\"clScroll\" onclick=\"parent.fnFastScrollTabs(0);\" onmouseover=\"parent.fnMouseOverScroll(0);\" onmouseout=\"parent.fnMouseOutScroll(0);\"><a>&#171;</a></td>"+
-  "<td valign=top id=tdScroll class=\"clScroll2\" onclick=\"parent.fnScrollTabs(0);\" ondblclick=\"parent.fnScrollTabs(0);\" onmouseover=\"parent.fnMouseOverScroll(1);\" onmouseout=\"parent.fnMouseOutScroll(1);\"><a>&lt</a></td>"+
-  "<td valign=top id=tdScroll class=\"clScroll2\" onclick=\"parent.fnScrollTabs(1);\" ondblclick=\"parent.fnScrollTabs(1);\" onmouseover=\"parent.fnMouseOverScroll(2);\" onmouseout=\"parent.fnMouseOutScroll(2);\"><a>&gt</a></td>"+
-  "<td valign=top id=tdScroll class=\"clScroll\" onclick=\"parent.fnFastScrollTabs(1);\" onmouseover=\"parent.fnMouseOverScroll(3);\" onmouseout=\"parent.fnMouseOutScroll(3);\"><a>&#187;</a></td>"+
-  "<td style=\"font:1pt\">&nbsp;<td></tr></table></body></html>";
-
- with (frames['frScroll'].document) {
-  open("text/html","replace");
-  write(szHTML);
-  close();
- }
-
- szHTML =
-  "<html><head>"+
-  "<style>A:link,A:visited,A:active {text-decoration:none;"+"color:"+c_rgszClr[3]+";}"+
-  ".clTab {cursor:hand;background:"+c_rgszClr[1]+";font:9pt Arial;padding-left:3px;padding-right:3px;text-align:center;}"+
-  ".clBorder {background:"+c_rgszClr[2]+";font:1pt;}"+
-  "</style></head><body onload=\"parent.fnInit();\" onselectstart=\"event.returnValue=false;\" ondragstart=\"event.returnValue=false;\" bgcolor="+c_rgszClr[4]+
-  " topmargin=0 leftmargin=0><table id=tbTabs cellpadding=0 cellspacing=0>";
-
- var iCellCount=(c_lTabs+1)*2;
-
- var i;
- for (i=0;i<iCellCount;i+=2)
-  szHTML+="<col width=1><col>";
-
- var iRow;
- for (iRow=0;iRow<6;iRow++) {
-
-  szHTML+="<tr>";
-
-  if (iRow==5)
-   szHTML+="<td colspan="+iCellCount+"></td>";
-  else {
-   if (iRow==0) {
-    for(i=0;i<iCellCount;i++)
-     szHTML+="<td height=1 class=\"clBorder\"></td>";
-   } else if (iRow==1) {
-    for(i=0;i<c_lTabs;i++) {
-     szHTML+="<td height=1 nowrap class=\"clBorder\">&nbsp;</td>";
-     szHTML+=
-      "<td id=tdTab height=1 nowrap class=\"clTab\" onmouseover=\"parent.fnMouseOverTab("+i+");\" onmouseout=\"parent.fnMouseOutTab("+i+");\">"+
-      "<a href=\""+document.all.item("shLink")[i].href+"\" target=\"frSheet\" id=aTab>&nbsp;"+c_rgszSh[i]+"&nbsp;</a></td>";
-    }
-    szHTML+="<td id=tdTab height=1 nowrap class=\"clBorder\"><a id=aTab>&nbsp;</a></td><td width=100%></td>";
-   } else if (iRow==2) {
-    for (i=0;i<c_lTabs;i++)
-     szHTML+="<td height=1></td><td height=1 class=\"clBorder\"></td>";
-    szHTML+="<td height=1></td><td height=1></td>";
-   } else if (iRow==3) {
-    for (i=0;i<iCellCount;i++)
-     szHTML+="<td height=1></td>";
-   } else if (iRow==4) {
-    for (i=0;i<c_lTabs;i++)
-     szHTML+="<td height=1 width=1></td><td height=1></td>";
-    szHTML+="<td height=1 width=1></td><td></td>";
-   }
-  }
-  szHTML+="</tr>";
- }
-
- szHTML+="</table></body></html>";
- with (frames['frTabs'].document) {
-  open("text/html","replace");
-  charset=document.charset;
-  write(szHTML);
-  close();
- }
-}
-
-function fnInit()
-{
- g_rglTabX[0]=0;
- var i;
- for (i=1;i<=c_lTabs;i++)
-  with (frames['frTabs'].document.all.tbTabs.rows[1].cells[fnTabToCol(i-1)])
-   g_rglTabX[i]=offsetLeft+offsetWidth-6;
-}
-
-function fnTabToCol(iTab)
-{
- return 2*iTab+1;
-}
-
-function fnNextTab(fDir)
-{
- var iNextTab=-1;
- var i;
-
- with (frames['frTabs'].document.body) {
-  if (fDir==0) {
-   if (scrollLeft>0) {
-    for (i=0;i<c_lTabs&&g_rglTabX[i]<scrollLeft;i++);
-    if (i<c_lTabs)
-     iNextTab=i-1;
-   }
-  } else {
-   if (g_rglTabX[c_lTabs]+6>offsetWidth+scrollLeft) {
-    for (i=0;i<c_lTabs&&g_rglTabX[i]<=scrollLeft;i++);
-    if (i<c_lTabs)
-     iNextTab=i;
-   }
-  }
- }
- return iNextTab;
-}
-
-function fnScrollTabs(fDir)
-{
- var iNextTab=fnNextTab(fDir);
-
- if (iNextTab>=0) {
-  frames['frTabs'].scroll(g_rglTabX[iNextTab],0);
-  return true;
- } else
-  return false;
-}
-
-function fnFastScrollTabs(fDir)
-{
- if (c_lTabs>16)
-  frames['frTabs'].scroll(g_rglTabX[fDir?c_lTabs-1:0],0);
- else
-  if (fnScrollTabs(fDir)>0) window.setTimeout("fnFastScrollTabs("+fDir+");",5);
-}
-
-function fnSetTabProps(iTab,fActive)
-{
- var iCol=fnTabToCol(iTab);
- var i;
-
- if (iTab>=0) {
-  with (frames['frTabs'].document.all) {
-   with (tbTabs) {
-    for (i=0;i<=4;i++) {
-     with (rows[i]) {
-      if (i==0)
-       cells[iCol].style.background=c_rgszClr[fActive?0:2];
-      else if (i>0 && i<4) {
-       if (fActive) {
-        cells[iCol-1].style.background=c_rgszClr[2];
-        cells[iCol].style.background=c_rgszClr[0];
-        cells[iCol+1].style.background=c_rgszClr[2];
-       } else {
-        if (i==1) {
-         cells[iCol-1].style.background=c_rgszClr[2];
-         cells[iCol].style.background=c_rgszClr[1];
-         cells[iCol+1].style.background=c_rgszClr[2];
-        } else {
-         cells[iCol-1].style.background=c_rgszClr[4];
-         cells[iCol].style.background=c_rgszClr[(i==2)?2:4];
-         cells[iCol+1].style.background=c_rgszClr[4];
-        }
-       }
-      } else
-       cells[iCol].style.background=c_rgszClr[fActive?2:4];
-     }
-    }
-   }
-   with (aTab[iTab].style) {
-    cursor=(fActive?"default":"hand");
-    color=c_rgszClr[3];
-   }
-  }
- }
-}
-
-function fnMouseOverScroll(iCtl)
-{
- frames['frScroll'].document.all.tdScroll[iCtl].style.color=c_rgszClr[7];
-}
-
-function fnMouseOutScroll(iCtl)
-{
- frames['frScroll'].document.all.tdScroll[iCtl].style.color=c_rgszClr[6];
-}
-
-function fnMouseOverTab(iTab)
-{
- if (iTab!=g_iShCur) {
-  var iCol=fnTabToCol(iTab);
-  with (frames['frTabs'].document.all) {
-   tdTab[iTab].style.background=c_rgszClr[5];
-  }
- }
-}
-
-function fnMouseOutTab(iTab)
-{
- if (iTab>=0) {
-  var elFrom=frames['frTabs'].event.srcElement;
-  var elTo=frames['frTabs'].event.toElement;
-
-  if ((!elTo) ||
-   (elFrom.tagName==elTo.tagName) ||
-   (elTo.tagName=="A" && elTo.parentElement!=elFrom) ||
-   (elFrom.tagName=="A" && elFrom.parentElement!=elTo)) {
-
-   if (iTab!=g_iShCur) {
-    with (frames['frTabs'].document.all) {
-     tdTab[iTab].style.background=c_rgszClr[1];
-    }
-   }
-  }
- }
-}
-
-function fnSetActiveSheet(iSh)
-{
- if (iSh!=g_iShCur) {
-  fnSetTabProps(g_iShCur,false);
-  fnSetTabProps(iSh,true);
-  g_iShCur=iSh;
- }
-}
-
- window.g_iIEVer=fnGetIEVer();
- if (window.g_iIEVer>=4)
-  fnBuildFrameset();
-//-->
-</script>
-<![endif]><!--[if gte mso 9]><xml>
+</xml><![endif]-->
+<style>
+<!--table
+	{mso-displayed-decimal-separator:"\.";
+	mso-displayed-thousand-separator:"\,";}
+@page
+	{margin:1.0in .75in 1.0in .75in;
+	mso-header-margin:.5in;
+	mso-footer-margin:.5in;}
+tr
+	{mso-height-source:auto;}
+col
+	{mso-width-source:auto;}
+br
+	{mso-data-placement:same-cell;}
+.style0
+	{mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	white-space:nowrap;
+	mso-rotate:0;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	color:windowtext;
+	font-size:10.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Arial;
+	mso-generic-font-family:auto;
+	mso-font-charset:0;
+	border:none;
+	mso-protection:locked visible;
+	mso-style-name:Normal;
+	mso-style-id:0;}
+td
+	{mso-style-parent:style0;
+	padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:windowtext;
+	font-size:10.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Arial;
+	mso-generic-font-family:auto;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border:none;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	mso-protection:locked visible;
+	white-space:nowrap;
+	mso-rotate:0;}
+.xl24
+	{mso-style-parent:style0;
+	font-weight:700;
+	font-family:Arial, sans-serif;
+	mso-font-charset:0;}
+.xl25
+	{mso-style-parent:style0;
+	font-family:Arial, sans-serif;
+	mso-font-charset:0;}
+-->
+</style>
+<!--[if gte mso 9]><xml>
  <x:ExcelWorkbook>
   <x:ExcelWorksheets>
    <x:ExcelWorksheet>
     <x:Name>Sheet1</x:Name>
-    <x:WorksheetSource HRef="Filter%20overview_files/sheet001.htm"/>
-   </x:ExcelWorksheet>
-   <x:ExcelWorksheet>
-    <x:Name>Sheet2</x:Name>
-    <x:WorksheetSource HRef="Filter%20overview_files/sheet002.htm"/>
-   </x:ExcelWorksheet>
-   <x:ExcelWorksheet>
-    <x:Name>Sheet3</x:Name>
-    <x:WorksheetSource HRef="Filter%20overview_files/sheet003.htm"/>
+    <x:WorksheetOptions>
+     <x:Selected/>
+     <x:Panes>
+      <x:Pane>
+       <x:Number>3</x:Number>
+       <x:ActiveCol>1</x:ActiveCol>
+      </x:Pane>
+     </x:Panes>
+     <x:ProtectContents>False</x:ProtectContents>
+     <x:ProtectObjects>False</x:ProtectObjects>
+     <x:ProtectScenarios>False</x:ProtectScenarios>
+    </x:WorksheetOptions>
    </x:ExcelWorksheet>
   </x:ExcelWorksheets>
-  <x:Stylesheet HRef="Filter%20overview_files/stylesheet.css"/>
-  <x:WindowHeight>15585</x:WindowHeight>
-  <x:WindowWidth>19995</x:WindowWidth>
-  <x:WindowTopX>480</x:WindowTopX>
-  <x:WindowTopY>105</x:WindowTopY>
+  <x:WindowHeight>14565</x:WindowHeight>
+  <x:WindowWidth>17115</x:WindowWidth>
+  <x:WindowTopX>120</x:WindowTopX>
+  <x:WindowTopY>15</x:WindowTopY>
   <x:ProtectStructure>False</x:ProtectStructure>
   <x:ProtectWindows>False</x:ProtectWindows>
  </x:ExcelWorkbook>
 </xml><![endif]-->
 </head>
 
-<frameset rows="*,39" border=0 width=0 frameborder=no framespacing=0>
- <frame src="Filter%20overview_files/sheet001.htm" name="frSheet">
- <frame src="Filter%20overview_files/tabstrip.htm" name="frTabs" marginwidth=0 marginheight=0>
- <noframes>
-  <body>
-   <p>This page uses frames, but your browser doesn't support them.</p>
-  </body>
- </noframes>
-</frameset>
+<body link=blue vlink=purple>
+
+<table x:str border=0 cellpadding=0 cellspacing=0 width=818 style='border-collapse:
+ collapse;table-layout:fixed;width:614pt'>
+ <col width=179 style='mso-width-source:userset;mso-width-alt:6546;width:134pt'>
+ <col width=134 style='mso-width-source:userset;mso-width-alt:4900;width:101pt'>
+ <col width=64 style='width:48pt'>
+ <col width=185 style='mso-width-source:userset;mso-width-alt:6765;width:139pt'>
+ <col width=64 span=4 style='width:48pt'>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 class=xl24 width=179 style='height:12.75pt;width:134pt'>Filter</td>
+  <td class=xl24 width=134 style='width:101pt'>Result Type</td>
+  <td class=xl24 width=64 style='width:48pt'>Priority</td>
+  <td class=xl24 width=185 style='width:139pt'>FilterList</td>
+  <td class=xl24 width=64 style='width:48pt'>package</td>
+  <td class=xl24 width=64 style='width:48pt'></td>
+  <td width=64 style='width:48pt'></td>
+  <td width=64 style='width:48pt'></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>AddFileLocationFilter</td>
+  <td>ResultsBean</td>
+  <td align=right x:num>550</td>
+  <td>imageSource.addFileLocation</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.search.filter</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>BlockedSearchFilter</td>
+  <td>T</td>
+  <td align=right x:num>0</td>
+  <td>cfind.blocked</td>
+  <td colspan=4 style='mso-ignore:colspan'>org.dcm4chee.xero.search.dicom</td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>ChooseContentTypeFilter</td>
+  <td>ServletResponseItem</td>
+  <td align=right x:num>100</td>
+  <td>WADO.choose</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>DicomFilter</td>
+  <td>DicomImageReader</td>
+  <td align=right x:num>100</td>
+  <td>dicomImageReader.dicom</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>DicomImageFilter</td>
+  <td>WadoImage</td>
+  <td align=right x:num>0</td>
+  <td>baseImg.src</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>DicomUpdateFilter</td>
+  <td>DicomImageReader</td>
+  <td align=right x:num>250</td>
+  <td>dicomUpdated.update</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>DSModel</td>
+  <td>ServletResponseItem</td>
+  <td align=right x:num>0</td>
+  <td>xmlReport.dsmodel</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>EmptyQueryParameterFilter</td>
+  <td>ResultFromDicom</td>
+  <td align=right x:num>1000</td>
+  <td>source:emptyFilter</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.search</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>EncodeDicom</td>
+  <td>ServletResponseItem</td>
+  <td align=right x:num>0</td>
+  <td>wadoDcm.header</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>EncodeImage</td>
+  <td>ServletResponseItem</td>
+  <td align=right x:num>25</td>
+  <td>WADO.image</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>FileLocationMgtFilter</td>
+  <td>URL</td>
+  <td align=right x:num>1000</td>
+  <td>fileLocation.fileLocationMgt</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.search.filter</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>FilterList</td>
+  <td>T</td>
+  <td colspan=2 style='mso-ignore:colspan'></td>
+  <td colspan=4 style='mso-ignore:colspan'>org.dcm4chee.xero.metadata.filter</td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>FrameNumberItFilter</td>
+  <td>Iterator&lt;ServletRespon<span style='display:none'>seItem&gt;</span></td>
+  <td align=right x:num>7000</td>
+  <td>multipart.frameNumberItFilter</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado.multi</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>GspsBurnIn</td>
+  <td>WadoImage</td>
+  <td align=right x:num>7000</td>
+  <td>wadoImg.gspsBurn</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>GspsDiscover</td>
+  <td>ResultsBean</td>
+  <td align=right x:num>100</td>
+  <td>studySource.gsps</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.search.filter</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>GspsDiscover</td>
+  <td>ResultsBean</td>
+  <td align=right x:num>20</td>
+  <td>seriesSource.gsps</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.search.filter</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>GspsEncode</td>
+  <td>ResultsBean</td>
+  <td align=right x:num>600</td>
+  <td>imageSource.gsps</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.search.filter</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>GspsUid</td>
+  <td>ResultsBean</td>
+  <td align=right x:num>100</td>
+  <td>imageSource.gspsUid</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.search.filter</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>ImageCache</td>
+  <td>WadoImage</td>
+  <td align=right x:num>0</td>
+  <td>imageCache</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>ImageDisplayRelative</td>
+  <td>WadoImage</td>
+  <td align=right x:num>7000</td>
+  <td>xeroImg.relative</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>ImageSearch</td>
+  <td>ResultFromDicom</td>
+  <td align=right x:num>0</td>
+  <td>imageSource.imageSearch</td>
+  <td colspan=4 style='mso-ignore:colspan'>org.dcm4chee.xero.search.study</td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>ImageSearchConditionParser</td>
+  <td>SearchCriteria</td>
+  <td align=right x:num>0</td>
+  <td>seriesSource.emptyFilter.searc<span style='display:none'>hParser</span></td>
+  <td colspan=4 style='mso-ignore:colspan'>org.dcm4chee.xero.search.study</td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>ImageSearchConditionParser</td>
+  <td>SearchCriteria</td>
+  <td align=right x:num>0</td>
+  <td>imageSource.emptyFilter.searc<span style='display:none'>hParser</span></td>
+  <td colspan=4 style='mso-ignore:colspan'>org.dcm4chee.xero.search.study</td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>IndexedImageSource</td>
+  <td>WadoImage</td>
+  <td align=right x:num>0</td>
+  <td>imageRel.source</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>IndexedImageSource</td>
+  <td>WadoImage</td>
+  <td align=right x:num>0</td>
+  <td>displayRel.source</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>JaxbFilter</td>
+  <td>ServletResponseItem</td>
+  <td colspan=2 style='mso-ignore:colspan'></td>
+  <td colspan=4 style='mso-ignore:colspan'>org.dcm4chee.xero.metadata.servlet</td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>KeyObjectFilter</td>
+  <td>ResultsBean</td>
+  <td align=right x:num>25</td>
+  <td>imageSource.ko</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.search.filter</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>KeyObjectSeries</td>
+  <td>ResultsBean</td>
+  <td align=right x:num>25</td>
+  <td>seriesSource.kin</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.search.filter</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>MemoryCacheFilter</td>
+  <td>T</td>
+  <td align=right x:num>10000</td>
+  <td>fileLocation.locationCache</td>
+  <td colspan=4 style='mso-ignore:colspan'>org.dcm4chee.xero.metadata.filter</td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>MemoryCacheFilter</td>
+  <td>T</td>
+  <td align=right x:num>200</td>
+  <td>dicomImageReader.memcache</td>
+  <td colspan=4 style='mso-ignore:colspan'>org.dcm4chee.xero.metadata.filter</td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>MemoryCacheFilter</td>
+  <td>T</td>
+  <td align=right x:num>400</td>
+  <td>imageSource.cacheFilter</td>
+  <td colspan=4 style='mso-ignore:colspan'>org.dcm4chee.xero.metadata.filter</td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>MemoryCacheFilter</td>
+  <td>T</td>
+  <td align=right x:num>400</td>
+  <td>seriesSource.cacheFilter</td>
+  <td colspan=4 style='mso-ignore:colspan'>org.dcm4chee.xero.metadata.filter</td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>MemoryCacheFilter</td>
+  <td>T</td>
+  <td align=right x:num>5000</td>
+  <td>baseImg.memcache</td>
+  <td colspan=4 style='mso-ignore:colspan'>org.dcm4chee.xero.metadata.filter</td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>MinMaxPixelInfo</td>
+  <td>ResultsBean</td>
+  <td align=right x:num>650</td>
+  <td>imageSource.minMaxPixelInfo</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.search.filter</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>MultipartCallFilter</td>
+  <td>Iterator&lt;ServletRespon<span style='display:none'>seItem&gt;</span></td>
+  <td align=right x:num>8500</td>
+  <td>multipart.original</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado.multi</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>MultipartCallFilter</td>
+  <td>Iterator&lt;ServletRespon<span style='display:none'>seItem&gt;</span></td>
+  <td align=right x:num>8000</td>
+  <td>multipart.dicomHeader</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado.multi</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>MultipartCallFilter</td>
+  <td>Iterator&lt;ServletRespon<span style='display:none'>seItem&gt;</span></td>
+  <td align=right x:num>7500</td>
+  <td>multipart.dicom</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado.multi</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>MultipartCallFilter</td>
+  <td>Iterator&lt;ServletRespon<span style='display:none'>seItem&gt;</span></td>
+  <td align=right x:num>5000</td>
+  <td>multipart.padding</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado.multi</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>MultipartCallFilter</td>
+  <td>Iterator&lt;ServletRespon<span style='display:none'>seItem&gt;</span></td>
+  <td align=right x:num>4000</td>
+  <td>multipart.overlay</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado.multi</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>MultipartCallFilter</td>
+  <td>Iterator&lt;ServletRespon<span style='display:none'>seItem&gt;</span></td>
+  <td align=right x:num>6000</td>
+  <td>multipart.image</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado.multi</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>ObjectUidItFilter</td>
+  <td>Iterator&lt;ServletRespon<span style='display:none'>seItem&gt;</span></td>
+  <td align=right x:num>9000</td>
+  <td>multipart.objectUidItFilter</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado.multi</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>Overlay</td>
+  <td>WadoImage</td>
+  <td align=right x:num>400</td>
+  <td>imageRel.overlay</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>PagedImageFilter</td>
+  <td>ResultsType</td>
+  <td align=right x:num>500</td>
+  <td>imageSource.pagedFilter</td>
+  <td colspan=4 style='mso-ignore:colspan'>org.dcm4chee.xero.search.study</td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>PixelPadding</td>
+  <td>WadoImage</td>
+  <td align=right x:num>500</td>
+  <td>imageRel.pixelPadding</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>QueryAudit</td>
+  <td>T</td>
+  <td align=right x:num>9000</td>
+  <td>source:rename</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.search.filter</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>QueryAudit</td>
+  <td>T</td>
+  <td align=right x:num>9000</td>
+  <td>cfind.audit</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.search.filter</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>RecodeDicom</td>
+  <td>ServletResponseItem</td>
+  <td align=right x:num>1000</td>
+  <td>wadoDcm.recodeDicom</td>
+  <td class=xl25 colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>ReduceBitsFilter</td>
+  <td>WadoImage</td>
+  <td align=right x:num>6300</td>
+  <td>xeroImg.reduceBits</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>ReduceBitsFilter</td>
+  <td>WadoImage</td>
+  <td align=right x:num>6300</td>
+  <td>dcmImg.reduceBits</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>RegroupNonImage</td>
+  <td>ResultsBean</td>
+  <td align=right x:num>200</td>
+  <td>imageSource.regroupNon</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.search.filter</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>RenameAttributeFilter</td>
+  <td>T</td>
+  <td align=right x:num>1000</td>
+  <td>source:rename</td>
+  <td colspan=4 style='mso-ignore:colspan'>org.dcm4chee.xero.search.study</td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>RenameAttributeFilter</td>
+  <td>T</td>
+  <td align=right x:num>0</td>
+  <td>cfind.rename</td>
+  <td colspan=4 style='mso-ignore:colspan'>org.dcm4chee.xero.search.study</td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>ScaleFilter</td>
+  <td>WadoImage</td>
+  <td align=right x:num>6100</td>
+  <td>wadoImg.scale</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>ScaleFilter</td>
+  <td>WadoImage</td>
+  <td align=right x:num>6100</td>
+  <td>dcmImg.scale</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>SeriesSearch</td>
+  <td>ResultFromDicom</td>
+  <td align=right x:num>0</td>
+  <td>seriesSource.seriesSearch</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.search</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>SeriesUidItFilter</td>
+  <td>Iterator&lt;ServletRespon<span style='display:none'>seItem&gt;</span></td>
+  <td align=right x:num>9000</td>
+  <td>multipart.seriesUidItFilter</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado.multi</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>SingleImagePerSeriesFilter</td>
+  <td>ResultsBean</td>
+  <td align=right x:num>15</td>
+  <td>seriesSource.singleImagePerS<span style='display:none'>eriesFilter</span></td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.search.filter</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>SortImageFilter</td>
+  <td>ResultsBean</td>
+  <td align=right x:num>50</td>
+  <td>imageSource.sortFilter</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.search.filter</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>SortImageFilter</td>
+  <td>ResultsBean</td>
+  <td align=right x:num>50</td>
+  <td>seriesSource.sortFilter</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.search.filter</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>StringTemplateFilter</td>
+  <td>ServletResponseItem</td>
+  <td align=right x:num>1000</td>
+  <td>xmlReport.stringTemplateFilter</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.template</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>StudySearch</td>
+  <td>ResultFromDicom</td>
+  <td align=right x:num>0</td>
+  <td>studySource.studySearch</td>
+  <td colspan=4 style='mso-ignore:colspan'>org.dcm4chee.xero.search.study</td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>ViewAudit</td>
+  <td>T</td>
+  <td align=right x:num>200</td>
+  <td>dicomImageReader.audit</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <tr height=17 style='height:12.75pt'>
+  <td height=17 style='height:12.75pt'>WLFilter</td>
+  <td>WadoImage</td>
+  <td align=right x:num>6000</td>
+  <td>xeroImg.wl</td>
+  <td colspan=3 style='mso-ignore:colspan'>org.dcm4chee.xero.wado</td>
+  <td></td>
+ </tr>
+ <![if supportMisalignedColumns]>
+ <tr height=0 style='display:none'>
+  <td width=179 style='width:134pt'></td>
+  <td width=134 style='width:101pt'></td>
+  <td width=64 style='width:48pt'></td>
+  <td width=185 style='width:139pt'></td>
+  <td width=64 style='width:48pt'></td>
+  <td width=64 style='width:48pt'></td>
+  <td width=64 style='width:48pt'></td>
+  <td width=64 style='width:48pt'></td>
+ </tr>
+ <![endif]>
+</table>
+
+</body>
+
 </html>
