@@ -102,7 +102,8 @@ import org.jboss.system.server.ServerConfigLocator;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2008-10-16 10:02:19 +0200 (Thu, 16 Oct
+ *          2008) $
  * @since 31.08.2003
  */
 public abstract class AbstractScpService extends ServiceMBeanSupport {
@@ -113,37 +114,35 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected static final String NONE = "NONE";
 
     private static int sequenceInt = new Random().nextInt();
-    
+
     protected ObjectName dcmServerName;
     protected ObjectName aeServiceName;
 
     protected AuditLoggerDelegate auditLogger = new AuditLoggerDelegate(this);
-    
+
     protected DcmHandler dcmHandler;
-    
+
     protected UserIdentityNegotiator userIdentityNegotiator;
-    
+
     protected String[] calledAETs;
 
-    /** 
-     * List of allowed calling AETs. 
-     * <p />
-     * <code>null</code> means ANY<br /> 
-     * An empty list (length=0) means CONFIGURED_AETS. 
+    /**
+     * List of allowed calling AETs. <p /> <code>null</code> means ANY<br /> An
+     * empty list (length=0) means CONFIGURED_AETS.
      */
     protected String[] callingAETs;
 
     protected String[] generatePatientID = null;
-    
+
     protected String issuerOfGeneratedPatientID;
-    
+
     protected boolean supplementIssuerOfPatientID;
-    
+
     /**
      * Map containing accepted Transfer Syntax UIDs. key is name (as in config
      * string), value is real uid)
      */
-    protected Map<String,String> tsuidMap = new LinkedHashMap<String,String>();
+    protected Map<String, String> tsuidMap = new LinkedHashMap<String, String>();
 
     protected int maxPDULength = PDataTF.DEF_MAX_PDU_LENGTH;
 
@@ -154,7 +153,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected String[] logCallingAETs = {};
 
     protected File logDir;
-	private boolean writeCoercionXmlLog;    
+    private boolean writeCoercionXmlLog;
 
     protected TemplatesDelegate templates = new TemplatesDelegate(this);
 
@@ -166,66 +165,73 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     static {
         aetChangeFilter.enableType(AetChanged.class.getName());
     }
-    
-    private final NotificationListener callingAETChangeListener = 
-        new NotificationListener() {
-            public void handleNotification(Notification notif, Object handback) {
+
+    private final NotificationListener callingAETChangeListener = new NotificationListener() {
+        public void handleNotification(Notification notif, Object handback) {
+            try {
+                CallingAetChanged userData = (CallingAetChanged) notif
+                        .getUserData();
+                if (areCalledAETsAffected(userData.getAffectedCalledAETs())) {
+                    String[] newCallingAets = userData.getNewCallingAETs();
+                    String newCallingAETs = newCallingAets == null ? ANY
+                            : newCallingAets.length == 0 ? CONFIGURED_AETS
+                                    : StringUtils
+                                            .toString(newCallingAets, '\\');
+                    log.debug("newCallingAETs:" + newCallingAETs);
+                    server.setAttribute(serviceName, new Attribute(
+                            "CallingAETitles", newCallingAETs));
+                }
+            } catch (Throwable th) {
+                log.warn("Failed to process callingAET change notification: ",
+                        th);
+            }
+        }
+
+        private boolean areCalledAETsAffected(String[] affectedCalledAETs) {
+            if (calledAETs == null)
+                return true;
+            if (affectedCalledAETs != null) {
+                for (int i = 0; i < affectedCalledAETs.length; i++) {
+                    for (int j = 0; j < calledAETs.length; j++) {
+                        if (affectedCalledAETs[i].equals(calledAETs[j]))
+                            return true;
+                    }
+                }
+            }
+            return false;
+        }
+    };
+    private final NotificationListener aetChangeListener = new NotificationListener() {
+        public void handleNotification(Notification notif, Object handback) {
+            if (callingAETs != null || callingAETs.length == 0) {
                 try {
-                    CallingAetChanged userData = (CallingAetChanged) notif.getUserData();
-                    if ( areCalledAETsAffected(userData.getAffectedCalledAETs())) {
-                        String[] newCallingAets = userData.getNewCallingAETs();
-                        String newCallingAETs = newCallingAets == null ? ANY 
-                                                : newCallingAets.length == 0 ? CONFIGURED_AETS
-                                                : StringUtils.toString(newCallingAets,'\\');
-                        log.debug("newCallingAETs:"+newCallingAETs);
-                        server.setAttribute(serviceName, new Attribute("CallingAETitles", newCallingAETs));
+                    log.debug("Handle AE Title change notification!");
+                    AetChanged userData = (AetChanged) notif.getUserData();
+                    String removeAET = userData.getOldAET();
+                    String addAET = userData.getNewAET();
+                    AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
+                    for (int i = 0; i < calledAETs.length; ++i) {
+                        AcceptorPolicy policy1 = policy
+                                .getPolicyForCalledAET(calledAETs[i]);
+                        if (removeAET != null) {
+                            policy1.removeCallingAET(removeAET);
+                        }
+                        if (addAET != null) {
+                            policy1.addCallingAET(addAET);
+                        }
                     }
+
                 } catch (Throwable th) {
-                   log.warn("Failed to process callingAET change notification: ", th);       
+                    log.warn(
+                            "Failed to process AE Title change notification: ",
+                            th);
                 }
             }
+        }
 
-            private boolean areCalledAETsAffected(String[] affectedCalledAETs) {
-                if ( calledAETs == null) return true;
-                if ( affectedCalledAETs != null ) {
-                    for ( int i = 0 ; i < affectedCalledAETs.length ; i++ ) {
-                        for ( int j = 0 ; j < calledAETs.length ; j++) {
-                            if ( affectedCalledAETs[i].equals(calledAETs[j])) return true;
-                        }
-                    }
-                }
-                return false;
-            }
-        };
-    private final NotificationListener aetChangeListener = 
-        new NotificationListener() {
-            public void handleNotification(Notification notif, Object handback) {
-            	if ( callingAETs != null || callingAETs.length == 0 ) {
-                    try {
-                        log.debug("Handle AE Title change notification!");
-                        AetChanged userData = (AetChanged) notif.getUserData();
-                        String removeAET = userData.getOldAET();
-                        String addAET = userData.getNewAET();
-                        AcceptorPolicy policy = dcmHandler.getAcceptorPolicy();
-                        for (int i = 0; i < calledAETs.length; ++i) {
-                            AcceptorPolicy policy1 = policy.getPolicyForCalledAET(calledAETs[i]);
-                            if ( removeAET != null ) {
-                            	policy1.removeCallingAET(removeAET);
-                            }
-                            if ( addAET != null ) {
-                            	policy1.addCallingAET(addAET);
-                            }
-                        }
-                        
-                    } catch (Throwable th) {
-                       log.warn("Failed to process AE Title change notification: ", th);       
-                    }
-            	}
-            }
+    };
 
-        };
-        
-	public final ObjectName getDcmServerName() {
+    public final ObjectName getDcmServerName() {
         return dcmServerName;
     }
 
@@ -248,7 +254,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     public final void setTemplatesServiceName(ObjectName serviceName) {
         templates.setTemplatesServiceName(serviceName);
     }
-        
+
     public ObjectName getAEServiceName() {
         return aeServiceName;
     }
@@ -257,7 +263,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         this.aeServiceName = aeServiceName;
     }
 
-	public final String getCalledAETs() {
+    public final String getCalledAETs() {
         return calledAETs == null ? "" : StringUtils.toString(calledAETs, '\\');
     }
 
@@ -300,53 +306,46 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         if (pl == -1 && sl == -1) {
             this.generatePatientID = new String[] { pattern };
         } else if (pl != -1 && sl != -1) {
-            this.generatePatientID = pl < sl
-            		? split(pattern, pl, pr, sl, sr)
+            this.generatePatientID = pl < sl ? split(pattern, pl, pr, sl, sr)
                     : split(pattern, sl, sr, pl, pr);
 
         } else {
-            this.generatePatientID = pl != -1
-            		? split(pattern, pl, pr)
-            		: split(pattern, sl, sr);
+            this.generatePatientID = pl != -1 ? split(pattern, pl, pr) : split(
+                    pattern, sl, sr);
         }
     }
 
     private static String[] split(String pattern, int l1, int r1) {
-        return new String[] {
-        		pattern.substring(0, l1),
-                pattern.substring(l1, r1 + 1),
-                pattern.substring(r1 + 1), };
+        return new String[] { pattern.substring(0, l1),
+                pattern.substring(l1, r1 + 1), pattern.substring(r1 + 1), };
     }
 
     private static String[] split(String pattern, int l1, int r1, int l2, int r2) {
         if (r1 > l2) {
             throw new IllegalArgumentException(pattern);
         }
-        return new String[] {
-        		pattern.substring(0, l1),
-                pattern.substring(l1, r1 + 1),
-                pattern.substring(r1 + 1, l2),
-                pattern.substring(l2, r2 + 1),
-                pattern.substring(r2 + 1) };
+        return new String[] { pattern.substring(0, l1),
+                pattern.substring(l1, r1 + 1), pattern.substring(r1 + 1, l2),
+                pattern.substring(l2, r2 + 1), pattern.substring(r2 + 1) };
     }
-    
+
     public final String getIssuerOfGeneratedPatientID() {
-		return issuerOfGeneratedPatientID;
-	}
+        return issuerOfGeneratedPatientID;
+    }
 
-	public final void setIssuerOfGeneratedPatientID(
-			String issuerOfGeneratedPatientID) {
-		this.issuerOfGeneratedPatientID = issuerOfGeneratedPatientID;
-	}
-	
-	public final boolean isSupplementIssuerOfPatientID() {
-		return supplementIssuerOfPatientID;
-	}
+    public final void setIssuerOfGeneratedPatientID(
+            String issuerOfGeneratedPatientID) {
+        this.issuerOfGeneratedPatientID = issuerOfGeneratedPatientID;
+    }
 
-	public final void setSupplementIssuerOfPatientID(
-			boolean supplementIssuerOfPatientID) {
-		this.supplementIssuerOfPatientID = supplementIssuerOfPatientID;
-	}
+    public final boolean isSupplementIssuerOfPatientID() {
+        return supplementIssuerOfPatientID;
+    }
+
+    public final void setSupplementIssuerOfPatientID(
+            boolean supplementIssuerOfPatientID) {
+        this.supplementIssuerOfPatientID = supplementIssuerOfPatientID;
+    }
 
     public final int getMaxPDULength() {
         return maxPDULength;
@@ -388,16 +387,16 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     public final void setCoerceConfigDir(String path) {
         templates.setConfigDir(path);
     }
-        
+
     public boolean isWriteCoercionXmlLog() {
-		return writeCoercionXmlLog;
-	}
+        return writeCoercionXmlLog;
+    }
 
-	public void setWriteCoercionXmlLog(boolean writeCoercionXmlLog) {
-		this.writeCoercionXmlLog = writeCoercionXmlLog;
-	}
+    public void setWriteCoercionXmlLog(boolean writeCoercionXmlLog) {
+        this.writeCoercionXmlLog = writeCoercionXmlLog;
+    }
 
-	protected boolean enableService() {
+    protected boolean enableService() {
         if (dcmHandler == null)
             return false;
         boolean changed = false;
@@ -415,13 +414,13 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 changed = true;
             } else {
                 String[] aets = policy1.getCallingAETs();
-                if (aets.length == 0 ) {
+                if (aets.length == 0) {
                     if (callingAETs != null) {
                         policy1.setCallingAETs(callingAETs);
                         changed = true;
                     }
                 } else {
-                    if ( ! haveSameItems(aets, callingAETs) ) {
+                    if (!haveSameItems(aets, callingAETs)) {
                         policy1.setCallingAETs(callingAETs);
                         changed = true;
                     }
@@ -436,12 +435,14 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     @SuppressWarnings("unchecked")
     private String[] getCallingAETsForPolicy() {
-        if ( callingAETs == null ) return null;
-        if ( callingAETs.length != 0 ) return callingAETs;
+        if (callingAETs == null)
+            return null;
+        if (callingAETs.length != 0)
+            return callingAETs;
         log.debug("Use 'CONFIGURED_AETS' for list of calling AETs");
         try {
             List<AEDTO> l = aeMgr().findAll();
-            if (l.size() == 0 ) {
+            if (l.size() == 0) {
                 log.warn("No AETs configured! No calling AET is allowed!");
                 return callingAETs;
             }
@@ -449,28 +450,34 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             String aet;
             for (Iterator<AEDTO> iter = l.iterator(); iter.hasNext();) {
                 aet = iter.next().getTitle();
-                if ( aet.indexOf('^') == -1 ) {//filter 'HL7' AETs
+                if (aet.indexOf('^') == -1) {// filter 'HL7' AETs
                     dicomAEs.add(aet);
                 }
             }
-            log.debug("Use 'CONFIGURED_AETS'. Current list of configured (dicom) AETs"+dicomAEs);
+            log
+                    .debug("Use 'CONFIGURED_AETS'. Current list of configured (dicom) AETs"
+                            + dicomAEs);
             String[] sa = new String[dicomAEs.size()];
             return dicomAEs.toArray(sa);
         } catch (Exception e) {
-            log.error("Failed to query configured AETs! No calling AET is allowed!", e);
+            log
+                    .error(
+                            "Failed to query configured AETs! No calling AET is allowed!",
+                            e);
             return callingAETs;
         }
     }
 
-    // Only check if all items in o1 are also in o2! (and same length) 
+    // Only check if all items in o1 are also in o2! (and same length)
     // e.g. {"a","a","d"}, {"a","d","d"} will also return true!
     private boolean haveSameItems(Object[] o1, Object[] o2) {
-        if ( o1 == null || o2 == null || o1.length != o2.length ) return false;
-        if ( o1.length == 1 ) 
+        if (o1 == null || o2 == null || o1.length != o2.length)
+            return false;
+        if (o1.length == 1)
             return o1[0].equals(o2[0]);
-        iloop:for ( int i = 0, len = o1.length ; i < len ; i++ ) {
-            for ( int j = 0 ; j < len ; j++ ) {
-                if ( o1[i].equals( o2[j]))
+        iloop: for (int i = 0, len = o1.length; i < len; i++) {
+            for (int j = 0; j < len; j++) {
+                if (o1[i].equals(o2[j]))
                     continue iloop;
             }
             return false;
@@ -497,26 +504,29 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     public final String getCallingAETs() {
         return callingAETs == null ? ANY
-                : callingAETs.length == 0 ? CONFIGURED_AETS
-                : StringUtils.toString(callingAETs, '\\');
+                : callingAETs.length == 0 ? CONFIGURED_AETS : StringUtils
+                        .toString(callingAETs, '\\');
     }
 
-    public final void setCallingAETs(String callingAETs) throws InstanceNotFoundException, MBeanException, ReflectionException {
+    public final void setCallingAETs(String callingAETs)
+            throws InstanceNotFoundException, MBeanException,
+            ReflectionException {
         if (getCallingAETs().equals(callingAETs))
             return;
         this.callingAETs = ANY.equalsIgnoreCase(callingAETs) ? null
                 : CONFIGURED_AETS.equalsIgnoreCase(callingAETs) ? new String[0]
-                : StringUtils.split(callingAETs, '\\');
-        if ( enableService() ) {
+                        : StringUtils.split(callingAETs, '\\');
+        if (enableService()) {
             server.invoke(dcmServerName, "notifyCallingAETchange",
-                    new Object[] {calledAETs, this.callingAETs} , 
-                    new String[] {String[].class.getName(), String[].class.getName()});
+                    new Object[] { calledAETs, this.callingAETs },
+                    new String[] { String[].class.getName(),
+                            String[].class.getName() });
         }
     }
 
-    protected void updateAcceptedSOPClass(Map<String,String> cuidMap,
+    protected void updateAcceptedSOPClass(Map<String, String> cuidMap,
             String newval, DcmService scp) {
-        Map<String,String> tmp = parseUIDs(newval);
+        Map<String, String> tmp = parseUIDs(newval);
         if (cuidMap.keySet().equals(tmp.keySet()))
             return;
         disableService();
@@ -533,7 +543,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     // return valuesToStringArray(tsuids);
     // }
 
-    protected static String[] valuesToStringArray(Map<String,String> tsuid) {
+    protected static String[] valuesToStringArray(Map<String, String> tsuid) {
         return tsuid.values().toArray(new String[tsuid.size()]);
     }
 
@@ -563,9 +573,9 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         updateAcceptedTransferSyntax(tsuidMap, s);
     }
 
-    protected void updateAcceptedTransferSyntax(Map<String,String> tsuidMap,
+    protected void updateAcceptedTransferSyntax(Map<String, String> tsuidMap,
             String newval) {
-        Map<String,String> tmp = parseUIDs(newval);
+        Map<String, String> tmp = parseUIDs(newval);
         if (tsuidMap.keySet().equals(tmp.keySet()))
             return;
         tsuidMap.clear();
@@ -573,7 +583,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         enableService();
     }
 
-    protected String toString(Map<String,String> uids) {
+    protected String toString(Map<String, String> uids) {
         if (uids == null || uids.isEmpty())
             return "";
         String nl = System.getProperty("line.separator", "\n");
@@ -585,10 +595,10 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         return sb.toString();
     }
 
-    protected static Map<String,String> parseUIDs(String uids) {
+    protected static Map<String, String> parseUIDs(String uids) {
         StringTokenizer st = new StringTokenizer(uids, " \t\r\n;");
         String uid, name;
-        Map<String,String> map = new LinkedHashMap<String,String>();
+        Map<String, String> map = new LinkedHashMap<String, String>();
         while (st.hasMoreTokens()) {
             uid = st.nextToken().trim();
             name = uid;
@@ -617,8 +627,10 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         dcmHandler = (DcmHandler) server.invoke(dcmServerName, "dcmHandler",
                 null, null);
         bindDcmServices(dcmHandler.getDcmServiceRegistry());
-        server.addNotificationListener(dcmServerName, callingAETChangeListener, callingAETsChangeFilter, null);
-        server.addNotificationListener(aeServiceName, aetChangeListener, aetChangeFilter, null);
+        server.addNotificationListener(dcmServerName, callingAETChangeListener,
+                callingAETsChangeFilter, null);
+        server.addNotificationListener(aeServiceName, aetChangeListener,
+                aetChangeFilter, null);
         enableService();
     }
 
@@ -627,9 +639,10 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         unbindDcmServices(dcmHandler.getDcmServiceRegistry());
         dcmHandler = null;
         userIdentityNegotiator = null;
-        server.removeNotificationListener(dcmServerName, callingAETChangeListener);
+        server.removeNotificationListener(dcmServerName,
+                callingAETChangeListener);
         server.removeNotificationListener(aeServiceName, aetChangeListener);
-     }
+    }
 
     protected abstract void bindDcmServices(DcmServiceRegistry services);
 
@@ -736,12 +749,12 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     private void logCoercion(Association a, String xsl, Dataset in, Dataset out)
             throws TransformerConfigurationException, IOException {
-        if ( writeCoercionXmlLog && contains(logCallingAETs, a.getCallingAET())) {
+        if (writeCoercionXmlLog && contains(logCallingAETs, a.getCallingAET())) {
             Date now = new Date();
             XSLTUtils.writeTo(in,
-                    getLogFile(now, "coercion", "."+xsl+".in"));
-            XSLTUtils.writeTo(out,
-                    getLogFile(now, "coercion", "."+xsl+".out"));
+                    getLogFile(now, "coercion", "." + xsl + ".in"));
+            XSLTUtils.writeTo(out, getLogFile(now, "coercion", "." + xsl
+                    + ".out"));
         }
     }
 
@@ -749,7 +762,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         coerceAttributes(ds, coerce, null);
     }
 
-    @SuppressWarnings({ "fallthrough", "unchecked" })
+    @SuppressWarnings( { "fallthrough", "unchecked" })
     private void coerceAttributes(DcmObject ds, DcmObject coerce,
             DcmElement parent) {
         boolean coerced = false;
@@ -817,7 +830,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             }
         }
     }
-    
+
     public void sendJMXNotification(Object o) {
         long eventID = super.getNextNotificationSequenceNumber();
         Notification notif = new Notification(o.getClass().getName(), this,
@@ -829,23 +842,24 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     public void logDicomQuery(Association assoc, String cuid, Dataset keys) {
         try {
             if (auditLogger.isAuditLogIHEYr4()) {
-                RemoteNode rnode = AuditLoggerFactory.getInstance().newRemoteNode(
-                        assoc.getSocket(), assoc.getCallingAET());
-                server.invoke(auditLogger.getAuditLoggerName(), "logDicomQuery", 
-                        new Object[] { keys, rnode, cuid },
+                RemoteNode rnode = AuditLoggerFactory
+                        .getInstance()
+                        .newRemoteNode(assoc.getSocket(), assoc.getCallingAET());
+                server.invoke(auditLogger.getAuditLoggerName(),
+                        "logDicomQuery", new Object[] { keys, rnode, cuid },
                         new String[] { Dataset.class.getName(),
-                            RemoteNode.class.getName(), String.class.getName() });
+                                RemoteNode.class.getName(),
+                                String.class.getName() });
             } else {
                 QueryMessage msg = new QueryMessage();
-                msg.addDestinationProcess(AuditMessage.getProcessID(), 
-                        calledAETs, AuditMessage.getProcessName(), 
-                        AuditMessage.getLocalHostName(), false);
-                
-                String srcHost = AuditMessage.hostNameOf(
-                        assoc.getSocket().getInetAddress());
-                msg.addSourceProcess(srcHost , 
-                        new String[] { assoc.getCallingAET() }, null, 
-                        srcHost, true);
+                msg.addDestinationProcess(AuditMessage.getProcessID(),
+                        calledAETs, AuditMessage.getProcessName(), AuditMessage
+                                .getLocalHostName(), false);
+
+                String srcHost = AuditMessage.hostNameOf(assoc.getSocket()
+                        .getInetAddress());
+                msg.addSourceProcess(srcHost, new String[] { assoc
+                        .getCallingAET() }, null, srcHost, true);
                 byte[] query = DatasetUtils.toByteArray(keys);
                 msg.addQuerySOPClass(cuid, UIDs.ExplicitVRLittleEndian, query);
                 msg.validate();
@@ -862,7 +876,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         }
         return DcmObjectFactory.getInstance().newPersonName(pname).format();
     }
-    
+
     public void supplementIssuerOfPatientID(Dataset ds, String callingAET) {
         if (supplementIssuerOfPatientID
                 && !ds.containsValue(Tags.IssuerOfPatientID)) {
@@ -888,25 +902,26 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         }
     }
 
-	public void generatePatientID(Dataset pat, Dataset sty) {
-    	String pid = pat.getString(Tags.PatientID);
-    	if (pid != null) {
-    		return;
-    	}
-    	String pname = pat.getString(Tags.PatientName);
+    public void generatePatientID(Dataset pat, Dataset sty) {
+        String pid = pat.getString(Tags.PatientID);
+        if (pid != null) {
+            return;
+        }
+        String pname = pat.getString(Tags.PatientName);
         if (generatePatientID.length == 1) {
             pid = generatePatientID[0];
         } else {
-        	String suid = sty != null ? sty.getString(Tags.StudyInstanceUID) : null;
-        	int suidHash = suid != null ? suid.hashCode() : ++sequenceInt;
-        	// generate different Patient IDs for different studies
-        	// if no Patient Name
-        	int pnameHash = pname == null ? suidHash : pname.hashCode() * 37
-        				+ pat.getString(Tags.PatientBirthDate, "").hashCode();
+            String suid = sty != null ? sty.getString(Tags.StudyInstanceUID)
+                    : null;
+            int suidHash = suid != null ? suid.hashCode() : ++sequenceInt;
+            // generate different Patient IDs for different studies
+            // if no Patient Name
+            int pnameHash = pname == null ? suidHash : pname.hashCode() * 37
+                    + pat.getString(Tags.PatientBirthDate, "").hashCode();
 
-        	StringBuffer sb = new StringBuffer();
-        	for (int i = 0; i < generatePatientID.length; i++) {
-        		String s = generatePatientID[i];
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < generatePatientID.length; i++) {
+                String s = generatePatientID[i];
                 int l = s.length();
                 if (l == 0)
                     continue;
@@ -915,25 +930,25 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                     sb.append(s);
                     continue;
                 }
-                String v = Long.toString((c == '#' ? pnameHash : suidHash)
-                		& 0xffffffffL);
+                String v = Long
+                        .toString((c == '#' ? pnameHash : suidHash) & 0xffffffffL);
                 for (int j = v.length() - l; j < 0; j++) {
                     sb.append('0');
                 }
                 sb.append(v);
             }
-        	pid = sb.toString();
+            pid = sb.toString();
         }
         pat.putLO(Tags.PatientID, pid);
         pat.putLO(Tags.IssuerOfPatientID, issuerOfGeneratedPatientID);
         if (log.isInfoEnabled()) {
-        	StringBuffer prompt = new StringBuffer("Generate Patient ID: ");
-        	prompt.append(pid);
-        	if (issuerOfGeneratedPatientID != null) {
-            	prompt.append("^^^").append(issuerOfGeneratedPatientID);
-        	}
-        	prompt.append(" for Patient: ").append(pname);
-	        log.info(prompt.toString());
+            StringBuffer prompt = new StringBuffer("Generate Patient ID: ");
+            prompt.append(pid);
+            if (issuerOfGeneratedPatientID != null) {
+                prompt.append("^^^").append(issuerOfGeneratedPatientID);
+            }
+            prompt.append(" for Patient: ").append(pname);
+            log.info(prompt.toString());
         }
     }
 
@@ -945,8 +960,8 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     public StudyPermissionManager getStudyPermissionManager(Association a)
             throws Exception {
-        StudyPermissionManager mgt = (StudyPermissionManager)
-        a.getProperty(StudyPermissionManagerHome.JNDI_NAME);
+        StudyPermissionManager mgt = (StudyPermissionManager) a
+                .getProperty(StudyPermissionManagerHome.JNDI_NAME);
         if (mgt == null) {
             mgt = ((StudyPermissionManagerHome) EJBHomeFactory.getFactory()
                     .lookup(StudyPermissionManagerHome.class,
