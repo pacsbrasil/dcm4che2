@@ -41,6 +41,8 @@ package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
@@ -76,7 +78,6 @@ public class MPPSQueryCmd extends BaseReadCmd {
                 transactionIsolationLevel);
         defineColumnTypes(new int[] { blobAccessType, blobAccessType });
         // ensure keys contains (8,0005) for use as result filter
-        sqlBuilder.setSelect(SELECT);
         sqlBuilder.setFrom(FROM);
         sqlBuilder.setRelations(RELATIONS);
         sqlBuilder.addListOfStringMatch(null, "MPPS.sopIuid",
@@ -111,9 +112,35 @@ public class MPPSQueryCmd extends BaseReadCmd {
                 SqlBuilder.TYPE1,
 				filter.getStrings(Tags.PPSStatus));
     }
-
-    public void execute() throws SQLException {
-        execute(sqlBuilder.getSql());
+    
+    public int count() throws SQLException {
+        try {
+            sqlBuilder.setSelectCount(new String[]{"MPPS.pk"}, true);
+            execute( sqlBuilder.getSql() );
+            next();
+            return rs.getInt(1);
+        } finally {
+            close();
+        }
+    }
+    public List<Dataset> list(int offset, int limit ) {
+        sqlBuilder.setSelect(SELECT);
+        sqlBuilder.addOrderBy("MPPS.ppsStartDateTime", SqlBuilder.DESC);
+        sqlBuilder.setOffset(offset);
+        sqlBuilder.setLimit(limit);
+        List<Dataset> resp = null;
+        try {
+            resp = new ArrayList<Dataset>();
+            execute(sqlBuilder.getSql());
+            while ( next() ) {
+                resp.add( getDataset() );
+            }
+        } catch ( Exception x ) {
+            log.error( "Exception occured in getMWLEntries: "+x.getMessage(), x );
+        } finally {
+            close();
+        }
+        return resp;
     }
 
     public Dataset getDataset() throws SQLException {
@@ -122,6 +149,4 @@ public class MPPSQueryCmd extends BaseReadCmd {
         DatasetUtils.fromByteArray( rs.getBytes(2), ds);
         return ds;
     }
-    
- 
 }
