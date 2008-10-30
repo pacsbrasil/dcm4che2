@@ -174,6 +174,27 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getGeneratePatientIDForUnscheduledFromAETs"
+      setMethod="setGeneratePatientIDForUnscheduledFromAETs">
+      <description><![CDATA[List of AE titles of Storage SCUs for which the
+      Patient ID in received objects without Scheduled Procedure Step reference
+      shall be replaced by a new generated Patient ID. Separate multiple values
+      by "\"(backslash).
+      <br/>If the list is prefixed by "!\", the Patient ID in objects without
+      Scheduled Procedure Step reference received from <b>any</b> Storage SCU,
+      <b>except</b> which AE title is specified in the list, will be replaced
+      by a new generated Patient ID.
+      <br/>"NONE" = do not replace Patient IDs in objects received from any
+      Storage SCU.
+      ]]>
+      </description>
+      <name>GeneratePatientIDForUnscheduledFromAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isStudyDateInFilePath"
       setMethod="setStudyDateInFilePath">
       <description><![CDATA[Use Study Date in received objects to structure directories of the storage file system.

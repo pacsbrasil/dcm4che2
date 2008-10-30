@@ -603,8 +603,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 service.postCoercionProcessing(ds);
             }
             checkPatientIdAndName(ds, callingAET);
-            service.supplementIssuerOfPatientID(ds, callingAET);
-            service.generatePatientID(ds, ds);
             Storage store = getStorage(assoc);
             String seriuid = ds.getString(Tags.SeriesInstanceUID);
             SeriesStored seriesStored = (SeriesStored) assoc.getProperty(SERIES_STORED);
@@ -625,6 +623,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     coerced = merge(coerced, mergeMatchingMWLItem(assoc, ds,
                             seriuid, mwlFilter));
                 }
+                service.ignorePatientIDForUnscheduled(ds,
+                        Tags.RequestAttributesSeq, callingAET);
+                service.supplementIssuerOfPatientID(ds, callingAET);
+                service.generatePatientID(ds, ds);
             }
             appendInstanceToSeriesStored(seriesStored, ds, fsDTO);
             perfMon.start(activeAssoc, rq,

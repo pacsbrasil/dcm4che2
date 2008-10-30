@@ -91,6 +91,27 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getGeneratePatientIDForUnscheduledFromAETs"
+      setMethod="setGeneratePatientIDForUnscheduledFromAETs">
+      <description><![CDATA[List of AE titles of MPPS SCUs for which the
+      Patient ID in received MPPS N-CREATE request without Scheduled Procedure
+      Step reference shall be replaced by a new generated Patient ID.
+      Separate multiple values by "\"(backslash).
+      <br/>If the list is prefixed by "!\", the Patient ID in MPPS N-CREATE
+      requests without Scheduled Procedure Step reference received from
+      <b>any</b> MPPS SCUs, <b>except</b> which AE title is specified in the
+      list, will be replaced by a new generated Patient ID.
+      <br/>"NONE" = do not replace Patient IDs in MPPS N-CREATE request from
+      any MPPS SCU.
+      ]]>
+      </description>
+      <name>GeneratePatientIDForUnscheduledFromAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getAcceptedTransferSyntax"
       setMethod="setAcceptedTransferSyntax">
       <description><![CDATA[

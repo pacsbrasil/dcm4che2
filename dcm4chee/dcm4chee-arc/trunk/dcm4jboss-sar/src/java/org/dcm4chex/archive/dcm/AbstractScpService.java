@@ -138,6 +138,10 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     protected boolean supplementIssuerOfPatientID;
 
+    protected String[] generatePatientIDForUnscheduledFromAETs;
+
+    protected boolean invertGeneratePatientIDForUnscheduledFromAETs;
+
     /**
      * Map containing accepted Transfer Syntax UIDs. key is name (as in config
      * string), value is real uid)
@@ -345,6 +349,32 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     public final void setSupplementIssuerOfPatientID(
             boolean supplementIssuerOfPatientID) {
         this.supplementIssuerOfPatientID = supplementIssuerOfPatientID;
+    }
+
+    public final String getGeneratePatientIDForUnscheduledFromAETs() {
+        return invertGeneratePatientIDForUnscheduledFromAETs ? "!\\" : ""
+            + (generatePatientIDForUnscheduledFromAETs == null ? "NONE"
+                    : StringUtils.toString(
+                            generatePatientIDForUnscheduledFromAETs, '\\'));
+    }
+
+    public final void setGeneratePatientIDForUnscheduledFromAETs(String aets) {
+        if (invertGeneratePatientIDForUnscheduledFromAETs = aets.startsWith("!\\")) {
+            aets = aets.substring(2);
+        }
+        generatePatientIDForUnscheduledFromAETs = aets.equalsIgnoreCase("NONE")
+                ? null : StringUtils.split(aets, '\\');
+    }
+
+    protected boolean isGeneratePatientIDForUnscheduledFromAET(String callingAET) {
+        if (generatePatientIDForUnscheduledFromAETs != null) {
+            for (String aet : generatePatientIDForUnscheduledFromAETs) {
+                if (aet.equals(callingAET)) {
+                    return !invertGeneratePatientIDForUnscheduledFromAETs;
+                }
+            }
+        }
+        return invertGeneratePatientIDForUnscheduledFromAETs;
     }
 
     public final int getMaxPDULength() {
@@ -950,6 +980,32 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             prompt.append(" for Patient: ").append(pname);
             log.info(prompt.toString());
         }
+    }
+
+    public boolean ignorePatientIDForUnscheduled(Dataset ds,
+            int requestAttrsSeqTag, String callingAET) {
+        String pid = ds.getString(Tags.PatientID);
+        Dataset requestAttrs = ds.getItem(requestAttrsSeqTag);
+        if (pid != null
+                && (requestAttrs == null
+                        || !requestAttrs.containsValue(Tags.SPSID))
+                && isGeneratePatientIDForUnscheduledFromAET(callingAET)) {
+            String issuer = ds.getString(Tags.IssuerOfPatientID);
+            ds.putLO(Tags.PatientID);
+            ds.remove(Tags.IssuerOfPatientID);
+            if (log.isInfoEnabled()) {
+                StringBuffer prompt = new StringBuffer("Ignore Patient ID: ");
+                prompt.append(pid);
+                if (issuer != null) {
+                    prompt.append("^^^").append(issuer);
+                }
+                prompt.append(" for Patient: ")
+                    .append(ds.getString(Tags.PatientName));
+                log.info(prompt.toString());
+            }
+            return true;
+        }
+        return false;
     }
 
     protected AEManager aeMgr() throws Exception {

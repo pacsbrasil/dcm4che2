@@ -112,7 +112,9 @@ public class MPPSScp extends DcmServiceBase {
         if (coerce != null) {
             service.coerceAttributes(mpps, coerce);
         }
-        checkCreateAttributs(mpps);        
+        checkCreateAttributs(mpps);
+        service.ignorePatientIDForUnscheduled(mpps,
+                Tags.ScheduledStepAttributesSeq, callingAET);
         service.supplementIssuerOfPatientID(mpps, callingAET);
         service.generatePatientID(mpps, mpps.getItem(Tags.ScheduledStepAttributesSeq));
         mpps.putUI(Tags.SOPClassUID, cuid);
