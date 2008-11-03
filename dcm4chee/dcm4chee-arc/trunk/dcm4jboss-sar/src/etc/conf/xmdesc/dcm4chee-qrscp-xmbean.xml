@@ -277,6 +277,26 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getHideWithoutIssuerOfPatientIDFromAETs"
+      setMethod="setHideWithoutIssuerOfPatientIDFromAETs">
+      <description><![CDATA[AE Titles of C-FIND SCUs to which only responses
+      for matching entities of Patients which <i>Patient ID</i> is qualified by
+      an <i>Issuer Of Patient ID</i> are returned.
+      Separate multiple values by '\'(backslash).
+      <br/>If the list is prefixed by '!\', entities of Patients which
+      <i>Patient ID</i> is not qualified by an <i>Issuer Of Patient ID</i> will
+      be hidden from <b>any</b> C-FIND SCU, <b>except</b> which AE title is
+      specified in the list.
+      <br/>'NONE' = do not hide entities of Patients without
+      <i>Issuer of Patient ID</i> from any C-FIND SCU.]]>
+      </description>
+      <name>HideWithoutIssuerOfPatientIDFromAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getIgnorableSOPClasses"
       setMethod="setIgnorableSOPClasses">
       <description><![CDATA[

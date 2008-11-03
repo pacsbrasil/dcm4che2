@@ -67,15 +67,17 @@ class VMFFindScp extends FindScp {
         super(service, true);
     }
 
-    protected MultiDimseRsp newMultiCFindRsp(Dataset rqData, Subject subject)
+    protected MultiDimseRsp newMultiCFindRsp(Dataset rqData,
+            boolean hideWithoutIssuerOfPID, Subject subject)
             throws SQLException {
         if (!"IMAGE".equals(rqData.getString(Tags.QueryRetrieveLevel)))
-            return super.newMultiCFindRsp(rqData, subject);
+            return super.newMultiCFindRsp(rqData, hideWithoutIssuerOfPID, subject);
         final String studyIUID = rqData.getString(Tags.StudyInstanceUID);
         final String[] seriesIUIDs = rqData.getStrings(Tags.SeriesInstanceUID);
         if (seriesIUIDs == null || seriesIUIDs.length == 0)
             throw new IllegalArgumentException("Missing Series Instance UID");
-        return new VMFMultiCFindRsp(studyIUID, seriesIUIDs, subject);
+        return new VMFMultiCFindRsp(studyIUID, seriesIUIDs,
+                hideWithoutIssuerOfPID, subject);
     }
 
     private class VMFMultiCFindRsp implements MultiDimseRsp {
@@ -87,13 +89,16 @@ class VMFFindScp extends FindScp {
 
         private final String[] seriesIUIDs;
 
+        private final boolean hideWithoutIssuerOfPID;
+
         private final Subject subject;
 
         public VMFMultiCFindRsp(String studyIUID, String[] seriesIUIDs,
-                Subject subject) {
+                boolean hideWithoutIssuerOfPID, Subject subject) {
             keys = DcmObjectFactory.getInstance().newDataset();
             keys.putUI(Tags.StudyInstanceUID, studyIUID);
             this.seriesIUIDs = seriesIUIDs;
+            this.hideWithoutIssuerOfPID = hideWithoutIssuerOfPID;
             this.subject = subject;
         }
 
@@ -115,7 +120,8 @@ class VMFFindScp extends FindScp {
                 keys.putUI(Tags.SeriesInstanceUID, seriesIUIDs[next++]);
                 try {
                     QueryCmd queryCmd = QueryCmd.createInstanceQuery(keys,
-                            false, service.isNoMatchForNoValue(), subject);
+                            false, service.isNoMatchForNoValue(),
+                            hideWithoutIssuerOfPID, subject);
                     try {
                         queryCmd.execute();
                         if (!queryCmd.next())

@@ -151,13 +151,15 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
                     && service.isPixQueryCallingAET(callingAET)) {
                 pixQuery(rqData);
             }
+            boolean hideWithoutIssuerOfPID = 
+                    service.isHideWithoutIssuerOfPIDFromAET(callingAET);
             MultiDimseRsp rsp;
             if (service.hasUnrestrictedQueryPermissions(callingAET)) {
-                rsp = newMultiCFindRsp(rqData, null);
+                rsp = newMultiCFindRsp(rqData, hideWithoutIssuerOfPID, null);
             } else {
                 Subject subject = (Subject) a.getProperty("user");
                 if (subject != null) {
-                    rsp = newMultiCFindRsp(rqData, subject);
+                    rsp = newMultiCFindRsp(rqData, hideWithoutIssuerOfPID, subject);
                 } else {
                     log
                             .info("Missing user identification -> no records returned");
@@ -252,10 +254,11 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
         return true;
     }
 
-    protected MultiDimseRsp newMultiCFindRsp(Dataset rqData, Subject subject)
+    protected MultiDimseRsp newMultiCFindRsp(Dataset rqData,
+            boolean hideWithoutIssuerOfPID, Subject subject)
             throws SQLException {
-        QueryCmd queryCmd = QueryCmd.create(rqData, filterResult, service
-                .isNoMatchForNoValue(), subject);
+        QueryCmd queryCmd = QueryCmd.create(rqData, filterResult,
+                service.isNoMatchForNoValue(), hideWithoutIssuerOfPID, subject);
         queryCmd.execute();
         return new MultiCFindRsp(queryCmd);
     }

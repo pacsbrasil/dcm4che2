@@ -42,7 +42,6 @@ package org.dcm4chex.archive.dcm.qrscp;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.rmi.RemoteException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,7 +54,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Map.Entry;
 
-import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 import javax.management.JMException;
 import javax.management.ObjectName;
@@ -107,7 +105,6 @@ import org.dcm4chex.archive.perf.PerfPropertyEnum;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
-import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.logging.Logger;
 
 /**
@@ -145,7 +142,11 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private String[] unrestrictedReadPermissionsToAETitles = null;
 
     private String[] unrestrictedExportPermissionsToAETitles = null;
-    
+
+    private String[] hideWithoutIssuerOfPIDFromAETs;
+
+    private boolean invertHideWithoutIssuerOfPIDFromAETs;
+
     private Map ignorableSOPClasses = new LinkedHashMap();
 
     private LinkedHashMap requestStgCmtFromAETs = new LinkedHashMap();
@@ -461,7 +462,33 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 || Arrays.asList(unrestrictedExportPermissionsToAETitles)
                         .contains(aet);
     }
-        
+
+    public final String getHideWithoutIssuerOfPatientIDFromAETs() {
+        return invertHideWithoutIssuerOfPIDFromAETs ? "!\\" : ""
+            + (hideWithoutIssuerOfPIDFromAETs == null ? "NONE"
+                    : StringUtils.toString(
+                            hideWithoutIssuerOfPIDFromAETs, '\\'));
+    }
+
+    public final void setHideWithoutIssuerOfPatientIDFromAETs(String aets) {
+        if (invertHideWithoutIssuerOfPIDFromAETs = aets.startsWith("!\\")) {
+            aets = aets.substring(2);
+        }
+        hideWithoutIssuerOfPIDFromAETs = aets.equalsIgnoreCase("NONE")
+                ? null : StringUtils.split(aets, '\\');
+    }
+
+    boolean isHideWithoutIssuerOfPIDFromAET(String callingAET) {
+        if (hideWithoutIssuerOfPIDFromAETs != null) {
+            for (String aet : hideWithoutIssuerOfPIDFromAETs) {
+                if (aet.equals(callingAET)) {
+                    return !invertHideWithoutIssuerOfPIDFromAETs;
+                }
+            }
+        }
+        return invertHideWithoutIssuerOfPIDFromAETs;
+    }
+
     public final boolean isNoMatchForNoValue() {
         return noMatchForNoValue;
     }

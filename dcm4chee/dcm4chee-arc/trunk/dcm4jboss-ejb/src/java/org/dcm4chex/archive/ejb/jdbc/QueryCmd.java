@@ -158,6 +158,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     private boolean coercePatientIds = false;
 
+    protected boolean noMatchWithoutIssuerOfPID;
+
     protected final Subject subject;
 
     public void setCoercePatientIds( boolean coercePatientIds ) {
@@ -165,62 +167,73 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     }
     
     public static QueryCmd create(Dataset keys, boolean filterResult,
-            boolean noMatchForNoValue, Subject subject) throws SQLException {
+            boolean noMatchForNoValue,
+            boolean noMatchWithoutIssuerOfPID, Subject subject)
+            throws SQLException {
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
         if ("IMAGE".equals(qrLevel))
             return createInstanceQuery(keys, filterResult, noMatchForNoValue,
-                    subject);
+                    noMatchWithoutIssuerOfPID, subject);
         if ("SERIES".equals(qrLevel))
             return createSeriesQuery(keys, filterResult, noMatchForNoValue,
-                    subject);
+                    noMatchWithoutIssuerOfPID, subject);
         if ("STUDY".equals(qrLevel))
             return createStudyQuery(keys, filterResult, noMatchForNoValue,
-                    subject);
+                    noMatchWithoutIssuerOfPID, subject);
         if ("PATIENT".equals(qrLevel))
             return createPatientQuery(keys, filterResult, noMatchForNoValue,
-                    subject);
+                    noMatchWithoutIssuerOfPID, subject);
         throw new IllegalArgumentException("QueryRetrieveLevel=" + qrLevel);
     }
 
     public static PatientQueryCmd createPatientQuery(Dataset keys,
-            boolean filterResult, boolean noMatchForNoValue, Subject subject)
+            boolean filterResult, boolean noMatchForNoValue,
+            boolean noMatchWithoutIssuerOfPID, Subject subject)
             throws SQLException {
         final PatientQueryCmd cmd = new PatientQueryCmd(keys, filterResult,
-                noMatchForNoValue, subject);
+                noMatchForNoValue, noMatchWithoutIssuerOfPID, subject);
         cmd.init();
         return cmd;
     }
 
     public static StudyQueryCmd createStudyQuery(Dataset keys,
-            boolean filterResult, boolean noMatchForNoValue, Subject subject)
+            boolean filterResult, boolean noMatchForNoValue,
+            boolean noMatchWithoutIssuerOfPID, Subject subject)
             throws SQLException {
         final StudyQueryCmd cmd = new StudyQueryCmd(keys, filterResult,
-                noMatchForNoValue, subject);
+                noMatchForNoValue, noMatchWithoutIssuerOfPID, subject);
         cmd.init();
         return cmd;
     }
 
     public static SeriesQueryCmd createSeriesQuery(Dataset keys,
-            boolean filterResult, boolean noMatchForNoValue, Subject subject)
+            boolean filterResult, boolean noMatchForNoValue,
+            boolean noMatchWithoutIssuerOfPID, Subject subject)
             throws SQLException {
         final SeriesQueryCmd cmd = new SeriesQueryCmd(keys, filterResult,
-                noMatchForNoValue, subject);
+                noMatchForNoValue, noMatchWithoutIssuerOfPID, subject);
         cmd.init();
         return cmd;
     }
 
     public static ImageQueryCmd createInstanceQuery(Dataset keys,
-            boolean filterResult, boolean noMatchForNoValue, Subject subject)
+            boolean filterResult, boolean noMatchForNoValue,
+            boolean noMatchWithoutIssuerOfPID, Subject subject)
             throws SQLException {
         final ImageQueryCmd cmd = new ImageQueryCmd(keys, filterResult,
-                noMatchForNoValue, subject);
+                noMatchForNoValue, noMatchWithoutIssuerOfPID,
+                subject);
         cmd.init();
         return cmd;
     }
 
     protected QueryCmd(Dataset keys, boolean filterResult,
-            boolean noMatchForNoValue, Subject subject) throws SQLException {
+            boolean noMatchForNoValue,
+            boolean noMatchWithoutIssuerOfPID, Subject subject)
+            throws SQLException {
         super(keys, filterResult, noMatchForNoValue, transactionIsolationLevel);
+        this.noMatchWithoutIssuerOfPID =
+                noMatchWithoutIssuerOfPID;
         this.subject = subject;
         if (!keys.contains(Tags.SpecificCharacterSet)) {
             keys.putCS(Tags.SpecificCharacterSet);
@@ -279,8 +292,14 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         } else {
             sqlBuilder.addWildCardMatch(null, "Patient.patientId", type2, keys
                     .getStrings(Tags.PatientID));
-            sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
-                    type2, keys.getString(Tags.IssuerOfPatientID));
+            String issuer = keys.getString(Tags.IssuerOfPatientID);
+            if (issuer != null) {
+                sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
+                        type2, issuer);
+            } else if (noMatchWithoutIssuerOfPID) {
+                sqlBuilder.addNULLValueMatch(null,"Patient.issuerOfPatientId",
+                        true);
+            }
         }
         sqlBuilder.addPNMatch(
                 new String[] { "Patient.patientName",
@@ -658,9 +677,11 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     static class PatientQueryCmd extends QueryCmd {
 
         PatientQueryCmd(Dataset keys, boolean filterResult,
-                boolean noMatchForNoValue, Subject subject)
+                boolean noMatchForNoValue,
+                boolean noMatchWithoutIssuerOfPID, Subject subject)
                 throws SQLException {
-            super(keys, filterResult, noMatchForNoValue, subject);
+            super(keys, filterResult, noMatchForNoValue,
+                    noMatchWithoutIssuerOfPID, subject);
             defineColumnTypes(new int[] { blobAccessType });
         }
 
@@ -688,9 +709,11 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     static class StudyQueryCmd extends QueryCmd {
 
         StudyQueryCmd(Dataset keys, boolean filterResult,
-                boolean noMatchForNoValue, Subject subject)
+                boolean noMatchForNoValue,
+                boolean noMatchWithoutIssuerOfPID, Subject subject)
                 throws SQLException {
-            super(keys, filterResult, noMatchForNoValue, subject);
+            super(keys, filterResult, noMatchForNoValue,
+                    noMatchWithoutIssuerOfPID, subject);
             defineColumnTypes(new int[] {
                     blobAccessType,     // Patient.encodedAttributes
                     blobAccessType,     // Study.encodedAttributes
@@ -763,9 +786,11 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     static class SeriesQueryCmd extends QueryCmd {
 
         SeriesQueryCmd(Dataset keys, boolean filterResult,
-                boolean noMatchForNoValue, Subject subject)
+                boolean noMatchForNoValue,
+                boolean noMatchWithoutIssuerOfPID, Subject subject)
                 throws SQLException {
-            super(keys, filterResult, noMatchForNoValue, subject);
+            super(keys, filterResult, noMatchForNoValue,
+                    noMatchWithoutIssuerOfPID, subject);
             defineColumnTypes(new int[] {
                     blobAccessType,     // Patient.encodedAttributes
                     blobAccessType,     // Study.encodedAttributes
@@ -850,9 +875,11 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         HashMap seriesAttrsCache = new HashMap();
 
         ImageQueryCmd(Dataset keys, boolean filterResult,
-                boolean noMatchForNoValue, Subject subject)
-                throws SQLException {
-            super(keys, filterResult, noMatchForNoValue, subject);
+                boolean noMatchForNoValue,
+                boolean noMatchWithoutIssuerOfPID,
+                Subject subject) throws SQLException {
+            super(keys, filterResult, noMatchForNoValue,
+                    noMatchWithoutIssuerOfPID, subject);
             defineColumnTypes(lazyFetchSeriesAttrsOnImageLevelQuery
                     ? new int[] {
                             blobAccessType,     // Instance.encodedAttributes
