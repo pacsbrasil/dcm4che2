@@ -265,13 +265,6 @@
     </antcall>
     <antcall target="xslt">
       <param name="in"
-             value="${dcm4jboss-sar.xmdesc}/dcm4chee-checkstudypat-xmbean.xml" />
-      <param name="out" value="checkstudypat-xmbean.xml" />
-      <param name="mbean"
-             value="dcm4chee.archive:service=CheckStudyPatientService" />
-    </antcall>
-    <antcall target="xslt">
-      <param name="in"
              value="${dcm4jboss-sar.xmdesc}/dcm4chee-compression-xmbean.xml" />
       <param name="out" value="compression-xmbean.xml" />
       <param name="mbean" value="dcm4chee.archive:service=CompressionService" />

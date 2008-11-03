@@ -97,7 +97,6 @@
          <value value="
          dcm4chee.archive:service=AuditLogger#SupressLogForAETitles
          dcm4chee.archive:service=AuditLogger#LocalAETitles
-         dcm4chee.archive:service=CheckStudyPatientService#SourceAET
          dcm4chee.archive:service=ContentEditService#CalledAETitle
          dcm4chee.archive:service=ContentEditService#CallingAETitle
          dcm4chee.archive:service=ECHOService#CallingAETitle

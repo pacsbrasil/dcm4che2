@@ -51,6 +51,7 @@ import java.util.List;
 
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
@@ -319,12 +320,12 @@ public abstract class ContentManagerBean implements SessionBean {
     }
     
     private PatientLocal getPatientLocal(String pid, String issuer) throws FinderException {
-        Collection col;
         if ( issuer != null ) {
-            col = patHome.findByPatientIdWithExactIssuer(pid, issuer);
-        } else {
-            col = patHome.findByPatientId(pid);
+            try {
+                return patHome.findByPatientIdWithIssuer(pid, issuer);
+            } catch (ObjectNotFoundException onfe) {}
         }
+        Collection col = patHome.findByPatientId(pid);
         if ( col.isEmpty() )
             return null;
         if ( col.size() > 1 ) {

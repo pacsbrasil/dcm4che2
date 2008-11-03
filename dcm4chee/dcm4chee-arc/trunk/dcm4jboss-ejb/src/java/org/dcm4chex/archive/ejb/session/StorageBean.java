@@ -423,21 +423,12 @@ public abstract class StorageBean implements SessionBean {
 
     private PatientLocal getPatient(Dataset ds, Dataset coercedElements)
             throws Exception {
-        PatientLocal pat;
-        try {
-            pat = patHome.searchFor(ds, true, false);
-        } catch (ObjectNotFoundException e) {
-            try {
-                return patHome.create(ds);
-            } catch (CreateException e1) {
-                // check if Patient record was inserted by concurrent thread
-                try {
-                    pat = patHome.searchFor(ds, true, false);
-                } catch (Exception e2) {
-                    throw e1;
-                }
-            }
+        Collection c = patHome.selectByPatientDemographic(ds);
+        if (c.size() != 1) {
+            return patHome.create(ds);
         }
+        PatientLocal pat = patHome.followMergedWith(
+                (PatientLocal) c.iterator().next());
         coercePatientIdentity(pat, ds, coercedElements);
         return pat;
     }

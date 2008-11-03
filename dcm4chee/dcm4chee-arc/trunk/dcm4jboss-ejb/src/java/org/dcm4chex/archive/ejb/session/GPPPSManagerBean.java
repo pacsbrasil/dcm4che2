@@ -143,11 +143,12 @@ public abstract class GPPPSManagerBean implements SessionBean {
     private PatientLocal findOrCreatePatient(Dataset ds)
             throws DcmServiceException {
         try {
-            try {
-                return patHome.searchFor(ds, true, false);
-            } catch (ObjectNotFoundException onfe) {
-                return patHome.create(ds.subSet(PATIENT_ATTRS_INC));
-            }           
+            Collection c = patHome.selectByPatientDemographic(ds);
+            if (c.size() == 1) {
+                return patHome.followMergedWith(
+                        (PatientLocal) c.iterator().next());
+            }
+            return patHome.create(ds.subSet(PATIENT_ATTRS_INC));
         } catch (Exception e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }           

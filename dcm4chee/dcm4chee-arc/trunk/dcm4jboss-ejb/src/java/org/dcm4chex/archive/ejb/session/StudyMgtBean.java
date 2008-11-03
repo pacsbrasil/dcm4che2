@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.ejb.session;
 
 import java.rmi.RemoteException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -152,11 +153,11 @@ public abstract class StudyMgtBean implements SessionBean {
 
     private PatientLocal findOrCreatePatient(Dataset ds)
             throws FinderException, CreateException {
-        try {
-            return patHome.searchFor(ds, true, false);
-        } catch (ObjectNotFoundException onfe) {
+        Collection c = patHome.selectByPatientDemographic(ds);
+        if (c.size() != 1) {
             return patHome.create(ds);
         }
+        return patHome.followMergedWith((PatientLocal) c.iterator().next());
     }
 
     private void checkDuplicateStudy(String suid) throws FinderException,

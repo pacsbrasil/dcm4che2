@@ -179,11 +179,12 @@ public abstract class MPPSManagerBean implements SessionBean {
     private PatientLocal findOrCreatePatient(Dataset ds)
             throws DcmServiceException {
         try {
-            try {
-                return patHome.searchFor(ds, true, false);
-            } catch (ObjectNotFoundException onfe) {
-                return patHome.create(ds.subSet(PATIENT_ATTRS_INC));
+            Collection c = patHome.selectByPatientDemographic(ds);
+            if (c.size() == 1) {
+                return patHome.followMergedWith(
+                        (PatientLocal) c.iterator().next());
             }
+            return patHome.create(ds.subSet(PATIENT_ATTRS_INC));
         } catch (Exception e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
@@ -487,11 +488,14 @@ public abstract class MPPSManagerBean implements SessionBean {
         PatientLocal mppsPat = mpps.getPatient();
         Map map = updateLinkedMpps(mpps, null, mwlAttrs);
         if (!isSamePatient(mwlPatDs, mppsPat)) {
-            Collection col = patHome.findByPatientIdWithIssuer(mwlPatDs
-                    .getString(Tags.PatientID), mwlPatDs
-                    .getString(Tags.IssuerOfPatientID));
-            PatientLocal mwlPat = col.isEmpty() ? patHome.create(mwlPatDs)
-                    : (PatientLocal) col.iterator().next();
+            PatientLocal mwlPat;
+            try {
+                mwlPat = patHome.findByPatientIdWithIssuer(
+                        mwlPatDs.getString(Tags.PatientID),
+                        mwlPatDs.getString(Tags.IssuerOfPatientID));
+            } catch (ObjectNotFoundException onfe) {
+                mwlPat = patHome.create(mwlPatDs);
+            }
             map.put("mwlPat", mwlPat.getAttributes(true));
             map.put("mppsPat", mppsPat.getAttributes(true));
         }
@@ -691,7 +695,7 @@ public abstract class MPPSManagerBean implements SessionBean {
         }
         PatientLocal pat;
         try {
-            pat = patHome.searchFor(mwlitem, false, true);
+            pat = patHome.selectByPatientId(mwlitem);
         } catch (FinderException e) {
             throw new EJBException(e);
         }
