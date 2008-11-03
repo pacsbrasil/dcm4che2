@@ -933,6 +933,9 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     public void generatePatientID(Dataset pat, Dataset sty) {
+        if (generatePatientID == null) {
+            return;
+        }
         String pid = pat.getString(Tags.PatientID);
         if (pid != null) {
             return;
