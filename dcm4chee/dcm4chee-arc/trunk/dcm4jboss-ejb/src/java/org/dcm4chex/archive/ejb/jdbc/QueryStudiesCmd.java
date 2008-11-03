@@ -107,19 +107,6 @@ public class QueryStudiesCmd extends BaseReadCmd {
     public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, Subject subject)
     	throws SQLException {
     	this(filter, hideMissingStudies, false, subject );
-        defineColumnTypes(new int[] { 
-                blobAccessType, // Patient.encodedAttributes
-                blobAccessType, // Study.encodedAttributes
-                Types.BIGINT,   // Patient.pk
-                Types.BIGINT,   // Study.pk
-                Types.VARCHAR,  // Study.modalitiesInStudy
-                Types.INTEGER,  // Study.numberOfStudyRelatedSeries
-                Types.INTEGER,  // Study.numberOfStudyRelatedInstances
-                Types.VARCHAR,  // Study.retrieveAETs
-                Types.INTEGER,  // Study.availability
-                Types.VARCHAR,  // Study.filesetId
-                Types.VARCHAR,  // Study.studyStatusId
-                });
     }
 
     /**
@@ -240,6 +227,19 @@ public class QueryStudiesCmd extends BaseReadCmd {
 
 	
     public List list(int offset, int limit) throws SQLException {
+        defineColumnTypes(new int[] { 
+                blobAccessType, // Patient.encodedAttributes
+                blobAccessType, // Study.encodedAttributes
+                Types.BIGINT,   // Patient.pk
+                Types.BIGINT,   // Study.pk
+                Types.VARCHAR,  // Study.modalitiesInStudy
+                Types.INTEGER,  // Study.numberOfStudyRelatedSeries
+                Types.INTEGER,  // Study.numberOfStudyRelatedInstances
+                Types.VARCHAR,  // Study.retrieveAETs
+                Types.INTEGER,  // Study.availability
+                Types.VARCHAR,  // Study.filesetId
+                Types.VARCHAR,  // Study.studyStatusId
+                });
         sqlBuilder.setSelect(SELECT_ATTRIBUTE);
         sqlBuilder.addOrderBy("Patient.patientName", SqlBuilder.ASC);
         sqlBuilder.addOrderBy("Patient.pk", SqlBuilder.ASC);

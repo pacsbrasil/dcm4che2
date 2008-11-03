@@ -83,11 +83,6 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
             throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel);
-        defineColumnTypes(new int[] {
-                blobAccessType,
-                blobAccessType,
-                Types.BIGINT,
-                Types.BIGINT});
     	this.hideMissingStudies = hideMissingStudies;
     	sqlBuilder.setFrom(ENTITY);
         sqlBuilder.setLeftJoin(LEFT_JOIN);
@@ -149,6 +144,11 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
 
 	
     public List list(int offset, int limit) throws SQLException {
+        defineColumnTypes(new int[] {
+                blobAccessType,
+                blobAccessType,
+                Types.BIGINT,
+                Types.BIGINT});
         sqlBuilder.setSelect(SELECT_ATTRIBUTE);
         sqlBuilder.addOrderBy("PrivatePatient.pk", SqlBuilder.ASC);
         sqlBuilder.setOffset(offset);
