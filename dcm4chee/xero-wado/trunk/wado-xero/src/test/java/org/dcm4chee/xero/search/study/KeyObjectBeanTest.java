@@ -74,7 +74,7 @@ public class KeyObjectBeanTest {
 
       ret.addResult(keyObject);
 
-      KeyObjectBean kob = (KeyObjectBean) ret.getChildren().get("1.113654.1.2001.20.512.1");
+      KeyObjectBean kob = (KeyObjectBean) ret.getChildren().get("1.113654.1.2001.20.512.1.2.109999");
       List<KeySelection> keys = kob.getKeySelection();
             
       KeySelection key1 = keys.get(0);

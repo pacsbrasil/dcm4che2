@@ -84,12 +84,18 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 
    public static final String KEY_UID = "koUID";
 
+   private static final String KO = "ko";
+
    public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
 	  String koUid = (String) params.get(KEY_UID);
-	  if (koUid == null || koUid.equals("")) {
+	  String ko = (String) params.get(KO);
+	  if (koUid == null)   {
+	     koUid = "*";
+	  }
+	  if (ko == null || ko.equals("")) {
 		 return filterItem.callNextFilter(params);
 	  }
-	  ResultsBean ret = addKeyObjectMacro(filterItem, params, koUid);
+	  ResultsBean ret = addKeyObjectMacro(filterItem, params, koUid, ko);
 	  if (ret == null)
 		 return null;
 
@@ -105,7 +111,7 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
      * @param koUid
      * @return
      */
-   protected ResultsBean addKeyObjectMacro(FilterItem<ResultsBean> filterItem, Map<String, Object> params, String koUid) {
+   protected ResultsBean addKeyObjectMacro(FilterItem<ResultsBean> filterItem, Map<String, Object> params, String koUid, String ko) {
 	  // Don't remove the koUID as it is part of the cache key still
 	  ResultsBean ret = filterItem.callNextFilter(params);
 	  if (ret == null)
@@ -114,9 +120,19 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 		 PatientType patient = ret.getPatient().get(patientI);
 		 for (StudyType studyType : patient.getStudy()) {
 			StudyBean study = (StudyBean) studyType;
+			
 			String studyKo = findKeyObject(study, koUid);
-			if (studyKo == null)
+			
+			if (studyKo == null) {
 			   continue;
+			}
+			
+            if (!includeOtherStudies(koUid)) {
+               if (!isCurrentStudy(params, studyKo))    {
+                  continue;
+               }
+            }
+			
 			KeyObjectMacro kom = (KeyObjectMacro) ret.getMacroItems().findMacro(KeyObjectMacro.class);
 			if (kom != null) {
 			   if (kom.getKeyObject().equals(studyKo)) {
@@ -135,8 +151,10 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 			}
 			kom = new KeyObjectMacro(studyKo);
 			study.getMacroItems().addMacro(kom);
-
-	        removeUnferencedImages(kob.getKeySelection(), study);		
+			
+			if (isReferenced(ko))  {
+			   removeUnferencedImages(kob.getKeySelection(), study);
+			}
 			List<KeySelection> missing = assignKeyObjectMacro(ret, kom, kob.getKeySelection());
 			if (missing != null && !missing.isEmpty() ) {
 			   handleMissingItems(filterItem, params, ret, kom, missing);
@@ -146,6 +164,18 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 	  return ret;
    }
 
+   private boolean isReferenced(String ko) {
+      return ko.equals("referenced");
+   }
+
+   private boolean includeOtherStudies(String koUid) {
+      return (koUid != "*");
+   }
+
+   private boolean isCurrentStudy(Map<String, Object> params, String studyId) {
+      return (params.get("studyUID").equals(studyId));
+   }
+   
    private Filter<DicomObject> dicomFullHeader;
 
    /** Gets the filter that returns the dicom object image header */

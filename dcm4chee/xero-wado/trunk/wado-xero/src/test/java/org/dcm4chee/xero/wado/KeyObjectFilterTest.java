@@ -38,14 +38,11 @@
 package org.dcm4chee.xero.wado;
 
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.imageio.stream.MemoryCacheImageInputStream;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
 
 import org.dcm4che2.data.BasicDicomObject;
@@ -63,10 +60,7 @@ import org.dcm4chee.xero.search.study.ImageBean;
 import org.dcm4chee.xero.search.study.KeyObjectBean;
 import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;
-import org.dcm4chee.xero.search.study.ResultsType;
-import org.dcm4chee.xero.search.study.SeriesBean;
 import org.dcm4chee.xero.search.study.SeriesType;
-import org.dcm4chee.xero.search.study.StudyBean;
 import org.dcm4chee.xero.search.study.StudyType;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -141,10 +135,12 @@ public class KeyObjectFilterTest {
    }
 
    @Test
-   public void displayAllImagesTest() throws Exception  {
+   public void displayKOModeAllTest() throws Exception  {
 
       Map<String, Object> params = new HashMap<String, Object>();
-
+      params.put("ko", "all");
+      params.put("studyUID", "1.2.124.113532.193.190.36.23.20020315.210813.1712247");
+      
       ResultsBean rbOut = ko.filter(fI, params);
 
       List<PatientType> pats = rbOut.getPatient();
@@ -152,64 +148,56 @@ public class KeyObjectFilterTest {
       List<StudyType> studies = pat.getStudy();
       StudyType studyType = studies.get(0);
       List<SeriesType> seriesList = studyType.getSeries();
-
-      ImageBean img = (ImageBean) ((SeriesType) seriesList.get(0))
-            .getDicomObject().get(0);
-      assert img.getId().equals(
-            "1.3.12.2.1107.5.1.4.24072.4.0.1934796515801817");
-
-      img = (ImageBean) ((SeriesType) seriesList.get(1)).getDicomObject()
-            .get(0);
-      assert img.getId().equals(
-            "1.3.12.2.1107.5.1.4.24072.202.0.743531425431591");
-
-      img = (ImageBean) ((SeriesType) seriesList.get(2)).getDicomObject()
-            .get(0);
-      assert img.getId().equals(
-            "1.3.12.2.1107.5.1.4.24072.202.0.743380316762580");
-      assert img.getOtherAttributes() == null;
+      
+      assert ((SeriesType) seriesList.get(0)).getDicomObject().size() == 1;
       
       Object obj = ((SeriesType) seriesList.get(3)).getDicomObject().get(0);
       assert obj instanceof KeyObjectBean;
    }
+
+   @Test
+   public void displayKOModeUIDAllTest() throws Exception {
+      Map<String, Object> params = new HashMap<String, Object>();
+      params.put("koUID", "1.113654.1.2001.20.512.1.2.109999");
+      params.put("ko", "all");
+      params.put("studyUID", "1.2.124.113532.193.190.36.23.20020315.210813.1712247");
+
+      ResultsBean rbOut = ko.filter(fI, params);
+
+      List<PatientType> pats = rbOut.getPatient();
+      PatientType pat = pats.get(0);
+      List<StudyType> studies = pat.getStudy();
+      StudyType studyType = studies.get(0);
+      List<SeriesType> seriesList = studyType.getSeries();
+      
+      ImageBean img = (ImageBean) ((SeriesType) seriesList.get(0))
+            .getDicomObject().get(0);
+      assert img.getId().equals(
+            "1.3.12.2.1107.5.1.4.24072.4.0.1934796515801817");
+      assert img.getOtherAttributes().get(QName.valueOf("koUID")).equals(
+            "1.113654.1.2001.20.512.1.2.109999");
+
+      
+      img = (ImageBean) ((SeriesType) seriesList.get(1)).getDicomObject()
+            .get(0);
+      System.out.println (img.getId());
+      System.out.println (seriesList.size());
+      assert img.getId().equals(
+            "1.3.12.2.1107.5.1.4.24072.202.0.743531425431591");
+      assert img.getOtherAttributes().get(QName.valueOf("koUID")).equals(
+            "1.113654.1.2001.20.512.1.2.109999");
+
+      Object obj = ((SeriesType) seriesList.get(3)).getDicomObject().get(0);
+      assert obj instanceof KeyObjectBean;
+   }
+   
    
    @Test
-   public void displayKOModeAllTest() throws Exception  {
-
+   public void displayKOModeReferenced() throws Exception {
       Map<String, Object> params = new HashMap<String, Object>();
-      params.put("koUID", "*");
-      
-      ResultsBean rbOut = ko.filter(fI, params);
-
-      List<PatientType> pats = rbOut.getPatient();
-      PatientType pat = pats.get(0);
-      List<StudyType> studies = pat.getStudy();
-      StudyType studyType = studies.get(0);
-      List<SeriesType> seriesList = studyType.getSeries();
-
-      ImageBean img = (ImageBean) ((SeriesType) seriesList.get(0))
-            .getDicomObject().get(0);
-      assert img.getId().equals(
-            "1.3.12.2.1107.5.1.4.24072.4.0.1934796515801817");
-      assert img.getKobUID().equals(
-            "1.113654.1.2001.20.512.1");
-
-      img = (ImageBean) ((SeriesType) seriesList.get(1)).getDicomObject()
-            .get(0);
-      assert img.getId().equals(
-            "1.3.12.2.1107.5.1.4.24072.202.0.743531425431591");
-      assert img.getKobUID().equals(
-            "1.113654.1.2001.20.512.1");
-
-      
-      Object obj = ((SeriesType) seriesList.get(2)).getDicomObject().get(0);
-      assert obj instanceof KeyObjectBean;
-   }
-
-   @Test
-   public void displayKOModeUIDTest() throws Exception {
-      Map<String, Object> params = new HashMap<String, Object>();
-      params.put("koUID", "1.113654.1.2001.20.512.1");
+      params.put("koUID", "1.113654.1.2001.20.512.1.2.109999");
+      params.put("ko", "referenced");
+      params.put("studyUID", "1.2.124.113532.193.190.36.23.20020315.210813.1712247");
 
       ResultsBean rbOut = ko.filter(fI, params);
 
@@ -224,16 +212,17 @@ public class KeyObjectFilterTest {
       assert img.getId().equals(
             "1.3.12.2.1107.5.1.4.24072.4.0.1934796515801817");
       assert img.getOtherAttributes().get(QName.valueOf("koUID")).equals(
-            "1.113654.1.2001.20.512.1");
+            "1.113654.1.2001.20.512.1.2.109999");
 
       img = (ImageBean) ((SeriesType) seriesList.get(1)).getDicomObject()
             .get(0);
       assert img.getId().equals(
             "1.3.12.2.1107.5.1.4.24072.202.0.743531425431591");
       assert img.getOtherAttributes().get(QName.valueOf("koUID")).equals(
-            "1.113654.1.2001.20.512.1");
+            "1.113654.1.2001.20.512.1.2.109999");
 
       Object obj = ((SeriesType) seriesList.get(2)).getDicomObject().get(0);
       assert obj instanceof KeyObjectBean;
-   }
+      
+   }   
 }

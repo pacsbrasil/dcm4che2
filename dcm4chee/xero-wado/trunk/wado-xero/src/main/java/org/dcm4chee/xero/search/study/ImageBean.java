@@ -108,6 +108,7 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
 	  image.rows = this.rows;
 	  image.objectUID = this.objectUID;
 	  image.instanceNumber = this.instanceNumber;
+	  image.kobUID = this.kobUID;
 	  image.macroItems = getMacroItems();
 	  return image;
    }
