@@ -38,6 +38,8 @@
 
 package org.dcm4che.server;
 
+import java.util.Iterator;
+
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.AssociationListener;
 import org.dcm4che.net.DcmServiceRegistry;
@@ -65,6 +67,8 @@ public interface DcmHandler extends Server.Handler
      */
     void removeAssociationListener(AssociationListener l);
 
+
+    Iterator associationListenerIterator();
 
     /**
      *  Sets the acceptorPolicy attribute of the DcmHandler object

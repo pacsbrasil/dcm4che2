@@ -277,6 +277,9 @@ class DcmHandlerImpl implements DcmHandler
         }
     }
 
+    public Iterator associationListenerIterator() {
+        return listeners.iterator();
+    }
 
     /**
      *  Gets the sockedClosedByHandler attribute of the DcmHandlerImpl object
