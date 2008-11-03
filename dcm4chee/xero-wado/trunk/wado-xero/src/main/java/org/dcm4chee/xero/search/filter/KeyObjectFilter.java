@@ -39,6 +39,7 @@ package org.dcm4chee.xero.search.filter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -135,6 +136,7 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 			kom = new KeyObjectMacro(studyKo);
 			study.getMacroItems().addMacro(kom);
 
+	        removeUnferencedImages(kob.getKeySelection(), study);		
 			List<KeySelection> missing = assignKeyObjectMacro(ret, kom, kob.getKeySelection());
 			if (missing != null && !missing.isEmpty() ) {
 			   handleMissingItems(filterItem, params, ret, kom, missing);
@@ -202,6 +204,12 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 		 // at least at the moment.
 		 if (mmi instanceof ImageBean) {
 			ImageBean image = (ImageBean) mmi;
+			String kUd = image.getKobUID();
+			if (kUd != null && kUd.length() != 0)   {
+			   image.setKobUID(kUd+","+kob.getId());
+			} else   {
+			   image.setKobUID(kob.getId());
+			}			
 			SeriesBean imgSeries = image.getSeriesBean();
 			SeriesBean series = availSeries.get(imgSeries.getSeriesUID());
 			// Identity comparison is acceptable here.
@@ -229,6 +237,31 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 		 }
 	  }
 	  return missing;
+   }
+
+   /**
+    * remove image from the resultset that is not being referenced by the specified key object. 
+    * @param selection
+    * @param study
+    */
+   private static void removeUnferencedImages(List<KeySelection> selection,
+         StudyBean study) {
+      Iterator iter = study.getSeries().iterator();
+      while (iter.hasNext())   {
+         SeriesBean ser = (SeriesBean) iter.next();
+         
+         Object obj = ser.getDicomObject().get(0);
+         boolean contains = false;
+         if (obj instanceof ImageBean)  {
+            for (KeySelection key : selection) {
+               if (key.getObjectUid().equals(((ImageBean)obj).getId()))
+                     contains = true;
+            }
+            if (!contains) {
+               iter.remove();
+            }
+         }
+      }
    }
 
    /** Handle any missing items - by default, does nothing */

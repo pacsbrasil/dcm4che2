@@ -3,11 +3,13 @@
   xmlns="http://www.w3.org/2001/XMLSchema" 
   xmlns:tns="http://www.dcm4chee.org/xero/search/study/" 
   xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
-  xmlns:svg="http://www.w3.org/2000/svg" 
+  xmlns:svg="http://www.w3.org/2000/svg"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml" 
   targetNamespace="http://www.dcm4chee.org/xero/search/study/" 
   jxb:version="2.0"
 >
   <import namespace="http://www.w3.org/2000/svg" schemaLocation="../../../../w3/svg/partialSvg.xsd"/>
+  <import namespace="http://www.w3.org/1999/xhtml" schemaLocation="../../../../w3/svg/p.xsd"/>
 
   <!-- A studies element is the root for all children, and all children should
          have information upto the studies level, at least UID's, however many
@@ -27,6 +29,8 @@
     <element name="report" type="tns:reportType" />
     
     <element name="keyObject" type="tns:keyObjectType" />
+    
+    <element name="objectRef" type="tns:objectRef" />
     
     <complexType name="resultsType">
     	<sequence maxOccurs="unbounded" minOccurs="0">
@@ -121,6 +125,12 @@
        </restriction>
     </simpleType>
     
+    <complexType name="objectRef">
+       <attribute name="objectUID" type="tns:UID" />
+       <attribute name="gspsUID" type="tns:UID" use="optional"/>
+       <attribute name="frame" type="int" use="optional"/>
+    </complexType>
+    
     <complexType name="gspsType">
      <complexContent>
        <extension base="tns:dicomObjectType">
@@ -160,6 +170,12 @@ Key objects are a named (by code meaning) list of images to display.
       </annotation>
       <complexContent>
         <extension base="tns:reportType">
+           <sequence>
+              <element ref="tns:objectRef" minOccurs="0" maxOccurs="unbounded"/>
+              <element ref="xhtml:p" minOccurs="0" maxOccurs="unbounded"/>
+           </sequence>
+           <attribute name="id" type="tns:UID" />
+           <attribute name="name" type="string" />        
         </extension>
       </complexContent>
     </complexType>
@@ -180,6 +196,7 @@ Key objects are a named (by code meaning) list of images to display.
     			<attribute name="Rows" type="int" />
     			<attribute name="Columns" type="int" />
     			<attribute name="gspsUID" type="tns:UID" />
+                <attribute name="kobUID" type="string" />
     		</extension>
     	</complexContent>
     </complexType>

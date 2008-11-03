@@ -39,6 +39,7 @@ package org.dcm4chee.xero.search.study;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -53,6 +54,7 @@ import org.dcm4che2.data.Tag;
 import org.dcm4chee.xero.search.LocalModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3.svg.P;
 
 /** Provides information about a key object type object. */
 public class KeyObjectBean extends KeyObjectType implements LocalModel<String>, MacroMixIn, SearchableDicomObject {
@@ -101,8 +103,37 @@ public class KeyObjectBean extends KeyObjectType implements LocalModel<String>, 
 	  initKeySelection(data);
    }
 
+
+   /**
+    * Initialize the key object reference text values
+    * @param data
+    */
+   private void initKeyValues(DicomObject data) {
+      DicomElement tContentSeq = data.get(Tag.ContentSequence);
+      if (tContentSeq == null || !tContentSeq.hasItems()) {
+         return;
+      }
+      int size = tContentSeq.countItems();
+      
+      for (int i = 0; i < size; i++) {
+         DicomObject conDcm = tContentSeq.getDicomObject(i);
+         String tValueType = conDcm.getString(Tag.ValueType);
+         if (tValueType.equals("TEXT"))  {
+            P para = new P();
+            para.setContent(conDcm.getString(Tag.TextValue));
+            if(p == null)    {
+               p = new ArrayList<P>();
+            }
+            p.add(para);
+         }
+      }
+   }
    /** Initialize the key seleciton from the given dicom object */
    public void initKeySelection(DicomObject data) {
+      if (objectRef == null)    {
+         objectRef = new ArrayList<ObjectRef>();   
+      }
+      initKeyValues(data);   
 	  initKeySelection(data.get(Tag.ContentSequence));
    }
    
@@ -120,8 +151,8 @@ public class KeyObjectBean extends KeyObjectType implements LocalModel<String>, 
 	  log.info("Found a selected image.");
 	  int size = sq.countItems();
 	  for (int i = 0; i < size; i++) {
-		 DicomObject dcmObj = sq.getDicomObject(i);
-		 DicomElement imgs = dcmObj.get(Tag.ReferencedSOPSequence);
+		 DicomObject conDcm = sq.getDicomObject(i);
+		 DicomElement imgs = conDcm.get(Tag.ReferencedSOPSequence);
 		 initKeySelectionFromImages(imgs);
 	  }
    }
@@ -145,14 +176,45 @@ public class KeyObjectBean extends KeyObjectType implements LocalModel<String>, 
 		 }
 		 if (frames == null || frames.length == 0) {
 			KeySelection keySel = new KeySelection(uid, gspsUid, 0);
+	        addToObjectRef(uid, gspsUid, null);
 			keySelection.add(keySel);
 		 } else {
 			for (int f = 0; f < frames.length; f++) {
 			   KeySelection keySel = new KeySelection(uid, gspsUid, frames[f]);
 			   keySelection.add(keySel);
+	           addToObjectRef(uid, gspsUid, frames[f]);
 			}
 		 }
 	  }
+   }
+
+   /**
+    * Creates <tt>ObjectRef</tt> and adds to the objectRef list of not present
+    * @param uid
+    * @param gspsUid
+    * @param frame
+    */
+   private void addToObjectRef(String uid, String gspsUid, Integer frame) {
+      ObjectRef objRef = new ObjectRef();
+       objRef.setObjectUID(uid);
+       if (gspsUid != null)  {
+          objRef.setGspsUID(gspsUid);
+       }
+       if (frame != null)   {
+          objRef.setFrame(frame);
+       }
+      Iterator<ObjectRef> iter = objectRef.iterator();
+      boolean contains = false;
+      while (iter.hasNext())    {
+         ObjectRef ref = iter.next();
+         if (ref.getObjectUID().equals(uid))    {
+            contains = true;
+            break;
+         }
+      }
+      if (!contains)    {
+         objectRef.add(objRef);
+      }
    }
 
    /**
@@ -171,7 +233,7 @@ public class KeyObjectBean extends KeyObjectType implements LocalModel<String>, 
 		 log.debug("Get dicom object in concept code sequence is null.");
 		 return;
 	  }
-	  setConceptMeaning(item.getString(Tag.CodeMeaning));
+	  setName(item.getString(Tag.CodeMeaning));
 	  setConceptCode(item.getString(Tag.CodeValue));
 	  log.debug("Report has code meaning and value:" + getConceptCode() + "," + getConceptMeaning());
    }
