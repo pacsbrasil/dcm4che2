@@ -1360,7 +1360,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 try {
                     retrieveFileFromTAR(fsID, fileID);
                 } catch (Exception e) {
-                    // failure to fetch TAR of if no such file ID is included
+                    // failure to fetch TAR or if no such file ID is included
                     // in the fetched TAR will be handled by retrieveLocal()
                 }
             }
