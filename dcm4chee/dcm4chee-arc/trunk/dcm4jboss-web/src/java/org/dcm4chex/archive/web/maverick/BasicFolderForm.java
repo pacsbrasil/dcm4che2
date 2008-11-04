@@ -62,7 +62,7 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
 public abstract class BasicFolderForm extends BasicFormPagingModel {
 
     private int limit = 20;
-    
+
     private List patients;
 
     private final Set stickyPatients = new HashSet();
@@ -76,22 +76,25 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
     private int offset;
 
     private int total;
-    
-	private boolean showWithoutStudies;
 
-        private boolean latestStudiesFirst;
-        
-	protected static Logger log = Logger.getLogger(BasicFolderForm.class);
-	
-	private PatientModel editPat = null;
+    private boolean showWithoutStudies;
+
+    private boolean latestStudiesFirst;
     
-	protected BasicFolderForm( HttpServletRequest request ) {
-    	super(request);
+    private boolean hideHasIssuerOfPID;
+    private boolean hideHasNoIssuerOfPID = true;
+
+    protected static Logger log = Logger.getLogger(BasicFolderForm.class);
+
+    private PatientModel editPat = null;
+
+    protected BasicFolderForm( HttpServletRequest request ) {
+        super(request);
     }
-	
-	public String getModelName() { return "FOLDER"; }
 
-	
+    public String getModelName() { return "FOLDER"; }
+
+
     public final int getLimit() {
         return limit;
     }
@@ -125,7 +128,7 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
     public final Set getStickyPatients() {
         return stickyPatients;
     }
-    
+
     public final Set getStickySeries() {
         return stickySeries;
     }
@@ -137,10 +140,10 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
     public final int getOffset() {
         return offset;
     }
-    
+
     public final void resetOffset() {
-    	offset = 0;
-    	total = -1;
+        offset = 0;
+        total = -1;
     }
 
     public final List getPatients() {
@@ -158,20 +161,20 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
     public final int getTotal() {
         return total;
     }
-    
-	/**
-	 * @return Returns the hideStudyLess.
-	 */
-	public boolean isShowWithoutStudies() {
-		return showWithoutStudies;
-	}
-	/**
-	 * @param hideStudyLess The hideStudyLess to set.
-	 */
-	public void setShowWithoutStudies(boolean showWithoutStudies) {
-		this.showWithoutStudies = showWithoutStudies;
-	}
-	
+
+    /**
+     * @return Returns the hideStudyLess.
+     */
+    public boolean isShowWithoutStudies() {
+        return showWithoutStudies;
+    }
+    /**
+     * @param hideStudyLess The hideStudyLess to set.
+     */
+    public void setShowWithoutStudies(boolean showWithoutStudies) {
+        this.showWithoutStudies = showWithoutStudies;
+    }
+
     public final boolean isLatestStudiesFirst() {
         return latestStudiesFirst;
     }
@@ -179,32 +182,60 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
     public final void setLatestStudiesFirst(boolean latestStudiesFirst) {
         this.latestStudiesFirst = latestStudiesFirst;
     }
+    
+    public final Boolean getQueryHasIssuerOfPID() {
+        log.info("return getQueryIssuerOfPID: hideHasIssuerOfPID:"+hideHasIssuerOfPID+" hideHasNoIssuerOfPID"+hideHasNoIssuerOfPID);
+        return hideHasIssuerOfPID ^ hideHasNoIssuerOfPID ? Boolean.valueOf(hideHasNoIssuerOfPID) : null; 
+    }
+    public void setHideHasIssuerOfPID(boolean b) {
+        log.info("setHideHasIssuerOfPID "+b);
+        if ( b != this.hideHasIssuerOfPID) {
+            hideHasIssuerOfPID = b;
+            hideHasNoIssuerOfPID = false;
+        }    
+    }
+
+    public boolean isHideHasNoIssuerOfPID() {
+        return hideHasNoIssuerOfPID;
+    }
+
+    public void setHideHasNoIssuerOfPID(boolean b) {
+        log.info("setHideHasNoIssuerOfPID "+b);
+        if ( b != this.hideHasNoIssuerOfPID) {
+            hideHasNoIssuerOfPID = b;
+            hideHasIssuerOfPID = false;
+        }
+    }
+
+    public boolean isHideHasIssuerOfPID() {
+        return hideHasIssuerOfPID;
+    }
 
     public void setEditPatient(PatientModel pat) {
-		this.editPat = pat;
-	}
-	
+        this.editPat = pat;
+    }
+
     /**
-	 * @param studyList
-	 */
-	public void setStudies(List studyList) {
-		List patList = new ArrayList();
+     * @param studyList
+     */
+    public void setStudies(List studyList) {
+        List patList = new ArrayList();
         PatientModel curPat = null;
-		for (int i = 0, n = studyList.size(); i < n; i++) {
-		    Dataset ds = (Dataset) studyList.get(i);
-		    PatientModel pat = new PatientModel(ds);
-		    if (!pat.equals(curPat)) {
-		        patList.add(curPat = pat);
-		    }
-		    StudyModel study = new StudyModel(ds);
-		    if (study.getPk() != -1 && !curPat.getStudies().contains(study)) {
-		        curPat.getStudies().add(study);
-		    }
-		}
-		this.updatePatients(patList);
-	}
-	
-	public void updatePatients(List newPatients) {
+        for (int i = 0, n = studyList.size(); i < n; i++) {
+            Dataset ds = (Dataset) studyList.get(i);
+            PatientModel pat = new PatientModel(ds);
+            if (!pat.equals(curPat)) {
+                patList.add(curPat = pat);
+            }
+            StudyModel study = new StudyModel(ds);
+            if (study.getPk() != -1 && !curPat.getStudies().contains(study)) {
+                curPat.getStudies().add(study);
+            }
+        }
+        this.updatePatients(patList);
+    }
+
+    public void updatePatients(List newPatients) {
         List sticky = patients;
         patients = newPatients;
         if (sticky != null) {
@@ -323,9 +354,9 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
     }
 
     public PatientModel getPatientByPk(long patPk) {
-    	if ( patPk == -1 ) {
-    		return editPat;
-    	}
+        if ( patPk == -1 ) {
+            return editPat;
+        }
         for (int i = 0, n = patients.size(); i < n; i++) {
             PatientModel pat = (PatientModel) patients.get(i);
             if (pat.getPk() == patPk) { return pat; }
@@ -360,7 +391,7 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
         }
         return null;
     }
-    
+
     public InstanceModel getInstanceByPk(long patPk, long studyPk, long seriesPk, long instancePk) {
         return getInstanceByPk(getSeriesByPk(patPk, studyPk, seriesPk), instancePk);
     }
@@ -374,42 +405,42 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
         }
         return null;
     }
-    
+
 
     public void removeStickies() {
         PatientModel patient;
         for (Iterator patient_iter = patients.iterator(); patient_iter
-                .hasNext();) {
+        .hasNext();) {
             patient = (PatientModel) patient_iter.next();
             if (stickyPatients.contains(String.valueOf(patient.getPk()))) {
                 stickyPatients.remove(String.valueOf(patient.getPk()));
             }
             for (Iterator study_iter = patient.getStudies().iterator(); study_iter
-                    .hasNext();) {
-				removeStickies((StudyModel) study_iter.next());
+            .hasNext();) {
+                removeStickies((StudyModel) study_iter.next());
             }
         }
     }
 
-	public void removeStickies(StudyModel study) {
+    public void removeStickies(StudyModel study) {
         if (stickyStudies.contains(String.valueOf(study.getPk()))) {
             stickyStudies.remove(String.valueOf(study.getPk()));
         }
-		SeriesModel series;
-		InstanceModel instance;
-		for (Iterator series_iter = study.getSeries().iterator(); series_iter.hasNext();) {
-		    series = (SeriesModel) series_iter.next();
-		    if (stickySeries.contains(String.valueOf(series.getPk()))) {
-		        stickySeries.remove(String.valueOf(series.getPk()));
-		    }
-	        for (Iterator instance_iter = series.getInstances().iterator(); instance_iter.hasNext();) {
-	            instance = (InstanceModel) instance_iter.next();
-	            if (isSticky(instance)) {
-	                stickyInstances.remove(String.valueOf(instance.getPk()));
-	            }
-	        }
-		}
-	}
+        SeriesModel series;
+        InstanceModel instance;
+        for (Iterator series_iter = study.getSeries().iterator(); series_iter.hasNext();) {
+            series = (SeriesModel) series_iter.next();
+            if (stickySeries.contains(String.valueOf(series.getPk()))) {
+                stickySeries.remove(String.valueOf(series.getPk()));
+            }
+            for (Iterator instance_iter = series.getInstances().iterator(); instance_iter.hasNext();) {
+                instance = (InstanceModel) instance_iter.next();
+                if (isSticky(instance)) {
+                    stickyInstances.remove(String.valueOf(instance.getPk()));
+                }
+            }
+        }
+    }
 
 
 }

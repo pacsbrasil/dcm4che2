@@ -161,3 +161,7 @@
 <!ENTITY ViewManifestInWebviewer "Afficher le Manifeste dans dans un WebViewer">
 <!ENTITY OpenPDFDocument "Ouvrir le Document PDF">
 <!ENTITY OpenXDSDocument "Ouvrir le Document XDS">
+<!ENTITY QueryHasIssuer "Filter for 'has Issuer of PID'">
+<!ENTITY QueryHasIssuer_text1 "">
+<!ENTITY QueryHasIssuer_text2 "Avec /">
+<!ENTITY QueryHasIssuer_text3 "Sans exposant de PID">

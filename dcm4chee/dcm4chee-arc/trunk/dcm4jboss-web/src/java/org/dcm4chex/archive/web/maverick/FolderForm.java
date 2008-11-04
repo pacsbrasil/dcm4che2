@@ -101,6 +101,8 @@ public class FolderForm extends BasicFolderForm {
     private boolean filterAET = false;
 
     private boolean noMatchForNoValue = false;
+    
+    private boolean showIssuerOfPID;
 
     protected static Logger log = Logger.getLogger(FolderForm.class);
 
@@ -132,6 +134,7 @@ public class FolderForm extends BasicFolderForm {
             checkXDSQuery(ctx, form);
             request.getSession().setAttribute(FOLDER_ATTRNAME, form);
             initLimit(ctx.getServletConfig().getInitParameter("limitNrOfStudies"), form);
+            form.setShowIssuerOfPID("true".equals(ctx.getServletConfig().getInitParameter("showIssuerOfPID")));
 
             try {
                 ObjectName qrscpServiceName = new ObjectName(ctx.getServletConfig().getInitParameter("qrscpServiceName"));
@@ -419,6 +422,14 @@ public class FolderForm extends BasicFolderForm {
      */
     public void setNoMatchForNoValue(boolean noMatchForNoValue) {
         this.noMatchForNoValue = noMatchForNoValue;
+    }
+
+    public boolean isShowIssuerOfPID() {
+        return showIssuerOfPID;
+    }
+
+    public void setShowIssuerOfPID(boolean showIssuerOfPID) {
+        this.showIssuerOfPID = showIssuerOfPID;
     }
 
     /* (non-Javadoc)

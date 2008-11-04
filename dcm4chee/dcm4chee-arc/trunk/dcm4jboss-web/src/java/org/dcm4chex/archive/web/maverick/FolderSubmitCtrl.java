@@ -143,6 +143,8 @@ public class FolderSubmitCtrl extends FolderCtrl {
                 folderForm.setShowWithoutStudies( "true".equals( rq.getParameter("showWithoutStudies")));
                 folderForm.setLatestStudiesFirst("true".equals( rq.getParameter("latestStudiesFirst")));
                 folderForm.setFilterAET( "true".equals( rq.getParameter("filterAET")));
+                folderForm.setHideHasIssuerOfPID( "true".equals( rq.getParameter("hideHasIssuerOfPID")));
+                folderForm.setHideHasNoIssuerOfPID( "true".equals( rq.getParameter("hideHasNoIssuerOfPID")));
             }
             if (rq.getParameter("logout") != null || rq.getParameter("logout.x") != null ) 
                 return logout();
@@ -210,12 +212,12 @@ public class FolderSubmitCtrl extends FolderCtrl {
             (Subject) PolicyContext.getContext(SUBJECT_CONTEXT_KEY);
         if (newQuery) {
             folderForm.setTotal( new QueryStudiesCmd(filter.toDataset(), 
-                    !folderForm.isShowWithoutStudies(), folderForm.isNoMatchForNoValue(), subject).count() );
+                    !folderForm.isShowWithoutStudies(), folderForm.isNoMatchForNoValue(), folderForm.getQueryHasIssuerOfPID(), subject).count() );
             queryAETList(folderForm);
         }
         List studyList = new QueryStudiesCmd(filter.toDataset(), 
                 !folderForm.isShowWithoutStudies(), 
-                folderForm.isNoMatchForNoValue(), 
+                folderForm.isNoMatchForNoValue(), folderForm.getQueryHasIssuerOfPID(),
                 subject).list(folderForm.getOffset(), folderForm.getLimit());
         if (subject != null) {
             folderForm.setGrantedStudyActions(queryGrantedStudyActions(studyList,subject));
