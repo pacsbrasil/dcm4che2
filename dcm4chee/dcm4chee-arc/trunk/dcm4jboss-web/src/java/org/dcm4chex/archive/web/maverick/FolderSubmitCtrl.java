@@ -210,7 +210,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
             (Subject) PolicyContext.getContext(SUBJECT_CONTEXT_KEY);
         if (newQuery) {
             folderForm.setTotal( new QueryStudiesCmd(filter.toDataset(), 
-                    !folderForm.isShowWithoutStudies(), subject).count() );
+                    !folderForm.isShowWithoutStudies(), folderForm.isNoMatchForNoValue(), subject).count() );
             queryAETList(folderForm);
         }
         List studyList = new QueryStudiesCmd(filter.toDataset(), 
