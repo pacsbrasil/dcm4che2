@@ -84,8 +84,6 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
-import org.dcm4chex.archive.ejb.jdbc.QueryPrivateStudiesCmd;
-import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
 import org.dcm4chex.archive.util.Convert;
 
 /**
@@ -256,17 +254,6 @@ public abstract class ContentManagerBean implements SessionBean {
     }
     
     /**
-     * @ejb.interface-method
-     */
-    public int countStudies(Dataset filter, boolean hideWithoutStudies, Subject subject) {
-        try {
-       		return new QueryStudiesCmd(filter, hideWithoutStudies, subject).count();
-        } catch (SQLException e) {
-            throw new EJBException(e);
-        }
-    }
-
-    /**
      * Get the Info of an instance.
      * <p>
      * Info means the Dataset with all attributes stored in DB for the instance 
@@ -366,39 +353,6 @@ public abstract class ContentManagerBean implements SessionBean {
         ds.putAll( study.getAttributes(supplement));
         ds.putAll( study.getPatient().getAttributes(supplement));
         return ds;
-    }
-    
-    /**
-     * @ejb.interface-method
-     */
-    public List listStudies(Dataset filter, boolean hideWithoutStudies, boolean noMatchForNoValue, Subject subject, int offset, int limit) {
-        try {
-       		return new QueryStudiesCmd(filter, hideWithoutStudies, noMatchForNoValue, subject).list(offset, limit);
-        } catch (SQLException e) {
-            throw new EJBException(e);
-        }
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public int countPrivateStudies(Dataset filter, int privateType, boolean hideWithoutStudies) {
-        try {
-       		return new QueryPrivateStudiesCmd(filter, privateType, hideWithoutStudies).count();
-        } catch (SQLException e) {
-            throw new EJBException(e);
-        }
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public List listPrivateStudies(Dataset filter, int privateType, boolean hideWithoutStudies, int offset, int limit) {
-        try {
-       		return new QueryPrivateStudiesCmd(filter, privateType, hideWithoutStudies).list(offset, limit);
-        } catch (SQLException e) {
-            throw new EJBException(e);
-        }
     }
     
     /**
