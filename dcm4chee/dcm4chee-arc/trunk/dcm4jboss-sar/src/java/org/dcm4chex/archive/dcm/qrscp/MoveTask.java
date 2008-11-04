@@ -210,6 +210,7 @@ public class MoveTask implements Runnable {
         this.remaining = size;
         this.retrieveInfo = new RetrieveInfo(service, fileInfo);
         if (retrieveInfo.isRetrieveFromLocal()) {
+            service.prefetchTars(retrieveInfo.getLocalFiles());
             openAssociation();
         }
         moveAssoc.addCancelListener(msgID, cancelListener);

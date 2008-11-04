@@ -45,6 +45,8 @@ import java.net.Socket;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -1334,5 +1336,34 @@ public class QueryRetrieveScpService extends AbstractScpService {
             }
         }
         return null;
+    }
+
+    void prefetchTars(Collection<List<FileInfo>> localFiles) {
+        HashSet<String> tarPaths = null;
+        for (List<FileInfo> list : localFiles) {
+            FileInfo fileInfo = list.get(0);
+            String fsID = fileInfo.basedir;
+            if (!fsID.startsWith("tar:")) {
+                continue;
+            }
+            String fileID = fileInfo.fileID;
+            int tarEnd = fileID.indexOf('!');
+            if (tarEnd == -1) {
+                // invalid fileID will be handled by retrieveLocal()
+                continue;
+            }
+            String tarPath = fileID.substring(0, tarEnd);
+            if (tarPaths == null) {
+                tarPaths = new HashSet<String>(8);
+            }
+            if (tarPaths.add(tarPath)) {
+                try {
+                    retrieveFileFromTAR(fsID, fileID);
+                } catch (Exception e) {
+                    // failure to fetch TAR of if no such file ID is included
+                    // in the fetched TAR will be handled by retrieveLocal()
+                }
+            }
+        }
     }
 }
