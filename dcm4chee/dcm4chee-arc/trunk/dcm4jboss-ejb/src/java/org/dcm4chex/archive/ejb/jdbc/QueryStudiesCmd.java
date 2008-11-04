@@ -72,18 +72,18 @@ public class QueryStudiesCmd extends BaseReadCmd {
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     private static final String[] SELECT_ATTRIBUTE = {
-            "Patient.encodedAttributes",                // (1)
-            "Study.encodedAttributes",                  // (2)
-            "Patient.pk",                               // (3)
-            "Study.pk",                                 // (4)
-            "Study.modalitiesInStudy",                  // (5)
-            "Study.numberOfStudyRelatedSeries",         // (6)
-            "Study.numberOfStudyRelatedInstances",      // (7)
-            "Study.retrieveAETs",                       // (8)
-            "Study.availability",                       // (9)
-            "Study.filesetId",                          // (10)
-            "Study.studyStatusId",                      // (11)
-            };
+        "Patient.encodedAttributes",                // (1)
+        "Study.encodedAttributes",                  // (2)
+        "Patient.pk",                               // (3)
+        "Study.pk",                                 // (4)
+        "Study.modalitiesInStudy",                  // (5)
+        "Study.numberOfStudyRelatedSeries",         // (6)
+        "Study.numberOfStudyRelatedInstances",      // (7)
+        "Study.retrieveAETs",                       // (8)
+        "Study.availability",                       // (9)
+        "Study.filesetId",                          // (10)
+        "Study.studyStatusId",                      // (11)
+    };
 
     private static final String[] LEFT_JOIN = { 
         "Study", null, "Patient.pk", "Study.patient_fk",};
@@ -98,16 +98,11 @@ public class QueryStudiesCmd extends BaseReadCmd {
         "Series", null, "Study.pk", "Series.study_fk", 
         "StudyPermission", null, "Study.studyIuid", "StudyPermission.studyIuid"};
 
-	private boolean hideMissingStudies;
-    
+    private boolean hideMissingStudies;
+
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
-	private boolean checkPermissions = true;
-
-    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, Subject subject)
-    	throws SQLException {
-    	this(filter, hideMissingStudies, false, subject );
-    }
+    private boolean checkPermissions = true;
 
     /**
      * Creates a new QueryStudiesCmd object with given filter.
@@ -124,14 +119,14 @@ public class QueryStudiesCmd extends BaseReadCmd {
      * @throws SQLException
      */
     public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, boolean noMatchForNoValue, Subject subject)
-            throws SQLException {
+    throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel);
         checkPermissions = subject != null;
         boolean type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
-    	sqlBuilder.setFrom(getTables());
+        sqlBuilder.setFrom(getTables());
         sqlBuilder.setLeftJoin( getLeftJoin(filter.containsValue(Tags.SeriesInstanceUID)));
-    	sqlBuilder.setRelations(getRelations());
+        sqlBuilder.setRelations(getRelations());
         sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
         sqlBuilder.addWildCardMatch(null, "Patient.patientId",
                 type2,
@@ -141,9 +136,9 @@ public class QueryStudiesCmd extends BaseReadCmd {
         sqlBuilder.addPNMatch(new String[] {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
-                "Patient.patientPhoneticName"},
-                type2,
-                filter.getString(Tags.PatientName));
+        "Patient.patientPhoneticName"},
+        type2,
+        filter.getString(Tags.PatientName));
         sqlBuilder.addWildCardMatch(null, "Study.studyId", type2,
                 filter.getStrings(Tags.StudyID));
         sqlBuilder.addListOfStringMatch(null, "Study.studyIuid",
@@ -159,46 +154,46 @@ public class QueryStudiesCmd extends BaseReadCmd {
         filter.setPrivateCreatorID(PrivateTags.CreatorID);
         sqlBuilder.addCallingAETsNestedMatch(false,
                 filter.getStrings(PrivateTags.CallingAET));
-    	this.hideMissingStudies = hideMissingStudies;	
+        this.hideMissingStudies = hideMissingStudies;	
         if ( this.hideMissingStudies && ! checkPermissions) {
-        	sqlBuilder.addNULLValueMatch(null,"Study.encodedAttributes", true);
-    	}
+            sqlBuilder.addNULLValueMatch(null,"Study.encodedAttributes", true);
+        }
         if ( checkPermissions ) {
             String[] roles = SecurityUtils.rolesOf(subject);
             if ( roles.length < 1 ) {
-        	throw new IllegalArgumentException("User is not in a StudyPermission relevant role");
+                throw new IllegalArgumentException("User is not in a StudyPermission relevant role");
             }
             if ( hideMissingStudies ) {
                 sqlBuilder.addSingleValueMatch(null, "StudyPermission.action", false, StudyPermissionDTO.QUERY_ACTION);
-        	sqlBuilder.addListOfStringMatch(null, "StudyPermission.role", false, roles );
+                sqlBuilder.addListOfStringMatch(null, "StudyPermission.role", false, roles );
             } else {
-    	       	Node node = sqlBuilder.addNodeMatch("or", false);
-    	       	node.addMatch( new Match.NULLValue(null,"Study.encodedAttributes", false) );
-    	       	Node node1 = new Match.Node("and", false);
-    	       	node1.addMatch(new Match.SingleValue(null, "StudyPermission.action", false, StudyPermissionDTO.QUERY_ACTION));
-    	       	node1.addMatch( new Match.ListOfString(null, "StudyPermission.role", false, roles ) );
-    	       	node.addMatch(node1);
+                Node node = sqlBuilder.addNodeMatch("or", false);
+                node.addMatch( new Match.NULLValue(null,"Study.encodedAttributes", false) );
+                Node node1 = new Match.Node("and", false);
+                node1.addMatch(new Match.SingleValue(null, "StudyPermission.action", false, StudyPermissionDTO.QUERY_ACTION));
+                node1.addMatch( new Match.ListOfString(null, "StudyPermission.role", false, roles ) );
+                node.addMatch(node1);
             }
         }
     }
-    
+
     protected String[] getTables() {
-    	return new String[] { "Patient" };
+        return new String[] { "Patient" };
     }
 
     protected String[] getLeftJoin(boolean withSeries) {
-    	if ( withSeries ) {
+        if ( withSeries ) {
             return checkPermissions
-            	? LEFT_JOIN_WITH_SERIES_AND_STUDY_PERMISSION
-                : QueryStudiesCmd.LEFT_JOIN_WITH_SERIES;
-    	} else {
-    		return checkPermissions
-    			? LEFT_JOIN_WITH_STUDY_PERMISSION
-    			: QueryStudiesCmd.LEFT_JOIN;
-    	}
+            ? LEFT_JOIN_WITH_SERIES_AND_STUDY_PERMISSION
+                    : QueryStudiesCmd.LEFT_JOIN_WITH_SERIES;
+        } else {
+            return checkPermissions
+            ? LEFT_JOIN_WITH_STUDY_PERMISSION
+                    : QueryStudiesCmd.LEFT_JOIN;
+        }
     }
     protected String[] getRelations() {
-    	return null;
+        return null;
     }
 
 
@@ -213,7 +208,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
             rs.close();
             rs = null;
             sqlBuilder.setSelectCount(new String[]{"Patient.pk"}, true);
-        	sqlBuilder.addNULLValueMatch(null,"Study.pk", false);
+            sqlBuilder.addNULLValueMatch(null,"Study.pk", false);
             execute( sqlBuilder.getSql() );
             next();
             int emptyPatients = rs.getInt(1);
@@ -225,7 +220,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
         }
     }
 
-	
+
     public List list(int offset, int limit) throws SQLException {
         defineColumnTypes(new int[] { 
                 blobAccessType, // Patient.encodedAttributes
@@ -239,7 +234,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
                 Types.INTEGER,  // Study.availability
                 Types.VARCHAR,  // Study.filesetId
                 Types.VARCHAR,  // Study.studyStatusId
-                });
+        });
         sqlBuilder.setSelect(SELECT_ATTRIBUTE);
         sqlBuilder.addOrderBy("Patient.patientName", SqlBuilder.ASC);
         sqlBuilder.addOrderBy("Patient.pk", SqlBuilder.ASC);
@@ -249,7 +244,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
         try {
             execute(sqlBuilder.getSql());
             ArrayList result = new ArrayList();
-            
+
             while (next()) {
                 final byte[] patAttrs = rs.getBytes(1);
                 final byte[] styAttrs = rs.getBytes(2);
