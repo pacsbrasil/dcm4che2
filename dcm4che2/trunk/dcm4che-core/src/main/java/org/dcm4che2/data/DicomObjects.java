@@ -62,7 +62,10 @@ public class DicomObjects {
      * allows modules to provide users with "read-only" access to internal dicom
      * objects. Query operations on the returned dicom object "read through" to
      * the specified dicom object, and attempts to modify the returned dicom
-     * object result in an <tt>UnsupportedOperationException</tt>.
+     * object result in an <tt>UnsupportedOperationException</tt>. If the
+     * specified dicom object is already an unmodifiable view returned by
+     * a previous invocation of this method, the specified dicom object is
+     * returned.
      * <p>
      * 
      * @param dcmobj
@@ -71,7 +74,8 @@ public class DicomObjects {
      * @return an unmodifiable view of the specified dicom object.
      */
     public static DicomObject unmodifiableDicomObject(DicomObject dcmobj) {
-        return new UnmodifiableDicomObject(dcmobj);
+        return dcmobj instanceof UnmodifiableDicomObject ? dcmobj
+                : new UnmodifiableDicomObject(dcmobj);
     }
 
     static class UnmodifiableDicomObject implements DicomObject {
