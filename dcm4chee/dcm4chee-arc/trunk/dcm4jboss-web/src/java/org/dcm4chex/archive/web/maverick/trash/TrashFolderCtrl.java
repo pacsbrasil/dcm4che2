@@ -49,6 +49,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
+import org.dcm4chex.archive.ejb.jdbc.QueryPrivateStudiesCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.AuditLoggerDelegate;
 import org.dcm4chex.archive.web.maverick.ContentEditDelegate;
@@ -65,52 +66,52 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
  * @since 28.01.2004
  */
 public class TrashFolderCtrl extends FolderCtrl {
-    
-	public static final String TRASH = "trash";
-	public static final String LOGOUT = "logout";
 
-	public static final int DELETED = 1;//private type DELETED
-	
+    public static final String TRASH = "trash";
+    public static final String LOGOUT = "logout";
+
+    public static final int DELETED = 1;//private type DELETED
+
     private static ContentEditDelegate delegate = null;
 
     public static ContentEditDelegate getDelegate() {
-    	return delegate;
+        return delegate;
     }
-    
-	/**
-	 * Get the model for the view.
-	 * @throws 
-	 */
+
+    /**
+     * Get the model for the view.
+     * @throws 
+     */
     protected Object makeFormBean() {
         if ( delegate == null ) {
-        	delegate = new ContentEditDelegate();
-        	try {
-        		delegate.init( getCtx() );
-        	} catch( Exception x ) {
-        		log.error("Cant make form bean!", x );
-        	}
-        	StudyModel.setHttpRoot(getCtx().getServletContext().getRealPath("/"));//set http root to check if a studyStatus image is available.
+            delegate = new ContentEditDelegate();
+            try {
+                delegate.init( getCtx() );
+            } catch( Exception x ) {
+                log.error("Cant make form bean!", x );
+            }
+            StudyModel.setHttpRoot(getCtx().getServletContext().getRealPath("/"));//set http root to check if a studyStatus image is available.
         }
-       return TrashFolderForm.getTrashFolderForm(getCtx());
+        return TrashFolderForm.getTrashFolderForm(getCtx());
     }
-    
+
     protected String perform() throws Exception {
         try {
             TrashFolderForm folderForm = (TrashFolderForm) getForm();
-        	if ( getPermissions().getPermissionsForApp("trash") == null ) return FOLDER;
-    		folderForm.clearPopupMsg();
+            if ( getPermissions().getPermissionsForApp("trash") == null ) return FOLDER;
+            folderForm.clearPopupMsg();
             setSticky(folderForm.getStickyPatients(), "stickyPat");
             setSticky(folderForm.getStickyStudies(), "stickyStudy");
             setSticky(folderForm.getStickySeries(), "stickySeries");
             setSticky(folderForm.getStickyInstances(), "stickyInst");
             HttpServletRequest rq = getCtx().getRequest();
             if ( rq.getParameter("showWithoutStudies") != null ) {
-            	folderForm.setShowWithoutStudies( "true".equals( rq.getParameter("showWithoutStudies")));
+                folderForm.setShowWithoutStudies( "true".equals( rq.getParameter("showWithoutStudies")));
             }
             if (rq.getParameter("logout") != null || rq.getParameter("logout.x") != null ) 
-            	return logout();
-            
-        	rq.getSession().setAttribute("dcm4chee-session", "ACTIVE");
+                return logout();
+
+            rq.getSession().setAttribute("dcm4chee-session", "ACTIVE");
             if (folderForm.getTotal() < 1 || rq.getParameter("filter") != null
                     || rq.getParameter("filter.x") != null) { return query(true); }
             if (rq.getParameter("prev") != null
@@ -143,11 +144,10 @@ public class TrashFolderCtrl extends FolderCtrl {
             TrashFolderForm folderForm = (TrashFolderForm) getForm();
             folderForm.setCallingAETs(getAEFilterPermissions());
             if (newQuery) {
-                folderForm.setTotal(cm.countPrivateStudies(folderForm.filterDS(), DELETED, 
-                		!folderForm.isShowWithoutStudies()));
+                folderForm.setTotal(new QueryPrivateStudiesCmd(folderForm.filterDS(), DELETED, 
+                        !folderForm.isShowWithoutStudies()).count());
             }
-            List studyList = cm.listPrivateStudies(folderForm.filterDS(), DELETED, !folderForm.isShowWithoutStudies(), 
-					folderForm.getOffset(), folderForm.getLimit());
+            List studyList = new QueryPrivateStudiesCmd(folderForm.filterDS(), DELETED, !folderForm.isShowWithoutStudies()).list(folderForm.getOffset(), folderForm.getLimit());
             List patList = new ArrayList();
             PatientModel curPat = null;
             for (int i = 0, n = studyList.size(); i < n; i++) {
@@ -175,7 +175,7 @@ public class TrashFolderCtrl extends FolderCtrl {
     private void emptyTrash() {
         delegate.emptyTrash();
     }
-    
+
     private String delete() throws Exception {
         TrashFolderForm folderForm = (TrashFolderForm) getForm();
         deletePatients(folderForm.getPatients());
@@ -185,13 +185,13 @@ public class TrashFolderCtrl extends FolderCtrl {
     }
 
     private void deletePatients(List patients)
-            throws Exception {
+    throws Exception {
         TrashFolderForm folderForm = (TrashFolderForm) getForm();
         for (int i = 0, n = patients.size(); i < n; i++) {
             PatientModel pat = (PatientModel) patients.get(i);
             if (folderForm.isSticky(pat)) {
                 List studies = listStudiesOfPatient(pat.getPk());
-            	delegate.deletePatient(pat.getPk());
+                delegate.deletePatient(pat.getPk());
             } else {
                 deleteStudies( pat );
             }
@@ -199,13 +199,13 @@ public class TrashFolderCtrl extends FolderCtrl {
     }
 
     private void deleteStudies( PatientModel pat )
-            throws Exception {
+    throws Exception {
         List studies = pat.getStudies();
         TrashFolderForm folderForm = (TrashFolderForm) getForm();
         for (int i = 0, n = studies.size(); i < n; i++) {
             StudyModel study = (StudyModel) studies.get(i);
             if (folderForm.isSticky(study)) {
-            	delegate.deleteStudy(study.getPk());
+                delegate.deleteStudy(study.getPk());
             } else {
                 final int deletedInstances = deleteSeries( study.getSeries() );
             }
@@ -213,13 +213,13 @@ public class TrashFolderCtrl extends FolderCtrl {
     }
 
     private int deleteSeries(List series)
-    		throws Exception {
+    throws Exception {
         int numInsts = 0;
         TrashFolderForm folderForm = (TrashFolderForm) getForm();
         for (int i = 0, n = series.size(); i < n; i++) {
             SeriesModel serie = (SeriesModel) series.get(i);
             if (folderForm.isSticky(serie)) {
-               	delegate.deleteSeries(serie.getPk());
+                delegate.deleteSeries(serie.getPk());
                 numInsts += serie.getNumberOfInstances();
             } else {
                 numInsts += deleteInstances(serie.getInstances());
@@ -234,25 +234,25 @@ public class TrashFolderCtrl extends FolderCtrl {
         for (int i = 0, n = instances.size(); i < n; i++) {
             InstanceModel instance = (InstanceModel) instances.get(i);
             if (folderForm.isSticky(instance)) {
-               	delegate.deleteInstance(instance.getPk());
+                delegate.deleteInstance(instance.getPk());
             }
         }
         return numInsts;
     }
 
     private String undelete(HttpServletRequest rq) throws Exception {
-    	String cmd = rq.getParameter("undel");
+        String cmd = rq.getParameter("undel");
         TrashFolderForm folderForm = (TrashFolderForm) getForm();
         if ( "patient".equals(cmd)) {
-        	delegate.undeletePatient(Integer.parseInt( rq.getParameter("patPk") ) );
+            delegate.undeletePatient(Integer.parseInt( rq.getParameter("patPk") ) );
         } else if ( "study".equals(cmd) ) {
-        	delegate.undeleteStudy(Integer.parseInt( rq.getParameter("studyPk") ) );
+            delegate.undeleteStudy(Integer.parseInt( rq.getParameter("studyPk") ) );
         } else if ( "series".equals(cmd) ) {
-        	delegate.undeleteSeries(Integer.parseInt( rq.getParameter("seriesPk") ) );
+            delegate.undeleteSeries(Integer.parseInt( rq.getParameter("seriesPk") ) );
         } else if ( "instance".equals(cmd) ) {
-        	delegate.undeleteInstance(Integer.parseInt( rq.getParameter("instancePk") ) );
+            delegate.undeleteInstance(Integer.parseInt( rq.getParameter("instancePk") ) );
         } else {
-        	undeletePatients(folderForm.getPatients());
+            undeletePatients(folderForm.getPatients());
         }
         folderForm.removeStickies();
         query(true);
@@ -260,25 +260,25 @@ public class TrashFolderCtrl extends FolderCtrl {
     }
 
     private void undeletePatients(List patients)
-            throws Exception {
+    throws Exception {
         TrashFolderForm folderForm = (TrashFolderForm) getForm();
         for (int i = 0, n = patients.size(); i < n; i++) {
             PatientModel pat = (PatientModel) patients.get(i);
             if (folderForm.isSticky(pat)) {
-            	delegate.undeletePatient(pat.getPk());
+                delegate.undeletePatient(pat.getPk());
             } else
                 undeleteStudies( pat );
         }
     }
 
     private void undeleteStudies( PatientModel pat )
-            throws Exception {
+    throws Exception {
         List studies = pat.getStudies();
         TrashFolderForm folderForm = (TrashFolderForm) getForm();
         for (int i = 0, n = studies.size(); i < n; i++) {
             StudyModel study = (StudyModel) studies.get(i);
             if (folderForm.isSticky(study)) {
-            	delegate.undeleteStudy(study.getPk());
+                delegate.undeleteStudy(study.getPk());
             } else {
                 undeleteSeries( study.getSeries() );
             }
@@ -286,13 +286,13 @@ public class TrashFolderCtrl extends FolderCtrl {
     }
 
     private int undeleteSeries(List series)
-    		throws Exception {
+    throws Exception {
         int numInsts = 0;
         TrashFolderForm folderForm = (TrashFolderForm) getForm();
         for (int i = 0, n = series.size(); i < n; i++) {
             SeriesModel serie = (SeriesModel) series.get(i);
             if (folderForm.isSticky(serie)) {
-               	delegate.undeleteSeries(serie.getPk());
+                delegate.undeleteSeries(serie.getPk());
             } else {
                 numInsts += undeleteInstances(serie.getInstances());
             }
@@ -306,12 +306,12 @@ public class TrashFolderCtrl extends FolderCtrl {
         for (int i = 0, n = instances.size(); i < n; i++) {
             InstanceModel instance = (InstanceModel) instances.get(i);
             if (folderForm.isSticky(instance)) {
-               	delegate.undeleteInstance(instance.getPk());
+                delegate.undeleteInstance(instance.getPk());
             }
         }
         return numInsts;
     }
-    
+
     private void setSticky(Set stickySet, String attr) {
         stickySet.clear();
         String[] newValue = getCtx().getRequest().getParameterValues(attr);
@@ -322,15 +322,15 @@ public class TrashFolderCtrl extends FolderCtrl {
 
     private ContentManager lookupContentManager() throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-                .getFactory().lookup(ContentManagerHome.class,
-                        ContentManagerHome.JNDI_NAME);
+        .getFactory().lookup(ContentManagerHome.class,
+                ContentManagerHome.JNDI_NAME);
         return home.create();
     }
 
     private List listStudiesOfPatient(long patPk) throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-                .getFactory().lookup(ContentManagerHome.class,
-                        ContentManagerHome.JNDI_NAME);
+        .getFactory().lookup(ContentManagerHome.class,
+                ContentManagerHome.JNDI_NAME);
         ContentManager cm = home.create();
         try {
             return cm.listStudiesOfPrivatePatient(patPk);
@@ -341,25 +341,25 @@ public class TrashFolderCtrl extends FolderCtrl {
             }
         }
     }
- 
 
 
-    
-    
+
+
+
     /**
-	 * 
-	 */
-	public void clearSticky() {
-		TrashFolderForm folderForm = (TrashFolderForm) getForm();
-       	folderForm.getStickyPatients().clear();		
-       	folderForm.getStickyStudies().clear();		
-       	folderForm.getStickySeries().clear();		
-       	folderForm.getStickyInstances().clear();		
-	}
+     * 
+     */
+    public void clearSticky() {
+        TrashFolderForm folderForm = (TrashFolderForm) getForm();
+        folderForm.getStickyPatients().clear();		
+        folderForm.getStickyStudies().clear();		
+        folderForm.getStickySeries().clear();		
+        folderForm.getStickyInstances().clear();		
+    }
 
-	
-	protected void logProcedureRecord( PatientModel pat, StudyModel study, String desc ) {
-		AuditLoggerDelegate.logProcedureRecord(getCtx(),
+
+    protected void logProcedureRecord( PatientModel pat, StudyModel study, String desc ) {
+        AuditLoggerDelegate.logProcedureRecord(getCtx(),
                 AuditLoggerDelegate.MODIFY,
                 pat.getPatientID(),
                 pat.getPatientName(),
@@ -368,15 +368,15 @@ public class TrashFolderCtrl extends FolderCtrl {
                 study.getStudyIUID(),
                 study.getAccessionNumber(),
                 desc );
-	}
-	
-	private String logout() {
-    	getCtx().getRequest().getSession().invalidate();
-    	return LOGOUT;
-	}
+    }
 
-	protected String getCtrlName() {
-		return "trash";
-	}
-	
+    private String logout() {
+        getCtx().getRequest().getSession().invalidate();
+        return LOGOUT;
+    }
+
+    protected String getCtrlName() {
+        return "trash";
+    }
+
 }
