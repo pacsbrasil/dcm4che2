@@ -112,13 +112,18 @@ public class QueryStudiesCmd extends BaseReadCmd {
      * <p>
      * Dont use this feature for DICOM queries!
      *   
-     * @param filter Filter Dataset.
-     * @param hideMissingStudies Hide patients without studies.
-     * @param noMatchForNoValue disable type2 matches.
+     * @param filter                    Filter Dataset.
+     * @param hideMissingStudies        Hide patients without studies.
+     * @param noMatchForNoValue         disable type2 matches.Hide results where object does not have a value for a query attribute (NOT DICOM conform)
+     * @param queryHasIssuerOfPID          Enable query if issuer of patient is set. Only effective if IssuerOfPatientID isn't a query attribute!
+     *                                  <dl><dd><code>null</code> disabled (default: contains</dd> 
+     *                                  <dd>TRUE...only objects of patients with issuer</dd>
+     *                                  <dd>FALSE..only objects of patients without issuer</dd></dl>
+     * @param subject                   Security subject to apply study permissions for current user. If <code>null</code> studyPermission check is disabled!
      * 
      * @throws SQLException
      */
-    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, boolean noMatchForNoValue, Subject subject)
+    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, boolean noMatchForNoValue, Boolean queryHasIssuerOfPID, Subject subject)
     throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel);
@@ -131,8 +136,12 @@ public class QueryStudiesCmd extends BaseReadCmd {
         sqlBuilder.addWildCardMatch(null, "Patient.patientId",
                 type2,
                 filter.getStrings(Tags.PatientID));
-        sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId", type2, filter
-                .getString(Tags.IssuerOfPatientID));
+        String issuer = filter.getString(Tags.IssuerOfPatientID);
+        if ( issuer != null ) {
+            sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId", type2, issuer);
+        } else if ( queryHasIssuerOfPID != null ) {
+            sqlBuilder.addNULLValueMatch(null,"Patient.issuerOfPatientId", queryHasIssuerOfPID.booleanValue() );
+        }
         sqlBuilder.addPNMatch(new String[] {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
