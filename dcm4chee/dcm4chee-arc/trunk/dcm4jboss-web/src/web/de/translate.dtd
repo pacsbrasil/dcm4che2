@@ -161,7 +161,7 @@
 <!ENTITY ViewManifestInWebviewer "XDS-I Manifest in Webviewer öffnen">
 <!ENTITY OpenPDFDocument "PDF Dokument öffnen">
 <!ENTITY OpenXDSDocument "XDS Dokument öffnen">
-<!ENTITY QueryHasIssuer "Zeigt nur Studien von Patienten die einen Issuer (Mit) oder keinen Issuer (Ohne) für die Patientnen ID haben.">
+<!ENTITY QueryHasIssuer "Zeigt nur Studien von Patienten die einen (Mit) oder keinen (Ohne) Issuer für die Patienten ID haben.">
 <!ENTITY QueryHasIssuer_text1 "">
 <!ENTITY QueryHasIssuer_text2 "Mit ">
 <!ENTITY QueryHasIssuer_text3 "Ohne Issuer of PID">
