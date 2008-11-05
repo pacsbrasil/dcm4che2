@@ -3,48 +3,54 @@
   <parent>
     <groupId>dcm4che</groupId>
     <artifactId>dcm4chee-arr</artifactId>
-    <version>3.0.6</version>
+    <version>3.0.7</version>
   </parent>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-arr-${db}</artifactId>
   <packaging>ear</packaging>
-  <version>3.0.6</version>
+  <version>3.0.7</version>
   <name>Assemble EAR for ARR</name>
   <dependencies>
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-arr-entities-${db}</artifactId>
       <type>ejb</type>
-      <version>3.0.6</version>
+      <version>3.0.7</version>
     </dependency>
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-arr-listeners-mdb</artifactId>
       <type>ejb</type>
-      <version>3.0.6</version>
+      <version>3.0.7</version>
     </dependency>
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-arr-listeners-udp</artifactId>
       <type>sar</type>
-      <version>3.0.6</version>
+      <version>3.0.7</version>
     </dependency>
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-arr-seam-ejb</artifactId>
       <type>ejb</type>
-      <version>3.0.6</version>
+      <version>3.0.7</version>
     </dependency>
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-arr-seam-web-${db}</artifactId>
       <type>war</type>
-      <version>3.0.6</version>
+      <version>3.0.7</version>
     </dependency>
     <dependency>
-      <groupId>jboss</groupId>
+      <groupId>org.jboss.el</groupId>
       <artifactId>jboss-el</artifactId>
-      <version>2.0.0.CR1</version>
+      <version>1.0_02.CR2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.el</groupId>
+          <artifactId>el-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
   <build>
@@ -83,12 +89,12 @@
               <bundleFileName>listeners-udp.sar</bundleFileName>
             </sarModule>
             <jarModule>
-              <groupId>jboss</groupId>
+              <groupId>org.jboss.seam</groupId>
               <artifactId>jboss-seam</artifactId>
               <includeInApplicationXml>true</includeInApplicationXml>
             </jarModule>
             <jarModule>
-              <groupId>jboss</groupId>
+              <groupId>org.jboss.el</groupId>
               <artifactId>jboss-el</artifactId>
               <includeInApplicationXml>true</includeInApplicationXml>
             </jarModule>
