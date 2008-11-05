@@ -288,7 +288,6 @@ public class MemoryCacheFilter<T> implements Filter<T>, MetaDataUser {
 		 throw new UnsupportedOperationException();
 	  }
 
-	  @SuppressWarnings("unchecked")
 	  public T get() throws InterruptedException, ExecutionException {
 		 value = (T) filterItem.callNextFilter(params);
 		 if( value==null ) {

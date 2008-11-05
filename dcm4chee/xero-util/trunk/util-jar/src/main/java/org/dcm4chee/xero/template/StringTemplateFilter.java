@@ -108,7 +108,6 @@ public class StringTemplateFilter implements Filter<ServletResponseItem>, MetaDa
 	 * provided model is used for the source data. It is recommended that all
 	 * objects have been validated before they are permitted to be used.
 	 */
-	@SuppressWarnings("unchecked")
 	public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
 		try {
 			Map<String, Object> model = FilterUtil.getModel(params,mdbModel);

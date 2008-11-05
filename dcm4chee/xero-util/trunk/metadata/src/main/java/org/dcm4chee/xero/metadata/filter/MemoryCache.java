@@ -107,7 +107,6 @@ public class MemoryCache<K, V> {
      * Create a memory cache with the given number of levels, sizes and
      * transitions
      */
-   @SuppressWarnings("unchecked")
    public MemoryCache(long cacheSize) {
 	  this.cacheSize = cacheSize;
    }

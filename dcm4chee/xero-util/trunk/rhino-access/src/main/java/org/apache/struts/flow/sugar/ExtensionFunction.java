@@ -23,7 +23,13 @@ import org.mozilla.javascript.*;
  */
 public abstract class ExtensionFunction extends ScriptableObject implements Function {
         
-    protected Object target;    
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	
+	protected Object target;    
     protected Scriptable wrapper;
         
     public Object call(Context cx, Scriptable scope, Scriptable thisObj, java.lang.Object[] args) {

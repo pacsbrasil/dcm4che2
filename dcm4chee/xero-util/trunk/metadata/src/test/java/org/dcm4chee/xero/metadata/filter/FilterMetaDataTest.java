@@ -81,7 +81,6 @@ public class FilterMetaDataTest {
 	static class AddFilter implements Filter<Integer>
 	{
 
-		@SuppressWarnings("unchecked")
 		public Integer filter(FilterItem<Integer> filterItem, Map<String,Object> params) {
 			Integer value = (Integer) filterItem.callNextFilter(params);
 			if( value==null ) return null;
