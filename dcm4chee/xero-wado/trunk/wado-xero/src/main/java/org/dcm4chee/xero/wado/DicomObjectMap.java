@@ -2,6 +2,7 @@ package org.dcm4chee.xero.wado;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -119,11 +120,17 @@ class DicomElementWrap {
 		return de.length();
 	}
 
-	public String getValue() {
-		String val = de.getString(scs, false);
-		// If you want it to match WADO 1, then the following line could be included.
-		//if( val!=null && de.vr()==VR.CS && (val.length() % 2)==1) return val+" ";
-		return val; 
+	public Object getValue() {
+		int vm = getVm();
+		if( vm==0 ) return null;
+		if( vm==1 ) {
+			String val = de.getString(scs, false);
+			// If you want it to match WADO 1, then the following line could be included.
+			//if( val!=null && de.vr()==VR.CS && (val.length() % 2)==1) return val+" ";
+			return val;
+		}
+		List<String> ret = Arrays.asList(de.getStrings(scs, false));
+		return ret;
 	}
 
 	public boolean getHasDicomObjects() {
@@ -145,7 +152,9 @@ class DicomElementWrap {
 	}
 
 	public String toString() {
-		return getValue();
+		Object v = getValue();
+		if( v==null ) return "";
+		return v.toString();
 	}
 }
 

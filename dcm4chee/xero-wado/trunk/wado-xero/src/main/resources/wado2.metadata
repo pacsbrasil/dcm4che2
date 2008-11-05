@@ -201,6 +201,8 @@ WADO=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 WADO.choose=${class:org.dcm4chee.xero.wado.ChooseContentTypeFilter}
 WADO.choose.priority=100
 
+WADO.encapsulated=${class:org.dcm4chee.xero.wado.EncapsulatedFilter}
+WADO.encapsulated.priority=50
 WADO.image=${class:org.dcm4chee.xero.wado.EncodeImage}
 WADO.image.priority=25
 WADO.application/xml=${ref:xmlReport}

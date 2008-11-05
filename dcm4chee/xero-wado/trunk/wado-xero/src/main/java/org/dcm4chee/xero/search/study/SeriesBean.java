@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.UID;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
 import org.dcm4chee.xero.search.LocalModel;
 import org.dcm4chee.xero.search.ResultFromDicom;
@@ -153,11 +154,12 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 
    /** Create different types of children based on the modality of the series */
    protected DicomObjectType createChildByModality(DicomObject data) {
+	  String sopClass = data.getString(Tag.SOPClassUID);
 	  if( modality.equals("ECG") ) {
 		 log.warn("Unsupported modality "+modality);
 		 return null;
 	  }
-	  if (modality.equals("SR")) {
+	  if (modality.equals("SR") || UID.EncapsulatedPDFStorage.equals(sopClass)) {
 		 return new ReportBean(data);
 	  }
 	  if (modality.equals("KO")) {

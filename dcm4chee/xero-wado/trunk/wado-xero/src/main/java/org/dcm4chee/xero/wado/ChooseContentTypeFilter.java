@@ -74,6 +74,8 @@ public class ChooseContentTypeFilter implements Filter<ServletResponseItem> {
 		 if( dobj==null ) {
 			return null;
 		 }
+		 boolean encapsulated = dobj.contains(Tag.MIMETypeOfEncapsulatedDocument);
+		 if( encapsulated ) return filterItem.callNextFilter(params);
 		 String modality = dobj.getString(Tag.Modality);
 		 if( modality==null ) {
 			log.info("Couldn't find modality for object, not returning any result.");

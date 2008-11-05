@@ -7,6 +7,7 @@ import java.util.Map;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.search.study.PatientType;
+import org.dcm4chee.xero.search.study.ReportType;
 import org.dcm4chee.xero.search.study.ResultsBean;
 import org.dcm4chee.xero.search.study.SeriesBean;
 import org.dcm4chee.xero.search.study.SeriesType;
@@ -62,6 +63,8 @@ public class RegroupNonImage implements Filter<ResultsBean> {
 			for (int i = 0; i < n; i++) {
 			   SeriesType se = sel.get(i);
 			   String modality = se.getModality();
+			   // Handle encapsulated documents that aren't SR
+			   if( se.getDicomObject().size()>0 && (se.getDicomObject().get(0) instanceof ReportType) ) modality="SR"; 
 			   if (("PR".equals(modality) || "SR".equals(modality) || "KO".equals(modality))
 					 && !se.getSeriesUID().startsWith(modality)) {
 				  SeriesBean ser = addSeries(sb, modality, (SeriesBean) se);

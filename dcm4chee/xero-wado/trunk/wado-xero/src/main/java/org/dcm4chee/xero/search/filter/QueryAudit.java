@@ -74,7 +74,12 @@ public class QueryAudit<T> extends AuditFilter<T> {
 			return null;
 		QueryMessage msg = new QueryMessage();
 
-		ParticipantObject poQuery = new ParticipantObject((String) params.get(MemoryCacheFilter.KEY_NAME),
+		String queryParams = (String) params.get(MemoryCacheFilter.KEY_NAME);
+		if( queryParams==null || queryParams.length()==0 ) {
+			log.info("Not auditing because no parameters were provided.");
+			return null;
+		}
+		ParticipantObject poQuery = new ParticipantObject(queryParams,
 		      ParticipantObject.IDTypeCode.SEARCH_CRITERIA);
 		msg.addParticipantObject(poQuery);
 		return msg;
