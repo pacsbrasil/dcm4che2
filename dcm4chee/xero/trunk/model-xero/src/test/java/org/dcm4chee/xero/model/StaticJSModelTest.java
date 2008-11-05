@@ -25,7 +25,6 @@ public class StaticJSModelTest {
 	/**
 	 * Tests that the scripts value is well defined and contains the value required for the script plugin test
 	 */
-	@SuppressWarnings("unchecked")
 	@Test
 	public void valueScriptPluginTest() {
 		assert stat!=null;

@@ -108,4 +108,81 @@ navigationTests.testModifiedQuery = function() {
 	assertNotNull(se00.external,"se00.external");
 };
 
+/** All of the event setup uses a set of listeners that just records the responses */
+function TestEventListener(events) {
+	this.events = events;
+	this.navigateEvent = new Array();
+	this.namedEvent = new Array();
+	this.children = new Array();
+};
+TestEventListener.prototype.navigateListener = function (navigate) {
+	this.navigateEvent.push(navigate);
+};
+TestEventListener.prototype.namedListener = function (navigate, varname, newVal, oldVal) {
+	this.namedEvent.push({"navigate":navigate,"varname":varname, "oldVal":oldVal,"newVal":newVal});
+};
+TestEventListener.prototype.clear = function() {
+	this.navigateEvent = new Array();
+	this.namedEvent = new Array();
+	var i,n=this.children.length;
+	for(i=0; i<n;i++) {
+		this.children[i].clear();
+	};
+};
+
+var rootEvent = new TestEventListener([".", "/conversation:mode"]);
+rootEvent.navigate = "patient:0";
+var studyEvent = new TestEventListener([".", "../conversation:showReport", "/patient:0/merged:windowLevel"]);
+studyEvent.navigate = "study:0";
+rootEvent.children.push(studyEvent);
+
+/** Tests navigation level changes */
+navigationTests.test_setNavigation_expectEvent = function () {
+	var nav = new Navigation();
+	nav.hook(rootEvent);
+	nav.setNavigation(patid);
+	studyData = new StudyData();
+	studyData.parseString(prStudy);
+	var urls = nav.mergeExternal(studyData);
+	$assert(test="rootEvent.navigateEvent.length>0")$;
+	$assert(test="studyEvent.navigateEvent.length>0")$;
+	rootEvent.clear();
+};
+
+/** Tests conversational (non-nav) events/changes */
+navigationTests.test_setConversation_expectEvent = function test_setConversation_expectEvent() {
+	var nav = new Navigation();
+	nav.hook(rootEvent);
+	nav.setNavigation(patid);
+	studyData = new StudyData();
+	studyData.parseString(prStudy);
+	nav.mergeExternal(studyData);
+	rootEvent.clear();
+	
+	nav.setConversation("mode", "wl");
+	$assert(test="rootEvent.namedEvent.length>0")$;
+	rootEvent.clear();
+	console.info("About to set showReport to true.");
+	nav.getChild(0).setConversation("showReport", "true");
+	$assert(test="studyEvent.namedEvent.length>0")$;
+	rootEvent.clear();
+};
+
+/** Tests merged events/changes */
+navigationTests.test_setMerged_expectEvent = function () {
+	var nav = new Navigation();
+	nav.hook(rootEvent);
+	nav.setNavigation(patid);
+	studyData = new StudyData();
+	studyData.parseString(prStudy);
+	nav.mergeExternal(studyData);
+	rootEvent.navigateEvent = new Array();
+	studyEvent.navigateEvent = new Array();
+	rootEvent.clear();
+	
+	nav.getChild(0).setMerged("windowLevel", 129);
+	$assert(test="studyEvent.namedEvent.length>0")$;
+	rootEvent.clear();
+};
+
 runUnitTests(navigationTests);

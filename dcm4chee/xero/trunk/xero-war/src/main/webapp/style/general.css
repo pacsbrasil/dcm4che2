@@ -48,7 +48,7 @@ button {
 }
 
 iframe {
-	position: absolute;
+	position: relative;
 }
 
 .jslink {
@@ -133,7 +133,7 @@ li.thumbnail span {
 li.thumbnail img {
 	width:96px;
 	height: auto;
-	margin: 2px;
+	margin: 1px;
 }
 
 span.thumbnail, span.report, span.gsps, span.keyObject {
@@ -195,14 +195,13 @@ div.tabHeader {
 
 .menu {
 	position:relative;        /* establish a menu-relative positioning context */
-	float:left;                                     /* play nicely with others */
-	z-index:100;
+	z-index:10;
 	margin:0;
 	padding:0;
 	border:0;
+	float: left;
 	font-size:12px;         /* this (and also below) sets the menu's font size */
-	padding-left: 1em;
-	z-index:50;
+	overflow: visible;
 }
 
 .menu img {
@@ -252,7 +251,7 @@ div.tabHeader {
 }
 
 .menu ul li {
-   margin-right: 3px;
+   padding-left: 3px;
 }
 
 .menu ul li a,
@@ -262,6 +261,7 @@ div.tabHeader {
 	float:left;
 	text-decoration:none;
 	height:18px;
+	margin: 0px;
 }
 
 .menu ul li:hover a,
@@ -281,7 +281,7 @@ div.tabHeader {
 	height:auto;      /* the drop-down height will be determiend by line count */
 	width:22.5em;
 	color:black;                        /* this sets the unselected-text color */
-	background:white;         /* this sets our menu's effective "border" color */
+	z-index: 200;
 }
 
 .menu ul li:hover ul.leftbutton,
@@ -312,14 +312,12 @@ div.tabHeader {
 	padding:0;
 	height:auto;
 	color:black;               /* this sets the unselected drop-down text color */
-	background:white;       /* this sets the drop-down menu background color */
 	width:22.5em;
 }
 
 .menu ul li:hover ul li:hover a,
 .menu ul li a:hover ul li a:hover {                /* 2nd level selected item */
 	color:black;
-	background:white;
 }
 
 .menu ul li:hover ul.skinny li a,
@@ -359,6 +357,13 @@ div.tabHeader {
 }
 
 /* Need to change the root menu z-index so later indices are hidden under it */
-div.rootMenu {
-	z-index: 100;
+#PatientMenu {
+	z-index: 120;
+}
+
+div.studyInfo {
+	z-index: 75;
+}
+div.studyToolbar {
+	z-index: 50;
 }

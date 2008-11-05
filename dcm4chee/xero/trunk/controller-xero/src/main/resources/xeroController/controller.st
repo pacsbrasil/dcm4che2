@@ -192,6 +192,17 @@ XeroController.prototype.switchTab = function XC_switchTab(src,tabName) {
 	}
 };
 
+/** Switch a button */
+XeroController.prototype.pushButton = function XC_pushButton(layId) {
+	var lay = this.model.layout.findLayout(layId);
+	if(!lay ) {
+		console.warn("No layout named",layId,"found.");
+		return;
+	};
+	lay.isActive = ! lay.isActive;
+	this.updateView("pushButton");
+};
+
 
 // Define short versions of the MVC components.
 var controller = xeroController;

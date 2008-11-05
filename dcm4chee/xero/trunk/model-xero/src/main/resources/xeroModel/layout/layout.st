@@ -19,6 +19,7 @@ Layout.SOUTH = "south";
 Layout.prototype.widthEdge = 0;
 Layout.prototype.heightEdge = 0;
 Layout.prototype.extraStyle = "";
+Layout.prototype.baseConstructor = Layout;
 
 Layout.prototype.debug = function() {};
 Layout.prototype.template = "html/layout";
@@ -67,12 +68,12 @@ Layout.prototype.resizeEdge = function Layout_resizeExtra() {
 	var edge = this.north;
 	var style;
 	if( edge ) {
-		style = "width: 100%; height: "+(edge.absHeight*100/this.height-0.1)+"%;";
+		style = "width: 100%; height: "+edge.absHeight+"px;";
 		edge.resize(this.width, edge.absHeight,style);
 	}
 	edge = this.west;
 	if( edge ) {
-		style = "width: "+(edge.absWidth*100/this.width-0.1)+"%; height: "+((this.height-this.deltaHeight)/this.height-0.1)+"%;";
+		style = "width: "+(edge.absWidth*100/this.width)+"%; height: "+((this.height-this.deltaHeight)/this.height)+"%;";
 		edge.resize(this.width, edge.absHeight,style);
 	}
 	edge = this.east;
@@ -91,7 +92,7 @@ Layout.prototype.resizeEdge = function Layout_resizeExtra() {
  * Resizes the objects to display in the correct area
  */
 Layout.prototype.resize = function Layout_resize(width,height,style) {
-	console.info("resize %s to %d,%d style %s",this.id,width,height,style);
+	this.debug("resize",this.id,"to",width,height,"style",style);
 	var changed = this.resizeListener && ((this.width!=Math.floor(width)) || (this.height!=Math.floor(height)));
 	this.width = Math.floor(width);
 	this.height = Math.floor(height);

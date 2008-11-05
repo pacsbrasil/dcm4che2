@@ -1,5 +1,6 @@
-function XeroRootMenu() {
+function XeroRootMenu(suffix) {
 	this.baseConstructor("XeroRootMenu");
+	if(!suffix) suffix="";
 $layout/addChildren(children=overallMenuLayout.children)$
 };
 

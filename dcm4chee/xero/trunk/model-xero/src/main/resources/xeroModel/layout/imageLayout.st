@@ -1,12 +1,13 @@
 /**
  * This section defines some special image layout handling
  */
-function ImageLayout(id) {
+function ImageLayout(id, nth) {
 	this.baseConstructor(id);
+	this.nth = nth;
+	this.navigate = "image:"+nth;
 };
 
 ImageLayout.prototype = new Layout("baseImage","image/image");
-
 ImageLayout.prototype.isDebug = false;
 
 ImageLayout.prototype.baseConstructor = Layout;
@@ -18,7 +19,51 @@ ImageLayout.prototype.MAGNIFY = "MAGNIFY";
 ImageLayout.prototype.SCALE_TO_FIT = "SCALE_TO_FIT";
 ImageLayout.prototype.TRUE_SIZE = "TRUE_SIZE";
 ImageLayout.prototype.urlCount = 0;
+ImageLayout.prototype.events = ".";
 
+
+/** This defines the listeners for navigate changes to the layout */
+ImageLayout.prototype.navigateListener = function ImageMergedListener(navigate) {
+	this.navigate = navigate;
+	if( navigate && this.image!==navigate.external ) {
+		this.relayout = true;
+		this.image = navigate.external;
+		this.merged = navigate.getMerged();
+		if( this.image ) {
+			this.Position1 = 1+parseInt(this.image.Position);
+		}
+		this.updatePosition();
+		this.addImageUrl(true);
+	}
+};
+
+/** Adds an image URL to the set of URLs to display */
+ImageLayout.prototype.addImageUrl = function AddImageUrl(clear) {
+	if( clear ) {
+	   this.imageUrls = new Array();
+	} else if(this.imageUrls.length>0 ) {
+	   this.imageUrls[this.imageUrls.length-1].imageId = this.imageUrls[this.imageUrls.length-1].fullImageId; 
+	}
+	if( (!this.image) || !(this.width) || !(this.height) ) return;
+	this.imageUrls.push(this.createFullUrl(WADO_QUERY));
+	this.preloadImage = new Image();
+	var src = this.imageUrls[this.imageUrls.length-1].imageUrl;
+	// This needs to be the unexpanded form as the src assignment does not undo this.
+	src = src.replace(/&amp;/g,"&");
+	this.preloadImage.src = src;
+	console.info("Created a pre-load image for '%s'", src);
+};
+
+/** Listens for changes in size and re-calculates the URLs to use - LEAVING the old one in place
+ * so that it continues to show until the new one is ready. (Leaving the old one is temporarily disabled
+ * while bugs are worked out around re-sizing - this leaving should occur only if the old image has 
+ * been fetched and is immediately visible - this change may cause some hiccups to occur for a while.)
+ */
+ImageLayout.prototype.resizeListener = function ImageResizeListener() {
+	this.updatePosition();
+	this.addImageUrl(true);
+};
+ 
 /** Updates the image position information
  */
 ImageLayout.prototype.updatePosition = function ImageLayout_updatePosition() {

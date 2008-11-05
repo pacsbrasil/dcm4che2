@@ -38,5 +38,4 @@ navConversationTests.complexChildTest = function() {
 	assertEquals(c1.getPresentationId(),"mypid"+presMod, "presentation id");
 };
 
-
 runUnitTests(navConversationTests);

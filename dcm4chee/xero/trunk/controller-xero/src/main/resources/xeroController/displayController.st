@@ -23,7 +23,7 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 	
 	if(!uids) {
 		uids = new Array();
-		// Gets the series level information for all studies.
+		// Gets the study level ko/sr/pr applicability for all studies.
 		for(i=0; i<n; i++) {
 			uids.push(study[i].studyUID);
 		};
@@ -58,6 +58,25 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 	this.updateView("displayPatient");
 };
 
+/** Sets the current display mode - that is, the operation that controls click etc */
+XeroController.prototype.displayMode = function(layId) {
+	var lay = this.model.patientLayout.findLayout(layId);
+	console.info("Changing display mode to",lay.i18n);
+	this.model.navigate.setConversation("mode", lay.i18n);
+	// TODO - avoid a complete update, just do a lazy update of the changs
+	this.updateView("displayMode");
+};
+
+/** Chooses between the compare study mode and single study mode */
+XeroController.prototype.compareStudyMode = function(layId) {
+	var lay = this.model.patientLayout.findLayout(layId);
+	console.info("Changing study layout to",lay.i18n);
+	this.model.navigate.getChild(0).setConversation("compareStudy", lay.i18n);
+	var size = getViewportSize();
+	this.model.patientLayout.resize(size[0]-8,size[1]-32, "width:100%; height:100%;");
+	this.updateView("compareStudyMode");
+};
+
 /** Merge the external data into the navigate display data so that layouts can be seen. */
 XeroController.prototype.mergeExternal = function(external) {
 	var navigate = this.model.navigate;
@@ -80,9 +99,11 @@ XeroController.prototype.selectGsps = function XC_selectGsps(navId, gsps) {
 	console.info("You selected to apply %s to %s", gsps, navId);
 	var lay = this.model.patientLayout.findLayout(navId);
 	var nav = lay.navigate;
-	nav.conversation.setPresentation("&gsps="+gsps);
-	console.info("Conversation info set on %s at level %d external id now %s", nav.conversation.id, 
-		nav.conversation.level, nav.conversation.getUrlId());
+	if(!nav) nav = lay.parent.navigate;
+	if( gsps==null || gsps==="" ) nav.conversation.setPresentation(undefined);
+	else nav.conversation.setPresentation("&gsps="+gsps);
+	console.info("Conversation info set on",nav.conversation.id,"at level",
+		nav.level,"external id now", nav.conversation.getUrlId());
 	this.updateDisplayTab(true);
 	console.info("Completed applying gsps %s", gsps);	
 };
@@ -168,7 +189,7 @@ XeroController.prototype.navWheelImg = function XC_navWheelImg(id,e) {
 	id = this.model.patientLayout.findLayout(id);
 	console.info("Wheel mouse navigation called on %s", id.id);
 	var wheelData = e.detail ? e.detail : e.wheelDelta/-40;
-	wheelData = (wheelData * id.gridX * id.gridY)/-3;
+	wheelData = (wheelData * id.gridX * id.gridY)/3;
 	console.info("Trying to navigate %d", wheelData);
 	this.navImg(id,wheelData);
 	console.info("Wheel isComplete=%s",id.isComplete());
@@ -186,9 +207,5 @@ XeroController.prototype.setImgLay = function XC_setImgLay(id,w,h) {
 	id.navigateListener(id.navigate);
 	id.resize(id.width, id.height, id.style);
 	this.updateView("displayPatient");
-};
-
-XeroController.prototype.setMode = function XC_setMode(md) {
-	alert("Set mode to "+md);
 };
 

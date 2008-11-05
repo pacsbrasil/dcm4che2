@@ -76,7 +76,7 @@ NavConversation.prototype.getPresentationId = function NC_getPresentationId() {
  * Returns the combined modifiers.
  */
 NavConversation.prototype.assignDefaultModifiers = function NC_assignDefaultModifiers(external) {
-	console.debug("Assign default modifiers %d",this.level);
+	console.debug("Assign default modifiers",this.level);
 	if( this.queryModifier!==undefined || this.presentation!==undefined ) return this.getCombinedModifiers();
 	if( !external ) return this.getCombinedModifiers();
 	if( external.gspsLabel ) {

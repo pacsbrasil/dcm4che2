@@ -74,9 +74,8 @@ Navigation.prototype.generateQuery = function Navigation_generateQuery(child, re
 	var url, modifiers;
 	
 	var childId = child.id;
-	if( child.conversation ) {
-		modifiers = child.conversation.assignDefaultModifiers(child.external);
-	}
+	modifiers = this.conversation.assignDefaultModifiers(this.external);
+	console.info("Modifiers ",modifiers);
 	if( this.level===3 ) {
 		this.debug("Adding image level query at %d of size %d initial offset %d", childId, this.IMAGE_QUERY_SIZE, this.QUERY_SIZE);
 		position = childId - this.QUERY_SIZE;
@@ -85,13 +84,11 @@ Navigation.prototype.generateQuery = function Navigation_generateQuery(child, re
 		url = this.QUERY+"?seriesUID="+this.id+"&Count="+this.IMAGE_QUERY_SIZE+"&Position="+position+"&pixelInfo=true";
 		console.info("Adding series extension query %s",url); 
 	} else if( this.level===2 ) {
-		url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&studyUID="+this.id+"&pixelInfo=true&regroup=true";
-		console.warn("Adding pixelInfo query - this should be done only as needed because it is expensive query: %s", url);
+		url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&studyUID="+this.id+"&regroup=true";
 		this.debug("Adding image query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
 	} else if( this.level===1 && modifiers!=null && modifiers[2]!=undefined) {
 		// Fix the modifiers, and do an image level query.
-		url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&studyUID="+child.id+"&pixelInfo=true&regroup=true";
-		console.warn("Adding pixelInfo query - this should be done only as needed because it is expensive query: %s", url);
+		url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&studyUID="+child.id+"&regroup=true";
 		this.debug("Adding updated image, with study query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
 	} else if( this.level===1 ) {
 		// This happens when the user views a NEW study in the same patient
@@ -118,7 +115,7 @@ Navigation.prototype.mergeExternal = function Navigation_mergeExternal(external,
 		if( this.merged ) this.merged.external = this.external;
 		this.fireChanged(this.EXTERNAL_CHANGED);
 	}
-	this.debug("Adding external data to %s at level %d", this.id,this.level);
+	console.info("Adding external data to %s at level %d", this.id,this.level);
 	var child,childKey;
 	var childExt,url,position,extId;
 	for(childKey in this.children) {
@@ -187,7 +184,7 @@ Navigation.prototype.invalidate = function Navigation_invalidate(isTop) {
 	var childKey, child;
 	for(childKey in this.children ) {
 		child = this.children[childKey];
-		child.invalidate(false);		
+		child.invalidate(false);
 	}
 };
 
@@ -195,11 +192,21 @@ Navigation.prototype.fireChanged = function Merge_fireChanged(type) {
 	if( this.level===0 ) return;
 	if( this.conversation && this.conversation.navigateListener ) 
 		this.conversation.navigateListener(this,type);
-	var i,n=this.listeners.length;
-	var listener;
+	var v, l, i,n=this.listeners.length;
 	for(i=0; i<n;i++) {
 		this.listeners[i].navigateListener(this,type);
 	}
+	// It isn't clear whether to fire on external is null/empty - for now, don't fire
+	if(! this.external ) return;
+	if( this.namedListeners ) {
+		for(i in this.namedListeners) {
+			l = this.namedListeners[i];
+			v = this.conversation[i];
+			if(!v ) v = this.merged[i];
+			var j,jn = l.length;
+			for(j=0;j<jn;j++) l[j].namedListener(this,i,v);
+		}
+	}	
 };
 
 /** Given a particular key name, figure out what the child element should be. 
@@ -372,6 +379,7 @@ Navigation.prototype.getChild = function Navigation_getChild(offset,key) {
  * position/offset.  The given function is assigned ot obj as navigateListener and called.  A given
  * object can't have 2 or more functions without some other means of combining them.
  * @return the child object that is being listened to.
+ * @deprecated - try to use hook instead for all types of listeners
  */
 Navigation.prototype.addChildListener = function Navigation_addChildListener(obj, listenerF, offset, key) {
 	return this.getChild(offset,key).addListener(obj,listenerF);
@@ -382,6 +390,129 @@ Navigation.prototype.addListener = function Navigation_addListener(obj,listenerF
 	this.listeners.push(obj);
 	obj.navigateListener(this);
 	return this;
+};
+
+/** Hook listeners up to this object.  The top level object should be used to hook generally,
+ * and then if specific nested items need hooking, they can be added separately.
+ * navigate strings in the nested hierarchy will be replaced with the navigate object they
+ * refer to.
+ */
+Navigation.prototype.hook = function Navigation_hook(obj, dot) {
+	if( !dot ) dot = this;
+	if( obj.navigate ) {		
+		if( typeof( obj.navigate )==="string" ) {
+			var oldDot = dot;
+			dot = this.getPath(obj.navigate,dot);
+			if(!dot.hook ) {
+				throw "Unknown navigate path "+dot[1]+" at level "+oldDot.level;
+			}
+		} else {
+			dot = obj.navigate;
+		}
+	}
+	var olst = obj.events;
+	var i,n;
+	if( typeof(olst)==="string" ) {
+		this.hookEvent(obj,olst,dot);
+	} else if( olst!=null ) {
+		n=olst.length;
+		for(i=0; i<n; i++) {
+			this.hookEvent(obj,olst[i],dot);
+		}
+	}
+	if(! obj.children ) return;
+	n = obj.children.length;
+	for(i=0; i<n; i++) {
+		this.hook(obj.children[i],dot);
+	}
+};
+
+/** Hooks the specific item if relevant */
+Navigation.prototype.hookEvent = function Navigation_hookEvent(obj,evt,dot) {
+	var path = this.getPath(evt,dot);
+	if( path.hookEvent ) {
+	   // This is a navigate event - not an array
+	   path.listeners.push(obj);
+	   return;
+	}
+	var typ = path[1];
+	var arg = path[2];
+	var dot = path[0];
+
+	if( typ=="conversation" || typ=="merged") {
+		if( dot.namedListeners==null ) dot.namedListeners = new Object();
+		if(! dot.namedListeners[arg] ) dot.namedListeners[arg] = new Array();
+		dot.namedListeners[arg].push(obj);
+	} else {
+		throw "Unknown event to hook in Navigation: "+evt+" type="+typ;
+	}
+};
+
+/** Gets the path specified by evt - returning the navigation object if the
+ * path ends that way, or a quadruple [path, type, arg for type, rest of path]
+ */
+Navigation.prototype.getPath = function Navigation_getPath(evt,dot) {
+	if( evt==="" || evt==="." ) {
+		return dot;
+	}
+	
+	var cln = evt.indexOf(":");
+	var slash = evt.indexOf("/");
+	if( slash==0 ) {
+		evt = evt.substring(1);
+		cln--;
+		slash = evt.indexOf("/");
+		dot = this;
+	}
+	if( slash<0 ) slash = evt.length;
+	if( cln<0 || cln>slash ) cln = slash;
+	var typ = evt.substring(0,cln);
+	var arg = evt.substring(cln+1,slash);
+	if( cln===slash ) arg = null; 
+	var rest = "";
+	if( slash < evt.length ) rest = evt.substring(slash+1);
+	if( typ=="." ) {
+		return this.getPath(rest,dot);
+	} else if( typ=="..") {
+	  return this.getPath(rest, dot.parent);
+	} else if( typ==dot.childType ) {
+		var offset = parseInt(arg);
+		return this.getPath(rest, dot.getChild(offset));
+	} else {
+		return [dot,typ,arg,rest];
+	}
+};
+
+/** Sets a conversational level item - typically things like navigational data or mode/settings */
+Navigation.prototype.setConversation = function(key,value,internalChange) {
+	this.createConversation();
+	var oldValue = this.conversation[key]; 
+	if( oldValue===value && !internalChange ) {
+		return;
+	}
+	this.conversation[key] = value;
+	if(! this.namedListeners ) return;
+	var l = this.namedListeners[key];
+	if(!l ) return;
+	var i,n=l.length
+	for(i=0; i<n;i++) {
+	   l[i].namedListener(this,key,value,oldValue);
+	}
+};
+
+/** Sets a merged level item - typically things like window level, flip/rotate etc */
+Navigation.prototype.setMerged = function(key,value,internalChange) {
+	this.createMerged();
+	var oldValue = this.merged[key]; 
+	if( oldValue===value && !internalChange ) return;
+	this.merged[key] = value;
+	if(! this.namedListeners ) return;
+	var l = this.namedListeners[key];
+	if(!l ) return;
+	var i,n=l.length
+	for(i=0; i<n;i++) {
+	   l[i].namedListener(this,key,value,oldValue);
+	}
 };
 
 /**
@@ -396,6 +527,7 @@ Navigation.prototype.removeAllListeners = function Navigation_removeAllListeners
 			this.listeners[i].navigateListener(undefined);
 		}
 		this.listeners = new Array();
+		this.namedListeners = null;
 	}
 	var childKey, child;
 	for(childKey in this.children ) {
