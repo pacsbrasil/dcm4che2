@@ -1338,7 +1338,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return null;
     }
 
-    void prefetchTars(Collection<List<FileInfo>> localFiles) {
+    void prefetchTars(Collection<List<FileInfo>> localFiles)
+            throws DcmServiceException {
         HashSet<String> tarPaths = null;
         for (List<FileInfo> list : localFiles) {
             FileInfo fileInfo = list.get(0);
@@ -1360,8 +1361,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 try {
                     retrieveFileFromTAR(fsID, fileID);
                 } catch (Exception e) {
-                    // failure to fetch TAR or if no such file ID is included
-                    // in the fetched TAR will be handled by retrieveLocal()
+                    throw new DcmServiceException(
+                            Status.UnableToPerformSuboperations, e.getMessage());
                 }
             }
         }

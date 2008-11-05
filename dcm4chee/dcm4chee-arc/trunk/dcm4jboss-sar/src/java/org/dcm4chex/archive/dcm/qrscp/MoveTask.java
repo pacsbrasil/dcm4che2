@@ -212,7 +212,7 @@ public class MoveTask implements Runnable {
         moveAssoc.addCancelListener(msgID, cancelListener);
     }
 
-    private boolean openAssociation() {
+    private void openAssociation() throws DcmServiceException {
         PDU ac = null;
         Association a = null;
         AssociationFactory asf = AssociationFactory.getInstance();
@@ -242,13 +242,15 @@ public class MoveTask implements Runnable {
         } catch (Exception e) {
             final String prompt = "Failed to connect " + moveDest;
             log.error(prompt, e);
-            return false;
+            throw new DcmServiceException(Status.UnableToPerformSuboperations,
+                    prompt, e);
         }
         if (!(ac instanceof AAssociateAC)) {
             final String prompt = "Association not accepted by " + moveDest
                     + ":\n" + ac;
             log.error(prompt);
-            return false;
+            throw new DcmServiceException(Status.UnableToPerformSuboperations,
+                    prompt);
         }
         storeAssoc = asf.newActiveAssociation(a, null);
         storeAssoc.start();
@@ -262,7 +264,8 @@ public class MoveTask implements Runnable {
             final String prompt = "No Presentation Context for Storage accepted by "
                     + moveDest;
             log.error(prompt);
-            return false;
+            throw new DcmServiceException(Status.UnableToPerformSuboperations,
+                    prompt);
         }
         Iterator it = retrieveInfo.getCUIDs();
         String cuid;
@@ -291,22 +294,17 @@ public class MoveTask implements Runnable {
         AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
         remoteNode = alf.newRemoteNode(storeAssoc.getAssociation().getSocket(),
                 storeAssoc.getAssociation().getCalledAET());
-        return true;
+
     }
 
     public void run() {
         service.scheduleSendPendingRsp(sendPendingRsp);
         try {
+        try {
             if (retrieveInfo.isRetrieveFromLocal()) {
                 service.prefetchTars(retrieveInfo.getLocalFiles());
-                if (openAssociation()) {
-                    retrieveLocal();
-                } else {
-                    Set<String> iuids = retrieveInfo.removeLocalIUIDs();
-                    remaining -= iuids.size();
-                    failedIUIDs.addAll(iuids);
-                    failed += iuids.size();
-                }
+                openAssociation();
+                retrieveLocal();
             }
             while (!canceled && retrieveInfo.nextMoveForward()) {
                 String retrieveAET = retrieveInfo.getMoveForwardAET();
@@ -349,6 +347,18 @@ public class MoveTask implements Runnable {
             sendPendingRsp.cancel();
         }
         notifyMoveFinished();
+        } catch (DcmServiceException e) {
+            try {
+                Command rspCmd = DcmObjectFactory.getInstance().newCommand();
+                rspCmd.initCMoveRSP(moveRqCmd.getMessageID(), moveRqCmd
+                        .getAffectedSOPClassUID(), e.getStatus());
+                e.writeTo(rspCmd);
+                moveAssoc.getAssociation().write(
+                        AssociationFactory.getInstance().newDimse(movePcid, rspCmd));
+            } catch (Exception x) {
+                log.info("Failed to send Move RSP to Move Originator:", x);
+            }
+        }
     }
 
     private void forwardMove(String retrieveAET, Command moveRqCmd,
