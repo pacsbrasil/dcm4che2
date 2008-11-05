@@ -209,14 +209,10 @@ public class MoveTask implements Runnable {
         this.size = fileInfo.length;
         this.remaining = size;
         this.retrieveInfo = new RetrieveInfo(service, fileInfo);
-        if (retrieveInfo.isRetrieveFromLocal()) {
-            service.prefetchTars(retrieveInfo.getLocalFiles());
-            openAssociation();
-        }
         moveAssoc.addCancelListener(msgID, cancelListener);
     }
 
-    private void openAssociation() throws DcmServiceException {
+    private boolean openAssociation() {
         PDU ac = null;
         Association a = null;
         AssociationFactory asf = AssociationFactory.getInstance();
@@ -246,15 +242,13 @@ public class MoveTask implements Runnable {
         } catch (Exception e) {
             final String prompt = "Failed to connect " + moveDest;
             log.error(prompt, e);
-            throw new DcmServiceException(Status.UnableToPerformSuboperations,
-                    prompt, e);
+            return false;
         }
         if (!(ac instanceof AAssociateAC)) {
             final String prompt = "Association not accepted by " + moveDest
                     + ":\n" + ac;
             log.error(prompt);
-            throw new DcmServiceException(Status.UnableToPerformSuboperations,
-                    prompt);
+            return false;
         }
         storeAssoc = asf.newActiveAssociation(a, null);
         storeAssoc.start();
@@ -268,8 +262,7 @@ public class MoveTask implements Runnable {
             final String prompt = "No Presentation Context for Storage accepted by "
                     + moveDest;
             log.error(prompt);
-            throw new DcmServiceException(Status.UnableToPerformSuboperations,
-                    prompt);
+            return false;
         }
         Iterator it = retrieveInfo.getCUIDs();
         String cuid;
@@ -298,14 +291,22 @@ public class MoveTask implements Runnable {
         AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
         remoteNode = alf.newRemoteNode(storeAssoc.getAssociation().getSocket(),
                 storeAssoc.getAssociation().getCalledAET());
-
+        return true;
     }
 
     public void run() {
         service.scheduleSendPendingRsp(sendPendingRsp);
         try {
             if (retrieveInfo.isRetrieveFromLocal()) {
-                retrieveLocal();
+                service.prefetchTars(retrieveInfo.getLocalFiles());
+                if (openAssociation()) {
+                    retrieveLocal();
+                } else {
+                    Set<String> iuids = retrieveInfo.removeLocalIUIDs();
+                    remaining -= iuids.size();
+                    failedIUIDs.addAll(iuids);
+                    failed += iuids.size();
+                }
             }
             while (!canceled && retrieveInfo.nextMoveForward()) {
                 String retrieveAET = retrieveInfo.getMoveForwardAET();
