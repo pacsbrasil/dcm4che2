@@ -71,13 +71,18 @@ class MultiFindRSP implements DimseRSP {
             keys.putNull(Tag.SpecificCharacterSet, VR.CS);
         this.rsp = rsp;
         this.files = source.listFiles();
+        if (this.files == null) {
+            this.files = new File[0];
+        }
     }
 
     public synchronized boolean next() throws IOException, InterruptedException {
         if (cur < 0)
             return false;
-        try {
-            if (files != null) {
+        if (files == null) {
+            rsp.putInt(Tag.Status, VR.US, Status.Cancel);
+        } else {
+            try {
                 while (cur < files.length) {
                     mwl = dcmOF.load(files[cur++]);
                     if (mwl.matches(keys, true)) {
@@ -90,10 +95,10 @@ class MultiFindRSP implements DimseRSP {
                     }
                 }
                 rsp.putInt(Tag.Status, VR.US, Status.Success);
+            } catch (Exception e) {
+                rsp.putInt(Tag.Status, VR.US, Status.ProcessingFailure);
+                rsp.putString(Tag.ErrorComment, VR.LO, e.getMessage());
             }
-        } catch (Exception e) {
-            rsp.putInt(Tag.Status, VR.US, Status.ProcessingFailure);
-            rsp.putString(Tag.ErrorComment, VR.LO, e.getMessage());
         }
         mwl = null;
         cur = -1;
@@ -109,7 +114,6 @@ class MultiFindRSP implements DimseRSP {
     }
 
     public synchronized void cancel(Association a) throws IOException {
-        rsp.putInt(Tag.Status, VR.US, Status.Cancel);
         files = null;
     }
 
