@@ -586,7 +586,7 @@ public class NetworkConnection {
             receiveBufferSize = size;
         }
         else if (receiveBufferSize != size) {
-            s.setReceiveBufferSize(size);
+            s.setReceiveBufferSize(receiveBufferSize);
             receiveBufferSize = s.getReceiveBufferSize();
         }
         size = s.getSendBufferSize();
@@ -594,7 +594,7 @@ public class NetworkConnection {
             sendBufferSize = size;
         }
         else if (sendBufferSize != size) {
-            s.setSendBufferSize(size);
+            s.setSendBufferSize(sendBufferSize);
             sendBufferSize = s.getSendBufferSize();
         }
         if (s.getTcpNoDelay() != tcpNoDelay) {
