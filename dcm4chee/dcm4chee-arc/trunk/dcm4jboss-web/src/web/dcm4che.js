@@ -142,5 +142,11 @@ function selectAll(form, name, chk) {
     	}
 	}
 }
+
+function toggle(check1, check2) {
+    if (check1.checked) {
+        check2.checked = false;
+    }
+}
   
   

@@ -250,14 +250,16 @@
                             test="$folder.query_has_issuer='true'">
                             <div title="&QueryHasIssuer;">
                                 <xsl:text>&QueryHasIssuer_text1;</xsl:text>                            
-                            <input type="checkbox" name="hideHasNoIssuerOfPID" value="true">
+                            <input type="checkbox" name="hideHasNoIssuerOfPID" value="true"
+                                onclick="return toggle(this.form.hideHasNoIssuerOfPID, this.form.hideHasIssuerOfPID)">
                                 <xsl:if
                                     test="hideHasNoIssuerOfPID = 'true'">
                                     <xsl:attribute name="checked" />
                                 </xsl:if>
                             </input>
                             <xsl:text>&QueryHasIssuer_text2;</xsl:text>
-                            <input type="checkbox" name="hideHasIssuerOfPID" value="true">
+                            <input type="checkbox" name="hideHasIssuerOfPID" value="true"
+                                onclick="return toggle(this.form.hideHasIssuerOfPID, this.form.hideHasNoIssuerOfPID)">
                                 <xsl:if
                                     test="hideHasIssuerOfPID = 'true'">
                                     <xsl:attribute name="checked" />
