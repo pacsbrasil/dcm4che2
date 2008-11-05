@@ -135,7 +135,12 @@ public class FolderForm extends BasicFolderForm {
             request.getSession().setAttribute(FOLDER_ATTRNAME, form);
             initLimit(ctx.getServletConfig().getInitParameter("limitNrOfStudies"), form);
             form.setShowIssuerOfPID("true".equals(ctx.getServletConfig().getInitParameter("showIssuerOfPID")));
-
+            String defaultQueryHasIssuer = ctx.getServletConfig().getInitParameter("defaultQueryHasIssuer");
+            if ( "true".equals(defaultQueryHasIssuer)) {
+                form.setHideHasNoIssuerOfPID(true);
+            } else if ("false".equals(defaultQueryHasIssuer)) {
+                form.setHideHasIssuerOfPID(true);
+            }
             try {
                 ObjectName qrscpServiceName = new ObjectName(ctx.getServletConfig().getInitParameter("qrscpServiceName"));
                 MBeanServer server = MBeanServerLocator.locate();

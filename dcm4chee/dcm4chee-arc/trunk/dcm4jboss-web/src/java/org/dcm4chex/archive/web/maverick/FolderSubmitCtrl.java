@@ -139,12 +139,15 @@ public class FolderSubmitCtrl extends FolderCtrl {
             setSticky(folderForm.getStickyStudies(), "stickyStudy");
             setSticky(folderForm.getStickySeries(), "stickySeries");
             setSticky(folderForm.getStickyInstances(), "stickyInst");
+            Set allowedMethods = getPermissions().getPermissionsForApp("folder");
             if ( "true".equals( rq.getParameter("form")) ) {
                 folderForm.setShowWithoutStudies( "true".equals( rq.getParameter("showWithoutStudies")));
                 folderForm.setLatestStudiesFirst("true".equals( rq.getParameter("latestStudiesFirst")));
                 folderForm.setFilterAET( "true".equals( rq.getParameter("filterAET")));
-                folderForm.setHideHasIssuerOfPID( "true".equals( rq.getParameter("hideHasIssuerOfPID")));
-                folderForm.setHideHasNoIssuerOfPID( "true".equals( rq.getParameter("hideHasNoIssuerOfPID")));
+                if ( allowedMethods.contains("folder.query_has_issuer") ) {
+                    folderForm.setHideHasIssuerOfPID( "true".equals( rq.getParameter("hideHasIssuerOfPID")));
+                    folderForm.setHideHasNoIssuerOfPID( "true".equals( rq.getParameter("hideHasNoIssuerOfPID")));
+                }
             }
             if (rq.getParameter("logout") != null || rq.getParameter("logout.x") != null ) 
                 return logout();
@@ -162,7 +165,6 @@ public class FolderSubmitCtrl extends FolderCtrl {
                     || rq.getParameter("next.x") != null) { return query(false); }
             if (rq.getParameter("send") != null
                     || rq.getParameter("send.x") != null) { return send(); }
-            Set allowedMethods = getPermissions().getPermissionsForApp("folder");
             if ( allowedMethods.contains("folder.delete") ) {
                 if (rq.getParameter("del") != null
                         || rq.getParameter("del.x") != null) { return delete(); }

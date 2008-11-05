@@ -82,7 +82,7 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
     private boolean latestStudiesFirst;
     
     private boolean hideHasIssuerOfPID;
-    private boolean hideHasNoIssuerOfPID = true;
+    private boolean hideHasNoIssuerOfPID;
 
     protected static Logger log = Logger.getLogger(BasicFolderForm.class);
 
@@ -184,11 +184,9 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
     }
     
     public final Boolean getQueryHasIssuerOfPID() {
-        log.info("return getQueryIssuerOfPID: hideHasIssuerOfPID:"+hideHasIssuerOfPID+" hideHasNoIssuerOfPID"+hideHasNoIssuerOfPID);
         return hideHasIssuerOfPID ^ hideHasNoIssuerOfPID ? Boolean.valueOf(hideHasNoIssuerOfPID) : null; 
     }
     public void setHideHasIssuerOfPID(boolean b) {
-        log.info("setHideHasIssuerOfPID "+b);
         if ( b != this.hideHasIssuerOfPID) {
             hideHasIssuerOfPID = b;
             hideHasNoIssuerOfPID = false;
@@ -200,7 +198,6 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
     }
 
     public void setHideHasNoIssuerOfPID(boolean b) {
-        log.info("setHideHasNoIssuerOfPID "+b);
         if ( b != this.hideHasNoIssuerOfPID) {
             hideHasNoIssuerOfPID = b;
             hideHasIssuerOfPID = false;

@@ -66,10 +66,22 @@
 			<param-name>startWithoutQuery</param-name>
 			<param-value>true</param-value>
 		</init-param>
-		
+
+        <!-- Enable/disable issuer of PID when PatientID is displayed
+             The display will be formatted like <PatientID>^^^<IssuerOfPatientID> 
+        -->		
         <init-param>
             <param-name>showIssuerOfPID</param-name>
             <param-value>true</param-value>
+        </init-param>
+        <!-- The default query 'Has Issuer':
+             disabled ... Show all patients. Regardless if an issuer is set or not.
+             true     ... Show only patients that have an issuer.
+             false    ... Show only patients that have no issuer.
+         -->
+        <init-param>
+            <param-name>defaultQueryHasIssuer</param-name>
+            <param-value>disabled</param-value>
         </init-param>
 		<!-- 
 			Used by dcm4chee-web application to find AuditLogger MBean.

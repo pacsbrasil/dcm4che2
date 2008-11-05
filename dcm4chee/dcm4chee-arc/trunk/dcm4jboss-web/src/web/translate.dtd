@@ -161,7 +161,7 @@
 <!ENTITY ViewManifestInWebviewer "View Manifest in Webviewer">
 <!ENTITY OpenPDFDocument "Open PDF Document">
 <!ENTITY OpenXDSDocument "Open XDS Document">
-<!ENTITY QueryHasIssuer "Filter for 'has Issuer of PID'">
-<!ENTITY QueryHasIssuer_text1 "Show only">
-<!ENTITY QueryHasIssuer_text2 "With / ">
-<!ENTITY QueryHasIssuer_text3 "Without Issuer of PID">
+<!ENTITY QueryHasIssuer "Show only studies for patients that have (With) or haven't (Without) an Issuer of PID">
+<!ENTITY QueryHasIssuer_text1 "Show only With">
+<!ENTITY QueryHasIssuer_text2 "Without">
+<!ENTITY QueryHasIssuer_text3 "Issuer of PID">
