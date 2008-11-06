@@ -24,9 +24,9 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>jboss</groupId>
-      <artifactId>jboss-j2ee</artifactId>
-      <version>4.2.3.GA</version>
+      <groupId>javax.security</groupId>
+      <artifactId>jacc</artifactId>
+      <version>1.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -42,9 +42,9 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>jboss</groupId>
+      <groupId>jboss.common</groupId>
       <artifactId>jboss-common</artifactId>
-      <version>4.2.3.GA</version>
+      <version>1.2.1.GA</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
