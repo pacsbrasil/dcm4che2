@@ -52,9 +52,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSession;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -391,7 +388,7 @@ public class XDSService extends ServiceMBeanSupport {
     private void deleteDocuments(List storedDocuments) {
         docStoreDelegate.rollbackDocuments(storedDocuments);
     }
-    
+
     private String getSystemProperty(String name) {
         return System.getProperty(getClass().getName()+"."+name);
     }
