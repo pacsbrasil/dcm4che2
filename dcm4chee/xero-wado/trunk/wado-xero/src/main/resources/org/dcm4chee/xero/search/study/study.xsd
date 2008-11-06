@@ -174,8 +174,6 @@ Key objects are a named (by code meaning) list of images to display.
               <element ref="tns:objectRef" minOccurs="0" maxOccurs="unbounded"/>
               <element ref="xhtml:p" minOccurs="0" maxOccurs="unbounded"/>
            </sequence>
-           <attribute name="id" type="tns:UID" />
-           <attribute name="name" type="string" />        
         </extension>
       </complexContent>
     </complexType>

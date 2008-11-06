@@ -233,7 +233,7 @@ public class KeyObjectBean extends KeyObjectType implements LocalModel<String>, 
 		 log.debug("Get dicom object in concept code sequence is null.");
 		 return;
 	  }
-	  setName(item.getString(Tag.CodeMeaning));
+	  setConceptMeaning(item.getString(Tag.CodeMeaning));
 	  setConceptCode(item.getString(Tag.CodeValue));
 	  log.debug("Report has code meaning and value:" + getConceptCode() + "," + getConceptMeaning());
    }
