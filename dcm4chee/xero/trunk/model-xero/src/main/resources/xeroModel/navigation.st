@@ -51,6 +51,7 @@ Navigation.prototype.QUERY_SIZE=16;
 Navigation.prototype.NAVIGATION_CHANGED = 100;
 Navigation.prototype.INVALID = 110;
 Navigation.prototype.EXTERNAL_CHANGED = 120;
+Navigation.prototype.EXTERNAL_UPDATED = "external";
 
 Navigation.prototype.QUERY = "/wado2/image.xml";
 Navigation.prototype.STUDY_QUERY = "/wado2/study.xml";
@@ -114,6 +115,8 @@ Navigation.prototype.mergeExternal = function Navigation_mergeExternal(external,
 		this.external = external;
 		if( this.merged ) this.merged.external = this.external;
 		this.fireChanged(this.EXTERNAL_CHANGED);
+	} else {
+		this.fire(this.EXTERNAL_UPDATED,external,external);
 	}
 	console.info("Adding external data to %s at level %d", this.id,this.level);
 	var child,childKey;
@@ -491,13 +494,19 @@ Navigation.prototype.setConversation = function(key,value,internalChange) {
 		return;
 	}
 	this.conversation[key] = value;
+	
+	this.fire(key,value,oldValue);
+};
+
+/** Fire any named listeners */
+Navigation.prototype.fire = function(key,value,oldValue) {
 	if(! this.namedListeners ) return;
 	var l = this.namedListeners[key];
 	if(!l ) return;
 	var i,n=l.length
 	for(i=0; i<n;i++) {
 	   l[i].namedListener(this,key,value,oldValue);
-	}
+	};
 };
 
 /** Sets a merged level item - typically things like window level, flip/rotate etc */
@@ -506,13 +515,7 @@ Navigation.prototype.setMerged = function(key,value,internalChange) {
 	var oldValue = this.merged[key]; 
 	if( oldValue===value && !internalChange ) return;
 	this.merged[key] = value;
-	if(! this.namedListeners ) return;
-	var l = this.namedListeners[key];
-	if(!l ) return;
-	var i,n=l.length
-	for(i=0; i<n;i++) {
-	   l[i].namedListener(this,key,value,oldValue);
-	}
+	this.fire(key,value,oldValue);
 };
 
 /**

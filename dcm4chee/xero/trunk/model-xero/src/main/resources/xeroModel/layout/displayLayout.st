@@ -150,8 +150,6 @@ ReportArea.prototype.events="conversation:displayReport";
 ReportArea.prototype.namedListener=function(nav,vname,val) {
 	if( !(nav && nav.external) ) return;
 	if( val===undefined ) {
-		console.info("Undefined report to view.");
-		// Todo - compute the report to view
 		this.used = false; 
 		return;
 	};
@@ -162,7 +160,7 @@ ReportArea.prototype.namedListener=function(nav,vname,val) {
 	}
 	console.info("Displaying report",val);
 	this.used = true;
-	this.src = "/wado2/wado?studyUID="+nav.external.studyUID+"&amp;objectUID="+val;
+	this.src = "studyUID="+nav.external.studyUID+"&amp;objectUID="+val;
 }; 
 
 /**
@@ -185,7 +183,20 @@ function SeriesAreas(suffix, nth) {
 SeriesAreas.prototype = new Layout("SeriesAreas");
 SeriesAreas.prototype.gridX = 2;
 SeriesAreas.prototype.gridY = 2;
+SeriesAreas.prototype.events="merged:external";
 
+/** Just disable the series area if there are no available series */
+SeriesAreas.prototype.namedListener = function(nav,key,external) {
+	this.used = false;
+	if( !(nav && external && external.series) ) return;
+	var i,n=external.series.length;
+	for(i=0; i<n; i++) {
+		if( external.series[i].image ) {
+			this.used = true;
+			break;
+		}
+	}
+};
 
 /** Handle the study tray layout */
 function StudyTrayLayout(suffix) {
