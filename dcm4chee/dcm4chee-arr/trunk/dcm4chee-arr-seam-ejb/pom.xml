@@ -30,10 +30,10 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>jboss</groupId>
-      <artifactId>jboss-j2ee</artifactId>
-      <version>4.2.3.GA</version>
-      <scope>provided</scope>     
+      <groupId>javax.jms</groupId>
+      <artifactId>jms</artifactId>
+      <version>1.1</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>jboss</groupId>
@@ -48,19 +48,19 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>jboss</groupId>
-      <artifactId>ejb3-persistence</artifactId>
-      <version>4.2.3.GA</version>
+      <groupId>javax.persistence</groupId>
+      <artifactId>persistence-api</artifactId>
+      <version>1.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>hibernate</groupId>
-      <artifactId>hibernate</artifactId>
-      <version>3.2.4.sp1</version>
+      <artifactId>hibernate3</artifactId>
+      <version>3.2.4.SP1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>hibernate</groupId>
+      <groupId>hibernate-annotations</groupId>
       <artifactId>hibernate-annotations</artifactId>
       <version>3.2.1.GA</version>
       <scope>provided</scope>
