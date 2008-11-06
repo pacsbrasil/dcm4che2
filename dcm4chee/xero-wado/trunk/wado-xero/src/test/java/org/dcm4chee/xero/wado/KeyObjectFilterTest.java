@@ -38,11 +38,14 @@
 package org.dcm4chee.xero.wado;
 
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.imageio.stream.MemoryCacheImageInputStream;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
 
 import org.dcm4che2.data.BasicDicomObject;
@@ -223,6 +226,13 @@ public class KeyObjectFilterTest {
 
       Object obj = ((SeriesType) seriesList.get(2)).getDicomObject().get(0);
       assert obj instanceof KeyObjectBean;
-      
-   }   
+   }
+   
+   public void displayResult(ResultsBean rbout) throws Exception    {
+      JAXBContext context = JAXBContext.newInstance("org.dcm4chee.xero.search.study");
+      Marshaller marshaller = context.createMarshaller();
+      StringWriter  writer = new StringWriter();
+      marshaller.marshal(rbout, writer);
+      System.out.println (writer.toString());
+   }
 }

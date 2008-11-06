@@ -196,7 +196,6 @@ Key objects are a named (by code meaning) list of images to display.
     			<attribute name="Rows" type="int" />
     			<attribute name="Columns" type="int" />
     			<attribute name="gspsUID" type="tns:UID" />
-                <attribute name="kobUID" type="string" />
     		</extension>
     	</complexContent>
     </complexType>

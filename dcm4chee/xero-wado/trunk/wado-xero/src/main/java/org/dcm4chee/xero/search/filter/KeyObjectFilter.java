@@ -128,7 +128,7 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 			}
 			
             if (!includeOtherStudies(koUid)) {
-               if (!isCurrentStudy(params, studyKo))    {
+               if (!isCurrentStudy(params, study.getStudyUID()))    {
                   continue;
                }
             }
@@ -225,21 +225,24 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 			mmi = image.getImageFrame(key.getFrame());
 		 }
 		 // Might have already added one of these - if so, don't do it again.
-		 if (mmi.getMacroItems().findMacro(KeyObjectMacro.class) != null)
-			continue;
-		 mmi.getMacroItems().addMacro(kom);
+		 KeyObjectMacro existingMacro = (KeyObjectMacro) mmi.getMacroItems().findMacro(KeyObjectMacro.class);
+		 
+		 if (existingMacro != null) {
+		    if (kom.getKeyObject().equals(existingMacro.getKeyObject())) {
+		       continue;
+		    } else    {
+		       mmi.getMacroItems().removeMacro(existingMacro);
+		       mmi.getMacroItems().addMacro(new KeyObjectMacro(existingMacro.getKeyObject()+","+kom.getKeyObject()));
+		    }
+		 } else   {
+		    mmi.getMacroItems().addMacro(kom);
+		 }
 
 		 // TODO: Fix: Can only move images over to the right study, not
             // other types of objects.
 		 // at least at the moment.
 		 if (mmi instanceof ImageBean) {
 			ImageBean image = (ImageBean) mmi;
-			String kUd = image.getKobUID();
-			if (kUd != null && kUd.length() != 0)   {
-			   image.setKobUID(kUd+","+kob.getId());
-			} else   {
-			   image.setKobUID(kob.getId());
-			}			
 			SeriesBean imgSeries = image.getSeriesBean();
 			SeriesBean series = availSeries.get(imgSeries.getSeriesUID());
 			// Identity comparison is acceptable here.
