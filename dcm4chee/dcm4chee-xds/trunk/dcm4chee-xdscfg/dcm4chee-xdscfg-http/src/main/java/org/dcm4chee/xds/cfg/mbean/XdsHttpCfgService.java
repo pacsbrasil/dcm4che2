@@ -70,14 +70,14 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
 
     public static final String HTTP_PROXY_HOST = "http.proxyHost";
     public static final String HTTP_PROXY_PORT = "http.proxyPort";
-    public static final String HTTP_PROXY_USER = "http.proxyUser";
-    public static final String HTTP_PROXY_PASSWD = "http.proxyPassword";
+    public static final String HTTP_PROXY_USER = "http.proxy.username";
+    public static final String HTTP_PROXY_PASSWD = "http.proxy.password";
     public static final String HTTP_NON_PROXY_HOSTS = "http.nonProxyHosts";
     
     public static final String HTTPS_PROXY_HOST = "https.proxyHost";
     public static final String HTTPS_PROXY_PORT = "https.proxyPort";
-    public static final String HTTPS_PROXY_USER = "https.proxyUser";
-    public static final String HTTPS_PROXY_PASSWD = "https.proxyPassword";
+    public static final String HTTPS_PROXY_USER = "https.proxy.username";
+    public static final String HTTPS_PROXY_PASSWD = "https.proxy.password";
     public static final String HTTPS_NON_PROXY_HOSTS = "https.nonProxyHosts";
 
     public static final String TRUST_STORE_PASSWORD = "javax.net.ssl.trustStorePassword";
