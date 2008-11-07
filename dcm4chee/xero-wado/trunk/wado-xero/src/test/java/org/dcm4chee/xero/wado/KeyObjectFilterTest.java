@@ -183,8 +183,6 @@ public class KeyObjectFilterTest {
       
       img = (ImageBean) ((SeriesType) seriesList.get(1)).getDicomObject()
             .get(0);
-      System.out.println (img.getId());
-      System.out.println (seriesList.size());
       assert img.getId().equals(
             "1.3.12.2.1107.5.1.4.24072.202.0.743531425431591");
       assert img.getOtherAttributes().get(QName.valueOf("koUID")).equals(
@@ -233,6 +231,5 @@ public class KeyObjectFilterTest {
       Marshaller marshaller = context.createMarshaller();
       StringWriter  writer = new StringWriter();
       marshaller.marshal(rbout, writer);
-      System.out.println (writer.toString());
    }
 }

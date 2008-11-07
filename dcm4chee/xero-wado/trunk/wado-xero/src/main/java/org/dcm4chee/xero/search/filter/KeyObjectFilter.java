@@ -39,14 +39,19 @@ package org.dcm4chee.xero.search.filter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
+import org.dcm4chee.xero.search.DicomCFindFilter;
+import org.dcm4chee.xero.search.ResultFromDicom;
 import org.dcm4chee.xero.search.macro.KeyObjectMacro;
 import org.dcm4chee.xero.search.study.ImageBean;
 import org.dcm4chee.xero.search.study.ImageBeanMultiFrame;
@@ -85,6 +90,13 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
    public static final String KEY_UID = "koUID";
 
    private static final String KO = "ko";
+   
+   private static final String[] EMPTY_STRING_ARR = new String[0];
+   
+   private Filter<DicomObject> dicomFullHeader;
+   
+   private Filter<ResultFromDicom> imageSource;
+
 
    public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
 	  String koUid = (String) params.get(KEY_UID);
@@ -127,12 +139,6 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 			   continue;
 			}
 			
-            if (!includeOtherStudies(koUid)) {
-               if (!isCurrentStudy(params, study.getStudyUID()))    {
-                  continue;
-               }
-            }
-			
 			KeyObjectMacro kom = (KeyObjectMacro) ret.getMacroItems().findMacro(KeyObjectMacro.class);
 			if (kom != null) {
 			   if (kom.getKeyObject().equals(studyKo)) {
@@ -164,19 +170,15 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 	  return ret;
    }
 
+   /**
+    * @param ko
+    * @return if ko has value referenced
+    */
    private boolean isReferenced(String ko) {
       return ko.equals("referenced");
    }
 
-   private boolean includeOtherStudies(String koUid) {
-      return (koUid != "*");
-   }
-
-   private boolean isCurrentStudy(Map<String, Object> params, String studyId) {
-      return (params.get("studyUID").equals(studyId));
-   }
    
-   private Filter<DicomObject> dicomFullHeader;
 
    /** Gets the filter that returns the dicom object image header */
 	public Filter<DicomObject> getDicomFullHeader() {
@@ -300,6 +302,25 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
    /** Handle any missing items - by default, does nothing */
    protected void handleMissingItems(FilterItem<ResultsBean> filterItem, Map<String, Object> params, ResultsBean ret, KeyObjectMacro kom,
 		 List<KeySelection> missing) {
+      Map<String, Object> newParams = new HashMap<String, Object>();
+      Set<String> uids = new HashSet<String>(newParams.size());
+      StringBuffer queryStr = new StringBuffer("&koUID=").append(params.get(KEY_UID));
+      for (KeySelection key : missing) {
+          if (uids.contains(key.getObjectUid()))
+              continue;
+          uids.add(key.getObjectUid());
+          queryStr.append("&objectUID=").append(key.getObjectUid());
+      }
+      String[] uidArr = uids.toArray(EMPTY_STRING_ARR);
+      log.info("Querying for " + uidArr.length + " additional images: " + queryStr);
+      newParams.put("objectUID", uidArr);
+      newParams.put(MemoryCacheFilter.KEY_NAME, queryStr.toString());
+      newParams.put(DicomCFindFilter.EXTEND_RESULTS_KEY, ret);
+      imageSource.filter(null, newParams);
+      List<KeySelection> stillMissing = assignKeyObjectMacro(ret, kom, missing);
+      if (stillMissing != null && !stillMissing.isEmpty()) {
+          log.warn("Could not find " + stillMissing.size() + " items referenced in key object.");
+      }      
    }
 
    /**
@@ -322,4 +343,20 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 	  return kob;
    }
 
+
+   /**
+    * @return imagesource
+    */
+   public Filter<ResultFromDicom> getImageSource() {
+      return imageSource;
+   }
+
+   /**
+    * Sets the filter to use for an image search.
+    * @param imageSource
+    */
+   @MetaData(out="${ref:imageSource}")
+   public void setImageSource(Filter<ResultFromDicom> imageSource) {
+      this.imageSource = imageSource;
+  }   
 }
