@@ -88,7 +88,7 @@ function StudyAreaLayout(nth) {
 	this.baseConstructor("StudyArea"+suffix);
 	this.nth = nth;
 	this.navigate = "/patient:0/study:"+nth;
-	var studyTray = new StudyTrayLayout(suffix);
+	var studyTray = new StudyTrayLayout(suffix,nth);
 	var even = ((nth %2)==0);
 	if( studyTray.absWidth ) {
 		this.add(studyTray,(even?Layout.WEST:Layout.EAST));
@@ -165,9 +165,9 @@ ReportArea.prototype.namedListener=function(nav,vname,val) {
 }; 
 
 /** Handle the study tray layout */
-function StudyTrayLayout(suffix) {
+function StudyTrayLayout(suffix,nth) {
 	this.baseConstructor("StudyTray"+suffix);
-	this.add(new StudyMenu(suffix),"StudyMenu");
+	this.add(new StudyMenu(suffix,nth),"StudyMenu");
 	$layout/addChildren(children=studyTrayLayout.children)$
 };
 
@@ -177,8 +177,9 @@ StudyTrayLayout.prototype.events=".";
 StudyTrayLayout.prototype.navigateListener = StudyAreaLayout.prototype.navigateListener;
 
 /** Creates the study menu top level item */
-function StudyMenu(suffix) {
+function StudyMenu(suffix,nth) {
 	this.baseConstructor("StudyMenu"+suffix);
+	this.nth = nth;
 	this.StudyMenuItems = new StudyMenuItems(suffix);
 	this.add(this.StudyMenuItems);
 	this.baseLayouts = this.layouts;
@@ -192,7 +193,7 @@ StudyMenu.prototype.navigateListener = function(nav) {
 	this.label = nav.external.StudyDescription;
 	console.info("StudyMenu navigate listener level",nav.level,this.label);
 	var pat = nav.parent.external;
-	this.navigate = nav;
+	this.navigate = nav.parent;
 	this.StudyMenuItems.used = (pat.study.length>1);
 	if(!this.StudyMenuItems.used) this.layouts = null;
 		else this.layouts = this.baseLayouts;

@@ -109,7 +109,7 @@ XeroController.prototype.mergeExternal = function(external) {
 
 XeroController.prototype.selectGsps = function XC_selectGsps(navId, gsps) {
 	console.info("You selected to apply %s to %s", gsps, navId);
-	var lay = this.model.patientLayout.findLayout(navId);
+	var lay = this.model.layout.findLayout(navId);
 	var nav = lay.navigate;
 	if(!nav) nav = lay.parent.navigate;
 	if( gsps==null || gsps==="" ) nav.conversation.setPresentation(undefined);
@@ -152,7 +152,19 @@ XeroController.prototype.navStudy = function(layId,uid) {
 	var nav = lay.parent.navigate;
 	if( !(nav && nav.external) ) return;
 	if(nav.external.studyUID==uid) return;
-	console.info("Navigating layout",layId,"to study",uid);
+	var uids = nav.conversation.nav;
+	var uid2 = uids[lay.parent.nth];
+	console.info("Swapping studies",uid,uid2);
+	var p2, v, n=uids.length, uids2 = new Array();
+	for(p2=0; p2<n; p2++) {
+		v = uids[p2];
+		if( v==uid ) uids2.push(uid2);
+		else if(v==uid2 ) uids2.push(uid);
+		else uids2.push(v);
+	};
+	nav.setNavigation(uids2);
+	this.mergeExternal();
+	this.displayResize();
 };
 
 /** Navigates at the series level to a specific series */
