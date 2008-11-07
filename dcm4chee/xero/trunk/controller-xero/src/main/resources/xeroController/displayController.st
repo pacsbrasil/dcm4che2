@@ -51,20 +51,34 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 	model.layout.selectTab("Display");
 	console.timeEnd("Load Patient Data");
 
+	this.displayResize("displayPatient");
+};
+
+/** Resizes and redisplays the entire display area */
+XeroController.prototype.displayResize = function(op) {
 	var size = getViewportSize();
 	this.debug("Viewport size %d,%d",size[0],size[1]);
-	model.patientLayout.resize(size[0]-8,size[1]-32, "width:100%; height:100%;");
-
-	this.updateView("displayPatient");
+	this.model.patientLayout.resize(size[0]-8,size[1]-32, "width:100%; height:100%;");
+	this.updateView(op);
 };
 
 /** Sets the current display mode - that is, the operation that controls click etc */
 XeroController.prototype.displayMode = function(layId) {
-	var lay = this.model.patientLayout.findLayout(layId);
+	var lay = this.model.layout.findLayout(layId);
 	console.info("Changing display mode to",lay.i18n);
 	this.model.navigate.setConversation("mode", lay.i18n);
 	// TODO - avoid a complete update, just do a lazy update of the changs
 	this.updateView("displayMode");
+};
+
+/** Sets the current display mode - that is, the operation that controls click etc */
+XeroController.prototype.seriesLayout = function(layId) {
+	var lay = this.model.layout.findLayout(layId);
+	console.info("Changing series layout to",lay.i18n);
+	var nav = lay.navigate;
+	if( nav==null ) nav = lay.parent.navigate;
+	nav.setConversation("seriesLayout", lay.i18n);
+	this.displayResize("seriesLayout");
 };
 
 /** Chooses between the compare study mode and single study mode */
@@ -72,9 +86,7 @@ XeroController.prototype.compareStudyMode = function(layId) {
 	var lay = this.model.patientLayout.findLayout(layId);
 	console.info("Changing study layout to",lay.i18n);
 	this.model.navigate.getChild(0).setConversation("compareStudy", lay.i18n);
-	var size = getViewportSize();
-	this.model.patientLayout.resize(size[0]-8,size[1]-32, "width:100%; height:100%;");
-	this.updateView("compareStudyMode");
+	this.displayResize("compareStudyMode");
 };
 
 /** Merge the external data into the navigate display data so that layouts can be seen. */
@@ -132,6 +144,15 @@ XeroController.prototype.displayStudy = function XC_displayStudy(src,patientId, 
 	this.debug("Display study UID %s",studyUid);
 	var uids = [ studyUid ];
 	this.displayPatient(src, patientId,uids);
+};
+
+/** Navigates to a given study for a given study slot */
+XeroController.prototype.navStudy = function(layId,uid) {
+	var lay = this.model.layout.findLayout(layId);
+	var nav = lay.parent.navigate;
+	if( !(nav && nav.external) ) return;
+	if(nav.external.studyUID==uid) return;
+	console.info("Navigating layout",layId,"to study",uid);
 };
 
 /** Navigates at the series level to a specific series */

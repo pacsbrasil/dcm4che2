@@ -283,3 +283,27 @@ function LabelLayout(id,  label, i18n, icon, action, href) {
 LabelLayout.prototype = new Layout("Label", "html/toolItem");
 LabelLayout.prototype.baseConstructor = Layout;
 LabelLayout.prototype.i18n = null;
+
+/** Finds the given item, offset by dir, in the lst, or in the children elements. */
+Layout.prototype.findRotate = function (i18n, dir, lst) {
+	if( dir==null ) dir = 0;
+	if(!lst ) lst = this.children;
+	var i,n=lst.length;
+	for(i=0; i<n; i++) {
+		if( lst[i].i18n==i18n ) {
+			i = (i+n + dir) % n;
+			return lst[i];
+		}		
+	};
+	return null;
+};
+
+/** Copies relevant attributes from another layout - should be over-ridden if
+ * more than just the i18n, icon, label, arg are to be copied.
+ */
+Layout.prototype.copyFrom = function(lay) {
+	this.i18n = lay.i18n;
+	this.label = lay.label;
+	this.icon = lay.icon;
+	this.arg = lay.arg;
+};

@@ -15,14 +15,13 @@ PatientLayout.prototype.gridX = 2;
 PatientLayout.prototype.gridY = 1;
 // Add some initial size to handle the border.
 PatientLayout.prototype.heightEdge = 0;
-PatientLayout.prototype.widthEdge = 0;
+PatientLayout.prototype.widthEdge = 12;
 
 /** Initialize the patient layout object - lazy, and only succeed if the navigate object is available.
  */
 PatientLayout.prototype.init = function PatientLayout_init() {
 	if( this.navigate==null ) return false;
 	if( this.layouts && this.layouts.length>0 ) return true;
-	if( model.IS_IE ) this.widthEdge = 12;
 	var patientMenu = new PatientMenu();
 	this.add(patientMenu, TabsLayout.TabMenu);
 	
@@ -116,13 +115,17 @@ StudyAreaLayout.prototype.compareUsed = true;
  */
 StudyAreaLayout.prototype.navigateListener = function (navigate) {
 	this.navigate = navigate;  
-	this.used = (navigate!=null && navigate.external!=null);
+	this.used = false;
 	if( ! navigate ) return;
 	this.study = navigate.external;
 	if( !this.study ) return;
+	this.used = true;
 	this.patient = navigate.parent.external;
 	this.multiStudy = (this.patient.study.length>1);
-	if( this.nth>0 && navigate.parent.conversation.compareStudy=="SingleStudy" ) this.used = false;
+	if( this.nth>0 && navigate.parent.conversation.compareStudy=="SingleStudy" ) {
+		console.info("StudyArea: Setting used to false because compare study is single study.");
+		this.used = false;
+	};
 };
 
 
@@ -130,9 +133,9 @@ StudyAreaLayout.prototype.navigateListener = function (navigate) {
 StudyAreaLayout.prototype.namedListener = function StudyNavigateListener(nav,vname,val) {
 	console.info("compare study changed",val,"study area listener.");
 	if( this.nth==0 ) return;
-	this.compareUsed = (val==="CompareStudy");
-	var nUsed = (this.compareUsed && nav.external!=null);
-	console.info("Set compare used to",this.compareUsed,"nUsed",nUsed);
+	this.compareUsed = (val!=="SingleStudy");
+	var nUsed = (this.compareUsed && this.navigate.external!=null);
+	console.info("StudyLayout set compare used to",this.compareUsed,"nUsed",nUsed);
 	if( nUsed!=this.used ) {
 		this.used = nUsed;
 		this.relayout = true;
@@ -145,71 +148,67 @@ function ReportArea(suffix) {
 };
 
 ReportArea.prototype = new Layout("ReportArea","report/report");
-ReportArea.prototype.events="conversation:displayReport";
+ReportArea.prototype.events=["conversation:displayReport","conversation:studyLayout"];
 
 ReportArea.prototype.namedListener=function(nav,vname,val) {
+	this.used = false;
 	if( !(nav && nav.external) ) return;
-	if( val===undefined ) {
-		this.used = false; 
-		return;
-	};
-	if( val===null || val==="" ) {
-		console.info("Display no report.");
-		this.used = false;
-		return;
-	}
+
+	var studyLayout = nav.conversation.studyLayout;
+	var displayReport = nav.conversation.displayReport;
+	console.info("Report area layout",studyLayout,"report",displayReport);
+	
+	if( !(studyLayout && displayReport && studyLayout!=="ShowImages") ) return;
 	console.info("Displaying report",val);
 	this.used = true;
-	this.src = "studyUID="+nav.external.studyUID+"&amp;objectUID="+val;
+	this.src = "studyUID="+nav.external.studyUID+"&amp;objectUID="+displayReport;
 }; 
-
-/**
- * The series areas contains the individual series are display objects
- */
-function SeriesAreas(suffix, nth) {
-	this.baseConstructor("SeriesArea"+suffix);
-	this.nth = nth;
-	var i,j, seriesSuffix, imageAreas;
-	for(j=0; j<this.gridY; j++) {
-		for(i=0; i<this.gridX; i++) {
-			nth = j*this.gridX+i;
-			seriesSuffix = suffix+"Se"+nth;
-			imageAreas = new ImageAreasLayout(seriesSuffix, nth);
-			this.add(imageAreas);
-		};
-	};
-};
-
-SeriesAreas.prototype = new Layout("SeriesAreas");
-SeriesAreas.prototype.gridX = 2;
-SeriesAreas.prototype.gridY = 2;
-SeriesAreas.prototype.events="merged:external";
-
-/** Just disable the series area if there are no available series */
-SeriesAreas.prototype.namedListener = function(nav,key,external) {
-	this.used = false;
-	if( !(nav && external && external.series) ) return;
-	var i,n=external.series.length;
-	for(i=0; i<n; i++) {
-		if( external.series[i].image ) {
-			this.used = true;
-			break;
-		}
-	}
-};
 
 /** Handle the study tray layout */
 function StudyTrayLayout(suffix) {
 	this.baseConstructor("StudyTray"+suffix);
-
-$layout/addChildren(children=studyTrayLayout.children)$
-	
+	this.add(new StudyMenu(suffix),"StudyMenu");
+	$layout/addChildren(children=studyTrayLayout.children)$
 };
 
 StudyTrayLayout.prototype = new Layout("StudyTray", "image/studyTray");
 StudyTrayLayout.prototype.absWidth = 135;
 StudyTrayLayout.prototype.events=".";
 StudyTrayLayout.prototype.navigateListener = StudyAreaLayout.prototype.navigateListener;
+
+/** Creates the study menu top level item */
+function StudyMenu(suffix) {
+	this.baseConstructor("StudyMenu"+suffix);
+	this.StudyMenuItems = new StudyMenuItems(suffix);
+	this.add(this.StudyMenuItems);
+	this.baseLayouts = this.layouts;
+};
+StudyMenu.prototype = new Layout("StudyMenu","html/toolItem");
+StudyMenu.prototype.events=".";
+
+/** Setup the child menu */
+StudyMenu.prototype.navigateListener = function(nav) {
+	if( !(nav && nav.external) ) return;
+	this.label = nav.external.StudyDescription;
+	console.info("StudyMenu navigate listener level",nav.level,this.label);
+	var pat = nav.parent.external;
+	this.navigate = nav;
+	this.StudyMenuItems.used = (pat.study.length>1);
+	if(!this.StudyMenuItems.used) this.layouts = null;
+		else this.layouts = this.baseLayouts;
+	this.StudyMenuItems.items = pat.study;
+};
+
+
+/** Contains the list of items in the study menu */
+function StudyMenuItems(suffix) {
+	this.baseConstructor(this.id+suffix);
+};
+StudyMenuItems.prototype = new Layout("StudyMenuItems","html/childList");
+StudyMenuItems.prototype.itemId = "studyUID";
+StudyMenuItems.prototype.listTemplate="image/studyMenuItem";
+StudyMenuItems.prototype.action="controller.navStudy";
+
 
 /** Defines the X of N series layout information */
 function XofNSeries() {
@@ -221,11 +220,11 @@ XofNSeries.prototype = new Layout("XofN","image/seriesNumber");
 XofNSeries.prototype.events="series:0";
 
 XofNSeries.prototype.navigateListener = function(nav) {
-	console.info("Setting nav information for x of n series","nav level",nav.level);
-	if( !nav ) return;
-	if( ! nav.external ) return;
+	this.used = false;
+	if( !(nav && nav.external) ) return;
 	this.series = nav.parent.getExtChildren();
 	if( ! this.series ) return;
+	this.used = true;
 	console.info("Series UID navigated to", nav.external.seriesUID);
 	this.n = this.series.length;
 	for(this.x = 1;this.x<=this.series.length; this.x++) {
@@ -236,8 +235,13 @@ XofNSeries.prototype.navigateListener = function(nav) {
 /**
  * Generic display mode 
  */
-function DisplayModeLay(i18n) {
-	this.baseConstructor(i18n);
+function DisplayModeLay(suffix,i18n) {
+	if( !i18n ) {
+		i18n = suffix;
+		suffix = "";
+	}
+	var id = i18n+suffix;
+	this.baseConstructor(id);
 	this.i18n = i18n;
 	this.icon = i18n+"Icon";
 };
@@ -251,23 +255,15 @@ DisplayModeLay.prototype.namedListener = function (navigate, varName, newVal) {
 	if( this.children && this.i18n!=newVal ) {
 		// This is a top-level menu item that contains child modes, so make it reflect the
 		// child mode correctly.
-		var i,n=this.children.length;
-		for(i=0; i<n; i++) {
-			if( this.children[i].i18n==newVal ) {
-				this.i18n = this.children[i].i18n;
-				this.icon = this.children[i].icon;
-				this.isActive = true;
-				return;
-			}
-		}
-		this.isActive = false;
+		var rot = this.findRotate(newVal);
+		this.isActive = (rot!=null);
+		if( rot ) this.copyFrom(rot);
 	}
 	else {
 		var newActive = (this.i18n == newVal);
 		if( newActive==this.isActive ) return;
 		console.info("Setting mode change on",this.i18n,"to",newActive,"mode event",newVal);
 		this.isActive = newActive;
-		this.relayout = true;
 	}
 };
 
@@ -302,6 +298,60 @@ $layout/addChildren(children=spatMenu.children)$
 };
 SpatMenu.prototype = new DisplayModeLay("RotateRight");
 SpatMenu.prototype.showLabel = false;
+
+/**
+ * The series areas contains the individual series are display objects
+ */
+function SeriesAreas(suffix, nth) {
+	this.baseConstructor("SeriesAreas"+suffix);
+	this.nth = nth;
+	var i,j, seriesSuffix, imageAreas;
+	for(j=0; j<this.gridY; j++) {
+		for(i=0; i<this.gridX; i++) {
+			nth = j*this.gridX+i;
+			seriesSuffix = suffix+"Se"+nth;
+			imageAreas = new ImageAreasLayout(seriesSuffix, nth);
+			this.add(imageAreas);
+		};
+	};
+};
+
+SeriesAreas.prototype = new Layout("SeriesAreas");
+SeriesAreas.prototype.gridX = 2;
+SeriesAreas.prototype.gridY = 2;
+SeriesAreas.prototype.events=["series:0","conversation:seriesLayout","conversation:studyLayout"];
+SeriesAreas.prototype.extraStyle = "width: 99.3%;";
+SeriesAreas.prototype.displayClass="seriesAreas";
+
+/** Just disable the series area if there are no available series */
+SeriesAreas.prototype.navigateListener = function(nav) {
+	this.used = (nav!=null && nav.external!=null);
+	this.hasSeries = this.used;
+	if( this.used && nav.parent.conversation && nav.parent.conversation.studyLayout=="ShowReport" ) this.used = false;
+	console.info("SeriesAreas navList used,hasSeries=",this.used,this.hasSeries);
+};
+
+/** Handle the series layout settings grid X/Y wise. */
+SeriesAreas.prototype.namedListener = function(nav,vname,val) {
+	console.info("SeriesAreas",vname,val);
+	var studyLayout = nav.conversation.studyLayout;;
+	if( studyLayout==="ShowReport" ) {
+		console.info("ShowReport only - not displaying series areas.");
+		this.used = false;
+		return;
+	};
+	this.used = this.hasSeries;
+	console.info("SeriesArea listener",vname,"used",this.used);
+	if( vname==="studyLayout" ) return;
+	
+	if( val==null ) val = "Layout2x2";
+
+	this.gridX = 2;
+	this.gridY = 2;
+	if( val=="Layout2x2" ) return;
+	if( val=="Layout2x1" || val=="Layout1x1") this.gridY = 1;
+	if( val=="Layout1x2" || val=="Layout1x1" ) this.gridX = 1;
+};
 
 /** Create an images areas object */
 function ImageAreasLayout(suffix, nth) {
@@ -340,7 +390,7 @@ ImageAreasLayout.prototype = new Layout();
 ImageAreasLayout.prototype.gridX = 2;
 ImageAreasLayout.prototype.gridY = 2;
 ImageAreasLayout.prototype.onmousewheel="controller.navWheelImg";
-ImageAreasLayout.prototype.events=".";
+ImageAreasLayout.prototype.events=[".","../conversation:seriesLayout"];
 
 /** Defines the image area navigate listener to reset the grid size and
  * enable/disable child elements as appropriate.
@@ -353,11 +403,8 @@ ImageAreasLayout.prototype.navigateListener = function(navigate) {
 	}
 	this.relayout = true;
 	this.series = navigate.external;
-	if( !this.series ) {
-		this.used = false;
-		return;
-	}
-	this.used = true;
+	this.namedListener(navigate,"seriesLayout",(navigate.parent.conversation? navigate.parent.conversation.seriesLayout : null));
+	if( !this.used ) return;
 	var n,imageCount = navigate.external.Viewable;
 	if( imageCount<=1 ) {
 		this.gridX = 1;
@@ -391,6 +438,19 @@ ImageAreasLayout.prototype.navigateListener = function(navigate) {
 	for(i=0; i<n; i++) {
 		this.layouts[i].used = (i < this.gridX * this.gridY);
 	}
+};
+
+ImageAreasLayout.prototype.namedListener = function(nav,vname,val) {
+	if( !this.series ) {
+		this.used = false;
+		return;
+	}
+	var maxSeries = 100;
+	if( val==="Layout1x1" ) maxSeries = 1;
+	else if( val=="Layout2x1" || val=="Layout1x2") maxSeries = 2;
+	else if( val=="Layout2x2" ) maxSeries = 4;
+	this.used = (this.nth < maxSeries);
+	console.info("ImageAreas used",this.used,"nth",this.nth,"max series",maxSeries,val);
 }; 
 
 /** The menu for image level control */

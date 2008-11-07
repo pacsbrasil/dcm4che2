@@ -27,3 +27,20 @@ $layout/addChildren(children=findMenuLayout.children)$
 FindMenuLayout.prototype = new Layout("FindMenuPrototype", "html/menu");
 FindMenuLayout.prototype.baseConstructor = Layout;
 
+function ReportSelect(suffix) {
+	this.baseConstructor("ReportSelect");
+	this.add(new ReportSelectItem("ShowReportAndImages"));
+	this.add(new ReportSelectItem("ShowReport"));
+	this.add(new ReportSelectItem("ShowImages"));
+	this.copyFrom(this.layouts[0]);
+};
+ReportSelect.prototype = new Layout("ReportSelect","html/toolItem");
+
+function ReportSelectItem(i18n) {
+	this.baseConstructor(i18n);
+	this.i18n = i18n;
+	this.icon = i18n+"Icon";
+};
+ReportSelectItem.prototype = new Layout("ReportSelectItem", "html/toolItem");
+ReportSelectItem.prototype.action = "controller.rotateButton";
+ReportSelectItem.prototype.showLabel = true;

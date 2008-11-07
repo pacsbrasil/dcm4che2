@@ -203,6 +203,16 @@ XeroController.prototype.pushButton = function XC_pushButton(layId) {
 	this.updateView("pushButton");
 };
 
+/** Rotates to the given child item */
+XeroController.prototype.rotateButton = function XC_rotateButton(layId) {
+	var lay = this.model.layout.findLayout(layId);
+	if(!lay ) {
+		console.warn("No layout named",layId,"found.");
+		return;
+	};
+	lay.parent.copyFrom(lay);
+	this.updateView("rotateButton");
+};
 
 // Define short versions of the MVC components.
 var controller = xeroController;

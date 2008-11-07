@@ -4,7 +4,7 @@ $children:{child|
 	$if(child.template)$
 	child = new Layout("$child.name$"+suffix,"$child.template$");
 	$elseif(child.layout)$
-	child = new $child.layout$(suffix);
+	child = new $child.layout$(suffix$if(child.i18n)$,"$child.i18n;format="xml"$"$endif$);
 	$elseif(child.i18n)$
 	child = new LabelLayout("$child.i18n$"+suffix,"$child.i18n$","$child.i18n$", "$child.icon$", "$child.action$", "$child.href$");
 	$elseif(child.label)$

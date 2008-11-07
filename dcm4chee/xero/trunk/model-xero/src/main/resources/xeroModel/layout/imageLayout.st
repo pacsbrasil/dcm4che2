@@ -142,8 +142,9 @@ ImageLayout.prototype.createFullUrl = function ImageLayout_createFullUrl(base) {
 	
 	var intScale = 1;
 	// Only fetch sizes down to 256 -otherwise fetch full size.
+	var testScale = this.scale*2;
 	for(ret.fetchScale=1; ret.fetchScale < this.image.Rows/this.fetchSize; ret.fetchScale *=2 ) {
-		if( this.scale >= intScale ) break;
+		if( testScale >= intScale ) break;
 		intScale = intScale/2;
 	}
 	

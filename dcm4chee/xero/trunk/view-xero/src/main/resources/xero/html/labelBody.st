@@ -1,4 +1,4 @@
-<a $if(layout.action)$ onclick="return $layout.action$('$layout.id$');" href="#"
+<a $if(layout.action)$ onclick="$layout.action$('$layout.id$'); return false;" href="#"
 $elseif(layout.href)$ href="$layout.href;format="xml"$" $if(layout.target)$target="$layout.target$"$endif$$else$ onclick="return true;" href="#"$endif$>
 $if(layout.i18n)$
 $if(layout.icon)$

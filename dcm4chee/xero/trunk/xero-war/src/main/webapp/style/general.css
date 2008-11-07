@@ -49,6 +49,13 @@ button {
 
 iframe {
 	position: relative;
+	width:99.3%;
+	height:99%;
+}
+
+div.iReport {
+	float: left;
+	padding-right: 24px;
 }
 
 .jslink {
@@ -115,6 +122,7 @@ div.layout {
 /*====================== Study Tray/Thumbnails ===========================*/
 div.studyTray {
 	overflow: auto;
+	padding: 4px 2px 2px 1px;
 }
 
 ul.thumbnail {
@@ -162,9 +170,6 @@ div.tab, div.activeTab {
 	color: black;
 	width: 6em;
 	height: 22px; /* Must match menu bar height. */
-	border-style: solid;
-	border-width: 1px;
-	border-color: black;
 	padding-left: 0.2em;
 	border-bottom: solid 1px #999999;
 }
