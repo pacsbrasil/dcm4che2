@@ -1007,6 +1007,28 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         return countStudies;
     }
 
+    public long scheduleStudyForDeletion(String suid) throws Exception {
+        FileSystemMgt2 fsMgt = fileSystemMgt();
+        Collection<DeleteStudyOrder> orders = 
+            fsMgt.createDeleteOrdersForStudyOnFSGroup(suid,
+                    getFileSystemGroupID());
+        long sizeToDel = 0;
+        for (DeleteStudyOrder order : orders) {
+            if (fsMgt.removeStudyOnFSRecord(order)) {
+                try {
+                    deleteStudy.scheduleDeleteOrder(order);
+                } catch (Exception e) {
+                    // re-insert SOF record, so the deleter keeps track 
+                    // for deletion of the study
+                    fsMgt.createStudyOnFSRecord(order);
+                    throw e;
+                }
+                sizeToDel  += fsMgt.getStudySize(order);
+            }
+        }
+        return sizeToDel;
+    }
+
     public int deleteOrphanedPrivateFiles() throws Exception {
         log.info("Check file system group " + getFileSystemGroupID()
                 + " for deletion of orphaned private files");

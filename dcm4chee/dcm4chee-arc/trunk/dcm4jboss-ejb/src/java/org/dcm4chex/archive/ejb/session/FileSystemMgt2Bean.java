@@ -531,6 +531,22 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                 copyOnFSGroup, copyArchived, copyOnReadOnlyFS);
     }
 
+    /**    
+     * @ejb.interface-method
+     */
+    public Collection createDeleteOrdersForStudyOnFSGroup(String suid,
+            String fsGroup) throws FinderException {
+        Collection sofs = sofHome.findByStudyIUIDAndFSGroup(suid, fsGroup);
+        Collection orders = new ArrayList(sofs.size());
+        for (Iterator iter = sofs.iterator(); iter.hasNext();) {
+            StudyOnFileSystemLocal sof = (StudyOnFileSystemLocal) iter.next();
+            orders.add(new DeleteStudyOrder(sof.getPk(),
+                    sof.getStudy().getPk(), sof.getFileSystem().getPk(),
+                    sof.getAccessTime().getTime()));
+        }
+        return orders;
+    }
+
     private Collection createDeleteOrders(
             Collection sofs, boolean externalRetrieveable,
             boolean storageNotCommited, boolean copyOnMedia,

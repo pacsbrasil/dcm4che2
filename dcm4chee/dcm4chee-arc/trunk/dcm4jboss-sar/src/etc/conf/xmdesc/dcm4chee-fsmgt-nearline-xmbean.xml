@@ -734,6 +734,21 @@
     <return-type>int</return-type>
   </operation>
 
+  <operation impact="ACTION">
+    <description><![CDATA[Schedule deletion of study with specified Study
+      Instance UID from writable file systems of the file system group managed
+      by this service, <b>without</b> consideration of the configured set of
+      constraints. Returns size of study in bytes scheduled for deletion.]]>
+    </description>
+    <name>scheduleStudyForDeletion</name>
+    <parameter>
+      <description>Study Instance UID.
+      </description>
+      <name>suid</name>
+      <type>java.lang.String</type>
+    </parameter>
+    <return-type>long</return-type>
+  </operation>
 
   <operation impact="ACTION">
     <description><![CDATA[Delete orphaned private files from writable file
