@@ -57,10 +57,8 @@ CompareStudyLay.prototype.namedListener = function(nav,vname,val) {
 
 /** Listen at the patient level to determine updates to the layout */
 CompareStudyLay.prototype.navigateListener = function(nav) {
-	if(!nav) return;
-	if(!nav.external) return;
-	if(!nav.external.study) return;
-	this.used = nav.external.study.length>1;
+	if(!(nav && nav.conversation && nav.conversation.nav)) return;
+	this.used = nav.conversation.nav.length>1;
 };
 
 /** The menu for patient tab control */
@@ -121,7 +119,6 @@ StudyAreaLayout.prototype.navigateListener = function (navigate) {
 	if( !this.study ) return;
 	this.used = true;
 	this.patient = navigate.parent.external;
-	this.multiStudy = (this.patient.study.length>1);
 	if( this.nth>0 && navigate.parent.conversation.compareStudy=="SingleStudy" ) {
 		console.info("StudyArea: Setting used to false because compare study is single study.");
 		this.used = false;
@@ -194,10 +191,18 @@ StudyMenu.prototype.navigateListener = function(nav) {
 	console.info("StudyMenu navigate listener level",nav.level,this.label);
 	var pat = nav.parent.external;
 	this.navigate = nav.parent;
-	this.StudyMenuItems.used = (pat.study.length>1);
+	var navStudy = this.navigate.conversation.nav;
+	this.StudyMenuItems.used = (navStudy.length>1);
 	if(!this.StudyMenuItems.used) this.layouts = null;
 		else this.layouts = this.baseLayouts;
-	this.StudyMenuItems.items = pat.study;
+	this.StudyMenuItems.items = new Array();
+	var study, i,n=navStudy.length;
+	// TODO - move this code into navigate proper.
+	for(i=0; i<n; i++) {
+		if( i==this.nth ) continue;
+		study = this.navigate.external.children[navStudy[i]];
+		this.StudyMenuItems.items.push(study);
+	}
 };
 
 
