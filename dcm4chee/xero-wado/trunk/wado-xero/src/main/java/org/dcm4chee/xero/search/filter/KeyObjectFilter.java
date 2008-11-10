@@ -61,6 +61,7 @@ import org.dcm4chee.xero.search.study.MacroMixIn;
 import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;
 import org.dcm4chee.xero.search.study.SeriesBean;
+import org.dcm4chee.xero.search.study.SeriesType;
 import org.dcm4chee.xero.search.study.StudyBean;
 import org.dcm4chee.xero.search.study.StudyType;
 import org.dcm4chee.xero.wado.DicomFilter;
@@ -281,7 +282,7 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
     */
    private static void removeUnferencedImages(List<KeySelection> selection,
          StudyBean study) {
-      Iterator iter = study.getSeries().iterator();
+      Iterator<SeriesType> iter = study.getSeries().iterator();
       while (iter.hasNext())   {
          SeriesBean ser = (SeriesBean) iter.next();
          
