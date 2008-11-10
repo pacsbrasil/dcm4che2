@@ -48,6 +48,7 @@ import org.mozilla.javascript.ContextFactory;
 import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.UniqueTag;
 
 /**
@@ -178,6 +179,7 @@ public class JavaScriptObjectWrapper extends AbstractMap<String, Object> {
 				return null;
 			if (s == UniqueTag.NULL_VALUE)
 				return null;
+			if (s==Undefined.instance ) return null;
 			return s;
 		}
 		return new JavaScriptObjectWrapper((Scriptable) s);
