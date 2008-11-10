@@ -205,7 +205,6 @@ StudyMenu.prototype.navigateListener = function(nav) {
 	}
 };
 
-
 /** Contains the list of items in the study menu */
 function StudyMenuItems(suffix) {
 	this.baseConstructor(this.id+suffix);
@@ -232,6 +231,7 @@ XofNSeries.prototype.navigateListener = function(nav) {
 	if( ! this.series ) return;
 	this.used = true;
 	console.info("Series UID navigated to", nav.external.seriesUID);
+	this.relayout=true;
 	this.n = this.series.length;
 	for(this.x = 1;this.x<=this.series.length; this.x++) {
 		if( nav.external.seriesUID == this.series[this.x-1].seriesUID ) break;
@@ -326,7 +326,6 @@ SeriesAreas.prototype = new Layout("SeriesAreas");
 SeriesAreas.prototype.gridX = 2;
 SeriesAreas.prototype.gridY = 2;
 SeriesAreas.prototype.events=["series:0","conversation:seriesLayout","conversation:studyLayout"];
-SeriesAreas.prototype.extraStyle = "width: 99.3%;";
 SeriesAreas.prototype.displayClass="seriesAreas";
 
 /** Just disable the series area if there are no available series */

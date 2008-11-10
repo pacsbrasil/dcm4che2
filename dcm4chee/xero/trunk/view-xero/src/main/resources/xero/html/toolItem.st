@@ -1,1 +1,1 @@
-<li class="label toolItem">$html/labelBody()$</li>
+<li id="$layout.id$" class="label toolItem">$html/labelBody()$</li>

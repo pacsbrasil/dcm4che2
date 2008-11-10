@@ -33,8 +33,11 @@ function ReportSelect(suffix) {
 	this.add(new ReportSelectItem("ShowReport"));
 	this.add(new ReportSelectItem("ShowImages"));
 	this.copyFrom(this.layouts[0]);
+	this.arg="ShowReport";
 };
+
 ReportSelect.prototype = new Layout("ReportSelect","html/toolItem");
+ReportSelect.prototype.action="controller.rotateButton";
 
 function ReportSelectItem(i18n) {
 	this.baseConstructor(i18n);

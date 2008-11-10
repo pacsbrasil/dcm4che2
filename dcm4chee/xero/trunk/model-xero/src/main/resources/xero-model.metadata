@@ -40,22 +40,30 @@ static.imageAreasMenu.children.imageNumber.template=image/imageNumber
 static.imageAreasMenu.children.prev.inherit=toolItem
 static.imageAreasMenu.children.prev.priority=500
 static.imageAreasMenu.children.prev.label=Previous Image
-static.imageAreasMenu.children.prev.icon=icon/prev.png
+static.imageAreasMenu.children.prev.icon=icon/prev.gif
+static.imageAreasMenu.children.prev.action=controller.navImg
+static.imageAreasMenu.children.prev.arg=-1
 
 static.imageAreasMenu.children.next.inherit=toolItem
 static.imageAreasMenu.children.next.label=Next Image
 static.imageAreasMenu.children.next.priority=1500
-static.imageAreasMenu.children.next.icon=icon/next.png
+static.imageAreasMenu.children.next.icon=icon/next.gif
+static.imageAreasMenu.children.next.action=controller.navImg
+static.imageAreasMenu.children.next.arg=1
 
 static.imageAreasMenu.children.first.inherit=toolItem
 static.imageAreasMenu.children.first.priority=250
 static.imageAreasMenu.children.first.label=First Image
-static.imageAreasMenu.children.first.icon=icon/first.png
+static.imageAreasMenu.children.first.icon=icon/first.gif
+static.imageAreasMenu.children.first.action=controller.navImg
+static.imageAreasMenu.children.first.arg=first
 
 static.imageAreasMenu.children.last.inherit=toolItem
 static.imageAreasMenu.children.last.priority=1750
 static.imageAreasMenu.children.last.label=Last Image
-static.imageAreasMenu.children.last.icon=icon/last.png
+static.imageAreasMenu.children.last.icon=icon/last.gif
+static.imageAreasMenu.children.last.action=controller.navImg
+static.imageAreasMenu.children.last.arg=last
 
 static.imageAreasMenu.children.seriesDescription.inherit=toolItem
 static.imageAreasMenu.children.seriesDescription.priority=1900
@@ -140,19 +148,20 @@ static.studyTrayLayout.children.prev.inherit=toolItem
 static.studyTrayLayout.children.prev.priority=500
 static.studyTrayLayout.children.prev.i18n=PreviousSeries
 static.studyTrayLayout.children.prev.icon=PreviousSeriesIcon
-
-static.studyTrayLayout.children.seriesNumber.inherit=toolItem
-static.studyTrayLayout.children.seriesNumber.priority=1000
-static.studyTrayLayout.children.seriesNumber.layout=XofNSeries
+static.studyTrayLayout.children.prev.action=controller.navSer
+static.studyTrayLayout.children.prev.arg=-1
 
 static.studyTrayLayout.children.next.inherit=toolItem
 static.studyTrayLayout.children.next.priority=1500
 static.studyTrayLayout.children.next.i18n=NextSeries
 static.studyTrayLayout.children.next.icon=NextSeriesIcon
+static.studyTrayLayout.children.next.action=controller.navSer
+static.studyTrayLayout.children.next.arg=1
 
 static.overallMenuLayout.inherit=toolbar
 static.overallMenuLayout.children.userName.inherit=toolItem
 static.overallMenuLayout.children.userName.template=html/userName
+static.overallMenuLayout.children.userName.name=UserName
 static.overallMenuLayout.children.userName.priority=950
 
 static.overallMenuLayout.children.logout.inherit=toolItem

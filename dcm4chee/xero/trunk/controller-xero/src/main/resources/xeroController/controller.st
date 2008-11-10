@@ -200,18 +200,36 @@ XeroController.prototype.pushButton = function XC_pushButton(layId) {
 		return;
 	};
 	lay.isActive = ! lay.isActive;
-	this.updateView("pushButton");
+	lay.relayout = true;
+	this.waitUpdate("pushButton");
 };
 
 /** Rotates to the given child item */
-XeroController.prototype.rotateButton = function XC_rotateButton(layId) {
+XeroController.prototype.rotateButton = function XC_rotateButton(layId,arg) {
 	var lay = this.model.layout.findLayout(layId);
 	if(!lay ) {
 		console.warn("No layout named",layId,"found.");
 		return;
 	};
-	lay.parent.copyFrom(lay);
-	this.updateView("rotateButton");
+	var par, chd;
+	console.info("Rotating button",lay.id,"arg",arg,"in",lay.i18n);
+	if( lay.children ) {
+		par = lay;
+		chd = lay.findRotate(arg,0);
+	} else {
+		par = lay.parent;
+		chd = lay;
+	};
+	var lst = par.findRotate(par.i18n);
+	if( lst ) lst.isActive = false;
+	chd.isActive = true;
+	par.copyFrom(chd);
+	// Choose the next child type
+	var rot = par.findRotate(par.i18n,1);
+	console.info("Found rotate",rot.i18n);
+	par.arg = rot.i18n;
+	par.relayout = true;
+	this.waitUpdate("rotateButton");
 };
 
 // Define short versions of the MVC components.

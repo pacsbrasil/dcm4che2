@@ -72,12 +72,13 @@ XeroController.prototype.displayMode = function(layId) {
 };
 
 /** Sets the current display mode - that is, the operation that controls click etc */
-XeroController.prototype.seriesLayout = function(layId) {
+XeroController.prototype.seriesLayout = function(layId, arg) {
 	var lay = this.model.layout.findLayout(layId);
 	console.info("Changing series layout to",lay.i18n);
 	var nav = lay.navigate;
 	if( nav==null ) nav = lay.parent.navigate;
-	nav.setConversation("seriesLayout", lay.i18n);
+	if( !arg ) arg = lay.i18n;
+	nav.setConversation("seriesLayout", arg);
 	this.displayResize("seriesLayout");
 };
 
@@ -179,36 +180,38 @@ XeroController.prototype.navToSer = function XC_NavToSer(id,uid) {
 
 /** Navigates at the series level by dir +/- forward/backwards */
 XeroController.prototype.navSer = function XC_navSer(id,dir) {
-	var lay = this.model.patientLayout.findLayout(id);
+	var lay = this.model.layout.findLayout(id);
 	console.info("You are trying to navigate %s in dir %d found lay %s", id,dir,lay.id);
-	if( (!lay) || ! lay.navigate ) {
-		console.warn("Didn't find a study to navigate on?");
-		return;
-	}
-	var navigate = lay.navigate;
-	var dirSeries = navigate.lookupId(dir);
+	var nav = lay.navigate;
+	if(!nav) nav = lay.parent.navigate
+	if( typeof(dir)==="string" ) dir = parseInt(dir);
+	var dirSeries = nav.lookupId(dir);
 	if(!dirSeries ) {
 		console.warn("Didn't find a next/previous series to navigate to.");
 		return;
 	}
 	console.info("You are trying to navigate to %s", dirSeries);
-	navigate.setNavigation(dirSeries);
+	nav.setNavigation(dirSeries);
 	console.info("setNav completed.");
 	this.updateDisplayTab();	
 };
 
 /** Navigates at the image level - can be called against either the imageToolbar or imageArea */
 XeroController.prototype.navImg = function XC_navImg(id,dir) {
-	var lay = this.model.patientLayout.findLayout(id);
+	var lay = this.model.layout.findLayout(id);
 	console.info("You are trying to navigate %s in dir %d found lay %s", id,dir,lay.id);
-	if( (!lay) || ! lay.navigate ) {
-		console.warn("Didn't find an image to navigate on?");
-		return;
-	}
 	var navigate = lay.navigate;
-	var dirImg = navigate.lookupId(dir);
+	if(!navigate) navigate = lay.parent.navigate;
+	if( dir==="first" ) {
+		var dirImg = 0;
+	} else if(dir==="last") {
+		var dirImg = navigate.external.Viewable-1; 
+	} else {
+		if( typeof(dir)==="string" ) dir = parseInt(dir);
+		var dirImg = navigate.lookupId(dir);
+	};
 	if(dirImg==null ) {
-		console.warn("Didn't find a next/previous series to navigate to.");
+		console.warn("Didn't find a next/previous series to navigate to dir",dir,dirImg);
 		return;
 	}
 	console.info("You are trying to navigate to %s", dirImg);

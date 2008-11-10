@@ -270,14 +270,10 @@ Layout.prototype.init = function Layout_init() {
 
 
 /** Some exemplar layout types */
-function LabelLayout(id,  label, i18n, icon, action, href) {
+function LabelLayout(id,  label, i18n) {
 	this.baseConstructor(id);
 	this.label = label;
-	
 	if( i18n && i18n!="" ) this.i18n = i18n;
-	if( action && action!="" ) this.action = action;
-	if( icon && icon!="" ) this.icon = icon;
-	if( href && href!="" ) this.href = href;
 };
 
 LabelLayout.prototype = new Layout("Label", "html/toolItem");
