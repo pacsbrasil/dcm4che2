@@ -101,7 +101,7 @@
       of received object from Storage SCUs, for which no specific file system
       group is defined in an AE configuration entry.]]>
       </description>
-      <name>setDefaultFileSystemGroupID</name>
+      <name>DefaultFileSystemGroupID</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="ONLINE_STORAGE"/>
