@@ -41,6 +41,7 @@
 package org.dcm4chex.archive.dcm.storescp;
 
 import java.io.BufferedInputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -1010,7 +1011,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     } else {
                         int read = compressCmd.compress(decParam.byteOrder,
                                 parser.getInputStream(), bos);
-                        in.skip(parser.getReadLength() - read);
+                        skipFully(in, parser.getReadLength() - read);
                     }
                     ds.writeHeader(bos, encParam, Tags.SeqDelimitationItem,
                             VRs.NONE, 0);
@@ -1032,6 +1033,17 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             bos.close();
         }
         return md != null ? md.digest() : null;
+    }
+
+    private static void skipFully(InputStream in, int n) throws IOException {
+        int remaining = n;
+        int skipped = 0;
+        while (remaining > 0) {
+            if ((skipped = (int) in.skip(remaining)) == 0) {
+                throw new EOFException();
+            }
+            remaining -= skipped;
+        }
     }
 
     private String checkSOPInstanceUID(Command rqCmd, Dataset ds, String aet)

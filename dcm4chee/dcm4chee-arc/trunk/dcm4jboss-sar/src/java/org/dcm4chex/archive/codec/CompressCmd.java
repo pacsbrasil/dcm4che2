@@ -175,7 +175,7 @@ public abstract class CompressCmd extends CodecCmd {
                 int read = compressCmd.compress(decParam.byteOrder, in, bos);
                 ds.writeHeader(bos, encParam, Tags.SeqDelimitationItem,
                         VRs.NONE, 0);
-                in.skip(p.getReadLength() - read);
+                skipFully(in, p.getReadLength() - read);
                 p.parseDataset(decParam, -1);
                 ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);
             } finally {
@@ -185,6 +185,17 @@ public abstract class CompressCmd extends CodecCmd {
     	} finally {
     		in.close();
     	}
+    }
+
+    private static void skipFully(InputStream in, int n) throws IOException {
+        int remaining = n;
+        int skipped = 0;
+        while (remaining > 0) {
+            if ((skipped = (int) in.skip(remaining)) == 0) {
+                throw new EOFException();
+            }
+            remaining -= skipped;
+        }
     }
 
     public static CompressCmd createCompressCmd(Dataset ds, String tsuid) {
