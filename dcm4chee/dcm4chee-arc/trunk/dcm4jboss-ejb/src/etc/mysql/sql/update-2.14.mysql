@@ -13,7 +13,7 @@ ALTER TABLE patient ADD pat_birthdate_varchar VARCHAR(250) BINARY;
 UPDATE patient SET pat_birthdate_varchar = DATE_FORMAT(pat_birthdate,'%Y%m%d') WHERE pat_birthdate IS NOT NULL;
 ALTER TABLE patient DROP INDEX pat_birthdate;
 ALTER TABLE patient DROP COLUMN pat_birthdate;
-ALTER TABLE patient RENAME COLUMN pat_birthdate_varchar TO pat_birthdate;
+ALTER TABLE patient CHANGE COLUMN pat_birthdate_varchar pat_birthdate VARCHAR(250) BINARY;
 CREATE INDEX pat_birthdate ON patient(pat_birthdate(8));
 
 ALTER TABLE study ADD cuids_in_study VARCHAR(250) BINARY;
