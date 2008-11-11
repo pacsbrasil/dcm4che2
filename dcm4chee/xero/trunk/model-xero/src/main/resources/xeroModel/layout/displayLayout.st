@@ -375,7 +375,7 @@ function ImageAreasLayout(suffix, nth) {
 
 	this.mousewheel = function(evt) {
 		useThis.debug("Mouse wheel image area called.");
-		return controller.navWheelImg(useThis,evt);
+		return controller.wheelMouse(useThis,evt);
 	};
 	
 	var i,j,layout, imageSuffix;
@@ -394,8 +394,9 @@ function ImageAreasLayout(suffix, nth) {
 ImageAreasLayout.prototype = new Layout();
 ImageAreasLayout.prototype.gridX = 2;
 ImageAreasLayout.prototype.gridY = 2;
-ImageAreasLayout.prototype.onmousewheel="controller.navWheelImg";
+ImageAreasLayout.prototype.onmousewheel="controller.wheelMouse";
 ImageAreasLayout.prototype.events=[".","../conversation:seriesLayout"];
+ImageAreasLayout.prototype.area="Series";
 
 /** Defines the image area navigate listener to reset the grid size and
  * enable/disable child elements as appropriate.

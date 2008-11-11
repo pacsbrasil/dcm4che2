@@ -61,11 +61,11 @@ StudyData.prototype.getChild = function StudyData_getChild(name,el,modifiers) {
 /**
  * Makes the requested queries for additional information to merge.
  */
-StudyData.prototype.addQueries = function StudyData_addQueries(queries) {
+StudyData.prototype.addQueries = function StudyData_addQueries(queries, lazy) {
 	var key;
 	for(key in queries) {
 		this.debug("Adding information from %s",key);
-		this.requestUrl(key, queries[key]);
+		this.requestUrl(key, queries[key],lazy);
 	}
 };
 

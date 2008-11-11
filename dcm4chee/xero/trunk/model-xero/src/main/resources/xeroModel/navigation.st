@@ -76,14 +76,14 @@ Navigation.prototype.generateQuery = function Navigation_generateQuery(child, re
 	
 	var childId = child.id;
 	modifiers = this.conversation.assignDefaultModifiers(this.external);
-	console.info("Modifiers ",modifiers);
+	this.debug("Modifiers ",modifiers);
 	if( this.level===3 ) {
 		this.debug("Adding image level query at %d of size %d initial offset %d", childId, this.IMAGE_QUERY_SIZE, this.QUERY_SIZE);
 		position = childId - this.QUERY_SIZE;
 		position -= (position % this.IMAGE_QUERY_SIZE);
 		position += this.QUERY_SIZE;
-		url = this.QUERY+"?seriesUID="+this.id+"&Count="+this.IMAGE_QUERY_SIZE+"&Position="+position+"&pixelInfo=true";
-		console.info("Adding series extension query %s",url); 
+		url = this.QUERY+"?seriesUID="+this.id+"&Count="+this.IMAGE_QUERY_SIZE+"&Position="+position;
+		this.debug("Adding series extension query %s",url); 
 	} else if( this.level===2 ) {
 		url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&studyUID="+this.id+"&regroup=true";
 		this.debug("Adding image query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
@@ -94,7 +94,7 @@ Navigation.prototype.generateQuery = function Navigation_generateQuery(child, re
 	} else if( this.level===1 ) {
 		// This happens when the user views a NEW study in the same patient
 		url = this.STUDY_QUERY+"?gsps=*&studyUID="+childId;
-		console.info("Adding new study query %s", url);
+		this.debug("Adding new study query %s", url);
 	} else {
 		console.error("Unknown id/query level %d for child id %s", this.level, childId);
 		return ret;
@@ -113,12 +113,19 @@ Navigation.prototype.mergeExternal = function Navigation_mergeExternal(external,
 	if( external==null && this.level==0 ) external = this.external;
 	if( this.external!==external ) {
 		this.external = external;
-		if( this.merged ) this.merged.external = this.external;
+		if( this.merged ) {
+			if( this.level>0 ) {
+				this.merged = null;
+				this.createMerged();
+			} else {
+				this.merged.external = external;
+			}
+		}
 		this.fireChanged(this.EXTERNAL_CHANGED);
 	} else {
 		this.fire(this.EXTERNAL_UPDATED,external,external);
 	}
-	console.info("Adding external data to %s at level %d", this.id,this.level);
+	this.debug("Adding external data to %s at level %d", this.id,this.level);
 	var child,childKey;
 	var childExt,url,position,extId;
 	for(childKey in this.children) {
@@ -156,15 +163,15 @@ Navigation.prototype.setNavigation = function Navigation_setNavigation(value,key
 	this.conversation[key] = value;
 
 	this.fireChanged(this.NAVIGATION_CHANGED);
-	console.info("Finished fire changed - about to invalidate.");
+	this.debug("Finished fire changed - about to invalidate.");
 	this.invalidate(true);
-	console.info("Finished invalidate.");
+	this.debug("Finished invalidate.");
 };
 
 /** Invalidates the given key element, if there are any children depending on it. */
 Navigation.prototype.invalidate = function Navigation_invalidate(isTop) {
 	if( !isTop ) {
-		this.debug("Invalidating child object - resetting ids at level %d",this.level);
+		this.debug("Invalidating child object - resetting ids at level",this.level);
 		var oldId = this.id;
 		// Compute the new id if we can
 		this.id = this.parent.lookupId(this.offset);
@@ -172,7 +179,7 @@ Navigation.prototype.invalidate = function Navigation_invalidate(isTop) {
 		if( this.id === oldId ) {
 			return;
 		}
-		this.debug("Changed data for old id %s is now %s",oldId,this.id);
+		this.debug("Changed data for old id",oldId,"is now",this.id);
 		this.conversation = undefined;
 		var msg = this.INVALID;
 		this.external = undefined;
@@ -229,7 +236,7 @@ Navigation.prototype.lookupId = function Navigation_lookupId(offset,key) {
 	}
 	
 	if( type==="object" ) {
-		console.info("Looking up offset %s in array/object value %s", offset, val[offset]);
+		this.debug("Looking up offset %s in array/object value %s", offset, val[offset]);
 		if( offset < val.length && offset >=0 ) return val[offset];
 		return null;
 	}
@@ -253,7 +260,7 @@ Navigation.prototype.lookupId = function Navigation_lookupId(offset,key) {
 		if( !this.external ) return undefined;
 		var extChildren = this.getExtChildren();
 		if( !extChildren ) {
-			console.info("Found no children defined for %s under the name %s at level %d offset %s", this.id,this.childType, this.level, offset);
+			this.debug("Found no children defined for %s under the name %s at level %d offset %s", this.id,this.childType, this.level, offset);
 			return undefined;
 		}
 		if( val ) {
@@ -322,7 +329,9 @@ Navigation.prototype.createConversation = function Navigation_createConversation
 	this.conversation = this.parent.conversation.getChild(this.id);
 };
 
-/** Creates the merged and external contexts as appropriate */
+/** Creates the merged and external contexts as appropriate.  The external context will be 
+ * replaced at various levels by a real external context.
+ */
 Navigation.prototype.createMerged = function Navigation_createMerged() {
 	if( this.merged ) return;
 	this.createConversation();
@@ -331,6 +340,7 @@ Navigation.prototype.createMerged = function Navigation_createMerged() {
 	if( mid==null ) this.error("Unable to get presentation id for "+this.id);
 	this.merged = this.parent.merged.getChild(mid);
 	this.createExternal();
+	this.merged.external = this.external;
 };
 
 /** Creates/sets up the external object, if it can be found, returning true if available.  id, merged and conversation must be setup already.
@@ -341,12 +351,11 @@ Navigation.prototype.createExternal = function Navigation_createExternal() {
 	if( !this.parent.external.children ) this.parent.external.children = new Object();
 	var eid = this.conversation.getUrlId();
 	this.external = this.parent.external.children[eid];
-	if( this.external ) this.merged.external = this.external;	
 	return this.external!=undefined;
 };
 
 /** Gets the merged context for this object, creating one if necessary.  Returns undefined
- * if the id isn't set.
+ * if the id isn't set, and null if there isn't yet a merged object.
  */
 Navigation.prototype.getMerged = function Navigation_getMerged() {
 	if(this.id==null) return undefined;
@@ -512,7 +521,8 @@ Navigation.prototype.fire = function(key,value,oldValue) {
 /** Sets a merged level item - typically things like window level, flip/rotate etc */
 Navigation.prototype.setMerged = function(key,value,internalChange) {
 	this.createMerged();
-	var oldValue = this.merged[key]; 
+	var oldValue = this.merged[key];
+	console.info("setMerged",key,"old",oldValue,"new value",value); 
 	if( oldValue===value && !internalChange ) return;
 	this.merged[key] = value;
 	this.fire(key,value,oldValue);

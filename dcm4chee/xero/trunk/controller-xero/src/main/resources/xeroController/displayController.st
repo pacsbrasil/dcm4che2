@@ -31,6 +31,7 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 
 	if( ! model.navigate ) {
 		model.navigate = new Navigation();
+		model.navigate.conversation.mode="WindowLevel";
 		model.patientLayout.navigate = model.navigate;
 		model.patientLayout.init();
 	}
@@ -52,6 +53,20 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 	console.timeEnd("Load Patient Data");
 
 	this.displayResize("displayPatient");
+};
+
+/** Returns the mode for the given layout */
+XeroController.prototype.getModeImage = function(lay) {
+	var mode = this.model.navigate.conversation.mode;
+	return mode;
+};
+XeroController.prototype.getModeSeries = XeroController.prototype.getModeImage;
+
+/** Gets the navigate object from this or a parent object */
+XeroController.prototype.getNavigate = function(lay) {
+	while(!lay.navigate) lay = lay.parent;
+	if( !lay ) return;
+	return lay.navigate;
 };
 
 /** Resizes and redisplays the entire display area */
@@ -221,7 +236,7 @@ XeroController.prototype.navImg = function XC_navImg(id,dir) {
 };
 
 /** Navigates the series using the mouse wheel */
-XeroController.prototype.navWheelImg = function XC_navWheelImg(id,e) {
+XeroController.prototype.wheelSeries = function(id,e) {
 	id = this.model.patientLayout.findLayout(id);
 	console.info("Wheel mouse navigation called on %s", id.id);
 	var wheelData = e.detail ? e.detail : e.wheelDelta/-40;
@@ -244,4 +259,5 @@ XeroController.prototype.setImgLay = function XC_setImgLay(id,w,h) {
 	id.resize(id.width, id.height, id.style);
 	this.updateView("displayPatient");
 };
+
 

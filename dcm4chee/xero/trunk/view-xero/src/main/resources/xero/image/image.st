@@ -1,7 +1,7 @@
 <div class="image" $html/style()$ xmlns="http://www.w3.org/1999/xhtml">
  $if(IS_IE)$
    <v:group id="vml$layout.id$" class="imageDisplay"
-   	 onmousedown="controller.imageMouseDown('$layout.id$')"
+   	 onmousedown="controller.mouseDown('$layout.id$')"
 $if(layout.sameSize)$
 	style="overflow: visible; left: $layout.negHalfRealWidth$; margin-left: 50%; top: 50%; margin-top: $layout.negHalfRealHeight$; width: $layout.realWidth$; height: $layout.realHeight$;"
 $else$
@@ -37,8 +37,7 @@ $endif$
    </v:group>
 $else$
 $if(layout.image)$
-<svg id="svg$layout.id$" class="imageDisplay" onmousedown="controller.imageMouseDown('$layout.id$',evt)" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg"
->
+<svg id="svg$layout.id$" class="imageDisplay" onmousedown="controller.mouseDown('$layout.id$',evt)" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
 
 <svg id="gim$layout.id$" 
 	class="imageGroup" 

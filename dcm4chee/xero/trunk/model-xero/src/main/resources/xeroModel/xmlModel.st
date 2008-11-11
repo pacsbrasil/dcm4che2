@@ -41,7 +41,7 @@ XmlModel.prototype.request = function XM_request() {
 /**
  * Makes the given request, along with any modifiers such as GSPS application.  
  */
-XmlModel.prototype.requestUrl = function XM_requestUrl(url, modifiers) {
+XmlModel.prototype.requestUrl = function XM_requestUrl(url, modifiers, lazy) {
 	var request;
 	if( modifiers ) {
 		for(key in modifiers) {
@@ -50,6 +50,17 @@ XmlModel.prototype.requestUrl = function XM_requestUrl(url, modifiers) {
 	}
 	this.debug("Requesting XML data "+url);
 	request = new XMLHttpRequest();
+	if( lazy ) {
+		var usethis = this;
+		request.onreadystatechange = function() {
+			if( request.readyState!=4 ) return;
+			usethis.parse(request.responseXML.documentElement,modifiers);
+			usethis.url = "Done Request.";
+		};
+		request.open("GET",url,true);
+		request.send(null);
+		return;
+	}
 	request.open("GET",url,false);
 	request.send(null);
 	// TODO - add error handling.

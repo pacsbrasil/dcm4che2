@@ -35,6 +35,7 @@ var xeroController = new XeroController(xeroView);
 XeroController.prototype.isDebug = false;
 XeroController.prototype.debug = function() {};
 
+
 XeroController.prototype.getBody = function XC_getBody() {
 	if( this.body===undefined ) {
 		this.body = document.getElementById("body");

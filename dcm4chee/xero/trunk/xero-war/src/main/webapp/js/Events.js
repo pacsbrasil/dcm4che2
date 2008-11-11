@@ -94,14 +94,6 @@ function isMouseDown(evt) {
 	return event.button!=0;
 };
 
-/** Return the response to this function to prevent the default action from occurring */
-function evtPreventDefault(e) {
-	if( e.preventDefault ) {
-		e.preventDefault();
-	}
-	return false;
-}
-
 /**
  * Finds the coordinates for a given event, multi-browser supported.
  * Returns array with the DOCUMENT based coordinates

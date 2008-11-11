@@ -19,13 +19,16 @@ ImageLayout.prototype.MAGNIFY = "MAGNIFY";
 ImageLayout.prototype.SCALE_TO_FIT = "SCALE_TO_FIT";
 ImageLayout.prototype.TRUE_SIZE = "TRUE_SIZE";
 ImageLayout.prototype.urlCount = 0;
-ImageLayout.prototype.events = ".";
+ImageLayout.prototype.events = [".","../merged:windowWidth","../merged:windowCenter"];
+ImageLayout.prototype.area="Image";
 
 
 /** This defines the listeners for navigate changes to the layout */
 ImageLayout.prototype.navigateListener = function ImageMergedListener(navigate) {
+	console.info("Image merged listener");
 	this.navigate = navigate;
 	if( navigate && this.image!==navigate.external ) {
+		console.info("Updating the merged setting:",this.id);
 		this.relayout = true;
 		this.image = navigate.external;
 		this.merged = navigate.getMerged();
@@ -35,6 +38,14 @@ ImageLayout.prototype.navigateListener = function ImageMergedListener(navigate) 
 		this.updatePosition();
 		this.addImageUrl(true);
 	}
+};
+
+/** Update the URLs if the window width changes */
+ImageLayout.prototype.namedListener = function(nav,vname,val) {
+	if( !val ) return;
+	console.info("Updating all image URLs for",nav.external.seriesUID);
+	this.addImageUrl(true);
+	this.relayout = true;
 };
 
 /** Adds an image URL to the set of URLs to display */
