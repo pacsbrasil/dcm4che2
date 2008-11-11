@@ -44,18 +44,18 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.search.ResultFromDicom;
 import org.dcm4chee.xero.search.macro.KeyObjectGspsMacro;
+import org.dcm4chee.xero.search.macro.KeyObjectMacro;
 import org.dcm4chee.xero.search.study.ImageSearch;
 import org.dcm4chee.xero.search.study.KeyObjectBean;
 import org.dcm4chee.xero.search.study.KeySelection;
 import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;
+import org.dcm4chee.xero.search.study.SearchableDicomObject;
 import org.dcm4chee.xero.search.study.StudyBean;
 import org.dcm4chee.xero.search.study.StudyType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.dcm4chee.xero.wado.DicomFilter;
 
 /**
  * This filter adds information whether any GSPS asscoiated to the images
@@ -80,7 +80,7 @@ public class KeyObjectStudyFilter implements Filter<ResultsBean> {
 		String studyUID = (String) params.get(STUDY_UID);
 		String ko = (String) params.get(KO);
 
-		if (studyUID == null || ko == null) {
+		if (ko == null) {
 			return filterItem.callNextFilter(params);
 		}
 		ResultsBean ret = addKoGspsMacro(filterItem, params, studyUID);
@@ -91,50 +91,95 @@ public class KeyObjectStudyFilter implements Filter<ResultsBean> {
 	}
 
 	/**
+	 * Perform image level search to find the latest KeyObject. If the KeyObject
+	 * found set koUId and the koGSPS=true if the key image has gsps references
 	 * 
 	 * @param filterItem
 	 * @param params
 	 * @param studyUID
+	 *            can be <tt>null</tt>
 	 * @return
 	 */
 	private ResultsBean addKoGspsMacro(FilterItem<ResultsBean> filterItem,
 			Map<String, Object> params, String studyUID) {
 		ResultsBean ret = filterItem.callNextFilter(params);
 
-		performImageLevelQuery(ret, studyUID, "KO");
+		ResultsBean imageResult = performImageLevelQuery(studyUID, "KO");
 
-		for (int patientI = 0; patientI < ret.getPatient().size(); patientI++) {
-			PatientType patient = ret.getPatient().get(patientI);
+		for (int i = 0; i < ret.getPatient().size(); i++) {
+			PatientType patient = ret.getPatient().get(i);
 			for (StudyType studyType : patient.getStudy()) {
 				StudyBean study = (StudyBean) studyType;
-
-				KeyObjectBean keyDicom = (KeyObjectBean) study.searchStudy("*",
-						"KO");
-				if (keyDicom == null) {
-					continue;
+				if (study.getModalitiesInStudy().indexOf("KO") > -1) {
+					searchAndAddMacro(params, imageResult, study);
 				}
+			}
+		}
 
-				KeyObjectBean kob = KeyObjectFilter.queryForKO(dicomFullHeader,
-						params, keyDicom.getObjectUID(), ret);
+		return ret;
+	}
 
-				if (kob != null) {
-					// Set the keyObjectGspsMacro to true if atleast one Key Object
-					// image references GSPS UID
-					for (KeySelection key : kob.getKeySelection()) {
-						if (key.getGspsUid() != null) {
-							KeyObjectGspsMacro gsm = (KeyObjectGspsMacro) study
-									.getMacroItems().findMacro(
-											KeyObjectGspsMacro.class);
-							if (gsm == null) {
-								study.getMacroItems().addMacro(
-										new KeyObjectGspsMacro("true"));
-							}
-						}
+	/**
+	 * Search for the latest KeyObject under all studies in the image result and
+	 * assign it to the passed in study if the uid matches
+	 * 
+	 * @param params
+	 * @param imageResult
+	 *            <tt>ResultsBean</tt> for the image level query
+	 * @param study
+	 */
+	private void searchAndAddMacro(Map<String, Object> params,
+			ResultsBean imageResult, StudyBean study) {
+		for (int i = 0; i < imageResult.getPatient().size(); i++) {
+			PatientType patient = imageResult.getPatient().get(i);
+			for (StudyType imgStudyType : patient.getStudy()) {
+				StudyBean imgStudy = (StudyBean) imgStudyType;
+				if (imgStudy.getStudyUID().equals(study.getStudyUID())) {
+
+					SearchableDicomObject kobDicom = (SearchableDicomObject) imgStudy
+							.searchStudy("*", "KO");
+					
+					if (kobDicom != null) {
+						DicomObject dobj = DicomFilter.callInstanceFilter(
+								dicomFullHeader, params, kobDicom
+										.getObjectUID());
+						KeyObjectBean kob = (KeyObjectBean) kobDicom;
+						kob.initKeySelection(dobj);
+						addMacros(study, kob);
+						return;
 					}
 				}
 			}
 		}
-		return ret;
+	}
+
+	/**
+	 * Set the <tt>KeyObjectMacro</tt> to <tt>StudyBean</tt>. Set the
+	 * <tt>KeyObjectGspsMacro</tt> to true if atleast one Key image references a
+	 * GSPS UID
+	 * 
+	 * @param study
+	 * @param kob
+	 */
+	private void addMacros(StudyBean study, KeyObjectBean kob) {
+		KeyObjectMacro kom = (KeyObjectMacro) study.getMacroItems().findMacro(
+				KeyObjectMacro.class);
+		if (kom == null) {
+			study.getMacroItems().addMacro(
+					new KeyObjectMacro(kob.getObjectUID()));
+		}
+
+		// Check for GSPS uids and assign KeyObjectGspsMacro if present
+		for (KeySelection key : kob.getKeySelection()) {
+			if (key.getGspsUid() != null) {
+				KeyObjectGspsMacro gspsm = (KeyObjectGspsMacro) study
+						.getMacroItems().findMacro(KeyObjectGspsMacro.class);
+				if (gspsm == null) {
+					study.getMacroItems().addMacro(
+							new KeyObjectGspsMacro("true"));
+				}
+			}
+		}
 	}
 
 	/**
@@ -143,13 +188,13 @@ public class KeyObjectStudyFilter implements Filter<ResultsBean> {
 	 * @param ret
 	 * @return
 	 */
-	protected ResultsBean performImageLevelQuery(ResultsBean ret,
-			String studyUID, String modality) {
+	private ResultsBean performImageLevelQuery(String studyUID, String modality) {
+		ResultsBean ret = new ResultsBean();
 		Map<String, Object> newParams = new HashMap<String, Object>();
-		StringBuffer queryStr = new StringBuffer("studyUID=").append(studyUID);
-		newParams.put("studyUID", studyUID);
+		if (studyUID != null) {
+			newParams.put("studyUID", studyUID);
+		}
 		newParams.put("Modality", modality);
-		newParams.put(MemoryCacheFilter.KEY_NAME, queryStr.toString());
 		newParams.put(ImageSearch.EXTEND_RESULTS_KEY, ret);
 		imageSearch.filter(null, newParams);
 		return ret;

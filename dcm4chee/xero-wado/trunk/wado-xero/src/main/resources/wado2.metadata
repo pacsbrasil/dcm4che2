@@ -68,6 +68,7 @@ studySource.studySearch=${class:org.dcm4chee.xero.search.study.StudySearch}
 studySource.gsps=${class:org.dcm4chee.xero.search.filter.GspsDiscover}
 studySource.gsps.priority=100
 studySource.ko=${class:org.dcm4chee.xero.search.filter.KeyObjectStudyFilter}
+studySource.ko.priority=50
 
 # And also have a filter for series and/or images or the complete study.
 imageFilter.inherit=servletFilter
