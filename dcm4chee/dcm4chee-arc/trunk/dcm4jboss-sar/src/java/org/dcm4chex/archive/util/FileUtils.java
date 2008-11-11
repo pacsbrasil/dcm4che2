@@ -215,14 +215,20 @@ public class FileUtils {
                 p1.setDcmHandler(attrs.getDcmHandler());
     			p1.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
     			p2.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
+                int samples = attrs.getInt(Tags.SamplesPerPixel, 1);
+                int frames = attrs.getInt(Tags.NumberOfFrames, 1);
+                int rows = attrs.getInt(Tags.Rows, 1);
+                int columns = attrs.getInt(Tags.Columns, 1);
                 int bitsAlloc = attrs.getInt(Tags.BitsAllocated, 8);
                 int bitsStored = attrs.getInt(Tags.BitsStored, bitsAlloc);
-    			int totLen = p1.getReadLength();
-    			if (totLen < 0 || totLen != p2.getReadLength()) {
-    				return false;
-    			}
-    			byte[] b1 = new byte[BUFFER_SIZE];
-    			byte[] b2 = new byte[BUFFER_SIZE];
+                int frameLength = rows * columns * samples * bitsAlloc / 8;
+                int pixelDataLength = frameLength * frames;
+                if (pixelDataLength > p1.getReadLength()
+                        || pixelDataLength > p2.getReadLength()) {
+                    return false;
+                }
+                byte[] b1 = new byte[BUFFER_SIZE];
+                byte[] b2 = new byte[BUFFER_SIZE];
                 int[] mask = { 0xff, 0xff };
                 int len, len2;
                 if (bitsAlloc == 16 && bitsStored < 16) {
@@ -230,8 +236,8 @@ public class FileUtils {
                             = 0xff >>> (16 - bitsStored);
                 } 
                 int pos = 0;
-                while (pos < totLen) {
-                    len = in1.read(b1, 0, Math.min(totLen - pos, BUFFER_SIZE));
+                while (pos < pixelDataLength) {
+                    len = in1.read(b1, 0, Math.min(pixelDataLength - pos, BUFFER_SIZE));
                     if (len < 0) // EOF
                         return false;
                     int off = 0;
