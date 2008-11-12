@@ -122,7 +122,7 @@ public class KeyObjectStudyFilter implements Filter<ResultsBean> {
 		if( studies==null ) return;
 		
 		String ae = (String) params.get(WadoParams.AE);
-		log.info("Searching for study UID's {}",studyUID);
+		log.debug("Searching for study UID's {}",studyUID);
 		ResultsBean imageResult = performImageLevelQuery(studyUID.toString(), "KO", ae);
 		searchAndAddMacro(params,imageResult, studies);
 	}
@@ -138,9 +138,9 @@ public class KeyObjectStudyFilter implements Filter<ResultsBean> {
 	 */
 	private void searchAndAddMacro(Map<String, Object> params,
 			ResultsBean imageResult, Map<String,StudyBean> studies) {
-		log.info("In image results, there are {} patients", imageResult.getPatient().size());
+		log.debug("In image results, there are {} patients", imageResult.getPatient().size());
 		for (PatientType patient : imageResult.getPatient()) {
-			log.info("In patient {} there are {} studies.", patient.getPatientIdentifier(),patient.getStudy().size());
+			log.debug("In patient {} there are {} studies.", patient.getPatientIdentifier(),patient.getStudy().size());
 			for (StudyType imgStudyType : patient.getStudy()) {
 				StudyBean imgStudy = (StudyBean) imgStudyType;
 				StudyBean resultStudy = studies.get(imgStudy.getStudyUID());
@@ -152,7 +152,7 @@ public class KeyObjectStudyFilter implements Filter<ResultsBean> {
 						.searchStudy((String) params.get(KO), "KO");
 					
 				if (kobDicom != null) {
-					log.info("Found key object info for study {}", resultStudy.getStudyUID());
+					log.debug("Found key object info for study {}", resultStudy.getStudyUID());
 					DicomObject dobj = DicomFilter.callInstanceFilter(
 							dicomFullHeader, params, kobDicom
 									.getObjectUID());
