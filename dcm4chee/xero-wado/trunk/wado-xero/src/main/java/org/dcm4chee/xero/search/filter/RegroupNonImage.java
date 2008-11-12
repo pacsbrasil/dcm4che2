@@ -63,8 +63,9 @@ public class RegroupNonImage implements Filter<ResultsBean> {
 			for (int i = 0; i < n; i++) {
 			   SeriesType se = sel.get(i);
 			   String modality = se.getModality();
-			   // Handle encapsulated documents that aren't SR
-			   if( se.getDicomObject().size()>0 && (se.getDicomObject().get(0) instanceof ReportType) ) modality="SR"; 
+			   // Handle encapsulated documents that aren't SR or KO and convert them to SR
+			   if( se.getDicomObject().size()>0 && (se.getDicomObject().get(0) instanceof ReportType) 
+					   && modality.equals("KO")==false) modality="SR"; 
 			   if (("PR".equals(modality) || "SR".equals(modality) || "KO".equals(modality))
 					 && !se.getSeriesUID().startsWith(modality)) {
 				  SeriesBean ser = addSeries(sb, modality, (SeriesBean) se);
@@ -92,6 +93,7 @@ public class RegroupNonImage implements Filter<ResultsBean> {
    SeriesBean addSeries(StudyBean sb, String modality, SeriesBean origSer) {
 	  String key = modality + ":" + sb.getStudyUID();
 	  SeriesBean seb = (SeriesBean) sb.getChildById(key);
+	  log.debug("Looking for series key {} for orig {}",key,origSer.getSeriesUID());
 	  SeriesBean ret = null;
 	  if (seb == null) {
 		 seb = new SeriesBean(sb);
