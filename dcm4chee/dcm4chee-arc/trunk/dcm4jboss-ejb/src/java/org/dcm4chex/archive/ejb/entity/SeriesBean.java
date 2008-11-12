@@ -482,7 +482,7 @@ public abstract class SeriesBean implements EntityBean {
      * 
      * @ejb.interface-method
      */
-    public void updateAttributes( Dataset newAttrs, boolean overwriteReqAttrSQ ) throws CreateException {
+    public void updateAttributes( Dataset newAttrs, boolean overwriteReqAttrSQ ) {
         Dataset oldAttrs = getAttributes(false);
         boolean updated = updateSeriesRequest(oldAttrs, newAttrs, overwriteReqAttrSQ);
         if ( oldAttrs == null ) {
@@ -495,7 +495,8 @@ public abstract class SeriesBean implements EntityBean {
         }
     }
     
-    private boolean updateSeriesRequest(Dataset oldAttrs, Dataset newAttrs, boolean overwriteReqAttrSQ) throws CreateException {
+    private boolean updateSeriesRequest(Dataset oldAttrs, Dataset newAttrs,
+            boolean overwriteReqAttrSQ) {
         DcmElement newReqAttrSQ = newAttrs.get(Tags.RequestAttributesSeq);
         if (newReqAttrSQ == null) {
             return false;
@@ -520,7 +521,11 @@ public abstract class SeriesBean implements EntityBean {
         }
         SeriesLocal series = (SeriesLocal) ejbctx.getEJBLocalObject();
         for (int i = 0, len = newReqAttrSQ.countItems(); i < len; i++) {
-            c.add(reqHome.create(newReqAttrSQ.getItem(i), series));
+            try {
+                c.add(reqHome.create(newReqAttrSQ.getItem(i), series));
+            } catch (CreateException e) {
+                throw new EJBException(e);
+            }
         }
         return true;
     }
