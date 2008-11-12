@@ -13,7 +13,7 @@ function StudyData(uids) {
 		for(i=1; i<n; i++) {
 			uidsBack = uidsBack + "\\\\"+uids[i];
 		}
-		this.url = STUDY_QUERY+"?gsps=*&studyUID="+uidsBack;
+		this.url = STUDY_QUERY+"?gsps=*&ko=*&studyUID="+uidsBack;
 	}
 };
 

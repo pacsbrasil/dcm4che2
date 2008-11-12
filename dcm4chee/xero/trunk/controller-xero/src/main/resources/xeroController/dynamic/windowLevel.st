@@ -6,8 +6,12 @@ function WLController() {
 WLController.prototype = new MouseHandler();
 WLController.prototype.isWLController = true;
 
-XeroController.prototype.WindowLevel_clickImage = new WLController();
-XeroController.prototype.ctrl_clickImage = XeroController.prototype.WindowLevel_clickImage;
+XeroController.prototype.WindowLevel_dragImage = new WLController();
+XeroController.prototype.ctrl_dragImage = XeroController.prototype.WindowLevel_clickImage;
+
+XeroController.prototype.WindowLevel_clickImage = function(id,e) {
+	console.info("Image clicked - trying to reset the window level.");
+};
 
 WLController.prototype.prepare = function(e) {
 	this.prepareBase();

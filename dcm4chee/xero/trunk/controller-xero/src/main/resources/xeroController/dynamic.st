@@ -128,42 +128,57 @@ XeroController.prototype.mouseDown = function(id,e) {
 	var lay = this.model.layout.findLayout(id);
 	var area = lay.area; 
 	var handler = this.getShiftInfo(e);
+	var clickHandler = handler;
 	if( this.isDoubleClick(e) ) {
-		handler = handler+"dbl";
+		handler = handler+"dblDrag";
+		clickkHandler = clickHandler + "dbl";
 	} else {
-		handler = handler+"click";
+		handler = handler+"drag";
+		clickHandler = clickHandler + "click";
 	};
-	if( area ) handler = this["getMode"+area](lay,e)+"_"+handler+area; 
+	if( area ) {
+		var mode = this["getMode"+area](lay,e)+"_";
+		handler = mode+handler+area;
+		clickHandler = mode+clickHandler+area;
+	} 
 	console.info("Looking for handler for",handler);
 	handler = this.findModeHandler(handler);
-	if(!handler) return;
-	console.info("Found mouse click handler",handler);
-
-	var mousing;
-	if( typeof(this[handler])==="function" ) mousing = new ClickHandler(lay,handler);
-	else mousing = this[handler];
-
-	mousing.lay = lay;
-	mousing.controller = this;
-	mousing.startPosn = docCoords(e);
-	var mouseDom = mousing.getMouseDom(target(e));
-	mousing.mouseDom = mouseDom;
-	this.mousing = mousing;
-	if( !mouseDom ) {
-		console.warn("No mouse DOM area to hook mouse events to for",handler);
-		return;
-	}
-	console.info("Found mouse DOM area",mouseDom.id);
-	if( ! mousing.prepare(e) ) {
-		console.warn("Mouse prepare for",handler,"returned false, not mousing.");
-		return;
-	}
-	console.info("Area prepared - now about to hook listeners.");
+	clickHandler = this.findModeHandler(clickHandler);
+	if(!(handler || clickHandler)) return;
+	console.info("Found mouse handler",handler,"click",clickHandler);
 	
-	if(mousing.mousemove) hookEvent(mouseDom, "mousemove", XC_callMouseMove);
-	hookEvent(mouseDom,"mouseout", XC_callMouseOut);
-	hookEvent(mouseDom,"mouseup", XC_callMouseUp);
-	console.info("Hooked events, returning and awaiting the next call.");
+	if( handler ) {
+		var mousing;
+		mousing = this[handler];
+		mousing.clickHandler = clickHandler;
+
+		mousing.lay = lay;
+		mousing.controller = this;
+		mousing.startPosn = docCoords(e);
+		var mouseDom = mousing.getMouseDom(target(e));
+		mousing.mouseDom = mouseDom;
+		this.mousing = mousing;
+		if( !mouseDom ) {
+			console.warn("No mouse DOM area to hook mouse events to for",handler);
+			return;
+		}
+		console.info("Found mouse DOM area",mouseDom.id);
+		if( ! mousing.prepare(e) ) {
+			console.warn("Mouse prepare for",handler,"returned false, not mousing.");
+			return;
+		}
+		console.info("Area prepared - now about to hook listeners.");
+	
+		if(mousing.mousemove) hookEvent(mouseDom, "mousemove", XC_callMouseMove);
+		hookEvent(mouseDom,"mouseout", XC_callMouseOut);
+		hookEvent(mouseDom,"mouseup", XC_callMouseUp);
+		console.info("Hooked events, returning and awaiting the next call.");
+	} else {
+		// Only a click handler - so we can execute it when the mouse comes up.
+		this.mousing = {"clickHandler":clickHandler,"lay":lay};
+		hookEvent(target(e),"mouseout", XC_callMouseOut);
+		hookEvent(target(e),"mouseup", XC_callMouseUp);
+	};
 	return cancelEvent(e);
 };
 
@@ -337,6 +352,7 @@ MouseHandler.prototype.findLayout = function MouseHandler_findLayout() {
 	var id = this.mouseDom.parentNode.id;
 	return this.controller.model.layout.findLayout(id);
 };
+
 
 /** Defines the individual dynamic controllers */
 $dynamic/windowLevel()$

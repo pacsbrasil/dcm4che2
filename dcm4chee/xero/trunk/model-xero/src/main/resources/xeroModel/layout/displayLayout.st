@@ -403,13 +403,18 @@ ImageAreasLayout.prototype.area="Series";
  */
 ImageAreasLayout.prototype.navigateListener = function(navigate) {
 	this.navigate = navigate;
-	if(!navigate) return;
+	if(!navigate) {
+		this.external=undefined;
+		return;
+	}
 	if( navigate.external===this.series ) {
 		return;
 	}
-	this.relayout = true;
 	this.series = navigate.external;
+	this.relayout = true;
+	var wasUsed = this.used;
 	this.namedListener(navigate,"seriesLayout",(navigate.parent.conversation? navigate.parent.conversation.seriesLayout : null));
+	if( wasUsed!==this.used ) this.parent.relayout =true;
 	if( !this.used ) return;
 	var n,imageCount = navigate.external.Viewable;
 	if( imageCount<=1 ) {

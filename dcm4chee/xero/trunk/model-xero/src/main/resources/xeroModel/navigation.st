@@ -93,7 +93,7 @@ Navigation.prototype.generateQuery = function Navigation_generateQuery(child, re
 		this.debug("Adding updated image, with study query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
 	} else if( this.level===1 ) {
 		// This happens when the user views a NEW study in the same patient
-		url = this.STUDY_QUERY+"?gsps=*&studyUID="+childId;
+		url = this.STUDY_QUERY+"?gsps=*&ko=*&studyUID="+childId;
 		this.debug("Adding new study query %s", url);
 	} else {
 		console.error("Unknown id/query level %d for child id %s", this.level, childId);
@@ -125,7 +125,7 @@ Navigation.prototype.mergeExternal = function Navigation_mergeExternal(external,
 	} else {
 		this.fire(this.EXTERNAL_UPDATED,external,external);
 	}
-	this.debug("Adding external data to %s at level %d", this.id,this.level);
+	console.info("Adding external data to %s at level %d", this.id,this.level);
 	var child,childKey;
 	var childExt,url,position,extId;
 	for(childKey in this.children) {
@@ -136,8 +136,8 @@ Navigation.prototype.mergeExternal = function Navigation_mergeExternal(external,
 		// Null means no object there, whereas undefined means unknown, so if it is null, just continue.
 		if( child.id===null ) continue;
 		if( child.id!==undefined && external.children) {
-			extId = child.conversation.getUrlId();
-			this.debug("Looking for external id %s on base id %s",extId,child.id);
+			extId = child.conversation.getExternalId();
+			console.info("Looking for external id %s on base id %s",extId,child.id);
 			childExt = external.children[extId];
 			if( childExt ) {
 				ret = child.mergeExternal(childExt,ret);
@@ -336,8 +336,8 @@ Navigation.prototype.createMerged = function Navigation_createMerged() {
 	if( this.merged ) return;
 	this.createConversation();
 	this.parent.createMerged();
-	var mid = this.conversation.getPresentationId();
-	if( mid==null ) this.error("Unable to get presentation id for "+this.id);
+	var mid = this.conversation.getMergedId();
+	if( mid==null ) this.error("Unable to get merged id for "+this.id);
 	this.merged = this.parent.merged.getChild(mid);
 	this.createExternal();
 	this.merged.external = this.external;
@@ -349,7 +349,7 @@ Navigation.prototype.createExternal = function Navigation_createExternal() {
 	if( this.external ) return true;
 	if( !this.parent.createExternal() ) return false;
 	if( !this.parent.external.children ) this.parent.external.children = new Object();
-	var eid = this.conversation.getUrlId();
+	var eid = this.conversation.getExternalId();
 	this.external = this.parent.external.children[eid];
 	return this.external!=undefined;
 };

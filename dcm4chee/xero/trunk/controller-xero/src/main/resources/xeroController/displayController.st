@@ -123,17 +123,32 @@ XeroController.prototype.mergeExternal = function(external) {
 
 };
 
-XeroController.prototype.selectGsps = function XC_selectGsps(navId, gsps) {
-	console.info("You selected to apply %s to %s", gsps, navId);
-	var lay = this.model.layout.findLayout(navId);
-	var nav = lay.navigate;
-	if(!nav) nav = lay.parent.navigate;
-	if( gsps==null || gsps==="" ) nav.conversation.setPresentation(undefined);
-	else nav.conversation.setPresentation("&gsps="+gsps);
+XeroController.prototype.selectGsps = function XC_selectGsps(id, gsps) {
+	console.info("You selected to apply %s to %s", gsps, id);
+	var lay = this.model.layout.findLayout(id);
+	var nav = this.getNavigate(lay);
+	if( gsps==null || gsps==="" ) nav.conversation.setQueryModifier("pr");
+	else nav.conversation.setQueryModifier("pr","&gsps="+gsps,true);
 	console.info("Conversation info set on",nav.conversation.id,"at level",
-		nav.level,"external id now", nav.conversation.getUrlId());
+		nav.level,"external id now", nav.conversation.getExternalId());
 	this.updateDisplayTab(true);
 	console.info("Completed applying gsps %s", gsps);	
+};
+
+XeroController.prototype.selectKo = function (id, koUID) {
+	console.info("You selected to apply ko %s to %s", koUID, id);
+	var lay = this.model.layout.findLayout(id);
+	var nav = this.getNavigate(lay);
+	if( koUID==null || koUID==="" ) nav.conversation.setQueryModifier("ko");
+	else nav.conversation.setQueryModifier("ko","&ko=referenced&koUID="+koUID);
+	console.info("Conversation info set on",nav.conversation.id,"at level",
+		nav.level,"external id now", nav.conversation.getExternalId());
+	// The merge external is required before the invalidate to match the next external data/children
+	// up, while the invalidate is required to ensure that new children get the correct values from external.
+	// This may require an extra external query AFTER the invalidate.
+	this.mergeExternal();
+	nav.invalidate(true);
+	this.updateDisplayTab(true);
 };
 
 /** Redisplays the display tab, resizing and merging external information etc */
@@ -148,7 +163,7 @@ XeroController.prototype.updateDisplayTab = function XC_updateDisplayTab(forceCo
 	this.model.patientLayout.resize(size[0]-8,size[1]-32, "width:100%; height:100%;");
 
 	if( sameTab && forceComplete!==true ) {
-		this.waitUpdate("displayTab");
+		this.waitUpdate("displayTabPartial");
 	}
 	else {
 		this.updateView("displayTab");
