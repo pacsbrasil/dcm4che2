@@ -12,7 +12,6 @@ import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 /** Returns encapsulated object responses */
 public class EncapsulatedFilter implements Filter<ServletResponseItem> {
 
-	@Override
 	public ServletResponseItem filter(
 			FilterItem<ServletResponseItem> filterItem,
 			Map<String, Object> params) {
