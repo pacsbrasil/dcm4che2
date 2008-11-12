@@ -506,8 +506,13 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
-    public boolean updateRetrieveAETs() throws FinderException {
-        final Set aetSet = ejbSelectRetrieveAETs(getPk());
+    public boolean updateRetrieveAETs() {
+        Set aetSet;
+        try {
+            aetSet = ejbSelectRetrieveAETs(getPk());
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
         if (aetSet.remove(null))
             log.warn("Instance[iuid=" + getSopIuid()
                     + "] reference File(s) with unspecified Retrieve AET");
@@ -530,12 +535,15 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
-    public boolean updateAvailability(int availabilityOfExternalRetrieveable)
-            throws FinderException {
+    public boolean updateAvailability(int availabilityOfExternalRetrieveable) {
         int availability = Availability.UNAVAILABLE;
         MediaLocal media;
         if (getRetrieveAETs() != null)
-            availability = ejbSelectLocalAvailability(getPk());
+            try {
+                availability = ejbSelectLocalAvailability(getPk());
+            } catch (FinderException e) {
+                throw new EJBException(e);
+            }
         if (getExternalRetrieveAET() != null)
             availability = Math.min(availability, availabilityOfExternalRetrieveable);
         if (availability == Availability.UNAVAILABLE
@@ -549,21 +557,6 @@ public abstract class InstanceBean implements EntityBean {
         return true;
     }
 
-/*
-    public boolean updateDerivedFields(boolean retrieveAETs,
-            boolean availability, int availabilityOfExtRetr)
-            throws FinderException {
-        boolean updated = false;
-        final Long pk = getPk();
-        if (retrieveAETs)
-            if (updateRetrieveAETs(pk))
-                updated = true;
-        if (availability)
-            if (updateAvailability(pk, getRetrieveAETs(), availabilityOfExtRetr))
-                updated = true;
-        return updated;
-    }
-*/
     /** 
      * @ejb.interface-method
      */
