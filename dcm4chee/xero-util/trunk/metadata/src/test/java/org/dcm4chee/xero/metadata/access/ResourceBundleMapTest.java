@@ -17,7 +17,7 @@ public class ResourceBundleMapTest {
 	
 	static {
 		lazy.put("name.icon", "Icon Name");
-	}
+	};
 	
 	@Test
 	public void test_get_returns_value() {
@@ -28,8 +28,9 @@ public class ResourceBundleMapTest {
 	@Test
 	public void test_iteration() {
 		int count = 0;
-		for(@SuppressWarnings("unused") Map.Entry<String,Object> me : rbm.entrySet() ) {
+		for(Map.Entry<String,Object> me : rbm.entrySet() ) {
 			count++;
+			assert me!=null;
 		}
 		System.out.println("Count="+count);
 		assert count==4;
