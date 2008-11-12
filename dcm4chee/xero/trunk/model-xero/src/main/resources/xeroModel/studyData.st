@@ -19,7 +19,7 @@ function StudyData(uids) {
 
 StudyData.prototype = new XmlModel();
 StudyData.prototype.level = 0;
-StudyData.prototype.idVars = {"patient":"PatientIdentifier", "study":"studyUID", "series":"seriesUID", "image":"Position", "gsps":"objectUID", "report":"objectUID", "ko":"objectUID"};
+StudyData.prototype.idVars = {"patient":"PatientIdentifier", "study":"studyUID", "series":"seriesUID", "image":"Position", "gsps":"objectUID", "report":"objectUID", "keyObject":"objectUID"};
 
 /** Gets a StudyData child, re-using the existing one of the right id if present, and indexing them
  * in a "children" element.

@@ -92,7 +92,8 @@ Navigation.prototype.generateQuery = function Navigation_generateQuery(child, re
 		url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&studyUID="+child.id+"&regroup=true";
 		this.debug("Adding updated image, with study query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
 	} else if( this.level===1 ) {
-		// This happens when the user views a NEW study in the same patient
+		// This happens when the user views a new study in the same patient, or an updated study in 
+		// the same patient.
 		url = this.STUDY_QUERY+"?gsps=*&ko=*&studyUID="+childId;
 		this.debug("Adding new study query %s", url);
 	} else {

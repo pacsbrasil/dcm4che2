@@ -93,7 +93,7 @@ NavConversation.prototype.assignDefaultModifiers = function NC_assignDefaultModi
 		console.info("gspsLabel found, setting presentation modifier %s", external.gspsLabel);
 	}
 	if( external.koUID ) {
-		this.setQueryModifier("ko", "&ko=referenced&koUID="+external.koUID, external.koGSPS!=null);
+		this.setQueryModifier("ko", "&koUID="+external.koUID, external.koGSPS!=null);
 		console.info("ko found, applying",external.koUID);
 	}
 	return this.getCombinedModifiers();

@@ -140,7 +140,7 @@ XeroController.prototype.selectKo = function (id, koUID) {
 	var lay = this.model.layout.findLayout(id);
 	var nav = this.getNavigate(lay);
 	if( koUID==null || koUID==="" ) nav.conversation.setQueryModifier("ko");
-	else nav.conversation.setQueryModifier("ko","&ko=referenced&koUID="+koUID);
+	else nav.conversation.setQueryModifier("ko","&koUID="+koUID);
 	console.info("Conversation info set on",nav.conversation.id,"at level",
 		nav.level,"external id now", nav.conversation.getExternalId());
 	// The merge external is required before the invalidate to match the next external data/children

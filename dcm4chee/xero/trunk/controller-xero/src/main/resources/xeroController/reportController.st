@@ -24,17 +24,13 @@ XeroController.prototype.viewReport = function RC_viewReport(layId,uid) {
 };
 
 /** Changes the report/study layout to the one specified in layId */
-XeroController.prototype.reportLayout = function RC_viewReport(layId) {
-	var lay = this.model.layout.findLayout(layId);
-	console.info("Trying to change report layout to",lay.i18n,"id",layId);
+XeroController.prototype.reportLayout = function RC_viewReport(id, newLay) {
+	var lay = this.model.layout.findLayout(id);
+	if( !newLay ) newLay = lay.arg;
+	console.info("Trying to change report layout to",lay.i18n,"id",newLay);
 
-	var nav = lay.navigate;
-	if(!nav) nav = lay.parent.navigate;
-	if( !nav ) {
-		console.warn("No navigation defined - can't navigate study/report.");
-	 	return;
-	};
-	nav.setConversation("studyLayout", lay.i18n);
+	var nav = this.getNavigate(lay);
+	nav.setConversation("studyLayout", newLay);
 
-	this.displayResize("reportLayout");
+	this.displayResize(newLay);
 };
