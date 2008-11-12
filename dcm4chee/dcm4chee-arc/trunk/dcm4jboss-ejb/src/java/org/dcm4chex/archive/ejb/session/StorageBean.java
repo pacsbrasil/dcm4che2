@@ -359,10 +359,8 @@ public abstract class StorageBean implements SessionBean {
     public void updateDerivedStudyAndSeriesFields(String seriuid)
             throws FinderException {
         SeriesLocal series = findBySeriesIuid(seriuid);
-        series.updateDerivedFields(true, true, false, true, true);
-        StudyLocal study = series.getStudy();
-        study.updateDerivedFields(true, true, false, true, true, true);
-        study.updateSOPClassesInStudy();
+        UpdateDerivedFieldsUtils.updateDerivedFieldsOf(series);
+        UpdateDerivedFieldsUtils.updateDerivedFieldsOf(series.getStudy());
     }
 
     /**
@@ -482,11 +480,11 @@ public abstract class StorageBean implements SessionBean {
         }
         for (Iterator series = seriesSet.iterator(); series.hasNext();) {
             final SeriesLocal ser = findBySeriesIuid((String) series.next());
-            ser.updateDerivedFields(false, false, true, false, false);
+            ser.updateExternalRetrieveAET();
         }
         for (Iterator studies = studySet.iterator(); studies.hasNext();) {
             final StudyLocal study = studyHome.findByStudyIuid((String) studies.next());
-            study.updateDerivedFields(false, false, true, false, false, false);
+            study.updateExternalRetrieveAET();
         }
     }
 
@@ -527,11 +525,10 @@ public abstract class StorageBean implements SessionBean {
             SeriesLocal series = inst.getSeries();
             StudyLocal study = series.getStudy();
             inst.remove();
-            series.updateDerivedFields(true, true, true, true, true);
+            UpdateDerivedFieldsUtils.updateDerivedFieldsOf(series);
             if (deleteSeries && series.getNumberOfSeriesRelatedInstances() == 0)
                 series.remove();	    	
-            study.updateDerivedFields(true, true, true, true, true, true);
-            study.updateSOPClassesInStudy();
+            UpdateDerivedFieldsUtils.updateDerivedFieldsOf(study);
             if (deleteStudy && study.getNumberOfStudyRelatedSeries() == 0)
                 study.remove();
         }

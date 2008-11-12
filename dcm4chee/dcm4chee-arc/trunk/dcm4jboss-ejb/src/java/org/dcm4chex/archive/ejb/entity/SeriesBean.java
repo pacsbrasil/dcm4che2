@@ -667,32 +667,43 @@ public abstract class SeriesBean implements EntityBean {
                                 updatedBefore));
     }
 
-    private boolean updateRetrieveAETs(Long pk, int numI) throws FinderException {
-    	boolean updated = false;
+    /**
+     * @ejb.interface-method
+     */
+    public boolean updateRetrieveAETs() {
         String aets = null;
+        int numI = getNumberOfSeriesRelatedInstances();
         if (numI > 0) {
-	        StringBuffer sb = new StringBuffer();
-//                Set iAetSet = getInternalRetrieveAETs(pk);
-	        Set iAetSet = ejbSelectInternalRetrieveAETs(pk);
-	        if (iAetSet.remove(null))
-	            log.warn("Series[iuid=" + getSeriesIuid()
-	                    + "] contains Instance(s) with unspecified Retrieve AET");
-	        for (Iterator it = iAetSet.iterator(); it.hasNext();) {
-	            final String aet = (String) it.next();
-	            if (ejbSelectNumberOfSeriesRelatedInstancesWithInternalRetrieveAET(pk, aet) == numI)
-	                sb.append(aet).append('\\');
-	        }
+            StringBuffer sb = new StringBuffer();
+            Long pk = getPk();
+            Set iAetSet;
+            try {
+//              iAetSet = getInternalRetrieveAETs(pk);
+                iAetSet = ejbSelectInternalRetrieveAETs(pk);
+                if (iAetSet.remove(null))
+                    log.warn("Series[iuid=" + getSeriesIuid()
+                            + "] contains Instance(s) with unspecified Retrieve AET");
+                for (Iterator it = iAetSet.iterator(); it.hasNext();) {
+                    final String aet = (String) it.next();
+                    if (ejbSelectNumberOfSeriesRelatedInstancesWithInternalRetrieveAET(pk, aet)
+                            == numI) {
+                        sb.append(aet).append('\\');
+                    }
+                }
+            } catch (FinderException e) {
+                throw new EJBException(e);
+            }
             if (sb.length() > 0) {
                 sb.setLength(sb.length() - 1);
                 aets = sb.toString();
             }
-    	}
-        if (updated = aets == null 
-        		? getRetrieveAETs() != null 
-        		: !aets.equals(getRetrieveAETs())) {
-        	setRetrieveAETs(aets);
         }
-        return updated;
+        if (aets == null ? getRetrieveAETs() == null
+                         : aets.equals(getRetrieveAETs())) {
+            return false;
+        }
+        setRetrieveAETs(aets);
+        return true;
     }
 
     /* Commented out: Does not work for instances which are only external
@@ -708,90 +719,101 @@ public abstract class SeriesBean implements EntityBean {
     		return new HashSet(aets);    	
     }
      */
-    
-    private boolean updateExternalRetrieveAET(Long pk, int numI) throws FinderException {
-    	boolean updated = false;
-    	String aet = null;
-        if (numI > 0) {
-	        Set eAetSet = ejbSelectExternalRetrieveAETs(getPk());
-	        if (eAetSet.size() == 1)
-	        	aet = (String) eAetSet.iterator().next();
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean updateExternalRetrieveAET() {
+        String aet = null;
+        if (getNumberOfSeriesRelatedInstances() > 0) {
+            Set eAetSet;
+            try {
+                eAetSet = ejbSelectExternalRetrieveAETs(getPk());
+            } catch (FinderException e) {
+                throw new EJBException(e);
+            }
+            if (eAetSet.size() == 1)
+                aet = (String) eAetSet.iterator().next();
         }
-        if (updated = aet == null 
-        		? getExternalRetrieveAET() != null 
-        		: !aet.equals(getExternalRetrieveAET())) {
-        	setExternalRetrieveAET(aet);
+        if (aet == null ? getExternalRetrieveAET() == null 
+                        : aet.equals(getExternalRetrieveAET())) {
+            return false;
         }    	
-        return updated;
-    }
-    
-    private boolean updateAvailability(Long pk, int numI) throws FinderException {
-        int availability = numI > 0 ? ejbSelectAvailability(getPk()) 
-        		: Availability.UNAVAILABLE;
-        boolean updated;
-		if (updated = availability != getAvailabilitySafe()) {
-            setAvailability(availability);
-        }
-        return updated;
-    }
-    
-    private boolean updateNumberOfInstances(Long pk) throws FinderException {
-    	boolean updated = false;
-        final int numI = ejbSelectNumberOfSeriesRelatedInstances(pk);
-        if (getNumberOfSeriesRelatedInstances() != numI) {
-            setNumberOfSeriesRelatedInstances(numI);
-            updated = true;
-        }
-        return updated;
-    }
-    
-    private boolean updateFilesetId(Long pk, int numI) throws FinderException {
-    	boolean updated = false;
-       	String fileSetId = null;
-       	String fileSetIuid = null;
-        if (numI > 0) {
-	        if (ejbSelectNumberOfSeriesRelatedInstancesOnMediaWithStatus(pk, MediaDTO.COMPLETED) == numI) {
-	            Set c = ejbSelectMediaWithStatus(pk, MediaDTO.COMPLETED);
-	            if (c.size() == 1) {
-	                MediaLocal media = (MediaLocal) c.iterator().next();
-	                fileSetId = media.getFilesetId();
-	                fileSetIuid = media.getFilesetIuid();
-	            }
-	        }
-        }
-        if (fileSetId == null ? getFilesetId() != null
-        		: !fileSetId.equals(getFilesetId())) {
-        	setFilesetId(fileSetId);
-        	updated = true;
-        }
-        if (fileSetIuid == null ? getFilesetIuid() != null
-        		: !fileSetIuid.equals(getFilesetIuid())) {
-        	setFilesetIuid(fileSetIuid);
-        	updated = true;
-        }
-        return updated;
+        setExternalRetrieveAET(aet);
+        return true;
     }
 
     /**
      * @ejb.interface-method
      */
-    public boolean updateDerivedFields(boolean numOfInstances,
-    		boolean retrieveAETs, boolean externalRettrieveAETs,
-            boolean filesetId, boolean availibility) throws FinderException {
-    	boolean updated = false;
-    	final Long pk = getPk();
-		if (numOfInstances)
-			if (updateNumberOfInstances(pk)) updated = true;
-    	final int numI = getNumberOfSeriesRelatedInstances();
-		if (retrieveAETs)
-			if (updateRetrieveAETs(pk, numI)) updated = true;
-		if (externalRettrieveAETs)
-			if (updateExternalRetrieveAET(pk, numI)) updated = true;
-		if (filesetId)
-			if (updateFilesetId(pk, numI)) updated = true;
-		if (availibility)
-			if (updateAvailability(pk, numI)) updated = true;
-		return updated;
+    public boolean updateAvailability() {
+        int availability;
+        try {
+            availability = getNumberOfSeriesRelatedInstances() > 0
+                    ? ejbSelectAvailability(getPk()) 
+                    : Availability.UNAVAILABLE;
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+        if (availability == getAvailabilitySafe()) {
+            return false;
+        }
+        setAvailability(availability);
+        return true;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean updateNumberOfSeriesRelatedInstances() {
+        int numI;
+        try {
+            numI = ejbSelectNumberOfSeriesRelatedInstances(getPk());
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+        if (getNumberOfSeriesRelatedInstances() == numI) {
+            return false;
+        }
+        setNumberOfSeriesRelatedInstances(numI);
+        return true;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean updateFilesetId() {
+        boolean updated = false;
+        String fileSetId = null;
+        String fileSetIuid = null;
+        int numI = getNumberOfSeriesRelatedInstances();
+        if (numI > 0) {
+            Long pk = getPk();
+            try {
+                if (ejbSelectNumberOfSeriesRelatedInstancesOnMediaWithStatus(pk,
+                        MediaDTO.COMPLETED) == numI) {
+                    Set c = ejbSelectMediaWithStatus(pk, MediaDTO.COMPLETED);
+                    if (c.size() == 1) {
+                        MediaLocal media = (MediaLocal) c.iterator().next();
+                        fileSetId = media.getFilesetId();
+                        fileSetIuid = media.getFilesetIuid();
+                    }
+                }
+            } catch (FinderException e) {
+                throw new EJBException(e);
+            }
+        }
+        if (fileSetId == null ? getFilesetId() != null
+                : !fileSetId.equals(getFilesetId())) {
+            setFilesetId(fileSetId);
+            updated = true;
+        }
+        if (fileSetIuid == null ? getFilesetIuid() != null
+                : !fileSetIuid.equals(getFilesetIuid())) {
+            setFilesetIuid(fileSetIuid);
+            updated = true;
+        }
+        return updated;
     }
 
     /** 

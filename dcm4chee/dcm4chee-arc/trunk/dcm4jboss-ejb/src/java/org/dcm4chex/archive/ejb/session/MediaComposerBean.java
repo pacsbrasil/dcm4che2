@@ -577,13 +577,13 @@ public abstract class MediaComposerBean implements SessionBean {
         Iterator iter = series.iterator();
         while (iter.hasNext()) {
             final SeriesLocal ser = ((SeriesLocal) iter.next());
-            ser.updateDerivedFields(false, false, false, true, false);
+            ser.updateFilesetId();
         }
         Collection studies = studyHome.findStudiesOnMedia(media);
         iter = studies.iterator();
         while (iter.hasNext()) {
             final StudyLocal sty = ((StudyLocal) iter.next());
-            sty.updateDerivedFields(false, false, false, true, false, false);
+            sty.updateFilesetId();
         }
     }
 
@@ -609,7 +609,8 @@ public abstract class MediaComposerBean implements SessionBean {
         Iterator iter = series.iterator();
         while (iter.hasNext()) {
             SeriesLocal ser = (SeriesLocal) iter.next();
-            ser.updateDerivedFields(false, false, false, true, true);
+            ser.updateFilesetId();
+            ser.updateAvailability();
         }
         if (log.isDebugEnabled())
             log.debug("Series updated after media " + filesetId
@@ -617,7 +618,8 @@ public abstract class MediaComposerBean implements SessionBean {
         iter = studies.iterator();
         while (iter.hasNext()) {
             StudyLocal sty = (StudyLocal) iter.next();
-            sty.updateDerivedFields(false, false, false, true, true, false);
+            sty.updateFilesetId();
+            sty.updateAvailability();
         }
         if (log.isDebugEnabled())
             log.debug("Studies updated after media " + filesetId

@@ -503,17 +503,22 @@ public abstract class InstanceBean implements EntityBean {
         }
     }
 
-    private boolean updateRetrieveAETs(Long pk) throws FinderException {
-        final Set aetSet = ejbSelectRetrieveAETs(pk);
+    /**
+     * @ejb.interface-method
+     */
+    public boolean updateRetrieveAETs() throws FinderException {
+        final Set aetSet = ejbSelectRetrieveAETs(getPk());
         if (aetSet.remove(null))
             log.warn("Instance[iuid=" + getSopIuid()
                     + "] reference File(s) with unspecified Retrieve AET");
         final String aets = toString(aetSet);
         boolean updated;
-        if (updated = aets == null ? getRetrieveAETs() != null : !aets
-                .equals(getRetrieveAETs()))
-            setRetrieveAETs(aets);
-        return updated;
+        if (aets == null ? getRetrieveAETs() == null
+                         : aets.equals(getRetrieveAETs())) {
+            return false;
+        }
+        setRetrieveAETs(aets);
+        return true;
     }
 
     /**
@@ -522,28 +527,29 @@ public abstract class InstanceBean implements EntityBean {
     public abstract int ejbSelectLocalAvailability(Long pk)
             throws FinderException;
 
-    private boolean updateAvailability(Long pk, String retrieveAETs,
-            int availabilityOfExternalRetrieveable) throws FinderException {
+    /**
+     * @ejb.interface-method
+     */
+    public boolean updateAvailability(int availabilityOfExternalRetrieveable)
+            throws FinderException {
         int availability = Availability.UNAVAILABLE;
         MediaLocal media;
-        if (retrieveAETs != null)
-            availability = ejbSelectLocalAvailability(pk);
+        if (getRetrieveAETs() != null)
+            availability = ejbSelectLocalAvailability(getPk());
         if (getExternalRetrieveAET() != null)
             availability = Math.min(availability, availabilityOfExternalRetrieveable);
         if (availability == Availability.UNAVAILABLE
                 && (media = getMedia()) != null
                 && media.getMediaStatus() == MediaDTO.COMPLETED)
             availability = Availability.OFFLINE;
-        boolean updated;
-        if (updated = availability != getAvailabilitySafe()) {
-            setAvailability(availability);
+        if (availability == getAvailabilitySafe()) {
+            return false;
         }
-        return updated;
+        setAvailability(availability);
+        return true;
     }
 
-    /**
-     * @ejb.interface-method
-     */
+/*
     public boolean updateDerivedFields(boolean retrieveAETs,
             boolean availability, int availabilityOfExtRetr)
             throws FinderException {
@@ -557,7 +563,7 @@ public abstract class InstanceBean implements EntityBean {
                 updated = true;
         return updated;
     }
-
+*/
     /** 
      * @ejb.interface-method
      */

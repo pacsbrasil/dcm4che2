@@ -151,7 +151,6 @@ public abstract class ConsistencyCheckBean implements SessionBean {
     }
 
     /**
-     * @param availabilityOfExternalRetrieveable 
      * @ejb.interface-method
      */
     public boolean updateStudy(long study_pk,
@@ -170,26 +169,97 @@ public abstract class ConsistencyCheckBean implements SessionBean {
                 Iterator iter1 = instances.iterator();
                 while (iter1.hasNext()) {
                     instance = (InstanceLocal) iter1.next();
-                    if (instance.updateDerivedFields(true, true,
+                    if (instance.updateRetrieveAETs()) {
+                        log.info("Retrieve AETs in Instance "
+                                + instance.getSopIuid() + " updated!");
+                        updated = true;
+                    }
+                    if (instance.updateAvailability(
                             availabilityOfExternalRetrieveable)) {
-                        log.info("Instance " + instance.getSopIuid()
-                                + " updated!");
+                        log.info("Availability in Instance "
+                                + instance.getSopIuid() + " updated!");
                         updated = true;
                     }
                 }
-                if (series.updateDerivedFields(true, true, true, true, true)) {
-                    log.info("Series " + series.getSeriesIuid() + " updated!");
+                if (series.updateNumberOfSeriesRelatedInstances()) {
+                    log.info("Number of Series Related Instances in Series "
+                            + series.getSeriesIuid() + " updated!");
+                    updated = true;
+                }
+                if (series.updateRetrieveAETs()) {
+                    log.info("Retrieve AETs in Series "
+                            + series.getSeriesIuid() + " updated!");
+                    updated = true;
+                }
+                if (series.updateExternalRetrieveAET()) {
+                    log.info("External Retrieve AET in Series "
+                            + series.getSeriesIuid() + " updated!");
+                    updated = true;
+                }
+                if (series.updateFilesetId()) {
+                    log.info("Fileset ID in Series "
+                            + series.getSeriesIuid() + " updated!");
+                    updated = true;
+                }
+                if (series.updateAvailability()) {
+                    log.info("Availability in Series "
+                            + series.getSeriesIuid() + " updated!");
                     updated = true;
                 }
             }
-            if (study.updateDerivedFields(true, true, true, true, true, true)) {
-                log.info("Study " + study.getStudyIuid() + " updated!");
+            if (study.updateNumberOfStudyRelatedSeries()) {
+                log.info("Number of Study Related Series in Study "
+                        + study.getStudyIuid() + " updated!");
+                updated = true;
+            }
+            if (study.updateNumberOfStudyRelatedInstances()) {
+                log.info("Number of Study Related Instances in Study "
+                        + study.getStudyIuid() + " updated!");
+                updated = true;
+            }
+            if (study.updateRetrieveAETs()) {
+                log.info("Retrieve AETs in Study "
+                        + study.getStudyIuid() + " updated!");
+                updated = true;
+            }
+            if (study.updateExternalRetrieveAET()) {
+                log.info("External Retrieve AET in Study "
+                        + study.getStudyIuid() + " updated!");
+                updated = true;
+            }
+            if (study.updateFilesetId()) {
+                log.info("Fileset ID Study "
+                        + study.getStudyIuid() + " updated!");
+                updated = true;
+            }
+            if (study.updateAvailability()) {
+                log.info("Availability in Study "
+                        + study.getStudyIuid() + " updated!");
+                updated = true;
+            }
+            if (study.updateModalitiesInStudy()) {
+                log.info("Modalities In Study in Study "
+                        + study.getStudyIuid() + " updated!");
                 updated = true;
             }
             if (study.updateSOPClassesInStudy()) {
                 log.info("SOP Classes in Study " + study.getStudyIuid() + " updated!");
                 updated = true;
             }
+            /*
+                        if (retrieveAETs)
+                                if (updateRetrieveAETs(pk, numI)) updated = true;
+                        if (externalRettrieveAETs)
+                                if (updateExternalRetrieveAET(pk, numI)) updated = true;
+                        if (filesetId)
+                                if (updateFilesetId(pk, numI)) updated = true;
+                        if (availibility)
+                                if (updateAvailability(pk, numI)) updated = true;
+                        if (modsInStudies)
+                                if (updateModalitiesInStudy(pk, numI)) updated = true;
+                        return updated;
+            }
+        */
             study.setTimeOfLastConsistencyCheck(new Timestamp(System
                     .currentTimeMillis()));
             return updated;

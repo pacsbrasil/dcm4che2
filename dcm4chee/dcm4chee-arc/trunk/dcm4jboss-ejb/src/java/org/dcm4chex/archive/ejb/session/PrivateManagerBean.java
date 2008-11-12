@@ -385,18 +385,14 @@ public abstract class PrivateManagerBean implements SessionBean {
                         getPrivateSeries(series, DELETED, null, false);
                         series.remove();
                     } else
-                        series
-                                .updateDerivedFields(true, true, true, true,
-                                        true);
+                        UpdateDerivedFieldsUtils.updateDerivedFieldsOf(series);
                 }
                 if (study.getSeries().size() == 0 && cascading) {
                     // Delete the study too since there's no series left
                     getPrivateStudy(study, DELETED, null, false);
                     study.remove();
                 } else
-                    study.updateDerivedFields(true, true, true, true, true,
-                            true);
-                study.updateSOPClassesInStudy();
+                    UpdateDerivedFieldsUtils.updateDerivedFieldsOf(study);
             }
 
             return dss;
@@ -426,10 +422,8 @@ public abstract class PrivateManagerBean implements SessionBean {
             Dataset ds = getStudyMgtDataset(series.getStudy(), mapSeries);
             getPrivateInstance(instance, DELETED, null);
             instance.remove();
-            series.updateDerivedFields(true, true, true, true, true);
-            StudyLocal study = series.getStudy();
-            study.updateDerivedFields(true, true, true, true, true, true);
-            study.updateSOPClassesInStudy();
+            UpdateDerivedFieldsUtils.updateDerivedFieldsOf(series);
+            UpdateDerivedFieldsUtils.updateDerivedFieldsOf(series.getStudy());
             return ds;
         } catch (CreateException e) {
             throw new RemoteException(e.getMessage());
@@ -455,8 +449,7 @@ public abstract class PrivateManagerBean implements SessionBean {
             Dataset ds = getStudyMgtDataset(series.getStudy(), mapSeries);
             getPrivateSeries(series, DELETED, null, true);
             series.remove();
-            study.updateDerivedFields(true, true, true, true, true, true);
-            study.updateSOPClassesInStudy();
+            UpdateDerivedFieldsUtils.updateDerivedFieldsOf(study);
             return ds;
         } catch (CreateException e) {
             throw new RemoteException(e.getMessage());
@@ -488,9 +481,7 @@ public abstract class PrivateManagerBean implements SessionBean {
                 if (removeEmptyParents && study.getSeries().isEmpty()) {
                     study.remove();
                 } else {
-                    study.updateDerivedFields(true, true, true, true, true,
-                            true);
-                    study.updateSOPClassesInStudy();
+                    UpdateDerivedFieldsUtils.updateDerivedFieldsOf(study);
                 }
             }
         } catch (FinderException ignore) {

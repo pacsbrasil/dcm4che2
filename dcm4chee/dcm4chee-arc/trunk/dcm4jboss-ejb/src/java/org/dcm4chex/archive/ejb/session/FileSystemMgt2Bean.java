@@ -408,19 +408,18 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             boolean updateSeries = false;
             for (Iterator instit = insts.iterator(); instit.hasNext();) {
                 InstanceLocal inst = (InstanceLocal) instit.next();
-                if (inst.updateDerivedFields(false, true,
-                        availabilityOfExtRetr)) {
+                if (inst.updateAvailability(availabilityOfExtRetr)) {
                     updateSeries = updated = true;
                 }
             }
             if (updateSeries) {
-                if (ser.updateDerivedFields(false, false, false, false, true)) {
+                if (ser.updateAvailability()) {
                     updateStudy = true;
                 }
             }
         }
         if (updateStudy) {
-            study.updateDerivedFields(false, false, false, false, true, false);
+            study.updateAvailability();
         }
         return updated;
     }
@@ -656,12 +655,14 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                     Collection insts = series.getInstances();
                     for (Iterator iiter = insts.iterator(); iiter.hasNext();) {
                         InstanceLocal inst = (InstanceLocal) iiter.next();
-                        inst.updateDerivedFields(true, true,
-                                availabilityOfExtRetr);
+                        inst.updateRetrieveAETs();
+                        inst.updateAvailability(availabilityOfExtRetr);
                     }
-                    series.updateDerivedFields(false, true, false, false, true);
+                    series.updateRetrieveAETs();
+                    series.updateAvailability();
                 }
-                study.updateDerivedFields(false, true, false, false, true, false);
+                study.updateRetrieveAETs();
+                study.updateAvailability();
              }
             return fpaths;
         } catch (FinderException e) {
@@ -849,10 +850,9 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                     InstanceLocal inst = (InstanceLocal) itInst.next();
                     inst.remove();
                 }
-                series.updateDerivedFields(true, true, true, true, true);
+                UpdateDerivedFieldsUtils.updateDerivedFieldsOf(series);
             }
-            study.updateDerivedFields(true, true, true, true, true, true);
-            study.updateSOPClassesInStudy();
+            UpdateDerivedFieldsUtils.updateDerivedFieldsOf(study);
             return (FileDTO[]) fileDTOs.toArray(new FileDTO[fileDTOs.size()]);
         } catch (FinderException e) {
             throw new EJBException(e);

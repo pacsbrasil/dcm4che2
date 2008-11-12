@@ -309,7 +309,7 @@ public abstract class ContentEditBean implements SessionBean {
             SeriesLocal series = seriesHome.findByPrimaryKey(new Long(pk));
 	        series.setAttributes(ds);
             StudyLocal study = series.getStudy();
-            study.updateDerivedFields(false, false, false, false, false, true);
+            study.updateModalitiesInStudy();
             study.updateSOPClassesInStudy();
             Collection col = new ArrayList();
             col.add( series );
@@ -361,10 +361,9 @@ public abstract class ContentEditBean implements SessionBean {
             if (oldStudy.isIdentical(study)) continue;
             seriess.add(series);                
             movedSeriess.add( series );
-            oldStudy.updateDerivedFields(true, true, true, true, true, true);
-            oldStudy.updateSOPClassesInStudy();
+            UpdateDerivedFieldsUtils.updateDerivedFieldsOf(oldStudy);
         }
-        study.updateDerivedFields(true, true, true, true, true, true);
+        UpdateDerivedFieldsUtils.updateDerivedFieldsOf(study);
         return getStudyMgtDataset( study, movedSeriess, null );
     }
     
@@ -382,20 +381,15 @@ public abstract class ContentEditBean implements SessionBean {
             SeriesLocal oldSeries = instance.getSeries();
             if (oldSeries.isIdentical(series)) continue;
             instances.add(instance);                
-            oldSeries.updateDerivedFields(true, true, true, true, true);
-            StudyLocal oldStudy = oldSeries.getStudy();
-            oldStudy.updateDerivedFields(true, true, true, true, true, true);
-            oldStudy.updateSOPClassesInStudy();
+            UpdateDerivedFieldsUtils.updateDerivedFieldsOf(oldSeries);
+            UpdateDerivedFieldsUtils.updateDerivedFieldsOf(oldSeries.getStudy());
         }
-        series.updateDerivedFields(true, true, true, true, true);
-        StudyLocal newStudy = series.getStudy();
-        newStudy.updateDerivedFields(true, true, true, true, true, true);
-        newStudy.updateSOPClassesInStudy();
+        UpdateDerivedFieldsUtils.updateDerivedFieldsOf(series);
+        UpdateDerivedFieldsUtils.updateDerivedFieldsOf(series.getStudy());
         Collection col = new ArrayList(); col.add( series );
         return getStudyMgtDataset( series.getStudy(), col, instances );
     }
 
-    
     private Dataset getStudyMgtDataset( StudyLocal study, Collection series, Collection instances ) {
     	return getStudyMgtDataset( study, series, instances, 0, null );
     }
