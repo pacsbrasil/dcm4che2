@@ -71,4 +71,5 @@ public class WadoParams {
 
    /** Keys for headers to return */
    public static final String CONTENT_DISPOSITION="Content-Disposition";
+   public static final Object AE = "ae";
 }

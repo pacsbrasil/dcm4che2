@@ -47,7 +47,6 @@ import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.search.ResultFromDicom;
 import org.dcm4chee.xero.search.macro.KeyObjectGspsMacro;
 import org.dcm4chee.xero.search.macro.KeyObjectMacro;
-import org.dcm4chee.xero.search.study.ImageSearch;
 import org.dcm4chee.xero.search.study.KeyObjectBean;
 import org.dcm4chee.xero.search.study.KeySelection;
 import org.dcm4chee.xero.search.study.PatientType;
@@ -56,6 +55,9 @@ import org.dcm4chee.xero.search.study.SearchableDicomObject;
 import org.dcm4chee.xero.search.study.StudyBean;
 import org.dcm4chee.xero.search.study.StudyType;
 import org.dcm4chee.xero.wado.DicomFilter;
+import org.dcm4chee.xero.wado.WadoParams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This filter adds information whether any GSPS asscoiated to the images
@@ -65,9 +67,8 @@ import org.dcm4chee.xero.wado.DicomFilter;
  * 
  */
 public class KeyObjectStudyFilter implements Filter<ResultsBean> {
-
-	private static final String STUDY_UID = "studyUID";
-
+	private static final Logger log = LoggerFactory.getLogger(KeyObjectStudyFilter.class);
+	
 	private static final String KO = "ko";
 
 	private Filter<DicomObject> dicomFullHeader;
@@ -77,16 +78,13 @@ public class KeyObjectStudyFilter implements Filter<ResultsBean> {
 	@Override
 	public ResultsBean filter(FilterItem<ResultsBean> filterItem,
 			Map<String, Object> params) {
-		String studyUID = (String) params.get(STUDY_UID);
 		String ko = (String) params.get(KO);
 
+		ResultsBean ret = filterItem.callNextFilter(params);
 		if (ko == null) {
-			return filterItem.callNextFilter(params);
+			return ret;
 		}
-		ResultsBean ret = addKoGspsMacro(filterItem, params, studyUID);
-		if (ret == null)
-			return null;
-
+		addKoGspsMacro(filterItem, params, ret);
 		return ret;
 	}
 
@@ -100,23 +98,33 @@ public class KeyObjectStudyFilter implements Filter<ResultsBean> {
 	 *            can be <tt>null</tt>
 	 * @return
 	 */
-	private ResultsBean addKoGspsMacro(FilterItem<ResultsBean> filterItem,
-			Map<String, Object> params, String studyUID) {
-		ResultsBean ret = filterItem.callNextFilter(params);
-
-		ResultsBean imageResult = performImageLevelQuery(studyUID, "KO");
+	private void addKoGspsMacro(FilterItem<ResultsBean> filterItem,
+			Map<String, Object> params, ResultsBean ret) {
+		StringBuffer studyUID = null;
+		Map<String,StudyBean> studies=null;
 
 		for (int i = 0; i < ret.getPatient().size(); i++) {
 			PatientType patient = ret.getPatient().get(i);
 			for (StudyType studyType : patient.getStudy()) {
 				StudyBean study = (StudyBean) studyType;
 				if (study.getModalitiesInStudy().indexOf("KO") > -1) {
-					searchAndAddMacro(params, imageResult, study);
+					if( studies==null ) {
+						studies =new HashMap<String,StudyBean>();
+						studyUID = new StringBuffer();
+					} else {
+						studyUID.append("\\");
+					}
+					studyUID.append(study.getStudyUID());
+					studies.put(study.getStudyUID(),study);
 				}
 			}
 		}
-
-		return ret;
+		if( studies==null ) return;
+		
+		String ae = (String) params.get(WadoParams.AE);
+		log.info("Searching for study UID's {}",studyUID);
+		ResultsBean imageResult = performImageLevelQuery(studyUID.toString(), "KO", ae);
+		searchAndAddMacro(params,imageResult, studies);
 	}
 
 	/**
@@ -129,25 +137,30 @@ public class KeyObjectStudyFilter implements Filter<ResultsBean> {
 	 * @param study
 	 */
 	private void searchAndAddMacro(Map<String, Object> params,
-			ResultsBean imageResult, StudyBean study) {
-		for (int i = 0; i < imageResult.getPatient().size(); i++) {
-			PatientType patient = imageResult.getPatient().get(i);
+			ResultsBean imageResult, Map<String,StudyBean> studies) {
+		log.info("In image results, there are {} patients", imageResult.getPatient().size());
+		for (PatientType patient : imageResult.getPatient()) {
+			log.info("In patient {} there are {} studies.", patient.getPatientIdentifier(),patient.getStudy().size());
 			for (StudyType imgStudyType : patient.getStudy()) {
 				StudyBean imgStudy = (StudyBean) imgStudyType;
-				if (imgStudy.getStudyUID().equals(study.getStudyUID())) {
-
-					SearchableDicomObject kobDicom = (SearchableDicomObject) imgStudy
-							.searchStudy("*", "KO");
+				StudyBean resultStudy = studies.get(imgStudy.getStudyUID());
+				if( resultStudy==null ) {
+					log.warn("Returned study {} but not found in original query?",imgStudy.getStudyUID());
+					continue;
+				}
+				SearchableDicomObject kobDicom = (SearchableDicomObject) imgStudy
+						.searchStudy((String) params.get(KO), "KO");
 					
-					if (kobDicom != null) {
-						DicomObject dobj = DicomFilter.callInstanceFilter(
-								dicomFullHeader, params, kobDicom
-										.getObjectUID());
-						KeyObjectBean kob = (KeyObjectBean) kobDicom;
-						kob.initKeySelection(dobj);
-						addMacros(study, kob);
-						return;
-					}
+				if (kobDicom != null) {
+					log.info("Found key object info for study {}", resultStudy.getStudyUID());
+					DicomObject dobj = DicomFilter.callInstanceFilter(
+							dicomFullHeader, params, kobDicom
+									.getObjectUID());
+					KeyObjectBean kob = (KeyObjectBean) kobDicom;
+					kob.initKeySelection(dobj);
+					addMacros(resultStudy, kob);
+				} else {
+					log.warn("Unable to find key object bean for study {}",resultStudy.getStudyUID());
 				}
 			}
 		}
@@ -188,16 +201,12 @@ public class KeyObjectStudyFilter implements Filter<ResultsBean> {
 	 * @param ret
 	 * @return
 	 */
-	private ResultsBean performImageLevelQuery(String studyUID, String modality) {
-		ResultsBean ret = new ResultsBean();
+	private ResultsBean performImageLevelQuery(String studyUID, String modality, String ae) {
 		Map<String, Object> newParams = new HashMap<String, Object>();
-		if (studyUID != null) {
-			newParams.put("studyUID", studyUID);
-		}
+		newParams.put("studyUID", studyUID);
 		newParams.put("Modality", modality);
-		newParams.put(ImageSearch.EXTEND_RESULTS_KEY, ret);
-		imageSearch.filter(null, newParams);
-		return ret;
+		if( ae!=null ) newParams.put("ae", ae);
+		return (ResultsBean) imageSearch.filter(null, newParams);
 	}
 
 	/**
