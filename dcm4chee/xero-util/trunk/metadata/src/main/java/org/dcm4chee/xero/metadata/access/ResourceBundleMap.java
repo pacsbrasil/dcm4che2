@@ -2,6 +2,7 @@ package org.dcm4chee.xero.metadata.access;
 
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 /** This is a map implementation on top of a resource bundle */
@@ -28,8 +29,12 @@ public class ResourceBundleMap extends LazyMap {
 	/** Gets a value from the bundle */
 	@Override
 	protected Object getLazy(Object key) {
-		String skey = key.toString();
-		if(! resourceBundle.containsKey(skey) ) return super.getLazy(key);
+		String skey = key.toString();		
+		try{
+			resourceBundle.getObject(skey);
+		}catch(MissingResourceException mre){
+			return super.getLazy(key);
+		}
 		return resourceBundle.getString((String) key);
 	}
 
