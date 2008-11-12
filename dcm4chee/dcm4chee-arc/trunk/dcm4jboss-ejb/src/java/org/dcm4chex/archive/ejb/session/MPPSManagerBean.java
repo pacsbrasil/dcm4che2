@@ -662,8 +662,6 @@ public abstract class MPPSManagerBean implements SessionBean {
             }
         } catch (FinderException e) {
             throw new EJBException(e);
-        } catch (CreateException e) {
-            throw new EJBException(e);
         }
     }
 
