@@ -53,6 +53,7 @@ import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.search.DicomCFindFilter;
 import org.dcm4chee.xero.search.ResultFromDicom;
 import org.dcm4chee.xero.search.macro.KeyObjectMacro;
+import org.dcm4chee.xero.search.macro.OriginalStudyMacro;
 import org.dcm4chee.xero.search.study.ImageBean;
 import org.dcm4chee.xero.search.study.ImageBeanMultiFrame;
 import org.dcm4chee.xero.search.study.KeyObjectBean;
@@ -208,6 +209,7 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 	  KeyObjectBean kob = (KeyObjectBean) ret.getChildren().get(kom.getKeyObject());
 	  if( kob==null ) throw new NullPointerException("Key object bean should not be null.");
 	  StudyBean study = kob.getSeriesBean().getStudyBean();
+	  String koStudyUID = study.getStudyUID();
 	  Map<String, SeriesBean> availSeries = new HashMap<String, SeriesBean>();
 	  for (Object set : study.getSeries()) {
 		 SeriesBean se = (SeriesBean) set;
@@ -265,6 +267,13 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
 			   addImage.setSeriesBean(series);
 			   addImage.setPosition(null);
 			   series.getDicomObject().add(addImage);
+			}
+			
+			String imgSeriesStudyUID = imgSeries.getStudyBean().getStudyUID();
+			if (!imgSeriesStudyUID.equals(koStudyUID))	{
+				if (series.getMacroItems().findMacro(OriginalStudyMacro.class) == null)	{
+					series.getMacroItems().addMacro(new OriginalStudyMacro(imgSeriesStudyUID));
+				}
 			}
 		 }
 		 if (key.getGspsUid() != null) {
