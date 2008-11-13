@@ -37,6 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado;
 
+import static org.dcm4chee.xero.wado.WadoParams.CONTENT_DISPOSITION;
+
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -46,14 +48,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.dcm4chee.xero.wado.WadoParams.*;
 /**
  * Implements a servlet response item that writes a DICOM header only to the
  * output stream. Any encoding is allowed, but only items actually in the
