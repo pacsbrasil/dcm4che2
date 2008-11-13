@@ -38,9 +38,11 @@
 package org.dcm4chee.xero.search.study;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAnyAttribute;
@@ -296,6 +298,27 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 	  }
 	  return (DicomObjectType) ret;
    }
+   
+   
+   /**
+    * Searches the leaf nodes for all the items matching the given modality.
+    * @param key
+    * @param modality
+    * @return
+    */
+   public List<DicomObjectType> searchStudy(String modality) {
+	  List<DicomObjectType> ret = new ArrayList<DicomObjectType>();
+	  for (SeriesType series : getSeries()) {
+		 if (! series.getModality().equals(modality) )
+			continue;
+		 for (DicomObjectType dot : series.getDicomObject()) {
+			if( !(dot instanceof SearchableDicomObject) )
+			   continue;
+			ret.add((DicomObjectType) dot);
+		 }
+	  }
+	  return ret;
+   }   
    
    /**
     * Figures out whether sdo1 is a better match than sdo2 or not
