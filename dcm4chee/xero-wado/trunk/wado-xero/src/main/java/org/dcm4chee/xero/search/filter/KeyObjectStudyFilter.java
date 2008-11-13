@@ -75,7 +75,6 @@ public class KeyObjectStudyFilter implements Filter<ResultsBean> {
 
 	private Filter<ResultFromDicom> imageSearch;
 
-	@Override
 	public ResultsBean filter(FilterItem<ResultsBean> filterItem,
 			Map<String, Object> params) {
 		String ko = (String) params.get(KO);
