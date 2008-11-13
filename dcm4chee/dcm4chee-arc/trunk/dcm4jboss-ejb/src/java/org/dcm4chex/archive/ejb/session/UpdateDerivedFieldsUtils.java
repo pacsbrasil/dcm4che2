@@ -37,8 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.archive.ejb.session;
 
-import javax.ejb.FinderException;
-
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 
@@ -47,7 +45,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * @version $Revision$ $Date$
  * @since Nov 12, 2008
  */
-public class UpdateDerivedFieldsUtils {
+class UpdateDerivedFieldsUtils {
 
     public static void updateDerivedFieldsOf(StudyLocal study) {
         study.updateNumberOfStudyRelatedSeries();
