@@ -19,7 +19,7 @@ ImageLayout.prototype.MAGNIFY = "MAGNIFY";
 ImageLayout.prototype.SCALE_TO_FIT = "SCALE_TO_FIT";
 ImageLayout.prototype.TRUE_SIZE = "TRUE_SIZE";
 ImageLayout.prototype.urlCount = 0;
-ImageLayout.prototype.events = [".","../merged:windowWidth","../merged:windowCenter"];
+ImageLayout.prototype.events = [".","../merged:windowWidth","../merged:windowCenter","../merged:invert"];
 ImageLayout.prototype.area="Image";
 
 
@@ -42,7 +42,6 @@ ImageLayout.prototype.navigateListener = function ImageMergedListener(navigate) 
 
 /** Update the URLs if the window width changes */
 ImageLayout.prototype.namedListener = function(nav,vname,val) {
-	if( !val ) return;
 	console.info("Updating all image URLs for",nav.external.seriesUID);
 	this.addImageUrl(true);
 	this.relayout = true;
@@ -141,11 +140,12 @@ ImageLayout.prototype.createFullUrl = function ImageLayout_createFullUrl(base) {
 		ret.imageUrl = ret.imageUrl + "&amp;windowWidth="+ww+"&amp;windowCenter="+wc;
 	}
 	var isinvert = this.merged.get("invert");
-	if( isinvert=="true" ) {
+	if( isinvert ) {
+		console.info("Invert is true.");
 		// Changes from the natural presentation to the inverted presentation - this is an OVERRIDE
 		// on the base value or base value + GSPS value, it isn't the base value itself.
 		ret.imageUrl = ret.imageUrl+"&amp;invert=true";
-	}
+	} else console.info("Invert is false.");
 	var puid = this.merged.get("gspsUID");
 	if( puid ) {
 		ret.imageUrl = ret.imageUrl + "&amp;presentationUID="+puid;

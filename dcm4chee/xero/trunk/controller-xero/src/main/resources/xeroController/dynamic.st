@@ -84,39 +84,6 @@ XeroController.prototype.keyPress = function(e) {
 XeroController.prototype.dblClickTime=350;
 XeroController.prototype.dblMoveDistance=2;
 
-/**
- * Determine if the click was a double click event
- */
-XeroController.prototype.isDoubleClick = function(e) {
-	var lastMouse = this.lastMouse;
-	e.timems = (new Date()).getTime();
-	this.lastMouse = e;
-	if( !lastMouse ) return false;
-	var delta = e.timems - lastMouse.timems; 
-	if( delta > this.dblClickTime ) return false;
-	delta = Math.abs(e.clientX-lastMouse.clientX)+Math.abs(e.clientY-lastMouse.clientY);
-	if( delta>this.dblMoveDistance ) return false;
-	// Clear the last mouse as it can't be used for a triple click.
-	this.lastMouse = null;
-	return true;
-};
-
-/**
- * Determine if the mouse-move was long enough to be valid - don't actually
- * start handling any child events until this one returns true.
- */
-XeroController.prototype.isMouseMoveValid = function(e) {
-	var lastMouse = this.lastMouse;
-	var timems = (new Date()).getTime();
-	if( !lastMouse ) return true;
-	var delta = timems - lastMouse.timems; 
-	if( delta > this.dblClickTime ) return true;
-	delta = Math.abs(e.clientX-lastMouse.clientX)+Math.abs(e.clientY-lastMouse.clientY);
-	if( delta>this.dblMoveDistance ) return true;
-	// Clear the last mouse as it can't be used for a double click
-	this.lastMouse = null;
-	return false;
-};
 
 /**
  * Handles the mouse down events - this is typically called underneath a
@@ -129,85 +96,62 @@ XeroController.prototype.mouseDown = function(id,e) {
 	var area = lay.area; 
 	var handler = this.getShiftInfo(e);
 	var clickHandler = handler;
-	if( this.isDoubleClick(e) ) {
-		handler = handler+"dblDrag";
-		clickkHandler = clickHandler + "dbl";
+	var but = "";
+	if( isRightMouse(e) ) but = "Right";
+	else if( !isLeftMouse(e) ) but = "Mid";
+	var dbl = (this.singleClickMousing && this.singleClickMousing.singleClickTime()!=0);
+	console.info("Button pressed:",(but==""?"left":but),"is double",dbl);
+	if( dbl ) {
+		handler = handler+"dblDrag"+but;
+		clickkHandler = clickHandler + "dbl"+but;
+		this.singleClickMousing = null;
 	} else {
-		handler = handler+"drag";
-		clickHandler = clickHandler + "click";
+		handler = handler+"drag"+but;
+		clickHandler = clickHandler + "click"+but;
 	};
 	if( area ) {
 		var mode = this["getMode"+area](lay,e)+"_";
 		handler = mode+handler+area;
 		clickHandler = mode+clickHandler+area;
 	} 
-	console.info("Looking for handler for",handler);
 	handler = this.findModeHandler(handler);
 	clickHandler = this.findModeHandler(clickHandler);
 	if(!(handler || clickHandler)) return;
 	console.info("Found mouse handler",handler,"click",clickHandler);
 	
+	var mousing;
 	if( handler ) {
-		var mousing;
 		mousing = this[handler];
-		mousing.clickHandler = clickHandler;
-
-		mousing.lay = lay;
-		mousing.controller = this;
-		mousing.startPosn = docCoords(e);
-		var mouseDom = mousing.getMouseDom(target(e));
-		mousing.mouseDom = mouseDom;
-		this.mousing = mousing;
-		if( !mouseDom ) {
-			console.warn("No mouse DOM area to hook mouse events to for",handler);
-			return;
-		}
-		console.info("Found mouse DOM area",mouseDom.id);
-		if( ! mousing.prepare(e) ) {
-			console.warn("Mouse prepare for",handler,"returned false, not mousing.");
-			return;
-		}
-		console.info("Area prepared - now about to hook listeners.");
-	
-		if(mousing.mousemove) hookEvent(mouseDom, "mousemove", XC_callMouseMove);
-		hookEvent(mouseDom,"mouseout", XC_callMouseOut);
-		hookEvent(mouseDom,"mouseup", XC_callMouseUp);
-		console.info("Hooked events, returning and awaiting the next call.");
 	} else {
-		// Only a click handler - so we can execute it when the mouse comes up.
-		this.mousing = {"clickHandler":clickHandler,"lay":lay};
-		hookEvent(target(e),"mouseout", XC_callMouseOut);
-		hookEvent(target(e),"mouseup", XC_callMouseUp);
+		mousing = new MouseHandler();
 	};
+
+	var mouseDom = mousing.getMouseDom(e);
+	if( !mouseDom ) {
+		console.warn("No mouse DOM area to hook mouse events to for",handler);
+		return;
+	}
+	console.info("Found mouse DOM area",mouseDom.id);
+	this.mousing = mousing;
+	mousing.clickHandler = clickHandler;
+	mousing.lay = lay;
+	mousing.controller = this;
+	mousing.mouseDom = mouseDom;
+	mousing.dblClick = dbl;
+	
+	if( ! mousing.prepare(e) ) {
+		console.warn("Mouse prepare for",handler,"returned false, not mousing.");
+		return;
+	}
+	console.info("Area prepared - now about to hook listeners.");
+	
+	hookEvent(mouseDom,"mouseout", XC_callMouseOut);
+	hookEvent(mouseDom,"mouseup", XC_callMouseUp);
+	if(mousing.mousemove) hookEvent(mouseDom, "mousemove", XC_callMouseMove);
+	
+	console.info("Hooked events, returning and awaiting the next call at",this.mousing.startTime);
 	return cancelEvent(e);
 };
-
-/** 
- * Finds the image display parent of the given object.  This is a top-level funciton that is
- * re-used.
- */
-function XC_findImageTarget(src) {
-	var clazz = src.className;
-	var prevChild = src;
-	if( clazz && clazz.baseVal ) clazz = clazz.baseVal;
-	while( src && clazz!="imageDisplay" && src.nodeName!=="BODY" && src.nodeName!=="body") {
-		console.debug("findImageTarget", src.id, src.nodeName, clazz);
-		prevChild = src;
-		src = src.parentNode;
-		clazz = src.className;
-		if( clazz && clazz.baseVal ) clazz = clazz.baseVal;
-		// Safari and Opera don't provide easy access to svg class.
-		if( clazz==="image" ) {
-			console.info("Returning previous child - not really a good test.");
-			return prevChild;
-		}
-	} 
-	if( clazz==="imageDisplay" ) {
-		console.debug("findImageTarget Found", src.id, src.nodeName, clazz);
-		return src;
-	}
-	return undefined;
-}; 
 
 /** Call the Xero controller mouse move. */
 function XC_callMouseMove(evt) {
@@ -227,7 +171,7 @@ XeroController.prototype.mouseMove = function(e) {
 	if( !e ) e = window.event;
 	if( !this.mousing ) {
 		unhookEvent(target(e),"mousemove", XC_callMouseMove);
-		return cancelEvent(e);
+		return;
 	};
 	if( !isMouseDown(e) ) {
 		return this.mouseUp(e);
@@ -235,29 +179,45 @@ XeroController.prototype.mouseMove = function(e) {
 	// Only start sending events to the child element once the double click
 	// time/distance is exceeded so that no updates are done before that.
 	// The return value will be true on started once it is ready.
-	if(this.isMouseMoveValid(e) ) {
-		if( !this.mousing.started ) {
-			this.mousing.started = this.mousing.start();
-			if( !this.mousing.started ) return false;
-		} 
-		this.mousing.mousemove(e);
-	} else {
-		console.info("Still waiting for the mouse move to become valid.");
-	};
-	return false;
+	if( !this.mousing.isDrag(e) ) return;
+	if( !this.mousing.started ) {
+		this.mousing.started = this.mousing.start();
+		if( !this.mousing.started ) return;
+	} 
+	this.mousing.mousemove(e);
 };
 
 /** Handle the mouse up events */
 XeroController.prototype.mouseUp = function(e) {
 	if( !this.mousing ) return true;
 	if( !e ) e = window.event;
-	this.mousing.end(e);
+	if( this.mousing.isDrag(e) ) {
+		console.info("Drag, not click.");
+		this.mousing.end(e);
+	} else {
+		var clickTime = this.mousing.singleClickTime();
+		// Browsers can't usually delay less than 25 ms
+		if( clickTime>25 ) {
+			this.singleClickMousing = this.mousing;
+			console.info("Waiting for",clickTime,"to determine double click.");
+			window.setTimeout(runSingleClickMousing, clickTime);
+		} else {
+			console.info("Click, not drag - todo, check if double click.");	
+			this.mousing.runClickEvent();
+		}
+	}
 	unhookEvent(this.mousing.mouseDom,"mousemove", XC_callMouseMove);
 	unhookEvent(this.mousing.mouseDom,"mouseout", XC_callMouseOut);
 	unhookEvent(this.mousing.mouseDom,"mouseup", XC_callMouseUp);
 	this.mousing = null;
-	this.waitUpdate("mouseUp",2);
 	return cancelEvent(e);
+};
+
+function runSingleClickMousing() {
+	if( ! controller.singleClickMousing ) return;
+	controller.singleClickMousing.runClickEvent();
+	controller.singleClickMousing = undefined;
+	controller.waitUpdate("singleClickMousing",2); 
 };
 
 /** Handle mouse out events - currently only handles image area events 
@@ -289,24 +249,15 @@ XeroController.prototype.mouseOut = function(e) {
 function MouseHandler() {
 };
 
-/** Called before start is called to start loadings information/background images etc
- * @return true to indicate to handle this click.
- */
-MouseHandler.prototype.prepare = function (lay,e) {
-	this.imageDisplay = null;
-	this.image = null;
-	this.started = false;
-	return true;
+MouseHandler.prototype.prepare = function (e) {
+	this.startTime = (new Date()).getTime();
+	this.startPosn = docCoords(e);
+	console.info("Start position",this.startPosn,"at",this.startTime);
+	this.drag = undefined;
+	return this.clickHandler!=null;
 };
 
-/** Have an extra copy of this to allow calling the parent method */ 
-MouseHandler.prototype.prepareBase = MouseHandler.prototype.prepare;
-
-
-/** Gets the object to register the general events on - mostly this will be the image area
- * so that is setup to be the default area.
- */
-MouseHandler.prototype.getMouseDom = XC_findImageTarget;
+MouseHandler.prototype.mhPrepare = MouseHandler.prototype.prepare; 
 
 MouseHandler.prototype.start = function MouseHandler_start(event) {
 	console.info("Hello, image mouse down target id %s imageDisplay %s button %d which %d at ", this.target, this.imageDisplay.id, event.button, event.which, this.startPosn);
@@ -319,8 +270,103 @@ MouseHandler.prototype.end = function MouseHandler_showMouseMoveEnd(event) {
 	console.debug("Show Mouse Move End button %d which %d at %s", event.button, event.which, delta);
 };
 
+/** Runs the click event instead of the drag event */
+MouseHandler.prototype.runClickEvent = function(e) {
+	// Click event may not be defined.
+	if( !this.clickHandler ) return;
+	this.controller[this.clickHandler](this.lay,e);
+	this.clickHandler = undefined;
+};
+
+/** Determines if the object was a drag */
+MouseHandler.prototype.isDrag = function(e) {
+	if(this.drag!==undefined ) return this.drag;
+	var cposn = docCoords(e);
+	var delta = Math.abs(cposn[0]-this.startPosn[0])+Math.abs(cposn[1]-this.startPosn[1]);
+	console.info("Delta",delta);
+	if( delta>this.controller.dblMoveDistance ) {
+		this.drag = true;
+		return true;
+	};
+	return false;
+};
+
+/** Determines how much time is left before this is considered a single click */
+MouseHandler.prototype.singleClickTime = function() {
+	if( this.dblClick ) return 0;
+	var ret =  this.controller.dblClickTime - (new Date()).getTime() + this.startTime;
+	console.info("singleClickTime:",ret);
+	if( ret<0 ) return 0;
+	return ret;
+};
+
+/** Handle an image-area mouse event - this defines things that affect the image */
+function ImageMouseHandler() {
+};
+ImageMouseHandler.prototype = new MouseHandler();
+
+/** Get the area to link the mouse listeners to */
+ImageMouseHandler.prototype.getMouseDom = target;
+
+/** Called before start is called to start loadings information/background images etc
+ * @return true to indicate to handle this click.
+ */
+ImageMouseHandler.prototype.prepare = function (e) {
+	this.mhPrepare(e);
+	this.imageDisplay = null;
+	this.image = null;
+	this.started = false;
+
+	this.image = this.getImage();
+	if( !this.image ) {
+		console.warn("No image found, not mousing.");
+		return false;
+	}
+	this.layout = this.findLayout();
+	if( !this.layout ) {
+		console.warn("No layout found, not mousing.");
+		return false;
+	}	
+	return true;
+};
+
+/** Have an extra copy of this to allow calling the parent method */ 
+ImageMouseHandler.prototype.prepareBase = ImageMouseHandler.prototype.prepare;
+
+
+/** 
+ * Finds the image display parent of the given object.  This is a top-level funciton that is
+ * re-used.
+ */
+ImageMouseHandler.prototype.getMouseDom = function (e) {
+	var src = target(e);
+	var clazz = src.className;
+	var prevChild = src;
+	if( clazz && clazz.baseVal ) clazz = clazz.baseVal;
+	while( src && clazz!="imageDisplay" && src.nodeName!=="BODY" && src.nodeName!=="body") {
+		console.debug("findImageTarget", src.id, src.nodeName, clazz);
+		prevChild = src;
+		src = src.parentNode;
+		clazz = src.className;
+		if( clazz && clazz.baseVal ) clazz = clazz.baseVal;
+		// Safari and Opera don't provide easy access to svg class.
+		if( clazz==="image" ) {
+			console.info("Returning previous child - not really a good test.");
+			return prevChild;
+		}
+	} 
+	if( clazz==="imageDisplay" ) {
+		console.debug("findImageTarget Found", src.id, src.nodeName, clazz);
+		return src;
+	}
+	return undefined;
+}; 
+
+
+
+
 /** Finds the (primary) image object */
-MouseHandler.prototype.getImage = function() {
+ImageMouseHandler.prototype.getImage = function() {
 	if(!this.imageDisplay) this.imageDisplay = this.mouseDom;
 	var imageId = "im"+this.imageDisplay.id.substring(3);
 	var ret = document.getElementById(imageId); 
@@ -329,7 +375,7 @@ MouseHandler.prototype.getImage = function() {
 };
 
 /** Finds the url for the image object */
-MouseHandler.prototype.getImageUrl = function MouseHandler_getImageUrl(strip) {
+ImageMouseHandler.prototype.getImageUrl = function MouseHandler_getImageUrl(strip) {
 	if(!this.image) this.image = this.getImage();
 	var url = this.image.getAttribute("src");
 	if( url ) return stripUrl(url,strip);
@@ -339,7 +385,7 @@ MouseHandler.prototype.getImageUrl = function MouseHandler_getImageUrl(strip) {
 };
 
 /** Sets the url for the image object */
-MouseHandler.prototype.setImageUrl = function MouseHandler_setImageUrl(url) {
+ImageMouseHandler.prototype.setImageUrl = function MouseHandler_setImageUrl(url) {
 	var origUrl = this.image.getAttribute("src");
 	if( origUrl ) {
 		this.image.setAttribute("src", url);
@@ -348,7 +394,7 @@ MouseHandler.prototype.setImageUrl = function MouseHandler_setImageUrl(url) {
 	this.image.setAttributeNS("http://www.w3.org/1999/xlink","href",url);
 };
 
-MouseHandler.prototype.findLayout = function MouseHandler_findLayout() {
+ImageMouseHandler.prototype.findLayout = function MouseHandler_findLayout() {
 	var id = this.mouseDom.parentNode.id;
 	return this.controller.model.layout.findLayout(id);
 };

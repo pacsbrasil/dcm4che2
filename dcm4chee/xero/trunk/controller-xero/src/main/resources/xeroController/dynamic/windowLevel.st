@@ -3,28 +3,44 @@
  */
 function WLController() {
 };
-WLController.prototype = new MouseHandler();
+WLController.prototype = new ImageMouseHandler();
 WLController.prototype.isWLController = true;
 
 XeroController.prototype.WindowLevel_dragImage = new WLController();
+// Default drag operation is window level, as is the default ctrl-drag image.
+XeroController.prototype.dragImage = XeroController.prototype.WindowLevel_dragImage;
 XeroController.prototype.ctrl_dragImage = XeroController.prototype.WindowLevel_clickImage;
 
-XeroController.prototype.WindowLevel_clickImage = function(id,e) {
-	console.info("Image clicked - trying to reset the window level.");
+/** Handle the window level reset operation */
+XeroController.prototype.WindowLevel_clickImage = function(lay,e) {
+	console.info("Image clicked - trying to reset the image, layout",lay.id);
+	var nav = this.getNavigate(lay);
+	nav=nav.parent;
+	if( nav.merged.invert ) {
+		nav.setMerged("invert");
+	}
+	if( nav.merged.windowWidth ) {
+		// Only notify on the second set
+		nav.merged.windowWidth = undefined;
+		nav.setMerged("windowCenter");
+	}
+	this.waitUpdate("mouseUp",2);
+};
+XeroController.prototype.WLReset_clickImage=XeroController.prototype.WindowLevel_clickImage;
+
+/** Handle inverting the image */
+XeroController.prototype.WLInvert_clickImage = function(lay,e) {
+	console.info("Image clicked - trying to invert the image, layout",lay.id);
+	var nav = this.getNavigate(lay);
+	var inv = nav.merged.get("invert"); 
+	nav=nav.parent;
+	nav.setMerged("invert",!inv);
+	this.waitUpdate("mouseUp",2);
 };
 
+
 WLController.prototype.prepare = function(e) {
-	this.prepareBase();
-	this.image = this.getImage();
-	if( !this.image ) {
-		console.warn("No image found, not window levelling.");
-		return false;
-	}
-	this.layout = this.findLayout();
-	if( !this.layout ) {
-		console.warn("No layout found, not window levelling.");
-		return false;
-	}
+	this.prepareBase(e);
 	this.baseUrl = this.getImageUrl(["rows", "columns", "windowWidth", "windowCenter","imageQuality"]);
 	console.info("Window levelling layout %s url %s",this.layout.id, this.baseUrl);
 
@@ -133,7 +149,7 @@ WLController.prototype.end = function WLC_end(event) {
 	this.image = undefined;
 	this.layout = undefined;
 	this.baseUrl = undefined;
-	return true;
+	this.controller.waitUpdate("mouseUp",2);
 };
 
 /** Sets the default mode to window levelling */

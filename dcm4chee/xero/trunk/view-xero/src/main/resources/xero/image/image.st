@@ -1,7 +1,7 @@
 <div class="image" $html/style()$ xmlns="http://www.w3.org/1999/xhtml">
  $if(IS_IE)$
    <v:group id="vml$layout.id$" class="imageDisplay"
-   	 onmousedown="controller.mouseDown('$layout.id$')"
+   	 onmousedown="return controller.mouseDown('$layout.id$');"
 $if(layout.sameSize)$
 	style="overflow: visible; left: $layout.negHalfRealWidth$; margin-left: 50%; top: 50%; margin-top: $layout.negHalfRealHeight$; width: $layout.realWidth$; height: $layout.realHeight$;"
 $else$
