@@ -20,9 +20,9 @@ if [ ! -f "$XDS_HOME"/bin/upgrade_jbossws.sh ]; then
   exit 1
 fi
 
-cp -v -R "$XDS_SERV/deploy/dcm4che*" "$DCM4CHEE_SERV/deploy"
-cp -v "$XDS_SERV/conf/xmdesc/dcm4chee-xds-xmbean.xml" "$DCM4CHEE_SERV/conf/xmdesc"
-cp -v "$XDS_SERV/lib/*" "$DCM4CHEE_SERV/lib"
-cp -v "$XDS_HOME/bin/*" "$DCM4CHEE_HOME/bin"
+cp -v -R "$XDS_SERV"/deploy/dcm4che* "$DCM4CHEE_SERV"/deploy
+cp -v "$XDS_SERV"/conf/xmdesc/dcm4chee-xds-xmbean.xml "$DCM4CHEE_SERV"/conf/xmdesc
+cp -v "$XDS_SERV"/lib/* "$DCM4CHEE_SERV"/lib
+cp -v "$XDS_HOME"/bin/* "$DCM4CHEE_HOME"/bin
 
 echo XDS components installed!
