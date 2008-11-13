@@ -224,7 +224,7 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 			EncodeResponseInfo eri = entry.getValue();		   
 			if (mimeType.equals(eri.mimeType)){
 				transferSyntax = entry.getKey();
-				if (!transferSyntax.equalsIgnoreCase(mimeType)){
+				if (Character.isDigit(transferSyntax.charAt(0))){
 					return transferSyntax;
 				}
 			}
