@@ -29,7 +29,8 @@
 		<type>java.lang.String</type>
 		<descriptors>
 			<value
-				value="http://129.6.24.109:9080/axis2/services/xdsregistrya" />
+                value="http://ihexds.nist.gov:9080/tf5/services/xdsregistrya" /> <!-- 2008-2009 -->            
+            <!--      value="http://129.6.24.109:9080/axis2/services/xdsregistrya" /> 2007-2008 -->
 			<!--  <value value="http://hcxw2k1.nist.gov:8080/xdsServices2/registry/soap/portals/yr3a/registry"/> 
 				NIST year 2007 version (does NOT work with JBOSS SOAP implementation) -->
 		</descriptors>
@@ -41,7 +42,7 @@
 		<type>java.lang.String</type>
 		<descriptors>
 			<value
-				value="http://129.6.24.109:9080/axis2/services/xdsregistrya" />
+				value="http://ihexds.nist.gov:9080/tf5/services/xdsregistrya" />
 		</descriptors>
 	</attribute>
 	<attribute access="read-write" getMethod="isForceSQLQuery"
