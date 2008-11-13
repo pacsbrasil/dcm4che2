@@ -159,12 +159,26 @@ public class XDSStoreService extends ServiceMBeanSupport {
     public XDSDocument storeDocument(XDSDocument xdsDoc) throws XDSException {
         log.info("#### Store Document:"+xdsDoc.getDocumentUID()+" without metadata");
         return storeDocument(xdsDoc, null);
-    }	
+    }
+    /**
+     * Store given document with optional metadata.
+     * <p>
+     * Return null if a Document with same UID already exists!
+     * (Even when the document is unavailable.)
+     * 
+     * @param xdsDoc
+     * @param metadata
+     * @return
+     * @throws XDSException
+     */
     public XDSDocument storeDocument(XDSDocument xdsDoc, Source metadata) throws XDSException {
         String documentUID = xdsDoc.getDocumentUID();
-        if ( docStore.getDocument(documentUID, null) != null )
+        Availability avail = docStore.getAvailability(documentUID);
+        if ( avail.compareTo(Availability.NONEEXISTENT) < 0 ) {
+            if ( log.isDebugEnabled() )
+                log.debug("Document "+documentUID+" already exists with availability "+avail);
             return null;//Document with given documentUID already exists!
-
+        }
         log.info("#### Store Document:"+documentUID+" to pool "+storeBeforeRegisterPool+"\nmetadata:"+metadata);
         boolean error = false;
         boolean docAdded = false;
@@ -256,13 +270,21 @@ public class XDSStoreService extends ServiceMBeanSupport {
     public XDSDocument retrieveDocument(String docUid, String mime) throws IOException {
         log.info("#### Retrieve Document from storage:"+docUid);
         BaseDocument doc = docStore.getDocument(docUid, mime);
-        return doc == null || doc.getAvailability().equals( Availability.UNAVAILABLE) ? null  :
+        return doc != null && doc.getAvailability().compareTo(Availability.UNAVAILABLE) < 0 ? null  :
             new XDSDocument(docUid, mime, getXdsDocWriter(doc));
     }
 
+    /**
+     * Return true if availability of document in docstore is better than UNAVAILABLE
+     * (i.e. not UNAVAILABLE or NONEEXISTENT
+     * 
+     * @param docUid
+     * @param mime
+     * @return
+     */
     public boolean documentExists(String docUid, String mime){
         log.info("#### Document Exists?:"+docUid);
-        return !docStore.getDocument(docUid, mime).getAvailability().equals( Availability.UNAVAILABLE);
+        return docStore.getAvailability(docUid).compareTo(Availability.UNAVAILABLE) < 0;
     }
 
     public boolean commitDocuments(Collection<XDSDocument> documents) {
