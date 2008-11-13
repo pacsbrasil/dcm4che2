@@ -65,10 +65,6 @@ public class WadoParams {
 	/** The separator to use when specifying a colour */
 	public static final String COLOUR_SEPARATOR = ":";
 	
-	// Some UIDs for various options
-   public static final String NoPixelDataUid = "1.2.840.10008.1.2.4.XX";
-   public static final String NoPixelDataDeflateUid = "1.2.840.10008.1.2.4.YY";
-
    /** Keys for headers to return */
    public static final String CONTENT_DISPOSITION="Content-Disposition";
    public static final Object AE = "ae";

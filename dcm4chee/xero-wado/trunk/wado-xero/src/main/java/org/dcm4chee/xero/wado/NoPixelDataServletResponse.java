@@ -81,15 +81,12 @@ public class NoPixelDataServletResponse implements ServletResponseItem {
 	  response.setContentType("application/dicom");
 	  response.setHeader(CONTENT_DISPOSITION, "attachment;filename="+ds.getString(Tag.SOPInstanceUID)+"-header.dcm");
 	  DicomObject fmiAttrs = getFileMetaInformation();
+	  fmiAttrs.putString(Tag.TransferSyntaxUID,VR.UI,tsuid);
 	  log.debug("Using transfer syntax {} for no pixel data",tsuid);
 	  OutputStream os = response.getOutputStream();
 	  DicomOutputStream dos = new DicomOutputStream(os);
 	  dos.writeFileMetaInformation(fmiAttrs);
 	  String useTsuid = tsuid;
-	  // The NoPixelDataDeflate isn't yet fully defined, so use an internal value.
-	  // TODO remove this when Supplement 119 gets real UIDs to use as it will happen automatically.
-	  if( NoPixelDataDeflateUid.equals(tsuid) ) 
-		 useTsuid = UID.DeflatedExplicitVRLittleEndian;
 	  dos.writeDataset(ds, useTsuid);
 	  dos.finish();
    }

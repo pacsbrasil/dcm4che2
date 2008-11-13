@@ -154,8 +154,13 @@ public class RecodeDicom implements Filter<ServletResponseItem> {
 	  return null;
    }
 
+   /** Determine if the tsuid is exactly one of the no pixel data deflate syntaxes - 
+    * by exactly, it means the same value as in the class, not an aribtrary value.
+    * @param tsuid
+    * @return
+    */
    public static boolean isNoPixelData(String tsuid) {
-	  return tsuid == NoPixelDataDeflateUid || tsuid == NoPixelDataUid;
+	  return tsuid == UID.NoPixelData || tsuid == UID.NoPixelDataDeflate;
    }
 
    /** Selects the transfer syntax to use */
@@ -169,10 +174,10 @@ public class RecodeDicom implements Filter<ServletResponseItem> {
 		 return currentUid;
 	  }
 	  // Choose no pixel data by preference at this end, and prefer deflated.
-	  if (tsuid.indexOf(NoPixelDataDeflateUid) >= 0)
-		 return NoPixelDataDeflateUid;
-	  if (tsuid.indexOf(NoPixelDataUid) >= 0)
-		 return NoPixelDataUid;
+	  if (tsuid.indexOf(UID.NoPixelDataDeflate) >= 0)
+		 return UID.NoPixelDataDeflate;
+	  if (tsuid.indexOf(UID.NoPixelData) >= 0)
+		 return UID.NoPixelData;
 	  // Otherwise see if we can retain the existing transfer syntax to avoid
         // recoding images.
 	  if (tsuid.indexOf(currentUid) >= 0)
