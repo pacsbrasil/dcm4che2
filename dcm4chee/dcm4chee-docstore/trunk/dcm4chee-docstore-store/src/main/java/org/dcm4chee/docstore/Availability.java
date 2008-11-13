@@ -46,9 +46,10 @@ public class Availability implements Comparable<Availability> {
     public static final Availability NEARLINE = new Availability(2);
     public static final Availability OFFLINE = new Availability(3);
     public static final Availability UNAVAILABLE  = new Availability(4);
+    public static final Availability NONEEXISTENT  = new Availability(5);
 
     private static final String[] NAMES = new String[]{"INMEMORY","ONLINE","NEARLINE",
-        "OFFLINE","UNAVAILABLE"};
+        "OFFLINE","UNAVAILABLE","NONEEXISTENT"};
     
     private Availability(int avail) {
         this.avail = avail;

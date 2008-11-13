@@ -227,6 +227,18 @@ public class DocumentStore {
         return registry.getDocumentStorage(this.domain, storageName);
     }
 
+    public Availability getAvailability(String docUid) {
+        log.debug("getAvailability docUid"+docUid);
+        Availability availability, bestAvailability = Availability.NONEEXISTENT;
+        for ( DocumentStorage storage : retrieveDocStorages ) {
+            availability = storage.getAvailabilty(docUid);
+            if ( availability.compareTo(bestAvailability) < 0 ) {
+                bestAvailability = availability;
+            }
+        }
+        return bestAvailability;
+    }
+    
     /**
      * Get a document for given document UID and content type.
      * <p/>

@@ -142,7 +142,7 @@ public class DocumentFileStorage extends BaseDocumetStorage {
 
     public Availability getAvailabilty(String docUid) {
         File f = getDocumentPath(docUid);
-        return f.exists() ? Availability.ONLINE : Availability.UNAVAILABLE;
+        return f.exists() ? Availability.ONLINE : Availability.NONEEXISTENT;
     }
 
     public String getRetrieveURL(String docUid) {
