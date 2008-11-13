@@ -126,7 +126,7 @@ XeroController.prototype.mouseDown = function(id,e) {
 		mousing = new MouseHandler();
 	};
 
-	var mouseDom = mousing.getMouseDom(e);
+	var mouseDom = mousing.getMouseDom(target(e));
 	if( !mouseDom ) {
 		console.warn("No mouse DOM area to hook mouse events to for",handler);
 		return;
@@ -228,8 +228,8 @@ XeroController.prototype.mouseOut = function(e) {
 	if( !e ) e = window.event;
 	var targ = target(e);
 	var reltg = (e.relatedTarget) ? e.relatedTarget : e.toElement;
-	var src = this.findImageTarget(targ);
-	var dest = this.findImageTarget(reltg);
+	var src = this.mousing.getMouseDom(targ);
+	var dest = this.mousing.getMouseDom(reltg);
 	console.info("Mouse out test src id dest id",(src==null ? "null src" : src.id), (dest==null ? "null dest" : dest.id));
 	if( dest===null || src!==dest ) return this.mouseUp(e);
 	console.info("Same target - just ignoring this.");
@@ -306,7 +306,7 @@ function ImageMouseHandler() {
 ImageMouseHandler.prototype = new MouseHandler();
 
 /** Get the area to link the mouse listeners to */
-ImageMouseHandler.prototype.getMouseDom = target;
+ImageMouseHandler.prototype.getMouseDom = function(targ) { return targ; };
 
 /** Called before start is called to start loadings information/background images etc
  * @return true to indicate to handle this click.
@@ -338,8 +338,7 @@ ImageMouseHandler.prototype.prepareBase = ImageMouseHandler.prototype.prepare;
  * Finds the image display parent of the given object.  This is a top-level funciton that is
  * re-used.
  */
-ImageMouseHandler.prototype.getMouseDom = function (e) {
-	var src = target(e);
+ImageMouseHandler.prototype.getMouseDom = function (src) {
 	var clazz = src.className;
 	var prevChild = src;
 	if( clazz && clazz.baseVal ) clazz = clazz.baseVal;

@@ -43,6 +43,9 @@ WLController.prototype.prepare = function(e) {
 	this.prepareBase(e);
 	this.baseUrl = this.getImageUrl(["rows", "columns", "windowWidth", "windowCenter","imageQuality"]);
 	console.info("Window levelling layout %s url %s",this.layout.id, this.baseUrl);
+	this.cnt = 0;
+	this.totalCnt = 0;
+	this.timeSum = 0;
 
 	this.minPixel = this.layout.merged.get("minPixel");
 	if( this.minPixel==undefined ) {
@@ -114,23 +117,56 @@ WLController.prototype.mousemove = function WLC_mousemove(event) {
 };
 
 WLController.prototype.qualityOpts = "&rows=256";
+WLController.prototype.qualityLevel = 0;
+WLController.prototype.qualityOpts = ["&rows=512&imageQuality=0.6","&rows=512&imageQuality=0.4", "&rows=512&imageQuality=0.3",
+	"&rows=256&imageQuality=0.75","&rows=256&imageQuality=0.6", "&rows=256&imageQuality=0.4", "&rows=256&imageQuality=0.2"];
 
 /** This causes the image to be updated if it is complete, otherwise it just continues */
 WLController.prototype.updateImage = function WLC_updateImage() {
 	if( !this.loadImage ) {
 		if( this.width == this.loadWidth && this.center==this.loadCenter ) return;
+		if( this.delayTime ) {
+			if( this.delayTime<(new Date()).getTime() ) this.delayTime = undefined;
+			else return;
+		};
 		this.loadWidth = this.width;
 		this.loadCenter = this.center;
 		this.tries = 0;
-		var url = this.baseUrl + this.qualityOpts + "&windowWidth="+this.width+"&windowCenter="+this.center;
+		var url = this.baseUrl + this.qualityOpts[this.qualityLevel] + "&windowWidth="+this.width+"&windowCenter="+this.center;
 		//console.info("Loading %s", url);
 		this.loadImage = new Image();
 		this.loadImage.src = url;
+		this.loadStart = (new Date()).getTime();
 	}
 
 	if( this.loadImage.complete || this.tries > 10 ) {
 		this.setImageUrl(this.loadImage.src);
 		this.loadImage = null;
+		this.cnt++;
+		this.totalCnt++;
+		var now = (new Date()).getTime();
+		this.timeSum = this.timeSum + now-this.loadStart;
+		var avg = this.timeSum/this.cnt;
+		var len = (avg>0 ? 1000/avg : "infinite");
+		if((this.totalCnt % 10)==0) console.info("Average frame time",avg,"ms/frame rate",len,"frame/s","now",(now % 100000));
+		if( this.cnt > 20 ) {
+			this.cnt--;
+			this.timeSum = Math.floor(this.timeSum*0.95);
+		}
+		if( avg > 200 ) { 
+			this.qualityLevel++;
+			if( this.qualityLevel>=this.length ) {
+				console.info("Quality level is already at lowest quality.");
+				this.qualityLevel--;
+			} else {
+				console.info("Dropping quality level (higher is lower quality):",this.qualityLevel,"options",this.qualityOpts[this.qualityLevel]);
+				this.timeSum = 0;
+				this.cnt = 0;
+			}
+		} else if( avg < 100  ) {
+			if( this.qualityLevel>0 ) this.qualityLevel--;
+			else this.delayTime = (new Date()).getTime()+64;			
+		}
 	} else {
 		this.tries++;
 	}
