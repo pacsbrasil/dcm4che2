@@ -1,1 +1,0 @@
-$it.ReferencedSOPSequence.dicomObjects:srimage()$

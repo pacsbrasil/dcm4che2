@@ -1,1 +1,0 @@
-$it.ConceptCodeSequence.dicomObjects:{$it.CodeMeaning$}$

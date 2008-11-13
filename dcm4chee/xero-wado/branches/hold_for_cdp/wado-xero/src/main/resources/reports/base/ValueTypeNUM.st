@@ -1,1 +1,0 @@
-$it.MeasuredValueSequence.dicomObjects:{ $it.NumericValue$ $it.MeasurementUnitsCodeSequence.dicomObjects:{$it.CodeMeaning$}$ }$
