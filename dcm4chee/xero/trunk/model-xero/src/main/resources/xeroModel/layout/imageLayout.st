@@ -19,7 +19,7 @@ ImageLayout.prototype.MAGNIFY = "MAGNIFY";
 ImageLayout.prototype.SCALE_TO_FIT = "SCALE_TO_FIT";
 ImageLayout.prototype.TRUE_SIZE = "TRUE_SIZE";
 ImageLayout.prototype.urlCount = 0;
-ImageLayout.prototype.events = [".","../merged:windowWidth","../merged:windowCenter","../merged:invert"];
+ImageLayout.prototype.events = [".","../merged:windowWidth","../merged:windowCenter","../merged:invert","../merged:rotation","../merged:horizontalFlip"];
 ImageLayout.prototype.area="Image";
 
 
@@ -41,10 +41,14 @@ ImageLayout.prototype.navigateListener = function ImageMergedListener(navigate) 
 };
 
 /** Update the URLs if the window width changes */
-ImageLayout.prototype.namedListener = function(nav,vname,val) {
+ImageLayout.prototype.namedListener = function(nav,vname,val,prevVal) {
+	if( prevVal===val && val===undefined ) return;
 	console.info("Updating all image URLs for",nav.external.seriesUID);
-	this.addImageUrl(true);
 	this.relayout = true;
+	if( vname==="horizontalFlip" || vname==="rotation" ) {
+		this.updatePosition();
+	};
+	this.addImageUrl(true);
 };
 
 /** Adds an image URL to the set of URLs to display */
@@ -140,7 +144,7 @@ ImageLayout.prototype.createFullUrl = function ImageLayout_createFullUrl(base) {
 		ret.imageUrl = ret.imageUrl + "&amp;windowWidth="+ww+"&amp;windowCenter="+wc;
 	}
 	var isinvert = this.merged.get("invert");
-	if( isinvert ) {
+	if( isinvert && isinvert!=="FALSE" && isinvert!=="false" ) {
 		console.info("Invert is true.");
 		// Changes from the natural presentation to the inverted presentation - this is an OVERRIDE
 		// on the base value or base value + GSPS value, it isn't the base value itself.
@@ -240,7 +244,7 @@ ImageLayout.prototype.computeTranslate = function ImageLayout_computeTranslate()
 ImageLayout.prototype.computeSpatialTransform = function ImageLayout_computeSpatialTransform() {
 	this.rotation = this.merged.get("rotation");
 	var flip = this.merged.get("horizontalFlip");
-	if( flip && flip=="TRUE" ) this.flip = true;
+	if( flip && flip!=="FALSE" && flip!=="false" ) this.flip = true;
 	this.debug("Flip %s rotation %d", this.flip, this.rotation); 
 	this.flipRotate = (this.flip || this.rotation);
 };

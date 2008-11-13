@@ -80,10 +80,14 @@ XeroController.prototype.displayResize = function(op) {
 /** Sets the current display mode - that is, the operation that controls click etc */
 XeroController.prototype.displayMode = function(layId) {
 	var lay = this.model.layout.findLayout(layId);
-	console.info("Changing display mode to",lay.i18n);
-	this.model.navigate.setConversation("mode", lay.i18n);
-	// TODO - avoid a complete update, just do a lazy update of the changs
-	this.updateView("displayMode");
+	var toMode = lay.i18n;
+	if( lay.isActive && lay.children ) {
+		toMode = lay.findRotate(toMode,1).i18n;
+	}
+	console.info("Changing display mode to",toMode);
+	this.model.navigate.setConversation("mode", toMode);
+	// TODO - avoid a complete update, just do a lazy update of the changes
+	this.waitUpdate("displayMode");
 };
 
 /** Sets the current display mode - that is, the operation that controls click etc */

@@ -401,3 +401,5 @@ ImageMouseHandler.prototype.findLayout = function MouseHandler_findLayout() {
 
 /** Defines the individual dynamic controllers */
 $dynamic/windowLevel()$
+$dynamic/spat()$
+$dynamic/zoom()$

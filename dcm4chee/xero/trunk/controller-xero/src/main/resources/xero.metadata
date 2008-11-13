@@ -10,7 +10,7 @@ model=${factory:org.dcm4chee.xero.metadata.access.MapWithDefaults}
 static.xeroControllers=${class:org.dcm4chee.xero.metadata.access.ValueList}
 static.xeroControllers.displayController=displayController
 static.xeroControllers.reportController=reportController
-static.xeroControllers.dynamic=dynamic
+static.xeroControllers.dynamic=dynamic/dynamic
 static.xeroControllers.findController=findController
 static.xeroControllers.tabsController=tabsController
 

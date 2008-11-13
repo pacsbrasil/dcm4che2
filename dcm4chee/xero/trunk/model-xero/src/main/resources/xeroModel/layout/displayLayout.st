@@ -271,6 +271,7 @@ DisplayModeLay.prototype.namedListener = function (navigate, varName, newVal) {
 		console.info("Setting mode change on",this.i18n,"to",newActive,"mode event",newVal);
 		this.isActive = newActive;
 	}
+	this.relayout = true;
 };
 
 
