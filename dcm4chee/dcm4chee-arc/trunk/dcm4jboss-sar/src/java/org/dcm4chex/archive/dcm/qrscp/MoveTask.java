@@ -56,10 +56,8 @@ import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.UIDDictionary;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AAbort;
 import org.dcm4che.net.AAssociateAC;
@@ -120,8 +118,6 @@ public class MoveTask implements Runnable {
 
     private final int msgID;
 
-    private final boolean withoutPixeldata;
-
     private ActiveAssociation moveAssoc;
 
     private final List<String> failedIUIDs = new ArrayList<String>();
@@ -140,7 +136,8 @@ public class MoveTask implements Runnable {
 
     private boolean moveAssocClosed = false;
     
-    private ArrayList successfulTransferred = new ArrayList();
+    private ArrayList<FileInfo> successfulTransferred =
+            new ArrayList<FileInfo>();
     
     private ActiveAssociation storeAssoc;
 
@@ -198,7 +195,6 @@ public class MoveTask implements Runnable {
         this.moveRqData = moveRqData;
         this.aeData = aeData;
         this.moveDest = moveDest;
-        this.withoutPixeldata = service.isWithoutPixelData(moveDest);
         this.moveOriginatorAET = moveAssoc.getAssociation().getCallingAET();
         this.moveCalledAET = moveAssoc.getAssociation().getCalledAET();
         this.perfMon = service.getMoveScp().getPerfMonDelegate();
@@ -267,11 +263,11 @@ public class MoveTask implements Runnable {
             throw new DcmServiceException(Status.UnableToPerformSuboperations,
                     prompt);
         }
-        Iterator it = retrieveInfo.getCUIDs();
+        Iterator<String> it = retrieveInfo.getCUIDs();
         String cuid;
-        Set iuids;
+        Set<String> iuids;
         while (it.hasNext()) {
-            cuid = (String) it.next();
+            cuid = it.next();
             if (a.listAcceptedPresContext(cuid).isEmpty()) {
                 iuids = retrieveInfo.removeInstancesOfClass(cuid);
                 it.remove(); // Use Iterator itself to remove the current
@@ -308,7 +304,7 @@ public class MoveTask implements Runnable {
             }
             while (!canceled && retrieveInfo.nextMoveForward()) {
                 String retrieveAET = retrieveInfo.getMoveForwardAET();
-                Collection iuids = retrieveInfo.getMoveForwardUIDs();
+                Collection<String> iuids = retrieveInfo.getMoveForwardUIDs();
                 if (iuids.size() == size) {
                     if (log.isDebugEnabled())
                         log.debug("Forward original Move RQ to " + retrieveAET);
@@ -362,7 +358,7 @@ public class MoveTask implements Runnable {
     }
 
     private void forwardMove(String retrieveAET, Command moveRqCmd,
-            Dataset moveRqData, final Collection iuids) {
+            Dataset moveRqData, final Collection<String> iuids) {
         remaining -= iuids.size();
         final boolean[] receivedFinalRsp = { false };
         try {
@@ -478,13 +474,14 @@ public class MoveTask implements Runnable {
         Set<StudyInstanceUIDAndDirPath> studyInfos = 
                 new HashSet<StudyInstanceUIDAndDirPath>();
         Association a = storeAssoc.getAssociation();
-        Collection localFiles = retrieveInfo.getLocalFiles();
-        final Set remainingIUIDs = new HashSet(retrieveInfo.removeLocalIUIDs());
-        Iterator it = localFiles.iterator();
+        Collection<List<FileInfo>> localFiles = retrieveInfo.getLocalFiles();
+        final Set<String> remainingIUIDs = new HashSet<String>(
+                retrieveInfo.removeLocalIUIDs());
+        Iterator<List<FileInfo>> it = localFiles.iterator();
         while (a.getState() == Association.ASSOCIATION_ESTABLISHED && !canceled
                 && it.hasNext()) {
-            final List list = (List) it.next();
-            final FileInfo fileInfo = (FileInfo) list.get(0);
+            final List<FileInfo> list = it.next();
+            final FileInfo fileInfo = list.get(0);
             final String iuid = fileInfo.sopIUID;
             DimseListener storeScpListener = new DimseListener() {
 
