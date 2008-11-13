@@ -37,7 +37,9 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado;
 
-import static org.dcm4chee.xero.wado.WadoParams.*;
+import static org.dcm4chee.xero.wado.WadoParams.CONTENT_DISPOSITION;
+import static org.dcm4chee.xero.wado.WadoParams.OBJECT_UID;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -45,6 +47,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -76,150 +79,179 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class EncodeImage implements Filter<ServletResponseItem> {
-   private static final Logger log = LoggerFactory.getLogger(EncodeImage.class);
-   public static final String MAX_BITS = "maxBits";
+	private static final Logger log = LoggerFactory.getLogger(EncodeImage.class);
+	public static final String MAX_BITS = "maxBits";
 
-   private static final float DEFAULT_QUALITY = -1.0f;
-   
-   protected static Map<String, EncodeResponseInfo> contentTypeMap = new HashMap<String, EncodeResponseInfo>();
-   // TODO - replace the bit information with a set of additional params requested....
-   static {
-	  new EncodeResponseInfo("image/jp12", "image/jpeg", true, 12, "JPEG", UID.JPEGExtended24);
-	  new EncodeResponseInfo("image/jpls", "image/jpeg", false, 16, "JPEG-LS", UID.JPEGLSLossless, UID.JPEGLSLossyNearLossless);
-	  new EncodeResponseInfo("image/jpll", "image/jpeg", false, 16, "JPEG-LOSSLESS", UID.JPEGLossless);
-	  new EncodeResponseInfo("image/png", null, false, 0, null);
-	  new EncodeResponseInfo("image/png16", "image/png", false, 16, null);
-	  // image/jpeg is the default, so add a image/* as an additional mapping.
-	  new EncodeResponseInfo("image/jpeg", "image/jpeg", true, 0, "JPEG", UID.JPEGBaseline1, "image/*");
-	  new EncodeResponseInfo("image/jp2", null, false, 16, "JPEG2000", UID.JPEG2000, UID.JPEG2000LosslessOnly);
-	  new EncodeResponseInfo("image/gif", null, false, 0, null);
-	  new EncodeResponseInfo("image/bmp", null, false, 0, null);
-   };
+	private static final float DEFAULT_QUALITY = -1.0f;
 
-   /*
-     * Include the WADO parameters that are handled further down the chain -
-     * These could be explicitly added by handlers, but it is useful to include
-     * them here right now.
-     */
-   String[] wadoParameters = new String[] { "windowCenter", "windowWidth", "imageUID", "studyUID", "seriesUID", "objectUID",
-		 "frameNumber", "rgb", // Could be re-calculated fairly easily, but
-		 // right now it isn't worthwhile.
-		 "region", "rows", "cols", "presentationUID", };
+	protected static Map<String, EncodeResponseInfo> contentTypeMap = new HashMap<String, EncodeResponseInfo>();
+	// TODO - replace the bit information with a set of additional params requested....
+	static {
+		new EncodeResponseInfo("image/jp12", "image/jpeg", true, 12, "JPEG", UID.JPEGExtended24);
+		new EncodeResponseInfo("image/jpls", "image/jpeg", false, 16, "JPEG-LS", UID.JPEGLSLossless, UID.JPEGLSLossyNearLossless);
+		new EncodeResponseInfo("image/jpll", "image/jpeg", false, 16, "JPEG-LOSSLESS", UID.JPEGLossless);
+		new EncodeResponseInfo("image/png", null, false, 0, null);
+		new EncodeResponseInfo("image/png16", "image/png", false, 16, null);
+		// image/jpeg is the default, so add a image/* as an additional mapping.
+		new EncodeResponseInfo("image/jpeg", "image/jpeg", true, 0, "JPEG", UID.JPEGBaseline1, "image/*");
+		new EncodeResponseInfo("image/jp2", null, false, 16, "JPEG2000", UID.JPEG2000, UID.JPEG2000LosslessOnly);
+		new EncodeResponseInfo("image/gif", null, false, 0, null);
+		new EncodeResponseInfo("image/bmp", null, false, 0, null);
+	};
 
-   /**
-     * Filter the image by returning an JPEG type image object
-     * 
-     * @param filterItem
-     *            is the information about what to filter.
-     * @param map
-     *            contains the parameters used to determine the encoding type.
-     * @return A response that can be used to write the image to a stream in the
-     *         provided encoding type, or image/jpeg if none.
-     */
-   public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> map) {
-	  String contentType = (String) map.get("contentType");
-	  // If the request contains relative, it means it wants an image or display relative object which MAY
-	  // not mean it needs actual pixel data to display, so return an image regardless.
-	  boolean containsRelative = map.containsKey("relative");
-	  if (contentType == null)
-		 contentType = (containsRelative ? "image/png" : "image/jpeg");
-	  log.info("Encoding image in content type={}", contentType);
-	  DicomObject ds = dicomImageHeader.filter(null,map);
-	  if( ds!=null && !(ds.contains(Tag.PixelRepresentation) || containsRelative) ) {
-		 log.info("DICOM does not contain pixel representation.");
-		 return filterItem.callNextFilter(map);
-	  }
+	/*
+	 * Include the WADO parameters that are handled further down the chain -
+	 * These could be explicitly added by handlers, but it is useful to include
+	 * them here right now.
+	 */
+	String[] wadoParameters = new String[] { "windowCenter", "windowWidth", "imageUID", "studyUID", "seriesUID", "objectUID",
+			"frameNumber", "rgb", // Could be re-calculated fairly easily, but
+			// right now it isn't worthwhile.
+			"region", "rows", "cols", "presentationUID", };
 
-	  float quality = DEFAULT_QUALITY;
-	  String sQuality = (String) map.get("imageQuality");
-	  if (sQuality != null)
-		 quality = Float.parseFloat(sQuality);
-	  String queryStr = computeQueryStr(map);
-	  map.put(org.dcm4chee.xero.metadata.filter.MemoryCacheFilter.KEY_NAME, queryStr);
-	  EncodeResponseInfo eri = contentTypeMap.get(contentType);
-	  boolean multipleEncoding = contentType.indexOf(',')>=0;
-	  if ((eri != null && eri.maxBits > 8) || multipleEncoding) {
-		 String tsuid = ds.getString(Tag.TransferSyntaxUID);
-		 EncodeResponseInfo tsEri = contentTypeMap.get(tsuid);
-		 log.info("Source tsuid="+tsuid);
-		 if (tsEri != null && contentType.indexOf(tsEri.mimeType) >= 0) {
-			contentType = tsEri.mimeType;
-			log.debug("Trying to read raw image for {}",map.get(OBJECT_UID));
-			MemoryCacheFilter.addToQuery(map, WadoImage.IMG_AS_BYTES, "true");
-			eri = tsEri;
-			contentType = eri.mimeType;
-			multipleEncoding = false;
-		 }
-		 if( eri!=null && eri.maxBits!=0 && map.containsKey(MAX_BITS)==false) map.put(MAX_BITS, eri.maxBits);
-	  }
-	  if( multipleEncoding ) {
-		 // This won't happen if we found the encoding that exists in the actual image, eg IMG_AS_BYTES return.
-		 for( String testType : contentType.split(",") ) {
-			int semi = testType.indexOf(';');
-			if( semi>0 ) testType = testType.substring(0,semi);
-			testType = testType.trim();
-			eri = contentTypeMap.get(testType);
-			if( eri!=null ) break;
-		 }
-	  }
-	  if( eri==null ) {
-		 return new ErrorResponseItem(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,"Content type "+contentType+" isn't supported.");
-	  }
-	  WadoImage image = wadoImageFilter.filter(null, map);
-	  if( image==null ) return new ErrorResponseItem(HttpServletResponse.SC_NO_CONTENT,"No content found.");
-	  return new ImageServletResponseItem(image, eri, quality);
-   }
+	/**
+	 * Filter the image by returning an JPEG type image object
+	 * 
+	 * @param filterItem
+	 *            is the information about what to filter.
+	 * @param map
+	 *            contains the parameters used to determine the encoding type.
+	 * @return A response that can be used to write the image to a stream in the
+	 *         provided encoding type, or image/jpeg if none.
+	 */
+	public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> map) {
+		String contentType = (String) map.get("contentType");
+		// If the request contains relative, it means it wants an image or display relative object which MAY
+		// not mean it needs actual pixel data to display, so return an image regardless.
+		boolean containsRelative = map.containsKey("relative");
+		if (contentType == null)
+			contentType = (containsRelative ? "image/png" : "image/jpeg");
+		log.info("Encoding image in content type={}", contentType);
+		DicomObject ds = dicomImageHeader.filter(null,map);
+		if( ds!=null && !(ds.contains(Tag.PixelRepresentation) || containsRelative) ) {
+			log.info("DICOM does not contain pixel representation.");
+			return filterItem.callNextFilter(map);
+		}
 
-   /**
-     * Figures out what the query string should be - in a fixed order, using
-     * just the handled items.
-     * 
-     * @param map
-     *            to get the WADO parameters from
-     * @param A
-     *            URI parameter string with the relevant WADO parameters in it,
-     *            as defined by wadoParameters
-     */
-   String computeQueryStr(Map<String, ?> map) {
-	  StringBuffer ret = new StringBuffer();
-	  for (String key : wadoParameters) {
-		 Object value = map.get(key);
-		 if (value != null) {
-			ret.append("&").append(key).append("=").append(value);
-		 }
-	  }
-	  return ret.toString();
-   }
+		float quality = DEFAULT_QUALITY;
+		String sQuality = (String) map.get("imageQuality");
+		if (sQuality != null)
+			quality = Float.parseFloat(sQuality);
+		String queryStr = computeQueryStr(map);
+		map.put(org.dcm4chee.xero.metadata.filter.MemoryCacheFilter.KEY_NAME, queryStr);
+		EncodeResponseInfo eri = contentTypeMap.get(contentType);
+		boolean multipleEncoding = contentType.indexOf(',')>=0;
+		if ((eri != null && eri.maxBits > 8) || multipleEncoding) {
+			String tsuid = ds.getString(Tag.TransferSyntaxUID);
+			EncodeResponseInfo tsEri = contentTypeMap.get(tsuid);
+			log.info("Source tsuid="+tsuid);
+			if (tsEri != null && contentType.indexOf(tsEri.mimeType) >= 0) {
+				contentType = tsEri.mimeType;
+				log.debug("Trying to read raw image for {}",map.get(OBJECT_UID));
+				MemoryCacheFilter.addToQuery(map, WadoImage.IMG_AS_BYTES, "true");
+				eri = tsEri;
+				contentType = eri.mimeType;
+				multipleEncoding = false;
+			}
+			if( eri!=null && eri.maxBits!=0 && map.containsKey(MAX_BITS)==false) map.put(MAX_BITS, eri.maxBits);
+		}
+		if( multipleEncoding ) {
+			// This won't happen if we found the encoding that exists in the actual image, eg IMG_AS_BYTES return.
+			for( String testType : contentType.split(",") ) {
+				int semi = testType.indexOf(';');
+				if( semi>0 ) testType = testType.substring(0,semi);
+				testType = testType.trim();
+				eri = contentTypeMap.get(testType);
+				if( eri!=null ) break;
+			}
+		}
+		if( eri==null ) {
+			return new ErrorResponseItem(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,"Content type "+contentType+" isn't supported.");
+		}
+		WadoImage image = wadoImageFilter.filter(null, map);
+		if( image==null ) return new ErrorResponseItem(HttpServletResponse.SC_NO_CONTENT,"No content found.");
+		return new ImageServletResponseItem(image, eri, quality);
+	}
 
-   /** Adds encoding information to the params map based on the transfer syntax or (single)
-    * contentType tsuid.
-    * 
-    * @param tsuid  The transfer syntax UID or single mime type with no parameters.
-    * @param params
-    */
-   public static void addEncodingInfo(String tsuid, Map<String, Object> params) {
-	  EncodeResponseInfo eri = contentTypeMap.get(tsuid);
-	  if( eri==null ) return;
-	  params.put(MAX_BITS, eri.maxBits);
-   }
+	/**
+	 * Figures out what the query string should be - in a fixed order, using
+	 * just the handled items.
+	 * 
+	 * @param map
+	 *            to get the WADO parameters from
+	 * @param A
+	 *            URI parameter string with the relevant WADO parameters in it,
+	 *            as defined by wadoParameters
+	 */
+	String computeQueryStr(Map<String, ?> map) {
+		StringBuffer ret = new StringBuffer();
+		for (String key : wadoParameters) {
+			Object value = map.get(key);
+			if (value != null) {
+				ret.append("&").append(key).append("=").append(value);
+			}
+		}
+		return ret.toString();
+	}
 
-   private Filter<DicomObject> dicomImageHeader;
+	/** Adds encoding information to the params map based on the transfer syntax or (single)
+	 * contentType tsuid.
+	 * 
+	 * @param tsuid  The transfer syntax UID or single mime type with no parameters.
+	 * @param params
+	 */
+	public static void addEncodingInfo(String tsuid, Map<String, Object> params) {
+		EncodeResponseInfo eri = contentTypeMap.get(tsuid);
+		if( eri==null ) return;
+		params.put(MAX_BITS, eri.maxBits);
+	}
 
-   /** Gets the filter that returns the dicom object image header */
+	/** Returns the transferSyntax corresponding to the file format of an image. Returns null
+	 * when the image format is not recognized or the compression type is not jpeg. 
+	 * 
+	 * @param fileFormat The file format of an image file.
+	 * @return
+	 */
+	public static String getTransferSyntaxFromFileFormat(String fileFormat){
+		String mimeType = "image/" + fileFormat;
+		String transferSyntax;
+		
+		/* Find the transferSyntax stored as key corresponding to the mimeType stored
+		 * in the EncodeResponseInfo entry. when more than one corresponds, a random one
+		 * is chosen. */ 		
+		Set<Map.Entry<String, EncodeResponseInfo>>  set = contentTypeMap.entrySet();	
+		for(Map.Entry<String, EncodeResponseInfo> entry : set){					
+			EncodeResponseInfo eri = entry.getValue();		   
+			if (mimeType.equals(eri.mimeType)){
+				transferSyntax = entry.getKey();
+				if (!transferSyntax.equalsIgnoreCase(mimeType)){
+					return transferSyntax;
+				}
+			}
+		}
+		
+		log.warn("The file format " + fileFormat + " does not correspond to a transfer syntax UID");
+		return null;
+	}
+
+
+	private Filter<DicomObject> dicomImageHeader;
+
+	/** Gets the filter that returns the dicom object image header */
 	public Filter<DicomObject> getDicomImageHeader() {
-   	return dicomImageHeader;
-   }
+		return dicomImageHeader;
+	}
 
 	@MetaData(out="${ref:dicomImageHeader}")
 	public void setDicomImageHeader(Filter<DicomObject> dicomImageHeader) {
-   	this.dicomImageHeader = dicomImageHeader;
-   }
-	
-   private Filter<WadoImage> wadoImageFilter;
+		this.dicomImageHeader = dicomImageHeader;
+	}
+
+	private Filter<WadoImage> wadoImageFilter;
 
 	public Filter<WadoImage> getWadoImageFilter() {
-   	return wadoImageFilter;
-   }
+		return wadoImageFilter;
+	}
 
 	/**
 	 * Sets the filter to use for the wado image data.
@@ -227,180 +259,179 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 	 */
 	@MetaData(out="${ref:wadoImg}")
 	public void setWadoImageFilter(Filter<WadoImage> wadoImageFilter) {
-   	this.wadoImageFilter = wadoImageFilter;
-   }
+		this.wadoImageFilter = wadoImageFilter;
+	}
 
 
 }
 
 /** Does the actual writing to the stream */
 class ImageServletResponseItem implements ServletResponseItem {
-   private static Logger log = LoggerFactory.getLogger(ImageServletResponseItem.class);
+	private static Logger log = LoggerFactory.getLogger(ImageServletResponseItem.class);
 
-   String contentType;
+	String contentType;
 
-   ImageWriter writer;
+	ImageWriter writer;
 
-   ImageWriteParam imageWriteParam;
+	ImageWriteParam imageWriteParam;
 
-   IIOMetadata iiometadata;
+	IIOMetadata iiometadata;
 
-   WadoImage wadoImage;
+	WadoImage wadoImage;
 
-   private int maxAge = 3600;
+	private int maxAge = 3600;
 
-   // TODO Make this come from metadata
-   // CLIB version
-   static String preferred_name_start2 = "com.sun.media.imageioimpl.plugins";
+	// TODO Make this come from metadata
+	// CLIB version
+	static String preferred_name_start2 = "com.sun.media.imageioimpl.plugins";
 
-   // Agfa proprietary version
-   static String preferred_name_start = "com.agfa";
-   // Pure Java version
-   // static String preferred_name_start = "com.sun.imageio.plugins";
+	// Agfa proprietary version
+	static String preferred_name_start = "com.agfa";
+	// Pure Java version
+	// static String preferred_name_start = "com.sun.imageio.plugins";
 
-   /**
-     * Create an image servlet response to write the given image to the response
-     * stream.
-     * 
-     * @param image
-     *            is the data to write to the stream
-     * @param contentType
-     *            is the type of image encoding to use (image/jpeg etc) - any
-     *            available encoder will be used
-     * @param quality
-     *            is the JPEG lossy quality (may eventually be other types as
-     *            well, but currently that is the only one available)
-     */
-   public ImageServletResponseItem(WadoImage image, EncodeResponseInfo eri, float quality) {
-	  Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(eri.lookupMimeType);
-	  ImageWriter writerIt = writers.next();
-	  while (writers.hasNext()) {
-		 String name = writerIt.getClass().getName();
-		 if( name.startsWith(preferred_name_start) ) {
+	/**
+	 * Create an image servlet response to write the given image to the response
+	 * stream.
+	 * 
+	 * @param image
+	 *            is the data to write to the stream
+	 * @param contentType
+	 *            is the type of image encoding to use (image/jpeg etc) - any
+	 *            available encoder will be used
+	 * @param quality
+	 *            is the JPEG lossy quality (may eventually be other types as
+	 *            well, but currently that is the only one available)
+	 */
+	public ImageServletResponseItem(WadoImage image, EncodeResponseInfo eri, float quality) {
+		Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(eri.lookupMimeType);
+		ImageWriter writerIt = writers.next();
+		while (writers.hasNext()) {
+			String name = writerIt.getClass().getName();
+			if( name.startsWith(preferred_name_start) ) {
+				writer = writerIt;
+				break;
+			}
+			else if( name.startsWith(preferred_name_start2) ) {
+				writer = writerIt;
+			}
+			log.debug("Skipping {}", name);
+			writerIt = writers.next();
+		}
+		if( writer==null ) {
 			writer = writerIt;
-			break;
-		 }
-		 else if( name.startsWith(preferred_name_start2) ) {
-			writer = writerIt;
-		 }
-		 log.debug("Skipping {}", name);
-		 writerIt = writers.next();
-	  }
-	  if( writer==null ) {
-		 writer = writerIt;
-		 log.warn("Couldn't find preferred writer, using "+writer.getClass()+" instead.");
-	  }
-	  this.contentType = eri.mimeType;
-	  this.wadoImage = image;
-	  if (eri!=null && quality >= 0f && quality <= 1f && eri.isLossyQuality) {
-		 imageWriteParam = writer.getDefaultWriteParam();
-		 imageWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-		 imageWriteParam.setCompressionType("JPEG");
-		 imageWriteParam.setCompressionQuality(quality);
-	  }
-	  if (eri.compressionType != null) {
-		 if (imageWriteParam == null)
+			log.warn("Couldn't find preferred writer, using "+writer.getClass()+" instead.");
+		}
+		this.contentType = eri.mimeType;
+		this.wadoImage = image;
+		if (eri!=null && quality >= 0f && quality <= 1f && eri.isLossyQuality) {
 			imageWriteParam = writer.getDefaultWriteParam();
-		 imageWriteParam.setCompressionType(eri.compressionType);
-	  }
+			imageWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+			imageWriteParam.setCompressionType("JPEG");
+			imageWriteParam.setCompressionQuality(quality);
+		}
+		if (eri.compressionType != null) {
+			if (imageWriteParam == null)
+				imageWriteParam = writer.getDefaultWriteParam();
+			imageWriteParam.setCompressionType( eri.compressionType);
+		}
 
-   }
+	}
 
-   /**
-     * Write the response to the provided stream. Sets the content type and
-     * writes to the output stream.
-     * 
-     * @param httpRequest
-     *            unused
-     * @param response
-     *            that the image is written to. Also sets the content type.
-     */
-   @SuppressWarnings("unchecked")
-   public void writeResponse(HttpServletRequest httpRequest, HttpServletResponse response) throws IOException {
-	  if (wadoImage == null) {
-		 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Image not found.");
-		 log.warn("Image not found.");
-		 return;
-	  }
-	  long start = System.nanoTime();
-	  response.setContentType(contentType);
-	  response.setHeader("Cache-Control", "max-age=" + maxAge);
-	  // Because this is controlled by login, it will have Pragma and Expires
-        // set
-	  // to different values, and those need to be removed to get this cached.
-	  response.setHeader("Pragma", null);
-	  response.setHeader("Expires", null);
-	  String filename = wadoImage.getFilename();
-	  if( filename!=null ) {
-		  int extPos = 1+contentType.indexOf("/");
-		  response.setHeader(CONTENT_DISPOSITION, "inline;filename="+filename+"."+contentType.substring(extPos));
-	  }
-	  Collection<String> headers = (Collection<String>) wadoImage.getParameter("responseHeaders");
-	  if (headers != null) {
-		 for (String key : headers) {
-			response.setHeader(key, (String) wadoImage.getParameter(key));
-		 }
-	  }
-	  
-	  byte[] rawImage;
-	  String msg;
-	  if( wadoImage.getValue()==null ) {
-		 rawImage = (byte[]) wadoImage.getParameter(WadoImage.IMG_AS_BYTES);
-		 msg = "Raw image ";
-	  } else {
-		  ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		  ImageOutputStream ios = new MemoryCacheImageOutputStream(baos);
-		  writer.setOutput(ios);
-		  IIOImage iioimage = new IIOImage(wadoImage.getValue(), null, null);
-		  writer.write(iiometadata, iioimage, imageWriteParam);
-	  	  writer.dispose();
-	  	  ios.close();
-	     rawImage = baos.toByteArray();
-	     baos.close();
-	     msg = "Encoding with " + writer.getClass();
-	  }
-     long mid = System.nanoTime();
-     response.setContentLength(rawImage.length);
-	  OutputStream os = response.getOutputStream();
-	  os.write(rawImage);
-	  os.flush();
+	/**
+	 * Write the response to the provided stream. Sets the content type and
+	 * writes to the output stream.
+	 * 
+	 * @param httpRequest
+	 *            unused
+	 * @param response
+	 *            that the image is written to. Also sets the content type.
+	 */
+	@SuppressWarnings("unchecked")
+	public void writeResponse(HttpServletRequest httpRequest, HttpServletResponse response) throws IOException {
+		if (wadoImage == null) {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Image not found.");
+			log.warn("Image not found.");
+			return;
+		}
+		long start = System.nanoTime();
+		response.setContentType(contentType);
+		response.setHeader("Cache-Control", "max-age=" + maxAge);
+		// Because this is controlled by login, it will have Pragma and Expires
+		// set
+		// to different values, and those need to be removed to get this cached.
+		response.setHeader("Pragma", null);
+		response.setHeader("Expires", null);
+		String filename = wadoImage.getFilename();
+		if( filename!=null ) {
+			int extPos = 1+contentType.indexOf("/");
+			response.setHeader(CONTENT_DISPOSITION, "inline;filename="+filename+"."+contentType.substring(extPos));
+		}
+		Collection<String> headers = (Collection<String>) wadoImage.getParameter("responseHeaders");
+		if (headers != null) {
+			for (String key : headers) {
+				response.setHeader(key, (String) wadoImage.getParameter(key));
+			}
+		}
 
-	  if( log.isInfoEnabled() ) {
-		  log.info(msg+" took "+((mid-start)/1e6)+" Writing took " + ((System.nanoTime() - mid)/1e6));
-	  }
-   }
+		byte[] rawImage;
+		String msg;
+		if( wadoImage.getValue()==null ) {
+			rawImage = (byte[]) wadoImage.getParameter(WadoImage.IMG_AS_BYTES);
+			msg = "Raw image ";
+		} else {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ImageOutputStream ios = new MemoryCacheImageOutputStream(baos);
+			writer.setOutput(ios);
+			IIOImage iioimage = new IIOImage(wadoImage.getValue(), null, null);
+			writer.write(iiometadata, iioimage, imageWriteParam);
+			writer.dispose();
+			ios.close();
+			rawImage = baos.toByteArray();
+			baos.close();
+			msg = "Encoding with " + writer.getClass();
+		}
+		long mid = System.nanoTime();
+		response.setContentLength(rawImage.length);
+		OutputStream os = response.getOutputStream();
+		os.write(rawImage);
+		os.flush();
 
+		if( log.isInfoEnabled() ) {
+			log.info(msg+" took "+((mid-start)/1e6)+" Writing took " + ((System.nanoTime() - mid)/1e6));
+		}
+	}
 }
 
 class EncodeResponseInfo {
-   // Read from this mime type.
-   public String mimeType;
+	// Read from this mime type.
+	public String mimeType;
 
-   // Lookup the writer from this mime type.
-   public String lookupMimeType;
+	// Lookup the writer from this mime type.
+	public String lookupMimeType;
 
-   // Set the lossy quality from the header
-   public boolean isLossyQuality;
+	// Set the lossy quality from the header
+	public boolean isLossyQuality;
 
-   // Maximum number of encodeable bits.
-   public int maxBits;
+	// Maximum number of encodeable bits.
+	public int maxBits;
 
-   // Set the compression type to this value
-   public String compressionType;
+	// Set the compression type to this value
+	public String compressionType;
 
-   public EncodeResponseInfo(String mimeType, String lookupMimeType, boolean isLossyQuality, int maxBits, String compressionType,
-		 String... transferSyntaxes) {
-	  this.mimeType = mimeType;
-	  if( lookupMimeType==null ) lookupMimeType = mimeType;
-	  this.lookupMimeType = lookupMimeType;
-	  this.isLossyQuality = isLossyQuality;
-	  this.maxBits = maxBits;
-	  this.compressionType = compressionType;
-	  if (transferSyntaxes != null) {
-		 for (String ts : transferSyntaxes) {
-			EncodeImage.contentTypeMap.put(ts, this);
-		 }
-	  }
-	  EncodeImage.contentTypeMap.put(mimeType, this);
-   }
+	public EncodeResponseInfo(String mimeType, String lookupMimeType, boolean isLossyQuality, int maxBits, String compressionType,
+			String... transferSyntaxes) {
+		this.mimeType = mimeType;
+		if( lookupMimeType==null ) lookupMimeType = mimeType;
+		this.lookupMimeType = lookupMimeType;
+		this.isLossyQuality = isLossyQuality;
+		this.maxBits = maxBits;
+		this.compressionType = compressionType;
+		if (transferSyntaxes != null) {
+			for (String ts : transferSyntaxes) {
+				EncodeImage.contentTypeMap.put(ts, this);
+			}
+		}
+		EncodeImage.contentTypeMap.put(mimeType, this);
+	}
 }

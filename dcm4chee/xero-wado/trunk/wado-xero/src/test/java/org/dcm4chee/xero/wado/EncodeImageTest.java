@@ -37,7 +37,16 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado;
 
+import static org.easymock.EasyMock.anyObject;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
@@ -45,15 +54,15 @@ import javax.servlet.http.HttpServletResponse;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.servlet.CaptureServletOutputStream;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
+import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import static org.easymock.EasyMock.*;
 
 /** Tests that images can be encoded as JPEGs, GIF and PNG files.
  * Uses the GradedWadoImage as an image source.
@@ -100,6 +109,50 @@ public class EncodeImageTest {
 		// Not sure how big it should be, but it had better have some length. 
 		assert data.length>16;
 		verify(mock);
+	}
+	
+	@Test
+	public void testGetTransferSyntaxFromFileFormat(){
+		String output;
+		
+		output = EncodeImage.getTransferSyntaxFromFileFormat("jp12");	;
+		assert output.equalsIgnoreCase(UID.forName("JPEGExtended24"));		
+		
+		output = EncodeImage.getTransferSyntaxFromFileFormat("jpls");
+		if (!(output.equalsIgnoreCase(UID.forName("JPEGLSLossless")) ||
+				output.equalsIgnoreCase(UID.forName("JPEGLSLossyNearLossless")))){
+			Assert.fail();
+		}
+		
+		output = EncodeImage.getTransferSyntaxFromFileFormat("jpll");
+		assert output.equalsIgnoreCase(UID.forName("JPEGLossless"));
+		
+		output = EncodeImage.getTransferSyntaxFromFileFormat("jpeg");
+		assert output.equalsIgnoreCase(UID.forName("JPEGBaseline1"));
+		
+		output = EncodeImage.getTransferSyntaxFromFileFormat("jp2");
+		if (!(output.equalsIgnoreCase(UID.forName("JPEG2000")) ||
+				output.equalsIgnoreCase(UID.forName("JPEG2000LosslessOnly")))){
+			Assert.fail();
+		}
+		
+		List<String> fileFormatsOther = new ArrayList<String>();
+		fileFormatsOther.add("bmp");
+		fileFormatsOther.add("gif");
+		fileFormatsOther.add("png");
+		fileFormatsOther.add("png16");			
+		for (String input : fileFormatsOther){
+			output = EncodeImage.getTransferSyntaxFromFileFormat(input);
+			Assert.assertNull(output);
+		}
+		
+		List<String> fileFormatsUnknown = new ArrayList<String>();
+		fileFormatsUnknown.add("jpg");
+		fileFormatsUnknown.add("test");
+		for (String input : fileFormatsUnknown){
+			output = EncodeImage.getTransferSyntaxFromFileFormat(input);			
+			Assert.assertNull(output);
+		}		
 	}
 }
  
