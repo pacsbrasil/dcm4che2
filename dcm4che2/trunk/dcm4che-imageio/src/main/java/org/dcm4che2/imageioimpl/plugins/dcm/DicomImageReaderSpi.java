@@ -71,10 +71,23 @@ public class DicomImageReaderSpi extends ImageReaderSpi {
 
     
     public DicomImageReaderSpi() {
-        super(vendor, version, formatNames, suffixes, MIMETypes,
+        this(vendor, version, MIMETypes,
                 "org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader",
-                STANDARD_INPUT_TYPE, null, false, null, null, null,
-                null, false, null, null, null, null);
+                STANDARD_INPUT_TYPE, null, false, false);
+    }
+    
+    /**
+     * A constructor added to easier extend this class.
+     */
+    protected DicomImageReaderSpi(String vendorName, String version,  
+    		String[] MIMETypes, String readerClassName, Class[] inputTypes, 
+    		String[] writerSpiNames,  boolean supportsStandardStreamMetadataFormat, 
+    		boolean supportsStandardImageMetadataFormat){
+    	
+    	super(vendorName, version, formatNames, suffixes, MIMETypes, readerClassName, 
+    			inputTypes, writerSpiNames, supportsStandardStreamMetadataFormat,
+    			null, null, null, null, supportsStandardImageMetadataFormat, 
+    			null, null, null, null);
     }
 
     @Override
