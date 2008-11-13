@@ -40,7 +40,8 @@
       <name>XDSRegistryURI</name>
       <type>java.lang.String</type>
       <descriptors>
-      	 <value value="http://129.6.24.109:9080/axis2/services/xdsregistryb"/>
+         <value value="http://ihexds.nist.gov:9080/tf5/services/xdsregistryb" /> <!-- 2008-2009 -->            
+      	 <!--  <value value="http://129.6.24.109:9080/axis2/services/xdsregistryb"/> 2007-2008 -->
       </descriptors>
    </attribute>
  
