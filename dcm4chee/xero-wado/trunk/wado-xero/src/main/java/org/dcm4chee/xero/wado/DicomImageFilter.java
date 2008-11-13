@@ -170,7 +170,7 @@ public class DicomImageFilter implements Filter<WadoImage> {
      * @param width
      * @param height
      */
-   protected String updateParamFromRegion(ImageReadParam read, Map<String, Object> params, int width, int height) {
+   public String updateParamFromRegion(ImageReadParam read, Map<String, Object> params, int width, int height) {
      String ret = "";
 	  float[] region = getFloats(params, "region", null);
 	  int rows = getInt(params, "rows");
