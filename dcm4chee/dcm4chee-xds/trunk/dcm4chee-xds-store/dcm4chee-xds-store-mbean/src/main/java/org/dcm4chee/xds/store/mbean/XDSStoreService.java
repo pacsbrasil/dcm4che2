@@ -270,8 +270,8 @@ public class XDSStoreService extends ServiceMBeanSupport {
     public XDSDocument retrieveDocument(String docUid, String mime) throws IOException {
         log.info("#### Retrieve Document from storage:"+docUid);
         BaseDocument doc = docStore.getDocument(docUid, mime);
-        return doc != null && doc.getAvailability().compareTo(Availability.UNAVAILABLE) < 0 ? null  :
-            new XDSDocument(docUid, mime, getXdsDocWriter(doc));
+        return doc != null && doc.getAvailability().compareTo(Availability.UNAVAILABLE) < 0 ? 
+            new XDSDocument(docUid, mime, getXdsDocWriter(doc)) : null;
     }
 
     /**
