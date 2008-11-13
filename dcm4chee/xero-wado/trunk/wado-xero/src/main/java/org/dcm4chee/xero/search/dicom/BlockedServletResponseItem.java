@@ -46,6 +46,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.TransferSyntax;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4chee.xero.metadata.filter.Filter;
@@ -99,7 +100,7 @@ public class BlockedServletResponseItem implements ServletResponseItem, ResultFr
 		 if( uid==null ) uid = data.getString(Tag.PatientID);
 		 log.info("Adding cfind result "+uid);
 		 dos.writeHeader(Tag.Item, null, -1);
-		 dos.writeDicomFile(data);
+		 dos.writeDataset(data,TransferSyntax.NoPixelData);
 		 dos.writeHeader(Tag.ItemDelimitationItem, null, 0);
 	  } 
 	  catch (IOException e) {
