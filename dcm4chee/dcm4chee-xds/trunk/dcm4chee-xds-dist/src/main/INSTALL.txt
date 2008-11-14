@@ -6,13 +6,19 @@ Installed Modules:
 dcm4chee-xds-common:	   Common classes for XDS implementation
 dcm4chee-xdsa-repository:  XDS.a Repository implementation
 dcm4chee-xdsb-repo:        XDS.b Repository implementation
-dcm4chee-xdsb-src:         XDS.b Source Service (XDS.a -> XDS.b Bridge
 dcm4chee-xds-store:        Persistence Layer Service for XDS documents
 dcm4chee-xds-consumer:     XDS Stored Query Service for Consumer (and Source - document life-cycle)
 dcm4chee-xdscfg:           XDS Configuration Management service
 dcm4chee-xds-registry:     XDS Registry service (Mocking service)
 dcm4chee-docstore:         Generic Document Storage
 ------------------------------------------------------------------------------------------
+
+Included Modules but not installed (deployed): 
+------------------------------------------------------------------------------------------
+dcm4chee-xdsb-src:         XDS.b Source Service (XDS.a -> XDS.b Bridge
+dcm4chee-xds-consumer:     XDS Stored Query Service for Consumer (and Source - document life-cycle)
+------------------------------------------------------------------------------------------
+(not used by XDS Repository actor and therefore moved to <XDS_HOME>/extras directory)
 
 Minimum System Requirements
 JDK 5 or higher.
@@ -25,7 +31,6 @@ Requirements:
 
 Downloads:
    JBoss 4.2.3.GA:                 http://labs.jboss.com/jbossas/downloads
-   JBossWs-3.0.1-native-2.0.4.GA:  http://www.jboss.org/downloading/?projectId=jbossws&url=/jbossws/downloads/jbossws-3.0.1-native-2.0.4.GA.zip
 
 Installation Procedure:
 

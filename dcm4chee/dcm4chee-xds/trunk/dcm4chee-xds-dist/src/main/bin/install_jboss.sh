@@ -119,4 +119,8 @@ cp -v -R "$JBOSS_SERV"/deploy/jmx-console.war/WEB-INF/classes \
 echo Install additional dcm4chee-docstore for standalone XDS distribution:
 cp -v -R "$DCM4CHEE_HOME"/standalone/lib "$DCM4CHEE_SERV"
   
+echo Move XDS.b Source and XDS Query services from deploy directory to 'extras'
+mkdir "$DCM4CHEE_HOME"/extras
+mv "$DCM4CHEE_SERV"/deploy/dcm4chee-xdsb-src-mbean-0.0.2.sar "$DCM4CHEE_HOME"/extras
+mv "$DCM4CHEE_SERV"/deploy/dcm4chee-xds-consumer-query-0.0.2.sar "$DCM4CHEE_HOME"/extras
   

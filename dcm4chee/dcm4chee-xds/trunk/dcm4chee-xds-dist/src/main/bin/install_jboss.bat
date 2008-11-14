@@ -155,5 +155,10 @@ xcopy /S "%JBOSS_WEB_CONSOLE%\WEB-INF\tlds" "%DCM4CHEE_WEB_CONSOLE%\WEB-INF\tlds
 echo Install additional dcm4chee-docstore for standalone XDS distribution:
 xcopy /S "%DCM4CHEE_HOME%"\standalone\lib "%DCM4CHEE_SERV%\lib\"
 
+echo Move XDS.b Source and XDS Query services from deploy directory to 'extras'
+md "%DCM4CHEE_HOME%"\extras
+move "%DCM4CHEE_SERV%"\deploy\dcm4chee-xdsb-src-mbean-0.0.2.sar "%DCM4CHEE_HOME%"\extras
+move "%DCM4CHEE_SERV%"\deploy\dcm4chee-xds-consumer-query-0.0.2.sar "%DCM4CHEE_HOME%"\extras
+
 :end
 if "%OS%" == "Windows_NT" endlocal
