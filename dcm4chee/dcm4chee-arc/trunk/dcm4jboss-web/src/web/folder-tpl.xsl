@@ -1706,7 +1706,7 @@
 					</xsl:when>
 					<xsl:when test="fileStatus=-3">&MD5CheckFailed;
 					</xsl:when>
-					<xsl:when test="fileStatus=-3">&HSMQueryFailed;
+					<xsl:when test="fileStatus=-4">&HSMQueryFailed;
 					</xsl:when>
 					<xsl:otherwise>
 						<xsl:value-of select="fileStatus" />
