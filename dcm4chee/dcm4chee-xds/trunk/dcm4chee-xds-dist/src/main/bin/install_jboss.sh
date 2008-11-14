@@ -8,7 +8,7 @@ DCM4CHEE_HOME="$DIRNAME"/..
 DCM4CHEE_SERV="$DCM4CHEE_HOME"/server/default
 
 if [ x$1 = x ]; then
-  echo "Usage: $0 <path-to-jboss-4.2.2.GA-installation-directory>"
+  echo "Usage: $0 <path-to-jboss-4.2.3.GA-installation-directory>"
   exit 1
 fi
 
@@ -16,7 +16,7 @@ JBOSS_HOME="$1"
 JBOSS_SERV="$JBOSS_HOME"/server/default
 
 if [ ! -f "$JBOSS_HOME"/bin/run.jar ]; then
-  echo Could not locate jboss-4.2.2.GA in "$JBOSS_HOME"
+  echo Could not locate jboss-4.2.3.GA in "$JBOSS_HOME"
   exit 1
 fi
 
@@ -115,4 +115,8 @@ cp -v -R "$JBOSS_SERV"/deploy/jmx-console.war/cluster \
   
 cp -v -R "$JBOSS_SERV"/deploy/jmx-console.war/WEB-INF/classes \
   "$DCM4CHEE_SERV"/deploy/jmx-console.war/WEB-INF
+  
+echo Install additional dcm4chee-docstore for standalone XDS distribution:
+cp -v -R "$DCM4CHEE_HOME"/standalone/lib "$DCM4CHEE_SERV"
+  
   

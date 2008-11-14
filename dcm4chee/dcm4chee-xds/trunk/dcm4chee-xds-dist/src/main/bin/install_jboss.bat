@@ -17,7 +17,7 @@ goto end
 
 :found_dcm4chee
 if not [%1] == [] goto found_arg1
-echo "Usage: install_jboss <path-to-jboss-4.2.2.GA-installation-directory>"
+echo "Usage: install_jboss <path-to-jboss-4.2.3.GA-installation-directory>"
 goto end
 
 :found_arg1
@@ -25,7 +25,7 @@ set JBOSS_HOME=%1
 set JBOSS_SERV=%JBOSS_HOME%\server\default
 
 if exist "%JBOSS_SERV%" goto found_jboss
-echo Could not locate jboss-4.2.2.GA in %JBOSS_HOME%.
+echo Could not locate jboss-4.2.3.GA in %JBOSS_HOME%.
 goto end
 
 :found_jboss
@@ -151,6 +151,9 @@ xcopy /S "%JBOSS_WEB_CONSOLE%\META-INF" "%DCM4CHEE_WEB_CONSOLE%\META-INF\"
 
 xcopy /S "%JBOSS_WEB_CONSOLE%\WEB-INF\classes" "%DCM4CHEE_WEB_CONSOLE%\WEB-INF\classes\"
 xcopy /S "%JBOSS_WEB_CONSOLE%\WEB-INF\tlds" "%DCM4CHEE_WEB_CONSOLE%\WEB-INF\tlds\"
+
+echo Install additional dcm4chee-docstore for standalone XDS distribution:
+xcopy /S "%DCM4CHEE_HOME%"\standalone\lib "%DCM4CHEE_SERV%\lib\"
 
 :end
 if "%OS%" == "Windows_NT" endlocal
