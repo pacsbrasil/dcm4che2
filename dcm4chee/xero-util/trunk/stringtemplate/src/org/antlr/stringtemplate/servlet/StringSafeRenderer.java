@@ -70,20 +70,35 @@ public class StringSafeRenderer implements AttributeRenderer {
 	  return ret.toString();
    }
 
+   /** Convert o into a string using the given format name. */
    public String toString(Object o, String formatName) {
 	  if( formatName==null ) return o.toString();
 	  if( formatName.equals("js") ) return toJSString(o);
 	  if( formatName.equals("xml") ) return toXmlString(o);
+	  if( formatName.equals("underline") ) return toUnderlineString(o);
 	  log.warn("Unknown format name {}", formatName);
 	  return o.toString();
    }
+   
+   /** Escape spaces to underlines so that the name can be used as a template name */
+   public static String toUnderlineString(Object o) {
+      String src = o.toString();
+      StringBuffer ret = new StringBuffer(src.length());
+      for(int i=0; i<src.length(); i++) {
+         char ch = src.charAt(i);
+         if( ch==0 || Character.isSpaceChar(ch) ) ret.append("_");
+         else ret.append(ch);
+      }
+      return ret.toString();
+   }
 
+   /** Escape the XML relevant characters so that the string is XML safe. */
    public static String toXmlString(Object o) {
 	  String src = o.toString();
 	  boolean changed = false;
 	  for(int i=0, n=src.length(); i<n; i++) {
 		 char ch = src.charAt(i);
-		 if( ch=='&' || ch=='<' ) {
+		 if( ch=='&' || ch=='<' || ch==0 ) {
 			changed=true;
 			break;
 		 }
@@ -94,13 +109,13 @@ public class StringSafeRenderer implements AttributeRenderer {
 		 char ch = src.charAt(i);
 		 switch(ch) {
 		 case '&':
-			changed = true;
 			ret.append("&amp;");
 			break;
 		 case '<':
-			changed =true;
 			ret.append("&lt;");
 			break;
+		 case 0:
+		    break;
 		 default:
 			ret.append(ch);
 		 }
