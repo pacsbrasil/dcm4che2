@@ -116,7 +116,6 @@ WLController.prototype.mousemove = function WLC_mousemove(event) {
 	this.updateImage();
 };
 
-WLController.prototype.qualityOpts = "&rows=256";
 WLController.prototype.qualityLevel = 0;
 WLController.prototype.qualityOpts = ["&rows=512&imageQuality=0.6","&rows=512&imageQuality=0.4", "&rows=512&imageQuality=0.3",
 	"&rows=256&imageQuality=0.75","&rows=256&imageQuality=0.6", "&rows=256&imageQuality=0.4", "&rows=256&imageQuality=0.2"];
@@ -155,8 +154,7 @@ WLController.prototype.updateImage = function WLC_updateImage() {
 		}
 		if( avg > 120 ) { 
 			this.qualityLevel++;
-			if( this.qualityLevel>=this.length ) {
-				console.info("Quality level is already at lowest quality.");
+			if( this.qualityLevel>=this.qualityOpts.length ) {
 				this.qualityLevel--;
 			} else {
 				console.info("Dropping quality level (higher is lower quality):",this.qualityLevel,"options",this.qualityOpts[this.qualityLevel]);
@@ -164,8 +162,10 @@ WLController.prototype.updateImage = function WLC_updateImage() {
 				this.cnt = 0;
 			}
 		} else if( avg < 80  ) {
-			if( this.qualityLevel>0 ) this.qualityLevel--;
-			else this.delayTime = (new Date()).getTime()+64;			
+			if( this.qualityLevel>0 ) {
+				console.info("Increasing quality level to", this.qualityLevel);
+				this.qualityLevel--;
+			} else this.delayTime = (new Date()).getTime()+64;			
 		}
 	} else {
 		this.tries++;
