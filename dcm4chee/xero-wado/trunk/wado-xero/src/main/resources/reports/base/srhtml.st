@@ -3,9 +3,9 @@ $! This template allows rendering of the HTML version of a report. !$
 <head><title>$ds.ConceptNameCodeSequence.dicomObjects:{$it.CodeMeaning.value;format="xml"$}$</title></head>
 <body>
 <font size="-1">
-$if(ds.("0x80080").value)$ $else$By $ds.("0x80080").value$, $endif$Ref. Phys. $ds.("0x80090").value$</font><br />
+$if(ds.("0x80080").value)$ $else$By $ds.("0x80080").value;format="xml"$, $endif$Ref. Phys. $ds.("0x80090").value;format="xml"$</font><br />
 <table border="0">
-  <tr><td>Patient Name:</td><td>$ds.PatientName$</td></tr>
+  <tr><td>Patient Name:</td><td>$ds.PatientName.value;format="xml"$</td></tr>
   <tr><td>Patient Id:</td><td>$ds.("0x00100020")$</td></tr>
   <tr><td>Patient Birthdate:</td><td>$ds.("0x100030")$</td></tr>
   <tr><td>Patient Sex:</td><td>$ds.("0x100040")$</td></tr>

@@ -1,2 +1,2 @@
 <font size="+1">$it.ConceptNameCodeSequence.dicomObjects:{$it.CodeMeaning$}$</font>
-$("ValueType"+it.ValueType)()$
+$({ValueType$it.ValueType.value;format="underline"$})()$
