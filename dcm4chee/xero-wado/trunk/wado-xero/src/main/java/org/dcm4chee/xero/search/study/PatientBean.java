@@ -128,7 +128,9 @@ public class PatientBean extends PatientType implements Patient,
 		if (str.length() == 0)
 			return null;
 		if (str.charAt(str.length() - 1) == 0) {
-			return str.substring(0, str.length() - 1);
+		    int posn = str.indexOf(0);
+		    assert posn>=0;
+			return str.substring(0, posn);
 		}
 		return str;
 	}
