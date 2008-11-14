@@ -147,6 +147,7 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
       if (ret == null)
          return null;
       List<KeyObjectMacro> koms = new ArrayList<KeyObjectMacro>();
+      ResultsBean imgRes = null;
       for (int patientI = 0; patientI < ret.getPatient().size(); patientI++) {
          PatientType patient = ret.getPatient().get(patientI);
          for (StudyType studyType : patient.getStudy()) {
@@ -179,15 +180,14 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
                KeyObjectMacro komDiscovered = new KeyObjectMacro(queryKoUid);
                checkAndAddKeyObjectMacro(komDiscovered, study.getMacroItems());
                koms.add(komDiscovered);
+               
+               // check if there is any Key image missing in the ResultsBean to be fetched from other studies
+               List<KeySelection> missing = getMissingKOSelectionImages(koms, ret);
+               if (missing != null && !missing.isEmpty()) {
+                  imgRes = queryForMissingImages(filterItem, params, ret, missing);
+               }
             }
          }
-      }
-
-      // check if there is any Key image missing in the ResultsBean
-      List<KeySelection> missing = getMissingKOSelectionImages(koms, ret);
-      ResultsBean imgRes = null;
-      if (missing != null && !missing.isEmpty()) {
-         imgRes = queryForMissingImages(filterItem, params, ret, missing);
       }
 
       assignKeyObjectMacroToImageSelection(ret, koms, imgRes);
