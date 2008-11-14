@@ -12,11 +12,12 @@ function NavConversation(id, level) {
 		id = "results";
 	}
 	this.id = id;
+	this.level = level;
+	if(id==undefined)return;
 	if( !id.indexOf ) id = ""+id;
 	this.baseId = id;
 	var amp = id.indexOf("&");
 	if( amp>0 ) this.baseId = id.substring(0,amp);
-	this.level = level;
 };
 
 /** Gets a child by the given name.  Adds the conversation id to the fetched child.
@@ -84,19 +85,27 @@ NavConversation.prototype.setQueryModifier = function (name,modifier,isMerged) {
  * Both first and subsequent times, returns the modifier object contain all parent level modifiers.
  * Returns the combined modifiers.
  */
-NavConversation.prototype.assignDefaultModifiers = function NC_assignDefaultModifiers(external) {
+NavConversation.prototype.assignDefaultModifiers = function NC_assignDefaultModifiers(external, childId) {
 	console.debug("Assign default modifiers, level",this.level);
-	if( this.modifier!==undefined ) return this.getCombinedModifiers();
-	if( !external ) return this.getCombinedModifiers();
-	if( external.gspsLabel ) {
-		this.setQueryModifier("pr","&gsps="+external.gspsLabel,true);
-		console.info("gspsLabel found, setting presentation modifier %s", external.gspsLabel);
+	if( (this.modifier!==undefined) || !external ) return this.getChild(childId).getCombinedModifiers();
+	if( this.level==2 ) {
+		if( external.gspsLabel ) {
+			this.setQueryModifier("pr","&gsps="+external.gspsLabel,true);
+			console.info("gspsLabel found, setting presentation modifier %s", external.gspsLabel);
+		}
+		if( external.koUID ) {
+			this.koUID = external.koUID;
+			if( this.parent.parent.keyObjectDefault!==false) {
+				this.setQueryModifier("ko", "&koUID="+external.koUID, external.koGSPS!=null);
+				console.info("ko found, applying",external.koUID);
+			} else {
+				var qm = this.setQueryModifier("ko", "&koUID=*");
+				qm.infoOnly=true;
+				console.info("ko found, not applying it, just getting info.");
+			}
+		}
 	}
-	if( external.koUID ) {
-		this.setQueryModifier("ko", "&koUID="+external.koUID, external.koGSPS!=null);
-		console.info("ko found, applying",external.koUID);
-	}
-	return this.getCombinedModifiers();
+	return this.getChild(childId).getCombinedModifiers();
 };
 
 /** 

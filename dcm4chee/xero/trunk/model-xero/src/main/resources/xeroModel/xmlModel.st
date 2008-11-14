@@ -15,7 +15,7 @@
  
 function XmlModel(urlSource) {
 	this.urlSource = urlSource;
-	if( this.isDebug ) this.debug = console.debug;
+	if( this.isDebug ) this.debug = console.info;
 };
 
 XmlModel.prototype.debug = function() {};
@@ -85,18 +85,20 @@ XmlModel.prototype.parse = function XM_parse(el, modifiers) {
 	children = el.childNodes;
 	n = children.length;
 	var lst, name,xchild;
+	if( this.TEXT ) this.TEXT = "";
 	for(i=0; i<n; i++) {
 		child = children.item(i);
 		if( child.nodeType===3 ) {
-			this.TEXT = child.data;
+			console.info("Found child text",child.data);
+			if(! this.TEXT ) this.TEXT="";
+			this.TEXT = this.TEXT+child.data;
 			continue;
 		}
 		if( child.nodeType!==1 ) continue;
 		name = localName(child);
-		xchild = this.getChild(name,child,modifiers);
+		xchild = this.getChild(name,child,modifiers,i);
 		xchild._parent = this;
 		xchild.parse(child,modifiers);
-		xchild._parent = this;
 	};
 
 	var nodeType = localName(el);
@@ -111,7 +113,7 @@ XmlModel.prototype.parseString = function XM_parse(str,modifiers) {
 };
 
 /** Gets a given child, specified by the given name.  May use other attributes from el to look it up. */
-XmlModel.prototype.getChild = function XM_getChild(name,el,modifiers) {		
+XmlModel.prototype.getChild = function XM_getChild(name,el,modifiers, i) {		
 	var lst = this[name];
 	var xchild = new XmlModel();
 	if( !lst ) {

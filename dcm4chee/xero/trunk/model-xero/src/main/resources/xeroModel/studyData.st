@@ -19,12 +19,12 @@ function StudyData(uids) {
 
 StudyData.prototype = new XmlModel();
 StudyData.prototype.level = 0;
-StudyData.prototype.idVars = {"patient":"PatientIdentifier", "study":"studyUID", "series":"seriesUID", "image":"Position", "gsps":"objectUID", "report":"objectUID", "keyObject":"objectUID"};
+StudyData.prototype.idVars = {"patient":"PatientIdentifier", "study":"studyUID", "series":"seriesUID", "image":"Position", "gsps":"objectUID", "report":"objectUID", "keyObject":"objectUID", "objectRef":"objectUID"};
 
 /** Gets a StudyData child, re-using the existing one of the right id if present, and indexing them
  * in a "children" element.
  */
-StudyData.prototype.getChild = function StudyData_getChild(name,el,modifiers) {
+StudyData.prototype.getChild = function StudyData_getChild(name,el,modifiers,i) {
 	var lst = this[name];
 	var isFirst = false;
 	var modifier;
@@ -36,17 +36,17 @@ StudyData.prototype.getChild = function StudyData_getChild(name,el,modifiers) {
 	  this[name] = lst;
 	  isFirst = true;
 	}
-	// For now, assume only 1 child type - that may not be a good assumption longer term.
-	if(! this.childId ) {
-		this.childId = this.idVars[name];
-		// Detect a non-DICOM image object child, and just use id for those.
-		if( name=="image" && el.getAttribute("objectUID")==null ) this.childId = "id";
-		if( !this.childId ) this.childId = "id";
-		this.debug("Choose childID %s for level %d on child %s", this.childId,this.level,name); 
-	}
-	var id = el.getAttribute(this.childId);
+	
+	var childId = this.idVars[name];
+	// Detect a non-DICOM image object child, and just use id for those.
+	if( name=="image" && el.getAttribute("objectUID")==null ) this.childId = "id";
+	if( !childId ) childId = "id";
+	this.debug("Choose childID %s for level %d on child %s", childId,this.level,name); 
+
+	var id = el.getAttribute(childId);
+	if( id==null ) id = ""+i;
 	if( modifier ) id = id+modifier;
-	this.debug("Found child %s=%s modifier %s modifiers %s", this.childId,id, modifier, modifiers);
+	this.debug("Found child %s=%s modifier %s modifiers %s", childId,id, modifier, modifiers);
 	var xchild = this.children[id];
 	if( !xchild ) {
 		xchild = new StudyData();
@@ -128,4 +128,63 @@ StudyData.prototype.customize_svg = function StudyData_customize_svg() {
 	for(key in this.children) {
 		svg["#"+key] = this.children[key];
 	};
+};
+
+
+/** Adds a customization for key objects, to store their UID's consistently */
+StudyData.prototype.customize_keyObject = function() {
+	if( this.p ) {
+		this.keyText = new Array();
+		for(var i=0; this.p[i]; i++) this.keyText.push(this.p[i].TEXT);
+	}
+	
+	var allKo = this._parent._parent.allKo;
+	if(! allKo ) {
+		allKo = new Object();
+		this._parent._parent.allKo=allKo;
+	};
+	var val = allKo[this.objectUID];
+	if( val===this ) return;
+	allKo[this.objectUID] = this;
+	for(var i in val) {
+		console.info("Adding key object to key objects list of image.");
+		val[i].keyObjects.push(this);
+	}
+};
+
+/** Adds a customizations for images that have key objects matching them up to their object */
+StudyData.prototype.customize_image = function() {
+	if(!this.koUID) return;
+	if(this.keyObjects) return;
+	this.keyObjects = new Array();
+	var allKo = this._parent._parent.allKo;
+	if(!allKo) {
+		allKo = new Object();
+		this._parent._parent.allKo = allKo;
+	}
+	var cur, uid, koUID = this.koUID;
+	do {
+		cur = koUID.indexOf(",");
+		if( cur>0 ) {
+			uid = koUID.substring(0,cur);
+			koUID = koUID.substring(cur+1);
+		} else {
+			uid = koUID;
+			koUID = null;
+		}
+		console.info("Adding key object",uid,"to image",this.objectUID);
+		var v = allKo[uid];
+		if( v==null ) {
+			v = new Array();
+			allKo[uid] = v;
+		};
+		if( v.length>=0 ) {
+			console.info("image customize - adding image child",this);
+			v.push(this);
+		} else {
+			console.info("image customize - adding key object child directly",v);
+			this.keyObjects.push(v);
+		}
+		last = cur;
+	} while(koUID);
 };

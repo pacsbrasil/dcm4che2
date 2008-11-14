@@ -153,7 +153,7 @@ WLController.prototype.updateImage = function WLC_updateImage() {
 			this.cnt--;
 			this.timeSum = Math.floor(this.timeSum*0.95);
 		}
-		if( avg > 200 ) { 
+		if( avg > 120 ) { 
 			this.qualityLevel++;
 			if( this.qualityLevel>=this.length ) {
 				console.info("Quality level is already at lowest quality.");
@@ -163,7 +163,7 @@ WLController.prototype.updateImage = function WLC_updateImage() {
 				this.timeSum = 0;
 				this.cnt = 0;
 			}
-		} else if( avg < 100  ) {
+		} else if( avg < 80  ) {
 			if( this.qualityLevel>0 ) this.qualityLevel--;
 			else this.delayTime = (new Date()).getTime()+64;			
 		}

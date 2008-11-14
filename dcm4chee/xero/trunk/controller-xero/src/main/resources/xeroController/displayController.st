@@ -39,6 +39,8 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 	var navigate = model.navigate;
 	navigate.setNavigation(patientId);
 	navigate.getChild(0).setNavigation(uids);
+	var keyObjects = model.layout.findLayout("KeyObjects");
+	navigate.conversation.keyObjectDefault = (keyObjects && keyObjects.isActive);
 	
 	var external = navigate.external;
 	if( (!external) || (!external.children[patientId]) ) {
@@ -143,8 +145,11 @@ XeroController.prototype.selectKo = function (id, koUID) {
 	console.info("You selected to apply ko %s to %s", koUID, id);
 	var lay = this.model.layout.findLayout(id);
 	var nav = this.getNavigate(lay);
-	if( koUID==null || koUID==="" ) nav.conversation.setQueryModifier("ko");
-	else nav.conversation.setQueryModifier("ko","&koUID="+koUID);
+	if( koUID==null || koUID==="" ) {
+		var qm = nav.conversation.setQueryModifier("ko","&koUID=*");
+		qm.infoOnly = true;
+	} else nav.conversation.setQueryModifier("ko","&koUID="+koUID);
+	nav.setConversation("koUID", koUID);
 	console.info("Conversation info set on",nav.conversation.id,"at level",
 		nav.level,"external id now", nav.conversation.getExternalId());
 	// The merge external is required before the invalidate to match the next external data/children

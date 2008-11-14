@@ -1,5 +1,5 @@
 $layout.image.image:{
-<v:image id="$it.id$" src="$it.href;format="xml"$" style="width:$it.width$;height:$it.height$;" />
+$if(it.id)$<v:image id="$it.id$" src="$it.href;format="xml"$" style="width:$it.width$;height:$it.height$;" />$endif$
 }$
 $layout.image.use:{
 $if(it.isIMAGEREL)$

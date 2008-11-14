@@ -11,3 +11,11 @@ $it._parent._parent._parent.svg.(it.href).path:{
 }$
 $endif$
 }$
+
+$if(layout.image.keyObjects)$
+	<v:image id="ko$layout.id$" src="$i18n.KeyObjectsIcon$" style="width:35;height:35;left:965;top:7"/>
+	$layout.image.keyObjects:{
+		$it.contentLabel$
+		$it.keyText:{<p>$it;format="xml"$</p>}$
+	}$
+$endif$

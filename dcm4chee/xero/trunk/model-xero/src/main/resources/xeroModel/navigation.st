@@ -75,21 +75,21 @@ Navigation.prototype.generateQuery = function Navigation_generateQuery(child, re
 	var url, modifiers;
 	
 	var childId = child.id;
-	modifiers = this.conversation.assignDefaultModifiers(this.external);
+	modifiers = this.conversation.assignDefaultModifiers(this.external, childId);
 	this.debug("Modifiers ",modifiers);
 	if( this.level===3 ) {
 		this.debug("Adding image level query at %d of size %d initial offset %d", childId, this.IMAGE_QUERY_SIZE, this.QUERY_SIZE);
 		position = childId - this.QUERY_SIZE;
 		position -= (position % this.IMAGE_QUERY_SIZE);
 		position += this.QUERY_SIZE;
-		url = this.QUERY+"?seriesUID="+this.id+"&Count="+this.IMAGE_QUERY_SIZE+"&Position="+position;
+		url = this.QUERY+"?regroup=true&studyUID="+this.parent.id+"&seriesUID="+this.id+"&Count="+this.IMAGE_QUERY_SIZE+"&Position="+position;
 		this.debug("Adding series extension query %s",url); 
 	} else if( this.level===2 ) {
-		url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&studyUID="+this.id+"&regroup=true";
+		url = this.QUERY+"?regroup=true&studyUID="+this.id+"&Position=0&Count="+this.QUERY_SIZE;
 		this.debug("Adding image query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
 	} else if( this.level===1 && modifiers!=null && modifiers[2]!=undefined) {
 		// Fix the modifiers, and do an image level query.
-		url = this.QUERY+"?Position=0&Count="+this.QUERY_SIZE+"&studyUID="+child.id+"&regroup=true";
+		url = this.QUERY+"?regroup=true&studyUID="+child.id+"&Position=0&Count="+this.QUERY_SIZE;
 		this.debug("Adding updated image, with study query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
 	} else if( this.level===1 ) {
 		// This happens when the user views a new study in the same patient, or an updated study in 
@@ -199,6 +199,9 @@ Navigation.prototype.invalidate = function Navigation_invalidate(isTop) {
 	}
 };
 
+/** Notifies listeners of changes to the navigation information, specified by the given type. Also fires the named listener changes
+ * for the new conversational/merged data.
+ */
 Navigation.prototype.fireChanged = function Merge_fireChanged(type) {
 	if( this.level===0 ) return;
 	if( this.conversation && this.conversation.navigateListener ) 
