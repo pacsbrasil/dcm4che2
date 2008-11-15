@@ -1,0 +1,1 @@
+/** Handles the panning/zooming controls */
