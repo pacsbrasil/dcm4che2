@@ -81,6 +81,7 @@ public class KeyObjectFilterTest {
    private ResultsBean rb = null;
    private FilterItem<ResultsBean> fI = null;
 
+   @SuppressWarnings("unchecked")
    @BeforeMethod
    public void init() throws Exception {
       rb = new ResultsBean();
