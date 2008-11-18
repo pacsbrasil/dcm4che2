@@ -94,55 +94,54 @@ final class RetrieveInfo {
     private final Map<String, Set<String>> iuidsByExternalAET =
             new HashMap<String, Set<String>>();
     private final Set<String> notAvailableIuids = new HashSet<String>();
+    private final Set<String> availableIuids = new HashSet<String>();
     private Map.Entry<String, Set<String>> curMoveForward;
+
+    private boolean externalRetrieveAET;
     
     RetrieveInfo(QueryRetrieveScpService service, FileInfo[][] instInfos) {
         FileInfo[] fileInfos;
         FileInfo fileInfo;
-        String iuid, cuid;
-        IuidsAndTsuids iuidsAndTsuids;
+        String iuid;
         this.size = instInfos.length;
         for (int i = 0; i < size; ++i) {
             fileInfos = instInfos[i];
             iuid = fileInfos[0].sopIUID;
-            cuid = fileInfos[0].sopCUID;
-            
-            // Check the availability first. If it's not ONLINE or NEARLINE,
-            // we skip it.
-            if(fileInfos[0].availability >= Availability.OFFLINE)
-            	continue;
-            
-            iuidsAndTsuids = iuidsAndTsuidsByCuid.get(cuid);
-            if (iuidsAndTsuids == null) {
-                iuidsAndTsuids = new IuidsAndTsuids();
-                iuidsAndTsuidsByCuid.put(cuid, iuidsAndTsuids);
-            }
-            iuidsAndTsuids.iuids.add(iuid);
             notAvailableIuids.add(iuid);
             for (int j = 0; j < fileInfos.length; j++) {
                 fileInfo = fileInfos[j];
-                if (fileInfo.fileRetrieveAET != null
-                        && service.isLocalRetrieveAET(fileInfo.fileRetrieveAET)) {
-                    putLocalFile(iuid, fileInfo);
-                    iuidsAndTsuids.tsuids.add(fileInfo.tsUID);
-                } else {
-                    if (fileInfo.fileRetrieveAET != null) {
+                if (fileInfo.fileRetrieveAET != null 
+                        && (fileInfo.availability == Availability.ONLINE
+                                || fileInfo.availability == Availability.NEARLINE)) {
+                    if (service.isLocalRetrieveAET(fileInfo.fileRetrieveAET)) {
+                        putLocalFile(fileInfo);
+                    } else {
                         putIuid(iuidsByRemoteAET, fileInfo.fileRetrieveAET, iuid);
-                    } else if (fileInfo.extRetrieveAET != null) {
-                        putIuid(iuidsByExternalAET, fileInfo.extRetrieveAET, iuid);
                     }
+                } else if (fileInfo.extRetrieveAET != null) {
+                    putIuid(iuidsByExternalAET, fileInfo.extRetrieveAET, iuid);
                 }
             }
         }
     }
 
-    private void putLocalFile(String iuid, FileInfo fileInfo) {
+    private void putLocalFile(FileInfo fileInfo) {
+        String iuid = fileInfo.sopIUID;
+        String cuid = fileInfo.sopCUID;
+        IuidsAndTsuids iuidsAndTsuids = iuidsAndTsuidsByCuid.get(cuid);
+        if (iuidsAndTsuids == null) {
+            iuidsAndTsuids = new IuidsAndTsuids();
+            iuidsAndTsuidsByCuid.put(cuid, iuidsAndTsuids);
+        }
+        iuidsAndTsuids.iuids.add(iuid);
+        iuidsAndTsuids.tsuids.add(fileInfo.tsUID);
         List<FileInfo> localFiles = localFilesByIuid.get(iuid);
         if (localFiles == null) {
             localFiles = new ArrayList<FileInfo>();
             localFilesByIuid.put(iuid, localFiles);
         }
         localFiles.add(fileInfo);
+        availableIuids.add(iuid);
         notAvailableIuids.remove(iuid);
     }
 
@@ -154,31 +153,10 @@ final class RetrieveInfo {
             iuidsByAET.put(aet, iuids);
         }
         iuids.add(iuid);
+        availableIuids.add(iuid);
         notAvailableIuids.remove(iuid);
     }
     
-    public final boolean isAnyLocal() {
-        return !localFilesByIuid.isEmpty();
-    }
-
-    public final boolean isAllLocal() {
-        return localFilesByIuid.size() == size;
-    }
-    
-    public final boolean isAetWithAllIuids() {
-        Iterator<Map.Entry<String, Set<String>>> it = 
-                iuidsByRemoteAET.entrySet().iterator();
-        while (it.hasNext()) {
-            if (it.next().getValue().size() == size)
-                return true;
-        }
-        return false;
-    }
-    
-    public boolean isRetrieveFromLocal() {
-        return  isAnyLocal() && (isAllLocal() || !isAetWithAllIuids());  
-    }
-   
     public void addPresContext(AAssociateRQ rq,
             boolean sendWithDefaultTransferSyntax,
             boolean offerNoPixelData,
@@ -257,10 +235,12 @@ final class RetrieveInfo {
 
     public boolean nextMoveForward() {
         if (!iuidsByRemoteAET.isEmpty()) {
+            externalRetrieveAET = false;
             curMoveForward = removeNextRemoteAET(iuidsByRemoteAET);
             return true;
         }
         if (!iuidsByExternalAET.isEmpty()) {
+            externalRetrieveAET = true;
             curMoveForward = removeNextRemoteAET(iuidsByExternalAET);
             return true;
         }
@@ -304,6 +284,18 @@ final class RetrieveInfo {
 
     public final Set<String> getMoveForwardUIDs() {
         return curMoveForward != null ? curMoveForward.getValue() : null;
+    }
+
+    public final boolean isExternalRetrieveAET() {
+        return externalRetrieveAET;
+    }
+
+    public final Set<String> getNotAvailableIUIDs() {
+        return notAvailableIuids;
+    }
+
+    public final Set<String> getAvailableIUIDs() {
+        return availableIuids;
     }
 
 }

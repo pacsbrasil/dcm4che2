@@ -40,12 +40,14 @@
 package org.dcm4chex.archive.dcm.qrscp;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -57,8 +59,11 @@ import java.util.TimerTask;
 import java.util.Map.Entry;
 
 import javax.ejb.FinderException;
+import javax.management.InstanceNotFoundException;
 import javax.management.JMException;
+import javax.management.MBeanException;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -169,6 +174,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private long pendingRetrieveRSPInterval = 5000;
     
     private boolean forwardAsMoveOriginator = true;
+
+    private String directForwardingList="";
+
+    private Map<String,List<String>> directForwardingMap =
+            new HashMap<String, List<String>>();
+
+    private String localStorageAET;
 
     private boolean recordStudyAccessTime = true;
 
@@ -834,7 +846,120 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return maxBlockedFindRSP;
     }
 
-	public final ObjectName getPerfMonServiceName() {
+    public synchronized void setDirectForwardingList(String directForwardingList) {
+        if (!this.directForwardingList.equals(directForwardingList)) {
+            this.directForwardingList = directForwardingList;
+            directForwardingMap.clear();
+            String[] mappings = directForwardingList.split("\\;");
+            for (String mapping : mappings) {
+                int k = mapping.indexOf(',');
+                String src;
+                String dests;
+                if (k < 0) {
+                    dests = "any";
+                    src = mapping;
+                } else {
+                    dests = mapping.substring(k + 1);
+                    src = mapping.substring(0, k).trim();
+                    if (dests.equals("") || dests.equals("*")) {
+                        dests = "any";
+                    }
+                }
+                List<String> lst = new ArrayList<String>();
+                if (!dests.equalsIgnoreCase("any")) {
+                    lst.addAll(Arrays.asList(dests.split("\\,")));
+                }
+                directForwardingMap.put(src, lst);
+            }
+        }
+    }
+
+    public synchronized String getDirectForwardingList() {
+        return directForwardingList;
+    }
+
+    public synchronized void addDirectForwarding(String aet, String dest) {
+        if (dest == null || dest.equals("") || dest.equals("*")) {
+            dest = "any";
+        }
+        List<String> lst = directForwardingMap.get(aet);
+        if (lst != null) {
+            if (lst.size() == 0 || lst.contains(dest)) {
+                return;
+            }
+            if (dest.equalsIgnoreCase("any")) {
+                lst.clear();
+            } else
+                lst.add(dest);
+        } else {
+            lst = new ArrayList<String>();
+            if (!dest.equalsIgnoreCase("any")) {
+                lst.add(dest);
+            }
+        }
+        setDirectForwardingList(toDirectForwardList());
+    }
+
+    public synchronized void removeDirectForwarding(String aet) {
+        removeDirectForwarding(aet, "any");
+    }
+
+    public synchronized void removeDirectForwarding(String aet, String dest) {
+        if (dest == null || dest.equals("") || dest.equals("*")) {
+            dest = "any";
+        }
+        if (dest.equalsIgnoreCase("any")) {
+            directForwardingMap.remove(aet);
+        } else {
+            List<String> lst = directForwardingMap.get(aet);
+            if (lst == null || !lst.contains(dest)) {
+                return;
+            }
+            if (lst.size() == 1)
+                directForwardingMap.remove(aet);
+            else
+                lst.remove(dest);
+        }
+        setDirectForwardingList(toDirectForwardList());
+    }
+
+    private String toDirectForwardList() {
+        StringBuffer buf = new StringBuffer();
+        int i = 0;
+        for (String aet : directForwardingMap.keySet()) {
+            if (i > 0)
+                buf.append(";");
+            List<String> lst = directForwardingMap.get(aet);
+            buf.append(aet);
+            if (lst.size() == 0) {
+                buf.append(",any");
+            } else {
+                for (String dest : lst) {
+                    buf.append(",").append(dest);
+                }
+            }
+        }
+        return buf.toString();
+    }
+
+    public synchronized boolean isDirectForwarding(String retrieveAET,
+            String destination) {
+        List<String> lst = directForwardingMap.get(retrieveAET);
+        if (lst != null) {
+            return lst.size() == 0 || lst.contains(destination);
+        }
+        return false;
+    }
+
+    public void setLocalStorageAET(String localStorageAET) {
+        this.localStorageAET = localStorageAET;
+    }
+
+    public String getLocalStorageAET() {
+        return localStorageAET;
+    }
+
+    public final ObjectName getPerfMonServiceName() {
 		return dicomFindScp.getPerfMonServiceName();
 	}
 
@@ -1120,9 +1245,17 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     File retrieveFileFromTAR(String fsID, String fileID) throws Exception {
-        return (File) server.invoke(tarRetrieverName, "retrieveFileFromTAR",
-                new Object[] { fsID, fileID }, new String[] {
-                        String.class.getName(), String.class.getName() });
+        try {
+            return (File) server.invoke(tarRetrieverName, "retrieveFileFromTAR",
+                    new Object[] { fsID, fileID }, new String[] {
+                            String.class.getName(), String.class.getName() });
+        } catch (InstanceNotFoundException e) {
+            throw new ConfigurationException(e.getMessage(), e);
+        } catch (MBeanException e) {
+            throw e.getTargetException();
+        } catch (ReflectionException e) {
+            throw new ConfigurationException(e.getMessage(), e);
+        }
     }
 
     private FileSystemMgt2 getFileSystemMgt() throws Exception {
@@ -1200,7 +1333,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
      }
 
-    Dataset makeRetrieveRspIdentifier(List<String> failedIUIDs) {
+    Dataset makeRetrieveRspIdentifier(Collection<String> failedIUIDs) {
         if (failedIUIDs.isEmpty() )
             return null;
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
@@ -1338,8 +1471,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return null;
     }
 
-    void prefetchTars(Collection<List<FileInfo>> localFiles)
-            throws DcmServiceException {
+    void prefetchTars(Collection<List<FileInfo>> localFiles) throws IOException {
         HashSet<String> tarPaths = null;
         for (List<FileInfo> list : localFiles) {
             FileInfo fileInfo = list.get(0);
@@ -1361,10 +1493,10 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 try {
                     retrieveFileFromTAR(fsID, fileID);
                 } catch (Exception e) {
-                    throw new DcmServiceException(
-                            Status.UnableToPerformSuboperations, e.getMessage());
+                    throw new IOException("Failed to retrieve TAR " + tarPath
+                            + " from file system " + fsID, e);
                 }
-            }
+             }
         }
     }
 }

@@ -41,7 +41,6 @@ package org.dcm4chex.archive.dcm.qrscp;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -58,7 +57,6 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AAbort;
 import org.dcm4che.net.AAssociateAC;
 import org.dcm4che.net.AAssociateRQ;
@@ -68,11 +66,11 @@ import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
-import org.dcm4che.net.ExtNegotiation;
 import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
+import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.perf.PerfCounterEnum;
 import org.dcm4chex.archive.perf.PerfMonDelegate;
 import org.dcm4chex.archive.perf.PerfPropertyEnum;
@@ -85,15 +83,6 @@ import org.jboss.logging.Logger;
  */
 public class MoveTask implements Runnable {
 
-    private static final String[] NATIVE_LE_TS = { UIDs.ExplicitVRLittleEndian,
-            UIDs.ImplicitVRLittleEndian, };
-
-    private static final byte[] RELATIONAL_RETRIEVE = { 1 };
-
-    private static final int PCID = 1;
-
-    private static final String IMAGE = "IMAGE";
-
     protected final QueryRetrieveScpService service;
 
     protected final Logger log;
@@ -104,33 +93,31 @@ public class MoveTask implements Runnable {
 
     private final int movePcid;
 
-    private final Command moveRqCmd;
-
     private final Dataset moveRqData;
 
     private final String moveOriginatorAET;
 
     private final String moveCalledAET;
 
-    private final String callingAET;
-
     private final int priority;
 
     private final int msgID;
 
+    private final String sopClassUID;
+
     private ActiveAssociation moveAssoc;
 
-    private final List<String> failedIUIDs = new ArrayList<String>();
+    private final Set<String> remainingIUIDs;
 
-    private final int size;
+    private final Set<String> failedIUIDs;
 
-    private int failed = 0;
+    private final int total;
+
+    private int remaining;
 
     private int warnings = 0;
 
     private int completed = 0;
-
-    private int remaining = 0;
 
     private boolean canceled = false;
 
@@ -139,9 +126,9 @@ public class MoveTask implements Runnable {
     private ArrayList<FileInfo> successfulTransferred =
             new ArrayList<FileInfo>();
     
-    private ActiveAssociation storeAssoc;
+    private MoveScu moveScu;
 
-    private ActiveAssociation forwardAssoc;
+    private boolean directForwarding;
 
     private RemoteNode remoteNode;
 
@@ -153,24 +140,15 @@ public class MoveTask implements Runnable {
     
     private DcmElement refSOPSeq;
 
-    private Command fwdMoveRspCmd;
-    
     private PerfMonDelegate perfMon;
 
     private DimseListener cancelListener = new DimseListener() {
 
         public void dimseReceived(Association assoc, Dimse dimse) {
             canceled = true;
-            if (forwardAssoc != null) {
-                try {
-                    Command cmd = DcmObjectFactory.getInstance().newCommand();
-                    cmd.initCCancelRQ(msgID);
-                    Dimse ccancelrq = AssociationFactory.getInstance()
-                            .newDimse(PCID, cmd);
-                    forwardAssoc.getAssociation().write(ccancelrq);
-                } catch (IOException e) {
-                    log.warn("Failed to forward C-CANCEL-RQ:", e);
-                }
+            MoveScu tmp = moveScu;
+            if (tmp != null) {
+                tmp.forwardCancelRQ(dimse);
             }
         }
     };
@@ -178,8 +156,15 @@ public class MoveTask implements Runnable {
     private TimerTask sendPendingRsp = new TimerTask() {
 
         public void run() {
-            if (remaining > 0 || fwdMoveRspCmd != null) {
-                notifyMoveSCU(Status.Pending, null, fwdMoveRspCmd);
+            if (!canceled && remaining > 0) {
+                Command rsp = makeMoveRsp(Status.Pending);
+                MoveScu tmp = moveScu;
+                if (directForwarding && tmp != null) {
+                    tmp.adjustPendingRsp(rsp);
+                }
+                if (rsp.getInt(Tags.NumberOfRemainingSubOperations, 0) > 0) {
+                    notifyMoveSCU(rsp, null);
+                }
             }
         }};
 
@@ -191,64 +176,51 @@ public class MoveTask implements Runnable {
         this.log = service.getLog();
         this.moveAssoc = moveAssoc;
         this.movePcid = movePcid;
-        this.moveRqCmd = moveRqCmd;
         this.moveRqData = moveRqData;
         this.aeData = aeData;
         this.moveDest = moveDest;
         this.moveOriginatorAET = moveAssoc.getAssociation().getCallingAET();
         this.moveCalledAET = moveAssoc.getAssociation().getCalledAET();
         this.perfMon = service.getMoveScp().getPerfMonDelegate();
-        this.callingAET = service.isForwardAsMoveOriginator() ? moveOriginatorAET
-                : moveCalledAET;
         this.priority = moveRqCmd.getInt(Tags.Priority, Command.MEDIUM);
         this.msgID = moveRqCmd.getMessageID();
-        this.size = fileInfo.length;
-        this.remaining = size;
+        this.sopClassUID = moveRqCmd.getAffectedSOPClassUID();
+        this.total = fileInfo.length;
+        this.remaining = total;
         this.retrieveInfo = new RetrieveInfo(service, fileInfo);
+        this.remainingIUIDs = retrieveInfo.getAvailableIUIDs();
+        this.failedIUIDs = retrieveInfo.getNotAvailableIUIDs();
         moveAssoc.addCancelListener(msgID, cancelListener);
     }
 
-    private void openAssociation() throws DcmServiceException {
-        PDU ac = null;
-        Association a = null;
+    private ActiveAssociation openAssociation() throws Exception {
         AssociationFactory asf = AssociationFactory.getInstance();
-        try {
-            a = asf.newRequestor(service.createSocket(moveCalledAET, aeData));
-            a.setAcTimeout(service.getAcTimeout());
-            a.setDimseTimeout(service.getDimseTimeout());
-            a.setSoCloseDelay(service.getSoCloseDelay());
-            a.putProperty("MoveAssociation", moveAssoc);
-            AAssociateRQ rq = asf.newAAssociateRQ();
-            rq.setCalledAET(moveDest);
-            rq.setCallingAET(moveAssoc.getAssociation().getCalledAET());
-            int maxOpsInvoked = service.getMaxStoreOpsInvoked();
-            if (maxOpsInvoked != 1) {
-                rq.setAsyncOpsWindow(asf.newAsyncOpsWindow(maxOpsInvoked, 1));
-            }
-            retrieveInfo.addPresContext(rq,
-                    service.isSendWithDefaultTransferSyntax(moveDest),
-                    service.isOfferNoPixelData(moveDest),
-                    service.isOfferNoPixelDataDeflate(moveDest));
-            
-            perfMon.assocEstStart(a, Command.C_STORE_RQ);
-            
-            ac = a.connect(rq);
+        Association a = asf.newRequestor(
+                service.createSocket(moveCalledAET, aeData));
+        a.setAcTimeout(service.getAcTimeout());
+        a.setDimseTimeout(service.getDimseTimeout());
+        a.setSoCloseDelay(service.getSoCloseDelay());
+        a.putProperty("MoveAssociation", moveAssoc);
+        AAssociateRQ rq = asf.newAAssociateRQ();
+        rq.setCalledAET(moveDest);
+        rq.setCallingAET(moveAssoc.getAssociation().getCalledAET());
+        int maxOpsInvoked = service.getMaxStoreOpsInvoked();
+        if (maxOpsInvoked != 1) {
+            rq.setAsyncOpsWindow(asf.newAsyncOpsWindow(maxOpsInvoked, 1));
+        }
+        retrieveInfo.addPresContext(rq,
+                service.isSendWithDefaultTransferSyntax(moveDest),
+                service.isOfferNoPixelData(moveDest),
+                service.isOfferNoPixelDataDeflate(moveDest));
 
-            perfMon.assocEstEnd(a, Command.C_STORE_RQ);
-        } catch (Exception e) {
-            final String prompt = "Failed to connect " + moveDest;
-            log.error(prompt, e);
-            throw new DcmServiceException(Status.UnableToPerformSuboperations,
-                    prompt, e);
+        perfMon.assocEstStart(a, Command.C_STORE_RQ);
+        PDU pdu = a.connect(rq);
+        perfMon.assocEstEnd(a, Command.C_STORE_RQ);
+        if (!(pdu instanceof AAssociateAC)) {
+            throw new IOException("Association not accepted by "
+                    + moveDest + ":\n" + pdu);
         }
-        if (!(ac instanceof AAssociateAC)) {
-            final String prompt = "Association not accepted by " + moveDest
-                    + ":\n" + ac;
-            log.error(prompt);
-            throw new DcmServiceException(Status.UnableToPerformSuboperations,
-                    prompt);
-        }
-        storeAssoc = asf.newActiveAssociation(a, null);
+        ActiveAssociation storeAssoc = asf.newActiveAssociation(a, null);
         storeAssoc.start();
         if (a.countAcceptedPresContext() == 0) {
             try {
@@ -257,12 +229,17 @@ public class MoveTask implements Runnable {
                 log.info("Exception during release of assocation to "
                         + moveDest, e);
             }
-            final String prompt = "No Presentation Context for Storage accepted by "
-                    + moveDest;
-            log.error(prompt);
-            throw new DcmServiceException(Status.UnableToPerformSuboperations,
-                    prompt);
+            throw new IOException("No Presentation Context for Storage accepted by "
+                    + moveDest);
         }
+        removeInstancesOfUnsupportedStorageSOPClasses(a);
+        AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
+        remoteNode = alf.newRemoteNode(storeAssoc.getAssociation().getSocket(),
+                storeAssoc.getAssociation().getCalledAET());
+        return storeAssoc;
+    }
+
+    private void removeInstancesOfUnsupportedStorageSOPClasses(Association a) {
         Iterator<String> it = retrieveInfo.getCUIDs();
         String cuid;
         Set<String> iuids;
@@ -272,215 +249,101 @@ public class MoveTask implements Runnable {
                 iuids = retrieveInfo.removeInstancesOfClass(cuid);
                 it.remove(); // Use Iterator itself to remove the current
                                 // item to avoid ConcurrentModificationException
-                remaining -= iuids.size();
                 final String prompt = "No Presentation Context for "
-                        + QueryRetrieveScpService.uidDict.toString(cuid) + " accepted by " + moveDest
+                        + QueryRetrieveScpService.uidDict.toString(cuid)
+                        + " accepted by " + moveDest
                         + "\n\tCannot send " + iuids.size()
                         + " instances of this class";
                 if (!service.isIgnorableSOPClass(cuid, moveDest)) {
                     failedIUIDs.addAll(iuids);
-                    failed += iuids.size();
                     log.warn(prompt);
                 } else {
                     completed += iuids.size();
                     log.info(prompt);
                 }
+                remainingIUIDs.removeAll(iuids);
+                remaining = remainingIUIDs.size();
             }
         }
-        AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
-        remoteNode = alf.newRemoteNode(storeAssoc.getAssociation().getSocket(),
-                storeAssoc.getAssociation().getCalledAET());
-
     }
 
     public void run() {
         service.scheduleSendPendingRsp(sendPendingRsp);
         try {
-        try {
-            if (retrieveInfo.isRetrieveFromLocal()) {
-                service.prefetchTars(retrieveInfo.getLocalFiles());
-                openAssociation();
-                retrieveLocal();
-            }
+            Set<String> localUIDs = retrieveInfo.removeLocalIUIDs();
+            boolean updateLocalUIDs = false;
             while (!canceled && retrieveInfo.nextMoveForward()) {
                 String retrieveAET = retrieveInfo.getMoveForwardAET();
                 Collection<String> iuids = retrieveInfo.getMoveForwardUIDs();
-                if (iuids.size() == size) {
+                directForwarding = !retrieveInfo.isExternalRetrieveAET()
+                        || service.isDirectForwarding(retrieveAET, moveDest);
+                String moveDest1 = directForwarding ? moveDest 
+                        : service.getLocalStorageAET();
+                String callingAET = (directForwarding
+                        && service.isForwardAsMoveOriginator()) 
+                            ? moveOriginatorAET
+                            : moveCalledAET;
+                moveScu = new MoveScu(service, moveCalledAET, callingAET,
+                        retrieveAET, remaining);
+                if (iuids.size() == total) {
                     if (log.isDebugEnabled())
                         log.debug("Forward original Move RQ to " + retrieveAET);
-                    forwardMove(retrieveAET, moveRqCmd, moveRqData, iuids);
+                    moveScu.forwardMoveRQ(movePcid, msgID, priority,
+                            moveDest1, moveRqData, iuids);
                 } else {
-                    DcmObjectFactory dof = DcmObjectFactory.getInstance();
-                    Command cmd = dof.newCommand();
-                    cmd.initCMoveRQ(msgID,
-                            UIDs.StudyRootQueryRetrieveInformationModelMOVE,
-                            priority, moveDest);
-                    Dataset ds = dof.newDataset();
-                    ds.putCS(Tags.QueryRetrieveLevel, IMAGE);
-                    String[] a = (String[]) iuids.toArray(new String[iuids.size()]);
-                    if (a.length <= service.getMaxUIDsPerMoveRQ()) {
-                        ds.putUI(Tags.SOPInstanceUID, a);
-                        forwardMove(retrieveAET, cmd, ds, iuids);
-                    } else {
-                        String[] b = new String[service.getMaxUIDsPerMoveRQ()];
-                        int off = 0;
-                        int fwdMsgID = msgID;
-                        while (off + b.length < a.length) {
-                            System.arraycopy(a, off, b, 0, b.length);
-                            ds.putUI(Tags.SOPInstanceUID, b);
-                            forwardMove(retrieveAET, cmd, ds, Arrays.asList(b));
-                            off += b.length;
-                            cmd.putUS(Tags.MessageID, ++fwdMsgID);
-                        }
-                        b = new String[a.length - off];
-                        System.arraycopy(a, off, b, 0, b.length);
-                        ds.putUI(Tags.SOPInstanceUID, b);
-                        forwardMove(retrieveAET, cmd, ds, Arrays.asList(b));
+                    moveScu.splitAndForwardMoveRQ(movePcid, msgID, priority,
+                            moveDest1, iuids);
+                }
+                if (directForwarding) {
+                    completed += moveScu.completed();
+                    warnings += moveScu.warnings();
+                    failedIUIDs.addAll(moveScu.failedIUIDs());
+                    remainingIUIDs.removeAll(iuids);
+                    remaining = canceled ? moveScu.remaining() 
+                            : remainingIUIDs.size();
+                } else {
+                    if (moveScu.completed() > 0 || moveScu.warnings() > 0) {
+                        updateLocalUIDs = true;
                     }
+                }
+                moveScu = null;
+            }
+            if (!canceled) {
+                try {
+                    if (updateLocalUIDs) {
+                        FileInfo[][] fileInfo = RetrieveCmd.create(moveRqData).getFileInfos();
+                        retrieveInfo = new RetrieveInfo(service, fileInfo);
+                        localUIDs = retrieveInfo.removeLocalIUIDs();
+                    }
+                    if (!localUIDs.isEmpty()) {
+                        service.prefetchTars(retrieveInfo.getLocalFiles());
+                        ActiveAssociation storeAssoc = openAssociation();
+                        retrieveLocal(storeAssoc);
+                    }
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
                 }
             }
         } finally {
             sendPendingRsp.cancel();
         }
-        notifyMoveFinished();
-        } catch (DcmServiceException e) {
-            try {
-                Command rspCmd = DcmObjectFactory.getInstance().newCommand();
-                rspCmd.initCMoveRSP(moveRqCmd.getMessageID(), moveRqCmd
-                        .getAffectedSOPClassUID(), e.getStatus());
-                e.writeTo(rspCmd);
-                moveAssoc.getAssociation().write(
-                        AssociationFactory.getInstance().newDimse(movePcid, rspCmd));
-            } catch (Exception x) {
-                log.info("Failed to send Move RSP to Move Originator:", x);
-            }
+        if (!canceled) {
+            failedIUIDs.addAll(remainingIUIDs);
+            remainingIUIDs.clear();
+            remaining = 0;
         }
+        notifyMoveSCU(makeMoveRsp(status()),
+                service.makeRetrieveRspIdentifier(failedIUIDs));
     }
 
-    private void forwardMove(String retrieveAET, Command moveRqCmd,
-            Dataset moveRqData, final Collection<String> iuids) {
-        remaining -= iuids.size();
-        final boolean[] receivedFinalRsp = { false };
-        try {
-            final AssociationFactory asf = AssociationFactory.getInstance();
-            final AEDTO retrieveAEData = service
-                    .queryAEData(retrieveAET, null);
-            Association a = asf.newRequestor(service
-                    .createSocket(moveCalledAET, retrieveAEData));
-            a.setAcTimeout(service.getAcTimeout());
-            a.setDimseTimeout(service.getDimseTimeout());
-            a.setSoCloseDelay(service.getSoCloseDelay());
-            AAssociateRQ rq = asf.newAAssociateRQ();
-            rq.setCalledAET(retrieveAEData.getTitle());
-            rq.setCallingAET(callingAET);
-            rq.addPresContext(asf.newPresContext(PCID,
-                    UIDs.StudyRootQueryRetrieveInformationModelMOVE,
-                    NATIVE_LE_TS));
-            rq.addExtNegotiation(asf.newExtNegotiation(
-                    UIDs.StudyRootQueryRetrieveInformationModelMOVE,
-                    RELATIONAL_RETRIEVE));
-            PDU pdu = a.connect(rq);
-            if (!(pdu instanceof AAssociateAC)) {
-                throw new IOException("Association not accepted by "
-                        + retrieveAEData + ":\n" + pdu);
-            }
-            AAssociateAC ac = (AAssociateAC) pdu;
-            forwardAssoc = asf.newActiveAssociation(a, null);
-            forwardAssoc.start();
-            try {
-                if (a.getAcceptedTransferSyntaxUID(PCID) == null)
-                    throw new IOException(
-                            "StudyRootQueryRetrieveInformationModelMOVE not supported by "
-                                    + retrieveAEData);
-                ExtNegotiation extNeg = ac
-                        .getExtNegotiation(UIDs.StudyRootQueryRetrieveInformationModelMOVE);
-                if (extNeg == null
-                        || !Arrays.equals(extNeg.info(), RELATIONAL_RETRIEVE)) {
-                    log.warn("Relational Retrieve not supported by "
-                            + retrieveAEData);
-                }
-                Dimse cmoverq = asf.newDimse(PCID, moveRqCmd, moveRqData);
-                DimseListener moveRspListener = new DimseListener() {
-                    public void dimseReceived(Association assoc, Dimse dimse) {
-                        try {
-                            fwdMoveRspCmd = dimse.getCommand();
-                            final Dataset ds = dimse.getDataset();
-                            final int status = fwdMoveRspCmd.getStatus();
-                            switch (status) {
-                            case Status.Pending:
-                                return;
-                            case Status.Cancel:
-                            case Status.UnableToPerformSuboperations:
-                                remaining += fwdMoveRspCmd.getInt(
-                                        Tags.NumberOfRemainingSubOperations, 0);
-                            case Status.Success:
-                            case Status.SubOpsOneOrMoreFailures:
-                                failed += fwdMoveRspCmd.getInt(
-                                        Tags.NumberOfFailedSubOperations, 0);
-                                completed += fwdMoveRspCmd.getInt(
-                                        Tags.NumberOfCompletedSubOperations, 0);
-                                warnings += fwdMoveRspCmd.getInt(
-                                        Tags.NumberOfWarningSubOperations, 0);
-                                if (ds != null) {
-                                    String[] a = ds
-                                            .getStrings(Tags.FailedSOPInstanceUIDList);
-                                    if (a != null && a.length != 0) {
-                                        failedIUIDs.addAll(Arrays.asList(a));
-                                    } else {
-                                        failedIUIDs.addAll(iuids);
-                                    }
-                                }
-                                break;
-                            default: // other error status
-                                failed += iuids.size();
-                                failedIUIDs.addAll(iuids);
-                            }
-                            receivedFinalRsp[0] = true;
-                        } catch (IOException e) {
-                            failed += iuids.size();
-                            failedIUIDs.addAll(iuids);
-                            log.error("Failure during receive of C-MOVE_RSP:",
-                                    e);
-                        }
-                    }
-                };
-                forwardAssoc.invoke(cmoverq, moveRspListener);
-            } finally {
-                try {
-                    forwardAssoc.release(true);
-                    // workaround to ensure that the final MOVE-RSP of forwarded
-                    // MOVE-RQ is processed before the final MOVE-RSP is sent
-                    // to the primary Move Originator
-                    Thread.sleep(10);
-                } catch (Exception ignore) {
-                }
-                forwardAssoc = null;
-            }
-            if (!receivedFinalRsp[0]) {
-                failed += iuids.size();
-                failedIUIDs.addAll(iuids);
-                log.error("No final MOVE RSP received from " + retrieveAET);
-            }
-        } catch (Exception e) {
-            failed += iuids.size();
-            failedIUIDs.addAll(iuids);
-            log.error("Failed to forward MOVE RQ to " + retrieveAET, e);
-        }
-    }
-
-    private void retrieveLocal() {
+    private void retrieveLocal(ActiveAssociation storeAssoc) {
         this.stgCmtActionInfo = DcmObjectFactory.getInstance().newDataset();
         this.refSOPSeq = stgCmtActionInfo.putSQ(Tags.RefSOPSeq);
         Set<StudyInstanceUIDAndDirPath> studyInfos = 
                 new HashSet<StudyInstanceUIDAndDirPath>();
         Association a = storeAssoc.getAssociation();
         Collection<List<FileInfo>> localFiles = retrieveInfo.getLocalFiles();
-        final Set<String> remainingIUIDs = new HashSet<String>(
-                retrieveInfo.removeLocalIUIDs());
-        Iterator<List<FileInfo>> it = localFiles.iterator();
-        while (a.getState() == Association.ASSOCIATION_ESTABLISHED && !canceled
-                && it.hasNext()) {
-            final List<FileInfo> list = it.next();
+        for (List<FileInfo> list : localFiles) {
             final FileInfo fileInfo = list.get(0);
             final String iuid = fileInfo.sopIUID;
             DimseListener storeScpListener = new DimseListener() {
@@ -502,7 +365,6 @@ public class MoveTask implements Runnable {
                         successfulTransferred.add(fileInfo);
                         break;
                     default:
-                        ++failed;
                         failedIUIDs.add(iuid);
                         break;
                     }
@@ -512,21 +374,25 @@ public class MoveTask implements Runnable {
             };
             
             try {
-            	Dimse rq = service.makeCStoreRQ(storeAssoc,
-            	        fileInfo, priority, moveOriginatorAET, msgID, perfMon);
-            	perfMon.start(storeAssoc, rq, PerfCounterEnum.C_STORE_SCU_OBJ_OUT );
-            	perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.REQ_DIMSE, rq);
-            	perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.STUDY_IUID, fileInfo.studyIUID);
+                Dimse rq = service.makeCStoreRQ(storeAssoc,
+                        fileInfo, priority, moveOriginatorAET, msgID, perfMon);
+                perfMon.start(storeAssoc, rq, PerfCounterEnum.C_STORE_SCU_OBJ_OUT );
+                perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.REQ_DIMSE, rq);
+                perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.STUDY_IUID, fileInfo.studyIUID);
 
-            	storeAssoc.invoke(rq, storeScpListener);
-            	
-            	perfMon.stop(storeAssoc, rq, PerfCounterEnum.C_STORE_SCU_OBJ_OUT);
+                storeAssoc.invoke(rq, storeScpListener);
+                
+                perfMon.stop(storeAssoc, rq, PerfCounterEnum.C_STORE_SCU_OBJ_OUT);
             } catch (Exception e) {
                 log.error("Exception during move of " + iuid, e);
             }
             // track access on ONLINE FS
-            if (fileInfo.availability == Availability.ONLINE)
+            if (fileInfo.availability == Availability.ONLINE) {
                 studyInfos.add(new StudyInstanceUIDAndDirPath(fileInfo));
+            }
+            if (canceled || a.getState() != Association.ASSOCIATION_ESTABLISHED) {
+                break;
+            }
         }
         if (a.getState() == Association.ASSOCIATION_ESTABLISHED) {
             try {
@@ -549,11 +415,6 @@ public class MoveTask implements Runnable {
             } catch (IOException ignore) {
             }
         }
-        if (!canceled) {
-            remaining -= remainingIUIDs.size();
-            failed += remainingIUIDs.size();
-            failedIUIDs.addAll(remainingIUIDs);
-        }
         if (instancesAction != null) {
             service.logInstancesSent(remoteNode, instancesAction);
         }
@@ -563,10 +424,10 @@ public class MoveTask implements Runnable {
         }
         service.updateStudyAccessTime(studyInfos);
         String stgCmtAET = service.getStgCmtAET(moveDest);
-        if (stgCmtAET != null && refSOPSeq.countItems() > 0)
-            service
-                    .queueStgCmtOrder(moveCalledAET, stgCmtAET,
+        if (stgCmtAET != null && refSOPSeq.countItems() > 0) {
+            service.queueStgCmtOrder(moveCalledAET, stgCmtAET,
                             stgCmtActionInfo);
+        }
     }
     
     private void updateInstancesAction(final FileInfo info) {
@@ -590,21 +451,20 @@ public class MoveTask implements Runnable {
         item.putUI(Tags.RefSOPInstanceUID, fileInfo.sopIUID);
     }
 
-    private void notifyMoveFinished() {
-        notifyMoveSCU(canceled ? Status.Cancel : failed == 0 ? Status.Success
-                : completed == 0 ? Status.UnableToPerformSuboperations
-                        : Status.SubOpsOneOrMoreFailures,
-                service.makeRetrieveRspIdentifier(failedIUIDs), null);
+    private int status() {
+        return canceled ? Status.Cancel 
+                : failedIUIDs.isEmpty() ? Status.Success
+                : completed == 0 && warnings == 0 
+                        ? Status.UnableToPerformSuboperations
+                        : Status.SubOpsOneOrMoreFailures;
     }
 
-    private void notifyMoveSCU(int status, Dataset ds, Command fwdMoveRspCmd) {
+    private void notifyMoveSCU(Command moveRspCmd, Dataset moveRspData) {
         if (!moveAssocClosed) {
-            Command cmd = fwdMoveRspCmd != null ? makeMoveRsp(fwdMoveRspCmd)
-                    : makeMoveRsp(status);
             try {
                 moveAssoc.getAssociation().write(
                         AssociationFactory.getInstance().newDimse(movePcid,
-                                cmd, ds));
+                                moveRspCmd, moveRspData));
             } catch (Exception e) {
                 log.info("Failed to send Move RSP to Move Originator:", e);
                 moveAssocClosed  = true;
@@ -612,33 +472,18 @@ public class MoveTask implements Runnable {
         }
     }
 
-    private Command makeMoveRsp(Command fwdMoveRspCmd) {
-        Command rspCmd = DcmObjectFactory.getInstance().newCommand();
-        rspCmd.initCMoveRSP(moveRqCmd.getMessageID(), moveRqCmd
-                .getAffectedSOPClassUID(), fwdMoveRspCmd.getStatus());
-        rspCmd.putUS(Tags.NumberOfRemainingSubOperations, remaining
-                + fwdMoveRspCmd.getInt(Tags.NumberOfRemainingSubOperations, 0));
-        rspCmd.putUS(Tags.NumberOfCompletedSubOperations, completed
-                + fwdMoveRspCmd.getInt(Tags.NumberOfCompletedSubOperations, 0));
-        rspCmd.putUS(Tags.NumberOfWarningSubOperations, warnings
-                + fwdMoveRspCmd.getInt(Tags.NumberOfWarningSubOperations, 0));
-        rspCmd.putUS(Tags.NumberOfFailedSubOperations, failed
-                + fwdMoveRspCmd.getInt(Tags.NumberOfFailedSubOperations, 0));
-        return rspCmd;
-    }
-
     private Command makeMoveRsp(int status) {
         Command rspCmd = DcmObjectFactory.getInstance().newCommand();
-        rspCmd.initCMoveRSP(moveRqCmd.getMessageID(), moveRqCmd
-                .getAffectedSOPClassUID(), status);
+        rspCmd.initCMoveRSP(msgID, sopClassUID, status);
         if (remaining > 0) {
-            rspCmd.putUS(Tags.NumberOfRemainingSubOperations, remaining);
+            rspCmd.putUS(Tags.NumberOfRemainingSubOperations,
+                    remaining);
         } else {
             rspCmd.remove(Tags.NumberOfRemainingSubOperations);
         }
         rspCmd.putUS(Tags.NumberOfCompletedSubOperations, completed);
         rspCmd.putUS(Tags.NumberOfWarningSubOperations, warnings);
-        rspCmd.putUS(Tags.NumberOfFailedSubOperations, failed);
+        rspCmd.putUS(Tags.NumberOfFailedSubOperations, failedIUIDs.size());
         return rspCmd;
     }
 

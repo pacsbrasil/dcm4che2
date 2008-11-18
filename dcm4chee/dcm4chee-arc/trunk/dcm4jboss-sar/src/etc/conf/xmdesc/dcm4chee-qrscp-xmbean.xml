@@ -46,6 +46,20 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getLocalStorageAET"
+      setMethod="setLocalStorageAET">
+      <description><![CDATA[AE title of local Storage SCP. Used as Move
+      Destination in forwarded C-Move RQs to external Retrieve AEs, for which
+      no direct forwarding to the Move Destination in the received C-MOVE RQ
+      is configured in <b>DirectForwardingList</b>.]]>
+      </description>
+      <name>LocalStorageAETitle</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="DCM4CHEE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isSupplementIssuerOfPatientID"
       setMethod="setSupplementIssuerOfPatientID">
       <description><![CDATA[Supplement received C-FIND RQ identifier containing
@@ -620,6 +634,23 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getDirectForwardingList" 
+      setMethod="setDirectForwardingList">
+      <description><![CDATA[A list of rules of direct forwarding in C-Move for
+      external retrieve AE. Assume the local AE is A and C-Move to C is
+      requested. The files do not exist in A, but the local database has the
+      database entries for the requested objects with external retrieve AE B.
+      If B to C is defined in the Direct-Forwarding list, a C-Move from B to C
+      will be initiated. If B to C is not included in the list, the requested
+      objects will be first stored to A and then moved from A to C. <br>
+      Format:<br>
+        [source1],[destination1],[destination2];[source2],any;...<br>
+        Use 'any' for all destinations.<br>]]>
+      </description>
+      <name>DirectForwardingList</name>
+      <type>java.lang.String</type>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isRecordStudyAccessTime"
       setMethod="setRecordStudyAccessTime">
       <description>Record last retrieve time of instances of a study. Should be enabled,
@@ -1115,6 +1146,77 @@ QueryRetrieveScp service.</description>
         <description>AE Title</description>
         <name>aet</name>
         <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[Add a direct forward rule of external C-Move from
+      source to destination]]>
+      </description>
+      <name>addDirectForwarding</name>
+      <parameter>
+         <description><![CDATA[Source of C-Move]]></description>
+         <name>source</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+         <description><![CDATA[Destination of C-Move. Use any for all
+         destination]]>
+         </description>
+         <name>destination</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[Remove a direct forward rule of external C-Move for
+      a source AE]]>
+      </description>
+      <name>removeDirectForwarding</name>
+      <parameter>
+         <description><![CDATA[Source of C-Move]]></description>
+         <name>source</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[Remove a direct forward rule of external C-Move
+      from source to destination]]>
+      </description>
+      <name>removeDirectForwarding</name>
+      <parameter>
+         <description><![CDATA[Source of C-Move]]></description>
+         <name>source</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+         <description><![CDATA[Destination of C-Move. Use any for all
+          desinations]]>
+         </description>
+         <name>destination</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[Check whether an external C-Move should use direct
+      forwarding]]>
+      </description>
+      <name>isDirectForwarding</name>
+      <parameter>
+         <description><![CDATA[Source of C-Move]]></description>
+         <name>source</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+         <description><![CDATA[Destination of C-Move.]]></description>
+         <name>destination</name>
+         <type>java.lang.String</type>
       </parameter>
       <return-type>boolean</return-type>
    </operation>
