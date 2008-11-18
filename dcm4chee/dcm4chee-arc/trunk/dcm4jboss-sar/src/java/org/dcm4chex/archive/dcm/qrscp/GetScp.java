@@ -105,7 +105,8 @@ public class GetScp extends DcmServiceBase {
             try {
                 fileInfos = RetrieveCmd.create(rqData).getFileInfos();
                 checkPermission(a, fileInfos);
-                    new Thread(new GetTask(service, assoc, rq, fileInfos))
+                    new Thread(new GetTask(
+                            service, assoc, pcid, rqCmd, rqData, fileInfos))
                         .start();
             } catch (DcmServiceException e) {
                 throw e;
