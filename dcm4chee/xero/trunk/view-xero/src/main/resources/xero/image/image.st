@@ -3,7 +3,7 @@
    <v:group id="vml$layout.id$" class="imageDisplay"
    	 onmousedown="return controller.mouseDown('$layout.id$');"
 $if(layout.sameSize)$
-	style="overflow: visible; left: $layout.negHalfRealWidth$; margin-left: 50%; top: 50%; margin-top: $layout.negHalfRealHeight$; width: $layout.realWidth$; height: $layout.realHeight$;"
+	style="overflow: visible; left: $layout.negHalfRealWidth$; margin-left: 50%; margin-top: 50%; top: $layout.negHalfRealHeight$; width: $layout.realWidth$; height: $layout.realHeight$;"
 $else$
      style="overflow: visible; left: $layout.translateXPercent$%; top: $layout.translateYPercent$%; width: expression(Math.min(document.getElementById('$layout.id$').clientWidth,document.getElementById('$layout.id$').clientHeight*$layout.coordWidth$/$layout.coordHeight$));height: expression(Math.min(document.getElementById('$layout.id$').clientWidth*$layout.coordHeight$/$layout.coordWidth$,document.getElementById('$layout.id$').clientHeight));"
 $endif$
@@ -17,10 +17,6 @@ $endif$
 $layout.imageUrls:{
 		<v:image id="$it.imageId$" src="$it.imageUrl$" style="width: $it.cols$px; height:$it.rows$px; left: $it.left$px;top:$it.top$;" />
 }$
-		<v:line from="0,0" to="$layout.image.Columns$,0" strokecolor="#202020" strokeweight="2"/>
-		<v:line from="0,0" to="0,$layout.image.Rows$"  strokecolor="#202020" strokeweight="2"/>
-		<v:line from="$layout.image.Columns$,0" to="$layout.image.Columns$,$layout.image.Rows$" strokecolor="#202020" strokeweight="2"/>
-		<v:line from="0,$layout.image.Rows$" to="$layout.image.Columns$,$layout.image.Rows$" strokecolor="#202020" strokeweight="2" />
 		
 		$image/imageRelativeVml()$
 	</v:group>
@@ -33,6 +29,10 @@ $endif$
    </v:group>
 
    <v:group class="imageDisplayRel" style="width: 100%; height: 100%; top: 0px; left: 0px;" coordsize="1000,1000" coordorigin="0,0">
+		<v:line from="0,0" to="1000,0" strokecolor="#202020" strokeweight="2"/>
+		<v:line from="0,0" to="0,1000"  strokecolor="#202020" strokeweight="2"/>
+		<v:line from="1000,0" to="1000,1000" strokecolor="#202020" strokeweight="2"/>
+		<v:line from="0,1000" to="1000,1000" strokecolor="#202020" strokeweight="2" />
 	   $image/displayRelativeVml()$
    </v:group>
 $else$
@@ -51,20 +51,20 @@ $else$
 $endif$
 	viewBox="$layout.coordX$ $layout.coordY$ $layout.coordWidth$ $layout.coordHeight$"
 >
-<g transform="$if(layout.flip)$scale(-1,1)$endif$ $if(layout.rotation)$rotate($layout.rotation$,0,0)$endif$ $if(layout.aspect)$ scale(1,$layout.aspect$)$endif$">
+<g id="tr$layout.id$" transform="$if(layout.flip)$scale(-1,1)$endif$ $if(layout.rotation)$rotate($layout.rotation$,0,0)$endif$ $if(layout.aspect)$ scale(1,$layout.aspect$)$endif$">
 $layout.imageUrls:{
 <image id="$it.imageId$" preserveAspectRatio="none" xlink:href="$it.imageUrl$" width="$it.cols$" height="$it.rows$" transform="translate($it.left$,$it.top$)"/>
 }$
 
-<line x1="0" y1="0" x2="$layout.image.Columns$" y2="0" style="stroke: #202020; stroke-width: 4;" />
-<line x1="0" y1="0" x2="0" y2="$layout.image.Rows$" style="stroke: #202020; stroke-width: 4;" />
-<line x1="$layout.image.Columns$" y1="0" x2="$layout.image.Columns$" y2="$layout.image.Rows$" style="stroke: #202020; stroke-width: 4;" />
-<line x1="0" y1="$layout.image.Rows$" x2="$layout.image.Columns$" y2="$layout.image.Rows$" style="stroke: #202020; stroke-width: 4;" />
 
 $image/imageRelativeSvg()$
 </g>
 </svg>
 $if(layout.sameSize)$</svg>$endif$
+<line x1="0" y1="0" x2="1000" y2="0" style="stroke: #202020; stroke-width: 4;" />
+<line x1="0" y1="0" x2="0" y2="1000" style="stroke: #202020; stroke-width: 4;" />
+<line x1="1000" y1="0" x2="1000" y2="1000" style="stroke: #202020; stroke-width: 4;" />
+<line x1="0" y1="1000" x2="1000" y2="1000" style="stroke: #202020; stroke-width: 4;" />
 <svg class="imageDisplayRel" style="width: 100%; height: 100%;" preserveAspectRatio="none" viewBox="0,0,1000,1000">
 $image/displayRelativeSvg()$
 </svg>

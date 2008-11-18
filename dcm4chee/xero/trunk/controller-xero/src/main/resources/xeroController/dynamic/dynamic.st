@@ -74,9 +74,9 @@ XeroController.prototype.keyPress = function(e) {
 	if(!e) e = window.event;
 	var shift = this.getShiftInfo(e);	
 	var handler= shift+"key"+e.keyCode;
-	console.debug("Key press handler initial",handler);
+	//console.debug("Key press handler initial",handler);
 	handler = this.findModeHandler(handler);
-	console.debug("Found handler",handler);
+	//console.debug("Found handler",handler);
 	if(!handler) return;
 	return this[handler](e);
 };

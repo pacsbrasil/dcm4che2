@@ -41,6 +41,7 @@
  * @param {String} point
  */
 function parsePoint(point) {
+	if( !point.substring ) return point;
 	var spoint = ""+point;
 	var xy = spoint.match(/[\-0-9.]+/g);
 	for(var i=0; i<xy.length; i++) {

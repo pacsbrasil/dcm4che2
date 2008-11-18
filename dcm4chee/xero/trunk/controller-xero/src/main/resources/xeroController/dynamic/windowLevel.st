@@ -128,8 +128,8 @@ WLController.prototype.updateImage = function WLC_updateImage() {
 			if( this.delayTime<(new Date()).getTime() ) this.delayTime = undefined;
 			else return;
 		};
-		this.loadWidth = this.width;
-		this.loadCenter = this.center;
+		this.loadStartWidth = this.width;
+		this.loadStartCenter = this.center;
 		this.tries = 0;
 		var url = this.baseUrl + this.qualityOpts[this.qualityLevel] + "&windowWidth="+this.width+"&windowCenter="+this.center;
 		//console.info("Loading %s", url);
@@ -139,6 +139,8 @@ WLController.prototype.updateImage = function WLC_updateImage() {
 	}
 
 	if( this.loadImage.complete || this.tries > 10 ) {
+		this.loadWidth = this.loadStartWidth;
+		this.loadCenter = this.loadStartCenter;
 		this.setImageUrl(this.loadImage.src);
 		this.loadImage = null;
 		this.cnt++;
@@ -185,7 +187,7 @@ WLController.prototype.end = function WLC_end(event) {
 	this.image = undefined;
 	this.layout = undefined;
 	this.baseUrl = undefined;
-	this.controller.waitUpdate("mouseUp",2);
+	this.controller.waitUpdate("mouseUp",5);
 };
 
 /** Sets the default mode to window levelling */

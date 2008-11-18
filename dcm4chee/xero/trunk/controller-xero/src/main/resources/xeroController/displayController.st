@@ -264,7 +264,8 @@ XeroController.prototype.wheelSeries = function(id,e) {
 	id = this.model.patientLayout.findLayout(id);
 	console.info("Wheel mouse navigation called on %s", id.id);
 	var wheelData = e.detail ? e.detail : e.wheelDelta/-40;
-	wheelData = (wheelData * id.gridX * id.gridY)/3;
+	if( e.shiftKey ) wheelData = (wheelData * id.gridX * id.gridY)*10;
+	else wheelData = (wheelData * id.gridX * id.gridY)/3;
 	console.info("Trying to navigate %d", wheelData);
 	this.navImg(id,wheelData);
 	console.info("Wheel isComplete=%s",id.isComplete());

@@ -19,7 +19,7 @@ ImageLayout.prototype.MAGNIFY = "MAGNIFY";
 ImageLayout.prototype.SCALE_TO_FIT = "SCALE_TO_FIT";
 ImageLayout.prototype.TRUE_SIZE = "TRUE_SIZE";
 ImageLayout.prototype.urlCount = 0;
-ImageLayout.prototype.events = [".","../merged:windowWidth","../merged:windowCenter","../merged:invert","../merged:rotation","../merged:horizontalFlip"];
+ImageLayout.prototype.events = [".","../merged:windowWidth","../merged:windowCenter","../merged:invert","../merged:rotation","../merged:horizontalFlip","../merged:size", "../merged:topLeft","../merged:bottomRight"];
 ImageLayout.prototype.area="Image";
 
 
@@ -45,9 +45,9 @@ ImageLayout.prototype.namedListener = function(nav,vname,val,prevVal) {
 	if( prevVal===val && val===undefined ) return;
 	console.info("Updating all image URLs for",nav.external.seriesUID);
 	this.relayout = true;
-	if( vname==="horizontalFlip" || vname==="rotation" ) {
+	if( vname==="horizontalFlip" || vname==="rotation" || vname==="size" || vname==="bottomRight" || vname==="topLeft") {
 		this.updatePosition();
-	};
+	}
 	this.addImageUrl(true);
 };
 
@@ -59,13 +59,16 @@ ImageLayout.prototype.addImageUrl = function AddImageUrl(clear) {
 	   this.imageUrls[this.imageUrls.length-1].imageId = this.imageUrls[this.imageUrls.length-1].fullImageId; 
 	}
 	if( (!this.image) || !(this.width) || !(this.height) ) return;
+	if( this.navigate.merged.get("smallImage") ) {
+		this.imageUrls.push(this.createSmallImage(WADO_QUERY));
+	}
 	this.imageUrls.push(this.createFullUrl(WADO_QUERY));
 	this.preloadImage = new Image();
 	var src = this.imageUrls[this.imageUrls.length-1].imageUrl;
 	// This needs to be the unexpanded form as the src assignment does not undo this.
 	src = src.replace(/&amp;/g,"&");
 	this.preloadImage.src = src;
-	console.info("Created a pre-load image for '%s'", src);
+	console.info("Created a pre-load image for", src);
 };
 
 /** Listens for changes in size and re-calculates the URLs to use - LEAVING the old one in place
@@ -128,12 +131,21 @@ ImageLayout.prototype.isComplete = function ImageLayout_isComplete() {
 	return false;
 };
 
-/** This generates a URL object that includes positioning/offset information 
- * as well as the actual URL string to display the image.
- * This is technically controller code, but it is so intimately connected with this model
- * details that it is better to keep it part of the model.  
- */
-ImageLayout.prototype.createFullUrl = function ImageLayout_createFullUrl(base) {
+/** This generates a small URL reference for the entire image area, but at a reduced resolution/quality */
+ImageLayout.prototype.createSmallImage = function(base) {
+	var ret = this.createBaseUrl(base);
+	ret.imageUrl = ret.imageUrl + "&amp;imageQuality=0.4";
+	var rows = this.image.Rows;
+	while(rows>512) rows = rows/2;
+	rows = Math.floor(rows);
+	ret.rows = this.image.Rows;
+	ret.cols = this.image.Columns;	
+	ret.imageUrl = ret.imageUrl + "&amp;rows="+rows;
+	return ret;
+};
+
+/** Creates the base URL object */
+ImageLayout.prototype.createBaseUrl = function (base) {
 	var ret = { "imageUrl" : base+"&amp;objectUID="+this.image.objectUID, "top":0, "left":0, "imageId":"im"+this.id, "fullImageId": this.urlCount++};
 	if( this.image.frame ) {
 		ret.imageUrl = ret.imageUrl + "&amp;frameNumber="+this.image.frame;
@@ -154,6 +166,16 @@ ImageLayout.prototype.createFullUrl = function ImageLayout_createFullUrl(base) {
 	if( puid ) {
 		ret.imageUrl = ret.imageUrl + "&amp;presentationUID="+puid;
 	}
+	return ret;
+};
+
+/** This generates a URL object that includes positioning/offset information 
+ * as well as the actual URL string to display the image.
+ * This is technically controller code, but it is so intimately connected with this model
+ * details that it is better to keep it part of the model.  
+ */
+ImageLayout.prototype.createFullUrl = function ImageLayout_createFullUrl(base) {
+	var ret = this.createBaseUrl(base);
 	
 	var intScale = 1;
 	// Only fetch sizes down to 256 -otherwise fetch full size.
@@ -201,6 +223,7 @@ ImageLayout.prototype.createFullUrl = function ImageLayout_createFullUrl(base) {
 	if( xmin!==0 || ymin!==0 || xmax!==this.image.Columns || ymax!==this.image.Rows ) {
 		this.debug("Fetching sub-region %d,%d,%d,%d", xmin,ymin,xmax,ymax);
 		ret.imageUrl = ret.imageUrl + "&amp;region="+xmin/this.image.Columns+","+ymin/this.image.Rows+","+xmax/this.image.Columns+","+ymax/this.image.Rows;
+		ret.isSubregion = true;
 	}
 	if( ret.fetchScale!=1 ) {
 		this.debug("Fetching at scale %d",ret.fetchScale);
@@ -355,9 +378,17 @@ ImageLayout.prototype.computeScale = function ImageLayout_computeScale() {
 
 	var imageX = Math.abs(imgBR[0]-imgTL[0]);
 	var imageY = Math.abs(imgBR[1]-imgTL[1]);
-	
+
 	if( this.layoutType=="TRUE_SIZE") {
-		var spx = parseFloat(this.merged.get("spacingX"));
+		var spx = this.merged.get("spacingX");
+		if( !spx ) {
+			console.warn("No spacing for true size -unable to apply true size.");
+			this.layoutType = "SCALE_TO_FIT";
+		}
+	};
+
+	if( this.layoutType=="TRUE_SIZE") {
+		var spx = parseFloat(spx);
 		var dpi = screen.logicalXDPI;
 		if( !dpi ) dpi = screen.deviceXDPI;
 		if( !dpi ) {
@@ -376,7 +407,9 @@ ImageLayout.prototype.computeScale = function ImageLayout_computeScale() {
 		this.realWidth = Math.floor(imageX*spx)+"mm";
 		this.realHeight = Math.floor(imageY*spx)+"mm";		
 	} else if( this.layoutType=="MAGNIFY" ) {
-		this.scale = parseFloat(this.merged.get("magnify"));
+		var mag = this.merged.get("magnify");
+		if( !mag ) mag = "1.0";
+		this.scale = parseFloat(mag);
 		this.sameSize = true;
 		this.negHalfRealWidth = Math.floor(-imageX*this.scale/2)+"px";
 		this.negHalfRealHeight = Math.floor(-imageY*this.scale/2)+"px";

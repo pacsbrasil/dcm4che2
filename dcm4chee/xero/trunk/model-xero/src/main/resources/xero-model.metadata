@@ -110,17 +110,25 @@ static.spatMenu.children.reset.i18n=SpatReset
 
 static.zoomMenu.inherit=toolbar
 
-static.zoomMenu.children.magnify.inherit=displayModeItem
-static.zoomMenu.children.magnify.priority=200
-static.zoomMenu.children.magnify.i18n=Magnify
+#static.zoomMenu.children.magnify.inherit=displayModeItem
+#static.zoomMenu.children.magnify.priority=200
+#static.zoomMenu.children.magnify.i18n=Magnify
 
 static.zoomMenu.children.scaleToFit.inherit=displayModeItem
 static.zoomMenu.children.scaleToFit.i18n=Zoom
 static.zoomMenu.children.scaleToFit.priority=100
 
-static.zoomMenu.children.trueSize.inherit=displayModeItem
-static.zoomMenu.children.trueSize.priority=400
-static.zoomMenu.children.trueSize.i18n=TrueSize
+static.zoomMenu.children.zoomIn.inherit=displayModeItem
+static.zoomMenu.children.zoomIn.i18n=ZoomIn
+static.zoomMenu.children.zoomIn.priority=125
+
+static.zoomMenu.children.zoomOut.inherit=displayModeItem
+static.zoomMenu.children.zoomOut.i18n=ZoomOut
+static.zoomMenu.children.zoomOut.priority=130
+
+#static.zoomMenu.children.trueSize.inherit=displayModeItem
+#static.zoomMenu.children.trueSize.priority=400
+#static.zoomMenu.children.trueSize.i18n=TrueSize
 
 static.zoomMenu.children.reset.inherit=displayModeItem
 static.zoomMenu.children.reset.priority=300
