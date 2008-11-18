@@ -103,7 +103,8 @@ XeroController.prototype.mouseDown = function(id,e) {
 	console.info("Button pressed:",(but==""?"left":but),"is double",dbl);
 	if( dbl ) {
 		handler = handler+"dblDrag"+but;
-		clickkHandler = clickHandler + "dbl"+but;
+		clickHandler = clickHandler + "dbl"+but;
+		console.info("Looking for double click handler",clickHandler);
 		this.singleClickMousing = null;
 	} else {
 		handler = handler+"drag"+but;
@@ -116,7 +117,10 @@ XeroController.prototype.mouseDown = function(id,e) {
 	} 
 	handler = this.findModeHandler(handler);
 	clickHandler = this.findModeHandler(clickHandler);
-	if(!(handler || clickHandler)) return;
+	if(!(handler || clickHandler)) {
+		console.info("No click handlers found.");
+		return;
+	}
 	console.info("Found mouse handler",handler,"click",clickHandler);
 	
 	var mousing;
@@ -263,6 +267,9 @@ MouseHandler.prototype.start = function MouseHandler_start(event) {
 	console.info("Hello, image mouse down target id %s imageDisplay %s button %d which %d at ", this.target, this.imageDisplay.id, event.button, event.which, this.startPosn);
 	return true;
 };
+
+/** Just use the object clicked for the mouse dom area. */
+MouseHandler.prototype.getMouseDom = function(src) { return src; };
 
 MouseHandler.prototype.end = function MouseHandler_showMouseMoveEnd(event) {
 	var posn = docCoords(event);

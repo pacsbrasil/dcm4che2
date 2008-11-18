@@ -272,6 +272,25 @@ XeroController.prototype.wheelSeries = function(id,e) {
 	return cancelEvent(e);
 };
 
+/** Changes the series mode to 1x1 mode, or to 2x2 if in 1x1 */
+XeroController.prototype.dblImage = function(id,e) {
+	var lay =this.model.patientLayout.findLayout(id);
+	var nav = this.getNavigate(lay);
+	nav = nav.parent.parent;
+	var mode = nav.conversation.seriesLayout;
+	if( mode==="Layout1x1" ) {
+	  if( nav.conversation.wasSeriesLayout ) {
+	  	mode = nav.conversation.wasSeriesLayout;
+	  	nav.conversation.wasSeriesLayout = undefined;
+	  } else mode = "Layout2x2";
+	} else {
+	  nav.conversation.wasSeriesLayout = mode;
+	  mode="Layout1x1";
+	}
+	nav.setConversation("seriesLayout", mode);
+	this.displayResize("doubleImage");
+};
+
 /** Changes the image layout */
 XeroController.prototype.setImgLay = function XC_setImgLay(id,w,h) {
 	id = this.model.patientLayout.findLayout(id);

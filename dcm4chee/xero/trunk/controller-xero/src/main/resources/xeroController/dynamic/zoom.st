@@ -124,6 +124,7 @@ function PanController() {
 PanController.prototype = new ImageMouseHandler();
 
 XeroController.prototype.Zoom_dragImage = new PanController();
+XeroController.prototype.dblDragImage = XeroController.prototype.Zoom_dragImage;
 XeroController.prototype.Magnify_dragImage = XeroController.prototype.Zoom_dragImage;
 XeroController.prototype.TrueSize_dragImage = XeroController.prototype.Zoom_dragImage;
 XeroController.prototype.ZoomReset_dragImage = XeroController.prototype.Zoom_dragImage;
@@ -224,8 +225,6 @@ PanController.prototype.sumPoint = function(p1,dx,dy) {
 	return [p1[0]+dx,p1[1]+dy];
 };
 
-var pc;
-
 /** Handle the end of the pan movement - compute the topLeft, bottomRight and rerender */
 PanController.prototype.end = function(e) {
 	console.info("Final dx,dy=",this.dx,",",this.dy);
@@ -240,7 +239,6 @@ PanController.prototype.end = function(e) {
 		dy = Math.floor(dy*this.finalScaleY);
 		console.info("VML dx,dy=",dx,dy);
 	}
-	pc = this;	
 	// Convert dx,dy into IMAGE coordinate changes
 	// Apply dx,dy to tl, br
 	tl = this.sumPoint(tl,-dx,-dy);

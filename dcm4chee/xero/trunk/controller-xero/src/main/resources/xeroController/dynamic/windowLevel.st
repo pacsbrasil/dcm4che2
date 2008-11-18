@@ -9,6 +9,13 @@ WLController.prototype.isWLController = true;
 XeroController.prototype.WindowLevel_dragImage = new WLController();
 // Default drag operation is window level, as is the default ctrl-drag image.
 XeroController.prototype.dragImage = XeroController.prototype.WindowLevel_dragImage;
+
+// Over-ride the double-drag modes for zoom
+XeroController.prototype.Zoom_dblDragImage = XeroController.prototype.dragImage;
+XeroController.prototype.ZoomIn_dblDragImage = XeroController.prototype.dragImage;
+XeroController.prototype.ZoomOut_dblDragImage = XeroController.prototype.dragImage;
+XeroController.prototype.ZoomReset_dblDragImage = XeroController.prototype.dragImage;
+
 XeroController.prototype.ctrl_dragImage = XeroController.prototype.WindowLevel_clickImage;
 
 /** Handle the window level reset operation */
