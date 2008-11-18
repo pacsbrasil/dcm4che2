@@ -246,13 +246,16 @@ div.tabHeader {
 	margin:0;
 	text-align:right;   /* this right alignment goes with the float:left below */
 	cursor:pointer;      /* IE tries to switch back to an I-beam, don't let it */
-	cursor:hand;           /* IE5 only knows about "hand", so set it both ways */
 }
 
 .drop span {        /* this simultaneously left and right aligns the text and */
 	float:left;       /* the >> in the drop-down menus which link to sub-menus */
 }
 
+a.koTitle {
+	font-weight: bold;
+	color: white;
+}
 
 /*======================== TOP LEVEL MENU DEFINITIONS ========================*/
 

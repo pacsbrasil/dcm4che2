@@ -73,4 +73,5 @@ $else$
 No Image
 $endif$
 $endif$
+$image/keyImageNote()$
 </div>
