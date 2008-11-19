@@ -90,13 +90,6 @@ public class QueryStudiesCmd extends BaseReadCmd {
     private static final String[] LEFT_JOIN_WITH_SERIES = { 
         "Study", null, "Patient.pk", "Study.patient_fk", 
         "Series", null, "Study.pk", "Series.study_fk"};
-    private static final String[] LEFT_JOIN_WITH_STUDY_PERMISSION = { 
-        "Study", null, "Patient.pk", "Study.patient_fk", 
-        "StudyPermission", null, "Study.studyIuid", "StudyPermission.studyIuid"};
-    private static final String[] LEFT_JOIN_WITH_SERIES_AND_STUDY_PERMISSION = { 
-        "Study", null, "Patient.pk", "Study.patient_fk",
-        "Series", null, "Study.pk", "Series.study_fk", 
-        "StudyPermission", null, "Study.studyIuid", "StudyPermission.studyIuid"};
 
     private boolean hideMissingStudies;
 
@@ -164,7 +157,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
         sqlBuilder.addCallingAETsNestedMatch(false,
                 filter.getStrings(PrivateTags.CallingAET));
         this.hideMissingStudies = hideMissingStudies;	
-        if ( this.hideMissingStudies && ! checkPermissions) {
+        if ( this.hideMissingStudies ) {
             sqlBuilder.addNULLValueMatch(null,"Study.encodedAttributes", true);
         }
         if ( checkPermissions ) {
@@ -172,35 +165,26 @@ public class QueryStudiesCmd extends BaseReadCmd {
             if ( roles.length < 1 ) {
                 throw new IllegalArgumentException("User is not in a StudyPermission relevant role");
             }
-            if ( hideMissingStudies ) {
-                sqlBuilder.addSingleValueMatch(null, "StudyPermission.action", false, StudyPermissionDTO.QUERY_ACTION);
-                sqlBuilder.addListOfStringMatch(null, "StudyPermission.role", false, roles );
-            } else {
-                Node node = sqlBuilder.addNodeMatch("or", false);
-                node.addMatch( new Match.NULLValue(null,"Study.encodedAttributes", false) );
-                Node node1 = new Match.Node("and", false);
-                node1.addMatch(new Match.SingleValue(null, "StudyPermission.action", false, StudyPermissionDTO.QUERY_ACTION));
-                node1.addMatch( new Match.ListOfString(null, "StudyPermission.role", false, roles ) );
-                node.addMatch(node1);
-            }
+            addStudyPermissionMatch(subject);
         }
     }
+    
+    private void addStudyPermissionMatch(Subject subject) {
+        if (subject != null) {
+            sqlBuilder.addQueryPermissionNestedMatch(false,
+                    SecurityUtils.rolesOf(subject));
+        }
+    }
+    
 
     protected String[] getTables() {
         return new String[] { "Patient" };
     }
 
     protected String[] getLeftJoin(boolean withSeries) {
-        if ( withSeries ) {
-            return checkPermissions
-            ? LEFT_JOIN_WITH_SERIES_AND_STUDY_PERMISSION
-                    : QueryStudiesCmd.LEFT_JOIN_WITH_SERIES;
-        } else {
-            return checkPermissions
-            ? LEFT_JOIN_WITH_STUDY_PERMISSION
-                    : QueryStudiesCmd.LEFT_JOIN;
-        }
+        return withSeries ? QueryStudiesCmd.LEFT_JOIN_WITH_SERIES : QueryStudiesCmd.LEFT_JOIN;
     }
+
     protected String[] getRelations() {
         return null;
     }
