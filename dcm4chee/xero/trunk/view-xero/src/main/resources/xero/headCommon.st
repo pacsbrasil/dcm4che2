@@ -13,6 +13,7 @@
   $endif$
   $if(IS_IE)$
     <style> v\:* { behavior: url(#default#VML); display: inline-block; overflow: hidden; position: absolute; }  </style>
+    <link type="text/cass" rel="stylesheet" href="style/ie.css"> </link>
   $endif$
   <title>Xero Query</title>
   $model/scripts()$

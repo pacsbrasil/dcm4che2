@@ -111,8 +111,8 @@ WLController.prototype.mousemove = function WLC_mousemove(event) {
 	var posn = docCoords(event);
 	var dx = posn[0]-this.startPosn[0];
 	var dy = posn[1]-this.startPosn[1];
-	var center = Math.floor(this.origCenter - (dx*this.pixelRange/512));
-	var width = Math.floor(this.origWidth - (dy*this.pixelRange/512));
+	var center = Math.floor(this.origCenter - (dy*this.pixelRange/512));
+	var width = Math.floor(this.origWidth - (dx*this.pixelRange/512));
 	if( center >= this.minPixel && center < this.maxPixel ) {
 		this.center = center;
 	}

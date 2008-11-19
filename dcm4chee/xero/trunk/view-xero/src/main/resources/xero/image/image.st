@@ -29,10 +29,6 @@ $endif$
    </v:group>
 
    <v:group class="imageDisplayRel" style="width: 100%; height: 100%; top: 0px; left: 0px;" coordsize="1000,1000" coordorigin="0,0">
-		<v:line from="0,0" to="1000,0" strokecolor="#202020" strokeweight="2"/>
-		<v:line from="0,0" to="0,1000"  strokecolor="#202020" strokeweight="2"/>
-		<v:line from="1000,0" to="1000,1000" strokecolor="#202020" strokeweight="2"/>
-		<v:line from="0,1000" to="1000,1000" strokecolor="#202020" strokeweight="2" />
 	   $image/displayRelativeVml()$
    </v:group>
 $else$
@@ -61,10 +57,6 @@ $image/imageRelativeSvg()$
 </g>
 </svg>
 $if(layout.sameSize)$</svg>$endif$
-<line x1="0" y1="0" x2="1000" y2="0" style="stroke: #202020; stroke-width: 4;" />
-<line x1="0" y1="0" x2="0" y2="1000" style="stroke: #202020; stroke-width: 4;" />
-<line x1="1000" y1="0" x2="1000" y2="1000" style="stroke: #202020; stroke-width: 4;" />
-<line x1="0" y1="1000" x2="1000" y2="1000" style="stroke: #202020; stroke-width: 4;" />
 <svg class="imageDisplayRel" style="width: 100%; height: 100%;" preserveAspectRatio="none" viewBox="0,0,1000,1000">
 $image/displayRelativeSvg()$
 </svg>

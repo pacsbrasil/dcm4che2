@@ -1,3 +1,8 @@
+<v:line from="0,0" to="1000,0" strokecolor="#202020" strokeweight="2"/>
+<v:line from="0,0" to="0,1000"  strokecolor="#202020" strokeweight="2"/>
+<v:line from="1000,0" to="1000,1000" strokecolor="#202020" strokeweight="2"/>
+<v:line from="0,1000" to="1000,1000" strokecolor="#202020" strokeweight="2" />
+
 $layout.image.use:{
 $if(it.isDISPLAYREL)$
 $it._parent._parent._parent.svg.(it.href).text:{

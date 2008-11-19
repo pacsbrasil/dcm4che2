@@ -99,6 +99,7 @@ public class QueryController<T> implements Filter<T> {
 	@SuppressWarnings("unchecked")
    private void manyStudy(XmlModel search) {
 	   List<XmlModel> patients = (List<XmlModel>) search.get("patient");
+	   if( patients==null ) return;
 	   for(XmlModel patient : patients) {
 	      List<?> studies = (List<?>) patient.get("study");
 	      if( studies.size()>2 ) patient.put("manyStudy", true);
