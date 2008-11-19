@@ -62,7 +62,7 @@ $image/displayRelativeSvg()$
 </svg>
 </svg>
 $else$
-No Image
+<span style="position:relative;top:40px; left: 40px;">No Image</span>
 $endif$
 $endif$
 $image/keyImageNote()$
