@@ -1,0 +1,1 @@
+<li id="$layout.id$" class="label toolItem">$html/labelBody()$</li>
