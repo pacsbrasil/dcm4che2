@@ -90,7 +90,8 @@ NavConversation.prototype.assignDefaultModifiers = function NC_assignDefaultModi
 	if( (this.modifier!==undefined) || !external ) return this.getChild(childId).getCombinedModifiers();
 	if( this.level==2 ) {
 		if( external.gspsLabel ) {
-			this.setQueryModifier("pr","&gsps="+external.gspsLabel,true);
+			var qm = this.setQueryModifier("pr","&gsps="+external.gspsLabel,true);
+			this.gspsLabel = external.gspsLabel;
 			console.info("gspsLabel found, setting presentation modifier %s", external.gspsLabel);
 		}
 		if( external.koUID ) {

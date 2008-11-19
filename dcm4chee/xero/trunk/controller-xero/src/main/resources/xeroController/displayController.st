@@ -155,6 +155,7 @@ XeroController.prototype.selectGsps = function XC_selectGsps(id, gsps) {
 	var nav = this.getNavigate(lay);
 	if( gsps==null || gsps==="" ) nav.conversation.setQueryModifier("pr");
 	else nav.conversation.setQueryModifier("pr","&gsps="+gsps,true);
+	nav.setConversation("gspsLabel",gsps);
 	console.info("Conversation info set on",nav.conversation.id,"at level",
 		nav.level,"external id now", nav.conversation.getExternalId());
 	this.updateDisplayTab(true);

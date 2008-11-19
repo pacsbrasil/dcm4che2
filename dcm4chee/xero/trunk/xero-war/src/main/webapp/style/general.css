@@ -257,10 +257,6 @@ div.tabHeader {
 	float:left;       /* the >> in the drop-down menus which link to sub-menus */
 }
 
-a.koTitle {
-	font-weight: bold;
-	color: white;
-}
 
 /*======================== TOP LEVEL MENU DEFINITIONS ========================*/
 
@@ -375,6 +371,9 @@ a.koTitle {
 	background:white;
 }
 
+
+/*======================== MENU Customizations ========================*/
+
 /* Need to change the root menu z-index so later indices are hidden under it */
 #PatientMenu {
 	z-index: 120;
@@ -385,4 +384,9 @@ div.studyInfo {
 }
 div.studyToolbar {
 	z-index: 50;
+}
+
+.menu ul li a.koTitle {
+	text-decoration: underline;
+	color: white;
 }
