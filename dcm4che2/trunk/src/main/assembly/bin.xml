@@ -15,26 +15,26 @@
         <include>dcm4che:dcm4che-imageio-rle</include>
         <include>dcm4che:dcm4che-net</include>
         <include>dcm4che:dcm4che-hp</include>
-        <include>dcm4che:dcm4che-tool-dcm2dcm</include>
-        <include>dcm4che:dcm4che-tool-dcm2jpg</include>
-        <include>dcm4che:dcm4che-tool-dcm2txt</include>
-        <include>dcm4che:dcm4che-tool-dcm2xml</include>
-        <include>dcm4che:dcm4che-tool-dcmdir</include>
-        <include>dcm4che:dcm4che-tool-dcmecho</include>
-        <include>dcm4che:dcm4che-tool-dcmgpwl</include>
-        <include>dcm4che:dcm4che-tool-dcmhpqr</include>
-        <include>dcm4che:dcm4che-tool-dcmmwl</include>
-        <include>dcm4che:dcm4che-tool-dcmof</include>
-        <include>dcm4che:dcm4che-tool-dcmqr</include>
-        <include>dcm4che:dcm4che-tool-dcmrcv</include>
-        <include>dcm4che:dcm4che-tool-dcmsnd</include>
-        <include>dcm4che:dcm4che-tool-dcmwado</include>   
-        <include>dcm4che:dcm4che-tool-logger</include>
-        <include>dcm4che:dcm4che-tool-jpg2dcm</include>
-        <include>dcm4che:dcm4che-tool-pdf2dcm</include>
-        <include>dcm4che:dcm4che-tool-rgb2ybr</include>
-        <include>dcm4che:dcm4che-tool-txt2dcmsr</include>
-        <include>dcm4che:dcm4che-tool-xml2dcm</include>
+        <include>dcm4che.tool:dcm4che-tool-dcm2dcm</include>
+        <include>dcm4che.tool:dcm4che-tool-dcm2jpg</include>
+        <include>dcm4che.tool:dcm4che-tool-dcm2txt</include>
+        <include>dcm4che.tool:dcm4che-tool-dcm2xml</include>
+        <include>dcm4che.tool:dcm4che-tool-dcmdir</include>
+        <include>dcm4che.tool:dcm4che-tool-dcmecho</include>
+        <include>dcm4che.tool:dcm4che-tool-dcmgpwl</include>
+        <include>dcm4che.tool:dcm4che-tool-dcmhpqr</include>
+        <include>dcm4che.tool:dcm4che-tool-dcmmwl</include>
+        <include>dcm4che.tool:dcm4che-tool-dcmof</include>
+        <include>dcm4che.tool:dcm4che-tool-dcmqr</include>
+        <include>dcm4che.tool:dcm4che-tool-dcmrcv</include>
+        <include>dcm4che.tool:dcm4che-tool-dcmsnd</include>
+        <include>dcm4che.tool:dcm4che-tool-dcmwado</include>   
+        <include>dcm4che.tool:dcm4che-tool-logger</include>
+        <include>dcm4che.tool:dcm4che-tool-jpg2dcm</include>
+        <include>dcm4che.tool:dcm4che-tool-pdf2dcm</include>
+        <include>dcm4che.tool:dcm4che-tool-rgb2ybr</include>
+        <include>dcm4che.tool:dcm4che-tool-txt2dcmsr</include>
+        <include>dcm4che.tool:dcm4che-tool-xml2dcm</include>
       </includes>      
       <binaries>
         <outputDirectory>lib</outputDirectory>

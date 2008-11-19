@@ -1,11 +1,11 @@
 <project>
   <parent>
     <artifactId>dcm4che-tool</artifactId>
-    <groupId>dcm4che</groupId>
+    <groupId>dcm4che.tool</groupId>
     <version>2.0.18-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>dcm4che</groupId>
+  <groupId>dcm4che.tool</groupId>
   <artifactId>dcm4che-tool-dcm2dcm</artifactId>
   <packaging>jar</packaging>
   <name>DICOM to DICOM Converter</name>
