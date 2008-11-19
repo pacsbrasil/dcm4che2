@@ -13,8 +13,20 @@ XeroController.prototype.performSearch = function XC_performSearch(src) {
 	var searchLayout = model.idMap.SearchLayout;
 	searchLayout.search = new StudyData();
 	searchLayout.search.requestUrl(queryLayout.query.url);
+	if( searchLayout.search.tooManyResults ) {
+		console.warn("Too many results found from query",queryLayout.query.url);
+	}
 	console.timeEnd("SearchQuery");
 };
+
+/** Causes the study query to be made immediately on loading - so that everything is available */
+function onloadStudySearch() {
+	if( model.idMap.SearchLayout.search ) return;
+	controller.performSearch();
+};
+
+addLoadEvent(onloadStudySearch);
+
 
 /** Adds a multiple study selection to allow viewing a sub-set of the available studies. */
 XeroController.prototype.manyStudy = function(id, pid, studyUID) {

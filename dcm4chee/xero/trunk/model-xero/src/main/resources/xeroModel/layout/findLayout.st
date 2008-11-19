@@ -2,7 +2,7 @@
 function FindLayout() {
 	this.baseConstructor("Find");
 	var queryBox = new Layout("QueryLayout","query/query");
-	queryBox.query = new UrlFactory("/wado2/study.xml",queryBox.id);
+	queryBox.query = new UrlFactory("/wado2/study.xml?maxResults=500",queryBox.id);
 	 
 	var searchLayout = new Layout("SearchLayout","query/studyTable");
 	searchLayout.columns = XeroStudyColumns;

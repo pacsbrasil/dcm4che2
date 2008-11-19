@@ -22,6 +22,7 @@ UrlFactory.prototype.updateUrl = function URLF_updateUrl() {
 		this.debug("Update url %s from form %s", this.url, this.formId);
 		this.sep = "?";
 		this.url = this.base;
+		if( this.url.indexOf("?")>=0 ) this.sep = "&";
 		this.updateUrlFromForm(form);
 	}
 	else {

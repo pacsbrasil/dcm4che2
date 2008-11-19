@@ -205,7 +205,7 @@ function unhookEvent(element, eventName, callback)
   }
   else if(element.detachEvent)
     element.detachEvent("on" + eventName, callback);
-}
+};
 
 /** Cancels an events default behaviour */
 function cancelEvent(e)
@@ -219,6 +219,23 @@ function cancelEvent(e)
   e.cancel = true;
   e.returnValue = false;
   return false;
-}
+};
+
+/** Adds the given function to the onload event - this can handle things like auto-querying
+ * or other things that need to happen when the window is loaded.
+ */
+function addLoadEvent(func) {
+  var oldonload = window.onload;
+  if (typeof window.onload != 'function') {
+    window.onload = func;
+  } else {
+    window.onload = function() {
+      if (oldonload) {
+        oldonload();
+      }
+      func();
+    }
+  }
+};
 
 

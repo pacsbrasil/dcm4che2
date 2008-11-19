@@ -35,6 +35,7 @@ queryTemplates.htmlTabs=html/tabs
 queryTemplates.noHeaderTabs=html/noHeaderTabs
 queryTemplates.queryQuery=query/query
 queryTemplates.studyTable=query/studyTable
+queryTemplates.patientNameSel=query/patientNameSel
 queryTemplates.studyDescriptionSel=query/studyDescriptionSel
 
 displayTemplates=${class:org.dcm4chee.xero.template.AllTemplatesMap}
@@ -42,7 +43,6 @@ displayTemplates.templateGroup=${ref:templateGroup}
 displayTemplates.imageNumber=image/imageNumber
 displayTemplates.seriesNumber=image/seriesNumber
 displayTemplates.seriesDescription=image/seriesDescription
-displayTemplates.patientNameSel=image/patientNameSel
 displayTemplates.patientMenu=image/patientMenu
 displayTemplates.imageImage=image/image
 displayTemplates.studyTra=image/studyTray

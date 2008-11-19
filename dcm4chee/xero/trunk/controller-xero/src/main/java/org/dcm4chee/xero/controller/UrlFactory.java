@@ -60,14 +60,15 @@ public class UrlFactory implements MapFactory<String>, MetaDataUser {
     */
    public String create(Map<String, Object> src) {
 	  StringBuffer ret = new StringBuffer(base);
-	  boolean first = true;
 	  log.info("Creating a URL starting from "+base);
+	  char sep = '?';
+	  if( base.indexOf('?')>=0 ) sep = '&';
 	  for(String key : queryParams) {
 		 Object value = src.get(key);
 		 log.info("Checking "+key+"="+value);
 		 if( value==null ) continue;
-		 ret.append(first ? '?' : '&');
-		 first = false;
+		 ret.append(sep);
+		 sep = '&';
 		 ret.append(key).append('=').append(value.toString());
 	  }
 	  return ret.toString();

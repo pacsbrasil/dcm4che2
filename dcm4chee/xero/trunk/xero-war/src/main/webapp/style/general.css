@@ -87,6 +87,11 @@ div.rootMenu {
 	display: block;
 }
 
+.warning {
+	color: red;
+	font-weight: bold;
+}
+
 .image {
 	background: black;
 	overflow: hidden;
