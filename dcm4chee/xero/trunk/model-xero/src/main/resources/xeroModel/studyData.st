@@ -188,3 +188,8 @@ StudyData.prototype.customize_image = function() {
 		last = cur;
 	} while(koUID);
 };
+
+StudyData.prototype.customize_patient = function() {
+	this.manyStudy = (this.study!=null && this.study.length>2);
+	console.info("Customizing patient - set many study to", this.manyStudy);
+};

@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.transform.URIResolver;
@@ -87,13 +88,24 @@ public class QueryController<T> implements Filter<T> {
 		String url = FilterUtil.getString(query, "url");
 		XmlModel search;
 		search = new XmlModel(resolver, url);
+		manyStudy(search);
 		model.put("search",search);
 		searchLayout.put("search",search);
 
 		return filterItem.callNextFilter(params);
 	}
 
-	/** Gets the given map isn't null */
+	/** Sets up the hasMany patient level attribute */
+	@SuppressWarnings("unchecked")
+   private void manyStudy(XmlModel search) {
+	   List<XmlModel> patients = (List<XmlModel>) search.get("patient");
+	   for(XmlModel patient : patients) {
+	      List<?> studies = (List<?>) patient.get("study");
+	      if( studies.size()>2 ) patient.put("manyStudy", true);
+	   }
+    }
+
+   /** Gets the given map isn't null */
 	public static Map<String,Object> assertNotNull(Map<?,?> map, String key) {
 		Map<String,Object> ret = FilterUtil.getMap(map, key);
 		if( ret==null ) throw new NullPointerException("The path "+key+" was null.");

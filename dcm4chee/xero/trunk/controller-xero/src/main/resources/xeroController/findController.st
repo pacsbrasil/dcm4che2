@@ -11,9 +11,30 @@ XeroController.prototype.performSearch = function XC_performSearch(src) {
 
 	console.time("SearchQuery");
 	var searchLayout = model.idMap.SearchLayout;
-	searchLayout.search = new XmlModel(queryLayout.query);
-	searchLayout.search.request();
+	searchLayout.search = new StudyData();
+	searchLayout.search.requestUrl(queryLayout.query.url);
 	console.timeEnd("SearchQuery");
+};
+
+/** Adds a multiple study selection to allow viewing a sub-set of the available studies. */
+XeroController.prototype.manyStudy = function(id, pid, studyUID) {
+	var search = this.model.idMap.SearchLayout.search;
+	if( !(search && search.children) ) {
+		this.performSearch();
+		search = this.model.idMap.SearchLayout.search;
+	}
+	var pat = search.children[pid];
+	if(!pat) {
+		log.warn("Didn't find patient.");
+		return;
+	}
+	var study = pat.children[studyUID];
+	if( !study ) {
+		log.warn("Didn't find study UID.",studyUID);
+		return;
+	};
+	study.isSelected = !pat.children[studyUID].isSelected;
+	console.info("Selected study",studyUID,study.isSelected); 
 };
 
 /** Finds the search results and causes them to be displayed */

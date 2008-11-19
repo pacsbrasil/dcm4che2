@@ -63,7 +63,7 @@ var XeroStudyColumns = {
 	"header":[
 		{"i18n":"PatientName", "var":"PatientName",  "sort":"PatientName", "template":"image/patientNameSel","action":"controller.sortQuery" },
 		{"i18n":"PatientID", "var":"PatientID", "sort":"PatientID", "template":"html/displayFirst","action":"controller.sortQuery" },
-		{"i18n":"StudyDescription", "var":"StudyDescription", "sort":"StudyDescription", "template":"image/studyDescriptionSel","action":"controller.sortQuery" },
+		{"i18n":"StudyDescription", "var":"StudyDescription", "sort":"StudyDescription", "template":"query/studyDescriptionSel","action":"controller.sortQuery" },
 		{"i18n":"Modality", "var":"ModalitiesInStudy", "sort":"ModalitiesInStudy", "template":"html/displayIt","action":"controller.sortQuery" },
 		{"i18n":"AccessionNumber", "var":"AccessionNumber", "sort":"AccessionNumber", "template":"html/displayIt","action":"controller.sortQuery" },
 		{"i18n":"StudyDateTimeF", "var":"StudyDateF", "sort":"StudyDateTime", "template":"html/displayIt","action":"controller.sortQuery" },

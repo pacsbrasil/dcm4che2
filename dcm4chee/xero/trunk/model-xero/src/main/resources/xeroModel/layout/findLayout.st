@@ -7,7 +7,7 @@ function FindLayout() {
 	var searchLayout = new Layout("SearchLayout","query/studyTable");
 	searchLayout.columns = XeroStudyColumns;
 	searchLayout.query = queryBox.query;
-	searchLayout.sortPatient = new SortPatient(this.searchLayout)
+	searchLayout.sortPatient = new SortPatient(searchLayout);
 	this.add(queryBox);
 	this.add(searchLayout);
 	

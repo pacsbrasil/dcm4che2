@@ -15,19 +15,18 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 	};
 	
 	var patient = searchLayout.search.find("patient","PatientIdentifier", patientId);
+	if(!patient) {
+		log.warn("Unable to find patient.");
+		// TODO - use the actual selected objects to read the patient IDs
+		return;
+	}
 	var study = patient.study;
 	var i,n=study.length;
 	model.studies = new Object();
 	var xmlSeries;
 	this.debug("Found %d studies.",n);
 	
-	if(!uids) {
-		uids = new Array();
-		// Gets the study level ko/sr/pr applicability for all studies.
-		for(i=0; i<n; i++) {
-			uids.push(study[i].studyUID);
-		};
-	}; 
+	uids = this.selectManyStudies(patient,uids);
 
 	if( ! model.navigate ) {
 		model.navigate = new Navigation();
@@ -55,6 +54,27 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 	console.timeEnd("Load Patient Data");
 
 	this.displayResize("displayPatient");
+};
+
+/** Selects the isSelected studies from patient */
+XeroController.prototype.selectManyStudies = function(patient,uid) {
+	var study,studies = patient.study;
+	var i,n=studies.length;
+	var uids = new Array();
+	if( uid ) uids.push(uid);
+	for(i=0; i<n;i++) {
+		study = studies[i];
+		if( study.isSelected && study.studyUID!=uid) uids.push(study.studyUID);
+	}
+	if( uids.length>0 ) {
+		console.info("Found",uids.length,"seleted studies:",uids);
+		return uids;
+	}
+	for(i=0; i<n; i++) {
+		study = studies[i];
+		uids.push(study.studyUID);	
+	}
+	return uids;
 };
 
 /** Returns the mode for the given layout */
