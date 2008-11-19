@@ -21,6 +21,21 @@ StudyData.prototype = new XmlModel();
 StudyData.prototype.level = 0;
 StudyData.prototype.idVars = {"patient":"PatientIdentifier", "study":"studyUID", "series":"seriesUID", "image":"Position", "gsps":"objectUID", "report":"objectUID", "keyObject":"objectUID", "objectRef":"objectUID"};
 
+/** For for additional studies - whichever ones are missing */
+StudyData.prototype.queryForStudies = function(uids, studies) {
+	var i,n=uids.length;
+	var uidsBack;
+	for(i=1; i<n; i++) {
+		if( studies[uids[i]] ) continue;
+		if( uidsBack ) uidsBack = uidsBack+"\\\\";
+		else uidsBack = "";
+		uidsBack = uidsBack + uids[i];
+	}
+	if(!uidsBack ) return;
+	this.url = STUDY_QUERY+"?gsps=*&ko=*&studyUID="+uidsBack;
+	this.request();
+};
+
 /** Gets a StudyData child, re-using the existing one of the right id if present, and indexing them
  * in a "children" element.
  */

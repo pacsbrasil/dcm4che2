@@ -182,13 +182,12 @@ function StudyMenu(suffix,nth) {
 	this.baseLayouts = this.layouts;
 };
 StudyMenu.prototype = new Layout("StudyMenu","html/toolItem");
-StudyMenu.prototype.events=".";
+StudyMenu.prototype.events="merged:external";
 
 /** Setup the child menu */
-StudyMenu.prototype.navigateListener = function(nav) {
+StudyMenu.prototype.namedListener = function(nav) {
 	if( !(nav && nav.external) ) return;
 	this.label = nav.external.StudyDescription;
-	console.info("StudyMenu navigate listener level",nav.level,this.label);
 	var pat = nav.parent.external;
 	this.navigate = nav.parent;
 	var navStudy = this.navigate.conversation.nav;
@@ -197,6 +196,7 @@ StudyMenu.prototype.navigateListener = function(nav) {
 		else this.layouts = this.baseLayouts;
 	this.StudyMenuItems.items = new Array();
 	var study, i,n=navStudy.length;
+	console.info("StudyMenu navigate listener level",nav.level,this.label,"on",n,"Child studies.");
 	// TODO - move this code into navigate proper.
 	for(i=0; i<n; i++) {
 		if( i==this.nth ) continue;

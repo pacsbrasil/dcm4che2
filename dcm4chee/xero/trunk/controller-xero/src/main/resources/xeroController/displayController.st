@@ -47,7 +47,11 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 		console.info("Setup external study data root on url %s", external.url);
 		external.request();
 		console.info("Loaded study data.");
+	} else {
+		// Need to ensure all the studies are available for the base information
+		external.queryForStudies(uids, external.children[patientId].children);
 	}
+	
 	this.mergeExternal(external);
 
 	model.layout.selectTab("Display");
