@@ -11,44 +11,42 @@
 
 <tr><td>$i18n.StudyDateTimeF;format="xml"$</td><td>
   <select name="StudyDateTime">
-	$if(query.StudyDateTime)$<option selected="true" value="$query.StudyDateTime$">$query.StudyDateTime$</option>$endif$
+	$if(query.StudyDateTime)$<option selected="true" value="$query.StudyDateTime;format="xml"$">$if(i18n.(query.StudyDateTime))$ $i18n.(query.StudyDateTime)$ $else$ $query.StudyDateTime;format="xml"$ $endif$</option>$endif$
 	<option value=""> </option>
-  	<option value="Today">Today</option>
-  	<option value="SinceYesterday">Since Yesterday</option>
-  	<option value="Yesterday">Yesterday</option>
-  	<option value="Last7days">Last 7 Days</option>
-  	<option value="Last4weeks">Last 4 Weeks</option>
-  	<option value="ThisMonth">This Month</option>
-  	<option value="LastMonth">Last Month</option>
-  	<option value="ThisYear">This Year</option>
-  	<option value="LastYear">Last Year</option>
-  	<option value="SinceLastYear">Since Last Year</option>
-  	<option value="Last10Years">Last 10 Years</option>
+  	<option value="Today">$i18n.Today$</option>
+  	<option value="SinceYesterday">$i18n.SinceYesterday$</option>
+  	<option value="Yesterday">$i18n.Yesterday$</option>
+  	<option value="Last7days">$i18n.Last7days$</option>
+  	<option value="Last4weeks">$i18n.Last4weeks$</option>
+  	<option value="ThisMonth">$i18n.ThisMonth$</option>
+  	<option value="LastMonth">$i18n.LastMonth$</option>
+  	<option value="ThisYear">$i18n.ThisYear$</option>
+  	<option value="LastYear">$i18n.LastYear$</option>
+  	<option value="SinceLastYear">$i18n.SinceLastYear$</option>
+  	<option value="Last10Years">$i18n.Last10Years$</option>
   </select>
 </td></tr>
 
 <tr><td>$i18n.Modality;format="xml"$</td><td>
   <select name="ModalitiesInStudy">
-	$if(query.ModalitiesInStudy)$<option selected="true" value="$query.ModalitiesInStudy$">$query.ModalitiesInStudy$</option>$endif$
+	$if(query.ModalitiesInStudy)$<option selected="true" value="$query.ModalitiesInStudy;format="xml"$">$if(i18n.(query.ModalitiesInStudy))$$i18n.(query.ModalitiesInStudy)$$else$$query.ModalitiesInStudy$$endif$</option>$endif$
 	<option value=""> </option>
 	<option value="CR">CR</option>
 	<option value="DX">DX</option>
 	<option value="CT">CT</option>
-	<option value="MG">Mammo</option>
+	<option value="MG">MG</option>
 	<option value="MR">MR</option>
-	<option value="US">Ultrasound</option>
+	<option value="US">US</option>
 	<option value="NM">NM</option>
-
 	<option value="XC">XC</option>
-	<option value="XA">Angio</option>
+	<option value="XA">XA</option>
+	<option value="PX">PX</option>
 	
-	<option value="PX">Pano</option>
-	<option value="IO">Dental</option>
-	
-	<option value="KO">Key</option>
-	<option value="SR">Report</option>
-	<option value="OT">Test</option>
-	<option value="PR">Presentation/Markup</option>
+	<option value="IO">$i18n.IO$</option>
+	<option value="KO">$i18n.KO$</option>
+	<option value="SR">$i18n.SR$</option>
+	<option value="OT">$i18n.OT$</option>
+	<option value="PR">$i18n.PR$</option>
   </select></td>
 </tr>
 

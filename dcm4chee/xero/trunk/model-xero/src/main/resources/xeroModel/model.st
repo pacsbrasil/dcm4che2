@@ -61,7 +61,7 @@ $xeroModels:{ $(it)()$ }$
 var XeroStudyColumns = {
 	"template":"xeroStudyColumns",
 	"header":[
-		{"i18n":"PatientName", "var":"PatientName",  "sort":"PatientName", "template":"image/patientNameSel","action":"controller.sortQuery" },
+		{"i18n":"PatientName", "var":"PatientName",  "sort":"PatientName", "template":"query/patientNameSel","action":"controller.sortQuery" },
 		{"i18n":"PatientID", "var":"PatientID", "sort":"PatientID", "template":"html/displayFirst","action":"controller.sortQuery" },
 		{"i18n":"StudyDescription", "var":"StudyDescription", "sort":"StudyDescription", "template":"query/studyDescriptionSel","action":"controller.sortQuery" },
 		{"i18n":"Modality", "var":"ModalitiesInStudy", "sort":"ModalitiesInStudy", "template":"html/displayIt","action":"controller.sortQuery" },
