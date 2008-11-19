@@ -210,7 +210,6 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
    }
 
    /** Assigns the key object macro instance for the listed selection 
-    * @deprecated
 	 */
    public static List<KeySelection> assignKeyObjectMacro(ResultsBean ret, KeyObjectMacro kom, List<KeySelection> selection) {
       List<KeySelection> missing = null;

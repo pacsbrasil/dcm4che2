@@ -65,6 +65,7 @@ import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.search.study.ResultsBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,7 +83,9 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 {
-	public static final String EXTEND_RESULTS_KEY = "EXTEND_RESULTS";
+	private static final int DEFAULT_MAX_RESULTS = 100000;
+
+   public static final String EXTEND_RESULTS_KEY = "EXTEND_RESULTS";
 	
 	static Logger log = LoggerFactory.getLogger(DicomCFindFilter.class);
 	
@@ -317,7 +320,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
      * This method performs a remote query against the local DCM4CHEE ae instance, on port 11112, and
      * returns the result as a set of objects of type E.
      */
-	public void find(SearchCriteria searchCriteria, ResultFromDicom resultFromDicom, AEConnection aeConn) {
+	public void find(SearchCriteria searchCriteria, ResultFromDicom resultFromDicom, AEConnection aeConn, int maxResults) {
 		try {
 		   log.info("Connecting to "+aeConn.getRemoteHost()+" remoteAE="+aeConn.getRemoteAE()+" on conn="+aeConn.getConnection()+" at level "+getQueryLevel());
 		   long start = System.nanoTime();
@@ -342,11 +345,19 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 	    				 data = dir.getDicomObject(i);
 	    				 addResult(resultFromDicom,data);
 	    				 cntResults++;
+	    				 maxResults--;
 	    			  }
 	    		   } 
 	    		   else {
 	    			  addResult(resultFromDicom,data);
 	    			  cntResults++;
+	    			  maxResults--;
+	    		   }
+	    		   if( maxResults<0 ) {
+	    		        if( resultFromDicom instanceof HasMaxResults ) {
+	    		           ((HasMaxResults) resultFromDicom).tooManyResults();
+	    		        }
+	    		      break;
 	    		   }
 	    	   }
 	       }
@@ -387,12 +398,13 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 		
 		ResultFromDicom resultFromDicom = (ResultFromDicom) params.get(EXTEND_RESULTS_KEY);
 		if( resultFromDicom==null ) resultFromDicom = new ResultsBean();
+		int maxResults = FilterUtil.getInt(params,"maxResults",DEFAULT_MAX_RESULTS);
 		SearchCriteria searchCriteria= searchParser.filter(null,params);
 		if( searchCriteria==null ) {
 			log.warn("No search conditions found for parameters "+params);
 			return null;
 		}
-		find(searchCriteria, resultFromDicom, new AEConnection (settings));
+		find(searchCriteria, resultFromDicom, new AEConnection (settings), maxResults);
 		log.debug("Found result(s) - returning from filter.");
 		return resultFromDicom;
 	}

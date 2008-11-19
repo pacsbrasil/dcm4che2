@@ -49,6 +49,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.DimseRSP;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
+import org.dcm4chee.xero.search.HasMaxResults;
 import org.dcm4chee.xero.search.LocalModel;
 import org.dcm4chee.xero.search.ResultFromDicom;
 
@@ -59,7 +60,7 @@ import org.dcm4chee.xero.search.ResultFromDicom;
  * 
  */
 @XmlRootElement(namespace = "http://www.dcm4chee.org/xero/search/study/", name = "results")
-public class ResultsBean extends ResultsType implements ResultFromDicom, CacheItem {
+public class ResultsBean extends ResultsType implements ResultFromDicom, CacheItem, HasMaxResults {
 
    @XmlTransient
    private Map<Object, Object> children = new HashMap<Object, Object>();
@@ -187,5 +188,10 @@ public class ResultsBean extends ResultsType implements ResultFromDicom, CacheIt
 	  if (baseName == null)
 		 return "id" + counter;
 	  return baseName + counter;
+   }
+
+   /** Record the fact that there are too many results */
+   public void tooManyResults() {
+      setTooManyResults(true);
    }
 }

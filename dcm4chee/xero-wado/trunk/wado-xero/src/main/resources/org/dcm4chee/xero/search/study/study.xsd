@@ -36,6 +36,7 @@
     	<sequence maxOccurs="unbounded" minOccurs="0">
     		<element ref="tns:patient"></element>
     	</sequence>
+    	<attribute name="tooManyResults" type="boolean" use="optional" />
     </complexType>
     
     <complexType name="patientType">
