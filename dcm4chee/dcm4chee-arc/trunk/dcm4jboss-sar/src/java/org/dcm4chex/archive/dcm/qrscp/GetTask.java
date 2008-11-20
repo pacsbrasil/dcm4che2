@@ -262,6 +262,13 @@ class GetTask implements Runnable {
                 break;
             }
         }
+        if (a.getState() == Association.ASSOCIATION_ESTABLISHED) {
+            try {
+                assoc.waitForPendingRSP();
+            } catch (InterruptedException e) {
+                log.warn("Exception during wait for pending C-STORE RSP:", e);
+            }
+        }
         if (!transferred.isEmpty()) {
             service.logInstancesSent(a, a, transferred);
         }
