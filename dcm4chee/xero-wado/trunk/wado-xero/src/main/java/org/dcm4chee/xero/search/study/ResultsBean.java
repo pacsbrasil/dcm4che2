@@ -52,6 +52,7 @@ import org.dcm4chee.xero.metadata.filter.CacheItem;
 import org.dcm4chee.xero.search.HasMaxResults;
 import org.dcm4chee.xero.search.LocalModel;
 import org.dcm4chee.xero.search.ResultFromDicom;
+import org.dcm4chee.xero.util.StringUtil;
 
 /**
  * This class handles creating or extending results from DICOM query results.
@@ -99,7 +100,26 @@ public class ResultsBean extends ResultsType implements ResultFromDicom, CacheIt
    /** Formats a DICOM name */
    public static String formatDicomName(String name) {
 	   if( name==null ) return null;
-	   return name;
+	   if( name.indexOf('=')>=0 ) {
+	      String[] i18n = StringUtil.split(name,'=', true);
+	      StringBuffer ret = new StringBuffer();
+	      for(int i=0; i<i18n.length; i++) {
+	         if( i18n[i].equals("") ) continue;
+	         i18n[i] = formatDicomName(i18n[i]);
+	         if( ret.length()>0 ) ret.append(", ");
+	         ret.append(i18n[i]);
+	      }
+	      return ret.toString();
+	   }
+	   String[] parts = StringUtil.split(name,'^', true);
+       if( parts.length==1 ) return parts[0];
+	   StringBuffer ret = new StringBuffer();
+	   if( parts.length>=4 ) ret.append(parts[3]).append(" ");
+	   ret.append(parts[1]).append(" ");
+	   if( parts.length>=3 ) ret.append(parts[2]).append(" ");
+	   ret.append(parts[0]).append(" ");
+	   if( parts.length>=5 ) ret.append(parts[4]);
+	   return ret.toString();
    }
 
    /*
