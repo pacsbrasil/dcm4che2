@@ -166,11 +166,12 @@ public class DocumentFileStorage extends BaseDocumetStorage {
     public BaseDocument retrieveDocument(String docUid, String mime) throws IOException {
         File docPath = getDocumentPath(docUid);
         BaseDocument doc = null;
+        String[] m = new String[]{mime};
         if ( docPath.exists() ) {
-            File f = getDocumentFile(docPath, mime);
+            File f = getDocumentFile(docPath, m);
             log.debug("docFile:"+f+" exists:"+f.exists());
             if ( f.exists() ){
-                doc = new BaseDocument(docUid, mime, new DataHandler(new FileDataSource(f)), 
+                doc = new BaseDocument(docUid, m[0], new DataHandler(new FileDataSource(f)), 
                         Availability.ONLINE, docPath.length(), this);
                 notifyRetrieved(doc);
             }
@@ -185,7 +186,7 @@ public class DocumentFileStorage extends BaseDocumetStorage {
         if ( ! defaultMime.exists() ) {
             writeFile(getMimeFile(docPath),mime.getBytes());
         }
-        File docFile = this.getDocumentFile(docPath, mime);
+        File docFile = getDocumentFile(docPath, new String[]{mime});
         log.debug("M-CREATE: Empty document file created:"+docFile);
         BaseDocument doc = new BaseDocument(docUid, mime, 
                 new DataHandler(new FileDataSource(docFile)), Availability.UNAVAILABLE, docFile.length(), this);
@@ -198,7 +199,8 @@ public class DocumentFileStorage extends BaseDocumetStorage {
         log.debug("#### Document Path:"+docPath);
         log.debug("#### Document Path exist?:"+docPath.exists());
         try {
-            File docFile = this.getDocumentFile(docPath, dh.getContentType());
+            String[] mime = new String[]{dh.getContentType()};
+            File docFile = this.getDocumentFile(docPath, mime);
             log.debug("#### Document File:"+docFile);
             log.debug("#### Document File exist?:"+docFile.exists());
             if ( docFile.exists() )
@@ -206,9 +208,9 @@ public class DocumentFileStorage extends BaseDocumetStorage {
             byte[] digest = writeFile(docFile, dh);
             File mimeFile = getMimeFile(docPath);
             if ( !mimeFile.exists() ) {
-                writeFile(mimeFile,dh.getContentType().getBytes());
+                writeFile(mimeFile,mime[0].getBytes());
             }
-            BaseDocument doc = new BaseDocument(docUid, dh.getContentType(), 
+            BaseDocument doc = new BaseDocument(docUid, mime[0], 
                     new DataHandler(new FileDataSource(docFile)), Availability.ONLINE, docFile.length(), this);
             doc.setHash(DocumentStore.toHexString(digest));
             notifyStored(doc);
@@ -300,13 +302,26 @@ public class DocumentFileStorage extends BaseDocumetStorage {
         return new File( baseDir, getFilepath(docUid) );
     }
 
-    private File getDocumentFile(File docPath, String mime) throws IOException {
-        if ( mime == null ) {
+    /**
+     * Get the File object for the Document file for given docPath and mime type.
+     * <p/>
+     * docPath... Path built with documentUID<br/>
+     * mime...... String array with one element containing the content type (mime).<br/>
+     * If the element is <code>null</code> (unknown mime) it will be set either to the content of default mime file (if present)
+     * or to <code>UNKNOWN_MIME</code>.
+     * 
+     * @param docPath   File of the base directory to a document
+     * @param mime      String[] with one element containing mime type.
+     * @return
+     * @throws IOException
+     */
+    private File getDocumentFile(File docPath, String[] mime) throws IOException {
+        if ( mime[0] == null || mime[0].trim().length() < 1 ) {
             byte[] ba = readFile(getMimeFile(docPath));
-            mime = ba != null ? new String(ba) : UNKNOWN_MIME;
+            mime[0] = ba != null ? new String(ba) : UNKNOWN_MIME;
         }
-        mime = mime.replace('/', '_');
-        return new File(docPath, URLEncoder.encode(mime, "UTF-8"));
+        String m = mime[0].replace('/', '_');
+        return new File(docPath, URLEncoder.encode(m, "UTF-8"));
     }
 
     private File getMimeFile(File docPath) {
