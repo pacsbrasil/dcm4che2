@@ -87,10 +87,6 @@ public class MinMaxPixelInfo implements Filter<ResultsBean> {
 				  if (!(dot instanceof ImageBean))
 					 continue;
 				  ImageBean ib = (ImageBean) dot;
-				  // If it has already had information added, eg from GSPS,
-				  // then don't update it again (ie don't read the header.)
-				  if (ib.getGspsUID() != null)
-					 continue;
 				  if (ib.getMacroItems().findMacro(MinMaxPixelMacro.class) != null)
 					 continue;
 				  log.debug("MinMaxPixelInfo on {}", ib.getObjectUID());
