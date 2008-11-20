@@ -187,6 +187,9 @@ public class DocumentFileStorage extends BaseDocumetStorage {
             writeFile(getMimeFile(docPath),mime.getBytes());
         }
         File docFile = getDocumentFile(docPath, new String[]{mime});
+        if ( docFile.exists() ) {
+            throw new IOException("Create empty document failed! Document already exists! docUid:"+docUid+" mime:"+mime);
+        }
         log.debug("M-CREATE: Empty document file created:"+docFile);
         BaseDocument doc = new BaseDocument(docUid, mime, 
                 new DataHandler(new FileDataSource(docFile)), Availability.UNAVAILABLE, docFile.length(), this);
