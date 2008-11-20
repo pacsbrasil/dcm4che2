@@ -25,6 +25,7 @@ import org.jboss.system.server.ServerConfigLocator;
 
 public class DocumentFileStorage extends BaseDocumetStorage {
 
+    private static final String UNKNOWN_MIME = "application/octet-stream";
     private static final String DEFAULT_MIME_FILENAME = "default.mime";
     public static final String STORAGE_TYPE = "SimpleFileStorage";
     private static final String DEFAULT_BASE_DIR = "store/docs";
@@ -64,7 +65,7 @@ public class DocumentFileStorage extends BaseDocumetStorage {
             }
             s = p.getProperty("checkIntervall");
             if ( s != null ) {
-                checkIntervall = Integer.parseInt(s);
+                checkIntervall = Integer.parseInt(s.trim());
             }
             s = p.getProperty("disableHash");
             if ( s != null && s.equalsIgnoreCase("true") ) {
@@ -87,8 +88,13 @@ public class DocumentFileStorage extends BaseDocumetStorage {
         if ( dir.isAbsolute() ) {
             baseDir = dir;
         } else {
-            File serverHomeDir = ServerConfigLocator.locate().getServerHomeDir();
-            baseDir = new File(serverHomeDir, dir.getPath());
+            try {
+                File serverHomeDir = ServerConfigLocator.locate().getServerHomeDir();
+                baseDir = new File(serverHomeDir, dir.getPath());
+            } catch (Throwable x) {
+                log.debug("Error getting Server Home Directory! Use current working directory instead! BaseDir:"+dir.getAbsolutePath());
+                baseDir = dir;
+            }
         }
         if ( !baseDir.exists() ) {
             baseDir.mkdirs();
@@ -129,7 +135,7 @@ public class DocumentFileStorage extends BaseDocumetStorage {
         log.info("M-DELETE DocumentStorage file:"+f);
         return f.delete();
     }
-    
+
     private void purgeDocumentPath(File dir) {
         if (dir == null || dir.equals(baseDir))
             return;
@@ -165,17 +171,18 @@ public class DocumentFileStorage extends BaseDocumetStorage {
             log.debug("docFile:"+f+" exists:"+f.exists());
             if ( f.exists() ){
                 doc = new BaseDocument(docUid, mime, new DataHandler(new FileDataSource(f)), 
-                    Availability.ONLINE, docPath.length(), this);
+                        Availability.ONLINE, docPath.length(), this);
                 notifyRetrieved(doc);
             }
         }
         return doc;
     }
 
-    public BaseDocument createDocument(String docUid, String mime) throws IOException { 
+    public BaseDocument createDocument(String docUid, String mime) throws IOException {
+        if ( mime == null || mime.trim().length() < 1 ) mime = UNKNOWN_MIME;
         File docPath = getDocumentPath(docUid);
         File defaultMime = getMimeFile(docPath);
-        if ( ! defaultMime.exists()) {
+        if ( ! defaultMime.exists() ) {
             writeFile(getMimeFile(docPath),mime.getBytes());
         }
         File docFile = this.getDocumentFile(docPath, mime);
@@ -212,7 +219,7 @@ public class DocumentFileStorage extends BaseDocumetStorage {
         } finally {
             try {
                 dh.getInputStream().close();
-            } catch (IOException ignore) {
+            } catch (Exception ignore) {
                 log.warn("Error closing InputStream of DataHandler! Ignored",ignore );
             }
         }
@@ -296,7 +303,7 @@ public class DocumentFileStorage extends BaseDocumetStorage {
     private File getDocumentFile(File docPath, String mime) throws IOException {
         if ( mime == null ) {
             byte[] ba = readFile(getMimeFile(docPath));
-            mime = ba != null ? new String(ba) : "unknown_mime";
+            mime = ba != null ? new String(ba) : UNKNOWN_MIME;
         }
         mime = mime.replace('/', '_');
         return new File(docPath, URLEncoder.encode(mime, "UTF-8"));
@@ -330,6 +337,6 @@ public class DocumentFileStorage extends BaseDocumetStorage {
 
     public String toString() {
         return super.toString()+" baseDir:"+baseDir+"(minFree:"+this.minFree+") "+
-            this.getStorageAvailability();
+        this.getStorageAvailability();
     }
 }
