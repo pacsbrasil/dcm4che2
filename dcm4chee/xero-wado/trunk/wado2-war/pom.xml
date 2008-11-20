@@ -22,6 +22,15 @@
               <plugin>
                  <artifactId>maven-antrun-plugin</artifactId>
                  <executions>
+		    <execution>
+		       <id>Notify</id>
+		       <phase>compile</phase>
+		       <configuration>
+			  <tasks>
+			     <echo>Hudson-External-Artifact: wado2.war=scp://hap.mitra.com/maven-repository/org/dcm4chee/xero/wado2-war/${project.version}/wado2-war-${project.version}.war</echo>
+			  </tasks>
+		       </configuration>
+		    </execution>
 
                     <execution>
                        <id>ViewCopy</id>
