@@ -94,7 +94,7 @@ XeroController.prototype.zoomChange = function(lay,e,delta) {
 XeroController.prototype.Zoom_wheelSeries = function(id,e) {
 	var lay = this.model.layout.findLayout(id);
 	
-	var wheelData = e.detail ? e.detail : e.wheelDelta/-40;
+	var wheelData = e.detail ? (-e.detail) : e.wheelDelta/40;
 	if(! e.shiftKey ) wheelData = wheelData/3;
 	else wheelData = wheelData*3;
 	console.info("Wheeling zoom",wheelData);
@@ -124,6 +124,8 @@ function PanController() {
 PanController.prototype = new ImageMouseHandler();
 
 XeroController.prototype.Zoom_dragImage = new PanController();
+XeroController.prototype.ZoomIn_dragImage = XeroController.prototype.Zoom_dragImage;
+XeroController.prototype.ZoomOut_dragImage = XeroController.prototype.Zoom_dragImage;
 XeroController.prototype.dblDragImage = XeroController.prototype.Zoom_dragImage;
 XeroController.prototype.Magnify_dragImage = XeroController.prototype.Zoom_dragImage;
 XeroController.prototype.TrueSize_dragImage = XeroController.prototype.Zoom_dragImage;
