@@ -301,7 +301,7 @@ public class FileCopyService extends AbstractFileCopyService {
         }
         Storage storage = getStorageHome().create();
         for (FileInfo finfo : fileInfos) {
-            String fileId = tarPath + '!' + mkTarEntryName(finfo.fileID);
+            String fileId = tarPath + '!' + mkTarEntryName(finfo);
             storage.storeFile(finfo.sopIUID, finfo.tsUID, destPath, fileId,
                     (int) finfo.size, MD5.toBytes(finfo.md5), fileStatus);
         }
@@ -355,7 +355,7 @@ public class FileCopyService extends AbstractFileCopyService {
             md5sum[i+32] = ' ';
             md5sum[i+33] = ' ';
             System.arraycopy(
-                    mkTarEntryName(fileInfo.fileID).getBytes("US-ASCII"), 0, 
+                    mkTarEntryName(fileInfo).getBytes("US-ASCII"), 0, 
                     md5sum, i+34, 17);
             md5sum[i+51] = '\n';
             i += MD5SUM_ENTRY_LEN;
@@ -367,7 +367,7 @@ public class FileCopyService extends AbstractFileCopyService {
     private void writeFile(TarOutputStream tar, FileInfo fileInfo) 
     throws IOException, FileNotFoundException {
         File file = FileUtils.toFile(fileInfo.basedir, fileInfo.fileID);
-        TarEntry entry = new TarEntry(mkTarEntryName(fileInfo.fileID));
+        TarEntry entry = new TarEntry(mkTarEntryName(fileInfo));
         entry.setSize(fileInfo.size);
         tar.putNextEntry(entry);
         FileInputStream fis = new FileInputStream(file);
@@ -379,8 +379,12 @@ public class FileCopyService extends AbstractFileCopyService {
         tar.closeEntry();
     }
     
-    private String mkTarEntryName(String filePath) {
-        return filePath.substring(filePath.length() - 17);
+    private String mkTarEntryName(FileInfo fileInfo) {
+        StringBuilder sb = new StringBuilder(17);
+        sb.append(FileUtils.toHex(fileInfo.seriesIUID.hashCode()));
+        sb.append('/');
+        sb.append(FileUtils.toHex((int)(fileInfo.pk)));
+        return sb.toString();
     }
 
     private String mkTarPath(String filePath) {
