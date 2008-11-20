@@ -72,4 +72,6 @@ public interface ActiveAssociation extends Runnable
 
    void release(boolean waitOnRSP)
    throws InterruptedException, IOException;
+
+   void waitForPendingRSP() throws InterruptedException;
 }

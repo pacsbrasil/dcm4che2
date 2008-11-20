@@ -196,13 +196,17 @@ final class ActiveAssociationImpl implements ActiveAssociation,
             IOException {
         // checkRunning();
         if (waitOnRSP) {
-            synchronized (rspDispatcher) {
-                while (!rspDispatcher.isEmpty()) {
-                    rspDispatcher.wait();
-                }
-            }
+            waitForPendingRSP();
         }
         ((AssociationImpl) assoc).writeReleaseRQ();
+    }
+
+    public void waitForPendingRSP() throws InterruptedException {
+        synchronized (rspDispatcher) {
+            while (!rspDispatcher.isEmpty()) {
+                rspDispatcher.wait();
+            }
+        }
     }
 
     // LF_ThreadPool.Handler implementation --------------------------
