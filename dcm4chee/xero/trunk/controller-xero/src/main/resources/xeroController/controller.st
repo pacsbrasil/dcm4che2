@@ -81,9 +81,18 @@ XeroController.prototype.importHtml = function XC_importHtml(el, html) {
 	this.debug("Finished parsing node.");
 	var newEl = document.importNode(parsed,true);
 	newEl = newEl.firstChild;
-	if(!newEl ) console.warn("newEl not defined.");
-	if(!oldEl ) console.warn("oldEl '%s' not defined.", el);
-	if( !oldEl.parentNode ) console.warn("parentNode of oldEl not defined.");
+	if(!newEl ) {
+		console.warn("newEl not defined.");
+		return false;
+	}
+	if(!oldEl ) {
+		console.warn("oldEl '%s' not defined.", el);
+		return false;
+	}
+	if( !oldEl.parentNode ) {
+		console.warn("parentNode of oldEl not defined.");
+		return false;
+	}
 	this.debug("Finished importing node.");
 	oldEl.parentNode.replaceChild(newEl, oldEl);
 	this.debug("Replaced body node directly.");
@@ -97,10 +106,9 @@ XeroController.prototype.importHtml = function XC_importHtml(el, html) {
 XeroController.prototype.replaceHtml = function XC_replaceHtml(node,text) {
 	//console.info("Replacing %s with %s", node, text);
 	if( _SARISSA_IS_IE ) {
-		this.innerHtml(node,text);
-	} else {
-		this.importHtml(node, text);
+		return this.innerHtml(node,text);
 	}
+	return this.importHtml(node, text);
 }
 
 /** Updates the view in its entirety.
@@ -116,6 +124,7 @@ XeroController.prototype.updateView = function XC_action(actionName) {
 	
 	//console.info("Render: %s",render);
 	this.replaceHtml("body", render);
+	this.model.layout.clearRelayout();
 	console.timeEnd(actionName);
 };
 
@@ -124,7 +133,7 @@ XeroController.prototype.waitUpdate = function XC_waitUpdate(actionName, cnt) {
 	if( cnt===undefined ) cnt = 5;
 	var missing = this.renderComplete([this.model.layout]);
 	if( missing===0 ) return 0;
-	if( cnt===0 ) {
+	if(cnt===0 || missing<0) {
 		this.debug("Rendering with cnt=%d with %d missing", cnt, missing);
 		this.updateLayouts(actionName);
 		return;
@@ -153,8 +162,11 @@ XeroController.prototype.renderComplete = function XC_renderComplete(layouts,inc
 				render = this.view.toString(lay.template,this.model);
 				console.timeEnd("rerender");
 				this.model.layout = origLay;
-				this.replaceHtml(lay.id,render);
+				var result = this.replaceHtml(lay.id,render);
 				lay.clearRelayout();
+				if( result===false ) {
+					return -100000;
+				} 
 			}
 			else {
 				ret++;
@@ -163,6 +175,7 @@ XeroController.prototype.renderComplete = function XC_renderComplete(layouts,inc
 		else {
 			ret += this.renderComplete(lay.children,incomplete);
 		}
+		if( ret<0 ) return ret;
 	}
 	return ret;
 };

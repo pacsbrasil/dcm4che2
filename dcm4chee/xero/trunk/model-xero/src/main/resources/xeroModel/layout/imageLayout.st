@@ -134,6 +134,7 @@ ImageLayout.prototype.isComplete = function ImageLayout_isComplete() {
 /** This generates a small URL reference for the entire image area, but at a reduced resolution/quality */
 ImageLayout.prototype.createSmallImage = function(base) {
 	var ret = this.createBaseUrl(base);
+	ret.imageId = ret.fullImageId;
 	ret.imageUrl = ret.imageUrl + "&amp;imageQuality=0.4";
 	var rows = this.image.Rows;
 	while(rows>512) rows = rows/2;
