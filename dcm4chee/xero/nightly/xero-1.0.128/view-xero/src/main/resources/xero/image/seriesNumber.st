@@ -1,0 +1,1 @@
+<li id="$layout.id$" class="label toolItem">$layout.x$ $i18n.Of$ $layout.n$</li>
