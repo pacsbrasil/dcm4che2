@@ -1471,7 +1471,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return null;
     }
 
-    void prefetchTars(Collection<List<FileInfo>> localFiles) throws IOException {
+    void prefetchTars(Collection<List<FileInfo>> localFiles) throws Exception {
         HashSet<String> tarPaths = null;
         for (List<FileInfo> list : localFiles) {
             FileInfo fileInfo = list.get(0);
@@ -1493,7 +1493,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 try {
                     retrieveFileFromTAR(fsID, fileID);
                 } catch (Exception e) {
-                    throw new IOException("Failed to retrieve TAR " + tarPath
+                    throw new Exception("Failed to retrieve TAR " + tarPath
                             + " from file system " + fsID, e);
                 }
              }
