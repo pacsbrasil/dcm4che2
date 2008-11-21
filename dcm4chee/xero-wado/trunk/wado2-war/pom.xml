@@ -16,7 +16,7 @@
           <executions>
              <execution>
                <id>HudsonNotify</id>
-               <phase>install</phase>
+               <phase>deploy</phase>
                <configuration>
                  <tasks>
 	           <echo>Hudson-External-Artifact: wado2.war=http://hap.mitra.com/maven-repository/org/dcm4chee/xero/wado2-war/${project.version}/wado2-war-${project.version}.war</echo>
