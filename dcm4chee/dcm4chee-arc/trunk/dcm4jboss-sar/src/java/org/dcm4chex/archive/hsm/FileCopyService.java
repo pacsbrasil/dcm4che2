@@ -272,11 +272,15 @@ public class FileCopyService extends AbstractFileCopyService {
     private void copyTar(List<FileInfo> fileInfos, String destPath) throws Exception {
         FileInfo file1Info = (FileInfo) fileInfos.get(0);
         String tarPath = mkTarPath(file1Info.fileID);
+        String[] tarEntryNames = new String[fileInfos.size()];
+        for (int i = 0; i < tarEntryNames.length; i++) {
+            tarEntryNames[i] = mkTarEntryName(fileInfos.get(i));
+        }
         if (tarCopyCmd == null) {
             File tarFile = FileUtils.toFile(destPath.substring(4), tarPath);
             log.info("M-WRITE " + tarFile);
             tarFile.getParentFile().mkdirs();
-            mkTar(fileInfos, tarFile);
+            mkTar(fileInfos, tarFile, tarEntryNames);
         } else {
             if (absTarOutgoingDir.mkdirs()) {
                 log.info("M-WRITE " + absTarOutgoingDir);
@@ -285,7 +289,7 @@ public class FileCopyService extends AbstractFileCopyService {
                     new File(tarPath).getName());
             try {
                 log.info("M-WRITE " + tarFile);
-                mkTar(fileInfos, tarFile);
+                mkTar(fileInfos, tarFile, tarEntryNames);
                 String cmd = makeCommand(tarFile.getPath(), destPath, tarPath);
                 log.info("Copy to HSM: " + cmd);
                 Executer ex = new Executer(cmd);
@@ -300,21 +304,23 @@ public class FileCopyService extends AbstractFileCopyService {
             }
         }
         Storage storage = getStorageHome().create();
-        for (FileInfo finfo : fileInfos) {
-            String fileId = tarPath + '!' + mkTarEntryName(finfo);
+        for (int i = 0; i < tarEntryNames.length; i++) {
+            String fileId = tarPath + '!' + tarEntryNames[i];
+            FileInfo finfo = fileInfos.get(i);
             storage.storeFile(finfo.sopIUID, finfo.tsUID, destPath, fileId,
                     (int) finfo.size, MD5.toBytes(finfo.md5), fileStatus);
         }
     }
     
-    private void mkTar(List<FileInfo> fileInfos, File tarFile) throws Exception {
+    private void mkTar(List<FileInfo> fileInfos, File tarFile,
+            String[] tarEntryNames) throws Exception {
         try {
             TarOutputStream tar = new TarOutputStream(
                     new FileOutputStream(tarFile));
             try {
-                writeMD5SUM(tar, fileInfos);
-                for (FileInfo finfo : fileInfos) {
-                    writeFile(tar, finfo);
+                writeMD5SUM(tar, fileInfos, tarEntryNames);
+                for (int i = 0; i < tarEntryNames.length; i++) {
+                    writeFile(tar, fileInfos.get(i), tarEntryNames[i]);
                 }
             } finally {
                 tar.close();
@@ -341,21 +347,20 @@ public class FileCopyService extends AbstractFileCopyService {
         return removed;
     }
 
-    private void writeMD5SUM(TarOutputStream tar, List<FileInfo> fileInfos)
+    private void writeMD5SUM(TarOutputStream tar, List<FileInfo> fileInfos,
+            String[] tarEntryNames)
             throws IOException {
         byte[] md5sum = new byte[fileInfos.size() * MD5SUM_ENTRY_LEN];
         final TarEntry tarEntry = new TarEntry("MD5SUM");
         tarEntry.setSize(md5sum.length);
         tar.putNextEntry(tarEntry);
-        
         int i = 0;
-        for (FileInfo fileInfo : fileInfos) {
-            MD5Utils.toHexChars(MD5.toBytes(fileInfo.md5), md5sum, i);
-            
+        for (int j = 0; j < tarEntryNames.length; j++) {
+            MD5Utils.toHexChars(MD5.toBytes(fileInfos.get(j).md5), md5sum, i);
             md5sum[i+32] = ' ';
             md5sum[i+33] = ' ';
             System.arraycopy(
-                    mkTarEntryName(fileInfo).getBytes("US-ASCII"), 0, 
+                    tarEntryNames[j].getBytes("US-ASCII"), 0, 
                     md5sum, i+34, 17);
             md5sum[i+51] = '\n';
             i += MD5SUM_ENTRY_LEN;
@@ -364,10 +369,11 @@ public class FileCopyService extends AbstractFileCopyService {
         tar.closeEntry();
     }
 
-    private void writeFile(TarOutputStream tar, FileInfo fileInfo) 
+    private void writeFile(TarOutputStream tar, FileInfo fileInfo,
+            String tarEntryName) 
     throws IOException, FileNotFoundException {
         File file = FileUtils.toFile(fileInfo.basedir, fileInfo.fileID);
-        TarEntry entry = new TarEntry(mkTarEntryName(fileInfo));
+        TarEntry entry = new TarEntry(tarEntryName);
         entry.setSize(fileInfo.size);
         tar.putNextEntry(entry);
         FileInputStream fis = new FileInputStream(file);
