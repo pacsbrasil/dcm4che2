@@ -291,7 +291,7 @@ XeroController.prototype.wheelSeries = function(id,e) {
 	var wheelData = e.detail ? e.detail : e.wheelDelta/-40;
 	if( e.shiftKey ) wheelData = (wheelData * id.gridX * id.gridY)*10;
 	else wheelData = (wheelData * id.gridX * id.gridY)/3;
-	wheelData = Math.floor(wheelData);
+	wheelData = Math.floor(-wheelData);
 	console.info("Trying to navigate %d", wheelData);
 	this.navImg(id,wheelData);
 	console.info("Wheel isComplete=%s",id.isComplete());

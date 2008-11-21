@@ -59,7 +59,25 @@
      </profile>
   </profiles>
 
-  <build><finalName>xero</finalName></build>
+  <build><finalName>xero</finalName>
+     <plugins>
+        <plugin>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <executions>
+             <execution>
+               <id>HudsonNotify</id>
+               <phase>deploy</phase>
+               <configuration>
+                 <tasks>
+	           <echo>Hudson-External-Artifact: xero.war=http://hap.mitra.com/maven-repository/org/dcm4chee/xero/xero-war/${project.version}/xero-war-${project.version}.war</echo>
+                 </tasks>
+               </configuration>
+             <goals><goal>run</goal></goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
   
   <dependencies>
     <dependency>
