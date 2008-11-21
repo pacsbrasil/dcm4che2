@@ -9,6 +9,25 @@
   <name>Xero WADO 2 WAR File</name>
   <packaging>war</packaging>
 
+  <build>
+     <plugins>
+        <plugin>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <executions>
+             <execution>
+               <id>HudsonNotify</id>
+               <phase>install</phase>
+               <configuration>
+                 <tasks>
+	           <echo>Hudson-External-Artifact: wado2.war=http://hap.mitra.com/maven-repository/org/dcm4chee/xero/wado2-war/${project.version}/wado2-war-${project.version}.war</echo>
+                 </tasks>
+               </configuration>
+             <goals><goal>run</goal></goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
   <profiles>
      <profile>
@@ -36,17 +55,7 @@
                        <goals><goal>run</goal></goals>
                     </execution>
 
-                    <execution>
-                       <id>HudsonNotify</id>
-                       <phase>deploy</phase>
-                       <configuration>
-                          <tasks>
-			     <echo>Hudson-External-Artifact: wado2.war=http://hap.mitra.com/maven-repository/org/dcm4chee/xero/wado2-war/${project.version}/wado2-war-${project.version}.war</echo>
-                          </tasks>
-                       </configuration>
-                       <goals><goal>run</goal></goals>
-                    </execution>
-
+ 
                     <execution>
                        <id>WARCopy</id>
                        <phase>install</phase>
