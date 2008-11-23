@@ -71,7 +71,7 @@
 	</path>
 	
 	<path id="xdoclet.path">
-		<fileset dir="${xdoclet.home}/lib">
+		<fileset dir="${xdoclet.lib}">
 			<include name="*.jar"/>
 		</fileset>
 		<path refid="base.path"/>
