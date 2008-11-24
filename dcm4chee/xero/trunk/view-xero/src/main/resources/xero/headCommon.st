@@ -21,6 +21,7 @@
   <script>
 /** Define per-user information as required TODO - move this to a child script */
 model.userName = "$userName$";  
+model.ae = "$ae;format="xml"$";
   </script>
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" /> 

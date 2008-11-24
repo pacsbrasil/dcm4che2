@@ -86,6 +86,12 @@ public class QueryController<T> implements Filter<T> {
 		// view
 		URIResolver resolver = FilterUtil.getURIResolver(params);
 		String url = FilterUtil.getString(query, "url");
+		String ae = (String) model.get("ae");
+		if( ae!=null ) {
+		   url = url+ae;
+		   log.info("Querying ae {}", ae);
+		} else log.info("Not querying with a specific AE");
+		log.info("URL to query for:{}",url);
 		XmlModel search;
 		search = new XmlModel(resolver, url);
 		manyStudy(search);

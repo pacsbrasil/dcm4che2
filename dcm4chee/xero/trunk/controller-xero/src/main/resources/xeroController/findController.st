@@ -12,9 +12,11 @@ XeroController.prototype.performSearch = function XC_performSearch(src) {
 	console.time("SearchQuery");
 	var searchLayout = model.idMap.SearchLayout;
 	searchLayout.search = new StudyData();
-	searchLayout.search.requestUrl(queryLayout.query.url);
+	var url = queryLayout.query.url;
+	if( model.ae ) url = url+model.ae;
+	searchLayout.search.requestUrl(url);
 	if( searchLayout.search.tooManyResults ) {
-		console.warn("Too many results found from query",queryLayout.query.url);
+		console.warn("Too many results found from query",url);
 	}
 	console.timeEnd("SearchQuery");
 };

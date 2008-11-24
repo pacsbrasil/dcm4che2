@@ -43,13 +43,13 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 	
 	var external = navigate.external;
 	if( (!external) || (!external.children[patientId]) ) {
-		external = new StudyData(uids);
+		external = new StudyData(uids, model.ae);
 		console.info("Setup external study data root on url %s", external.url);
 		external.request();
 		console.info("Loaded study data.");
 	} else {
 		// Need to ensure all the studies are available for the base information
-		external.queryForStudies(uids, external.children[patientId].children);
+		external.queryForStudies(uids, external.children[patientId].children, model.ae);
 	}
 	
 	this.mergeExternal(external);

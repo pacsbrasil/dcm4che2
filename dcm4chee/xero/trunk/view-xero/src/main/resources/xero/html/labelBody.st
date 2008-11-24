@@ -10,10 +10,10 @@ $else$
 $layout.i18n$
 $endif$
 $elseif(layout.icon)$
-<img class="icon" src="$layout.icon$" alt="$layout.label$" />
-$if(layout.showLabel)$ $layout.label$$endif$
+<img class="icon" src="$layout.icon$" alt="$layout.label;format="xml"$" />
+$if(layout.showLabel)$ $layout.label;format="xml"$$endif$
 $elseif(layout.label)$
-$layout.label$
+$layout.label;format="xml"$
 $else$
 Unknown label
 $endif$

@@ -6,7 +6,7 @@
  * are included.
  */
 
-function StudyData(uids) {
+function StudyData(uids,ae) {
 	if( uids ) {
 		var i,n=uids.length;
 		var uidsBack = uids[0];
@@ -14,6 +14,7 @@ function StudyData(uids) {
 			uidsBack = uidsBack + "\\\\"+uids[i];
 		}
 		this.url = STUDY_QUERY+"?gsps=*&ko=*&studyUID="+uidsBack;
+		if( ae ) this.url = this.url + ae;
 	}
 };
 
@@ -22,7 +23,7 @@ StudyData.prototype.level = 0;
 StudyData.prototype.idVars = {"patient":"PatientIdentifier", "study":"studyUID", "series":"seriesUID", "image":"Position", "gsps":"objectUID", "report":"objectUID", "keyObject":"objectUID", "objectRef":"objectUID"};
 
 /** For for additional studies - whichever ones are missing */
-StudyData.prototype.queryForStudies = function(uids, studies) {
+StudyData.prototype.queryForStudies = function(uids, studies, ae) {
 	var i,n=uids.length;
 	var uidsBack;
 	for(i=1; i<n; i++) {
@@ -33,6 +34,7 @@ StudyData.prototype.queryForStudies = function(uids, studies) {
 	}
 	if(!uidsBack ) return;
 	this.url = STUDY_QUERY+"?gsps=*&ko=*&studyUID="+uidsBack;
+	if( ae ) this.url = this.url + ae;
 	this.request();
 };
 

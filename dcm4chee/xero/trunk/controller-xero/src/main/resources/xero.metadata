@@ -30,6 +30,10 @@ controller.languageTheme.priority=9500
 controller.browser=${class:org.dcm4chee.xero.controller.BrowserVersion}
 controller.browser.priority=9900
 
+controller.ae=${class:org.dcm4chee.xero.controller.AESelector}
+controller.ae.priortiy=3000
+
+
 # Defines a URL query factory - something that knows how to produce a query result from
 # one or more parameters. 
 controller.query=${class:org.dcm4chee.xero.controller.RequestValidator}
@@ -66,6 +70,9 @@ jscontroller.stringTemplate.priority=10000
 
 jscontroller.browser=${class:org.dcm4chee.xero.controller.BrowserVersion}
 jscontroller.browser.priority=9900
+
+jscontroller.ae=${class:org.dcm4chee.xero.controller.AESelector}
+jscontroller.ae.priortiy=9000
 
 jscontroller.languageTheme=${class:org.dcm4chee.xero.controller.LanguageThemeController}
 jscontroller.languageTheme.priority=9500
