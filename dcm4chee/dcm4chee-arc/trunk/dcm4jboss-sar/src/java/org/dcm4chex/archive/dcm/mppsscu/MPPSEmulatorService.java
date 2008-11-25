@@ -167,7 +167,12 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
     }
 
     public void handleNotification(Notification notification, Object handback) {
-        emulateMPPS();
+        if (stationAETs.length > 0) {
+            new Thread(new Runnable(){
+                public void run() {
+                    emulateMPPS();
+                }}).start();
+        }
     }
 
     public int emulateMPPS() {
