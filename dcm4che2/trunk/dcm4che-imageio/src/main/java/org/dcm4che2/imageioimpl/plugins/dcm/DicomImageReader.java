@@ -285,18 +285,22 @@ public class DicomImageReader extends ImageReader {
 	 * @throws IOException
 	 */
 	protected void initImageReader(int imageIndex) throws IOException {
-		if (reader != null) {
-			return;
-		}
 		readMetaData();
-		if (compressed) {			
-			initCompressedImageReader(imageIndex);
+		if (reader == null) {
+			if (compressed) {
+				initCompressedImageReader(imageIndex);
+			} else {
+				initRawImageReader();
+			}
+		} 
+		// Reset the input stream location if required, and reset the reader if required
+		if( compressed ) {
+			if( reader!=null ) postDecompress();
 			itemParser.seekFrame(siis, imageIndex);
-			reader.setInput(siis);
-		} else {
-			initRawImageReader();
+			reader.setInput(siis, false);
 		}
 	}
+		
 
 	private void initCompressedImageReader(int imageIndex) throws IOException {
 		ImageReaderFactory f = ImageReaderFactory.getInstance();
@@ -365,7 +369,7 @@ public class DicomImageReader extends ImageReader {
 	throws IOException {		
 		// Index changes from 1 to 0 as the Dicom frames start to count at 1 
 		// ImageReader expects the first frame to be 0.
-		initImageReader(1);
+		initImageReader(0);
 		return reader.getImageTypes(0);
 	}
 
@@ -421,7 +425,6 @@ public class DicomImageReader extends ImageReader {
 			ImageReadParam param1 = reader.getDefaultReadParam();
 			copyReadParam(param, param1);
 			bi = reader.read(0, param1);
-			postDecompress();           
 		} else {
 			bi = reader.read(imageIndex, param);
 		}
@@ -485,15 +488,11 @@ public class DicomImageReader extends ImageReader {
 
 	private Raster decompressRaster(int imageIndex, ImageReadParam param)
 	throws IOException {
-		itemParser.seekFrame(siis, imageIndex);
-		reader.setInput(siis);
 		if (!reader.canReadRaster()) {	
 			BufferedImage bi = reader.read(0, param);
-			postDecompress();	        
 			return bi.getRaster();
 		}        
 		Raster raster = reader.readRaster(0, param);
-		postDecompress();
 		return raster;
 	}
 
