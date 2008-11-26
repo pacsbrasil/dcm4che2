@@ -166,10 +166,11 @@ static.studyTrayLayout.children.next.icon=NextSeriesIcon
 static.studyTrayLayout.children.next.action=controller.navSer
 static.studyTrayLayout.children.next.arg=1
 
+static.userMenuLayout.inherit=toolbar
+
 static.overallMenuLayout.inherit=toolbar
 static.overallMenuLayout.children.userName.inherit=toolItem
-static.overallMenuLayout.children.userName.template=html/userName
-static.overallMenuLayout.children.userName.name=UserName
+static.overallMenuLayout.children.userName.layout=UserNameMenu
 static.overallMenuLayout.children.userName.priority=950
 
 static.overallMenuLayout.children.logout.inherit=toolItem
