@@ -173,6 +173,8 @@ ReportArea.prototype.namedListener=function(nav,vname,val) {
 	console.info("Displaying report",val);
 	this.used = true;
 	this.src = "studyUID="+nav.external.studyUID+"&amp;objectUID="+displayReport;
+	var ae = nav.external.get("ae");
+	if( ae ) this.src =this.src+"&amp;ae="+ae;
 }; 
 
 /** Handle the study tray layout */
