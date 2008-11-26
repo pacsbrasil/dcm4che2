@@ -50,9 +50,10 @@ CompareStudyLay.prototype.action="controller.compareStudyMode";
 CompareStudyLay.prototype.events=["/patient:0", "/patient:0/conversation:compareStudy"];
 
 CompareStudyLay.prototype.namedListener = function(nav,vname,val) {
-	if( val=="SingleStudy" ) this.i18n = "CompareStudy";
-	else this.i18n = "SingleStudy";
-	this.icon = this.i18n+"Icon";	
+	if( !val ) val = "CompareStudy";
+	this.i18n = val;
+	this.icon = val+"Icon";
+	this.arg = (val=="SingleStudy" ? "CompareStudy" : "SingleStudy");
 };
 
 /** Listen at the patient level to determine updates to the layout */

@@ -128,10 +128,11 @@ XeroController.prototype.seriesLayout = function(layId, arg) {
 };
 
 /** Chooses between the compare study mode and single study mode */
-XeroController.prototype.compareStudyMode = function(layId) {
+XeroController.prototype.compareStudyMode = function(layId, arg) {
 	var lay = this.model.patientLayout.findLayout(layId);
-	console.info("Changing study layout to",lay.i18n);
-	this.model.navigate.getChild(0).setConversation("compareStudy", lay.i18n);
+	if(!arg ) arg = lay.i18n;
+	console.info("Changing study layout to",arg);
+	this.model.navigate.getChild(0).setConversation("compareStudy", arg);
 	this.displayResize("compareStudyMode");
 };
 
