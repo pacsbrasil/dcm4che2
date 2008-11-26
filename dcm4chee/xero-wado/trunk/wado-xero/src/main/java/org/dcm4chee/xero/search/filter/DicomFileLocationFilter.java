@@ -44,52 +44,72 @@ import java.util.Map;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
+import org.dcm4chee.xero.search.AEProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * This class finds the location of the given dicom object as a WADO
- * request object.
+ * This class finds the location of the given dicom object as a WADO request
+ * object.
+ * 
  * @author bwallace
- *
+ * 
  */
 public class DicomFileLocationFilter implements Filter<URL> {
+   private static final Logger log = LoggerFactory.getLogger(DicomFileLocationFilter.class);
+   
+   public static final String DICOM_FILE_LOCATION = " DICOM_FILE_LOCATION";
+   public static final String WADO_TYPE = "wado";
+   public static final String XERO_WADO_TYPE = "xeroWado";
 
-	public static final String DICOM_FILE_LOCATION = " DICOM_FILE_LOCATION";
-	
-	protected static final String wadoRequired[] = new String[]{
-		"studyUID",
-		"seriesUID", 
-		"objectUID",
-	};
+   protected static final String wadoRequired[] = new String[] { "studyUID", "seriesUID", "objectUID", };
 
-	/** Figure out the location of the file, as referenced by SOP instance UID. */
-	public URL filter(FilterItem<URL> filterItem, Map<String, Object> params) {
-		URL ret = (URL) params.get(DICOM_FILE_LOCATION);
-		if( ret!=null ) return ret;
-		try {
-			return new URL(createWadoUrl(params));
-		} catch (MalformedURLException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	/** Figures out the URL to use for the WADO request
-	 * @todo change the host to be configurable. */
-	protected String createWadoUrl(Map<String, ?> args) {
-		StringBuffer ret = new StringBuffer(
-				"http://localhost/wado?requestType=WADO&contentType=application%2Fdicom");
-		for(String key : wadoRequired ) {
-			Object value = args.get(key);
-			String strValue = (value==null ? null : value.toString().trim());
-			if( strValue==null || strValue.equals("")) {
-				throw new IllegalArgumentException("Required value "+key+" is missing for request.");
-			}
-			ret.append("&").append(key).append("=").append(strValue);
-		}
-		return ret.toString();
-	}
+   /** Figure out the location of the file, as referenced by SOP instance UID. */
+   public URL filter(FilterItem<URL> filterItem, Map<String, Object> params) {
+      URL ret = (URL) params.get(DICOM_FILE_LOCATION);
+      if (ret != null)
+         return ret;
 
-	@MetaData
-	public int getPriority() {
-		return -1;
-	}
+      Map<String, Object> ae = AEProperties.getAE(params);
+      String type = FilterUtil.getString(ae,"type");
+      if (!(WADO_TYPE.equals(type) || XERO_WADO_TYPE.equals(type)) ) {
+         return filterItem.callNextFilter(params);
+      }
+      try {
+         ret = new URL(createWadoUrl(params, ae, type));
+         params.put(MemoryCacheFilter.CACHE_SIZE, ret.toString().length()*2+32);
+         log.debug("Returning WADO url: {}", ret);
+         return ret;
+      } catch (MalformedURLException e) {
+         throw new RuntimeException(e);
+      }
+   }
+
+   /**
+    * Figures out the URL to use for the WADO request
+    * 
+    * @todo change the host to be configurable.
+    */
+   protected String createWadoUrl(Map<String, ?> args, Map<String,Object> ae, String type) {
+      StringBuffer ret = new StringBuffer(FilterUtil.getString(ae,"wadoPath"));
+      ret.append("?requestType=WADO&contentType=application%2Fdicom");
+      for (String key : wadoRequired) {
+         Object value = args.get(key);
+         String strValue = (value == null ? null : value.toString().trim());
+         if (strValue == null || strValue.equals("")) {
+            // Only object UID required for the Xero WADO service.
+            if( type.equals(XERO_WADO_TYPE) && ! key.equals("objectUID") ) continue;
+            throw new IllegalArgumentException("Required value " + key + " is missing for request.");
+         }
+         ret.append("&").append(key).append("=").append(strValue);
+      }
+      return ret.toString();
+   }
+
+   @MetaData
+   public int getPriority() {
+      return -1;
+   }
 }

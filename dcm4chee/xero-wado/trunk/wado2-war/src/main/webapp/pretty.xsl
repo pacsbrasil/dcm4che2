@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="/xero/pretty.xsl"?>
+<?xml-stylesheet type="text/xsl" href="pretty.xsl"?>
 <!--
 
 Pretty XML Tree Viewer 1.0 (15 Oct 2001):
@@ -125,15 +125,16 @@ instruction below. This is recommended if you are a beginner.
   </xsl:template>
 
   <xsl:template match="@objectUID" mode="render">
-     <a target="wadoTab"><xsl:attribute name="href">/wado2/wado?requestType=WADO<xsl:value-of select="concat('&amp;studyUID=',../../../@studyUID, '&amp;seriesUID=',../../@seriesUID,'&amp;objectUID=',.)" /></xsl:attribute><xsl:call-template name="attrRender" /></a>
+  	 <a target="wadoTab"><xsl:attribute name="href">/wado2/wado?requestType=WADO<xsl:value-of select="concat('&amp;studyUID=',../../../@studyUID, '&amp;seriesUID=',../../@seriesUID,'&amp;objectUID=',.)" /><xsl:if test="count(/*/@ae)=1">&amp;ae=<xsl:value-of select="/*/@ae" /></xsl:if></xsl:attribute><xsl:call-template name="attrRender" /></a>
+  	 ae='<xsl:value-of select="/*/@ae" />'
   </xsl:template>
 
   <xsl:template match="@studyUID" mode="render">
-     <a target="studyTab"><xsl:attribute name="href">/wado2/series.xml?studyUID=<xsl:value-of select="." /></xsl:attribute><xsl:call-template name="attrRender" /></a>
+     <a target="studyTab"><xsl:attribute name="href">/wado2/series.xml?studyUID=<xsl:value-of select="." /><xsl:if test="count(/*/@ae)=1">&amp;ae=<xsl:value-of select="/*/@ae" /></xsl:if></xsl:attribute><xsl:call-template name="attrRender" /></a>
   </xsl:template>
 
   <xsl:template match="@seriesUID" mode="render">
-     <a target="seriesTab"><xsl:attribute name="href">/wado2/image.xml?seriesUID=<xsl:value-of select="." /></xsl:attribute><xsl:call-template name="attrRender" /></a>
+     <a target="seriesTab"><xsl:attribute name="href">/wado2/image.xml?seriesUID=<xsl:value-of select="." /><xsl:if test="count(/*/@ae)=1">&amp;ae=<xsl:value-of select="/*/@ae" /></xsl:if></xsl:attribute><xsl:call-template name="attrRender" /></a>
   </xsl:template>
 
   <xsl:template match="text()" mode="render">

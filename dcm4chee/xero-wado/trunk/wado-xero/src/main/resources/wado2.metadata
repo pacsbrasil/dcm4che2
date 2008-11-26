@@ -21,10 +21,15 @@ source.emptyFilter.priority=9500
 
 # Need to be able to find the files.  Returns a URL
 fileLocation=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+
+# Actived by fileLocationMgt or null as the type
 fileLocation.fileLocationMgt=${class:org.dcm4chee.xero.search.filter.FileLocationMgtFilter}
 fileLocation.fileLocationMgt.priority=1000
-#fileLocation.wadoLocation=${class:org.dcm4chee.xero.search.filter.DicomFileLocationFilter}
-#fileLocation.wadoLocation.priority=100
+
+# Activated by wado or xeroWado as the type in the ae properties file.
+fileLocation.wadoLocation=${class:org.dcm4chee.xero.search.filter.DicomFileLocationFilter}
+fileLocation.wadoLocation.priority=500
+
 fileLocation.locationCache=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
 fileLocation.locationCache.priority=10000
 fileLocation.locationCache.cacheSize=2000000

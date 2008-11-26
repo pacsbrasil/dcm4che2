@@ -4,10 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
+import javax.imageio.stream.FileCacheImageInputStream;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
-import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,10 +61,8 @@ public class ReopenableImageInputStream extends ImageInputStreamImpl {
 		 if( !first ) log.info("Re-opening DICOM image from local cache file " + fileName);
 		 stream = new FileImageInputStream(new File(fileName));
 	  } else {
-		 // TODO change to FileCacheInputStream once we can configure the
-		 // location.
-		 if( !first ) log.warn("Re-opening DICOM image from remote url {} TODO - change to FileCacheInputStream",location);
-		 stream = new MemoryCacheImageInputStream(location.openStream());
+		 if( !first ) log.info("Re-opening DICOM image from remote url {}",location);
+		 stream = new FileCacheImageInputStream(location.openStream(),null);
 	  }
 	  if( getStreamPosition()!=0 ) {
 		 stream.seek(getStreamPosition());

@@ -68,6 +68,8 @@ public class AEProperties {
 
    static Logger log = LoggerFactory.getLogger(AEProperties.class);
 
+   ClassLoader cl = Thread.currentThread().getContextClassLoader();
+
    /**
     * force initialization through this class
     */
@@ -101,10 +103,10 @@ public class AEProperties {
     * 
     * @param name
     */
+   @SuppressWarnings("unchecked")
    private void loadRemoteProperty(String name) {
-      ClassLoader cl = Thread.currentThread().getContextClassLoader();
-      InputStream is = cl.getResourceAsStream(FILE_NAME_PREPEND + name
-            + FILE_NAME_EXT);
+      String propName = FILE_NAME_PREPEND + name + FILE_NAME_EXT;
+      InputStream is = cl.getResourceAsStream(propName);
       Properties props = new Properties();
       if (is != null) {
          try {
@@ -112,25 +114,25 @@ public class AEProperties {
 
             String hostname = props.getProperty("host");
             String aeport = props.getProperty("aeport");
+            if( aeport==null ) aeport = "11112";
             String ejbport = props.getProperty("ejbport");
+            if( ejbport==null ) ejbport = "1099";
             String title = props.getProperty("title");
+            if( title==null ) props.put("title","DCM4CHEE");
             String localTitle = props.getProperty("localTitle");
+            if( localTitle==null ) props.put("localTitle","XERO");
 
-            if (hostname != null && aeport != null && ejbport != null
-                  && title != null && localTitle != null) {
-
-               Map<String, Object> map = new HashMap<String, Object>();
-               map.put("host", hostname);
+            if (hostname != null ) {
+               Map mprops = props;
+               Map<String, Object> map = (Map<String,Object>) mprops;
                map.put("aeport", Integer.parseInt(aeport));
                map.put("ejbport", Integer.parseInt(ejbport));
-               map.put("title", title);
-               map.put("localTitle", localTitle);
 
                remoteProperties
                      .putIfAbsent(name, map);
 
             } else {
-               log.error("insufficient ae values");
+               log.error("The host must be specified.");
             }
          } catch (Exception e) {
             // Do nothing
@@ -143,6 +145,8 @@ public class AEProperties {
                }
             }
          }
+      } else {
+         log.warn("Unable to find ae property file {}", propName);
       }
    }
 
@@ -175,5 +179,17 @@ public class AEProperties {
       }
 
       return remoteProperties.get(name);
+   }
+   
+   /**
+    * Gets the AE object from the parameters.  Throws a runtime exception if the AE
+    * isn't found and the AE is specified.
+    */
+   public static Map<String,Object> getAE(Map<String,Object> params) {
+      String aes = (String) params.get("ae");
+      if( aes==null ) return aeProperties.getDefaultAE();
+      Map<String,Object> ret = aeProperties.getAE(aes);
+      if( ret==null ) throw new RuntimeException("Unknown AE specified:"+aes);
+      return ret;
    }
 }

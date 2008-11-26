@@ -107,6 +107,14 @@ public class FileLocationMgtFilter implements Filter<URL> {
 
    /** Get the URL of the local file - may not be updated for DB changes etc */
    public URL filter(FilterItem<URL> filterItem, Map<String, Object> params) {
+      Map<String,Object> ae = AEProperties.getAE(params);
+      String type = (String) ae.get("type");
+      if( type!=null && !type.equals("fileLocationMgt") ) {
+         URL ret = filterItem.callNextFilter(params);
+         log.debug("AE filter type {}, calling next filter, returned {}", type,ret);
+         return ret;
+      }
+      log.debug("AE filter type {}", type);
       long start = System.nanoTime();
       String objectUID = (String) params.get("objectUID");
       try {

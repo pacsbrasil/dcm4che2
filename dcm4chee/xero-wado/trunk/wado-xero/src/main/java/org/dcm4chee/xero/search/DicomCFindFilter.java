@@ -385,19 +385,23 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 		
 		String name = (String) params.get("ae");
 		
-		if (name != null && AEProperties.getInstance().getAE(name) != null)   {
+        ResultFromDicom resultFromDicom = (ResultFromDicom) params.get(EXTEND_RESULTS_KEY);
+        if( resultFromDicom==null ) resultFromDicom = new ResultsBean();
+        
+		if (name != null )   {
 		   if (aeConCache.containsKey(name))   {
 		      settings = aeConCache.get(name);
 		   } else {
-		      aeConCache.putIfAbsent(name, new AESettings(AEProperties.getInstance().getAE((String)name)));
+		      aeConCache.putIfAbsent(name, new AESettings(AEProperties.getAE(params)));
 		      settings = aeConCache.get(name);
 		   }
 		} else    {
 		   settings = aeConCache.get("local");
 		}
+		if( resultFromDicom instanceof RecordsAE ) {
+		   ((RecordsAE) resultFromDicom).setAe(name);
+		}
 		
-		ResultFromDicom resultFromDicom = (ResultFromDicom) params.get(EXTEND_RESULTS_KEY);
-		if( resultFromDicom==null ) resultFromDicom = new ResultsBean();
 		int maxResults = FilterUtil.getInt(params,"maxResults",DEFAULT_MAX_RESULTS);
 		SearchCriteria searchCriteria= searchParser.filter(null,params);
 		if( searchCriteria==null ) {

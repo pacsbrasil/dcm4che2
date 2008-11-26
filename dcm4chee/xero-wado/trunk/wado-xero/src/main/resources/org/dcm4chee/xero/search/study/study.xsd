@@ -37,6 +37,7 @@
     		<element ref="tns:patient"></element>
     	</sequence>
     	<attribute name="tooManyResults" type="boolean" use="optional" />
+    	<attribute name="ae" type="string" use="optional" />
     </complexType>
     
     <complexType name="patientType">

@@ -23,6 +23,24 @@
      <url-pattern>/wado</url-pattern>
    </servlet-mapping>
 
+   <!-- TODO change the filter/permission checking to be based on IP addresses, not login - for remote access. -->
+   <servlet>
+     <servlet-name>IPWADO</servlet-name>
+      <servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet</servlet-class>
+      <init-param>
+	      <param-name>metaData</param-name>
+    	  <param-value>wado2.metadata</param-value>
+      </init-param>
+      <init-param>
+	      <param-name>filter</param-name>
+    	  <param-value>wado</param-value>
+      </init-param>
+   </servlet>
+   <servlet-mapping>
+     <servlet-name>IPWADO</servlet-name>
+     <url-pattern>/ipwado</url-pattern>
+   </servlet-mapping>
+
    <servlet>
      <servlet-name>CFind</servlet-name>
       <servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet</servlet-class>
