@@ -16,15 +16,14 @@ import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 public class DSModel implements Filter<ServletResponseItem> {
 
 	/** Add the ds (dicom object) to the model in the params */
-	@SuppressWarnings("unchecked")
 	public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
 		DicomObject ds = dicomUpdatedHeader.filter(null, params);
 		if (ds != null) {
-			((Map<String, Object>) params.get("model")).put("ds", new DicomObjectMap(ds));
+			FilterUtil.getModel(params).put("ds", new DicomObjectMap(ds));
 		}
 		String template = FilterUtil.getString(params,"template");
 		if( template!=null )
-			((Map<String, Object>) params.get("model")).put("template", template);
+			FilterUtil.getModel(params).put("template", template);
 		return filterItem.callNextFilter(params);
 	}
 

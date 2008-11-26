@@ -100,11 +100,15 @@ public class DicomFileLocationFilter implements Filter<URL> {
          String strValue = (value == null ? null : value.toString().trim());
          if (strValue == null || strValue.equals("")) {
             // Only object UID required for the Xero WADO service.
-            if( type.equals(XERO_WADO_TYPE) && ! key.equals("objectUID") ) continue;
+            if( type.equals(XERO_WADO_TYPE) && ! key.equals("objectUID") ) {
+               ret.append("&").append(key).append("=1");
+               continue;
+            }
             throw new IllegalArgumentException("Required value " + key + " is missing for request.");
          }
          ret.append("&").append(key).append("=").append(strValue);
       }
+      if( type.equals(XERO_WADO_TYPE) ) ret.append("&useOrig=true");
       return ret.toString();
    }
 
