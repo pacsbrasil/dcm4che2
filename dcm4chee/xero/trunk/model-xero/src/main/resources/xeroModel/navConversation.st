@@ -105,6 +105,12 @@ NavConversation.prototype.assignDefaultModifiers = function NC_assignDefaultModi
 				console.info("ko found, not applying it, just getting info.");
 			}
 		}
+
+		var ae = external.get("ae");
+		if( ae ) {
+			console.info("Setting results level query modifier",ae);
+			this.setQueryModifier("ae", "&ae="+ae);
+		} else console.info("Not setting query level 0 results modifier.");
 	}
 	return this.getChild(childId).getCombinedModifiers();
 };

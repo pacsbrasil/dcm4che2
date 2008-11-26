@@ -100,6 +100,7 @@ ImageLayout.prototype.updatePosition = function ImageLayout_updatePosition() {
 	this.rotation = undefined;
 	this.flip = false;
 	this.aspectPercent = undefined;
+	this.ae = this.navigate.external.get("ae");
 	
 	var tl = this.merged.get("topLeft");
 	if( tl ) {
@@ -147,7 +148,11 @@ ImageLayout.prototype.createSmallImage = function(base) {
 
 /** Creates the base URL object */
 ImageLayout.prototype.createBaseUrl = function (base) {
-	var ret = { "imageUrl" : base+"&amp;objectUID="+this.image.objectUID, "top":0, "left":0, "imageId":"im"+this.id, "fullImageId": this.urlCount++};
+	var uids = "&amp;studyUID="+this.image.get("studyUID")+"&amp;seriesUID="+this.image.get("seriesUID");
+	var ret = { "imageUrl" : base+uids+"&amp;objectUID="+this.image.objectUID, "top":0, "left":0, "imageId":"im"+this.id, "fullImageId": this.urlCount++};
+	if( this.ae ) {
+		ret.imageUrl = ret.imageUrl + "&amp;ae="+this.ae;
+	}
 	if( this.image.frame ) {
 		ret.imageUrl = ret.imageUrl + "&amp;frameNumber="+this.image.frame;
 	}

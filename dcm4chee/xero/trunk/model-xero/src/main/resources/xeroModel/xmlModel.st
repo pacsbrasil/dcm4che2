@@ -135,3 +135,10 @@ XmlModel.prototype.find = function XM_find(childName, att, value) {
 		if( lst[i][att]==value ) return lst[i];
 	}
 };
+
+/** Gets an element from this or any parent of this. */
+XmlModel.prototype.get = function (at) {
+	var ret=this[at];
+	if( ret!==undefined ) return ret;
+	if( this._parent ) return this._parent.get(at);
+};

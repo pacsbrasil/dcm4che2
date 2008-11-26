@@ -7,6 +7,9 @@ function ILTest(width,height, presets) {
 	this.imageLayout = new ImageLayout();
 	this.imageLayout.merged = this;
 	this.imageLayout.image = this;
+	this.imageLayout.navigate = this;
+	this.external = this;
+	this.get = function(at) { return this[at]; };
 	this.imageLayout.width = width;
 	this.imageLayout.height = height;
 	var key;

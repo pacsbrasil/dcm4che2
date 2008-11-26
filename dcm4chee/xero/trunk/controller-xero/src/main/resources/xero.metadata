@@ -19,6 +19,7 @@ templateGroup.groupNames.xeroController=xeroController
 
 # Define the regular controller used for rendering Xero XHTML pages.
 controller=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+
 controller.stringTemplate=${class:org.dcm4chee.xero.template.StringTemplateFilter}
 controller.stringTemplate.defaultGroup=${ref:templateGroup}
 controller.stringTemplate.model.inherit=model
@@ -31,7 +32,7 @@ controller.browser=${class:org.dcm4chee.xero.controller.BrowserVersion}
 controller.browser.priority=9900
 
 controller.ae=${class:org.dcm4chee.xero.controller.AESelector}
-controller.ae.priortiy=3000
+controller.ae.priority=9000
 
 
 # Defines a URL query factory - something that knows how to produce a query result from
