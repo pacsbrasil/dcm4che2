@@ -104,6 +104,7 @@ StudyAreaLayout.prototype.gridY = 2;
 StudyAreaLayout.prototype.displayClass="studyArea";
 StudyAreaLayout.prototype.events= ["/patient:0/conversation:compareStudy","."];
 StudyAreaLayout.prototype.compareUsed = true;
+StudyAreaLayout.prototype.widthEdge=3;
 
 /**
  * This defines the listeners for navigate changes to the layout.  Computes
@@ -137,6 +138,19 @@ StudyAreaLayout.prototype.namedListener = function StudyNavigateListener(nav,vna
 		this.used = nUsed;
 		this.relayout = true;
 	} 
+};
+
+/** Resize the study area - change the position of the report to left/top based on
+  * available size.
+  */
+StudyAreaLayout.prototype.resizeListener = function() {
+	if( this.width < 800 ) {
+		this.gridX = 1;
+		this.gridY = 2;
+	} else {
+		this.gridX = 2;
+		this.gridY = 1;
+	}
 };
 
 /** The report area displays a report study */
