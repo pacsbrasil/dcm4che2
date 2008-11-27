@@ -286,6 +286,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     }
 
     protected void addPatientMatch() {
+        sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
         DcmElement otherPatIdSQ = getOtherPatientIdMatchSQ();
         if (otherPatIdSQ != null) {
             addListOfPatIdMatch(otherPatIdSQ);
