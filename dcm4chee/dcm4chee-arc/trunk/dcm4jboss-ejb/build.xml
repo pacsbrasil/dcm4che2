@@ -383,6 +383,7 @@
           	</manifest>	
         	<fileset dir="${target.classes}">
                 <include name="**/common/*"/>
+                <include name="**/conf/*"/>
                 <include name="**/exceptions/*"/>
                 <include name="**/util/*"/>
                 <include name="**/interfaces/*"/>
@@ -447,6 +448,7 @@
 	        	
         	<fileset dir="${target.classes}">
                 <exclude name="**/common/*"/>
+                <exclude name="**/conf/*"/>
                 <exclude name="**/exceptions/*"/>
                 <exclude name="**/*Test.class"/>
                 <exclude name="**/jdbc/**"/>
