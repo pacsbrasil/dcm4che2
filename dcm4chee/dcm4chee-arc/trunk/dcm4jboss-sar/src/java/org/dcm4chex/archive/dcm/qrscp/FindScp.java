@@ -203,12 +203,14 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             }
         }
         if (updateRQ) {
-            Iterator iter = result.iterator();
+            String pid0 = rqData.getString(Tags.PatientID);
+            String issuer0 = rqData.getString(Tags.IssuerOfPatientID);
             opidsq = rqData.putSQ(Tags.OtherPatientIDSeq);
-            if (iter.hasNext()) {
-                setPID(rqData, (String[]) iter.next());
-                while (iter.hasNext()) {
-                    setPID(opidsq.addNewItem(), (String[]) iter.next());
+            Iterator iter = result.iterator();
+            while (iter.hasNext()) {
+                String[] pid = (String[]) iter.next();
+                if (!(pid[PID].equals(pid0) && pid[PID].equals(issuer0))) {
+                    setPID(opidsq.addNewItem(), pid);
                 }
             }
         }
