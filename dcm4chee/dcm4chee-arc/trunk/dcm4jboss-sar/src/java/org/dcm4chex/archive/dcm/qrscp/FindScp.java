@@ -209,7 +209,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             Iterator iter = result.iterator();
             while (iter.hasNext()) {
                 String[] pid = (String[]) iter.next();
-                if (!(pid[PID].equals(pid0) && pid[PID].equals(issuer0))) {
+                if (!(pid[PID].equals(pid0) && pid[ISSUER].equals(issuer0))) {
                     setPID(opidsq.addNewItem(), pid);
                 }
             }
