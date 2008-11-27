@@ -63,14 +63,25 @@ public class DateUtils {
         return c.getTime();
     }
 
+    /**
+     * Parses a value that has a TM VR as a {@link Date}.
+     * 
+     * @param s the TM string to parse.
+     * @param end whether or not to initialize missing precision to the maximum values (December
+     *        31st, 23:59).
+     * @return the parsed date or <code>null</code> if the input is empty.
+     */
     public static Date parseTM(String s, boolean end) {
-        if (s == null || s.length() == 0)
+        if (s == null || s.length() == 0) {
             return null;
+        }
+
         Calendar c = new GregorianCalendar();
         c.clear();
         if (end) {
             setTo2359(c);
         }
+
         parseTM(c, s, 0, s.length());
         return c.getTime();
     }
@@ -144,14 +155,12 @@ public class DateUtils {
             if (!Character.isDigit(s.charAt(pos)))
                 ++pos;
             if (pos + 2 <= len) {
-                c.set(Calendar.MONTH, Integer.parseInt(s.substring(pos,
-                        pos += 2)) - 1);
+                c.set(Calendar.MONTH, Integer.parseInt(s.substring(pos, pos += 2)) - 1);
                 if (pos < len) {
                     if (!Character.isDigit(s.charAt(pos)))
                         ++pos;
                     if (pos + 2 <= len) {
-                        c.set(Calendar.DAY_OF_MONTH, Integer.parseInt(s
-                                .substring(pos, pos += 2)));
+                        c.set(Calendar.DAY_OF_MONTH, Integer.parseInt(s.substring(pos, pos += 2)));
                     }
                 }
             }
@@ -161,29 +170,48 @@ public class DateUtils {
 
     private static int parseTM(Calendar c, String s, int off, int len) {
         int pos = off;
-        c.set(Calendar.HOUR_OF_DAY, Integer
-                .parseInt(s.substring(pos, pos += 2)));
+
+        String hours = s.substring(pos, pos += 2);
+        c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hours));
+
         if (pos < len) {
-            if (!Character.isDigit(s.charAt(pos)))
+            if (!Character.isDigit(s.charAt(pos))) {
                 ++pos;
+            }
+
             if (pos + 2 <= len) {
-                c.set(Calendar.MINUTE, Integer.parseInt(s.substring(pos,
-                        pos += 2)));
+                String minutes = s.substring(pos, pos += 2);
+                c.set(Calendar.MINUTE, Integer.parseInt(minutes));
+
                 if (pos < len) {
-                    if (!Character.isDigit(s.charAt(pos)))
+                    if (!Character.isDigit(s.charAt(pos))) {
                         ++pos;
+                    }
+
                     if (pos + 2 <= len) {
-                        c.set(Calendar.SECOND, Integer.parseInt(s.substring(
-                                pos, pos += 2)));
+                        String seconds = s.substring(pos, pos += 2);
+                        c.set(Calendar.SECOND, Integer.parseInt(seconds));
+
                         if (pos + 1 < len) {
-                            c.set(Calendar.MILLISECOND, (int) (Float
-                                    .parseFloat(s.substring(pos, len)) * 1000));
+                            String micros = s.substring(pos + 1, Math.min(len, pos + 5));
+                            while (micros.length() < 4) {
+                                micros += '0';
+                            }
+
+                            int millis = roundMicrosToMillis(micros);
+                            c.set(Calendar.MILLISECOND, millis);
                         }
                     }
                 }
             }
         }
         return pos;
+    }
+    
+    private static int roundMicrosToMillis(String micros) {
+        assert micros != null && micros.length() == 4;
+        double dblMicros = Integer.valueOf(micros).doubleValue();
+        return (int) Math.round(dblMicros / 10.0);
     }
 
     private static StringBuffer formatDA(Calendar c, StringBuffer sb) {
