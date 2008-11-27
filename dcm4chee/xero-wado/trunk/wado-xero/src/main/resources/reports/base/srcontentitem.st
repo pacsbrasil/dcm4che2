@@ -1,2 +1,2 @@
-<font size="+1">$it.ConceptNameCodeSequence.dicomObjects:{$it.CodeMeaning$}$</font>
+<span class="contentItem">$it.ConceptNameCodeSequence.dicomObjects:{$it.CodeMeaning$}$</span>
 $({ValueType$it.ValueType.value;format="underline"$})()$

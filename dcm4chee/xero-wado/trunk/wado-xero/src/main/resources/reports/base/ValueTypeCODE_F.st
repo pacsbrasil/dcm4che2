@@ -1,1 +1,1 @@
-$it.ConceptCodeSequence.dicomObjects:{$it.CodeMeaning$}$
+$it.ConceptCodeSequence.dicomObjects:{$it.CodeMeaning$};format="xml"$

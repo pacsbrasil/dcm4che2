@@ -1,1 +1,1 @@
-$it.PersonName;format="xml"$
+$it.PersonName.name;format="xml"$
