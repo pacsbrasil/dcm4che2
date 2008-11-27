@@ -87,20 +87,28 @@ public class DateUtils {
     }
 
     public static Date parseDT(String s, boolean end) {
-        if (s == null || s.length() == 0)
+        if (s == null || s.length() == 0) {
             return null;
+        }
+        
         Calendar c = new GregorianCalendar();
         c.clear();
+        
         if (end) {
             setToDec31(c);
             setTo2359(c);
         }
+        
         int len = s.length();
-        final char tzsign = s.charAt(len - 5);
-        if (tzsign == '+' || tzsign == '-') {
-            len -= 5;
-            c.setTimeZone(TimeZone.getTimeZone("GMT" + s.substring(len)));
+        
+        if (len >= 5) {
+            final char tzsign = s.charAt(len - 5);
+            if (tzsign == '+' || tzsign == '-') {
+                len -= 5;
+                c.setTimeZone(TimeZone.getTimeZone("GMT" + s.substring(len)));
+            }
         }
+        
         int pos = parseDA(c, s, 0, len);
         if (pos + 2 <= len) {
             parseTM(c, s, pos, len);

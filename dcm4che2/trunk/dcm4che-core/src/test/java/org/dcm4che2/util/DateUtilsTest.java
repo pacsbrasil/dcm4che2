@@ -40,17 +40,20 @@ package org.dcm4che2.util;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import junit.framework.TestCase;
 
 public class DateUtilsTest extends TestCase {
+    private static final TimeZone GMT = TimeZone.getTimeZone("GMT");
+
     public void testParseDTPrecision() {
         Calendar cal = new GregorianCalendar();
         cal.clear();
 
         Date expectedDate = setCal(cal, Calendar.YEAR, 2005);
-        // TODO 2008-11-27 rick.riemer Temporarily disabled test. Will fix in next commit.
-        // assertEquals(expectedDate, DateUtils.parseDT("2005", false));
+        // the following assert verifies that http://www.dcm4che.org/jira/browse/DCM-255 is fixed
+        assertEquals(expectedDate, DateUtils.parseDT("2005", false));
         expectedDate = setCal(cal, Calendar.MONTH, Calendar.JANUARY);
         assertEquals(expectedDate, DateUtils.parseDT("200501", false));
         expectedDate = setCal(cal, Calendar.DAY_OF_MONTH, 2);
@@ -76,15 +79,32 @@ public class DateUtilsTest extends TestCase {
                 "20050102030409.4327", false));
     }
 
+    public void testParseDTTimezone() {
+        Calendar cal = new GregorianCalendar(GMT);
+        cal.clear();
+
+        cal.set(Calendar.YEAR, 2008);
+        cal.set(Calendar.MONTH, Calendar.AUGUST);
+        cal.set(Calendar.DAY_OF_MONTH, 8);
+        cal.set(Calendar.HOUR_OF_DAY, 8);
+        cal.set(Calendar.MINUTE, 8);
+        cal.set(Calendar.SECOND, 8);
+        cal.set(Calendar.MILLISECOND, 888);
+        Date expectedDate = cal.getTime();
+
+        assertEquals(expectedDate, DateUtils.parseDT("20080808080808.888+0000", false));
+        assertEquals(expectedDate, DateUtils.parseDT("20080808100808.888+0200", false));
+        assertEquals(expectedDate, DateUtils.parseDT("20080807230808.888-0900", false));
+    }
+
+    // Test for http://www.dcm4che.org/jira/browse/DCM-254
     public void testParseTMPrecisionRoundtrip() {
-        // Test for http://www.dcm4che.org/jira/browse/DCM-254
         Date date = DateUtils.parseTM("102229.506", false);
         assertEquals("102229.506", DateUtils.formatTM(date));
     }
 
     private Date setCal(Calendar c, int field, int val) {
         c.set(field, val);
-        Date date = c.getTime();
-        return date;
+        return c.getTime();
     }
 }
