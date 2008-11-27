@@ -48,7 +48,7 @@ public class StaticJSModelTest {
 	
 	@Test
 	public void modelInterpretTest() {
-		runTestD("modelInterpretTest");
+		runTest("modelInterpretTest");
 	}
 
 	@Test

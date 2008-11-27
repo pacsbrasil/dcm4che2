@@ -89,7 +89,6 @@ XmlModel.prototype.parse = function XM_parse(el, modifiers) {
 	for(i=0; i<n; i++) {
 		child = children.item(i);
 		if( child.nodeType===3 ) {
-			console.info("Found child text",child.data);
 			if(! this.TEXT ) this.TEXT="";
 			this.TEXT = this.TEXT+child.data;
 			continue;
