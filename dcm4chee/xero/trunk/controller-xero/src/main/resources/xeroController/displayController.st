@@ -299,20 +299,37 @@ XeroController.prototype.wheelSeries = function(id,e) {
 	return cancelEvent(e);
 };
 
-/** Changes the series mode to 1x1 mode, or to 2x2 if in 1x1 */
+/** Changes the series mode to 1x1 mode, or to 2x2 if in 1x1, AND navigates to the current
+ * series.
+ */
 XeroController.prototype.dblImage = function(id,e) {
+	console.info("dbl image on",id);
 	var lay =this.model.patientLayout.findLayout(id);
 	var nav = this.getNavigate(lay);
+	var nth = nav.parent.offset;
 	nav = nav.parent.parent;
 	var mode = nav.conversation.seriesLayout;
+	var navTo;
 	if( mode==="Layout1x1" ) {
 	  if( nav.conversation.wasSeriesLayout ) {
 	  	mode = nav.conversation.wasSeriesLayout;
 	  	nav.conversation.wasSeriesLayout = undefined;
+	  	navTo = nav.conversation.dblSeries;
+	  	nav.setConversation("dblSeries");
 	  } else mode = "Layout2x2";
 	} else {
+	  if(!mode) mode = "Layout2x2";
 	  nav.conversation.wasSeriesLayout = mode;
 	  mode="Layout1x1";
+	  nav.setConversation("dblSeries", nav.lookupId(0));
+	  if( nth>0 ) navTo = nav.lookupId(nth);
+	}
+	if( navTo ) {
+		console.debug("DBl click navigating seris to",navTo);
+		nav.setConversation("seriesLayout", mode);
+		nav.setNavigation(navTo);		
+		this.updateDisplayTab();
+		return;
 	}
 	nav.setConversation("seriesLayout", mode);
 	this.displayResize("doubleImage");
