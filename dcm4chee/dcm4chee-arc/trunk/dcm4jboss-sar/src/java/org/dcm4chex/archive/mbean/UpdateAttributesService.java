@@ -162,12 +162,17 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
         this.maximalNumberOfSeriesToUpdateByOneTask = max;
     }
 
+    public void reloadAttributeFilter() {
+        AttributeFilter.reload();
+    }
+
     public int countNumberOfMatchingSeriesToUpdate() throws Exception {
         return updateAttributes().countSeriesForAttributesUpdate(availability,
                 modality, sourceAETitle, updatedAfter, updatedBefore());
     }
 
     public int updateMatchingSeries() throws Exception {
+        reloadAttributeFilter();
         UpdateAttributes updateAttributes = updateAttributes();
         Collection seriesIuids = updateAttributes.seriesIuidsForAttributesUpdate(
                 availability, modality, sourceAETitle, updatedAfter,
@@ -179,6 +184,7 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
     }
 
     public int updateSeries(String seriesIuid) throws Exception {
+        reloadAttributeFilter();
         return updateSeries(seriesIuid, updateAttributes());
     }
 

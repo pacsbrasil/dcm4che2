@@ -158,4 +158,14 @@
       </parameter>
       <return-type>int</return-type>
    </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[
+       Reload Attribute Filter configuration from
+       <i>conf/dcm4chee-attribute-filter.xml</i>. Implicit invoked by
+       <b>updateMatchingSeries()</b>, <b>updateMatchingSeriesShowElapsedTime()</b> 
+       and <b>updateSeries()</b>.]]>
+      </description>
+      <name>reloadAttributeFilter</name>
+      <return-type>void</return-type>
+   </operation>
 </mbean>

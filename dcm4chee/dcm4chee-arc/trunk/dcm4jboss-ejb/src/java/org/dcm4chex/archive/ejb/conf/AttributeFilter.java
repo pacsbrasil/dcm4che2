@@ -72,14 +72,22 @@ public final class AttributeFilter {
     private boolean noFilter = false;
     
     static {
-        AttributeFilterLoader.loadFrom(CONFIG_URL);        
+        reload();
     }
 
     // Test Driver
     public static void main(String[] args) {
         AttributeFilterLoader.loadFrom(args[0]);
     }
-    
+
+    public static void reload() {
+        AttributeFilter.patientFilter = null;
+        AttributeFilter.studyFilter = null;
+        AttributeFilter.seriesFilter = null;
+        AttributeFilter.instanceFilters.clear();
+        AttributeFilterLoader.loadFrom(CONFIG_URL);
+    }
+
     public static long lastModified() {
         URLConnection conn;
         try {
