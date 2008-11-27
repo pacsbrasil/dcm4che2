@@ -660,11 +660,6 @@
 						<img src="images/edit.gif" alt="icon" border="0"
 							title="&EditPatientAttributes;" />
 					</a>
-					<a href="inspectDicomHeader.m?patPk={pk}"
-						target="dbAttrs">
-						<img src="images/dbattrs.gif" alt="icon"
-							border="0" title="&ShowPatientAttributesInDB;" />
-					</a>
 					<xsl:if test="$folder.study_permission='true'">
 						<a href="studyPermission.m?patPk={pk}">
 							<img src="images/permission.gif" alt="icon"
@@ -672,6 +667,11 @@
 						</a>
 					</xsl:if>
 				</xsl:if>
+                <a href="inspectDicomHeader.m?patPk={pk}"
+                    target="dbAttrs">
+                    <img src="images/dbattrs.gif" alt="icon"
+                        border="0" title="&ShowPatientAttributesInDB;" />
+                </a>
 				<input type="checkbox" name="stickyPat" value="{pk}">
 					<xsl:if test="/model/stickyPatients/item = pk">
 						<xsl:attribute name="checked" />
@@ -839,11 +839,6 @@
 						<img src="images/edit.gif" alt="icon" border="0"
 							title="&EditStudyAttributes;" />
 					</a>
-					<a href="inspectDicomHeader.m?studyPk={pk}"
-						target="studyAtrrs">
-						<img src="images/dbattrs.gif" alt="icon"
-							border="0" title="&ShowStudyAttributesInDB;" />
-					</a>
 					<xsl:if test="$folder.study_permission='true'">
 						<a
 							href="studyPermission.m?studyIUID={studyIUID}&amp;patPk={../../pk}">
@@ -852,6 +847,11 @@
 						</a>
 					</xsl:if>
 				</xsl:if>
+                <a href="inspectDicomHeader.m?studyPk={pk}"
+                    target="studyAtrrs">
+                    <img src="images/dbattrs.gif" alt="icon"
+                        border="0" title="&ShowStudyAttributesInDB;" />
+                </a>
 				<input type="checkbox" name="stickyStudy"
 					value="{pk}">
 					<xsl:if test="/model/stickyStudies/item = pk">
@@ -1012,12 +1012,12 @@
 						<img src="images/edit.gif" alt="icon" border="0"
 							title="&EditSeriesAttributes;" />
 					</a>
-					<a href="inspectDicomHeader.m?seriesPk={pk}"
-						target="dbAttrs">
-						<img src="images/dbattrs.gif" alt="icon"
-							border="0" title="&ShowSeriesAttributesInDB;" />
-					</a>
 				</xsl:if>
+                <a href="inspectDicomHeader.m?seriesPk={pk}"
+                    target="dbAttrs">
+                    <img src="images/dbattrs.gif" alt="icon"
+                        border="0" title="&ShowSeriesAttributesInDB;" />
+                </a>
 				<input type="checkbox" name="stickySeries"
 					value="{pk}">
 					<xsl:if test="/model/stickySeries/item = pk">
