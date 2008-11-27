@@ -56,17 +56,19 @@ import org.slf4j.LoggerFactory;
  */
 public class AEProperties {
 
+   private static final Logger log = LoggerFactory.getLogger(AEProperties.class);
+   
+   private static final String FILE_NAME_PREPEND = "ae-";
+
+   private static final String FILE_NAME_EXT = ".properties";
+
    private static final AEProperties aeProperties = new AEProperties();
 
-   private static String FILE_NAME_PREPEND = "ae-";
-
-   private static String FILE_NAME_EXT = ".properties";
 
    private Map<String, Object> defaultProperties = null;
 
    private ConcurrentHashMap<String, Map<String, Object>> remoteProperties = new ConcurrentHashMap<String, Map<String, Object>>();
 
-   static Logger log = LoggerFactory.getLogger(AEProperties.class);
 
    ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
@@ -89,6 +91,9 @@ public class AEProperties {
     * populate default ae properties.
     */
    private void initLocalProperties() {
+      loadRemoteProperty("local");
+      defaultProperties = remoteProperties.get("local");
+      if( defaultProperties!=null ) return;
       Map<String, Object> temp = new HashMap<String, Object>();
       temp.put("host", "localhost");
       temp.put("aeport", 11112);
