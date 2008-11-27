@@ -100,6 +100,7 @@ public class AEProperties {
       temp.put("ejbport", 1099);
       temp.put("title", "DCM4CHEE");
       temp.put("localTitle", "XERO");
+      temp.put("wadoPath", "http://localhost:8080/wado");
       defaultProperties = Collections.unmodifiableMap(temp);
    }
 

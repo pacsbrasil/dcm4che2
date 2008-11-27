@@ -44,6 +44,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.ejb.ObjectNotFoundException;
+
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
@@ -67,6 +69,8 @@ public class FileLocationMgtFilter implements Filter<URL> {
    private static final Logger log = LoggerFactory
          .getLogger(FileLocationMgtFilter.class);
 
+   boolean tryNext = false;
+   
    /**
     * Returns the DICOM file <tt>URL</tt> for the given arguments.
     * <p>
@@ -87,6 +91,7 @@ public class FileLocationMgtFilter implements Filter<URL> {
                      FileSystemMgtHome.class);
 
          FileSystemMgt fileMgt = home.create();
+         tryNext = false;
          FileDTO[] dtos = fileMgt.getFilesOfInstance(instanceUID);
 
          if (dtos == null || dtos.length == 0)
@@ -95,14 +100,15 @@ public class FileLocationMgtFilter implements Filter<URL> {
          for (FileDTO dto : dtos) {
           url = new URL("file:///" + dto.getDirectoryPath().replace("\\", "/") + "/" + dto.getFilePath());
          }
-      } catch (Exception e) {
-         log.error("Failed to get DICOM file URL", e);
       }
-
-      if (url != null)
-         return url;
-
-      return null; // not found!
+      catch(ObjectNotFoundException e) {
+         log.warn("Object not available");
+      }
+      catch (Exception e) {
+         log.error("Failed to get DICOM file URL, unknown reason:", e);
+         tryNext = true;
+      }
+      return url;
    }
 
    /** Get the URL of the local file - may not be updated for DB changes etc */
@@ -135,6 +141,7 @@ public class FileLocationMgtFilter implements Filter<URL> {
          }
 
          if (url == null) {
+            if( ! tryNext ) return null; 
             log.warn("File not found in local online cache.");
             return filterItem.callNextFilter(params);
          }

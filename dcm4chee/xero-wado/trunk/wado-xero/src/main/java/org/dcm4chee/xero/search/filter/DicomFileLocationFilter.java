@@ -74,7 +74,7 @@ public class DicomFileLocationFilter implements Filter<URL> {
 
       Map<String, Object> ae = AEProperties.getAE(params);
       String type = FilterUtil.getString(ae,"type");
-      if (!(WADO_TYPE.equals(type) || XERO_WADO_TYPE.equals(type)) ) {
+      if (!(type==null || WADO_TYPE.equals(type) || XERO_WADO_TYPE.equals(type)) ) {
          return filterItem.callNextFilter(params);
       }
       try {
@@ -100,7 +100,7 @@ public class DicomFileLocationFilter implements Filter<URL> {
          String strValue = (value == null ? null : value.toString().trim());
          if (strValue == null || strValue.equals("")) {
             // Only object UID required for the Xero WADO service.
-            if( type.equals(XERO_WADO_TYPE) && ! key.equals("objectUID") ) {
+            if( (type==null || type.equals(XERO_WADO_TYPE)) && ! key.equals("objectUID") ) {
                ret.append("&").append(key).append("=1");
                continue;
             }
