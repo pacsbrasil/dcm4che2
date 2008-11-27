@@ -14,10 +14,8 @@ body,td,th {
 }
 body {
 	background-color: #CCCCCC;
-	margin-left: 10px;
-	margin-top: 10px;
-	margin-right: 10px;
-	margin-bottom: 10px;
+	margin: 0;
+	padding: 10px;
 }
 
 .contentItem {
