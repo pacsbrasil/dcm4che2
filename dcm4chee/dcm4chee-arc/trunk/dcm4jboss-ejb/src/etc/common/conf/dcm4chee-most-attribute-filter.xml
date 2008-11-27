@@ -56,6 +56,7 @@
         <attr tag="00080021"/> <!-- Series Date -->
         <attr tag="00080031"/> <!-- Series Time -->
         <attr tag="00080060"/> <!-- Modality -->
+        <attr tag="00080068"/> <!-- Presentation Intent Type -->
         <attr tag="00080070"/> <!-- Manufacturer -->
         <attr tag="00080080"/> <!-- Institution Name -->
         <attr tag="00080081"/> <!-- Institution Address -->
