@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.activation.DataHandler;
+import javax.imageio.spi.ServiceRegistry;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
@@ -60,7 +61,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import sun.misc.Service;
 
 public class DocumentStorageRegistry extends DefaultHandler {
 
@@ -92,7 +92,7 @@ public class DocumentStorageRegistry extends DefaultHandler {
 
     @SuppressWarnings("unchecked")
     public void init() {
-        Iterator iter = Service.providers(DocumentStorageProviderSPI.class);
+        Iterator iter = ServiceRegistry.lookupProviders(DocumentStorageProviderSPI.class);
         DocumentStorageProviderSPI sp;
         while (iter.hasNext()) {
             sp = (DocumentStorageProviderSPI)iter.next();
