@@ -203,6 +203,10 @@
         <attr tag="00200105"/> <!-- Number of Temporal Positions -->
         <attr tag="00201041"/> <!-- Slice Location -->
         <attr tag="00204000"/> <!-- Image Comments -->
+        <attr tag="00209161"/> <!-- Concatenation UID -->
+        <attr tag="00209162"/> <!-- In-concatenation Number -->
+        <attr tag="00209163"/> <!-- In-concatenation Total Number -->
+        <attr tag="00209228"/> <!-- Concatenation Frame Offset Number -->
         <attr tag="00280002"/> <!-- Samples per pixels -->
         <attr tag="00280004"/> <!-- Photometric Interpretation -->
         <attr tag="00280006"/> <!-- Planar Configuration -->
