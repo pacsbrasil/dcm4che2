@@ -53,8 +53,6 @@ import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.search.AEProperties;
 import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,20 +84,21 @@ public class FileLocationMgtFilter implements Filter<URL> {
    protected URL getDICOMFileURL(String host, String port, String instanceUID) throws IOException {
       URL url = null;
       try {
-         FileSystemMgtHome home = (FileSystemMgtHome) EJBServiceLocator
-               .getInstance().getRemoteHome(host, port, "ejb/FileSystemMgt",
-                     FileSystemMgtHome.class);
+          FileDTO[] dtos = FileSystemMgtResolver.getDTOs(host, port, instanceUID);
+            tryNext = false;
+            if (dtos == null || dtos.length == 0)
+                return null; // not found!
 
-         FileSystemMgt fileMgt = home.create();
-         tryNext = false;
-         FileDTO[] dtos = fileMgt.getFilesOfInstance(instanceUID);
+            for (FileDTO dto : dtos) {
+                if (dto.getDirectoryPath().startsWith("ftp://")
+                        || dto.getDirectoryPath().startsWith("mvfhsm://"))
+                    url = new URL(dto.getDirectoryPath() + "/" + dto.getFilePath());
+                else
+                    url = new URL("file:///" + dto.getDirectoryPath().replace("\\", "/") + "/" + dto.getFilePath());
+                break;
+            }
 
-         if (dtos == null || dtos.length == 0)
-            return null; // not found!
-         
-         for (FileDTO dto : dtos) {
-          url = new URL("file:///" + dto.getDirectoryPath().replace("\\", "/") + "/" + dto.getFilePath());
-         }
+            log.info("URL: " + url);
       }
       catch(ObjectNotFoundException e) {
          log.warn("Object not available");
