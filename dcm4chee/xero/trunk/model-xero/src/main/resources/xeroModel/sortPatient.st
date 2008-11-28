@@ -93,11 +93,19 @@ SortPatient.prototype.sortColumn = function (col)   {
         if (or == "asc")    {
             for (i in val)  {
                 val [i].study.sort(compareAsc);
+                for (j in val[i].study) {
+                    val[i].study [j].xmlFirst=false;
+                }
+                val[i].study [0].xmlFirst=true;
             }
             val.sort(compareAscFirstChild);
         } else {
             for (i in val)  {
                 val [i].study.sort(compareDesc);
+                for (j in val[i].study) {
+                    val[i].study [j].xmlFirst=false;
+                }
+                val[i].study [0].xmlFirst=true;
             }
             val.sort(compareDescFirstChild);
         }
