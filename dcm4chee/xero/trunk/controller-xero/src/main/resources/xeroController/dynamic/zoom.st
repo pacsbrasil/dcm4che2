@@ -39,6 +39,10 @@ XeroController.prototype.zoomMode = function(lay,e,mode) {
  * and scale to fit it changes the magnification by 10%
  */
 XeroController.prototype.zoomChange = function(lay,e,delta) {
+	if( !(delta && isFinite(delta)) ) {
+		console.warn("Non-finite zoom change:",delta);
+		return;
+	}
 	var nav = this.getNavigate(lay);
 	nav.setMerged("smallImage",true);
 	var size = nav.merged.get("size");
@@ -85,8 +89,12 @@ XeroController.prototype.zoomChange = function(lay,e,delta) {
 		tl[1] = tl[1]+dy;
 		br[0] = br[0]-dx;
 		br[1] = br[1]-dy;
-		nav.parent.merged.topLeft = tl;
-		nav.parent.setMerged("bottomRight", br,true);
+		if( !(isFinite(tl[0]) && isFinite(tl[1]) && isFinite(br[0]) && isFinite(br[1])) ) {
+			console.warn("New region isn't finite:",tl,br);
+		} else { 
+			nav.parent.merged.topLeft = tl;
+			nav.parent.setMerged("bottomRight", br,true);
+		}
 	}
 	this.waitUpdate("zoomMode",5);
 };

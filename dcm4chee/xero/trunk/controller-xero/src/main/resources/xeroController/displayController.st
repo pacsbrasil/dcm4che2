@@ -250,6 +250,11 @@ XeroController.prototype.navSer = function XC_navSer(id,dir) {
 	var nav = lay.navigate;
 	if(!nav) nav = lay.parent.navigate
 	if( typeof(dir)==="string" ) dir = parseInt(dir);
+	if(!isFinite(dir)) {
+		console.warn("Not a finite series direction:",dir);
+		return;
+	}
+	dir = Math.floor(dir);
 	var dirSeries = nav.lookupId(dir);
 	if(!dirSeries ) {
 		console.warn("Didn't find a next/previous series to navigate to.");
@@ -257,7 +262,6 @@ XeroController.prototype.navSer = function XC_navSer(id,dir) {
 	}
 	console.info("You are trying to navigate to %s", dirSeries);
 	nav.setNavigation(dirSeries);
-	console.info("setNav completed.");
 	this.updateDisplayTab();	
 };
 
@@ -273,9 +277,15 @@ XeroController.prototype.navImg = function XC_navImg(id,dir) {
 		var dirImg = navigate.external.Viewable-1; 
 	} else {
 		if( typeof(dir)==="string" ) dir = parseInt(dir);
+		if( !isFinite(dir) ) {
+			console.warn("Not a finite direction/number:",dir);
+			return;
+		}
+		// Sometimes fractions can occur
+		dir = Math.floor(dir);
 		var dirImg = navigate.lookupId(dir);
 	};
-	if(dirImg==null ) {
+	if( !dirImg ) {
 		console.warn("Didn't find a next/previous series to navigate to dir",dir,dirImg);
 		return;
 	}
@@ -322,17 +332,15 @@ XeroController.prototype.dblImage = function(id,e) {
 	  nav.conversation.wasSeriesLayout = mode;
 	  mode="Layout1x1";
 	  nav.setConversation("dblSeries", nav.lookupId(0));
-	  if( nth>0 ) navTo = nav.lookupId(nth);
-	}
-	if( navTo ) {
-		console.debug("DBl click navigating seris to",navTo);
-		nav.setConversation("seriesLayout", mode);
-		nav.setNavigation(navTo);		
-		this.updateDisplayTab();
-		return;
+	  navTo = nav.lookupId(nth);
 	}
 	nav.setConversation("seriesLayout", mode);
-	this.displayResize("doubleImage");
+	if( navTo ) {
+		console.debug("DBl click navigating seris to",navTo);
+		nav.setNavigation(navTo);		
+	}
+	this.updateDisplayTab(true);
+	//this.displayResize("doubleImage");
 };
 
 /** Changes the image layout */
