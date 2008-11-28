@@ -17,9 +17,11 @@ SortPatient.prototype.sortColumn = function (col)   {
      * Ascending compare function for top level elements of the study result
      */
     var compareAsc = function (item1, item2)  {
-        if (isNaN(item1) && isNaN(item2))   { 
-            if(item1[col] < item2[col]) return -1;
-            if(item1[col]==item2[col]) return 0;
+        if (isNaN(item1) && isNaN(item2))   {
+            var a = String(item1[col]).toLowerCase(); 
+            var b = String(item2[col]).toLowerCase();  
+            if(a < b) return -1;
+            if(a==b) return 0;
             return 1;
         } else  {
             return item1-item2;
@@ -31,8 +33,10 @@ SortPatient.prototype.sortColumn = function (col)   {
      */      
     var compareDesc = function (item1, item2)  {
         if (isNaN(item1) && isNaN(item2))   {
-            if(item1[col] > item2[col]) return -1;
-            if(item1[col] == item2[col]) return 0;
+            var a = String(item1[col]).toLowerCase(); 
+            var b = String(item2[col]).toLowerCase();          
+            if(a > b) return -1;
+            if(a == b) return 0;
             return 1;
         } else  {
             return item2-item1;
@@ -45,8 +49,10 @@ SortPatient.prototype.sortColumn = function (col)   {
      */      
     var compareAscFirstChild = function (item1, item2)  {
         if (isNaN(item1.study[0][col]) && isNaN(item2.study[0][col]))   {
-            if(item1.study[0][col] < item2.study[0][col]) return -1;
-            if(item1.study[0][col] == item2.study[0][col]) return 0;
+            var a = String(item1.study[0][col]).toLowerCase(); 
+            var b = String(item2.study[0][col]).toLowerCase();           
+            if(a < b) return -1;
+            if(a == b) return 0;
             return 1;
         } else  {
             return item1.study[0][col]-item2.study[0][col];
@@ -58,9 +64,11 @@ SortPatient.prototype.sortColumn = function (col)   {
      * comparison based on the first child.
      */            
     var compareDescFirstChild = function (item1, item2)  {
-        if (isNaN(item1.study[0][col]) && isNaN(item2.study[0][col]))   {    
-            if(item1.study[0][col] > item2.study[0][col]) return -1;
-            if(item1.study[0][col] == item2.study[0][col]) return 0;
+        if (isNaN(item1.study[0][col]) && isNaN(item2.study[0][col]))   {
+            var a = String(item1.study[0][col]).toLowerCase(); 
+            var b = String(item2.study[0][col]).toLowerCase();                       
+            if(a > b) return -1;
+            if(a == b) return 0;
             return 1;
         } else  {
             return item2.study[0][col]-item1.study[0][col];
