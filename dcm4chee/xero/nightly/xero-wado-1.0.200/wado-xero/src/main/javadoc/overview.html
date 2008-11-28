@@ -1,0 +1,260 @@
+<html>
+  <head><title>Xero WADO and External Model Components</title></head>
+<body>
+   <h1>Xero WADO and External Model Components</h1>
+   <p>This library contains the code to implement WADO, as well as the additional calls to get information about 
+   patients, studies and images. It is important to understand the Xero MetaData and Filter mechanism as the entire
+   WADO service is based on that mechanism.  A graphical overview of Xero WADO (representing wado2.metadata can be 
+   found <a href="wado2metadata.png">here</a>, and <a href="Filter overview.htm">this</a> contains the corresponding list of classes.</p>
+   
+   <h2>Background</h2>
+   <p>The Xero WADO services were written as an alternative to the existing DCM4CHE WADO services. The problem with the
+   existing services was encapsulation and separation of information.  It was becoming very difficult to understand
+   how to manage adding new features and functionality when all the arguments/data was being handled by a single class.
+   This made addition of any cached image data require adding a new parameter to an already long list for method calls,
+   and required the root class to know about all the details of the extensions.  Instead, a pipe and filter architecture
+   was deemed to be more extensible and encapsulated.  Thus, each filter is supposed to know about itself, plus a little
+   bit about the things it directly relies on, but to keep that knowledge at a minimum. Thus, most image filters only
+   need deal with a next image filter.  Some image filters also need to know about the DICOM header information, or
+   about file locations and being able to read an image etc.</p>
+   
+   <p>Overall, the Xero WADO services thus have a small number of primary filters that they go through - image filters
+   are one type, DICOM header data a second time, and then Study Data and C-FIND filters are a third type.  The last
+   two types have a few sub-types depending on the level of data - study, series or image(object) data.  There is a section
+   below for each of the major types, along with documentation on options/availability of the requests from the top level.</p>
+   
+   <h2>Packaging</h2>
+   <p>The actual WAR packaging for the Xero WADO services is contained in wado2-war. This design allows re-use of the
+   classes and information here in a separate WAR design if required for customization or other purposes.  Thus,
+   custom packaging could be provided that includes RID services or other back-end services not provided here.</p>
+   
+   <h2>WADO Web Service Summary</h2>
+   <p>The WADO services support all the required WADO functionality, a significant amount of the recommended functionality,
+   plus some significant extensions to the base functionality.  See <a href="http://medical.nema.org/dicom/2007/07_18pu.pdf">http://medical.nema.org/dicom/2007/07_18pu.pdf</a>
+   When specifying a contentType or any object with a forward slash, encode the slash as %2f</p>
+   
+   <h3>Xero Custom Version</h3>
+   <p>There is a custom version of the WADO service that prevents certain operations from occurring such as some scaling,
+   and colour burn-in of GSPS objects.  This can be used by requesting requestType=XERO instead of the default, or
+   using requestType=WADO.</p>
+   
+   <h3>Images</h3>
+   <p>Basic image loading can be done with just the objectUID, eg:
+   <pre>
+   http://localhost/wado2/wado?objectUID=1.3.51.0.7.99.2160121055.29330.1012811492.2.0.0
+   </pre>
+   However, it is recommended to also supply the study and series UID's in order for caching (TODO - figure out which
+   of these gets used for caches - both or just one.)
+   </p>
+    
+   <h4>Overlays</h4>
+   <p>The overlay for a GSPS or Image can be retrieved using the overlay=&lt;overlay#> option or overlay=all,burn-in,separate 
+   to allow all overlays to be returned, in a single object, all overlays to be returned burned into the image, or all overlays 
+   to be returned as separate objects (multi-part mime only.)  (TODO -change from frameNumber to overlay=)</p>
+   
+   <h4>Pixel Padding</h4>
+   <p>For non-rectangular images, the base image is encoded as a rectangle, with a specified value meaning to avoid fetching
+   the image.  This value is usually replaced by some fixed value and does not participate in window leveling etc.
+   To retrieve the pixel padding, use pixelPadding=&lt;true,burn-in> to return the pixel padding or burn it into the
+   returned image. (TODO implement this.)</p>
+   
+   <h4>Standard Image Options</h4>
+   <p>Standard WADO image options include rows, columns, region, windowCenter, windowWidth and presentationUID.
+   For requestType=XERO, the presentationUID will affect the window level, but will not affect the region or
+   cause the markup to be burned into the image.</p>
+   
+   <h4>Spatial Transformations</h4>
+   <p>rotation=degrees of rotation and flip=true can be used to perform a horizontal flip followed by the amount of rotation.
+   This may change the displayed area in order to encompass the entire specified region.</p>
+   
+   <h4>Additional Pixel Transformation</h4>
+   <p>Currently, the only additional pixel lookup table option included is invert=true to cause the image to be inverted.
+   At some point, a generalized colour map will likely be available, as well as post-GSPS window level transformations,
+   for example to allow the GSPS Modality LUT to be applied to the image, followed by a custom window level.  The window
+   level type should also be settable and window level should be applicable to colour images (applying only to the 
+   grayscale component).</p>
+   
+   <h4>Reduced Bits Images</h4>
+   <p>Using bits=8...15 and choosing an appropriate content type (image/jp12 is a good choice) one can retrieve
+   reduced bits images.  A linear transform is applied to the pixel values to reduce the bits to the specified number
+   of bits.  This is done WITHOUT applying any modality or other LUTs to the image so that the images can be processed
+   client side.</p>
+   
+   <h3>Reports</h3>
+   <p>Reports can be retrieved in XML or HTML, just by retrieving a report object UID and selecting the content type.
+   Additionally, adding format=NAMED_FORMAT allows adding custom report formats, for example, to include Xero components
+   in the displayed format (TODO - implement this).</p>
+   
+   <h3>Multi-part Mime</h3>
+   <p>It is possible to retrieve multiple objects at once by requesting more than a single object at a time and
+   using contentType=multipart/mime.  The separator for UID's is a backslash - either all the UID's can be listed,
+   with backslashes, or the objectUID or seriesUID can be omitted and all objects at the given level retrieved.
+   (TODO - extend this section with the full description.)</p>
+   
+   <h3>DICOM Object Retrieval</h3>
+   <p>Objects can be retrieved as DICOM by using contentType=application/dicom.  This is per the standard,
+   but there are several extensions available for custom retrieval.</p>
+   
+   <h4>Multiple transfer syntax</h4>
+   <p>In order to optimize the retrieval time, it is permitted to simply list multiple transfer syntaxes using
+   the standard backslash to separate the types.  The fastest one will be chosen - otherwise the first one will
+   be used.  The fastest one is the one that allows the images to not be encoded/recoded in order to transmit them.
+   Thus, if the image on disk in in JPEG-Lossless, and you request JPEG-Lossless as one of your options, that will
+   be the syntax chosen.</p>
+   
+   <h4>No Pixel Data</h4>
+   <p>The no pixel data and no pixel data deflate transfer syntaxes are supported - these use the literal
+   transfer syntaxes from the proposed document, so this will have to be changed to the final values when
+   completed.  These are particularly useful
+   for the multi-part mime return types if the image is desired to be returned in another type or size.</p>
+   
+   <h4>Raw Data</h4>
+   <p>The raw image data as it exists on disk can be retrieved directly using useOrig=true.  This will not 
+   update any header data to correspond to what is in the database, so be careful to not count on demographic
+   data for items such as the patient name contained in the DICOM header.  This is about twice as fast as
+   the multiple transfer syntax retrieve, and can be many times as fast as requiring the server to transcode
+   the image to the default or a specified format.</p>
+   
+   <h4>Image Frames/Operation Applied to DICOM</h4>
+   <p>It is possible to retrieve a sub-set of the frames using simpleFrameList=&lt;integer list, comma or dash separated>
+   which retrieves the ranges and individual frames selected.  FOr example simpleFrameList=1-3,7 would retrieve frames
+   1, 2, 3 and 7 in the DICOM.  This operation does NOT currently delete per-frame information for omitted frames, nor
+   does it change the SOP Instance UID.</p>
+   
+   <h2>Study Web Service Summary</h2>
+   <p>The Study Web Services provide information about patients, studies, series and images as XML.  This information
+   is expected to be extended information beyond the C-Find, although the study XML doesn't contain much information
+   beyond what can be found in the C-Find response.  The services are found through /wado2/study.xml /wado2/series.xml
+   and /wado2/image.xml  Queries add the normal tag names for the C-FIND queries, plus custom options.
+   One significant difference from the DICOM data is that the object as redundancy reduced - that is, for a given
+   patient, the patient name etc only occurs once, with whatever data occurs first being used to determine the values
+   of fields at that level.  This makes it MUCH shorter.  
+   As well, the general format of the XML is that attributes at a given level, for example SOPInstanceUID are treated as
+   XML attributes, while lists and other grouped/repeated elements are treated as child XML elements.  This makes the
+   representation very compact and easy to understand.</p>
+   
+   <h3>Study XML</h3>
+   <p>This is basically just a patient/study level query.  An example is below:
+   <pre>
+&lt;results 
+     xmlns="http://www.dcm4chee.org/xero/search/study/"
+     xmlns:ns2="http://www.w3.org/1999/xlink" 
+     xmlns:ns3="http://www.w3.org/2000/svg"
+  >
+  &lt;patient 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+       xsi:type="patientBean" PatientSex="O" PatientName="TEST-PATTERN^WHITE" 
+       PatientIdentifier="203" PatientID="203" PatientBirthDate="1994-12-31T00:00:00.000-05:00"
+    >
+    &lt;study 
+       xsi:type="studyBean" 
+       StudyDateF="31-Dec-1994 11:59:59 PM" 
+       studyUID="666.666.2.1.1" StudyID="S001001" StudyDescription="NONE" 
+       StudyDateTime="1994-12-31T23:59:59.000-05:00" ReferringPhysicianName="UNKNOWN" 
+       NumberOfStudyRelatedSeries="1" NumberOfStudyRelatedInstances="4" 
+       ModalitiesInStudy="OT" InstanceAvailability="ONLINE" 
+       AccessionNumber="A001004" 
+    />
+  &lt;/patient>
+&lt;/results>
+   	
+   </pre></p>
+   
+   <h4>GSPS Discovery</h4>
+   <p>One option that is important at the study level is which GSPS and Key Object to apply.  This should usually
+   only be done for small number of studies, NOT for the entire study list for a wide open query as it may involve
+   reading the GSPS DICOM objects themselves depending on the capabilities of the back end server.  To determine the
+   GSPS to apply, adding query parameters gsps=* and ko=* can be used.  For more details {@see org.dcm4chee.xero.search.filter.GspsDiscover}.
+   It is very cheap to apply this filter to studies without GSPS objects.  
+   </p>
+   
+   <h3>Series XML</h3>
+   <p>The series XML just adds a series level query, plus an example image per series.  This isn't used much as it
+   doesn't re-order and re-group the series correctly for some series types.  The XML looks like the study XML except
+   that it adds a series level.</p>
+   
+   <h3>Image XML</h3>
+   <p>The Image XML is the most interesting of the XML study objects.  It has many additional options
+   such as regrouping and re-organizing studies based on multi-frame, MR echo, MG study type, and adding
+   SVG representations of GSPS information.</p>
+   
+   <h4>GSPS</h4>
+   <p>To apply the GSPS information to a study, add gsps=NAME-OF-GSPS and the GSPS will be encoded for matching images.
+   The GSPS will be encoded as SVG elements under the image and gsps objects in the XML itself, or as attributes
+   at the image level for things like window level attributes.  </p>
+   
+   <h4>Pixel Information</h4>
+   <p>The pixel information about an image including min/max pixel values AFTER the specified modality LUT has been
+   applied can be discovered by using the pixelInfo=true flag.</p>
+   
+   <h4>File Location</h4>
+   <p>The File location for returned objects can be found by adding the fileLocation=true flag to the request.</p>
+   
+   <h4>Key Objects</h4>
+   <p>Images marked as key objects can be found by adding koUID=&lt;uid> to the request.  This WILL override any GSPS
+   objects for all objects that have a GSPS UID specified in the key object.  It will provide the default GSPS if
+   gsps=&lt;name> is specified.</p>
+   
+   <h4>Regrouping - non image objects</h4>
+   <p>Default regrouping will occur if the regroup=true flag is included.  This will group gsps into a single series
+   by content name, and reports/key object into series such that the first element is the current version of a set of reports.
+   That is, each series of reports, key objects or GSPS should typically show the FIRST element of each series as
+   an available object. (TODO - validate that this is in fact the current behaviour - it should be, but it might not
+   be quite right yet.)</p>
+   
+   <h4>Regrouping - image series</h4>
+   <p>TODO - implement this and describe the behaviour here.  regroup=true also activates this.  The basic idea is that
+   regrouping of series can be applied such that non-enhanced multi-frames are split by image number into "separate" series,
+   MR are split by echo number, and MG by type (LCC, RCC etc - with flags based on the name.)  This is NOT the splitting
+   that would happen for a hanging protocol to be applied.</p>
+    
+   <h3>GSPS XML</h3>
+   <p>TODO - describe the way that the GSPS splits the markup/annotations based on whether it is display or image
+   relative, and the inclusion of some VML attributes required to display some types of SVG.</p>
+   
+   <h3>Paged Image Data</h3>
+   <p>Since there can easily be tens of thousands of images, and there are often thousands of images, it is possible
+   to request a page of image data using Count=&lt;number of returned items> and Position=&lt;starting position>  
+   These will index the images with a Position and will add a Viewable to the series level.  This can be used for
+   multiple series at once in order to get the initial breakdown and set of images organized correctly.</p>
+    
+   <h3>Suggested Study Data Alternative Services</h3>
+   <p>It would be quite easy to create an additional set of services that provide non-XML formatted services, such
+   as direct study queries and information.  For example, an HTML file containing a table could fairly easily be created
+   It is recommended that these services be provided on TOP of the existing study data services by adding an additional
+   StringTemplateFilter response converter that converts the existing object types into HTML instead of XML.  This allows
+   future changes and extensions to the objects to continue to be used rather than requiring going through the C-FIND
+   services.  Alternatively, if it is known that ONLY the C-FIND response data is required, it would be possible to
+   go through the C-FIND services directly.</p>
+   
+   <h2>C-Find Web Service Summary</h2>
+   <p>The C-FIND services can be accessed over the web using the /wado2/cfind service.  Query parameters are provided
+   as URL parameters of the same name, for example, /wado2/cfind?level=study&mp;studyUID=1.2.3 would return
+   a blocked c-find response.  This blocked structure is streamed as a response, thus, it can begin to be parsed before
+   all values are found server side.  </p>
+   
+   
+   <h2>Major Filter Chains</h2>
+   <p>Some of the major filter chains that are import are described below.
+   
+   <h3>FileLocation</h3>
+   <p>The file location takes at least an object UID, perhaps an AE and study/series UID's and creates a URL that 
+   can be read for the given file.  MOST file readers should be able to handle most file types.  It might be required
+   to cache such files locally in order to provide said file handles.</p>
+   
+   <h3>DICOM Header</h3>
+   <p>The DICOM header returns a dcm4che2 DicomObject instance containing the DICOM header, OR an abbreviated sub-set 
+   of that header with just some data required for image display/organization.  This typically uses the file location
+   but it is entirely possible to construct synthetic headers that have no actual original DICOM data associated with 
+   them - this could be useful for things like pathology images which might not be in DICOM format.</p>
+    
+   <h3>Study/Series/Image Source</h3>
+   <p>These return PatientBean, StudyBean, SeriesBean, ImageBean hierarchies.  Only the maximum depth is changed
+   based on the query type, not the nesting itself.</p>
+   
+   <h3>CFind</h3>
+   <p>The CFind chain is quite short, being just a connector from the C-Find results return into a streaming mechanism
+   for the return. </p>
+   
+</body>
+</html>
