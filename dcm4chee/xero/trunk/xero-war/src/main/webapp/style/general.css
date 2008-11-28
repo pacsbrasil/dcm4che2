@@ -80,6 +80,7 @@ div.studyTray, div.seriesToolbar {
 
 div.rootMenu {
 	float: right;
+	z-index: 60;
 }
 
 .toolItem {
