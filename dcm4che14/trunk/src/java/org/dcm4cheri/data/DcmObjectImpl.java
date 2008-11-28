@@ -68,21 +68,20 @@ import org.dcm4che.util.DTFormat;
 import org.dcm4cheri.util.StringUtils;
 import org.xml.sax.helpers.DefaultHandler;
 
-/** 
- *
- * @author     <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
+/**
+ * 
+ * @author <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
  * @since March 2002
  * @version $Revision$ $Date$
  */
 abstract class DcmObjectImpl implements DcmObject {
 
-    static UIDDictionary DICT =
-        DictionaryFactory.getInstance().getDefaultUIDDictionary();
+    static UIDDictionary DICT = DictionaryFactory.getInstance()
+            .getDefaultUIDDictionary();
 
     protected final static Logger log = Logger.getLogger(DcmObjectImpl.class);
 
     protected ArrayList list = new ArrayList();
-
 
     public DcmHandler getDcmHandler() {
         return new DcmObjectHandlerImpl(this);
@@ -95,7 +94,7 @@ abstract class DcmObjectImpl implements DcmObject {
     public DefaultHandler getSAXHandler2(File basedir) {
         return new SAXHandlerAdapter2(getDcmHandler(), basedir);
     }
-    
+
     public String getPrivateCreatorID() {
         return null;
     }
@@ -144,7 +143,7 @@ abstract class DcmObjectImpl implements DcmObject {
             else
                 return mid; // key found
         }
-        return - (low + 1); // key not found
+        return -(low + 1); // key not found
     }
 
     public boolean contains(int tag) {
@@ -180,11 +179,12 @@ abstract class DcmObjectImpl implements DcmObject {
             }
         }
         int index = indexOf(tag);
-        return index >= 0 ? ((DcmElement) list.get(index)).vm(getSpecificCharacterSet()) : -1;
+        return index >= 0 ? ((DcmElement) list.get(index))
+                .vm(getSpecificCharacterSet()) : -1;
     }
 
     private int adjustPrivateTag(int tag, boolean create)
-        throws DcmValueException {
+            throws DcmValueException {
         String creatorID = getPrivateCreatorID();
         // no adjustments, if creatorID not set
         if (creatorID == null) {
@@ -208,7 +208,8 @@ abstract class DcmObjectImpl implements DcmObject {
         if (!create) {
             return 0;
         }
-        doPut(StringElement.createLO(gr | el, creatorID, getSpecificCharacterSet()));
+        doPut(StringElement.createLO(gr | el, creatorID,
+                getSpecificCharacterSet()));
         return gr | (el << 8) | (tag & 0xff);
     }
 
@@ -254,9 +255,8 @@ abstract class DcmObjectImpl implements DcmObject {
     public String getString(int tag, String defVal) {
         DcmElement el = get(tag);
         try {
-            return el != null && !el.isEmpty() 
-                            ? el.getString(getSpecificCharacterSet())
-                            : defVal;
+            return el != null && !el.isEmpty() ? el
+                    .getString(getSpecificCharacterSet()) : defVal;
         } catch (DcmValueException e) {
             return defVal;
         }
@@ -293,9 +293,8 @@ abstract class DcmObjectImpl implements DcmObject {
     public String getBoundedString(int maxLen, int tag, String defVal) {
         DcmElement el = get(tag);
         try {
-            return el != null && !el.isEmpty() 
-                ? el.getBoundedString(maxLen, getSpecificCharacterSet())
-                : defVal;
+            return el != null && !el.isEmpty() ? el.getBoundedString(maxLen,
+                    getSpecificCharacterSet()) : defVal;
         } catch (DcmValueException e) {
             return defVal;
         }
@@ -308,8 +307,8 @@ abstract class DcmObjectImpl implements DcmObject {
     public String getBoundedString(int maxLen, int tag, int index) {
         DcmElement el = get(tag);
         try {
-            return el != null ? el.getBoundedString(index, getSpecificCharacterSet())
-                    : null;
+            return el != null ? el.getBoundedString(index,
+                    getSpecificCharacterSet()) : null;
         } catch (DcmValueException e) {
             return null;
         }
@@ -323,9 +322,8 @@ abstract class DcmObjectImpl implements DcmObject {
     public String[] getBoundedStrings(int maxLen, int tag) {
         DcmElement el = get(tag);
         try {
-            return el != null
-                    ? el.getBoundedStrings(maxLen, getSpecificCharacterSet())
-                    : null;
+            return el != null ? el.getBoundedStrings(maxLen,
+                    getSpecificCharacterSet()) : null;
         } catch (DcmValueException e) {
             return null;
         }
@@ -334,7 +332,8 @@ abstract class DcmObjectImpl implements DcmObject {
     public Integer getInteger(int tag) {
         DcmElement el = get(tag);
         try {
-            return el != null && !el.isEmpty() ? new Integer(el.getInt()) : null;
+            return el != null && !el.isEmpty() ? new Integer(el.getInt())
+                    : null;
         } catch (DcmValueException e) {
             return null;
         }
@@ -343,9 +342,8 @@ abstract class DcmObjectImpl implements DcmObject {
     public Integer getInteger(int tag, int index) {
         DcmElement el = get(tag);
         try {
-            return el != null && index < el.vm(null)
-                        ? new Integer(el.getInt(index))
-                        : null;
+            return el != null && index < el.vm(null) ? new Integer(el
+                    .getInt(index)) : null;
         } catch (DcmValueException e) {
             return null;
         }
@@ -354,7 +352,8 @@ abstract class DcmObjectImpl implements DcmObject {
     public PersonName getPersonName(int tag) {
         DcmElement el = get(tag);
         try {
-            return el != null && !el.isEmpty() ? el.getPersonName(getSpecificCharacterSet()) : null;
+            return el != null && !el.isEmpty() ? el
+                    .getPersonName(getSpecificCharacterSet()) : null;
         } catch (DcmValueException e) {
             return null;
         }
@@ -363,7 +362,8 @@ abstract class DcmObjectImpl implements DcmObject {
     public PersonName[] getPersonNames(int tag) {
         DcmElement el = get(tag);
         try {
-            return el != null ? el.getPersonNames(getSpecificCharacterSet()) : null;
+            return el != null ? el.getPersonNames(getSpecificCharacterSet())
+                    : null;
         } catch (DcmValueException e) {
             return null;
         }
@@ -373,7 +373,7 @@ abstract class DcmObjectImpl implements DcmObject {
         PersonName[] pns = getPersonNames(tag);
         return pns != null && index < pns.length ? pns[index] : null;
     }
-    
+
     public int getInt(int tag, int defVal) {
         DcmElement el = get(tag);
         try {
@@ -386,7 +386,8 @@ abstract class DcmObjectImpl implements DcmObject {
     public int getInt(int tag, int index, int defVal) {
         DcmElement el = get(tag);
         try {
-            return el != null && index < el.vm(null) ? el.getInt(index) : defVal;
+            return el != null && index < el.vm(null) ? el.getInt(index)
+                    : defVal;
         } catch (DcmValueException e) {
             return defVal;
         }
@@ -413,7 +414,8 @@ abstract class DcmObjectImpl implements DcmObject {
     public int getTag(int tag, int index, int defVal) {
         DcmElement el = get(tag);
         try {
-            return el != null && index < el.vm(null) ? el.getTag(index) : defVal;
+            return el != null && index < el.vm(null) ? el.getTag(index)
+                    : defVal;
         } catch (DcmValueException e) {
             return defVal;
         }
@@ -431,7 +433,8 @@ abstract class DcmObjectImpl implements DcmObject {
     public Float getFloat(int tag) {
         DcmElement el = get(tag);
         try {
-            return el != null && !el.isEmpty() ? new Float(el.getFloat()) : null;
+            return el != null && !el.isEmpty() ? new Float(el.getFloat())
+                    : null;
         } catch (DcmValueException e) {
             return null;
         }
@@ -440,9 +443,8 @@ abstract class DcmObjectImpl implements DcmObject {
     public Float getFloat(int tag, int index) {
         DcmElement el = get(tag);
         try {
-            return el != null && index < el.vm(null)
-                        ? new Float(el.getFloat(index))
-                        : null;
+            return el != null && index < el.vm(null) ? new Float(el
+                    .getFloat(index)) : null;
         } catch (DcmValueException e) {
             return null;
         }
@@ -460,7 +462,8 @@ abstract class DcmObjectImpl implements DcmObject {
     public float getFloat(int tag, int index, float defVal) {
         DcmElement el = get(tag);
         try {
-            return el != null && index < el.vm(null) ? el.getFloat(index) : defVal;
+            return el != null && index < el.vm(null) ? el.getFloat(index)
+                    : defVal;
         } catch (DcmValueException e) {
             return defVal;
         }
@@ -478,7 +481,8 @@ abstract class DcmObjectImpl implements DcmObject {
     public Double getDouble(int tag) {
         DcmElement el = get(tag);
         try {
-            return el != null && !el.isEmpty() ? new Double(el.getDouble()) : null;
+            return el != null && !el.isEmpty() ? new Double(el.getDouble())
+                    : null;
         } catch (DcmValueException e) {
             return null;
         }
@@ -487,9 +491,8 @@ abstract class DcmObjectImpl implements DcmObject {
     public Double getDouble(int tag, int index) {
         DcmElement el = get(tag);
         try {
-            return el != null && index < el.vm(null)
-                        ? new Double(el.getDouble(index))
-                        : null;
+            return el != null && index < el.vm(null) ? new Double(el
+                    .getDouble(index)) : null;
         } catch (DcmValueException e) {
             return null;
         }
@@ -507,7 +510,8 @@ abstract class DcmObjectImpl implements DcmObject {
     public double getDouble(int tag, int index, double defVal) {
         DcmElement el = get(tag);
         try {
-            return el != null && index < el.vm(null) ? el.getDouble(index) : defVal;
+            return el != null && index < el.vm(null) ? el.getDouble(index)
+                    : defVal;
         } catch (DcmValueException e) {
             return defVal;
         }
@@ -569,7 +573,7 @@ abstract class DcmObjectImpl implements DcmObject {
             if (time == null || time.isEmpty()) {
                 return date.getDate();
             }
-            String dt = date.getString(null) + time.getString(null); 
+            String dt = date.getString(null) + time.getString(null);
             return new DTFormat().parse(dt);
         } catch (Exception e) {
             return null;
@@ -586,19 +590,19 @@ abstract class DcmObjectImpl implements DcmObject {
             return null;
         }
         try {
-        	String[] dateRange = splitRange(date.getString(null));
-        	String[] timeRange = splitRange(time.getString(null));
-        	Date[] result = new Date[2];
-        	DTFormat f = new DTFormat();
-        	if (dateRange[0] != null) {
-        		result[0] = f.parse(dateRange[0] 
-        		          + (timeRange[0] == null ? "" : timeRange[0]));
-        	}
-        	if (dateRange[1] != null) {
-        		result[1] = f.parse(dateRange[1] 
-        		          + (timeRange[1] == null ? "235959.999" : timeRange[1]));
-        	}
-            return result; 
+            String[] dateRange = splitRange(date.getString(null));
+            String[] timeRange = splitRange(time.getString(null));
+            Date[] result = new Date[2];
+            DTFormat f = new DTFormat();
+            if (dateRange[0] != null) {
+                result[0] = f.parse(dateRange[0]
+                        + (timeRange[0] == null ? "" : timeRange[0]));
+            }
+            if (dateRange[1] != null) {
+                result[1] = f.parse(dateRange[1]
+                        + (timeRange[1] == null ? "235959.999" : timeRange[1]));
+            }
+            return result;
         } catch (ParseException e) {
             return null;
         } catch (DcmValueException e) {
@@ -606,17 +610,17 @@ abstract class DcmObjectImpl implements DcmObject {
         }
     }
 
-	private static String[] splitRange(String range) {
+    private static String[] splitRange(String range) {
         int hypen = range.indexOf('-');
         String[] result = new String[2];
         if (hypen != 0) {
-        	result[0] = hypen == -1 ? range : range.substring(0, hypen);
+            result[0] = hypen == -1 ? range : range.substring(0, hypen);
         }
         if (hypen != range.length() - 1) {
-        	result[1] = hypen == -1 ? range : range.substring(hypen+1);
+            result[1] = hypen == -1 ? range : range.substring(hypen + 1);
         }
-		return result;
-	}
+        return result;
+    }
 
     public Dataset getItem(int tag) {
         return getItem(tag, 0);
@@ -628,10 +632,11 @@ abstract class DcmObjectImpl implements DcmObject {
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  newElem  Description of the Parameter
-     * @return          Description of the Return Value
+     * Description of the Method
+     * 
+     * @param newElem
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     protected DcmElement put(DcmElement newElem) {
         if (log.isDebugEnabled()) {
@@ -643,8 +648,8 @@ abstract class DcmObjectImpl implements DcmObject {
 
         if (Tags.isPrivate(newElem.tag())) {
             try {
-                ((DcmElementImpl) newElem).tag =
-                    adjustPrivateTag(newElem.tag(), true);
+                ((DcmElementImpl) newElem).tag = adjustPrivateTag(
+                        newElem.tag(), true);
             } catch (DcmValueException e) {
                 log.warn("Could not access creator ID - ignore " + newElem, e);
                 return newElem;
@@ -658,15 +663,14 @@ abstract class DcmObjectImpl implements DcmObject {
             final int size = list.size();
             final int newTag = newElem.tag();
             if (size == 0
-                || (((DcmElementImpl) list.get(size - 1)).tag & 0xffffffffL)
-                    < (newTag & 0xffffffffL)) {
+                    || (((DcmElementImpl) list.get(size - 1)).tag & 0xffffffffL) < (newTag & 0xffffffffL)) {
                 list.add(newElem);
             } else {
                 int index = indexOf(newTag);
                 if (index >= 0) {
                     list.set(index, newElem);
                 } else {
-                    list.add(- (index + 1), newElem);
+                    list.add(-(index + 1), newElem);
                 }
             }
             return newElem;
@@ -674,135 +678,143 @@ abstract class DcmObjectImpl implements DcmObject {
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putAE(int tag) {
         return put(StringElement.createAE(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putAE(int tag, String value) {
-        return put(
-            value != null
-                ? StringElement.createAE(tag, value)
+        return put(value != null ? StringElement.createAE(tag, value)
                 : StringElement.createAE(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putAE(int tag, String[] values) {
-        return put(
-            values != null
-                ? StringElement.createAE(tag, values)
+        return put(values != null ? StringElement.createAE(tag, values)
                 : StringElement.createAE(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putAS(int tag) {
         return put(StringElement.createAS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putAS(int tag, String value) {
-        return put(
-            value != null && value.length() != 0
-                ? StringElement.createAS(tag, value)
-                : StringElement.createAS(tag));
+        return put(value != null && value.length() != 0 ? StringElement
+                .createAS(tag, value) : StringElement.createAS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putAS(int tag, String[] values) {
-        return put(
-            values != null
-                ? StringElement.createAS(tag, values)
+        return put(values != null ? StringElement.createAS(tag, values)
                 : StringElement.createAS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putAT(int tag) {
         return put(ValueElement.createAT(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putAT(int tag, int value) {
         return put(ValueElement.createAT(tag, value));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putAT(int tag, int[] values) {
-        return put(
-            values != null
-                ? ValueElement.createAT(tag, values)
+        return put(values != null ? ValueElement.createAT(tag, values)
                 : StringElement.createAT(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putAT(int tag, String value) {
-        return value != null && value.length() != 0
-            ? putAT(tag, Integer.parseInt(value, 16))
-            : putAT(tag);
+        return value != null && value.length() != 0 ? putAT(tag, Integer
+                .parseInt(value, 16)) : putAT(tag);
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putAT(int tag, String[] values) {
         if (values == null) {
@@ -816,740 +828,767 @@ abstract class DcmObjectImpl implements DcmObject {
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putCS(int tag) {
         return put(StringElement.createCS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putCS(int tag, String value) {
-        return put(
-            value != null
-                ? StringElement.createCS(tag, value)
+        return put(value != null ? StringElement.createCS(tag, value)
                 : StringElement.createCS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putCS(int tag, String[] values) {
-        return put(
-            values != null
-                ? StringElement.createCS(tag, values)
+        return put(values != null ? StringElement.createCS(tag, values)
                 : StringElement.createCS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putDA(int tag) {
         return put(StringElement.createDA(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putDA(int tag, Date value) {
-        return put(
-            value != null
-                ? StringElement.createDA(tag, value)
+        return put(value != null ? StringElement.createDA(tag, value)
                 : StringElement.createDA(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putDA(int tag, Date[] values) {
-        return put(
-            values != null
-                ? StringElement.createDA(tag, values)
+        return put(values != null ? StringElement.createDA(tag, values)
                 : StringElement.createDA(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag   Description of the Parameter
-     * @param  from  Description of the Parameter
-     * @param  to    Description of the Parameter
-     * @return       Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param from
+     *            Description of the Parameter
+     * @param to
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putDA(int tag, Date from, Date to) {
-        return put(
-            from != null
-                || to != null
-                    ? StringElement.createDA(tag, from, to)
-                    : StringElement.createDA(tag));
+        return put(from != null || to != null ? StringElement.createDA(tag,
+                from, to) : StringElement.createDA(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putDA(int tag, String value) {
-        return put(
-            value != null && value.length() != 0
-                ? StringElement.createDA(tag, value)
-                : StringElement.createDA(tag));
+        return put(value != null && value.length() != 0 ? StringElement
+                .createDA(tag, value) : StringElement.createDA(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putDA(int tag, String[] values) {
-        return put(
-            values != null
-                ? StringElement.createDA(tag, values)
+        return put(values != null ? StringElement.createDA(tag, values)
                 : StringElement.createDA(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putDS(int tag) {
         return put(StringElement.createDS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putDS(int tag, float value) {
         return put(StringElement.createDS(tag, value));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putDS(int tag, float[] values) {
-        return put(
-            values != null
-                ? StringElement.createDS(tag, values)
+        return put(values != null ? StringElement.createDS(tag, values)
                 : StringElement.createDS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putDS(int tag, String value) {
-        return put(
-            value != null && value.length() != 0
-                ? StringElement.createDS(tag, value)
-                : StringElement.createDS(tag));
+        return put(value != null && value.length() != 0 ? StringElement
+                .createDS(tag, value) : StringElement.createDS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putDS(int tag, String[] values) {
-        return put(
-            values != null
-                ? StringElement.createDS(tag, values)
+        return put(values != null ? StringElement.createDS(tag, values)
                 : StringElement.createDS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putDT(int tag) {
         return put(StringElement.createDT(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putDT(int tag, Date value) {
-        return put(
-            value != null
-                ? StringElement.createDT(tag, value)
+        return put(value != null ? StringElement.createDT(tag, value)
                 : StringElement.createDT(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putDT(int tag, Date[] values) {
-        return put(
-            values != null
-                ? StringElement.createDT(tag, values)
+        return put(values != null ? StringElement.createDT(tag, values)
                 : StringElement.createDT(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag   Description of the Parameter
-     * @param  from  Description of the Parameter
-     * @param  to    Description of the Parameter
-     * @return       Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param from
+     *            Description of the Parameter
+     * @param to
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putDT(int tag, Date from, Date to) {
-        return put(
-            from != null
-                || to != null
-                    ? StringElement.createDT(tag, from, to)
-                    : StringElement.createDT(tag));
+        return put(from != null || to != null ? StringElement.createDT(tag,
+                from, to) : StringElement.createDT(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putDT(int tag, String value) {
-        return put(
-            value != null && value.length() != 0
-                ? StringElement.createDT(tag, value)
-                : StringElement.createDT(tag));
+        return put(value != null && value.length() != 0 ? StringElement
+                .createDT(tag, value) : StringElement.createDT(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putDT(int tag, String[] values) {
-        return put(
-            values != null
-                ? StringElement.createDT(tag, values)
+        return put(values != null ? StringElement.createDT(tag, values)
                 : StringElement.createDT(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putFL(int tag) {
         return put(ValueElement.createFL(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putFL(int tag, float value) {
         return put(ValueElement.createFL(tag, value));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putFL(int tag, float[] values) {
-        return put(
-            values != null
-                ? ValueElement.createFL(tag, values)
+        return put(values != null ? ValueElement.createFL(tag, values)
                 : ValueElement.createFL(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putFL(int tag, String value) {
-        return put(
-            value != null && value.length() != 0
-                ? ValueElement.createFL(tag, Float.parseFloat(value))
-                : ValueElement.createFL(tag));
+        return put(value != null && value.length() != 0 ? ValueElement
+                .createFL(tag, Float.parseFloat(value)) : ValueElement
+                .createFL(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putFL(int tag, String[] values) {
-        return put(
-            values != null
-                ? ValueElement.createFL(tag, StringUtils.parseFloats(values))
-                : ValueElement.createFL(tag));
+        return put(values != null ? ValueElement.createFL(tag, StringUtils
+                .parseFloats(values)) : ValueElement.createFL(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putFD(int tag) {
         return put(ValueElement.createFD(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putFD(int tag, double value) {
         return put(ValueElement.createFD(tag, value));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putFD(int tag, double[] values) {
-        return put(
-            values != null
-                ? ValueElement.createFD(tag, values)
+        return put(values != null ? ValueElement.createFD(tag, values)
                 : ValueElement.createFD(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putFD(int tag, String value) {
-        return put(
-            value != null && value.length() != 0
-                ? ValueElement.createFD(tag, Double.parseDouble(value))
-                : ValueElement.createFD(tag));
+        return put(value != null && value.length() != 0 ? ValueElement
+                .createFD(tag, Double.parseDouble(value)) : ValueElement
+                .createFD(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putFD(int tag, String[] values) {
-        return put(
-            values != null
-                ? ValueElement.createFD(tag, StringUtils.parseDoubles(values))
-                : ValueElement.createFD(tag));
+        return put(values != null ? ValueElement.createFD(tag, StringUtils
+                .parseDoubles(values)) : ValueElement.createFD(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putIS(int tag) {
         return put(StringElement.createIS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putIS(int tag, int value) {
         return put(StringElement.createIS(tag, value));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putIS(int tag, int[] values) {
-        return put(
-            values != null
-                ? StringElement.createIS(tag, values)
+        return put(values != null ? StringElement.createIS(tag, values)
                 : StringElement.createIS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putIS(int tag, String value) {
-        return put(
-            value != null && value.length() != 0
-                ? StringElement.createIS(tag, value)
-                : StringElement.createIS(tag));
+        return put(value != null && value.length() != 0 ? StringElement
+                .createIS(tag, value) : StringElement.createIS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putIS(int tag, String[] values) {
-        return put(
-            values != null
-                ? StringElement.createIS(tag, values)
+        return put(values != null ? StringElement.createIS(tag, values)
                 : StringElement.createIS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putLO(int tag) {
         return put(StringElement.createLO(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putLO(int tag, String value) {
-        return put(
-            value != null
-                ? StringElement.createLO(tag, value, getSpecificCharacterSet())
-                : StringElement.createLO(tag));
+        return put(value != null ? StringElement.createLO(tag, value,
+                getSpecificCharacterSet()) : StringElement.createLO(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putLO(int tag, String[] values) {
-        return put(
-            values != null
-                ? StringElement.createLO(tag, values, getSpecificCharacterSet())
-                : StringElement.createLO(tag));
+        return put(values != null ? StringElement.createLO(tag, values,
+                getSpecificCharacterSet()) : StringElement.createLO(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putLT(int tag) {
         return put(StringElement.createLT(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putLT(int tag, String value) {
-        return put(
-            value != null
-                ? StringElement.createLT(tag, value, getSpecificCharacterSet())
-                : StringElement.createLT(tag));
+        return put(value != null ? StringElement.createLT(tag, value,
+                getSpecificCharacterSet()) : StringElement.createLT(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putLT(int tag, String[] values) {
-        return put(
-            values != null
-                ? StringElement.createLT(tag, values, getSpecificCharacterSet())
-                : StringElement.createLT(tag));
+        return put(values != null ? StringElement.createLT(tag, values,
+                getSpecificCharacterSet()) : StringElement.createLT(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putOB(int tag) {
         return put(ValueElement.createOB(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putOB(int tag, byte[] value) {
-        return put(
-            value != null
-                ? ValueElement.createOB(tag, value)
+        return put(value != null ? ValueElement.createOB(tag, value)
                 : ValueElement.createOB(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putOB(int tag, ByteBuffer value) {
-        return put(
-            value != null
-                ? ValueElement.createOB(tag, value)
+        return put(value != null ? ValueElement.createOB(tag, value)
                 : ValueElement.createOB(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putOBsq(int tag) {
         return put(FragmentElement.createOB(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putOF(int tag) {
         return put(ValueElement.createOF(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putOF(int tag, float[] value) {
-        return put(
-            value != null
-                ? ValueElement.createOF(tag, value)
+        return put(value != null ? ValueElement.createOF(tag, value)
                 : ValueElement.createOF(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putOF(int tag, ByteBuffer value) {
-        return put(
-            value != null
-                ? ValueElement.createOF(tag, value)
+        return put(value != null ? ValueElement.createOF(tag, value)
                 : ValueElement.createOF(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putOFsq(int tag) {
         return put(FragmentElement.createOF(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putOW(int tag) {
         return put(ValueElement.createOW(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putOW(int tag, short[] value) {
-        return put(
-            value != null
-                ? ValueElement.createOW(tag, value)
+        return put(value != null ? ValueElement.createOW(tag, value)
                 : ValueElement.createOW(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putOW(int tag, ByteBuffer value) {
-        return put(
-            value != null
-                ? ValueElement.createOW(tag, value)
+        return put(value != null ? ValueElement.createOW(tag, value)
                 : ValueElement.createOW(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putOWsq(int tag) {
         return put(FragmentElement.createOW(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putPN(int tag) {
         return put(StringElement.createPN(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putPN(int tag, PersonName value) {
-        return put(
-            value != null
-                ? StringElement.createPN(tag, value, getSpecificCharacterSet())
-                : StringElement.createPN(tag));
+        return put(value != null ? StringElement.createPN(tag, value,
+                getSpecificCharacterSet()) : StringElement.createPN(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putPN(int tag, PersonName[] values) {
-        return put(
-            values != null
-                ? StringElement.createPN(tag, values, getSpecificCharacterSet())
-                : StringElement.createPN(tag));
+        return put(values != null ? StringElement.createPN(tag, values,
+                getSpecificCharacterSet()) : StringElement.createPN(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putPN(int tag, String value) {
-        return put(
-            value != null && value.length() != 0
-                ? StringElement.createPN(
-                    tag,
-                    new PersonNameImpl(value, false),
-                    getSpecificCharacterSet())
-                : StringElement.createPN(tag));
+        return put(value != null && value.length() != 0 ? StringElement
+                .createPN(tag, new PersonNameImpl(value, false),
+                        getSpecificCharacterSet()) : StringElement
+                .createPN(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putPN(int tag, String[] values) {
         if (values == null) {
@@ -1563,941 +1602,962 @@ abstract class DcmObjectImpl implements DcmObject {
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putSH(int tag) {
         return put(StringElement.createSH(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putSH(int tag, String value) {
-        return put(
-            value != null
-                ? StringElement.createSH(tag, value, getSpecificCharacterSet())
-                : StringElement.createSH(tag));
+        return put(value != null ? StringElement.createSH(tag, value,
+                getSpecificCharacterSet()) : StringElement.createSH(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putSH(int tag, String[] values) {
-        return put(
-            values != null
-                ? StringElement.createSH(tag, values, getSpecificCharacterSet())
-                : StringElement.createSH(tag));
+        return put(values != null ? StringElement.createSH(tag, values,
+                getSpecificCharacterSet()) : StringElement.createSH(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putSL(int tag) {
         return put(ValueElement.createSL(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putSL(int tag, int value) {
         return put(ValueElement.createSL(tag, value));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putSL(int tag, int[] values) {
-        return put(
-            values != null
-                ? ValueElement.createSL(tag, values)
+        return put(values != null ? ValueElement.createSL(tag, values)
                 : ValueElement.createSL(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putSL(int tag, String value) {
-        return put(
-            value != null && value.length() != 0
-                ? ValueElement.createSL(
-                    tag,
-                    StringUtils.parseInt(
-                        value,
-                        Integer.MIN_VALUE,
-                        Integer.MAX_VALUE))
-                : ValueElement.createSL(tag));
+        return put(value != null && value.length() != 0 ? ValueElement
+                .createSL(tag, StringUtils.parseInt(value, Integer.MIN_VALUE,
+                        Integer.MAX_VALUE)) : ValueElement.createSL(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putSL(int tag, String[] values) {
-        return put(
-            ValueElement.createSL(
-                tag,
-                StringUtils.parseInts(
-                    values,
-                    Integer.MIN_VALUE,
-                    Integer.MAX_VALUE)));
+        return put(ValueElement.createSL(tag, StringUtils.parseInts(values,
+                Integer.MIN_VALUE, Integer.MAX_VALUE)));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putSQ(int tag) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putSS(int tag) {
         return put(ValueElement.createSS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putSS(int tag, int value) {
         return put(ValueElement.createSS(tag, value));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putSS(int tag, int[] values) {
-        return put(
-            values != null
-                ? ValueElement.createSS(tag, values)
+        return put(values != null ? ValueElement.createSS(tag, values)
                 : ValueElement.createSS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putSS(int tag, String value) {
-        return put(
-            value != null && value.length() != 0
-                ? ValueElement.createSS(
-                    tag,
-                    StringUtils.parseInt(
-                        value,
-                        Short.MIN_VALUE,
-                        Short.MAX_VALUE))
-                : ValueElement.createSS(tag));
+        return put(value != null && value.length() != 0 ? ValueElement
+                .createSS(tag, StringUtils.parseInt(value, Short.MIN_VALUE,
+                        Short.MAX_VALUE)) : ValueElement.createSS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putSS(int tag, String[] values) {
-        return put(
-            values != null
-                ? ValueElement.createSS(
-                    tag,
-                    StringUtils.parseInts(
-                        values,
-                        Short.MIN_VALUE,
-                        Short.MAX_VALUE))
+        return put(values != null ? ValueElement.createSS(tag, StringUtils
+                .parseInts(values, Short.MIN_VALUE, Short.MAX_VALUE))
                 : ValueElement.createSS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putST(int tag) {
         return put(StringElement.createST(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putST(int tag, String value) {
-        return put(
-            value != null
-                ? StringElement.createST(tag, value, getSpecificCharacterSet())
-                : StringElement.createST(tag));
+        return put(value != null ? StringElement.createST(tag, value,
+                getSpecificCharacterSet()) : StringElement.createST(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putST(int tag, String[] values) {
-        return put(
-            values != null
-                ? StringElement.createST(tag, values, getSpecificCharacterSet())
-                : StringElement.createST(tag));
+        return put(values != null ? StringElement.createST(tag, values,
+                getSpecificCharacterSet()) : StringElement.createST(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putTM(int tag) {
         return put(StringElement.createTM(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putTM(int tag, Date value) {
-        return put(
-            value != null
-                ? StringElement.createTM(tag, value)
+        return put(value != null ? StringElement.createTM(tag, value)
                 : StringElement.createTM(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putTM(int tag, Date[] values) {
-        return put(
-            values != null
-                ? StringElement.createTM(tag, values)
+        return put(values != null ? StringElement.createTM(tag, values)
                 : StringElement.createTM(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag   Description of the Parameter
-     * @param  from  Description of the Parameter
-     * @param  to    Description of the Parameter
-     * @return       Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param from
+     *            Description of the Parameter
+     * @param to
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putTM(int tag, Date from, Date to) {
-        return put(
-            from != null
-                || to != null
-                    ? StringElement.createTM(tag, from, to)
-                    : StringElement.createTM(tag));
+        return put(from != null || to != null ? StringElement.createTM(tag,
+                from, to) : StringElement.createTM(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putTM(int tag, String value) {
-        return put(
-            value != null && value.length() != 0
-                ? StringElement.createTM(tag, value)
-                : StringElement.createTM(tag));
+        return put(value != null && value.length() != 0 ? StringElement
+                .createTM(tag, value) : StringElement.createTM(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putTM(int tag, String[] values) {
-        return put(
-            values != null
-                ? StringElement.createTM(tag, values)
+        return put(values != null ? StringElement.createTM(tag, values)
                 : StringElement.createTM(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUI(int tag) {
         return put(StringElement.createUI(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUI(int tag, String value) {
-        return put(
-            value != null
-                ? StringElement.createUI(tag, value)
+        return put(value != null ? StringElement.createUI(tag, value)
                 : StringElement.createUI(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUI(int tag, String[] values) {
-        return put(
-            values != null
-                ? StringElement.createUI(tag, values)
+        return put(values != null ? StringElement.createUI(tag, values)
                 : StringElement.createUI(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUL(int tag) {
         return put(ValueElement.createUL(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUL(int tag, int value) {
         return put(ValueElement.createUL(tag, value));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUL(int tag, int[] values) {
-        return put(
-            values != null
-                ? ValueElement.createUL(tag, values)
+        return put(values != null ? ValueElement.createUL(tag, values)
                 : StringElement.createUI(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUL(int tag, String value) {
-        return put(
-            value != null && value.length() != 0
-                ? ValueElement.createUL(
-                    tag,
-                    StringUtils.parseInt(value, 0L, 0xFFFFFFFFL))
+        return put(value != null && value.length() != 0 ? ValueElement
+                .createUL(tag, StringUtils.parseInt(value, 0L, 0xFFFFFFFFL))
                 : ValueElement.createUL(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUL(int tag, String[] values) {
-        return put(
-            values != null
-                ? ValueElement.createUL(
-                    tag,
-                    StringUtils.parseInts(values, 0L, 0xFFFFFFFFL))
-                : ValueElement.createUL(tag));
+        return put(values != null ? ValueElement.createUL(tag, StringUtils
+                .parseInts(values, 0L, 0xFFFFFFFFL)) : ValueElement
+                .createUL(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUN(int tag) {
         return put(ValueElement.createUN(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUN(int tag, byte[] value) {
-        return put(
-            value != null
-                ? ValueElement.createUN(tag, value)
+        return put(value != null ? ValueElement.createUN(tag, value)
                 : ValueElement.createUN(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUN(int tag, ByteBuffer value) {
-        return put(
-            value != null
-                ? ValueElement.createUN(tag, value)
+        return put(value != null ? ValueElement.createUN(tag, value)
                 : ValueElement.createUN(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUNsq(int tag) {
         return put(FragmentElement.createUN(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUS(int tag) {
         return put(ValueElement.createUS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUS(int tag, int value) {
         return put(ValueElement.createUS(tag, value));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUS(int tag, int[] values) {
-        return put(
-            values != null
-                ? ValueElement.createUS(tag, values)
+        return put(values != null ? ValueElement.createUS(tag, values)
                 : ValueElement.createUS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUS(int tag, String value) {
-        return put(
-            value != null && value.length() != 0
-                ? ValueElement.createUS(
-                    tag,
-                    StringUtils.parseInt(value, 0L, 0xFFFFL))
+        return put(value != null && value.length() != 0 ? ValueElement
+                .createUS(tag, StringUtils.parseInt(value, 0L, 0xFFFFL))
                 : ValueElement.createUS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUS(int tag, String[] values) {
-        return put(
-            values != null
-                ? ValueElement.createUS(
-                    tag,
-                    StringUtils.parseInts(values, 0L, 0xFFFFL))
-                : ValueElement.createUS(tag));
+        return put(values != null ? ValueElement.createUS(tag, StringUtils
+                .parseInts(values, 0L, 0xFFFFL)) : ValueElement.createUS(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUT(int tag) {
         return put(StringElement.createUT(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUT(int tag, String value) {
-        return put(
-            value != null
-                ? StringElement.createUT(tag, value, getSpecificCharacterSet())
-                : StringElement.createUT(tag));
+        return put(value != null ? StringElement.createUT(tag, value,
+                getSpecificCharacterSet()) : StringElement.createUT(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putUT(int tag, String[] values) {
-        return put(
-            values != null
-                ? StringElement.createUT(tag, values, getSpecificCharacterSet())
-                : StringElement.createUT(tag));
+        return put(values != null ? StringElement.createUT(tag, values,
+                getSpecificCharacterSet()) : StringElement.createUT(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putXX(int tag) {
         return putXX(tag, VRMap.DEFAULT.lookup(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  bytes  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param bytes
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putXX(int tag, ByteBuffer bytes) {
         return putXX(tag, VRMap.DEFAULT.lookup(tag), bytes);
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putXX(int tag, String value) {
         return putXX(tag, VRMap.DEFAULT.lookup(tag), value);
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putXX(int tag, String[] values) {
         return putXX(tag, VRMap.DEFAULT.lookup(tag), values);
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putXXsq(int tag) {
         return putXXsq(tag, VRMap.DEFAULT.lookup(tag));
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @param  vr   Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param vr
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putXXsq(int tag, int vr) {
         switch (vr) {
-            case VRs.OB :
-                return putOBsq(tag);
-            case VRs.OF :
-                return putOFsq(tag);
-            case VRs.OW :
-                return putOWsq(tag);
-            case VRs.UN :
-                return putUNsq(tag);
-            default :
-                throw new IllegalArgumentException(
-                    Tags.toString(tag) + " " + VRs.toString(vr));
+        case VRs.OB:
+            return putOBsq(tag);
+        case VRs.OF:
+            return putOFsq(tag);
+        case VRs.OW:
+            return putOWsq(tag);
+        case VRs.UN:
+            return putUNsq(tag);
+        default:
+            throw new IllegalArgumentException(Tags.toString(tag) + " "
+                    + VRs.toString(vr));
         }
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag  Description of the Parameter
-     * @param  vr   Description of the Parameter
-     * @return      Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param vr
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putXX(int tag, int vr) {
         switch (vr) {
-            case VRs.AE :
-                return putAE(tag);
-            case VRs.AS :
-                return putAS(tag);
-            case VRs.AT :
-                return putAT(tag);
-            case VRs.CS :
-                return putCS(tag);
-            case VRs.DA :
-                return putDA(tag);
-            case VRs.DS :
-                return putDS(tag);
-            case VRs.DT :
-                return putDT(tag);
-            case VRs.FL :
-                return putFL(tag);
-            case VRs.FD :
-                return putFD(tag);
-            case VRs.IS :
-                return putIS(tag);
-            case VRs.LO :
-                return putLO(tag);
-            case VRs.LT :
-                return putLT(tag);
-            case VRs.OB :
-                return putOB(tag);
-            case VRs.OF :
-                return putOF(tag);
-            case VRs.OW :
-                return putOW(tag);
-            case VRs.PN :
-                return putPN(tag);
-            case VRs.SH :
-                return putSH(tag);
-            case VRs.SL :
-                return putSL(tag);
-            case VRs.SQ :
-                return ((Dataset) this).putSQ(tag);
-            case VRs.SS :
-                return putSS(tag);
-            case VRs.ST :
-                return putST(tag);
-            case VRs.TM :
-                return putTM(tag);
-            case VRs.UI :
-                return putUI(tag);
-            case VRs.UN :
-                return putUN(tag);
-            case VRs.UL :
-                return putUL(tag);
-            case VRs.US :
-                return putUS(tag);
-            case VRs.UT :
-                return putUT(tag);
-            default :
-                log.warn(Tags.toString(tag) + " with illegal VR Code: "
-                        + Integer.toHexString(vr) + "H");
-                return putXX(tag, VRMap.DEFAULT.lookup(tag));
+        case VRs.AE:
+            return putAE(tag);
+        case VRs.AS:
+            return putAS(tag);
+        case VRs.AT:
+            return putAT(tag);
+        case VRs.CS:
+            return putCS(tag);
+        case VRs.DA:
+            return putDA(tag);
+        case VRs.DS:
+            return putDS(tag);
+        case VRs.DT:
+            return putDT(tag);
+        case VRs.FL:
+            return putFL(tag);
+        case VRs.FD:
+            return putFD(tag);
+        case VRs.IS:
+            return putIS(tag);
+        case VRs.LO:
+            return putLO(tag);
+        case VRs.LT:
+            return putLT(tag);
+        case VRs.OB:
+            return putOB(tag);
+        case VRs.OF:
+            return putOF(tag);
+        case VRs.OW:
+            return putOW(tag);
+        case VRs.PN:
+            return putPN(tag);
+        case VRs.SH:
+            return putSH(tag);
+        case VRs.SL:
+            return putSL(tag);
+        case VRs.SQ:
+            return ((Dataset) this).putSQ(tag);
+        case VRs.SS:
+            return putSS(tag);
+        case VRs.ST:
+            return putST(tag);
+        case VRs.TM:
+            return putTM(tag);
+        case VRs.UI:
+            return putUI(tag);
+        case VRs.UN:
+            return putUN(tag);
+        case VRs.UL:
+            return putUL(tag);
+        case VRs.US:
+            return putUS(tag);
+        case VRs.UT:
+            return putUT(tag);
+        default:
+            log.warn(Tags.toString(tag) + " with illegal VR Code: "
+                    + Integer.toHexString(vr) + "H");
+            return putXX(tag, VRMap.DEFAULT.lookup(tag));
         }
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  vr     Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param vr
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putXX(int tag, int vr, ByteBuffer value) {
         if (value == null) {
             return putXX(tag, vr);
         }
         switch (vr) {
-            case VRs.AE :
-                return put(StringElement.createAE(tag, value));
-            case VRs.AS :
-                return put(StringElement.createAS(tag, value));
-            case VRs.AT :
-                return put(ValueElement.createAT(tag, value));
-            case VRs.CS :
-                return put(StringElement.createCS(tag, value));
-            case VRs.DA :
-                return put(StringElement.createDA(tag, value));
-            case VRs.DS :
-                return put(StringElement.createDS(tag, value));
-            case VRs.DT :
-                return put(StringElement.createDT(tag, value));
-            case VRs.FL :
-                return put(ValueElement.createFL(tag, value));
-            case VRs.FD :
-                return put(ValueElement.createFD(tag, value));
-            case VRs.IS :
-                return put(StringElement.createIS(tag, value));
-            case VRs.LO :
-                return put(StringElement.createLO(tag, value));
-            case VRs.LT :
-                return put(StringElement.createLT(tag, value));
-            case VRs.OB :
-                return put(ValueElement.createOB(tag, value));
-            case VRs.OF :
-                return put(ValueElement.createOF(tag, value));
-            case VRs.OW :
-                return put(ValueElement.createOW(tag, value));
-            case VRs.PN :
-                return put(StringElement.createPN(tag, value));
-            case VRs.SH :
-                return put(StringElement.createSH(tag, value));
-            case VRs.SL :
-                return put(ValueElement.createSL(tag, value));
-            case VRs.SS :
-                return put(ValueElement.createSS(tag, value));
-            case VRs.ST :
-                return put(StringElement.createST(tag, value));
-            case VRs.TM :
-                return put(StringElement.createTM(tag, value));
-            case VRs.UI :
-                return put(StringElement.createUI(tag, value));
-            case VRs.UN :
-                return put(ValueElement.createUN(tag, value));
-            case VRs.UL :
-                return put(ValueElement.createUL(tag, value));
-            case VRs.US :
-                return put(ValueElement.createUS(tag, value));
-            case VRs.UT :
-                return put(StringElement.createUT(tag, value));
-            default :
-                log.warn(Tags.toString(tag) + " with illegal VR Code: "
-                        + Integer.toHexString(vr) + "H");
-                return putXX(tag, VRMap.DEFAULT.lookup(tag), value);
+        case VRs.AE:
+            return put(StringElement.createAE(tag, value));
+        case VRs.AS:
+            return put(StringElement.createAS(tag, value));
+        case VRs.AT:
+            return put(ValueElement.createAT(tag, value));
+        case VRs.CS:
+            return put(StringElement.createCS(tag, value));
+        case VRs.DA:
+            return put(StringElement.createDA(tag, value));
+        case VRs.DS:
+            return put(StringElement.createDS(tag, value));
+        case VRs.DT:
+            return put(StringElement.createDT(tag, value));
+        case VRs.FL:
+            return put(ValueElement.createFL(tag, value));
+        case VRs.FD:
+            return put(ValueElement.createFD(tag, value));
+        case VRs.IS:
+            return put(StringElement.createIS(tag, value));
+        case VRs.LO:
+            return put(StringElement.createLO(tag, value));
+        case VRs.LT:
+            return put(StringElement.createLT(tag, value));
+        case VRs.OB:
+            return put(ValueElement.createOB(tag, value));
+        case VRs.OF:
+            return put(ValueElement.createOF(tag, value));
+        case VRs.OW:
+            return put(ValueElement.createOW(tag, value));
+        case VRs.PN:
+            return put(StringElement.createPN(tag, value));
+        case VRs.SH:
+            return put(StringElement.createSH(tag, value));
+        case VRs.SL:
+            return put(ValueElement.createSL(tag, value));
+        case VRs.SS:
+            return put(ValueElement.createSS(tag, value));
+        case VRs.ST:
+            return put(StringElement.createST(tag, value));
+        case VRs.TM:
+            return put(StringElement.createTM(tag, value));
+        case VRs.UI:
+            return put(StringElement.createUI(tag, value));
+        case VRs.UN:
+            return put(ValueElement.createUN(tag, value));
+        case VRs.UL:
+            return put(ValueElement.createUL(tag, value));
+        case VRs.US:
+            return put(ValueElement.createUS(tag, value));
+        case VRs.UT:
+            return put(StringElement.createUT(tag, value));
+        default:
+            log.warn(Tags.toString(tag) + " with illegal VR Code: "
+                    + Integer.toHexString(vr) + "H");
+            return putXX(tag, VRMap.DEFAULT.lookup(tag), value);
         }
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag    Description of the Parameter
-     * @param  vr     Description of the Parameter
-     * @param  value  Description of the Parameter
-     * @return        Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param vr
+     *            Description of the Parameter
+     * @param value
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putXX(int tag, int vr, String value) {
         if (value == null) {
             return putXX(tag, vr);
         }
         switch (vr) {
-            case VRs.AE :
-                return putAE(tag, value);
-            case VRs.AS :
-                return putAS(tag, value);
-            case VRs.AT :
-                return putAT(tag, value);
-            case VRs.CS :
-                return putCS(tag, value);
-            case VRs.DA :
-                return putDA(tag, value);
-            case VRs.DS :
-                return putDS(tag, value);
-            case VRs.DT :
-                return putDT(tag, value);
-            case VRs.FL :
-                return putFL(tag, value);
-            case VRs.FD :
-                return putFD(tag, value);
-            case VRs.IS :
-                return putIS(tag, value);
-            case VRs.LO :
-                return putLO(tag, value);
-            case VRs.LT :
-                return putLT(tag, value);
-            case VRs.OB:
-            case VRs.OF:
-            case VRs.OW:
-                throw new IllegalArgumentException(
-                        Tags.toString(tag) + " " + VRs.toString(vr));
-            case VRs.PN :
-                return putPN(tag, value);
-            case VRs.SH :
-                return putSH(tag, value);
-            case VRs.SL :
-                return putSL(tag, value);
-            case VRs.SS :
-                return putSS(tag, value);
-            case VRs.ST :
-                return putST(tag, value);
-            case VRs.TM :
-                return putTM(tag, value);
-            case VRs.UI :
-                return putUI(tag, value);
-            case VRs.UN:
-                throw new IllegalArgumentException(
-                        Tags.toString(tag) + " " + VRs.toString(vr));
-            case VRs.UL :
-                return putUL(tag, value);
-            case VRs.US :
-                return putUS(tag, value);
-            case VRs.UT :
-                return putUT(tag, value);
-            default :
-                log.warn(Tags.toString(tag) + " with illegal VR Code: "
-                        + Integer.toHexString(vr) + "H");
-                return putXX(tag, VRMap.DEFAULT.lookup(tag), value);
+        case VRs.AE:
+            return putAE(tag, value);
+        case VRs.AS:
+            return putAS(tag, value);
+        case VRs.AT:
+            return putAT(tag, value);
+        case VRs.CS:
+            return putCS(tag, value);
+        case VRs.DA:
+            return putDA(tag, value);
+        case VRs.DS:
+            return putDS(tag, value);
+        case VRs.DT:
+            return putDT(tag, value);
+        case VRs.FL:
+            return putFL(tag, value);
+        case VRs.FD:
+            return putFD(tag, value);
+        case VRs.IS:
+            return putIS(tag, value);
+        case VRs.LO:
+            return putLO(tag, value);
+        case VRs.LT:
+            return putLT(tag, value);
+        case VRs.OB:
+        case VRs.OF:
+        case VRs.OW:
+            throw new IllegalArgumentException(Tags.toString(tag) + " "
+                    + VRs.toString(vr));
+        case VRs.PN:
+            return putPN(tag, value);
+        case VRs.SH:
+            return putSH(tag, value);
+        case VRs.SL:
+            return putSL(tag, value);
+        case VRs.SS:
+            return putSS(tag, value);
+        case VRs.ST:
+            return putST(tag, value);
+        case VRs.TM:
+            return putTM(tag, value);
+        case VRs.UI:
+            return putUI(tag, value);
+        case VRs.UN:
+            throw new IllegalArgumentException(Tags.toString(tag) + " "
+                    + VRs.toString(vr));
+        case VRs.UL:
+            return putUL(tag, value);
+        case VRs.US:
+            return putUS(tag, value);
+        case VRs.UT:
+            return putUT(tag, value);
+        default:
+            log.warn(Tags.toString(tag) + " with illegal VR Code: "
+                    + Integer.toHexString(vr) + "H");
+            return putXX(tag, VRMap.DEFAULT.lookup(tag), value);
         }
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  tag     Description of the Parameter
-     * @param  vr      Description of the Parameter
-     * @param  values  Description of the Parameter
-     * @return         Description of the Return Value
+     * Description of the Method
+     * 
+     * @param tag
+     *            Description of the Parameter
+     * @param vr
+     *            Description of the Parameter
+     * @param values
+     *            Description of the Parameter
+     * @return Description of the Return Value
      */
     public DcmElement putXX(int tag, int vr, String[] values) {
         if (values == null) {
             return putXX(tag, vr);
         }
         switch (vr) {
-            case VRs.AE :
-                return putAE(tag, values);
-            case VRs.AS :
-                return putAS(tag, values);
-            case VRs.AT :
-                return putAT(tag, values);
-            case VRs.CS :
-                return putCS(tag, values);
-            case VRs.DA :
-                return putDA(tag, values);
-            case VRs.DS :
-                return putDS(tag, values);
-            case VRs.DT :
-                return putDT(tag, values);
-            case VRs.FL :
-                return putFL(tag, values);
-            case VRs.FD :
-                return putFD(tag, values);
-            case VRs.IS :
-                return putIS(tag, values);
-            case VRs.LO :
-                return putLO(tag, values);
-            case VRs.LT :
-                return putLT(tag, values);
-            case VRs.OB:
-            case VRs.OF:
-            case VRs.OW:
-                throw new IllegalArgumentException(
-                        Tags.toString(tag) + " " + VRs.toString(vr));
-            case VRs.PN :
-                return putPN(tag, values);
-            case VRs.SH :
-                return putSH(tag, values);
-            case VRs.SL :
-                return putSL(tag, values);
-            case VRs.SS :
-                return putSS(tag, values);
-            case VRs.ST :
-                return putST(tag, values);
-            case VRs.TM :
-                return putTM(tag, values);
-            case VRs.UI :
-                return putUI(tag, values);
-            case VRs.UN:
-                throw new IllegalArgumentException(
-                        Tags.toString(tag) + " " + VRs.toString(vr));
-            case VRs.UL :
-                return putUL(tag, values);
-            case VRs.US :
-                return putUS(tag, values);
-            case VRs.UT :
-                return putUT(tag, values);
-            default :
-                log.warn(Tags.toString(tag) + " with illegal VR Code: "
-                        + Integer.toHexString(vr) + "H");
-                return putXX(tag, VRMap.DEFAULT.lookup(tag), values);
+        case VRs.AE:
+            return putAE(tag, values);
+        case VRs.AS:
+            return putAS(tag, values);
+        case VRs.AT:
+            return putAT(tag, values);
+        case VRs.CS:
+            return putCS(tag, values);
+        case VRs.DA:
+            return putDA(tag, values);
+        case VRs.DS:
+            return putDS(tag, values);
+        case VRs.DT:
+            return putDT(tag, values);
+        case VRs.FL:
+            return putFL(tag, values);
+        case VRs.FD:
+            return putFD(tag, values);
+        case VRs.IS:
+            return putIS(tag, values);
+        case VRs.LO:
+            return putLO(tag, values);
+        case VRs.LT:
+            return putLT(tag, values);
+        case VRs.OB:
+        case VRs.OF:
+        case VRs.OW:
+            throw new IllegalArgumentException(Tags.toString(tag) + " "
+                    + VRs.toString(vr));
+        case VRs.PN:
+            return putPN(tag, values);
+        case VRs.SH:
+            return putSH(tag, values);
+        case VRs.SL:
+            return putSL(tag, values);
+        case VRs.SS:
+            return putSS(tag, values);
+        case VRs.ST:
+            return putST(tag, values);
+        case VRs.TM:
+            return putTM(tag, values);
+        case VRs.UI:
+            return putUI(tag, values);
+        case VRs.UN:
+            throw new IllegalArgumentException(Tags.toString(tag) + " "
+                    + VRs.toString(vr));
+        case VRs.UL:
+            return putUL(tag, values);
+        case VRs.US:
+            return putUS(tag, values);
+        case VRs.UT:
+            return putUT(tag, values);
+        default:
+            log.warn(Tags.toString(tag) + " with illegal VR Code: "
+                    + Integer.toHexString(vr) + "H");
+            return putXX(tag, VRMap.DEFAULT.lookup(tag), values);
         }
     }
 
     /**
-     *  Description of the Method
-     *
-     * @return    Description of the Return Value
+     * Description of the Method
+     * 
+     * @return Description of the Return Value
      */
     public Iterator iterator() {
         return list.iterator();
@@ -2506,11 +2566,11 @@ abstract class DcmObjectImpl implements DcmObject {
     public int hashCode() {
         int h = 0;
         for (Iterator iter = iterator(); iter.hasNext();) {
-            h = 31*h + iter.next().hashCode();            
+            h = 31 * h + iter.next().hashCode();
         }
         return h;
     }
-    
+
     public boolean equals(Object o) {
         if (!(o instanceof DcmObject)) {
             return false;
@@ -2530,19 +2590,19 @@ abstract class DcmObjectImpl implements DcmObject {
             Object el2 = it2.next();
             if (!el1.equals(el2)) {
                 if (log.isDebugEnabled()) {
-                    log.debug("" + el2 + " of " + dcmobj2 
-                            + " differs from " + el1 + " of this " + this);
+                    log.debug("" + el2 + " of " + dcmobj2 + " differs from "
+                            + el1 + " of this " + this);
                 }
                 return false;
             }
-       }
+        }
         return !it2.hasNext();
     }
 
     public void putAll(DcmObject dcmObj) {
-    	putAll(dcmObj, REPLACE_ITEMS);
+        putAll(dcmObj, REPLACE_ITEMS);
     }
-    
+
     public void putAll(DcmObject dcmObj, int itemTreatment) {
         for (Iterator it = dcmObj.iterator(); it.hasNext();) {
             DcmElement el = (DcmElement) it.next();
@@ -2552,52 +2612,53 @@ abstract class DcmObjectImpl implements DcmObject {
                 DcmElement sq;
                 Dataset item;
                 switch (el.vr()) {
-                    case VRs.SQ :
-                    	sq = itemTreatment != REPLACE_ITEMS ? get(el.tag()) : null;
-                    	if (sq == null || sq.vr() != VRs.SQ)
-                    		sq = putSQ(el.tag());
+                case VRs.SQ:
+                    sq = itemTreatment != REPLACE_ITEMS ? get(el.tag()) : null;
+                    if (sq == null || sq.vr() != VRs.SQ)
+                        sq = putSQ(el.tag());
+                    for (int i = 0, n = el.countItems(); i < n; ++i) {
+                        item = itemTreatment == MERGE_ITEMS ? sq.getItem(i)
+                                : null;
+                        if (item == null)
+                            item = sq.addNewItem();
+                        item.putAll(el.getItem(i), itemTreatment);
+                    }
+                    break;
+                case VRs.OB:
+                case VRs.OF:
+                case VRs.OW:
+                case VRs.UN:
+                    if (el.hasDataFragments()) {
+                        sq = putXXsq(el.tag(), el.vr());
                         for (int i = 0, n = el.countItems(); i < n; ++i) {
-                        	item = itemTreatment == MERGE_ITEMS ? sq.getItem(i) : null;
-                        	if (item == null)
-                        		item = sq.addNewItem();
-                        	item.putAll(el.getItem(i), itemTreatment);
+                            sq.addDataFragment(el.getDataFragment(i));
                         }
                         break;
-                    case VRs.OB :
-                    case VRs.OF :
-                    case VRs.OW :
-                    case VRs.UN :
-                        if (el.hasDataFragments()) {
-                            sq = putXXsq(el.tag(), el.vr());
-                            for (int i = 0, n = el.countItems(); i < n; ++i) {
-                                sq.addDataFragment(el.getDataFragment(i));
-                            }
-                            break;
-                        }
-                    default :
-                        putXX(el.tag(), el.vr(), el.getByteBuffer());
-                        break;
+                    }
+                default:
+                    putXX(el.tag(), el.vr(), el.getByteBuffer());
+                    break;
                 }
             }
         }
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  grTag            Description of the Parameter
-     * @param  grLen            Description of the Parameter
-     * @param  handler          Description of the Parameter
-     * @exception  IOException  Description of the Exception
+     * Description of the Method
+     * 
+     * @param grTag
+     *            Description of the Parameter
+     * @param grLen
+     *            Description of the Parameter
+     * @param handler
+     *            Description of the Parameter
+     * @exception IOException
+     *                Description of the Exception
      */
     protected void write(int grTag, int grLen, DcmHandler handler)
-        throws IOException {
-        byte[] b4 =
-            {
-                (byte) grLen,
-                (byte) (grLen >>> 8),
-                (byte) (grLen >>> 16),
-                (byte) (grLen >>> 24)};
+            throws IOException {
+        byte[] b4 = { (byte) grLen, (byte) (grLen >>> 8),
+                (byte) (grLen >>> 16), (byte) (grLen >>> 24) };
         long el1Pos = ((DcmElement) list.get(0)).getStreamPosition();
         handler.startElement(grTag, VRs.UL, el1Pos == -1L ? -1L : el1Pos - 12);
         handler.value(b4, 0, 4);
@@ -2613,22 +2674,23 @@ abstract class DcmObjectImpl implements DcmObject {
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  out              Description of the Parameter
-     * @param  encParam         Description of the Parameter
-     * @param  tag              Description of the Parameter
-     * @param  vr               Description of the Parameter
-     * @param  len              Description of the Parameter
-     * @exception  IOException  Description of the Exception
+     * Description of the Method
+     * 
+     * @param out
+     *            Description of the Parameter
+     * @param encParam
+     *            Description of the Parameter
+     * @param tag
+     *            Description of the Parameter
+     * @param vr
+     *            Description of the Parameter
+     * @param len
+     *            Description of the Parameter
+     * @exception IOException
+     *                Description of the Exception
      */
-    public void writeHeader(
-        ImageOutputStream out,
-        DcmEncodeParam encParam,
-        int tag,
-        int vr,
-        int len)
-        throws IOException {
+    public void writeHeader(ImageOutputStream out, DcmEncodeParam encParam,
+            int tag, int vr, int len) throws IOException {
         if (encParam.byteOrder == ByteOrder.LITTLE_ENDIAN) {
             out.write(tag >> 16);
             out.write(tag >> 24);
@@ -2671,22 +2733,23 @@ abstract class DcmObjectImpl implements DcmObject {
     }
 
     /**
-     *  Description of the Method
-     *
-     * @param  out              Description of the Parameter
-     * @param  encParam         Description of the Parameter
-     * @param  tag              Description of the Parameter
-     * @param  vr               Description of the Parameter
-     * @param  len              Description of the Parameter
-     * @exception  IOException  Description of the Exception
+     * Description of the Method
+     * 
+     * @param out
+     *            Description of the Parameter
+     * @param encParam
+     *            Description of the Parameter
+     * @param tag
+     *            Description of the Parameter
+     * @param vr
+     *            Description of the Parameter
+     * @param len
+     *            Description of the Parameter
+     * @exception IOException
+     *                Description of the Exception
      */
-    public void writeHeader(
-        OutputStream out,
-        DcmEncodeParam encParam,
-        int tag,
-        int vr,
-        int len)
-        throws IOException {
+    public void writeHeader(OutputStream out, DcmEncodeParam encParam, int tag,
+            int vr, int len) throws IOException {
         if (encParam.byteOrder == ByteOrder.LITTLE_ENDIAN) {
             out.write(tag >> 16);
             out.write(tag >> 24);
