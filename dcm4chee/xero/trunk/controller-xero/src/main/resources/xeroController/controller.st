@@ -130,7 +130,7 @@ XeroController.prototype.updateView = function XC_action(actionName) {
 
 /** Performs a delayed update */
 XeroController.prototype.waitUpdate = function XC_waitUpdate(actionName, cnt) {
-	if( cnt===undefined ) cnt = 5;
+	if( cnt===undefined ) cnt = 7;
 	var missing = this.renderComplete([this.model.layout]);
 	if( missing===0 ) return 0;
 	if(cnt===0 || missing<0) {
@@ -142,7 +142,7 @@ XeroController.prototype.waitUpdate = function XC_waitUpdate(actionName, cnt) {
 	var usethis = this;
 	window.setTimeout( function() {
 		usethis.waitUpdate(actionName,cnt-1);
-	}, 150);
+	}, 200);
 };
 
 /** Renders all components that have relayout set and are complete.  Returns a count of required items. */
