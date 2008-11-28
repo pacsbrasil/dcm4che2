@@ -323,6 +323,8 @@ public class DatasetTest extends TestCase {
     private final static String[] TEXT_VALUE = {
             "Text Value"
             };
+    private static final String UMLAUT = "\u00dcml\u00e4ut";
+    private static final String[] UMLAUTS = { UMLAUT, UMLAUT, UMLAUT };
 
 
     /**
@@ -562,5 +564,25 @@ public class DatasetTest extends TestCase {
         }
     }
 
+    public void testTranscodeStringValues() throws Exception {
+        ds.putCS(Tags.SpecificCharacterSet, "ISO_IR 100");
+        ds.putPN(Tags.PatientName, UMLAUT);
+        ds.putPN(Tags.OtherPatientNames, UMLAUTS);
+        ds.putSQ(Tags.VerifyingObserverSeq).addNewItem()
+                .putPN(Tags.VerifyingObserverName, UMLAUT);
+        Dataset ds2 = DcmObjectFactory.getInstance().newDataset();
+        ds2.putCS(Tags.SpecificCharacterSet, "ISO_IR 192");
+        ds2.putAll(ds);
+        assertEquals(UMLAUT, ds2.getString(Tags.PatientName));
+        assertEquals(UMLAUTS, ds2.getStrings(Tags.OtherPatientNames));
+        assertEquals(UMLAUT, ds2.get(Tags.VerifyingObserverSeq).getItem()
+                .getString(Tags.VerifyingObserverName));
+        ds.putAll(ds2);
+        assertEquals(UMLAUT, ds.getString(Tags.PatientName));
+        assertEquals(UMLAUTS, ds.getStrings(Tags.OtherPatientNames));
+        assertEquals(UMLAUT, ds.get(Tags.VerifyingObserverSeq).getItem()
+                .getString(Tags.VerifyingObserverName));
+    }
 }
+
 

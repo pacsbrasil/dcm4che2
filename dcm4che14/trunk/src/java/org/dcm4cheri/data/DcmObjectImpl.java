@@ -2604,8 +2604,22 @@ abstract class DcmObjectImpl implements DcmObject {
     }
 
     public void putAll(DcmObject dcmObj, int itemTreatment) {
+        SpecificCharacterSet dstCharSet = getSpecificCharacterSet();
+        SpecificCharacterSet srcCharSet = dcmObj.getSpecificCharacterSet();
+        boolean skipSpecificCharacterSet = (this instanceof Dataset) &&
+                (!isEmpty() || ((Dataset) this).getParent() != null);
+        boolean transcodeStringValues = skipSpecificCharacterSet
+                && (dstCharSet != null 
+                        ? !dstCharSet.contains(srcCharSet)
+                        : srcCharSet != null && !srcCharSet.isAscii());
+        ByteBuffer value;
+        String strval;
         for (Iterator it = dcmObj.iterator(); it.hasNext();) {
             DcmElement el = (DcmElement) it.next();
+            if (skipSpecificCharacterSet
+                    && el.tag() == Tags.SpecificCharacterSet) {
+                continue;
+            }
             if (el.isEmpty()) {
                 putXX(el.tag(), el.vr());
             } else {
@@ -2636,11 +2650,31 @@ abstract class DcmObjectImpl implements DcmObject {
                         break;
                     }
                 default:
-                    putXX(el.tag(), el.vr(), el.getByteBuffer());
+                    value = el.getByteBuffer();
+                    if (transcodeStringValues) {
+                        switch (el.vr()) {
+                        case VRs.LO:
+                        case VRs.LT:
+                        case VRs.PN:
+                        case VRs.SH:
+                        case VRs.ST:
+                        case VRs.UT:
+                            value = transcodeString(value, srcCharSet, dstCharSet);
+                        }
+                    }
+                    putXX(el.tag(), el.vr(), value);
                     break;
                 }
             }
         }
+    }
+
+    private ByteBuffer transcodeString(ByteBuffer value,
+            SpecificCharacterSet srcCharSet, SpecificCharacterSet dstCharSet) {
+        byte[] b = value.array();
+        String s = srcCharSet == null ? new String(b) : srcCharSet.decode(b);
+        return ByteBuffer.wrap(dstCharSet == null ? s.getBytes()
+                : dstCharSet.encode(s));
     }
 
     /**

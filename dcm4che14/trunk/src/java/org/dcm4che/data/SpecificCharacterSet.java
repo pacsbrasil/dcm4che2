@@ -83,6 +83,15 @@ public class SpecificCharacterSet {
         this.charset = charset;
     }
 
+    public boolean isAscii() {
+        return charset.equals("US-ASCII");
+    }
+
+    public boolean contains(SpecificCharacterSet other) {
+        return other == null || other.isAscii() ||
+                charset.equals(other.charset);
+    }
+
     public static SpecificCharacterSet valueOf(String[] codes) {
         if (codes == null || codes.length == 0)
             return null;
