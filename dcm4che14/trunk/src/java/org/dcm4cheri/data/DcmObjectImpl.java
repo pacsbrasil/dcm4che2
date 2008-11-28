@@ -2613,7 +2613,6 @@ abstract class DcmObjectImpl implements DcmObject {
                         ? !dstCharSet.contains(srcCharSet)
                         : srcCharSet != null && !srcCharSet.isAscii());
         ByteBuffer value;
-        String strval;
         for (Iterator it = dcmObj.iterator(); it.hasNext();) {
             DcmElement el = (DcmElement) it.next();
             if (skipSpecificCharacterSet
