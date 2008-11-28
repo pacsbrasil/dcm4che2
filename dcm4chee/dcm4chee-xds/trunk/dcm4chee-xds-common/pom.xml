@@ -45,13 +45,13 @@
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-jmx</artifactId>
-      <version>4.0.2</version>
+      <version>4.2.3.GA</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-j2ee</artifactId>
-      <version>4.2.2.GA</version>
+      <version>4.2.3.GA</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -69,7 +69,7 @@
     <dependency>
     	<groupId>jboss</groupId>
     	<artifactId>jboss-common</artifactId>
-    	<version>4.2.2.GA</version>
+    	<version>4.2.3.GA</version>
     	<scope>provided</scope>
     </dependency>  	
   </dependencies>  
