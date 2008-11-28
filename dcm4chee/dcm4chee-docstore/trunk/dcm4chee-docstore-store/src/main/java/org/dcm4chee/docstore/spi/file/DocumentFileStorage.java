@@ -164,6 +164,7 @@ public class DocumentFileStorage extends BaseDocumetStorage {
     }
 
     public BaseDocument retrieveDocument(String docUid, String mime) throws IOException {
+        log.debug("RetrieveDocument docUid:"+docUid+" mime:"+mime);
         File docPath = getDocumentPath(docUid);
         BaseDocument doc = null;
         String[] m = new String[]{mime};

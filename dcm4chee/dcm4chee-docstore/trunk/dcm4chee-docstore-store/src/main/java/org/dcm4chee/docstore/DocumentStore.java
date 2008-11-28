@@ -76,6 +76,13 @@ public class DocumentStore {
             retrieveDocStorages.addAll(domainStores);
 
     }
+    
+    public static void setDocumentStorageRegistry( DocumentStorageRegistry r ) {
+        if ( registry != null ) {
+            throw new IllegalStateException("DocumentStore already initialized with DocumentStorageRegistry!");
+        }
+        registry = r;
+    }
 
     /**
      * Create a named DocumentStore instance for a storage domain.
