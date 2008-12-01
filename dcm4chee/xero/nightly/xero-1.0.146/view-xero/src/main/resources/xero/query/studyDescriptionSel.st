@@ -1,0 +1,1 @@
+$if(rowTop.manyStudy)$<input type="checkbox" $if(row.isSelected)$checked="checked"$endif$ onclick="controller.manyStudy('$layout.id$','$rowTop.PatientIdentifier$','$row.studyUID$')"/>$endif$<a class="jslink" onclick="controller.displayStudy('$layout.id$','$rowTop.PatientIdentifier$','$row.studyUID$')">$row.(var);format="xml"$</a>
