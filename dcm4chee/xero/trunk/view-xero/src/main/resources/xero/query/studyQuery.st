@@ -47,6 +47,8 @@
 	<option value="SR">$i18n.SR$</option>
 	<option value="OT">$i18n.OT$</option>
 	<option value="PR">$i18n.PR$</option>
+	<option value="AU">$i18n.AU$</option>
+	<option value="ECG">$i18n.ECG$</option>
   </select></td>
 </tr>
 
