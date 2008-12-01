@@ -285,7 +285,7 @@ XeroController.prototype.navImg = function XC_navImg(id,dir) {
 		dir = Math.floor(dir);
 		var dirImg = navigate.lookupId(dir);
 	};
-	if( !dirImg ) {
+	if( dirImg==null ) {
 		console.warn("Didn't find a next/previous series to navigate to dir",dir,dirImg);
 		return;
 	}
