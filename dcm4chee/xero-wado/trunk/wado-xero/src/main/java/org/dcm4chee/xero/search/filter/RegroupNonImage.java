@@ -48,10 +48,10 @@ public class RegroupNonImage implements Filter<ResultsBean> {
    public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
 	  ResultsBean rb = (ResultsBean) filterItem.callNextFilter(params);
 	  if (rb == null || !params.containsKey("regroup")) {
-		 log.info("Not regrouping SR,KO,PR.");
+		 log.info("Not regrouping SR,KO,PR,AU,ECG.");
 		 return rb;
 	  }
-	  log.info("Regrouping SR,KO,PR.");
+	  log.info("Regrouping SR,KO,PR,AU,ECG.");
 
 	  List<SeriesBean> addedSeries = new ArrayList<SeriesBean>(2);
 	  /** Map the type to the series bean that includes it */
@@ -66,7 +66,8 @@ public class RegroupNonImage implements Filter<ResultsBean> {
 			   // Handle encapsulated documents that aren't SR or KO and convert them to SR
 			   if( se.getDicomObject().size()>0 && (se.getDicomObject().get(0) instanceof ReportType) 
 					   && modality.equals("KO")==false) modality="SR"; 
-			   if (("PR".equals(modality) || "SR".equals(modality) || "KO".equals(modality))
+			   if (("PR".equals(modality) || "SR".equals(modality) || "KO".equals(modality)
+			         || "AU".equals(modality) || "ECG".equals(modality))
 					 && !se.getSeriesUID().startsWith(modality)) {
 				  SeriesBean ser = addSeries(sb, modality, (SeriesBean) se);
 				  if (ser != null)

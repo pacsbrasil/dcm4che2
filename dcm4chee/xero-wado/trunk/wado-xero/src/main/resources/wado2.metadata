@@ -208,6 +208,8 @@ WADO=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 WADO.choose=${class:org.dcm4chee.xero.wado.ChooseContentTypeFilter}
 WADO.choose.priority=100
 
+WADO.audio/wave=${class:org.dcm4chee.xero.wado.EncodeAudio}
+WADO.audio/wave.priority=60
 WADO.encapsulated=${class:org.dcm4chee.xero.wado.EncapsulatedFilter}
 WADO.encapsulated.priority=50
 WADO.image=${class:org.dcm4chee.xero.wado.EncodeImage}

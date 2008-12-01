@@ -81,7 +81,10 @@ public class ChooseContentTypeFilter implements Filter<ServletResponseItem> {
 			log.info("Couldn't find modality for object, not returning any result.");
 			return null;
 		 }
-		 if( modality.equalsIgnoreCase("SR") || modality.equalsIgnoreCase("KO") 
+		 if( modality.equalsIgnoreCase("AU") ) {
+		    contentType="audio/wave";
+		 }
+		 else if( modality.equalsIgnoreCase("SR") || modality.equalsIgnoreCase("KO") 
 			   || modality.equalsIgnoreCase("ECG") ) {
 			contentType = "text/html";
 		 }

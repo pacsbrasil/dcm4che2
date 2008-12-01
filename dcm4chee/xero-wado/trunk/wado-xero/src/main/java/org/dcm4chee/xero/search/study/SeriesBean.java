@@ -155,11 +155,9 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
    /** Create different types of children based on the modality of the series */
    protected DicomObjectType createChildByModality(DicomObject data) {
 	  String sopClass = data.getString(Tag.SOPClassUID);
-	  if( modality.equals("ECG") ) {
-		 log.warn("Unsupported modality "+modality);
-		 return null;
-	  }
-	  if (modality.equals("SR") || UID.EncapsulatedPDFStorage.equals(sopClass)) {
+	  if (modality.equals("SR") || UID.EncapsulatedPDFStorage.equals(sopClass)
+	        || modality.equals("ECG") || modality.equals("AU")) {
+	     // TODO - create a real audio and ECG record type.
 		 return new ReportBean(data);
 	  }
 	  if (modality.equals("KO")) {

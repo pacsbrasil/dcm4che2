@@ -108,7 +108,7 @@ public class DicomFileLocationFilter implements Filter<URL> {
          }
          ret.append("&").append(key).append("=").append(strValue);
       }
-      if( type.equals(XERO_WADO_TYPE) ) ret.append("&useOrig=true");
+      if( type==null || type.equals(XERO_WADO_TYPE) ) ret.append("&useOrig=true");
       return ret.toString();
    }
 
