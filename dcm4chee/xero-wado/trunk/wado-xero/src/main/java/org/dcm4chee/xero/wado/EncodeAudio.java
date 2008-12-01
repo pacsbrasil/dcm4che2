@@ -6,6 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,17 +33,13 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class EncodeAudio implements Filter<ServletResponseItem> {
-   private static final Logger log = LoggerFactory.getLogger(EncodeAudio.class);
+   //private static final Logger log = LoggerFactory.getLogger(EncodeAudio.class);
 
    /** Encodes the raw dicom object as XML */
    public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
       DicomObject ds = dicomFullHeader.filter(null, params);
-      if (ds == null || !"AU".equals(ds.getString(Tag.Modality)))
+      if (ds == null || !ds.contains(Tag.WaveformSequence))
          return filterItem.callNextFilter(params);
-      if (!ds.contains(Tag.WaveformSequence)) {
-         log.warn("Unable to get waveform data.");
-         return filterItem.callNextFilter(params);
-      }
       return new AudioServletResponseItem(ds, FilterUtil.getString(params, "contentType"));
    }
 
@@ -65,6 +62,25 @@ class AudioServletResponseItem implements ServletResponseItem {
    private static final Logger log = LoggerFactory.getLogger(AudioServletResponseItem.class);
    DicomObject ds;
    String encoding;
+   
+   static Map<String,AudioFormat.Encoding> ENCODINGS = new HashMap<String,AudioFormat.Encoding>();
+   static {
+      ENCODINGS.put("UB", AudioFormat.Encoding.PCM_UNSIGNED);
+      ENCODINGS.put("US", AudioFormat.Encoding.PCM_UNSIGNED);
+      ENCODINGS.put("SB", AudioFormat.Encoding.PCM_SIGNED);
+      ENCODINGS.put("SS", AudioFormat.Encoding.PCM_SIGNED);
+      ENCODINGS.put("MB", AudioFormat.Encoding.ULAW);
+      ENCODINGS.put("AB", AudioFormat.Encoding.ALAW);
+   };
+   
+   static HashMap<String, AudioFileFormat.Type> CONTENT_TYPES = new HashMap<String,AudioFileFormat.Type>();
+   static {
+      CONTENT_TYPES.put("audio/wav", AudioFileFormat.Type.WAVE);
+      CONTENT_TYPES.put("audio/snd", AudioFileFormat.Type.SND);
+      CONTENT_TYPES.put("audio/basic", AudioFileFormat.Type.AU);
+      CONTENT_TYPES.put("audio/x-aiff", AudioFileFormat.Type.AIFF);
+      CONTENT_TYPES.put("audio/x-aifc", AudioFileFormat.Type.AIFC);
+   }
 
    /** Get the audio information from the object and return it */
    public AudioServletResponseItem(DicomObject ds, String encoding) {
@@ -79,16 +95,25 @@ class AudioServletResponseItem implements ServletResponseItem {
    public void writeResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
       DicomObject waveDs = ds.getNestedDicomObject(Tag.WaveformSequence);
       float rate = waveDs.getFloat(Tag.SamplingFrequency);
-      int size = waveDs.getInt(Tag.NumberOfWaveformSamples);
+      AudioFormat.Encoding interpretation = ENCODINGS.get(waveDs.getString(Tag.WaveformSampleInterpretation));
+      int bits = waveDs.getInt(Tag.WaveformBitsStored,8);
       byte[] data = waveDs.getBytes(Tag.WaveformData);
-      log.info("Writing approximately {} bytes of audio data - as WAVE", size);
-      AudioFormat af = new AudioFormat(AudioFormat.Encoding.PCM_UNSIGNED, rate, 8, 1, 1, 1 /rate, false);
+      int size = data.length;
+      
+      AudioFormat af = new AudioFormat(interpretation, rate, bits, 1, 1, 1 /rate, false);
       InputStream is = new ByteArrayInputStream(data);
       AudioInputStream stream = new AudioInputStream(is, af, size);
+      AudioFileFormat.Type type = CONTENT_TYPES.get(encoding);
+      if( type==null ) {
+         log.info("Content type {} not found - using audio/wav", encoding);
+         encoding = "audio/wav";
+         type = AudioFileFormat.Type.WAVE;
+      }
+      log.info("Encoding response as {}", encoding);
       response.setContentType("audio/wav");
-      response.setHeader(CONTENT_DISPOSITION, "inline;filename="+ds.getString(Tag.SOPInstanceUID)+".wav");
+      response.setHeader(CONTENT_DISPOSITION, "inline;filename="+ds.getString(Tag.SOPInstanceUID)+"."+type.getExtension());
       OutputStream os = response.getOutputStream();
-      AudioSystem.write(stream, AudioFileFormat.Type.WAVE, os);
+      AudioSystem.write(stream, type, os);
       os.close();
    }
 
