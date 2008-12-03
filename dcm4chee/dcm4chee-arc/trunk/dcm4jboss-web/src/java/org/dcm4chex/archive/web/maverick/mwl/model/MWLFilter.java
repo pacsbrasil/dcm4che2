@@ -145,6 +145,7 @@ public class MWLFilter extends ModalityBaseFilterModel {
 //Patient/Visit Identification
         ds.putPN( Tags.PatientName );
         ds.putLO( Tags.PatientID);
+        ds.putLO( Tags.IssuerOfPatientID);
         ds.putLO( Tags.AdmissionID );
 //Visit Status
         ds.putLO(Tags.CurrentPatientLocation);
