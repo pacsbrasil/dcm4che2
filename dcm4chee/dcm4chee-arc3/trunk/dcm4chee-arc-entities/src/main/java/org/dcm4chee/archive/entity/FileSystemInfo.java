@@ -139,7 +139,7 @@ public class FileSystemInfo implements Serializable {
                 + (nextFileSystem != null 
                         ? ", next=FileSystem[pk=" + nextFileSystem.pk
                             + ", dir=" + nextFileSystem.directoryPath
-                        + nextFileSystem.getPk() : "") + "]";
+                        : "") + "]";
     }
 
 }
