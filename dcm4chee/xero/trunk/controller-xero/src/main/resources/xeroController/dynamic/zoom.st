@@ -143,19 +143,16 @@ PanController.prototype.prepare= function(e) {
 	this.prepareBase(e);
 	
 	this.gtr = document.getElementById("tr"+this.lay.id);
-	if(this.gtr) {
-		console.info("Found an SVG g transform object", this.gtr.id);
-		this.baseTransform = this.gtr.attributes.getNamedItem("transform").value;
-		console.info("Found base transform", this.baseTransform);
-		var ctm = this.gtr.parentNode.getScreenCTM();
-		// This object only has scale factors, not rotation.
-		this.scaleX = 1/ctm.a;
-		this.scaleY = 1/ctm.d;
-		console.info("Scale x,y=",this.scaleX, this.scaleY);
-		return true;
-	}
+	if(this.gtr) return this.prepareSvg();
 	this.vml = document.getElementById("vml"+this.lay.id);
-	if( this.vml ) {
+	if( this.vml ) return this.prepareVml();
+	console.warn("Can't find any object to pan?");
+	return false;
+}; 
+
+
+/** Compute the scale for VML (IE) */
+PanController.prototype.prepareVml = function() {
 		console.info("Found a VML element",this.vml.id,"to zoom/pan");
 		console.info("Left,Top is", this.vml.style.left,this.vml.style.top);
 		var width = this.vml.parentNode.offsetWidth;
@@ -176,10 +173,20 @@ PanController.prototype.prepare= function(e) {
 		this.vml.style.left = this.baseX+"px";
 		this.vml.style.top = this.baseY+"px";
 		return true;
-	}
-	console.warn("Can't find any object to pan?");
-	return false;
-}; 
+};
+
+/** Computes the scale translation for an SVG pan */
+PanController.prototype.prepareSvg = function() {
+		console.info("Found an SVG g transform object", this.gtr.id);
+		this.baseTransform = this.gtr.attributes.getNamedItem("transform").value;
+		console.info("Found base transform", this.baseTransform);
+		var ctm = this.gtr.parentNode.getScreenCTM();
+		// This object only has scale factors, not rotation.
+		this.scaleX = 1/ctm.a;
+		this.scaleY = 1/ctm.d;
+		console.info("Scale x,y=",this.scaleX, this.scaleY);
+		return true;
+};
 
 /** Start active panning */
 PanController.prototype.start = function(e) {
@@ -201,29 +208,37 @@ PanController.prototype.convertToBase = function(val,length, scale) {
 /** Handle the pan movement - update the transform for SVG, and the style for VML */
 PanController.prototype.mousemove = function(e) {
 	var posn = docCoords(e);
-	if( this.gtr ) {
-		this.dx = Math.floor((posn[0]-this.startPosn[0])*this.scaleX);
-		this.dy = Math.floor((posn[1]-this.startPosn[1])*this.scaleY);
-		var transform = "translate("+this.dx+","+this.dy+") "+this.baseTransform;
-		if( this.transform==transform ) return;
-		this.e = e;
-		this.transform = transform;
-		//console.info("Pan delta",this.dx,",",this.dy,"transform",this.transform);
-		this.gtr.attributes.getNamedItem("transform").value = this.transform;
-		return;
-	}
-	if( this.vml ) {
-		var dx = posn[0]-this.startPosn[0] ;
-		var dy = posn[1]-this.startPosn[1] ;
-		this.dx = dx;
-		this.dy = dy;
-		dx = dx*this.scaleX+this.baseX;
-		dy = dy*this.scaleY+this.baseY;
-		//console.info("dx,dy=",dx,",",dy);
-		this.vml.style.left = dx+"px";
-		this.vml.style.top = dy+"px";
-		return;
-	}
+	if( this.gtr ) this.mousemoveSvg(e,posn);
+	else if( this.vml ) this.mousemoveVml(e,posn);
+};
+
+/** Compute the amount the mouse has moved since the start, and apply it the the 
+ * VML style left/top position.
+ */
+PanController.prototype.mousemoveVml = function(e,posn) {
+	var dx = posn[0]-this.startPosn[0] ;
+	var dy = posn[1]-this.startPosn[1] ;
+	this.dx = dx;
+	this.dy = dy;
+	dx = dx*this.scaleX+this.baseX;
+	dy = dy*this.scaleY+this.baseY;
+	//console.info("dx,dy=",dx,",",dy);
+	this.vml.style.left = dx+"px";
+	this.vml.style.top = dy+"px";
+};
+
+/** Compute the amount the mouse has moved since the start, and apply it to the
+ * SVG transform value.
+ */
+PanController.prototype.mousemoveSvg = function(e,posn) {
+	this.dx = Math.floor((posn[0]-this.startPosn[0])*this.scaleX);
+	this.dy = Math.floor((posn[1]-this.startPosn[1])*this.scaleY);
+	var transform = "translate("+this.dx+","+this.dy+") "+this.baseTransform;
+	if( this.transform==transform ) return;
+	this.e = e;
+	this.transform = transform;
+	//console.info("Pan delta",this.dx,",",this.dy,"transform",this.transform);
+	this.gtr.attributes.getNamedItem("transform").value = this.transform;
 };
 
 
@@ -235,7 +250,9 @@ PanController.prototype.sumPoint = function(p1,dx,dy) {
 	return [p1[0]+dx,p1[1]+dy];
 };
 
-/** Handle the end of the pan movement - compute the topLeft, bottomRight and rerender */
+/** Handle the end of the pan movement - compute the topLeft, bottomRight based on the
+ * dx,dy coordinates as set in the mousemove functions, and then rerender.  THis should
+ * result in the image  */
 PanController.prototype.end = function(e) {
 	console.info("Final dx,dy=",this.dx,",",this.dy);
 	var tl = this.lay.navigate.merged.get("topLeft");
