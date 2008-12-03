@@ -121,17 +121,22 @@ public class PatientBean extends PatientType implements Patient,
 		getStudy().addAll(patient.getStudy());
 	}
 
-	/** Excludes a zero at the end of the string from being included. */
-	public static String excludeZeroEnd(String str) {
+	/** Excludes a zero at the end of the string from being included. Empty
+	 * strings become nulls, and some characters (0 and 0x1b) are removed/spaced out
+	 */
+	public static String sanitizeString(String str) {
 		if (str == null)
 			return null;
-		if (str.length() == 0)
-			return null;
+        if (str.length() == 0)
+           return null;
 		if (str.charAt(str.length() - 1) == 0) {
 		    int posn = str.indexOf(0);
 		    assert posn>=0;
 			return str.substring(0, posn);
 		}
+        if (str.indexOf(0x1B) >= 0) {
+           str = str.replace((char) 0x1B, ' ');
+        }
 		return str;
 	}
 
@@ -141,7 +146,7 @@ public class PatientBean extends PatientType implements Patient,
 		// For now, just use the ID as the patient identifier
 		// This maybe changed further up by patient linking etc.
 		setId(new PatientIdentifier(getPatientID()));
-		setPatientName(excludeZeroEnd(cmd.getString(Tag.PatientName)));
+		setPatientName(sanitizeString(cmd.getString(Tag.PatientName)));
 		String strSex = cmd.getString(Tag.PatientSex);
 		if (strSex != null) {
 			try {

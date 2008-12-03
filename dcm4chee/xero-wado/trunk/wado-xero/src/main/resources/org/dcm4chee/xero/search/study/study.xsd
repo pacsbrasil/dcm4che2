@@ -22,7 +22,31 @@
     
     <element name="series" type="tns:seriesType"/>
     
-    <element name="image" type="tns:imageType" />
+    <element name="image">
+       <annotation><appinfo>
+     	<jxb:class name="ImageType" />
+   	   </appinfo></annotation>
+       <complexType>
+    	<annotation>
+    		<documentation>
+    			Images are viewable image meta-data.  Can have arbitrary additional customized
+    			attributes.
+    			@param rows is the number of available pixels in the y dimension.
+    			@param columns is the number of avaialble pixels in the x dimension.
+    			@param frame is the frame number
+    			@param SpsUID is the softcopy presentation state UID.  This can be a GSPS object or a CSPS object  				
+    		</documentation>
+    	</annotation>
+    	<complexContent>
+	   		<extension base="tns:dicomObjectType">
+    			<attribute name="Rows" type="int" />
+    			<attribute name="Columns" type="int" />
+    			<attribute name="gspsUID" type="tns:UID" />
+    		</extension>
+    	</complexContent>
+       </complexType>
+   	</element>
+    
     
     <element name="gsps" type="tns:gspsType" />
     
@@ -180,24 +204,4 @@ Key objects are a named (by code meaning) list of images to display.
       </complexContent>
     </complexType>
     
-    <complexType name="imageType">
-    	<annotation>
-    		<documentation>
-    			Images are viewable image meta-data.  Can have arbitrary additional customized
-    			attributes.
-    			@param rows is the number of available pixels in the y dimension.
-    			@param columns is the number of avaialble pixels in the x dimension.
-    			@param frame is the frame number
-    			@param SpsUID is the softcopy presentation state UID.  This can be a GSPS object or a CSPS object  				
-    		</documentation>
-    	</annotation>
-    	<complexContent>
-	   		<extension base="tns:dicomObjectType">
-    			<attribute name="Rows" type="int" />
-    			<attribute name="Columns" type="int" />
-    			<attribute name="gspsUID" type="tns:UID" />
-    		</extension>
-    	</complexContent>
-    </complexType>
-
 </schema>

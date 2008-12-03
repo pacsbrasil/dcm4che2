@@ -126,7 +126,6 @@ instruction below. This is recommended if you are a beginner.
 
   <xsl:template match="@objectUID" mode="render">
   	 <a target="wadoTab"><xsl:attribute name="href">/wado2/wado?requestType=WADO<xsl:value-of select="concat('&amp;studyUID=',../../../@studyUID, '&amp;seriesUID=',../../@seriesUID,'&amp;objectUID=',.)" /><xsl:if test="count(/*/@ae)=1">&amp;ae=<xsl:value-of select="/*/@ae" /></xsl:if></xsl:attribute><xsl:call-template name="attrRender" /></a>
-  	 ae='<xsl:value-of select="/*/@ae" />'
   </xsl:template>
 
   <xsl:template match="@studyUID" mode="render">

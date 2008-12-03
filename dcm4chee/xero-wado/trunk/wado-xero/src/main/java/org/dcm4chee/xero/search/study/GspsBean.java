@@ -5,6 +5,8 @@ import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.dcm4chee.xero.search.study.PatientBean.sanitizeString;
+
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -35,7 +37,7 @@ public class GspsBean extends GspsType implements LocalModel<String> {
 	 */
 	protected void initAttributes(DicomObject dcmobj) {
 		setObjectUID(dcmobj.getString(Tag.SOPInstanceUID));
-		setContentLabel(sanitizeXmlString(dcmobj.getString(Tag.ContentLabel)));
+		setContentLabel(sanitizeString(dcmobj.getString(Tag.ContentLabel)));
 		Date date = null;
 		try {
 			date = dcmobj.getDate(Tag.PresentationCreationDate,
@@ -109,14 +111,6 @@ public class GspsBean extends GspsType implements LocalModel<String> {
 	/** The SOP Instance is the ID for a GSPS object */
 	public String getId() {
 		return getObjectUID();
-	}
-
-	/** This method replaces illegal charaters in a string with spaces. */
-	public static String sanitizeXmlString(String str) {
-		if (str.indexOf(0x1B) >= 0) {
-			str = str.replace((char) 0x1B, ' ');
-		}
-		return str;
 	}
 
 	/** Get the set of object uid's that this GSPS references */

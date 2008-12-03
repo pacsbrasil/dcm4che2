@@ -54,11 +54,12 @@ public class ImageSearch extends SeriesSearch
 	public static final int InstanceSeq =  0x00430040;
 
 	public static final int[] IMAGE_LEVEL_RETURN_KEYS = {
-		Tag.PatientID, Tag.PatientBirthDate, Tag.PatientSex,
+		Tag.PatientID, Tag.PatientName, Tag.PatientBirthDate, Tag.PatientSex,
         Tag.NumberOfPatientRelatedStudies,
         Tag.NumberOfPatientRelatedSeries,
         Tag.NumberOfPatientRelatedInstances,
         Tag.StudyDate,
+        Tag.StudyDescription,
         Tag.StudyTime,
         Tag.AccessionNumber,
         Tag.StudyID,

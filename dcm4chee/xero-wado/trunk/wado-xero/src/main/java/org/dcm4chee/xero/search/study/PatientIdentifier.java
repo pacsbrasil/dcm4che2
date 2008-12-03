@@ -39,25 +39,45 @@ package org.dcm4chee.xero.search.study;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** This class handles identification of patients */
 public class PatientIdentifier {
+   private static final Logger log = LoggerFactory.getLogger(PatientIdentifier.class);
 	String patientID;
 
 	/** Identify the patient via the patient ID */
 	public PatientIdentifier(DicomObject data) {
 		// Read the patient ID and use it as the only comparison for now.
 		this.patientID = data.getString(Tag.PatientID);
+		if (this.patientID == null) {
+			//could be null for anonymized study, hashCode() won't like
+			this.patientID = data.getString(Tag.OtherPatientIDs);
+			if( this.patientID == null ) {
+			   this.patientID = PatientBean.sanitizeString(data.getString(Tag.PatientName));
+			}
+			if( this.patientID==null ) this.patientID="";
+			log.warn("Unable to find a patient ID - probably an anonymized study, choose ID={} as an alternate ID", this.patientID);
+		}
+		// Add the domain to the identifier as a URL type identifier.
+		String idDomain = data.getString(Tag.IssuerOfPatientID);
+		if( idDomain!=null && idDomain.length()>0 ) this.patientID = idDomain+":"+this.patientID;
 	}
 	
 	/** Empty constructor for use by JAXB - not actually used anywhere */
 	public PatientIdentifier() { patientID=""; }
 
-	/** Create an identification for a patient. */
-	public PatientIdentifier(String patientID) {
-		this.patientID = patientID;
+	/** Create an identification for a patient, from a string identifier */
+	public PatientIdentifier(String patientIdentifier) {
+		this.patientID = patientIdentifier;
 	}
 
+    /** Create an identification for a patient from the issuer and the ID */
+    public PatientIdentifier(String issuer, String patientID) {
+        this.patientID = issuer+":"+patientID;
+    }
+    
 	@Override
 	public boolean equals(Object obj) {
 		return (obj instanceof PatientIdentifier) && patientID.equals(((PatientIdentifier) obj).patientID);

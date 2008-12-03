@@ -144,7 +144,7 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 	  setModalitiesInStudy(commaSeparate(data.getStrings(Tag.ModalitiesInStudy)));
 	  setNumberOfStudyRelatedInstances(data.getInt(Tag.NumberOfStudyRelatedInstances));
 	  setNumberOfStudyRelatedSeries(data.getInt(Tag.NumberOfStudyRelatedSeries));
-	  setReferringPhysicianName(PatientBean.excludeZeroEnd(data.getString(Tag.ReferringPhysicianName)));
+	  setReferringPhysicianName(PatientBean.sanitizeString(data.getString(Tag.ReferringPhysicianName)));
 
 	  Date date = null;
 	  try {
