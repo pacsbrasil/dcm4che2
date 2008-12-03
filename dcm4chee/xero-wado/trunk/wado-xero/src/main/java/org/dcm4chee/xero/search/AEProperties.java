@@ -64,7 +64,9 @@ public class AEProperties {
 
    private static final AEProperties aeProperties = new AEProperties();
 
-
+   /** The key to use for a particular ae */
+   public static final String AE="ae";
+   
    private Map<String, Object> defaultProperties = null;
 
    private ConcurrentHashMap<String, Map<String, Object>> remoteProperties = new ConcurrentHashMap<String, Map<String, Object>>();
@@ -192,7 +194,7 @@ public class AEProperties {
     * isn't found and the AE is specified.
     */
    public static Map<String,Object> getAE(Map<String,Object> params) {
-      String aes = (String) params.get("ae");
+      String aes = (String) params.get(AE);
       if( aes==null ) return aeProperties.getDefaultAE();
       Map<String,Object> ret = aeProperties.getAE(aes);
       if( ret==null ) throw new RuntimeException("Unknown AE specified:"+aes);
