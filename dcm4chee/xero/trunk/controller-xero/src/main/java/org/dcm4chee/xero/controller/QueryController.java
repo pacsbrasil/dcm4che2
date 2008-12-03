@@ -86,7 +86,7 @@ public class QueryController<T> implements Filter<T> {
 		// view
 		URIResolver resolver = FilterUtil.getURIResolver(params);
 		String url = FilterUtil.getString(query, "url");
-		String ae = (String) model.get("ae");
+		String ae = (String) model.get(AESelector.AE);
 		if( ae!=null ) {
 		   url = url+ae;
 		   log.info("Querying ae {}", ae);
