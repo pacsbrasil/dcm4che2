@@ -49,6 +49,9 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Utility class to locate the EJBHome interface and cache them
  * @author smohan
@@ -56,6 +59,9 @@ import javax.rmi.PortableRemoteObject;
  */
 public class EJBServiceLocator {
 
+    private static final Logger log = LoggerFactory
+    .getLogger(EJBServiceLocator.class);
+    
    /**
     * jndi home cache
     */
@@ -78,19 +84,21 @@ public class EJBServiceLocator {
     * @throws NamingException
     */
    public static InitialContext getInitialContext(String host, String port) throws NamingException {
-      Properties prop = new Properties();
-      prop.put(Context.INITIAL_CONTEXT_FACTORY,
-            "org.jnp.interfaces.NamingContextFactory");
-      prop.put(Context.PROVIDER_URL, "jnp://" + host + ":" + port);
-      prop
-            .put(Context.URL_PKG_PREFIXES,
-                  "jboss.naming:org.jnp.interfaces");
-      return new InitialContext(prop);
+       log.debug("getInitialContext host "+host+", port "+port);
+       if (host.equals("localhost") && (port == null || port.equals(""))) {
+            return new InitialContext();
+       }
+       Properties prop = new Properties();
+       prop.put(Context.INITIAL_CONTEXT_FACTORY,
+               "org.jnp.interfaces.NamingContextFactory");
+       prop.put(Context.PROVIDER_URL, "jnp://" + host + ":" + port);
+       prop.put(Context.URL_PKG_PREFIXES, "jboss.naming:org.jnp.interfaces");
+       return new InitialContext(prop);
    }
 
    /**
-    * @return this instance
-    */
+     * @return this instance
+     */
    static public EJBServiceLocator getInstance() {
       return INSTANCE;
    }

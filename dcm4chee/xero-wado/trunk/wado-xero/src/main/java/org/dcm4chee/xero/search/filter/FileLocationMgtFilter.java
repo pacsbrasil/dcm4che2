@@ -124,20 +124,19 @@ public class FileLocationMgtFilter implements Filter<URL> {
       String objectUID = (String) params.get("objectUID");
       try {
          URL url = null;
-         
+         Map<String, Object> aeMap = null;
          if (params.get("ae") != null && AEProperties.getInstance().getAE((String)params.get("ae")) != null)   {
-            Map<String, Object> aeMap = AEProperties.getInstance().getAE((String)params.get("ae"));
-            
-            String hostname = (String) aeMap.get("host");
-            Integer port = (Integer) aeMap.get("ejbport");
-            url = getDICOMFileURL(hostname, port.toString(), objectUID);
+            aeMap = AEProperties.getInstance().getAE((String)params.get("ae"));
          } else {
-            Map<String, Object> aeMap = AEProperties.getInstance().getDefaultAE();
-
-            String hostname = (String) aeMap.get("host");
-            Integer port = (Integer) aeMap.get("ejbport");
-            url = getDICOMFileURL(hostname, port.toString(), objectUID);
+            aeMap = AEProperties.getInstance().getDefaultAE();
          }
+         String hostname = (String) aeMap.get("host");
+         Integer port = (Integer) aeMap.get("ejbport");
+         String portStr = null;
+         if ( port != null )
+             portStr = port.toString();
+             
+         url = getDICOMFileURL(hostname, portStr, objectUID);
 
          if (url == null) {
             if( ! tryNext ) return null; 

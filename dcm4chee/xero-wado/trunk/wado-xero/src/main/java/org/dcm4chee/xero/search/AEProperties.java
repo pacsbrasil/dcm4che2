@@ -99,7 +99,6 @@ public class AEProperties {
       Map<String, Object> temp = new HashMap<String, Object>();
       temp.put("host", "localhost");
       temp.put("aeport", 11112);
-      temp.put("ejbport", 1099);
       temp.put("title", "DCM4CHEE");
       temp.put("localTitle", "XERO");
       temp.put("wadoPath", "http://localhost:8080/wado");
