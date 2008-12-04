@@ -23,6 +23,7 @@ public class NameJSTemplate extends HashMap<Object,String> {
    @Override
    public String get(Object key) {
 	  String ret = super.get(key);
+      //System.out.println("key='"+key+" of type "+(key==null ? "null" : key.getClass().getName())+" return "+ret);
 	  if( ret!=null ) return ret;
 	  return "ast";
    }
@@ -32,7 +33,4 @@ public class NameJSTemplate extends HashMap<Object,String> {
 	  return true;
    }
    
-   public void put(int key, String value) {
-	  this.put(Integer.toString(key),value);
-   }
 }

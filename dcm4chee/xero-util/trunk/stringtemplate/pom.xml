@@ -8,7 +8,7 @@
 
   <artifactId>stringtemplate</artifactId>
   <name>Xero StringTemplate</name>
-  <version>3.1.10-XERO-SNAPSHOT</version>
+  <version>3.2.0-XERO-SNAPSHOT</version>
   <description>A version of stringtemplate with some extra methods to allow use of templates as model objects to generate JavaScript.
   </description>
 
@@ -55,14 +55,16 @@
     <dependency>
        <groupId>org.slf4j</groupId>
        <artifactId>slf4j-api</artifactId>
-       <version>1.1.0</version>
+       <version>1.5.0</version>
        <type>jar</type>
+       <scope>compile</scope>
      </dependency>
      <dependency>
        <groupId>org.slf4j</groupId>
        <artifactId>slf4j-log4j12</artifactId>
-       <version>1.1.0</version>
+       <version>1.5.0</version>
        <type>jar</type>
+       <scope>compile</scope>
      </dependency>
      <dependency>
       <groupId>javax.servlet</groupId>
