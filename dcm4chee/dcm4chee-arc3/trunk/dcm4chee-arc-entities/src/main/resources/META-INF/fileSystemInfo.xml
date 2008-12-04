@@ -29,7 +29,7 @@
       <basic name="userInfo">
         <column name="user_info" />
       </basic>
-      <one-to-one name="nextFileSystem">
+      <one-to-one name="nextFileSystem" fetch="LAZY">
         <join-column name="next_fk" />
       </one-to-one>
     </attributes>
