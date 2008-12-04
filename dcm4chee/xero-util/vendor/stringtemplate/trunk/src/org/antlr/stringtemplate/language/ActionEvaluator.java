@@ -301,7 +301,7 @@ public ActionEvaluator() {
 		org.antlr.stringtemplate.language.StringTemplateAST at = null;
 		
 		Object obj = null;
-		String propName = null;
+		Object propName = null;
 		Object e = null;
 		
 		
@@ -337,7 +337,7 @@ public ActionEvaluator() {
 					_t = _retTree;
 					_t = __t35;
 					_t = _t.getNextSibling();
-					if (e!=null) {propName=e.toString();}
+					if (e!=null) {propName=e;}
 					break;
 				}
 				default:
@@ -580,7 +580,6 @@ public ActionEvaluator() {
 		
 		Object e = null;
 		List elements = new ArrayList();
-		value = new CatIterator(elements);
 		
 		
 		try {      // for error handling
@@ -611,7 +610,6 @@ public ActionEvaluator() {
 					_t = _retTree;
 					
 								  	if ( e!=null ) {
-										e = ASTExpr.convertAnythingToIterator(e);
 								  		elements.add(e);
 								  	}
 								  	
@@ -638,6 +636,7 @@ public ActionEvaluator() {
 			}
 			_t = __t6;
 			_t = _t.getNextSibling();
+			value = new Cat(elements);
 		}
 		catch (RecognitionException ex) {
 			reportError(ex);
