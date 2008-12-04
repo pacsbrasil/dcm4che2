@@ -281,9 +281,10 @@
   </target>
 
   <target name="jmeterPerformance">
+     <property name="tag" value="${jtl}" />
      <xslt style="${jmeterhome}/extras/jmeter-to-hudson-performance.xsl"
-	in="target/${jtl}.jtl" out="target/perf/${jtl}.avg">
-	<param name="tag" expression="${jtl}" />
+	in="target/${jtl}.jtl" out="target/perf/${tag}.avg">
+	<param name="tag" expression="${tag}" />
      </xslt>
   </target>
 
