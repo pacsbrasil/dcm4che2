@@ -277,7 +277,7 @@
      </move>
      <xslt style="${jmeterhome}/extras/jmeter-results-to-junit.xsl"
 	basedir="target"
-	includes="**/*.jtl" destdir="target/junit-jmeter" />
+	includes="**/*.jtl" destdir="target/junit-jmeter" extension=".xml"/>
   </target>
 
   <target name="jmeterPerformance">
