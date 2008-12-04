@@ -265,15 +265,27 @@
      <delete dir="target" quiet="true" />
      <mkdir dir="target" />
      <jmeter jmeterhome="${jmeterhome}"
-        testplan="${basedir}/${ant.project.name}.jmx"
         resultlogdir="${basedir}/target">
+	<testplans dir="${basedir}">
+	    <include name="**/*.jmx" />
+	    <exclude name="**/include/**/*" />
+	</testplans>
         <property name="SERVER" value="${integration.server}" />
      </jmeter>
      <move todir="target">
         <fileset dir="${jmeterhome}/bin" includes="**/*.jtl" />
      </move>
      <xslt style="${jmeterhome}/extras/jmeter-results-to-junit.xsl"
-        in="target/${ant.project.name}.jtl" out="target/${ant.project.name}-junit-jmeter.xml" />
+	basedir="target"
+	includes="**/*.jtl" destdir="target/junit-jmeter" />
+  </target>
+
+  <target name="jmeterPerformance">
+     <xslt style="${jmeterhome}/extras/jmeter-to-hudson-performance.xsl"
+	basedir="target"
+	includes="${jtl}.jtl" destdir="target/perf">
+	<param name="tag" expression="${jtl}" />
+     </xslt>
   </target>
 
 </project>
