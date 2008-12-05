@@ -61,12 +61,12 @@ public class MemoryCacheFilterTest {
 		map.put("end", "fini");
 		map.put("middle", "456");
 		map.put(MemoryCacheFilter.KEY_NAME,"first=123&middle=456&endmiddle=321&end=fini&");
-		MemoryCacheFilter.removeFromQuery(map, "first");
+		FilterUtil.removeFromQuery(map, "first");
 		assert map.get(MemoryCacheFilter.KEY_NAME).equals("middle=456&endmiddle=321&end=fini");
 		map.put(MemoryCacheFilter.KEY_NAME,"first=123&middle=456&endmiddle=321&end=fini");
-		assert MemoryCacheFilter.removeFromQuery(map, "end")[0].equals("fini");
+		assert FilterUtil.removeFromQuery(map, "end")[0].equals("fini");
 		assert map.get(MemoryCacheFilter.KEY_NAME).equals("first=123&middle=456&endmiddle=321");
-		assert MemoryCacheFilter.removeFromQuery(map, "middle")[0].equals("456");
+		assert FilterUtil.removeFromQuery(map, "middle")[0].equals("456");
 		assert map.get(MemoryCacheFilter.KEY_NAME).equals("first=123&endmiddle=321");
 	}
 }
