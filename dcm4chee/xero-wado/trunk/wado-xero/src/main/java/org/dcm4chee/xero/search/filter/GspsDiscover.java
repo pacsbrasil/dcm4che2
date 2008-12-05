@@ -45,7 +45,7 @@ import java.util.Map;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.search.ResultFromDicom;
 import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.search.study.GspsType;
@@ -154,7 +154,7 @@ public class GspsDiscover implements Filter<ResultsBean> {
 		 return null;
 	  prParams.put("Modality", "PR");
 	  prParams.put("studyUID", uids.toArray(STRING_ARRAY_TYPE));
-	  MemoryCacheFilter.computeQueryString(prParams, "Modality", "studyUID");
+	  FilterUtil.computeQueryString(prParams, "Modality", "studyUID");
 	  log.debug("Doing a search on {} Study UID's for PR objects uid[0]={}", uids.size(), uids.get(0));
 	  ResultsBean gspsRB = (ResultsBean) imageSource.filter(null,prParams);
 	  return gspsRB;

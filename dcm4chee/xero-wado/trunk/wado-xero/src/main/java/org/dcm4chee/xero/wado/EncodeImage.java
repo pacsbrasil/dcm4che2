@@ -65,7 +65,7 @@ import org.dcm4che2.data.UID;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.servlet.ErrorResponseItem;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.slf4j.Logger;
@@ -148,7 +148,7 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 			if (tsEri != null && contentType.indexOf(tsEri.mimeType) >= 0) {
 				contentType = tsEri.mimeType;
 				log.debug("Trying to read raw image for {}",map.get(OBJECT_UID));
-				MemoryCacheFilter.addToQuery(map, WadoImage.IMG_AS_BYTES, "true");
+				FilterUtil.addToQuery(map, WadoImage.IMG_AS_BYTES, "true");
 				eri = tsEri;
 				contentType = eri.mimeType;
 				multipleEncoding = false;

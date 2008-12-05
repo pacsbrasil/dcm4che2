@@ -46,7 +46,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.servlet.ErrorResponseItem;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.dcm4chee.xero.util.StringUtil;
@@ -82,7 +82,7 @@ public class MultiPartContentTypeFilter implements Filter<ServletResponseItem> {
 			log.warn("No content type found, expected to see multipart/mixed");
 			return null;
 		}
-	   MemoryCacheFilter.removeFromQuery(params, CONTENT_TYPE);
+	   FilterUtil.removeFromQuery(params, CONTENT_TYPE);
 
 		MultiPartHandler ri = createMultiPartResponseItem(contentTypes);
 		if (ri==null) {

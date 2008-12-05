@@ -54,7 +54,6 @@ import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
@@ -89,7 +88,7 @@ public class WLFilter implements Filter<WadoImage> {
    };
 
    public WadoImage filter(FilterItem<WadoImage> filterItem, Map<String, Object> params) {
-	  Object[] values = MemoryCacheFilter.removeFromQuery(params, WINDOW_WIDTH, WINDOW_CENTER, PRESENTATION_UID, INVERT);
+	  Object[] values = FilterUtil.removeFromQuery(params, WINDOW_WIDTH, WINDOW_CENTER, PRESENTATION_UID, INVERT);
 
 	  WadoImage wi = filterItem.callNextFilter(params);
 	  if (wi == null) {

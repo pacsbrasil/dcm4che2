@@ -58,7 +58,7 @@ import org.dcm4che2.imageio.plugins.dcm.DicomStreamMetaData;
 import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageWriter;
 import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageWriterSpi;
 import org.dcm4chee.xero.metadata.filter.Filter;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -187,10 +187,10 @@ public class DicomImageServletResponse implements ServletResponseItem {
    protected WadoImage readImage(int frameNumber) {
 	  if( readRaw ) {
 		 log.info("Reading raw bytes.");
-		 MemoryCacheFilter.addToQuery(params, WadoImage.FRAME_NUMBER, Integer.toString(frameNumber), WadoImage.IMG_AS_BYTES, "true");
+		 FilterUtil.addToQuery(params, WadoImage.FRAME_NUMBER, Integer.toString(frameNumber), WadoImage.IMG_AS_BYTES, "true");
 	  } else{
 		 log.info("Reading images.");
-		 MemoryCacheFilter.addToQuery(params, WadoImage.FRAME_NUMBER, Integer.toString(frameNumber));
+		 FilterUtil.addToQuery(params, WadoImage.FRAME_NUMBER, Integer.toString(frameNumber));
 	  }
 	  return wadoImageFilter.filter(null, params);
    }

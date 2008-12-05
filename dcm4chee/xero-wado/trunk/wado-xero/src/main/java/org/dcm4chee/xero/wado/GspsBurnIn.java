@@ -39,7 +39,6 @@ package org.dcm4chee.xero.wado;
 
 import static org.dcm4chee.xero.metadata.filter.FilterUtil.getInt;
 import static org.dcm4chee.xero.metadata.filter.FilterUtil.splitFloat;
-import static org.dcm4chee.xero.metadata.filter.MemoryCacheFilter.removeFromQuery;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -63,6 +62,7 @@ import org.apache.batik.transcoder.TranscoderOutput;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.search.ResultFromDicom;
 import org.dcm4chee.xero.search.SearchFilterUtils;
@@ -231,7 +231,7 @@ public class GspsBurnIn implements Filter<WadoImage> {
 
 	  String region = "" + left + "," + top + "," + right + "," + bottom;
 	  log.info("Burning in region " + region);
-	  removeFromQuery(params, "region", "fip", "rotation", "rows", "cols");
+	  FilterUtil.removeFromQuery(params, "region", "fip", "rotation", "rows", "cols");
 	  StringBuffer queryStr = new StringBuffer((String) params.get(MemoryCacheFilter.KEY_NAME));
 	  params.put("region", region);
 	  params.put("rows", rows);

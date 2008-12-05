@@ -59,7 +59,6 @@ import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,7 +104,7 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 			 return filterItem.callNextFilter(params);
 		 }
 		 // Can't get it as bytes....
-		 MemoryCacheFilter.removeFromQuery(params,WadoImage.IMG_AS_BYTES);
+		 FilterUtil.removeFromQuery(params,WadoImage.IMG_AS_BYTES);
 		 params.remove(WadoImage.IMG_AS_BYTES);
 	  }
 

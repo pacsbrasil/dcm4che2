@@ -14,7 +14,7 @@ import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.search.DicomCFindFilter;
 import org.dcm4chee.xero.search.ResultFromDicom;
 import org.dcm4chee.xero.search.StudyInfo;
@@ -173,7 +173,7 @@ public class DicomUpdateFilter implements Filter<DicomImageReader> {
 				params.put("studyUID", si.getStudyUID());
 				si.put("seriesQuery", Boolean.TRUE);
 			}
-			MemoryCacheFilter.computeQueryString(params);
+			FilterUtil.computeQueryString(params);
 			params.put(DicomCFindFilter.EXTEND_RESULTS_KEY, new StudyInfoHeaderRecord(si));
 			seriesCFind.filter(null,params);
 			series = si.getSeriesHeader(seriesUid);

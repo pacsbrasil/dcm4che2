@@ -43,6 +43,7 @@ import java.util.Map;
 
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.search.DicomCFindFilter;
 import org.dcm4chee.xero.search.ResultFromDicom;
@@ -139,10 +140,10 @@ public class SingleImagePerSeriesFilter implements Filter<ResultsBean> {
 		// created.
 		params.put(DicomCFindFilter.EXTEND_RESULTS_KEY, rb);
 		log.info("Filtering by adding an instance number=1 as a first guess.");
-		params.put(INSTANCE_NUMBER, "1");
+		FilterUtil.addToQuery(params,INSTANCE_NUMBER,"1");
 		ResultsBean ret = (ResultsBean) imageSource.filter(null,params);
 		assert ret == rb;
-		params.remove(INSTANCE_NUMBER);
+		FilterUtil.removeFromQuery(params,INSTANCE_NUMBER);
 		return rb;
 	}
 

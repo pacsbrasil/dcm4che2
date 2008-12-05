@@ -44,6 +44,7 @@ import java.util.Map;
 
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +82,7 @@ public class PagedImageFilter implements Filter<ResultsType> {
    public ResultsType filter(FilterItem<ResultsType> filterItem, Map<String, Object> params) {
 	  int position = 0;
 	  int count = 0;
-	  Object[] page = MemoryCacheFilter.removeFromQuery(params,POSITION_KEY,COUNT_KEY, CONTAINS_OBJECT_UID, CONTAINS_FRAME_NUMBER);
+	  Object[] page = FilterUtil.removeFromQuery(params,POSITION_KEY,COUNT_KEY, CONTAINS_OBJECT_UID, CONTAINS_FRAME_NUMBER);
 	  String objectUID = null;
 	  String frameNo = null;
 	  if (page[0]!=null) {
