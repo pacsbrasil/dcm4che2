@@ -245,7 +245,7 @@ multipart.original.priority=8500
 
 multipart.dicomHeader=${class:org.dcm4chee.xero.wado.multi.MultipartCallFilter}
 multipart.dicomHeader.addDefaults=${class:org.dcm4chee.xero.metadata.access.MapWithDefaults}
-multipart.dicomHeader.addDefaults.transferSyntax=1.2.840.10008.1.2.4.XX
+multipart.dicomHeader.addDefaults.transferSyntax=1.2.840.10008.1.2.4.96
 multipart.dicomHeader.childName=dicomHeader
 multipart.dicomHeader.childFilter=${ref:wadoDcm}
 multipart.dicomHeader.default=true
