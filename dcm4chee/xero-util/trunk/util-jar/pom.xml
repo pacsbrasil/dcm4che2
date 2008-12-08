@@ -16,7 +16,7 @@
     <dependency>
       <groupId>org.dcm4chee.xero</groupId>
       <artifactId>stringtemplate</artifactId>
-      <version>3.1.10-XERO-SNAPSHOT</version>
+      <version>3.2.0-XERO-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
