@@ -102,7 +102,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
 
     protected final QueryRetrieveScpService service;
 
-    private final boolean filterResult;
+    protected final boolean filterResult;
 
     protected final Logger log;
 
