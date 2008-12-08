@@ -675,9 +675,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         DatasetUtils.fromByteArray(rs.getBytes(column), ds);
     }
 
-    static class PatientQueryCmd extends QueryCmd {
+    public static class PatientQueryCmd extends QueryCmd {
 
-        PatientQueryCmd(Dataset keys, boolean filterResult,
+        protected PatientQueryCmd(Dataset keys, boolean filterResult,
                 boolean noMatchForNoValue,
                 boolean noMatchWithoutIssuerOfPID, Subject subject)
                 throws SQLException {
@@ -707,9 +707,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     }
 
-    static class StudyQueryCmd extends QueryCmd {
+    public static class StudyQueryCmd extends QueryCmd {
 
-        StudyQueryCmd(Dataset keys, boolean filterResult,
+        protected StudyQueryCmd(Dataset keys, boolean filterResult,
                 boolean noMatchForNoValue,
                 boolean noMatchWithoutIssuerOfPID, Subject subject)
                 throws SQLException {
@@ -784,9 +784,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     }
 
-    static class SeriesQueryCmd extends QueryCmd {
+    public static class SeriesQueryCmd extends QueryCmd {
 
-        SeriesQueryCmd(Dataset keys, boolean filterResult,
+        protected SeriesQueryCmd(Dataset keys, boolean filterResult,
                 boolean noMatchForNoValue,
                 boolean noMatchWithoutIssuerOfPID, Subject subject)
                 throws SQLException {
@@ -871,11 +871,11 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
     }
 
-    static class ImageQueryCmd extends QueryCmd {
+    public static class ImageQueryCmd extends QueryCmd {
 
         HashMap seriesAttrsCache = new HashMap();
 
-        ImageQueryCmd(Dataset keys, boolean filterResult,
+        protected ImageQueryCmd(Dataset keys, boolean filterResult,
                 boolean noMatchForNoValue,
                 boolean noMatchWithoutIssuerOfPID,
                 Subject subject) throws SQLException {
