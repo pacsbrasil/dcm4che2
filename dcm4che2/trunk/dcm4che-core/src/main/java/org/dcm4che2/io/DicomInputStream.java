@@ -98,8 +98,6 @@ public class DicomInputStream extends FilterInputStream implements
 
     private int vallen;
 
-    private long vallenLimit = 40000000L;
-
     private boolean stopAtFmiEnd;
 
     public DicomInputStream(RandomAccessFile raf) throws IOException {
@@ -154,14 +152,6 @@ public class DicomInputStream extends FilterInputStream implements
 
     public final void setStreamPosition(long pos) {
         this.pos = pos;
-    }
-
-    public final long getValueLengthLimit() {
-        return vallenLimit;
-    }
-
-    public final void setValueLengthLimit(long vallenLimit) {
-        this.vallenLimit = vallenLimit;
     }
 
     public final long tagPosition() {
@@ -565,17 +555,6 @@ public class DicomInputStream extends FilterInputStream implements
     public byte[] readBytes(int vallen) throws IOException {
         if (vallen == 0)
             return EMPTY_BYTES;
-        if (vallen > vallenLimit) {
-            long remaining = vallen;
-            long nr;
-            while (remaining > 0) {
-                nr = skip(remaining);
-                if (nr == 0)
-                    throw new EOFException();
-                remaining -= nr;
-            }
-            return EMPTY_BYTES;
-        }
         byte[] val = new byte[vallen];
         readFully(val, 0, vallen);
         return val;
