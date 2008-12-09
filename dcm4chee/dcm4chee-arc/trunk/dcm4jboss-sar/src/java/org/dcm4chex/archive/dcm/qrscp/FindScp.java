@@ -44,6 +44,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 import javax.management.ObjectName;
 import javax.security.auth.Subject;
@@ -203,17 +205,42 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             }
         }
         if (updateRQ) {
-            String pid0 = rqData.getString(Tags.PatientID);
-            String issuer0 = rqData.getString(Tags.IssuerOfPatientID);
+            Pattern pid0 = toPattern(rqData.getString(Tags.PatientID));
+            Pattern issuer0 = toPattern(rqData.getString(Tags.IssuerOfPatientID));
             opidsq = rqData.putSQ(Tags.OtherPatientIDSeq);
             Iterator iter = result.iterator();
+            boolean checkIfPID0 = true;
             while (iter.hasNext()) {
-                String[] pid = (String[]) iter.next();
-                if (!(pid[PID].equals(pid0) && pid[ISSUER].equals(issuer0))) {
+                 String[] pid = (String[]) iter.next();
+                 if (checkIfPID0 && pid0.matcher(pid[PID]).matches()
+                         && issuer0.matcher(pid[ISSUER]).matches()) {
+                    setPID(rqData, pid);
+                    checkIfPID0 = false;
+                 } else {
                     setPID(opidsq.addNewItem(), pid);
                 }
             }
         }
+    }
+
+    private static Pattern toPattern(String wc) {
+        if (wc.indexOf('*') == -1 && wc.indexOf('?') == -1) {
+            return Pattern.compile(wc);
+        }
+        StringBuilder sb = new StringBuilder(wc.length() + 16);
+        StringTokenizer tokens = new StringTokenizer(wc, "*?.", true);
+        while (tokens.hasMoreTokens()) {
+            String token = tokens.nextToken();
+            if (token.equals("*")) {
+                token = ".*";
+            } else if (token.equals("?")) {
+                token = ".";
+            } else if (token.equals(".")) {
+                token = "\\.";
+            }
+            sb.append(token);
+        }
+        return Pattern.compile(sb.toString());
     }
 
     private void setPID(Dataset rqData, String[] pid) {
