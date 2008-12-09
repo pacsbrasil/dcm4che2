@@ -1,0 +1,1 @@
+$it.StudyDescription;format="xml"$ $it.StudyID;format="xml"$ $it.AccessionNumber;format="xml"$
