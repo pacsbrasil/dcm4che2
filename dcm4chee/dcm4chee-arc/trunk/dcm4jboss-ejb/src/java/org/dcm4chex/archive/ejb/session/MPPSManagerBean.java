@@ -562,22 +562,6 @@ public abstract class MPPSManagerBean implements SessionBean {
     }
 
     /**
-     * Delete a list of mpps entries.
-     * 
-     * @ejb.interface-method
-     */
-    public boolean deleteMPPSEntries(String[] iuids) {
-        for (int i = 0; i < iuids.length; i++) {
-            try {
-                mppsHome.findBySopIuid(iuids[i]).remove();
-            } catch (Exception x) {
-                log.error("Cant delete mpps:" + iuids[i], x);
-            }
-        }
-        return true;
-    }
-
-    /**
      * @ejb.interface-method
      */
     public Collection getSeriesIUIDs(String mppsIUID) throws FinderException {
