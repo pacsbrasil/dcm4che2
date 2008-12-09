@@ -295,22 +295,6 @@ public class MPPSScpService extends AbstractScpService {
     	mgr.unlinkMpps(mppsIUID);
     }
     
-	/**
-	 * Deletes MPPS entries specified by an array of MPPS IUIDs.
-	 * <p>
-	 * 
-	 * @param iuids  The List of Instance UIDs of the MPPS Entries to delete.
-	 * @return
-	 * @throws HomeFactoryException
-	 * @throws CreateException
-	 * @throws RemoteException
-	 */
-	public boolean deleteMPPSEntries(String[] iuids) throws RemoteException, CreateException, HomeFactoryException {
-        MPPSManager mgr = getMPPSManagerHome().create();
-        mgr.deleteMPPSEntries(iuids);
-		return false;
-	}
-
     public void logMppsLinkRecord(Map map, String spsID, String mppsIUID ) {
         if (!auditLogger.isAuditLogIHEYr4()) {
             return;
