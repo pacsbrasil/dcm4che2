@@ -120,6 +120,7 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
      *            to copy image level data into this from.
      */
    protected void initAttributes(DicomObject data) {
+      this.setCfindHeader(data);
 	  setColumns(data.getInt(Tag.Columns));
 	  setRows(data.getInt(Tag.Rows));
 	  // setSOPClassUID(data.getString(Tag.SOPClassUID));
@@ -213,4 +214,20 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
    public Integer getFrame() {
 	  return null;
    }
+
+
+   /** The C-Find header in the response */
+   @XmlTransient
+   DicomObject cfindHeader;
+
+   /** Get the C-Find header */
+   public DicomObject getCfindHeader() {
+      return cfindHeader;
+   }
+
+   /** Sets the C-Find header */
+   public void setCfindHeader(DicomObject cfindHeader) {
+      this.cfindHeader = cfindHeader;
+   }
+
 }

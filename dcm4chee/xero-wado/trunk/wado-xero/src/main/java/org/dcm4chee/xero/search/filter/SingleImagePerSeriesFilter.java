@@ -41,10 +41,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.FilterUtil;
-import org.dcm4chee.xero.metadata.MetaData;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.search.DicomCFindFilter;
 import org.dcm4chee.xero.search.ResultFromDicom;
 import org.dcm4chee.xero.search.study.PatientType;
@@ -65,130 +65,137 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class SingleImagePerSeriesFilter implements Filter<ResultsBean> {
-	private static final String[] EMPTY_STRING_ARRAY = new String[0];
+   private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
-	private static Logger log = LoggerFactory
-			.getLogger(SingleImagePerSeriesFilter.class.getName());
+   private static Logger log = LoggerFactory.getLogger(SingleImagePerSeriesFilter.class.getName());
 
-	private static final String INSTANCE_NUMBER = "InstanceNumber";
+   private static final String INSTANCE_NUMBER = "InstanceNumber";
 
-	/** Adds an InstanceNumber search criteria */
-	public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
-		if (params.containsKey(INSTANCE_NUMBER)) {
-			log
-					.info("Search already has instance number, not filtering series.");
-			return filterItem.callNextFilter(params);
-		}
+   /** Adds an InstanceNumber search criteria */
+   public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
+      if (params.containsKey(INSTANCE_NUMBER)) {
+         log.info("Search already has instance number, not filtering series.");
+         return filterItem.callNextFilter(params);
+      }
 
-		ResultsBean rb = filterItem.callNextFilter(params);
-		if (rb == null)
-			return null;
+      ResultsBean rb = filterItem.callNextFilter(params);
+      if (rb == null)
+         return null;
 
-		// Now, re-do the same query at the image level
-		rb = extendWithInstanceImage(filterItem, params, rb);
+      // Now, re-do the same query at the image level
+      rb = extendWithInstanceImage(filterItem, params, rb);
 
-		List<SeriesType> childless = findChildless(rb);
-		if (childless == null)
-			return rb;
-		return extendWithOtherInstances(filterItem, params, rb, childless);
-	}
+      List<SeriesType> childless = findChildless(rb);
+      if (childless == null)
+         return rb;
+      return extendWithOtherInstances(filterItem, params, rb, childless);
+   }
 
-	/**
-	 * Extend by doing a secondary search on instances that didn't find any children.
-	 * For most series, this only is done for fewer than 10 children, 
-	 * but for PR (GSPS), MG, SR and KO this is done for any number of children, as the
-	 * series tray may need all children to determine what to show. 
-	 * @param filterItem
-	 * @param params
-	 * @param rb
-	 *            to extend
-	 * @param childless
-	 *            series to extend
-	 * @return
-	 */
-	protected ResultsBean extendWithOtherInstances(FilterItem<ResultsBean> filterItem, Map<String, Object> params, ResultsBean rb, List<SeriesType> childless) {
-		log.info("Found "+childless.size()+" series with no child with instance number=1.");
-		List<String> uidsToSearch = new ArrayList<String>(childless.size());
-		for(SeriesType se : childless) {
-			String modality = se.getModality();
-			if( ((SeriesBean) se).getNumberOfSeriesRelatedInstances() < 10 ||
-				modality.equals("PR") || modality.equals("MG") || modality.equals("SR") || modality.equals("KO") ) 
-			{
-				uidsToSearch.add(se.getSeriesUID());
-			}
-			else {
-				// TODO - figure out what to do here. This one is really rather
-				// ugly
-				log.warn("There are too many children to be able to extend series "+se.getSeriesUID() + " of modality "+se.getModality());
-			}
-		}
-		if( uidsToSearch.size()>0 ) {
-		    log.info("Searching ",uidsToSearch.size()," series completely.");
-			String[] seriesUids = uidsToSearch.toArray(EMPTY_STRING_ARRAY);
-			Object origValue = params.put("seriesUID", seriesUids);
-			Object updated = imageSource.filter(null, params);
-			assert updated==rb;
-			if( origValue==null ) params.remove("seriesUID");
-			else params.put("seriesUID", origValue);
-		}
-		return rb;
-	}
+   /**
+    * Extend by doing a secondary search on instances that didn't find any
+    * children. For most series, this only is done for fewer than 10 children,
+    * but for PR (GSPS), MG, SR and KO this is done for any number of children,
+    * as the series tray may need all children to determine what to show.
+    * 
+    * @param filterItem
+    * @param params
+    * @param rb
+    *           to extend
+    * @param childless
+    *           series to extend
+    * @return
+    */
+   protected ResultsBean extendWithOtherInstances(FilterItem<ResultsBean> filterItem, Map<String, Object> params, ResultsBean rb,
+         List<SeriesType> childless) {
+      log.info("Found " + childless.size() + " series with no child with instance number=1.");
+      List<String> uidsToSearch = new ArrayList<String>(childless.size());
+      for (SeriesType se : childless) {
+         String modality = se.getModality();
+         if (((SeriesBean) se).getNumberOfSeriesRelatedInstances() < 10 || modality.equals("PR") || modality.equals("MG")
+               || modality.equals("SR") || modality.equals("KO")) {
+            uidsToSearch.add(se.getSeriesUID());
+         } else {
+            // TODO - figure out what to do here. This one is really rather
+            // ugly
+            log.warn("There are too many children to be able to extend series " + se.getSeriesUID() + " of modality "
+                  + se.getModality());
+         }
+      }
+      if (uidsToSearch.size() > 0) {
+         log.info("Searching ", uidsToSearch.size(), " series completely.");
+         String[] seriesUids = uidsToSearch.toArray(EMPTY_STRING_ARRAY);
+         Object origValue = params.put("seriesUID", seriesUids);
+         Object origNoCache = params.put(MemoryCacheFilter.NO_CACHE, true);
+         Object updated = imageSource.filter(null, params);
+         assert updated == rb;
+         if (origNoCache == null)
+            params.remove(MemoryCacheFilter.NO_CACHE);
+         if (origValue == null)
+            params.remove("seriesUID");
+         else
+            params.put("seriesUID", origValue);
+      }
+      return rb;
+   }
 
-	protected ResultsBean extendWithInstanceImage(FilterItem<ResultsBean> filterItem,
-			Map<String, Object> params, ResultsBean rb) {
-		// This will cause rb to be extended instead of a new instance being
-		// created.
-		params.put(DicomCFindFilter.EXTEND_RESULTS_KEY, rb);
-		log.info("Filtering by adding an instance number=1 as a first guess.");
-		FilterUtil.addToQuery(params,INSTANCE_NUMBER,"1");
-		ResultsBean ret = (ResultsBean) imageSource.filter(null,params);
-		assert ret == rb;
-		FilterUtil.removeFromQuery(params,INSTANCE_NUMBER);
-		return rb;
-	}
+   protected ResultsBean extendWithInstanceImage(FilterItem<ResultsBean> filterItem, Map<String, Object> params, ResultsBean rb) {
+      // This will cause rb to be extended instead of a new instance being
+      // created.
+      params.put(DicomCFindFilter.EXTEND_RESULTS_KEY, rb);
+      log.info("Filtering by adding an instance number=1 as a first guess.");
+      params.put(INSTANCE_NUMBER, "1");
+      Object origNoCache = params.put(MemoryCacheFilter.NO_CACHE, true);
+      ResultsBean ret = (ResultsBean) imageSource.filter(null, params);
+      assert ret == rb;
+      if (origNoCache == null)
+         params.remove(MemoryCacheFilter.NO_CACHE);
+      params.remove(INSTANCE_NUMBER);
+      return rb;
+   }
 
-	/**
-	 * Returns a list of all childless series.
-	 * 
-	 * @param ResultsBean
-	 *            to search for series containing no children
-	 * @return null if everyone has a child, or a List of all Series Bean's
-	 *         containing no children.
-	 */
-	List<SeriesType> findChildless(ResultsType results) {
-		List<SeriesType> ret = null;
-		for (PatientType pat : results.getPatient()) {
-			for (StudyType study : pat.getStudy()) {
-				for (SeriesType series : study.getSeries()) {
-					if (series.getDicomObject().size() == 0) {
-						if (ret == null)
-							ret = new ArrayList<SeriesType>();
-						ret.add(series);
-					}
-				}
-			}
-		}
-		return ret;
-	}
+   /**
+    * Returns a list of all childless series.
+    * 
+    * @param ResultsBean
+    *           to search for series containing no children
+    * @return null if everyone has a child, or a List of all Series Bean's
+    *         containing no children.
+    */
+   List<SeriesType> findChildless(ResultsType results) {
+      List<SeriesType> ret = null;
+      for (PatientType pat : results.getPatient()) {
+         for (StudyType study : pat.getStudy()) {
+            for (SeriesType series : study.getSeries()) {
+               if (series.getDicomObject().size() == 0) {
+                  if (ret == null)
+                     ret = new ArrayList<SeriesType>();
+                  ret.add(series);
+               }
+            }
+         }
+      }
+      return ret;
+   }
 
    private Filter<ResultFromDicom> imageSource;
 
-	public Filter<ResultFromDicom> getImageSource() {
-   	return imageSource;
+   public Filter<ResultFromDicom> getImageSource() {
+      return imageSource;
    }
 
-	/**
-	 * Sets the filter to use for an image search.
-	 * @param imageSource
-	 */
-	@MetaData(out="${ref:imageSource}")
-	public void setImageSource(Filter<ResultFromDicom> imageSource) {
-   	this.imageSource = imageSource;
+   /**
+    * Sets the filter to use for an image search.
+    * 
+    * @param imageSource
+    */
+   @MetaData(out = "${ref:imageSource}")
+   public void setImageSource(Filter<ResultFromDicom> imageSource) {
+      this.imageSource = imageSource;
    }
 
-	/** Returns the default priority of this filter. */
-	@MetaData
-	public int getPriority() {
-		return 15;
-	}
+   /** Returns the default priority of this filter. */
+   @MetaData
+   public int getPriority() {
+      return 15;
+   }
 }

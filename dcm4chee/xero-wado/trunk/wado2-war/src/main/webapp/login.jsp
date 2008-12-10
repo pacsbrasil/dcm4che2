@@ -1,3 +1,4 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <%--
 	$Id: login.jsp 3384 2007-06-13 12:27:53Z javawilli $
 	$Source$
@@ -11,10 +12,10 @@
 	Therefore this user should only have WebUser role.
 --%>
 <%@ page import='java.net.InetAddress' %>
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <title>Login</title>
-  <link href="style.css" rel="stylesheet" type="text/css">
+  <link href="style.css" rel="stylesheet" type="text/css"> </link>
 </head>
 
 <%
@@ -23,15 +24,15 @@
 <body onload="self.focus();document.login.j_username.focus()">
 <table border="0" cellspacing="0" cellpadding="0" width="100%">
  <tr>
-  <td><img src="/dcm4chee-web/white48.jpg" width="100%" height="5px"></td>
+  <td><img src="/dcm4chee-web/white48.jpg" width="100%" height="5px" /></td>
  </tr>
  <tr>
   <td background="/dcm4chee-web/white48.jpg">
-    <img src="/dcm4chee-web/white48.jpg" width="10px" height="24px"><img src="/dcm4chee-web/logo.gif" alt="DCM4CHEE"> Xero
+    <img src="/dcm4chee-web/white48.jpg" width="10px" height="24px" /><img src="/dcm4chee-web/logo.gif" alt="DCM4CHEE" /> Xero
   </td>
  </tr>
  <tr>
-  <td><img src="/dcm4chee-web/line.jpg" width="100%" height="20px" alt="line"></td>
+  <td><img src="/dcm4chee-web/line.jpg" width="100%" height="20px" alt="line" /></td>
  </tr>
 </table>
 <center>
