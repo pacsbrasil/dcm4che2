@@ -271,6 +271,7 @@
 	    <exclude name="**/include/**/*" />
 	</testplans>
         <property name="SERVER" value="${integration.server}" />
+        <property name="integration.cdp" value="${integration.cdp}" />
      </jmeter>
      <move todir="target">
         <fileset dir="${jmeterhome}/bin" includes="**/*.jtl" />
