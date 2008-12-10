@@ -106,4 +106,8 @@ public class BaseDocument {
     public void setHash(String hash) {
         this.hash = hash;
     }
+    
+    public String toString() {
+        return "BaseDocument: docUid:"+docUid+" mime:"+mime+" size:"+size+"\nAvailability:"+availability+ "hash:"+hash;
+    }
 }
