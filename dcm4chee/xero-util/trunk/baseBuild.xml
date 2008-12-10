@@ -272,6 +272,7 @@
 	</testplans>
         <property name="SERVER" value="${integration.server}" />
         <property name="integration.cdp" value="${integration.cdp}" />
+	<property name="includecontroller.prefix" value="${integration.cdp}" />
      </jmeter>
      <move todir="target">
         <fileset dir="${jmeterhome}/bin" includes="**/*.jtl" />
