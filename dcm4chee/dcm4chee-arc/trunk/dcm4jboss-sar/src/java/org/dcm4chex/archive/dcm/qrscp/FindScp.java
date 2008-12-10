@@ -212,8 +212,10 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             boolean checkIfPID0 = true;
             while (iter.hasNext()) {
                  String[] pid = (String[]) iter.next();
-                 if (checkIfPID0 && pid0.matcher(pid[PID]).matches()
-                         && issuer0.matcher(pid[ISSUER]).matches()) {
+                 if (checkIfPID0 
+                         && (pid0 == null || pid0.matcher(pid[PID]).matches())
+                         && (issuer0 == null 
+                                 || issuer0.matcher(pid[ISSUER]).matches())) {
                     setPID(rqData, pid);
                     checkIfPID0 = false;
                  } else {
@@ -224,6 +226,9 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
     }
 
     private static Pattern toPattern(String wc) {
+        if (wc == null) {
+            return null;
+        }
         if (wc.indexOf('*') == -1 && wc.indexOf('?') == -1) {
             return Pattern.compile(wc);
         }
