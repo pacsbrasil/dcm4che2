@@ -45,6 +45,9 @@ import org.dcm4chee.xero.search.Column;
  *
  */
 public interface Series {
+	
+	@Column(type="string")
+	String getManufacturer();
 
 	/**
 	 * Gets the value of the modality property.
@@ -93,5 +96,6 @@ public interface Series {
 	/**
 	 * Gets the number of series related instances
 	 */
+	@Column(searchable=false,type="int")
 	Integer getNumberOfSeriesRelatedInstances();
 }

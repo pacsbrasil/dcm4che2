@@ -47,6 +47,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
+import java.util.Set;
+import java.util.Iterator;
 
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
@@ -134,7 +136,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     protected abstract String getQueryLevel();
     
     /** Return the set of key to negotiate for */
-    protected abstract int[] getReturnKeys();
+    protected abstract Set<Integer> getReturnKeys();
     
     
     /**
@@ -223,10 +225,11 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     {
     	DicomObject ret = new BasicDicomObject();
     	ret.putString(Tag.QueryRetrieveLevel, VR.CS, getQueryLevel());
-    	int[] returnKeys = getReturnKeys();
-    	for( int itag : returnKeys)
+    	Set<Integer> returnKeys = getReturnKeys();
+    	Iterator<Integer> it = returnKeys.iterator();
+    	while (it.hasNext())
     	{
-    		ret.putNull(itag,null);
+     		ret.putNull(it.next().intValue(),null);
     	}
     	Map<String,TableColumn> searchCondition = searchCriteria.getAttributeByName();
     	for(String key : searchCondition.keySet()) {

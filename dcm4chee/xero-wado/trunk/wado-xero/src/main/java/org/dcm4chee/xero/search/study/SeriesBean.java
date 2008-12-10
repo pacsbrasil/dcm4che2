@@ -88,6 +88,7 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	  setSeriesNumber(series.getSeriesNumber());
 	  setViewable(series.getViewable());
 	  getDicomObject().addAll(series.getDicomObject());
+	  setManufacturer(series.getManufacturer());
    }
 
    /**
@@ -118,6 +119,7 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	  setNumberOfSeriesRelatedInstances(data.getInt(Tag.NumberOfSeriesRelatedInstances));
 	  setBodyPartExamined(data.getString(Tag.BodyPartExamined));
 	  setLaterality(data.getString(Tag.Laterality));
+	  setManufacturer(data.getString(Tag.Manufacturer));
 	  try {
 		 setSeriesNumber(data.getInt(Tag.SeriesNumber));
 	  } catch (NumberFormatException nfe) {

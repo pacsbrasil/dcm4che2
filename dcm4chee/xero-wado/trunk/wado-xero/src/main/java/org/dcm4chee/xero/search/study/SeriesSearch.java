@@ -41,15 +41,18 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
-import org.dcm4chee.xero.search.DicomCFindFilter;
 import org.dcm4chee.xero.search.SearchCriteria;
+
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Arrays;
 
 /** A C-Find searcher for series level data.
  * Uses the private SOP classes to get all the available series level data, if these are supported.
  *
  * @author bwallace
  */
-public class SeriesSearch extends DicomCFindFilter{
+public class SeriesSearch extends StudySearch{
 
 	static final String SERIES_SEARCH_LEVEL = "SERIES";
 	
@@ -59,15 +62,18 @@ public class SeriesSearch extends DicomCFindFilter{
         UID.StudyRootQueryRetrieveInformationModelFIND,
         UID.PatientRootQueryRetrieveInformationModelFIND, };
  
-    private static final int[] SERIES_RETURN_KEYS = {
-    	Tag.PatientID,
-    	Tag.StudyInstanceUID,
-        Tag.Modality,
+    static protected final Integer[] SERIES_RETURN_KEYS = {
+    	Tag.Modality,
         Tag.SeriesNumber,
         Tag.SeriesInstanceUID,
         Tag.NumberOfSeriesRelatedInstances,
-        Tag.NumberOfStudyRelatedSeries,
-        Tag.PatientName};
+        Tag.Manufacturer};
+    
+    protected static Set<Integer> returnKeys = new HashSet<Integer>(Arrays.asList(SERIES_RETURN_KEYS));
+    
+    static {
+    	returnKeys.addAll(StudySearch.returnKeys);
+    }
 
 	@Override
 	protected String[] getCuids() {
@@ -80,8 +86,8 @@ public class SeriesSearch extends DicomCFindFilter{
 	}
 
 	@Override
-	protected int[] getReturnKeys() {
-		return SERIES_RETURN_KEYS;
+	protected Set<Integer> getReturnKeys() {
+		return SeriesSearch.returnKeys;
 	}
 
 	/**

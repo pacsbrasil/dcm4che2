@@ -43,6 +43,9 @@ import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.search.DicomCFindFilter;
 import org.dcm4chee.xero.search.SearchCriteria;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Arrays;
 
 /**
  * A C-Find filter that knows how to perform C-Find queries to get study level data.  Prefers to use the return all
@@ -60,19 +63,22 @@ public class StudySearch extends DicomCFindFilter {
         UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired };
  
     // TODO - generate this list dynamically from the contents of the class...
-    private static final int[] STUDY_RETURN_KEYS = { 
+    static protected final Integer[] STUDY_RETURN_KEYS = { 
+        Tag.PatientID,
+        Tag.PatientName,
+		Tag.PatientBirthDate, 
+		Tag.PatientSex,
         Tag.StudyDate,
         Tag.StudyTime,
         Tag.AccessionNumber,
         Tag.StudyID,
-        Tag.PatientID,
-        Tag.PatientName,
         Tag.StudyDescription,
         Tag.StudyInstanceUID,
         Tag.NumberOfStudyRelatedInstances,
         Tag.NumberOfStudyRelatedSeries,
      };
- 
+    
+    protected static Set<Integer> returnKeys = new HashSet<Integer>(Arrays.asList(STUDY_RETURN_KEYS));
 
 	@Override
 	protected String[] getCuids() {
@@ -85,8 +91,8 @@ public class StudySearch extends DicomCFindFilter {
 	}
 
 	@Override
-	protected int[] getReturnKeys() {
-		return STUDY_RETURN_KEYS;
+	protected Set<Integer> getReturnKeys() {
+		return StudySearch.returnKeys;
 	}
 
 	/**

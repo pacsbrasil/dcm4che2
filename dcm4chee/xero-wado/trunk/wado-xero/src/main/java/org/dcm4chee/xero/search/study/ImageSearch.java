@@ -37,6 +37,10 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Arrays;
+
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
@@ -53,29 +57,22 @@ public class ImageSearch extends SeriesSearch
 	public static final String IMAGE_QUERY_LEVEL="IMAGE";
 	public static final int InstanceSeq =  0x00430040;
 
-	public static final int[] IMAGE_LEVEL_RETURN_KEYS = {
-		Tag.PatientID, Tag.PatientName, Tag.PatientBirthDate, Tag.PatientSex,
-        Tag.NumberOfPatientRelatedStudies,
+	public static final Integer[] IMAGE_LEVEL_RETURN_KEYS = {
+		Tag.NumberOfPatientRelatedStudies,
         Tag.NumberOfPatientRelatedSeries,
         Tag.NumberOfPatientRelatedInstances,
-        Tag.StudyDate,
-        Tag.StudyDescription,
-        Tag.StudyTime,
-        Tag.AccessionNumber,
-        Tag.StudyID,
-        Tag.StudyInstanceUID,
-        Tag.NumberOfStudyRelatedSeries,
-        Tag.NumberOfStudyRelatedInstances,
-        Tag.Modality,
-        Tag.SeriesNumber,
-        Tag.SeriesInstanceUID,
-        Tag.NumberOfSeriesRelatedInstances,
         Tag.InstanceNumber,
         Tag.SOPClassUID,
         Tag.SOPInstanceUID,
         Tag.Rows, Tag.Columns, Tag.WindowCenter, Tag.WindowWidth, Tag.NumberOfFrames,
-        InstanceSeq,
+        InstanceSeq
 	};
+
+    protected static Set<Integer> returnKeys = new HashSet<Integer>(Arrays.asList(IMAGE_LEVEL_RETURN_KEYS));
+	
+    static {
+    	returnKeys.addAll(SeriesSearch.returnKeys);
+    }
 
 	@Override
 	protected String getQueryLevel() {
@@ -83,8 +80,8 @@ public class ImageSearch extends SeriesSearch
 	}
 
 	@Override
-	protected int[] getReturnKeys() {
-		return IMAGE_LEVEL_RETURN_KEYS;
+	protected Set<Integer> getReturnKeys() {
+		return ImageSearch.returnKeys;
 	}
 
 
