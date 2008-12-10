@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -102,6 +103,8 @@ public class MetaDataServlet extends HttpServlet {
 	/** A key value to use to fetch the full request URI - t */
 	public static final String REQUEST_URI = "_requestURI";
 	public static final String REQUEST = "_request";
+	public static final String RESPONSE = "_response";
+	public static final String SERVLET_CONTEXT = "_servletContext";
 	public static final String USER_KEY = "userName";
 
 	/** The meta data needs to be read from the appropriate location. */
@@ -147,7 +150,7 @@ public class MetaDataServlet extends HttpServlet {
 			HttpServletResponse response) throws ServletException, IOException {
 		try {
 			String requestType = request.getParameter(REQUEST_TYPE);
-			Map<String, Object> params = computeParameterMap(request, response);
+			Map<String, Object> params = computeParameterMap(request, response, getServletContext());
 			FilterItem useFilterItem;
 			if (requestType != null) {
 				useFilterItem = filter.getNamedFilter(filterItem, requestType);
@@ -197,8 +200,8 @@ public class MetaDataServlet extends HttpServlet {
 	 *         usual case where there is only 1 possible value.
 	 */
 	@SuppressWarnings("unchecked")
-	protected Map<String, Object> computeParameterMap(
-			HttpServletRequest request, HttpServletResponse response) {
+	public static Map<String, Object> computeParameterMap(
+			HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
 		Map<String, String[]> parameters = request.getParameterMap();
 		Map<String, Object> ret = new HashMap<String, Object>();
 		for (Map.Entry<String, String[]> me : parameters.entrySet()) {
@@ -215,9 +218,11 @@ public class MetaDataServlet extends HttpServlet {
 		// filter really
 		// needs it - eg for auditing.
 		ret.put(REQUEST, request);
+		ret.put(RESPONSE, response);
 		ret.put(USER_KEY, request.getRemoteUser());
+		ret.put(SERVLET_CONTEXT, servletContext);
 		ret.put(UrlUriResolver.URIRESOLVER, new UrlUriResolver(request,
-				response, getServletContext()));
+				response, servletContext));
 
 		Locale loc = request.getLocale();
 		if (ret.containsKey("language")) {
