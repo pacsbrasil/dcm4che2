@@ -1,1 +1,1 @@
-$if(row.xmlFirst)$<a class="jslink" onclick="xeroController.displayPatient('$layout.id$','$rowTop.PatientID$')">$if(row.(var))$$row.(var);format="xml"$$else$Unknown$endif$</a>$endif$
+$if(row.xmlFirst)$<a id="$rowTop.PatientID;format="xml"$" class="jslink" onclick="xeroController.displayPatient('$layout.id$','$rowTop.PatientID;format="xml"$')">$if(row.(var))$$row.(var);format="xml"$$else$Unknown$endif$</a>$endif$
