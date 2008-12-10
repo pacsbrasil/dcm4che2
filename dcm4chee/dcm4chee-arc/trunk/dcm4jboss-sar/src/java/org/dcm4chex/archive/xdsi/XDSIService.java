@@ -1018,7 +1018,7 @@ public class XDSIService extends ServiceMBeanSupport {
      * @param kos
      * @return
      */
-    private String getAffinityDomainPatientID(Dataset kos) {
+    public String getAffinityDomainPatientID(Dataset kos) {
         String patID = kos.getString(Tags.PatientID);
         String issuer = kos.getString(Tags.IssuerOfPatientID);
         if ( affinityDomain.charAt(0) == '=') {

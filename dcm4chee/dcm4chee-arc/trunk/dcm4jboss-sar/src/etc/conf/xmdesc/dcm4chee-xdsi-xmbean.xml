@@ -489,6 +489,17 @@
      <return-type>void</return-type>
 	</operation>
 	
+   <operation impact="INFO">
+     <description>Obtain Affinity Domain patient ID for given patient information</description>
+     <name>getAffinityDomainPatientID</name>
+     <parameter>
+       <description>Dataset containing local patient id and issuer of id</description>
+       <name>kos</name>
+       <type>org.dcm4che.data.Dataset</type>
+     </parameter>
+     <return-type>java.lang.String</return-type>
+    </operation>
+	
    &defaultOperations;
 </mbean>
 
