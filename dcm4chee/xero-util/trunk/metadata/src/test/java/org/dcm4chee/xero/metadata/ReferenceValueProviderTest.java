@@ -37,6 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.metadata;
 
+import java.util.Map;
+
 import org.testng.annotations.Test;
 
 /**
@@ -87,4 +89,62 @@ public class ReferenceValueProviderTest {
 	   assert vSame!=null;
 	   assert vSame!=v;
 	}
+	
+	@Test void testInheritsObjectsSame() {
+		assert mdb!=null;
+		Object v = mdb.getValue("value3");
+		assert v!=null;
+		assert v.getClass().getName().contains("ReferenceValueProvider");
+		
+		Object vRef = mdb.getValue("value3Ref");
+		assert vRef!=null;
+		assert vRef.getClass().getName().contains("ReferenceValueProvider");
+		
+		Object vInherit = mdb.getValue("value3Inherits");
+		assert vInherit!=null;
+		assert vInherit.getClass().getName().contains("ReferenceValueProvider");
+		
+		assert v==vRef;
+		assert v!=vInherit;
+
+	}
+	
+	@Test void testDifferencesBetweenRefAndInherit() {
+		assert mdb!=null;
+		Object stringValue = mdb.getValue("value4");
+		assert stringValue!=null;
+		assert stringValue.equals("some value");
+
+		Object objectValue = mdb.getValue("value4.provider");
+		assert objectValue!=null;
+		assert objectValue.getClass().getName().contains("ReferenceValueProvider");
+
+		Object stringRef = mdb.getValue("value4Ref");
+		assert stringRef!=null;
+		assert stringRef.equals("some value");
+
+		Object objectRef = mdb.getValue("value4Ref.provider");
+		assert objectRef!=null;
+		assert objectRef.getClass().getName().contains("ReferenceValueProvider");
+
+		Object stringInherit = mdb.getValue("value4Inherit");
+		assert stringInherit!=null;
+		assert stringInherit.equals("some value");
+
+		Object objectInherit = mdb.getValue("value4Inherit.provider");
+		assert objectInherit!=null;
+		assert objectInherit.getClass().getName().contains("ReferenceValueProvider");
+		
+		// String values should all be equal
+		assert stringValue == stringRef;
+		assert stringValue == stringInherit;
+		
+		// These object values should be equal, as one is a pointer to the other...
+		assert objectValue == objectRef;
+		
+		// ... but these should not be.  They are separate instances.
+		assert objectValue != objectInherit;
+	
+	}
+
 }
