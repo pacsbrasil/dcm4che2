@@ -46,6 +46,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import org.dcm4chee.docstore.Availability;
 import org.dcm4chee.docstore.BaseDocument;
 import org.dcm4chee.docstore.DocumentStorageListener;
 import org.dcm4chee.docstore.Feature;
@@ -127,6 +128,10 @@ public abstract class BaseDocumetStorage implements DocumentStorage {
     public boolean addStorageListener(DocumentStorageListener listener) {
         return listeners.add(listener);
     }
+    
+    protected int getNumberOfListeners(){
+        return listeners.size();
+    }
 
     protected void notifyStored(BaseDocument doc) {
         for ( DocumentStorageListener l : listeners ) {
@@ -144,6 +149,7 @@ public abstract class BaseDocumetStorage implements DocumentStorage {
         }
     }
     protected void notifyDeleted(BaseDocument doc) {
+        log.debug("notifyDeleted:"+doc+"\nlisteners"+listeners);
         for ( DocumentStorageListener l : listeners ) {
             l.documentDeleted(doc);
         }
@@ -151,5 +157,9 @@ public abstract class BaseDocumetStorage implements DocumentStorage {
     protected void notifyRetrieved(BaseDocument doc) {
         for ( DocumentStorageListener l : listeners ) {
             l.documentRetrieved(doc);        }
+    }
+    protected void notifyAvailabilityChanged(Availability oldAvail, Availability newAvail) {
+        for ( DocumentStorageListener l : listeners ) {
+            l.storageAvailabilityChanged(this, oldAvail, newAvail);        }
     }
 }

@@ -152,6 +152,21 @@ public class DocumentStore {
             retrieveDocStorages.addAll(domainStores);
         if ( log.isDebugEnabled() ) log.debug("resulting retrieveDocStorages:"+retrieveDocStorages);
     }
+    
+    /**
+     * Add DocumentStorageListener to all stores in the domain from this DocStore.
+     * @param listener
+     */
+    public void addStorageListener(DocumentStorageListener listener) {
+        Collection<DocumentStorage> domainStores = registry.getDocumentStorages(domain);
+        if ( domainStores != null ) {
+            for ( DocumentStorage store : domainStores ) {
+                store.addStorageListener(listener);
+            }
+        } else {
+            log.warn("No DocumentStorage in this domain:"+domain);
+        }
+    }
 
     /**
      * Name of this DocumentStore instance.
@@ -188,13 +203,16 @@ public class DocumentStore {
      * @return A DocumentStorage or null if the pool doesn't exist.
      */
     public DocumentStorage selectDocStorageFromPoolOrDomain(String pool) {
+        log.info("pool:"+pool);
         Collection<DocumentStorage> c = null;
         if ( pool != null ) {
             c = registry.getDocumentStoragesOfPool(pool);
         } 
         if ( c == null || c.isEmpty() ) {
+            log.info("domain:"+domain);
             c = registry.getDocumentStorages(domain);
         }
+        log.info("found storages:"+c);
         return selectStorageByAvailability(c);
     }
 

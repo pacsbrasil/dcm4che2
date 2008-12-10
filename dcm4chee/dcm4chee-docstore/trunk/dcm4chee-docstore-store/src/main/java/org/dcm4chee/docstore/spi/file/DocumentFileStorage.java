@@ -109,7 +109,11 @@ public class DocumentFileStorage extends BaseDocumetStorage {
 
     public Availability checkAvailabilty() {
         log.debug("checkAvailabilty called! currentAvailabilty:"+currentAvailabilty);
+        Availability oldAvail = currentAvailabilty;
         currentAvailabilty = FileSystemInfo.getFileSystemAvailability(baseDir, minFree);
+        if ( oldAvail == null || !oldAvail.equals(currentAvailabilty)) {
+            this.notifyAvailabilityChanged(oldAvail, currentAvailabilty);
+        }
         log.debug("checkAvailabilty done! currentAvailabilty:"+currentAvailabilty);
         lastCheck = System.currentTimeMillis();
         return currentAvailabilty;
@@ -117,10 +121,23 @@ public class DocumentFileStorage extends BaseDocumetStorage {
 
     public boolean deleteDocument(String docUID) {
         boolean b = false;
-        File f = getDocumentPath(docUID);
-        if ( f.exists() ) {
-            b = deleteFile(f);
-            purgeDocumentPath(f.getParentFile());
+        File docPath = getDocumentPath(docUID);
+        log.debug("deleteDocument docPath:"+docPath);
+        if ( docPath.exists() ) {
+            String[] docFiles = null;
+            if ( getNumberOfListeners() > 0 ) {
+                docFiles = docPath.list();
+            }
+            b = deleteFile(docPath);
+            log.debug("docPath deleted?:"+b);
+            if ( b && docFiles != null) {
+                for ( String f : docFiles ) {
+                    log.debug(" docFile:"+f);
+                    if ( ! DEFAULT_MIME_FILENAME.equals(f))
+                        notifyDeleted(new BaseDocument(docUID, f, null, null, -1, null));
+                }
+            }
+            purgeDocumentPath(docPath.getParentFile());
         }
         return b;
     }
