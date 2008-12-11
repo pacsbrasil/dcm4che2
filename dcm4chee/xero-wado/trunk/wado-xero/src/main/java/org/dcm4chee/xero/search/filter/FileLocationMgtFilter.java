@@ -112,8 +112,8 @@ public class FileLocationMgtFilter implements Filter<URL> {
 
    /** Get the URL of the local file - may not be updated for DB changes etc */
    public URL filter(FilterItem<URL> filterItem, Map<String, Object> params) {
-      Map<String,Object> ae = AEProperties.getAE(params);
-      String type = (String) ae.get("type");
+      Map<String,Object> aeMap = AEProperties.getAE(params);
+      String type = (String) aeMap.get("type");
       if( type!=null && !type.equals("fileLocationMgt") ) {
          URL ret = filterItem.callNextFilter(params);
          log.debug("AE filter type {}, calling next filter, returned {}", type,ret);
@@ -121,23 +121,34 @@ public class FileLocationMgtFilter implements Filter<URL> {
       }
       log.debug("AE filter type {}", type);
       long start = System.nanoTime();
+      
+       
+      if (params.get("ae") != null && AEProperties.getInstance().getAE((String)params.get("ae")) != null)   {
+    	  String ae = (String)params.get("ae");
+          aeMap = AEProperties.getInstance().getAE(ae);
+      } else {
+    	  aeMap = AEProperties.getInstance().getDefaultAE();
+      }
+      
+      
+      // This is only for dcm4chee fileLocation searches (This is the default, so null is okay).
+      String pacsType = (String) aeMap.get("pacsType");
+      if( pacsType != null && !pacsType.equalsIgnoreCase("dcm4chee")) {
+    	  return filterItem.callNextFilter(params);
+      }
+      
       String objectUID = (String) params.get("objectUID");
       try {
          URL url = null;
-         Map<String, Object> aeMap = null;
-         if (params.get("ae") != null && AEProperties.getInstance().getAE((String)params.get("ae")) != null)   {
-            aeMap = AEProperties.getInstance().getAE((String)params.get("ae"));
-         } else {
-            aeMap = AEProperties.getInstance().getDefaultAE();
-         }
-         String hostname = (String) aeMap.get("host");
-         Integer port = (Integer) aeMap.get("ejbport");
+         String hostname = (String)aeMap.get("host");
+         Integer port = (Integer)aeMap.get("ejbport");
+
          String portStr = null;
          if ( port != null )
              portStr = port.toString();
              
          url = getDICOMFileURL(hostname, portStr, objectUID);
-
+ 
          if (url == null) {
             if( ! tryNext ) return null; 
             log.warn("File not found in local online cache.");
@@ -163,6 +174,22 @@ public class FileLocationMgtFilter implements Filter<URL> {
          Map<String, Object> params) {
       Map<String, Object> newParams = new HashMap<String, Object>();
       newParams.put("objectUID", dot.getObjectUID());
+      String queryStr = "objectUID='"+dot.getObjectUID()+"'";
+      
+      String ae = (String) params.get("ae");
+      if(ae!=null ) {
+    	  newParams.put("ae",ae);
+    	  queryStr += ";ae="+ae;
+      }
+      
+      newParams.put("queryStr",queryStr);
+      
+      String studyUid = (String) params.get("studyUID");
+      if( studyUid != null ) newParams.put("studyUID", studyUid);
+      
+      String seriesUid = (String) params.get("seriesUID");
+      if( seriesUid != null ) newParams.put("seriesUID", seriesUid);
+      
       if ("true".equalsIgnoreCase((String) params
             .get(MemoryCacheFilter.NO_CACHE))) {
          newParams.put("no-cache", "true");
@@ -192,7 +219,7 @@ public class FileLocationMgtFilter implements Filter<URL> {
 
    private Filter<URL> fileLocation;
 
-   public Filter<URL> getFileLocation() {
+   public Filter<URL> getFileLocation() {	   
       return fileLocation;
    }
 

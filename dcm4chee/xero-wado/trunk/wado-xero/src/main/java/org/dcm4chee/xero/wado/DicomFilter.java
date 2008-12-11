@@ -145,8 +145,8 @@ public class DicomFilter implements Filter<DicomImageReader> {
 			if (params.containsKey(DicomUpdateFilter.UPDATE_HEADER)) {
 				newParams.put(DicomUpdateFilter.UPDATE_HEADER, "TRUE");
 			}
-			String ae = (String) params.get("AE");
-			if(ae!=null ) newParams.put("AE",ae);
+			String ae = (String) params.get("ae");
+			if(ae!=null ) newParams.put("ae",ae);
 		}
 		DicomObject ret = filter.filter(null, newParams);
 		return ret;

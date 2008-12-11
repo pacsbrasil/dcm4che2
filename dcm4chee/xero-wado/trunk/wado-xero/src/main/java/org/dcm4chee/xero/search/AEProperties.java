@@ -102,6 +102,7 @@ public class AEProperties {
       temp.put("title", "DCM4CHEE");
       temp.put("localTitle", "XERO");
       temp.put("wadoPath", "http://localhost:8080/wado");
+      temp.put("pacsType","dcm4chee");
       defaultProperties = Collections.unmodifiableMap(temp);
    }
 
@@ -128,6 +129,8 @@ public class AEProperties {
             if( title==null ) props.put("title","DCM4CHEE");
             String localTitle = props.getProperty("localTitle");
             if( localTitle==null ) props.put("localTitle","XERO");
+            String pacsType = props.getProperty("pacsType");
+            if( pacsType==null ) props.put("pacsType","dcm4chee");
 
             if (hostname != null ) {
                Map mprops = props;

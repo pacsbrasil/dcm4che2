@@ -73,6 +73,10 @@ public class AddFileLocationFilter  implements Filter<ResultsBean> {
 				  if( ! (dot instanceof MacroMixIn) ) continue;
 				  MacroMixIn mmi = (MacroMixIn) dot;
 				  if( mmi.getMacroItems().findMacro(FileLocationMacro.class)!=null ) continue;
+				  String seriesUid = set.getSeriesUID();
+				  String studyUid = st.getStudyUID();
+				  if( seriesUid != null) params.put("seriesUID", seriesUid);
+				  if( studyUid != null) params.put("studyUID", studyUid);
 				  URL url = FileLocationMgtFilter.findImageBeanUrl(dot, fileLocation, params);
 				  if( url==null ) continue;
 				  mmi.getMacroItems().addMacro(new FileLocationMacro(url.toString()));
