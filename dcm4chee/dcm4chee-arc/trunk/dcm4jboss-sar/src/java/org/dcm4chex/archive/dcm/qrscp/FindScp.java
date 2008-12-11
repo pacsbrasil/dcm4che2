@@ -79,8 +79,8 @@ import org.jboss.logging.Logger;
  * @since 31.08.2003
  */
 public class FindScp extends DcmServiceBase implements AssociationListener {
-    private static final int PID = 0;
-    private static final int ISSUER = 1;
+    protected static final int PID = 0;
+    protected static final int ISSUER = 1;
     private static final String QUERY_XSL = "cfindrq.xsl";
     private static final String RESULT_XSL = "cfindrsp.xsl";
     private static final String QUERY_XML = "-cfindrq.xml";
@@ -193,7 +193,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
         return key.indexOf('*') != -1 || key.indexOf('?') != -1;
     }
 
-    private void pixQuery(Dataset rqData) throws DcmServiceException {
+    protected void pixQuery(Dataset rqData) throws DcmServiceException {
         ArrayList result = new ArrayList();
         boolean updateRQ = pixQuery(rqData, result);
         DcmElement opidsq = rqData.get(Tags.OtherPatientIDSeq);
@@ -253,7 +253,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
         rqData.putLO(Tags.IssuerOfPatientID, pid[ISSUER]);
     }
 
-    private boolean pixQuery(Dataset rqData, ArrayList result)
+    protected boolean pixQuery(Dataset rqData, ArrayList result)
             throws DcmServiceException {
         String pid = rqData.getString(Tags.PatientID);
         if (isUniversalMatching(pid)) {
