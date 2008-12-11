@@ -79,6 +79,7 @@ import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToStrin
 public class DicomImageFilter implements Filter<WadoImage> {
    public static final String COLOR_MODEL_PARAM = "ColorModelParam";
    public static final String RET = "ret";
+   public static final String SUBSAMPLE_INDEX = "subSampleIndex";
 
    private static Logger log = LoggerFactory.getLogger(DicomImageFilter.class);
 
@@ -112,6 +113,10 @@ public class DicomImageFilter implements Filter<WadoImage> {
 		 synchronized (reader) {
 			int width = reader.getWidth(0);
 			int height = reader.getHeight(0);
+			int subSampleIndex = getInt(params, SUBSAMPLE_INDEX, 1);
+			
+			width = (width + subSampleIndex -1)/subSampleIndex;
+			height = (height + subSampleIndex -1)/subSampleIndex;
 			String filenameExtra = updateParamFromRegion(param, params, width, height);
 			BufferedImage bi;
 			DicomStreamMetaData streamData = (DicomStreamMetaData) reader.getStreamMetadata();
