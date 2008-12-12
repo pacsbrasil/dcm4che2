@@ -37,8 +37,14 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado;
 
+import static org.dcm4chee.xero.metadata.filter.FilterUtil.getBoolean;
+import static org.dcm4chee.xero.metadata.filter.FilterUtil.getFloats;
+import static org.dcm4chee.xero.metadata.filter.FilterUtil.getInt;
+
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -52,10 +58,6 @@ import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.dcm4chee.xero.metadata.filter.FilterUtil.getFloats;
-import static org.dcm4chee.xero.metadata.filter.FilterUtil.getInt;
-import static org.dcm4chee.xero.metadata.filter.FilterUtil.getBoolean;
 
 /**
  * Scales the image as required. Assumes the image can be read in decimated
@@ -86,10 +88,20 @@ public class ScaleFilter implements Filter<WadoImage> {
 	  // Size can't change per-image, so just get the overall sizes.
 	  int width, height;
 	  try {
-		 // If no image has been read yet, the size will be zero, so read the metadata to get this.
+		  // Read the StreamMetadata to ensure we can get the width and height.
+		  //
+		  // HACK ALERT:  DicomImageFilter.filter() also does this:
+		  // Right now the reader gives back the original width and height regardless
+		  // of any scaling that might have been done before putting the data in file cache.  We
+		  // need to convert this to the actual pixel-data width and height.
+		  //
 		 dir.getStreamMetadata();
 		 width = dir.getWidth(0);
 		 height = dir.getHeight(0);
+		 int subSampleIndex = getInt(params, DicomImageFilter.SUBSAMPLE_INDEX, 1);
+		 width = DicomImageFilter.calculateFinalSizeFromSubsampling(width, subSampleIndex);
+		 height = DicomImageFilter.calculateFinalSizeFromSubsampling(height ,subSampleIndex);
+
 		 if( width<=0 || height<=0 ) {
 			log.error("Image width/height is zero.");
 			 return (WadoImage) filterItem.callNextFilter(params);
@@ -98,34 +110,65 @@ public class ScaleFilter implements Filter<WadoImage> {
 		 log.warn("Couldnt't read DICOM image.");
 		 return null;
 	  }
+	  Rectangle regionOnSource = DicomImageFilter.calculateSubregionFromRegionFloatArray(region,width,height);
+	  if ( regionOnSource.isEmpty()) {
+		  //FIXME: What is the desired behavior?  This bad region will still be passed to the next filter.
+		  // Should we remove the region from the parameters, and continue instead of just calling the next filter now?
+		  log.error("Source subimage is described with zero size.");
+		  return (WadoImage) filterItem.callNextFilter(params);
+	  }
+	  Dimension desiredSize = new Dimension(cols,rows);
+	  Point2D scale = new Point2D.Double(1.0,1.0);
 	  if( rows==0 && cols==0 ) {
-		 cols = (int) (width * (region[2] - region[0]));
-		 rows = (int) (height * (region[3]-region[1]));
+		  desiredSize = regionOnSource.getSize();
+	  } else if (rows == 0) {
+		  double aspectHeightToWidth = (double)height / (double)width; 
+		  desiredSize.height = (int)Math.round( cols * aspectHeightToWidth );
+		  double scaleFactor = calculateScaleDownFactor( regionOnSource.width, desiredSize.width );
+		  scale.setLocation(scaleFactor,scaleFactor);
+	  } else if (cols == 0) {
+		  double aspectWidthToHeight = (double)width / (double)height;
+		  desiredSize.width = (int)Math.round( rows * aspectWidthToHeight );
+		  double scaleFactor = calculateScaleDownFactor( regionOnSource.height, desiredSize.height );
+		  scale.setLocation(scaleFactor,scaleFactor);
+	  } else {
+		  scale.setLocation( calculateScaleDownFactor( regionOnSource.width, desiredSize.width ),
+				             calculateScaleDownFactor( regionOnSource.height, desiredSize.height ) );
 	  }
-	  else if (rows == 0)
-		 rows = (cols * height) / width;
-	  else if (cols == 0)
-		 cols = (rows * width) / height;
-	  int fRows = (int) (rows / (region[3] - region[1]));
-	  int fCols = (int) (cols / (region[2] - region[0]));
-
-	  float scaleX = width / (float) fCols;
-	  float scaleY = height / (float) fRows;
-	  if ((scaleX <= 1 && scaleY <= 1 && rot==0 && !flip) || scaleX<=0 || scaleY<=0) {
-		 log.debug("Just calling next filter - no scaling being applied.");
-		 return (WadoImage) filterItem.callNextFilter(params);
+	  // don't scale up.
+	  boolean isEqualAspectScale = (Math.abs(( scale.getX() - scale.getY() )* Math.min(regionOnSource.width,regionOnSource.height) ) <= 2 );
+	  if ( ( scale.getX() >= 1.0 ) || ( scale.getY() >= 1.0 ) ) {
+		  if ( isEqualAspectScale ) {
+			  scale.setLocation(1.0, 1.0);
+		  }
+		  else {
+			  double ratioXY = scale.getX() / scale.getY();
+			  if ( ratioXY >= 1.0 ) {
+				  scale.setLocation(1.0, 1.0/ratioXY);
+			  }
+			  else {
+				  scale.setLocation(ratioXY, 1.0);
+			  }
+		  }
 	  }
-	  // Don't request anything bigger than the current image size.
-	  if( scaleX<1 ) scaleX = 1;
-	  if( scaleY<1 ) scaleY = 1;
-	  int nCols = (int) ((width / (int) scaleX) * (region[2] - region[0]));
-	  int nRows = (int) ((height / (int) scaleY) * (region[3] - region[1]));
+	  if ( isEqualAspectScale && ( scale.getX() >= 1.0 ) && ( rot == 0 ) && ( !flip ) )
+	  {
+		  log.debug("Just calling next filter - no scaling being applied.");
+		  return (WadoImage) filterItem.callNextFilter(params);
+	  }
+	  
+	  Dimension neededSize = new Dimension(
+			  (int)(scale.getX()*regionOnSource.width + 0.99), 
+			  (int)(scale.getY()*regionOnSource.height + 0.99) );
+	  
+	  // Remove scaling, rotation, and flip information from the parameters to 
+	  // downstream filters.
 	  FilterUtil.removeFromQuery(params, "rows", "cols", "rotation", "flip");
-	  params.put("rows", nRows);
-	  params.put("cols", nCols);
+	  params.put("rows", neededSize.height);
+	  params.put("cols", neededSize.width);
 	  String queryStr = (String) params.get(MemoryCacheFilter.KEY_NAME);
 	  // Need to include the rows/cols in the new queryStr for caching.
-	  queryStr = queryStr + "&rows=" + nRows + "&cols=" + nCols;
+	  queryStr = queryStr + "&rows=" + neededSize.height + "&cols=" + neededSize.width;
 	  params.put(MemoryCacheFilter.KEY_NAME, queryStr);
 	  log.debug("Calling the next filter with queryStr=" + queryStr);
 	  WadoImage wi = (WadoImage) filterItem.callNextFilter(params);
@@ -135,32 +178,56 @@ public class ScaleFilter implements Filter<WadoImage> {
 	  BufferedImage bi = wi.getValue();
 	  int nWidth = bi.getWidth();
 	  int nHeight = bi.getHeight();
-	  if ((Math.abs(nWidth - cols) <= 3) && (Math.abs(nHeight - rows) <= 3) && rot==0 && !flip) {
+	  if ((Math.abs(nWidth - neededSize.width) <= 3) && (Math.abs(nHeight - neededSize.height) <= 3) && rot==0 && !flip) {
 		 log.debug("Within 3 pixels of desired size, returning directly.");
 		 return wi;
 	  }
+	  int sourceDiffX = Math.abs(nWidth - regionOnSource.width );
+	  int sourceDiffY = Math.abs(nHeight - regionOnSource.height);
+	  if ( ( sourceDiffX > 0 ) || (sourceDiffY > 0 ) ) {
+		  String message = "";
+		  if ( log.isDebugEnabled() )
+		  {
+			  message = "Didn't get expected source size " + regionOnSource.width + "x" + 
+			  	regionOnSource.height + ", but got source size " + nWidth + "x" + nHeight;
+		  }
+		  if ( ( sourceDiffX > 1 ) || (sourceDiffY > 1 ) ) {
+			  log.warn( message + ".  Recalculating scale factor." );
+			  scale.setLocation((double)neededSize.width / (double) nWidth, (double)neededSize.height / (double) nHeight);
+		  } else {
+			  log.debug( message + ".  Close enough - using previously calculated scale factor.");
+		  }
+	  } else {
+		  log.debug( "Received correct unscaled source size.  Will scale.");
+	  }
 
-	  log.debug("Returning a scaled instance of the image sx=" + (cols / (double) nWidth) + " sy=" + (rows / (double) nHeight));
+	  log.debug("Returning a scaled instance of the image sx=" + scale.getX() + " sy=" + scale.getY() );
 	  AffineTransform affine = new AffineTransform();
 	  
 	  BufferedImage biScale = null;
 	  String transform = "";
-	  if( region[0]!=0 || region[1]!=0 ) {
-		 transform = " translate("+(-region[0]*width)+","+(-region[1]*height)+")" + transform;
+	  if( regionOnSource.x!=0 || regionOnSource.y!=0 ) {
+		 transform = " translate("+(-regionOnSource.width)+","+(-regionOnSource.height)+")" + transform;
 	  }
-	  if( scaleX!=1 || scaleY!=1 ) {
-		 transform =" scale("+(1/scaleX)+","+(1/scaleY)+") "+transform;
+	  if( scale.getX()!=1 || scale.getY() !=1 ) {
+		 transform =" scale("+scale.getX()+","+scale.getY()+") "+transform;
 	  }
 	  if( flip ) {
 		 affine.scale(-1,1);
 		 transform = "scale(-1,1) "+transform;
 	  }
+	  //
+	  // The AffineTransformOp is going to figure out the bounds of the image
+	  // so we don't need to worry about translations.
+	  // TODO: verify the rotation works correctly along with non-uniform scaling.
+	  // The scaling operates on the
+	  //
 	  if( rot!=0 ) {
 		 affine.rotate(rot*Math.PI/180);
 		 transform = "rotate("+(360-rot)+") "+transform;
 	  }
 	  if( cols!=nWidth || rows!=nHeight ) {
-		 affine.scale(cols / (double) nWidth, rows / (double) nHeight);
+		 affine.scale(scale.getX(), scale.getY());
 	  }
 
 	  Rectangle bounds = affine.createTransformedShape(new Rectangle(nWidth, nHeight)).getBounds();
@@ -172,12 +239,22 @@ public class ScaleFilter implements Filter<WadoImage> {
 	  firstAffine.concatenate(affine);
 	  log.debug("Overall affine transform="+firstAffine);
 	  
-	  AffineTransformOp scale = new AffineTransformOp(firstAffine, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-	  biScale = scale.filter(bi, biScale);
+	  AffineTransformOp scaleOp = new AffineTransformOp(firstAffine, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+	  biScale = scaleOp.filter(bi, biScale);
 	  WadoImage ret = wi.clone();
 	  ret.setValue(biScale);
 	  if( !transform.equals("") ) ret.setParameter(SVG_TRANSFORM, transform);
 	  return ret;
+   }
+   
+   protected static double calculateScaleDownFactor( int startSize, int destinationSize )
+   {
+	   int subsampleFactor = DicomImageFilter.calculateDesiredSubsamplingFactorForOneDimension( startSize, destinationSize );
+	   int subsampledSize = DicomImageFilter.calculateFinalSizeFromSubsampling( startSize, subsampleFactor );
+	   if ( subsampledSize == destinationSize ) {
+		   return 1.0 / (double)subsampleFactor;
+	   }
+	   return (double)destinationSize / (double)startSize;
    }
    
    private Filter<DicomImageReader> dicomImageReaderFilter;

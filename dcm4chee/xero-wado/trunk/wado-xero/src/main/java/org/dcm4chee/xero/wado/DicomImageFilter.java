@@ -111,12 +111,17 @@ public class DicomImageFilter implements Filter<WadoImage> {
 		 long start = System.nanoTime();
 		 String op = "decompress";
 		 synchronized (reader) {
+			// HACK ALERT:  ScaleFilter.filter() also does this:
+			// Right now the reader gives back the original width and height regardless
+			// of any scaling that might have been done before putting the data in file cache.  We
+			// need to convert this to the actual pixel-data width and height.
+			//
 			int width = reader.getWidth(0);
 			int height = reader.getHeight(0);
 			int subSampleIndex = getInt(params, SUBSAMPLE_INDEX, 1);
+			width = calculateFinalSizeFromSubsampling(width, subSampleIndex);
+			height = calculateFinalSizeFromSubsampling(height ,subSampleIndex);
 			
-			width = (width + subSampleIndex -1)/subSampleIndex;
-			height = (height + subSampleIndex -1)/subSampleIndex;
 			String filenameExtra = updateParamFromRegion(param, params, width, height);
 			BufferedImage bi;
 			DicomStreamMetaData streamData = (DicomStreamMetaData) reader.getStreamMetadata();
@@ -164,6 +169,107 @@ public class DicomImageFilter implements Filter<WadoImage> {
 		 return (WadoImage) filterItem.callNextFilter(params);
 	  return ret;
    }
+   
+   /**
+    * Given an image dimension and a subsample factor, calculate the final dimension.  This is
+    * integer division with upwards rounding.
+    * <p>
+    * <code><pre>
+    * return ( startSize + subsampleFactor - 1 ) / subsampleFactor;
+    * We choose subsampleFactor such that 0<=( outputSize - desiredSize ) is a minimum.
+    * </pre></code>
+    * @param startSize the initial size before subsampling.
+    * @param subsampleFactor an subsample factor >0
+    * @return the calculated final size.
+    */
+   public static int calculateFinalSizeFromSubsampling( int startSize, int subsampleFactor ) {
+	   if ( subsampleFactor <= 0 ) {
+		   log.error("bad subsample factor of " + subsampleFactor);
+		   return startSize;
+	   }
+	   return ( startSize + subsampleFactor - 1 ) / subsampleFactor;
+   }
+   
+   /**
+    * Based on one dimension only, calculate the needed subsample factor.
+    * <p>
+    * <code><pre>
+    * int outputSize = ( startSize + subsampleFactor - 1 ) / subsampleFactor;
+    * We choose subsampleFactor such that 0<=( outputSize - desiredSize ) is a minimum.
+    * </pre></code>
+    * @param startSize the start dimension of the image before subsampling.
+    * @param desiredSize the final output scaling size desired.  If zero, we simply return 1 (no subsampling).
+    * @return the integral subsampling factor that will get us the closest output size larger than, or equal to the
+    *         desiredSize.
+    */
+   public static int calculateDesiredSubsamplingFactorForOneDimension( int startSize, int desiredSize ) {
+	   if ( ( desiredSize <= 0 ) || ( desiredSize >= startSize ) ) {
+		   log.debug("startSize "+startSize+" or desiredSize "+desiredSize+" are outside normal range. Returning subsample factor of 1.1");
+		   return 1;
+	   }
+	   int firstTry = startSize / desiredSize;
+	   int lastTry = firstTry;
+	   if ( desiredSize > 1 ) {
+		   lastTry = startSize / (desiredSize-1);
+	   }
+	   int subsampleFactorToUse = firstTry;
+	   int bestDiff = Integer.MAX_VALUE;
+	   for (int subsampleFactor = firstTry; subsampleFactor <= lastTry; subsampleFactor++) {
+		   int subsampleSize = calculateFinalSizeFromSubsampling( startSize, subsampleFactor );
+		   int diff = subsampleSize - desiredSize;
+		   if ( ( diff <= bestDiff ) && ( diff >= 0 ) ) {
+			   boolean isBetter = true;
+			   if ( diff == bestDiff ) {
+				   if ( ! isPowerOfTwo( subsampleSize )) {
+					   isBetter = false;
+				   }
+			   } 
+			   if ( isBetter ) {
+				   bestDiff = diff;
+				   subsampleFactorToUse = subsampleFactor;
+			   }
+		   }
+	   }
+	   return subsampleFactorToUse;
+   }
+   
+   /**
+    * Check if an integer is equal to 2^n, where n is in {0,1,2,3,...}.  
+    * Therefore value must be {1,2,4,8,16,...}.
+    * @param value a value to test.
+    * @return true if the integer is a power of 2, else false.
+    */
+   protected static boolean isPowerOfTwo( int value ) {
+	   if ( value <= 0 ) {
+		   return false;
+	   }
+	   int testValue = value;
+	   int i = 0;
+	   while ( testValue > 1 ) {
+		   i++;
+		   testValue /= 2;
+	   }
+	   if ( ( 1L << i ) == value ) {
+		   return true;
+	   }
+	   return false;
+   }
+
+   /**
+    * Given the "region" parameter, and the source image dimensions, calculate the desired image region in pixels.
+    * @param region the desired fractional region, in format {x0,y0,x1,y1} where the elements are between 0.0 and 1.0
+    * @param fullWidth the source width to apply the region to.
+    * @param fullHeight the source height to apply the region to.
+    * @return the rectangle on the source image
+    */
+   public static Rectangle calculateSubregionFromRegionFloatArray( float[] region, int fullWidth, int fullHeight ) {
+	   int xOffset = (int)Math.round(region[0] * fullWidth);
+	   int yOffset = (int)Math.round(region[1] * fullHeight);
+	   int sWidth = (int)Math.round((region[2] - region[0]) * fullWidth);
+	   int sHeight = (int)Math.round((region[3] - region[1]) * fullHeight);
+	   Rectangle desiredRect = new Rectangle(xOffset, yOffset, sWidth, sHeight);
+	   return desiredRect.intersection( new Rectangle(0,0,fullWidth,fullHeight));
+   }
 
    /**
      * Compute the source, sub-sampling and destination regions appropriately
@@ -177,57 +283,51 @@ public class DicomImageFilter implements Filter<WadoImage> {
      * @param height
      */
    public String updateParamFromRegion(ImageReadParam read, Map<String, Object> params, int width, int height) {
-     String ret = "";
-	  float[] region = getFloats(params, "region", null);
-	  int rows = getInt(params, "rows");
-	  int cols = getInt(params, "cols");
-	  log.debug("DicomImageFilter rows=" + rows + " cols=" + cols);
-	  int xOffset = 0;
-	  int yOffset = 0;
-	  int sWidth = width;
-	  int sHeight = height;
+	   String ret = "";
+	   float[] region = getFloats(params, "region", null);
+	   int rows = getInt(params, "rows");
+	   int cols = getInt(params, "cols");
+	   log.debug("DicomImageFilter rows=" + rows + " cols=" + cols);
+	   Rectangle fullRegion = new Rectangle(0, 0, width, height);
+	   Rectangle subRegion = new Rectangle( fullRegion );
 
-	  if (region != null) {
-		 // Figure out the sub-region to use
-		 xOffset = (int) (region[0] * width);
-		 yOffset = (int) (region[1] * height);
-		 sWidth = (int) ((region[2] - region[0]) * width);
-		 sHeight = (int) ((region[3] - region[1]) * height);
-		 if( xOffset>0 || yOffset>0 || sWidth < width || sHeight<height) {
-			 Rectangle rect = new Rectangle(xOffset, yOffset, sWidth, sHeight);
-			 read.setSourceRegion(rect);
-			 ret="-r"+xOffset+","+yOffset+","+sWidth+","+sHeight;
-			 log.debug("Source region {} region {}",rect,region);
-		 }
-	  }
+	   if (region != null) {
+		   // Figure out the sub-region to use
+		   subRegion = calculateSubregionFromRegionFloatArray(region,width,height);
+		   if( ! subRegion.equals( fullRegion ) ) {
+			   read.setSourceRegion(subRegion);
+			   ret="-r"+subRegion.x+","+subRegion.y+","+subRegion.width+","+subRegion.height;
+			   log.debug("Source region {} region {}",subRegion,region);
+		   }
+	   }
 
-	  if (rows == 0 && cols == 0)
-		 return ret;
+	   if (rows == 0 && cols == 0)
+		   return ret;
 
-	  // Now figure out the size of the final region
-	  int subsampleX = 1;
-	  int subsampleY = 1;
-	  if (cols != 0) {
-		 subsampleX = sWidth / cols;
-		 subsampleY = subsampleX;
-	  }
-	  if (rows != 0) {
-		 subsampleY = sHeight / rows;
-		 if (cols == 0)
-			subsampleX = subsampleY;
-	  }
-	  // Can't over-sample the data...
-	  if (subsampleX < 1)
-		 subsampleX = 1;
-	  if (subsampleY < 1)
-		 subsampleY = 1;
-	  if (subsampleX == 1 && subsampleY == 1)
-		 return ret;
-	  log.debug("Sub-sampling " + subsampleX + "," + subsampleY + " sWidth,Height=" + sWidth+","+sHeight);
-	  read.setSourceSubsampling(subsampleX, subsampleY, 0, 0);
-	  ret = "-s"+subsampleX+","+subsampleY+ret;	  
-	  params.put(RET, ret);
-	  return ret;
+	   // Now figure out the size of the final region
+	   int subsampleX = 1;
+	   int subsampleY = 1;
+	   if (cols != 0) {
+		   subsampleX = calculateDesiredSubsamplingFactorForOneDimension( subRegion.width, cols );
+		   subsampleY = subsampleX;
+	   }
+	   if (rows != 0) {
+		   subsampleY = calculateDesiredSubsamplingFactorForOneDimension( subRegion.height, rows );
+		   if (cols == 0)
+			   subsampleX = subsampleY;
+	   }
+	   // Can't over-sample the data...
+	   if (subsampleX < 1)
+		   subsampleX = 1;
+	   if (subsampleY < 1)
+		   subsampleY = 1;
+	   if (subsampleX == 1 && subsampleY == 1)
+		   return ret;
+	   log.debug("Sub-sampling " + subsampleX + "," + subsampleY + " sWidth,Height=" + subRegion.width + "," + subRegion.height );
+	   read.setSourceSubsampling(subsampleX, subsampleY, 0, 0);
+	   ret = "-s"+subsampleX+","+subsampleY+ret;	  
+	   params.put(RET, ret);
+	   return ret;
    }
 
    /** Get the default priority for this filter. */
