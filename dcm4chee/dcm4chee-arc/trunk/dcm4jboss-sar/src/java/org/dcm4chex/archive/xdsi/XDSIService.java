@@ -1262,7 +1262,9 @@ public class XDSIService extends ServiceMBeanSupport {
             File propFile = FileUtils.resolve(this.autoPublishPropertyFile);
             bis= new BufferedInputStream( new FileInputStream( propFile ));
             props.load(bis);
-            return props;
+            if ( sourceID != null ) {
+                props.setProperty(SOURCE_ID, sourceID);
+            }
         } catch (IOException x) {
             log.error("Cant read Metadata Properties for AutoPublish!",x);
         } finally {
