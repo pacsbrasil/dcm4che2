@@ -40,9 +40,11 @@
 package org.dcm4chex.wado.mbean;
 
 import java.awt.Rectangle;
+import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorConvertOp;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -69,11 +71,8 @@ import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
-import javax.management.ReflectionException;
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
@@ -100,6 +99,7 @@ import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.imageio.plugins.DcmMetadata;
+import org.dcm4cheri.imageio.plugins.SimpleYBRColorSpace;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
@@ -1147,6 +1147,14 @@ public class WADOSupport {
         w = (int) Math.min(w, h * ratio);
         h = (int) Math.min(h, w / ratio);
         if (w != w0 || h != h0) {
+            ColorSpace cs = bi.getColorModel().getColorSpace();
+            if (cs instanceof SimpleYBRColorSpace) {
+                // convert YBR to RGB, otherwise scaleOp.filter(bi, null) will
+                // throw ImagingOpException("Unable to transform src image")
+                ColorConvertOp colorConvetOp = new ColorConvertOp(
+                        ColorSpace.getInstance(ColorSpace.CS_sRGB), null);
+                bi = colorConvetOp.filter(bi, null);
+            }
             AffineTransform scale = AffineTransform.getScaleInstance((double) w
                     / w0, (double) h / h0);
             AffineTransformOp scaleOp = new AffineTransformOp(scale,
