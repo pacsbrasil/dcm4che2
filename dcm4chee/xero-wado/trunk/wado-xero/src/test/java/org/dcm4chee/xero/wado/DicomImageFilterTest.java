@@ -73,7 +73,7 @@ public class DicomImageFilterTest {
 			for ( int desiredSize = 1; desiredSize < 70; desiredSize++ ) {
 				int subsampleFactor = calculateDesiredSubsamplingFactorForOneDimension( startSize, desiredSize );
 				int finalSize = calculateFinalSizeFromSubsampling( startSize, subsampleFactor );
-				int smallerThanDesiredSize = calculateFinalSizeFromSubsampling( startSize, subsampleFactor+1 );
+				int smallerThanDesiredSize = calculateFinalSizeFromSubsampling( startSize, subsampleFactor*2 );
 				String msg = "startSize= "+startSize+", desiredSize= "+desiredSize;
 				if( desiredSize > startSize){
 					assertTrue(finalSize == startSize, msg);

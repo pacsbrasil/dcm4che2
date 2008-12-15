@@ -37,14 +37,21 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado;
 
-import static org.dcm4chee.xero.wado.WadoParams.*;
+import static org.dcm4chee.xero.metadata.filter.FilterUtil.getFloats;
+import static org.dcm4chee.xero.metadata.filter.FilterUtil.getInt;
+import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
+import static org.dcm4chee.xero.wado.WadoParams.FRAME_NUMBER;
+import static org.dcm4chee.xero.wado.WadoParams.OBJECT_UID;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.imageio.ImageReadParam;
 
@@ -62,10 +69,6 @@ import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.dcm4chee.xero.metadata.filter.FilterUtil.getFloats;
-import static org.dcm4chee.xero.metadata.filter.FilterUtil.getInt;
-import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
 
 /**
  * This class takes a URL to either a file location or another WADO service, and
@@ -120,7 +123,7 @@ public class DicomImageFilter implements Filter<WadoImage> {
 			int height = reader.getHeight(0);
 			int subSampleIndex = getInt(params, SUBSAMPLE_INDEX, 1);
 			width = calculateFinalSizeFromSubsampling(width, subSampleIndex);
-			height = calculateFinalSizeFromSubsampling(height ,subSampleIndex);
+			height = calculateFinalSizeFromSubsampling(height, subSampleIndex);
 			
 			String filenameExtra = updateParamFromRegion(param, params, width, height);
 			BufferedImage bi;
@@ -191,46 +194,59 @@ public class DicomImageFilter implements Filter<WadoImage> {
    }
    
    /**
-    * Based on one dimension only, calculate the needed subsample factor.
+    * Based on one dimension only, calculate the needed power-of-2 subsample factor.
     * <p>
     * <code><pre>
     * int outputSize = ( startSize + subsampleFactor - 1 ) / subsampleFactor;
-    * We choose subsampleFactor such that 0<=( outputSize - desiredSize ) is a minimum.
+    * We choose subsampleFactor such that 0<=( outputSize - desiredSize ) is a minimum, and subsampleFactor
+    * is an positive-integer power-of-2.
     * </pre></code>
     * @param startSize the start dimension of the image before subsampling.
     * @param desiredSize the final output scaling size desired.  If zero, we simply return 1 (no subsampling).
-    * @return the integral subsampling factor that will get us the closest output size larger than, or equal to the
+    * @return the positive-integer power-of-2 subsampling factor that will get us the closest output size larger than, or equal to the
     *         desiredSize.
     */
    public static int calculateDesiredSubsamplingFactorForOneDimension( int startSize, int desiredSize ) {
+	   
+	   return (1 << calculateDesiredPowerOfTwoResolutionLevelForOneDimension(startSize, desiredSize));
+   }
+   
+   /**
+    * Based on one dimension only, calculate the needed power-of-2 resolution level.  Resolution
+    * Level is the value 'level' such that 2^level is the scale-down ratio.
+    * <p>
+    * <code><pre>
+    * int outputSize = ( startSize + 2^level - 1 ) / 2^level;
+    * We choose level such that 0<=( outputSize - desiredSize ) is a minimum, and level>=0.
+    * </pre></code>
+    * @param startSize the start dimension of the image before subsampling.
+    * @param desiredSize the final output scaling size desired.  If zero, we simply return 0.
+    * @return the level that will get us the closest output size larger than, or equal to the
+    *         desiredSize.
+    */
+   public static int calculateDesiredPowerOfTwoResolutionLevelForOneDimension( int startSize, int desiredSize ) {
 	   if ( ( desiredSize <= 0 ) || ( desiredSize >= startSize ) ) {
-		   log.debug("startSize "+startSize+" or desiredSize "+desiredSize+" are outside normal range. Returning subsample factor of 1.1");
-		   return 1;
+		   log.debug("startSize "+startSize+" or desiredSize "+desiredSize+" are outside normal range. Returning resolution level of 0 (original)");
+		   return 0;
 	   }
-	   int firstTry = startSize / desiredSize;
-	   int lastTry = firstTry;
-	   if ( desiredSize > 1 ) {
-		   lastTry = startSize / (desiredSize-1);
-	   }
-	   int subsampleFactorToUse = firstTry;
+	   double rawFactor = (double)(startSize)/(double)(desiredSize);
+	   double logOfFactor = Math.log(rawFactor)/Math.log(2.0);
+	   int roundedLogOfFactor = (int)Math.round(logOfFactor);
+	   int startTry = Math.max(0, roundedLogOfFactor-1);
+	   int endTry = roundedLogOfFactor+1;
+
+	   int levelToUse = 0;
 	   int bestDiff = Integer.MAX_VALUE;
-	   for (int subsampleFactor = firstTry; subsampleFactor <= lastTry; subsampleFactor++) {
+	   for ( int level = startTry; level <= endTry; level++ ) {
+		   int subsampleFactor = 1 << level;
 		   int subsampleSize = calculateFinalSizeFromSubsampling( startSize, subsampleFactor );
 		   int diff = subsampleSize - desiredSize;
 		   if ( ( diff <= bestDiff ) && ( diff >= 0 ) ) {
-			   boolean isBetter = true;
-			   if ( diff == bestDiff ) {
-				   if ( ! isPowerOfTwo( subsampleSize )) {
-					   isBetter = false;
-				   }
-			   } 
-			   if ( isBetter ) {
-				   bestDiff = diff;
-				   subsampleFactorToUse = subsampleFactor;
-			   }
+			   bestDiff = diff;
+			   levelToUse = level;
 		   }
 	   }
-	   return subsampleFactorToUse;
+	   return levelToUse;
    }
    
    /**
@@ -279,8 +295,8 @@ public class DicomImageFilter implements Filter<WadoImage> {
      * 
      * @param read
      * @param params
-     * @param width
-     * @param height
+     * @param width source image width (not subsampled)
+     * @param height source image height (not subsampled)
      */
    public static String updateParamFromRegion(ImageReadParam read, Map<String, Object> params, int width, int height) {
 	   String ret = "";
@@ -330,6 +346,44 @@ public class DicomImageFilter implements Filter<WadoImage> {
 	   return ret;
    }
 
+   /**
+    * 
+    * @param regionAndSubsampleDescription of the form: -sSx,Sy-rX0,Y0,SubWidth,SubHeight 
+    *         ( i.e. -s3,3-r0,16,256,512 )
+    * @return A rectangle containing the region information, or null if the region was not specified in the 
+    *         input String, meaning the region is equal to the full image.
+    */
+   public static Rectangle getRegionInformationFromFilenameString(String regionAndSubsampleDescription){
+	   Pattern pattern = Pattern.compile("-r([0-9]+),([0-9]+),([0-9]+),([0-9]+)");
+	   Matcher matcher = pattern.matcher(regionAndSubsampleDescription);
+	   if (!matcher.find()){
+		   log.debug("The region indicator -r was not found in the filename, return null.");
+		   return null;
+	   }
+	   return new Rectangle(Integer.valueOf(matcher.group(1)), 
+			   Integer.valueOf(matcher.group(2)),
+			   Integer.valueOf(matcher.group(3)),
+			   Integer.valueOf(matcher.group(4)));
+   }
+
+   /**
+    * 
+    * @param regionAndSubsampleDescription of the form: -sSx,Sy-rX0,Y0,SubWidth,SubHeight 
+    *         ( i.e. -s3,3-r0,16,256,512 )
+    * @return A Point contaning the subSample factor in the X and Y directions. If the subSample factor
+    *         was not specified in the input String (i.e. -s was not found), then a Point containing (1,1)
+    *         is returned. 
+    */
+   public static Point getSubSampleInformationFromFilenameString(String regionAndSubsampleDescription){
+	   Pattern pattern = Pattern.compile("-s([0-9]+),([0-9]+)");
+	   Matcher matcher = pattern.matcher(regionAndSubsampleDescription);
+	   if (!matcher.find()){
+		   log.debug("The size indicator -s was not found in the filename, returning 1,1 as size value.");
+		   return new Point(1,1);
+	   }
+	   return new Point(Integer.valueOf(matcher.group(1)), Integer.valueOf(matcher.group(2)));
+   }
+   
    /** Get the default priority for this filter. */
    @MetaData
    public int getPriority() {
