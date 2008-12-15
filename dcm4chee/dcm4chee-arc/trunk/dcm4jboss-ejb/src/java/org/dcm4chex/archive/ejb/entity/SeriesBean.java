@@ -531,17 +531,17 @@ public abstract class SeriesBean implements EntityBean {
     }
 
     /**
-     * @ejb.select query="SELECT DISTINCT i.retrieveAETs FROM Instance i WHERE i.series.pk = ?1"
-     */
-    public abstract java.util.Set ejbSelectInstanceRetrieveAETs(Long pk) throws FinderException;
+     * @ejb.select query="SELECT DISTINCT f.fileSystem.retrieveAET FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1"
+     */ 
+    public abstract java.util.Set ejbSelectInternalRetrieveAETs(Long pk) throws FinderException;
 
     /**
-     * @ejb.select query="SELECT DISTINCT i.externalRetrieveAET FROM Instance i WHERE i.series.pk = ?1"
+     * @ejb.select query="SELECT DISTINCT i.externalRetrieveAET FROM Series s, IN(s.instances) i WHERE s.pk = ?1"
      */ 
     public abstract java.util.Set ejbSelectExternalRetrieveAETs(Long pk) throws FinderException;
     
     /**
-     * @ejb.select query="SELECT DISTINCT i.media FROM Instance i WHERE i.series.pk = ?1 AND i.media.mediaStatus = ?2"
+     * @ejb.select query="SELECT DISTINCT i.media FROM Series s, IN(s.instances) i WHERE s.pk = ?1 AND i.media.mediaStatus = ?2"
      */ 
     public abstract java.util.Set ejbSelectMediaWithStatus(Long pk, int status) throws FinderException;
 
@@ -679,7 +679,7 @@ public abstract class SeriesBean implements EntityBean {
             Set iAetSet;
             try {
 //              iAetSet = getInternalRetrieveAETs(pk);
-                iAetSet = ejbSelectInstanceRetrieveAETs(pk);
+                iAetSet = ejbSelectInternalRetrieveAETs(pk);
                 if (iAetSet.remove(null))
                     log.warn("Series[iuid=" + getSeriesIuid()
                             + "] contains Instance(s) with unspecified Retrieve AET");
