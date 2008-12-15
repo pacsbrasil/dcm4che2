@@ -42,6 +42,9 @@ XeroController.prototype.getBody = function XC_getBody() {
 	return this.body;
 };
 
+/** Updates the innerHtml of the element provided (el) with the provided HTML to update the
+ * display area in IE.
+ */
 XeroController.prototype.innerHtml = function XC_innerHtml(el, html) {
 	var oldEl = typeof el === "string" ? document.getElementById(el) : el;
 	oldEl.outerHTML = html;
@@ -62,6 +65,11 @@ XeroController.prototype.fixWheelMouse = function XC_fixWheelMouse(layouts) {
 	}
 };
 
+/**
+ * el is the element in document (string name or element itself) to
+ * replace with the string from html.  el must exist (otherwise it isn't
+ * clear where to update).
+ */
 XeroController.prototype.importHtml = function XC_importHtml(el, html) {
 	this.debug("importHTML.");
 	var oldEl = typeof el === "string" ? document.getElementById(el) : el;
@@ -79,7 +87,11 @@ XeroController.prototype.importHtml = function XC_importHtml(el, html) {
 		return;
 	}
 	this.debug("Finished parsing node.");
-	var newEl = document.importNode(parsed,true);
+	var newEl;
+	if( document.importNode ) 
+		newEl = document.importNode(parsed,true);
+	else
+		newEl = parsed;
 	newEl = newEl.firstChild;
 	if(!newEl ) {
 		console.warn("newEl not defined.");
