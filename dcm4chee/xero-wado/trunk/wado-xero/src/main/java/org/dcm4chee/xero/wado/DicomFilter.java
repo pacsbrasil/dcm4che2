@@ -100,8 +100,7 @@ public class DicomFilter implements Filter<DicomImageReader> {
 			DicomImageReader reader = (DicomImageReader) dicomImageReaderSpi.createReaderInstance();
 			ImageInputStream in = new ReopenableImageInputStream(location);
 			reader.setInput(in);
-			// We don't have any reliable size information right now.
-			params.put(MemoryCacheFilter.CACHE_SIZE, 2048);
+			params.put(MemoryCacheFilter.CACHE_SIZE, 20480);
 			// Makes this a bit more thread safe if the header has been read, then
 			// it will
 			// be safe to get the stream meta-data.

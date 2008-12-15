@@ -40,7 +40,6 @@ dicomImageReader=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 dicomImageReader.dicom=${class:org.dcm4chee.xero.wado.DicomFilter}
 dicomImageReader.dicom.priority=100
 dicomImageReader.memcache=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
-# About 1000 open readers at any given time, maximum.  Probably increase for production use.
 dicomImageReader.memcache.cacheSize=2000000
 dicomImageReader.memcache.priority=200
 dicomImageReader.memcache.queryStr=objectUID
