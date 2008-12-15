@@ -37,8 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.metadata;
 
-import java.util.Map;
-
 import org.testng.annotations.Test;
 
 /**

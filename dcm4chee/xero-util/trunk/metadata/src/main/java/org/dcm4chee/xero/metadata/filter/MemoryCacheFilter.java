@@ -101,6 +101,10 @@ public class MemoryCacheFilter<T> implements Filter<T>, MetaDataUser {
 		 return filterItem.callNextFilter(params);
 	  }
 	  String key = computeKey(params);
+	  if( key==null ) {
+	     log.warn("Unknown image cache key - image probably not found.");
+	     return filterItem.callNextFilter(params);
+	  }
 	  SizeableFuture<T> sf = new SizeableFutureFilter<T>(filterItem, params);
 
 	  long start = System.nanoTime();
