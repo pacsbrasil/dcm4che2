@@ -3,8 +3,8 @@
   <property file="build.properties"/>
   <property file="../build.properties"/>
 
-  <property name="version" value="2.14.1"/>
-  <property name="audit-version" value="2.14.1"/>
+  <property name="version" value="2.14.2"/>
+  <property name="audit-version" value="2.14.2"/>
   <property name="docstore-version" value="0.0.2"/>
   <property name="target.dir" value="${basedir}/target"/>
 
@@ -15,11 +15,11 @@
   <!-- Override with your local Maven2 repository location -->
   <property name="m2.repos" value="${user.home}/.m2/repository"/>
   <property name="dcm4chee-audit-login.lib" 
-    value="${m2.repos}/dcm4che/dcm4chee-audit-login/${audit-version}"/>
+    value="${m2.repos}/dcm4che/dcm4chee/dcm4chee-audit-login/${audit-version}"/>
   <property name="dcm4chee-audit-logger.lib" 
-    value="${m2.repos}/dcm4che/dcm4chee-audit-logger/${audit-version}"/>
+    value="${m2.repos}/dcm4che/dcm4chee/dcm4chee-audit-logger/${audit-version}"/>
   <property name="dcm4chee-audit-tomcat.lib" 
-    value="${m2.repos}/dcm4che/dcm4chee-audit-tomcat/${audit-version}"/>
+    value="${m2.repos}/dcm4che/dcm4chee/dcm4chee-audit-tomcat/${audit-version}"/>
   <property name="dcm4chee-docstore.lib" 
     value="${m2.repos}/dcm4che/dcm4chee-docstore-store/${docstore-version}"/>
 
