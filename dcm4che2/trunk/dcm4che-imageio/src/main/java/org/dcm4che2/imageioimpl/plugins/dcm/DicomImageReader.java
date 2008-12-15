@@ -295,7 +295,6 @@ public class DicomImageReader extends ImageReader {
 		} 
 		// Reset the input stream location if required, and reset the reader if required
 		if( compressed ) {
-			if( reader!=null ) postDecompress();
 			itemParser.seekFrame(siis, imageIndex);
 			reader.setInput(siis, false);
 		}
@@ -425,6 +424,7 @@ public class DicomImageReader extends ImageReader {
 			ImageReadParam param1 = reader.getDefaultReadParam();
 			copyReadParam(param, param1);
 			bi = reader.read(0, param1);
+			postDecompress();
 		} else {
 			bi = reader.read(imageIndex, param);
 		}
@@ -490,9 +490,11 @@ public class DicomImageReader extends ImageReader {
 	throws IOException {
 		if (!reader.canReadRaster()) {	
 			BufferedImage bi = reader.read(0, param);
+			postDecompress();
 			return bi.getRaster();
 		}        
 		Raster raster = reader.readRaster(0, param);
+		postDecompress();
 		return raster;
 	}
 
