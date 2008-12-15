@@ -104,7 +104,7 @@ public class AuditFilterTest {
 		}
 		params.put(MemoryCacheFilter.KEY_NAME,sb.toString());
 		params.put(ParamReturnFilter.RETURN_KEY, rb);
-		params.put("user", "testuser");
+		params.put(MetaDataServlet.USER_KEY, "testuser");
 		
 		fl.filter(null,params);
 		verify(log);
@@ -171,7 +171,7 @@ public class AuditFilterTest {
 		request.setQueryString("requestType=WADO&studyUID=2&seriesUID=3&objectUID=4");
 		request.setRequestURL("http://localhost/wado2/wado");
 		params.put(MetaDataServlet.REQUEST, request);
-		params.put("user", "testuser");
+		params.put(MetaDataServlet.USER_KEY, "testuser");
 		vfl.filter(null,params);
 		verify(log);
 		assert auditCapture.hasCaptured();

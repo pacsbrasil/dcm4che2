@@ -66,6 +66,7 @@ public class ImageCache extends MemoryCacheFilter<WadoImage> {
  	  key.append("-f").append(frameNumber+1);
 
  	  DicomObject ds = dicomImageHeader.filter(null,params);
+ 	  if( ds==null ) return null;
  	  int width = ds.getInt(Tag.Columns);
  	  int height = ds.getInt(Tag.Rows);
  	  if( width==0 || height==0 ) {

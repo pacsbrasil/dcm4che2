@@ -115,7 +115,7 @@ public abstract class AuditFilter<T> implements Filter<T> {
 		msg.addActiveParticipant(apSrc);
 		
 		// Assign the user
-		String user = (String) params.get("user");
+		String user = (String) params.get(MetaDataServlet.USER_KEY);
 		if( user!=null ) {
 			ActiveParticipant ap = ActiveParticipant.createActivePerson(user,null,user,null,true);
 			msg.addActiveParticipant(ap);
