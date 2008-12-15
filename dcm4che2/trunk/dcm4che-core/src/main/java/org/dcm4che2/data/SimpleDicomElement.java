@@ -66,7 +66,7 @@ class SimpleDicomElement extends AbstractDicomElement {
     };
     private static final byte[] NULL_VALUE = {};
     private transient byte[] value;
-    private transient Object cachedValue;
+    private volatile transient Object cachedValue;
 
     public SimpleDicomElement(int tag, VR vr, boolean bigEndian,
             byte[] value, Object cachedValue) {
