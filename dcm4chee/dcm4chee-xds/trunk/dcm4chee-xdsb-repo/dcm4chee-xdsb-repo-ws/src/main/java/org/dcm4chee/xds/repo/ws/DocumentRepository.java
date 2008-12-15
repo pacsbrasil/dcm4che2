@@ -1,10 +1,21 @@
 package org.dcm4chee.xds.repo.ws;
 
+import static javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_MTOM_BINDING;
+
+import java.io.IOException;
+
+import javax.activation.DataHandler;
 import javax.annotation.Resource;
+import javax.jws.HandlerChain;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
+import javax.mail.util.ByteArrayDataSource;
 import javax.xml.bind.JAXBException;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.ws.BindingType;
 import javax.xml.ws.WebServiceContext;
+import javax.xml.ws.handler.MessageContext.Scope;
+import javax.xml.ws.handler.soap.SOAPMessageContext;
 
 import org.dcm4chee.xds.common.delegate.XDSbServiceDelegate;
 import org.dcm4chee.xds.common.exception.XDSException;
@@ -14,6 +25,10 @@ import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetRequestType;
 import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType;
 import org.dcm4chee.xds.common.ws.DocumentRepositoryPortType;
 import org.jboss.ws.annotation.EndpointConfig;
+import org.jboss.ws.core.CommonMessageContext;
+import org.jboss.ws.core.soap.MessageContextAssociation;
+import org.jboss.ws.core.soap.SOAPMessageImpl;
+import org.jboss.ws.extensions.xop.XOPContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +45,9 @@ import org.slf4j.LoggerFactory;
         endpointInterface="org.dcm4chee.xds.common.ws.DocumentRepositoryPortType"
 )
 @SOAPBinding(style = SOAPBinding.Style.DOCUMENT)
+@BindingType(value = SOAP12HTTP_MTOM_BINDING)
 @EndpointConfig(configName = "Standard SOAP 1.2 WSAddressing Endpoint")
+@HandlerChain(file = "xds_repo_handler.xml")
 public class DocumentRepository implements DocumentRepositoryPortType {
 
     @Resource
