@@ -633,8 +633,7 @@ public abstract class StudyBean implements EntityBean {
                 Iterator it = seriesAets.iterator();
                 aets = (String) it.next();
                 while (it.hasNext()) {
-                    aets = aets == null ? (String) it.next()
-                            : commonRetrieveAETs(aets, (String) it.next());
+                    aets = AETs.common(aets, (String) it.next());
                 }
             }
         }
@@ -646,24 +645,6 @@ public abstract class StudyBean implements EntityBean {
         return true;
     }
     
-    private String commonRetrieveAETs(String aets1, String aets2)
-    {
-        if (aets1.equals(aets2))
-            return aets1;
-        String[] a1 = StringUtils.split(aets1, '\\');
-        String[] a2 = StringUtils.split(aets2, '\\');
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < a1.length; i++)
-            for (int j = 0; j < a2.length; j++)
-                if (a1[i].equals(a2[j]))
-                    sb.append(a1[i]).append('\\');
-        int l = sb.length();
-        if (l == 0)
-            return null;
-        sb.setLength(l-1);
-        return sb.toString();
-    }
-
     /**
      * @ejb.interface-method
      */

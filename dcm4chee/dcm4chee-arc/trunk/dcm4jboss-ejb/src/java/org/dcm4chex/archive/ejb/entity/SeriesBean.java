@@ -117,8 +117,6 @@ import org.dcm4chex.archive.util.Convert;
  *              strategy="on-find"
  *              eager-load-group="*"
  * 
- * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstancesWithInternalRetrieveAET(java.lang.Long pk, java.lang.String retrieveAET)"
- *              query="SELECT COUNT(DISTINCT i) FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.pk = ?1 AND f.fileSystem.retrieveAET = ?2"
  * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstancesOnMediaWithStatus(java.lang.Long pk, int status)"
  *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.pk = ?1 AND i.media.mediaStatus = ?2"
  * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstances(java.lang.Long pk)"
@@ -553,11 +551,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.select query=""
      */ 
-    public abstract int ejbSelectNumberOfSeriesRelatedInstancesWithInternalRetrieveAET(Long pk, String retrieveAET) throws FinderException;
-
-    /**
-     * @ejb.select query=""
-     */ 
     public abstract int ejbSelectNumberOfSeriesRelatedInstances(Long pk) throws FinderException;
     
     /**
@@ -680,18 +673,15 @@ public abstract class SeriesBean implements EntityBean {
             try {
 //              iAetSet = getInternalRetrieveAETs(pk);
                 iAetSet = ejbSelectInternalRetrieveAETs(pk);
-                if (iAetSet.remove(null))
-                    log.warn("Series[iuid=" + getSeriesIuid()
-                            + "] contains Instance(s) with unspecified Retrieve AET");
-                for (Iterator it = iAetSet.iterator(); it.hasNext();) {
-                    final String aet = (String) it.next();
-                    if (ejbSelectNumberOfSeriesRelatedInstancesWithInternalRetrieveAET(pk, aet)
-                            == numI) {
-                        sb.append(aet).append('\\');
-                    }
-                }
             } catch (FinderException e) {
                 throw new EJBException(e);
+            }
+            if (!iAetSet.contains(null)) {
+                Iterator it = iAetSet.iterator();
+                aets = (String) it.next();
+                while (it.hasNext()) {
+                    aets = AETs.common(aets, (String) it.next());
+                }
             }
             if (sb.length() > 0) {
                 sb.setLength(sb.length() - 1);
