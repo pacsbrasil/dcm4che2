@@ -109,6 +109,8 @@ public class MediaComposerService extends ServiceMBeanSupport {
     private int bufferSize = 512;
 
     private String fileSetDescriptorFile;
+    
+    private String queueName;
 
     private String charsetOfFileSetDescriptorFile = "ISO_IR 100";
 
@@ -196,6 +198,14 @@ public class MediaComposerService extends ServiceMBeanSupport {
     public final void setMakeIsoImageServiceName(
             ObjectName makeIsoImageServiceName) {
         this.makeIsoImageServiceName = makeIsoImageServiceName;
+    }
+    
+    public final String getQueueName() {
+        return queueName;
+    }
+
+    public final void setQueueName(String queueName) {
+        this.queueName = queueName;
     }
     
     public final boolean isIncludeDisplayApplicationOnAllMedia() {
@@ -470,11 +480,11 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     protected void startService() throws Exception {
         log.info("Initialize " + DicomDirDOM.class.getName());
-        JMSDelegate.startListening("MediaComposer", listener);
+        JMSDelegate.startListening(queueName, listener);
     }
 
     protected void stopService() throws Exception {
-        JMSDelegate.stopListening("MediaComposer");
+        JMSDelegate.stopListening(queueName);
     }
 
     protected void process(MediaCreationRequest rq) {

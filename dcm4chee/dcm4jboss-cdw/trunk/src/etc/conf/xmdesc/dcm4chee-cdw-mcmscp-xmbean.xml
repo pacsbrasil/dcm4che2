@@ -257,6 +257,17 @@
       <name>DcmServerName</name>
       <type>javax.management.ObjectName</type>      
    </attribute>
+  <attribute access="read-write"
+      getMethod="getMediaComposerQueueName"
+      setMethod="setMediaComposerQueueName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>MediaComposerQueueName</name>
+      <type>java.lang.String</type>
+     <descriptors>
+         <value value="MediaComposer" />
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="getSpoolDirName"
       setMethod="setSpoolDirName">

@@ -340,12 +340,23 @@ value for <code>Instance Number</code> in the referenced DICOM file.]]>
       </descriptors>
    </attribute>      
    <attribute access="read-write"
+      getMethod="getQueueName"
+      setMethod="setQueueName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>QueueName</name>
+      <type>java.lang.String</type>      
+     <descriptors>
+         <value value="MediaComposer" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getMakeIsoImageServiceName"
       setMethod="setMakeIsoImageServiceName">
       <description>Used internally - do NOT modify.
       </description>
       <name>MakeIsoImageServiceName</name>
-      <type>javax.management.ObjectName</type>      
+      <type>javax.management.ObjectName</type>
    </attribute>
    <attribute access="read-write"
       getMethod="getSpoolDirName"

@@ -98,6 +98,8 @@ public class MediaCreationMgtScpService extends AbstractScpService {
     private String defaultRequestPriority = Priority.LOW;
 
     private String defaultFilesetID;
+    
+    private String mediaComposerQueueName;
 
     private DecimalFormat defaultFilesetIDFormat;
     
@@ -341,6 +343,15 @@ public class MediaCreationMgtScpService extends AbstractScpService {
     protected void removePresContexts() {
         putPresContexts(CUIDS, null);
     }
+    
+    public final String getMediaComposerQueueName() {
+        return mediaComposerQueueName;
+    }
+
+    public final void setMediaComposerQueueName(String mediaComposerQueueName) {
+        this.mediaComposerQueueName = mediaComposerQueueName;
+    }
+
 
     private Dataset doNCreate(ActiveAssociation assoc, Dimse rq, Command rspCmd)
             throws IOException, DcmServiceException {
@@ -548,7 +559,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
                     throw new DcmServiceException(Status.ProcessingFailure, e);
                 }
                 try {
-                    JMSDelegate.queue("MediaComposer",
+                    JMSDelegate.queue(mediaComposerQueueName,
                             		"Schedule Composing media for " + rq,
                                     log,
                                     mcrq,
