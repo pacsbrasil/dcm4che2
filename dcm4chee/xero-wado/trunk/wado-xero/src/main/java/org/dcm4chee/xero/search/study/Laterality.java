@@ -104,7 +104,7 @@ public enum Laterality
       Laterality laterality;
       
       String code = dicom.getString(Tag.ImageLaterality);
-      if(code == null || code.isEmpty())
+      if(code == null || code.length() == 0)
          laterality = UNKNOWN;
       else
          laterality = parseLaterality(code.charAt(0));

@@ -69,7 +69,6 @@ public class RegroupMultiframesByInstanceNumberFilter implements Filter<ResultsB
 {
    private static final String NAME = RegroupMultiframesByInstanceNumberFilter.class.getSimpleName();
    
-   @Override
    public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params)
    {
       ResultsBean results = filterItem.callNextFilter(params);
