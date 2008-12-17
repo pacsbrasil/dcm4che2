@@ -82,11 +82,7 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
      */
    public SeriesBean(StudyBean newParent, SeriesType series) {
 	  this.parent = newParent;
-	  setModality(series.getModality());
-	  setSeriesDescription(series.getSeriesDescription());
-	  setSeriesUID(series.getSeriesUID());
-	  setSeriesNumber(series.getSeriesNumber());
-	  setViewable(series.getViewable());
+	  copySeriesAttributes(series);
 	  getDicomObject().addAll(series.getDicomObject());
 	  setManufacturer(series.getManufacturer());
    }
@@ -125,6 +121,26 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	  } catch (NumberFormatException nfe) {
 		 log.warn("Series number was incorrectly formatted - sometimes happens for SR data:" + nfe);
 	  }
+   }
+
+   /**
+    * Copy all series level attributes and macros.
+    */
+   protected void copySeriesAttributes(SeriesType series)
+   {
+      setBodyPartExamined(series.getBodyPartExamined());
+      setModality(series.getModality());
+      setLaterality(series.getLaterality());
+      setSeriesDescription(series.getSeriesDescription());
+      setSeriesUID(series.getSeriesUID());
+      setSeriesNumber(series.getSeriesNumber());
+      setViewable(series.getViewable());
+      
+      if(series instanceof SeriesBean )
+      {
+         MacroItems macroItems = ((SeriesBean)series).getMacroItems();
+         getMacroItems().getMacros().addAll(macroItems.getMacros());
+      }
    }
 
    /** Add any image level information to this series. */
@@ -261,5 +277,58 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	  if (macroItems == null)
 		 return null;
 	  return macroItems.getAnyAttributes();
+   }
+   
+   /**
+    * Move the indicated dicom object from it's existing series into this one.
+    * <p>
+    * This method will change the structure of the DICOM tree, and will prune
+    * any empty series in the client.
+    * <p>
+    * Currently this method only works for ImageBeanS.  If it turns out we need
+    * to move other Object types then a new sub-type of DicomObjectType should be
+    * introduced.
+    */
+   public void move(ImageBean image)
+   {
+      if(image == null) return;
+      
+      SeriesBean originalSeries = image.getSeriesBean();
+      originalSeries.getDicomObject().remove(image); // What does it mean to not remove?
+      
+      if(this.getDicomObject().add(image))
+         image.setSeriesBean(this);
+      
+      // If the number of children is 0, then remove the series completely.
+      if(originalSeries.getDicomObject().size() == 0)
+      {
+         StudyBean study = originalSeries.getStudyBean();
+         study.getSeries().remove(originalSeries);
+         originalSeries.getChildren().remove(originalSeries.getId());
+      }
+      
+   }
+   
+   /**
+    * Create a new SeriesBean instance from this instance.
+    * <p>
+    * NOTE:  This is a shallow copy:  i.e. children are not copied.
+    * @param uidPrefix Since the UIDs must always be unique, this prefix will a prepended.
+    * @return New Series instance.
+    */
+   public SeriesBean clone(String uidPrefix)
+   {
+      if(uidPrefix == null)
+         uidPrefix = "CLONE";
+      
+      StudyBean study = getStudyBean();
+      SeriesBean newSeries = new SeriesBean(study);
+      if(study!=null)
+         study.getSeries().add(newSeries);
+      newSeries.copySeriesAttributes(this);
+      newSeries.setSynthetic(true);
+      newSeries.setSeriesUID(uidPrefix + ":" + newSeries.getSeriesUID());
+      
+      return newSeries;
    }
 }

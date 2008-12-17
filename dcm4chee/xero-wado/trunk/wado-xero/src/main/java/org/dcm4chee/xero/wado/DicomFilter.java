@@ -72,8 +72,6 @@ public class DicomFilter implements Filter<DicomImageReader> {
 
 	public static String PREFERRED_DICOM_READER = "org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader";
 
-	private static final String DICOM_OBJECT_HEADER_KEY = " DICOM_OBJECT_HEADER";
-
 	/**
 	 * Return either the params cached header, or read it from the file location
 	 * as appropriate. Returns a dicom image reader that should be synchronized
@@ -84,9 +82,6 @@ public class DicomFilter implements Filter<DicomImageReader> {
 	 * @param
 	 */
 	public DicomImageReader filter(FilterItem<DicomImageReader> filterItem, Map<String, Object> params) {
-		DicomImageReader ret = (DicomImageReader) params.get(DICOM_OBJECT_HEADER_KEY);
-		if (ret != null)
-			return ret;
 		URL location = fileLocation.filter(null, params);
 		if (location == null)
 			return null;
@@ -100,6 +95,7 @@ public class DicomFilter implements Filter<DicomImageReader> {
 			DicomImageReader reader = (DicomImageReader) dicomImageReaderSpi.createReaderInstance();
 			ImageInputStream in = new ReopenableImageInputStream(location);
 			reader.setInput(in);
+			// Size is from visualvm size of object + sub-objects, roughly
 			params.put(MemoryCacheFilter.CACHE_SIZE, 20480);
 			// Makes this a bit more thread safe if the header has been read, then
 			// it will
@@ -112,11 +108,8 @@ public class DicomFilter implements Filter<DicomImageReader> {
 			log.warn("Can't read sop instance " + params.get("objectUID") + " at " + location + " exception:" + e);
 		}
 		// This might happen if the instance UID under request comes from
-		// another
-		// system and needs to be read in another way.
-		if (ret == null)
-			return filterItem.callNextFilter(params);
-		return ret;
+		// another system and needs to be read in another way.
+		return filterItem.callNextFilter(params);
 	}
 
 	/** Get the default priority for the dicom header filter. */

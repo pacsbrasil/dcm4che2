@@ -80,8 +80,11 @@ public class PagedImageFilter implements Filter<ResultsType> {
      * instance of the overall result.
      */
    public ResultsType filter(FilterItem<ResultsType> filterItem, Map<String, Object> params) {
+	  String removedSeriesUID = removeSeriesParameterIfStudyUIDPresent(params);
+      
 	  int position = 0;
 	  int count = 0;
+	  
 	  Object[] page = FilterUtil.removeFromQuery(params,POSITION_KEY,COUNT_KEY, CONTAINS_OBJECT_UID, CONTAINS_FRAME_NUMBER);
 	  String objectUID = null;
 	  String frameNo = null;
@@ -121,6 +124,8 @@ public class PagedImageFilter implements Filter<ResultsType> {
 	  else {
 		 log.debug("Not looking for paging image results - probably an ad-hoc query.");
 	  }
+	  
+	  
 	  ResultsType results = filterItem.callNextFilter(params);
 	  if( objectUID!=null && results!=null ) {
 		 position = findPosition(results,objectUID,frameNo);
@@ -130,10 +135,33 @@ public class PagedImageFilter implements Filter<ResultsType> {
 	  if (results == null)
 		 return results;
 	  if (count > 0 ) {
-		 results = decimate(results, position, count);
+		 results = decimate(results, position, count,removedSeriesUID);
 	  }
 	  return results;
    }
+
+   
+   /**
+    * Check the incoming parameters and remove the series UID if the containing
+    * Study UID is defined.  By pulling out the series UID we can ensure that we
+    * match the URL path cache and get a faster response.
+    * 
+    * @return the Series UID if present.  NULL if the series UID cannot be removed.
+    */
+   protected String removeSeriesParameterIfStudyUIDPresent( Map<String, Object> params)
+   {
+      String seriesUID = null;
+      if(params.containsKey("studyUID"))
+      {
+         Object[] removedParameters = FilterUtil.removeFromQuery(params, "seriesUID");
+         seriesUID = (String)removedParameters[0];
+      }
+      
+      return seriesUID;
+         
+   }
+   
+//   protected String removeParametersAndCalculatePosition()
 
    /** Finds the position that the given object is at */
    private int findPosition(ResultsType results, String objectUID, String frameNo) {
@@ -157,7 +185,7 @@ public class PagedImageFilter implements Filter<ResultsType> {
 
    /**
      * Remove all images before the position element and starting with
-     * position+count and later.
+     * position+count and later in the indicated series.
      * 
      * @param results
      *            to remove images from, already sorted with non-viewables
@@ -166,9 +194,11 @@ public class PagedImageFilter implements Filter<ResultsType> {
      *            to start images from
      * @param count
      *            of images to include information on.
+     * @param seriesUID
+     *            UID of the series to remove the images from.  NULL indicates any series can be used.
      * @return New decimated ResultsType instance.
      */
-   public ResultsType decimate(ResultsType results, int position, int count) {
+   public ResultsType decimate(ResultsType results, int position, int count,String seriesUID) {
 	  ResultsBean ret = new ResultsBean(results);
 	  ret.getPatient().clear();
 	  for (PatientType patient : results.getPatient()) {
@@ -180,11 +210,30 @@ public class PagedImageFilter implements Filter<ResultsType> {
 			newStudy.getSeries().clear();
 			newPatient.getStudy().add(newStudy);
 			for (SeriesType series : study.getSeries()) {
+			   if(seriesUID == null || series.getSeriesUID().equals(seriesUID) || "PR".equals(series.getModality()) )
 			   newStudy.getSeries().add(decimate(newStudy, series, position, count));
 			}
 		 }
 	  }
 	  return ret;
+   }
+
+   /**
+    * Remove all images before the position element and starting with
+    * position+count and later.
+    * 
+    * @param results
+    *            to remove images from, already sorted with non-viewables
+    *            removed.
+    * @param position
+    *            to start images from
+    * @param count
+    *            of images to include information on.
+    * @return New decimated ResultsType instance.
+    */
+   public ResultsType decimate(ResultsType results, int position, int count)
+   {
+      return decimate(results,position, count,null);
    }
 
    /**
@@ -227,8 +276,10 @@ public class PagedImageFilter implements Filter<ResultsType> {
 	  for(int i=0; i<modified.size(); i++ ) {
 		 if( modified.get(i) instanceof ImageBeanMultiFrame ) {
 			ImageBeanMultiFrame image = (ImageBeanMultiFrame) modified.get(i);
-			log.debug("Splitting a multi-frame object with "+image.getNumberOfFrames()+" frames.");
+			log.debug("Splitting a multi-frame object with {} frames.",image.getNumberOfFrames());
 			if( image.getNumberOfFrames()==1 ) continue;
+			assert image.getPosition()  < image.getNumberOfFrames() : "Cannot have a position outside of the range of frames";
+			
 			int startFrame = Math.max(1, position-image.getPosition()+1);
 			int endFrame = Math.min(image.getNumberOfFrames(), position+count-image.getPosition());
 			List<DicomObjectType> addList = new ArrayList<DicomObjectType>(endFrame-startFrame);
@@ -241,7 +292,7 @@ public class PagedImageFilter implements Filter<ResultsType> {
 			i += addList.size()-1;
 		 }
 		 else {
-			log.debug("Not splitting non-multi-frame object "+modified.get(i).getObjectUID());
+			log.debug("Not splitting non-multi-frame object: {}",modified.get(i).getObjectUID());
 		 }
 	  }
 	  return ret;
@@ -251,14 +302,14 @@ public class PagedImageFilter implements Filter<ResultsType> {
      * Finds the position of the image bean with the given position item.
      * Assumes all elements are image beans.
      */
-   private int findPosition(List<DicomObjectType> modified, int position) {
+   protected static int findPosition(List<DicomObjectType> imageList, int position) {
 	  if( position<=0 ) return 0;
 	  int min = 0;
-	  int max = modified.size();
+	  int max = imageList.size();
 	  int size = max-1;
 	  while(min<size) {
 		 int test = (min+max)/2;
-		 ImageBean image = (ImageBean) modified.get(test);
+		 ImageBean image = (ImageBean) imageList.get(test);
 		 if( image.getPosition()>position ) {
 			max = test;
 		 }
