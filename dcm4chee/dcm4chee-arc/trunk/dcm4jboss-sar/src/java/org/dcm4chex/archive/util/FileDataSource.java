@@ -204,6 +204,9 @@ public class FileDataSource implements DataSource {
 
     public void writeTo(OutputStream out, String tsUID) throws IOException {
         log.info("M-READ file:" + file);
+        boolean withoutPixeldata1 = withoutPixeldata 
+                || UIDs.NoPixelData.equals(tsUID)
+                || UIDs.NoPixelDataDeflate.equals(tsUID);
         DataInputStream dis = new DataInputStream(
                 new BufferedInputStream(new FileInputStream(file)));
         FileImageInputStream fiis = null;
@@ -221,10 +224,11 @@ public class FileDataSource implements DataSource {
             String tsOrig = DecompressCmd.getTransferSyntax(ds);
             if (writeFile) {
                 if (tsUID != null) {
-                    if (tsUID.equals(UIDs.ExplicitVRLittleEndian)
-                            || !tsUID.equals(tsOrig)) { // can only decompress
-                                                        // here!
-                        tsUID = UIDs.ExplicitVRLittleEndian;
+                    if (!tsUID.equals(tsOrig)) { // can only decompress here!
+                        if (!withoutPixeldata1 
+                                && !UIDs.ImplicitVRLittleEndian.equals(tsUID)) {
+                            tsUID = UIDs.ExplicitVRLittleEndian;
+                        }
                         ds.setFileMetaInfo(DcmObjectFactory.getInstance()
                                 .newFileMetaInfo(ds, tsUID));
                     }
@@ -241,8 +245,7 @@ public class FileDataSource implements DataSource {
             }
             int pixelDataLen = parser.getReadLength();
             boolean encapsulated = pixelDataLen == -1;
-            if (withoutPixeldata || UIDs.NoPixelData.equals(tsUID)
-                    || UIDs.NoPixelDataDeflate.equals(tsUID)) {
+            if (withoutPixeldata1) {
                 // skip Pixel Data
                 if (!encapsulated) {
                     dis.skipBytes(pixelDataLen);
