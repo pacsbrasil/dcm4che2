@@ -88,19 +88,10 @@ public class ScaleFilter implements Filter<WadoImage> {
 	  // Size can't change per-image, so just get the overall sizes.
 	  int width, height;
 	  try {
-		  // Read the StreamMetadata to ensure we can get the width and height.
-		  //
-		  // HACK ALERT:  DicomImageFilter.filter() also does this:
-		  // Right now the reader gives back the original width and height regardless
-		  // of any scaling that might have been done before putting the data in file cache.  We
-		  // need to convert this to the actual pixel-data width and height.
-		  //
+		  // Read the StreamMetadata to ensure we can get the width and height.		
 		 dir.getStreamMetadata();
 		 width = dir.getWidth(0);
 		 height = dir.getHeight(0);
-		 int subSampleIndex = getInt(params, DicomImageFilter.SUBSAMPLE_INDEX, 1);
-		 width = DicomImageFilter.calculateFinalSizeFromSubsampling(width, subSampleIndex);
-		 height = DicomImageFilter.calculateFinalSizeFromSubsampling(height ,subSampleIndex);
 
 		 if( width<=0 || height<=0 ) {
 			log.error("Image width/height is zero.");
@@ -145,14 +136,12 @@ public class ScaleFilter implements Filter<WadoImage> {
 			  double ratioXY = scale.getX() / scale.getY();
 			  if ( ratioXY >= 1.0 ) {
 				  scale.setLocation(1.0, 1.0/ratioXY);
-			  }
-			  else {
+			  } else {
 				  scale.setLocation(ratioXY, 1.0);
 			  }
 		  }
 	  }
-	  if ( isEqualAspectScale && ( scale.getX() >= 1.0 ) && ( rot == 0 ) && ( !flip ) )
-	  {
+	  if ( isEqualAspectScale && ( scale.getX() >= 1.0 ) && ( rot == 0 ) && ( !flip ) ) {
 		  log.debug("Just calling next filter - no scaling being applied.");
 		  return (WadoImage) filterItem.callNextFilter(params);
 	  }
@@ -186,13 +175,12 @@ public class ScaleFilter implements Filter<WadoImage> {
 	  int sourceDiffY = Math.abs(nHeight - regionOnSource.height);
 	  if ( ( sourceDiffX > 0 ) || (sourceDiffY > 0 ) ) {
 		  String message = "";
-		  if ( log.isDebugEnabled() )
-		  {
+		  if ( log.isDebugEnabled() ) {
 			  message = "Didn't get expected source size " + regionOnSource.width + "x" + 
 			  	regionOnSource.height + ", but got source size " + nWidth + "x" + nHeight;
 		  }
 		  if ( ( sourceDiffX > 1 ) || (sourceDiffY > 1 ) ) {
-			  log.warn( message + ".  Recalculating scale factor." );
+			  log.debug( message + ".  Recalculating scale factor." );
 			  scale.setLocation((double)neededSize.width / (double) nWidth, (double)neededSize.height / (double) nHeight);
 		  } else {
 			  log.debug( message + ".  Close enough - using previously calculated scale factor.");
@@ -209,22 +197,26 @@ public class ScaleFilter implements Filter<WadoImage> {
 	  if( regionOnSource.x!=0 || regionOnSource.y!=0 ) {
 		 transform = " translate("+(-regionOnSource.width)+","+(-regionOnSource.height)+")" + transform;
 	  }
+	  String scaleInFilename = "";
 	  if( scale.getX()!=1 || scale.getY() !=1 ) {
 		 transform =" scale("+scale.getX()+","+scale.getY()+") "+transform;
+		 scaleInFilename = "-scaletoXY" + neededSize.width + "," + neededSize.height;
 	  }
+	  String flipInFilename = "";
 	  if( flip ) {
 		 affine.scale(-1,1);
 		 transform = "scale(-1,1) "+transform;
+		 flipInFilename = "-flipLR";
 	  }
 	  //
 	  // The AffineTransformOp is going to figure out the bounds of the image
 	  // so we don't need to worry about translations.
-	  // TODO: verify the rotation works correctly along with non-uniform scaling.
-	  // The scaling operates on the
 	  //
+	  String rotInFilename = "";
 	  if( rot!=0 ) {
 		 affine.rotate(rot*Math.PI/180);
 		 transform = "rotate("+(360-rot)+") "+transform;
+		 rotInFilename = "-rot" + (360-rot);
 	  }
 	  if( cols!=nWidth || rows!=nHeight ) {
 		 affine.scale(scale.getX(), scale.getY());
@@ -244,6 +236,10 @@ public class ScaleFilter implements Filter<WadoImage> {
 	  WadoImage ret = wi.clone();
 	  ret.setValue(biScale);
 	  if( !transform.equals("") ) ret.setParameter(SVG_TRANSFORM, transform);
+	  String filename = ret.getFilename();
+	  	 
+	  filename += scaleInFilename + flipInFilename + rotInFilename;
+	  ret.setFilename(filename);
 	  return ret;
    }
    

@@ -114,16 +114,8 @@ public class DicomImageFilter implements Filter<WadoImage> {
 		 long start = System.nanoTime();
 		 String op = "decompress";
 		 synchronized (reader) {
-			// HACK ALERT:  ScaleFilter.filter() also does this:
-			// Right now the reader gives back the original width and height regardless
-			// of any scaling that might have been done before putting the data in file cache.  We
-			// need to convert this to the actual pixel-data width and height.
-			//
 			int width = reader.getWidth(0);
 			int height = reader.getHeight(0);
-			int subSampleIndex = getInt(params, SUBSAMPLE_INDEX, 1);
-			width = calculateFinalSizeFromSubsampling(width, subSampleIndex);
-			height = calculateFinalSizeFromSubsampling(height, subSampleIndex);
 			
 			String filenameExtra = updateParamFromRegion(param, params, width, height);
 			BufferedImage bi;

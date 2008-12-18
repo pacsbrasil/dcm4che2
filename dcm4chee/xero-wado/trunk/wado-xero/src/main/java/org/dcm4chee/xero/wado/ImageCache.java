@@ -37,10 +37,9 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado;
 
-import static org.dcm4chee.xero.metadata.filter.FilterUtil.getFloats;
-import static org.dcm4chee.xero.wado.DicomImageFilter.*;
-import static org.dcm4chee.xero.metadata.filter.FilterUtil.getInt;
-import static org.dcm4chee.xero.wado.WadoParams.*;
+import static org.dcm4chee.xero.wado.DicomImageFilter.updateParamFromRegion;
+import static org.dcm4chee.xero.wado.WadoParams.FRAME_NUMBER;
+import static org.dcm4chee.xero.wado.WadoParams.OBJECT_UID;
 
 import java.util.Map;
 
