@@ -40,13 +40,14 @@
       <basic name="encodedAttributes">
         <column name="mpps_attrs" column-definition="@blob@" />
       </basic>
-      <many-to-one name="discontinuationReasonCode">
+      <many-to-one name="discontinuationReasonCode" fetch="LAZY">
         <join-column name="drcode_fk" />
       </many-to-one>
-      <many-to-one name="patient">
+      <many-to-one name="patient" fetch="LAZY">
         <join-column name="patient_fk" />
       </many-to-one>
-      <one-to-many name="series" mapped-by="modalityPerformedProcedureStep" />
+      <one-to-many name="series" mapped-by="modalityPerformedProcedureStep"
+        fetch="LAZY"/>
     </attributes>
   </entity>
 </entity-mappings>

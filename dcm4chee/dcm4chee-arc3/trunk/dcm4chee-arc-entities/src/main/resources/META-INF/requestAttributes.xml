@@ -32,7 +32,7 @@
       <basic name="requestingPhysicianPhoneticName">
         <column name="req_phys_p_name" column-definition="@nvarchar2@" />
       </basic>
-      <many-to-one name="series">
+      <many-to-one name="series" fetch="LAZY">
         <join-column name="series_fk" />
       </many-to-one>
     </attributes>

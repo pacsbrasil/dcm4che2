@@ -26,10 +26,10 @@
       <basic name="fileSize">
         <column name="file_size" />
       </basic>
-      <many-to-one name="instance">
+      <many-to-one name="instance" fetch="LAZY">
         <join-column name="instance_fk" />
       </many-to-one>
-      <many-to-one name="fileSystemInfo">
+      <many-to-one name="fileSystemInfo" fetch="LAZY">
         <join-column name="filesystem_fk" />
       </many-to-one>
     </attributes>

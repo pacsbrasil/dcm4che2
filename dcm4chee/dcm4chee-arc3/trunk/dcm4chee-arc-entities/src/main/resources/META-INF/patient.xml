@@ -52,19 +52,20 @@
       <basic name="encodedAttributes">
         <column name="pat_attrs" column-definition="@blob@" />
       </basic>
-      <many-to-one name="mergedWith">
+      <many-to-one name="mergedWith" fetch="LAZY">
         <join-column name="merge_fk" />
       </many-to-one>
-      <one-to-many name="previous" mapped-by="mergedWith" />
-      <one-to-many name="studies" mapped-by="patient" />
-      <one-to-many name="modalityWorklistItems" mapped-by="patient" />
-      <one-to-many name="modalityPerformedProcedureSteps"
-        mapped-by="patient" />
+      <one-to-many name="previous" mapped-by="mergedWith" fetch="LAZY"/>
+      <one-to-many name="studies" mapped-by="patient" fetch="LAZY"/>
+      <one-to-many name="modalityWorklistItems" mapped-by="patient"
+        fetch="LAZY"/>
+      <one-to-many name="modalityPerformedProcedureSteps" mapped-by="patient"
+        fetch="LAZY"/>
       <one-to-many name="generalPurposeScheduledProcedureSteps"
-        mapped-by="patient" />
+        mapped-by="patient" fetch="LAZY"/>
       <one-to-many name="generalPurposePerformedProcedureSteps"
-        mapped-by="patient" />
-      <many-to-many name="otherPatientIDs">
+        mapped-by="patient" fetch="LAZY"/>
+      <many-to-many name="otherPatientIDs" fetch="LAZY">
         <join-table name="rel_pat_other_pid">
           <join-column name="patient_fk" />
           <inverse-join-column name="other_pid_fk" />

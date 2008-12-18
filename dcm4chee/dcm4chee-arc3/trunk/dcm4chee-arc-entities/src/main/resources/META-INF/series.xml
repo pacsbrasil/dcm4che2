@@ -97,14 +97,14 @@
       <basic name="storageStatus">
         <column name="series_status" />
       </basic>
-      <many-to-one name="modalityPerformedProcedureStep">
+      <many-to-one name="modalityPerformedProcedureStep" fetch="LAZY">
         <join-column name="mpps_fk" />
       </many-to-one>
-      <many-to-one name="study">
+      <many-to-one name="study" fetch="LAZY">
         <join-column name="study_fk" />
       </many-to-one>
-      <one-to-many name="requestAttributes" mapped-by="series" />
-      <one-to-many name="instances" mapped-by="series" />
+      <one-to-many name="requestAttributes" mapped-by="series" fetch="LAZY"/>
+      <one-to-many name="instances" mapped-by="series" fetch="LAZY"/>
     </attributes>
   </entity>
 </entity-mappings>

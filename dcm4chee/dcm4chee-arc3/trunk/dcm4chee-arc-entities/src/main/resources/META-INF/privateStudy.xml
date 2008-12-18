@@ -23,10 +23,10 @@
       <basic name="encodedAttributes">
       	<column name="study_attrs" column-definition="@blob@"/>
       </basic>
-      <many-to-one name="patient">
+      <many-to-one name="patient" fetch="LAZY">
       	<join-column name="patient_fk"/>
       </many-to-one>
-      <one-to-many name="series" mapped-by="study"/>
+      <one-to-many name="series" mapped-by="study" fetch="LAZY"/>
     </attributes>
   </entity>
 </entity-mappings>

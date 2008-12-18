@@ -20,10 +20,10 @@
       <basic name="encodedAttributes">
         <column name="inst_attrs" column-definition="@blob@" />
       </basic>
-      <many-to-one name="series">
+      <many-to-one name="series" fetch="LAZY">
         <join-column name="series_fk" />
       </many-to-one>
-      <one-to-many name="files" mapped-by="instance" />
+      <one-to-many name="files" mapped-by="instance" fetch="LAZY"/>
     </attributes>
   </entity>
 </entity-mappings>

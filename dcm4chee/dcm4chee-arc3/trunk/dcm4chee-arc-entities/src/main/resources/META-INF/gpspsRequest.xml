@@ -17,7 +17,7 @@
       <basic name="accessionNumber">
         <column name="accession_no" />
       </basic>
-      <many-to-one name="gpsps">
+      <many-to-one name="gpsps" fetch="LAZY">
         <join-column name="gpsps_fk" />
       </many-to-one>
     </attributes>

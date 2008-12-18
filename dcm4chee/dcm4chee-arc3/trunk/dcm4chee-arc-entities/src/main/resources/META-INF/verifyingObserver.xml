@@ -23,7 +23,7 @@
       <basic name="verifyingObserverPhoneticName">
         <column name="observer_p_name" column-definition="@nvarchar2@" />
       </basic>
-      <many-to-one name="instance">
+      <many-to-one name="instance" fetch="LAZY">
         <join-column name="instance_fk" />
       </many-to-one>
     </attributes>

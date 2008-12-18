@@ -31,10 +31,10 @@
       <basic name="encodedAttributes">
         <column name="pps_attrs" column-definition="@blob@" />
       </basic>
-      <many-to-one name="patient">
+      <many-to-one name="patient" fetch="LAZY">
         <join-column name="patient_fk" />
       </many-to-one>
-      <many-to-many name="scheduledProcedureSteps">
+      <many-to-many name="scheduledProcedureSteps" fetch="LAZY">
         <join-table name="rel_gpsps_gppps">
           <join-column name="gppps_fk" />
           <inverse-join-column name="gpsps_fk" />

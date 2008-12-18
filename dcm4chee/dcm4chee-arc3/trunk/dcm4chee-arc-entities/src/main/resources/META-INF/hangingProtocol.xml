@@ -35,10 +35,10 @@
       <basic name="encodedAttributes">
         <column name="hp_attrs" column-definition="@blob@" />
       </basic>
-      <many-to-one name="userIDCode">
+      <many-to-one name="userIDCode" fetch="LAZY">
         <join-column name="user_fk" />
       </many-to-one>
-      <one-to-many name="definitions" mapped-by="hangingProtocol"/>
+      <one-to-many name="definitions" mapped-by="hangingProtocol" fetch="LAZY"/>
     </attributes>
   </entity>
 </entity-mappings>

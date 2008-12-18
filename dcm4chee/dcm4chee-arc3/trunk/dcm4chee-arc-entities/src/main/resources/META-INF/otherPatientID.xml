@@ -17,7 +17,7 @@
       <basic name="issuerOfPatientID">
         <column name="pat_id_issuer" nullable="false" />
       </basic>
-      <many-to-many name="patients" mapped-by="otherPatientIDs" />
+      <many-to-many name="patients" mapped-by="otherPatientIDs" fetch="LAZY"/>
     </attributes>
   </entity>
 </entity-mappings>

@@ -20,7 +20,7 @@
       <basic name="modality">
         <column name="modality" nullable="false" />
       </basic>
-      <many-to-many name="protocolCodes">
+      <many-to-many name="protocolCodes" fetch="LAZY">
         <join-table name="rel_dev_proto">
           <join-column name="prcode_fk" />
           <inverse-join-column name="device_fk" />

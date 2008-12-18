@@ -20,10 +20,10 @@
       <basic name="humanPerformerPhoneticName">
         <column name="hum_perf_p_name" column-definition="@nvarchar2@" />
       </basic>
-      <many-to-one name="gpsps">
+      <many-to-one name="gpsps" fetch="LAZY">
         <join-column name="gpsps_fk" />
       </many-to-one>
-      <many-to-one name="code">
+      <many-to-one name="code" fetch="LAZY">
         <join-column name="code_fk" />
       </many-to-one>
     </attributes>

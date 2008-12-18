@@ -58,7 +58,7 @@
       <basic name="encodedAttributes">
         <column name="item_attrs" column-definition="@blob@" />
       </basic>
-      <many-to-one name="patient">
+      <many-to-one name="patient" fetch="LAZY">
         <join-column name="patient_fk" nullable="false" />
       </many-to-one>
     </attributes>

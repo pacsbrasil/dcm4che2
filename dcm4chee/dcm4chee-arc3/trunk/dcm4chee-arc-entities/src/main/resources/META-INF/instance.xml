@@ -67,17 +67,17 @@
       <basic name="storageComitted">
         <column name="commitment" />
       </basic>
-      <many-to-one name="conceptNameCode">
+      <many-to-one name="conceptNameCode" fetch="LAZY">
         <join-column name="srcode_fk" />
       </many-to-one>
-      <many-to-one name="media">
+      <many-to-one name="media" fetch="LAZY">
         <join-column name="media_fk" />
       </many-to-one>
-      <many-to-one name="series">
+      <many-to-one name="series" fetch="LAZY">
         <join-column name="series_fk" />
       </many-to-one>
-      <one-to-many name="verifyingObservers" mapped-by="instance" />
-      <one-to-many name="fileInfos" mapped-by="instance" />
+      <one-to-many name="verifyingObservers" mapped-by="instance" fetch="LAZY"/>
+      <one-to-many name="fileInfos" mapped-by="instance" fetch="LAZY"/>
     </attributes>
   </entity>
 </entity-mappings>

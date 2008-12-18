@@ -88,11 +88,11 @@
       <basic name="studyStatusID">
         <column name="study_status_id" />
       </basic>
-      <many-to-one name="patient">
+      <many-to-one name="patient" fetch="LAZY">
         <join-column name="patient_fk" />
       </many-to-one>
-      <one-to-many name="series" mapped-by="study" />
-      <many-to-many name="procedureCodes">
+      <one-to-many name="series" mapped-by="study" fetch="LAZY"/>
+      <many-to-many name="procedureCodes" fetch="LAZY">
         <join-table name="rel_study_pcode">
           <join-column name="study_fk" />
           <inverse-join-column name="pcode_fk" />

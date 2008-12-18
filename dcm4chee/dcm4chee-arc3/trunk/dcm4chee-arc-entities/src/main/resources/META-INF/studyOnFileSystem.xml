@@ -14,10 +14,10 @@
       <basic name="accessTime">
         <column name="access_time" nullable="false" />
       </basic>
-      <many-to-one name="study">
+      <many-to-one name="study" fetch="LAZY">
         <join-column name="study_fk" />
       </many-to-one>
-      <many-to-one name="fileSystemInfo">
+      <many-to-one name="fileSystemInfo" fetch="LAZY">
         <join-column name="filesystem_fk" />
       </many-to-one>
     </attributes>

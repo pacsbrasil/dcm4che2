@@ -35,41 +35,41 @@
       <basic name="encodedAttributes">
         <column name="item_attrs" column-definition="@blob@" />
       </basic>
-      <many-to-one name="patient">
+      <many-to-one name="patient" fetch="LAZY">
         <join-column name="patient_fk" />
       </many-to-one>
-      <many-to-one name="scheduledWorkItemCode">
+      <many-to-one name="scheduledWorkItemCode" fetch="LAZY">
         <join-column name="code_fk" />
       </many-to-one>
-      <one-to-many name="referencedRequests" mapped-by="gpsps" />
-      <one-to-many name="scheduledHumanPerformers"
-        mapped-by="gpsps" />
-      <many-to-many name="scheduledProcessingApplicationsCodes">
+      <one-to-many name="referencedRequests" mapped-by="gpsps" fetch="LAZY"/>
+      <one-to-many name="scheduledHumanPerformers" mapped-by="gpsps"
+        fetch="LAZY" />
+      <many-to-many name="scheduledProcessingApplicationsCodes" fetch="LAZY">
         <join-table name="rel_gpsps_appcode">
           <join-column name="appcode_fk" />
           <inverse-join-column name="gpsps_fk" />
         </join-table>
       </many-to-many>
-      <many-to-many name="scheduledStationNameCodes">
+      <many-to-many name="scheduledStationNameCodes" fetch="LAZY">
         <join-table name="rel_gpsps_devname">
           <join-column name="devname_fk" />
           <inverse-join-column name="gpsps_fk" />
         </join-table>
       </many-to-many>
-      <many-to-many name="scheduledStationClassCodes">
+      <many-to-many name="scheduledStationClassCodes" fetch="LAZY">
         <join-table name="rel_gpsps_devclass">
           <join-column name="devclass_fk" />
           <inverse-join-column name="gpsps_fk" />
         </join-table>
       </many-to-many>
-      <many-to-many name="scheduledStationGeographicLocationCodes">
+      <many-to-many name="scheduledStationGeographicLocationCodes" fetch="LAZY">
         <join-table name="rel_gpsps_devloc">
           <join-column name="devloc_fk" />
           <inverse-join-column name="gpsps_fk" />
         </join-table>
       </many-to-many>
       <many-to-many name="performedProcedureSteps"
-        mapped-by="scheduledProcedureSteps" />
+        mapped-by="scheduledProcedureSteps" fetch="LAZY"/>
     </attributes>
   </entity>
 </entity-mappings>
