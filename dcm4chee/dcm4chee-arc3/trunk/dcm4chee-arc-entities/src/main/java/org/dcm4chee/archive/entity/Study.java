@@ -302,7 +302,6 @@ public class Study implements Serializable {
         + ", desc=" + studyDescription
         + ", mods=" + modalitiesInStudy
         + ", cuids=" + sopClassesInStudy
-        + ", procs=" + procedureCodes
         + ", refphys=" + referringPhysicianName
         + ", numseries=" + numberOfStudyRelatedSeries
         + ", numinsts=" + numberOfStudyRelatedInstances
@@ -311,15 +310,6 @@ public class Study implements Serializable {
         + ", extaet=" + externalRetrieveAET
         + ", fsid=" + fileSetID
         + ", fsuid=" + fileSetUID
-        + (patient != null 
-                ? ", Patient[pk=" + patient.getPk()
-                        + ", pid=" + patient.getPatientID()
-                        + (patient.getIssuerOfPatientID() != null
-                                ? "^^^" + patient.getIssuerOfPatientID()
-                                : "")
-                        + ", name=" + patient.getPatientName()
-                        + "]"
-                : "")
         + "]";
     }
 

@@ -108,8 +108,10 @@ public class PrivateStudy implements Serializable {
 
     @Override
     public String toString() {
-        return "PrivateStudy[pk=" + pk + ", uid=" + studyInstanceUID
-                + ", accno=" + accessionNumber + "]";
+        return "PrivateStudy[pk=" + pk
+                + ", uid=" + studyInstanceUID
+                + ", accno=" + accessionNumber
+                + "]";
     }
 
     public DicomObject getAttributes() throws IOException {

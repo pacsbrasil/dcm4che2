@@ -103,7 +103,9 @@ public class PrivateInstance implements Serializable {
 
     @Override
     public String toString() {
-        return "PrivateInstance[pk=" + pk + ", uid=" + sopInstanceUID + "]";
+        return "PrivateInstance[pk=" + pk
+                + ", uid=" + sopInstanceUID
+                + "]";
     }
 
     public DicomObject getAttributes() throws IOException {

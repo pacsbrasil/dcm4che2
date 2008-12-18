@@ -91,16 +91,6 @@ public class StudyOnFileSystem implements Serializable {
     public String toString() {
         return "StudyOnFileSystem[pk=" + pk
             + ", lastaccess=" + accessTime
-            + (study != null
-                    ? ", Study[pk=" + study.getPk()
-                            + ", uid=" + study.getStudyInstanceUID()
-                            + "]"
-                    : "")
-            + (fileSystemInfo != null 
-                    ? ", FileSystem[pk=" + fileSystemInfo.getPk()
-                            + ", dir=" + fileSystemInfo.getDirectoryPath()
-                            + "]"
-                    : "")
             + "]";
     }
 

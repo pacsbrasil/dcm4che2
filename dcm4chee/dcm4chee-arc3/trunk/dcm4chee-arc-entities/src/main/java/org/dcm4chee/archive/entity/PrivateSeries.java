@@ -109,8 +109,10 @@ public class PrivateSeries implements Serializable {
 
     @Override
     public String toString() {
-        return "PrivateSeries[pk=" + pk + ", uid=" + seriesInstanceUID
-                + ", srcaet=" + sourceAET + "]";
+        return "PrivateSeries[pk=" + pk
+                + ", uid=" + seriesInstanceUID
+                + ", srcaet=" + sourceAET
+                + "]";
     }
 
     public DicomObject getAttributes() throws IOException {

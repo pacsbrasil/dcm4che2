@@ -103,11 +103,6 @@ public class GPSPSPerformer implements Serializable {
         return "GPSPSPerformer[pk=" + getPk()
                 + ", name=" + humanPerformerName
                 + ", code=" + code
-                + (gpsps != null
-                        ? ", GPSPS[pk=" + gpsps.getPk()
-                                + ", uid=" + gpsps.getSOPInstanceUID()
-                                + "]"
-                        : "")
                 + "]";
     }
 

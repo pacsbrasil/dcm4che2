@@ -116,16 +116,7 @@ public class HPDefinition implements Serializable {
     public String toString() {
         return "HPDefinition[pk=" + pk
                 + ", modality=" + modality
-                + ", region=" + anatomicRegionCodes
                 + ", laterality=" + laterality
-                + ", procedure=" + procedureCodes
-                + ", reason=" + reasonforRequestedCodes
-                + (hangingProtocol != null
-                        ? "HangingProtocol[pk=" + pk
-                                + ", iuid=" + hangingProtocol.getSOPInstanceUID()
-                                + ", name=" + hangingProtocol.getName()
-                                + "]"
-                        : "")
                 + "]" + hangingProtocol;
     }
 

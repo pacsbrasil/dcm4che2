@@ -150,17 +150,6 @@ public class FileInfo implements Serializable {
                 + ", tsuid=" + transferSyntaxUID
                 + ", size=" + fileSize
                 + ", status=" + fileStatus
-                + (fileSystemInfo != null 
-                        ? ", FileSystem[pk=" + fileSystemInfo.getPk()
-                                + ", dir=" + fileSystemInfo.getDirectoryPath()
-                                + "]"
-                        : "")
-                + (instance != null 
-                        ? ", Instance[pk=" + instance.getPk()
-                                + ", iuid=" + instance.getSOPInstanceUID()
-                                + ", cuid=" + instance.getSOPClassUID()
-                                + "]"
-                        : "" )
                 + "]";
     }
 

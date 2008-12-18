@@ -320,10 +320,6 @@ public class Series implements Serializable {
                 + ", performer=" + performingPhysicianName
                 + ", start=" + performedProcedureStepStartDateTime
                 + ", ppsuid=" + performedProcedureStepInstanceUID
-                + (modalityPerformedProcedureStep != null
-                        ? ", MPPS[pk=" + modalityPerformedProcedureStep.getPk()
-                                + "]"
-                        : "")
                 + ", numinsts=" + numberOfSeriesRelatedInstances
                 + ", status=" + storageStatus
                 + ", avail=" + availability
@@ -331,11 +327,6 @@ public class Series implements Serializable {
                 + ", extaet=" + externalRetrieveAET
                 + ", fsid=" + fileSetID
                 + ", fsuid=" + fileSetUID
-                + (study != null
-                        ? ", Study[pk=" + study.getPk()
-                                + ", uid=" + study.getStudyInstanceUID()
-                                + "]"
-                        : "")
                 + "]";
     }
 

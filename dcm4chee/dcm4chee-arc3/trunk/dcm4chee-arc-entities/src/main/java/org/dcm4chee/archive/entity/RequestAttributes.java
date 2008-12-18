@@ -114,9 +114,11 @@ public class RequestAttributes implements Serializable {
 
     @Override
     public String toString() {
-        return "RequestAttributes[pk=" + getPk() + ", suid=" + studyInstanceUID
-                + ", rpid=" + requestedProcedureID + ", spsid="
-                + scheduledProcedureStepID + "]->" + series;
+        return "RequestAttributes[pk=" + pk
+                + ", suid=" + studyInstanceUID
+                + ", rpid=" + requestedProcedureID
+                + ", spsid=" + scheduledProcedureStepID
+                + "]";
     }
 
     public void setAttributes(DicomObject attrs) {

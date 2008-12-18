@@ -136,10 +136,7 @@ public class FileSystemInfo implements Serializable {
                 + ", avail=" + availability
                 + ", status=" + status
                 + ", aet=" + retrieveAET
-                + (nextFileSystem != null 
-                        ? ", next=FileSystem[pk=" + nextFileSystem.pk
-                            + ", dir=" + nextFileSystem.directoryPath
-                        : "") + "]";
+                + "]";
     }
 
 }

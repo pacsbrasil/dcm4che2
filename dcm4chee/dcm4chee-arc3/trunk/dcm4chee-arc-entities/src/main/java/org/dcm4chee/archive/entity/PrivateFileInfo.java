@@ -128,8 +128,10 @@ public class PrivateFileInfo implements Serializable {
 
     @Override
     public String toString() {
-        return "PrivateFileInfo[pk=" + pk + ", path=" + filePath + ", tsuid="
-                + transferSyntaxUID + ", fs=" + fileSystemInfo + "]->"
-                + instance;
+        return "PrivateFileInfo[pk=" + pk
+                + ", path=" + filePath 
+                + ", tsuid=" + transferSyntaxUID
+                + ", fs=" + fileSystemInfo
+                + "]";
     }
 }

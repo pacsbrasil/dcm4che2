@@ -252,9 +252,6 @@ public class Instance implements Serializable {
                 + ", cuid=" + sopClassUID
                 + ", instno=" + instanceNumber
                 + ", time=" + contentDateTime
-                + (conceptNameCode != null
-                        ? ", title=" + conceptNameCode
-                        : "")
                 + (completionFlag != null
                         ? ", completion=" + completionFlag
                         : "")
@@ -267,13 +264,7 @@ public class Instance implements Serializable {
                 + ", avail=" + availability
                 + ", aets=" + retrieveAETs
                 + ", extaet=" + externalRetrieveAET
-                + ", media=" + media
-                + (series != null
-                        ? ", Series[pk=" + series.getPk()
-                                + ", uid=" + series.getSeriesInstanceUID()
-                                + "]"
-                        : "")
-                + "]";
+                 + "]";
     }
 
     public void onPrePersist() {

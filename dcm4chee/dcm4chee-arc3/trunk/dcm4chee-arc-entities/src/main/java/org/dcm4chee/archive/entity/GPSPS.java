@@ -214,20 +214,6 @@ public class GPSPS implements Serializable {
                 + ", complete=" + expectedCompletionDateTime
                 + ", priority=" + priority
                 + ", input=" + inputAvailability
-                + ", wkitem=" + scheduledWorkItemCode
-                + ", apps=" + scheduledProcessingApplicationsCodes
-                + ", classes=" + scheduledStationClassCodes
-                + ", location=" + scheduledStationGeographicLocationCodes
-                + ", stations=" + scheduledStationNameCodes
-                + (patient != null 
-                        ? ", Patient[pk=" + patient.getPk()
-                                + ", pid=" + patient.getPatientID()
-                                + (patient.getIssuerOfPatientID() != null
-                                        ? "^^^" + patient.getIssuerOfPatientID()
-                                        : "")
-                                + ", name=" + patient.getPatientName()
-                                + "]"
-                        : "")
                 + "]";
     }
 

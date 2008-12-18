@@ -105,8 +105,12 @@ public class PrivatePatient implements Serializable {
 
     @Override
     public String toString() {
-        return "PrivatePatient[pk=" + pk + ", id=" + patientID + ", issuer="
-                + issuerOfPatientID + ", name=" + patientName + "]";
+        return "PrivatePatient[pk=" + pk
+                + ", pid=" + (issuerOfPatientID != null
+                        ? patientID + "^^^" + issuerOfPatientID
+                        : patientID)
+                + ", name=" + patientName
+                + "]";
     }
 
     public DicomObject getAttributes() throws IOException {

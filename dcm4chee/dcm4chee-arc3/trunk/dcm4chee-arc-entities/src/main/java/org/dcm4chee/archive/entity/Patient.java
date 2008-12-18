@@ -210,21 +210,9 @@ public class Patient implements Serializable {
                 + ", pid=" + (issuerOfPatientID != null
                         ? patientID + "^^^" + issuerOfPatientID
                         : patientID)
-                + ", otherpids=" + otherPatientIDs
                 + ", name=" + patientName
                 + ", birthdate=" + patientBirthDate
                 + ", sex=" + patientSex
-                + (mergedWith != null
-                        ? ", MergedWith[pk=" + mergedWith.pk + ", pid="
-                                + (mergedWith.issuerOfPatientID != null
-                                        ? mergedWith.patientID
-                                                + "^^^"
-                                                + mergedWith.issuerOfPatientID
-                                        : mergedWith.patientID)
-                                + ", otherpids=" + mergedWith.otherPatientIDs
-                                + ", name=" + mergedWith.patientName
-                                + "]"
-                        : "")
                 + "]";
     }
 

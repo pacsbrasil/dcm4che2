@@ -124,15 +124,6 @@ public class GPPPS implements Serializable {
                 + ", uid=" + sopInstanceUID
                 + ", start=" + startDateTime
                 + ", status=" + status
-                + (patient != null 
-                        ? ", Patient[pk=" + patient.getPk()
-                                + ", pid=" + patient.getPatientID()
-                                + (patient.getIssuerOfPatientID() != null
-                                        ? "^^^" + patient.getIssuerOfPatientID()
-                                        : "")
-                                + ", name=" + patient.getPatientName()
-                                + "]"
-                        : "")
                 + "]";
     }
 

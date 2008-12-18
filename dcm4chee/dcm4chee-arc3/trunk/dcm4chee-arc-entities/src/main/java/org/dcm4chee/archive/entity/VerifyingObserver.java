@@ -100,12 +100,6 @@ public class VerifyingObserver implements Serializable {
         return "VerifyingObserver[pk=" + getPk()
                 + ", name=" + verifyingObserverName
                 + ", time=" + verificationDateTime
-                + (instance != null 
-                        ? ", Instance[pk=" + instance.getPk()
-                                + ", iuid=" + instance.getSOPInstanceUID()
-                                + ", cuid=" + instance.getSOPClassUID()
-                                + "]"
-                        : "" )
                 + "]";
     }
 

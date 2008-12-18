@@ -86,11 +86,6 @@ public class GPSPSRequest implements Serializable {
         return "GPSPSRequest[pk=" + getPk()
                 + ", rpid=" + requestedProcedureID
                 + ", accno=" + accessionNumber
-                + (gpsps != null
-                        ? ", GPSPS[pk=" + gpsps.getPk()
-                                + ", uid=" + gpsps.getSOPInstanceUID()
-                                + "]"
-                        : "")
                 + "]";
     }
 

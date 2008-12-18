@@ -140,7 +140,6 @@ public class HangingProtocol implements Serializable {
                 + ", name=" + name
                 + ", level=" + level
                 + ", userGroupName=" + userGroupName
-                + ", userID=" + userIDCode
                 + ", priors=" + numberOfPriorsReferenced
                 + ", screens=" + numberOfScreens
                 + "]";

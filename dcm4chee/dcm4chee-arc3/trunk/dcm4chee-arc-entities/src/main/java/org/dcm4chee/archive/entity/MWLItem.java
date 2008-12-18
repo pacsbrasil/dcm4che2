@@ -179,15 +179,6 @@ public class MWLItem implements Serializable {
                 + ", performer=" + scheduledPerformingPhysicianName
                 + ", start=" + startDateTime
                 + ", status=" + status
-                + (patient != null 
-                        ? ", Patient[pk=" + patient.getPk()
-                                + ", pid=" + patient.getPatientID()
-                                + (patient.getIssuerOfPatientID() != null
-                                        ? "^^^" + patient.getIssuerOfPatientID()
-                                        : "")
-                                + ", name=" + patient.getPatientName()
-                                + "]"
-                        : "")
                 + "]";
     }
 

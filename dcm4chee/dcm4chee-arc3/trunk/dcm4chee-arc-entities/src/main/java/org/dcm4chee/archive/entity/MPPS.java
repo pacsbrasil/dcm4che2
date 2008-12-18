@@ -155,20 +155,10 @@ public class MPPS implements Serializable {
         return "MPPS[pk=" + pk
                 + ", iuid=" + sopInstanceUID
                 + ", status=" + status
-                + ", dcreason=" + discontinuationReasonCode
                 + ", accno=" + accessionNumber
                 + ", start=" + startDateTime
                 + ", mod=" + modality
                 + ", aet=" + performedStationAET
-                + (patient != null 
-                        ? ", Patient[pk=" + patient.getPk()
-                                + ", pid=" + patient.getPatientID()
-                                + (patient.getIssuerOfPatientID() != null
-                                        ? "^^^" + patient.getIssuerOfPatientID()
-                                        : "")
-                                + ", name=" + patient.getPatientName()
-                                + "]"
-                        : "")
                 + "]";
     }
 
