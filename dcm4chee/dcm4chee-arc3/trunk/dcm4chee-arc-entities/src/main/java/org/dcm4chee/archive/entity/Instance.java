@@ -107,7 +107,7 @@ public class Instance implements Serializable {
 
     private Series series;
 
-    private Set<FileInfo> fileInfos;
+    private Set<File> files;
 
     public final long getPk() {
         return pk;
@@ -241,8 +241,8 @@ public class Instance implements Serializable {
         this.series = series;
     }
 
-    public Set<FileInfo> getFileInfos() {
-        return fileInfos;
+    public Set<File> getFiles() {
+        return files;
     }
 
     @Override

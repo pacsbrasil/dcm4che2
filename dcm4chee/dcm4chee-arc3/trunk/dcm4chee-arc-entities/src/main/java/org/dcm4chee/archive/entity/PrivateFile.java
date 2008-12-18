@@ -46,7 +46,7 @@ import java.io.Serializable;
  * @version $Revision$ $Date$
  * @since Mar 3, 2008
  */
-public class PrivateFileInfo implements Serializable {
+public class PrivateFile implements Serializable {
 
     private static final long serialVersionUID = 88587213724521925L;
 
@@ -64,7 +64,7 @@ public class PrivateFileInfo implements Serializable {
 
     private PrivateInstance instance;
 
-    private FileSystemInfo fileSystemInfo;
+    private FileSystem fileSystem;
 
     public long getPk() {
         return pk;
@@ -118,20 +118,20 @@ public class PrivateFileInfo implements Serializable {
         this.instance = instance;
     }
 
-    public FileSystemInfo getFileSystemInfo() {
-        return fileSystemInfo;
+    public FileSystem getFileSystem() {
+        return fileSystem;
     }
 
-    public void setFileSystemInfo(FileSystemInfo fileSystemInfo) {
-        this.fileSystemInfo = fileSystemInfo;
+    public void setFileSystem(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
     }
 
     @Override
     public String toString() {
-        return "PrivateFileInfo[pk=" + pk
+        return "PrivateFile[pk=" + pk
                 + ", path=" + filePath 
                 + ", tsuid=" + transferSyntaxUID
-                + ", fs=" + fileSystemInfo
+                + ", fs=" + fileSystem
                 + "]";
     }
 }

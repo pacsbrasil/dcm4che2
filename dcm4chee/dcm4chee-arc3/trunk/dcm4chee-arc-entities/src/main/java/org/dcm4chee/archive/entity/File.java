@@ -38,9 +38,7 @@
 package org.dcm4chee.archive.entity;
 
 import java.io.Serializable;
-
-import org.dcm4chee.archive.common.Availability;
-import org.dcm4chee.archive.common.FileSystemStatus;
+import java.util.Date;
 
 /**
  * @author Damien Evans <damien.daddy@gmail.com>
@@ -49,94 +47,113 @@ import org.dcm4chee.archive.common.FileSystemStatus;
  * @version $Revision$ $Date$
  * @since Feb 25, 2008
  */
-public class FileSystemInfo implements Serializable {
+public class File implements Serializable {
 
-    private static final long serialVersionUID = 8949412622901631772L;
+    private static final long serialVersionUID = 4043304968513421877L;
 
     private long pk;
 
-    private String directoryPath;
+    private Date createdTime;
 
-    private String groupID;
+    private String filePath;
 
-    private String retrieveAET;
+    private String transferSyntaxUID;
 
-    private Availability availability;
+    private long fileSize;
 
-    private FileSystemStatus status;
+    private String md5Sum;
 
-    private String userInfo;
+    private Date timeOfLastMD5SumCheck;
 
-    private FileSystemInfo nextFileSystem;
+    private int fileStatus;
+
+    private Instance instance;
+
+    private FileSystem fileSystem;
 
     public long getPk() {
         return pk;
     }
 
-    public String getDirectoryPath() {
-        return directoryPath;
+    public Date getCreatedTime() {
+        return createdTime;
     }
 
-    public void setDirectoryPath(String directoryPath) {
-        this.directoryPath = directoryPath;
+    public String getFilePath() {
+        return filePath;
     }
 
-    public String getGroupID() {
-        return groupID;
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 
-    public void setGroupID(String groupID) {
-        this.groupID = groupID;
+    public String getTransferSyntaxUID() {
+        return transferSyntaxUID;
     }
 
-    public String getRetrieveAET() {
-        return retrieveAET;
+    public void setTransferSyntaxUID(String transferSyntaxUID) {
+        this.transferSyntaxUID = transferSyntaxUID;
     }
 
-    public void setRetrieveAET(String retrieveAET) {
-        this.retrieveAET = retrieveAET;
+    public long getFileSize() {
+        return fileSize;
     }
 
-    public Availability getAvailability() {
-        return availability;
+    public void setFileSize(long fileSize) {
+        this.fileSize = fileSize;
     }
 
-    public void setAvailability(Availability availability) {
-        this.availability = availability;
+    public String getMD5Sum() {
+        return md5Sum;
     }
 
-    public FileSystemStatus getStatus() {
-        return status;
+    public void setMD5Sum(String md5Sum) {
+        this.md5Sum = md5Sum;
     }
 
-    public void setStatus(FileSystemStatus status) {
-        this.status = status;
+    public Date getTimeOfLastMD5SumCheck() {
+        return timeOfLastMD5SumCheck;
     }
 
-    public String getUserInfo() {
-        return userInfo;
+    public void setTimeOfLastMD5SumCheck(Date timeOfLastMD5SumCheck) {
+        this.timeOfLastMD5SumCheck = timeOfLastMD5SumCheck;
     }
 
-    public void setUserInfo(String userInfo) {
-        this.userInfo = userInfo;
+    public int getFileStatus() {
+        return fileStatus;
     }
 
-    public FileSystemInfo getNextFileSystem() {
-        return nextFileSystem;
+    public void setFileStatus(int fileStatus) {
+        this.fileStatus = fileStatus;
     }
 
-    public void setNextFileSystem(FileSystemInfo nextFileSystem) {
-        this.nextFileSystem = nextFileSystem;
+    public Instance getInstance() {
+        return instance;
+    }
+
+    public void setInstance(Instance instance) {
+        this.instance = instance;
+    }
+
+    public FileSystem getFileSystem() {
+        return fileSystem;
+    }
+
+    public void setFileSystem(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
     }
 
     @Override
     public String toString() {
-        return "FileSystem[pk=" + pk
-                + ", dir=" + directoryPath
-                + ", avail=" + availability
-                + ", status=" + status
-                + ", aet=" + retrieveAET
+        return "File[pk=" + pk
+                + ", path=" + filePath
+                + ", tsuid=" + transferSyntaxUID
+                + ", size=" + fileSize
+                + ", status=" + fileStatus
                 + "]";
     }
 
+    public void onPrePersist() {
+        createdTime = new Date();
+    }
 }

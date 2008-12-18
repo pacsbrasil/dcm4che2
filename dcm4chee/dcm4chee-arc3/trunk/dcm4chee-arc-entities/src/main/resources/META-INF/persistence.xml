@@ -8,8 +8,8 @@
     <mapping-file>META-INF/ae.xml</mapping-file>
     <mapping-file>META-INF/code.xml</mapping-file>
     <mapping-file>META-INF/device.xml</mapping-file>
-    <mapping-file>META-INF/fileInfo.xml</mapping-file>
-    <mapping-file>META-INF/fileSystemInfo.xml</mapping-file>
+    <mapping-file>META-INF/file.xml</mapping-file>
+    <mapping-file>META-INF/fileSystem.xml</mapping-file>
     <mapping-file>META-INF/gppps.xml</mapping-file>
     <mapping-file>META-INF/gpsps.xml</mapping-file>
     <mapping-file>META-INF/gpspsPerformer.xml</mapping-file>
@@ -22,7 +22,7 @@
     <mapping-file>META-INF/mwlItem.xml</mapping-file>
     <mapping-file>META-INF/otherPatientID.xml</mapping-file>
     <mapping-file>META-INF/patient.xml</mapping-file>
-    <mapping-file>META-INF/privateFileInfo.xml</mapping-file>
+    <mapping-file>META-INF/privateFile.xml</mapping-file>
     <mapping-file>META-INF/privateInstance.xml</mapping-file>
     <mapping-file>META-INF/privatePatient.xml</mapping-file>
     <mapping-file>META-INF/privateSeries.xml</mapping-file>

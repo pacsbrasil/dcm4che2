@@ -67,7 +67,7 @@ public class PrivateInstance implements Serializable {
 
     private PrivateSeries series;
 
-    private Set<PrivateFileInfo> files;
+    private Set<PrivateFile> files;
 
     public long getPk() {
         return pk;
@@ -97,7 +97,7 @@ public class PrivateInstance implements Serializable {
         this.series = series;
     }
 
-    public Set<PrivateFileInfo> getFiles() {
+    public Set<PrivateFile> getFiles() {
         return files;
     }
 

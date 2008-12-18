@@ -3,7 +3,7 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
   version="1.0">
-  <entity class="org.dcm4chee.archive.entity.PrivateFileInfo" access="FIELD">
+  <entity class="org.dcm4chee.archive.entity.PrivateFile" access="FIELD">
     <table name="priv_file" />
     <attributes>
       <id name="pk">
@@ -29,7 +29,7 @@
       <many-to-one name="instance" fetch="LAZY">
         <join-column name="instance_fk" />
       </many-to-one>
-      <many-to-one name="fileSystemInfo" fetch="LAZY">
+      <many-to-one name="fileSystem" fetch="LAZY">
         <join-column name="filesystem_fk" />
       </many-to-one>
     </attributes>

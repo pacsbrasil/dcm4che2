@@ -57,7 +57,7 @@ public class StudyOnFileSystem implements Serializable {
 
     private Study study;
 
-    private FileSystemInfo fileSystemInfo;
+    private FileSystem fileSystem;
 
     public long getPk() {
         return pk;
@@ -79,12 +79,12 @@ public class StudyOnFileSystem implements Serializable {
         this.study = study;
     }
 
-    public FileSystemInfo getFileSystemInfo() {
-        return fileSystemInfo;
+    public FileSystem getFileSystem() {
+        return fileSystem;
     }
 
-    public void setFileSystemInfo(FileSystemInfo fileSystemInfo) {
-        this.fileSystemInfo = fileSystemInfo;
+    public void setFileSystem(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
     }
 
     @Override

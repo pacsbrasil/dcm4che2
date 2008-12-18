@@ -17,7 +17,7 @@
       <many-to-one name="study" fetch="LAZY">
         <join-column name="study_fk" />
       </many-to-one>
-      <many-to-one name="fileSystemInfo" fetch="LAZY">
+      <many-to-one name="fileSystem" fetch="LAZY">
         <join-column name="filesystem_fk" />
       </many-to-one>
     </attributes>

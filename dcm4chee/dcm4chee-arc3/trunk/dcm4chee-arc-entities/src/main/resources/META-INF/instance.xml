@@ -77,7 +77,7 @@
         <join-column name="series_fk" />
       </many-to-one>
       <one-to-many name="verifyingObservers" mapped-by="instance" fetch="LAZY"/>
-      <one-to-many name="fileInfos" mapped-by="instance" fetch="LAZY"/>
+      <one-to-many name="files" mapped-by="instance" fetch="LAZY"/>
     </attributes>
   </entity>
 </entity-mappings>
