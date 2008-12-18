@@ -44,6 +44,7 @@ import java.util.Set;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.common.StorageStatus;
 import org.dcm4chee.archive.conf.AttributeFilter;
@@ -275,8 +276,25 @@ public class Instance implements Serializable {
         updatedTime = new Date();
     }
 
-    public DicomObject getAttributes() throws IOException {
-        return DicomObjectUtils.decode(encodedAttributes);
+    public DicomObject getAttributes(boolean cfindrsp) throws IOException {
+        DicomObject dataset = DicomObjectUtils.decode(encodedAttributes);
+        if (cfindrsp) {
+            if (media != null) {
+                dataset.putString(Tag.StorageMediaFilesetUID, VR.UI,
+                        media.getFileSetUID());
+                dataset.putString(Tag.StorageMediaFilesetID, VR.SH,
+                        media.getFileSetID());
+            }
+            if (retrieveAETs != null || externalRetrieveAET != null) {
+                dataset.putString(Tag.RetrieveAETitle, VR.AE, 
+                        externalRetrieveAET == null ? retrieveAETs
+                                : retrieveAETs == null ? externalRetrieveAET
+                                : retrieveAETs + '\\' + externalRetrieveAET);
+            }
+            dataset.putString(Tag.InstanceAvailability, VR.CS,
+                    availability.name());
+        }
+        return dataset;
     }
 
     public void setAttributes(DicomObject attrs) {
