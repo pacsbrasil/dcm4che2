@@ -8,7 +8,7 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
-import org.dcm4chee.xero.search.filter.DicomFileLocationFilter;
+import org.dcm4chee.xero.search.filter.WadoFileLocation;
 import org.testng.annotations.Test;
 
 /** Tests the dicom file location filter */
@@ -33,7 +33,7 @@ public class DicomFileLocationFilterTest {
 		if( url==null ) throw new IllegalArgumentException("Resource not found "+filename);
 		//File f = new File(url.getFile());
 		//assert f.canRead();
-		params.put(DicomFileLocationFilter.DICOM_FILE_LOCATION, url);
+		params.put(WadoFileLocation.DICOM_FILE_LOCATION, url);
 		return fi.filter(null, params);
 	}
    
