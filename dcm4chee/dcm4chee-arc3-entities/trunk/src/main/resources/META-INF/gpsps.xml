@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
+  version="1.0">
+  <entity class="org.dcm4chee.archive.entity.GPSPS" access="FIELD">
+    <table name="gpsps" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="gpsps_pk_seq" />
+      </id>
+      <basic name="sopInstanceUID">
+        <column name="gpsps_iuid" />
+      </basic>
+      <basic name="transactionUID">
+        <column name="gpsps_tuid" />
+      </basic>
+      <basic name="startDateTime">
+        <column name="start_datetime" />
+      </basic>
+      <basic name="expectedCompletionDateTime">
+        <column name="end_datetime" />
+      </basic>
+      <basic name="status">
+        <column name="gpsps_status" />
+      </basic>
+      <basic name="priority">
+        <column name="gpsps_prior" />
+      </basic>
+      <basic name="inputAvailability">
+        <column name="in_availability" />
+      </basic>
+      <basic name="encodedAttributes">
+        <column name="item_attrs" column-definition="@blob@" />
+      </basic>
+      <many-to-one name="patient" fetch="LAZY">
+        <join-column name="patient_fk" />
+      </many-to-one>
+      <many-to-one name="scheduledWorkItemCode" fetch="LAZY">
+        <join-column name="code_fk" />
+      </many-to-one>
+      <one-to-many name="referencedRequests" mapped-by="gpsps" fetch="LAZY"/>
+      <one-to-many name="scheduledHumanPerformers" mapped-by="gpsps"
+        fetch="LAZY" />
+      <many-to-many name="scheduledProcessingApplicationsCodes" fetch="LAZY">
+        <join-table name="rel_gpsps_appcode">
+          <join-column name="appcode_fk" />
+          <inverse-join-column name="gpsps_fk" />
+        </join-table>
+      </many-to-many>
+      <many-to-many name="scheduledStationNameCodes" fetch="LAZY">
+        <join-table name="rel_gpsps_devname">
+          <join-column name="devname_fk" />
+          <inverse-join-column name="gpsps_fk" />
+        </join-table>
+      </many-to-many>
+      <many-to-many name="scheduledStationClassCodes" fetch="LAZY">
+        <join-table name="rel_gpsps_devclass">
+          <join-column name="devclass_fk" />
+          <inverse-join-column name="gpsps_fk" />
+        </join-table>
+      </many-to-many>
+      <many-to-many name="scheduledStationGeographicLocationCodes" fetch="LAZY">
+        <join-table name="rel_gpsps_devloc">
+          <join-column name="devloc_fk" />
+          <inverse-join-column name="gpsps_fk" />
+        </join-table>
+      </many-to-many>
+      <many-to-many name="performedProcedureSteps"
+        mapped-by="scheduledProcedureSteps" fetch="LAZY"/>
+    </attributes>
+  </entity>
+</entity-mappings>

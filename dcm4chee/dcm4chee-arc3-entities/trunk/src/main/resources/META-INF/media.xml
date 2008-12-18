@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
+  version="1.0">
+  <entity class="org.dcm4chee.archive.entity.Media" access="FIELD">
+    <table name="media" />
+    <pre-persist method-name="onPrePersist" />
+    <pre-update method-name="onPreUpdate" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="media_pk_seq" />
+      </id>
+      <basic name="createdTime">
+        <column name="created_time" />
+      </basic>
+      <basic name="updatedTime">
+        <column name="updated_time" />
+      </basic>
+      <basic name="mediaCreationRequestInstanceUID">
+        <column name="media_rq_iuid" />
+      </basic>
+      <basic name="mediaStatus">
+        <column name="media_status" />
+      </basic>
+      <basic name="mediaStatusInfo">
+        <column name="media_status_info" />
+      </basic>
+      <basic name="mediaUsage">
+        <column name="media_usage" />
+      </basic>
+      <basic name="fileSetID">
+        <column name="fileset_id" />
+      </basic>
+      <basic name="fileSetUID">
+        <column name="fileset_iuid" />
+      </basic>
+      <one-to-many name="instances" mapped-by="media" fetch="LAZY"/>
+    </attributes>
+  </entity>
+</entity-mappings>

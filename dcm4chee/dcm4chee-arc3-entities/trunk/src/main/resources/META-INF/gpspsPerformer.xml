@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
+  version="1.0">
+  <entity class="org.dcm4chee.archive.entity.GPSPSPerformer" access="FIELD">
+    <table name="gpsps_perf" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="gpsps_perf_pk_seq" />
+      </id>
+      <basic name="humanPerformerName">
+        <column name="human_perf_name" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="humanPerformerIdeographicName">
+        <column name="hum_perf_i_name" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="humanPerformerPhoneticName">
+        <column name="hum_perf_p_name" column-definition="@nvarchar2@" />
+      </basic>
+      <many-to-one name="gpsps" fetch="LAZY">
+        <join-column name="gpsps_fk" />
+      </many-to-one>
+      <many-to-one name="code" fetch="LAZY">
+        <join-column name="code_fk" />
+      </many-to-one>
+    </attributes>
+  </entity>
+</entity-mappings>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
+  version="1.0">
+  <entity class="org.dcm4chee.archive.entity.File" access="FIELD">
+    <table name="files" />
+    <pre-persist method-name="onPrePersist" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="files_pk_seq" />
+      </id>
+      <basic name="createdTime">
+        <column name="created_time" />
+      </basic>
+      <basic name="filePath">
+        <column name="filepath" />
+      </basic>
+      <basic name="transferSyntaxUID">
+        <column name="file_tsuid" />
+      </basic>
+      <basic name="fileSize">
+        <column name="file_size" />
+      </basic>
+      <basic name="md5Sum">
+        <column name="file_md5" />
+      </basic>
+      <basic name="timeOfLastMD5SumCheck">
+        <column name="md5_check_time" />
+      </basic>
+      <basic name="fileStatus">
+        <column name="file_status" />
+      </basic>
+      <many-to-one name="instance" fetch="LAZY">
+        <join-column name="instance_fk" />
+      </many-to-one>
+      <many-to-one name="fileSystem" fetch="LAZY">
+        <join-column name="filesystem_fk" />
+      </many-to-one>
+    </attributes>
+  </entity>
+</entity-mappings>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"
+  version="1.0">
+  <entity class="org.dcm4chee.archive.entity.Instance" access="FIELD">
+    <table name="instance" />
+    <pre-persist method-name="onPrePersist" />
+    <pre-update method-name="onPreUpdate" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="instance_pk_seq" />
+      </id>
+      <basic name="createdTime">
+        <column name="created_time" />
+      </basic>
+      <basic name="updatedTime">
+        <column name="updated_time" />
+      </basic>
+      <basic name="sopInstanceUID">
+        <column name="sop_iuid" />
+      </basic>
+      <basic name="sopClassUID">
+        <column name="sop_cuid" />
+      </basic>
+      <basic name="instanceNumber">
+        <column name="inst_no" />
+      </basic>
+      <basic name="contentDateTime">
+        <column name="content_datetime" />
+      </basic>
+      <basic name="completionFlag">
+        <column name="sr_complete" />
+      </basic>
+      <basic name="verificationFlag">
+        <column name="sr_verified" />
+      </basic>
+      <basic name="instanceCustomAttribute1">
+        <column name="inst_custom1" />
+      </basic>
+      <basic name="instanceCustomAttribute2">
+        <column name="inst_custom2" />
+      </basic>
+      <basic name="instanceCustomAttribute3">
+        <column name="inst_custom3" />
+      </basic>
+      <basic name="encodedAttributes">
+        <column name="inst_attrs" column-definition="@blob@" />
+      </basic>
+      <basic name="retrieveAETs">
+        <column name="retrieve_aets" />
+      </basic>
+      <basic name="externalRetrieveAET">
+        <column name="ext_retr_aet" />
+      </basic>
+      <basic name="availability">
+        <column name="availability" />
+      </basic>
+      <basic name="storageStatus">
+        <column name="inst_status" />
+      </basic>
+      <basic name="allAttributes">
+        <column name="all_attrs" />
+      </basic>
+      <basic name="storageComitted">
+        <column name="commitment" />
+      </basic>
+      <many-to-one name="conceptNameCode" fetch="LAZY">
+        <join-column name="srcode_fk" />
+      </many-to-one>
+      <many-to-one name="media" fetch="LAZY">
+        <join-column name="media_fk" />
+      </many-to-one>
+      <many-to-one name="series" fetch="LAZY">
+        <join-column name="series_fk" />
+      </many-to-one>
+      <one-to-many name="verifyingObservers" mapped-by="instance" fetch="LAZY"/>
+      <one-to-many name="files" mapped-by="instance" fetch="LAZY"/>
+    </attributes>
+  </entity>
+</entity-mappings>
