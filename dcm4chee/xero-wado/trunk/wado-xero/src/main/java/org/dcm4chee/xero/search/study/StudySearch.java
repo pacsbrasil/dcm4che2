@@ -76,6 +76,7 @@ public class StudySearch extends DicomCFindFilter {
         Tag.StudyInstanceUID,
         Tag.NumberOfStudyRelatedInstances,
         Tag.NumberOfStudyRelatedSeries,
+        Tag.ModalitiesInStudy,
      };
     
     protected static Set<Integer> returnKeys = new HashSet<Integer>(Arrays.asList(STUDY_RETURN_KEYS));
