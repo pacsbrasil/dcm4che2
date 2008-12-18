@@ -277,6 +277,10 @@
      <move todir="target">
         <fileset dir="${jmeterhome}/bin" includes="**/*.jtl" />
      </move>
+     <antcall target="runJMeterXslt" />
+  </target>
+
+  <target name="runJMeterXslt">
      <xslt style="${jmeterhome}/extras/jmeter-results-to-junit.xsl"
 	basedir="target"
 	includes="**/*.jtl" destdir="target/junit-jmeter" extension=".xml"/>
@@ -285,8 +289,24 @@
   <target name="jmeterPerformance">
      <property name="tag" value="${jtl}" />
      <xslt style="${jmeterhome}/extras/jmeter-to-hudson-performance.xsl"
-	in="target/${jtl}.jtl" out="target/perf/${tag}.avg">
+	in="target/junit-jmeter/${jtl}.xml" out="target/perf/${tag}.avg">
 	<param name="tag" expression="${tag}" />
+	<param name="extract" expression="avg" />
+     </xslt>
+     <xslt style="${jmeterhome}/extras/jmeter-to-hudson-performance.xsl"
+	in="target/junit-jmeter/${jtl}.xml" out="target/perf/${tag}.stddev">
+	<param name="tag" expression="${tag}" />
+	<param name="extract" expression="stdDev" />
+     </xslt>
+     <xslt style="${jmeterhome}/extras/jmeter-to-hudson-performance.xsl"
+	in="target/junit-jmeter/${jtl}.xml" out="target/perf/${tag}.min">
+	<param name="tag" expression="${tag}" />
+	<param name="extract" expression="min" />
+     </xslt>
+     <xslt style="${jmeterhome}/extras/jmeter-to-hudson-performance.xsl"
+	in="target/junit-jmeter/${jtl}.xml" out="target/perf/${tag}.max">
+	<param name="tag" expression="${tag}" />
+	<param name="extract" expression="max" />
      </xslt>
   </target>
 
