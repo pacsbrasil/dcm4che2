@@ -38,6 +38,21 @@ StudyData.prototype.queryForStudies = function(uids, studies, ae) {
 	this.request();
 };
 
+/** Finds a given object instance child by UID */
+StudyData.prototype.findInstance = function(uid) {
+	if( this.level>4 ) return;
+	if( this.level==4 ) {
+		if( this.objectUID===uid ) return this;
+	} else if( this.level<4 ) {
+		var i;
+		for(i in this.children) {
+			var child = this.children[i];
+			var ret = child.findInstance(uid);
+			if( ret ) return ret;
+		}
+	}
+};
+
 /** Gets a StudyData child, re-using the existing one of the right id if present, and indexing them
  * in a "children" element.
  */

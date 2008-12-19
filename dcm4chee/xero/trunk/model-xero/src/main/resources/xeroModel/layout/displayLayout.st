@@ -171,10 +171,15 @@ ReportArea.prototype.namedListener=function(nav,vname,val) {
 	console.info("Report area layout",studyLayout,"report",displayReport);
 	
 	if( !(studyLayout && displayReport && studyLayout!=="ShowImages") ) return;
+	var reportExt = nav.external.findInstance(displayReport);
+	if( reportExt==null ) {
+		console.warn("Can't find report information.");
+		return;
+	}
 	console.info("Displaying report",val);
 	this.used = true;
-	this.src = "studyUID="+nav.external.studyUID+"&amp;objectUID="+displayReport;
-	var ae = nav.external.get("ae");
+	this.src = "studyUID="+reportExt.get("studyUID")+"&amp;seriesUID="+reportExt.get("seriesUID")+"&amp;objectUID="+displayReport;
+	var ae = reportExt.get("ae");
 	if( ae ) this.src =this.src+"&amp;ae="+ae;
 }; 
 
