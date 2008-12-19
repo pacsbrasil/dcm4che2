@@ -38,7 +38,7 @@
  
 package org.dcm4che2.audit.message;
 
-class AuditMessageSupport extends AuditMessage {
+public class AuditMessageSupport extends AuditMessage {
 
     public static final AuditEvent.ActionCode CREATE = 
             AuditEvent.ActionCode.CREATE;
