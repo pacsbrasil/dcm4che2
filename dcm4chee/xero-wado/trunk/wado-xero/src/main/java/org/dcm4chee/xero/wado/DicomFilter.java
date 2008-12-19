@@ -53,6 +53,9 @@ import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
+import org.dcm4chee.xero.search.study.DicomObjectInterface;
+import org.dcm4chee.xero.search.study.SeriesBean;
+import org.dcm4chee.xero.search.study.StudyBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,6 +146,32 @@ public class DicomFilter implements Filter<DicomImageReader> {
 		DicomObject ret = filter.filter(null, newParams);
 		return ret;
 	}
+
+   /**
+    * Retrieve the DicomObject that represents the full DICOM header for the indicated
+    * DicomObjectType instance.
+    */
+   public static DicomObject callInstanceFilter(Filter<DicomObject> filter, DicomObjectInterface dot,String aeTitle)
+   {
+      Map<String, Object> params = new HashMap<String, Object>();
+      
+      if(aeTitle != null)
+         params.put(WadoParams.AE, aeTitle);
+      
+      params.put(WadoParams.OBJECT_UID, dot.getObjectUID());      
+      SeriesBean seriesBean =  dot.getSeriesBean();;
+      if(seriesBean != null)
+      {
+         params.put("seriesUID", seriesBean.getSeriesUID());
+         StudyBean studyBean = seriesBean.getStudyBean();
+         if(studyBean != null)
+         {
+            params.put("studyUID", studyBean.getStudyUID());
+         }
+            
+      }
+      return filter.filter(null,params);
+   }
 
    private Filter<URL> fileLocation;
    

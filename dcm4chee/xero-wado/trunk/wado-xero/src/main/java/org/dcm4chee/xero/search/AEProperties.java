@@ -56,6 +56,10 @@ import org.slf4j.LoggerFactory;
  */
 public class AEProperties {
 
+   public static final String AE_TITLE_KEY = "title";
+   public static final String AE_PORT_KEY = "aeport";
+   public static final String AE_HOST_KEY = "host";
+
    private static final Logger log = LoggerFactory.getLogger(AEProperties.class);
    
    private static final String FILE_NAME_PREPEND = "ae-";
@@ -97,9 +101,9 @@ public class AEProperties {
       defaultProperties = remoteProperties.get("local");
       if( defaultProperties!=null ) return;
       Map<String, Object> temp = new HashMap<String, Object>();
-      temp.put("host", "localhost");
-      temp.put("aeport", 11112);
-      temp.put("title", "DCM4CHEE");
+      temp.put(AE_HOST_KEY, "localhost");
+      temp.put(AE_PORT_KEY, 11112);
+      temp.put(AE_TITLE_KEY, "DCM4CHEE");
       temp.put("localTitle", "XERO");
       temp.put("wadoPath", "http://localhost:8080/wado");
       defaultProperties = Collections.unmodifiableMap(temp);
@@ -119,20 +123,20 @@ public class AEProperties {
          try {
             props.load(is);
 
-            String hostname = props.getProperty("host");
-            String aeport = props.getProperty("aeport");
+            String hostname = props.getProperty(AE_HOST_KEY);
+            String aeport = props.getProperty(AE_PORT_KEY);
             if( aeport==null ) aeport = "11112";
             String ejbport = props.getProperty("ejbport");
             if( ejbport==null ) ejbport = "1099";
-            String title = props.getProperty("title");
-            if( title==null ) props.put("title","DCM4CHEE");
+            String title = props.getProperty(AE_TITLE_KEY);
+            if( title==null ) props.put(AE_TITLE_KEY,"DCM4CHEE");
             String localTitle = props.getProperty("localTitle");
             if( localTitle==null ) props.put("localTitle","XERO");
  
             if (hostname != null ) {
                Map mprops = props;
                Map<String, Object> map = (Map<String,Object>) mprops;
-               map.put("aeport", Integer.parseInt(aeport));
+               map.put(AE_PORT_KEY, Integer.parseInt(aeport));
                map.put("ejbport", Integer.parseInt(ejbport));
 
                remoteProperties

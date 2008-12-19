@@ -51,6 +51,7 @@ import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.search.study.EffectiveLaterality;
 import org.dcm4chee.xero.search.study.ImageBean;
 import org.dcm4chee.xero.search.study.Laterality;
+import org.dcm4chee.xero.search.study.MammoImageFlipper;
 import org.dcm4chee.xero.search.study.Orientation;
 import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;
@@ -79,7 +80,7 @@ public class RegroupByLateralityAndOrientationFilter implements Filter<ResultsBe
    public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params)
    {
       ResultsBean results = filterItem.callNextFilter(params);
-      if(!shouldRegroup(params) || results == null)
+      if(!shouldRegroup(results,params))
          return results;
       
       log.info("Regrouping MG by laterality/view");
@@ -93,15 +94,28 @@ public class RegroupByLateralityAndOrientationFilter implements Filter<ResultsBe
    
    /**
     * Determine if we should regroup this set of results.
+    * <p>
+    * <ul>
+    * <li>Parameters must contain the name of the filter or '*' for the 'regroup' key.
+    * <li>The ModalitiesInStudy attribute must either contain MG or be empty (since this is not a required DICOM field
+    * </ul>
     */
-   protected boolean shouldRegroup(Map<String, Object> params)
+   protected boolean shouldRegroup(ResultsBean results,Map<String, Object> params)
    {
-      if(params == null)
+      if(params == null || results == null)
          return false;
       
       String regroup = (String)params.get("regroup");
-      return regroup != null &&
-         ( regroup.equals("*") || regroup.contains(NAME));
+      boolean parameterSet = regroup != null 
+         && ( regroup.equals("*") || regroup.contains(NAME));
+      
+      boolean containsMG = false;
+      for(PatientType p : results.getPatient())
+         for(StudyType s : p.getStudy())
+            if(containsMG = s.getModalitiesInStudy() == null || s.getModalitiesInStudy().contains("MG"))
+               break;
+      
+      return parameterSet && containsMG;
    }
 
    protected void groupImagesByOrientationAndPosition(StudyBean study,String aeTitle)
@@ -197,6 +211,16 @@ public class RegroupByLateralityAndOrientationFilter implements Filter<ResultsBe
       DicomObject dicom = image.getCfindHeader();
       Laterality laterality = effectiveLaterality.parseEffectiveLaterality(dicom);
       ViewCode viewCode = new ViewCode(dicom);
+      return generateSeriesDescription(laterality, viewCode);
+   }
+   
+   /**
+    * Generate a series description of the form {Laterality} {View Code} i.e. "L CC" or "R MLO"
+    */
+   protected String generateSeriesDescription(Laterality laterality, ViewCode viewCode)
+   {
+      if(laterality == null || viewCode == null)
+         return "";
       
       StringBuilder sb = new StringBuilder();
       sb.append(laterality.getDicomCode());

@@ -6,6 +6,9 @@ import java.util.Map;
 
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.search.macro.OriginalSeriesUID;
+import org.dcm4chee.xero.search.study.DicomObjectInterface;
+import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ReportType;
 import org.dcm4chee.xero.search.study.ResultsBean;
@@ -105,7 +108,13 @@ public class RegroupNonImage implements Filter<ResultsBean> {
 		 ret = seb;
 	  }
 	  seb.getDicomObject().addAll(origSer.getDicomObject());
+	  String seriesUID = origSer.getSeriesUID();
+	  OriginalSeriesUID origUid = new OriginalSeriesUID(seriesUID);
 	  seb.getChildren().remove(origSer.getId());
+	  for(DicomObjectType dot : seb.getDicomObject()) {
+	     DicomObjectInterface doi = (DicomObjectInterface) dot;
+	     doi.addMacro(origUid);
+	  }
 	  return ret;
    }
 }

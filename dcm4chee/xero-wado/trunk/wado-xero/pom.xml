@@ -77,6 +77,12 @@
     
     <dependency>
       <groupId>dcm4che</groupId>
+      <artifactId>dcm4che-image</artifactId>
+      <version>2.0.18</version>
+    </dependency> 
+
+    <dependency>
+      <groupId>dcm4che</groupId>
       <artifactId>dcm4che-imageio</artifactId>
       <version>2.0.19-intermediate2</version>
     </dependency> 
@@ -94,7 +100,7 @@
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4che-test-image</artifactId>
-      <version>2.0</version>
+      <version>2.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
