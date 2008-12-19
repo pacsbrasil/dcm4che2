@@ -115,12 +115,12 @@ public class FileLocationMgtFilter implements Filter<URL> {
    public URL filter(FilterItem<URL> filterItem, Map<String, Object> params) {
       Map<String,Object> aeMap = AEProperties.getAE(params);
       String type = (String) aeMap.get("type");
-      if( type!=null && !type.equals("fileLocationMgt") ) {
+      if( type!=null && !type.equals("dcm4chee") ) {
          URL ret = filterItem.callNextFilter(params);
-         log.debug("AE filter type {}, calling next filter, returned {}", type,ret);
+         log.debug("Pacs type {}, calling next filter, returned {}", type,ret);
          return ret;
       }
-      log.debug("AE filter type {}", type);
+      log.debug("Pacs type {}", type);
       long start = System.nanoTime();
       
        
@@ -129,13 +129,6 @@ public class FileLocationMgtFilter implements Filter<URL> {
           aeMap = AEProperties.getInstance().getAE(ae);
       } else {
     	  aeMap = AEProperties.getInstance().getDefaultAE();
-      }
-      
-      
-      // This is only for dcm4chee fileLocation searches (This is the default, so null is okay).
-      String pacsType = (String) aeMap.get("pacsType");
-      if( pacsType != null && !pacsType.equalsIgnoreCase("dcm4chee")) {
-    	  return filterItem.callNextFilter(params);
       }
       
       String objectUID = (String) params.get("objectUID");
