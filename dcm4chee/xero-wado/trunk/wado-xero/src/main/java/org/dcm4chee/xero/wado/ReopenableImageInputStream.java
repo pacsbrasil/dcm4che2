@@ -24,6 +24,7 @@ public class ReopenableImageInputStream extends ImageInputStreamImpl {
    URL location;
    String fileName;
    ImageInputStream stream;
+   File file = null;
    
    static long filesOpened = 0;
    static long filesClosed = 0;
@@ -38,6 +39,14 @@ public class ReopenableImageInputStream extends ImageInputStreamImpl {
 		 location = null;
 	  }
 	  reopen(true);
+   }
+   
+   /** Sets initially opens the stream */
+   public ReopenableImageInputStream(File file) throws IOException {
+	   this.file = file;
+	   this.fileName = file.getName();
+	   location = null;	  
+	   reopen(true);
    }
 
    public void reopen() throws IOException {
@@ -59,7 +68,11 @@ public class ReopenableImageInputStream extends ImageInputStreamImpl {
 	  if( stream!=null ) return;
 	  if (fileName!=null) {
 		 if( !first ) log.info("Re-opening DICOM image from local cache file " + fileName);
-		 stream = new FileImageInputStream(new File(fileName));
+		 if (!(file == null)){
+			 stream = new FileImageInputStream(file);
+		 }else{
+			 stream = new FileImageInputStream(new File(fileName));
+		 }
 	  } else {
 		 if( !first ) log.info("Re-opening DICOM image from remote url {}",location);
 		 stream = new FileCacheImageInputStream(location.openStream(),null);
