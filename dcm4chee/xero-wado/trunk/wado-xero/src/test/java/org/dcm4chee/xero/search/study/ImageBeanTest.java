@@ -37,39 +37,15 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
-import org.dcm4chee.xero.search.Column;
-import org.dcm4chee.xero.search.LocalModel;
-import org.dcm4chee.xero.search.ResultFromDicom;
+
+
+
 
 /**
- * Defines the standard fields and search criteria available at the object
- * instance level. THis is used for images, reports, key objects, ecg objects
- * etc.
- * 
- * @author bwallace
- * 
+ *
+ * @author Andrew Cowan (amidx)
  */
-public interface DicomObjectInterface extends ResultFromDicom, LocalModel<String>, MacroMixIn {
-
-   /**
-    * Gets the value of the objectUID property.
-    * 
-    * @return possible object is {@link String }
-    * 
-    */
-   @Column(searchable = true, type = "UID")
-   String getObjectUID();
-
-   /**
-    * Get the instance number - this is a value starting at 1 that defines the
-    * position of this object in terms of when it was received.
-    * 
-    * @return
-    */
-   @Column(searchable = true, type = "int")
-   Integer getInstanceNumber();
-
-   public SeriesBean getSeriesBean();
-
-   void addMacro(Macro origUid);
+public class ImageBeanTest
+{
+   
 }

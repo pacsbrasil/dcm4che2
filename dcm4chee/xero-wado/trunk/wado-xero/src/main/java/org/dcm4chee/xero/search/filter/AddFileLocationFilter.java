@@ -38,6 +38,7 @@
 package org.dcm4chee.xero.search.filter;
 
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.dcm4chee.xero.metadata.MetaData;
@@ -50,6 +51,7 @@ import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;
 import org.dcm4chee.xero.search.study.SeriesType;
 import org.dcm4chee.xero.search.study.StudyType;
+import org.dcm4chee.xero.wado.WadoParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,26 +67,33 @@ public class AddFileLocationFilter  implements Filter<ResultsBean> {
 	  log.debug("Add file location filter called.");
 	  if( ret==null || ! ("true".equalsIgnoreCase((String) params.get(FILE_LOCATION) )))
 		 return ret;
-	  log.debug("Adding file location to dicom objects.");
+	  log.info("Adding file location to dicom objects.");
+	  Map<String,Object> subParams = new HashMap<String,Object>();
+	  String ae = (String) params.get(WadoParams.AE);
+	  if( ae!=null )subParams.put(WadoParams.AE, ae);
 	  for (PatientType pt : ret.getPatient()) {
 		 for (StudyType st : pt.getStudy()) {
+		    subParams.put(WadoParams.STUDY_UID, st.getStudyUID());
 			for (SeriesType set : st.getSeries()) {
+			   subParams.put(WadoParams.SERIES_UID, set.getSeriesUID());
 			   for (DicomObjectType dot : set.getDicomObject()) {
 				  if( ! (dot instanceof MacroMixIn) ) continue;
+				  String objectUID = dot.getObjectUID();
 				  MacroMixIn mmi = (MacroMixIn) dot;
 				  if( mmi.getMacroItems().findMacro(FileLocationMacro.class)!=null ) continue;
-				  String seriesUid = set.getSeriesUID();
-				  String studyUid = st.getStudyUID();
-				  if( seriesUid != null) params.put("seriesUID", seriesUid);
-				  if( studyUid != null) params.put("studyUID", studyUid);
-				  URL url = FileLocationMgtFilter.findImageBeanUrl(dot, fileLocation, params);
-				  if( url==null ) continue;
+				  subParams.put(WadoParams.OBJECT_UID, objectUID);
+				  URL url = fileLocation.filter(null,subParams);
+				  if( url==null ) {
+				     log.warn("Unable to add file location for objectUID {}", objectUID);
+				     continue;
+				  }
+				  log.info("Adding location {} to {}", url, objectUID);
 				  mmi.getMacroItems().addMacro(new FileLocationMacro(url.toString()));
 			   }
 			}
 		 }
 	  }
-	  log.debug("Adding file location info done.");
+	  log.info("Adding file location info done.");
 	  return ret;
    }
 

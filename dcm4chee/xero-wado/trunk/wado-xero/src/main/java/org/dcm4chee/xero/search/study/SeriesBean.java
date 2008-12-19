@@ -176,13 +176,13 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	  if (modality.equals("SR") || UID.EncapsulatedPDFStorage.equals(sopClass)
 	        || modality.equals("ECG") || modality.equals("AU")) {
 	     // TODO - create a real audio and ECG record type.
-		 return new ReportBean(data);
+		 return new ReportBean(this,data);
 	  }
 	  if (modality.equals("KO")) {
 		 return new KeyObjectBean(this,data);
 	  }
 	  if (modality.equals("PR")) {
-		 return new GspsBean(data);
+		 return new GspsBean(this,data);
 	  }
 	  int frameCount = data.getInt(Tag.NumberOfFrames);
 	  if (frameCount > 1) {

@@ -1,6 +1,7 @@
 package org.dcm4chee.xero.wado.multi;
 
-import static org.dcm4chee.xero.wado.WadoParams.*;
+import static org.dcm4chee.xero.wado.WadoParams.FRAME_NUMBER;
+import static org.dcm4chee.xero.wado.WadoParams.OBJECT_UID;
 
 import java.util.ArrayList;
 import java.util.Iterator;

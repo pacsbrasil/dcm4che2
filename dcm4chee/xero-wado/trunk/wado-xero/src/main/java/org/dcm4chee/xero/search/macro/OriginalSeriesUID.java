@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Bill Wallace, Agfa HealthCare Inc., 
- * Portions created by the Initial Developer are Copyright (C) 2007
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -35,41 +35,29 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.search.study;
+package org.dcm4chee.xero.search.macro;
 
-import org.dcm4chee.xero.search.Column;
-import org.dcm4chee.xero.search.LocalModel;
-import org.dcm4chee.xero.search.ResultFromDicom;
+import java.util.Map;
 
-/**
- * Defines the standard fields and search criteria available at the object
- * instance level. THis is used for images, reports, key objects, ecg objects
- * etc.
- * 
- * @author bwallace
- * 
+import javax.xml.namespace.QName;
+
+import org.dcm4chee.xero.search.study.Macro;
+
+/** Allows storing the original series UID.  Should not be used on the 
+ * series level instance, but rather at the DicomObject level.
  */
-public interface DicomObjectInterface extends ResultFromDicom, LocalModel<String>, MacroMixIn {
+public class OriginalSeriesUID  implements Macro{
+   public static final QName Q_SERIES_UID = new QName(null,"seriesUID");
+   
+   String seriesUID;
+   
+   public OriginalSeriesUID(String seriesUID) {
+      this.seriesUID = seriesUID;
+   }
+   
+   public int updateAny(Map<QName, String> attrs) {
+      attrs.put(Q_SERIES_UID,seriesUID);
+      return 1;
+    }
 
-   /**
-    * Gets the value of the objectUID property.
-    * 
-    * @return possible object is {@link String }
-    * 
-    */
-   @Column(searchable = true, type = "UID")
-   String getObjectUID();
-
-   /**
-    * Get the instance number - this is a value starting at 1 that defines the
-    * position of this object in terms of when it was received.
-    * 
-    * @return
-    */
-   @Column(searchable = true, type = "int")
-   Integer getInstanceNumber();
-
-   public SeriesBean getSeriesBean();
-
-   void addMacro(Macro origUid);
 }

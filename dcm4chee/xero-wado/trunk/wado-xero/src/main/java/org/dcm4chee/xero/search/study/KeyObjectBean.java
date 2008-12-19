@@ -78,6 +78,13 @@ public class KeyObjectBean extends KeyObjectType implements LocalModel<String>, 
    @XmlTransient 
    Date contentDate;
    
+   /** Constructor for JAXB
+    * @deprecated
+    */
+   public KeyObjectBean() {
+      
+   }
+   
    /** Initialize the key object bean */
    public KeyObjectBean(SeriesBean series, DicomObject dobj) {
 	  this.parent = series;

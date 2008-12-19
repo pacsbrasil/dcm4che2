@@ -81,7 +81,7 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
    };
 
    /**
-    * Create an iamge bean with a specified parent.
+    * Create an image bean with a specified parent.
     * @param series
     */
    public ImageBean(SeriesBean series) {
@@ -96,7 +96,7 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
      */
    public ImageBean(SeriesBean seriesBean, DicomObject data) {
 	  this(seriesBean);
-	  initAttributes(data);
+	  addResult(data);
    }
 
    /** Make a clone of this image into the given image, or create a new one if necessary.
@@ -119,10 +119,12 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
      * @param data
      *            to copy image level data into this from.
      */
-   protected void initAttributes(DicomObject data) {
+   public void addResult(DicomObject data) {
+      if(data == null)
+         return;
       this.setCfindHeader(data);
-	  setColumns(data.getInt(Tag.Columns));
-	  setRows(data.getInt(Tag.Rows));
+	  setColumns(data.getInt(Tag.Columns,-1));
+	  setRows(data.getInt(Tag.Rows,-1));
 	  // setSOPClassUID(data.getString(Tag.SOPClassUID));
 	  setObjectUID(data.getString(Tag.SOPInstanceUID));
 	  setInstanceNumber(data.getInt(Tag.InstanceNumber));
@@ -230,4 +232,14 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
       this.cfindHeader = cfindHeader;
    }
 
+   /* (non-Javadoc)
+    * @see org.dcm4chee.xero.search.study.DicomObjectType#getPosition()
+    */
+   @Override
+   public Integer getPosition()
+   {
+      Integer position = super.getPosition();
+      assert position != null : "Sort must be complete before position is retrieved.";
+      return position;
+   }
 }

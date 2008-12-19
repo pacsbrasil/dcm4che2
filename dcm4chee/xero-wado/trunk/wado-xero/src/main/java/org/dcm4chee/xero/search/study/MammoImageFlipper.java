@@ -37,39 +37,53 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
-import org.dcm4chee.xero.search.Column;
-import org.dcm4chee.xero.search.LocalModel;
-import org.dcm4chee.xero.search.ResultFromDicom;
+import java.util.Collection;
+import java.util.List;
+
+import org.dcm4che2.data.DicomObject;
+import org.dcm4chee.xero.search.macro.FlipRotateMacro;
 
 /**
- * Defines the standard fields and search criteria available at the object
- * instance level. THis is used for images, reports, key objects, ecg objects
- * etc.
- * 
- * @author bwallace
- * 
+ * Utility that will check a mammo image and determine whether a flip is 
+ * required to show it in the proper orientation for the viewer.
+ * @author Andrew Cowan (amidx)
  */
-public interface DicomObjectInterface extends ResultFromDicom, LocalModel<String>, MacroMixIn {
+public class MammoImageFlipper
+{
 
    /**
-    * Gets the value of the objectUID property.
-    * 
-    * @return possible object is {@link String }
-    * 
-    */
-   @Column(searchable = true, type = "UID")
-   String getObjectUID();
-
-   /**
-    * Get the instance number - this is a value starting at 1 that defines the
-    * position of this object in terms of when it was received.
-    * 
+    * Mammo images should always be shown 
+    * @param image
     * @return
     */
-   @Column(searchable = true, type = "int")
-   Integer getInstanceNumber();
-
-   public SeriesBean getSeriesBean();
-
-   void addMacro(Macro origUid);
+   public boolean isFlipRequired(ImageBean image)
+   {
+      if(image == null)
+         return false;
+      
+      DicomObject dcm = image.getCfindHeader();
+      List<Orientation> orientations = Orientation.parsePatientOrientation(dcm);
+      Laterality laterality = Laterality.parseImageLaterality(dcm);
+      return isFlipRequired(laterality, orientations);
+   }
+   
+   public boolean isFlipRequired(Laterality laterality, Collection<Orientation> orientations)
+   {
+      if(laterality == null || orientations == null)
+         return false;
+      
+      boolean isAnterior = orientations.contains(Orientation.ANTERIOR);
+      boolean isLeft = laterality == Laterality.LEFT;
+      
+      return  isLeft ^ isAnterior;
+   }
+   
+   public boolean applyFlipIfNecessary(ImageBean image)
+   {
+      boolean shouldFlip = isFlipRequired(image);
+      if(shouldFlip)
+         image.getMacroItems().addMacro(new FlipRotateMacro(0,true));
+      
+      return shouldFlip;
+   }
 }

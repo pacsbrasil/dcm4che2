@@ -78,12 +78,10 @@ public class ImageBeanMultiFrame extends ImageBean {
    
    /** Read additional attributes from the dicom object */   
    @Override
-   protected void initAttributes(DicomObject data) {
-	  super.initAttributes(data);
+   public void addResult(DicomObject data) {
+	  super.addResult(data);
 	  frameItems = new MacroItems[data.getInt(Tag.NumberOfFrames)];
    }
-
-
 
    /** Return the number of frames in this instance */
    public int getNumberOfFrames() {
