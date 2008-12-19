@@ -90,4 +90,3 @@ cp -v "$JBOSS_WS_HOME/build/jbossws-default-deploy.conf" "$DCM4CHEE_JBOSSWS/jbos
 cp -v "$JBOSS_WS_DEPLOY/resources/jbossws-jboss42.sar/META-INF/jboss-service.xml" "$DCM4CHEE_JBOSSWS/META-INF/jboss-service.xml"
 
 cp -v "$JBOSS_WS_DEPLOY/resources/standard-jaxws-client-config.xml" "$DCM4CHEE_JBOSSWS/META-INF"
-cp -v "$JBOSS_WS_DEPLOY/resources/standard-jaxws-endpoint-config.xml" "$DCM4CHEE_JBOSSWS/META-INF"

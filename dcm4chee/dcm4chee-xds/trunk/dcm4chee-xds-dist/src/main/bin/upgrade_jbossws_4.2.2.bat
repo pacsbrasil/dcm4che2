@@ -96,7 +96,6 @@ copy "%JBOSS_WS_HOME%\build\jbossws-default-deploy.conf" "%DCM4CHEE_JBOSSWS%\jbo
 copy "%JBOSS_WS_DEPLOY%\resources\jbossws-jboss42.sar\META-INF\jboss-service.xml" "%DCM4CHEE_JBOSSWS%\META-INF\jboss-service.xml"
 
 copy "%JBOSS_WS_DEPLOY%\resources\standard-jaxws-client-config.xml" "%DCM4CHEE_JBOSSWS%\META-INF\"
-copy "%JBOSS_WS_DEPLOY%\resources\standard-jaxws-endpoint-config.xml" "%DCM4CHEE_JBOSSWS%\META-INF\"
 
 :end
 if "%OS%" == "Windows_NT" endlocal

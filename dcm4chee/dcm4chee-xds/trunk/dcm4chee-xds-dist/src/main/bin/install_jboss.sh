@@ -6,6 +6,7 @@
 DIRNAME=`dirname $0`
 DCM4CHEE_HOME="$DIRNAME"/..
 DCM4CHEE_SERV="$DCM4CHEE_HOME"/server/default
+DCM4CHEE_EP_CONFIG="$DCM4CHEE_SERV"/deploy/jbossws.sar/META-INF/standard-jaxws-endpoint-config.xml
 
 if [ x$1 = x ]; then
   echo "Usage: $0 <path-to-jboss-4.2.3.GA-installation-directory>"
@@ -70,12 +71,15 @@ cp -v "$JBOSS_SERV"/deploy/bsh-deployer.xml \
   "$JBOSS_SERV"/deploy/hsqldb-ds.xml \
   "$DCM4CHEE_SERV"/deploy
 
+mv "$DCM4CHEE_EP_CONFIG" "$DCM4CHEE_EP_CONFIG".dcm4che
 cp -v -R "$JBOSS_SERV"/deploy/ejb3.deployer \
   "$JBOSS_SERV"/deploy/http-invoker.sar \
   "$JBOSS_SERV"/deploy/jboss-aop-jdk50.deployer \
   "$JBOSS_SERV"/deploy/jboss-bean.deployer \
   "$JBOSS_SERV"/deploy/jbossws.sar \
   "$DCM4CHEE_SERV"/deploy
+mv "$DCM4CHEE_EP_CONFIG" "$DCM4CHEE_EP_CONFIG".orig
+mv "$DCM4CHEE_EP_CONFIG".dcm4che "$DCM4CHEE_EP_CONFIG"
 mv "$DCM4CHEE_SERV"/deploy/jbossws.sar/jaxb-api.jar "$DCM4CHEE_SERV"/lib
 mv "$DCM4CHEE_SERV"/deploy/jbossws.sar/jaxb-impl.jar "$DCM4CHEE_SERV"/lib
 
