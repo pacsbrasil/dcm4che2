@@ -52,6 +52,7 @@ import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.search.AEProperties;
 import org.dcm4chee.xero.search.study.DicomObjectType;
+import org.dcm4chee.xero.wado.WadoParams;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,8 +124,8 @@ public class FileLocationMgtFilter implements Filter<URL> {
       long start = System.nanoTime();
       
        
-      if (params.get("ae") != null && AEProperties.getInstance().getAE((String)params.get("ae")) != null)   {
-    	  String ae = (String)params.get("ae");
+      if (params.get(WadoParams.AE) != null && AEProperties.getInstance().getAE((String)params.get(WadoParams.AE)) != null)   {
+    	  String ae = (String)params.get(WadoParams.AE);
           aeMap = AEProperties.getInstance().getAE(ae);
       } else {
     	  aeMap = AEProperties.getInstance().getDefaultAE();
@@ -176,10 +177,10 @@ public class FileLocationMgtFilter implements Filter<URL> {
       newParams.put("objectUID", dot.getObjectUID());
       String queryStr = "objectUID='"+dot.getObjectUID()+"'";
       
-      String ae = (String) params.get("ae");
+      String ae = (String) params.get(WadoParams.AE);
       if(ae!=null ) {
-    	  newParams.put("ae",ae);
-    	  queryStr += ";ae="+ae;
+    	  newParams.put(WadoParams.AE,ae);
+    	  queryStr += ";"+WadoParams.AE+"="+ae;
       }
       
       newParams.put("queryStr",queryStr);
