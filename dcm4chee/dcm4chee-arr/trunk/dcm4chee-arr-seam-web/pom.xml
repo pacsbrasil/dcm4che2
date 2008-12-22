@@ -42,13 +42,13 @@
       <groupId>org.jboss.seam</groupId>
       <artifactId>jboss-seam</artifactId>
       <type>ejb</type>
-      <version>2.1.0.GA</version>
+      <version>2.1.0.SP1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jboss.seam</groupId>
       <artifactId>jboss-seam-ui</artifactId>
-      <version>2.1.0.GA</version>
+      <version>2.1.0.SP1</version>
       <exclusions>
         <exclusion>
           <groupId>org.jboss.seam</groupId>
@@ -64,7 +64,7 @@
     <dependency>
       <groupId>org.jboss.seam</groupId>
       <artifactId>jboss-seam-debug</artifactId>
-      <version>2.1.0.GA</version>
+      <version>2.1.0.SP1</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
