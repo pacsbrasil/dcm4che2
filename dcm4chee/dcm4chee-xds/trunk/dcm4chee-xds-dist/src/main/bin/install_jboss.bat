@@ -59,6 +59,7 @@ xcopy /S "%JBOSS_SERV%\lib" "%DCM4CHEE_SERV%\lib\"
 
 set JBOSS_DEPLOY=%JBOSS_SERV%\deploy
 set DCM4CHEE_DEPLOY=%DCM4CHEE_SERV%\deploy
+set DCM4CHEE_EP_CONFIG=%DCM4CHEE_DEPLOY%\jbossws.sar\META-INF\standard-jaxws-endpoint-config.xml
 
 copy "%JBOSS_DEPLOY%\bsh-deployer.xml" "%DCM4CHEE_DEPLOY%"
 copy "%JBOSS_DEPLOY%\cache-invalidation-service.xml" "%DCM4CHEE_DEPLOY%"
@@ -84,7 +85,10 @@ xcopy /S "%JBOSS_DEPLOY%\ejb3.deployer" "%DCM4CHEE_DEPLOY%\ejb3.deployer\"
 xcopy /S "%JBOSS_DEPLOY%\http-invoker.sar" "%DCM4CHEE_DEPLOY%\http-invoker.sar\"
 xcopy /S "%JBOSS_DEPLOY%\jboss-aop-jdk50.deployer" "%DCM4CHEE_DEPLOY%\jboss-aop-jdk50.deployer\"
 xcopy /S "%JBOSS_DEPLOY%\jboss-bean.deployer" "%DCM4CHEE_DEPLOY%\jboss-bean.deployer\"
+move "%DCM4CHEE_EP_CONFIG%" "%DCM4CHEE_EP_CONFIG%.dcm4che"
 xcopy /S "%JBOSS_DEPLOY%\jbossws.sar" "%DCM4CHEE_DEPLOY%\jbossws.sar\"
+move "%DCM4CHEE_EP_CONFIG%" "%DCM4CHEE_EP_CONFIG%.orig"
+move "%DCM4CHEE_EP_CONFIG%.dcm4che" "%DCM4CHEE_EP_CONFIG%"
 move "%DCM4CHEE_DEPLOY%"\jbossws.sar\jaxb-api.jar "%DCM4CHEE_SERV%"\lib\"
 move "%DCM4CHEE_DEPLOY%"\jbossws.sar\jaxb-impl.jar "%DCM4CHEE_SERV%"\lib\"
 
@@ -157,8 +161,8 @@ xcopy /S "%DCM4CHEE_HOME%"\standalone\lib "%DCM4CHEE_SERV%\lib\"
 
 echo Move XDS.b Source and XDS Query services from deploy directory to 'extras'
 md "%DCM4CHEE_HOME%"\extras
-move "%DCM4CHEE_SERV%"\deploy\dcm4chee-xdsb-src-mbean-0.0.2.sar "%DCM4CHEE_HOME%"\extras
-move "%DCM4CHEE_SERV%"\deploy\dcm4chee-xds-consumer-query-0.0.2.sar "%DCM4CHEE_HOME%"\extras
+move "%DCM4CHEE_SERV%"\deploy\dcm4chee-xdsb-src-mbean-*.sar "%DCM4CHEE_HOME%"\extras
+move "%DCM4CHEE_SERV%"\deploy\dcm4chee-xds-consumer-query-*.sar "%DCM4CHEE_HOME%"\extras
 
 :end
 if "%OS%" == "Windows_NT" endlocal
