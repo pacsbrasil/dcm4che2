@@ -51,13 +51,12 @@ import javax.xml.namespace.QName;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4chee.xero.search.LocalModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3.svg.P;
 
 /** Provides information about a key object type object. */
-public class KeyObjectBean extends KeyObjectType implements LocalModel<String>, MacroMixIn, SearchableDicomObject {
+public class KeyObjectBean extends KeyObjectType implements DicomObjectInterface, SearchableDicomObject {
    static Logger log = LoggerFactory.getLogger(KeyObjectBean.class);
 
    /**
@@ -88,7 +87,7 @@ public class KeyObjectBean extends KeyObjectType implements LocalModel<String>, 
    /** Initialize the key object bean */
    public KeyObjectBean(SeriesBean series, DicomObject dobj) {
 	  this.parent = series;
-	  initAttributes(dobj);
+	  addResult(dobj);
    }
 
    /** Create an empty key object bean */
@@ -100,7 +99,7 @@ public class KeyObjectBean extends KeyObjectType implements LocalModel<String>, 
     * Initialize the attributes of this series from the dicom header data
     * @param data
     */
-   protected void initAttributes(DicomObject data) {
+   public void addResult(DicomObject data) {
 	  setObjectUID(data.getString(Tag.SOPInstanceUID));
 	  setInstanceNumber(data.getInt(Tag.InstanceNumber));
 	  setCompletion(data.getString(Tag.CompletionFlag));
@@ -285,6 +284,21 @@ public class KeyObjectBean extends KeyObjectType implements LocalModel<String>, 
    public List<Object> getOtherElements() {
 	  if( this.macroItems==null ) return null;
 	  return this.macroItems.getOtherElements();
+   }
+
+   /** Adds the given macro to this objects set of macro items */
+   public void addMacro(Macro m) {
+      clearMacro(m.getClass());
+      getMacroItems().addMacro(m);
+   }
+   
+   /** Clears the macro from this class, and any children of this class.
+    * This uses getMacroItems rather than direct access to the variable in order to work with both
+    * frame and non-framed images.  It still needs extra work for the multi-frame single object, however. */
+   public void clearMacro(Class<? extends Macro> clazz) {
+      Macro item = getMacroItems().findMacro(clazz);
+      if (item != null)
+         getMacroItems().removeMacro(item);
    }
 
    /** Returns the date the content was created */
