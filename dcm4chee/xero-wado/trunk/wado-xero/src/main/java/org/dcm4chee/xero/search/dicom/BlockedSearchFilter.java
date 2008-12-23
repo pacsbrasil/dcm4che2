@@ -73,6 +73,10 @@ public class BlockedSearchFilter implements Filter<ServletResponseItem>, MetaDat
 	  String level = FilterUtil.getString(params,QUERY_LEVEL,"study");
 
 	  Filter<ResultFromDicom> filter = childFilters.get(level);
+	  if( filter==null ) {
+	     log.warn("Unable to find CFIND query results - likely the level is undefined:{}",level);
+	     return null;
+	  }
 	  return new BlockedServletResponseItem(filter, params);
    }
 
