@@ -168,7 +168,7 @@ public class MetaDataServlet extends HttpServlet {
 					.callThisFilter(params);
 			response.setCharacterEncoding("UTF-8");
 			if (sri == null) {
-				response.sendError(HttpServletResponse.SC_NO_CONTENT,
+				response.sendError(HttpServletResponse.SC_NOT_FOUND,
 						"No content found for this request.");
 				return;
 			}
