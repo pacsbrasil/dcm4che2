@@ -51,7 +51,6 @@ import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.search.study.EffectiveLaterality;
 import org.dcm4chee.xero.search.study.ImageBean;
 import org.dcm4chee.xero.search.study.Laterality;
-import org.dcm4chee.xero.search.study.MammoImageFlipper;
 import org.dcm4chee.xero.search.study.Orientation;
 import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;

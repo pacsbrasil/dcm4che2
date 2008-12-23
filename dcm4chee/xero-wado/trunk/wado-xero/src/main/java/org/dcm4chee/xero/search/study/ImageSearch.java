@@ -55,7 +55,7 @@ import org.dcm4chee.xero.search.SearchCriteria;
 public class ImageSearch extends SeriesSearch 
 {
 	public static final String IMAGE_QUERY_LEVEL="IMAGE";
-	public static final int InstanceSeq =  0x00430040;
+	public static final int InstanceSeq =  0x7FD90040;
 
 	public static final Integer[] IMAGE_LEVEL_RETURN_KEYS = {
 		Tag.NumberOfPatientRelatedStudies,
