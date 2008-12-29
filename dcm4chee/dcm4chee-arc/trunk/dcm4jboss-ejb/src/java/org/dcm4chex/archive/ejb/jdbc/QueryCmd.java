@@ -806,6 +806,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     Types.VARCHAR,      // Series.filesetIuid
                     Types.VARCHAR,      // Series.retrieveAETs
                     Types.VARCHAR,      // Series.externalRetrieveAET
+                    Types.VARCHAR,      // Series.sourceAET
                     Types.INTEGER,      // Series.availability
                     });
             addAdditionalReturnKeys();
@@ -834,7 +835,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     "Series.filesetIuid",                       // (11)
                     "Series.retrieveAETs",                      // (12)
                     "Series.externalRetrieveAET",               // (13)
-                    "Series.availability",                      // (14)
+                    "Series.sourceAET",                         // (14)
+                    "Series.availability",                      // (15)
                     };
         }
 
@@ -866,7 +868,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             ds.putSH(Tags.StorageMediaFileSetID, rs.getString(10));
             ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(11));
             DatasetUtils.putRetrieveAET(ds, rs.getString(12), rs.getString(13));
-            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(14)]);
+            ds.setPrivateCreatorID(PrivateTags.CreatorID);
+            ds.putSH(PrivateTags.CallingAET, rs.getString(14));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(15)]);
             ds.putCS(Tags.QueryRetrieveLevel, "SERIES");
         }
     }
@@ -903,6 +907,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                             Types.INTEGER,      // Study.numberOfStudyRelatedSeries
                             Types.INTEGER,      // Study.numberOfStudyRelatedInstances
                             Types.INTEGER,      // Series.numberOfSeriesRelatedInstances
+                            Types.VARCHAR,      // Series.sourceAET
                             Types.VARCHAR,      // Instance.retrieveAETs
                             Types.VARCHAR,      // Instance.externalRetrieveAET
                             Types.INTEGER,      // Instance.availability
@@ -944,11 +949,12 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                             "Study.numberOfStudyRelatedSeries",         // (9)
                             "Study.numberOfStudyRelatedInstances",      // (10)
                             "Series.numberOfSeriesRelatedInstances",    // (11)
-                            "Instance.retrieveAETs",                    // (12)
-                            "Instance.externalRetrieveAET",             // (13)
-                            "Instance.availability",                    // (14)
-                            "Media.filesetId",                          // (15)
-                            "Media.filesetIuid",                        // (16)
+                            "Series.sourceAET",                         // (12)
+                            "Instance.retrieveAETs",                    // (13)
+                            "Instance.externalRetrieveAET",             // (14)
+                            "Instance.availability",                    // (15)
+                            "Media.filesetId",                          // (16)
+                            "Media.filesetIuid",                        // (17)
                             };
         }
 
@@ -1051,10 +1057,12 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             ds.putIS(Tags.NumberOfStudyRelatedSeries, rs.getInt(9));
             ds.putIS(Tags.NumberOfStudyRelatedInstances, rs.getInt(10));
             ds.putIS(Tags.NumberOfSeriesRelatedInstances, rs.getInt(11));
-            DatasetUtils.putRetrieveAET(ds, rs.getString(12), rs.getString(13));
-            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(14)]);
-            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(15));
-            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(16));
+            ds.setPrivateCreatorID(PrivateTags.CreatorID);
+            ds.putSH(PrivateTags.CallingAET, rs.getString(12));
+            DatasetUtils.putRetrieveAET(ds, rs.getString(13), rs.getString(14));
+            ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(15)]);
+            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(16));
+            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(17));
             ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
         }
     }
