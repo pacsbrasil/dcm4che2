@@ -141,8 +141,12 @@ public class ORUService extends ORU_MDMService
                 sr.putUI(Tags.StudyInstanceUID, uidgen.createUID());
             }
         }
-        sr.putUI(Tags.SeriesInstanceUID, uidgen.createUID());
-        sr.putUI(Tags.SOPInstanceUID, uidgen.createUID());
+        if (!sr.containsValue(Tags.SeriesInstanceUID)) {
+            sr.putUI(Tags.SeriesInstanceUID, uidgen.createUID());
+        }
+        if (!sr.containsValue(Tags.SOPInstanceUID)) {
+            sr.putUI(Tags.SOPInstanceUID, uidgen.createUID());
+        }
         String cuid = sr.getString(Tags.SOPClassUID);
         DcmElement identicalDocumentsSeq = sr.get(Tags.IdenticalDocumentsSeq);
         if (identicalDocumentsSeq != null) {
