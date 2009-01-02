@@ -629,12 +629,10 @@ public abstract class StudyBean implements EntityBean {
             } catch (FinderException e) {
                 throw new EJBException(e);
             }
-            if (!seriesAets.contains(null)) {
-                Iterator it = seriesAets.iterator();
-                aets = (String) it.next();
-                while (it.hasNext()) {
-                    aets = AETs.common(aets, (String) it.next());
-                }
+            Iterator it = seriesAets.iterator();
+            aets = (String) it.next();
+            while (aets != null && it.hasNext()) {
+                aets = AETs.common(aets, (String) it.next());
             }
         }
         if (aets == null  ? getRetrieveAETs() == null
