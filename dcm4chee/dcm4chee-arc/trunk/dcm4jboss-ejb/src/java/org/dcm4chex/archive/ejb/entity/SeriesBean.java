@@ -676,12 +676,10 @@ public abstract class SeriesBean implements EntityBean {
             } catch (FinderException e) {
                 throw new EJBException(e);
             }
-            if (!iAetSet.contains(null)) {
-                Iterator it = iAetSet.iterator();
-                aets = (String) it.next();
-                while (it.hasNext()) {
-                    aets = AETs.common(aets, (String) it.next());
-                }
+            Iterator it = iAetSet.iterator();
+            aets = (String) it.next();
+            while (aets != null && it.hasNext()) {
+                aets = AETs.common(aets, (String) it.next());
             }
             if (sb.length() > 0) {
                 sb.setLength(sb.length() - 1);

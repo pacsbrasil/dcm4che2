@@ -60,6 +60,8 @@ public class AETs {
     }
 
     public static String common(String aets1, String aets2) {
+        if (aets1 == null || aets2 == null)
+            return null;
         if (aets1.equals(aets2))
             return aets1;
         String[] a1 = StringUtils.split(aets1, '\\');
