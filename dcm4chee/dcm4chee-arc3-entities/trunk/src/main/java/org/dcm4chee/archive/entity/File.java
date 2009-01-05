@@ -85,7 +85,7 @@ public class File implements Serializable {
     private int fileStatus;
 
     @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name = "filesystem_fk")
+    @JoinColumn(name = "instance_fk")
     private Instance instance;
 
     @ManyToOne(fetch=FetchType.LAZY)
