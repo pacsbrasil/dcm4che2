@@ -41,6 +41,12 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
 /**
  * @author Damien Evans <damien.daddy@gmail.com>
  * @author Justin Falk <jfalkmu@gmail.com>
@@ -48,28 +54,40 @@ import java.util.Set;
  * @version $Revision$ $Date$
  * @since Feb 29, 2008
  */
+@Entity
+@Table(name = "media")
 public class Media implements Serializable {
 
     private static final long serialVersionUID = -4054710856453638118L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "created_time")
     private Date createdTime;
 
+    @Column(name = "updated_time")
     private Date updatedTime;
 
+    @Column(name = "media_rq_iuid")
     private String mediaCreationRequestInstanceUID;
 
+    @Column(name = "media_status", nullable = false)
     private int mediaStatus;
 
+    @Column(name = "media_status_info")
     private String mediaStatusInfo;
 
+    @Column(name = "media_usage", nullable = false)
     private long mediaUsage;
 
+    @Column(name = "fileset_id")
     private String fileSetID;
 
+    @Column(name = "fileset_iuid", nullable = false)
     private String fileSetUID;
 
+    @OneToMany(mappedBy = "media", fetch = FetchType.LAZY)
     private Set<Instance> instances;
 
     public final long getPk() {

@@ -40,6 +40,13 @@ package org.dcm4chee.archive.entity;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 /**
  * @author Damien Evans <damien.daddy@gmail.com>
  * @author Justin Falk <jfalkmu@gmail.com>
@@ -47,16 +54,24 @@ import java.util.Date;
  * @version $Revision$ $Date$
  * @since Mar 3, 2008
  */
+@Entity
+@Table(name = "study_on_fs")
 public class StudyOnFileSystem implements Serializable {
 
     private static final long serialVersionUID = -4529151202029255741L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "access_time", nullable = false)
     private Date accessTime;
 
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name = "study_fk")
     private Study study;
 
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name = "filesystem_fk")
     private FileSystem fileSystem;
 
     public long getPk() {

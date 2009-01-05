@@ -41,6 +41,14 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
@@ -54,30 +62,44 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @version $Revision$ $Date$
  * @since Mar 2, 2008
  */
+@Entity
+@Table(name = "hp")
 public class HangingProtocol implements Serializable {
 
     private static final long serialVersionUID = -450985503561915871L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "hp_iuid", nullable = false)
     private String sopInstanceUID;
 
+    @Column(name = "hp_cuid")
     private String sopClassUID;
 
+    // JPA definition in orm.xml
     private String name;
 
+    @Column(name = "hp_level")
     private HangingProtocolLevel level;
 
+    @Column(name = "num_priors")
     private int numberOfPriorsReferenced;
 
+    // JPA definition in orm.xml
     private String userGroupName;
 
+    @Column(name = "num_screens")
     private int numberOfScreens;
 
+    // JPA definition in orm.xml
     private byte[] encodedAttributes;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_fk")
     private Code userIDCode;
 
+    @OneToMany(mappedBy = "hangingProtocol", fetch=FetchType.LAZY)
     private Set<HPDefinition> definitions;
 
     public long getPk() {

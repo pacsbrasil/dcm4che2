@@ -42,6 +42,16 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
@@ -58,44 +68,94 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @version $Revision$ $Date$
  * @since Mar 1, 2008
  */
+@Entity
+@Table(name = "gpsps")
 public class GPSPS implements Serializable {
 
     private static final long serialVersionUID = 4800913651614346013L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "gpsps_iuid", nullable = false)
     private String sopInstanceUID;
 
+    @Column(name = "gpsps_tuid")
     private String transactionUID;
 
+    @Column(name = "start_datetime", nullable = false)
     private Date startDateTime;
 
+    @Column(name = "end_datetime")
     private Date expectedCompletionDateTime;
 
+    @Column(name = "gpsps_status")
     private GPSPSStatus status;
 
+    @Column(name = "gpsps_prior")
     private GPSPSPriority priority;
 
+    @Column(name = "in_availability")
     private InputAvailabilityFlag inputAvailability;
 
+    // JPA definition in orm.xml
     private byte[] encodedAttributes;
 
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name = "patient_fk")
     private Patient patient;
 
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name = "code_fk")
     private Code scheduledWorkItemCode;
 
+    @ManyToMany(fetch=FetchType.LAZY)
+    @JoinTable(
+            name="rel_gpsps_appcode",
+            joinColumns=
+                @JoinColumn(name="appcode_fk", referencedColumnName="pk"),
+            inverseJoinColumns=
+                @JoinColumn(name="gpsps_fk", referencedColumnName="pk")
+        )
     private Set<Code> scheduledProcessingApplicationsCodes;
 
+    @ManyToMany(fetch=FetchType.LAZY)
+    @JoinTable(
+            name="rel_gpsps_devname",
+            joinColumns=
+                @JoinColumn(name="devname_fk", referencedColumnName="pk"),
+            inverseJoinColumns=
+                @JoinColumn(name="gpsps_fk", referencedColumnName="pk")
+        )
     private Set<Code> scheduledStationNameCodes;
 
+    @ManyToMany(fetch=FetchType.LAZY)
+    @JoinTable(
+            name="rel_gpsps_devclass",
+            joinColumns=
+                @JoinColumn(name="devclass_fk", referencedColumnName="pk"),
+            inverseJoinColumns=
+                @JoinColumn(name="gpsps_fk", referencedColumnName="pk")
+        )
     private Set<Code> scheduledStationClassCodes;
 
+    @ManyToMany(fetch=FetchType.LAZY)
+    @JoinTable(
+            name="rel_gpsps_devloc",
+            joinColumns=
+                @JoinColumn(name="devloc_fk", referencedColumnName="pk"),
+            inverseJoinColumns=
+                @JoinColumn(name="gpsps_fk", referencedColumnName="pk")
+        )
     private Set<Code> scheduledStationGeographicLocationCodes;
 
+    @OneToMany(mappedBy = "gpsps", fetch=FetchType.LAZY)
     private Set<GPSPSRequest> referencedRequests;
 
+    @OneToMany(mappedBy = "gpsps", fetch=FetchType.LAZY)
     private Set<GPSPSPerformer> scheduledHumanPerformers;
 
+    @ManyToMany(mappedBy = "scheduledProcedureSteps", fetch=FetchType.LAZY)
     private Set<GPPPS> performedProcedureSteps;
 
     public long getPk() {

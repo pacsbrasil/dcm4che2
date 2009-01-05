@@ -39,6 +39,13 @@ package org.dcm4chee.archive.entity;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 
@@ -49,16 +56,23 @@ import org.dcm4che2.data.Tag;
  * @version $Revision$ $Date$
  * @since Mar 2, 2008
  */
+@Entity
+@Table(name = "gpsps_req")
 public class GPSPSRequest implements Serializable {
 
     private static final long serialVersionUID = 6305364131324475996L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "req_proc_id")
     private String requestedProcedureID;
 
+    @Column(name = "accession_no")
     private String accessionNumber;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gpsps_fk")
     private GPSPS gpsps;
 
     public long getPk() {

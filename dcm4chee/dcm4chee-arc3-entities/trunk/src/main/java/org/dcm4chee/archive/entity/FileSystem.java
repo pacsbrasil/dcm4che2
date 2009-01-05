@@ -39,6 +39,13 @@ package org.dcm4chee.archive.entity;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.common.FileSystemStatus;
 
@@ -49,24 +56,35 @@ import org.dcm4chee.archive.common.FileSystemStatus;
  * @version $Revision$ $Date$
  * @since Feb 25, 2008
  */
+@Entity
+@Table(name = "filesystem")
 public class FileSystem implements Serializable {
 
     private static final long serialVersionUID = 8949412622901631772L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "dirpath", unique=true, nullable = false)
     private String directoryPath;
 
+    @Column(name = "fs_group_id", nullable = false)
     private String groupID;
 
+    @Column(name = "retrieve_aet", nullable = false)
     private String retrieveAET;
 
+    @Column(name = "availability", nullable = false)
     private Availability availability;
 
+    @Column(name = "fs_status", nullable = false)
     private FileSystemStatus status;
 
+    @Column(name = "user_info")
     private String userInfo;
 
+    @OneToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name = "next_fk")
     private FileSystem nextFileSystem;
 
     public long getPk() {

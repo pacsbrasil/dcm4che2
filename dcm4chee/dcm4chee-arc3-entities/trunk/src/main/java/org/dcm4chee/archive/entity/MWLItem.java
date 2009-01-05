@@ -41,6 +41,13 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
@@ -56,42 +63,62 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @version $Revision$ $Date$
  * @since Feb 29, 2008
  */
+@Entity
+@Table(name = "mwl_item")
 public class MWLItem implements Serializable {
 
     private static final long serialVersionUID = 5655030469102270878L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "created_time")
     private Date createdTime;
 
+    @Column(name = "updated_time")
     private Date updatedTime;
 
+    @Column(name = "sps_id")
     private String scheduledProcedureStepID;
 
+    @Column(name = "req_proc_id", nullable = false)
     private String requestedProcedureID;
 
+    @Column(name = "study_iuid", nullable = false)
     private String studyInstanceUID;
 
+    @Column(name = "accession_no")
     private String accessionNumber;
 
+    @Column(name = "modality", nullable = false)
     private String modality;
 
+    @Column(name = "station_aet", nullable = false)
     private String scheduledStationAET;
 
+    @Column(name = "station_name")
     private String scheduledStationName;
 
+    @Column(name = "start_datetime", nullable = false)
     private Date startDateTime;
 
+    // JPA definition in orm.xml
     private String scheduledPerformingPhysicianName;
-
+    
+    // JPA definition in orm.xml
     private String scheduledPerformingPhysicianIdeographicName;
 
+    // JPA definition in orm.xml
     private String scheduledPerformingPhysicianPhoneticName;
 
+    @Column(name = "sps_status")
     private SPSStatus status;
 
+    // JPA definition in orm.xml
     private byte[] encodedAttributes;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patient_fk")
     private Patient patient;
 
     public long getPk() {

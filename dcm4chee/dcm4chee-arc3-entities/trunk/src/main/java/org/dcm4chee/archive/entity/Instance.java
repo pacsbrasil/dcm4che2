@@ -42,6 +42,14 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
@@ -58,56 +66,85 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @version $Revision$ $Date$
  * @since Feb 25, 2008
  */
+@Entity
+@Table(name = "instance")
 public class Instance implements Serializable {
 
     private static final long serialVersionUID = -924140016923828861L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "created_time")
     private Date createdTime;
 
+    @Column(name = "updated_time")
     private Date updatedTime;
 
+    @Column(name = "sop_iuid", nullable = false)
     private String sopInstanceUID;
 
+    @Column(name = "sop_cuid", nullable = false)
     private String sopClassUID;
 
+    @Column(name = "inst_no")
     private String instanceNumber;
 
+    @Column(name = "content_datetime")
     private Date contentDateTime;
 
+    @Column(name = "sr_complete")
     private String completionFlag;
 
+    @Column(name = "sr_verified")
     private String verificationFlag;
 
+    @Column(name = "inst_custom1")
     private String instanceCustomAttribute1;
 
+    @Column(name = "inst_custom2")
     private String instanceCustomAttribute2;
 
+    @Column(name = "inst_custom3")
     private String instanceCustomAttribute3;
 
+    // JPA definition in orm.xml
     private byte[] encodedAttributes;
 
+    @Column(name = "retrieve_aets")
     private String retrieveAETs;
 
+    @Column(name = "ext_retr_aet")
     private String externalRetrieveAET;
 
+    @Column(name = "availability", nullable = false)
     private Availability availability;
 
+    @Column(name = "inst_status", nullable = false)
     private StorageStatus storageStatus;
 
+    @Column(name = "all_attrs", nullable = false)
     private boolean allAttributes;
 
+    @Column(name = "commitment", nullable = false)
     private boolean storageComitted;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "srcode_fk")
     private Code conceptNameCode;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "media_fk")
     private Media media;
 
+    @OneToMany(mappedBy = "instance", fetch = FetchType.LAZY)
     private Set<VerifyingObserver> verifyingObservers;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "series_fk")
     private Series series;
 
+    @OneToMany(mappedBy = "instance", fetch = FetchType.LAZY)
     private Set<File> files;
 
     public final long getPk() {

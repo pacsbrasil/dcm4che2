@@ -39,8 +39,19 @@ package org.dcm4chee.archive.entity;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.PersonName;
@@ -58,30 +69,43 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @version $Revision$ $Date$
  * @since Feb 25, 2008
  */
+@Entity
+@Table(name = "study")
 public class Study implements Serializable {
 
     private static final long serialVersionUID = -5851890695263668359L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "created_time")
     private Date createdTime;
 
+    @Column(name = "updated_time")
     private Date updatedTime;
 
+    @Column(name = "study_iuid", nullable = false)
     private String studyInstanceUID;
 
+    @Column(name = "study_id")
     private String studyID;
 
+    @Column(name = "study_datetime")
     private Date studyDateTime;
 
+    @Column(name = "accession_no")
     private String accessionNumber;
 
+    // JPA definition in orm.xml
     private String referringPhysicianName;
 
+    // JPA definition in orm.xml
     private String referringPhysicianIdeographicName;
 
+    // JPA definition in orm.xml
     private String referringPhysicianPhoneticName;
 
+    @Column(name = "study_desc")
     private String studyDescription;
 
     private String studyCustomAttribute1;
@@ -90,34 +114,60 @@ public class Study implements Serializable {
 
     private String studyCustomAttribute3;
 
+    // JPA definition in orm.xml
     private byte[] encodedAttributes;
 
+    @Column(name = "num_series", nullable = false)
     private int numberOfStudyRelatedSeries;
 
+    @Column(name = "num_instances", nullable = false)
     private int numberOfStudyRelatedInstances;
 
+    @Column(name = "mods_in_study")
     private String modalitiesInStudy;
 
+    @Column(name = "cuis_in_study")
     private String sopClassesInStudy;
 
+    @Column(name = "retrieve_aets")
     private String retrieveAETs;
 
+    @Column(name = "ext_retr_aet")
     private String externalRetrieveAET;
 
+    @Column(name = "fileset_id")
     private String fileSetID;
 
+    @Column(name = "fileset_iuid")
     private String fileSetUID;
 
+    @Column(name = "availability", nullable = false)
     private Availability availability;
 
+    @Column(name = "study_status", nullable = false)
     private int studyStatus;
 
+    @Column(name = "study_status_id")
     private String studyStatusID;
+    
+    @Column(name = "checked_time")
+    private Timestamp timeOfLastConsistencyCheck;
 
+    @ManyToMany(fetch=FetchType.LAZY)
+    @JoinTable(
+            name="rel_study_pcode",
+            joinColumns=
+                @JoinColumn(name="study_fk", referencedColumnName="pk"),
+            inverseJoinColumns=
+                @JoinColumn(name="pcode_fk", referencedColumnName="pk")
+        )
     private Set<Code> procedureCodes;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patient_fk")
     private Patient patient;
 
+    @OneToMany(mappedBy = "study", fetch = FetchType.LAZY)
     private Set<Series> series;
 
     public final long getPk() {
@@ -272,6 +322,14 @@ public class Study implements Serializable {
     public void setStudyStatus(int studyStatus) {
         this.studyStatus = studyStatus;
     }
+    
+    public Timestamp getTimeOfLastConsistencyCheck() {
+        return timeOfLastConsistencyCheck;
+    }
+
+    public void setTimeOfLastConsistencyCheck(Timestamp timeOfLastConsistencyCheck) {
+        this.timeOfLastConsistencyCheck = timeOfLastConsistencyCheck;
+    }
 
     public Set<Code> getProcedureCodes() {
         return procedureCodes;
@@ -375,5 +433,4 @@ public class Study implements Serializable {
         this.encodedAttributes = DicomObjectUtils.encode(filter.filter(attrs),
                 filter.getTransferSyntaxUID());
     }
-
 }

@@ -42,6 +42,14 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
@@ -56,34 +64,51 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @version $Revision$ $Date$
  * @since Feb 29, 2008
  */
+@Entity
+@Table(name = "mpps")
 public class MPPS implements Serializable {
 
     private static final long serialVersionUID = -599495313070741738L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "created_time")
     private Date createdTime;
 
+    @Column(name = "updated_time")
     private Date updatedTime;
 
+    @Column(name = "mpps_iuid", unique = true, nullable = false)
     private String sopInstanceUID;
 
+    @Column(name = "pps_start")
     private Date startDateTime;
 
+    @Column(name = "station_aet")
     private String performedStationAET;
 
+    @Column(name = "modality")
     private String modality;
 
+    @Column(name = "accession_no")
     private String accessionNumber;
 
+    @Column(name = "mpps_status", nullable = false)
     private PPSStatus status;
 
+    // JPA definition in orm.xml
     private byte[] encodedAttributes;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "drcode_fk")
     private Code discontinuationReasonCode;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patient_fk")
     private Patient patient;
 
+    @OneToMany(mappedBy = "modalityPerformedProcedureStep", fetch = FetchType.LAZY)
     private Set<Series> series;
 
     public long getPk() {

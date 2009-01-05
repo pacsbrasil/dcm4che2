@@ -42,6 +42,15 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
@@ -56,26 +65,42 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @version $Revision$ $Date$
  * @since Mar 1, 2008
  */
+@Entity
+@Table(name = "gppps")
 public class GPPPS implements Serializable {
 
     private static final long serialVersionUID = 5358842743055077420L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "created_time")
     private Date createdTime;
 
+    @Column(name = "updated_time")
     private Date updatedTime;
 
+    @Column(name = "pps_iuid", nullable = false)
     private String sopInstanceUID;
 
+    @Column(name = "pps_start")
     private Date startDateTime;
 
+    @Column(name = "pps_status", nullable = false)
     private PPSStatus status;
 
+    // JPA definition in orm.xml
     private byte[] encodedAttributes;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patient_fk")
     private Patient patient;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "rel_gpsps_gppps", 
+            joinColumns = @JoinColumn(name = "gppps_fk", referencedColumnName = "pk"), 
+            inverseJoinColumns = @JoinColumn(name = "gpsps_fk", referencedColumnName = "pk"))
     private Set<GPSPS> scheduledProcedureSteps;
 
     public long getPk() {
@@ -120,11 +145,8 @@ public class GPPPS implements Serializable {
 
     @Override
     public String toString() {
-        return "GPPPS[pk=" + pk
-                + ", uid=" + sopInstanceUID
-                + ", start=" + startDateTime
-                + ", status=" + status
-                + "]";
+        return "GPPPS[pk=" + pk + ", uid=" + sopInstanceUID + ", start="
+                + startDateTime + ", status=" + status + "]";
     }
 
     public void onPrePersist() {

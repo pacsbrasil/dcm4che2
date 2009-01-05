@@ -18,4 +18,452 @@
       </entity-listeners>
     </persistence-unit-defaults>
   </persistence-unit-metadata>
+  
+  <package>org.dcm4chee.archive.entity</package>
+  
+  <entity class="AE" access="FIELD" metadata-complete="false">
+    <table name="ae" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="ae_pk_seq" />
+      </id>
+    </attributes>
+  </entity>
+  
+  <entity class="Code" access="FIELD" metadata-complete="false">
+    <table name="code" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="code_pk_seq" />
+      </id>
+      <basic name="codeMeaning">
+        <column name="code_meaning" column-definition="@nvarchar2@"/>
+      </basic>
+    </attributes>
+  </entity>
+  
+  <entity class="Device" access="FIELD" metadata-complete="false">
+    <table name="device" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="device_pk_seq" />
+      </id>
+    </attributes>
+  </entity>
+  
+  <entity class="File" access="FIELD" metadata-complete="false">
+    <table name="files" />
+    <pre-persist method-name="onPrePersist" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="files_pk_seq" />
+      </id>
+    </attributes>
+  </entity>
+  
+  <entity class="FileSystem" access="FIELD" metadata-complete="false">
+    <table name="filesystem" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="filesystem_pk_seq" />
+      </id>
+    </attributes>
+  </entity>
+  
+  <entity class="GPPPS" access="FIELD" metadata-complete="false">
+    <table name="gppps" />
+    <pre-persist method-name="onPrePersist" />
+    <pre-update method-name="onPreUpdate" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="gppps_pk_seq" />
+      </id>
+      <basic name="encodedAttributes">
+        <column name="pps_attrs" column-definition="@blob@" />
+      </basic>
+    </attributes>
+  </entity>
+  
+  <entity class="GPSPS" access="FIELD" metadata-complete="false">
+    <table name="gpsps" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="gpsps_pk_seq" />
+      </id>
+      <basic name="encodedAttributes">
+        <column name="item_attrs" column-definition="@blob@" />
+      </basic>
+    </attributes>
+  </entity>
+  
+  <entity class="GPSPSPerformer" access="FIELD" metadata-complete="false">
+    <table name="gpsps_perf" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="gpsps_perf_pk_seq" />
+      </id>
+      <basic name="humanPerformerName">
+        <column name="human_perf_name" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="humanPerformerIdeographicName">
+        <column name="hum_perf_i_name" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="humanPerformerPhoneticName">
+        <column name="hum_perf_p_name" column-definition="@nvarchar2@" />
+      </basic>
+    </attributes>
+  </entity>
+  
+  <entity class="GPSPSRequest" access="FIELD" metadata-complete="false">
+    <table name="gpsps_req" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="gpsps_req_pk_seq" />
+      </id>
+    </attributes>
+  </entity>
+  
+  <entity class="HangingProtocol" access="FIELD" metadata-complete="false">
+    <table name="hp" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="hp_pk_seq" />
+      </id>
+      <basic name="name">
+        <column name="hp_name" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="userGroupName">
+        <column name="hp_group" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="encodedAttributes">
+        <column name="hp_attrs" column-definition="@blob@" />
+      </basic>
+    </attributes>
+  </entity>
+  
+  <entity class="HPDefinition" access="FIELD" metadata-complete="false">
+    <table name="hpdef" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="hpdef_pk_seq" />
+      </id>
+    </attributes>
+  </entity>
+  
+  <entity class="Instance" access="FIELD" metadata-complete="false">
+    <table name="instance" />
+    <pre-persist method-name="onPrePersist" />
+    <pre-update method-name="onPreUpdate" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="instance_pk_seq" />
+      </id>
+      <basic name="encodedAttributes">
+        <column name="inst_attrs" column-definition="@blob@" />
+      </basic>
+    </attributes>
+  </entity>
+  
+  <entity class="Media" access="FIELD" metadata-complete="false">
+    <table name="media" />
+    <pre-persist method-name="onPrePersist" />
+    <pre-update method-name="onPreUpdate" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="media_pk_seq" />
+      </id>
+    </attributes>
+  </entity>
+  
+  <entity class="MPPS" access="FIELD" metadata-complete="false">
+    <table name="mpps" />
+    <pre-persist method-name="onPrePersist" />
+    <pre-update method-name="onPreUpdate" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="mpps_pk_seq" />
+      </id>
+      <basic name="encodedAttributes">
+        <column name="mpps_attrs" column-definition="@blob@" />
+      </basic>
+    </attributes>
+  </entity>
+  
+  <entity class="MWLItem" access="FIELD" metadata-complete="false">
+    <table name="mwl_item" />
+    <pre-persist method-name="onPrePersist" />
+    <pre-update method-name="onPreUpdate" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="mwl_item_pk_seq" />
+      </id>
+      <basic name="scheduledPerformingPhysicianName">
+        <column name="perf_physician" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="scheduledPerformingPhysicianIdeographicName">
+        <column name="perf_phys_i_name" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="scheduledPerformingPhysicianPhoneticName">
+        <column name="perf_phys_p_name" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="encodedAttributes">
+        <column name="item_attrs" column-definition="@blob@" />
+      </basic>
+    </attributes>
+  </entity>
+  
+  <entity class="OtherPatientID" access="FIELD" metadata-complete="false">
+    <table name="other_pid" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="other_pid_pk_seq" />
+      </id>
+    </attributes>
+  </entity>
+  
+  <entity class="Patient" access="FIELD" metadata-complete="false">
+    <table name="patient" />
+    <pre-persist method-name="onPrePersist" />
+    <pre-update method-name="onPreUpdate" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="patient_pk_seq" />
+      </id>
+      <basic name="patientName">
+        <column name="pat_name" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="patientIdeographicName">
+        <column name="pat_i_name" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="patientPhoneticName">
+        <column name="pat_p_name" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="encodedAttributes">
+        <column name="pat_attrs" column-definition="@blob@" />
+      </basic>
+    </attributes>
+  </entity>
+  
+  <entity class="PrivateFile" access="FIELD" metadata-complete="false">
+    <table name="priv_file" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="priv_file_pk_seq" />
+      </id>
+    </attributes>
+  </entity>
+  
+  <entity class="PrivateInstance" access="FIELD" metadata-complete="false">
+    <table name="priv_instance" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="priv_instance_pk_seq" />
+      </id>
+      <basic name="encodedAttributes">
+        <column name="inst_attrs" column-definition="@blob@" />
+      </basic>
+    </attributes>
+  </entity>
+  
+  <entity class="PrivatePatient" access="FIELD" metadata-complete="false">
+    <table name="priv_patient" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="priv_patient_pk_seq" />
+     </id>
+      <basic name="encodedAttributes">
+        <column name="pat_attrs" column-definition="@blob@" />
+      </basic>
+    </attributes>
+  </entity>
+  
+  <entity class="PrivateSeries" access="FIELD" metadata-complete="false">
+    <table name="priv_series" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="priv_series_pk_seq" />
+      </id>
+      <basic name="encodedAttributes">
+        <column name="series_attrs" column-definition="@blob@" />
+      </basic>
+    </attributes>
+  </entity>
+  
+  <entity class="PrivateStudy" access="FIELD" metadata-complete="false">
+    <table name="priv_study" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="priv_study_pk_seq" />
+      </id>
+      <basic name="encodedAttributes">
+        <column name="study_attrs" column-definition="@blob@"/>
+      </basic>
+    </attributes>
+  </entity>
+  
+  <entity class="RequestAttributes" access="FIELD" metadata-complete="false">
+    <table name="series_req" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="series_req_pk_seq" />
+      </id>
+      <basic name="requestingService">
+        <column name="req_service" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="requestingPhysician">
+        <column name="req_physician" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="requestingPhysicianIdeographicName">
+        <column name="req_phys_i_name" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="requestingPhysicianPhoneticName">
+        <column name="req_phys_p_name" column-definition="@nvarchar2@" />
+      </basic>
+    </attributes>
+  </entity>
+  
+  <entity class="Series" access="FIELD" metadata-complete="false">
+    <table name="series" />
+    <pre-persist method-name="onPrePersist" />
+    <pre-update method-name="onPreUpdate" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="series_pk_seq" />
+      </id>
+      <basic name="institutionalDepartmentName">
+        <column name="department" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="institutionName">
+        <column name="institution" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="performingPhysicianName">
+        <column name="perf_physician" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="performingPhysicianIdeographicName">
+        <column name="perf_phys_i_name" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="performingPhysicianPhoneticName">
+        <column name="perf_phys_p_name" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="encodedAttributes">
+        <column name="series_attrs" column-definition="@blob@" />
+      </basic>
+    </attributes>
+  </entity>
+  
+  <entity class="Study" access="FIELD" metadata-complete="false">
+    <table name="study" />
+    <pre-persist method-name="onPrePersist" />
+    <pre-update method-name="onPreUpdate" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="study_pk_seq" />
+      </id>
+      <basic name="referringPhysicianName">
+        <column name="ref_physician" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="referringPhysicianIdeographicName">
+        <column name="ref_phys_i_name" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="referringPhysicianPhoneticName">
+        <column name="ref_phys_p_name" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="encodedAttributes">
+        <column name="study_attrs" column-definition="@blob@" />
+      </basic>
+    </attributes>
+  </entity>
+  
+  <entity class="StudyOnFileSystem" access="FIELD" metadata-complete="false">
+    <table name="study_on_fs" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="study_on_fs_pk_seq" />
+      </id>
+    </attributes>
+  </entity>
+  
+  <entity class="StudyPermission" access="FIELD" metadata-complete="false">
+    <table name="study_permission" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="study_permission_pk_seq" />
+      </id>
+    </attributes>
+  </entity>
+  
+  <entity class="VerifyingObserver" access="FIELD" metadata-complete="false">
+    <table name="verify_observer" />
+    <attributes>
+      <id name="pk">
+        <column name="pk" />
+        <generated-value strategy="@generation-type@" generator="seq"/>
+        <sequence-generator name="seq" sequence-name="verify_observer_pk_seq" />
+      </id>
+      <basic name="verifyingObserverName">
+        <column name="observer_name" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="verifyingObserverIdeographicName">
+        <column name="observer_i_name" column-definition="@nvarchar2@" />
+      </basic>
+      <basic name="verifyingObserverPhoneticName">
+        <column name="observer_p_name" column-definition="@nvarchar2@" />
+      </basic>
+    </attributes>
+  </entity>
+  
 </entity-mappings>

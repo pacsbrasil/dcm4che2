@@ -41,6 +41,12 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
@@ -53,22 +59,31 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @version $Revision$ $Date$
  * @since Mar 3, 2008
  */
+@Entity
+@Table(name = "priv_patient")
 public class PrivatePatient implements Serializable {
 
     private static final long serialVersionUID = 943058791913251357L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "priv_type", nullable = false)
     private int privateType;
 
+    @Column(name = "pat_id")
     private String patientID;
 
+    @Column(name = "pat_id_issuer")
     private String issuerOfPatientID;
 
+    @Column(name = "pat_name")
     private String patientName;
 
+    // JPA definition in orm.xml
     private byte[] encodedAttributes;
 
+    @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
     private Set<PrivateStudy> studies;
 
     public long getPk() {

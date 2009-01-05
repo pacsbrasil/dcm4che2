@@ -41,6 +41,14 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.common.PrivateTag;
@@ -53,22 +61,32 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @version $Revision$ $Date$
  * @since Mar 3, 2008
  */
+@Entity
+@Table(name = "priv_series")
 public class PrivateSeries implements Serializable {
 
     private static final long serialVersionUID = -8261618983812488376L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "priv_type", nullable = false)
     private int privateType;
 
+    @Column(name = "series_iuid", nullable = false)
     private String seriesInstanceUID;
 
+    @Column(name = "src_aet")
     private String sourceAET;
 
+    // JPA definition in orm.xml
     private byte[] encodedAttributes;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "study_fk", nullable = false)
     private PrivateStudy study;
 
+    @OneToMany(mappedBy = "series", fetch = FetchType.LAZY)
     private Set<PrivateInstance> instances;
 
     public long getPk() {

@@ -39,6 +39,12 @@ package org.dcm4chee.archive.entity;
 
 import java.io.Serializable;
 
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
@@ -50,20 +56,30 @@ import org.dcm4che2.data.Tag;
  * @version $Revision$ $Date$
  * @since Mar 2, 2008
  */
+@Entity
+@Table(name = "gppps")
 public class GPSPSPerformer implements Serializable {
 
     private static final long serialVersionUID = -7557539606659982634L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    // JPA definition in orm.xml
     private String humanPerformerName;
 
+    // JPA definition in orm.xml
     private String humanPerformerIdeographicName;
 
+    // JPA definition in orm.xml
     private String humanPerformerPhoneticName;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gpsps_fk")
     private GPSPS gpsps;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "code_fk")
     private Code code;
 
     public long getPk() {

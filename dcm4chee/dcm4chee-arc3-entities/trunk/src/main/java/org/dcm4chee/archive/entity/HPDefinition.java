@@ -40,6 +40,15 @@ package org.dcm4chee.archive.entity;
 import java.io.Serializable;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 
@@ -50,22 +59,53 @@ import org.dcm4che2.data.Tag;
  * @version $Revision$ $Date$
  * @since Mar 2, 2008
  */
+@Entity
+@Table(name = "hpdef")
 public class HPDefinition implements Serializable {
 
     private static final long serialVersionUID = 608638906765588946L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "modality")
     private String modality;
 
+    @Column(name = "laterality")
     private String laterality;
 
+    @ManyToMany(fetch=FetchType.LAZY)
+    @JoinTable(
+            name="rel_hpdef_region",
+            joinColumns=
+                @JoinColumn(name="hpdef_fk", referencedColumnName="pk"),
+            inverseJoinColumns=
+                @JoinColumn(name="region_fk", referencedColumnName="pk")
+        )
     private Set<Code> anatomicRegionCodes;
 
+    @ManyToMany(fetch=FetchType.LAZY)
+    @JoinTable(
+            name="rel_hpdef_proc",
+            joinColumns=
+                @JoinColumn(name="hpdef_fk", referencedColumnName="pk"),
+            inverseJoinColumns=
+                @JoinColumn(name="proc_fk", referencedColumnName="pk")
+        )
     private Set<Code> procedureCodes;
 
+    @ManyToMany(fetch=FetchType.LAZY)
+    @JoinTable(
+            name="rel_hpdef_reason",
+            joinColumns=
+                @JoinColumn(name="hpdef_fk", referencedColumnName="pk"),
+            inverseJoinColumns=
+                @JoinColumn(name="reason_fk", referencedColumnName="pk")
+        )
     private Set<Code> reasonforRequestedCodes;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hp_fk")
     private HangingProtocol hangingProtocol;
 
     public long getPk() {

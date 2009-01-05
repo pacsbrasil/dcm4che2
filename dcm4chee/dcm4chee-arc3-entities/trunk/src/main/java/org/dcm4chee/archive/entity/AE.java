@@ -39,6 +39,10 @@ package org.dcm4chee.archive.entity;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 /**
  * @author Damien Evans <damien.daddy@gmail.com>
  * @author Justin Falk <jfalkmu@gmail.com>
@@ -47,30 +51,43 @@ import java.io.Serializable;
  * @version $Revision$ $Date$
  * @since Mar 3, 2008
  */
+@Entity
+@Table(name = "ae")
 public class AE implements Serializable {
 
     private static final long serialVersionUID = -3132017392325052134L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "aet", nullable = false)
     private String title;
 
+    @Column(name = "hostname", nullable = false)
     private String hostName;
 
+    @Column(name = "port", nullable = false)
     private int port;
-
+    
+    @Column(name = "cipher_suites")
     private String cipherSuites;
 
+    @Column(name = "pat_id_issuer")
     private String issuerOfPatientID;
 
+    @Column(name = "user_id")
     private String userID;
 
+    @Column(name = "passwd")
     private String password;
 
+    @Column(name = "fs_group_id")
     private String fileSystemGroupID;
 
+    @Column(name = "ae_desc")
     private String description;
 
+    @Column(name = "wado_url")
     private String wadoURL;
 
     public long getPk() {

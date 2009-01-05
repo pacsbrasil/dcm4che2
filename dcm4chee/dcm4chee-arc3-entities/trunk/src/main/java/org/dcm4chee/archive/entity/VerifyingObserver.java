@@ -40,6 +40,13 @@ package org.dcm4chee.archive.entity;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
@@ -51,20 +58,29 @@ import org.dcm4che2.data.Tag;
  * @version $Revision$ $Date$
  * @since Feb 29, 2008
  */
+@Entity
+@Table(name = "verify_observer")
 public class VerifyingObserver implements Serializable {
 
     private static final long serialVersionUID = 8647650970218017903L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "verify_datetime")
     private Date verificationDateTime;
 
+    // JPA definition in orm.xml
     private String verifyingObserverName;
 
+    // JPA definition in orm.xml
     private String verifyingObserverIdeographicName;
 
+    // JPA definition in orm.xml
     private String verifyingObserverPhoneticName;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "instance_fk")
     private Instance instance;
 
     public final long getPk() {

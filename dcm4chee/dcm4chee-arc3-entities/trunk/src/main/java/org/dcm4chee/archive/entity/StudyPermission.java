@@ -39,6 +39,10 @@ package org.dcm4chee.archive.entity;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 /**
  * @author Damien Evans <damien.daddy@gmail.com>
  * @author Justin Falk <jfalkmu@gmail.com>
@@ -46,6 +50,8 @@ import java.io.Serializable;
  * @version $Revision$ $Date$
  * @since Mar 3, 2008
  */
+@Entity
+@Table(name = "study_permission")
 public class StudyPermission implements Serializable {
 
     private static final long serialVersionUID = -4389532918446366208L;
@@ -84,12 +90,16 @@ public class StudyPermission implements Serializable {
      */
     public static final String DELETE_ACTION = "D";
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "study_iuid", nullable = false)
     private String studyInstanceUID;
 
+    @Column(name = "action", nullable = false)
     private String action;
 
+    @Column(name = "roles", nullable = false)
     private String role;
 
     public long getPk() {
@@ -120,6 +130,7 @@ public class StudyPermission implements Serializable {
         this.studyInstanceUID = studyInstanceUID;
     }
 
+    @Override
     public String toString() {
         return "StudyPermission[pk=" + pk
                 + ", suid=" + studyInstanceUID

@@ -42,6 +42,16 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
@@ -56,52 +66,81 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  * @version $Revision$ $Date$
  * @since Feb 23, 2008
  */
+@Entity
+@Table(name = "patient")
 public class Patient implements Serializable {
 
     private static final long serialVersionUID = -1348274766865261645L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "created_time")
     private Date createdTime;
 
+    @Column(name = "updated_time")
     private Date updatedTime;
 
+    @Column(name = "pat_id")
     private String patientID;
 
+    @Column(name = "pat_id_issuer")
     private String issuerOfPatientID;
 
+    // JPA definition in orm.xml
     private String patientName;
 
+    // JPA definition in orm.xml
     private String patientIdeographicName;
 
+    // JPA definition in orm.xml
     private String patientPhoneticName;
 
+    @Column(name = "pat_birthdate")
     private String patientBirthDate;
 
+    @Column(name = "pat_sex")
     private String patientSex;
 
+    @Column(name = "pat_custom1")
     private String patientCustomAttribute1;
 
+    @Column(name = "pat_custom2")
     private String patientCustomAttribute2;
 
+    @Column(name = "pat_custom3")
     private String patientCustomAttribute3;
 
+    // JPA definition in orm.xml
     private byte[] encodedAttributes;
 
+    @ManyToMany(fetch=FetchType.LAZY)
+    @JoinTable(
+            name = "rel_pat_other_pid", 
+            joinColumns = @JoinColumn(name = "patient_fk", referencedColumnName = "pk"), 
+            inverseJoinColumns = @JoinColumn(name = "other_pid_fk", referencedColumnName = "pk"))
     private Set<OtherPatientID> otherPatientIDs;
 
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name = "merge_fk")
     private Patient mergedWith;
 
+    @OneToMany(mappedBy = "mergedWith", fetch=FetchType.LAZY)
     private Set<Patient> previous;
 
+    @OneToMany(mappedBy = "patient", fetch=FetchType.LAZY)
     private Set<Study> studies;
 
+    @OneToMany(mappedBy = "patient", fetch=FetchType.LAZY)
     private Set<MWLItem> modalityWorklistItems;
 
+    @OneToMany(mappedBy = "patient", fetch=FetchType.LAZY)
     private Set<MPPS> modalityPerformedProcedureSteps;
 
+    @OneToMany(mappedBy = "patient", fetch=FetchType.LAZY)
     private Set<GPSPS> generalPurposeScheduledProcedureSteps;
 
+    @OneToMany(mappedBy = "patient", fetch=FetchType.LAZY)
     private Set<GPPPS> generalPurposePerformedProcedureSteps;
 
     public long getPk() {

@@ -40,6 +40,13 @@ package org.dcm4chee.archive.entity;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 /**
  * @author Damien Evans <damien.daddy@gmail.com>
  * @author Justin Falk <jfalkmu@gmail.com>
@@ -47,28 +54,42 @@ import java.util.Date;
  * @version $Revision$ $Date$
  * @since Feb 25, 2008
  */
+@Entity
+@Table(name = "files")
 public class File implements Serializable {
 
     private static final long serialVersionUID = 4043304968513421877L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "created_time")
     private Date createdTime;
 
+    @Column(name = "filepath")
     private String filePath;
 
+    @Column(name = "file_tsuid")
     private String transferSyntaxUID;
 
+    @Column(name = "file_size")
     private long fileSize;
 
+    @Column(name = "file_md5")
     private String md5Sum;
 
+    @Column(name = "md5_check_time")
     private Date timeOfLastMD5SumCheck;
 
+    @Column(name = "file_status")
     private int fileStatus;
 
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name = "filesystem_fk")
     private Instance instance;
 
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name = "filesystem_fk")    
     private FileSystem fileSystem;
 
     public long getPk() {

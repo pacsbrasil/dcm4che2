@@ -39,6 +39,13 @@ package org.dcm4chee.archive.entity;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 /**
  * @author Damien Evans <damien.daddy@gmail.com>
  * @author Justin Falk <jfalkmu@gmail.com>
@@ -46,24 +53,36 @@ import java.io.Serializable;
  * @version $Revision$ $Date$
  * @since Mar 3, 2008
  */
+@Entity
+@Table(name = "priv_file")
 public class PrivateFile implements Serializable {
 
     private static final long serialVersionUID = 88587213724521925L;
 
+    // JPA definition in orm.xml
     private long pk;
 
+    @Column(name = "filepath", nullable = false)
     private String filePath;
 
+    @Column(name = "file_tsuid", nullable = false)
     private String transferSyntaxUID;
 
+    @Column(name = "file_md5")
     private String fileMD5;
 
+    @Column(name = "file_status")
     private int fileStatus;
 
+    @Column(name = "file_size")
     private long fileSize;
 
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name = "instance_fk")
     private PrivateInstance instance;
 
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name = "filesystem_fk")
     private FileSystem fileSystem;
 
     public long getPk() {
