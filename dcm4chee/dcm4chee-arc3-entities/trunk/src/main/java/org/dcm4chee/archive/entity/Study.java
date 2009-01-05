@@ -108,10 +108,13 @@ public class Study implements Serializable {
     @Column(name = "study_desc")
     private String studyDescription;
 
+    @Column(name = "study_custom1")
     private String studyCustomAttribute1;
 
+    @Column(name = "study_custom2")
     private String studyCustomAttribute2;
 
+    @Column(name = "study_custom3")
     private String studyCustomAttribute3;
 
     // JPA definition in orm.xml
@@ -126,7 +129,7 @@ public class Study implements Serializable {
     @Column(name = "mods_in_study")
     private String modalitiesInStudy;
 
-    @Column(name = "cuis_in_study")
+    @Column(name = "cuids_in_study")
     private String sopClassesInStudy;
 
     @Column(name = "retrieve_aets")
