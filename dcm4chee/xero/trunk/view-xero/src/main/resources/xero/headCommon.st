@@ -12,8 +12,17 @@
    <script type='text/javascript' src='firebug/firebugx.js'></script>
   $endif$
   $if(IS_IE)$
-    <style> v\:* { behavior: url(#default#VML); display: inline-block; overflow: hidden; position: absolute; }  </style>
+    <style> v\:* { behavior: url(#default#VML); display: inline-block; overflow: hidden; position: absolute; }
+    $if(IS_IE6)$
+    div.hoverMenu ul {	visibility: visible;  }
+    $endif$
+      </style>
     <link type="text/cass" rel="stylesheet" href="style/ie.css"> </link>
+  $elseif(IS_FIREFOX)$
+  	<style>
+  		table { height: 75%; }
+  		tbody { overflow: auto; height: 95%; }
+  	</style>
   $endif$
   <title>Xero Query</title>
   $model/scripts()$
@@ -22,6 +31,7 @@
 /** Define per-user information as required TODO - move this to a child script */
 model.userName = "$userName$";  
 model.ae = "$ae;format="xml"$";
+model.version = "$version$";
   </script>
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" /> 
