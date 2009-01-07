@@ -1031,7 +1031,6 @@ public class Association implements Runnable {
                         AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
                         AAssociateRJ.REASON_TEMPORARY_CONGESTION);
             setApplicationEntity(ae);
-            ae.negotiate(this, rq);
             associateAC = ae.negotiate(this, rq);
             processAC();
             maxOpsInvoked = associateAC.getMaxOpsPerformed();
