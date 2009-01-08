@@ -43,7 +43,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
@@ -64,10 +63,10 @@ import org.slf4j.LoggerFactory;
  */
 public class JaxbFilter implements Filter<ServletResponseItem>
 {
-	JAXBContext context;
 	static Logger log = LoggerFactory.getLogger(JaxbFilter.class);
 	
 	Filter<?> sourceFilter;
+   private JAXBProvider provider;
 	
 	/**
 	 * This class holds the filtered response item until it is time to be serialized
@@ -77,26 +76,22 @@ public class JaxbFilter implements Filter<ServletResponseItem>
 	 */
 	static class JaxbServletResponseItem implements ServletResponseItem {
 		Object data;
-		JAXBContext context;
+		JAXBProvider provider;
 		
 		/** Hold the given data item, and JAXB context until serialization occurs. */
-		JaxbServletResponseItem(Object data, JAXBContext context)
+		JaxbServletResponseItem(Object data, JAXBProvider provider)
 		{
 			this.data = data;
-			this.context = context;
+			this.provider = provider;
 		}
-
+	   
 		/** Actually write the XML out to the response.
 		 * @param response to write teh XML to.
 		 * @param request is ignored.
 		 */
 		public void writeResponse(HttpServletRequest request, HttpServletResponse response) {
 			try {
-				if( context==null ) {
-					context = JAXBContext.newInstance(data.getClass());
-				}
-				Marshaller m = context.createMarshaller();
-				m.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
+				Marshaller m = provider.createMarshaller();
 				response.setContentType("text/xml");
 				String xml="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n";
 				String pretty="<?xml-stylesheet type=\"text/xsl\" href=\"/wado2/pretty.xsl\"?>\n";
@@ -121,7 +116,7 @@ public class JaxbFilter implements Filter<ServletResponseItem>
 	public ServletResponseItem filter(FilterItem<ServletResponseItem> nextFilter, Map<String, Object> params) {
 		Object data = sourceFilter.filter(null, params);
 		if( data==null ) return nextFilter.callNextFilter(params);
-		return new JaxbServletResponseItem(data,context);
+		return new JaxbServletResponseItem(data,provider);
 	}
 
 	/** Returns the source filter used to get the object data to render */
@@ -141,7 +136,7 @@ public class JaxbFilter implements Filter<ServletResponseItem>
 	@MetaData
 	public void setContextPath(String contextPath) {
 		try {
-			if( contextPath!=null ) context = JAXBContext.newInstance(contextPath);
+			this.provider = new JAXBProvider(contextPath);
 		}
 		catch(JAXBException e) {
 			log.error("Could not find context "+contextPath+" caught exception "+e);
