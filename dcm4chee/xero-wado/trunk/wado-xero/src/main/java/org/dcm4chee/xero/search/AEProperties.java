@@ -44,28 +44,34 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This is a properties provider for <tt>DiconCFindFilter</tt>. Initialise the default properties to connect to the localhost.
- * 
+ * This is a properties provider for DICOM AEs. Initialize the default properties to connect to the localhost.
+ * <p>
+ * Definition files must be resources in the classpath and be of the form:  
+ * <p>
+ * <i> ae-{aePath}.properties</i>
+ * <br>
+ * Where aePath is of the form <aeTitle>[@hostName][:port] i.e. DCM4CHEE@localhost:104
  * @author smohan
  * 
  */
 public class AEProperties {
-
+   private static final Logger log = LoggerFactory.getLogger(AEProperties.class);
+   
    public static final String AE_TITLE_KEY = "title";
    public static final String AE_PORT_KEY = "aeport";
    public static final String AE_HOST_KEY = "host";
 
-   private static final Logger log = LoggerFactory.getLogger(AEProperties.class);
-   
    private static final String FILE_NAME_PREPEND = "ae-";
-
    private static final String FILE_NAME_EXT = ".properties";
 
+   private static final Pattern validFileNamePattern = Pattern.compile("[a-z0-9_@]+",Pattern.CASE_INSENSITIVE);
+   
    private static final AEProperties aeProperties = new AEProperties();
 
    /** The key to use for a particular ae */
@@ -112,11 +118,11 @@ public class AEProperties {
    /**
     * loads the property for the given ae name.
     * 
-    * @param name
+    * @param aePath
     */
    @SuppressWarnings("unchecked")
-   private void loadRemoteProperty(String name) {
-      String propName = FILE_NAME_PREPEND + name + FILE_NAME_EXT;
+   private void loadRemoteProperty(String aePath) {
+      String propName = FILE_NAME_PREPEND + aePath + FILE_NAME_EXT;
       InputStream is = cl.getResourceAsStream(propName);
       Properties props = new Properties();
       if (is != null) {
@@ -140,7 +146,7 @@ public class AEProperties {
                map.put("ejbport", Integer.parseInt(ejbport));
 
                remoteProperties
-                     .putIfAbsent(name, map);
+                     .putIfAbsent(aePath, map);
 
             } else {
                log.error("The host must be specified.");
@@ -181,13 +187,14 @@ public class AEProperties {
          return getDefaultAE();
       }
 
-      if (remoteProperties.contains(name)) {
-         return remoteProperties.get(name);
-      }
-
-      if (!remoteProperties.contains(name) && name.matches("[a-zA-Z_]+")) {
+      if (!remoteProperties.contains(name))
+      {
          loadRemoteProperty(name);
       }
+
+      if(!validFileNamePattern.matcher(name).matches())
+         throw new IllegalArgumentException("Invalid AE path:  Contains illegal filesystem characters");
+
 
       return remoteProperties.get(name);
    }

@@ -65,8 +65,9 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class FileLocationMgtFilter implements Filter<URL> {
-   private static final Logger log = LoggerFactory
-         .getLogger(FileLocationMgtFilter.class);
+   private static final Logger log = LoggerFactory.getLogger(FileLocationMgtFilter.class);
+
+   private FileLocationParameterChecker checker = new FileLocationParameterChecker(null,"dcm4chee");
 
    boolean tryNext = false;
    
@@ -115,7 +116,8 @@ public class FileLocationMgtFilter implements Filter<URL> {
    public URL filter(FilterItem<URL> filterItem, Map<String, Object> params) {
       Map<String,Object> aeMap = AEProperties.getAE(params);
       String type = (String) aeMap.get("type");
-      if( type!=null && !type.equals("dcm4chee") ) {
+      
+      if( ! checker.isLocationTypeInParameters(params) ) {
          URL ret = filterItem.callNextFilter(params);
          log.debug("Pacs type {}, calling next filter, returned {}", type,ret);
          return ret;

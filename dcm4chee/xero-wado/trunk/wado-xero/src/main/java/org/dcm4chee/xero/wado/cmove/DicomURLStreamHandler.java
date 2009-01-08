@@ -35,65 +35,39 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.search.study;
+package org.dcm4chee.xero.wado.cmove;
 
-import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.UID;
-import org.dcm4chee.xero.dicom.SOPClassUIDs;
-import org.dcm4chee.xero.metadata.MetaData;
-import org.dcm4chee.xero.metadata.filter.Filter;
-import org.dcm4chee.xero.search.SearchCriteria;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Arrays;
-
-/** A C-Find searcher for series level data.
- * Uses the private SOP classes to get all the available series level data, if these are supported.
- *
- * @author bwallace
+/**
+ * URL Stream Handler which will choose the most appropriate connection type
+ * for the URL passed.  The fall back for older PACS systems will be C-MOVE.
+ * 
+ * @author Andrew Cowan (amidx)
  */
-public class SeriesSearch extends StudySearch{
-
-	static final String SERIES_SEARCH_LEVEL = "SERIES";
-	
-    static protected final Integer[] SERIES_RETURN_KEYS = {
-    	Tag.Modality,
-        Tag.SeriesNumber,
-        Tag.SeriesInstanceUID,
-        Tag.NumberOfSeriesRelatedInstances,
-        Tag.Manufacturer};
-    
-    protected static Set<Integer> returnKeys = new HashSet<Integer>(Arrays.asList(SERIES_RETURN_KEYS));
-    
-    static {
-    	returnKeys.addAll(StudySearch.returnKeys);
-    }
-
-	@Override
-	protected String[] getCuids() {
-		return (String[])SOPClassUIDs.CFindSeriesLevel.toArray();
-	}
-
-	@Override
-	protected String getQueryLevel() {
-		return SERIES_SEARCH_LEVEL;
-	}
-
-	@Override
-	protected Set<Integer> getReturnKeys() {
-		return SeriesSearch.returnKeys;
-	}
-
-	/**
-	 * Set the filter that determines the search criteria to use for this query.
-	 * 
-	 * @param searchCondition
-	 */
-	@Override
-	@MetaData(out="${class:org.dcm4chee.xero.search.study.ImageSearchConditionParser}")
-	public void setSearchParser(Filter<SearchCriteria> searchParser) {
-   	super.setSearchParser(searchParser);
+public class DicomURLStreamHandler extends URLStreamHandler
+{
+   public DicomURLStreamHandler()
+   {
+      // Create a Stream Handler that works against the default AE.
+   }
+   
+   /**
+    * Open a DICOM based connection 
+    * @see java.net.URLStreamHandler#openConnection(java.net.URL)
+    */
+   @Override
+   protected URLConnection openConnection(URL u) throws IOException
+   {
+      //TODO: Pass in shared resources i.e. ThreadPools etc....
+      //TODO: Implement C-GET URL syntax as well?
+      //TODO: Provide different receivers concepts?
+      URLConnection conn =  new CMoveURLConnection(u);
+      conn.connect();
+      return conn;
    }
 
 }

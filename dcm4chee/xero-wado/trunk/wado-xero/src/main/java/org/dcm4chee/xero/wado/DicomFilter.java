@@ -108,7 +108,7 @@ public class DicomFilter implements Filter<DicomImageReader> {
 			      + nanoTimeToString(System.nanoTime() - start));
 			return reader;
 		} catch (IOException e) {
-			log.warn("Can't read sop instance " + params.get("objectUID") + " at " + location + " exception:" + e);
+			log.warn("Can't read sop instance " + params.get("objectUID") + " at " + location,e);
 		}
 		// This might happen if the instance UID under request comes from
 		// another system and needs to be read in another way.

@@ -35,65 +35,42 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.search.study;
+package org.dcm4chee.xero.search.filter;
 
-import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.UID;
-import org.dcm4chee.xero.dicom.SOPClassUIDs;
-import org.dcm4chee.xero.metadata.MetaData;
-import org.dcm4chee.xero.metadata.filter.Filter;
-import org.dcm4chee.xero.search.SearchCriteria;
-
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
-/** A C-Find searcher for series level data.
- * Uses the private SOP classes to get all the available series level data, if these are supported.
- *
- * @author bwallace
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
+import org.dcm4chee.xero.search.AEProperties;
+
+/**
+ * Utility class that will determine if the correct values have been provided to 
+ * this file location filter.
+ * @author Andrew Cowan (amidx)
  */
-public class SeriesSearch extends StudySearch{
+public class FileLocationParameterChecker
+{
+   public static final String TYPE_KEY = "type";
+   
+   private final List<String> fileLocationTypes;
 
-	static final String SERIES_SEARCH_LEVEL = "SERIES";
-	
-    static protected final Integer[] SERIES_RETURN_KEYS = {
-    	Tag.Modality,
-        Tag.SeriesNumber,
-        Tag.SeriesInstanceUID,
-        Tag.NumberOfSeriesRelatedInstances,
-        Tag.Manufacturer};
-    
-    protected static Set<Integer> returnKeys = new HashSet<Integer>(Arrays.asList(SERIES_RETURN_KEYS));
-    
-    static {
-    	returnKeys.addAll(StudySearch.returnKeys);
-    }
-
-	@Override
-	protected String[] getCuids() {
-		return (String[])SOPClassUIDs.CFindSeriesLevel.toArray();
-	}
-
-	@Override
-	protected String getQueryLevel() {
-		return SERIES_SEARCH_LEVEL;
-	}
-
-	@Override
-	protected Set<Integer> getReturnKeys() {
-		return SeriesSearch.returnKeys;
-	}
-
-	/**
-	 * Set the filter that determines the search criteria to use for this query.
-	 * 
-	 * @param searchCondition
-	 */
-	@Override
-	@MetaData(out="${class:org.dcm4chee.xero.search.study.ImageSearchConditionParser}")
-	public void setSearchParser(Filter<SearchCriteria> searchParser) {
-   	super.setSearchParser(searchParser);
+   
+   /**
+    * @param fileLocationType Location type to watch for.  Null will match to AEs without types.
+    */
+   public FileLocationParameterChecker(String... fileLocationTypes)
+   {
+      if(fileLocationTypes == null)
+         fileLocationTypes = new String[]{null};
+      
+      this.fileLocationTypes = Arrays.asList(fileLocationTypes);
    }
-
+   
+   public boolean isLocationTypeInParameters(Map<String,Object> params)
+   {
+      Map<String,Object> aeMap = AEProperties.getAE(params);
+      String type = FilterUtil.getString(aeMap,TYPE_KEY);
+      return fileLocationTypes.contains(type);
+   }
 }

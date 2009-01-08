@@ -39,6 +39,7 @@ package org.dcm4chee.xero.search.study;
 
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
+import org.dcm4chee.xero.dicom.SOPClassUIDs;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.search.DicomCFindFilter;
@@ -55,12 +56,7 @@ import java.util.Arrays;
  */
 public class StudySearch extends DicomCFindFilter {
     private static final String STUDY_QUERY_LEVEL = "STUDY";
-
-	private static final String[] STUDY_LEVEL_FIND_CUID = {
-    	UID.PrivateStudyRootQueryRetrieveInformationModelFIND,
-        UID.StudyRootQueryRetrieveInformationModelFIND,
-        UID.PatientRootQueryRetrieveInformationModelFIND,
-        UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired };
+ 
  
     // TODO - generate this list dynamically from the contents of the class...
     static protected final Integer[] STUDY_RETURN_KEYS = { 
@@ -83,7 +79,7 @@ public class StudySearch extends DicomCFindFilter {
 
 	@Override
 	protected String[] getCuids() {
-		return STUDY_LEVEL_FIND_CUID;
+		return (String[])SOPClassUIDs.CFindStudyLevel.toArray();
 	}
 
 	@Override

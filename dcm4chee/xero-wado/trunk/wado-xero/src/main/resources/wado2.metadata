@@ -22,6 +22,14 @@ source.emptyFilter.priority=9500
 # Need to be able to find the files.  Returns a URL
 fileLocation=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 
+# Activated by wado or xeroWado as the type in the ae properties file.
+fileLocation.wadoFileLocation=${class:org.dcm4chee.xero.search.filter.WadoFileLocation}
+fileLocation.wadoFileLocation.priority=500
+
+# Check a file location to see whether the AE is configured for cmove
+fileLocation.cmove=${class:org.dcm4chee.xero.wado.cmove.FileLocationCMoveFilter}
+fileLocation.cmove.priority=800
+
 # Actived by fileLocationMgt or null as the type
 fileLocation.fileLocationMgt=${class:org.dcm4chee.xero.search.filter.FileLocationMgtFilter}
 fileLocation.fileLocationMgt.priority=1000

@@ -58,6 +58,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.StopTagInputHandler;
+import org.dcm4chee.xero.metadata.servlet.JAXBProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -102,11 +103,24 @@ public class TestJaxbEncode {
 	  assert getXpathStr(studyStr, "study/series/@SeriesNumber").equals("1");
    }
    
+   @Test
+   public void testResultsEncode_NameSpacePrefixAreAssignedCorrectly() throws Exception
+   {
+      String studyStr = getStudyStr(singleUrl);
+      log.debug("study=" + studyStr);
+      
+      assert studyStr.contains("xmlns=\"http://www.dcm4chee.org/xero/search/study") : "XERO data types must be in the default namespace";
+      assert studyStr.contains("xmlns:h=\"http://www.w3.org/1999/xhtml") : "XHTML must use the 'h' namespace prefix";
+      assert studyStr.contains("xmlns:s=\"http://www.w3.org/2000/svg") : "SVG must use the 's' namespace prefix";
+      assert studyStr.contains("xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance") : "XML Schema must use the 'i' namespace prefix";
+   }
+   
    public static String getStudyStr(URL url) throws Exception {
 	  PatientBean patient = TestJaxbEncode.loadPatient(url);
 	  StudyBean study = (StudyBean) patient.getStudy().get(0);
 	  JAXBContext context = JAXBContext.newInstance(ResultsBean.class, StudyBean.class, SeriesBean.class, ImageBean.class);
-	  Marshaller m = context.createMarshaller();
+	  JAXBProvider provider = new JAXBProvider(context);
+	  Marshaller m = provider.createMarshaller();
 	  ByteArrayOutputStream baos = new ByteArrayOutputStream();
 	  m.marshal(study, baos);
 	  return baos.toString("UTF-8");

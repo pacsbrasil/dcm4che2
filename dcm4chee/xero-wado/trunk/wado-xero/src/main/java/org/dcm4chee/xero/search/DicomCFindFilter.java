@@ -38,33 +38,28 @@
 package org.dcm4chee.xero.search;
 
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executor;
-import java.util.Set;
-import java.util.Iterator;
 
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
-import org.dcm4che2.net.Device;
 import org.dcm4che2.net.DimseRSP;
-import org.dcm4che2.net.ExtQueryTransferCapability;
-import org.dcm4che2.net.NetworkApplicationEntity;
-import org.dcm4che2.net.NetworkConnection;
-import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.TransferCapability;
+import org.dcm4chee.xero.dicom.AEConnection;
+import org.dcm4chee.xero.dicom.AESettings;
+import org.dcm4chee.xero.dicom.TransferCapabilitySelector;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
@@ -94,9 +89,8 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     private int priority = 0;
     private int cancelAfter = Integer.MAX_VALUE;
 	
-	private static final String[] NATIVE_LE_TS = {
-        UID.ImplicitVRLittleEndian,
-        UID.ExplicitVRLittleEndian  };
+    TransferCapabilitySelector tcs = new TransferCapabilitySelector();
+
 
 	/**
 	 * cache for the AE connection details
@@ -113,24 +107,6 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
      */
     protected abstract String[] getCuids();
 
-    protected boolean getRelationQR()   {
-    	return false;
-    }
-    
-    protected boolean getSemanticPersonNameMatching()   {
-    	return false;
-    }
-
-    /** Make a find transfer capability object for use in requesting the transfer capabilities. */
-    private TransferCapability mkFindTC(String cuid, String[] ts) {
-        ExtQueryTransferCapability tc = new ExtQueryTransferCapability(cuid,
-                ts, TransferCapability.SCU);
-        tc.setExtInfoBoolean(ExtQueryTransferCapability.RELATIONAL_QUERIES, getRelationQR());
-        tc.setExtInfoBoolean(ExtQueryTransferCapability.DATE_TIME_MATCHING, false);
-        tc.setExtInfoBoolean(ExtQueryTransferCapability.FUZZY_SEMANTIC_PN_MATCHING,
-                getSemanticPersonNameMatching());
-        return tc;
-    }
 
     /** This method must return the query level, eg STUDY, PATIENT etc */
     protected abstract String getQueryLevel();
@@ -283,37 +259,6 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     	return ret;
     }
     
-    /**
-     * This method searches through the provided transfer capabilities until one is found that
-     * is supported at the remote end.
-     * @param cuid
-     * @return
-     */
-    protected TransferCapability selectTransferCapability(Association assoc, String[] cuid)
-    {
-        TransferCapability tc;
-        for (int i = 0; i < cuid.length; i++) {
-        	log.debug("Looking for transfer capability "+cuid[i]);
-            tc = assoc.getTransferCapabilityAsSCU(cuid[i]);
-            if (tc != null)
-                return tc;
-        }
-        return null;
-    }
-
-    /**
-     * This searches through the various transfer syntaxes to try to find a supported one.
-     * The preference is DeflatedExplicitVRLittleEnding, otherwise the first one on the list.
-     * @param tc
-     * @return
-     */
-    private String selectTransferSyntax(TransferCapability tc) {
-        String[] tcuids = tc.getTransferSyntax();
-        if (Arrays.asList(tcuids).indexOf(UID.DeflatedExplicitVRLittleEndian) != -1)
-            return UID.DeflatedExplicitVRLittleEndian;
-        return tcuids[0];
-    }
-
     /** Adds this object to the result - allows overriding to test for specific conditions in the data */
     protected void addResult(ResultFromDicom resultFromDicom, DicomObject data) {
        resultFromDicom.addResult(data);
@@ -323,17 +268,17 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
      * This method performs a remote query against the local DCM4CHEE ae instance, on port 11112, and
      * returns the result as a set of objects of type E.
      */
-	public void find(SearchCriteria searchCriteria, ResultFromDicom resultFromDicom, AEConnection aeConn, int maxResults) {
+	public void cfind(SearchCriteria searchCriteria, ResultFromDicom resultFromDicom, AEConnection aeConn, int maxResults) {
 		try {
-		   log.info("Connecting to "+aeConn.getRemoteHost()+" remoteAE="+aeConn.getRemoteAE()+" on conn="+aeConn.getConnection()+" at level "+getQueryLevel());
+		   log.info("Connecting to "+aeConn.getRemoteHost()+" remoteAE="+aeConn.getRemoteAE().getAETitle()+" on conn="+aeConn.getConnection().getHostname()+" at level "+getQueryLevel());
 		   long start = System.nanoTime();
 
 		   Association assoc = aeConn.getAE().connect(aeConn.getRemoteAE(), aeConn.getExecutor());
-	       TransferCapability tc = selectTransferCapability(assoc, getCuids());
+	       TransferCapability tc = tcs.selectTransferCapability(assoc, getCuids());
 	       if ( tc==null )
 	    	   throw new RuntimeException("Can't agree on any transfer capabilities with device.");
 	       String cuid = tc.getSopClass();
-	       String tsuid = selectTransferSyntax(tc);
+	       String tsuid = tcs.selectBestTransferSyntaxUID(tc);
 	       DicomObject keys = generateKeys(searchCriteria);
 	       DimseRSP rsp = assoc.cfind(cuid, priority, keys, tsuid, cancelAfter);
 	       int cntResults = 0;
@@ -411,7 +356,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 			log.warn("No search conditions found for parameters "+params);
 			return null;
 		}
-		find(searchCriteria, resultFromDicom, new AEConnection (settings), maxResults);
+		cfind(searchCriteria, resultFromDicom, new AEConnection (getCuids(),settings), maxResults);
 		log.debug("Found result(s) - returning from filter.");
 		return resultFromDicom;
 	}
@@ -432,171 +377,5 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 	 */
 	public void setSearchParser(Filter<SearchCriteria> searchParser) {
    	this.searchParser = searchParser;
-   }
-	
-   /**
-    * AE connections wrapper class
-    * 
-    * @author smohan
-    *
-    */
-   private class AEConnection   {	
-      
-      private Executor executor = new NewThreadExecutor("XERO_QUERY");
-      
-      private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
-      
-      private NetworkConnection remoteConn = new NetworkConnection();
-      
-      private Device device = new Device("XERO");
-      
-      private NetworkApplicationEntity ae = new NetworkApplicationEntity();
-
-      private NetworkConnection conn = new NetworkConnection();
-      
-      private String remoteHost = null;
-      
-      private AEConnection()    {
-         remoteAE.setInstalled(true);
-         remoteAE.setAssociationAcceptor(true);
-         remoteAE.setNetworkConnection(new NetworkConnection[] { remoteConn });
-         device.setNetworkApplicationEntity(ae);
-         device.setNetworkConnection(conn);
-         ae.setNetworkConnection(conn);
-         ae.setAssociationInitiator(true);
-         
-         ae.setPackPDV(true);
-         conn.setTcpNoDelay(true);
-         ae.setMaxOpsInvoked(1);
-
-         configureTransferCapability();
-      }
-      
-      /**
-       * @param aeProps
-       */
-      private AEConnection(AESettings settings)    {
-         this();
-         remoteConn.setHostname(settings.getHostName());
-         remoteConn.setPort(settings.getPort());
-         remoteAE.setAETitle(settings.getRemoteTitle());
-         ae.setAETitle(settings.getLocalTitle());
-         remoteHost = settings.getHostName();
-      }
-
-      
-      /**
-       * @return <tt>Executor</tt>
-       */
-      private Executor getExecutor() {
-         return executor;
-      }
-
-
-      /**
-       * @return <tt>NetworkApplicationEntity</tt>
-       */
-      private NetworkApplicationEntity getAE() {
-         return ae;
-      }
-
-
-      /**
-       * @return <tt>NetworkConnection</tt>
-       */
-      private NetworkConnection getConnection() {
-         return conn;
-      }
-
-
-      /**
-       * @return <tt>NetworkApplicationEntity</tt>
-       */
-      private NetworkApplicationEntity getRemoteAE() {
-         return remoteAE;
-      }
-
-      
-      /**
-       * @return remote host name
-       */
-      private String getRemoteHost()   {
-         return remoteHost;
-      }
-
-      /**
-       * Configure the transfer capabilities to request - based on the type of the object being requested from.
-       */
-      private void configureTransferCapability()
-      {
-          String[] cuids = getCuids();
-          TransferCapability[] tc = new TransferCapability[cuids.length];
-          int i=0;
-          for(String cuid : cuids ) {
-              tc[i++] = mkFindTC(cuid,NATIVE_LE_TS);
-          }
-          ae.setTransferCapability(tc);
-      }
-      
-   }
-   
-   
-   /**
-    * AE connection settings that is variable depending on the host
-    * 
-    * @author smohan
-    *
-    */
-   private class AESettings {
-      
-      private String hostName;
-      
-      private Integer port;
-      
-      private String remoteTitle;
-      
-      private String localTitle;
-
-      /**
-       * @param aeProps
-       */
-      private AESettings(Map<String, Object> aeProps)    {
-         hostName = (String) aeProps.get("host");
-         port=(Integer) aeProps.get("aeport");
-         remoteTitle=(String) aeProps.get("title");
-         localTitle = (String) aeProps.get("localTitle");
-      }
-
-
-      /**
-       * @return host name to connect
-       */
-      private String getHostName() {
-         return hostName;
-      }
-
-
-      /**
-       * @return port to connect
-       */
-      private Integer getPort() {
-         return port;
-      }
-
-
-      /**
-       * @return remote ae title
-       */
-      private String getRemoteTitle() {
-         return remoteTitle;
-      }
-
-
-      /**
-       * @return local ae title
-       */
-      private String getLocalTitle() {
-         return localTitle;
-      }
    }
 }

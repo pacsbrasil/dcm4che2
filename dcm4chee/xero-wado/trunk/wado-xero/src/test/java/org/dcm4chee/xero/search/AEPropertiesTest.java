@@ -35,65 +35,58 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.search.study;
+package org.dcm4chee.xero.search;
 
-import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.UID;
-import org.dcm4chee.xero.dicom.SOPClassUIDs;
-import org.dcm4chee.xero.metadata.MetaData;
-import org.dcm4chee.xero.metadata.filter.Filter;
-import org.dcm4chee.xero.search.SearchCriteria;
+import static org.testng.Assert.*;
 
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Arrays;
+import java.util.Map;
 
-/** A C-Find searcher for series level data.
- * Uses the private SOP classes to get all the available series level data, if these are supported.
+import org.testng.annotations.Test;
+
+
+/**
  *
- * @author bwallace
+ * @author Andrew Cowan (amidx)
  */
-public class SeriesSearch extends StudySearch{
-
-	static final String SERIES_SEARCH_LEVEL = "SERIES";
-	
-    static protected final Integer[] SERIES_RETURN_KEYS = {
-    	Tag.Modality,
-        Tag.SeriesNumber,
-        Tag.SeriesInstanceUID,
-        Tag.NumberOfSeriesRelatedInstances,
-        Tag.Manufacturer};
-    
-    protected static Set<Integer> returnKeys = new HashSet<Integer>(Arrays.asList(SERIES_RETURN_KEYS));
-    
-    static {
-    	returnKeys.addAll(StudySearch.returnKeys);
-    }
-
-	@Override
-	protected String[] getCuids() {
-		return (String[])SOPClassUIDs.CFindSeriesLevel.toArray();
-	}
-
-	@Override
-	protected String getQueryLevel() {
-		return SERIES_SEARCH_LEVEL;
-	}
-
-	@Override
-	protected Set<Integer> getReturnKeys() {
-		return SeriesSearch.returnKeys;
-	}
-
-	/**
-	 * Set the filter that determines the search criteria to use for this query.
-	 * 
-	 * @param searchCondition
-	 */
-	@Override
-	@MetaData(out="${class:org.dcm4chee.xero.search.study.ImageSearchConditionParser}")
-	public void setSearchParser(Filter<SearchCriteria> searchParser) {
-   	super.setSearchParser(searchParser);
+public class AEPropertiesTest
+{
+   private AEProperties ae = AEProperties.getInstance();
+   /**
+    * Test method for {@link org.dcm4chee.xero.search.AEProperties#getAE(java.lang.String)}.
+    */
+   @Test(expectedExceptions=IllegalArgumentException.class)
+   public void testGetAE_ShouldThrowIllegalArgument_WhenColonInName()
+   {
+      ae.getAE("invalid:name");
+   }
+   
+   @Test(expectedExceptions=IllegalArgumentException.class)
+   public void testGetAE_ShouldThrowIllegalArgument_WhenBackslashInName()
+   {
+      ae.getAE("invalid\\name");
    }
 
+   @Test(expectedExceptions=IllegalArgumentException.class)
+   public void testGetAE_ShouldThrowIllegalArgument_WhenForwardSlashInName()
+   {
+      ae.getAE("invalid/name");
+   }
+   
+   @Test
+   public void testGetAE_ShouldReturnNull_WhenUnknownAERequested()
+   {
+      assertNull(ae.getAE("unknownAE"));
+   }
+   
+   @Test
+   public void testGetAE_ShouldReturnMap_WhenKnownAERequested()
+   {
+      Map<String,Object> settings = ae.getAE("cmoveLocal");
+      assertNotNull(settings);
+      assertEquals(settings.get("type"),"cmove");
+      assertEquals(settings.get("host"),"localhost");
+      assertEquals(settings.get("aeport"),new Integer(11119));
+      assertEquals(settings.get("title"),"XERO-REQUEST");
+      
+   }
 }
