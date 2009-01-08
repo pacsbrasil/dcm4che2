@@ -47,7 +47,9 @@ import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.util.Map;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 import org.dcm4che2.image.LookupTable;
 import org.dcm4che2.image.VOIUtils;
 import org.dcm4chee.xero.metadata.MetaData;
@@ -155,7 +157,7 @@ public class WLFilter implements Filter<WadoImage> {
 		 func = LookupTable.LINEAR;
 	  }
 
-	  lut = LookupTable.createLutForImageWithPR(wi.getDicomObject(), pr, frame, windowCenter, windowWidth, func, 8, pval2out);
+	  lut = localCreateLutForImageWithPR(wi, pr, frame, windowCenter, windowWidth, func, 8, pval2out);
 	
 	  //if (lut != null) {
 		// for (int i = 0; i < lut.length(); i += 1 + (lut.length() / 10)) {
@@ -177,6 +179,59 @@ public class WLFilter implements Filter<WadoImage> {
 	  log.info("Window levelling took " + nanoTimeToString(dur));
 	  return ret;
    }
+   
+   private static boolean isInverse(DicomObject img) {
+       String shape = img.getString(Tag.PresentationLUTShape);
+       return shape != null ? "INVERSE".equals(shape) : "MONOCHROME1"
+               .equals(img.getString(Tag.PhotometricInterpretation));
+   }
+   
+   public static LookupTable localCreateLutForImageWithPR(
+		   WadoImage wi, DicomObject pr, int frame, float center, float width, String vlutFct, int outBits, short[] pval2out) {
+	   
+	   int reducedBits = ReduceBitsFilter.getPreviousReducedBits(wi);
+	   int smallestPixelValue = ReduceBitsFilter.getPreviousSmallestPixelValue(wi);
+	   int largestPixelValue = ReduceBitsFilter.getPreviousLargestPixelValue(wi);
+	   
+	   DicomObject img = wi.getDicomObject();
+	   DicomObject mlutObj = VOIUtils.selectModalityLUTObject(img, pr, frame);
+	   DicomObject voiObj = VOIUtils.selectVoiObject(img, pr, frame);
+
+	   if ( reducedBits >0 ) {
+	        float slope = mlutObj.getFloat(Tag.RescaleSlope, 1.f);
+	        float intercept = mlutObj.getFloat(Tag.RescaleIntercept, 0.f);
+	    	
+	        DicomObject mLut = mlutObj.getNestedDicomObject(Tag.ModalityLUTSequence);
+	        if ( mLut != null ) {
+	        	log.warn("Data has reduced bits, as well as a ModalityLutSequence. This isn't supported yet.  Image pixel values may be corrupted.");
+	        } else {
+	        	double sourceRange = ( largestPixelValue - smallestPixelValue );
+	        	double mult = sourceRange / (double)((1<<reducedBits)-1);
+	        	double newSlope = (mult * slope);
+	        	double newIntercept = slope * smallestPixelValue + intercept;
+	        	
+	        	mlutObj = new BasicDicomObject();
+	        	mlutObj.putFloat(Tag.RescaleSlope, null, (float)newSlope);
+	        	mlutObj.putFloat(Tag.RescaleIntercept, null, (float)newIntercept);
+	        }
+	        img = new BasicDicomObject(img);
+	        //TODO: should we figure out BitsAllocated from the BufferedImage in the WadoImage?
+	        img.putInt(Tag.BitsStored, null, reducedBits);
+	        img.putInt(Tag.HighBit, null, reducedBits-1);
+	        img.putInt(Tag.PixelRepresentation, null, 0);
+	   }
+	   
+	   boolean inverse;
+	   if( pr!=null ) {
+		   inverse = "INVERSE".equals(pr.getString(Tag.PresentationLUTShape));
+	   }
+	   else {
+		   inverse = isInverse(img);
+	   }
+	   DicomObject pLut = pr!=null ? pr.getNestedDicomObject(Tag.PresentationLUTSequence) : null;
+	   return LookupTable.createLutForImage(img, mlutObj, voiObj, pLut, center, width, vlutFct, inverse, outBits, pval2out);
+   }
+
 
    /**
      * Returns the number of bits per pixel, assuming the values are constant
