@@ -3,6 +3,8 @@
 $headCommon()$
 <body onkeyup="return controller.keyPress(event);">
 	$xeroBody()$
+	
+	$xeroScripts()$
 </body>
 </html>
 
