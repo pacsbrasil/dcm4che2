@@ -122,7 +122,11 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
    public void addResult(DicomObject data) {
       if(data == null)
          return;
+      if(data == null)
+         return;
+     
       this.setCfindHeader(data);
+      
 	  setColumns(data.getInt(Tag.Columns,-1));
 	  setRows(data.getInt(Tag.Rows,-1));
 	  // setSOPClassUID(data.getString(Tag.SOPClassUID));

@@ -130,7 +130,7 @@ public class RegroupMultiframesByInstanceNumberFilter implements Filter<ResultsB
       
       String regroup = (String)params.get("regroup");
       return regroup != null &&
-         ( regroup.equals("*") || regroup.contains(NAME));
+         ( regroup.equals("*") || regroup.contains(NAME) || regroup.equalsIgnoreCase("true"));
    }
 
 }

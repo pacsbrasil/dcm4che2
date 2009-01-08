@@ -52,9 +52,8 @@ public class MammoImageFlipper
 {
 
    /**
-    * Mammo images should always be shown 
-    * @param image
-    * @return
+    * Determine if a flip is required to show the Mammo image properly.
+    * The C-FIND header will be used to determine the image orientation.
     */
    public boolean isFlipRequired(ImageBean image)
    {
@@ -62,12 +61,17 @@ public class MammoImageFlipper
          return false;
       
       DicomObject dcm = image.getCfindHeader();
-      List<Orientation> orientations = Orientation.parsePatientOrientation(dcm);
-      Laterality laterality = Laterality.parseImageLaterality(dcm);
+      return isFlipRequired(dcm);
+   }
+   
+   public boolean isFlipRequired(DicomObject dicom)
+   {
+      List<Orientation> orientations = Orientation.parsePatientOrientation(dicom);
+      Laterality laterality = Laterality.parseImageLaterality(dicom);
       return isFlipRequired(laterality, orientations);
    }
    
-   public boolean isFlipRequired(Laterality laterality, Collection<Orientation> orientations)
+   protected boolean isFlipRequired(Laterality laterality, Collection<Orientation> orientations)
    {
       if(laterality == null || orientations == null)
          return false;
@@ -82,8 +86,13 @@ public class MammoImageFlipper
    {
       boolean shouldFlip = isFlipRequired(image);
       if(shouldFlip)
-         image.getMacroItems().addMacro(new FlipRotateMacro(0,true));
+         flip(image);
       
       return shouldFlip;
+   }
+   
+   public void flip(ImageBean image)
+   {
+      image.getMacroItems().addMacro(new FlipRotateMacro(0,true));
    }
 }

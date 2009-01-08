@@ -58,7 +58,7 @@ public class LateralityTest
    @Test
    public void testParseImageLaterality_R_ShouldParseAsRIGHT() throws IOException
    {
-      DicomObject dcm = DicomTestData.findDicomObject("org/dcm4chee/xero/search/study/MG0001.dcm");
+      DicomObject dcm = DicomTestData.findDicomObject("regroup/MG/MG0001.dcm");
       Laterality l = Laterality.parseImageLaterality(dcm);
       assertEquals(l,Laterality.RIGHT);
    }
@@ -66,7 +66,7 @@ public class LateralityTest
    @Test
    public void testParseImageLaterality_L_ShouldParseAsLEFT() throws IOException
    {
-      DicomObject dcm = DicomTestData.findDicomObject("org/dcm4chee/xero/search/study/MG0002.dcm");
+      DicomObject dcm = DicomTestData.findDicomObject("regroup/MG/MG0002.dcm");
       Laterality l = Laterality.parseImageLaterality(dcm);
       assertEquals(l,Laterality.LEFT);
    }

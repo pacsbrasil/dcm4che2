@@ -59,7 +59,7 @@ public class ViewCodeTest
     @Test
     public void testInitAttributes_MustReadViewCodeValueFromDICOMFile() throws IOException
     {
-        DicomObject dcm = DicomTestData.findDicomObject("org/dcm4chee/xero/search/study/MG0001.dcm");
+        DicomObject dcm = DicomTestData.findDicomObject("regroup/MG/MG0001.dcm");
         ViewCode vc = new ViewCode(dcm);
         assertEquals("R-10242",vc.getCodeValue());
     }
@@ -67,14 +67,14 @@ public class ViewCodeTest
     @Test
     public void testContainsViewCodeSequence_TrueIfThereIsViewCodeSequence() throws IOException
     {
-       DicomObject dcm = DicomTestData.findDicomObject("org/dcm4chee/xero/search/study/MG0001.dcm");
+       DicomObject dcm = DicomTestData.findDicomObject("regroup/MG/MG0001.dcm");
        assertTrue(ViewCode.containsViewCodeSequence(dcm));
     }
     
     @Test
     public void testGetDescription_MapsToTheRightDescription() throws IOException
     {
-       DicomObject dcm = DicomTestData.findDicomObject("org/dcm4chee/xero/search/study/MG0001.dcm");
+       DicomObject dcm = DicomTestData.findDicomObject("regroup/MG/MG0001.dcm");
        ViewCode vc = new ViewCode(dcm);
        assertEquals(vc.getDescription(),"CC");
     }
@@ -88,7 +88,7 @@ public class ViewCodeTest
     @Test
     public void getDescription_ShouldReturnCodeValueIfMeaningIsNotKnown() throws IOException
     {
-       DicomObject dcm = DicomTestData.findDicomObject("org/dcm4chee/xero/search/study/MG0001.dcm");
+       DicomObject dcm = DicomTestData.findDicomObject("regroup/MG/MG0001.dcm");
        ViewCode vc = new ViewCode(dcm);
        vc.setCodeValue("R-MyNewCode");
        

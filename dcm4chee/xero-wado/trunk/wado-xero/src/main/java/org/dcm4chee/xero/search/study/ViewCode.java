@@ -88,7 +88,8 @@ public class ViewCode
          return; // Leave a blank object if there is no sequence.
 
       DicomObject vcs = dicom.getNestedDicomObject(Tag.ViewCodeSequence);
-      setCodeValue(vcs.getString(Tag.CodeValue));
+      String codeValue = vcs == null ? null : vcs.getString(Tag.CodeValue);
+      setCodeValue(codeValue);
    }
 
    /**

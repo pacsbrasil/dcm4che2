@@ -64,7 +64,7 @@ public class OrientationTest
    @Test
    public void testParsePatientOrientation_ReadOrientationFromFile_ShouldInterpetPLasR() throws IOException
    {
-      DicomObject dcm = DicomTestData.findDicomObject("org/dcm4chee/xero/search/study/MG0001.dcm");
+      DicomObject dcm = DicomTestData.findDicomObject("regroup/MG/MG0001.dcm");
       Collection<Orientation> orientations = Orientation.parsePatientOrientation(dcm);
       assertEquals(orientations.size(),2);
       assertTrue(orientations.contains(Orientation.POSTERIOR));
@@ -75,7 +75,7 @@ public class OrientationTest
    public void testParsePatientOrientation_ReadOrientationFromFile_ShouldInterpretARasR()
        throws IOException
    {   
-      DicomObject dcm = DicomTestData.findDicomObject("org/dcm4chee/xero/search/study/MG0002.dcm");
+      DicomObject dcm = DicomTestData.findDicomObject("regroup/MG/MG0002.dcm");
       Collection<Orientation> orientations = Orientation.parsePatientOrientation(dcm);
       assertEquals(orientations.size(),2);
       assertTrue(orientations.contains(Orientation.ANTERIOR));
@@ -86,7 +86,7 @@ public class OrientationTest
    public void testParsePatientOrientation_ReadOrientationFromFile_ShouldHandleBadlyFormedSequences()
        throws IOException
    {   
-      DicomObject dcm = DicomTestData.findDicomObject("org/dcm4chee/xero/search/study/MG0003.dcm");
+      DicomObject dcm = DicomTestData.findDicomObject("regroup/MG/MG0003.dcm");
       Collection<Orientation> orientations = Orientation.parsePatientOrientation(dcm);
       assertEquals(orientations.size(),3);
       assertTrue(orientations.contains(Orientation.POSTERIOR));

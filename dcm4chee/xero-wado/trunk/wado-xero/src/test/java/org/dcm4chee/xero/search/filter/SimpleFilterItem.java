@@ -42,10 +42,6 @@ import java.util.Map;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 
 /**
- *
- * @author Andrew Cowan (amidx)
- */
-/**
  * Trivial filter item implementation to make testing easier.
  * 
  * @author Andrew Cowan (amidx)

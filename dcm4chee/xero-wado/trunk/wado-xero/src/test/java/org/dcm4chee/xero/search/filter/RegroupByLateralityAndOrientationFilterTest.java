@@ -43,12 +43,23 @@ import static org.testng.Assert.*;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4chee.xero.metadata.filter.Filter;
+import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.search.macro.FlipRotateMacro;
+import org.dcm4chee.xero.search.study.DicomObjectType;
+import org.dcm4chee.xero.search.study.ImageBean;
+import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;
 import org.dcm4chee.xero.search.study.SeriesBean;
 import org.dcm4chee.xero.search.study.SeriesType;
 import org.dcm4chee.xero.search.study.StudyBean;
+import org.dcm4chee.xero.search.study.StudyType;
+import org.dcm4chee.xero.wado.WadoParams;
 import org.testng.annotations.Test;
 
 public class RegroupByLateralityAndOrientationFilterTest
@@ -61,6 +72,7 @@ public class RegroupByLateralityAndOrientationFilterTest
       results.addResult(DicomTestData.findDicomObject("regroup/MG/MG0003.dcm"));
       return results;
    }
+
 
    @Test
    public void shouldRegroup_ShouldOnlyRegroupIfParameterIsSet() throws IOException
@@ -104,8 +116,14 @@ public class RegroupByLateralityAndOrientationFilterTest
       params.put("regroup", "*");
       regroup.filter(new SimpleFilterItem<ResultsBean>(results), params);
 
-      assertEquals(study.getSeries().size(), 3);
+      assertSeriesPropertySorted(study);
       
+
+   }
+   
+   private void assertSeriesPropertySorted(StudyBean study)
+   {
+      assertEquals(study.getSeries().size(), 3);
       for(SeriesType seriesType : study.getSeries())
       {
          SeriesBean series = (SeriesBean)seriesType;
@@ -122,7 +140,7 @@ public class RegroupByLateralityAndOrientationFilterTest
             fail("This study only has CC and MLO view codes.");
       }
    }
-   
+
    @Test 
    public void testFilter_ShouldOnlyFilterMGStudies() throws IOException
    {
@@ -165,5 +183,93 @@ public class RegroupByLateralityAndOrientationFilterTest
       assertEquals(study.getSeries().size(), 1);
       assertEquals(study.getSeries().get(0).getDicomObject().size(), 3);
    }
+   
+   
+   @Test 
+   public void testFilter_ShouldNotRegroupStudies_WhenSufficientElementsAreUnavailable() throws IOException
+   {
+      ResultsBean results = createResultsBeanFromDICOM();
+      removeElementsFromCFindHeader(results);
+      
+      StudyBean study = (StudyBean) results.getPatient().get(0).getStudy().get(0);
+      assertEquals(study.getSeries().size(), 1);
+      assertEquals(study.getSeries().get(0).getDicomObject().size(), 3);
+      
+      Map<String,Object> params = new HashMap<String, Object>();
+      params.put("regroup", "*");
+      RegroupByLateralityAndOrientationFilter regroup = new RegroupByLateralityAndOrientationFilter();
+      regroup.filter(new SimpleFilterItem<ResultsBean>(results),params);
 
+      assertEquals(study.getSeries().size(), 1, "Do not regroup if elements are not present.");
+      assertEquals(study.getSeries().get(0).getDicomObject().size(), 3, "Do not regroup if elements are not present.");
+   }
+   
+   /**
+    * Remove the elements from the C-FIND header and return a Map of objectUID 
+    * to the original DicomObject.
+    */
+   private Map<String,DicomObject> removeElementsFromCFindHeader(ResultsBean results)
+   {
+      Map<String,DicomObject>  removed = new HashMap<String, DicomObject>();
+      
+      for(PatientType patient : results.getPatient())
+         for(StudyType study : patient.getStudy())
+            for(SeriesType series : study.getSeries())
+               for(DicomObjectType object : series.getDicomObject())
+               {
+                  ImageBean image = (ImageBean)object;
+                  String uid = object.getObjectUID();
+                  removed.put(uid, image.getCfindHeader());
+                  image.setCfindHeader(new BasicDicomObject());
+               }
+      
+      return removed;
+   }
+
+   @Test 
+   public void testFilter_ShouldRetrieveFullDicomHeader_WhenSufficientElementsAreUnavailable() throws IOException
+   {
+      ResultsBean results = createResultsBeanFromDICOM();
+      final Map<String,DicomObject> uidToDcm = removeElementsFromCFindHeader(results);
+      
+      Filter<DicomObject> dicomFullHeader = new Filter<DicomObject>() {
+         @Override
+         public DicomObject filter(FilterItem<DicomObject> filterItem, Map<String, Object> params)
+         {
+            String uid = (String)params.get(WadoParams.OBJECT_UID);
+            DicomObject dcm = uidToDcm.get(uid);
+            return dcm;
+         }
+      };
+      
+      StudyBean study = (StudyBean) results.getPatient().get(0).getStudy().get(0);
+      assertEquals(study.getSeries().size(), 1);
+      assertEquals(study.getSeries().get(0).getDicomObject().size(), 3);
+      
+      Map<String,Object> params = new HashMap<String, Object>();
+      params.put("regroup", "*");
+      RegroupByLateralityAndOrientationFilter regroup = new RegroupByLateralityAndOrientationFilter();
+      regroup.setDicomFullHeader(dicomFullHeader);
+      regroup.filter(new SimpleFilterItem<ResultsBean>(results),params);
+      
+      assertSeriesPropertySorted(study);
+   }
+   
+   @Test
+   public void testFilter_ShouldFlipTheAnteriorLeftImage() throws IOException
+   {
+      ResultsBean results = new ResultsBean();
+      results.addResult(DicomTestData.findDicomObject("regroup/MG/MG0001_PosteriorLeft.dcm"));
+      
+      Map<String,Object> params = new HashMap<String, Object>();
+      params.put("regroup", "*");
+      RegroupByLateralityAndOrientationFilter regroup = new RegroupByLateralityAndOrientationFilter();
+      regroup.filter(new SimpleFilterItem<ResultsBean>(results),params);
+      
+      ImageBean image = (ImageBean)results.getPatient().get(0).getStudy().get(0).getSeries().get(0).getDicomObject().get(0);
+      FlipRotateMacro macro = (FlipRotateMacro)image.getMacroItems().getMacros().get(0);
+      assertTrue(macro.getFlip());
+      assertEquals(macro.getRotation() % 360,0);
+   }
+   
 }

@@ -58,38 +58,6 @@ import org.dcm4chee.xero.search.study.ResultsBean;
  */
 public class DicomTestData
 {
-
-   /**
-    * Create a new ResultsBean based on the file path provided.  A single file
-    * will be 
-    * @param path
-    * @return
-    * @throws IOException 
-    */
-   public static ResultsBean createResultsBeanFromPath(String path) throws IOException
-   {
-      ClassLoader cl = Thread.currentThread().getContextClassLoader();
-      URL u = cl.getResource(path);
-      File f = (File)u.getContent();
-      if(!f.exists())
-         return null;
-      
-      if(f.isDirectory())
-      {
-         
-      }
-      else if(f.isFile())
-      {
-         
-      }
-
-      return null;
-//      ResultsBean results = new ResultsBean();
-//      results.addResult(DicomTestData.findDicomObject("org/dcm4chee/xero/search/study/MG0001.dcm"));
-//      results.addResult(DicomTestData.findDicomObject("org/dcm4chee/xero/search/study/MG0002.dcm"));
-//      results.addResult(DicomTestData.findDicomObject("org/dcm4chee/xero/search/study/MG0003.dcm"));
-   }
-
    public static DicomObject findDicomObject(String relativePath) throws IOException
    {
       ClassLoader cl = Thread.currentThread().getContextClassLoader();

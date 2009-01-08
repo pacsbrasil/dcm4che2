@@ -45,12 +45,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.search.study.EffectiveLaterality;
 import org.dcm4chee.xero.search.study.ImageBean;
 import org.dcm4chee.xero.search.study.Laterality;
+import org.dcm4chee.xero.search.study.MammoImageFlipper;
 import org.dcm4chee.xero.search.study.Orientation;
 import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;
@@ -59,6 +61,7 @@ import org.dcm4chee.xero.search.study.SeriesType;
 import org.dcm4chee.xero.search.study.StudyBean;
 import org.dcm4chee.xero.search.study.StudyType;
 import org.dcm4chee.xero.search.study.ViewCode;
+import org.dcm4chee.xero.wado.DicomFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,19 +77,43 @@ public class RegroupByLateralityAndOrientationFilter implements Filter<ResultsBe
 
    private static final String NAME = RegroupByLateralityAndOrientationFilter.class.getSimpleName();
    
-   private EffectiveLaterality effectiveLaterality = new EffectiveLaterality();
+   private Filter<DicomObject> dicomFullHeader;
+   private EffectiveLaterality effectiveLaterality;
+   private MammoImageFlipper flipper;
    
+   public RegroupByLateralityAndOrientationFilter()
+   {
+      log.info("RegroupByLateralityAndOrientationFilter created.");
+      
+      this.effectiveLaterality = new EffectiveLaterality();
+      this.flipper = new MammoImageFlipper();
+   }
+   
+
+
+   /** Gets the filter that returns the dicom object image header */
+   public Filter<DicomObject> getDicomFullHeader() {
+      return dicomFullHeader;
+   }
+
+   /** Sets the full header filter - this returns all the fields, but not updated. */
+   @MetaData(out="${ref:dicomFullHeader}")
+   public void setDicomFullHeader(Filter<DicomObject> dicomFullHeader) {
+      this.dicomFullHeader = dicomFullHeader;
+   }
+   
+   @Override
    public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params)
    {
       ResultsBean results = filterItem.callNextFilter(params);
       if(!shouldRegroup(results,params))
          return results;
       
-      log.info("Regrouping MG by laterality/view");
       String aeTitle = results.getAe();
+      
       for(PatientType p : results.getPatient())
          for(StudyType s : p.getStudy())
-            groupImagesByOrientationAndPosition((StudyBean)s,aeTitle);
+            groupImagesByOrientationAndPosition((StudyBean)s, aeTitle);
       
       return results;
    }
@@ -106,15 +133,16 @@ public class RegroupByLateralityAndOrientationFilter implements Filter<ResultsBe
       
       String regroup = (String)params.get("regroup");
       boolean parameterSet = regroup != null 
-         && ( regroup.equals("*") || regroup.contains(NAME));
+         && ( regroup.equals("*") || regroup.contains(NAME) || regroup.equalsIgnoreCase("true"));
       
       boolean containsMG = false;
-      for(PatientType p : results.getPatient())
-         for(StudyType s : p.getStudy())
-            if(containsMG = s.getModalitiesInStudy() == null || s.getModalitiesInStudy().contains("MG"))
-               break;
+      if(parameterSet)
+         for(PatientType p : results.getPatient())
+            for(StudyType s : p.getStudy())
+               if(containsMG = s.getModalitiesInStudy() == null || s.getModalitiesInStudy().contains("MG"))
+                  break;
       
-      return parameterSet && containsMG;
+      return containsMG;
    }
 
    protected void groupImagesByOrientationAndPosition(StudyBean study,String aeTitle)
@@ -123,65 +151,59 @@ public class RegroupByLateralityAndOrientationFilter implements Filter<ResultsBe
 
       for(SeriesType series : study.getSeries())
       {
-         if(!"MG".equals(series.getModality()))
-               continue;
-         
-         for(DicomObjectType o : series.getDicomObject())
+         if("MG".equals(series.getModality()))
          {
-            if(!(o instanceof ImageBean))
-               continue;
-            
-            ImageBean i = (ImageBean)o;
-            
-            boolean viewCodeAvailable = ensureViewCodeIsAvailable(i,aeTitle);
-            boolean lateralityAvailable = ensureLateralityIsAvailable(i,aeTitle);
-            
-            if(viewCodeAvailable && lateralityAvailable)
-               imagesToMove.add(i);
+            for(DicomObjectType o : series.getDicomObject())
+            {
+               if(!(o instanceof ImageBean))
+                  continue;
+               imagesToMove.add((ImageBean)o);
+            }
          }
       }
       
-      moveImages(imagesToMove);
+      moveImages(imagesToMove,aeTitle);
    }
    
-
    /**
-    * Check to make sure that the Laterality is available for this instance.
-    * If the laterality is not available, then request the full header to get it.
+    * Ensure that the View Code sequence and either image laterality or patient orientation 
+    * are available in the DicomObject.
     */
-   private boolean ensureLateralityIsAvailable(ImageBean i,String aeTitle)
+   private boolean ensureDicomElementsAvailable(DicomObject dicom)
    {
-      if(i == null)
+      if(dicom == null)
          return false;
       
-      DicomObject dicom = i.getCfindHeader();
-      return Laterality.containsImageLaterality(dicom) || Orientation.containsPatientOrientation(dicom);
-   }
-
-   /**
-    * Check if the ViewCode is available, and if it is not then pull the full header
-    * and attach them.
-    * @return Whether the ViewCode is available
-    */
-   private boolean ensureViewCodeIsAvailable(ImageBean i,String aeTitle)
-   {
-      if(i == null) 
-         return false;
+      boolean viewCodeAvailable = ViewCode.containsViewCodeSequence(dicom);
+      boolean lateralityAvailable = Laterality.containsImageLaterality(dicom) || Orientation.containsPatientOrientation(dicom);
       
-      DicomObject dicom = i.getCfindHeader();
-      return ViewCode.containsViewCodeSequence(dicom);
+      boolean dicomElementsAvailable = viewCodeAvailable && lateralityAvailable;
+      
+      if(! dicomElementsAvailable )
+      {
+         log.debug("Insufficient DICOM elements to regroup: ViewCode={}, Laterality={}",
+               viewCodeAvailable,lateralityAvailable);
+      }
+      
+      return dicomElementsAvailable;
    }
 
    /**
     * Move the indicated images to new series.
     * @param imagesToMove
     */
-   protected void moveImages(Collection<ImageBean> imagesToMove)
+   protected void moveImages(Collection<ImageBean> imagesToMove, String aeTitle)
    {
       Map<String,SeriesBean> descriptionToSeries = new HashMap<String,SeriesBean>();
       for(ImageBean i : imagesToMove)
       {
-         String description = generateSeriesDescription(i);
+         DicomObject dicom = retrieveDicomObjectWithRequiredElements(i,aeTitle);
+         
+         // Flip the image if it is not properly oriented.
+         if(flipper.isFlipRequired(dicom))
+            flipper.flip(i);
+         
+         String description = generateSeriesDescription(i,dicom);
          
          if(description == null) 
             continue;
@@ -199,20 +221,56 @@ public class RegroupByLateralityAndOrientationFilter implements Filter<ResultsBe
       }
    }
    
+
+
    /**
     * Generate a series description of the form {Laterality} {View Code} i.e. "L CC" or "R MLO"
     */
-   protected String generateSeriesDescription(ImageBean image)
+   protected String generateSeriesDescription(ImageBean image,DicomObject dicom)
    {
       if(image == null)
          return "";
       
-      DicomObject dicom = image.getCfindHeader();
-      Laterality laterality = effectiveLaterality.parseEffectiveLaterality(dicom);
-      ViewCode viewCode = new ViewCode(dicom);
-      return generateSeriesDescription(laterality, viewCode);
+      String seriesDescription;
+      if(dicom != null)
+      {
+         Laterality laterality = effectiveLaterality.parseEffectiveLaterality(dicom);
+         ViewCode viewCode = new ViewCode(dicom);
+         seriesDescription = generateSeriesDescription(laterality, viewCode);
+      }
+      else
+      {
+         log.warn("Insufficient DICOM elements to regroup objectUID={}",image.getObjectUID());
+         seriesDescription = null;
+      }
+      
+      return seriesDescription;
    }
    
+   /**
+    * Retrieve the DICOM Object that contains the elements required to perform
+    * the regrouping of this image.
+    * @return a DicomObject with all required fields, or NULL if non could be found.
+    */
+   private DicomObject retrieveDicomObjectWithRequiredElements(ImageBean image, String aeTitle)
+   {
+      DicomObject dicom = image.getCfindHeader();
+      boolean dicomElementsAvailable = ensureDicomElementsAvailable(dicom);
+      if(! dicomElementsAvailable  && dicomFullHeader != null)
+      {
+         log.debug("Insufficent DICOM elements in C-FIND response.  Header will be retrieved.");
+         dicom = DicomFilter.callInstanceFilter(dicomFullHeader, image ,aeTitle);
+         dicomElementsAvailable = ensureDicomElementsAvailable(dicom);
+      }
+      
+      if(! dicomElementsAvailable )
+         dicom = null;
+      
+      return dicom;
+   }
+
+
+
    /**
     * Generate a series description of the form {Laterality} {View Code} i.e. "L CC" or "R MLO"
     */

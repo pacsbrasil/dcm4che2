@@ -60,7 +60,7 @@ public class EffectiveLateralityTest
        throws IOException
    {
 
-      DicomObject dcm = DicomTestData.findDicomObject("org/dcm4chee/xero/search/study/MG0001.dcm");
+      DicomObject dcm = DicomTestData.findDicomObject("regroup/MG/MG0001.dcm");
       assertEquals(effectiveLaterality.parseEffectiveOrientation(dcm),Orientation.RIGHT, "P,L is effectively R");
    }
    
@@ -68,7 +68,7 @@ public class EffectiveLateralityTest
    public void initAttributes_ReadOrientationFromFile_ShouldInterpretARasR()
        throws IOException
    {   
-      DicomObject dcm = DicomTestData.findDicomObject("org/dcm4chee/xero/search/study/MG0002.dcm");
+      DicomObject dcm = DicomTestData.findDicomObject("regroup/MG/MG0002.dcm");
       assertEquals(effectiveLaterality.parseEffectiveOrientation(dcm),Orientation.RIGHT, "A,R is effectively R");
    }
    
@@ -76,7 +76,7 @@ public class EffectiveLateralityTest
    public void initAttributes_ReadOrientationFromFile_ShouldHandleBadlyFormedSequences()
        throws IOException
    {   
-      DicomObject dcm = DicomTestData.findDicomObject("org/dcm4chee/xero/search/study/MG0003.dcm");
+      DicomObject dcm = DicomTestData.findDicomObject("regroup/MG/MG0003.dcm");
       assertEquals(effectiveLaterality.parseEffectiveOrientation(dcm),Orientation.RIGHT, "P,FL is effectively R.  Must be able to handle miswritten orientation codes.");
    }
 
