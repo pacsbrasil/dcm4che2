@@ -23,6 +23,16 @@
 /** Creates a XeroController object, typically called xeroController */
 function XeroController(view) {
 	this.model = new XeroModel(_SARISSA_IS_IE);
+	var ua = navigator.userAgent;
+	if(_SARISSA_IS_IE) {
+		this.model.IS_IE6 = (ua.indexOf("MSIE 6")>=0);
+		this.model.HAS_SVG = false;
+		this.model.HAS_VML = true;
+	} else {
+		this.model.HAS_SVG = true;
+		this.model.HAS_VML = false;
+	}
+	this.model.IS_MOBILE = (ua.indexOf("Mobile")>=0 || ua.indexOf("BlackBerry")>=0);
 	this.view = view;
 	
 	if( this.isDebug ) this.debug = console.debug;

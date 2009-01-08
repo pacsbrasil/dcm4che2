@@ -1,0 +1,1 @@
+<li style="float:right;"><img src="$i18n.CloseIcon$" alt="Compare" /></li>

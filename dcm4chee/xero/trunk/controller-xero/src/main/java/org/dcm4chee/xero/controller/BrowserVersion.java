@@ -60,19 +60,25 @@ public class BrowserVersion<T> implements Filter<T> {
    public T filter(FilterItem<T> filterItem, Map<String, Object> params) {
  	  String userAgent = MetaDataServlet.getUserAgent(params);
  	  Map<String,Object> model = FilterUtil.getModel(params);
+ 	  boolean isFirefox = false;
+ 	  boolean isIE = false;
+ 	  boolean isIE6 = false;
+ 	  log.debug("User agent is {}", userAgent);
  	  if( (userAgent.indexOf("msie")>=0) && (userAgent.indexOf("opera")==-1) ) {
- 	 	  log.info("User agent is IE {}", userAgent);
- 		  model.put("IS_IE", true);
- 		  model.put("HAS_SVG", false);
- 		  model.put("HAS_VML", true);
+ 	 	  isIE = true;
+ 		  isIE6 = (userAgent.indexOf("msie 6")>=0);
  	  }
  	  else {
- 	 	  log.info("User agent is not IE {}", userAgent);
- 	 	  model.put("IS_IE", false);
- 		  model.put("HAS_SVG", true);
- 		  model.put("HAS_VML", false);
+ 		  isFirefox = (userAgent.indexOf("firefox")>=0);
  		  // As needed, add more browser identifications.
  	  }
+ 	  
+      model.put("IS_IE", isIE);
+      model.put("IS_IE6", isIE6);
+      model.put("HAS_SVG", !isIE);
+      model.put("HAS_VML", isIE);
+ 	  model.put("IS_FIREFOX", isFirefox); 
+ 	  model.put("IS_MOBILE", userAgent.indexOf("Mobile")>=0 || userAgent.indexOf("BlackBerry")>=0);
  	  
  	  if( params.containsKey("firebug") ) model.put("firebug", params.get("firebug"));
  	  model.put("userName", params.get("userName"));

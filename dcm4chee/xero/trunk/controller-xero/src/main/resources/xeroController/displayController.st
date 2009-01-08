@@ -30,7 +30,7 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 
 	if( ! model.navigate ) {
 		model.navigate = new Navigation();
-		model.navigate.conversation.mode="WindowLevel";
+		model.navigate.conversation.mode="default";
 		model.patientLayout.navigate = model.navigate;
 		model.patientLayout.init();
 	}
@@ -58,6 +58,18 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 	console.timeEnd("Load Patient Data");
 
 	this.displayResize("displayPatient");
+};
+
+/** Finds the layout specified by the given id, optionally looks for the parent layout of the
+ * given patient through image level (1->4)
+ */
+XeroController.prototype.findLayout = function(id,lvl) {
+	var lay = this.model.layout.findLayout(id);
+	if( !lvl ) return lay;
+	while(lay) {
+		if( lay && lay.navigate && lay.navigate.level===lvl ) return lay;
+		lay = lay.parent;
+	}
 };
 
 /** Selects the isSelected studies from patient */
@@ -107,12 +119,11 @@ XeroController.prototype.displayResize = function(op) {
 XeroController.prototype.displayMode = function(layId) {
 	var lay = this.model.layout.findLayout(layId);
 	var toMode = lay.i18n;
-	if( lay.isActive && lay.children ) {
-		toMode = lay.findRotate(toMode,1).i18n;
-	}
-	console.info("Changing display mode to",toMode);
+	var wasMode = this.getModeImage();
+	if( lay.isActive ) toMode = "default";
+	console.info("Changing display mode to",toMode,"from",wasMode);
+	
 	this.model.navigate.setConversation("mode", toMode);
-	// TODO - avoid a complete update, just do a lazy update of the changes
 	this.waitUpdate("displayMode");
 };
 
@@ -212,10 +223,20 @@ XeroController.prototype.displayStudy = function XC_displayStudy(src,patientId, 
 	this.displayPatient(src, patientId,uids);
 };
 
+/** Navigates a given study next/previous */
+XeroController.prototype.navStudy = function(id,dir) {
+	var lay = this.findLayout(id);
+	var nav = this.getNavigate(lay);
+	console.info("Navigating study dir",dir);
+	if(!(nav && nav.external) ) return;
+	var uids = nav.conversation.nav;
+	
+};
+
 /** Navigates to a given study for a given study slot */
-XeroController.prototype.navStudy = function(layId,uid) {
-	var lay = this.model.layout.findLayout(layId);
-	var nav = lay.parent.navigate;
+XeroController.prototype.navToStudy = function(id,uid) {
+	var lay = this.findLayout(id);
+	var nav = this.getNavigate(lay);
 	if( !(nav && nav.external) ) return;
 	if(nav.external.studyUID==uid) return;
 	var uids = nav.conversation.nav;
@@ -267,10 +288,10 @@ XeroController.prototype.navSer = function XC_navSer(id,dir) {
 
 /** Navigates at the image level - can be called against either the imageToolbar or imageArea */
 XeroController.prototype.navImg = function XC_navImg(id,dir) {
-	var lay = this.model.layout.findLayout(id);
-	console.info("You are trying to navigate %s in dir %d found lay %s", id,dir,lay.id);
-	var navigate = lay.navigate;
-	if(!navigate) navigate = lay.parent.navigate;
+	var lay = this.findLayout(id);
+	console.info("You are trying to navigate",id,"in dir",dir,"found lay", id,dir,lay.id);
+	var navigate = this.getNavigate(lay);
+	if( navigate.level>Navigation.SERIES ) navigate = navigate.parent;
 	if( dir==="first" ) {
 		var dirImg = 0;
 	} else if(dir==="last") {
@@ -286,7 +307,7 @@ XeroController.prototype.navImg = function XC_navImg(id,dir) {
 		var dirImg = navigate.lookupId(dir);
 	};
 	if( dirImg==null ) {
-		console.warn("Didn't find a next/previous series to navigate to dir",dir,dirImg);
+		console.warn("Didn't find a next/previous image to navigate to dir",dir,dirImg,"level",navigate.level);
 		return;
 	}
 	console.info("You are trying to navigate to %s", dirImg);

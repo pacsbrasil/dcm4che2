@@ -238,6 +238,12 @@ div.tabHeader {
 	margin:0;
 }
 
+.menu ul.leftmenu li {
+	display: block;
+	clear: both;
+	height: 24px;
+}
+
 .menu ul li table {
 	margin:-1px 0;              /* IE5 needs -1px top and bottom table margins */
 	margin:0;               /* re-zero the table margins for everyone but IE5 */
@@ -342,6 +348,13 @@ div.tabHeader {
 	width:8.08333em;
 }
 
+.menu ul li:hover ul.wide li a,
+.menu ul li a:hover ul.wide li a,
+.menu ul li:hover ul.wide li a:hover,
+.menu ul li a:hover ul.wide li a:hover {
+	width: 64em;
+}
+
 /*======================== 3RD LEVEL MENU DEFINITIONS ========================*/
 
 .menu ul li:hover ul li ul,
@@ -374,6 +387,14 @@ div.tabHeader {
 
 /*======================== MENU Customizations ========================*/
 
+div.hoverMenu ul {
+	visibility: hidden;
+}
+
+div.hoverMenu:hover ul {
+	visibility:visible;
+}
+
 /* Need to change the root menu z-index so later indices are hidden under it */
 #PatientMenu {
 	z-index: 120;
@@ -390,3 +411,12 @@ div.studyToolbar {
 	text-decoration: underline;
 	color: white;
 }
+
+div.imageMenu {
+	position: absolute; 
+	width: 25%; 
+	height: 98%; 
+	top: 2%; 
+	left:1%;
+}
+

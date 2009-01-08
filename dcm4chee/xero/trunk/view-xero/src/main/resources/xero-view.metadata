@@ -48,12 +48,14 @@ displayTemplates.imageImage=image/image
 displayTemplates.studyTra=image/studyTray
 displayTemplates.reportReport=report/report
 displayTemplates.nextPrevSeries=image/nextPrevSeries
+displayTemplates.compareStudyLay=image/compareStudyLay
 displayTemplates.seriesReports=series/reports
 displayTemplates.seriesKeyObjects=series/keyObjects
 displayTemplates.seriesPresentation=series/presentation
 displayTemplates.seriesThumbnails=series/thumbnails
 displayTemplates.seriesGspsMarkup=series/gspsMarkup
 displayTemplates.studyMenuItem=image/studyMenuItem
+displayTemplates.imageNav=image/imageNav
 
 allTemplates=${class:org.dcm4chee.xero.template.AllTemplatesMap}
 allTemplates.templateGroup=${ref:templateGroup}

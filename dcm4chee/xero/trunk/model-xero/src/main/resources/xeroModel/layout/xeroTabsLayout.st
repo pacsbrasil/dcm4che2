@@ -6,7 +6,7 @@ $layout/addChildren(children=overallMenuLayout.children)$
 
 XeroRootMenu.prototype = new Layout("XeroRootMenuPrototype","html/menu");
 XeroRootMenu.prototype.baseConstructor = Layout;
-XeroRootMenu.prototype.displayClass="rootMenu";
+XeroRootMenu.prototype.displayClass="rootMenu menu";
 
 function UserNameMenu(suffix) {
 	this.baseConstructor("UserNameMenu");
@@ -15,4 +15,5 @@ function UserNameMenu(suffix) {
 
 UserNameMenu.prototype = new Layout("XeroRootMenuPrototype","html/userName");
 UserNameMenu.prototype.baseConstructor = Layout;
+
 

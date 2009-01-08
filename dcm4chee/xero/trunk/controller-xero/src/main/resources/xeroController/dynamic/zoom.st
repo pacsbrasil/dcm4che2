@@ -1,27 +1,25 @@
 /** Handles the panning/zooming controls */
 
-XeroController.prototype.TrueSize_clickImage = function (lay,e) {
-};
-
 /**
  * Sets the zoom mode, and sets the region back to the original region if the zoom mode was
  * already scale to fit.
  */
-XeroController.prototype.ZoomReset_clickImage = function (lay,e) {
+XeroController.prototype.zoomReset = function (lay,e) {
 	this.zoomMode(lay,e,"SCALE_TO_FIT");
 };
-XeroController.prototype.Zoom_clickImage = XeroController.prototype.ZoomReset_clickImage;
+XeroController.prototype.Zoom_clickImage = XeroController.prototype.zoomReset;
 
-XeroController.prototype.Magnify_clickImage = function(lay,e) {
+XeroController.prototype.magnify = function(lay,e) {
 	this.zoomMode(lay,e,"MAGNIFY");
 };
 
-XeroController.prototype.TrueSize_clickImage = function(lay,e) {
+XeroController.prototype.trueSize = function(lay,e) {
 	this.zoomMode(lay,e,"TRUE_SIZE");
 };
 
 /** Handles setting a given zoom mode, and re-setting the region */
 XeroController.prototype.zoomMode = function(lay,e,mode) {
+	lay = this.findLayout(lay);
 	var nav = this.getNavigate(lay);
 	nav.setMerged("smallImage",true);
 	console.info("Resetting region on",lay.id);
@@ -100,7 +98,7 @@ XeroController.prototype.zoomChange = function(lay,e,delta) {
 };
 
 XeroController.prototype.Zoom_wheelSeries = function(id,e) {
-	var lay = this.model.layout.findLayout(id);
+	var lay = this.findLayout(id);
 	
 	var wheelData = e.detail ? (-e.detail) : e.wheelDelta/40;
 	if(! e.shiftKey ) wheelData = wheelData/3;
@@ -110,17 +108,13 @@ XeroController.prototype.Zoom_wheelSeries = function(id,e) {
 	this.zoomChange(lay,e,wheelData);
 };
 XeroController.prototype.Zoom_shift_wheelSeries = XeroController.prototype.Zoom_wheelSeries;
-XeroController.prototype.ZoomIn_wheelSeries = XeroController.prototype.Zoom_wheelSeries;
-XeroController.prototype.ZoomOut_wheelSeries = XeroController.prototype.Zoom_wheelSeries;
-XeroController.prototype.ZoomIn_shift_wheelSeries = XeroController.prototype.Zoom_wheelSeries;
-XeroController.prototype.ZoomOut_shift_wheelSeries = XeroController.prototype.Zoom_wheelSeries;
 
-XeroController.prototype.ZoomIn_clickImage = function(id,e) {
-	var lay = this.model.layout.findLayout(id);
+XeroController.prototype.zoomIn = function(id,e) {
+	var lay = this.findLayout(id);
 	this.zoomChange(lay,e,1);
 };
-XeroController.prototype.ZoomOut_clickImage = function(id,e) {
-	var lay = this.model.layout.findLayout(id);
+XeroController.prototype.zoomOut = function(id,e) {
+	var lay = this.findLayout(id);
 	this.zoomChange(lay,e,-1);
 };
 
@@ -132,12 +126,8 @@ function PanController() {
 PanController.prototype = new ImageMouseHandler();
 
 XeroController.prototype.Zoom_dragImage = new PanController();
-XeroController.prototype.ZoomIn_dragImage = XeroController.prototype.Zoom_dragImage;
-XeroController.prototype.ZoomOut_dragImage = XeroController.prototype.Zoom_dragImage;
-XeroController.prototype.dblDragImage = XeroController.prototype.Zoom_dragImage;
-XeroController.prototype.Magnify_dragImage = XeroController.prototype.Zoom_dragImage;
-XeroController.prototype.TrueSize_dragImage = XeroController.prototype.Zoom_dragImage;
-XeroController.prototype.ZoomReset_dragImage = XeroController.prototype.Zoom_dragImage;
+XeroController.prototype.dragImage = XeroController.prototype.Zoom_dragImage;
+XeroController.prototype.WindowLevel_dblDragImage = XeroController.prototype.Zoom_dragImage; 
 
 PanController.prototype.prepare= function(e) {
 	this.prepareBase(e);

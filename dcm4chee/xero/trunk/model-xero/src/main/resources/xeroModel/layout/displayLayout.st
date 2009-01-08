@@ -110,8 +110,8 @@ StudyAreaLayout.prototype.widthEdge=3;
 /**
  * This defines the listeners for navigate changes to the layout.  Computes
  * quite a few fields relevant to display menus etc.
- * These computations really belong in the individual menu items, but right now
- * it isn't yet clear how to add those individually. 
+ * These computations probably should be moved to the individual sub-items, 
+ * and some of them have been. 
  */
 StudyAreaLayout.prototype.navigateListener = function (navigate) {
 	this.navigate = navigate;  
@@ -125,6 +125,9 @@ StudyAreaLayout.prototype.navigateListener = function (navigate) {
 		console.info("StudyArea: Setting used to false because compare study is single study.");
 		this.used = false;
 	};
+	
+	this.isFirst = true;
+	this.isLast = false;
 };
 
 
@@ -234,12 +237,12 @@ function StudyMenuItems(suffix) {
 StudyMenuItems.prototype = new Layout("StudyMenuItems","html/childList");
 StudyMenuItems.prototype.itemId = "studyUID";
 StudyMenuItems.prototype.listTemplate="image/studyMenuItem";
-StudyMenuItems.prototype.action="controller.navStudy";
+StudyMenuItems.prototype.action="controller.navToStudy";
 
 
 /** Defines the X of N series layout information */
-function XofNSeries() {
-	this.baseConstructor("XofN");
+function XofNSeries(suffix) {
+	this.baseConstructor("XofN"+suffix);
 };
 
 XofNSeries.prototype = new Layout("XofN","image/seriesNumber");
@@ -251,82 +254,41 @@ XofNSeries.prototype.navigateListener = function(nav) {
 	if( !(nav && nav.external) ) return;
 	this.series = nav.parent.getExtChildren();
 	if( ! this.series ) return;
+	this.n = this.series.length;
+	if( this.n<2 ) return;
 	this.used = true;
 	console.info("Series UID navigated to", nav.external.seriesUID);
 	this.relayout=true;
-	this.n = this.series.length;
 	for(this.x = 1;this.x<=this.series.length; this.x++) {
 		if( nav.external.seriesUID == this.series[this.x-1].seriesUID ) break;
 	}
+	console.info("xofn series x=",this.x);
+	this.isFirst = (this.x===1);
+	this.isLast = (this.x===this.n);
 };
 
-/**
- * Generic display mode 
- */
-function DisplayModeLay(suffix,i18n) {
-	if( !i18n ) {
-		i18n = suffix;
-		suffix = "";
-	}
-	var id = i18n+suffix;
-	this.baseConstructor(id);
-	this.i18n = i18n;
-	this.icon = i18n+"Icon";
+/** Defines the X of N series layout information */
+function XofNImage(suffix) {
+	this.baseConstructor("XofN"+suffix);
 };
-DisplayModeLay.prototype = new Layout("DisplayModeLay","html/toolItem");
-DisplayModeLay.prototype.events="/conversation:mode";
-DisplayModeLay.prototype.action="controller.displayMode";
-DisplayModeLay.prototype.showLabel=true;
 
-/** A general mode listener - activates/de-actives given modes, plus promoting child to parent mode */
-DisplayModeLay.prototype.namedListener = function (navigate, varName, newVal) {
-	if( this.children && this.i18n!=newVal ) {
-		// This is a top-level menu item that contains child modes, so make it reflect the
-		// child mode correctly.
-		var rot = this.findRotate(newVal);
-		this.isActive = (rot!=null);
-		if( rot ) this.copyFrom(rot);
-	}
-	else {
-		var newActive = (this.i18n == newVal);
-		if( newActive==this.isActive ) return;
-		console.info("Setting mode change on",this.i18n,"to",newActive,"mode event",newVal);
-		this.isActive = newActive;
-	}
+XofNImage.prototype = new Layout("XofN","image/imageNav");
+XofNImage.prototype.events=".";
+XofNImage.prototype.isFirst = false;
+XofNImage.prototype.isLast = false;
+XofNImage.prototype.x = 0;
+XofNImage.prototype.n = 300;
+
+XofNImage.prototype.navigateListener = function(nav) {
+	this.used = false;
+	if(!(nav && nav.external)) return;
+	this.x = 1+parseInt(nav.external.Position);
+	this.n = parseInt(nav.parent.external.Viewable);
+	this.isFirst = (this.x==1);
+	this.isLast = (this.x>=this.n);
+	this.used = (this.n>1);
 	this.relayout = true;
 };
-
-
-
-
-/** Handle the window level menu layout */
-function WLMenu() {
-	this.baseConstructor(this.i18n);
-	var suffix="";
-$layout/addChildren(children=wlMenu.children)$	
-};
-
-WLMenu.prototype = new DisplayModeLay("WindowLevel");
-WLMenu.prototype.isActive = true;
-WLMenu.prototype.showLabel = false;
-
-/** Handle the zoom menu layout */
-function ZoomMenu() {
-	this.baseConstructor(this.i18n);
-	var suffix="";
-$layout/addChildren(children=zoomMenu.children)$	
-};
-ZoomMenu.prototype = new DisplayModeLay("Zoom");
-ZoomMenu.prototype.showLabel = false;
-
-/** Create the Spatial transforms menu layout */
-function SpatMenu(suffix,studyNav) {
-	this.baseConstructor(this.i18n);
-	var suffix="";
-$layout/addChildren(children=spatMenu.children)$	
-};
-SpatMenu.prototype = new DisplayModeLay("RotateRight");
-SpatMenu.prototype.showLabel = false;
 
 /**
  * The series areas contains the individual series are display objects
@@ -346,7 +308,7 @@ function SeriesAreas(suffix, nth) {
 };
 
 SeriesAreas.prototype = new Layout("SeriesAreas");
-SeriesAreas.prototype.gridX = 2;
+SeriesAreas.prototype.gridX = 4;
 SeriesAreas.prototype.gridY = 2;
 SeriesAreas.prototype.events=["series:0","conversation:seriesLayout","conversation:studyLayout"];
 SeriesAreas.prototype.displayClass="seriesAreas";
@@ -379,6 +341,7 @@ SeriesAreas.prototype.namedListener = function(nav,vname,val) {
 	if( val=="Layout2x2" ) return;
 	if( val=="Layout2x1" || val=="Layout1x1") this.gridY = 1;
 	if( val=="Layout1x2" || val=="Layout1x1" ) this.gridX = 1;
+	if( val=="Layout4x2" ) this.gridX = 4;
 };
 
 /** Create an images areas object */
@@ -386,10 +349,6 @@ function ImageAreasLayout(suffix, nth) {
 	this.baseConstructor("ImageAreas"+suffix);
 	this.navigate = "series:"+nth;
 	this.nth = nth;
-
-	var toolbar = new ImageAreasMenu(suffix);
-	toolbar.imageAreas = this;
-	this.add(toolbar,Layout.NORTH);
 
 	this.used = false;
 	this.origGridX = this.gridX;
@@ -410,6 +369,8 @@ function ImageAreasLayout(suffix, nth) {
 			layout.x = i;
 			layout.y = j;
 			this.add(layout);
+			layout.add(new ImageMenu(suffix),"imageMenu");
+			layout.add(new XofNImage(suffix),"xofnImage");
 		};
 	};
 };
@@ -479,40 +440,65 @@ ImageAreasLayout.prototype.namedListener = function(nav,vname,val) {
 		this.used = false;
 		return;
 	}
+	if( !val ) val = "Layout2x2";
 	var maxSeries = 100;
 	if( val==="Layout1x1" ) maxSeries = 1;
 	else if( val=="Layout2x1" || val=="Layout1x2") maxSeries = 2;
 	else if( val=="Layout2x2" ) maxSeries = 4;
+	else if( val=="Layout4x2" ) maxSeries = 8;
 	this.used = (this.nth < maxSeries);
 	console.info("ImageAreas used",this.used,"nth",this.nth,"max series",maxSeries,val);
 }; 
 
-/** The menu for image level control */
-function ImageAreasMenu(suffix) {
-	this.baseConstructor("ImageAreasMenu"+suffix);
-	
-$layout/addChildren(children=imageAreasMenu.children)$
+/**
+ * Generic display mode change - these are major modes for window level and zoom/pan,
+ * plus others in the future. 
+ */
+function DisplayModeLay(suffix,i18n) {
+	if( !i18n ) {
+		i18n = suffix;
+		suffix = "";
+	}
+	var id = i18n+suffix;
+	this.baseConstructor(id);
+	this.i18n = i18n;
+	this.icon = i18n+"Icon";
+};
+DisplayModeLay.prototype = new Layout("DisplayModeLay","html/toolItem");
+DisplayModeLay.prototype.events="/conversation:mode";
+DisplayModeLay.prototype.action="controller.displayMode";
+
+/** A general mode listener - activates/de-actives given modes, plus promoting child to parent mode */
+DisplayModeLay.prototype.namedListener = function (navigate, varName, newVal) {
+	var wasActive = this.isActive;
+	this.isActive = (newVal===this.i18n);
+	if( wasActive!==this.isActive ) this.relayout = true;
 };
 
-ImageAreasMenu.prototype = new Layout("ImageAreasMenuPrototype","html/menu");
-ImageAreasMenu.prototype.absHeight = 22;
 
-/** This defines the listeners for navigate changes to the layout */
-ImageAreasMenu.prototype.navigateListener = function SeriesMergedListener(navigate) {
-	this.debug("series merged listener called.");
-	this.navigate = navigate;
-	var changed = this.used;
-	this.used = (navigate!=null && navigate.external!=null);
-	changed = (changed!=this.used);
-	if( navigate ) this.debug("Changing series on",this.id,"to", navigate.id);
-	if( changed && this.parent ) {
-		this.parent.relayout = true;
-	}
-	if( navigate && navigate.external!==this.series ) {
-		this.series = navigate.external;
-	}
+/** Handle the Image menu layout.  Knows about activating/de-activating mode specific
+ * buttons.
+ */
+function ImageMenu(suffix) {
+	this.baseConstructor("ImageMenu"+suffix);
+$layout/addChildren(children=imageMenu.children)$
+	this.namedListener(null,null,"default");	
+};
+
+ImageMenu.prototype = new Layout("ImageMenu", "html/menu");
+ImageMenu.prototype.displayClass="imageMenu hoverMenu menu";
+ImageMenu.prototype.ulClass="leftmenu";
+ImageMenu.prototype.isActive = true;
+ImageMenu.prototype.showLabel = false;
+ImageMenu.prototype.events="/conversation:mode";
+
+ImageMenu.prototype.namedListener = function(navigate,varName,newVal) {
+	if( !newVal ) newVal = "default";
+	var i, child;
+	for(i in this.children ) {
+		child = this.children[i];
+		if( !child.mode ) continue;
+		child.used = (newVal===child.mode);
+	};
 	this.relayout = true;
 };
-
-ImageAreasMenu.prototype.events=".";
-

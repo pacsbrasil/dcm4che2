@@ -7,19 +7,15 @@ WLController.prototype = new ImageMouseHandler();
 WLController.prototype.isWLController = true;
 
 XeroController.prototype.WindowLevel_dragImage = new WLController();
-// Default drag operation is window level, as is the default ctrl-drag image.
-XeroController.prototype.dragImage = XeroController.prototype.WindowLevel_dragImage;
 
-// Over-ride the double-drag modes for zoom
-XeroController.prototype.Zoom_dblDragImage = XeroController.prototype.dragImage;
-XeroController.prototype.ZoomIn_dblDragImage = XeroController.prototype.dragImage;
-XeroController.prototype.ZoomOut_dblDragImage = XeroController.prototype.dragImage;
-XeroController.prototype.ZoomReset_dblDragImage = XeroController.prototype.dragImage;
+// Over-ride the double-drag mode
+XeroController.prototype.dblDragImage = XeroController.prototype.WindowLevel_dragImage;
 
 XeroController.prototype.ctrl_dragImage = XeroController.prototype.WindowLevel_clickImage;
 
 /** Handle the window level reset operation */
-XeroController.prototype.WindowLevel_clickImage = function(lay,e) {
+XeroController.prototype.wlReset = function(lay) {
+	lay = this.findLayout(lay);
 	console.info("Image clicked - trying to reset the image, layout",lay.id);
 	var nav = this.getNavigate(lay);
 	nav=nav.parent;
@@ -33,10 +29,12 @@ XeroController.prototype.WindowLevel_clickImage = function(lay,e) {
 	}
 	this.waitUpdate("mouseUp",2);
 };
-XeroController.prototype.WLReset_clickImage=XeroController.prototype.WindowLevel_clickImage;
+
+XeroController.prototype.WindowLevel_clickImage = XeroController.prototype.wlReset; 
 
 /** Handle inverting the image */
-XeroController.prototype.WLInvert_clickImage = function(lay,e) {
+XeroController.prototype.wlInvert = function(lay) {
+	lay = this.findLayout(lay);
 	console.info("Image clicked - trying to invert the image, layout",lay.id);
 	var nav = this.getNavigate(lay);
 	var inv = nav.merged.get("invert"); 
