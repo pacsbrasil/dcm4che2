@@ -3,7 +3,7 @@
 
   <groupId>dcm4che</groupId>
   <artifactId>dcm4che-test-image</artifactId>
-  <version>2.2-INTERMEDIATE3</version>
+  <version>2.2-INTERMEDIATE4</version>
   <name>Dicom Image Tests</name>
 
   <build>
