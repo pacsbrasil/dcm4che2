@@ -77,6 +77,7 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
    public static final String LARGEST_IMAGE_PIXEL_VALUE = "LargestImagePixelValue";
 
    public static final String SMALLEST_IMAGE_PIXEL_VALUE = "SmallestImagePixelValue";
+   public static final String REDUCED_BITS = "ReducedBits";
 
    private static final Logger log = LoggerFactory.getLogger(ReduceBitsFilter.class);
 
@@ -99,7 +100,7 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 		 // Check up-front to see if the image can be returned as bytes so that no
 		 // decoding is necessary.  This only works if the correct number of bits is set.
 		 DicomObject ds = dicomImageHeader.filter(null,params);
-		 if( !needsRescale(bits,ds) ) {
+		 if( !needsRescale(null,bits,ds) ) {
 			 log.debug("Image doesn't need to be rescaled and can be returned as raw bytes.");
 			 return filterItem.callNextFilter(params);
 		 }
@@ -111,7 +112,7 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 	  WadoImage wi = (WadoImage) filterItem.callNextFilter(params);
 	  if( wi==null ) return wi;
 	  DicomObject ds = wi.getDicomObject();
-	  if( !needsRescale(bits,ds) )  {
+	  if( !needsRescale(wi,bits,ds) )  {
 		  log.debug("Image doesn't need to be rescaled, and can be returned as a regular image.");
 		  return wi;
 	  }
@@ -120,15 +121,35 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 	  long start = System.nanoTime();
 	  int maxAllowed = (1 << bits)-1;
 
-	  int [] smlLrg = addSmallestLargest(wi);
+	  WadoImage wiRet = wi.clone();
+	  
+	  int previousBits = getPreviousReducedBits(wi);
+	  int originalSmallestPixelValue = getPreviousSmallestPixelValue(wi);
+	  int originalLargestPixelValue = getPreviousLargestPixelValue(wi);
+	  int currentSmallestPixelValue = originalSmallestPixelValue;
+	  int currentLargestPixelValue = originalLargestPixelValue;
+	  if ( previousBits == 0 ) {
+		  int [] smlLrg = getSmallestLargest(wiRet);
+		  currentSmallestPixelValue = originalSmallestPixelValue = smlLrg[0];
+		  currentLargestPixelValue = originalLargestPixelValue = smlLrg[1];
+	  } else {
+		  currentSmallestPixelValue = 0;
+		  currentLargestPixelValue = (1 << previousBits)-1;
+	  }
+	  
 	  WritableRaster r = wi.getValue().getRaster();
 
-	  if (smlLrg[0] >= 0 && smlLrg[1] <= maxAllowed ) {
+	  if ( (currentSmallestPixelValue >= 0) && (currentLargestPixelValue <= maxAllowed) ) {
 		 // This is actually just a bits sized raw image - don't need to
          // transcode it - could compute actual bits, but this is good enough.
 		 // This case is VERY common for CT images so it is worth including.  As well it doesn't
 		 // require any actual changes to the results - however, it should be fixed to work
 		 // with 8 bit actual images as well...
+	     // TODO - fix thread safety of this code.
+		 // FIXME: is changing BitsStored necessary?  We don't do it when we DO need to
+		 // reduce the bits, so why do it when we DON'T need to reduce the bits?  By only
+		 // changing the BitsStored, and not the HighBit and PixelRepresentation, we can be
+		 // making a corrupt header.
 		 ds.putInt(Tag.BitsStored, VR.IS, bits);
 		 BufferedImage bi = new BufferedImage(cm12, r, false, null);
 		 wi.setValue(bi);
@@ -136,10 +157,11 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 
 		 return wi;
 	  }
+	  
+	  addSmallestLargestToWadoImage(wiRet, originalSmallestPixelValue, originalLargestPixelValue, bits);
 
-	  int range = smlLrg[1]-smlLrg[0];
+	  int range = currentLargestPixelValue-currentSmallestPixelValue;
 	  int entries = range + 1;
-
 	  
 	  BufferedImage bi;
 	  int stored = ds.getInt(Tag.BitsStored);
@@ -152,7 +174,7 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 		 for (int i = 0; i < entries; i++) {
 			slut[i] = (short) ((maxAllowed * i) / range);
 		 }
-		 ShortLookupTable lut = new ShortLookupTable(stored, signed, smlLrg[0], bits, slut);
+		 ShortLookupTable lut = new ShortLookupTable(stored, signed, currentSmallestPixelValue, bits, slut);
 		 lut.lookup(r.getDataBuffer(), r.getDataBuffer());
 	  } else {
 		 if( bits!=8 ) throw new IllegalArgumentException("Only 8...15 bits supported for reduce bits filter.");
@@ -161,23 +183,85 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 		 for (int i = 0; i < entries; i++) {
 			blut[i] = (byte) ((maxAllowed * i) / range);
 		 }
-		 ByteLookupTable lut = new ByteLookupTable(stored, signed, smlLrg[0], bits, blut);
+		 ByteLookupTable lut = new ByteLookupTable(stored, signed, currentSmallestPixelValue, bits, blut);
 		 lut.lookup(r.getDataBuffer(), bi.getRaster().getDataBuffer());
 	  }
 
-	  WadoImage wiRet = wi.clone();
 	  wiRet.setValue(bi);
-	  log.info(""+bits+" bit scaled " + nanoTimeToString(System.nanoTime() - start)+" small/large="+smlLrg[0]+","+smlLrg[1]);
+	  log.info(""+bits+" bit scaled " + nanoTimeToString(System.nanoTime() - start)+" small/large="+currentSmallestPixelValue+","+currentLargestPixelValue);
 
 	  return wiRet;
    }
 
-   /** Adds the smallest/largest image pixel value to the image information.
-    * Returns an array of the smallest/largest values.
+   /**
+    * Adds the smallest and largest pixel value before data resampling, and the number
+    * of bits we resample to, into the WadoImage response headers and filename.
+    * @param wi
+    * @param smallestPixelValue
+    * @param largestPixelValue
+    * @param bitsAfterResampling
+    */
+   @SuppressWarnings("unchecked")
+   public static void addSmallestLargestToWadoImage(WadoImage wi, int smallestPixelValue, int largestPixelValue, int bitsAfterResampling ) {
+	   // Add the header now so it is always available.
+	   Collection<String> headers = (Collection<String>) wi.getParameter(RESPONSE_HEADERS);
+
+	   if( headers==null ) {
+		   headers = new HashSet<String>(3);
+		   wi.setParameter(RESPONSE_HEADERS, headers);
+	   }	  
+
+	   headers.add(SMALLEST_IMAGE_PIXEL_VALUE);
+	   headers.add(LARGEST_IMAGE_PIXEL_VALUE);
+	   headers.add(REDUCED_BITS);
+
+	   String filename = getStrippedFilename(wi);
+
+	   wi.setParameter(SMALLEST_IMAGE_PIXEL_VALUE, ""+smallestPixelValue);
+	   wi.setParameter(LARGEST_IMAGE_PIXEL_VALUE, ""+largestPixelValue);
+	   wi.setParameter(REDUCED_BITS, ""+bitsAfterResampling);
+
+	   String filenameAddition = getFilenameAddition(smallestPixelValue, largestPixelValue, bitsAfterResampling );
+	   wi.setFilename( filename + filenameAddition);	   
+   }
+
+   protected static String getStrippedFilename(WadoImage wi) {
+	   String filename = wi.getFilename();
+	   int previousReducedBits = getPreviousReducedBits(wi);
+	   if (previousReducedBits != 0){
+		   int previousSmallestPixelValue = getPreviousSmallestPixelValue(wi);
+		   int previousLargestPixelValue = getPreviousLargestPixelValue(wi);		  
+
+		   String oldFilenameAddition = getFilenameAddition( previousSmallestPixelValue, 
+				   previousLargestPixelValue, previousReducedBits);
+
+		   filename = filename.replace(oldFilenameAddition, "");			  
+	   }
+	   return filename;
+   }
+
+   protected static String getFilenameAddition(int smallestPixelValue, int largestPixelValue, int bitsAfterResampling ){
+	   return "-pixelRange"+smallestPixelValue+","+largestPixelValue+","+bitsAfterResampling;
+   }
+   
+   protected static int getPreviousReducedBits(WadoImage wi) {
+		  return (int)wi.getParameter(REDUCED_BITS, 0.0f);
+   }
+   protected static int getPreviousSmallestPixelValue(WadoImage wi) {
+	   return (int)wi.getParameter(SMALLEST_IMAGE_PIXEL_VALUE, 0.0f);
+   }
+   protected static int getPreviousLargestPixelValue(WadoImage wi) {
+	   return (int)wi.getParameter(LARGEST_IMAGE_PIXEL_VALUE, 0.0f);
+   }
+   
+   /** 
+    * Determine the smallest and largest pixel-value, either from already existing
+    * DICOM tags, or by scanning the pixel data.
+    * @returns an array of the smallest/largest values.
     * @param wi
     */
    @SuppressWarnings("unchecked")
-   public static int[] addSmallestLargest(WadoImage wi) {
+   public static int[] getSmallestLargest(WadoImage wi) {
 	  WritableRaster r = wi.getValue().getRaster();
 	  DicomObject ds = wi.getDicomObject();
 	  int smallest = ds.getInt(Tag.SmallestImagePixelValue);
@@ -190,31 +274,26 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 		 ds.putInt(Tag.LargestImagePixelValue, VR.IS, largest);
 	  }
 
-	  // Add the header now so it is always available.
-	  Collection<String> headers = (Collection<String>) wi.getParameter(RESPONSE_HEADERS);
-	  if( headers==null ) {
-		 headers = new HashSet<String>(2);
-		 wi.setParameter(RESPONSE_HEADERS, headers);
-	  }
-	  headers.add(SMALLEST_IMAGE_PIXEL_VALUE);
-	  headers.add(LARGEST_IMAGE_PIXEL_VALUE);
-	  
-	  wi.setParameter(SMALLEST_IMAGE_PIXEL_VALUE, ""+smallest);
-	  wi.setParameter(LARGEST_IMAGE_PIXEL_VALUE, ""+largest);
-	  
-	  wi.setFilename(wi.getFilename()+"-pixelRange"+smallest+","+largest);
 	  return new int[]{smallest,largest};
    }
 
 
-   public static boolean needsRescale(int bits, DicomObject ds) {
+   public static boolean needsRescale(WadoImage wi, int bits, DicomObject ds) {
 	  boolean isGray = (ds.getInt(Tag.SamplesPerPixel)==1);
 	  if( !isGray ) {
 		 log.info("Not grayscale - not rescaling.");
 		 return false;
 	  }
+	  int previouslyResampledBits = 0;
+	  if ( wi != null ) { 
+		  previouslyResampledBits = getPreviousReducedBits(wi);
+	  }
 	  int stored = ds.getInt(Tag.BitsStored);
 	  boolean signed = ds.getInt(Tag.PixelRepresentation) == 1;
+	  if ( previouslyResampledBits != 0 ) {
+		  stored = previouslyResampledBits;
+		  signed = false;
+	  }
 	  // This will ensure that in current versions, colour images won't pass here,
 	  // and that regular images that don't need any translation will go directly through this filter.
 	  if( stored > bits || signed ) {

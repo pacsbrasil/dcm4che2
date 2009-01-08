@@ -54,6 +54,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageReadParam;
+import javax.imageio.metadata.IIOMetadata;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -69,6 +70,7 @@ import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Element;
 
 /**
  * This class takes a URL to either a file location or another WADO service, and
@@ -149,7 +151,8 @@ public class DicomImageFilter implements Filter<WadoImage> {
 			  ((ReopenableImageInputStream) input).close();
 			}
 			else log.info("Not closing re-openable multi-frame stream {}",ret.getFilename());
-
+			
+			ret = setPixelRangeInformation(reader, frame, ret);
 			ret.setValue(bi);
 			log.info("Time to "+op+" image "+ret.getFilename()+" ts=" + ds.getString(Tag.TransferSyntaxUID) + " only is "
 				  + nanoTimeToString(System.nanoTime() - start));
@@ -165,6 +168,55 @@ public class DicomImageFilter implements Filter<WadoImage> {
 	  return ret;
    }
    
+   /**
+    * Gets the IIOMetadata of the specific frame.
+    * <p>
+    * In this specific case the pixelRange node contains some information about previously done
+    * pixel-range reduction in the ReduceBits filter.  The ReduceBitsFilter adds this information
+    * to the filename.  When bit-reduced data is retrieved from cache, via a subclass of
+    * DicomImageReader, that reader must provide an IIOMetatdata object with the node:
+    * <p>
+    * "pixelRange", with attributes.
+    * <LU>
+    * <LI>ReduceBitsFilter.SMALLEST_IMAGE_PIXEL_VALUE</LI>
+    * <LI>ReduceBitsFilter.LARGEST_IMAGE_PIXEL_VALUE</LI>
+    * <LI>ReduceBitsFilter.REDUCED_BITS</LI>
+    * </LU>
+    * <p>
+    * Look in ReduceBitsFilter for the actual string attribute names.
+    * <p>
+    * 
+    * @param reader
+    * @param frame
+    * @param wi
+    * @return
+    */
+   protected WadoImage setPixelRangeInformation(DicomImageReader reader, int frame, WadoImage wi){
+	   IIOMetadata metadata;
+	   try {
+		   metadata = reader.getImageMetadata(frame);
+	   } catch (IOException e) {
+		   log.error("Could not read image metadata, assume no previous bit reduction.");
+		   e.printStackTrace();
+		   return wi;
+	   }
+	   if ( metadata == null ) {
+		   return wi;
+	   }
+	   final String nodeName = "pixelRange";
+	   Element pixelRangeNode = (Element)metadata.getAsTree(nodeName);
+	   if ( pixelRangeNode == null ) {
+		   log.debug("Image metadata available, but no pixelRange available?");
+		   return wi;
+	   }
+	   int smallestPixelValue = Integer.valueOf(pixelRangeNode.getAttribute(ReduceBitsFilter.SMALLEST_IMAGE_PIXEL_VALUE));
+	   int largestPixelValue = Integer.valueOf(pixelRangeNode.getAttribute(ReduceBitsFilter.LARGEST_IMAGE_PIXEL_VALUE));
+	   int bitsAfterResampling = Integer.valueOf(pixelRangeNode.getAttribute(ReduceBitsFilter.REDUCED_BITS));
+
+	   ReduceBitsFilter.addSmallestLargestToWadoImage(wi, smallestPixelValue, largestPixelValue, bitsAfterResampling);
+	   return wi;
+   }
+
    /**
     * Given an image dimension and a subsample factor, calculate the final dimension.  This is
     * integer division with upwards rounding.
