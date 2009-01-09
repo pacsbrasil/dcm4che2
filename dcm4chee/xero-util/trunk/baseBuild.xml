@@ -283,7 +283,8 @@
   <target name="runJMeterXslt">
      <xslt style="${jmeterhome}/extras/jmeter-results-to-junit.xsl"
 	basedir="target"
-	includes="**/*.jtl" destdir="target/junit-jmeter" extension=".xml"/>
+	includes="**/*.jtl" destdir="target/junit-jmeter" extension=".xml" filenameparameter="testSuiteName">
+     </xslt>
   </target>
 
   <target name="jmeterPerformance">
