@@ -22,6 +22,10 @@
      <servlet-name>WADO</servlet-name>
      <url-pattern>/wado</url-pattern>
    </servlet-mapping>
+   <servlet-mapping>
+     <servlet-name>WADO</servlet-name>
+     <url-pattern>/index.html</url-pattern>
+   </servlet-mapping>
 
    <!-- TODO change the filter/permission checking to be based on IP addresses, not login - for remote access. -->
    <servlet>
@@ -128,6 +132,7 @@
        <description>Only allows users with the role WebUser to access Xero.</description>
        <url-pattern>*.xml</url-pattern>
        <url-pattern>/wado</url-pattern>
+       <url-pattern>/index.html</url-pattern>
        <url-pattern>/cfind</url-pattern>
        <http-method>GET</http-method>
        <http-method>POST</http-method>
