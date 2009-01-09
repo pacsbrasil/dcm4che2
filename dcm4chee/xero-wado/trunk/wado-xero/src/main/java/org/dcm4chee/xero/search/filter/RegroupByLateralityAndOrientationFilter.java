@@ -102,7 +102,6 @@ public class RegroupByLateralityAndOrientationFilter implements Filter<ResultsBe
       this.dicomFullHeader = dicomFullHeader;
    }
    
-   @Override
    public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params)
    {
       ResultsBean results = filterItem.callNextFilter(params);

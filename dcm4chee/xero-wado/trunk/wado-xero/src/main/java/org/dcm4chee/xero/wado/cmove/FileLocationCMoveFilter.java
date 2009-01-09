@@ -81,7 +81,6 @@ public class FileLocationCMoveFilter implements Filter<URL>
     * @throws RuntimeException when the URL cannot be generated.
     * @see org.dcm4chee.xero.metadata.filter.Filter#filter(org.dcm4chee.xero.metadata.filter.FilterItem, java.util.Map)
     */
-   @Override
    public URL filter(FilterItem<URL> filterItem, Map<String, Object> params)
    {
       if(!checker.isLocationTypeInParameters(params))

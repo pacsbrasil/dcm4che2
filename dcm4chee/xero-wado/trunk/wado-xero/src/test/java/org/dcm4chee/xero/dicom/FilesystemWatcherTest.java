@@ -132,7 +132,6 @@ public class FilesystemWatcherTest
          this.file = file;
       }
 
-      @Override
       public Boolean call() throws Exception
       {
          return file.createNewFile();

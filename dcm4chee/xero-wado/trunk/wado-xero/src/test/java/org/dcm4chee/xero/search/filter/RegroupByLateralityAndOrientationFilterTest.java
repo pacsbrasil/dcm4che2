@@ -235,7 +235,6 @@ public class RegroupByLateralityAndOrientationFilterTest
       final Map<String,DicomObject> uidToDcm = removeElementsFromCFindHeader(results);
       
       Filter<DicomObject> dicomFullHeader = new Filter<DicomObject>() {
-         @Override
          public DicomObject filter(FilterItem<DicomObject> filterItem, Map<String, Object> params)
          {
             String uid = (String)params.get(WadoParams.OBJECT_UID);

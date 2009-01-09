@@ -88,7 +88,6 @@ public class FilesystemWatcher // Disposable
          this.file = file;
       }
 
-      @Override
       public InputStream call() throws Exception
       {
          InputStream in = null;
