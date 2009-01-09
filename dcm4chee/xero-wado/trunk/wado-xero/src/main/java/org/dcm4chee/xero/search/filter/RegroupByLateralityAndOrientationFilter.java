@@ -40,6 +40,8 @@ package org.dcm4chee.xero.search.filter;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,6 +164,7 @@ public class RegroupByLateralityAndOrientationFilter implements Filter<ResultsBe
       }
       
       moveImages(imagesToMove,aeTitle);
+      sortSeries(study);
    }
    
    /**
@@ -220,6 +223,14 @@ public class RegroupByLateralityAndOrientationFilter implements Filter<ResultsBe
       }
    }
    
+
+   /**
+    * Sort the series into the correct order:  L before R.  CC before MLO.
+    */
+   protected void sortSeries(StudyBean study)
+   {
+      Collections.sort(study.getSeries(),new SeriesDescriptionComparator());
+   }
 
 
    /**
@@ -283,5 +294,55 @@ public class RegroupByLateralityAndOrientationFilter implements Filter<ResultsBe
       sb.append(' ');
       sb.append(viewCode.getDescription());
       return sb.toString();
+   }
+   
+   
+   /**
+    * Comparator that will move series based on the content of their 
+    *
+    * @author Andrew Cowan (amidx)
+    */
+   private static class SeriesDescriptionComparator implements Comparator<SeriesType>
+   {
+      public int compare(SeriesType s1, SeriesType s2)
+      {
+         String d1 = s1.getSeriesDescription();
+         String d2 = s2.getSeriesDescription();
+         
+         if(d1 == d2)
+            return 0;
+         else if(d1 == null)
+            return -1;
+         else if(d2 == null)
+            return 1;
+         else
+            return compareDescriptions(d1,d2);
+         
+      }
+
+      private int compareDescriptions(String d1, String d2)
+      {
+         int compare = 0;
+         
+         char o1 = d1.charAt(0);
+         char o2 = d2.charAt(0);
+         
+         String l1 = d1.substring(2);
+         String l2 = d2.substring(2);
+         
+         if(l1.equals(l2))
+            if(o1 == o2)
+               compare = 0;
+            else
+               compare = o1 == 'L' ? -1 : 1;
+         else if(l1.equals("CC") && l2.equals("MLO"))
+            compare = -1;
+         else if(l1.equals("MLO") && l2.equals("CC"))
+            compare = 1;
+         else
+            compare = 0;
+         
+         return compare;
+      }
    }
 }

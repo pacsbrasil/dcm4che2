@@ -37,16 +37,16 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.UID;
 import org.dcm4chee.xero.dicom.SOPClassUIDs;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.search.DicomCFindFilter;
 import org.dcm4chee.xero.search.SearchCriteria;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Arrays;
 
 /**
  * A C-Find filter that knows how to perform C-Find queries to get study level data.  Prefers to use the return all

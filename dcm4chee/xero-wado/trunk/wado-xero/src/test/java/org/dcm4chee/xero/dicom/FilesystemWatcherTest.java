@@ -40,7 +40,9 @@ package org.dcm4chee.xero.dicom;
 import static org.testng.Assert.*;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Callable;
@@ -123,6 +125,34 @@ public class FilesystemWatcherTest
       }
    }
 
+   @Test
+   public void testIncrementalDelay_ShouldIncrementDelayWhenInvoked()
+   {
+      FilesystemWatcher.IncrementalDelay d = new FilesystemWatcher.IncrementalDelay(100,50);
+      assertEquals(d.getDelay(),100);
+      assertEquals(d.getDelay(),150);
+      assertEquals(d.getDelay(),200);
+   }
+   
+   @Test
+   public void testOpenStream_WorksForOpenFiles() throws Exception, ExecutionException
+   {
+      FileOutputStream fos = null;
+      InputStream fis = null;
+      try
+      {
+         fos = new FileOutputStream(tempFile);
+         fos.write(5);
+         Future<InputStream> futureIS = watcher.openWhenAvailable(tempFile);
+         fis = futureIS.get();
+         assertEquals(fis.read(),5);
+      }
+      finally
+      {
+         if(fos != null) fos.close();
+         if(fis != null) fis.close();
+      }
+   }
 
    public class CreateFile implements Callable<Boolean>
    {

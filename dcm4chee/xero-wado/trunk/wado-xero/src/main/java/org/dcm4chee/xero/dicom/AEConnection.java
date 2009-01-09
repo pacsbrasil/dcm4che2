@@ -38,6 +38,8 @@
 package org.dcm4chee.xero.dicom;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.dcm4che2.data.UID;
 import org.dcm4che2.net.Device;
@@ -47,6 +49,7 @@ import org.dcm4che2.net.NetworkConnection;
 import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4chee.xero.search.DicomCFindFilter;
+import org.dcm4chee.xero.util.NamedThreadFactory;
 
 /**
  * AE connections wrapper class
@@ -61,7 +64,7 @@ public class AEConnection   {
       UID.ImplicitVRLittleEndian,
       UID.ExplicitVRLittleEndian  };
    
-   private Executor executor = new NewThreadExecutor("XERO_QUERY");
+   private Executor executor = Executors.newCachedThreadPool(new NamedThreadFactory("XERO_QUERY "));
    private Device device = new Device("XERO");
    
    private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();

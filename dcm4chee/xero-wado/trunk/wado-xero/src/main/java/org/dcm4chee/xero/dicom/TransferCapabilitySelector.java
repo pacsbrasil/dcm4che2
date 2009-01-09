@@ -38,6 +38,7 @@
 package org.dcm4chee.xero.dicom;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.dcm4che2.data.UID;
 import org.dcm4che2.net.Association;

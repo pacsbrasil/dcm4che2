@@ -35,81 +35,61 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.xero.dicom;
+package org.dcm4chee.xero.wado.cmove;
 
-import java.io.IOException;
+import java.net.URL;
+import java.util.Map;
+
+import org.dcm4chee.xero.dicom.DicomURLHandler;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
+import org.dcm4chee.xero.search.AEProperties;
 
 /**
- * Basic DICOM exception for the system.
- * <p>
- * NOTE:  This class puts the getCause call at this level since IOException 
- * in Java 5 does not implement the constructor.
- * TODO: Add status messages?
- * TODO: Add localization?
+ * Accessor class that 
  * @author Andrew Cowan (amidx)
  */
-@SuppressWarnings("serial")
-public class DicomException extends IOException 
+public class CMoveSettings
 {
-   private int status;
-   private Throwable cause;
+   public static final String DESTINATION_PATH = "destinationPath";
+   public static final String DESTINATION_AET = "destinationAET";
+ 
+   public static final String DEFAULT_DESTINATION_PATH = System.getProperty("user.home") + "/XeroDicomCache";
+   public static final String DEFAULT_DESTINATION_AET = "XERO-RECEIVE";
    
-   public DicomException() 
-   {
-      super();
-   }
+   private final Map<String, Object> aeSettings;
 
-   public DicomException(String message) 
+   /**
+    * Load the C-MOVE settings for the indicated DICOM URL
+    */
+   public CMoveSettings(URL dicomURL)
    {
-      super(message);
-   }
-
-   public DicomException(String message, Throwable cause) 
-   {
-      super(message);
-      this.cause = cause;
-   }
-
-   public DicomException(Throwable cause) 
-   {
-      super();
-      this.cause = cause;
-   }
-
-   public DicomException(int status) 
-   {
-      super();
-      this.status = status;
-   }
-
-   public DicomException(int status, String message) 
-   {
-      super(message);
-      this.status = status;
-   }
-    
-
-   public DicomException(int status, String message, Throwable cause) 
-   {
-      this(message, cause);
-      this.status = status;
-   }
-
-   public DicomException(int status, Throwable cause) 
-   {
-      this(cause);
-      this.status = status;
-   }
-
-   @Override
-   public Throwable getCause()
-   {
-      return this.cause;
+      this(DicomURLHandler.parseAETitle(dicomURL));
    }
    
-   public int getStatus() 
+   public CMoveSettings(String aePath)
    {
-      return status;
+      this(AEProperties.getInstance().getAE(aePath));
+   }
+
+   public CMoveSettings(Map<String, Object> aeSettings)
+   {
+      this.aeSettings = aeSettings;
+   }
+
+   /**
+    * Get the cache directory where files will be 
+    */
+   public String getDestinationPath()
+   {
+      return FilterUtil.getString(aeSettings, DESTINATION_PATH,DEFAULT_DESTINATION_PATH);
+   }
+   
+   /**
+    * Get the destination AE title for the C-MOVE 
+    */
+   public String getDestinationAET()
+   {
+      return FilterUtil.getString(aeSettings, DESTINATION_AET,DEFAULT_DESTINATION_AET);
    }
    
 }

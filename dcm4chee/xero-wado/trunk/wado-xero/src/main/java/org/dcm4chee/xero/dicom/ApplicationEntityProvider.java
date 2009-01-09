@@ -59,7 +59,6 @@ import org.slf4j.LoggerFactory;
  */
 public class ApplicationEntityProvider
 {
-   @SuppressWarnings("unused")
    private static final Logger log = LoggerFactory.getLogger(ApplicationEntityProvider.class);
    
    public static final String LOCAL_AE_NAME = "local";
@@ -69,7 +68,6 @@ public class ApplicationEntityProvider
       UID.ExplicitVRLittleEndian  };
    
 
-   
    private DicomURLHandler urlHandler = new DicomURLHandler();
    
    /**
@@ -86,6 +84,7 @@ public class ApplicationEntityProvider
       if(settings==null)
          throw new IllegalArgumentException("Unknown AE path: "+aePath);
       
+      log.debug("Creating a new AE for {}",aePath);
       NetworkApplicationEntity ae = new NetworkApplicationEntity();
       NetworkConnection connection = new NetworkConnection();
       Device device = new Device("XERO");
@@ -132,8 +131,14 @@ public class ApplicationEntityProvider
 
 
    /**
-    * @param connection
-    * @param settings
+    * Configure the network connection for the AE from the properties file.
+    * <p>
+    * The configured values are
+    * <ul>
+    * <li>AE host
+    * <li>AE port
+    * <li>TcpNoDelay = true (default)
+    * </ul>
     */
    private void configureNetworkConnection(NetworkConnection connection, Map<String, Object> settings)
    {
@@ -146,8 +151,13 @@ public class ApplicationEntityProvider
 
 
    /**
-    * @param ae
-    * @param settings
+    * Configure the AE settings based on the properties file values.  
+    * <p>
+    * The current default settings are:
+    * <ul>
+    * <li>PackPDV = true
+    * <li>MaxOpsInvoked = 1
+    * </ul>
     */
    private void configureAE(NetworkApplicationEntity ae, Map<String, Object> settings)
    {

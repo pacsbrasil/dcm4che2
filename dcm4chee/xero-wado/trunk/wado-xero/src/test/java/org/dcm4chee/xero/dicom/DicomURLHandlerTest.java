@@ -77,8 +77,6 @@ public class DicomURLHandlerTest
       assertEquals(dicomURL.getHost(),"DCM4CHEE@marlin");
       assertEquals(dicomURL.getPort(),11112);
       assertTrue(dicomURL.getQuery().contains("objectUID="+expectedObjectUID));
-      
-      System.out.println("DICOM URL: "+dicomURL.toString());
    }
 
    @Test
@@ -114,4 +112,20 @@ public class DicomURLHandlerTest
       assertEquals(parameters.get("seriesUID"),expectedSeriesUID);
       assertEquals(parameters.get("studyUID"),expectedStudyUID);      
    }
+   
+   @Test
+   public void createURL_NoQueryParams_ShouldCreateNonConstrainedQuery() throws MalformedURLException
+   {
+      String ae = "cmoveType";
+      Map<String,Object> params = new HashMap<String, Object>();
+      params.put("ae", ae);
+      params.put("queryStr", queryStr);
+
+      URL dicomURL = handler.createURL(params);
+      assertEquals(dicomURL.getProtocol(),"dicom");
+      assertEquals(dicomURL.getHost(),"DCM4CHEE@marlin");
+      assertEquals(dicomURL.getPort(),11112);
+      assertEquals(dicomURL.getQuery(),null);
+   }
+   
 }

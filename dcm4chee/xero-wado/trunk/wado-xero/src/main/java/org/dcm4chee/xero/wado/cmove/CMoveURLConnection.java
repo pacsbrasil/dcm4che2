@@ -45,6 +45,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -57,7 +58,6 @@ import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.ConfigurationException;
 import org.dcm4che2.net.DimseRSP;
 import org.dcm4che2.net.NetworkApplicationEntity;
-import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4chee.xero.dicom.ApplicationEntityProvider;
 import org.dcm4chee.xero.dicom.DicomCommandChecker;
@@ -66,6 +66,7 @@ import org.dcm4chee.xero.dicom.DicomURLHandler;
 import org.dcm4chee.xero.dicom.FilesystemWatcher;
 import org.dcm4chee.xero.dicom.SOPClassUIDs;
 import org.dcm4chee.xero.dicom.TransferCapabilitySelector;
+import org.dcm4chee.xero.util.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,28 +86,25 @@ public class CMoveURLConnection extends URLConnection
    
    private static final String DEFAULT_QUERY_LEVEL = "SERIES";
 
-   
-   private String destinationAET = "XERO-RECEIVE";
+   private static Executor executor = Executors.newCachedThreadPool(new NamedThreadFactory("XERO-CMOVE"));
    
    private DicomURLHandler urlHandler;
    private TransferCapabilitySelector tcs;
    private ApplicationEntityProvider aes;
-   private Executor executor;
-   private FilesystemWatcher fileSystemWatcher;
-   
-   private Future<InputStream> futureInputStream;
-   private DimseRSP dicomResponse;
-   private DicomCommandChecker responseChecker;
 
-   private String cachePath = "D:\\Data\\cache";
+   private FilesystemWatcher fileSystemWatcher;
+   private Future<InputStream> futureInputStream;
+   
+   private DicomCommandChecker responseChecker;
+   private CMoveSettings settings;
    
    public CMoveURLConnection(URL dicomURL)
    {
       super(dicomURL);
       
+      this.settings = new CMoveSettings(dicomURL);
       this.aes = new ApplicationEntityProvider();
       this.tcs = new TransferCapabilitySelector();
-      this.executor = new NewThreadExecutor("XERO C-MOVE Service"); // TODO: Use a named thread factory?
       this.fileSystemWatcher = new FilesystemWatcher();
       this.urlHandler = new DicomURLHandler();
       this.responseChecker = new DicomCommandChecker();
@@ -120,15 +118,15 @@ public class CMoveURLConnection extends URLConnection
    @Override
    public void connect() throws IOException
    {
-      String fileName = urlHandler.parseQueryParameters(getURL()).get("objectUID");
-      File file = new File(cachePath ,fileName);
+      String fileName = DicomURLHandler.parseQueryParameters(getURL()).get("objectUID");
+      File file = new File(settings.getDestinationPath() ,fileName);
       
       try
       {
          if(! file.exists())
          {
             log.info("DICOM file is not yet available.  C-MOVE will be initiated for "+fileName);
-            dicomResponse = cmove(); // Might want to put something in the file system to indicate series level queries
+            DimseRSP dicomResponse = cmove(); // Might want to put something in the file system to indicate series level queries
             
             // Exception will be thrown if the response is an error code.
             while(dicomResponse.next())
@@ -147,7 +145,7 @@ public class CMoveURLConnection extends URLConnection
       }
       catch (Exception e)
       {
-         throw new IOException("C-MOVE failed for "+getURL(),e);
+         throw new IOException("C-MOVE failed for "+getURL()+", error="+e);
       }
       finally
       {
@@ -168,7 +166,7 @@ public class CMoveURLConnection extends URLConnection
       Association association = null;
       try
       {
-         log.info("Performing a C-MOVE from {} to {}",remoteAE.getAETitle(),destinationAET);
+         log.info("Performing a C-MOVE from {} to {}",remoteAE.getAETitle(),settings.getDestinationAET());
          association = localAE.connect(remoteAE, executor);
          
          String transferSyntaxUID;
@@ -188,7 +186,7 @@ public class CMoveURLConnection extends URLConnection
                CommandUtils.HIGH,
                query,
                transferSyntaxUID,
-               destinationAET);
+               settings.getDestinationAET());
 
          return result;
 
@@ -198,11 +196,11 @@ public class CMoveURLConnection extends URLConnection
          log.debug("Interrupted during a C-MOVE from AE {}",remoteAE.getAETitle());
          
          //mark the state or throw an exception???
-         throw new IOException("Interrupted",e);
+         throw new IOException("Interrupted: "+e);
       }
       catch (ConfigurationException e)
       {
-         throw new IOException("DICOM configuration problems",e);
+         throw new IOException("DICOM configuration problems: "+e);
       }
       finally 
       {
@@ -228,11 +226,11 @@ public class CMoveURLConnection extends URLConnection
       }
       catch(InterruptedException e)
       {
-         throw new IOException("Thread interrupted before file was available",e);
+         throw new IOException("Thread interrupted before file was available "+e);
       }
       catch(ExecutionException e)
       {
-         throw new IOException("Unable to open stream to file",e.getCause());
+         throw new IOException("Unable to open stream to file: "+e.getCause());
       }
       catch(TimeoutException e)
       {

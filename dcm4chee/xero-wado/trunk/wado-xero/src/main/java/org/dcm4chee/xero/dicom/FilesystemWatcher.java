@@ -40,7 +40,6 @@ package org.dcm4chee.xero.dicom;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -58,10 +57,8 @@ import org.slf4j.LoggerFactory;
  */
 public class FilesystemWatcher // Disposable
 {
-   @SuppressWarnings("unused")
    private static final Logger log = LoggerFactory.getLogger(FilesystemWatcher.class);
    
-   //TODO: Pass in the executor?  If so then dispose must be handled externally.
    private ExecutorService executor = Executors.newCachedThreadPool();
 
    /**
@@ -73,7 +70,9 @@ public class FilesystemWatcher // Disposable
       if (file == null)
          throw new IllegalArgumentException("Cannot watch for a NULL file");
 
-      OpenFileWhenAvailable openFileTask = new OpenFileWhenAvailable(file);
+      log.debug("Watching for {} to be created.",file);
+      IncrementalDelay delay = new IncrementalDelay(50,50);
+      OpenFileWhenAvailable openFileTask = new OpenFileWhenAvailable(file,delay);
       return executor.submit(openFileTask);
    }
 
@@ -81,32 +80,26 @@ public class FilesystemWatcher // Disposable
    private static class OpenFileWhenAvailable implements Callable<InputStream>
    {
       private final File file;
-      private long msWaitTime = 50;
+      private final IncrementalDelay delay;
 
-      OpenFileWhenAvailable(File file)
+      OpenFileWhenAvailable(File file, IncrementalDelay delay)
       {
          this.file = file;
+         this.delay = delay;
       }
 
       public InputStream call() throws Exception
       {
-         InputStream in = null;
-
-         while (in == null)
+         while (!file.exists())
          {
-            if (file.exists())
-               in = new FileInputStream(file);
-
             synchronized (file)
             {
-               file.wait(msWaitTime);
+               file.wait(delay.getDelay());
             }
          }
 
-         if (in == null)
-            throw new FileNotFoundException(file.toString());
-
-         return in;
+         // Throws FileNotFoundException if the file isn't available.
+         return new FileInputStream(file);
       }
 
    }
@@ -114,5 +107,25 @@ public class FilesystemWatcher // Disposable
    public void dispose()
    {
       executor.shutdownNow();
+   }
+   
+   /**
+    * Fun little class that tracks a decaying delay time for the client.
+    */
+   public static class IncrementalDelay
+   {
+      private int delay;
+      private final int increment;
+
+      public IncrementalDelay(int initialDelay,int increment)
+      {
+         this.delay = Math.max(0,initialDelay - increment);
+         this.increment = increment;
+      }
+      
+      public int getDelay()
+      {
+         return this.delay += this.increment;
+      }
    }
 }

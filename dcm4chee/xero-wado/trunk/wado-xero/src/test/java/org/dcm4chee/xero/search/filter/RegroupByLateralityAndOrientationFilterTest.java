@@ -46,6 +46,7 @@ import static org.testng.Assert.fail;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.dcm4che2.data.BasicDicomObject;
@@ -69,9 +70,10 @@ public class RegroupByLateralityAndOrientationFilterTest
    private ResultsBean createResultsBeanFromDICOM() throws IOException
    {
       ResultsBean results = new ResultsBean();
+      results.addResult(DicomTestData.findDicomObject("regroup/MG/MG0003.dcm"));
       results.addResult(DicomTestData.findDicomObject("regroup/MG/MG0001.dcm"));
       results.addResult(DicomTestData.findDicomObject("regroup/MG/MG0002.dcm"));
-      results.addResult(DicomTestData.findDicomObject("regroup/MG/MG0003.dcm"));
+
       return results;
    }
 
@@ -118,12 +120,12 @@ public class RegroupByLateralityAndOrientationFilterTest
       params.put("regroup", "*");
       regroup.filter(new SimpleFilterItem<ResultsBean>(results), params);
 
-      assertSeriesPropertySorted(study);
+      assertSeriesRenamedAndOrganized(study);
       
 
    }
    
-   private void assertSeriesPropertySorted(StudyBean study)
+   private void assertSeriesRenamedAndOrganized(StudyBean study)
    {
       assertEquals(study.getSeries().size(), 3);
       for(SeriesType seriesType : study.getSeries())
@@ -142,6 +144,7 @@ public class RegroupByLateralityAndOrientationFilterTest
             fail("This study only has CC and MLO view codes.");
       }
    }
+
 
    @Test 
    public void testFilter_ShouldOnlyFilterMGStudies() throws IOException
@@ -253,7 +256,7 @@ public class RegroupByLateralityAndOrientationFilterTest
       regroup.setDicomFullHeader(dicomFullHeader);
       regroup.filter(new SimpleFilterItem<ResultsBean>(results),params);
       
-      assertSeriesPropertySorted(study);
+      assertSeriesRenamedAndOrganized(study);
    }
    
    @Test
@@ -271,6 +274,27 @@ public class RegroupByLateralityAndOrientationFilterTest
       FlipRotateMacro macro = (FlipRotateMacro)image.getMacroItems().getMacros().get(0);
       assertTrue(macro.getFlip());
       assertEquals(macro.getRotation() % 360,0);
+   }
+   
+   @Test
+   public void testFiler_ShouldAlwaysOrderLeftBeforeRightImages() throws IOException
+   {
+      ResultsBean results = createResultsBeanFromDICOM();
+
+      // Remember the location of SOP Instance UIDs
+      StudyBean study = (StudyBean) results.getPatient().get(0).getStudy().get(0);
+      assertEquals(study.getSeries().size(), 1);
+      assertEquals(study.getSeries().get(0).getDicomObject().size(), 3);
+
+      RegroupByLateralityAndOrientationFilter regroup = new RegroupByLateralityAndOrientationFilter();
+      Map<String,Object> params = new HashMap<String, Object>();
+      params.put("regroup", "*");
+      regroup.filter(new SimpleFilterItem<ResultsBean>(results), params);
+
+      List<SeriesType> series = study.getSeries();
+      assertEquals(series.get(0).getSeriesDescription(), "L CC");
+      assertEquals(series.get(1).getSeriesDescription(), "R CC");
+      assertEquals(series.get(2).getSeriesDescription(), "R MLO");
    }
    
 }

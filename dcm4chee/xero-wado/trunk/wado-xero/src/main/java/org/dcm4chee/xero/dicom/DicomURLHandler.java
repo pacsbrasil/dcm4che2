@@ -47,6 +47,7 @@ import java.util.Map;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.search.AEProperties;
 import org.dcm4chee.xero.wado.cmove.DicomURLStreamHandler;
@@ -94,7 +95,7 @@ public class DicomURLHandler // Manipulator?
       String aeAndHost = String.format("%s@%s", aeTitle,host);
       String queryStr = extractQueryStr(filterParams);
       
-      return new URL("dicom",aeAndHost,port,"/?"+queryStr,handler);
+      return new URL("dicom",aeAndHost,port,"/"+queryStr,handler);
    }
 
    private String extractQueryStr(Map<String, Object> filterParams)
@@ -104,24 +105,35 @@ public class DicomURLHandler // Manipulator?
       String studyUID = FilterUtil.getString(filterParams, "studyUID");
       
       StringBuilder sb = new StringBuilder();
-      sb.append("objectUID=");
-      sb.append(objectUID);
+      
+      if(objectUID != null)
+         appendQueryParam(sb,"objectUID",objectUID);
       
       if(seriesUID!=null)
-      {
-         sb.append('&');
-         sb.append("seriesUID=");
-         sb.append(seriesUID);
-      }
+         appendQueryParam(sb,"seriesUID",seriesUID);
       
       if(studyUID!=null)
-      {
-         sb.append('&');
-         sb.append("studyUID=");
-         sb.append(studyUID);
-      }
+         appendQueryParam(sb,"studyUID",studyUID);
+      
+      // Put a ? at the front of the query string if necessary
+      if(sb.length() > 0 && sb.charAt(0) == '&')
+         sb.setCharAt(0, '?');
       
       return sb.toString();
+      }
+      
+   
+   /**
+    * Append a new parameter to a query String:
+    * <p>
+    * &paramName=paramValue
+    */
+   private void appendQueryParam(StringBuilder sb,String paramName,String paramValue)
+      {
+         sb.append('&');
+      sb.append(paramName);
+      sb.append('=');
+      sb.append(paramValue);
    }
 
    /**
@@ -148,7 +160,7 @@ public class DicomURLHandler // Manipulator?
    /**
     * Parse the AE title out of the DICOM URL or null if none is defined.
     */
-   public String parseAETitle(URL dicomURL)
+   public static String parseAETitle(URL dicomURL)
    {
       if(dicomURL == null)
          return null;
@@ -160,7 +172,7 @@ public class DicomURLHandler // Manipulator?
          return null;
    }
    
-   public Map<String,String> parseQueryParameters(URL dicomURL)
+   public static Map<String,String> parseQueryParameters(URL dicomURL)
    {
       String queryStr = dicomURL.getQuery();
       if(queryStr == null || queryStr.trim().length()==0)
