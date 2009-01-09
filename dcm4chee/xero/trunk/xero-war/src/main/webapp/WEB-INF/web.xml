@@ -51,6 +51,10 @@
       <servlet-name>Xero Servlet</servlet-name>
       <url-pattern>/xero</url-pattern>
    </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>Xero Servlet</servlet-name>
+      <url-pattern>/index.html</url-pattern>
+   </servlet-mapping>
 
    <security-constraint>
      <display-name>Xero Security Constraint</display-name>
@@ -58,6 +62,7 @@
        <web-resource-name>dispatcher</web-resource-name>
        <description>Only allows users with the role WebUser to access Xero.</description>
        <url-pattern>/xero</url-pattern>
+       <url-pattern>/index.html</url-pattern>
        <http-method>GET</http-method>
        <http-method>POST</http-method>
      </web-resource-collection>
