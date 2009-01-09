@@ -128,10 +128,10 @@ public class StringTemplateFilter implements Filter<ServletResponseItem>, MetaDa
 				model.put(TEMPLATE_GROUP, stg);
 			}
 			if (template == null) {
-				template = defaultView;
-				if (template == null)
+			   template = defaultView;
+               if (template == null)
 					template = templateFromParams(params);
-				log.debug("Model template {} default was {}", template, defaultView);
+                log.debug("Model template {} default was {}", template, defaultView);
 				if (template == null) {
 					log.warn("View {} not found - returning 404", template);
 					return new ErrorResponseItem(404, "View name not defined.");
@@ -158,17 +158,24 @@ public class StringTemplateFilter implements Filter<ServletResponseItem>, MetaDa
 	public String templateFromParams(Map<String, Object> params) {
 		String uri = (String) params.get(MetaDataServlet.REQUEST_URI);
 		log.info("Template name is based on {}", uri);
-		if (uri == null)
-			return null;
+		if (uri == null || uri.equals("") )
+			return "default";
 		int pos = uri.lastIndexOf('.');
 		if (pos > 0)
 			uri = uri.substring(0, pos);
 		pos = uri.indexOf('/', 1);
-		if (pos < 0)
-			return null;
-		uri = uri.substring(pos + 1);
-		uri = uri.replace('/', '.');
-		log.info("Final template name is {}", uri);
+		if (pos ==-1 ) {
+		    // This is only required for root-context servlets.  For those
+		    // servlets, it is NOT possible to render sub-directories right now.
+		    // TODO Add a setting to allow this.
+			uri = uri.substring(1);
+		} else {
+		   uri = uri.substring(pos + 1);
+		   uri = uri.replace('/', '.');
+		}
+        uri = uri.trim();
+		if( uri.equals("") ) uri="default";
+		log.info("Final template name is '{}'", uri);
 		return uri;
 	}
 
