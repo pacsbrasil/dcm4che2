@@ -178,6 +178,9 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	     // TODO - create a real audio and ECG record type.
 		 return new ReportBean(this,data);
 	  }
+	  if( UID.MRSpectroscopyStorage.equals(sopClass) ) {
+	     return new ReportBean(this,data);
+	  }
 	  if (modality.equals("KO")) {
 		 return new KeyObjectBean(this,data);
 	  }

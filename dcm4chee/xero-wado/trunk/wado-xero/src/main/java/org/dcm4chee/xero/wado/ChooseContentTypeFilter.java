@@ -91,6 +91,8 @@ public class ChooseContentTypeFilter implements Filter<ServletResponseItem> {
 		 else if( modality.equalsIgnoreCase("PR")  ) {
 			if( params.containsKey("relative") ) contentType="image/png";
 			else contentType="text/html";
+		 } else if( dobj.contains(Tag.SpectroscopyData) ) {
+		    contentType="text/html";
 		 }
 	  }
 	  if( contentType==null ) {
