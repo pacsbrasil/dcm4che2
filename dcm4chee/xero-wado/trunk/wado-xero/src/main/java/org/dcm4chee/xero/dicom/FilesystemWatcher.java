@@ -58,6 +58,7 @@ import org.slf4j.LoggerFactory;
  */
 public class FilesystemWatcher // Disposable
 {
+   @SuppressWarnings("unused")
    private static final Logger log = LoggerFactory.getLogger(FilesystemWatcher.class);
    
    //TODO: Pass in the executor?  If so then dispose must be handled externally.

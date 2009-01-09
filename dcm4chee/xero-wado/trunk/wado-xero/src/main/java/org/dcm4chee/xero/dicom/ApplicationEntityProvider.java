@@ -38,9 +38,7 @@
 package org.dcm4chee.xero.dicom;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import org.dcm4che2.data.UID;
@@ -61,6 +59,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ApplicationEntityProvider
 {
+   @SuppressWarnings("unused")
    private static final Logger log = LoggerFactory.getLogger(ApplicationEntityProvider.class);
    
    public static final String LOCAL_AE_NAME = "local";

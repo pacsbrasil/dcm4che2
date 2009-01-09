@@ -38,16 +38,13 @@
 
 package org.dcm4chee.xero.search.filter;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.util.CloseUtils;
-import org.dcm4chee.xero.search.study.ResultsBean;
 
 /**
  * Class that helps to find the dicom files in the test data repository.
