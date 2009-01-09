@@ -23,6 +23,7 @@
         <include>dcm4che.tool:dcm4che-tool-dcmecho</include>
         <include>dcm4che.tool:dcm4che-tool-dcmgpwl</include>
         <include>dcm4che.tool:dcm4che-tool-dcmhpqr</include>
+        <include>dcm4che.tool:dcm4che-tool-dcmmv</include>
         <include>dcm4che.tool:dcm4che-tool-dcmmwl</include>
         <include>dcm4che.tool:dcm4che-tool-dcmof</include>
         <include>dcm4che.tool:dcm4che-tool-dcmqr</include>
@@ -218,6 +219,23 @@
     </fileSet>
     <fileSet>
       <directory>dcm4che-tool/dcm4che-tool-dcmhpqr/src/bin</directory>
+      <excludes>
+        <exclude>*.bat</exclude>
+      </excludes>
+      <lineEnding>unix</lineEnding>
+      <fileMode>0755</fileMode>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>dcm4che-tool/dcm4che-tool-dcmmv/src/bin</directory>
+      <includes>
+        <include>*.bat</include>
+      </includes>
+      <lineEnding>dos</lineEnding>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>dcm4che-tool/dcm4che-tool-dcmmv/src/bin</directory>
       <excludes>
         <exclude>*.bat</exclude>
       </excludes>
