@@ -33,9 +33,11 @@
 
         <!-- if you want to use a specific version of JAX-WS, you can do so like this -->
         <dependencies>
-          <groupId>com.sun.xml.ws</groupId>
-          <artifactId>jaxws-tools</artifactId>
-          <version>2.1.1</version>
+		  <dependency>
+	        <groupId>com.sun.xml.ws</groupId>
+	        <artifactId>jaxws-tools</artifactId>
+	        <version>2.1.1</version>
+		  </dependency>
         </dependencies>
       </plugin>
     </plugins>
