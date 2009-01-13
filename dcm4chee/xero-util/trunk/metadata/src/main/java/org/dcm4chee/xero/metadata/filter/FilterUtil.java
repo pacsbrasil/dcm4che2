@@ -331,4 +331,20 @@ public class FilterUtil {
       }
    }
 
+   /** This method creates a copy of the given parameters, in a new parameter map, and 
+    * sets the cache key.
+    * @param params
+    * @return
+    */
+   public static Map<String, Object> copyParams(Map<String, Object> params, String...keys) {
+      Map<String,Object> ret = new HashMap<String,Object>(keys.length+2);
+      for(String key : keys) {
+         Object val = params.get(key);
+         if( val==null ) continue;
+         ret.put(key,val);
+      }
+      computeQueryString(ret);
+      return ret;
+   }
+
 }
