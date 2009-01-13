@@ -49,6 +49,7 @@ XmlModel.prototype.requestUrl = function XM_requestUrl(url, modifiers, lazy) {
 		}
 	}
 	this.debug("Requesting XML data "+url);
+	url=url+"&v="+model.version;
 	request = new XMLHttpRequest();
 	if( lazy ) {
 		var usethis = this;

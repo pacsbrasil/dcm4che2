@@ -1,9 +1,11 @@
 $unittest(unittest="spt")$
 
-var scriptXml = "$model/scripts(); format="js"$";
+var scriptXml = "$model/scripts(version="1.0-alpha5"); format="js"$";
 
 spt.testScriptPlugins = function() {
-	var i = scriptXml.indexOf("src=\"js/sarissa.js\"");
+   console.info("%s",scriptXml);
+	var i = scriptXml.indexOf("src=\"js/sarissa.js?v=1.0-alpha5\"");
+	console.info("%s",i);
 	$assert(test="i>0",msg="Scripts generation must include sarissa.js.")$;
 };
 

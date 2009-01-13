@@ -127,7 +127,7 @@ static.overallMenuLayout.children.userName.layout=UserNameMenu
 static.overallMenuLayout.children.userName.priority=950
 
 static.overallMenuLayout.children.logout.inherit=toolItem
-static.overallMenuLayout.children.logout.href=logout.jsp
+static.overallMenuLayout.children.logout.template=html/logout
 static.overallMenuLayout.children.logout.i18n=Logout
 static.overallMenuLayout.children.logout.priority=1000
 

@@ -60,9 +60,9 @@ ImageLayout.prototype.addImageUrl = function AddImageUrl(clear) {
 	}
 	if( (!this.image) || !(this.width) || !(this.height) ) return;
 	if( this.navigate.merged.get("smallImage") ) {
-		this.imageUrls.push(this.createSmallImage(WADO_QUERY));
+		this.imageUrls.push(this.createSmallImage(WADO_QUERY+"&amp;v="+model.version));
 	}
-	this.imageUrls.push(this.createFullUrl(WADO_QUERY));
+	this.imageUrls.push(this.createFullUrl(WADO_QUERY+"&amp;v="+model.version));
 	this.preloadImage = new Image();
 	var src = this.imageUrls[this.imageUrls.length-1].imageUrl;
 	// This needs to be the unexpanded form as the src assignment does not undo this.

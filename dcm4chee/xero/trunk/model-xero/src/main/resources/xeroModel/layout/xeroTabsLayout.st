@@ -14,6 +14,4 @@ function UserNameMenu(suffix) {
 };
 
 UserNameMenu.prototype = new Layout("XeroRootMenuPrototype","html/userName");
-UserNameMenu.prototype.baseConstructor = Layout;
-
 
