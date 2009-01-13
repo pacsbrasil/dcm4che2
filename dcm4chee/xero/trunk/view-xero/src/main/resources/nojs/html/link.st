@@ -1,1 +1,1 @@
-<a href="$href$">$it$</a>
+<a href="$href$?v=$version$">$it$</a>

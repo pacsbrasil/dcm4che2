@@ -67,3 +67,4 @@ allTemplates.customStyle=customStyle
 allTemplates.toolItem=html/toolItem
 allTemplates.userName=html/userName
 allTemplates.childList=html/childList
+allTemplates.logout=html/logout
