@@ -272,9 +272,7 @@
      <mkdir dir="target" />
      <jmeter jmeterhome="${jmeterhome}"
         resultlogdir="${basedir}/target">
-	<testplans dir="${basedir}">
-	    <fileset refid="integration.scripts"/>
-	</testplans>
+	<testplans refid="integration.scripts"/>
         <property name="SERVER" value="${integration.server}" />
         <property name="integration.cdp" value="${integration.cdp}" />
 	<property name="includecontroller.prefix" value="${integration.cdp}/" />
