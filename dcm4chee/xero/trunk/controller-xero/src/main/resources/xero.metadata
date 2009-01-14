@@ -4,8 +4,7 @@ metaDataProvider.propertyXeroView.model=xero-view.metadata
 
 # The model is defined by the child values and factories registered in the model.
 model=${factory:org.dcm4chee.xero.metadata.access.MapWithDefaults}
-
-model.version=1.0-alpha5
+model.version=Xero
 
 # This defines the controller plugin components for JavaScript - NOT the dynamic instances
 static.xeroControllers=${class:org.dcm4chee.xero.metadata.access.ValueList}
