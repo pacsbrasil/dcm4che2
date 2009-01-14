@@ -261,18 +261,23 @@
      <taskdef name="jmeter" classname="org.programmerplanet.ant.taskdefs.jmeter.JMeterTask" />
   </target>
 
+   <!-- By default the integration scripts will be read from all subdirectories -->
+   <fileset dir="${basedir}" id="integration.scripts">
+      <include name="**/*.jmx" />
+      <exclude name="**/include/**/*" />
+   </fileset>
+
   <target name="runJMeter" depends="jmeter">
      <delete dir="target" quiet="true" />
      <mkdir dir="target" />
      <jmeter jmeterhome="${jmeterhome}"
         resultlogdir="${basedir}/target">
 	<testplans dir="${basedir}">
-	    <include name="**/*.jmx" />
-	    <exclude name="**/include/**/*" />
+	    <filelist refid="integration.scripts"/>
 	</testplans>
         <property name="SERVER" value="${integration.server}" />
         <property name="integration.cdp" value="${integration.cdp}" />
-	<property name="includecontroller.prefix" value="${integration.cdp}" />
+	<property name="includecontroller.prefix" value="${integration.cdp}/" />
      </jmeter>
      <move todir="target">
         <fileset dir="${jmeterhome}/bin" includes="**/*.jtl" />
