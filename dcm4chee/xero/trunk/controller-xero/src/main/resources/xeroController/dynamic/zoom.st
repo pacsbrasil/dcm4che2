@@ -37,6 +37,7 @@ XeroController.prototype.zoomMode = function(lay,e,mode) {
  * and scale to fit it changes the magnification by 10%
  */
 XeroController.prototype.zoomChange = function(lay,e,delta) {
+    console.info("Zoom change", delta);
 	if( !(delta && isFinite(delta)) ) {
 		console.warn("Non-finite zoom change:",delta);
 		return;
@@ -145,23 +146,18 @@ PanController.prototype.prepare= function(e) {
 PanController.prototype.prepareVml = function() {
 		console.info("Found a VML element",this.vml.id,"to zoom/pan");
 		console.info("Left,Top is", this.vml.style.left,this.vml.style.top);
+		console.info("VML coord origin:", this.vml.coordorigin.x, this.vml.coordorigin.y);
 		var width = this.vml.parentNode.offsetWidth;
 		var height = this.vml.parentNode.offsetHeight;
-		if( this.lay.sameSize ) {
-			this.scaleX = 1;
-			this.scaleY = 1;
-		} else {
-			this.scaleX = 0.5;
-			this.scaleY = 0.5;
-		}
-		this.baseX = this.convertToBase(this.vml.style.left, width, this.scaleX);
-		this.baseY = this.convertToBase(this.vml.style.top, height, this.scaleY);
-		
 		this.finalScaleX = this.vml.coordsize.x/this.convertToBase(this.vml.style.width, width, 1);
 		this.finalScaleY = this.vml.coordsize.y/this.convertToBase(this.vml.style.height,height,1);
 		
-		this.vml.style.left = this.baseX+"px";
-		this.vml.style.top = this.baseY+"px";
+	    this.baseX = this.vml.coordorigin.x;
+	    this.baseY = this.vml.coordorigin.y;
+	    console.info("prepare baseX,Y=",this.baseX, this.baseY);
+        this.scaleX = -this.finalScaleX;
+        this.scaleY = -this.finalScaleY;
+	    
 		return true;
 };
 
@@ -212,9 +208,10 @@ PanController.prototype.mousemoveVml = function(e,posn) {
 	this.dy = dy;
 	dx = dx*this.scaleX+this.baseX;
 	dy = dy*this.scaleY+this.baseY;
-	//console.info("dx,dy=",dx,",",dy);
-	this.vml.style.left = dx+"px";
-	this.vml.style.top = dy+"px";
+//	console.info("dx,dy=",dx,",",dy,"on", this.vml.id);
+//	console.info("vml coordorigin ", this.vml.coordorigin.x, this.vml.coordorigin.y);
+	this.vml.coordorigin.x = dx;
+	this.vml.coordorigin.y = dy;
 };
 
 /** Compute the amount the mouse has moved since the start, and apply it to the

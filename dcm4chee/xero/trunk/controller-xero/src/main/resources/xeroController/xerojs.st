@@ -1,3 +1,4 @@
 $model()$
 $xeroView()$
+$domUtils()$
 $controller()$

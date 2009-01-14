@@ -75,63 +75,21 @@ XeroController.prototype.fixWheelMouse = function XC_fixWheelMouse(layouts) {
 	}
 };
 
-/**
- * el is the element in document (string name or element itself) to
- * replace with the string from html.  el must exist (otherwise it isn't
- * clear where to update).
- */
-XeroController.prototype.importHtml = function XC_importHtml(el, html) {
-	this.debug("importHTML.");
-	var oldEl = typeof el === "string" ? document.getElementById(el) : el;
-
-	var dp = new DOMParser();
-	var parsed = dp.parseFromString('<div xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="http://www.w3.org/2000/svg" xmlns:v="urn:schemas-microsoft-com:vml">'+html+"</div>","text/xml");
-	this.debug("Parsed=%s",parsed);
-	if( !parsed ) {
-		console.warn("No parsed value found - not changing display, source text %s", html);
-		return;
+XeroController.prototype.replaceHtml = function XC_replaceHtml(node,text,isDiffUpdate) {
+	if( model.IS_IE ) {
+	    if( isDiffUpdate ) {
+		  return DOMUtils.updateHtml(node,text);
+	    } else {
+	      return this.innerHtml(node,text);
+	    }
 	}
-	parsed = parsed.documentElement;
-	if( !parsed ) {
-		console.warn("No parsed document element value found - not changing display, source text %s", html);
-		return;
-	}
-	this.debug("Finished parsing node.");
-	var newEl;
-	if( document.importNode ) 
-		newEl = document.importNode(parsed,true);
 	else
-		newEl = parsed;
-	newEl = newEl.firstChild;
-	if(!newEl ) {
-		console.warn("newEl not defined.");
-		return false;
-	}
-	if(!oldEl ) {
-		console.warn("oldEl '%s' not defined.", el);
-		return false;
-	}
-	if( !oldEl.parentNode ) {
-		console.warn("parentNode of oldEl not defined.");
-		return false;
-	}
-	this.debug("Finished importing node.");
-	oldEl.parentNode.replaceChild(newEl, oldEl);
-	this.debug("Replaced body node directly.");
+	{
 	this.fixWheelMouse();
 	this.debug("fixMouseWheel");
-	/* Since we just removed the old element from the DOM, return a reference
-	to the new element, which can be used to restore variable references. */
-	return newEl;
-};
-
-XeroController.prototype.replaceHtml = function XC_replaceHtml(node,text) {
-	//console.info("Replacing %s with %s", node, text);
-	if( _SARISSA_IS_IE ) {
-		return this.innerHtml(node,text);
+	return DOMUtils.updateHtml(node, text);
 	}
-	return this.importHtml(node, text);
-}
+};
 
 /** Updates the view in its entirety.
  */
@@ -184,7 +142,7 @@ XeroController.prototype.renderComplete = function XC_renderComplete(layouts,inc
 				render = this.view.toString(lay.template,this.model);
 				console.timeEnd("rerender");
 				this.model.layout = origLay;
-				var result = this.replaceHtml(lay.id,render);
+				var result = this.replaceHtml(lay.id,render, lay.isDiffUpdate);
 				lay.clearRelayout();
 				if( result===false ) {
 					return -100000;
