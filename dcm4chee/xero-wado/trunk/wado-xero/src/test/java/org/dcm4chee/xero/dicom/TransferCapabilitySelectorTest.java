@@ -39,7 +39,6 @@ package org.dcm4chee.xero.dicom;
 
 import java.util.ArrayList;
 
-import org.dcm4che2.net.Association;
 import org.testng.annotations.Test;
 
 /**

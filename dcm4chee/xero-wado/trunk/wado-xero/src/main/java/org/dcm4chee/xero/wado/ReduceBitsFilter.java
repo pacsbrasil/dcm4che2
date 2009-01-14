@@ -260,7 +260,6 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
     * @returns an array of the smallest/largest values.
     * @param wi
     */
-   @SuppressWarnings("unchecked")
    public static int[] getSmallestLargest(WadoImage wi) {
 	  WritableRaster r = wi.getValue().getRaster();
 	  DicomObject ds = wi.getDicomObject();

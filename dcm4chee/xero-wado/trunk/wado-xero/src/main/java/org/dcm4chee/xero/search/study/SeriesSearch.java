@@ -37,16 +37,15 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.UID;
 import org.dcm4chee.xero.dicom.SOPClassUIDs;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.search.SearchCriteria;
-
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Arrays;
 
 /** A C-Find searcher for series level data.
  * Uses the private SOP classes to get all the available series level data, if these are supported.

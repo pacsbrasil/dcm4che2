@@ -42,7 +42,6 @@ import java.io.PrintStream;
 import java.net.URL;
 
 import org.apache.log4j.BasicConfigurator;
-import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.io.DicomInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +68,6 @@ public class CMoveCmd
       }
       else
       {
-         String cache = "D:/Data/cache";
          String dicomStr = args[0];
          
          try 

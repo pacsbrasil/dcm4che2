@@ -68,8 +68,6 @@ public class ApplicationEntityProvider
       UID.ExplicitVRLittleEndian  };
    
 
-   private DicomURLHandler urlHandler = new DicomURLHandler();
-   
    /**
     * Create the named AE instance from the local configuration files.
     * @param aePath <aeTitle>[@hostName][:port]
@@ -178,7 +176,7 @@ public class ApplicationEntityProvider
     */
    public NetworkApplicationEntity getAE(URL dicomURL)
    {
-      String aeTitle = urlHandler.parseAETitle(dicomURL);
+      String aeTitle = DicomURLHandler.parseAETitle(dicomURL);
       return getAE(aeTitle);
    }
    

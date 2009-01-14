@@ -93,21 +93,21 @@ public class DicomURLHandlerTest
    public void parseAETitle_ShouldReturnAETitle_FromValidURL() throws MalformedURLException
    {
       URL dicomURL = handler.createURL(fullDicomURLStr);
-      assertEquals(handler.parseAETitle(dicomURL),"test");
+      assertEquals(DicomURLHandler.parseAETitle(dicomURL),"test");
    }
    
    @Test
    public void parseAETitle_ShouldReturnNULL_WhenAETitleIsMissing() throws MalformedURLException
    {
       URL dicomURL = handler.createURL("dicom://marlin:8080/?studyUID="+expectedStudyUID);
-      assertNull(handler.parseAETitle(dicomURL));
+      assertNull(DicomURLHandler.parseAETitle(dicomURL));
    }
    
    @Test
    public void parseQueryParameters_ShouldReadAllUIDsProperly() throws MalformedURLException
    {
       URL dicomURL = handler.createURL(fullDicomURLStr);
-      Map<String,String> parameters = handler.parseQueryParameters(dicomURL);
+      Map<String,String> parameters = DicomURLHandler.parseQueryParameters(dicomURL);
       assertEquals(parameters.get("objectUID"),expectedObjectUID);
       assertEquals(parameters.get("seriesUID"),expectedSeriesUID);
       assertEquals(parameters.get("studyUID"),expectedStudyUID);      

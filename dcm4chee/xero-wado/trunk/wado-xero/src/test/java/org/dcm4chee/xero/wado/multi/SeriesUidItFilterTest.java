@@ -1,7 +1,13 @@
 package org.dcm4chee.xero.wado.multi;
 
-import static org.easymock.classextension.EasyMock.*;
-import static org.dcm4chee.xero.wado.WadoParams.*;
+import static org.dcm4chee.xero.wado.WadoParams.OBJECT_UID;
+import static org.dcm4chee.xero.wado.WadoParams.STUDY_UID;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.notNull;
+import static org.easymock.EasyMock.isNull;
+import static org.easymock.classextension.EasyMock.createMock;
+import static org.easymock.classextension.EasyMock.replay;
+import static org.easymock.classextension.EasyMock.verify;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -13,7 +19,7 @@ import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.dcm4chee.xero.search.study.GspsType;
 import org.dcm4chee.xero.search.study.ImageType;
 import org.dcm4chee.xero.search.study.PatientType;
-import org.dcm4chee.xero.search.study.ResultsType;
+import org.dcm4chee.xero.search.study.ResultsBean;
 import org.dcm4chee.xero.search.study.SeriesType;
 import org.dcm4chee.xero.search.study.StudyType;
 import org.testng.annotations.BeforeMethod;
@@ -24,9 +30,9 @@ public class SeriesUidItFilterTest {
 	SeriesUidItFilter filter = new SeriesUidItFilter();
 	Map<String,Object> params;
 	FilterItem<Iterator<ServletResponseItem>> filterItem;
-	Filter<ResultsType> resultsFilter;
+	Filter<ResultsBean> resultsFilter;
 	Iterator<ServletResponseItem> iterator;
-	ResultsType rt;
+	ResultsBean rt;
 	
    @BeforeMethod
 	@SuppressWarnings("unchecked")
@@ -36,7 +42,7 @@ public class SeriesUidItFilterTest {
 		iterator = createMock( Iterator.class );
 		resultsFilter = createMock(Filter.class);
 		filter.setImageFilter(resultsFilter);
-		rt = new ResultsType();
+		rt = new ResultsBean();
 	}
 	
 	@Test
@@ -48,16 +54,18 @@ public class SeriesUidItFilterTest {
 		verify(filterItem);
 	}
 	
-	@Test
+	@SuppressWarnings("unchecked")
+    @Test
 	public void testFilter_withEmptyResults_returnNull() {
 		params.put(STUDY_UID,"1.2.3");
-		expect(resultsFilter.filter(null,params)).andReturn(rt);
+		expect(resultsFilter.filter((FilterItem) isNull(),(Map) notNull())).andReturn(rt);
 		replay(resultsFilter);
 		assert filter.filter(filterItem,params)==null;
 		verify(resultsFilter);
 	}
 	
-	@Test
+	@SuppressWarnings("unchecked")
+    @Test
 	public void testFilter_withTwoUids_returnNextIterator() {
 		params.put(STUDY_UID,"1.2.3");
 		PatientType pt = new PatientType();
@@ -72,7 +80,7 @@ public class SeriesUidItFilterTest {
 		gst.setObjectUID("1.2.3.b");
 		set.getDicomObject().add(img);
 		set.getDicomObject().add(gst);
-		expect(resultsFilter.filter(null,params)).andReturn(rt);
+        expect(resultsFilter.filter((FilterItem) isNull(),(Map) notNull())).andReturn(rt);
 		expect(filterItem.callNextFilter(params)).andReturn(iterator);
 		replay(resultsFilter, filterItem);
 		assert filter.filter(filterItem,params)==iterator;

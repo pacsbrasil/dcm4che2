@@ -37,8 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado.cmove;
 
-import static org.testng.Assert.*;
-
 import org.junit.Test;
 
 /**

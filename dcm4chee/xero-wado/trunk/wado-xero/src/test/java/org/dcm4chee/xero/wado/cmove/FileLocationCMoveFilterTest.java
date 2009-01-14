@@ -37,7 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado.cmove;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -47,7 +47,6 @@ import java.net.URLStreamHandler;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.dcm4chee.xero.search.filter.FileLocationParameterChecker;
 import org.dcm4chee.xero.search.filter.SimpleFilterItem;
 import org.testng.annotations.Test;
 
