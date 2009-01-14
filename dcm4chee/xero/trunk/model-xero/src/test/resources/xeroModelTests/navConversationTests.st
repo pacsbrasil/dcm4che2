@@ -1,14 +1,14 @@
 $unittest()$
 $navConversation()$
 
-var navConversationTests = new Object();
+var navConversationTests = new UnitTest();
 
-navConversationTests.createNavConversationTest = function() {
+navConversationTests.testCreateNavConversation = function() {
 	var nc = new NavConversation();
 };
 
 /** Tests that the id/position information is correct for a simple child element with no modifications/changes */
-navConversationTests.simpleChildTests = function() {
+navConversationTests.testSimpleChild = function() {
 	var nc = new NavConversation();
 	var c1 = nc.getChild("mypid");
 	assertNotNull(c1,"c1");
@@ -21,7 +21,7 @@ navConversationTests.simpleChildTests = function() {
 /** Tests that the id/position information is correct for an extended child with all of presentation changes,
  * navigation changes and a copy of the basic object 
  */
-navConversationTests.complexChildTest = function() {
+navConversationTests.testComplexChild = function() {
 	var nc = new NavConversation();
 	var c1 = nc.getChild("mypid&c=1");
 	var prMod = "&gsps=g";
@@ -37,4 +37,4 @@ navConversationTests.complexChildTest = function() {
 	};	
 };
 
-runUnitTests(navConversationTests);
+navConversationTests.runUnitTests();

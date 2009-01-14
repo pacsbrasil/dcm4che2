@@ -1,4 +1,4 @@
-$unittest(unittest="imageLayoutTests")$
+$unittest()$
 $layout/layout()$
 $layout/imageLayout()$
 
@@ -21,8 +21,10 @@ ILTest.prototype.get = function ILTest_get(v) {
 	return this[v];
 };
 
+imageLayoutTests = new UnitTest();
+
 /** Tests the simple scale to fit */
-imageLayoutTests.scaleToFitTest = function ILT_scaleToFitTest() {
+imageLayoutTests.testScaleToFit = function ILT_scaleToFitTest() {
 	var ilt = new ILTest(200,300, {"Rows":"512", "Columns":512});
 	var il = ilt.imageLayout;
 	il.updatePosition();
@@ -40,14 +42,14 @@ imageLayoutTests.scaleToFitTest = function ILT_scaleToFitTest() {
 	ilt = new ILTest(600,700, {"Rows":"512", "Columns":512});
 	il = ilt.imageLayout;
 	il.updatePosition();
-	$assert(test="il.scale==600/512",msg="Scale should be 600/512")$;
-	assertEquals(il.translateX,0,"Should not translate  to center.");
-	assertEquals(il.translateY,50,"Should translate to center.");
+	$assertTrue(condition="il.scale==600/512",msg="Scale should be 600/512")$;
+	$assertTrue(condition="il.translateX===0",msg="Should not translate to center.")$;
+	$assertTrue(condition="il.translateY===50",msg="Should translate to center.")$;
 
 };
 
 /** Tests the simple magnify */
-imageLayoutTests.magnifyTest = function ILT_magnifyTest() {
+imageLayoutTests.testMagnify = function ILT_magnifyTest() {
 	// First a test that is too large
 	var ilt = new ILTest(200,300, {"Rows":"512", "Columns":512, "magnify":0.5, "size":"MAGNIFY"});
 	var il = ilt.imageLayout;
@@ -65,7 +67,7 @@ imageLayoutTests.magnifyTest = function ILT_magnifyTest() {
 }
 
 /** Tests the 3 rotations in combination with scale to fit - and a size that can be used to ensure correct scale is computed. */
-imageLayoutTests.rotationTest = function ILT_rotationTest() {
+imageLayoutTests.testRotation = function ILT_rotationTest() {
 	var ilt = new ILTest(200,300, {"Columns":400, "Rows":900, "rotation":90});
 	var il = ilt.imageLayout;
 	il.updatePosition();
@@ -87,7 +89,7 @@ imageLayoutTests.rotationTest = function ILT_rotationTest() {
 };
 
 /** Tests the flip in all 4 rotations with scale to fit - and a size that can be used to ensure correct scale is computed. */
-imageLayoutTests.rotationTest = function ILT_rotationTest() {
+imageLayoutTests.testRotation = function ILT_rotationTest() {
 	var ilt = new ILTest(200,300, {"Columns":400, "Rows":900, "rotation":0, "horizontalFlip":"TRUE"});
 	var il = ilt.imageLayout;
 	il.updatePosition();
@@ -114,4 +116,4 @@ imageLayoutTests.rotationTest = function ILT_rotationTest() {
 	assertFloat(il.translateY,(300+400*2/9)/2,"flip rot270 tranlate Y");
 };
 
-runUnitTests(imageLayoutTests);
+imageLayoutTests.runUnitTests();

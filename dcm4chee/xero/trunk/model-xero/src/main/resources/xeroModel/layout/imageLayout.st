@@ -21,6 +21,7 @@ ImageLayout.prototype.TRUE_SIZE = "TRUE_SIZE";
 ImageLayout.prototype.urlCount = 0;
 ImageLayout.prototype.events = [".","../merged:windowWidth","../merged:windowCenter","../merged:invert","../merged:rotation","../merged:horizontalFlip","../merged:size", "../merged:topLeft","../merged:bottomRight"];
 ImageLayout.prototype.area="Image";
+ImageLayout.prototype.isDiffUpdate = true;
 
 
 /** This defines the listeners for navigate changes to the layout */

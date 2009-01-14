@@ -7,12 +7,13 @@ $studyData()$
 $layout/layout()$
 $sortPatient()$
 
-var studyDataTests = new Object();
+var studyDataTests = new UnitTest();
+console.info("testGsps"); 
 
 var vlutTxt = "$vlutImageXml();format="js"$";
 var sortTxt = "$sortStudyXml();format="js"$";
 
-studyDataTests.gspsTest = function StudyDataTests_gspsTest() {  
+studyDataTests.testGsps = function StudyDataTests_gspsTest() { 
 	var sd = new StudyData();
 	sd.parseString(vlutTxt);
 	assertNotNull(sd,"vlut study data");
@@ -28,7 +29,7 @@ studyDataTests.gspsTest = function StudyDataTests_gspsTest() {
 	assertEquals(gspsSeries.gsps.length,12,"Must have 12 GSPS VLUT children.");
 };
 
-studyDataTests.sortTest_parent = function StudyDataTests_sortTest_parent()  {
+studyDataTests.testSort_parent = function StudyDataTests_sortTest_parent()  {
     var sd = new StudyData();
     sd.parseString(sortTxt);
     sd.searchLayout = new Layout();
@@ -74,7 +75,7 @@ studyDataTests.sortTest_parent = function StudyDataTests_sortTest_parent()  {
 
 
 
-studyDataTests.sortTest_child = function StudyDataTests_sortTest_child()  {
+studyDataTests.testSort_child = function StudyDataTests_sortTest_child()  {
     var sd = new StudyData();
     sd.parseString(sortTxt);
     sd.searchLayout = new Layout();
@@ -161,6 +162,6 @@ studyDataTests.sortTest_child = function StudyDataTests_sortTest_child()  {
 
 
 
-runUnitTests(studyDataTests);
+studyDataTests.runUnitTests();
 
  

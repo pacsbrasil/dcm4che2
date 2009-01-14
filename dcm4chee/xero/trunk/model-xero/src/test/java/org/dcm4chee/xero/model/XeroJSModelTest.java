@@ -38,6 +38,7 @@
 package org.dcm4chee.xero.model;
 
 
+import org.dcm4chee.xero.test.JSTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -51,7 +52,7 @@ import org.testng.annotations.Test;
 public class XeroJSModelTest {
 	static final Logger log = LoggerFactory.getLogger(XeroJSModelTest.class);
 
-	static final JSTemplate jst = new JSTemplate("xeroModelTests", "xeroModel");
+	static final JSTemplate jst = new JSTemplate("xeroModelTests", "xeroModel", "xeroTest");
 
 	@Test
 	public void imageLayoutTest() {

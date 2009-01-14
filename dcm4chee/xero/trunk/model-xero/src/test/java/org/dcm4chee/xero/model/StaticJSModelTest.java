@@ -6,6 +6,7 @@ import java.util.Map;
 import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
+import org.dcm4chee.xero.test.JSTemplate;
 import org.testng.annotations.Test;
 
 /**
@@ -20,7 +21,7 @@ public class StaticJSModelTest {
 
 	MetaDataBean mdb = StaticMetaData.getMetaData("test-model.metadata");
 	MetaDataBean stat = mdb.getChild("static");
-	JSTemplate jst = new JSTemplate(stat,"xeroModelTests", "xeroModel");
+	JSTemplate jst = new JSTemplate(stat, "xeroModelTests", "xeroModel", "xeroTest");
 
 	/**
 	 * Tests that the scripts value is well defined and contains the value required for the script plugin test

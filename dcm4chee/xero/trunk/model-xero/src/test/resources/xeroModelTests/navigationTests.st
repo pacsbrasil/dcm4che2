@@ -5,9 +5,9 @@ $studyData()$
 $xmlModel()$
 $navigation()$
 
-navigationTests = new Object();
+navigationTests = new UnitTest();
 
-navigationTests.createNavigationTest = function() {
+navigationTests.testCreateNavigation = function() {
 	var nav = new Navigation();
 };
 
@@ -42,33 +42,33 @@ navigationTests.testStudyQuery = function() {
 	console.info("Set navigation to %s", uids);
 	var c0 = patNav.getChild(0);
 	var c1 = patNav.getChild(1);
-	$assert(test="c0.id==stuid0")$;
-	$assert(test="c1.id==stuid1")$;
+	$assertTrue(condition="c0.id==stuid0")$;
+	$assertTrue(condition="c1.id==stuid1")$;
 	studyData = new StudyData();
 	studyData.parseString(twoStudy);
 	var urls = nav.mergeExternal(studyData);
-	$assert(test="urls==null",msg="URLs must be null initially without anyone being interested in studies")$
+	$assertTrue(condition="urls==null",msg="URLs must be null initially without anyone being interested in studies")$
 	var se00 = c0.getChild(0);
 	var se10 = c1.getChild(0);
 	var im000 = se00.getChild(0);
 	var im100 = se10.getChild(0);
 	var im10n = se10.getChild(10000);
 	urls = nav.mergeExternal(studyData);
-	$assert(test="urls!=null",msg="Must require more URLs after adding studies to view.")$;
+	$assertTrue(condition="urls!=null",msg="Must require more URLs after adding studies to view.")$;
 	var cnt = 0;
 	for(key in urls) {
 		console.info("Looking for URL %s", key);
 		cnt++;
 	}
-	$assert(test="cnt==2",msg="Must have 2 studies to retrieve information for.")$;
+	$assertTrue(condition="cnt==2",msg="Must have 2 studies to retrieve information for.")$;
 	studyData.parseString(images0);
 	studyData.parseString(images1);
 	urls = nav.mergeExternal(studyData);
-	$assert(test="urls==null",msg="Urls must be null after supplying all data.")$
-	$assert(test="se00.id!=null")$
-	$assert(test="se00.external!=null")$
-	$assert(test="im000.id!=null")$
-	$assert(test="im000.external!=null")$
+	$assertTrue(condition="urls==null",msg="Urls must be null after supplying all data.")$
+	$assertTrue(condition="se00.id!=null")$
+	$assertTrue(condition="se00.external!=null")$
+	$assertTrue(condition="im000.id!=null")$
+	$assertTrue(condition="im000.external!=null")$
 };
  
 /**
@@ -144,8 +144,8 @@ navigationTests.test_setNavigation_expectEvent = function () {
 	studyData = new StudyData();
 	studyData.parseString(prStudy);
 	var urls = nav.mergeExternal(studyData);
-	$assert(test="rootEvent.navigateEvent.length>0")$;
-	$assert(test="studyEvent.navigateEvent.length>0")$;
+	$assertTrue(condition="rootEvent.navigateEvent.length>0")$;
+	$assertTrue(condition="studyEvent.navigateEvent.length>0")$;
 	rootEvent.clear();
 };
 
@@ -160,11 +160,11 @@ navigationTests.test_setConversation_expectEvent = function test_setConversation
 	rootEvent.clear();
 	
 	nav.setConversation("mode", "wl");
-	$assert(test="rootEvent.namedEvent.length>0")$;
+	$assertTrue(condition="rootEvent.namedEvent.length>0")$;
 	rootEvent.clear();
 	console.info("About to set showReport to true.");
 	nav.getChild(0).setConversation("showReport", "true");
-	$assert(test="studyEvent.namedEvent.length>0")$;
+	$assertTrue(condition="studyEvent.namedEvent.length>0")$;
 	rootEvent.clear();
 };
 
@@ -181,8 +181,8 @@ navigationTests.test_setMerged_expectEvent = function () {
 	rootEvent.clear();
 	
 	nav.getChild(0).setMerged("windowLevel", 129);
-	$assert(test="studyEvent.namedEvent.length>0")$;
+	$assertTrue(condition="studyEvent.namedEvent.length>0")$;
 	rootEvent.clear();
 };
 
-runUnitTests(navigationTests);
+navigationTests.runUnitTests();
