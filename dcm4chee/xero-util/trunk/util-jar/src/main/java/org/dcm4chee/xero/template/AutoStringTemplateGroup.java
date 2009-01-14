@@ -74,7 +74,13 @@ public class AutoStringTemplateGroup extends StringTemplateGroup implements Meta
 		this.setAttributeRenderers(StringSafeRenderer.RENDERERS);
 	}
 
-	@MetaData(required = false)
+    public AutoStringTemplateGroup(String ...groups) {
+        super("unknown");
+        this.setAttributeRenderers(StringSafeRenderer.RENDERERS);
+        this.setGroupNames(groups);
+    }
+
+    @MetaData(required = false)
 	public void setSuperGroup(StringTemplateGroup superGroup) {
 		super.setSuperGroup(superGroup);
 	}
@@ -96,6 +102,8 @@ public class AutoStringTemplateGroup extends StringTemplateGroup implements Meta
 			List<?> lnames = (List<?>) names;
 			parents = new String[lnames.size()];
 			lnames.toArray(parents);
+		} else if( names instanceof String[]) {
+		    parents = (String[]) names;
 		} else {
 			throw new IllegalArgumentException("Names must be a String or a List, but is "
 			      + (names == null ? "null" : (names.getClass().toString())));
