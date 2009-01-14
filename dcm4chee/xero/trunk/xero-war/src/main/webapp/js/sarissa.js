@@ -465,11 +465,14 @@ if((typeof(document.importNode) == "undefined") && _SARISSA_IS_IE){
         document.importNode = function(oNode, bChildren){
             var tmp;
             if (oNode.nodeName=='#text') {
-                return document.createTextElement(oNode.data);
+                return document.createTextNode(oNode.data);
             }
             else {
-                if(oNode.nodeName == "tbody" || oNode.nodeName == "tr"){
+                if(oNode.nodeName == "tbody" ){
                     tmp = document.createElement("table");
+                }
+                else if( oNode.nodeName == "tr"){
+                    tmp = document.createElement("tbody");
                 }
                 else if(oNode.nodeName == "td"){
                     tmp = document.createElement("tr");
@@ -481,7 +484,9 @@ if((typeof(document.importNode) == "undefined") && _SARISSA_IS_IE){
                     tmp = document.createElement("div");
                 };
                 if(bChildren){
-                    tmp.innerHTML = oNode.xml ? oNode.xml : oNode.outerHTML;
+                    var str = oNode.xml ? oNode.xml : oNode.outerHTML;
+//                    console.info("importing node",str,"of type", typeof str );
+                    tmp.innerHTML = str;
                 }else{
                     tmp.innerHTML = oNode.xml ? oNode.cloneNode(false).xml : oNode.cloneNode(false).outerHTML;
                 };
