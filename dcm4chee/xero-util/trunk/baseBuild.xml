@@ -273,7 +273,7 @@
      <jmeter jmeterhome="${jmeterhome}"
         resultlogdir="${basedir}/target">
 	<testplans dir="${basedir}">
-	    <filelist refid="integration.scripts"/>
+	    <fileset refid="integration.scripts"/>
 	</testplans>
         <property name="SERVER" value="${integration.server}" />
         <property name="integration.cdp" value="${integration.cdp}" />
