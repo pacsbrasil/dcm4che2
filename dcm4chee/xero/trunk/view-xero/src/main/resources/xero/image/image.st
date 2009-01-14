@@ -18,13 +18,15 @@ $layout.imageUrls:{
 }$
 		
 		$image/imageRelativeVml()$
-	</v:group>
 $if(layout.aspectPercent)$
+    <!-- aspect percent end -->
 	</v:group>
 $endif$
 $if(layout.flipRotate)$
+    <!-- flip rotate end -->
 	</v:group>
 $endif$
+   <!-- image group end -->
    </v:group>
 
    <v:group class="imageDisplayRel" style="width: 100%; height: 100%; top: 0px; left: 0px;" coordsize="1000,1000" coordorigin="0,0">
