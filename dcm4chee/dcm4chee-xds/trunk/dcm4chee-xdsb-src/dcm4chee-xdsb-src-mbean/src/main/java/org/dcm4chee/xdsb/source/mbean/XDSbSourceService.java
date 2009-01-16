@@ -257,7 +257,7 @@ public class XDSbSourceService extends ServiceMBeanSupport {
             SubmitObjectsRequest submitRequest = (SubmitObjectsRequest)
             unmarshaller.unmarshal( v2Req ? convertRimVersion(req, true) : req );
             log.info("unmarshalled SubmitObjectsRequest:"+ submitRequest);
-            if ( InfoSetUtil.getRegistryPackage(submitRequest) == null ) {
+            if ( InfoSetUtil.getRegistryPackage(submitRequest, null) == null ) {
                 submitRequest = unmarshallWorkaround(req, unmarshaller);
             }
             ProvideAndRegisterDocumentSetRequestType pnr = objFac.createProvideAndRegisterDocumentSetRequestType();
@@ -310,8 +310,8 @@ public class XDSbSourceService extends ServiceMBeanSupport {
         Node nOut = result.getNode();
         submitRequest = (SubmitObjectsRequest) unmarshaller.unmarshal(nOut);
         log.debug("unmarshalled SubmitObjectsRequest WORKAROUND:"+ submitRequest);
-        log.debug("InfoSetUtil.getRegistryPackage(submitRequest):"+InfoSetUtil.getRegistryPackage(submitRequest) );
-        log.info("Unmarshall with workaround success:"+InfoSetUtil.getRegistryPackage(submitRequest) != null );
+        log.debug("InfoSetUtil.getRegistryPackage(UUID.XDSSubmissionSet):"+InfoSetUtil.getRegistryPackage(submitRequest, UUID.XDSSubmissionSet) );
+        log.info("Unmarshall with workaround success:"+InfoSetUtil.getRegistryPackage(submitRequest, UUID.XDSSubmissionSet) != null );
         return submitRequest;
     }
 
@@ -335,7 +335,7 @@ public class XDSbSourceService extends ServiceMBeanSupport {
             eo = (ExtrinsicObjectType) iter.next();
             InfoSetUtil.setExternalIdentifierValue(UUID.XDSDocumentEntry_uniqueId, UIDUtils.createUID(), eo);
         }
-        RegistryPackageType rp = InfoSetUtil.getRegistryPackage(so);
+        RegistryPackageType rp = InfoSetUtil.getRegistryPackage(so, UUID.XDSSubmissionSet);
         InfoSetUtil.setExternalIdentifierValue(UUID.XDSSubmissionSet_uniqueId, UIDUtils.createUID(), rp);
         InfoSetUtil.setExternalIdentifierValue(UUID.XDSSubmissionSet_sourceId, this.getSourceId(), rp);
     }
@@ -347,7 +347,7 @@ public class XDSbSourceService extends ServiceMBeanSupport {
             if (logRequest) {
                 log.info(InfoSetUtil.getLogMessage(req));
             }
-            RegistryPackageType registryPackage = InfoSetUtil.getRegistryPackage(submitRequest);
+            RegistryPackageType registryPackage = InfoSetUtil.getRegistryPackage(submitRequest, UUID.XDSSubmissionSet);
             if ( registryPackage == null ) {
                 log.error("No RegistryPackage found!");
                 throw new XDSException( XDSConstants.XDS_ERR_REPOSITORY_ERROR, 
