@@ -38,20 +38,10 @@ fileLocation.fileLocationMgt.priority=1000
 fileLocation.wadoFileLocation=${class:org.dcm4chee.xero.search.filter.WadoFileLocation}
 fileLocation.wadoFileLocation.priority=500
 
-fileLocation.seriesFileLocation=${class:org.dcm4chee.xero.wado.SeriesFileLocation}
-fileLocation.seriesFileLocation.priority=9000
-
 fileLocation.locationCache=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
 fileLocation.locationCache.priority=10000
 fileLocation.locationCache.cacheSize=2000000
 fileLocation.locationCache.queryStr=objectUID
-
-seriesFileLocation=${class:org.dcm4chee.xero.metadata.filter.FilterList}
-seriesFileLocation.seriesFileLocationMemCache=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
-seriesFileLocation.seriesFileLocationMemCache.priority=10000
-seriesFileLocation.seriesFileLocationMemCache.cacheSize=2000000
-seriesFileLocation.seriesFileLocationMemCache.queryStr=seriesUID
-
 
 # Defines the list of items to read DicomImageReader objects for a given SOP Instance
 dicomImageReader=${class:org.dcm4chee.xero.metadata.filter.FilterList}
@@ -79,7 +69,6 @@ dicomFullHeader=${ref:dicomImageHeader}
 # A dicom updated header is the full header, with everything updated
 dicomUpdatedHeader=${class:org.dcm4chee.xero.wado.DicomImageReaderToDicomObject}
 dicomUpdatedHeader.imageReaderFilter=${ref:dicomUpdated}
-
 
 #Now, add a study filter that provides study searches.
 studyFilter.inherit=servletFilter
