@@ -252,13 +252,15 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
                 log.info(InfoSetUtil.getLogMessage(req));
             }
             SubmitObjectsRequest submitRequest = req.getSubmitObjectsRequest();
-            RegistryPackageType registryPackage = InfoSetUtil.getRegistryPackage(submitRequest);
-            if ( registryPackage == null ) {
-                log.error("No RegistryPackage found!");
+            RegistryPackageType submissionSet = InfoSetUtil.getRegistryPackage(submitRequest, UUID.XDSSubmissionSet);
+            if ( submissionSet == null ) {
+                log.error("No RegistryPackage id=SubmissionSet found!");
                 throw new XDSException( XDSConstants.XDS_ERR_REPOSITORY_ERROR, 
                         XDSConstants.XDS_ERR_MISSING_REGISTRY_PACKAGE, null);
             }
-            String submissionUID = InfoSetUtil.getExternalIdentifierValue(UUID.XDSSubmissionSet_uniqueId,registryPackage);
+            checkPatientIDs(req, submissionSet);
+            String submissionUID = InfoSetUtil.getExternalIdentifierValue(UUID.XDSSubmissionSet_uniqueId, submissionSet);
+
             perfLogger.setEventProperty("SubmissionSetUID", submissionUID);
             if ( saveRequestAsFile ) {
                 File f = new File(resolvePath("log/xdsb/pnr-"+submissionUID+".xml"));
@@ -393,12 +395,12 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         Map docs = InfoSetUtil.getDocuments(req);
         if ( extrObjs.size() > docs.size() ) {
             log.warn("Missing Documents! Found more ExtrinsicObjects("+extrObjs.size()+") than Documents("+docs.size()+")!");
-            throw new XDSException(XDSConstants.XDS_ERR_REPOSITORY_ERROR,
-                    XDSConstants.XDS_ERR_MISSING_DOCUMENT, null);
+            throw new XDSException(XDSConstants.XDS_ERR_MISSING_DOCUMENT,
+                    "", null);
         } else if ( extrObjs.size() < docs.size() ) {
             log.warn("Missing Document Metadata! Found less ExtrinsicObjects("+extrObjs.size()+") than Documents("+docs.size()+")!");
-            throw new XDSException(XDSConstants.XDS_ERR_REPOSITORY_ERROR,
-                    XDSConstants.XDS_ERR_MISSING_DOCUMENT_METADATA, null);
+            throw new XDSException(XDSConstants.XDS_ERR_MISSING_DOCUMENT_METADATA,
+                    "", null);
 
         } else if ( docs.size() == 0 ) {
             log.info("No Documents to save!");
@@ -457,6 +459,29 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         return storedDocuments;
     }
 
+    private void checkPatientIDs(ProvideAndRegisterDocumentSetRequestType req, RegistryPackageType registryPackage) throws XDSException {
+        String submissionPatId = InfoSetUtil.getExternalIdentifierValue(UUID.XDSSubmissionSet_patientId, registryPackage);
+        Map<String, ExtrinsicObjectType> extrObjs = InfoSetUtil.getExtrinsicObjects(req.getSubmitObjectsRequest());
+        String docPatId;
+        for ( ExtrinsicObjectType eo : extrObjs.values() ) {
+            docPatId = InfoSetUtil.getExternalIdentifierValue(UUID.XDSDocumentEntry_patientId, eo);
+            if ( docPatId != null && !docPatId.equals(submissionPatId)) {
+                String msg = "XDSDocumentEntry.patientId ("+docPatId+")and XDSSubmissionSet.patientId ("+submissionPatId+") doesn't match! ExtrinsicObject.Id:"+eo.getId();
+                log.warn(msg);
+                throw new XDSException(XDSConstants.XDS_ERR_PATID_DOESNOT_MATCH,
+                        msg, null);
+            }
+        }
+        RegistryPackageType folder = InfoSetUtil.getRegistryPackage(req.getSubmitObjectsRequest(), UUID.XDSFolder_ClassificationNode);
+        String folderPatId = InfoSetUtil.getExternalIdentifierValue(UUID.XDSFolder_patientId, folder);
+        if ( folderPatId != null && !folderPatId.equals(submissionPatId)) {
+            String msg = "XDSFolder.patientId ("+folderPatId+")and XDSSubmissionSet.patientId ("+submissionPatId+") doesn't match!";
+            log.warn(msg);
+            throw new XDSException(XDSConstants.XDS_ERR_PATID_DOESNOT_MATCH,
+                    msg, null);
+        }
+    }
+    
     private void addOrOverwriteSlot(RegistryObjectType ro, Map slots, String slotName, String val) throws JAXBException {
         addOrOverwriteSlot(ro, slots, slotName, new String[]{val});
     }
