@@ -36,7 +36,7 @@ third-party libraries.
 
 Finally,
 
-$ cd dcm4chee-dist
+$ cd dcm4chee-arr-dist
 $ mvn -Ddb=<database> assembly:assembly
 
 will assembly the binary distribution package dcm4chee-arr-<db>-3.0.7.zip,
