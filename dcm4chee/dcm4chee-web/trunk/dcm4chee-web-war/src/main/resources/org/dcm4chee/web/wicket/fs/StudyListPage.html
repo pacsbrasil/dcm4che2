@@ -1,0 +1,228 @@
+<html>
+<head>
+<title>Studies</title>
+<link href="style.css" rel="stylesheet" />
+</head>
+<body>
+<wicket:link>
+<ul class="menu">
+  <li><a href="../folder/StudyListPage.html">Studies</a></li>
+  <li><a href="../ae/AEListPage.html">Application Entities</a></li>
+  <li><a href="../fs/FileSystemPage.html">File Systems</a></li>
+</ul>
+</wicket:link>
+<form style="clear: both" wicket:id="form">
+<div wicket:id="feedback">
+  <ul>
+    <li class="feedbackPanelERROR">
+      <span class="feedbackPanelERROR">Study Date &#039;2008-12-32&#039; does not match pattern &#039;(19|20)YY[-MM[-DD]]&#039;</span>
+    </li>
+  </ul>
+</div>
+<table>
+  <tr align="left">
+    <th>Patient Name</th>
+    <th>Patient ID</th>
+    <th>Issuer</th>
+    <th>Study Date</th>
+    <th>Acc No</th>
+    <th>Mod</th>
+    <th>Source AET</th>
+  </tr>
+  <tr>
+    <td><input type="text" wicket:id="patientName" /></td>
+    <td><input type="text" wicket:id="patientID" /></td>
+    <td><input type="text" wicket:id="issuerOfPatientID" /></td>
+    <td><input type="text" wicket:id="studyDate" /></td>
+    <td><input type="text" wicket:id="accessionNumber" /></td>
+    <td>
+      <select wicket:id="modality">
+        <option>*</option>
+        <option>CR</option>
+        <option>CT</option>
+        <option>MR</option>
+      </select>
+    </td>
+     <td>
+      <select wicket:id="sourceAET">
+        <option>*</option>
+        <option>DCMSND</option>
+      </select>
+    </td>
+  </tr>
+</table>
+<div>
+  <input type="checkbox" id="patientsWithoutStudies" wicket:id="patientsWithoutStudies" />
+  <label for="patientsWithoutStudies">patients w/o studies</label>
+  <input type="checkbox" id="latestStudiesFirst" wicket:id="latestStudiesFirst" />
+  <label for="latestStudiesFirst">latest studies first</label>
+</div>
+<div>
+  <button type="submit" wicket:id="search">Search</button>
+  <button type="submit" wicket:id="prev">Prev</button>
+  <button type="submit" wicket:id="next">Next</button>
+</div>
+<div wicket:id="viewport">Displaying studies 1 to 20 from 1234 matching studies</div>
+<table border="1">
+  <thead wicket:id="thead" align="left" valign="top" >
+    <wicket:remove>
+    <tr class="patient">
+      <td rowspan="6">
+        <a href="#">(-)</a>
+      </td>
+      <th colspan="5">Patient Name</th>
+      <th>ID</th>
+      <th>Issuer</th>
+      <th>Birth Date</th>
+      <th>Sex</th>
+      <th></th>
+      <th></th>
+    </tr>
+    <tr class="study">
+      <td rowspan="5">
+        <a href="#">(-)</a>
+      </td>
+      <th colspan="4">Study Date/Time</th>
+      <th>Acc No</th>
+      <th>Mods</th>
+      <th>Description</th>
+      <th>#S/#I</th>
+      <th></th>
+      <th></th>
+    </tr>
+    <tr class="pps">
+      <td rowspan="4">
+        <a href="#">(-)</a>
+      </td>
+      <th colspan="3">PPS Start Date/Time</th>
+      <th>ID</th>
+      <th>Mod</th>
+      <th>Description</th>
+      <th>#S/#I</th>
+      <th></th>
+      <th></th>
+    </tr>
+    <tr class="series">
+      <td rowspan="3">
+        <a href="#">(-)</a>
+      </td>
+      <th colspan="2">Series Date/Time</th>
+      <th>No</th>
+      <th>Mod</th>
+      <th>Description</th>
+      <th>#I</th>
+      <th></th>
+    </tr>
+    <tr class="instance">
+      <td rowspan="2">
+        <a href="#">(-)</a>
+      </td>
+      <th>Instance Date/Time</th>
+      <th>No</th>
+      <th>CUID</th>
+      <th colspan="2">Description</th>
+      <th></th>
+      <th></th>
+    </tr>
+    <tr class="file">
+      <th>File Date/Time</th>
+      <th>Size</th>
+      <th>TUID</th>
+      <th colspan="2">File Path</th>
+      <th></th>
+      <th></th>
+    </tr>
+    </wicket:remove>
+  </thead>
+  <tbody wicket:id="patients" align="left" valign="top" >
+    <tr class="patient">
+      <td wicket:id="cell" rowspan="6">
+        <a wicket:id="expand" href="#">(+)</a>
+        <a wicket:id="collapse" href="#">(-)</a>
+      </td>
+      <td wicket:id="name" colspan="5">[PatientName]</td>
+      <td wicket:id="id">[ID]</td>
+      <td wicket:id="issuer">[Issuer]</td>
+      <td wicket:id="birthdate">[Birth Date]</td>
+      <td wicket:id="sex">[Sex]</td>
+      <td><a wicket:id="link" href="#">Show</a></td>
+      <td><input wicket:id="selected" type="checkbox" /></td>
+    </tr>
+    <wicket:container wicket:id="studies" >
+    <tr class="study">
+      <td wicket:id=cell rowspan="5">
+        <a wicket:id="expand" href="#">(+)</a>
+        <a wicket:id="collapse" href="#">(-)</a>
+      </td>
+      <td wicket:id="datetime" colspan="4">[Study Date/Time]</td>
+      <td wicket:id="accessionNumber">[Acc No]</td>
+      <td wicket:id="modalities">[Mods]</td>
+      <td wicket:id="description">[Description]</td>
+      <td><span wicket:id="numberOfSeries">[#S]</span>/<span
+                wicket:id="numberOfInstances">[#I]</span>
+      </td>
+      <td><a wicket:id="link" href="#">Show</a></td>
+      <td><input wicket:id="selected" type="checkbox" /></td>
+    </tr>
+    <wicket:container wicket:id="ppss" >
+    <tr class="pps">
+      <td wicket:id=cell rowspan="4">
+        <a wicket:id="expand" href="#">(+)</a>
+        <a wicket:id="collapse" href="#">(-)</a>
+      </td>
+      <td wicket:id="datetime" colspan="3">[PPS Start Date/Time]</td>
+      <td wicket:id="id">[ID]</td>
+      <td wicket:id="modality">[Mod]</td>
+      <td wicket:id="description">[Description]</td>
+      <td><span wicket:id="numberOfSeries">[#S]</span>/<span
+                wicket:id="numberOfInstances">[#I]</span>
+      </td>
+      <td><a wicket:id="link" href="#">Show</a></td>
+      <td><input wicket:id="selected" type="checkbox" /></td>
+    </tr>
+    <wicket:container wicket:id="series" >
+    <tr class="series">
+      <td wicket:id=cell rowspan="3">
+        <a wicket:id="expand" href="#">(+)</a>
+        <a wicket:id="collapse" href="#">(-)</a>
+      </td>
+      <td wicket:id="datetime" colspan="2">[Series Date/Time]</td>
+      <td wicket:id="seriesNumber">[No]</td>
+      <td wicket:id="modality">[Mod]</td>
+      <td wicket:id="description">[Description]</td>
+      <td wicket:id="numberOfInstances">[#I]</td>
+      <td><a wicket:id="link" href="#">Show</a></td>
+      <td><input wicket:id="selected" type="checkbox" /></td>
+    </tr>
+    <wicket:container wicket:id="instances" >
+    <tr class="instance">
+      <td wicket:id=cell rowspan="2">
+        <a wicket:id="expand" href="#">(+)</a>
+        <a wicket:id="collapse" href="#">(-)</a>
+      </td>
+      <td wicket:id="datetime">[Content Date/Time]</td>
+      <td wicket:id="instanceNumber">[No]</td>
+      <td wicket:id="sopClassUID">[CUID]</td>
+      <td wicket:id="description" colspan="2">[Description]</td>
+      <td><a wicket:id="link" href="#">Show</a></td>
+      <td><input wicket:id="selected" type="checkbox" /></td>
+    </tr>
+    <wicket:container wicket:id="files" >
+    <tr class="file">
+      <td wicket:id="datetime">[File Date/Time]</td>
+      <td wicket:id="size">[Size]</td>
+      <td wicket:id="transferSyntaxUID">[TUID]</td>
+      <td wicket:id="path" colspan="2">[File Path]</td>
+      <td></td>
+      <td></td>
+    </tr>
+    </wicket:container>
+    </wicket:container>
+    </wicket:container>
+    </wicket:container>
+    </wicket:container>
+  </tbody>
+</table>
+</form>
+</body>
+</html>

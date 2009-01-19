@@ -1,0 +1,43 @@
+<html>
+<head>
+<title>Dicom Object</title>
+<link href="style.css" rel="stylesheet" />
+</head>
+<body>
+<wicket:panel>
+  <table>
+    <colgroup>
+      <col class="attrname" />
+      <col class="tag" />
+      <col class="vr" />
+      <col class="len" />
+      <col class="val" />
+    </colgroup>
+    <thead wicket:id="header">
+      <tr>
+        <th class="attrname">Attribute Name</th>
+        <th class="tag">Tag</th>
+        <th class="vr">VR</th>
+        <th class="len">Length</th>
+        <th class="val">Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr wicket:id="elements">
+        <wicket:container wicket:id="fragment" />
+        <wicket:fragment wicket:id="element">
+          <td wicket:id="name" class="attrname">[Attribute Name]</td>
+          <td wicket:id="tag" class="tag">[Tag]</td>
+          <td wicket:id="vr" class="vr">[VR]</td>
+          <td wicket:id="length" class="len">[Length]</td>
+          <td wicket:id="value" class="val">[Value]</td>
+        </wicket:fragment>
+      </tr>
+      <wicket:fragment wicket:id="item">
+        <td wicket:id="name" colspan="5" class="item">[Item #]</td>
+      </wicket:fragment>
+    </tbody>
+  </table>
+</wicket:panel>
+</body>
+</html>
