@@ -363,7 +363,7 @@ CREATE INDEX access_time ON study_on_fs(access_time);
 CREATE TABLE mwl_item (
 	pk          	NUMERIC(19,0) IDENTITY(1,1) NOT NULL CONSTRAINT mwl_item_pk PRIMARY KEY,
 	patient_fk      NUMERIC(19,0),
-	sps_status      NUMERIC(19,0),
+	sps_status      INTEGER,
 	sps_id			VARCHAR(255),
 	start_datetime	DATETIME NOT NULL,
 	station_aet     VARCHAR(255) NOT NULL,
