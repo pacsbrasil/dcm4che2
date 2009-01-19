@@ -210,6 +210,11 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
                     log.warn("Document not found! document UID:"+docUid);
                 }
                 perfLogger.endSubEvent();
+            } else if ( mapExternalRepositories == null ) {
+                String msg = "DocumentRepositoryUID="+reqRepoUid+" is unknown! This repository unique ID:"+repositoryUniqueId;
+                log.warn(msg);
+                throw new XDSException(XDSConstants.XDS_ERR_WRONG_REPOSITORY_UNIQUE_ID,
+                        msg, null);
             } else {
                 log.info("Retrieve Document Request for other Repository!("+docReq.getRepositoryUniqueId()+
                         ") docUid:"+docUid);
@@ -221,15 +226,10 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
                 reqDocList.add(docReq);
             }
             if (!remoteDocRequests.isEmpty()) {
-                if ( mapExternalRepositories != null ) {
-                    try {
-                        addRemoteRetrieveRequests(rsp, remoteDocRequests, perfLogger);
-                    } catch (Exception e) {
-                        log.error("Remote Document Retrieve failed!",e);
-                    }
-                } else {
-                    log.info("Inclusion of retrieves from remote XDS.b Repositories is disabled!");
-                    log.info("Retrieve Request contains request for foreign repositories! requests:"+remoteDocRequests);
+                try {
+                    addRemoteRetrieveRequests(rsp, remoteDocRequests, perfLogger);
+                } catch (Exception e) {
+                    log.error("Remote Document Retrieve failed!",e);
                 }
             }
         }
