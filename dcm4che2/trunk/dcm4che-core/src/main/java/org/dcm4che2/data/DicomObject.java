@@ -353,6 +353,12 @@ public interface DicomObject extends Serializable {
     DicomElement remove(int tag);
 
     /**
+     * @param tagPath
+     * @return
+     */
+    DicomElement remove(int[] tagPath);
+
+    /**
      * @param tag
      *            (group, element) as 8 byte integer: ggggeeee.
      * @return

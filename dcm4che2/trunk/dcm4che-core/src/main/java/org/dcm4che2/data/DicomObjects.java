@@ -680,6 +680,10 @@ public class DicomObjects {
             throw new UnsupportedOperationException();
         }
 
+        public DicomElement remove(int[] tagPath) {
+            throw new UnsupportedOperationException();
+        }
+
         public int resolveTag(int tag, String privateCreator, boolean reserve) {
             if (reserve) {
                 throw new UnsupportedOperationException();
@@ -941,6 +945,11 @@ public class DicomObjects {
 
         public VR vr() {
             return e.vr();
+        }
+
+        @Override
+        public String getValueAsString(SpecificCharacterSet cs, int truncate) {
+            return e.getValueAsString(cs, truncate);
         }
 
     }

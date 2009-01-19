@@ -587,6 +587,13 @@ abstract class AbstractDicomObject implements DicomObject {
         return item != null ? item.get(tagPath[last]) : null;
     }
 
+    public DicomElement remove(int[] tagPath) {
+        checkTagPathLength(tagPath);
+        final int last = tagPath.length - 1;
+        final DicomObject item = getItem(tagPath, last, true);
+        return item != null ? item.remove(tagPath[last]) : null;
+    }
+
     public DicomObject getNestedDicomObject(int[] itemPath) {
         if ((itemPath.length & 1) != 0) {
             throw new IllegalArgumentException("itemPath.length: "
