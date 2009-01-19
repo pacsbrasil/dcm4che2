@@ -353,4 +353,9 @@ class SequenceDicomElement extends AbstractDicomElement {
         return new SequenceDicomElement(tag, vr, bigEndian, tmp, parent);
     }
 
+    @Override
+    public String getValueAsString(SpecificCharacterSet cs, int truncate) {
+        throw new UnsupportedOperationException();
+    }
+
 }

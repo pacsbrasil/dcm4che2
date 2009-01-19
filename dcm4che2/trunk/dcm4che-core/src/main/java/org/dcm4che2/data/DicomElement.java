@@ -126,4 +126,5 @@ public interface DicomElement extends Serializable {
 
     StringBuffer toStringBuffer(StringBuffer sb, int maxValLen);
 
+    String getValueAsString(SpecificCharacterSet cs, int truncate);
 }

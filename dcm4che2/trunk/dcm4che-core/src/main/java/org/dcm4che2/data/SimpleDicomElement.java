@@ -385,5 +385,15 @@ class SimpleDicomElement extends AbstractDicomElement {
     public DicomElement filterItems(DicomObject filter) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public String getValueAsString(SpecificCharacterSet cs, int truncate) {
+        if (value == null || value.length == 0) {
+            return null;
+        }
+        StringBuffer sb = new StringBuffer(64);
+        vr.promptValue(value, bigEndian, cs, cbuf.get(), truncate, sb);
+        return sb.toString();
+    }
     
 }
