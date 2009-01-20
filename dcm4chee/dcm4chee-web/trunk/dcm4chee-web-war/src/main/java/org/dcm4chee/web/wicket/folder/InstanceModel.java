@@ -187,22 +187,11 @@ public class InstanceModel implements Serializable {
         }
     }
 
-    public void refresh() {
+    public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         try {
-            dataset = dao.getInstance(pk).getAttributes(true);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    public void commit() {
-        StudyListLocal dao = (StudyListLocal)
-                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        try {
-            dataset = dao.updateInstance(pk, dataset).getAttributes(true);
+            dataset = dao.updateInstance(pk, dicomObject).getAttributes(true);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

@@ -238,11 +238,11 @@ public class StudyModel implements Serializable {
         }
     }
 
-    public void commit() {
+    public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         try {
-            dataset = dao.updateStudy(pk, dataset).getAttributes(true);
+            dataset = dao.updateStudy(pk, dicomObject).getAttributes(true);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

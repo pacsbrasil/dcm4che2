@@ -53,13 +53,12 @@ public class EditPPSPage extends WebPage {
 
             @Override
             protected void onCancel() {
-                model.refresh();
                 setResponsePage(studyListPage);
             }
 
             @Override
             protected void onSubmit() {
-                model.commit();
+                model.update(getDicomObject());
                 setResponsePage(studyListPage);
             }
         });

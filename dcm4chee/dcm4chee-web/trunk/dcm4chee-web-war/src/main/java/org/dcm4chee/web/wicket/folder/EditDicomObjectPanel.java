@@ -76,7 +76,8 @@ public class EditDicomObjectPanel extends Panel {
 
     public EditDicomObjectPanel(String id, DicomObject dcmObj) {
         super(id);
-        this.dcmObj = dcmObj;
+        this.dcmObj = new BasicDicomObject();
+        dcmObj.copyTo(this.dcmObj);
         add(new FeedbackPanel("feedback"));
         Form form = new Form("form");
         add(form);
@@ -107,6 +108,10 @@ public class EditDicomObjectPanel extends Panel {
             public void onClick() {
                 EditDicomObjectPanel.this.onCancel();
             }});
+    }
+
+    protected DicomObject getDicomObject() {
+        return dcmObj;
     }
 
     protected void onSubmit() {}

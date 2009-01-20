@@ -218,22 +218,11 @@ public class SeriesModel implements Serializable {
         }
     }
 
-    public void refresh() {
+    public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         try {
-            dataset = dao.getSeries(pk).getAttributes(true);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    public void commit() {
-        StudyListLocal dao = (StudyListLocal)
-                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        try {
-            dataset = dao.updateSeries(pk, dataset).getAttributes(true);
+            dataset = dao.updateSeries(pk, dicomObject).getAttributes(true);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
