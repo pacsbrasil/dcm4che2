@@ -67,26 +67,26 @@ public class ReopenableImageInputStream extends ImageInputStreamImpl {
    public void reopen(boolean first) throws IOException {
 	  if( stream!=null ) return;
 	  if (fileName!=null) {
-		 if( !first ) log.info("Re-opening DICOM image from local cache file " + fileName);
+		 if( !first ) log.debug("Re-opening DICOM image from local cache file " + fileName);
 		 if (!(file == null)){
 			 stream = new FileImageInputStream(file);
 		 }else{
 			 stream = new FileImageInputStream(new File(fileName));
 		 }
 	  } else {
-		 if( !first ) log.info("Re-opening DICOM image from remote url {}",location);
+		 if( !first ) log.debug("Re-opening DICOM image from remote url {}",location);
 		 stream = new FileCacheImageInputStream(location.openStream(),null);
 	  }
 	  if( getStreamPosition()!=0 ) {
 		 stream.seek(getStreamPosition());
 		 bitOffset = 0;
 	  }
-	  log.info("Open "+filesOpened+" close count "+filesClosed+" delta "+openCount());
+	  log.debug("Open "+filesOpened+" close count "+filesClosed+" delta "+openCount());
    }
    
    public void close() throws IOException {
 	  if( stream==null ) return;
-	  log.info("Close file open "+filesOpened+" close count "+filesClosed+" delta "+closeCount());
+	  log.debug("Close file open "+filesOpened+" close count "+filesClosed+" delta "+closeCount());
 	  stream.close();
 	  stream = null;
    }

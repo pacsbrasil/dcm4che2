@@ -119,7 +119,7 @@ public class ZipContentTypeResponseItem implements MultiPartHandler {
 				continue;
 			}
 			
-			log.info("Found a response item to add.");
+			log.debug("Found a response item to add.");
 			try {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				BodyResponseWrapper brw = new BodyResponseWrapper(response,baos);
@@ -128,18 +128,18 @@ public class ZipContentTypeResponseItem implements MultiPartHandler {
 				Map<String,String> headers = brw.getHeaders();
 				String filename = getFilename(headers);
 				if( filename==null ) filename="wado-unknown-"+fcnt++;
-				log.info("Writing response named {}", filename);
+				log.debug("Writing response named {}", filename);
 				ZipEntry ze = new ZipEntry(filename);
 				ze.setSize(data.length);
 				ze.setMethod(ZipEntry.STORED);
 				String comment = headersToString(headers);
 				if( comment!=null ) ze.setComment(comment);
-				log.info("Putting next entry {}", ze);
+				log.debug("Putting next entry {}", ze);
 				CRC32 crc = new CRC32();
 				crc.update(data);
 				ze.setCrc(crc.getValue());
 				zos.putNextEntry(ze);
-				log.info("Write data of size {}", data.length);
+				log.debug("Write data of size {}", data.length);
 				zos.write(data);
 			} catch ( Exception e ) {
 				e.printStackTrace();

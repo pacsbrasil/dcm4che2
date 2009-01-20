@@ -126,7 +126,7 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 		boolean containsRelative = map.containsKey("relative");
 		if (contentType == null)
 			contentType = (containsRelative ? "image/png" : "image/jpeg");
-		log.info("Encoding image in content type={}", contentType);
+		log.debug("Encoding image in content type={}", contentType);
 		DicomObject ds = dicomImageHeader.filter(null,map);
 		if( ds!=null && !(ds.contains(Tag.PixelRepresentation) || containsRelative) ) {
 			log.info("DICOM does not contain pixel representation.");
