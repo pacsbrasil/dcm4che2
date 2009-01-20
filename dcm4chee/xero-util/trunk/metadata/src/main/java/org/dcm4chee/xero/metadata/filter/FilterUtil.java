@@ -84,11 +84,11 @@ public class FilterUtil {
 	  throw new IllegalArgumentException("Expected boolean value for " + key + " got class " + v.getClass() + " value " + v);
    }
    
-   public static int getInt(Map<String, Object> params, String key) {
+   public static int getInt(Map<String, ?> params, String key) {
 	  return getInt(params, key, 0);
    }
 
-   public static int getInt(Map<String, Object> params, String key, int def) {
+   public static int getInt(Map<String, ?> params, String key, int def) {
 	  Object v = params.get(key);
 	  if (v == null)
 		 return def;
@@ -345,6 +345,21 @@ public class FilterUtil {
       }
       computeQueryString(ret);
       return ret;
+   }
+
+   /** Restores the values back into the query after they have been removed by removeFromQuery */
+   public static void restoreQuery(Map<String, Object> params, Object[] vals, String...keys) {
+      String queryStr = (String) params.get(MemoryCacheFilter.KEY_NAME);
+      if( queryStr==null ) queryStr = "";
+      StringBuffer sb = new StringBuffer(queryStr);
+      int i=0;
+      for(String key : keys) {
+         Object v=vals[i++];
+         if( v==null ) continue;
+         sb.append('&').append(key).append('=').append(v);
+         params.put(key,v);
+      }
+      params.put(MemoryCacheFilter.KEY_NAME, sb.toString());
    }
 
 }
