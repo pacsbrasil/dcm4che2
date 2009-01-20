@@ -52,6 +52,7 @@ import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
+import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,13 +82,12 @@ public class IndexedImageSource implements Filter<WadoImage> {
 		DicomObject ds;
 		WadoImage orig = null;
 		if (needOriginalImage) {
-			Object rows = params.remove(ROWS);
-			Object cols = params.remove(COLUMNS);
-			Object region = params.remove(REGION);
+		    Object [] vals = FilterUtil.removeFromQuery(params, ROWS, COLUMNS, REGION);
 			orig = wadoImageFilter.filter(null, params);
-			if( rows!=null ) params.put(ROWS,rows);
-			if( cols!=null ) params.put(COLUMNS, cols);
-			if( region!=null ) params.put(REGION, region);
+            if( orig==null ) {
+               log.error("Original source image must not be null, memory cache query string is {}",params.get(MemoryCacheFilter.KEY_NAME));
+            }
+			FilterUtil.restoreQuery(params, vals, ROWS, COLUMNS, REGION );
 			ds = orig.getDicomObject();
 		} else {
 			ds = dicomImageHeader.filter(null, params);
