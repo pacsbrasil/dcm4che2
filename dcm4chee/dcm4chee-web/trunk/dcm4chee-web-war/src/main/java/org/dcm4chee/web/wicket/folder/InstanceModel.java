@@ -97,7 +97,7 @@ public class InstanceModel implements Serializable {
             return sb.toString();
         }
         String s;
-        if ((s = dataset.getString(Tag.PrescriptionDescription)) != null) {
+        if ((s = dataset.getString(Tag.ContentDescription)) != null) {
             return s;
         }
         if ((s = dataset.getString(Tag.DocumentTitle)) != null) {
