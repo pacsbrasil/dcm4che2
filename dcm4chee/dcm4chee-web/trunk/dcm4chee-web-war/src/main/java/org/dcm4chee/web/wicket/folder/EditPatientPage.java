@@ -47,10 +47,21 @@ import org.apache.wicket.markup.html.WebPage;
  */
 public class EditPatientPage extends WebPage {
 
-    private PatientModel model;
+    public EditPatientPage(final StudyListPage studyListPage,
+            final PatientModel model) {
+        add(new EditDicomObjectPanel("dicomobject", model.getDataset()) {
 
-    public EditPatientPage(PatientModel model) {
-        this.model = model;
-        add(new EditDicomObjectPanel("dicomobject", model.getDataset()));
+            @Override
+            protected void onCancel() {
+                model.refresh();
+                setResponsePage(studyListPage);
+            }
+
+            @Override
+            protected void onSubmit() {
+                model.commit();
+                setResponsePage(studyListPage);
+            }
+        });
     }
 }

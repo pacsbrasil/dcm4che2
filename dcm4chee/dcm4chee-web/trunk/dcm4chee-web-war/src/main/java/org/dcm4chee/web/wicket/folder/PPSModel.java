@@ -61,13 +61,7 @@ public class PPSModel implements Serializable {
     private boolean selected;
     private boolean details;
     private DicomObject dataset;
-    private String datetime;
-    private String id;
-    private String uid;
-    private String modality;
-    private String description;
-    private String stationName;
-    private String stationAET;
+    private SeriesModel series1;
     private int numberOfInstances;
     private int numberOfSeries;
     private List<SeriesModel> series = new ArrayList<SeriesModel>();
@@ -77,13 +71,7 @@ public class PPSModel implements Serializable {
             pk = mpps.getPk();
             this.dataset = mpps.getAttributes();
         }
-        id = series1.getPPSId();
-        uid = series1.getPPSUid();
-        datetime = series1.getPPSStartDatetime();
-        modality = series1.getModality();
-        stationName = series1.getStationName();
-        stationAET = series1.getSourceAET();
-        description = series1.getPPSDescription();
+        this.series1 = series1;
         series.add(series1);
     }
 
@@ -120,31 +108,31 @@ public class PPSModel implements Serializable {
     }
 
     public String getDatetime() {
-        return datetime;
+        return series1.getPPSStartDatetime();
     }
 
     public String getId() {
-        return id;
+        return series1.getPPSId();
     }
 
     public String getUid() {
-        return uid;
+        return series1.getPPSUid();
     }
 
     public String getDescription() {
-        return description;
+        return series1.getPPSDescription();
     }
 
     public String getModality() {
-        return modality;
+        return series1.getModality();
     }
 
     public String getStationName() {
-        return stationName;
+        return series1.getStationName();
     }
 
     public String getStationAET() {
-        return stationAET;
+        return series1.getSourceAET();
     }
 
     public int getNumberOfSeries() {
@@ -190,12 +178,35 @@ public class PPSModel implements Serializable {
     }
 
     public void expand() throws Exception {
+        String uid = getUid();
         if (uid != null) {
             StudyListLocal dao = (StudyListLocal)
                     JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
             for (Series ser : dao.findSeriesOfMpps(uid)) {
                 series.add(new SeriesModel(ser));
             }
+        }
+    }
+
+    public void refresh() {
+        StudyListLocal dao = (StudyListLocal)
+                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        try {
+            dataset = dao.getMPPS(pk).getAttributes();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    public void commit() {
+        StudyListLocal dao = (StudyListLocal)
+                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        try {
+            dataset = dao.updateMPPS(pk, dataset).getAttributes();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 }

@@ -65,13 +65,11 @@ public class InstanceModel implements Serializable {
     private boolean selected;
     private boolean details;
     private DicomObject dataset;
-    private String description;
     private List<FileModel> files = new ArrayList<FileModel>();
 
     public InstanceModel(Instance inst) throws IOException {
         this.pk = inst.getPk();
         this.dataset = inst.getAttributes(true);
-        description = toDescription(dataset);
     }
 
     private static String toDescription(DicomObject dataset) {
@@ -175,7 +173,7 @@ public class InstanceModel implements Serializable {
     }
 
     public String getDescription() {
-        return description;
+        return toDescription(dataset);
     }
 
     public List<FileModel> getFiles() {
@@ -200,6 +198,28 @@ public class InstanceModel implements Serializable {
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         for (File file : dao.findFilesOfInstance(pk)) {
             this.files.add(new FileModel(file));
+        }
+    }
+
+    public void refresh() {
+        StudyListLocal dao = (StudyListLocal)
+                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        try {
+            dataset = dao.getInstance(pk).getAttributes(true);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    public void commit() {
+        StudyListLocal dao = (StudyListLocal)
+                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        try {
+            dataset = dao.updateInstance(pk, dataset).getAttributes(true);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 }

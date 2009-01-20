@@ -255,7 +255,8 @@ public class StudyListPage extends WebPage {
                 
                 @Override
                 public void onClick() {
-                    setResponsePage(new EditPatientPage(patModel));
+                    setResponsePage(
+                            new EditPatientPage(StudyListPage.this, patModel));
                 }
             });
             item.add(new CheckBox("selected"));
@@ -273,7 +274,7 @@ public class StudyListPage extends WebPage {
         }
     }
 
-    private final static class StudyListView extends PropertyListView {
+    private final class StudyListView extends PropertyListView {
 
         private final ListItem patientListItem;
 
@@ -350,7 +351,8 @@ public class StudyListPage extends WebPage {
                 
                 @Override
                 public void onClick() {
-                    setResponsePage(new EditStudyPage(studyModel));
+                    setResponsePage(
+                            new EditStudyPage(StudyListPage.this, studyModel));
                 }
             });
             item.add(new CheckBox("selected"));
@@ -369,7 +371,7 @@ public class StudyListPage extends WebPage {
         }
     }
 
-    private final static class PPSListView extends PropertyListView {
+    private final class PPSListView extends PropertyListView {
 
         private final ListItem patientListItem;
 
@@ -450,7 +452,7 @@ public class StudyListPage extends WebPage {
 
                 @Override
                 public void onClick() {
-                    setResponsePage(new EditPPSPage(ppsModel));
+                    setResponsePage(new EditPPSPage(StudyListPage.this, ppsModel));
                 }
 
                 @Override
@@ -474,7 +476,7 @@ public class StudyListPage extends WebPage {
         }
     }
 
-    private final static class SeriesListView extends PropertyListView {
+    private final class SeriesListView extends PropertyListView {
 
         private final ListItem patientListItem;
 
@@ -550,7 +552,7 @@ public class StudyListPage extends WebPage {
                 
                 @Override
                 public void onClick() {
-                    setResponsePage(new EditSeriesPage(seriesModel));
+                    setResponsePage(new EditSeriesPage(StudyListPage.this, seriesModel));
                 }
             });
             item.add(new CheckBox("selected"));
@@ -569,7 +571,7 @@ public class StudyListPage extends WebPage {
         }
     }
 
-    private final static class InstanceListView extends PropertyListView {
+    private final class InstanceListView extends PropertyListView {
 
         private final ListItem patientListItem;
 
@@ -644,7 +646,7 @@ public class StudyListPage extends WebPage {
                 
                 @Override
                 public void onClick() {
-                    setResponsePage(new EditInstancePage(instModel));
+                    setResponsePage(new EditInstancePage(StudyListPage.this, instModel));
                 }
             });
             item.add(new CheckBox("selected"));

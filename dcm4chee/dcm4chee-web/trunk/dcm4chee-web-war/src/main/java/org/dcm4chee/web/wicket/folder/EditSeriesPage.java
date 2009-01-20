@@ -47,7 +47,21 @@ import org.apache.wicket.markup.html.WebPage;
  */
 public class EditSeriesPage extends WebPage {
 
-    public EditSeriesPage(SeriesModel model) {
-        add(new EditDicomObjectPanel("dicomobject", model.getDataset()));
+    public EditSeriesPage(final StudyListPage studyListPage,
+            final SeriesModel model) {
+        add(new EditDicomObjectPanel("dicomobject", model.getDataset()) {
+
+            @Override
+            protected void onCancel() {
+                model.refresh();
+                setResponsePage(studyListPage);
+            }
+
+            @Override
+            protected void onSubmit() {
+                model.commit();
+                setResponsePage(studyListPage);
+            }
+        });
     }
 }

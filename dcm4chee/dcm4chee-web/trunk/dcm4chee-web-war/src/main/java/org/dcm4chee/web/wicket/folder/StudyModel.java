@@ -41,7 +41,6 @@ package org.dcm4chee.web.wicket.folder;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -55,6 +54,7 @@ import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.web.dao.StudyListLocal;
 import org.dcm4chee.web.wicket.util.DateUtils;
+import org.dcm4chee.web.wicket.util.JNDIUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -190,8 +190,8 @@ public class StudyModel implements Serializable {
     public void expand() throws Exception {
         InitialContext jndiCtx = new InitialContext();
         try {
-            StudyListLocal dao = (StudyListLocal)jndiCtx.lookup(
-                    "dcm4chee-web-ear/StudyListBean/local");
+            StudyListLocal dao = (StudyListLocal)
+                    JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
             for (Series series : dao.findSeriesOfStudy(pk)) {
                 add(series);
             }
@@ -221,5 +221,27 @@ public class StudyModel implements Serializable {
 
     private static boolean isNullOrEmpty(String s) {
         return s == null || s.length() == 0;
+    }
+
+    public void refresh() {
+        StudyListLocal dao = (StudyListLocal)
+                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        try {
+            dataset = dao.getStudy(pk).getAttributes(true);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    public void commit() {
+        StudyListLocal dao = (StudyListLocal)
+                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        try {
+            dataset = dao.updateStudy(pk, dataset).getAttributes(true);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 }

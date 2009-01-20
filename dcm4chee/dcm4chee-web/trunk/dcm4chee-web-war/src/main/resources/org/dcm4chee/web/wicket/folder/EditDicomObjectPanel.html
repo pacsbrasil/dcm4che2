@@ -58,13 +58,15 @@
         <td><a wicket:id="remove" href="#">(x)</a></td>
       </wicket:fragment>
       <wicket:fragment wicket:id="additem">
-        <td wicket:id="name" colspan="5" class="newitem">[New Item
-        #]</td>
+        <td wicket:id="name" colspan="5" class="newitem">[New Item #]</td>
         <td><a wicket:id="add" href="#">(+)</a></td>
       </wicket:fragment>
     </tbody>
   </table>
-  <input type="submit" value="Apply" /></form>
+  <button type="submit">Apply</button>
+  <button type="submit" wicket:id="submit">Submit</button>
+  <button type="submit" wicket:id="cancel">Cancel</button>
+  </form>
 </wicket:panel>
 </body>
 </html>

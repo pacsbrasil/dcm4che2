@@ -49,8 +49,11 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TemporalType;
 
+import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
+import org.dcm4chee.archive.entity.MPPS;
+import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.jboss.annotation.ejb.LocalBinding;
@@ -409,4 +412,64 @@ public class StudyListBean implements StudyListLocal {
                 .getResultList();
     }
 
+    @Override
+    public Patient getPatient(long pk) {
+        return em.find(Patient.class, pk);
+    }
+
+    @Override
+    public Patient updatePatient(long pk, DicomObject attrs) {
+        Patient patient = em.find(Patient.class, pk);
+        patient.setAttributes(attrs);
+        return patient;
+    }
+
+    @Override
+    public Study getStudy(long pk) {
+        return em.find(Study.class, pk);
+    }
+
+    @Override
+    public Study updateStudy(long pk, DicomObject attrs) {
+        Study study = em.find(Study.class, pk);
+        study.setAttributes(attrs);
+        return study;
+    }
+
+    @Override
+    public Series getSeries(long pk) {
+        return em.find(Series.class, pk);
+    }
+
+    @Override
+    public Series updateSeries(long pk, DicomObject attrs) {
+        Series series = em.find(Series.class, pk);
+        series.setAttributes(attrs);
+        return series;
+    }
+
+    @Override
+    public Instance getInstance(long pk) {
+        return em.find(Instance.class, pk);
+    }
+    
+
+    @Override
+    public Instance updateInstance(long pk, DicomObject attrs) {
+        Instance inst = em.find(Instance.class, pk);
+        inst.setAttributes(attrs);
+        return inst;
+    }
+
+    @Override
+    public MPPS getMPPS(long pk) {
+        return em.find(MPPS.class, pk);
+    }
+
+    @Override
+    public MPPS updateMPPS(long pk, DicomObject attrs) {
+        MPPS mpps = em.find(MPPS.class, pk);
+        mpps.setAttributes(attrs);
+        return mpps;
+    }
 }

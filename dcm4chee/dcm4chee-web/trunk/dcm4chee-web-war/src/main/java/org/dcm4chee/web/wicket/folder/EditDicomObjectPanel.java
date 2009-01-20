@@ -45,8 +45,10 @@ import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -92,7 +94,24 @@ public class EditDicomObjectPanel extends Panel {
             
         };
         table.add(rv);
+        form.add(new Button("submit") {
+
+            @Override
+            public void onSubmit() {
+                EditDicomObjectPanel.this.onSubmit();
+            }
+        });
+        form.add(new Link("cancel") {
+
+            @Override
+            public void onClick() {
+                EditDicomObjectPanel.this.onCancel();
+            }});
     }
+
+    protected void onSubmit() {}
+
+    protected void onCancel() {}
 
     private void addDicomObject(RepeatingView rv, DicomObject dcmObj,
             String nesting, int[] itemPath) {

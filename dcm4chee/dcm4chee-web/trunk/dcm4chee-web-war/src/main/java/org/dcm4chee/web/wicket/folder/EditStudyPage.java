@@ -47,7 +47,21 @@ import org.apache.wicket.markup.html.WebPage;
  */
 public class EditStudyPage extends WebPage {
 
-    public EditStudyPage(StudyModel model) {
-        add(new EditDicomObjectPanel("dicomobject", model.getDataset()));
+    public EditStudyPage(final StudyListPage studyListPage,
+            final StudyModel model) {
+        add(new EditDicomObjectPanel("dicomobject", model.getDataset()) {
+
+            @Override
+            protected void onCancel() {
+                model.refresh();
+                setResponsePage(studyListPage);
+            }
+
+            @Override
+            protected void onSubmit() {
+                model.commit();
+                setResponsePage(studyListPage);
+            }
+        });
     }
 }

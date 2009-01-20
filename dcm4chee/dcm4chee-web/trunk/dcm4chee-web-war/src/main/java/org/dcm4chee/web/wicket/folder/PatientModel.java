@@ -177,4 +177,26 @@ public class PatientModel implements Serializable {
             this.studies.add(new StudyModel(study));
         }
     }
+
+    public void refresh() {
+        StudyListLocal dao = (StudyListLocal)
+                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        try {
+            dataset = dao.getPatient(pk).getAttributes();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    public void commit() {
+        StudyListLocal dao = (StudyListLocal)
+                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        try {
+            dataset = dao.updatePatient(pk, dataset).getAttributes();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 }

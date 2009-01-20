@@ -38,13 +38,15 @@
 
 package org.dcm4chee.web.dao;
 
-import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.Local;
 
+import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
+import org.dcm4chee.archive.entity.MPPS;
+import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 
@@ -75,4 +77,24 @@ public interface StudyListLocal {
     List<String> selectDistinctSourceAETs();
 
     List<String> selectDistinctModalities();
+
+    Patient getPatient(long pk);
+
+    Patient updatePatient(long pk, DicomObject dataset);
+
+    Study getStudy(long pk);
+
+    Study updateStudy(long pk, DicomObject dataset);
+
+    Series getSeries(long pk);
+
+    Series updateSeries(long pk, DicomObject dataset);
+
+    Instance getInstance(long pk);
+
+    Instance updateInstance(long pk, DicomObject dataset);
+
+    MPPS getMPPS(long pk);
+
+    MPPS updateMPPS(long pk, DicomObject dataset);
 }
