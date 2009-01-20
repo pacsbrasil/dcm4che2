@@ -238,8 +238,8 @@ public class StudyListPage extends WebPage {
             item.add(new Label("name"));
             item.add(new Label("id"));
             item.add(new Label("issuer"));
-            item.add(new Label("birthdate"));
             item.add(new Label("sex"));
+            item.add(new Label("birthdate"));
             item.add(new AjaxFallbackLink("toggledetails") {
 
                 @Override
@@ -331,11 +331,13 @@ public class StudyListPage extends WebPage {
             });
             item.add(cell);
             item.add(new Label("datetime"));
+            item.add(new Label("id"));
             item.add(new Label("accessionNumber"));
             item.add(new Label("modalities"));
             item.add(new Label("description"));
             item.add(new Label("numberOfSeries"));
             item.add(new Label("numberOfInstances"));
+            item.add(new Label("availability"));
             item.add(new AjaxFallbackLink("toggledetails") {
 
                 @Override
@@ -429,10 +431,13 @@ public class StudyListPage extends WebPage {
             item.add(cell);
             item.add(new Label("datetime"));
             item.add(new Label("id"));
+            item.add(new Label("accessionNumber"));
             item.add(new Label("modality"));
             item.add(new Label("description"));
+            item.add(new Label("stationAET"));
             item.add(new Label("numberOfSeries"));
             item.add(new Label("numberOfInstances"));
+            item.add(new Label("status"));
             item.add(new AjaxFallbackLink("toggledetails") {
 
                 @Override
@@ -536,7 +541,9 @@ public class StudyListPage extends WebPage {
             item.add(new Label("seriesNumber"));
             item.add(new Label("modality"));
             item.add(new Label("description"));
+            item.add(new Label("sourceAET"));
             item.add(new Label("numberOfInstances"));
+            item.add(new Label("availability"));
             item.add(new AjaxFallbackLink("toggledetails") {
 
                 @Override
@@ -629,8 +636,9 @@ public class StudyListPage extends WebPage {
             item.add(cell);
             item.add(new Label("datetime"));
             item.add(new Label("instanceNumber"));
-            item.add(new Label("sopClassAsString"));
+            item.add(new Label("sopClassUID"));
             item.add(new Label("description"));
+            item.add(new Label("availability"));
             item.add(new AjaxFallbackLink("toggledetails") {
 
                 @Override
@@ -674,8 +682,9 @@ public class StudyListPage extends WebPage {
         protected void populateItem(final ListItem item) {
             item.add(new Label("datetime"));
             item.add(new Label("size"));
-            item.add(new Label("transferSyntaxAsString"));
+            item.add(new Label("transferSyntaxUID"));
             item.add(new Label("path"));
+            item.add(new Label("availability"));
         }
     }
 }

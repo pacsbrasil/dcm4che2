@@ -42,12 +42,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.web.dao.StudyListLocal;
@@ -157,17 +154,12 @@ public class InstanceModel implements Serializable {
         return dataset.getString(Tag.SOPClassUID);
     }
 
-    public String getSopClassAsString() {
-        String uid = dataset.getString(Tag.SOPClassUID);
-        try {
-            return ResourceBundle.getBundle("SOPClass").getString(uid);
-        } catch (MissingResourceException e) {
-            return uid;
-        }
-    }
-
     public String getDescription() {
         return toDescription(dataset);
+    }
+
+    public String getAvailability() {
+        return dataset.getString(Tag.InstanceAvailability);
     }
 
     public List<FileModel> getFiles() {

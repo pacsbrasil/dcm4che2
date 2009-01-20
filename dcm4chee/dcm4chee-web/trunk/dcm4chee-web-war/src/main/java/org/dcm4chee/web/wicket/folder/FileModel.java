@@ -40,8 +40,6 @@ package org.dcm4chee.web.wicket.folder;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 
 import org.dcm4chee.archive.entity.File;
 
@@ -75,18 +73,13 @@ public class FileModel implements Serializable {
         return file.getTransferSyntaxUID();
     }
 
-    public String getTransferSyntaxAsString() {
-        String uid = file.getTransferSyntaxUID();
-        try {
-            return ResourceBundle.getBundle("TransferSyntax").getString(uid );
-        } catch (MissingResourceException e) {
-            return uid;
-        }
-    }
-
     public String getPath() {
         return file.getFileSystem().getDirectoryPath() + '/'
                 + file.getFilePath();
+    }
+
+    public String getAvailability() {
+        return file.getFileSystem().getAvailability().name();
     }
 
 }

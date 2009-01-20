@@ -177,6 +177,10 @@ public class SeriesModel implements Serializable {
         return dataset.getString(Tag.PerformedProcedureStepDescription);
     }
 
+    public String getAvailability() {
+        return dataset.getString(Tag.InstanceAvailability);
+    }
+
     public List<InstanceModel> getInstances() {
         return instances;
     }

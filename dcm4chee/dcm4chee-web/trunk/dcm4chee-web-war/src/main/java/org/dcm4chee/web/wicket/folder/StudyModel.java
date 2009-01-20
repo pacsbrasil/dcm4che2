@@ -114,12 +114,12 @@ public class StudyModel implements Serializable {
         dataset.putString(Tag.StudyTime, VR.TM, datm[1]);
     }
 
-    public String getAccessionNumber() {
-        return dataset.getString(Tag.AccessionNumber, "");
+    public String getId() {
+        return dataset.getString(Tag.StudyID);
     }
 
-    public void setAccessionNumber(String accessionNumber) {
-        dataset.putString(Tag.AccessionNumber, VR.SH, accessionNumber);
+    public String getAccessionNumber() {
+        return dataset.getString(Tag.AccessionNumber, "");
     }
 
     public String getModalities() {
@@ -155,6 +155,10 @@ public class StudyModel implements Serializable {
 
     public int getNumberOfInstances() {
         return dataset.getInt(Tag.NumberOfStudyRelatedInstances);
+    }
+
+    public String getAvailability() {
+        return dataset.getString(Tag.InstanceAvailability);
     }
 
     public List<PPSModel> getPPSs() {

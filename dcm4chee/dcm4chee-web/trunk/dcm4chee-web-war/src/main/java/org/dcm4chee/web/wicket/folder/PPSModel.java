@@ -44,10 +44,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.web.dao.StudyListLocal;
+import org.dcm4chee.web.wicket.util.DateUtils;
 import org.dcm4chee.web.wicket.util.JNDIUtils;
 
 /**
@@ -108,11 +111,25 @@ public class PPSModel implements Serializable {
     }
 
     public String getDatetime() {
-        return series1.getPPSStartDatetime();
+        return dataset != null 
+                ? DateUtils.datm2str(
+                        dataset.getString(Tag.PerformedProcedureStepStartDate, ""),
+                        dataset.getString(Tag.PerformedProcedureStepStartTime, ""))
+                : series1.getPPSStartDatetime();
+    }
+
+    public String getAccessionNumber() {
+        return dataset != null
+                ? dataset.getString(new int[] { 
+                        Tag.ScheduledStepAttributesSequence, 0,
+                        Tag.AccessionNumber })
+                : null;
     }
 
     public String getId() {
-        return series1.getPPSId();
+        return dataset != null 
+                ? dataset.getString(Tag.PerformedProcedureStepID)
+                : series1.getPPSId();
     }
 
     public String getUid() {
@@ -120,7 +137,9 @@ public class PPSModel implements Serializable {
     }
 
     public String getDescription() {
-        return series1.getPPSDescription();
+        return dataset != null 
+                ? dataset.getString(Tag.PerformedProcedureStepDescription)
+                : series1.getPPSDescription();
     }
 
     public String getModality() {
@@ -128,27 +147,60 @@ public class PPSModel implements Serializable {
     }
 
     public String getStationName() {
-        return series1.getStationName();
+        return dataset != null 
+                ? dataset.getString(Tag.Modality)
+                : series1.getStationName();
     }
 
     public String getStationAET() {
-        return series1.getSourceAET();
+        return dataset != null 
+                ? dataset.getString(Tag.PerformedStationAETitle)
+                : series1.getSourceAET();
     }
 
     public int getNumberOfSeries() {
         if (numberOfSeries == 0) {
-            numberOfSeries = series.size();
+            if (dataset != null) {
+                DicomElement sersq = dataset.get(Tag.PerformedSeriesSequence);
+                if (sersq != null) {
+                    numberOfSeries = sersq.countItems();
+                }
+            } else {
+                numberOfSeries = series.size();
+            }
         }
         return numberOfSeries;
     }
 
     public int getNumberOfInstances() {
         if (numberOfInstances == 0) {
-            for (SeriesModel ser : series) {
-                numberOfInstances += ser.getNumberOfInstances();
+            if (dataset != null) {
+                DicomElement sersq = dataset.get(Tag.PerformedSeriesSequence);
+                for (int i = 0, n = sersq.countItems(); i < n; i++) {
+                    DicomObject ser = sersq.getDicomObject(i);
+                    DicomElement imgsq = ser.get(Tag.ReferencedImageSequence);
+                    DicomElement nonimgsq = ser.get(
+                            Tag.ReferencedNonImageCompositeSOPInstanceSequence);
+                    if (imgsq != null) {
+                        numberOfInstances += imgsq.countItems();
+                    }
+                    if (nonimgsq != null) {
+                        numberOfInstances += nonimgsq.countItems();
+                    }
+                }
+            } else {
+                for (SeriesModel ser : series) {
+                    numberOfInstances += ser.getNumberOfInstances();
+                }
             }
         }
         return numberOfInstances;
+    }
+
+    public String getStatus() {
+        return dataset != null 
+                ? dataset.getString(Tag.PerformedProcedureStepStatus)
+                : null;
     }
 
     public int getRowspan() {
