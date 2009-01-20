@@ -126,6 +126,14 @@ public class PPSModel implements Serializable {
                 : null;
     }
 
+    public String getSpsid() {
+        return dataset != null
+                ? dataset.getString(new int[] { 
+                        Tag.ScheduledStepAttributesSequence, 0,
+                        Tag.ScheduledProcedureStepID })
+                : null;
+    }
+
     public String getId() {
         return dataset != null 
                 ? dataset.getString(Tag.PerformedProcedureStepID)

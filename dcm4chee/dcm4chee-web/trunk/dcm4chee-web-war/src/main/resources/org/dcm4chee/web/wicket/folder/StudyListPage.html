@@ -79,8 +79,7 @@
         <a href="#">(-)</a>
       </td>
       <th colspan="5">Patient Name</th>
-      <th>ID</th>
-      <th>Issuer</th>
+      <th colspan="2">Patient ID/Issuer</th>
       <th>Sex</th>
       <th>Birth Date</th>
       <th></th>
@@ -162,8 +161,9 @@
         <a wicket:id="collapse" href="#">(-)</a>
       </td>
       <td wicket:id="name" colspan="5">[PatientName]</td>
-      <td wicket:id="id">[ID]</td>
-      <td wicket:id="issuer">[Issuer]</td>
+      <td colspan="2"><span wicket:id="id">[Patient ID]</span>/<span
+                wicket:id="issuer">[Issuer]</span>
+      </td>
       <td wicket:id="sex">[Sex]</td>
       <td wicket:id="birthdate">[Birth Date]</td>
       <td></td>
@@ -187,7 +187,7 @@
         <a wicket:id="collapse" href="#">(-)</a>
       </td>
       <td wicket:id="datetime" colspan="4">[Study Date/Time]</td>
-      <td wicket:id="id">[ID]</td>
+      <td wicket:id="id">[Study ID]</td>
       <td wicket:id="accessionNumber">[Acc No]</td>
       <td wicket:id="modalities">[Mods]</td>
       <td wicket:id="description" colspan="2">[Description]</td>
@@ -213,8 +213,8 @@
         <a wicket:id="collapse" href="#">(-)</a>
       </td>
       <td wicket:id="datetime" colspan="3">[PPS Start Date/Time]</td>
-      <td wicket:id="id">[ID]</td>
-      <td wicket:id="accessionNumber">[Acc No]</td>
+      <td wicket:id="id">[PPS ID]</td>
+      <td wicket:id="spsid">[SPS ID]</td>
       <td wicket:id="modality">[Mod]</td>
       <td wicket:id="description">[Description]</td>
       <td wicket:id="stationAET">[Station AET]</td>

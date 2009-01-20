@@ -431,7 +431,7 @@ public class StudyListPage extends WebPage {
             item.add(cell);
             item.add(new Label("datetime"));
             item.add(new Label("id"));
-            item.add(new Label("accessionNumber"));
+            item.add(new Label("spsid"));
             item.add(new Label("modality"));
             item.add(new Label("description"));
             item.add(new Label("stationAET"));
