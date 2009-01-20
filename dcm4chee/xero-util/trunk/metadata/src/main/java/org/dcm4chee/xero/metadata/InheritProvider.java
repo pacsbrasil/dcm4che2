@@ -94,7 +94,7 @@ public class InheritProvider implements MetaDataProvider {
 			if(inheritParent!=null) {
 				MetaDataBean mdbInherit = inheritParent.getForPath(childPath);
 				if( mdbInherit!=null && !alreadyInherited.contains(mdbInherit.path)) {
-					log.info("Inheriting from "+mdbInherit.path+" into "+path+" parent inherit "+inheritFrom + " at level "+mdb.path);
+					log.debug("Inheriting from "+mdbInherit.path+" into "+path+" parent inherit "+inheritFrom + " at level "+mdb.path);
 					alreadyInherited.add(mdbInherit.path);
 					inheritFrom(path,mdbInherit,inherittedValues);
 					addMetaData(path,"",mdbInherit, inherittedValues,alreadyInherited);
@@ -104,7 +104,7 @@ public class InheritProvider implements MetaDataProvider {
 					  log.debug("Not inheritting from "+mdbInherit.path+" as it is already inheritted.");
 				   }
 				   else {
-					  log.info("No parent "+mdbInherit+" found to inherit from.");
+					  log.debug("No parent "+mdbInherit+" found to inherit from.");
 				   }
 				}
 			}
