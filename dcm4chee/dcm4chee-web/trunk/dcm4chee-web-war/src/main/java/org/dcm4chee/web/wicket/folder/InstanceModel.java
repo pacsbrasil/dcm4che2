@@ -136,31 +136,25 @@ public class InstanceModel implements Serializable {
     }
 
     public String getDatetime() {
-        return DateUtils.datm2str(
-                dataset.getString(Tag.ContentDate, ""),
-                dataset.getString(Tag.ContentTime, ""));
+        return isPresentationState(getSopClassUID())
+                ? DateUtils.datm2str(
+                        dataset.getString(Tag.PresentationCreationDate, ""),
+                        dataset.getString(Tag.PresentationCreationDate, ""))
+                : DateUtils.datm2str(
+                        dataset.getString(Tag.ContentDate, ""),
+                        dataset.getString(Tag.ContentTime, ""));
     }
 
-    public void setDatetime(String datetime) {
-        String[] datm = DateUtils.str2datm(datetime);
-        dataset.putString(Tag.ContentDate, VR.DA, datm[0]);
-        dataset.putString(Tag.ContentTime, VR.TM, datm[1]);
+    private boolean isPresentationState(String cuid) {
+        return cuid.startsWith("1.2.840.10008.5.1.4.1.1.11.");
     }
 
     public String getInstanceNumber() {
         return dataset.getString(Tag.InstanceNumber, "");
     }
 
-    public void setInstanceNumber(String instanceNumber) {
-        dataset.putString(Tag.InstanceNumber, VR.IS, instanceNumber);
-    }
-
     public String getSopClassUID() {
         return dataset.getString(Tag.SOPClassUID);
-    }
-
-    public void setSopClassUID(String sopClassUID) {
-        dataset.putString(Tag.SOPClassUID, VR.UI, sopClassUID);
     }
 
     public String getSopClassAsString() {
