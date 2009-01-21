@@ -1,6 +1,5 @@
 package org.dcm4chee.web.wicket.folder;
 
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -110,35 +109,24 @@ public class StudyListPage extends WebPage {
     }
 
     private void initModalitiesAndSourceAETs() {
-        try {
-            StudyListLocal dao = (StudyListLocal)
-                    JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-            modalities.clear();
-            modalities.add("*");
-            modalities.addAll(dao.selectDistinctModalities());
-            sourceAETs.clear();
-            sourceAETs.add("*");
-            sourceAETs.addAll(dao.selectDistinctSourceAETs());
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        StudyListLocal dao = (StudyListLocal)
+                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        modalities.clear();
+        modalities.add("*");
+        modalities.addAll(dao.selectDistinctModalities());
+        sourceAETs.clear();
+        sourceAETs.add("*");
+        sourceAETs.addAll(dao.selectDistinctSourceAETs());
     }
 
     private void queryStudies() {
-        try {
-            StudyListLocal dao = (StudyListLocal)
-                    JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-            viewport.setTotal(dao.countStudies(viewport.getFilter()));
-            updatePatients(dao.findStudies(viewport.getFilter(), PAGESIZE, viewport.getOffset()));
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        StudyListLocal dao = (StudyListLocal)
+                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        viewport.setTotal(dao.countStudies(viewport.getFilter()));
+        updatePatients(dao.findStudies(viewport.getFilter(), PAGESIZE, viewport.getOffset()));
     }
 
-    private void updatePatients(List<Object[]> patientAndStudies)
-            throws IOException {
+    private void updatePatients(List<Object[]> patientAndStudies) {
         retainSelectedPatients();
         for (Object[] patientAndStudy : patientAndStudies) {
             PatientModel patientModel = addPatient((Patient) patientAndStudy[0]);
@@ -148,8 +136,7 @@ public class StudyListPage extends WebPage {
         }
     }
 
-    private boolean addStudy(Study study, PatientModel patient)
-            throws IOException {
+    private boolean addStudy(Study study, PatientModel patient) {
         List<StudyModel> studies = patient.getStudies();
         for (StudyModel studyModel : studies) {
             if (studyModel.getPk() == study.getPk()) {
@@ -170,7 +157,7 @@ public class StudyListPage extends WebPage {
         }
      }
 
-    private PatientModel addPatient(Patient patient) throws IOException {
+    private PatientModel addPatient(Patient patient) {
         long pk = patient.getPk();
         for (PatientModel patientModel : viewport.getPatients()) {
             if (patientModel.getPk() == pk) {
@@ -218,12 +205,7 @@ public class StudyListPage extends WebPage {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    try {
-                        patModel.expand(viewport.getFilter().isLatestStudiesFirst());
-                    } catch (Exception e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
+                    patModel.expand(viewport.getFilter().isLatestStudiesFirst());
                     if (target != null) {
                         target.addComponent(item);
                     }
@@ -313,12 +295,7 @@ public class StudyListPage extends WebPage {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    try {
-                        studyModel.expand();
-                    } catch (Exception e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
+                    studyModel.expand();
                     if (target != null) {
                         target.addComponent(patientListItem);
                     }
@@ -412,12 +389,7 @@ public class StudyListPage extends WebPage {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    try {
-                        ppsModel.expand();
-                    } catch (Exception e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
+                    ppsModel.expand();
                     if (target != null) {
                         target.addComponent(patientListItem);
                     }
@@ -520,12 +492,7 @@ public class StudyListPage extends WebPage {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    try {
-                        seriesModel.expand();
-                    } catch (Exception e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
+                    seriesModel.expand();
                     if (target != null) {
                         target.addComponent(patientListItem);
                     }
@@ -617,12 +584,7 @@ public class StudyListPage extends WebPage {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    try {
-                        instModel.expand();
-                    } catch (Exception e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
+                    instModel.expand();
                     if (target != null) {
                         target.addComponent(patientListItem);
                     }

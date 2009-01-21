@@ -38,7 +38,6 @@
 
 package org.dcm4chee.web.wicket.folder;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -69,7 +68,7 @@ public class PPSModel implements Serializable {
     private int numberOfSeries;
     private List<SeriesModel> series = new ArrayList<SeriesModel>();
 
-    public PPSModel(MPPS mpps, SeriesModel series1) throws IOException {
+    public PPSModel(MPPS mpps, SeriesModel series1) {
         if (mpps != null) {
             pk = mpps.getPk();
             this.dataset = mpps.getAttributes();
@@ -237,7 +236,7 @@ public class PPSModel implements Serializable {
         }
     }
 
-    public void expand() throws Exception {
+    public void expand() {
         String uid = getUid();
         if (uid != null) {
             StudyListLocal dao = (StudyListLocal)
@@ -251,11 +250,6 @@ public class PPSModel implements Serializable {
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        try {
-            dataset = dao.updateMPPS(pk, dicomObject).getAttributes();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        dataset = dao.updateMPPS(pk, dicomObject).getAttributes();
     }
 }

@@ -38,7 +38,6 @@
 
 package org.dcm4chee.web.wicket.folder;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -67,7 +66,7 @@ public class SeriesModel implements Serializable {
     private DicomObject dataset;
     private List<InstanceModel> instances = new ArrayList<InstanceModel>();
 
-    public SeriesModel(Series series) throws IOException {
+    public SeriesModel(Series series) {
         this.pk = series.getPk();
         this.sourceAET = series.getSourceAET();
         this.dataset = series.getAttributes(true);
@@ -210,7 +209,7 @@ public class SeriesModel implements Serializable {
         }
     }
 
-    public void expand() throws Exception {
+    public void expand() {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         for (Instance inst : dao.findInstancesOfSeries(pk)) {
@@ -221,12 +220,7 @@ public class SeriesModel implements Serializable {
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        try {
-            dataset = dao.updateSeries(pk, dicomObject).getAttributes(true);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        dataset = dao.updateSeries(pk, dicomObject).getAttributes(true);
     }
 
 }

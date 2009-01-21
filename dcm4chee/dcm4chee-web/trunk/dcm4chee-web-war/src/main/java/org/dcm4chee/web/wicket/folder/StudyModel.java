@@ -38,7 +38,6 @@
 
 package org.dcm4chee.web.wicket.folder;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -69,7 +68,7 @@ public class StudyModel implements Serializable {
     private DicomObject dataset;
     private List<PPSModel> ppss = new ArrayList<PPSModel>();
 
-    public StudyModel(Study study) throws IOException {
+    public StudyModel(Study study) {
         this.pk = study.getPk();
         dataset = study.getAttributes(true);
     }
@@ -191,20 +190,15 @@ public class StudyModel implements Serializable {
         }
     }
 
-    public void expand() throws Exception {
-        InitialContext jndiCtx = new InitialContext();
-        try {
-            StudyListLocal dao = (StudyListLocal)
-                    JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-            for (Series series : dao.findSeriesOfStudy(pk)) {
-                add(series);
-            }
-        } finally {
-            jndiCtx.close();
+    public void expand() {
+        StudyListLocal dao = (StudyListLocal)
+                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        for (Series series : dao.findSeriesOfStudy(pk)) {
+            add(series);
         }
     }
 
-    private void add(Series series) throws IOException {
+    private void add(Series series) {
         MPPS mpps = series.getModalityPerformedProcedureStep();
         SeriesModel seriesModel = new SeriesModel(series);
         String ppsuid = seriesModel.getPPSUid();
@@ -227,25 +221,9 @@ public class StudyModel implements Serializable {
         return s == null || s.length() == 0;
     }
 
-    public void refresh() {
-        StudyListLocal dao = (StudyListLocal)
-                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        try {
-            dataset = dao.getStudy(pk).getAttributes(true);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        try {
-            dataset = dao.updateStudy(pk, dicomObject).getAttributes(true);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        dataset = dao.updateStudy(pk, dicomObject).getAttributes(true);
     }
 }

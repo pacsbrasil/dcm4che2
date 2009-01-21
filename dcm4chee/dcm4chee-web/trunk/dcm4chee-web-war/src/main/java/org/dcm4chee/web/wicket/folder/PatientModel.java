@@ -38,7 +38,6 @@
 
 package org.dcm4chee.web.wicket.folder;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -66,7 +65,7 @@ public class PatientModel implements Serializable {
     private DicomObject dataset;
     private List<StudyModel> studies = new ArrayList<StudyModel>();
 
-    public PatientModel(Patient patient) throws IOException {
+    public PatientModel(Patient patient) {
         this.pk = patient.getPk();
         this.dataset = patient.getAttributes();
     }
@@ -170,7 +169,7 @@ public class PatientModel implements Serializable {
         }
     }
 
-    public void expand(boolean latestStudyFirst) throws Exception {
+    public void expand(boolean latestStudyFirst) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         for (Study study : dao.findStudiesOfPatient(pk, latestStudyFirst)) {
@@ -181,11 +180,6 @@ public class PatientModel implements Serializable {
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        try {
-            dataset = dao.updatePatient(pk, dicomObject).getAttributes();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        dataset = dao.updatePatient(pk, dicomObject).getAttributes();
     }
 }
