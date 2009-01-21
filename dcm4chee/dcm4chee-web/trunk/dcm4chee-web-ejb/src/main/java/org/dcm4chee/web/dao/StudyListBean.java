@@ -70,7 +70,6 @@ public class StudyListBean implements StudyListLocal {
     @PersistenceContext(unitName="dcm4chee-arc")
     private EntityManager em;
 
-    @Override
     public int countStudies(StudyListFilter filter) {
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT COUNT(*)");
@@ -82,7 +81,6 @@ public class StudyListBean implements StudyListLocal {
     }
 
     @SuppressWarnings("unchecked")
-    @Override
     public List<Object[]> findStudies(StudyListFilter filter, int max, int index) {
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT p, s");
@@ -359,7 +357,6 @@ public class StudyListBean implements StudyListLocal {
     }
 
     @SuppressWarnings("unchecked")
-    @Override
     public List<Study> findStudiesOfPatient(long pk, boolean latestStudyFirst) {
         return em.createQuery(latestStudyFirst
                     ? "FROM Study s WHERE s.patient.pk=?1 ORDER BY s.studyDateTime DESC"
@@ -369,7 +366,6 @@ public class StudyListBean implements StudyListLocal {
     }
 
     @SuppressWarnings("unchecked")
-    @Override
     public List<Series> findSeriesOfStudy(long pk) {
         return em.createQuery("FROM Series s LEFT JOIN FETCH s.modalityPerformedProcedureStep WHERE s.study.pk=?1 ORDER BY s.pk")
                 .setParameter(1, pk)
@@ -377,7 +373,6 @@ public class StudyListBean implements StudyListLocal {
     }
 
     @SuppressWarnings("unchecked")
-    @Override
     public List<Series> findSeriesOfMpps(String uid) {
         return em.createQuery("FROM Series s WHERE s.performedProcedureStepInstanceUID=?1 ORDER BY s.pk")
                 .setParameter(1, uid)
@@ -385,7 +380,6 @@ public class StudyListBean implements StudyListLocal {
     }
 
     @SuppressWarnings("unchecked")
-    @Override
     public List<Instance> findInstancesOfSeries(long pk) {
         return em.createQuery("FROM Instance i LEFT JOIN FETCH i.media WHERE i.series.pk=?1 ORDER BY i.pk")
                 .setParameter(1, pk)
@@ -393,80 +387,67 @@ public class StudyListBean implements StudyListLocal {
    }
 
     @SuppressWarnings("unchecked")
-    @Override
     public List<File> findFilesOfInstance(long pk) {
         return em.createQuery("FROM File f JOIN FETCH f.fileSystem WHERE f.instance.pk=?1 ORDER BY f.pk")
                 .setParameter(1, pk)
                 .getResultList();
     }
 
-    @Override
     public List<String> selectDistinctSourceAETs() {
         return em.createQuery("SELECT DISTINCT s.sourceAET FROM Series s WHERE s.sourceAET IS NOT NULL ORDER BY s.sourceAET")
                 .getResultList();
     }
 
-    @Override
     public List<String> selectDistinctModalities() {
         return em.createQuery("SELECT DISTINCT s.modality FROM Series s WHERE s.modality IS NOT NULL ORDER BY s.modality")
                 .getResultList();
     }
 
-    @Override
     public Patient getPatient(long pk) {
         return em.find(Patient.class, pk);
     }
 
-    @Override
     public Patient updatePatient(long pk, DicomObject attrs) {
         Patient patient = em.find(Patient.class, pk);
         patient.setAttributes(attrs);
         return patient;
     }
 
-    @Override
     public Study getStudy(long pk) {
         return em.find(Study.class, pk);
     }
 
-    @Override
     public Study updateStudy(long pk, DicomObject attrs) {
         Study study = em.find(Study.class, pk);
         study.setAttributes(attrs);
         return study;
     }
 
-    @Override
     public Series getSeries(long pk) {
         return em.find(Series.class, pk);
     }
 
-    @Override
     public Series updateSeries(long pk, DicomObject attrs) {
         Series series = em.find(Series.class, pk);
         series.setAttributes(attrs);
         return series;
     }
 
-    @Override
     public Instance getInstance(long pk) {
         return em.find(Instance.class, pk);
     }
     
 
-    @Override
     public Instance updateInstance(long pk, DicomObject attrs) {
         Instance inst = em.find(Instance.class, pk);
         inst.setAttributes(attrs);
         return inst;
     }
 
-    @Override
     public MPPS getMPPS(long pk) {
         return em.find(MPPS.class, pk);
     }
 
-    @Override
     public MPPS updateMPPS(long pk, DicomObject attrs) {
         MPPS mpps = em.find(MPPS.class, pk);
         mpps.setAttributes(attrs);
