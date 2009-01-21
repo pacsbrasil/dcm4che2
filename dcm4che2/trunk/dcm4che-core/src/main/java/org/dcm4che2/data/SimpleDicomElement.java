@@ -386,7 +386,6 @@ class SimpleDicomElement extends AbstractDicomElement {
         throw new UnsupportedOperationException();
     }
 
-    @Override
     public String getValueAsString(SpecificCharacterSet cs, int truncate) {
         if (value == null || value.length == 0) {
             return null;

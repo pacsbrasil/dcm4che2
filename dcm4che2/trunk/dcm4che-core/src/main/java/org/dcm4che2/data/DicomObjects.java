@@ -947,7 +947,6 @@ public class DicomObjects {
             return e.vr();
         }
 
-        @Override
         public String getValueAsString(SpecificCharacterSet cs, int truncate) {
             return e.getValueAsString(cs, truncate);
         }

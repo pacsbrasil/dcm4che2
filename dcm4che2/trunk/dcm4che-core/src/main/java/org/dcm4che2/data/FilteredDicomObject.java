@@ -224,7 +224,6 @@ abstract class FilteredDicomObject extends AbstractDicomObject
         public void clear() {
             filter.accept(new Visitor() {
 
-                @Override
                 public boolean visit(DicomElement e) {
                     attrs.remove(e.tag());
                     return true;
