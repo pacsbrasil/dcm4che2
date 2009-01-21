@@ -220,8 +220,9 @@ public class StudyListPage extends WebPage {
             item.add(new Label("name"));
             item.add(new Label("id"));
             item.add(new Label("issuer"));
-            item.add(new Label("sex"));
             item.add(new Label("birthdate"));
+            item.add(new Label("sex"));
+            item.add(new Label("comments"));
             item.add(new AjaxFallbackLink("toggledetails") {
 
                 @Override

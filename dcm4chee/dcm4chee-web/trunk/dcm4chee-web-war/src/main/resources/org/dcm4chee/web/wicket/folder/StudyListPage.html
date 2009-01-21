@@ -79,12 +79,10 @@
         <a href="#">(-)</a>
       </td>
       <th colspan="5">Patient Name</th>
-      <th colspan="2">Patient ID/Issuer</th>
-      <th>Sex</th>
+      <th>Patient ID/Issuer</th>
       <th>Birth Date</th>
-      <th></th>
-      <th></th>
-      <th></th>
+      <th>Sex</th>
+      <th colspan="4">Comments</th>
       <th></th>
       <th></th>
     </tr>
@@ -161,15 +159,13 @@
         <a wicket:id="collapse" href="#">(-)</a>
       </td>
       <td wicket:id="name" colspan="5">[PatientName]</td>
-      <td colspan="2"><span wicket:id="id">[Patient ID]</span>/<span
+      <td><span wicket:id="id">[Patient ID]</span>/<span
                 wicket:id="issuer">[Issuer]</span>
       </td>
-      <td wicket:id="sex">[Sex]</td>
       <td wicket:id="birthdate">[Birth Date]</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>
+      <td wicket:id="sex">[Sex]</td>
+      <td wicket:id="comments" colspan="4">[Patient Comments]</td>
+       <td>
         <a wicket:id="toggledetails" href="#">D</a>
         <a wicket:id="edit" href="#">E</a>
       </td>

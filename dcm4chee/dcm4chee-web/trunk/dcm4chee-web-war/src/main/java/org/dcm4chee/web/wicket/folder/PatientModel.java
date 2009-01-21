@@ -102,41 +102,24 @@ public class PatientModel implements Serializable {
         return dataset.getString(Tag.PatientName);
     }
 
-    public void setName(String name) {
-        dataset.putString(Tag.PatientName, VR.PN, name);
-    }
-
     public String getId() {
         return dataset.getString(Tag.PatientID);
-    }
-
-    public void setId(String id) {
-        dataset.putString(Tag.PatientID, VR.LO, id);
     }
 
     public String getIssuer() {
         return dataset.getString(Tag.IssuerOfPatientID);
     }
 
-    public void setIssuer(String issuer) {
-        dataset.putString(Tag.IssuerOfPatientID, VR.LO, issuer);
-    }
-
     public String getSex() {
-        return dataset.getString(Tag.PatientSex, "");
-    }
-
-    public void setSex(String sex) {
-        dataset.putString(Tag.PatientSex, VR.CS, sex);
+        return dataset.getString(Tag.PatientSex);
     }
 
     public String getBirthdate() {
         return DateUtils.da2str(dataset.getString(Tag.PatientBirthDate));
     }
 
-    public void setBirthdate(String birthdate) {
-        dataset.putString(Tag.PatientBirthDate, VR.DA,
-                DateUtils.str2da(birthdate));
+    public String getComments() {
+        return dataset.getString(Tag.PatientComments);
     }
 
     public List<StudyModel> getStudies() {
