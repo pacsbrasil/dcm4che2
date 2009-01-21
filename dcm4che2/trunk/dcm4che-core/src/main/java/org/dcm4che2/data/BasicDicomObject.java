@@ -463,7 +463,8 @@ public class BasicDicomObject extends AbstractDicomObject {
         if (vr == null)
             vr = vrOf(tag);
         return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val,
-                be, getSpecificCharacterSet()), cachePut ? val : null));
+                be, getSpecificCharacterSet()),
+                cachePut && vr.isSingleValue(val) ? val : null));
     }
 
     public DicomElement putStrings(int tag, VR vr, String[] val) {
@@ -471,7 +472,8 @@ public class BasicDicomObject extends AbstractDicomObject {
         if (vr == null)
             vr = vrOf(tag);
         return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val,
-                be, getSpecificCharacterSet()), cachePut ? val : null));
+                be, getSpecificCharacterSet()), 
+                cachePut && vr.containsSingleValues(val) ? val : null));
     }
 
     public DicomElement putDate(int tag, VR vr, Date val) {

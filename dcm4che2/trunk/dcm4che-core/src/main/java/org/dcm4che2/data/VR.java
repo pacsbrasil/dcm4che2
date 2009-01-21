@@ -402,6 +402,11 @@ public abstract class VR {
                 toString(val, bigEndian, cs)
             };
         }
+
+        @Override
+        public boolean isSingleValue(String val) {
+            return val != null && val.length() != 0;
+        }
     }
 
     private static class ShortVR extends VR
@@ -2611,6 +2616,22 @@ public abstract class VR {
     public void toggleEndian(byte[] val, int off, int len)
     {
         // NO OP
+    }
+
+    public boolean isSingleValue(String val) {
+        return val != null && val.length() != 0 && val.indexOf('\\') == -1;
+    }
+
+    public boolean containsSingleValues(String[] vals) {
+        if (vals == null) {
+            return false;
+        }
+        for (String val : vals) {
+            if (!isSingleValue(val)) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

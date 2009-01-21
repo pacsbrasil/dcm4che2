@@ -109,6 +109,17 @@ public class DicomObjectTest extends TestCase {
         assertEquals(VR.DA, dcm.get(Tag.AcquisitionDate).vr());
     }
 
+    public void testPutStringMultiValue() {
+        DicomObject dcm = new BasicDicomObject();
+        dcm.cachePut(true);
+        dcm.putString(Tag.ImageType, VR.CS, "ORIGINAL\\PRIMARY\\AXIAL");
+        assertEquals(IMAGE_TYPES.length, dcm.vm(Tag.ImageType));
+        assertEquals(IMAGE_TYPES[0], dcm.getString(Tag.ImageType));
+        dcm.putStrings(Tag.ImageType, VR.CS, new String[] { "ORIGINAL\\PRIMARY", "AXIAL" });
+        String[] val = dcm.getStrings(Tag.ImageType);
+        assertEquals(IMAGE_TYPES.length, val.length);
+   }
+
     private static final String[] IMAGE_TYPES = { "ORIGINAL", "PRIMARY",
             "AXIAL" };
 
