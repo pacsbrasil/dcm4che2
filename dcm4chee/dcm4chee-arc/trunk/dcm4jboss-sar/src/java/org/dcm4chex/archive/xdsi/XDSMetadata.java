@@ -77,7 +77,11 @@ import org.xml.sax.helpers.AttributesImpl;
  * @since Feb 15, 2006
  */
 public class XDSMetadata {
-	private static final String TAG_ASSOCIATION = "Association";
+	private static final String ORIGINAL = "Original";
+    private static final String HAS_MEMBER = "HasMember";
+    private static final String SUBMISSION_SET = "SubmissionSet";
+    private static final String FOLDER_DOC_ASSOC = "FolderDocAssoc";
+    private static final String TAG_ASSOCIATION = "Association";
 	private static final String DEFAULT_TIME_STRING = "000000";
 	private static final String DEFAULT_DATE_STRING = "11111111";
 	private static final String ATTR_CLASSIFICATION_NODE = "classificationNode";
@@ -220,7 +224,7 @@ public class XDSMetadata {
     	addObjectRef(UUID.XDSDocumentEntry_healthCareFacilityTypeCode); 
     	addObjectRef(UUID.XDSDocumentEntry_practiceSettingCode); 
         addObjectRef(UUID.XDSDocumentEntry_typeCode); 
-    	addClassification("SubmissionSet", UUID.XDSSubmissionSet);
+    	addClassification(SUBMISSION_SET, UUID.XDSSubmissionSet);
         if ( newFolder ) {
             addObjectRef(UUID.XDSFolder); 
             addObjectRef(UUID.XDSFolder_uniqueId); 
@@ -237,19 +241,20 @@ public class XDSMetadata {
         } else {
             title = mdValues.getProperty("submissionSetTitle","TITLE");
         }
-        addSubmissionRegistryPackage("SubmissionSet", title);
+        addSubmissionRegistryPackage(SUBMISSION_SET, title);
         if ( newFolder ) {
             addFolderRegistryPackage("Folder", mdValues.getProperty("folder.name","FOLDER"));
-            addAssociation("SubmissionSet","Folder", "HasMember", null);
+            addAssociation(null, SUBMISSION_SET,"Folder", HAS_MEMBER, null);
             if ( docs != null ) {
             for ( int i = 0 ; i < docs.length ; i++ ) {
-                addAssociation("Folder", docs[i].getDocumentID(),"HasMember", null);
+                addAssociation( FOLDER_DOC_ASSOC+i, "Folder", docs[i].getDocumentID(),HAS_MEMBER, null);
+                addAssociation( null, SUBMISSION_SET, FOLDER_DOC_ASSOC+i, HAS_MEMBER, null );
             }
         }
         }
         if ( docs != null ) {
             for ( int i = 0 ; i < docs.length ; i++ ) {
-                addAssociation("SubmissionSet",docs[i].getDocumentID(), "HasMember", "Original");
+                addAssociation( null, SUBMISSION_SET,docs[i].getDocumentID(), HAS_MEMBER, ORIGINAL );
             }
 
             String folders = mdValues.getProperty("folder_assoc.uniqueId");
@@ -259,7 +264,8 @@ public class XDSMetadata {
                 while ( st.hasMoreTokens() ) {
                     uuid = st.nextToken();
                     for ( int i = 0 ; i < docs.length ; i++ ) {
-                        addAssociation(uuid,docs[i].getDocumentID(), "HasMember", null);
+                        addAssociation(null, uuid,docs[i].getDocumentID(), HAS_MEMBER, null);
+                        addAssociation( null, SUBMISSION_SET, FOLDER_DOC_ASSOC+i, HAS_MEMBER, null );
                     }
                     addObjectRef(uuid);
                 }
@@ -283,7 +289,7 @@ public class XDSMetadata {
                     for ( Iterator iter = assocs.iterator() ; iter.hasNext() ; ) {
                         assoc = (XDSIDocument.Association) iter.next();
                         uuid = assoc.getUUID();
-                        addAssociation(docs[i].getDocumentID(),uuid, assoc.getType(), assoc.getStatus());
+                        addAssociation(null, docs[i].getDocumentID(),uuid, assoc.getType(), assoc.getStatus());
                         if ( !objectRefs.contains(uuid)){
                             addObjectRef(uuid);
                             objectRefs.add(uuid);
@@ -298,9 +304,11 @@ public class XDSMetadata {
 	 * @param status
 	 * @throws SAXException
 	 */
-	private void addAssociation(String sourceObject, String targetObject, String type, String status) throws SAXException {
+	private void addAssociation(String id, String sourceObject, String targetObject, String type, String status) throws SAXException {
 		AttributesImpl attr = new AttributesImpl();
-		attr.addAttribute("", "associationType", "associationType", "", type);		
+		if ( id != null )
+                    attr.addAttribute("", "id", "id", "", id);          
+                attr.addAttribute("", "associationType", "associationType", "", type);          
 		attr.addAttribute("", "sourceObject", "sourceObject", "", sourceObject);		
 		attr.addAttribute("", "targetObject", "targetObject", "", targetObject);		
     	th.startElement("", TAG_ASSOCIATION, TAG_ASSOCIATION, attr );
@@ -585,7 +593,7 @@ public class XDSMetadata {
 				mdValues.getProperty(XDSIService.AUTHOR_SPECIALITY, null));
 		}
         
-        addClassification(UUID.XDSSubmissionSet_contentTypeCode, "SubmissionSet", 
+        addClassification(UUID.XDSSubmissionSet_contentTypeCode, SUBMISSION_SET, 
                 mdValues.getProperty("contentTypeCode","Group counseling"),
                 mdValues.getProperty("contentTypeCodeDN","Group counseling"),
                 mdValues.getProperty("contentTypeCodeCodingSchemeOID","Connect-a-thon contentTypeCodes"));
