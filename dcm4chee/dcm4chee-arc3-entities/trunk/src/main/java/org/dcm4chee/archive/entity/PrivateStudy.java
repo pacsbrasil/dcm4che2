@@ -132,7 +132,7 @@ public class PrivateStudy implements Serializable {
                 + "]";
     }
 
-    public DicomObject getAttributes() throws IOException {
+    public DicomObject getAttributes() {
         return DicomObjectUtils.decode(encodedAttributes);
     }
 

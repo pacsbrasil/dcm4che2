@@ -125,7 +125,7 @@ public class PrivateInstance implements Serializable {
                 + "]";
     }
 
-    public DicomObject getAttributes() throws IOException {
+    public DicomObject getAttributes() {
         return DicomObjectUtils.decode(encodedAttributes);
     }
 

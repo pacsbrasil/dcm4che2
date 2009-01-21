@@ -313,7 +313,7 @@ public class Instance implements Serializable {
         updatedTime = new Date();
     }
 
-    public DicomObject getAttributes(boolean cfindrsp) throws IOException {
+    public DicomObject getAttributes(boolean cfindrsp) {
         DicomObject dataset = DicomObjectUtils.decode(encodedAttributes);
         if (cfindrsp) {
             if (media != null) {

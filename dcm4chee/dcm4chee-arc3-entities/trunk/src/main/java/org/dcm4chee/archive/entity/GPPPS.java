@@ -157,7 +157,7 @@ public class GPPPS implements Serializable {
         updatedTime = new Date();
     }
 
-    public DicomObject getAttributes() throws IOException {
+    public DicomObject getAttributes() {
         return DicomObjectUtils.decode(encodedAttributes);
     }
 

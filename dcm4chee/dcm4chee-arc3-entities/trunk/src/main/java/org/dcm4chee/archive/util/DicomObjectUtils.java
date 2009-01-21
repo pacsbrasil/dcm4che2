@@ -48,6 +48,7 @@ import org.dcm4che2.data.TransferSyntax;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.DicomOutputStream;
+import org.dcm4chee.archive.exceptions.BlobCorruptedException;
 
 /**
  * @author Damien Evans <damien.daddy@gmail.com>
@@ -80,15 +81,20 @@ public class DicomObjectUtils {
         return baos.toByteArray();
     }
 
-    public static DicomObject decode(byte[] b) throws IOException {
+    public static DicomObject decode(byte[] b) {
         BasicDicomObject dest = new BasicDicomObject();
         decode(b, dest);
         return dest;
     }
 
-    public static void decode(byte[] b, DicomObject dest) throws IOException {
-        new DicomInputStream(new ByteArrayInputStream(b))
-                .readDicomObject(dest, -1);
+    public static void decode(byte[] b, DicomObject dest) {
+        try {
+            new DicomInputStream(new ByteArrayInputStream(b))
+                    .readDicomObject(dest, -1);
+        } catch (IOException e) {
+            throw new BlobCorruptedException(e);
+        }
+        dest.remove(Tag.TransferSyntaxUID);
     }
 
 }
