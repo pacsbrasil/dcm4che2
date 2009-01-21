@@ -67,6 +67,13 @@ abstract class FilteredDicomObject extends AbstractDicomObject
         {
             return Arrays.binarySearch(tags, tag) >= 0;
         }
+
+        @Override
+        public void clear() {
+            for (int i = 0; i < tags.length; i++) {
+                attrs.remove(tags[i]);
+            }
+        }
     }
 
     static final class Exclude extends FilteredDicomObject
@@ -211,6 +218,17 @@ abstract class FilteredDicomObject extends AbstractDicomObject
         public Iterator<DicomElement> iterator(int fromTag, int toTag)
         {
             return new FilterItr(attrs.iterator(fromTag, toTag));
+        }
+
+        @Override
+        public void clear() {
+            filter.accept(new Visitor() {
+
+                @Override
+                public boolean visit(DicomElement e) {
+                    attrs.remove(e.tag());
+                    return true;
+                }});
         }
     }
 
@@ -359,92 +377,150 @@ abstract class FilteredDicomObject extends AbstractDicomObject
 
     public void add(DicomElement attr)
     {
-        throw new UnsupportedOperationException();
+        if (!filter(attr.tag())) {
+            throw new IllegalArgumentException();
+        }
+        attrs.add(attr);
     }
 
     public DicomElement putBytes(int tag, VR vr, byte[] val, boolean bigEndian)
     {
-        throw new UnsupportedOperationException();
+        if (!filter(tag)) {
+            throw new UnsupportedOperationException();
+        }
+        return attrs.putBytes(tag, vr, val, bigEndian);
     }
 
     public DicomElement putDouble(int tag, VR vr, double val)
     {
-        throw new UnsupportedOperationException();
+        if (!filter(tag)) {
+            throw new UnsupportedOperationException();
+        }
+        return attrs.putDouble(tag, vr, val);
     }
 
     public DicomElement putDoubles(int tag, VR vr, double[] val)
     {
-        throw new UnsupportedOperationException();
+        if (!filter(tag)) {
+            throw new UnsupportedOperationException();
+        }
+        return attrs.putDoubles(tag, vr, val);
     }
 
     public DicomElement putNull(int tag, VR vr)
     {
-        throw new UnsupportedOperationException();
+        if (!filter(tag)) {
+            throw new UnsupportedOperationException();
+        }
+        return attrs.putNull(tag, vr);
     }
 
     public DicomElement putFloat(int tag, VR vr, float val)
     {
-        throw new UnsupportedOperationException();
+        if (!filter(tag)) {
+            throw new UnsupportedOperationException();
+        }
+        return attrs.putFloat(tag, vr, val);
     }
 
     public DicomElement putFloats(int tag, VR vr, float[] val)
     {
-        throw new UnsupportedOperationException();
+        if (!filter(tag)) {
+            throw new UnsupportedOperationException();
+        }
+        return attrs.putFloats(tag, vr, val);
     }
 
     public DicomElement putInt(int tag, VR vr, int val)
     {
-        throw new UnsupportedOperationException();
+        if (!filter(tag)) {
+            throw new UnsupportedOperationException();
+        }
+        return attrs.putInt(tag, vr, val);
     }
 
     public DicomElement putInts(int tag, VR vr, int[] val)
     {
-        throw new UnsupportedOperationException();
+        if (!filter(tag)) {
+            throw new UnsupportedOperationException();
+        }
+        return attrs.putInts(tag, vr, val);
     }
 
     public DicomElement putShorts(int tag, VR vr, short[] val)
     {
-        throw new UnsupportedOperationException();
+        if (!filter(tag)) {
+            throw new UnsupportedOperationException();
+        }
+        return attrs.putShorts(tag, vr, val);
     }
 
     public DicomElement putNestedDicomObject(int tag, DicomObject item)
     {
-        throw new IllegalArgumentException(TagUtils.toString(tag));
+        if (!filter(tag)) {
+            throw new UnsupportedOperationException();
+        }
+        return attrs.putNestedDicomObject(tag, item);
     }
 
     public DicomElement putString(int tag, VR vr, String val)
     {
-        throw new UnsupportedOperationException();
+        if (!filter(tag)) {
+            throw new UnsupportedOperationException();
+        }
+        return attrs.putString(tag, vr, val);
     }
 
     public DicomElement putStrings(int tag, VR vr, String[] val)
     {
-        throw new UnsupportedOperationException();
+        if (!filter(tag)) {
+            throw new UnsupportedOperationException();
+        }
+        return attrs.putStrings(tag, vr, val);
     }
 
     public DicomElement putDate(int tag, VR vr, Date val)
     {
-        throw new UnsupportedOperationException();
+        if (!filter(tag)) {
+            throw new UnsupportedOperationException();
+        }
+        return attrs.putDate(tag, vr, val);
     }
 
     public DicomElement putDates(int tag, VR vr, Date[] val)
     {
-        throw new UnsupportedOperationException();
+        if (!filter(tag)) {
+            throw new UnsupportedOperationException();
+        }
+        return attrs.putDates(tag, vr, val);
     }
 
     public DicomElement putDateRange(int tag, VR vr, DateRange val)
     {
-        throw new UnsupportedOperationException();
+        if (!filter(tag)) {
+            throw new UnsupportedOperationException();
+        }
+        return attrs.putDateRange(tag, vr, val);
     }
 
     public void clear()
     {
-        throw new UnsupportedOperationException();
+        final int[] toRemove = new int[size()];
+        accept(new Visitor() {
+            int i = 0;
+            public boolean visit(DicomElement attr) {
+                toRemove[i++] = attr.tag();
+                return true;
+            }
+        });
+        for (int i = 0; i < toRemove.length; i++) {
+            attrs.remove(toRemove[i]);
+        }
     }
 
     public DicomElement remove(int tag)
     {
-        throw new UnsupportedOperationException();
+        return filter(tag) ? attrs.remove(tag) : null;
     }
 
     public int resolveTag(int privateTag, String privateCreator)
@@ -490,22 +566,34 @@ abstract class FilteredDicomObject extends AbstractDicomObject
     public DicomElement putFragments(int tag, VR vr, boolean bigEndian,
             int capacity)
     {
-        throw new UnsupportedOperationException();
+        if (!filter(tag)) {
+            throw new UnsupportedOperationException();
+        }
+        return attrs.putFragments(tag, vr, bigEndian, capacity);
     }
 
     public DicomElement putFragments(int tag, VR vr, boolean bigEndian)
     {
-        throw new UnsupportedOperationException();
+        if (!filter(tag)) {
+            throw new UnsupportedOperationException();
+        }
+        return attrs.putFragments(tag, vr, bigEndian);
     }
 
     public DicomElement putSequence(int tag, int capacity)
     {
-        throw new UnsupportedOperationException();
+        if (!filter(tag)) {
+            throw new UnsupportedOperationException();
+        }
+        return attrs.putSequence(tag, capacity);
     }
 
     public DicomElement putSequence(int tag)
     {
-        throw new UnsupportedOperationException();
+        if (!filter(tag)) {
+            throw new UnsupportedOperationException();
+        }
+        return attrs.putSequence(tag);
     }
 
     public void initFileMetaInformation(String tsuid)
