@@ -82,7 +82,7 @@
       <th>Patient ID/Issuer</th>
       <th>Birth Date</th>
       <th>Sex</th>
-      <th colspan="4">Comments</th>
+      <th colspan="3">Comments</th>
       <th></th>
       <th></th>
     </tr>
@@ -94,7 +94,7 @@
       <th>ID</th>
       <th>Accession No</th>
       <th>Mods</th>
-      <th colspan=2>Description</th>
+      <th>Description</th>
       <th>#S/#I</th>
       <th>Availability</th>
       <th></th>
@@ -109,7 +109,6 @@
       <th>Accession No</th>
       <th>Mod</th>
       <th>Description</th>
-      <th>Station AET</th>
       <th>#S/#I</th>
       <th>Status</th>
       <th></th>
@@ -120,10 +119,10 @@
         <a href="#">(-)</a>
       </td>
       <th colspan="2">Series Date/Time</th>
-      <th colspan="2">Series No</th>
+      <th>Series No</th>
+      <th>Source AET</th>
       <th>Mod</th>
       <th>Description</th>
-      <th>Source AET</th>
       <th>#I</th>
       <th>Availability</th>
       <th></th>
@@ -136,7 +135,7 @@
       <th>Instance Date/Time</th>
       <th>Instance No</th>
       <th colspan="2">SOP Class UID</th>
-      <th colspan="3">Description</th>
+      <th colspan="2">Description</th>
       <th>Availability</th>
       <th></th>
       <th></th>
@@ -145,7 +144,7 @@
       <th>File Date/Time</th>
       <th>Size</th>
       <th colspan="2">Transfer Syntax UID</th>
-      <th colspan="3">File Path</th>
+      <th colspan="2">File Path</th>
       <th>Availability</th>
       <th></th>
       <th></th>
@@ -164,7 +163,7 @@
       </td>
       <td wicket:id="birthdate">[Birth Date]</td>
       <td wicket:id="sex">[Sex]</td>
-      <td wicket:id="comments" colspan="4">[Patient Comments]</td>
+      <td wicket:id="comments" colspan="3">[Patient Comments]</td>
        <td>
         <a wicket:id="toggledetails" href="#">D</a>
         <a wicket:id="edit" href="#">E</a>
@@ -172,7 +171,7 @@
       <td><input wicket:id="selected" type="checkbox" /></td>
     </tr>
     <tr wicket:id="details" class="patient">
-      <td colspan="14">
+      <td colspan="13">
         <div wicket:id="dicomobject"></div>
       </td>
     </tr>
@@ -186,7 +185,7 @@
       <td wicket:id="id">[Study ID]</td>
       <td wicket:id="accessionNumber">[Acc No]</td>
       <td wicket:id="modalities">[Mods]</td>
-      <td wicket:id="description" colspan="2">[Description]</td>
+      <td wicket:id="description">[Description]</td>
       <td><span wicket:id="numberOfSeries">[#S]</span>/<span
                 wicket:id="numberOfInstances">[#I]</span>
       </td>
@@ -198,7 +197,7 @@
       <td><input wicket:id="selected" type="checkbox" /></td>
     </tr>
     <tr wicket:id="details" class="study">
-      <td colspan="13">
+      <td colspan="12">
         <div wicket:id="dicomobject"></div>
       </td>
     </tr>
@@ -213,7 +212,6 @@
       <td wicket:id="spsid">[SPS ID]</td>
       <td wicket:id="modality">[Mod]</td>
       <td wicket:id="description">[Description]</td>
-      <td wicket:id="stationAET">[Station AET]</td>
       <td><span wicket:id="numberOfSeries">[#S]</span>/<span
                 wicket:id="numberOfInstances">[#I]</span>
       </td>
@@ -225,7 +223,7 @@
       <td><input wicket:id="selected" type="checkbox" /></td>
     </tr>
     <tr wicket:id="details" class="pps">
-      <td colspan="12">
+      <td colspan="11">
         <div wicket:id="dicomobject"></div>
       </td>
     </tr>
@@ -236,10 +234,10 @@
         <a wicket:id="collapse" href="#">(-)</a>
       </td>
       <td wicket:id="datetime" colspan="2">[Series Date/Time]</td>
-      <td wicket:id="seriesNumber" colspan="2">[No]</td>
+      <td wicket:id="seriesNumber">[No]</td>
+      <td wicket:id="sourceAET">[Source AET]</td>
       <td wicket:id="modality">[Mod]</td>
       <td wicket:id="description">[Description]</td>
-      <td wicket:id="sourceAET">[Source AET]</td>
       <td wicket:id="numberOfInstances">[#I]</td>
       <td wicket:id="availability">[Availability]</td>
       <td>
@@ -249,7 +247,7 @@
       <td><input wicket:id="selected" type="checkbox" /></td>
     </tr>
     <tr wicket:id="details" class="series">
-      <td colspan="11">
+      <td colspan="10">
         <div wicket:id="dicomobject"></div>
       </td>
     </tr>
@@ -262,7 +260,7 @@
       <td wicket:id="datetime">[Content Date/Time]</td>
       <td wicket:id="instanceNumber">[No]</td>
       <td wicket:id="sopClassUID" colspan="2">[SOP Class UID]</td>
-      <td wicket:id="description" colspan="3">[Description]</td>
+      <td wicket:id="description" colspan="2">[Description]</td>
       <td wicket:id="availability">[Availability]</td>
       <td>
         <a wicket:id="toggledetails" href="#">D</a>
@@ -271,7 +269,7 @@
       <td><input wicket:id="selected" type="checkbox" /></td>
     </tr>
     <tr wicket:id="details" class="instance">
-      <td colspan="10">
+      <td colspan="9">
         <div wicket:id="dicomobject"></div>
       </td>
     </tr>
@@ -280,7 +278,7 @@
       <td wicket:id="datetime">[File Date/Time]</td>
       <td wicket:id="size">[Size]</td>
       <td wicket:id="transferSyntaxUID" colspan="2">[Transfer Syntax UID]</td>
-      <td wicket:id="path" colspan="3">[File Path]</td>
+      <td wicket:id="path" colspan="2">[File Path]</td>
       <td wicket:id="availability">[Availability]</td>
       <td></td>
       <td></td>

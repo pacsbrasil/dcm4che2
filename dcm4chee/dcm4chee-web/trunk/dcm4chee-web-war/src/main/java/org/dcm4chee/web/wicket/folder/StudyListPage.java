@@ -407,7 +407,6 @@ public class StudyListPage extends WebPage {
             item.add(new Label("spsid"));
             item.add(new Label("modality"));
             item.add(new Label("description"));
-            item.add(new Label("stationAET"));
             item.add(new Label("numberOfSeries"));
             item.add(new Label("numberOfInstances"));
             item.add(new Label("status"));
@@ -507,9 +506,9 @@ public class StudyListPage extends WebPage {
             item.add(cell);
             item.add(new Label("datetime"));
             item.add(new Label("seriesNumber"));
+            item.add(new Label("sourceAET"));
             item.add(new Label("modality"));
             item.add(new Label("description"));
-            item.add(new Label("sourceAET"));
             item.add(new Label("numberOfInstances"));
             item.add(new Label("availability"));
             item.add(new AjaxFallbackLink("toggledetails") {
