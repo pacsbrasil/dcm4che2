@@ -44,6 +44,8 @@ import java.util.Map;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.dcm4chee.xero.wado.WadoParams.*;
 
@@ -67,6 +69,7 @@ import static org.dcm4chee.xero.wado.WadoParams.*;
  * @author bwallace
  */
 public class ImageDisplayRelative implements Filter<WadoImage> {
+   private static final Logger log = LoggerFactory.getLogger(ImageDisplayRelative.class);
 	public static final String DISPLAY_VALUE = "display";
 	public static final String IMAGE_VALUE = "image";
 	public static final String RELATIVE_KEY = "relative";
@@ -97,8 +100,10 @@ public class ImageDisplayRelative implements Filter<WadoImage> {
 		params.put(COLOURS, new ArrayList<byte[]>());
 		params.put(NEEDS_IMAGE, Boolean.FALSE);
 		if (DISPLAY_VALUE.equalsIgnoreCase(relType)) {
+		   log.info("Return display relative image.");
 			return displayRel.filter(null, params);
 		} else {
+		   log.info("Return image relative filter.");
 			return imageRel.filter(null, params);
 		}
 	}

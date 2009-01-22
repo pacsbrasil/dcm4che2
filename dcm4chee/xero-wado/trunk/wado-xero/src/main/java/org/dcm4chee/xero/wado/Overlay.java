@@ -123,7 +123,6 @@ public class Overlay implements Filter<WadoImage> {
 		int h = biRet.getHeight();
 		int[] row = null;
 		int[] retrow = null;
-		int rowLen = (w + 7) / 8;
 
 		for (int y = 0; y < h; y++) {
 			if (r != null)
@@ -140,15 +139,18 @@ public class Overlay implements Filter<WadoImage> {
 						}
 					}
 				} else {
-					int start = rowLen * y;
+					int start = w * y;
 					if (oi.multiframe) {
 						log.debug("Returning a multi-frame embedded overlay.");
 						int frame = FilterUtil.getInt(params, FRAME_NUMBER, 1) - 1;
-						start = start + frame * rowLen * h;
+						start = start + frame * w * h;
 					}
-					for (int x = 0; x < w;) {
+                    int bitIgnore = start % 8;
+                    start = start/8;
+					for (int x = -bitIgnore; x < w;) {
 						byte datum = oi.data[start++];
 						for (int b = 1; b < 256 && x<w; b = b << 1, x++) {
+						    if( x<0 ) continue;
 							if ((datum & b) != 0) {
 								rowChanged = true;
 								retrow[x] = oi.useClr;
