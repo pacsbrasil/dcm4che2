@@ -10,11 +10,7 @@ UnitTest.prototype.runUnitTests = function() {
 	
 		if(key.substring(0, 4) == "test")
 		{
-			console.info("Testing " + key);
-		
-			this[key]();
-			
-			console.info(key + " passed");
+			this.runUnitTest(key);
 		}
 		else
 		{
@@ -25,6 +21,13 @@ UnitTest.prototype.runUnitTests = function() {
 		throw new Error("Failed "+errorCount+" tests.");
 	}
 	console.info("Done all tests.")
+};
+
+/** Runs a single unit test */
+UnitTest.prototype.runUnitTest = function(testName) {
+    console.info("Test "+testName);
+	this[testName]();
+	console.info(testName+" passed.");
 };
 
 function assert(bool,msg) {
