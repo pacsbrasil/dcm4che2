@@ -28,6 +28,7 @@ import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.web.dao.StudyListLocal;
 import org.dcm4chee.web.wicket.WicketSession;
+import org.dcm4chee.web.wicket.common.DateTimeLabel;
 import org.dcm4chee.web.wicket.util.JNDIUtils;
 
 public class StudyListPage extends WebPage {
@@ -630,23 +631,51 @@ public class StudyListPage extends WebPage {
             };
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", instModel.getDataset(), false));
-            item.add(new FileListView("files", instModel.getFiles()));
+            item.add(new FileListView("files", instModel.getFiles(), patientListItem));
         }
     }
 
     private final static class FileListView extends PropertyListView {
 
-        private FileListView(String id, List<FileModel> list) {
+        private final ListItem patientListItem;
+
+        private FileListView(String id, List<FileModel> list,
+                ListItem patientListItem) {
             super(id, list);
+            this.patientListItem = patientListItem;
         }
 
         @Override
         protected void populateItem(final ListItem item) {
-            item.add(new Label("datetime"));
-            item.add(new Label("size"));
-            item.add(new Label("transferSyntaxUID"));
-            item.add(new Label("path"));
-            item.add(new Label("availability"));
+            final FileModel fileModel = (FileModel) item.getModelObject();
+            item.add(new DateTimeLabel("file.createdTime"));
+            item.add(new Label("file.fileSize"));
+            item.add(new Label("file.transferSyntaxUID"));
+            item.add(new Label("file.fileSystem.directoryPath"));
+            item.add(new Label("file.filePath"));
+            item.add(new Label("file.fileSystem.availability"));
+            item.add(new AjaxFallbackLink("toggledetails") {
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    fileModel.setDetails(!fileModel.isDetails());
+                    if (target != null) {
+                        target.addComponent(patientListItem);
+                    }
+                }
+
+            });
+            item.add(new CheckBox("selected"));
+            WebMarkupContainer details = new WebMarkupContainer("details") {
+                
+                @Override
+                public boolean isVisible() {
+                    return fileModel.isDetails();
+                }
+                
+            };
+            item.add(details);
+            details.add(new FilePanel("file", fileModel));
         }
     }
 }

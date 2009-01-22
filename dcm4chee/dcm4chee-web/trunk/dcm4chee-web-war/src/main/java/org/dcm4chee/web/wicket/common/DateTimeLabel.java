@@ -36,49 +36,47 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket.folder;
+package org.dcm4chee.web.wicket.common;
 
-import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
-import org.dcm4chee.archive.entity.File;
+import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.util.convert.IConverter;
+import org.apache.wicket.util.convert.converters.DateConverter;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Dec 12, 2008
+ * @since Jan 22, 2009
  */
-public class FileModel implements Serializable {
+public class DateTimeLabel extends Label {
 
-    private boolean selected;
-    private boolean details;
-    private final File file;
-
-    public FileModel(File file) {
-        this.file = file;
+    public DateTimeLabel(String id) {
+        super(id);
     }
 
-    public File getFile() {
-        return file;
+    public DateTimeLabel(String id, String label) {
+        super(id, label);
     }
 
-    public boolean isSelected() {
-        return selected;
+    public DateTimeLabel(String id, IModel model) {
+        super(id, model);
     }
 
-    public void setSelected(boolean selected) {
-        this.selected = selected;
+    @Override
+    public IConverter getConverter(Class type) {
+        return new IConverter() {
+
+            public Object convertToObject(String value, Locale locale) {
+                throw new UnsupportedOperationException();
+            }
+
+            public String convertToString(Object value, Locale locale) {
+                return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(value);
+            }};
     }
 
-    public boolean isDetails() {
-        return details;
-    }
-
-    public void setDetails(boolean details) {
-        this.details = details;
-    }
-
-    public int getRowspan() {
-        return details ? 2 : 1;
-    }
 
 }

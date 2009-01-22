@@ -38,47 +38,34 @@
 
 package org.dcm4chee.web.wicket.folder;
 
-import java.io.Serializable;
-
-import org.dcm4chee.archive.entity.File;
+import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.CompoundPropertyModel;
+import org.dcm4chee.web.wicket.common.DateTimeLabel;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Dec 12, 2008
+ * @since Jan 22, 2009
  */
-public class FileModel implements Serializable {
+public class FilePanel extends Panel {
 
-    private boolean selected;
-    private boolean details;
-    private final File file;
-
-    public FileModel(File file) {
-        this.file = file;
-    }
-
-    public File getFile() {
-        return file;
-    }
-
-    public boolean isSelected() {
-        return selected;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
-
-    public boolean isDetails() {
-        return details;
-    }
-
-    public void setDetails(boolean details) {
-        this.details = details;
-    }
-
-    public int getRowspan() {
-        return details ? 2 : 1;
+    public FilePanel(String id, FileModel fileModel) {
+        super(id, new CompoundPropertyModel(fileModel));
+        add(new Label("file.pk"));
+        add(new DateTimeLabel("file.createdTime"));
+        add(new Label("file.fileSize"));
+        add(new Label("file.transferSyntaxUID"));
+        add(new Label("file.md5Sum"));
+        add(new DateTimeLabel("file.timeOfLastMD5SumCheck"));
+        add(new Label("file.fileStatus"));
+        add(new Label("file.filePath"));
+        add(new Label("file.fileSystem.directoryPath"));
+        add(new Label("file.fileSystem.groupID"));
+        add(new Label("file.fileSystem.retrieveAET"));
+        add(new Label("file.fileSystem.availability"));
+        add(new Label("file.fileSystem.status"));
+        add(new Label("file.fileSystem.userInfo"));
     }
 
 }

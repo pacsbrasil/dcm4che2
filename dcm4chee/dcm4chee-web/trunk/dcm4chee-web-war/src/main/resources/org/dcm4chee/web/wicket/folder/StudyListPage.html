@@ -275,13 +275,23 @@
     </tr>
     <wicket:container wicket:id="files" >
     <tr class="file">
-      <td wicket:id="datetime">[File Date/Time]</td>
-      <td wicket:id="size">[Size]</td>
-      <td wicket:id="transferSyntaxUID" colspan="2">[Transfer Syntax UID]</td>
-      <td wicket:id="path" colspan="2">[File Path]</td>
-      <td wicket:id="availability">[Availability]</td>
-      <td></td>
-      <td></td>
+      <td wicket:id="file.createdTime">[File Date/Time]</td>
+      <td wicket:id="file.fileSize">[Size]</td>
+      <td wicket:id="file.transferSyntaxUID" colspan="2">[Transfer Syntax UID]</td>
+      <td colspan="2">
+        <span wicket:id="file.fileSystem.directoryPath">[Dir Path]</span>/<span
+              wicket:id="file.filePath">[File Path]</span>
+      </td>
+      <td wicket:id="file.fileSystem.availability">[Availability]</td>
+      <td>
+        <a wicket:id="toggledetails" href="#">D</a>
+      </td>
+      <td><input wicket:id="selected" type="checkbox" /></td>
+    </tr>
+    <tr wicket:id="details" class="file">
+      <td colspan="9">
+        <div wicket:id="file"></div>
+      </td>
     </tr>
     </wicket:container>
     </wicket:container>

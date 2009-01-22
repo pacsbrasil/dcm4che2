@@ -203,7 +203,8 @@ public class SeriesModel implements Serializable {
     public void retainSelectedInstances() {
         for (Iterator<InstanceModel> it = instances.iterator(); it.hasNext();) {
             InstanceModel inst = it.next();
-            if (!inst.isSelected()) {
+            inst.retainSelectedFiles();
+            if (inst.isCollapsed() && !inst.isSelected()) {
                 it.remove();
             }
         }

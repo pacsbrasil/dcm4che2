@@ -40,6 +40,7 @@ package org.dcm4chee.web.wicket.folder;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.dcm4che2.data.DicomObject;
@@ -167,7 +168,10 @@ public class InstanceModel implements Serializable {
 
     public int getRowspan() {
         int rowspan = details ? 2 : 1;
-        return rowspan + files.size();
+        for (FileModel file : files) {
+            rowspan += file.getRowspan();
+        }
+        return rowspan;
     }
 
     public void collapse() {
@@ -176,6 +180,14 @@ public class InstanceModel implements Serializable {
 
     public boolean isCollapsed() {
         return files.isEmpty();
+    }
+
+    public void retainSelectedFiles() {
+        for (Iterator<FileModel> it = files.iterator(); it.hasNext();) {
+            if (!it.next().isSelected()) {
+                it.remove();
+            }
+        }
     }
 
     public void expand() {
