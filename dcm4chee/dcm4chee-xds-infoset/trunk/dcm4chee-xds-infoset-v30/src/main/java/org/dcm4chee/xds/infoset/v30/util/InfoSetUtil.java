@@ -87,13 +87,31 @@ public class InfoSetUtil {
         return null;
     }
 
-    public static RegistryPackageType getRegistryPackage(SubmitObjectsRequest so) {
+    public static RegistryPackageType getRegistryPackage(SubmitObjectsRequest so, String classificationUUID) {
         List list = so.getRegistryObjectList().getIdentifiable();
+        String id = null;
         Object o;
+        if ( classificationUUID != null ) {
+            ClassificationType ct;
+            for ( Iterator iter = list.iterator(); iter.hasNext() ; ) {
+                o = ((JAXBElement) iter.next()).getValue();
+                if ( o instanceof ClassificationType) {
+                    ct = (ClassificationType) o;
+                    if ( classificationUUID.equals( ct.getClassificationNode())) {
+                        id = ct.getClassifiedObject();
+                        break;
+                    }
+                }
+            }
+        }
+        RegistryPackageType rp;
         for ( Iterator iter = list.iterator(); iter.hasNext() ; ) {
             o = ((JAXBElement) iter.next()).getValue();
             if ( o instanceof RegistryPackageType) {
-                return (RegistryPackageType) o;
+                rp = (RegistryPackageType) o;
+                if ( id == null || id.equals( rp.getId())) {
+                    return rp;
+                }
             }
         }
         return null;
