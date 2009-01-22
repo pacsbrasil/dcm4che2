@@ -86,24 +86,24 @@ Navigation.prototype.generateQuery = function Navigation_generateQuery(child, re
 	modifiers = this.conversation.assignDefaultModifiers(this.external, childId);
 	this.debug("Modifiers ",modifiers);
 	if( this.level===3 ) {
-		this.debug("Adding image level query at %d of size %d initial offset %d", childId, this.IMAGE_QUERY_SIZE, this.QUERY_SIZE);
+		console.debug("Adding image level query at %d of size %d initial offset %d", childId, this.IMAGE_QUERY_SIZE, this.QUERY_SIZE);
 		position = childId - this.QUERY_SIZE;
 		position -= (position % this.IMAGE_QUERY_SIZE);
 		position += this.QUERY_SIZE;
 		url = this.QUERY+"?regroup=*&studyUID="+this.parent.id+"&seriesUID="+this.id+"&Count="+this.IMAGE_QUERY_SIZE+"&Position="+position;
-		this.debug("Adding series extension query %s",url); 
+		console.debug("Adding series extension query %s",url); 
 	} else if( this.level===2 ) {
 		url = this.QUERY+"?regroup=*&studyUID="+this.id+"&Position=0&Count="+this.QUERY_SIZE;
-		this.debug("Adding image query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
+		console.debug("Adding image query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
 	} else if( this.level===1 && modifiers!=null && modifiers[2]!=undefined) {
 		// Fix the modifiers, and do an image level query.
 		url = this.QUERY+"?regroup=*&studyUID="+child.id+"&Position=0&Count="+this.QUERY_SIZE;
-		this.debug("Adding updated image, with study query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
+		console.debug("Adding updated image, with study query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
 	} else if( this.level===1 ) {
 		// This happens when the user views a new study in the same patient, or an updated study in 
 		// the same patient.
 		url = this.STUDY_QUERY+"?gsps=*&ko=*&studyUID="+childId;
-		this.debug("Adding new study query %s", url);
+		console.debug("Adding new study query %s", url);
 	} else {
 		console.error("Unknown id/query level %d for child id %s", this.level, childId);
 		return ret;
@@ -183,7 +183,7 @@ Navigation.prototype.invalidate = function Navigation_invalidate(isTop) {
 		this.debug("Invalidating child object - resetting ids at level",this.level);
 		var oldId = this.id;
 		// Compute the new id if we can
-		this.id = this.parent.lookupId(this.offset);
+		this.id = this.lookupId();
 		this.debug("Looked up id = %s", this.id);
 		if( this.id === oldId ) {
 			return;
@@ -231,52 +231,58 @@ Navigation.prototype.fireChanged = function Merge_fireChanged(type) {
 	}	
 };
 
-/** Given a particular key name, figure out what the child element should be. 
+/** 
+ * Looks up the id of this object, within the context of the parent object..
+ * 
+ * The ID is calculated from several values:
+ *   1. The set of available, external entities - either those explicitly selected, or 
+ *      those from the external data.  For example, a set of study UID's to display, 
+ *      as defined in the conversation OR the external data.
+ *   2. Either an offset defined in a key, or a specific value to show, 
+ *      combined with a fixed offset.
+ * The value is returned.
+ * The offset can either be provided, or determined from this element.
  */
-Navigation.prototype.lookupId = function Navigation_lookupId(offset,key) {
-	if( !this.id ) return null;
-	this.createConversation();
-	
-	if(! key ) key = this.KEY;
-	
-	var val = this.conversation[key];
+Navigation.prototype.lookupId = function Navigation_lookupId(offset) {
+	if( !(this.parent && this.parent.id) ) return null;
+	this.parent.createConversation();
+
+	var key = this.KEY;
+	if( offset==undefined ) offset = this.offset;
+	var val = this.parent.conversation[key];
 	var type = typeof(val);
+	var external = this.parent.external;
+	
 	if(val==undefined ) {
 		this.debug("Failed to find any navigation information for key %s at level %d id %s", key, this.level, this.id);
-		if( this.level===3 ) type = "number";
+		if( this.level===4 ) type = "number";
 		else type="string";
 	}
 	
-	if( type==="object" ) {
-		this.debug("Looking up offset %s in array/object value %s", offset, val[offset]);
-		if( offset < val.length && offset >=0 ) return val[offset];
-		return null;
-	}
-	else if( type==="number" ) {
+	if( type==="number" ) {
 		this.debug("Looking up offset %s from number %s", offset, val);
-		if(! this.external ) return undefined;
+		if(! external ) return undefined;
 		if(!val) val = 0;
 		if( val+offset<0 ) return null;
-		if(! this.external.Viewable ) return undefined;
-		if( this.external.Viewable > val+offset ) return val+offset;
+		if(! external.Viewable ) return undefined;
+		if( external.Viewable > val+offset ) return val+offset;
 		return null;
 	}
 	else if( type==="string" ) {
-		this.debug("Looking up relative position to %s offset %s external %s", val, offset, this.external);
+		this.debug("Looking up relative position to %s offset %s external %s", val, offset, external);
 		// Key type - one case is to avoid any searching at all, although it doesn't
 		// allow you to find out much extra information in the child.
 		if( offset===0 && val ) {
 			this.debug("Returning 0 offset information directly.");
 			return val;
 		}
-		if( !this.external ) return undefined;
-		var extChildren = this.getExtChildren();
+		var extChildren = this.parent.getExtChildren();
 		if( !extChildren ) {
 			this.debug("Found no children defined for %s under the name %s at level %d offset %s", this.id,this.childType, this.level, offset);
-			return undefined;
+			return;
 		}
 		if( val ) {
-			var posn = this.findExternal(val);
+			var posn = this.parent.findExternal(val);
 			if( posn!==undefined ) {
 				offset = offset + posn;
 			} else {
@@ -285,7 +291,7 @@ Navigation.prototype.lookupId = function Navigation_lookupId(offset,key) {
 			}
 		}
 		if( extChildren.length > offset && offset>=0 ) {
-			return extChildren[offset][this.childIdVar];
+			return this.getIdFrom(extChildren[offset]);
 		}
 		// Return null because there ARE children, but the offset is outside the bounds
 		// so that means none available as opposed to unknown.
@@ -296,38 +302,69 @@ Navigation.prototype.lookupId = function Navigation_lookupId(offset,key) {
 	}
 };
 
+/** Gets the id from the given object for something at this level
+ * If obj is a string or a number, then returns it directly, otherwise
+ * uses the child id var to get the id.
+ */
+Navigation.prototype.getIdFrom = function(obj) {
+	if( typeof(obj)==="object" ) return obj[this.parent.childIdVar];
+	return obj;
+};
+
 /** Gets the external children list.
  * Normally, this is just the simple children objects, but
  * for the series child list (of a study), it only returns series that contain images.  
  * Other types of listeners/data is needed for non-image series.
  */
-Navigation.prototype.getExtChildren = function Navigation_getExtChildren() {
-	var ret = this.external[this.childType];
-	if( this.level!==2 || !ret) return ret;
+Navigation.prototype.getExtChildren = function Navigation_getExtChildren(key) {
+    if( !key ) key = this.childType;
+    if( !(this.external || this.conversation) ) return null;
+    
+	var ret = this.getCustomChildren(key);
+	if( ret!=null || this.external==null) return ret;
+	ret = this.external[key];
+	return ret;
+};
+
+/**
+ * This method is used to compute a custom key value - currently, that
+ * means the series level key.  Only returns a value if there is a conversation
+ * context available (which can happen even without an external context).
+ */
+Navigation.prototype.getCustomChildren = function(key) {
+	if( this.conversation==null ) return;
+	var ret = this.conversation[key];
+	if( ret!=null ) return ret;
+	if( key!=="series" || !this.external) return;
+	
+	 
 	// For the study level, the getExtChildren returns only series image children in the default list.
 	// To explicitly use another type of list, use a different key type such as a key set.
 	
-	var seriesImage = this.external._seriesImage;
 	// The available series doesn't change unless the entire object is refreshed, once the
 	// first set of series has been loaded.
-	if( seriesImage ) return seriesImage;
-	seriesImage = new Array();
-	var ser, i,n=ret.length;
+	ret = new Array();
+	var series = this.external.series;
+	if( !series ) return; 
+	var ser, i,n=series.length;
 	for(i=0; i<n; i++) {
-		ser = ret[i];
+		ser = series[i];
 		if( !ser.image ) continue;
-		seriesImage.push(ser);
+		ret.push(ser);
 	}
-	this.external._seriesImage = seriesImage;
-	return seriesImage;
+	this.conversation.series = ret;
+	return ret;
 };
 
-/** Finds the position in the external data having the given id value */
-Navigation.prototype.findExternal = function Navigation_findExternal(val) {
-	var extChildren = this.external[this.childType];
-	var i,n=extChildren.length;
+/** Finds the position in the external data having the given id value.  Uses the
+ * specified set of child values, if available
+ */
+Navigation.prototype.findExternal = function Navigation_findExternal(val,key) {
+	var extChildren = this.getExtChildren(key);
+	var v,i,n=extChildren.length;
 	for(i=0; i<n; i++) {
-		if( extChildren[i][this.childIdVar]==val ) return i;
+		v = extChildren[i];
+		if( v == val || v[this.childIdVar]==val ) return i;
 	}
 }
 
@@ -423,7 +460,9 @@ Navigation.prototype.addListener = function Navigation_addListener(obj,listenerF
  */
 Navigation.prototype.hook = function Navigation_hook(obj, dot) {
 	if( !dot ) dot = this;
-	if( obj.navigate ) {		
+	//console.info("Hook",dot.level,dot.id);
+	if( obj.navigate ) {
+		//console.info("Obj has navigate - changing dot level.");		
 		if( typeof( obj.navigate )==="string" ) {
 			var oldDot = dot;
 			dot = this.getPath(obj.navigate,dot);
@@ -434,6 +473,7 @@ Navigation.prototype.hook = function Navigation_hook(obj, dot) {
 			dot = obj.navigate;
 		}
 	}
+	//console.info("Adding any child hook events.");
 	var olst = obj.events;
 	var i,n;
 	if( typeof(olst)==="string" ) {
@@ -444,6 +484,7 @@ Navigation.prototype.hook = function Navigation_hook(obj, dot) {
 			this.hookEvent(obj,olst[i],dot);
 		}
 	}
+	//console.info("Recursing over children.");
 	if(! obj.children ) return;
 	n = obj.children.length;
 	for(i=0; i<n; i++) {
@@ -454,7 +495,9 @@ Navigation.prototype.hook = function Navigation_hook(obj, dot) {
 /** Hooks the specific item if relevant */
 Navigation.prototype.hookEvent = function Navigation_hookEvent(obj,evt,dot) {
 	var path = this.getPath(evt,dot);
+	//console.info("hookEvent",path);
 	if( path.hookEvent ) {
+	   //console.info("Hooking a navigate event.");
 	   // This is a navigate event - not an array
 	   path.listeners.push(obj);
 	   return;
@@ -463,6 +506,7 @@ Navigation.prototype.hookEvent = function Navigation_hookEvent(obj,evt,dot) {
 	var arg = path[2];
 	var dot = path[0];
 
+	//console.info("Hooking a named listener",typ,arg,dot);
 	if( typ=="conversation" || typ=="merged") {
 		if( dot.namedListeners==null ) dot.namedListeners = new Object();
 		if(! dot.namedListeners[arg] ) dot.namedListeners[arg] = new Array();

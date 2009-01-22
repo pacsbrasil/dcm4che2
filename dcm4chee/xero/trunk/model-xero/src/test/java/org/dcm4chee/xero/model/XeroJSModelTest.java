@@ -38,9 +38,12 @@
 package org.dcm4chee.xero.model;
 
 
+import java.io.IOException;
+
 import org.dcm4chee.xero.test.JSTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
@@ -64,9 +67,23 @@ public class XeroJSModelTest {
 		runTest("mergedTest", false);
 	}
 
-	@Test
-	public void navigationTest() {
-		runTest("navigationTests", false);
+	@DataProvider(name="navigationProvider")
+	public Object[][] navigationProvider() {
+	   return new Object[][]{
+             new Object[]{"test_lookupId"},
+             new Object[]{"test_getExtChildren"},
+             new Object[]{"test_getCustomChildren"},
+             new Object[]{"test_setNavigation_expectEvent"},
+             new Object[]{"test_setConversation_expectEvent"},
+             new Object[]{"test_setMerged_expectEvent"},
+             new Object[]{"testStudyQuery"},
+             new Object[]{"testModifiedQuery"},
+       };
+	}
+	
+	@Test(dataProvider="navigationProvider")
+	public void navigationTests(String test) throws IOException {
+	   jst.runTest("navigationTests", test, false);
 	}
 
 	@Test

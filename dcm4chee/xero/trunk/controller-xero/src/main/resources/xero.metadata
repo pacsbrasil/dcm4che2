@@ -19,6 +19,7 @@ templateGroup.groupNames.xeroController=xeroController
 
 # Define the regular controller used for rendering Xero XHTML pages.
 controller=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+controller.maxAge=360
 
 controller.stringTemplate=${class:org.dcm4chee.xero.template.StringTemplateFilter}
 controller.stringTemplate.defaultGroup=${ref:templateGroup}

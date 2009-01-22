@@ -1,9 +1,7 @@
 $unittest()$
 $merged()$
-var mergedTests = new UnitTest();
+var mergedTest = new UnitTest();
 
-mergedTests.testCreateMerged = function() {
+mergedTest.testCreateMerged = function() {
 	var merged = new Merged();
 };
-
-mergedTests.runUnitTests();

@@ -38,7 +38,7 @@ navigationTests.testStudyQuery = function() {
 	nav.setNavigation(patid);
 	var patNav = nav.getChild(0);
 	var uids = [stuid0, stuid1];	
-	patNav.setNavigation(uids);
+	patNav.setNavigation(uids,"study");
 	console.info("Set navigation to %s", uids);
 	var c0 = patNav.getChild(0);
 	var c1 = patNav.getChild(1);
@@ -70,6 +70,85 @@ navigationTests.testStudyQuery = function() {
 	$assertTrue(condition="im000.id!=null")$
 	$assertTrue(condition="im000.external!=null")$
 };
+
+/** 
+ * Tests that the getExtChildren will:
+ * 1. Use the external named child type if no other data is provided
+ * 2. Use the conversational data in preference if it is available
+ * 3. Compute the image series children to only contain image series objects.
+ * 4. For image objects, return an instance offset lookup (todo- consider this for general
+ *    return type - extend the array implementation perhaps?)
+ */
+navigationTests.test_getExtChildren = function() {
+	var nav = new Navigation();
+	nav.setNavigation(patid);
+	var patNav = nav.getChild(0);
+	var c0 = patNav.getChild(0);
+	var uids = [stuid0,stuid1];
+	patNav.setNavigation(uids,"study");	
+	var c1 = patNav.getChild(1);
+	$assertTrue(condition="c0.id==stuid0")$;
+	$assertTrue(condition="c1.id==stuid1")$;
+	studyData = new StudyData();
+	studyData.parseString(twoStudy);
+	nav.mergeExternal(studyData);
+	
+	var studyChildren = patNav.getExtChildren();
+	$assertTrue(condition="studyChildren.length==2",msg="Must have 2 study children from results.")$;
+};
+
+/**
+ * Tests the computeCustomKey gets the conversation key and the custom series key.
+ */
+navigationTests.test_getCustomChildren = function() {
+	var nav = new Navigation();
+	nav.setNavigation(patid);
+	var patNav = nav.getChild(0);
+	var uids = [stuid0];	
+	var s0 = patNav.getChild(0);
+	studyData = new StudyData();
+	studyData.parseString(images0);
+	nav.mergeExternal(studyData);
+	
+	var studyChildren = patNav.getCustomChildren();
+	$assertTrue(condition="studyChildren==null",msg="No custom study children until navigation is set.")$;
+
+	patNav.setNavigation(uids,"study");
+	nav.mergeExternal(studyData);
+	console.info("Set navigation to %s", uids);
+	studyChildren = patNav.getCustomChildren(patNav.childType);
+	$assertTrue(condition="studyChildren!=null",msg="Once conversational study is set, should be available")$;
+	
+	var seriesChildren = s0.getCustomChildren(s0.childType);
+	$assertTrue(condition="seriesChildren.length===21",msg="Must have 21 series children.")$;
+};
+ 
+/**
+ * Tests that the lookupId function finds the right id either as an offset into images,
+ * an offset into other ids, or a fixed offset after a given item name.
+ */
+navigationTests.test_lookupId = function() {
+	var nav = new Navigation();
+	nav.setNavigation(patid);
+	var patNav = nav.getChild(0);
+	var uids = [stuid0];	
+	var s0 = patNav.getChild(0);
+	var s0se0 = s0.getChild(0);
+	var s0se0i0 = s0se0.getChild(0)
+	
+	studyData = new StudyData();
+	studyData.parseString(images0);
+	nav.mergeExternal(studyData);
+	console.info("Set navigation to %s", uids);
+
+	console.info("s0.id=",s0.id);
+	console.info("s0se0.id=",s0se0.id);
+	console.info("s0se0i0.id=",s0se0i0.id);
+	var seuid = "1.2.276.0.7230010.3.200.3.1";
+	$assertTrue(condition="patNav.id==patid",msg="Patient navigation lookup id is incorrect.")$;
+	$assertTrue(condition="s0.id==stuid0",msg="Study UID in navigation object is incorrect.")$;
+	$assertTrue(condition="s0se0.id==seuid",msg="Series UID in navigation is incorrect.")$;
+};
  
 /**
  * Tests that the modified query is used when there is a gspsLabel to apply. 
@@ -79,33 +158,39 @@ navigationTests.testModifiedQuery = function() {
 	nav.setNavigation(patid);
 	var patNav = nav.getChild(0);
 	var uids = [stuid0];	
-	patNav.setNavigation(uids);
+	patNav.setNavigation(uids,"study");
 	console.info("Set navigation to %s", uids);
 	var c0 = patNav.getChild(0);
 	assertEquals(c0.id,stuid0,"c0.id");
 	studyData = new StudyData();
 	studyData.parseString(prStudy);
 	var urls = nav.mergeExternal(studyData);
-	assertNull(urls,"URLS must be null since no request has been made below that level");
+	$assertTrue(condition="urls==null",msg="URLS must be null since no request has been made below that level")$;
 	var se00 = c0.getChild(0);
 	var im000 = se00.getChild(0);
 	urls = nav.mergeExternal(studyData);
-	assertNotNull(urls,"URLS must not be null now.");
+	$assertTrue(condition="urls!=null",msg="URLS must not be null now.")$;
 	var cnt = 0;
 	var modifier;
 	for(key in urls) {
 		console.info("Looking for URL %s", key);
 		modifier = urls[key];
-		assert(modifier!==key,"Modifier and key must not be the same object.");
+		$assertTrue(condition="modifier!==key",msg="Modifier and key must not be the same object.")$;
 		cnt++;
 	}
-	assertEquals(cnt,1,"Must have 1 url requested for pr test.");
+	$assertTrue(condition="cnt===1",msg="Must have 1 url requested for pr test.")$;
 
 	studyData.parseString(images0,modifier);
+	console.info("testModifiedQuery merging study data external information.");
 	urls = nav.mergeExternal(studyData);
-	assertNull(urls,"Urls must be null after supplying all data.");
-	assertNotNull(se00.id,"se00.id");
-	assertNotNull(se00.external,"se00.external");
+	if( urls ) {
+		for(var i in urls) {
+			console.info("i=",i,"=",urls[i]);
+		}
+	}
+	$assertTrue(condition="urls==null",msg="Urls must be null after supplying all data.")$;
+	$assertTrue(condition="se00.id!=null",msg="se00.id should be defined")$;
+	$assertTrue(condition="se00.external!=null",msg="se00.external should be available")$;
 };
 
 /** All of the event setup uses a set of listeners that just records the responses */
@@ -185,4 +270,3 @@ navigationTests.test_setMerged_expectEvent = function () {
 	rootEvent.clear();
 };
 
-navigationTests.runUnitTests();
