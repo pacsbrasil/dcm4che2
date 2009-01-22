@@ -92,7 +92,7 @@ public class InstanceModel implements Serializable {
             return s;
         }
         return dataset.getString(
-                new int[] { Tag.ConceptCodeSequence, 0, Tag.CodeMeaning });
+                new int[] { Tag.ConceptNameCodeSequence, 0, Tag.CodeMeaning });
     }
 
     public long getPk() {
