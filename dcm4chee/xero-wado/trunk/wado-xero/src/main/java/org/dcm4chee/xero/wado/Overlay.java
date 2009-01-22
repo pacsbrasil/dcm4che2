@@ -146,7 +146,7 @@ public class Overlay implements Filter<WadoImage> {
 						int frame = FilterUtil.getInt(params, FRAME_NUMBER, 1) - 1;
 						start = start + frame * rowLen * h;
 					}
-					for (int x = 0; x < h;) {
+					for (int x = 0; x < w;) {
 						byte datum = oi.data[start++];
 						for (int b = 1; b < 256; b = b << 1, x++) {
 							if ((datum & b) != 0) {
