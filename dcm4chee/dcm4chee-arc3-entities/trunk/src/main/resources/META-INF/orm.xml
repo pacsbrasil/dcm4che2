@@ -418,6 +418,9 @@
       <basic name="referringPhysicianPhoneticName">
         <column name="ref_phys_p_name" column-definition="@nvarchar2@" />
       </basic>
+      <basic name="studyDescription">
+        <column name="study_desc" column-definition="@nvarchar2@" />
+      </basic>
       <basic name="encodedAttributes">
         <column name="study_attrs" column-definition="@blob@" />
       </basic>

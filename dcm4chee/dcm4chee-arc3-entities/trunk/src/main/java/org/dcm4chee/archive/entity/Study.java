@@ -105,7 +105,7 @@ public class Study implements Serializable {
     // JPA definition in orm.xml
     private String referringPhysicianPhoneticName;
 
-    @Column(name = "study_desc")
+    // JPA definition in orm.xml
     private String studyDescription;
 
     @Column(name = "study_custom1")
