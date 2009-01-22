@@ -153,7 +153,7 @@ public class XDSRegistryService extends ServiceMBeanSupport {
             if ( logReceivedMessage ) {
                 log.info(" Received RegisterDocuments SubmitObjectsRequest:"+InfoSetUtil.marshallObject( req, indentXmlLog));
             }
-            RegistryPackageType registryPackage = InfoSetUtil.getRegistryPackage(req);
+            RegistryPackageType registryPackage = InfoSetUtil.getRegistryPackage(req, null);
             if ( registryPackage == null ) {
                 log.error("No RegistryPackage found!");
                 throw new XDSException( XDSConstants.XDS_ERR_REGISTRY_ERROR, 
