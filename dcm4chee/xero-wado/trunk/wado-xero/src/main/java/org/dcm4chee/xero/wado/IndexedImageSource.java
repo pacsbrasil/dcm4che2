@@ -137,7 +137,7 @@ public class IndexedImageSource implements Filter<WadoImage> {
 			b[i] = clr[2];
 		}
 		IndexColorModel icm = new IndexColorModel(stored, clrCount, r, g, b, a);
-		int rowLength = width * stored / 8;
+		int rowLength = (width * stored+7) / 8;
 		byte[] data = new byte[rowLength * height];
 		DataBuffer db = new DataBufferByte(data, data.length);
 		WritableRaster wr = Raster.createPackedRaster(db, width, height, stored, null);
