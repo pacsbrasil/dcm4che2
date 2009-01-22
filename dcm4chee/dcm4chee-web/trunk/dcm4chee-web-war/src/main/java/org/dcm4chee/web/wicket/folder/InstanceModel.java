@@ -73,15 +73,6 @@ public class InstanceModel implements Serializable {
         String pmi = dataset.getString(Tag.PhotometricInterpretation);
         if (pmi != null) {
             StringBuilder sb = new StringBuilder();
-            String[] imageType = dataset.getStrings(Tag.ImageType);
-            if (imageType != null && imageType.length != 0) {
-                sb.append(imageType[0]);
-                for (int i = 1; i < imageType.length; i++) {
-                    sb.append('\\').append(imageType[i]);
-                    
-                }
-                sb.append(", ");
-            }
             sb.append(pmi);
             sb.append(", ");
             sb.append(dataset.getString(Tag.BitsAllocated));

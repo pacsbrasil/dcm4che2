@@ -224,6 +224,7 @@ public class StudyListPage extends WebPage {
             item.add(new Label("birthdate"));
             item.add(new Label("sex"));
             item.add(new Label("comments"));
+            item.add(new Label("pk"));
             item.add(new AjaxFallbackLink("toggledetails") {
 
                 @Override
@@ -317,6 +318,7 @@ public class StudyListPage extends WebPage {
             item.add(new Label("numberOfSeries"));
             item.add(new Label("numberOfInstances"));
             item.add(new Label("availability"));
+            item.add(new Label("pk"));
             item.add(new AjaxFallbackLink("toggledetails") {
 
                 @Override
@@ -411,6 +413,7 @@ public class StudyListPage extends WebPage {
             item.add(new Label("numberOfSeries"));
             item.add(new Label("numberOfInstances"));
             item.add(new Label("status"));
+            item.add(new Label("pk"));
             item.add(new AjaxFallbackLink("toggledetails") {
 
                 @Override
@@ -512,6 +515,7 @@ public class StudyListPage extends WebPage {
             item.add(new Label("description"));
             item.add(new Label("numberOfInstances"));
             item.add(new Label("availability"));
+            item.add(new Label("pk"));
             item.add(new AjaxFallbackLink("toggledetails") {
 
                 @Override
@@ -602,6 +606,7 @@ public class StudyListPage extends WebPage {
             item.add(new Label("sopClassUID"));
             item.add(new Label("description"));
             item.add(new Label("availability"));
+            item.add(new Label("pk"));
             item.add(new AjaxFallbackLink("toggledetails") {
 
                 @Override
@@ -654,6 +659,7 @@ public class StudyListPage extends WebPage {
             item.add(new Label("file.fileSystem.directoryPath"));
             item.add(new Label("file.filePath"));
             item.add(new Label("file.fileSystem.availability"));
+            item.add(new Label("file.pk"));
             item.add(new AjaxFallbackLink("toggledetails") {
 
                 @Override
