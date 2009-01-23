@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<results xmlns="http://www.dcm4chee.org/xero/search/study/" xmlns:ns2="http://www.w3.org/2000/svg" xmlns:ns3="http://www.w3.org/1999/xlink">
+<patient xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="patientBean" PatientName="Modality^LUT^PState^Test^A" PatientIdentifier="MLUT_Pnn_5" PatientID="MLUT_Pnn_5">
+<study xsi:type="studyBean" AccessionNumber="95686" StudyDateF="17-Oct-1999 8:30:08 AM" studyUID="1.2.276.0.7230010.3.200.3" StudyID="MLUT_Pnn" StudyDescription="Modality LUT PState Test_Z" StudyDateTime="1999-10-17T08:30:08.000-05:00" NumberOfStudyRelatedSeries="22" NumberOfStudyRelatedInstances="42" ModalitiesInStudy="PR,OT_Test_A"/>
+<study xsi:type="studyBean" AccessionNumber="95688" StudyDateF="18-Oct-1999 8:30:08 AM" studyUID="1.2.276.0.7230010.3.200.2" StudyID="MLUT_Pnn" StudyDescription="Modality LUT PState Test_A" StudyDateTime="1999-11-18T08:30:08.000-05:00" NumberOfStudyRelatedSeries="24" NumberOfStudyRelatedInstances="42" ModalitiesInStudy="PR,OT_Test_Z"/>
+<study xsi:type="studyBean" AccessionNumber="95685" StudyDateF="15-Oct-1999 8:30:08 AM" studyUID="1.2.276.0.7230010.3.200.4" StudyID="MLUT_Pnn" StudyDescription="Modality LUT PState Test_A" StudyDateTime="1999-10-15T08:30:08.000-05:00" NumberOfStudyRelatedSeries="20" NumberOfStudyRelatedInstances="42" ModalitiesInStudy="PR,OT_Test_Z"/>
+</patient>
+
+<patient xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="patientBean" PatientName="Modality^LUT^PState^Test^C" PatientIdentifier="MLUT_Pnn_3" PatientID="MLUT_Pnn_3">
+<study xsi:type="studyBean" AccessionNumber="95656" StudyDateF="17-Nov-1999 8:30:08 AM" studyUID="1.2.276.0.7230010.3.200.1" StudyID="MLUT_Pnn" StudyDescription="Modality LUT PState Test_T" StudyDateTime="1999-11-17T08:30:08.000-05:00" NumberOfStudyRelatedSeries="22" NumberOfStudyRelatedInstances="42" ModalitiesInStudy="PR,OT_Test_M"/>
+<study xsi:type="studyBean" AccessionNumber="95657" StudyDateF="18-Nov-1999 8:30:08 AM" studyUID="1.2.276.0.7230010.3.200.4" StudyID="MLUT_Pnn" StudyDescription="Modality LUT PState Test_S" StudyDateTime="1999-10-13T08:30:08.000-05:00" NumberOfStudyRelatedSeries="23" NumberOfStudyRelatedInstances="42" ModalitiesInStudy="PR,OT_Test_L"/>
+<study xsi:type="studyBean" AccessionNumber="95658" StudyDateF="19-Nov-1999 8:30:08 AM" studyUID="1.2.276.0.7230010.3.200.5" StudyID="MLUT_Pnn" StudyDescription="Modality LUT PState Test_L" StudyDateTime="1999-11-19T08:30:08.000-05:00" NumberOfStudyRelatedSeries="24" NumberOfStudyRelatedInstances="42" ModalitiesInStudy="PR,OT_Test_P"/>
+</patient>
+
+<patient xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="patientBean" PatientName="Modality^LUT^PState^Test^B" PatientIdentifier="MLUT_Pnn_2" PatientID="MLUT_Pnn_2">
+<study xsi:type="studyBean" AccessionNumber="95697" StudyDateF="17-Dec-1999 8:30:08 AM" studyUID="1.2.276.0.7230010.3.200.6" StudyID="MLUT_Pnn" StudyDescription="Modality LUT PState Test_K" StudyDateTime="1999-12-17T08:30:08.000-05:00" NumberOfStudyRelatedSeries="25" NumberOfStudyRelatedInstances="42" ModalitiesInStudy="PR,OT_Test_S"/>
+<study xsi:type="studyBean" AccessionNumber="95695" StudyDateF="18-Dec-1999 8:30:08 AM" studyUID="1.2.276.0.7230010.3.200.7" StudyID="MLUT_Pnn" StudyDescription="Modality LUT PState Test_N" StudyDateTime="1999-12-18T08:30:08.000-05:00" NumberOfStudyRelatedSeries="20" NumberOfStudyRelatedInstances="42" ModalitiesInStudy="PR,OT_Test_R"/>
+<study xsi:type="studyBean" AccessionNumber="95698" StudyDateF="19-Dec-1999 8:30:08 AM" studyUID="1.2.276.0.7230010.3.200.8" StudyID="MLUT_Pnn" StudyDescription="Modality LUT PState Test_M" StudyDateTime="1999-12-19T08:30:08.000-05:00" NumberOfStudyRelatedSeries="27" NumberOfStudyRelatedInstances="42" ModalitiesInStudy="PR,OT_Test_Q"/>
+</patient>
+</results>
