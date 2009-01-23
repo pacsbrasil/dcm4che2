@@ -72,245 +72,244 @@ import org.dcm4che2.util.UIDUtils;
  * 
  */
 public class DicomImageWriter extends ImageWriter {
-	protected DicomOutputStream dos;
+    protected DicomOutputStream dos;
 
-	protected ImageWriter writer;
+    protected ImageWriter writer;
 
-	/** The write param for the child element */
-	protected ImageWriteParam writeParam;
+    /** The write param for the child element */
+    protected ImageWriteParam writeParam;
 
-	/*
-	 * Encapsulated means that the iamge data is held in ITEMs instead of
-	 * directly as part of the root level object - true for all compressed
-	 * streams.
-	 */
-	protected boolean encapsulated = true;
+    /*
+     * Encapsulated means that the iamge data is held in ITEMs instead of
+     * directly as part of the root level object - true for all compressed
+     * streams.
+     */
+    protected boolean encapsulated = true;
 
-	/** Create a new DICOM Image Writer. */
-	public DicomImageWriter(ImageWriterSpi spi) {
-		super(spi);
-	}
+    /** Create a new DICOM Image Writer. */
+    public DicomImageWriter(ImageWriterSpi spi) {
+        super(spi);
+    }
 
-	/**
-	 * The image metadata provided MUST be of the correct type for the child
-	 * image writer, as the meta-data will only be written to the child image.
-	 */
-	@Override
-	public IIOMetadata convertImageMetadata(IIOMetadata metadata,
-			ImageTypeSpecifier type, ImageWriteParam param) {
-		setupWriter(metadata);
-		return writer.convertImageMetadata(metadata, type, param);
-	}
+    /**
+     * The image metadata provided MUST be of the correct type for the child
+     * image writer, as the meta-data will only be written to the child image.
+     */
+    @Override
+    public IIOMetadata convertImageMetadata(IIOMetadata metadata,
+            ImageTypeSpecifier type, ImageWriteParam param) {
+        setupWriter(metadata);
+        return writer.convertImageMetadata(metadata, type, param);
+    }
 
-	/** Can't convert anything except existing DicomStreamMetaData */
-	@Override
-	public IIOMetadata convertStreamMetadata(IIOMetadata metadata,
-			ImageWriteParam param) {
-		if (metadata instanceof DicomStreamMetaData)
-			return metadata;
-		return null;
-	}
+    /** Can't convert anything except existing DicomStreamMetaData */
+    @Override
+    public IIOMetadata convertStreamMetadata(IIOMetadata metadata,
+            ImageWriteParam param) {
+        if (metadata instanceof DicomStreamMetaData)
+            return metadata;
+        return null;
+    }
 
-	/**
-	 * No easy way to figure out what htis one as as the stream meta-data isn't
-	 * yet available. Suggest only using this after starting to write the
-	 * stream, as at that point, the child writer will be available.
-	 */
-	@Override
-	public IIOMetadata getDefaultImageMetadata(ImageTypeSpecifier image,
-			ImageWriteParam writeParam) {
-		if (writer != null)
-			return writer.getDefaultImageMetadata(image, writeParam);
-		return null;
-	}
+    /**
+     * No easy way to figure out what htis one as as the stream meta-data isn't
+     * yet available. Suggest only using this after starting to write the
+     * stream, as at that point, the child writer will be available.
+     */
+    @Override
+    public IIOMetadata getDefaultImageMetadata(ImageTypeSpecifier image,
+            ImageWriteParam writeParam) {
+        if (writer != null)
+            return writer.getDefaultImageMetadata(image, writeParam);
+        return null;
+    }
 
-	/**
-	 * Get a default set of DICOM data to use in the stream meta-data.
-	 */
-	@Override
-	public IIOMetadata getDefaultStreamMetadata(ImageWriteParam arg0) {
-		DicomStreamMetaData ret = new DicomStreamMetaData();
-		DicomObject dobj = new BasicDicomObject();
-		ret.setDicomObject(dobj);
-		Date now = new Date();
+    /**
+     * Get a default set of DICOM data to use in the stream meta-data.
+     */
+    @Override
+    public IIOMetadata getDefaultStreamMetadata(ImageWriteParam arg0) {
+        DicomStreamMetaData ret = new DicomStreamMetaData();
+        DicomObject dobj = new BasicDicomObject();
+        ret.setDicomObject(dobj);
+        Date now = new Date();
 
-		dobj.putString(Tag.TransferSyntaxUID, VR.UI, UID.JPEGBaseline1);
-		dobj.putString(Tag.ConversionType, VR.CS, "WSD");
-		dobj.putString(Tag.Modality, VR.CS, "OT");
-		dobj.putInt(Tag.InstanceNumber, VR.IS, 1);
-		dobj.putDate(Tag.DateOfSecondaryCapture, VR.DA, now);
-		dobj.putDate(Tag.TimeOfSecondaryCapture, VR.TM, now);
-		dobj
-				.putString(Tag.SOPClassUID, VR.UI,
-						UID.SecondaryCaptureImageStorage);
-		dobj.putString(Tag.SOPInstanceUID, VR.UI, UIDUtils.createUID());
-		return ret;
-	}
+        dobj.putString(Tag.TransferSyntaxUID, VR.UI, UID.JPEGBaseline1);
+        dobj.putString(Tag.ConversionType, VR.CS, "WSD");
+        dobj.putString(Tag.Modality, VR.CS, "OT");
+        dobj.putInt(Tag.InstanceNumber, VR.IS, 1);
+        dobj.putDate(Tag.DateOfSecondaryCapture, VR.DA, now);
+        dobj.putDate(Tag.TimeOfSecondaryCapture, VR.TM, now);
+        dobj
+                .putString(Tag.SOPClassUID, VR.UI,
+                        UID.SecondaryCaptureImageStorage);
+        dobj.putString(Tag.SOPInstanceUID, VR.UI, UIDUtils.createUID());
+        return ret;
+    }
 
-	/**
-	 * This updates the metadata with relevant information from the image, such
-	 * as the size etc.
-	 * 
-	 * @param metadata
-	 * @param image
-	 */
-	public void updateDicomHeader(DicomStreamMetaData metadata,
-			BufferedImage image) {
-		DicomObject dobj = metadata.getDicomObject();
-		// Assume that if it has bits stored, then everything else is
-		// correct....
-		if (dobj.containsValue(Tag.BitsStored))
-			return;
-		int numSamples = image.getColorModel().getNumComponents();
-		if (numSamples == 4)
-			numSamples = 3;
-		dobj.putInt(Tag.SamplesPerPixel, VR.IS, numSamples);
-		int bits = image.getColorModel().getComponentSize(0);
-		int allocated = 8;
-		if (bits > 8)
-			allocated = 16;
-		dobj.putInt(Tag.BitsStored, VR.IS, bits);
-		dobj.putInt(Tag.BitsAllocated, VR.IS, allocated);
-		dobj.putInt(Tag.Columns, VR.IS, image.getWidth());
-		dobj.putInt(Tag.Rows, VR.IS, image.getHeight());
-	}
+    /**
+     * This updates the metadata with relevant information from the image, such
+     * as the size etc.
+     * 
+     * @param metadata
+     * @param image
+     */
+    public void updateDicomHeader(DicomStreamMetaData metadata,
+            BufferedImage image) {
+        DicomObject dobj = metadata.getDicomObject();
+        // Assume that if it has bits stored, then everything else is
+        // correct....
+        if (dobj.containsValue(Tag.BitsStored))
+            return;
+        int numSamples = image.getColorModel().getNumComponents();
+        if (numSamples == 4)
+            numSamples = 3;
+        dobj.putInt(Tag.SamplesPerPixel, VR.IS, numSamples);
+        int bits = image.getColorModel().getComponentSize(0);
+        int allocated = 8;
+        if (bits > 8)
+            allocated = 16;
+        dobj.putInt(Tag.BitsStored, VR.IS, bits);
+        dobj.putInt(Tag.BitsAllocated, VR.IS, allocated);
+        dobj.putInt(Tag.Columns, VR.IS, image.getWidth());
+        dobj.putInt(Tag.Rows, VR.IS, image.getHeight());
+    }
 
-	/** Writes the image, including the DICOM metadata. */
-	@Override
-	public void write(IIOMetadata metadata, IIOImage iioimage,
-			ImageWriteParam param) throws IOException {
-		DicomStreamMetaData dmeta = (DicomStreamMetaData) metadata;
-		if (dmeta == null) {
-			dmeta = (DicomStreamMetaData) getDefaultStreamMetadata(param);
-			metadata = dmeta;
-			updateDicomHeader(dmeta, (BufferedImage) iioimage
-					.getRenderedImage());
-		}
-		prepareWriteSequence(metadata);
-		writeToSequence(iioimage, param);
-		endWriteSequence();
-	}
+    /** Writes the image, including the DICOM metadata. */
+    @Override
+    public void write(IIOMetadata metadata, IIOImage iioimage,
+            ImageWriteParam param) throws IOException {
+        DicomStreamMetaData dmeta = (DicomStreamMetaData) metadata;
+        if (dmeta == null) {
+            dmeta = (DicomStreamMetaData) getDefaultStreamMetadata(param);
+            metadata = dmeta;
+            updateDicomHeader(dmeta, (BufferedImage) iioimage
+                    .getRenderedImage());
+        }
+        prepareWriteSequence(metadata);
+        writeToSequence(iioimage, param);
+        endWriteSequence();
+    }
 
-	/**
-	 * Writing as a sequence is actually the preferred approach. All the regular
-	 * write method does is writes to a sequence.
-	 */
-	@Override
-	public boolean canWriteSequence() {
-		return true;
-	}
+    /**
+     * Writing as a sequence is actually the preferred approach. All the regular
+     * write method does is writes to a sequence.
+     */
+    @Override
+    public boolean canWriteSequence() {
+        return true;
+    }
 
-	/** Sets up the child writer if it hasn't already been setup */
-	protected void setupWriter(IIOMetadata metadata) {
-		if (writer != null)
-			return;
-		if (metadata == null)
-			metadata = getDefaultStreamMetadata(null);
-		DicomStreamMetaData dmeta = (DicomStreamMetaData) metadata;
-		DicomObject dobj = dmeta.getDicomObject();
-		String tsuid = dobj.getString(Tag.TransferSyntaxUID);
-		TransferSyntax ts = TransferSyntax.valueOf(tsuid);
-		encapsulated = ts.encapsulated();
+    /** Sets up the child writer if it hasn't already been setup */
+    protected void setupWriter(IIOMetadata metadata) {
+        if (writer != null)
+            return;
+        if (metadata == null)
+            metadata = getDefaultStreamMetadata(null);
+        DicomStreamMetaData dmeta = (DicomStreamMetaData) metadata;
+        DicomObject dobj = dmeta.getDicomObject();
+        String tsuid = dobj.getString(Tag.TransferSyntaxUID);
+        TransferSyntax ts = TransferSyntax.valueOf(tsuid);
+        encapsulated = ts.encapsulated();
 
-		if (encapsulated) {
-			writer = ImageWriterFactory.getInstance()
-					.getWriterForTransferSyntax(tsuid);
-			writeParam = ImageWriterFactory.getInstance().createWriteParam(
-					tsuid, writer);
-		} else {
-			writer = ImageIO.getImageWritersByFormatName("RAW").next();
-		}
-	}
+        if (encapsulated) {
+            writer = ImageWriterFactory.getInstance()
+                    .getWriterForTransferSyntax(tsuid);
+            writeParam = ImageWriterFactory.getInstance().createWriteParam(
+                    tsuid, writer);
+        } else {
+            writer = ImageIO.getImageWritersByFormatName("RAW").next();
+        }
+    }
 
-	/**
-	 * Start writing the intiial sequence.
-	 */
-	@Override
-	public void prepareWriteSequence(IIOMetadata metadata) throws IOException {
-		if (dos != null)
-			throw new IOException(
-					"Already written the DICOM object header - can't write it again.");
-		DicomStreamMetaData dmeta = (DicomStreamMetaData) metadata;
-		DicomObject dobj = dmeta.getDicomObject();
-		Object output = getOutput();
-		dos = new DicomOutputStream((ImageOutputStream) output);
-		dos.setAutoFinish(false);
-		dos.writeDicomFile(dobj);
+    /**
+     * Start writing the intiial sequence.
+     */
+    @Override
+    public void prepareWriteSequence(IIOMetadata metadata) throws IOException {
+        if (dos != null)
+            throw new IOException(
+                    "Already written the DICOM object header - can't write it again.");
+        DicomStreamMetaData dmeta = (DicomStreamMetaData) metadata;
+        DicomObject dobj = dmeta.getDicomObject();
+        Object output = getOutput();
+        dos = new DicomOutputStream((ImageOutputStream) output);
+        dos.setAutoFinish(false);
+        dos.writeDicomFile(dobj);
 
-		setupWriter(metadata);
+        setupWriter(metadata);
 
-		if (encapsulated) {
-			dos.writeHeader(Tag.PixelData, VR.OB, -1);
-			dos.writeHeader(Tag.Item, null, 0);
-		} else {
-			int frames = dobj.getInt(Tag.NumberOfFrames, 1);
-			int width = dobj.getInt(Tag.Columns);
-			int height = dobj.getInt(Tag.Rows);
-			int bytes = dobj.getInt(Tag.BitsStored, 8) / 8;
-			int samples = dobj.getInt(Tag.SamplesPerPixel);
-			int size = frames * width * height * bytes * samples;
-			dos.writeHeader(Tag.PixelData, VR.OB, size);
-		}
-		dos.flush();
-		((ImageOutputStream) output).flush();
-	}
+        if (encapsulated) {
+            dos.writeHeader(Tag.PixelData, VR.OB, -1);
+            dos.writeHeader(Tag.Item, null, 0);
+        } else {
+            int frames = dobj.getInt(Tag.NumberOfFrames, 1);
+            int width = dobj.getInt(Tag.Columns);
+            int height = dobj.getInt(Tag.Rows);
+            int bytes = dobj.getInt(Tag.BitsStored, 8) / 8;
+            int samples = dobj.getInt(Tag.SamplesPerPixel);
+            int size = frames * width * height * bytes * samples;
+            dos.writeHeader(Tag.PixelData, VR.OB, size);
+        }
+        dos.flush();
+        ((ImageOutputStream) output).flush();
+    }
 
-	/**
-	 * Write the given image to the sequence.
-	 */
-	@Override
-	public void writeToSequence(IIOImage iioimage, ImageWriteParam param)
-			throws IOException {
-		byte[] data = extractImageEncoding(iioimage, param);
-		writeBytesToSequence(data, param);
-	}
+    /**
+     * Write the given image to the sequence.
+     */
+    @Override
+    public void writeToSequence(IIOImage iioimage, ImageWriteParam param)
+            throws IOException {
+        byte[] data = extractImageEncoding(iioimage, param);
+        writeBytesToSequence(data, param);
+    }
 
-	/**
-	 * Write the given image as a byte array to the sequence.
-	 */
-	public void writeBytesToSequence(byte[] data, ImageWriteParam param)
-			throws IOException {
+    /**
+     * Write the given image as a byte array to the sequence.
+     */
+    public void writeBytesToSequence(byte[] data, ImageWriteParam param)
+            throws IOException {
 
-		if (encapsulated) 
-		{
-			dos.writeHeader(Tag.Item, null, data.length);
-		}
-		
-		dos.write(data);
-		// The flush allows any memory buffer to be cleared.
-		dos.flush();
-		((ImageOutputStream) output).flush();
-	}
+        if (encapsulated) {
+            dos.writeHeader(Tag.Item, null, data.length);
+        }
 
-	/**
-	 * This method gets the encoded image from the given object as a byte array
-	 * of data.
-	 */
-	protected byte[] extractImageEncoding(IIOImage iioimage,
-			ImageWriteParam param) throws IOException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		MemoryCacheImageOutputStream imageOutput = new MemoryCacheImageOutputStream(
-				baos);
-		writer.setOutput(imageOutput);
-		writer.write(null, iioimage, writeParam);
-		imageOutput.close();
-		baos.close();
-		byte[] data = baos.toByteArray();
-		return data;
-	}
+        dos.write(data);
+        // The flush allows any memory buffer to be cleared.
+        dos.flush();
+        ((ImageOutputStream) output).flush();
+    }
 
-	/**
-	 * Finish writing the header data to the stream.
-	 */
-	@Override
-	public void endWriteSequence() throws IOException {
-		if (encapsulated)
-			dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
-		dos.finish();
-		((ImageOutputStream) output).flush();
-		dos = null;
-		output = null;
-		writer = null;
-	}
+    /**
+     * This method gets the encoded image from the given object as a byte array
+     * of data.
+     */
+    protected byte[] extractImageEncoding(IIOImage iioimage,
+            ImageWriteParam param) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        MemoryCacheImageOutputStream imageOutput = new MemoryCacheImageOutputStream(
+                baos);
+        writer.setOutput(imageOutput);
+        writer.write(null, iioimage, writeParam);
+        imageOutput.close();
+        baos.close();
+        byte[] data = baos.toByteArray();
+        return data;
+    }
+
+    /**
+     * Finish writing the header data to the stream.
+     */
+    @Override
+    public void endWriteSequence() throws IOException {
+        if (encapsulated)
+            dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
+        dos.finish();
+        ((ImageOutputStream) output).flush();
+        dos = null;
+        output = null;
+        writer = null;
+    }
 
 }

@@ -49,7 +49,7 @@ public class DicomImageWriterSpi extends ImageWriterSpi {
     private static final String[] formatNames = { "dicom", "DICOM" };
     private static final String[] suffixes = { "dcm", "dic", "dicm", "dicom" };
     private static final String[] MIMETypes = { "application/dicom" };
-    private static final String[] readers = {"org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader"};
+    private static final String[] readers = { "org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader" };
 
     private static String vendor;
     private static String version;
@@ -66,26 +66,27 @@ public class DicomImageWriterSpi extends ImageWriterSpi {
     public DicomImageWriterSpi() {
         super(vendor, version, formatNames, suffixes, MIMETypes,
                 "org.dcm4che2.imageioimpl.plugins.dcm.DicomImageWriter",
-                STANDARD_OUTPUT_TYPE, readers, false, null, null, null,
-                null, false, null, null, null, null);
+                STANDARD_OUTPUT_TYPE, readers, false, null, null, null, null,
+                false, null, null, null, null);
     }
 
-	/** Indicate the DICOM can encapsulate the given type */
-	@Override
-	public boolean canEncodeImage(ImageTypeSpecifier type) {
-		return true;
-	}
+    /** Indicate the DICOM can encapsulate the given type */
+    @Override
+    public boolean canEncodeImage(ImageTypeSpecifier type) {
+        return true;
+    }
 
-	/** Create a dicom image writer */
-	@Override
-	public ImageWriter createWriterInstance(Object extension) throws IOException {
-		return new DicomImageWriter(this);
-	}
+    /** Create a dicom image writer */
+    @Override
+    public ImageWriter createWriterInstance(Object extension)
+            throws IOException {
+        return new DicomImageWriter(this);
+    }
 
-	/** Get the description of this image writer type. */
-	@Override
-	public String getDescription(Locale locale) {
-		return "DICOM Image Writer";
-	}
+    /** Get the description of this image writer type. */
+    @Override
+    public String getDescription(Locale locale) {
+        return "DICOM Image Writer";
+    }
 
 }

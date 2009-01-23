@@ -69,25 +69,25 @@ public class DicomImageReaderSpi extends ImageReaderSpi {
         return s != null ? s : def;
     }
 
-    
     public DicomImageReaderSpi() {
         this(vendor, version, MIMETypes,
                 "org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader",
                 STANDARD_INPUT_TYPE, null, false, false);
     }
-    
+
     /**
      * A constructor added to easier extend this class.
      */
-    protected DicomImageReaderSpi(String vendorName, String version,  
-    		String[] MIMETypes, String readerClassName, Class[] inputTypes, 
-    		String[] writerSpiNames,  boolean supportsStandardStreamMetadataFormat, 
-    		boolean supportsStandardImageMetadataFormat){
-    	
-    	super(vendorName, version, formatNames, suffixes, MIMETypes, readerClassName, 
-    			inputTypes, writerSpiNames, supportsStandardStreamMetadataFormat,
-    			null, null, null, null, supportsStandardImageMetadataFormat, 
-    			null, null, null, null);
+    protected DicomImageReaderSpi(String vendorName, String version,
+            String[] MIMETypes, String readerClassName, Class[] inputTypes,
+            String[] writerSpiNames,
+            boolean supportsStandardStreamMetadataFormat,
+            boolean supportsStandardImageMetadataFormat) {
+
+        super(vendorName, version, formatNames, suffixes, MIMETypes,
+                readerClassName, inputTypes, writerSpiNames,
+                supportsStandardStreamMetadataFormat, null, null, null, null,
+                supportsStandardImageMetadataFormat, null, null, null, null);
     }
 
     @Override
@@ -100,20 +100,20 @@ public class DicomImageReaderSpi extends ImageReaderSpi {
         if (!(input instanceof ImageInputStream)) {
             return false;
         }
-        
-        ImageInputStream stream = (ImageInputStream)input;
+
+        ImageInputStream stream = (ImageInputStream) input;
         byte[] b = new byte[132];
         stream.mark();
         try {
             stream.readFully(b);
-        } catch (EOFException e) {            
+        } catch (EOFException e) {
             return false;
         } finally {
             stream.reset();
         }
-        if (b[128] == 0x44           // D 
-                && b[129] == 0x49    // I
-                && b[130] == 0x43    // C
+        if (b[128] == 0x44 // D
+                && b[129] == 0x49 // I
+                && b[130] == 0x43 // C
                 && b[131] == 0x4D) { // M
             return true;
         }
@@ -122,10 +122,10 @@ public class DicomImageReaderSpi extends ImageReaderSpi {
                 if (b[1] == 0) {
                     return false;
                 }
-                int len = ((b[6] & 0xff) << 8)  | (b[7] & 0xff);
+                int len = ((b[6] & 0xff) << 8) | (b[7] & 0xff);
                 return (b[1] == b[len + 9]);
             }
-            
+
             // little endian
             if (b[1] != 0) { // expect group tag <= 00FF
                 return false;
