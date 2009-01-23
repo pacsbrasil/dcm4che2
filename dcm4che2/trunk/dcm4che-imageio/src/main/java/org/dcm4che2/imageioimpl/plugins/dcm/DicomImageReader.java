@@ -435,22 +435,22 @@ public class DicomImageReader extends ImageReader {
         }
         if (monochrome) {
             WritableRaster raster = bi.getRaster();
-            DataBuffer data = raster.getDataBuffer();
             LookupTable lut = createLut((DicomImageReadParam) param,
-                    imageIndex + 1, data);
+                    imageIndex + 1, raster);
             if (lut != null) {
-                DataBuffer dest = data;
-                if ((!(dest instanceof DataBufferByte))
+                WritableRaster dest = raster;
+                if (dest.getDataBuffer().getDataType() != DataBuffer.TYPE_BYTE
                         && (lut instanceof ByteLookupTable)) {
                     BufferedImage ret = new BufferedImage(bi.getWidth(), bi
                             .getHeight(), BufferedImage.TYPE_BYTE_GRAY);
-                    dest = ret.getRaster().getDataBuffer();
+                    dest = ret.getRaster();
                     bi = ret;
                 }
-                lut.lookup(data, dest);
-                if (dest.getDataType() == DataBuffer.TYPE_SHORT) {
+                DataBuffer destData = dest.getDataBuffer();
+                lut.lookup(raster, dest);
+                if (destData.getDataType() == DataBuffer.TYPE_SHORT) {
                     ColorModel cm = bi.getColorModel();
-                    short[] ss = ((DataBufferShort) data).getData();
+                    short[] ss = ((DataBufferShort) destData).getData();
                     return new BufferedImage(cm, Raster.createWritableRaster(
                             raster.getSampleModel(), new DataBufferUShort(ss,
                                     ss.length), null), cm
@@ -526,11 +526,11 @@ public class DicomImageReader extends ImageReader {
      * p-values into DDLs (digital driving levels).
      * 
      * @param param
-     * @param data
+     * @param raster
      * @return Complete lookup table to apply to the image.
      */
     private LookupTable createLut(DicomImageReadParam param, int frame,
-            DataBuffer data) {
+            Raster raster) {
         short[] pval2gray = param.getPValue2Gray();
         DicomObject pr = param.getPresentationState();
         float c = param.getWindowCenter();
@@ -540,7 +540,7 @@ public class DicomImageReader extends ImageReader {
             DicomObject voiObj = VOIUtils.selectVoiObject(ds, pr, frame);
             if (voiObj == null) {
                 float[] cw = VOIUtils.getMinMaxWindowCenterWidth(ds, pr, frame,
-                        data);
+                        raster);
                 c = cw[0];
                 w = cw[1];
                 vlutFct = LookupTable.LINEAR;

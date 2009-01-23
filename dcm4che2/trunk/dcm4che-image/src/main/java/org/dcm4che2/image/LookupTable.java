@@ -38,11 +38,13 @@
 
 package org.dcm4che2.image;
 
+import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
+import java.awt.image.Raster;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -101,69 +103,118 @@ public abstract class LookupTable {
 
     public abstract int lookup(int in);
 
-    public abstract byte[] lookup(byte[] src, byte[] dst);
+    public abstract byte[] lookup(byte[] src, int srcPos, byte[] dst,
+            int dstPos, int length);
 
-    public abstract short[] lookup(byte[] src, short[] dst);
+    public abstract short[] lookup(byte[] src, int srcPos, short[] dst,
+            int dstPos, int length);
 
-    public abstract int[] lookup(byte[] src, int[] dst, int alpha);
+    public abstract int[] lookup(byte[] src, int srcPos, int[] dst,
+            int dstPos, int length, int alpha);
 
-    public abstract byte[] lookup(short[] src, byte[] dst);
+    public abstract byte[] lookup(short[] src, int srcPos, byte[] dst,
+            int dstPos, int length);
 
-    public abstract short[] lookup(short[] src, short[] dst);
+    public abstract short[] lookup(short[] src, int srcPos, short[] dst,
+            int dstPos, int length);
 
-    public abstract int[] lookup(short[] src, int[] dst, int alpha);
+    public abstract int[] lookup(short[] src, int srcPos, int[] dst,
+            int dstPos, int length, int alpha);
 
-    public void lookup(DataBuffer src, DataBuffer dst) {
+    public byte[] lookup(byte[] src, byte[] dst) {
+        return lookup(src, 0, dst, 0, src.length);
+    }
+
+    public short[] lookup(byte[] src, short[] dst) {
+        return lookup(src, 0, dst, 0, src.length);
+    }
+
+    public int[] lookup(byte[] src, int[] dst, int alpha) {
+        return lookup(src, 0, dst, 0, src.length, alpha);
+    }
+
+    public byte[] lookup(short[] src, byte[] dst) {
+        return lookup(src, 0, dst, 0, src.length);
+    }
+
+    public short[] lookup(short[] src, int srcPos, short[] dst) {
+        return lookup(src, 0, dst, 0, src.length);
+    }
+
+    public int[] lookup(short[] src, int[] dst,int alpha) {
+        return lookup(src, 0, dst, 0, src.length, alpha);
+    }
+
+    public void lookup(Raster src, Raster dst) {
         lookup(src, dst, OPAQUE);
     }
     
-    public void lookup(DataBuffer src, DataBuffer dst, int alpha) {
-        switch (dst.getDataType()) {
+    public void lookup(Raster src, Raster dst, int alpha) {
+        int srcWidth = src.getWidth();
+        int srcHeight = src.getHeight();
+        int srcScanlineStride = ((ComponentSampleModel) src.getSampleModel())
+                .getScanlineStride();
+        DataBuffer srcdata = src.getDataBuffer();
+        int dstWidth = src.getWidth();
+        int dstHeight = src.getHeight();
+        int dstScanlineStride = ((ComponentSampleModel) dst.getSampleModel())
+                .getScanlineStride();
+        DataBuffer dstdata = dst.getDataBuffer();
+        if (srcWidth != dstWidth) {
+            throw new IllegalArgumentException("src.width:" + srcWidth
+                    + " != dst.width:" + dstWidth);
+        }
+        if (srcHeight != dstHeight) {
+            throw new IllegalArgumentException("src.height:" + srcWidth
+                    + " != dst.height:" + dstWidth);
+        }
+        if (srcHeight * srcScanlineStride != srcdata.getSize()) {
+            throw new IllegalArgumentException("srcHeight:" + srcHeight
+                    + " * srcScanlineStride:" + srcScanlineStride
+                    + " != src.length:" + srcdata.getSize());
+        }
+        if (srcHeight * dstScanlineStride != dstdata.getSize()) {
+            throw new IllegalArgumentException("srcHeight:" + srcHeight
+                    + " * dstScanlineStride:" + dstScanlineStride
+                    + " != dst.length:" + dstdata.getSize());
+        }
+        switch (dstdata.getDataType()) {
         case DataBuffer.TYPE_BYTE:
-            lookup(src, ((DataBufferByte) dst).getData());
+            lookup(srcdata, srcWidth, srcHeight, srcScanlineStride,
+                    ((DataBufferByte) dstdata).getData(), dstScanlineStride);
             break;
         case DataBuffer.TYPE_USHORT:
-            lookup(src, ((DataBufferUShort) dst).getData());
+            lookup(srcdata, srcWidth, srcHeight, srcScanlineStride,
+                    ((DataBufferUShort) dstdata).getData(), dstScanlineStride);
             break;
         case DataBuffer.TYPE_SHORT:
-            lookup(src, ((DataBufferShort) dst).getData());
+            lookup(srcdata, srcWidth, srcHeight, srcScanlineStride,
+                    ((DataBufferShort) dstdata).getData(), dstScanlineStride);
             break;
         case DataBuffer.TYPE_INT:
-            lookup(src, ((DataBufferInt) dst).getData(), alpha);
+            lookup(srcdata, srcWidth, srcHeight, srcScanlineStride,
+                    ((DataBufferInt) dstdata).getData(), dstScanlineStride, alpha);
             break;
         default:
             throw new IllegalArgumentException(
                     "Illegal Type of Destination DataBuffer: " + dst);
-        }       
+        }
     }
 
-    public void lookup(DataBuffer src, byte[] dst) {
+    public void lookup(DataBuffer src, int srcWidth, int srcHeight,
+            int srcScanlineStride, byte[] dst, int dstScanlineStride) {
         switch (src.getDataType()) {
         case DataBuffer.TYPE_BYTE:
-            lookup(((DataBufferByte) src).getData(), dst);
+            lookup(((DataBufferByte) src).getData(), srcWidth, srcHeight,
+                    srcScanlineStride, dst, dstScanlineStride);
             break;
         case DataBuffer.TYPE_USHORT:
-            lookup(((DataBufferUShort) src).getData(), dst);
+            lookup(((DataBufferUShort) src).getData(), srcWidth, srcHeight,
+                    srcScanlineStride, dst, dstScanlineStride);
             break;
         case DataBuffer.TYPE_SHORT:
-            lookup(((DataBufferShort) src).getData(), dst);
-            break;
-        default:
-            throw new IllegalArgumentException(
-                    "Illegal Type of Source DataBuffer: " + src);
-        }            
-    }
-    
-    public void lookup(DataBuffer src, short[] dst) {
-        switch (src.getDataType()) {
-        case DataBuffer.TYPE_BYTE:
-            lookup(((DataBufferByte) src).getData(), dst);
-            break;
-        case DataBuffer.TYPE_USHORT:
-            lookup(((DataBufferUShort) src).getData(), dst);
-            break;
-        case DataBuffer.TYPE_SHORT:
-            lookup(((DataBufferShort) src).getData(), dst);
+            lookup(((DataBufferShort) src).getData(), srcWidth, srcHeight,
+                    srcScanlineStride, dst, dstScanlineStride);
             break;
         default:
             throw new IllegalArgumentException(
@@ -171,21 +222,94 @@ public abstract class LookupTable {
         }            
     }
 
-    public void lookup(DataBuffer src, int[] dst, int alpha) {
+    public void lookup(DataBuffer src, int srcWidth, int srcHeight,
+            int srcScanlineStride, short[] dst, int dstScanlineStride) {
         switch (src.getDataType()) {
         case DataBuffer.TYPE_BYTE:
-            lookup(((DataBufferByte) src).getData(), dst, alpha);
+            lookup(((DataBufferByte) src).getData(), srcWidth, srcHeight,
+                    srcScanlineStride, dst, dstScanlineStride);
             break;
         case DataBuffer.TYPE_USHORT:
-            lookup(((DataBufferUShort) src).getData(), dst, alpha);
+            lookup(((DataBufferUShort) src).getData(), srcWidth, srcHeight,
+                    srcScanlineStride, dst, dstScanlineStride);
             break;
         case DataBuffer.TYPE_SHORT:
-            lookup(((DataBufferShort) src).getData(), dst, alpha);
+            lookup(((DataBufferShort) src).getData(), srcWidth, srcHeight,
+                    srcScanlineStride, dst, dstScanlineStride);
             break;
         default:
             throw new IllegalArgumentException(
                     "Illegal Type of Source DataBuffer: " + src);
         }            
+    }
+
+    public void lookup(DataBuffer src, int srcWidth, int srcHeight,
+            int srcScanlineStride, int[] dst, int dstScanlineStride, int alpha) {
+        switch (src.getDataType()) {
+        case DataBuffer.TYPE_BYTE:
+            lookup(((DataBufferByte) src).getData(), srcWidth, srcHeight,
+                    srcScanlineStride, dst, dstScanlineStride, alpha);
+            break;
+        case DataBuffer.TYPE_USHORT:
+            lookup(((DataBufferUShort) src).getData(), srcWidth, srcHeight,
+                    srcScanlineStride, dst, dstScanlineStride, alpha);
+            break;
+        case DataBuffer.TYPE_SHORT:
+            lookup(((DataBufferShort) src).getData(), srcWidth, srcHeight,
+                    srcScanlineStride, dst, dstScanlineStride, alpha);
+            break;
+        default:
+            throw new IllegalArgumentException(
+                    "Illegal Type of Source DataBuffer: " + src);
+        }            
+    }
+
+    public void lookup(byte[] src, int srcWidth, int srcHeight,
+            int srcScanlineStride, byte[] dst, int dstScanlineStride) {
+        for (int x = 0; x < srcHeight; x++) {
+            lookup(src, x * srcScanlineStride, dst, x * dstScanlineStride,
+                    srcWidth);
+        }
+    }
+
+    public void lookup(short[] src, int srcWidth, int srcHeight,
+            int srcScanlineStride, byte[] dst, int dstScanlineStride) {
+        for (int x = 0; x < srcHeight; x++) {
+            lookup(src, x * srcScanlineStride, dst, x * dstScanlineStride,
+                    srcWidth);
+        }
+    }
+
+    public void lookup(byte[] src, int srcWidth, int srcHeight,
+            int srcScanlineStride, short[] dst, int dstScanlineStride) {
+        for (int x = 0; x < srcHeight; x++) {
+            lookup(src, x * srcScanlineStride, dst, x * dstScanlineStride,
+                    srcWidth);
+        }
+    }
+
+    public void lookup(short[] src, int srcWidth, int srcHeight,
+            int srcScanlineStride, short[] dst, int dstScanlineStride) {
+        for (int x = 0; x < srcHeight; x++) {
+            lookup(src, x * srcScanlineStride, dst, x * dstScanlineStride,
+                    srcWidth);
+        }
+    }
+
+    public void lookup(byte[] src, int srcWidth, int srcHeight,
+            int srcScanlineStride, int[] dst, int dstScanlineStride, int alpha) {
+        for (int x = 0; x < srcHeight; x++) {
+            lookup(src, x * srcScanlineStride, dst, x * dstScanlineStride,
+                    srcWidth, alpha);
+        }
+    }
+
+    public void lookup(short[] src, int srcWidth, int srcHeight,
+            int srcScanlineStride, int[] dst, int dstScanlineStride, int alpha) {
+        for (int x = 0; x < srcHeight; x++) {
+            lookup(src, x * srcScanlineStride, dst, x * dstScanlineStride,
+                    srcWidth, alpha);
+        }
     }
 
     protected abstract LookupTable scale(int outBits, boolean inverse,

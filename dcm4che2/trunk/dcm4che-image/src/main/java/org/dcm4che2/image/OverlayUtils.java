@@ -189,8 +189,7 @@ public class OverlayUtils {
         }
         ColorModel cm = new IndexColorModel(1, 2, rArr, gArr, bArr, aArr);
         BufferedImage bi = new BufferedImage(cm, wr, false, null);
-        reorderBytes.lookup(bi.getRaster().getDataBuffer(), bi.getRaster()
-                .getDataBuffer());
+        reorderBytes.lookup(bi.getRaster(), bi.getRaster());
 
         return bi;
     }

@@ -38,13 +38,9 @@
 
 package org.dcm4che2.image;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ByteLookupTable extends LookupTable {
-    private static final Logger log = 
-        LoggerFactory.getLogger(ByteLookupTable.class);
-    
+
     private byte[] data;
 
     public ByteLookupTable(int inBits, boolean signed, int off, int outBits,
@@ -81,94 +77,129 @@ public class ByteLookupTable extends LookupTable {
     }
 
     @Override
-    public final byte[] lookup(byte[] src, byte[] dst) {
+    public final byte[] lookup(byte[] src, int srcPos, byte[] dst, int dstPos,
+            int length) {
+        if( srcPos + length >  src.length) {
+            throw new IndexOutOfBoundsException(
+                    "srcPos:" + srcPos + " + length:" + length
+                    + " > src.length:" + src.length);
+        }
         if (dst == null) {
-            dst = new byte[src.length];
+            dst = new byte[dstPos + length];
+        } else if (dstPos + length  >  dst.length) {
+            throw new IndexOutOfBoundsException(
+                    "dstPos:" + dstPos + " + length:" + length
+                    + " > dst.length:" + dst.length);
         }
-        int len = src.length;
-        if( dst.length < len ) {
-        	log.warn("Destination length "+dst.length+" is shorter than src length "+src.length);
-        	len = dst.length;
-        }
-        for (int i = 0; i < len; i++) {
-            dst[i] = lookupByte(src[i]);
+        for (int x = srcPos, y = dstPos, i = length; i-- > 0;) {
+            dst[y++] = lookupByte(src[x++]);
         }
         return dst;
     }
 
     @Override
-    public final short[] lookup(byte[] src, short[] dst) {
+    public final short[] lookup(byte[] src, int srcPos, short[] dst, int dstPos,
+            int length) {
+        if( srcPos + length >  src.length) {
+            throw new IndexOutOfBoundsException(
+                    "srcPos:" + srcPos + " + length:" + length
+                    + " > src.length:" + src.length);
+        }
         if (dst == null) {
-            dst = new short[src.length];
+            dst = new short[dstPos + length];
+        } else if (dstPos + length  >  dst.length) {
+            throw new IndexOutOfBoundsException(
+                    "dstPos:" + dstPos + " + length:" + length
+                    + " > dst.length:" + dst.length);
         }
-        int len = src.length;
-        if( dst.length < len ) {
-        	log.warn("Destination length "+dst.length+" is shorter than src length "+src.length);
-        	len = dst.length;
-        }
-        for (int i = 0; i < len; i++) {
-            dst[i] = lookupShort(src[i]);
+        for (int x = srcPos, y = dstPos, i = length; i-- > 0;) {
+            dst[y++] = lookupShort(src[x++]);
         }
         return dst;
     }
 
     @Override
-    public final int[] lookup(byte[] src, int[] dst, int alpha) {
+    public final int[] lookup(byte[] src, int srcPos, int[] dst, int dstPos,
+            int length, int alpha) {
+        if( srcPos + length >  src.length) {
+            throw new IndexOutOfBoundsException(
+                    "srcPos:" + srcPos + " + length:" + length
+                    + " > src.length:" + src.length);
+        }
         if (dst == null) {
-            dst = new int[src.length];
+            dst = new int[dstPos + length];
+        } else if (dstPos + length  >  dst.length) {
+            throw new IndexOutOfBoundsException(
+                    "dstPos:" + dstPos + " + length:" + length
+                    + " > dst.length:" + dst.length);
         }
-        int len = src.length;
-        if( dst.length < len ) {
-        	log.warn("Destination length "+dst.length+" is shorter than src length "+src.length);
-        	len = dst.length;
-        }
-        for (int i = 0; i < len; i++) {
-            int tmp = lookup(src[i]);
-            dst[i] = tmp | (tmp << 8) | (tmp << 16) | (alpha << 24);
+        for (int x = srcPos, y = dstPos, i = length; i-- > 0;) {
+            int tmp = lookup(src[x++]);
+            dst[y++] = tmp | (tmp << 8) | (tmp << 16) | (alpha << 24);
         }
         return dst;
     }
     
     @Override
-    public final byte[] lookup(short[] src, byte[] dst) {
+    public final byte[] lookup(short[] src, int srcPos, byte[] dst, int dstPos,
+            int length) {
+        if( srcPos + length >  src.length) {
+            throw new IndexOutOfBoundsException(
+                    "srcPos:" + srcPos + " + length:" + length
+                    + " > src.length:" + src.length);
+        }
         if (dst == null) {
-            dst = new byte[src.length];
+            dst = new byte[dstPos + length];
+        } else if (dstPos + length  >  dst.length) {
+            throw new IndexOutOfBoundsException(
+                    "dstPos:" + dstPos + " + length:" + length
+                    + " > dst.length:" + dst.length);
         }
-        int len = src.length;
-        if( dst.length < len ) {
-        	log.warn("Destination length "+dst.length+" is shorter than src length "+src.length);
-        	len = dst.length;
-        }
-        for (int i = 0; i < len; i++) {
-            dst[i] = lookupByte(src[i]);
+        for (int x = srcPos, y = dstPos, i = length; i-- > 0;) {
+            dst[y++] = lookupByte(src[x++]);
         }
         return dst;
     }
 
     @Override
-    public final short[] lookup(short[] src, short[] dst) {
+    public final short[] lookup(short[] src, int srcPos, short[] dst, int dstPos,
+            int length) {
+        if( srcPos + length >  src.length) {
+            throw new IndexOutOfBoundsException(
+                    "srcPos:" + srcPos + " + length:" + length
+                    + " > src.length:" + src.length);
+        }
         if (dst == null) {
-            dst = new short[src.length];
+            dst = new short[dstPos + length];
+        } else if (dstPos + length  >  dst.length) {
+            throw new IndexOutOfBoundsException(
+                    "dstPos:" + dstPos + " + length:" + length
+                    + " > dst.length:" + dst.length);
         }
-        int len = src.length;
-        if( dst.length < len ) {
-        	log.warn("Destination length "+dst.length+" is shorter than src length "+src.length);
-        	len = dst.length;
-        }
-        for (int i = 0; i < len; i++) {
-            dst[i] = lookupShort(src[i]);
+        for (int x = srcPos, y = dstPos, i = length; i-- > 0;) {
+            dst[y++] = lookupShort(src[x++]);
         }
         return dst;
     }
 
     @Override
-    public final int[] lookup(short[] src, int[] dst, int alpha) {
-        if (dst == null) {
-            dst = new int[src.length];
+    public final int[] lookup(short[] src, int srcPos, int[] dst, int dstPos,
+            int length, int alpha) {
+        if( srcPos + length >  src.length) {
+            throw new IndexOutOfBoundsException(
+                    "srcPos:" + srcPos + " + length:" + length
+                    + " > src.length:" + src.length);
         }
-        for (int i = 0; i < src.length; i++) {
-            int tmp = lookup(src[i]);
-            dst[i] = tmp | (tmp << 8) | (tmp << 16) | (alpha << 24);
+        if (dst == null) {
+            dst = new int[dstPos + length];
+        } else if (dstPos + length  >  dst.length) {
+            throw new IndexOutOfBoundsException(
+                    "dstPos:" + dstPos + " + length:" + length
+                    + " > dst.length:" + dst.length);
+        }
+        for (int x = srcPos, y = dstPos, i = length; i-- > 0;) {
+            int tmp = lookup(src[x++]);
+            dst[y++] = tmp | (tmp << 8) | (tmp << 16) | (alpha << 24);
         }
         return dst;
     }

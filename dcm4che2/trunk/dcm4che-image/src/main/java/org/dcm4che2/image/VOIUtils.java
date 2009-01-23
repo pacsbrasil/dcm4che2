@@ -38,10 +38,13 @@
 
 package org.dcm4che2.image;
 
+import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
+import java.awt.image.Raster;
+import java.awt.image.SampleModel;
 
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
@@ -247,11 +250,11 @@ public class VOIUtils {
      *            Is the GSPS to apply to the object.
      * @param frame
      *            is the frame number
-     * @param db
+     * @param raster
      * @return
      */
     public static float[] getMinMaxWindowCenterWidth(DicomObject img,
-            DicomObject pr, int frame, DataBuffer db) {
+            DicomObject pr, int frame, Raster raster) {
         int[] minMax;
         float slope;
         float intercept;
@@ -268,7 +271,7 @@ public class VOIUtils {
                     && img.containsValue(Tag.LargestImagePixelValue)) {
                 minMax = new int[] { img.getInt(Tag.SmallestImagePixelValue),
                         img.getInt(Tag.LargestImagePixelValue) };
-            } else if (db == null) {
+            } else if (raster == null) {
                 log
                         .debug("Using min/max possible values to compute WL range, as we don't have data buffer to use.");
                 int stored = img.getInt(Tag.BitsStored);
@@ -282,7 +285,7 @@ public class VOIUtils {
                 minMax = new int[] { (signed ? -(1 << (stored - 1)) : 0),
                         (signed ? (1 << (stored - 1)) - 1 : (1 << stored) - 1) };
             } else {
-                minMax = calcMinMax(img, db);
+                minMax = calcMinMax(img, raster);
             }
         }
         return new float[] {
@@ -291,57 +294,71 @@ public class VOIUtils {
     }
 
     /** Gets the min/max value from a data buffer, in the raw pixel data */
-    public static int[] calcMinMax(DicomObject img, DataBuffer db) {
+    public static int[] calcMinMax(DicomObject img, Raster raster) {
         int allocated = img.getInt(Tag.BitsAllocated, 8);
         int stored = img.getInt(Tag.BitsStored, allocated);
         boolean signed = img.getInt(Tag.PixelRepresentation) != 0;
         int range = 1 << stored;
         int mask = range - 1;
         int signbit = signed ? 1 << (stored - 1) : 0;
-        switch (db.getDataType()) {
+        int w = raster.getWidth();
+        int h = raster.getHeight();
+        int scanlineStride = ((ComponentSampleModel) raster.getSampleModel())
+                .getScanlineStride();
+        DataBuffer data = raster.getDataBuffer();
+        switch (data.getDataType()) {
         case DataBuffer.TYPE_BYTE:
-            return calcMinMax(signbit, mask, ((DataBufferByte) db).getData());
+            return calcMinMax(signbit, mask, w, h, scanlineStride,
+                    ((DataBufferByte) data).getData());
         case DataBuffer.TYPE_USHORT:
-            return calcMinMax(signbit, mask, ((DataBufferUShort) db).getData());
+            return calcMinMax(signbit, mask, w, h, scanlineStride,
+                    ((DataBufferUShort) data).getData());
         case DataBuffer.TYPE_SHORT:
-            return calcMinMax(signbit, mask, ((DataBufferShort) db).getData());
+            return calcMinMax(signbit, mask, w, h, scanlineStride,
+                    ((DataBufferShort) data).getData());
         default:
             throw new IllegalArgumentException("Illegal Type of DataBuffer: "
-                    + db);
+                    + raster);
         }
     }
 
-    static int[] calcMinMax(int signbit, int mask, short[] data) {
+    static int[] calcMinMax(int signbit, int mask, int w, int h,
+            int scanlineStride, short[] data) {
         int minVal = Integer.MAX_VALUE;
         int maxVal = Integer.MIN_VALUE;
-        for (int i = 0; i < data.length; i++) {
-            int val = data[i] & mask;
-            if ((val & signbit) != 0) {
-                val |= ~mask;
-            }
-            if (minVal > val) {
-                minVal = val;
-            }
-            if (maxVal < val) {
-                maxVal = val;
+        for (int x = 0; x < h; x++) {
+            for (int y = 0, i = x * scanlineStride; y < w; y++, i++) {
+                int val = data[i] & mask;
+                if ((val & signbit) != 0) {
+                    val |= ~mask;
+                }
+                if (minVal > val) {
+                    minVal = val;
+                }
+                if (maxVal < val) {
+                    maxVal = val;
+                }
             }
         }
         return new int[] { minVal, maxVal };
     }
 
-    static int[] calcMinMax(int signbit, int mask, byte[] data) {
+    static int[] calcMinMax(int signbit, int mask, int w, int h,
+            int scanlineStride, byte[] data) {
         int minVal = Integer.MAX_VALUE;
         int maxVal = Integer.MIN_VALUE;
-        for (int i = 0; i < data.length; i++) {
-            int val = data[i] & mask;
-            if ((val & signbit) != 0) {
-                val |= ~mask;
-            }
-            if (minVal > val) {
-                minVal = val;
-            }
-            if (maxVal < val) {
-                maxVal = val;
+        for (int x = 0; x < h; x++) {
+            for (int y = 0, i = x * scanlineStride; y < w; y++, i++) {
+                int val = data[i] & mask;
+                if ((val & signbit) != 0) {
+                    val |= ~mask;
+                }
+                if (minVal > val) {
+                    minVal = val;
+                }
+                if (maxVal < val) {
+                    maxVal = val;
+                }
             }
         }
         return new int[] { minVal, maxVal };
