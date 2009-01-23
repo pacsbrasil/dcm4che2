@@ -35,7 +35,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
- 
+
 package org.dcm4che2.image;
 
 import java.awt.image.DataBuffer;
@@ -56,23 +56,32 @@ import org.slf4j.LoggerFactory;
  * @since Aug 18, 2007
  */
 public class VOIUtils {
-	private static final Logger log = LoggerFactory.getLogger(VOIUtils.class);
+    private static final Logger log = LoggerFactory.getLogger(VOIUtils.class);
 
-	/** Return true if the specified object contains some type of VOI attributes at the current level (ie window level or VOI LUT sequence) */ 
+    /**
+     * Return true if the specified object contains some type of VOI attributes
+     * at the current level (ie window level or VOI LUT sequence)
+     */
     public static boolean containsVOIAttributes(DicomObject dobj) {
         return dobj.containsValue(Tag.WindowCenter)
                 && dobj.containsValue(Tag.WindowWidth)
                 || dobj.containsValue(Tag.VOILUTSequence);
     }
 
-    /** Return true if the specified image object contains a pixel intensity relationship LUT, based on SOP class */
+    /**
+     * Return true if the specified image object contains a pixel intensity
+     * relationship LUT, based on SOP class
+     */
     public static boolean isModalityLUTcontainsPixelIntensityRelationshipLUT(
             DicomObject img) {
         return isModalityLUTcontainsPixelIntensityRelationshipLUT(img
                 .getString(Tag.SOPClassUID));
     }
 
-    /** Return true if the specified SOP class contains a pixel intensity relationship LUT */
+    /**
+     * Return true if the specified SOP class contains a pixel intensity
+     * relationship LUT
+     */
     public static boolean isModalityLUTcontainsPixelIntensityRelationshipLUT(
             String uid) {
         return UID.XRayAngiographicImageStorage.equals(uid)
@@ -81,94 +90,122 @@ public class VOIUtils {
     }
 
     /**
-     * Finds the applicable DicomObject containing the Modality LUT information for the given frame within 
-     * the image.  
-     * Preference is to use the GSPS pr object first if it is found, then the dicom object enhanced multi-frame,
-     * and if those aren't found, then the image itself.  This will always return a non-null value, although if no
-     * Modality LUT information is found whatsoever, this can contain an empty set of information.
+     * Finds the applicable DicomObject containing the Modality LUT information
+     * for the given frame within the image. Preference is to use the GSPS pr
+     * object first if it is found, then the dicom object enhanced multi-frame,
+     * and if those aren't found, then the image itself. This will always return
+     * a non-null value, although if no Modality LUT information is found
+     * whatsoever, this can contain an empty set of information.
+     * 
      * @param img
      * @param pr
      * @param frame
-     * @return The DicomObject containing the correct modality LUT information for this frame.
+     * @return The DicomObject containing the correct modality LUT information
+     *         for this frame.
      */
-    public static DicomObject selectModalityLUTObject(DicomObject img, DicomObject pr, int frame) {
-    	if( pr!=null ) return pr;
-    	DicomElement framed = img.get(Tag.PerframeFunctionalGroupsSequence);
-    	if( framed!=null ) {
-    		int size = framed.countItems();
-    		log.debug("Looking in enhanced multi-frame Perframe object for VOI lut information, frames="+size);
-    		if( frame>=1 && frame<=size ) {
-    			DicomObject frameObj = framed.getDicomObject(frame-1);
-    			if( frameObj!=null ) {
-    				DicomObject mlutObj = frameObj.getNestedDicomObject(Tag.PixelValueTransformationSequence);
-    				if( mlutObj!=null ) {
-    					log.debug("Found a per-frame mlut info.");
-    					return mlutObj;
-    				}
-    			}
-    		}
-    	}
-    	DicomObject shared = img.getNestedDicomObject(Tag.SharedFunctionalGroupsSequence);
-    	if( shared!=null ) {
-    		DicomObject mlutObj = shared.getNestedDicomObject(Tag.PixelValueTransformationSequence);
-    		if( mlutObj!=null ) {
-    			log.debug("Found a shared mLut information object ");
-    			return mlutObj;
-    		}
-    	}
-    	return img;
+    public static DicomObject selectModalityLUTObject(DicomObject img,
+            DicomObject pr, int frame) {
+        if (pr != null)
+            return pr;
+        DicomElement framed = img.get(Tag.PerframeFunctionalGroupsSequence);
+        if (framed != null) {
+            int size = framed.countItems();
+            log
+                    .debug("Looking in enhanced multi-frame Perframe object for VOI lut information, frames="
+                            + size);
+            if (frame >= 1 && frame <= size) {
+                DicomObject frameObj = framed.getDicomObject(frame - 1);
+                if (frameObj != null) {
+                    DicomObject mlutObj = frameObj
+                            .getNestedDicomObject(Tag.PixelValueTransformationSequence);
+                    if (mlutObj != null) {
+                        log.debug("Found a per-frame mlut info.");
+                        return mlutObj;
+                    }
+                }
+            }
+        }
+        DicomObject shared = img
+                .getNestedDicomObject(Tag.SharedFunctionalGroupsSequence);
+        if (shared != null) {
+            DicomObject mlutObj = shared
+                    .getNestedDicomObject(Tag.PixelValueTransformationSequence);
+            if (mlutObj != null) {
+                log.debug("Found a shared mLut information object ");
+                return mlutObj;
+            }
+        }
+        return img;
     }
-    
+
     /**
-     * Finds the applicable DicomObject containing the VOI LUT information for the given frame within the image.
-     * Uses the GSPS first, if a match is found for the givem SOP/frame, then SOP only, then it uses the image enahanced
-     * multi-frame, and finally the regular image information.  Always returns some object to use, the img level itself
-     * if nothing else is found. 
+     * Finds the applicable DicomObject containing the VOI LUT information for
+     * the given frame within the image. Uses the GSPS first, if a match is
+     * found for the givem SOP/frame, then SOP only, then it uses the image
+     * enahanced multi-frame, and finally the regular image information. Always
+     * returns some object to use, the img level itself if nothing else is
+     * found.
+     * 
      * @param img
      * @param db
      * @return DicomObject containing the VOI LUT to use for this frame.
      */
-    public static DicomObject selectVoiObject(DicomObject img, DicomObject pr, int frame) {
+    public static DicomObject selectVoiObject(DicomObject img, DicomObject pr,
+            int frame) {
         String iuid = img.getString(Tag.SOPInstanceUID);
-    	DicomObject voi = selectVoiItemFromPr(iuid,pr,frame);
-    	if( voi!=null ) {
-    		return voi;
-    	}
-    	if( pr!=null ) {
-    		return pr;
-    	}
+        DicomObject voi = selectVoiItemFromPr(iuid, pr, frame);
+        if (voi != null) {
+            return voi;
+        }
+        if (pr != null) {
+            return pr;
+        }
 
-    	DicomElement framed = img.get(Tag.PerframeFunctionalGroupsSequence);
-    	if( framed!=null ) {
-    		int size = framed.countItems();
-    		if( frame>=1 && frame<=size ) {
-    			DicomObject frameObj = framed.getDicomObject(frame-1);
-    			if( frameObj!=null ) {
-    				DicomObject voiObj = frameObj.getNestedDicomObject(Tag.FrameVOILUTSequence);
-    				if( voiObj!=null ) {
-    					return voiObj;
-    				}
-    			}
-    		}
-    	}
-    	DicomObject shared = img.getNestedDicomObject(Tag.SharedFunctionalGroupsSequence);
-    	if( shared!=null ) {
-    		DicomObject voiObj = shared.getNestedDicomObject(Tag.FrameVOILUTSequence);
-    		if( voiObj!=null ) {
-    			return voiObj;
-    		}
-    	}
-    	if( containsVOIAttributes(img) ) return img;
-    	return null;
+        DicomElement framed = img.get(Tag.PerframeFunctionalGroupsSequence);
+        if (framed != null) {
+            int size = framed.countItems();
+            if (frame >= 1 && frame <= size) {
+                DicomObject frameObj = framed.getDicomObject(frame - 1);
+                if (frameObj != null) {
+                    DicomObject voiObj = frameObj
+                            .getNestedDicomObject(Tag.FrameVOILUTSequence);
+                    if (voiObj != null) {
+                        return voiObj;
+                    }
+                }
+            }
+        }
+        DicomObject shared = img
+                .getNestedDicomObject(Tag.SharedFunctionalGroupsSequence);
+        if (shared != null) {
+            DicomObject voiObj = shared
+                    .getNestedDicomObject(Tag.FrameVOILUTSequence);
+            if (voiObj != null) {
+                return voiObj;
+            }
+        }
+        if (containsVOIAttributes(img))
+            return img;
+        return null;
     }
 
-    /** Searches for a Softcopy VOI LUT Sequence for the given frame, or one for just the SOP instance. 
-     * @param iuid Image UID
-     * @param pr GSPS object to select from.
-     * @param frame number.  Use 0 to select any VOI applying to all frames of the UID (that is, no referenced frame number sub-object is present.)
+    /**
+     * Searches for a Softcopy VOI LUT Sequence for the given frame, or one for
+     * just the SOP instance.
+     * 
+     * @param iuid
+     *            Image UID
+     * @param pr
+     *            GSPS object to select from.
+     * @param frame
+     *            number. Use 0 to select any VOI applying to all frames of the
+     *            UID (that is, no referenced frame number sub-object is
+     *            present.)
      */
-    public static DicomObject selectVoiItemFromPr(String iuid, DicomObject pr, int frame) {
-    	if( pr==null ) return null;
+    public static DicomObject selectVoiItemFromPr(String iuid, DicomObject pr,
+            int frame) {
+        if (pr == null)
+            return null;
         DicomElement voisq = pr.get(Tag.SoftcopyVOILUTSequence);
         if (voisq == null) {
             return null;
@@ -183,30 +220,38 @@ public class VOIUtils {
                 DicomObject refImage = refImgs.getDicomObject(j);
                 if (iuid.equals(refImage
                         .getString(Tag.ReferencedSOPInstanceUID))) {
-                	int[] frames = refImage.getInts(Tag.ReferencedFrameNumber);
-                	if( frames==null || frames.length==0 ) return item;
-                	if( frame==0 ) return null; // Can't have a all-frame VOI once you see a per-frame VOI for the SOP
-                	for(int k=0; k<frames.length; k++ ) {
-                		if( frames[k]==frame ) return item;
-                	}
+                    int[] frames = refImage.getInts(Tag.ReferencedFrameNumber);
+                    if (frames == null || frames.length == 0)
+                        return item;
+                    if (frame == 0)
+                        return null; // Can't have a all-frame VOI once you see
+                                     // a per-frame VOI for the SOP
+                    for (int k = 0; k < frames.length; k++) {
+                        if (frames[k] == frame)
+                            return item;
+                    }
                 }
             }
         }
         return null;
     }
 
-
-    /** This method returns the minimum and maximum window center widths, based on the Modality
-     * LUT and image information.  If the databuffer is missing, then no image scannign will occur for
-     * min/max pixel information, but instead the minimum/maximum possible values will be used instead.
+    /**
+     * This method returns the minimum and maximum window center widths, based
+     * on the Modality LUT and image information. If the databuffer is missing,
+     * then no image scannign will occur for min/max pixel information, but
+     * instead the minimum/maximum possible values will be used instead.
+     * 
      * @param img
-     * @param pr Is the GSPS to apply to the object.
-     * @param frame is the frame number
+     * @param pr
+     *            Is the GSPS to apply to the object.
+     * @param frame
+     *            is the frame number
      * @param db
      * @return
      */
     public static float[] getMinMaxWindowCenterWidth(DicomObject img,
-    		DicomObject pr, int frame, DataBuffer db) {
+            DicomObject pr, int frame, DataBuffer db) {
         int[] minMax;
         float slope;
         float intercept;
@@ -223,26 +268,25 @@ public class VOIUtils {
                     && img.containsValue(Tag.LargestImagePixelValue)) {
                 minMax = new int[] { img.getInt(Tag.SmallestImagePixelValue),
                         img.getInt(Tag.LargestImagePixelValue) };
-            } else if( db==null ) {
-            	log.debug("Using min/max possible values to compute WL range, as we don't have data buffer to use.");
-            	int stored = img.getInt(Tag.BitsStored);
-            	boolean signed = img.getInt(Tag.PixelRepresentation)==1;
-            	if( stored==16 ) {
-            		String rescaleType = mObj.getString(Tag.RescaleType);
-            		if( "HU".equalsIgnoreCase(rescaleType) ) {
-            			stored = 12;
-            		}
-            	}
-            	minMax = new int[] {
-            			(signed ? -(1 << (stored -1)) : 0),
-            			(signed ? (1 << (stored - 1)) - 1 : (1 << stored) - 1)	
-            	};
+            } else if (db == null) {
+                log
+                        .debug("Using min/max possible values to compute WL range, as we don't have data buffer to use.");
+                int stored = img.getInt(Tag.BitsStored);
+                boolean signed = img.getInt(Tag.PixelRepresentation) == 1;
+                if (stored == 16) {
+                    String rescaleType = mObj.getString(Tag.RescaleType);
+                    if ("HU".equalsIgnoreCase(rescaleType)) {
+                        stored = 12;
+                    }
+                }
+                minMax = new int[] { (signed ? -(1 << (stored - 1)) : 0),
+                        (signed ? (1 << (stored - 1)) - 1 : (1 << stored) - 1) };
             } else {
                 minMax = calcMinMax(img, db);
             }
         }
         return new float[] {
-                ((minMax[1] + minMax[0]) / 2.f) * slope + intercept+0.5f,
+                ((minMax[1] + minMax[0]) / 2.f) * slope + intercept + 0.5f,
                 (minMax[1] - minMax[0]) * slope + 1 };
     }
 
@@ -256,14 +300,14 @@ public class VOIUtils {
         int signbit = signed ? 1 << (stored - 1) : 0;
         switch (db.getDataType()) {
         case DataBuffer.TYPE_BYTE:
-            return calcMinMax(signbit, mask, ((DataBufferByte) db).getData()); 
+            return calcMinMax(signbit, mask, ((DataBufferByte) db).getData());
         case DataBuffer.TYPE_USHORT:
-            return calcMinMax(signbit, mask, ((DataBufferUShort) db).getData()); 
+            return calcMinMax(signbit, mask, ((DataBufferUShort) db).getData());
         case DataBuffer.TYPE_SHORT:
             return calcMinMax(signbit, mask, ((DataBufferShort) db).getData());
         default:
-            throw new IllegalArgumentException(
-                    "Illegal Type of DataBuffer: " + db);
+            throw new IllegalArgumentException("Illegal Type of DataBuffer: "
+                    + db);
         }
     }
 
