@@ -37,10 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +56,10 @@ import org.dcm4chee.xero.search.LocalModel;
 import org.dcm4chee.xero.search.ResultFromDicom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.dcm4chee.xero.search.study.PatientBean.createDateTime;
+import static org.dcm4chee.xero.search.study.PatientBean.createDateF;
+
 
 /**
  * A Study representation that can initialize itself from the DICOM object and knows about macros and parent/child
@@ -117,6 +119,10 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 	  setStudyID(study.getStudyID());
 	  setStudyUID(study.getStudyUID());
 	  setStudyStatusID(study.getStudyStatusID());
+	  
+	  setPhysiciansOfRecord(study.getPhysiciansOfRecord());
+	  setNameOfPhysiciansReadingStudy(study.getNameOfPhysiciansReadingStudy());
+	  setAdmittingDiagnosesDescription(study.getAdmittingDiagnosesDescription());
 	  getSeries().addAll(study.getSeries());
    }
 
@@ -145,19 +151,7 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 	  setNumberOfStudyRelatedInstances(data.getInt(Tag.NumberOfStudyRelatedInstances));
 	  setNumberOfStudyRelatedSeries(data.getInt(Tag.NumberOfStudyRelatedSeries));
 	  setReferringPhysicianName(PatientBean.sanitizeString(data.getString(Tag.ReferringPhysicianName)));
-
-	  Date date = null;
-	  try {
-		 date = data.getDate(Tag.StudyDate, Tag.StudyTime);
-	  } catch (NumberFormatException nfe) {
-		 log.warn("Illegal study date or time:" + nfe);
-	  }
-	  if (date != null) {
-		 GregorianCalendar cal = new GregorianCalendar();
-		 cal.setTime(date);
-		 setStudyDateTime(PatientBean.datatypeFactory.newXMLGregorianCalendar(cal));
-	  }
-
+	  setStudyDateTime(createDateTime(data.getString(Tag.StudyDate), data.getString(Tag.StudyTime)));
 	  setStudyDescription(data.getString(Tag.StudyDescription));
 	  setStudyID(data.getString(Tag.StudyID));
 	  setStudyUID(data.getString(Tag.StudyInstanceUID));
@@ -165,6 +159,7 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 	  
 	  setPhysiciansOfRecord(data.getString(Tag.PhysiciansOfRecord));
 	  setNameOfPhysiciansReadingStudy(data.getString(Tag.NameOfPhysiciansReadingStudy));
+	  setAdmittingDiagnosesDescription(data.getString(Tag.AdmittingDiagnosesDescription));
    }
 
    /** Turn an array of strings into a comma separated string. */
@@ -243,11 +238,8 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
    
    @XmlAttribute(name = "StudyDateF")
    public String getStudyDateFormatted() {
-	  if( studyDateTime==null ) return null;
-	  GregorianCalendar gc = studyDateTime.toGregorianCalendar();
-	  Date time = gc.getTime();
-	  DateFormat df = DateFormat.getDateTimeInstance();
-	  return df.format(time);
+	   
+	   return createDateF(getStudyDateTime());
    }
 
 

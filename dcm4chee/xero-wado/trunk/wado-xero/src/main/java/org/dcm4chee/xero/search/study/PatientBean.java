@@ -51,6 +51,7 @@ import javax.xml.datatype.DatatypeFactory;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.util.DateUtils;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
 import org.dcm4chee.xero.search.LocalModel;
 import org.dcm4chee.xero.search.ResultFromDicom;
@@ -118,9 +119,51 @@ public class PatientBean extends PatientType implements Patient,
 		setPatientName(patient.getPatientName());
 		setPatientSex(patient.getPatientSex());
 		setPatientBirthDate(patient.getPatientBirthDate());
+		setOtherPatientIDs(patient.getOtherPatientIDs());
+		setPatientAge(patient.getPatientAge());
+		setAdditionalPatientHistory(patient.getAdditionalPatientHistory());
+		setCurrentPatientLocation(patient.getCurrentPatientLocation());
+		setConfidentialityCode(patient.getConfidentialityCode());
 		getStudy().addAll(patient.getStudy());
 	}
 
+	/** Simple concatenation of date & time parameters.  Returns null if either
+	 * paramter is null.
+	 * TODO move to a future utility class along with sanitizeString()
+	 */
+	public static String createDateTime(String date, String time) {
+		String dateTime = null;
+		if (date!= null && time != null) {
+			dateTime = date + time;
+		}
+		return dateTime;
+	}
+	
+	/** Formats a dateTimeString which is a concatenation of a DICOM date and time.
+	 * Returns null if unable to properly parse dateTimeString.
+	 * TODO move to a future utility class
+	 */
+	public static String createDateF(String dateTimeString) {
+		if (dateTimeString != null) {
+			Date dateTime = null;
+			try {
+				Date date = DateUtils.parseDA(dateTimeString.substring(0,7), false);
+				Date time = DateUtils.parseTM(dateTimeString.substring(8), false);
+				dateTime = DateUtils.toDateTime(date, time);
+			} catch (NumberFormatException nfe) {
+				log.warn("Illegal study date or time:" + nfe);
+			} catch (IndexOutOfBoundsException iobe) {
+				log.warn("Illegal study date or time:" + iobe);
+			}
+			if (dateTime != null) {
+				DateFormat df = DateFormat.getDateTimeInstance();
+				return df.format(dateTime);
+			}
+		}
+		return null;
+	}
+		
+	
 	/** Excludes a zero at the end of the string from being included. Empty
 	 * strings become nulls, and some characters (0 and 0x1b) are removed/spaced out
 	 */
@@ -142,6 +185,11 @@ public class PatientBean extends PatientType implements Patient,
 
 	/** Initialize the primary attributes of this object */
 	protected void initAttributes(DicomObject cmd) {
+		setOtherPatientIDs(cmd.getString(Tag.OtherPatientIDs));
+		setPatientAge(cmd.getString(Tag.PatientAge));
+		setAdditionalPatientHistory(cmd.getString(Tag.AdditionalPatientHistory));
+		setCurrentPatientLocation(cmd.getString(Tag.CurrentPatientLocation));
+		setConfidentialityCode(cmd.getString(Tag.ConfidentialityCode));
 		setPatientID(cmd.getString(Tag.PatientID));
 		// For now, just use the ID as the patient identifier
 		// This maybe changed further up by patient linking etc.

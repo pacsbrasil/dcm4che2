@@ -59,20 +59,29 @@ public class StudySearch extends DicomCFindFilter {
  
  
     // TODO - generate this list dynamically from the contents of the class...
-    static protected final Integer[] STUDY_RETURN_KEYS = { 
+    static protected final Integer[] STUDY_RETURN_KEYS = {
         Tag.PatientID,
         Tag.PatientName,
 		Tag.PatientBirthDate, 
 		Tag.PatientSex,
+		Tag.OtherPatientIDs,
+		Tag.PatientAge,
+		Tag.AdditionalPatientHistory,
+		Tag.CurrentPatientLocation,
+		Tag.ConfidentialityCode,
         Tag.StudyDate,
         Tag.StudyTime,
         Tag.AccessionNumber,
         Tag.StudyID,
         Tag.StudyDescription,
         Tag.StudyInstanceUID,
+        Tag.StudyStatusIDRET,
         Tag.NumberOfStudyRelatedInstances,
         Tag.NumberOfStudyRelatedSeries,
         Tag.ModalitiesInStudy,
+        Tag.ReferringPhysicianName,
+        Tag.NameOfPhysiciansReadingStudy,
+        Tag.AdmittingDiagnosesDescription
      };
     
     protected static Set<Integer> returnKeys = new HashSet<Integer>(Arrays.asList(STUDY_RETURN_KEYS));

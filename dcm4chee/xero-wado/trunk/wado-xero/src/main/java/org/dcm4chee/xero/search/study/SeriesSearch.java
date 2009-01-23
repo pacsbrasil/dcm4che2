@@ -61,7 +61,16 @@ public class SeriesSearch extends StudySearch{
         Tag.SeriesNumber,
         Tag.SeriesInstanceUID,
         Tag.NumberOfSeriesRelatedInstances,
-        Tag.Manufacturer};
+        Tag.Manufacturer,
+        Tag.InstitutionName,
+        Tag.PerformingPhysicianName,
+        Tag.StationName,
+        Tag.SeriesDate,
+        Tag.SeriesTime,
+        Tag.OperatorName,
+        Tag.InstitutionalDepartmentName,
+        Tag.ManufacturerModelName,
+        Tag.RequestingPhysician};
     
     protected static Set<Integer> returnKeys = new HashSet<Integer>(Arrays.asList(SERIES_RETURN_KEYS));
     

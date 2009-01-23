@@ -37,17 +37,12 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
-import javax.xml.datatype.XMLGregorianCalendar;
-
 import org.dcm4chee.xero.search.Column;
 
 /**
  * Defines the study query and retrieve fields for the StudyBean.
  */ 
 public interface Study {
-	@Column(searchable=true,type="DateTime")
-	XMLGregorianCalendar getStudyDateTime();
-
 	@Column(searchable=true,type="string")
 	String getAccessionNumber();
 

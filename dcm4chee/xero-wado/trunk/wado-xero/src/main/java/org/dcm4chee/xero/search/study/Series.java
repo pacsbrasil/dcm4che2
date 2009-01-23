@@ -46,6 +46,24 @@ import org.dcm4chee.xero.search.Column;
  */
 public interface Series {
 	
+	@Column(searchable=true,type="DateTime")
+	String getSeriesDateTime();
+	
+	@Column(searchable=true,type="string")
+	String getInstitutionalDepartmentName();
+	
+	@Column(searchable=true,type="string")
+	String getOperatorName();
+	
+	@Column(searchable=true,type="string")
+	String getStationName();
+	
+	@Column(searchable=true,type="string")
+	String getPerformingPhysicianName();
+	
+	@Column(searchable=true,type="string")
+	String getInstitutionName();
+	
 	@Column(type="string")
 	String getManufacturer();
 

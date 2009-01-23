@@ -59,5 +59,17 @@ public interface Patient {
 
 	@Column(searchable=true,type="Sex")
 	SexEnum getPatientSex();
+	
+	@Column(type="string")
+	String getOtherPatientIDs();
+	
+	@Column(type="string")
+	String getPatientAge();
+	
+	@Column(type="string")
+	String getAdditionalPatientHistory();
+	
+	@Column(type="string")
+	String getCurrentPatientLocation();
 
 }

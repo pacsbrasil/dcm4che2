@@ -37,6 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
+import static org.dcm4chee.xero.search.study.PatientBean.createDateTime;
+
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAnyAttribute;
@@ -85,6 +87,14 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	  copySeriesAttributes(series);
 	  getDicomObject().addAll(series.getDicomObject());
 	  setManufacturer(series.getManufacturer());
+	  setInstitutionName(series.getInstitutionName());
+	  setPerformingPhysicianName(series.getPerformingPhysicianName());
+	  setStationName(series.getStationName());
+	  setSeriesDateTime(series.getSeriesDateTime());
+	  setOperatorName(series.getOperatorName());
+	  setInstitutionalDepartmentName(series.getInstitutionalDepartmentName());
+	  setManufacturerModelName(series.getManufacturerModelName());
+	  setRequestingPhysician(series.getRequestingPhysician());
    }
 
    /**
@@ -116,6 +126,16 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	  setBodyPartExamined(data.getString(Tag.BodyPartExamined));
 	  setLaterality(data.getString(Tag.Laterality));
 	  setManufacturer(data.getString(Tag.Manufacturer));
+	  setInstitutionName(data.getString(Tag.InstitutionName));
+	  setPerformingPhysicianName(data.getString(Tag.PerformingPhysicianName));
+	  setStationName(data.getString(Tag.StationName));
+	  
+	  setSeriesDateTime(createDateTime(data.getString(Tag.SeriesDate), data.getString(Tag.SeriesTime)));
+	  
+	  setOperatorName(data.getString(Tag.OperatorName));
+	  setInstitutionalDepartmentName(data.getString(Tag.InstitutionalDepartmentName));
+	  setManufacturerModelName(data.getString(Tag.ManufacturerModelName));
+	  setRequestingPhysician(data.getString(Tag.RequestingPhysician));
 	  try {
 		 setSeriesNumber(data.getInt(Tag.SeriesNumber));
 	  } catch (NumberFormatException nfe) {
