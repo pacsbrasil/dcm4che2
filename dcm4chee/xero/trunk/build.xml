@@ -1,6 +1,6 @@
 <project name="xero" default="install">
   <property name="version.ownVersion" value="true" />
-  <property name="version.increment" value="208" />
+  <property name="version.increment" value="209" />
 
   <property file="build.properties" />
   <property name="baseAntDefns" value="../xero-util/baseBuild.xml" />
