@@ -83,7 +83,7 @@
     	</sequence>
     	<attribute name="tooManyResults" type="boolean" use="optional" />
     	<attribute name="ae" type="string" use="optional" />
-    </complexType>
+     </complexType>
     
     <complexType name="patientType">
          <sequence maxOccurs="unbounded" minOccurs="0">
@@ -95,6 +95,11 @@
          <attribute name="PatientBirthDate" type="dateTime"/>
          <attribute name="PatientIdentifier" type="string" />
          <attribute name="PatientComments" type="string" />
+         <attribute name="OtherPatientIDs" type="string" />
+         <attribute name="PatientAge" type="string" />
+         <attribute name="AdditionalPatientHistory" type="string" />
+         <attribute name="CurrentPatientLocation" type="string" />
+         <attribute name="ConfidentialityCode" type="string" />
     </complexType>
 
     <complexType name="studyType">
@@ -104,7 +109,7 @@
     	<attribute name="ModalitiesInStudy" />
     	<attribute name="studyUID" type="tns:UID" />
     	<attribute name="StudyID" type="string" />
-    	<attribute name="StudyDateTime" type="dateTime" />
+    	<attribute name="StudyDateTime" type="string" />
     	<attribute name="StudyStatusID" />
     	<attribute name="NumberOfStudyRelatedInstances" type="int" />
     	<attribute name="NumberOfStudyRelatedSeries" type="int" />
@@ -114,6 +119,7 @@
     	<attribute name="StudyDescription" />
 		<attribute name="PhysiciansOfRecord" />
     	<attribute name="NameOfPhysiciansReadingStudy" />
+    	<attribute name="AdmittingDiagnosesDescription" />
         	<!-- Contains the content name for the GSPS to apply -->
     	<attribute name="gspsLabel" type="string" />
     </complexType>
@@ -144,6 +150,14 @@
     	<!-- The actual number of objects that are available in the series to be viewed. -->
     	<attribute name="Viewable" type="int" />
     	<attribute name="Manufacturer" type="string" />
+    	<attribute name="InstitutionName" />
+    	<attribute name="PerformingPhysicianName" />
+    	<attribute name="StationName" />
+    	<attribute name="SeriesDateTime" type="string" />
+    	<attribute name="OperatorName" />
+    	<attribute name="InstitutionalDepartmentName" />
+    	<attribute name="ManufacturerModelName" />
+    	<attribute name="RequestingPhysician" />
     </complexType>
     
     <simpleType name="PresentationSizeMode">
