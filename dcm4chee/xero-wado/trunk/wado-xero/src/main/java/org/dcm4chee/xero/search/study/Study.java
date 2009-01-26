@@ -43,6 +43,9 @@ import org.dcm4chee.xero.search.Column;
  * Defines the study query and retrieve fields for the StudyBean.
  */ 
 public interface Study {
+	@Column(searchable=true,type="DateTime")
+	String getStudyDateTime();
+	
 	@Column(searchable=true,type="string")
 	String getAccessionNumber();
 
