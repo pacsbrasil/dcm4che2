@@ -39,27 +39,26 @@ PatientLayout.prototype.init = function PatientLayout_init() {
 };
 
 /** Handles the compare study layout/event notifications */
-function CompareStudyLay() {
-	this.baseConstructor(this.i18n);
+function CompareStudyLay(suffix) {
+	this.baseConstructor(this.i18n+suffix);
 };
 
-CompareStudyLay.prototype = new Layout("CompareStudyPrototype", "html/toolItem");
-CompareStudyLay.prototype.i18n="SingleStudy";
-CompareStudyLay.prototype.icon="SingleStudyIcon";
-CompareStudyLay.prototype.action="controller.compareStudyMode";
-CompareStudyLay.prototype.events=["/patient:0", "/patient:0/conversation:compareStudy"];
+CompareStudyLay.prototype = new Layout("CompareStudyPrototype", "image/compareStudyLay");
+CompareStudyLay.prototype.events=["/patient:0/conversation:nav0Show", "/patient:0/conversation:nav1Show"];
+CompareStudyLay.prototype.icon="CloseIcon";
 
 CompareStudyLay.prototype.namedListener = function(nav,vname,val) {
-	if( !val ) val = "CompareStudy";
-	this.i18n = val;
-	this.icon = val+"Icon";
-	this.arg = (val=="SingleStudy" ? "CompareStudy" : "SingleStudy");
-};
-
-/** Listen at the patient level to determine updates to the layout */
-CompareStudyLay.prototype.navigateListener = function(nav) {
-	if(!(nav && nav.conversation && nav.conversation.nav)) return;
-	this.used = nav.conversation.nav.length>1;
+	if(!(nav && nav.conversation) )return;
+	var show0 = (nav.conversation.nav0Show!==false);
+	var show1 = (nav.conversation.nav1Show!==false);
+	console.debug("Updating CompareStudyLay shows:", show0,show1);
+	if( show0===show1 ) {
+		this.icon = "CloseIcon";
+	} else {
+		this.icon = "CompareStudyIcon";
+	}
+	//console.info("Icon set to", this.icon);
+	this.relayout = true;
 };
 
 /** The menu for patient tab control */
@@ -86,7 +85,7 @@ function StudyAreaLayout(nth) {
 	var suffix = "S"+nth;
 	this.baseConstructor("StudyArea"+suffix);
 	this.nth = nth;
-	this.navigate = "/patient:0/study:"+nth;
+	this.navigate = "/patient:0/study:nav"+nth+",0";
 	var studyTray = new StudyTrayLayout(suffix,nth);
 	var even = ((nth %2)==0);
 	if( studyTray.absWidth ) {
@@ -103,7 +102,7 @@ StudyAreaLayout.prototype = new Layout();
 StudyAreaLayout.prototype.gridX = 1;
 StudyAreaLayout.prototype.gridY = 2;
 StudyAreaLayout.prototype.displayClass="studyArea";
-StudyAreaLayout.prototype.events= ["/patient:0/conversation:compareStudy","."];
+StudyAreaLayout.prototype.events= ["/patient:0/conversation:nav0Show","/patient:0/conversation:nav1Show","."];
 StudyAreaLayout.prototype.compareUsed = true;
 StudyAreaLayout.prototype.widthEdge=3;
 
@@ -121,23 +120,45 @@ StudyAreaLayout.prototype.navigateListener = function (navigate) {
 	if( !this.study ) return;
 	this.used = true;
 	this.patient = navigate.parent.external;
-	if( this.nth>0 && navigate.parent.conversation.compareStudy=="SingleStudy" ) {
-		console.info("StudyArea: Setting used to false because compare study is single study.");
+	if( navigate.parent.conversation[navigate.KEY+"Show"]===false ) {
+		console.info("Nav show is false, not showing area.");
 		this.used = false;
+		return;
 	};
+	console.info("Nav show isn't false, showing area.");
 	
-	this.isFirst = true;
-	this.isLast = false;
+	var studies = navigate.parent.getExtChildren();
+	if( !studies ){
+		console.warn("Didn't find studies to navigate on.");
+		return;
+	}
+
+        // The logic for the next/previous buttons is that there has to exist a next/previous
+        // item OTHER than a displayed study - thus, determine what is next and whether it is
+        // displayed before one can determine first/last.
+	var uid = navigate.external.studyUID;
+	var altKey = (navigate.KEY=="nav0" ? "nav1" : "nav0"); 
+	var uidAlt = navigate.parent.conversation[altKey];
+	var showAlt = (navigate.parent.conversation[altKey+"Show"]!==false);
+	var posn = navigate.parent.findExternal(uid);
+	var altPosn = navigate.parent.findExternal(uidAlt);
+	if( posn===undefined ) {
+		console.warn("Didn't find study uid in list:",uid);
+		return;
+	}
+	console.info("Found",studies.length,"Studies position",posn);
+	this.isFirst = (posn==0 || (showAlt && posn==1 && altPosn==0));
+	this.isLast = ((posn==studies.length-1) || (showAlt && posn==studies.length-2 && altPosn==studies.length-1));
 };
 
 
 /** Listen for changes in the compare study type */
 StudyAreaLayout.prototype.namedListener = function StudyNavigateListener(nav,vname,val) {
-	console.info("compare study changed",val,"study area listener.");
-	if( this.nth==0 ) return;
-	this.compareUsed = (val!=="SingleStudy");
-	var nUsed = (this.compareUsed && this.navigate.external!=null);
-	console.info("StudyLayout set compare used to",this.compareUsed,"nUsed",nUsed);
+	console.info("show study changed",vname,"to",val);
+	var key = "nav"+this.nth+"Show";
+	if( vname!==key ) return;
+	var nUsed = (val!==false && this.navigate.external!=null);
+	console.info("StudyLayout set show this to",nUsed);
 	if( nUsed!=this.used ) {
 		this.used = nUsed;
 		this.relayout = true;
@@ -202,7 +223,8 @@ StudyTrayLayout.prototype.navigateListener = StudyAreaLayout.prototype.navigateL
 function StudyMenu(suffix,nth) {
 	this.baseConstructor("StudyMenu"+suffix);
 	this.nth = nth;
-	this.StudyMenuItems = new StudyMenuItems(suffix);
+	this.key = "nav"+nth;
+	this.StudyMenuItems = new StudyMenuItems(suffix,this.key);
 	this.add(this.StudyMenuItems);
 	this.baseLayouts = this.layouts;
 };
@@ -231,8 +253,9 @@ StudyMenu.prototype.namedListener = function(nav) {
 };
 
 /** Contains the list of items in the study menu */
-function StudyMenuItems(suffix) {
+function StudyMenuItems(suffix, key) {
 	this.baseConstructor(this.id+suffix);
+	this.key = key;
 };
 StudyMenuItems.prototype = new Layout("StudyMenuItems","html/childList");
 StudyMenuItems.prototype.itemId = "studyUID";

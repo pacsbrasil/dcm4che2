@@ -1,1 +1,1 @@
-<li style="float:right;"><img src="$i18n.CloseIcon$?v=$version$" alt="Compare" /></li>
+<li style="float:right;"><img src="$i18n.(layout.icon)$?v=$version$" alt="$layout.icon$" onclick="controller.studyCompare('$layout.id$')"/></li>

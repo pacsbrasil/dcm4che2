@@ -115,7 +115,7 @@ static.studyTrayLayout.children.seriesNumber.layout=XofNSeries
 
 static.studyTrayLayout.children.compareStudy.inherit=toolItem
 static.studyTrayLayout.children.compareStudy.priority=10000
-static.studyTrayLayout.children.compareStudy.template=image/compareStudyLay
+static.studyTrayLayout.children.compareStudy.layout=CompareStudyLay
 static.studyTrayLayout.children.compareStudy.i18n=CompareStudy
 
 ####### Overall menu - user name, logout etc

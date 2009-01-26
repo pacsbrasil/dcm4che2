@@ -45,7 +45,7 @@ XeroController.prototype.wlInvert = function(lay) {
 
 
 WLController.prototype.prepare = function(e) {
-	this.prepareBase(e);
+	if( !this.prepareBase(e) ) return false;
 	this.baseUrl = this.getImageUrl(["rows", "columns", "windowWidth", "windowCenter","imageQuality"]);
 	console.info("Window levelling layout %s url %s",this.layout.id, this.baseUrl);
 	this.cnt = 0;

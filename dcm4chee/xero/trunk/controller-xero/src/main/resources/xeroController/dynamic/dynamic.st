@@ -375,8 +375,10 @@ ImageMouseHandler.prototype.getMouseDom = function (src) {
 ImageMouseHandler.prototype.getImage = function() {
 	if(!this.imageDisplay) this.imageDisplay = this.mouseDom;
 	var imageId = "im"+this.imageDisplay.id.substring(3);
-	var ret = document.getElementById(imageId); 
-	console.info("Getting image id %s object %s", imageId, ret);
+	var ret = document.getElementById(imageId);
+	if(!ret) { 
+		console.warn("Looked for image id",imageId,"but not found, based on",this.imageDisplay.id);
+	}
 	return ret;
 };
 

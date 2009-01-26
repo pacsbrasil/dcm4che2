@@ -37,7 +37,17 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 	
 	var navigate = model.navigate;
 	navigate.setNavigation(patientId);
-	navigate.getChild(0).setNavigation(uids,"study");
+	var navPat = navigate.getChild(0);
+	navPat.setNavigation(uids,"study");
+	navPat.setNavigation(uids[0],"nav0");
+	if( navPat.conversation.nav1Show==null ) {
+		navPat.conversation.nav1Show = (uids.length>1);
+	}
+	if( uids.length>1 ) {
+		navPat.setNavigation(uids[1],"nav1");
+	} else {
+		navPat.setNavigation(uids[0]+"&c=1","nav1");
+	}
 	var keyObjects = model.layout.findLayout("KeyObjects");
 	navigate.conversation.keyObjectDefault = (keyObjects && keyObjects.isActive);
 	
@@ -139,12 +149,25 @@ XeroController.prototype.seriesLayout = function(layId, arg) {
 };
 
 /** Chooses between the compare study mode and single study mode */
-XeroController.prototype.compareStudyMode = function(layId, arg) {
-	var lay = this.model.patientLayout.findLayout(layId);
-	if(!arg ) arg = lay.i18n;
-	console.info("Changing study layout to",arg);
-	this.model.navigate.getChild(0).setConversation("compareStudy", arg);
-	this.displayResize("compareStudyMode");
+XeroController.prototype.studyCompare = function(id) {
+	var lay = this.findLayout(id);
+	var nav = this.getNavigate(lay);
+	
+	var key = nav.KEY+"Show";
+	var altKey = (key =="nav0Show" ? "nav1Show" : "nav0Show");
+	var showAlt = nav.parent.conversation[altKey];
+	//console.info("compare Show keys",key,altKey,"at level", nav.parent.level);
+	//console.info("Values:", nav.parent.conversation[key],nav.parent.conversation[altKey]);
+	
+	if( showAlt===false ) {
+		// Display the compare mode again
+		console.debug("Showing alternate panel.");
+		nav.parent.setConversation(altKey,true);
+	} else {
+		console.debug("Hiding this panel.");
+		nav.parent.setConversation(key,false);
+	}
+	this.displayResize("studyCompare");
 };
 
 /** Merge the external data into the navigate display data so that layouts can be seen. */
@@ -223,14 +246,30 @@ XeroController.prototype.displayStudy = function XC_displayStudy(src,patientId, 
 	this.displayPatient(src, patientId,uids);
 };
 
-/** Navigates a given study next/previous */
+/** Navigates a given study next/previous - skips next/prev if they are
+ * shown in the alt screen.
+ */
 XeroController.prototype.navStudy = function(id,dir) {
+	console.info("Navigating study dir",dir,"in",id);
 	var lay = this.findLayout(id);
 	var nav = this.getNavigate(lay);
-	console.info("Navigating study dir",dir);
-	if(!(nav && nav.external) ) return;
-	var uids = nav.conversation.nav;
+	var uid = nav.lookupId(dir);
 	
+	var altKey = (nav.KEY=="nav0" ? "nav1" : "nav0");
+	var altVal = nav.parent.conversation[altKey];
+	var altShow = nav.parent.conversation[altKey+"Show"];
+	if( altShow!==false && uid===altVal ) {
+		console.info("Skipping alternate viewed image.");
+		uid = nav.lookupId(dir*2);
+	}
+	
+	if(uid==null ) {
+		console.warn("Didn't find a study to navigate to.");
+		return;
+	}
+	nav.parent.setNavigation(uid,nav.KEY);
+	this.mergeExternal();
+	this.displayResize();
 };
 
 /** Navigates to a given study for a given study slot */
@@ -238,18 +277,13 @@ XeroController.prototype.navToStudy = function(id,uid) {
 	var lay = this.findLayout(id);
 	var nav = this.getNavigate(lay);
 	if( !(nav && nav.external) ) return;
-	if(nav.external.studyUID==uid) return;
-	var uids = nav.conversation.study;
-	var uid2 = uids[lay.parent.nth];
-	console.info("Swapping studies",uid,uid2);
-	var p2, v, n=uids.length, uids2 = new Array();
-	for(p2=0; p2<n; p2++) {
-		v = uids[p2];
-		if( v==uid ) uids2.push(uid2);
-		else if(v==uid2 ) uids2.push(uid);
-		else uids2.push(v);
-	};
-	nav.setNavigation(uids2,"study");
+	
+	var altKey = (lay.key=="nav0" ? "nav1" : "nav0");
+	var altVal = nav.conversation[altKey];
+	if( altVal===uid ) {
+		uid = uid + "&c=1";
+	}
+	nav.setNavigation(uid,lay.key);
 	this.mergeExternal();
 	this.displayResize();
 };

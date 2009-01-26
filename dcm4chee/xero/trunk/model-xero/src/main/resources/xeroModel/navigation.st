@@ -426,6 +426,7 @@ Navigation.prototype.getChild = function Navigation_getChild(offset,key) {
 	var child =this.children[ckey];
 	if( ! child ) {
 		child = new Navigation(this.level+1, offset);
+		if( child.KEY!=key ) child.KEY = key;
 		child.parent = this;
 		this.children[ckey] = child;
 		// This will try to find information for this child element, at a minimum the id.
@@ -544,8 +545,14 @@ Navigation.prototype.getPath = function Navigation_getPath(evt,dot) {
 	} else if( typ=="..") {
 	  return this.getPath(rest, dot.parent);
 	} else if( typ==dot.childType ) {
+		var comma=arg.indexOf(",");
+		var key;
+		if( comma>0 ) {
+			key = arg.substring(0,comma);
+			arg = arg.substring(comma+1);
+		}
 		var offset = parseInt(arg);
-		return this.getPath(rest, dot.getChild(offset));
+		return this.getPath(rest, dot.getChild(offset,key));
 	} else {
 		return [dot,typ,arg,rest];
 	}
