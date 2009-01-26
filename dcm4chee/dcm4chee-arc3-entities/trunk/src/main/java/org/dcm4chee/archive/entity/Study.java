@@ -37,7 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.archive.entity;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -188,23 +187,39 @@ public class Study implements Serializable {
     public String getStudyInstanceUID() {
         return studyInstanceUID;
     }
+    
+    public void setStudyInstanceUID(String uid) {
+        this.studyInstanceUID = uid;
+    }
 
     public String getStudyID() {
         return studyID;
+    }
+    
+    public void setStudyID(String studyID) {
+        this.studyID = studyID;
     }
 
     public Date getStudyDateTime() {
         return studyDateTime;
     }
+    
+    public void setStudyDateTime(Date studyDateTime) {
+        this.studyDateTime = studyDateTime;
+    }
 
     public String getAccessionNumber() {
         return accessionNumber;
+    }
+    
+    public void setAccessionNumber(String accessionNumber) {
+        this.accessionNumber = accessionNumber;
     }
 
     public String getReferringPhysicianName() {
         return referringPhysicianName;
     }
-
+    
     public String getReferringPhysicianIdeographicName() {
         return referringPhysicianIdeographicName;
     }
@@ -216,17 +231,33 @@ public class Study implements Serializable {
     public String getStudyDescription() {
         return studyDescription;
     }
+    
+    public void setStudyDescription(String studyDescription) {
+        this.studyDescription = studyDescription;
+    }
 
     public String getStudyCustomAttribute1() {
         return studyCustomAttribute1;
+    }
+    
+    public void setStudyCustomAttribute1(String studyCustomAttribute1) {
+        this.studyCustomAttribute1 = studyCustomAttribute1;
     }
 
     public String getStudyCustomAttribute2() {
         return studyCustomAttribute2;
     }
+    
+    public void setStudyCustomAttribute2(String studyCustomAttribute2) {
+        this.studyCustomAttribute2 = studyCustomAttribute2;
+    }
 
     public String getStudyCustomAttribute3() {
         return studyCustomAttribute3;
+    }
+    
+    public void setStudyCustomAttribute3(String studyCustomAttribute3) {
+        this.studyCustomAttribute3 = studyCustomAttribute3;
     }
 
     public byte[] getEncodedAttributes() {
@@ -352,6 +383,10 @@ public class Study implements Serializable {
 
     public Set<Series> getSeries() {
         return series;
+    }
+    
+    public void setSeries(Set<Series> series) {
+        this.series = series;
     }
 
     @Override
