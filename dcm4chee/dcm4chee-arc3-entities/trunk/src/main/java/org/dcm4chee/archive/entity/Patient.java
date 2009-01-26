@@ -37,7 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.archive.entity;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
@@ -158,41 +157,81 @@ public class Patient implements Serializable {
     public String getPatientID() {
         return patientID;
     }
+    
+    public void setPatientID(String patientID) {
+        this.patientID = patientID;
+    }
 
     public String getIssuerOfPatientID() {
         return issuerOfPatientID;
+    }
+    
+    public void setIssuerOfPatientID(String issuer) {
+        this.issuerOfPatientID = issuer;
     }
 
     public String getPatientName() {
         return patientName;
     }
+    
+    public void setPatientName(String name) {
+        this.patientName = name;
+    }
 
     public String getPatientIdeographicName() {
         return patientIdeographicName;
+    }
+    
+    public void setPatientIdeographicName(String name) {
+        this.patientIdeographicName = name;
     }
 
     public String getPatientPhoneticName() {
         return patientPhoneticName;
     }
+    
+    public void setPatientPhoneticName(String name) {
+        this.patientPhoneticName = name;
+    }
 
     public String getPatientBirthDate() {
         return patientBirthDate;
+    }
+    
+    public void setPatientBirthDate(String dob) {
+        this.patientBirthDate = dob;
     }
 
     public String getPatientSex() {
         return patientSex;
     }
+    
+    public void setPatientSex(String patientSex) {
+        this.patientSex = patientSex;
+    }
 
     public String getPatientCustomAttribute1() {
         return patientCustomAttribute1;
+    }
+    
+    public void setPatientCustomAttribute1(String attr) {
+        this.patientCustomAttribute1 = attr;
     }
 
     public String getPatientCustomAttribute2() {
         return patientCustomAttribute2;
     }
+    
+    public void setPatientCustomAttribute2(String attr) {
+        this.patientCustomAttribute2 = attr;
+    }
 
     public String getPatientCustomAttribute3() {
         return patientCustomAttribute3;
+    }
+    
+    public void setPatientCustomAttribute3(String attr) {
+        this.patientCustomAttribute3 = attr;
     }
 
     public byte[] getEncodedAttributes() {
@@ -226,21 +265,41 @@ public class Patient implements Serializable {
     public Set<Study> getStudies() {
         return studies;
     }
+    
+    public void setStudies(Set<Study> studies) {
+        this.studies = studies;
+    }
 
     public Set<MWLItem> getModalityWorklistItems() {
         return modalityWorklistItems;
+    }
+    
+    public void setModalityWorklistItems(Set<MWLItem> modalityWorklistItems) {
+        this.modalityWorklistItems = modalityWorklistItems;
     }
 
     public Set<MPPS> getModalityPerformedProcedureSteps() {
         return modalityPerformedProcedureSteps;
     }
+    
+    public void setModalityPerformedProcedureSteps(Set<MPPS> mpps) {
+        this.modalityPerformedProcedureSteps = mpps;
+    }
 
     public Set<GPSPS> getGeneralPurposeScheduledProcedureSteps() {
         return generalPurposeScheduledProcedureSteps;
     }
+    
+    public void setGeneralPurposeScheduledProcedureSteps(Set<GPSPS> gpsps) {
+        this.generalPurposeScheduledProcedureSteps = gpsps;
+    }
 
     public Set<GPPPS> getGeneralPurposePerformedProcedureSteps() {
         return generalPurposePerformedProcedureSteps;
+    }
+    
+    public void setGeneralPurposePerformedProcedureSteps(Set<GPPPS> gppps) {
+        this.generalPurposePerformedProcedureSteps = gppps;
     }
 
     @Override
