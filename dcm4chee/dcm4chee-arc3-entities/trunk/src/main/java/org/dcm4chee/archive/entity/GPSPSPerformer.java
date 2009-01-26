@@ -57,7 +57,7 @@ import org.dcm4che2.data.Tag;
  * @since Mar 2, 2008
  */
 @Entity
-@Table(name = "gppps")
+@Table(name = "gpsps_perf")
 public class GPSPSPerformer implements Serializable {
 
     private static final long serialVersionUID = -7557539606659982634L;
