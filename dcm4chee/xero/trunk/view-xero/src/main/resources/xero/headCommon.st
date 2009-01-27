@@ -17,7 +17,7 @@
     <link type="text/cass" rel="stylesheet" href="style/ie.css?v=$version$"> </link>
   $elseif(IS_FIREFOX)$
   	<style>
-  		table { height: 75%; }
+  		table { height: 100%; }
   		tbody { overflow: auto; height: 95%; }
   	</style>
   $endif$

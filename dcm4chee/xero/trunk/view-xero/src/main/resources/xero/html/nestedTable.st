@@ -8,6 +8,7 @@ $! Parameters rows, cols, nest where nest is the child nesting to use !$
      {rowTop | $html/nestedRow(cssClass="odd")$ },
      {rowTop | $html/nestedRow(cssClass="even")$ }
    $
+   <tr style="height:95%;" />
    </tbody>
 </table>
 
