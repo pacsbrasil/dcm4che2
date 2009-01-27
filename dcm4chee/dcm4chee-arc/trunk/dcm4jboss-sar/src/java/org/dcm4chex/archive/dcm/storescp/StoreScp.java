@@ -488,8 +488,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                                 + "] ignored! Reason: Incorrect Worklist entry selected!");
                 return;
             }
-            FileSystemDTO fsDTO;
-            String filePath;
+            String retrieveAET;
+            String availability;
+            FileSystemDTO fsDTO = null;
+            String filePath = null;
             byte[] md5sum = null;
             Dataset coerced = service.getCoercionAttributesFor(assoc,
                     STORE_XSL, ds);
@@ -502,67 +504,76 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             if (dcm4cheeURIReferenced) {
                 String uri = ds.getString(Tags.RetrieveURI);
                 if (uri == null) {
-                    throw new DcmServiceException(
-                            Status.DataSetDoesNotMatchSOPClassError,
-                            "Missing (0040,E010) Retrieve URI - required for Dcm4che Retrieve URI Transfer Syntax");
-                }
-                if (!uri.startsWith(referencedDirectoryURI)) {
-                    throw new DcmServiceException(
-                            Status.DataSetDoesNotMatchSOPClassError,
-                            "(0040,E010) Retrieve URI: " + uri
-                            + " does not match with configured Referenced Directory Path: "
-                            + referencedDirectoryPath);
-                }
-                filePath = uri.substring(referencedDirectoryURI.length());
-                if (uri.startsWith("file:/")) {
-                    file = new File(new URI(uri));
-                    if (!file.isFile()) {
-                        throw new DcmServiceException(Status.ProcessingFailure,
-                                "File referenced by (0040,E010) Retrieve URI: "
-                                        + uri + " not found!");
+                    retrieveAET = ds.getString(Tags.RetrieveAET);
+                    availability = ds.getString(Tags.InstanceAvailability);
+                    if (retrieveAET == null || availability == null ) {
+                        throw new DcmServiceException(
+                                Status.DataSetDoesNotMatchSOPClassError,
+                                "Missing (0040,E010) Retrieve URI - required for Dcm4che Retrieve URI Transfer Syntax");
                     }
-                }
-                fsDTO = getFileSystemMgt().getFileSystemOfGroup(
-                        refFileSystemGroupID, referencedDirectoryPath);
-                if (file != null && readReferencedFile) {
-                    log.info("M-READ " + file);
-                    Dataset fileDS = objFact.newDataset();
-                    FileInputStream fis = new FileInputStream(file);
-                    try {
-                        if (md5sumReferencedFile) {
-                            MessageDigest digest = MessageDigest
-                                    .getInstance("MD5");
-                            DigestInputStream dis = new DigestInputStream(fis,
-                                    digest);
-                            BufferedInputStream bis = new BufferedInputStream(
-                                    dis);
-                            fileDS.readFile(bis, null, Tags.PixelData);
-                            byte[] buf = getByteBuffer(assoc);
-                            while (bis.read(buf) != -1)
-                                ;
-                            md5sum = digest.digest();
-                        } else {
-                            BufferedInputStream bis = new BufferedInputStream(
-                                    fis);
-                            fileDS.readFile(bis, null, Tags.PixelData);
-                        }
-                    } finally {
-                        fis.close();
-                    }
-                    fileDS.putAll(ds, Dataset.REPLACE_ITEMS);
-                    ds = fileDS;
                 } else {
-                    ds.setPrivateCreatorID(PrivateTags.CreatorID);
-                    String tsuid = ds.getString(
-                            PrivateTags.Dcm4cheURIReferencedTransferSyntaxUID,
-                            UIDs.ImplicitVRLittleEndian);
-                    ds.setFileMetaInfo(objFact.newFileMetaInfo(rqCmd
-                            .getAffectedSOPClassUID(), rqCmd
-                            .getAffectedSOPInstanceUID(), tsuid));
+                    if (!uri.startsWith(referencedDirectoryURI)) {
+                        throw new DcmServiceException(
+                                Status.DataSetDoesNotMatchSOPClassError,
+                                "(0040,E010) Retrieve URI: " + uri
+                                + " does not match with configured Referenced Directory Path: "
+                                + referencedDirectoryPath);
+                    }
+                    filePath = uri.substring(referencedDirectoryURI.length());
+                    if (uri.startsWith("file:/")) {
+                        file = new File(new URI(uri));
+                        if (!file.isFile()) {
+                            throw new DcmServiceException(Status.ProcessingFailure,
+                                    "File referenced by (0040,E010) Retrieve URI: "
+                                            + uri + " not found!");
+                        }
+                    }
+                    fsDTO = getFileSystemMgt().getFileSystemOfGroup(
+                            refFileSystemGroupID, referencedDirectoryPath);
+                    retrieveAET = fsDTO.getRetrieveAET();
+                    availability = Availability.toString(fsDTO.getAvailability());
+                    if (file != null && readReferencedFile) {
+                        log.info("M-READ " + file);
+                        Dataset fileDS = objFact.newDataset();
+                        FileInputStream fis = new FileInputStream(file);
+                        try {
+                            if (md5sumReferencedFile) {
+                                MessageDigest digest = MessageDigest
+                                        .getInstance("MD5");
+                                DigestInputStream dis = new DigestInputStream(fis,
+                                        digest);
+                                BufferedInputStream bis = new BufferedInputStream(
+                                        dis);
+                                fileDS.readFile(bis, null, Tags.PixelData);
+                                byte[] buf = getByteBuffer(assoc);
+                                while (bis.read(buf) != -1)
+                                    ;
+                                md5sum = digest.digest();
+                            } else {
+                                BufferedInputStream bis = new BufferedInputStream(
+                                        fis);
+                                fileDS.readFile(bis, null, Tags.PixelData);
+                            }
+                        } finally {
+                            fis.close();
+                        }
+                        fileDS.putAll(ds, Dataset.REPLACE_ITEMS);
+                        ds = fileDS;
+                    } else {
+                        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+                        String tsuid = ds.getString(
+                                PrivateTags.Dcm4cheURIReferencedTransferSyntaxUID,
+                                UIDs.ImplicitVRLittleEndian);
+                        ds.setFileMetaInfo(objFact.newFileMetaInfo(rqCmd
+                                .getAffectedSOPClassUID(), rqCmd
+                                .getAffectedSOPInstanceUID(), tsuid));
+                    }
                 }
             } else {
                 String fsgrpid = service.selectFileSystemGroup(callingAET, ds);
                 fsDTO = service.selectStorageFileSystem(fsgrpid);
+                retrieveAET = fsDTO.getRetrieveAET();
+                availability = Availability.toString(fsDTO.getAvailability());
                 File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
                 file = makeFile(baseDir, ds, callingAET);
                 filePath = file.getPath().substring(
@@ -596,7 +607,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putAE(PrivateTags.CallingAET, callingAET);
             ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
-            ds.putAE(Tags.RetrieveAET, fsDTO.getRetrieveAET());
+            ds.putAE(Tags.RetrieveAET, retrieveAET);
             if ( ! coerceBeforeWrite ) {
                 if (coerced != null) {
                     service.coerceAttributes(ds, coerced);
@@ -615,8 +626,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
             boolean newSeries = seriesStored == null;
             if (newSeries) {
-                seriesStored = initSeriesStored(ds, callingAET,
-                        fsDTO.getRetrieveAET());
+                seriesStored = initSeriesStored(ds, callingAET, retrieveAET);
                 assoc.putProperty(SERIES_STORED, seriesStored);
                 Dataset mwlFilter = service.getCoercionAttributesFor(assoc,
                         STORE2MWL_XSL, ds);
@@ -629,11 +639,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 service.supplementIssuerOfPatientID(ds, callingAET);
                 service.generatePatientID(ds, ds);
             }
-            appendInstanceToSeriesStored(seriesStored, ds, fsDTO);
+            appendInstanceToSeriesStored(seriesStored, ds, retrieveAET,
+                    availability);
             perfMon.start(activeAssoc, rq,
                     PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
             long fileLength = file != null ? file.length() : 0L;
-            Dataset coercedElements = updateDB(store, ds, fsDTO.getPk(),
+            Dataset coercedElements = updateDB(store, ds, 
+                    fsDTO != null ? fsDTO.getPk() : -1L,
                     filePath, fileLength, md5sum,
                     newSeries);
             ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
@@ -693,15 +705,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     private void appendInstanceToSeriesStored(SeriesStored seriesStored,
-            Dataset ds, FileSystemDTO fsDTO) {
+            Dataset ds, String retrieveAET, String availability) {
         Dataset refSOP = seriesStored.getIAN()
                 .get(Tags.RefSeriesSeq).getItem()
                 .get(Tags.RefSOPSeq).addNewItem();
         refSOP.putUI(Tags.RefSOPClassUID, ds.getString(Tags.SOPClassUID));
         refSOP.putUI(Tags.RefSOPInstanceUID, ds.getString(Tags.SOPInstanceUID));
-        refSOP.putAE(Tags.RetrieveAET, fsDTO.getRetrieveAET());
-        refSOP.putCS(Tags.InstanceAvailability,
-                Availability.toString(fsDTO.getAvailability()));
+        refSOP.putAE(Tags.RetrieveAET, retrieveAET);
+        refSOP.putCS(Tags.InstanceAvailability, availability);
     }
 
     private void checkAppendPermission(Association a, Dataset ds)

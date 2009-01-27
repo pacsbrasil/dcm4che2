@@ -191,7 +191,6 @@ public abstract class StorageBean implements SessionBean {
         log.info("inserting instance " + fmi);
         try {
             Dataset coercedElements = DcmObjectFactory.getInstance().newDataset();
-            FileSystemLocal fs = fileSystemHome.findByPrimaryKey(new Long(fspk));
             InstanceLocal instance;
             try {
                 instance = instHome.findBySopIuid(iuid);
@@ -199,15 +198,22 @@ public abstract class StorageBean implements SessionBean {
             } catch (ObjectNotFoundException onfe) {
                 instance = instHome.create(ds, getSeries(ds, coercedElements));
             }
-            FileLocal file = fileHome.create(fileid, tsuid, size, md5, 0,
-                    instance, fs);
-            instance.setAvailability(fs.getAvailability());
-            instance.addRetrieveAET(fs.getRetrieveAET());
+            if (fspk != -1) {
+                FileSystemLocal fs = fileSystemHome.findByPrimaryKey(new Long(fspk));
+                FileLocal file = fileHome.create(fileid, tsuid, size, md5, 0,
+                        instance, fs);
+                instance.setAvailability(fs.getAvailability());
+                instance.addRetrieveAET(fs.getRetrieveAET());
+                if (updateStudyAccessTime) {
+                    touchStudyOnFileSystem(ds.getString(Tags.StudyInstanceUID), fs);
+                }
+            } else {
+                instance.setAvailability(
+                        Availability.toInt(ds.getString(Tags.InstanceAvailability)));
+                instance.setExternalRetrieveAET(ds.getString(Tags.RetrieveAET));
+            }
             instance.setInstanceStatus(RECEIVED);
             instance.getSeries().setSeriesStatus(RECEIVED);
-            if (updateStudyAccessTime) {
-            	touchStudyOnFileSystem(ds.getString(Tags.StudyInstanceUID), fs);
-            }
             log.info("inserted records for instance[uid=" + iuid + "]");
             return coercedElements;
         } catch (Exception e) {
