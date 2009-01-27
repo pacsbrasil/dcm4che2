@@ -343,16 +343,16 @@ public class Dcm2Dcm {
             return null;
         int frames = ds.getInt(Tag.NumberOfFrames, 1);
         WritableRaster r = (WritableRaster) reader.readRaster(0, null);
-        int[] mm = VOIUtils.calcMinMax(ds, r.getDataBuffer());
+        int[] mm = VOIUtils.calcMinMax(ds, r);
         if (frames > 1) {
             r = (WritableRaster) reader.readRaster(frames - 1, null);
-            int[] mm2 = VOIUtils.calcMinMax(ds, r.getDataBuffer());
+            int[] mm2 = VOIUtils.calcMinMax(ds, r);
             mm[0] = Math.min(mm[0], mm2[0]);
             mm[1] = Math.min(mm[1], mm2[1]);
         }
         if (frames > 2) {
             r = (WritableRaster) reader.readRaster(frames / 2 - 1, null);
-            int[] mm2 = VOIUtils.calcMinMax(ds, r.getDataBuffer());
+            int[] mm2 = VOIUtils.calcMinMax(ds, r);
             mm[0] = Math.min(mm[0], mm2[0]);
             mm[1] = Math.min(mm[1], mm2[1]);
         }
@@ -424,8 +424,7 @@ public class Dcm2Dcm {
             ColorModel cm = ColorModelFactory.createColorModel(ds);
             BufferedImage bi = new BufferedImage(cm, r, false, null);
             if (lut != null) {
-                lut.lookup(bi.getRaster().getDataBuffer(), bi.getRaster()
-                        .getDataBuffer());
+                lut.lookup(bi.getRaster(), bi.getRaster());
             }
             IIOImage iioimage = new IIOImage(bi, null, null);
             writer.writeToSequence(iioimage, null);
