@@ -34,10 +34,6 @@ fileLocation.cmove.priority=800
 fileLocation.fileLocationMgt=${class:org.dcm4chee.xero.search.filter.FileLocationMgtFilter}
 fileLocation.fileLocationMgt.priority=1000
 
-# Activated by wado or xeroWado as the type in the ae properties file.
-fileLocation.wadoFileLocation=${class:org.dcm4chee.xero.search.filter.WadoFileLocation}
-fileLocation.wadoFileLocation.priority=500
-
 fileLocation.locationCache=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
 fileLocation.locationCache.priority=10000
 fileLocation.locationCache.cacheSize=2000000
