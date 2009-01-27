@@ -52,7 +52,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.compress.tar.TarEntry;
 import org.apache.commons.compress.tar.TarInputStream;
@@ -83,6 +85,9 @@ public class TarRetrieverService extends ServiceMBeanSupport {
         }
     };
 
+    private static final Set<String> extracting =
+            Collections.synchronizedSet(new HashSet<String>());
+ 
     private File cacheRoot;
 
     private File absCacheRoot;
@@ -227,34 +232,30 @@ public class TarRetrieverService extends ServiceMBeanSupport {
         String fpath = fileID.substring(tarEnd + 1).replace('/',
                 File.separatorChar);        
         File f = new File(cacheDir, fpath);
-        if (!f.exists()) {
+        while (!f.exists()) {
             String tarPath = fileID.substring(0, tarEnd);
             String tarName = fileID.substring(dirEnd+1, tarEnd);
-            if (tarFetchCmd == null) {
-                File tarFile = FileUtils.toFile(fsID.substring(4), tarPath);
-                extractTar(tarFile, cacheDir);
-            } else {
-                if (absTarIncomingDir.mkdirs()) {
-                    log.info("M-WRITE " + absTarIncomingDir);
-                }
-                File tarFile = new File(absTarIncomingDir, tarName);
-                String cmd = makeCommand(fsID, tarPath, tarFile.getPath());
+            if (extracting.add(tarName)) {
                 try {
-                    log.info("Fetch from HSM: " + cmd);
-                    Executer ex = new Executer(cmd);
-                    int exit = -1;
-                    try {
-                        exit = ex.waitFor();
-                    } catch (InterruptedException e) {}
-                    if (exit != 0) {
-                        throw new IOException("Non-zero exit code(" + exit 
-                                + ") of " + cmd);
-                    }
-                    log.info("M-WRITE " + tarFile);
-                    extractTar(tarFile, cacheDir);
+                    fetchAndExtractTar(fsID, tarPath, tarName, cacheDir);
                 } finally {
-                    log.info("M-DELETE " + tarFile);
-                    tarFile.delete();
+                    synchronized (extracting) {
+                        extracting.remove(tarName);
+                        extracting.notifyAll();
+                    }
+                }
+            } else {
+                if (log.isDebugEnabled())
+                    log.debug("Wait for concurrent fetch and extract of tar: "
+                            + tarName);
+                synchronized (extracting) {
+                    while (extracting.contains(tarName))
+                        try {
+                            extracting.wait();
+                        } catch (InterruptedException e) {
+                            log.warn("Wait for concurrent fetch and extract of tar: "
+                            + tarName + " interrupted:", e);
+                        }
                 }
             }
         }
@@ -264,6 +265,39 @@ public class TarRetrieverService extends ServiceMBeanSupport {
                 log.debug("Remove from list of LRU directories: " + p);
         p.setLastModified(System.currentTimeMillis());
         return f;
+    }
+
+    private void fetchAndExtractTar(String fsID, String tarPath,
+            String tarName, File cacheDir) throws IOException,
+            VerifyTarException {
+        if (tarFetchCmd == null) {
+            File tarFile = FileUtils.toFile(fsID.substring(4), tarPath);
+            extractTar(tarFile, cacheDir);
+        } else {
+            if (absTarIncomingDir.mkdirs()) {
+                log.info("M-WRITE " + absTarIncomingDir);
+            }
+            File tarFile = new File(absTarIncomingDir, tarName);
+            String cmd = makeCommand(fsID, tarPath, tarFile.getPath());
+            try {
+                log.info("Fetch from HSM: " + cmd);
+                Executer ex = new Executer(cmd);
+                int exit = -1;
+                try {
+                    exit = ex.waitFor();
+                } catch (InterruptedException e) {
+                }
+                if (exit != 0) {
+                    throw new IOException("Non-zero exit code(" + exit
+                            + ") of " + cmd);
+                }
+                log.info("M-WRITE " + tarFile);
+                extractTar(tarFile, cacheDir);
+            } finally {
+                log.info("M-DELETE " + tarFile);
+                tarFile.delete();
+            }
+        }
     }
 
     private void extractTar(File tarFile, File cacheDir)
