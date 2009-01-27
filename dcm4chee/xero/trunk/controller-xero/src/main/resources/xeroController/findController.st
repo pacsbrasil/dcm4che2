@@ -68,3 +68,8 @@ XeroController.prototype.sortQuery = function SC_sortQuery(src,col) {
   lay.sortPatient.sortColumn(col);
   this.updateView("findAction");	
 };
+
+/** Submit the find form on enter press */
+XeroController.prototype.find_key13 = function(e) {
+	this.findAction('QueryLayout');
+};

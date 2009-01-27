@@ -1,16 +1,16 @@
 <div style="float: left;"><table>
 
-<tr><td>$i18n.PatientName;format="xml"$</td><td><input type="text" name="PatientName" value="$query.PatientName$"/></td></tr>
-<tr><td>$i18n.PatientID;format="xml"$</td><td><input type="text" name="PatientID" value="$query.PatientID$"/></td></tr>
+<tr><td>$i18n.PatientName;format="xml"$</td><td><input type="text" name="PatientName" value="$query.PatientName$" onkeypress="controller.keyPress('find',event)"/></td></tr>
+<tr><td>$i18n.PatientID;format="xml"$</td><td><input type="text" name="PatientID" value="$query.PatientID$" onkeypress="controller.keyPress('find',event)"/></td></tr>
 
 </table></div>
 
 <div style="float: left;"><table>
 
-<tr><td>$i18n.AccessionNumber;format="xml"$</td><td><input type="text" name="AccessionNumber" value="$query.AccessionNumber$"/></td></tr>
+<tr><td>$i18n.AccessionNumber;format="xml"$</td><td><input type="text" name="AccessionNumber" value="$query.AccessionNumber$" onkeypress="controller.keyPress('find',event)"/></td></tr>
 
 <tr><td>$i18n.StudyDateTimeF;format="xml"$</td><td>
-  <select id="studyDateTimeSelect" name="StudyDateTime">
+  <select id="studyDateTimeSelect" name="StudyDateTime" onkeypress="controller.keyPress('find',event)">
 	$if(query.StudyDateTime)$<option selected="true" value="$query.StudyDateTime;format="xml"$">$if(i18n.(query.StudyDateTime))$ $i18n.(query.StudyDateTime)$ $else$ $query.StudyDateTime;format="xml"$ $endif$</option>$endif$
 	<option value=""> </option>
   	<option value="Today">$i18n.Today$</option>
@@ -28,7 +28,7 @@
 </td></tr>
 
 <tr><td>$i18n.Modality;format="xml"$</td><td>
-  <select id="modalitiesInStudySelect" name="ModalitiesInStudy">
+  <select id="modalitiesInStudySelect" name="ModalitiesInStudy" onkeypress="controller.keyPress('find',event)">
 	$if(query.ModalitiesInStudy)$<option selected="true" value="$query.ModalitiesInStudy;format="xml"$">$if(i18n.(query.ModalitiesInStudy))$$i18n.(query.ModalitiesInStudy)$$else$$query.ModalitiesInStudy$$endif$</option>$endif$
 	<option value=""> </option>
 	<option value="CR">CR</option>

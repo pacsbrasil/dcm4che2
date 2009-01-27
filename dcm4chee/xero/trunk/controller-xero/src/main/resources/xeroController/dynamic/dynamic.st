@@ -70,10 +70,11 @@ XeroController.prototype.getShiftInfo = function(e) {
  * @TODO see if there is a reasonable way to hook up specific event objects instead of
  * the generalized ones.
  */
-XeroController.prototype.keyPress = function(e) {
+XeroController.prototype.keyPress = function(area, e) {
 	if(!e) e = window.event;
 	var shift = this.getShiftInfo(e);	
 	var handler= shift+"key"+e.keyCode;
+	if( area ) handler = area+"_"+handler;
 	//console.debug("Key press handler initial",handler);
 	handler = this.findModeHandler(handler);
 	//console.debug("Found handler",handler);

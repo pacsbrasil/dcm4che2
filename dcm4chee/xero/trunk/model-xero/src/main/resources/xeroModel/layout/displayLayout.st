@@ -335,6 +335,7 @@ SeriesAreas.prototype.gridX = 4;
 SeriesAreas.prototype.gridY = 2;
 SeriesAreas.prototype.events=["series:0","conversation:seriesLayout","conversation:studyLayout"];
 SeriesAreas.prototype.displayClass="seriesAreas";
+SeriesAreas.prototype.heightEdge = 7;
 
 /** Just disable the series area if there are no available series */
 SeriesAreas.prototype.navigateListener = function(nav) {
