@@ -147,6 +147,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
             sq.addDicomObject(attrs);
             state = State.EXPECT_ELM;
         } else {
+            sb.setLength(0);
             state = State.EXPECT_FRAG;
         }
     }
@@ -159,7 +160,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
         case EXPECT_FRAG:
             DicomElement sq = sqStack.peek();
             byte[] data =  getValue(sq.vr(), null);
-            sq.addFragment(data);
+            sq.addFragment(data != null ? data : EMPTY_VALUE);
             sb.setLength(0);
             out.reset();
             break;
