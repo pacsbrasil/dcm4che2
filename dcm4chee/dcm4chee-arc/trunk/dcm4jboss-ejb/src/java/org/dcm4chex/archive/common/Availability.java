@@ -43,25 +43,26 @@ import java.util.Arrays;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2005-11-22 15:01:24 +0100 (Tue, 22 Nov
+ *          2005) $
  * @since 06.10.2004
- *
+ * 
  */
 public class Availability {
 
-	public static final int ONLINE = 0;
-	public static final int NEARLINE = 1;
-	public static final int OFFLINE = 2;
-	public static final int UNAVAILABLE = 3;
+    public static final int ONLINE = 0;
+    public static final int NEARLINE = 1;
+    public static final int OFFLINE = 2;
+    public static final int UNAVAILABLE = 3;
 
-	private static final String[] AVAILABILITY = { "ONLINE", "NEARLINE",
-            "OFFLINE", "UNAVAILABLE"};
+    private static final String[] AVAILABILITY = { "ONLINE", "NEARLINE",
+            "OFFLINE", "UNAVAILABLE" };
 
     public static final String toString(int value) {
         return AVAILABILITY[value];
     }
 
-    public static final int toInt(String s) {        
+    public static final int toInt(String s) {
         final int index = Arrays.asList(AVAILABILITY).indexOf(s);
         if (index == -1)
             throw new IllegalArgumentException(s);
