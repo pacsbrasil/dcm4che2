@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.dcm.qrscp;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -1417,8 +1418,12 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     protected File getFile(String fsID, String fileID) throws Exception {
-        return fsID.startsWith("tar:") ? retrieveFileFromTAR(fsID, fileID)
+        File file = fsID.startsWith("tar:") ? retrieveFileFromTAR(fsID, fileID)
                         : FileUtils.toFile(fsID, fileID);
+        if (!file.canRead()) {
+            throw new FileNotFoundException(file.getPath());
+        }
+        return file;
     }
 
     public Object locateInstance(String iuid) throws Exception {

@@ -373,9 +373,18 @@ public class MoveTask implements Runnable {
                 }
             };
             
+            Dimse rq;
             try {
-                Dimse rq = service.makeCStoreRQ(storeAssoc,
+                rq = service.makeCStoreRQ(storeAssoc,
                         fileInfo, priority, moveOriginatorAET, msgID, perfMon);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                failedIUIDs.add(iuid);
+                remainingIUIDs.remove(iuid);
+                --remaining;
+                continue;
+            }
+            try {
                 perfMon.start(storeAssoc, rq, PerfCounterEnum.C_STORE_SCU_OBJ_OUT );
                 perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.REQ_DIMSE, rq);
                 perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.STUDY_IUID, fileInfo.studyIUID);

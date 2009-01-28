@@ -237,19 +237,29 @@ class GetTask implements Runnable {
                     remainingIUIDs.remove(iuid);
                 }
             };
-
+            Dimse rq;
             try {
-                Dimse rq = service.makeCStoreRQ(assoc, fileInfo,
-                        priority, null, 0, null);
-                assoc.invoke(rq, storeScpListener);
+                rq = service.makeCStoreRQ(assoc,
+                        fileInfo, priority, null, 0, null);
             } catch (NoPresContextException e) {
                 if (!service.isIgnorableSOPClass(fileInfo.sopCUID, 
                         a.getCallingAET())) {
                     failedIUIDs.add(fileInfo.sopIUID);
+                    remainingIUIDs.remove(iuid);
                     log.warn(e.getMessage());
                 } else {
                     log.info(e.getMessage());
                 }
+                continue;
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                failedIUIDs.add(iuid);
+                remainingIUIDs.remove(iuid);
+                continue;
+            }
+
+            try {
+                assoc.invoke(rq, storeScpListener);
             } catch (Exception e) {
                 log.error("Exception during retrieve of " + iuid, e);
             }
