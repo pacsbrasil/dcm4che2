@@ -109,6 +109,10 @@ public class PPSModel implements Serializable {
         return series;
     }
 
+    public SeriesModel getSeries1() {
+        return series1;
+    }
+
     public String getDatetime() {
         return dataset != null 
                 ? DateUtils.datm2str(
@@ -140,7 +144,9 @@ public class PPSModel implements Serializable {
     }
 
     public String getUid() {
-        return series1.getPPSUid();
+        return dataset != null 
+                ? dataset.getString(Tag.SOPInstanceUID)
+                : series1.getPPSUid();
     }
 
     public String getDescription() {
@@ -150,12 +156,14 @@ public class PPSModel implements Serializable {
     }
 
     public String getModality() {
-        return series1.getModality();
+        return dataset != null 
+                ? dataset.getString(Tag.Modality)
+                : series1.getModality();
     }
 
     public String getStationName() {
         return dataset != null 
-                ? dataset.getString(Tag.Modality)
+                ? dataset.getString(Tag.PerformedStationName)
                 : series1.getStationName();
     }
 

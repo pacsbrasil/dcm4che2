@@ -106,50 +106,44 @@ public class SeriesModel implements Serializable {
                 dataset.getString(Tag.SeriesTime, ""));
     }
 
-    public void setDatetime(String datetime) {
-        String[] datm = DateUtils.str2datm(datetime);
-        dataset.putString(Tag.SeriesDate, VR.DA, datm[0]);
-        dataset.putString(Tag.SeriesDate, VR.TM, datm[1]);
+    public String getSeriesDate() {
+        return dataset.getString(Tag.SeriesDate);
     }
 
     public String getSeriesNumber() {
-        return dataset.getString(Tag.SeriesNumber, "");
-    }
-
-    public void setSeriesNumber(String seriesNumber) {
-        dataset.putString(Tag.SeriesNumber, VR.IS, seriesNumber);
+        return dataset.getString(Tag.SeriesNumber);
     }
 
     public String getModality() {
-        return dataset.getString(Tag.Modality, "");
-    }
-
-    public void setModality(String modality) {
-        dataset.putString(Tag.Modality, VR.CS, modality);
+        return dataset.getString(Tag.Modality);
     }
 
     public String getStationName() {
-        return dataset.getString(Tag.StationName, "");
+        return dataset.getString(Tag.StationName);
     }
 
-    public void setStationName(String stationName) {
-        dataset.putString(Tag.StationName, VR.SH, stationName);
+    public String getManufacturerModelName() {
+        return dataset.getString(Tag.ManufacturerModelName);
+    }
+
+    public String getManufacturer() {
+        return dataset.getString(Tag.Manufacturer);
+    }
+
+    public String getInstitutionalDepartmentName() {
+        return dataset.getString(Tag.InstitutionalDepartmentName);
+    }
+
+    public String getInstitutionName() {
+        return dataset.getString(Tag.InstitutionName);
     }
 
     public String getSourceAET() {
         return sourceAET;
     }
 
-    public void setSourceAET(String sourceAET) {
-        this.sourceAET = sourceAET;
-    }
-
    public String getDescription() {
-        return dataset.getString(Tag.SeriesDescription, "");
-    }
-
-    public void setDescription(String description) {
-        dataset.putString(Tag.SeriesDescription, VR.LO, description);
+        return dataset.getString(Tag.SeriesDescription);
     }
 
     public int getNumberOfInstances() {
@@ -222,6 +216,30 @@ public class SeriesModel implements Serializable {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         dataset = dao.updateSeries(pk, dicomObject).getAttributes(true);
+    }
+
+    public boolean containedBySamePPS(SeriesModel series) {
+        String ppsuid1 = getPPSUid();
+        String ppsuid2 = series.getPPSUid();
+        if (ppsuid1 != null) {
+            return ppsuid1.equals(ppsuid2);
+        }
+        if (ppsuid2 != null) {
+            return false;
+        }
+        return getSourceAET().equals(series.getSourceAET())
+                && equals(getSeriesDate(), series.getSeriesDate())
+                && equals(getStationName(), series.getStationName())
+                && equals(getManufacturerModelName(),
+                        series.getManufacturerModelName())
+                && equals(getManufacturer(), series.getManufacturer())
+                && equals(getInstitutionalDepartmentName(),
+                        series.getInstitutionalDepartmentName())
+                && equals(getInstitutionName(), series.getInstitutionName());
+    }
+
+    private static boolean equals(Object o1, Object o2) {
+        return o1 == null ? o2 == null : o1.equals(o2);
     }
 
 }

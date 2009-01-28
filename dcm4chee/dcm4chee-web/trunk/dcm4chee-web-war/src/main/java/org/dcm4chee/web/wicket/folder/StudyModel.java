@@ -201,15 +201,10 @@ public class StudyModel implements Serializable {
     private void add(Series series) {
         MPPS mpps = series.getModalityPerformedProcedureStep();
         SeriesModel seriesModel = new SeriesModel(series);
-        String ppsuid = seriesModel.getPPSUid();
-        String stationName = seriesModel.getStationName();
-        String sourceAET = seriesModel.getSourceAET();
         for (PPSModel pps : ppss) {
             if (mpps != null ? mpps.getPk() == pps.getPk()
-                    : !isNullOrEmpty(ppsuid) ? ppsuid.equals(pps.getUid())
-                    : !isNullOrEmpty(stationName) ? stationName.equals(pps.getStationName())
-                    : !isNullOrEmpty(sourceAET) ? sourceAET.equals(pps.getStationAET())
-                    : false) {
+                    : pps.getDataset() == null 
+                            && seriesModel.containedBySamePPS(pps.getSeries1())) {
                 pps.getSeries().add(seriesModel);
                 return;
             }
