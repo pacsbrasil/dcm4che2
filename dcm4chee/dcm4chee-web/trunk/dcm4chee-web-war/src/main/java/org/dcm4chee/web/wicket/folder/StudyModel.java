@@ -212,10 +212,6 @@ public class StudyModel implements Serializable {
         ppss.add(new PPSModel(mpps, seriesModel));
     }
 
-    private static boolean isNullOrEmpty(String s) {
-        return s == null || s.length() == 0;
-    }
-
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
