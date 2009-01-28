@@ -298,7 +298,7 @@ Navigation.prototype.lookupId = function Navigation_lookupId(offset) {
 		return null;
 	}
 	else {
-		this.error("Unknown key type "+key);
+		this.error("Unknown key "+key+" type "+type);
 	}
 };
 

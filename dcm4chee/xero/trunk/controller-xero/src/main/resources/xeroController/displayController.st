@@ -4,7 +4,7 @@
  */
 
  /** Displays all studies for the selected patient */
-XeroController.prototype.displayPatient = function XC_displayPatient(id,patientId,uids) {
+XeroController.prototype.displayPatient = function XC_displayPatient(id,patientId,uid) {
 	console.info("Display patient id",patientId);
 	
 	this.storeScrollPosition(id);
@@ -28,7 +28,7 @@ XeroController.prototype.displayPatient = function XC_displayPatient(id,patientI
 	var xmlSeries;
 	console.info("Found %d studies.",n);
 	
-	uids = this.selectManyStudies(patient,uids);
+	var uids = this.selectManyStudies(patient,uid);
 
 	if( ! model.navigate ) {
 		model.navigate = new Navigation();
@@ -232,8 +232,7 @@ XeroController.prototype.updateDisplayTab = function XC_updateDisplayTab(forceCo
 /** Displays the specified (backslashes) set of study UIDs */
 XeroController.prototype.displayStudy = function XC_displayStudy(src,patientId, studyUid) {
 	this.debug("Display study UID %s",studyUid);
-	var uids = [ studyUid ];
-	this.displayPatient(src, patientId,uids);
+	this.displayPatient(src, patientId,studyUid);
 };
 
 /** Navigates a given study next/previous - skips next/prev if they are
