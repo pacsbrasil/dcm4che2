@@ -127,43 +127,6 @@ public class PatientBean extends PatientType implements Patient,
 		getStudy().addAll(patient.getStudy());
 	}
 
-	/** Simple concatenation of date & time parameters.  Returns null if either
-	 * paramter is null.
-	 * TODO move to a future utility class along with sanitizeString()
-	 */
-	public static String createDateTime(String date, String time) {
-		String dateTime = null;
-		if (date!= null && time != null) {
-			dateTime = date + time;
-		}
-		return dateTime;
-	}
-	
-	/** Formats a dateTimeString which is a concatenation of a DICOM date and time.
-	 * Returns null if unable to properly parse dateTimeString.
-	 * TODO move to a future utility class
-	 */
-	public static String createDateF(String dateTimeString) {
-		if (dateTimeString != null) {
-			Date dateTime = null;
-			try {
-				Date date = DateUtils.parseDA(dateTimeString.substring(0,7), false);
-				Date time = DateUtils.parseTM(dateTimeString.substring(8), false);
-				dateTime = DateUtils.toDateTime(date, time);
-			} catch (NumberFormatException nfe) {
-				log.warn("Illegal study date or time:" + nfe);
-			} catch (IndexOutOfBoundsException iobe) {
-				log.warn("Illegal study date or time:" + iobe);
-			}
-			if (dateTime != null) {
-				DateFormat df = DateFormat.getDateTimeInstance();
-				return df.format(dateTime);
-			}
-		}
-		return null;
-	}
-		
-	
 	/** Excludes a zero at the end of the string from being included. Empty
 	 * strings become nulls, and some characters (0 and 0x1b) are removed/spaced out
 	 */

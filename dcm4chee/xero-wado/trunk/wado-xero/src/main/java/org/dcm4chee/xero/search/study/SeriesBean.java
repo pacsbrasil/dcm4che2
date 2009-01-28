@@ -37,8 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
-import static org.dcm4chee.xero.search.study.PatientBean.createDateTime;
-
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAnyAttribute;
@@ -52,6 +50,7 @@ import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
+import org.dcm4chee.xero.dicom.DicomDateTimeHandler;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
 import org.dcm4chee.xero.search.LocalModel;
 import org.dcm4chee.xero.search.ResultFromDicom;
@@ -62,7 +61,9 @@ import org.dcm4chee.xero.search.ResultFromDicom;
  *
  */
 public class SeriesBean extends SeriesType implements Series, ResultFromDicom, CacheItem, LocalModel<String> {
-   static Logger log = LoggerFactory.getLogger(SeriesBean.class);
+   private static Logger log = LoggerFactory.getLogger(SeriesBean.class);
+
+   static DicomDateTimeHandler dateTime = new DicomDateTimeHandler();
 
    /** Used to define the DICOM macro tables included in this object */
    @XmlTransient
@@ -130,7 +131,7 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	  setPerformingPhysicianName(data.getString(Tag.PerformingPhysicianName));
 	  setStationName(data.getString(Tag.StationName));
 	  
-	  setSeriesDateTime(createDateTime(data.getString(Tag.SeriesDate), data.getString(Tag.SeriesTime)));
+	  setSeriesDateTime(dateTime.createDateTime(data.getString(Tag.SeriesDate), data.getString(Tag.SeriesTime)));
 	  
 	  setOperatorName(data.getString(Tag.OperatorName));
 	  setInstitutionalDepartmentName(data.getString(Tag.InstitutionalDepartmentName));

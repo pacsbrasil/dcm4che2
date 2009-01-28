@@ -51,15 +51,12 @@ import javax.xml.namespace.QName;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4chee.xero.dicom.DicomDateTimeHandler;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
 import org.dcm4chee.xero.search.LocalModel;
 import org.dcm4chee.xero.search.ResultFromDicom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.dcm4chee.xero.search.study.PatientBean.createDateTime;
-import static org.dcm4chee.xero.search.study.PatientBean.createDateF;
-
 
 /**
  * A Study representation that can initialize itself from the DICOM object and knows about macros and parent/child
@@ -70,6 +67,8 @@ import static org.dcm4chee.xero.search.study.PatientBean.createDateF;
 public class StudyBean extends StudyType implements Study, CacheItem, LocalModel<String>, ResultFromDicom {
    private static Logger log = LoggerFactory.getLogger(StudyBean.class);
 
+   private static DicomDateTimeHandler dateTime = new DicomDateTimeHandler();
+   
    @XmlTransient
    Map<Object, Object> children;
 
@@ -151,7 +150,7 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 	  setNumberOfStudyRelatedInstances(data.getInt(Tag.NumberOfStudyRelatedInstances));
 	  setNumberOfStudyRelatedSeries(data.getInt(Tag.NumberOfStudyRelatedSeries));
 	  setReferringPhysicianName(PatientBean.sanitizeString(data.getString(Tag.ReferringPhysicianName)));
-	  setStudyDateTime(createDateTime(data.getString(Tag.StudyDate), data.getString(Tag.StudyTime)));
+	  setStudyDateTime(dateTime.createDateTime(data.getString(Tag.StudyDate), data.getString(Tag.StudyTime)));
 	  setStudyDescription(data.getString(Tag.StudyDescription));
 	  setStudyID(data.getString(Tag.StudyID));
 	  setStudyUID(data.getString(Tag.StudyInstanceUID));
@@ -238,8 +237,7 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
    
    @XmlAttribute(name = "StudyDateF")
    public String getStudyDateFormatted() {
-	   
-	   return createDateF(getStudyDateTime());
+	   return dateTime.formatDicomDateTime(getStudyDateTime());
    }
 
 
