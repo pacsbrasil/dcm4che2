@@ -1,4 +1,4 @@
-<div id="body">
+<div id="$layout.id$">
 $if(layout.template)$
 $(layout.template)()$
 $elseif(layout.template)$

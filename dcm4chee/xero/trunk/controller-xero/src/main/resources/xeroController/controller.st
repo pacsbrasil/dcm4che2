@@ -32,6 +32,7 @@ function XeroController(view) {
 		this.model.HAS_SVG = true;
 		this.model.HAS_VML = false;
 	}
+	this.model.IS_FIREFOX = _SARISSA_IS_MOZ;
 	this.model.IS_MOBILE = (ua.indexOf("Mobile")>=0 || ua.indexOf("BlackBerry")>=0);
 	this.view = view;
 	
@@ -45,11 +46,17 @@ var xeroController = new XeroController(xeroView);
 XeroController.prototype.isDebug = false;
 XeroController.prototype.debug = function() {};
 
-XeroController.prototype.getBody = function XC_getBody() {
-	if( this.body===undefined ) {
-		this.body = document.getElementById("body");
-	};
-	return this.body;
+/** Finds the layout specified by the given id, optionally looks for the parent layout of the
+ * given patient through image level (1->4)
+ */
+XeroController.prototype.findLayout = function(id,lvl) {
+	if( typeof(id)==="object" ) return id;
+	var lay = this.model.layout.findLayout(id);
+	if( !lvl ) return lay;
+	while(lay) {
+		if( lay && lay.navigate && lay.navigate.level===lvl ) return lay;
+		lay = lay.parent;
+	}
 };
 
 /** Updates the innerHtml of the element provided (el) with the provided HTML to update the
@@ -61,34 +68,88 @@ XeroController.prototype.innerHtml = function XC_innerHtml(el, html) {
 	return oldEl;
 };
 
-XeroController.prototype.fixWheelMouse = function XC_fixWheelMouse(layouts) {
-	if( _SARISSA_IS_IE ) return;
-	if(!layouts ) layouts = this.model.layout.layouts;
-	var lay, i,n=layouts.length;
-	for(i=0; i<n; i++) {
-		lay = layouts[i];
-		if( ! lay.used ) continue;
-		if( lay.mousewheel ) {
-			hookEvent(lay.id, "mousewheel", lay.mousewheel);
-		};
-		if( lay.layouts ) this.fixWheelMouse(lay.layouts);
-	}
+/** Non-IE browsers don't have a mouse wheel event to hook up to, so
+ * use the DOM events to hookup the mouse events. */
+XeroController.prototype.fixWheelMouse = function XC_fixWheelMouse(lay) {
+	if( this.model.IS_IE ) return;
+	
+	if( lay.mousewheel ) {
+	   hookEvent(lay.id, "mousewheel", lay.mousewheel);
+	};
 };
 
+
+/** Gets the scroll node, or null if not found */
+XeroController.prototype.getScrollNode = function(id) {
+   var node;
+   if( this.model.IS_FIREFOX ) {
+      node = document.getElementById(id+"Body");
+   } 
+   if(!node ) {
+      node = document.getElementById(id);
+   }
+   return node;
+};
+
+/**
+ * Restore the scroll position - has special handling for Firefox to restore
+ * the tbody scroll position instead of the top-level scroll position.
+ */
+XeroController.prototype.fixScrollPosition = function(id) {
+   var lay = this.findLayout(id);
+   if( !lay.scrollTop ) return;
+   var node = this.getScrollNode(lay.id);
+   console.info("fixScrollPosition",id,"on",node,"to",lay.scrollTop);
+   if( node ) node.scrollTop = lay.scrollTop;
+};
+
+/** Store the scroll position, so that it can be restored later */
+XeroController.prototype.storeScrollPosition = function(id) {
+   var lay = this.findLayout(id);
+   var node = this.getScrollNode(lay.id);
+   lay.scrollTop = node.scrollTop;
+};
+
+/** Replaces the node specified by the node id, with the given replacement text.
+ * If isDiffUpdate is true, then this should be updated by a difference comparison
+ * rather than a replacement.
+ */
 XeroController.prototype.replaceHtml = function XC_replaceHtml(node,text,isDiffUpdate) {
-	if( model.IS_IE ) {
-	    if( isDiffUpdate ) {
-		  return DOMUtils.updateHtml(node,text);
-	    } else {
-	      return this.innerHtml(node,text);
-	    }
-	}
-	else
-	{
-	this.fixWheelMouse();
-	this.debug("fixMouseWheel");
-	return DOMUtils.updateHtml(node, text);
-	}
+   var ret;
+   if( this.model.IS_IE ) {
+      if( isDiffUpdate ) {
+   	     ret = DOMUtils.updateHtml(node,text);
+      } else {
+         ret = this.innerHtml(node,text);
+       }
+   }
+   else
+   {
+      this.debug("fixMouseWheel");
+      var ret = DOMUtils.updateHtml(node, text);
+   }
+   this.fireViewRendered(this.findLayout(node));
+   return ret;
+};
+
+/** Fires the view rendered event recursively on this and child elements */
+XeroController.prototype.fireViewRendered = function(lay) {
+	if( !lay.used ) return;
+	// Fire event
+	var i,n;
+	if( lay.viewRenderedListeners ) {
+		n = lay.viewRenderedListeners.length;
+		for(i=0;i<n; i++) {
+			this[lay.viewRenderedListeners[i]](lay);
+		};
+	};
+	
+	// Recurse over the children
+	if( !lay.children ) return;
+	n=lay.children.length;
+	for(i=0;i<n;i++) {
+		this.fireViewRendered(lay.children[i]);
+	};
 };
 
 /** Updates the view in its entirety.
@@ -103,7 +164,7 @@ XeroController.prototype.updateView = function XC_action(actionName) {
 	window._render = render;
 	
 	//console.info("Render: %s",render);
-	this.replaceHtml("body", render);
+	this.replaceHtml(this.model.layout.id, render);
 	this.model.layout.clearRelayout();
 	console.timeEnd(actionName);
 };
@@ -187,7 +248,7 @@ XeroController.prototype.switchTab = function XC_switchTab(src,tabName) {
 
 /** Switch a button */
 XeroController.prototype.pushButton = function XC_pushButton(layId) {
-	var lay = this.model.layout.findLayout(layId);
+	var lay = this.findLayout(layId);
 	if(!lay ) {
 		console.warn("No layout named",layId,"found.");
 		return;
@@ -199,7 +260,7 @@ XeroController.prototype.pushButton = function XC_pushButton(layId) {
 
 /** Rotates to the given child item */
 XeroController.prototype.rotateButton = function XC_rotateButton(layId,arg) {
-	var lay = this.model.layout.findLayout(layId);
+	var lay = this.findLayout(layId);
 	if(!lay ) {
 		console.warn("No layout named",layId,"found.");
 		return;

@@ -1,5 +1,5 @@
 /** Defines the Find page layout information */
-function FindLayout() {
+function FindLayout(suffix) {
 	this.baseConstructor("Find");
 	var queryBox = new Layout("QueryLayout","query/query");
 	queryBox.query = new UrlFactory("/wado2/study.xml?maxResults=500",queryBox.id);
@@ -8,6 +8,7 @@ function FindLayout() {
 	searchLayout.columns = XeroStudyColumns;
 	searchLayout.query = queryBox.query;
 	searchLayout.sortPatient = new SortPatient(searchLayout);
+	searchLayout.viewRenderedListeners = ["fixScrollPosition"];
 	this.add(queryBox);
 	this.add(searchLayout);
 	
@@ -16,7 +17,6 @@ function FindLayout() {
 };
 
 FindLayout.prototype = new Layout();
-FindLayout.prototype.baseConstructor = Layout;
 
 /** The menu for the find display tab */
 function FindMenuLayout(suffix) {
@@ -25,7 +25,6 @@ $layout/addChildren(children=findMenuLayout.children)$
 };
 
 FindMenuLayout.prototype = new Layout("FindMenuPrototype", "html/menu");
-FindMenuLayout.prototype.baseConstructor = Layout;
 
 function ReportSelect(suffix) {
 	this.baseConstructor("ReportSelect");

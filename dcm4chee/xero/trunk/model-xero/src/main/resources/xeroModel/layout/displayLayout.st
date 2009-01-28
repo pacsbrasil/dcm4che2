@@ -403,6 +403,7 @@ ImageAreasLayout.prototype = new Layout();
 ImageAreasLayout.prototype.gridX = 2;
 ImageAreasLayout.prototype.gridY = 2;
 ImageAreasLayout.prototype.onmousewheel="controller.wheelMouse";
+ImageAreasLayout.prototype.viewRenderedListeners = ["fixWheelMouse"];
 ImageAreasLayout.prototype.events=[".","../conversation:seriesLayout"];
 ImageAreasLayout.prototype.area="Series";
 

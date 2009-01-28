@@ -73,3 +73,17 @@ XeroController.prototype.sortQuery = function SC_sortQuery(src,col) {
 XeroController.prototype.find_key13 = function(e) {
 	this.findAction('QueryLayout');
 };
+
+/** Clear the query criteria */
+XeroController.prototype.clearQuery = function(id) {
+	var lay = this.findLayout(id);
+	var q = lay.query;
+	// TODO - figure out a better way to list all the query fields.
+	q.AccessionNumber="";
+	q.ModalitiesInStudy="";
+	q.PatientID="";
+	q.StudyDateTime="";
+	q.PatientName="";
+	lay.relayout = true;
+	this.updateLayouts("clearQuery");
+};

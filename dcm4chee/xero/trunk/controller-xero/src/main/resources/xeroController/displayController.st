@@ -4,8 +4,10 @@
  */
 
  /** Displays all studies for the selected patient */
-XeroController.prototype.displayPatient = function XC_displayPatient(src,patientId,uids) {
+XeroController.prototype.displayPatient = function XC_displayPatient(id,patientId,uids) {
 	console.info("Display patient id",patientId);
+	
+	this.storeScrollPosition(id);
 	
 	console.time("Load Patient Data");
 	var model = this.model;
@@ -68,18 +70,6 @@ XeroController.prototype.displayPatient = function XC_displayPatient(src,patient
 	console.timeEnd("Load Patient Data");
 
 	this.displayResize("displayPatient");
-};
-
-/** Finds the layout specified by the given id, optionally looks for the parent layout of the
- * given patient through image level (1->4)
- */
-XeroController.prototype.findLayout = function(id,lvl) {
-	var lay = this.model.layout.findLayout(id);
-	if( !lvl ) return lay;
-	while(lay) {
-		if( lay && lay.navigate && lay.navigate.level===lvl ) return lay;
-		lay = lay.parent;
-	}
 };
 
 /** Selects the isSelected studies from patient */
