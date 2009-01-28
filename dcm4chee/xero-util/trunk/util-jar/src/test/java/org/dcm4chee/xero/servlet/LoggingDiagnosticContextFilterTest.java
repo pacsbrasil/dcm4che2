@@ -135,7 +135,7 @@ public class LoggingDiagnosticContextFilterTest
       verify(chain);
    }
    
-   @Test
+   @Test(enabled=false)
    public void scratch()
    {
 
