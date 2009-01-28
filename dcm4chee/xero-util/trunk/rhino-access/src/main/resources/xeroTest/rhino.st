@@ -287,3 +287,4 @@ var Node = new Object();
 Node.ELEMENT_NODE=1;
 
 _SARISSA_IS_IE = false;
+_SARISSA_IS_MOZ = false;
