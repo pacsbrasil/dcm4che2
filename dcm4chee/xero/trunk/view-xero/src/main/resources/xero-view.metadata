@@ -56,6 +56,8 @@ displayTemplates.seriesThumbnails=series/thumbnails
 displayTemplates.seriesGspsMarkup=series/gspsMarkup
 displayTemplates.studyMenuItem=image/studyMenuItem
 displayTemplates.imageNav=image/imageNav
+displayTemplates.imageMenu=image/imageMenu
+displayTemplates.imageMenuWithDescription=image/imageMenuWithDescription
 
 allTemplates=${class:org.dcm4chee.xero.template.AllTemplatesMap}
 allTemplates.templateGroup=${ref:templateGroup}
@@ -67,4 +69,5 @@ allTemplates.customStyle=customStyle
 allTemplates.toolItem=html/toolItem
 allTemplates.userName=html/userName
 allTemplates.childList=html/childList
+allTemplates.menuUL=html/menuUL
 allTemplates.logout=html/logout

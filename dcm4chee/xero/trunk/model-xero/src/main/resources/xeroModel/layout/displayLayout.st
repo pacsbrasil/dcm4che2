@@ -510,7 +510,7 @@ $layout/addChildren(children=imageMenu.children)$
 	this.namedListener(null,null,"default");	
 };
 
-ImageMenu.prototype = new Layout("ImageMenu", "html/menu");
+ImageMenu.prototype = new Layout("ImageMenu", "image/imageMenu");
 ImageMenu.prototype.displayClass="imageMenu hoverMenu menu";
 ImageMenu.prototype.ulClass="leftmenu";
 ImageMenu.prototype.isActive = true;

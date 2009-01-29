@@ -25,6 +25,7 @@ $children:{child|
 		$if(child.isActive)$child.isActive=$child.isActive$;$endif$
 		$if(child.target)$child.target="$child.target;format="js"$";$endif$
 		$if(child.arg)$child.arg="$child.arg;format="js"$";$endif$
+		$if(child.tooltip)$child.tooltip="$child.tooltip;format="js"$";$endif$
 		this.add(child $if(child.name)$,"$child.name$"$endif$);
 	};
 }$
