@@ -338,7 +338,7 @@ final class MonochromeParam extends BasicColorModelParam  {
    }
 
    private boolean containsBitsInHighByte(byte[] lutData, int bits) {
-       for (int i = 1; i < lutData.length; i++,i++) {
+       for (int i = lutData.length - 1; i > 0; i--,i--) {
            if ((lutData[i] & bits) != 0) {
                return true;
            }
