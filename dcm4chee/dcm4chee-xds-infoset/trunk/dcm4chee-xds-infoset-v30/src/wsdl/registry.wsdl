@@ -25,17 +25,27 @@
 		<part name="body" element="rs:RegistryResponse"/>
 	</message>
 
-	<portType name="DocumentRegistry_PortType">
-		<operation name="DocumentRegistry_RegisterDocumentSet-b">
-			<input message="ihe:RegisterDocumentSet-b_Message" wsaw:Action="urn:ihe:iti:2007:RegisterDocumentSet-b"/>
-			<output message="ihe:RegisterDocumentSet-bResponse_Message" wsaw:Action="urn:ihe:iti:2007:RegisterDocumentSet-bResponse"/>
-		</operation>
-		<operation name="DocumentRegistry_RegistryStoredQuery">
-			<input message="ihe:RegistryStoredQuery_Message" wsaw:Action="urn:ihe:iti:2007:RegistryStoredQuery"/>
-			<output message="ihe:RegistryStoredQueryResponse_Message" wsaw:Action="urn:ihe:iti:2007:RegistryStoredQueryResponse"/>
-		</operation>
-	</portType>
-	<binding name="DocumentRegistry_Binding_Soap11" type="ihe:DocumentRegistry_PortType">
+    <portType name="DocumentRegistry_PortType11">
+        <operation name="DocumentRegistry_RegisterDocumentSet-b">
+            <input message="ihe:RegisterDocumentSet-b_Message" wsaw:Action="urn:ihe:iti:2007:RegisterDocumentSet-b"/>
+            <output message="ihe:RegisterDocumentSet-bResponse_Message" wsaw:Action="urn:ihe:iti:2007:RegisterDocumentSet-bResponse"/>
+        </operation>
+        <operation name="DocumentRegistry_RegistryStoredQuery">
+            <input message="ihe:RegistryStoredQuery_Message" wsaw:Action="urn:ihe:iti:2007:RegistryStoredQuery"/>
+            <output message="ihe:RegistryStoredQueryResponse_Message" wsaw:Action="urn:ihe:iti:2007:RegistryStoredQueryResponse"/>
+        </operation>
+    </portType>
+    <portType name="DocumentRegistry_PortType12">
+        <operation name="DocumentRegistry_RegisterDocumentSet-b">
+            <input message="ihe:RegisterDocumentSet-b_Message" wsaw:Action="urn:ihe:iti:2007:RegisterDocumentSet-b"/>
+            <output message="ihe:RegisterDocumentSet-bResponse_Message" wsaw:Action="urn:ihe:iti:2007:RegisterDocumentSet-bResponse"/>
+        </operation>
+        <operation name="DocumentRegistry_RegistryStoredQuery">
+            <input message="ihe:RegistryStoredQuery_Message" wsaw:Action="urn:ihe:iti:2007:RegistryStoredQuery"/>
+            <output message="ihe:RegistryStoredQueryResponse_Message" wsaw:Action="urn:ihe:iti:2007:RegistryStoredQueryResponse"/>
+        </operation>
+    </portType>
+	<binding name="DocumentRegistry_Binding_Soap11" type="ihe:DocumentRegistry_PortType11">
 		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 		<operation name="DocumentRegistry_RegisterDocumentSet-b">
 			<soap:operation soapAction="urn:ihe:iti:2007:RegisterDocumentSet-b"/>
@@ -56,7 +66,7 @@
 			</output>
 		</operation>
 	</binding>
-	<binding name="DocumentRegistry_Binding_Soap12" type="ihe:DocumentRegistry_PortType">
+	<binding name="DocumentRegistry_Binding_Soap12" type="ihe:DocumentRegistry_PortType12">
 		<soap12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 		<operation name="DocumentRegistry_RegisterDocumentSet-b">
 			<soap12:operation soapAction="urn:ihe:iti:2007:RegisterDocumentSet-b"/>
@@ -78,9 +88,11 @@
 		</operation>
 	</binding>
 	<service name="DocumentRegistry_Service">
+
 		<port name="DocumentRegistry_Port_Soap11" binding="ihe:DocumentRegistry_Binding_Soap11">
 			<soap:address location="http://servicelocation/DocumentRegistry_Service"/>
 		</port>
+
 		<port name="DocumentRegistry_Port_Soap12" binding="ihe:DocumentRegistry_Binding_Soap12">
 			<soap12:address location="http://servicelocation/DocumentRegistry_Service"/>
 		</port>
