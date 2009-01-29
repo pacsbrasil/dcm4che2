@@ -12,7 +12,7 @@ import org.dcm4chee.xds.infoset.v30.AdhocQueryRequest;
 import org.dcm4chee.xds.infoset.v30.AdhocQueryResponse;
 import org.dcm4chee.xds.infoset.v30.RegistryResponseType;
 import org.dcm4chee.xds.infoset.v30.SubmitObjectsRequest;
-import org.dcm4chee.xds.infoset.v30.DocumentRegistryPortType;
+import org.dcm4chee.xds.infoset.v30.DocumentRegistryPortType12;
 import org.jboss.ws.annotation.EndpointConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 )
 @SOAPBinding(style = SOAPBinding.Style.DOCUMENT)
 @EndpointConfig(configName = "Standard SOAP 1.2 WSAddressing Endpoint")
-public class DocumentRegistryB implements DocumentRegistryPortType {
+public class DocumentRegistryB implements DocumentRegistryPortType12 {
 
     @Resource
     WebServiceContext wsCtx;
