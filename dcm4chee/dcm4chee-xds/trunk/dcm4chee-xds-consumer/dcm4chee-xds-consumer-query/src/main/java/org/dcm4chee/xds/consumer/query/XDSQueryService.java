@@ -67,7 +67,7 @@ import org.apache.log4j.Logger;
 import org.dcm4chee.xds.common.delegate.XdsHttpCfgDelegate;
 import org.dcm4chee.xds.infoset.v30.AdhocQueryRequest;
 import org.dcm4chee.xds.infoset.v30.AdhocQueryResponse;
-import org.dcm4chee.xds.infoset.v30.DocumentRegistryPortType;
+import org.dcm4chee.xds.infoset.v30.DocumentRegistryPortType12;
 import org.dcm4chee.xds.infoset.v30.DocumentRegistryService;
 import org.dcm4chee.xds.infoset.v30.util.InfoSetUtil;
 import org.dcm4chee.xds.infoset.v30.util.StoredQueryFactory;
@@ -306,7 +306,7 @@ public class XDSQueryService extends ServiceMBeanSupport {
 
     public AdhocQueryResponse performQueryViaWS(AdhocQueryRequest rq) {
         DocumentRegistryService s = new DocumentRegistryService();
-        DocumentRegistryPortType port = s.getDocumentRegistryPortSoap12();
+        DocumentRegistryPortType12 port = s.getDocumentRegistryPortSoap12();
         BindingProvider bindingProvider = (BindingProvider)port;
         Map<String, Object> reqCtx = bindingProvider.getRequestContext();
         reqCtx.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, xdsQueryURI);
