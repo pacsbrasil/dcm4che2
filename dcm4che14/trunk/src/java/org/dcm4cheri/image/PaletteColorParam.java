@@ -234,6 +234,10 @@ final class PaletteColorParam extends BasicColorModelParam {
         throw new UnsupportedOperationException();
     }
     
+    public Dataset getVOILUT() {
+        throw new UnsupportedOperationException();
+    }
+
     public boolean isMonochrome() {
         return false;
     }

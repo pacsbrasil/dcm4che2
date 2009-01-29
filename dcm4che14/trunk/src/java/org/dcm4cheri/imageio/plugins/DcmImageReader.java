@@ -482,6 +482,7 @@ public class DcmImageReader extends ImageReader {
     private BufferedImage adjustBufferedImage(BufferedImage bi,
             DcmImageReadParam readParam) {
         final boolean autoWindowing = cmParam != null && cmParam.isMonochrome()
+                && cmParam.getVOILUT() == null
                 && cmParam.getNumberOfWindows() == 0
                 && readParam.isAutoWindowing();
         if (!autoWindowing && !readParam.isMaskPixelData())

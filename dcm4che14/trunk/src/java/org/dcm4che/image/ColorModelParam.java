@@ -40,6 +40,8 @@ package org.dcm4che.image;
 
 import java.awt.image.ColorModel;
 
+import org.dcm4che.data.Dataset;
+
 /**
  *
  * @author  gunter.zeilinger@tiani.com
@@ -60,7 +62,9 @@ public interface ColorModelParam {
     public float getWindowWidth(int index);
 
     public int getNumberOfWindows();
-    
+
+    public Dataset getVOILUT();
+
     public float toMeasureValue(int pxValue);
     
     public int toPixelValue(float measureValue);

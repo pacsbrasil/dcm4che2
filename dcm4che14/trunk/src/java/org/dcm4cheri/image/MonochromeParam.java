@@ -58,12 +58,11 @@ final class MonochromeParam extends BasicColorModelParam  {
    private final int inverse;
    private final float slope, intercept;
    private final float[] center, width;
+   private Dataset voilut;
    private final int hashcode;
    private final byte[] pv2dll;
    private final int andmask;
    private final int pvBits;
-   private final int rshift;
-   private final int lshift;
    
    private final static float[] EMPTY = {};
    private final static float[] nullToEmpty(float[] a) {
@@ -102,19 +101,11 @@ final class MonochromeParam extends BasicColorModelParam  {
             width[i] = (max - min) / slope;
          }
       }
+      this.voilut = ds.getItem(Tags.VOILUTSeq);
       this.pv2dll = pv2dll;
       this.pvBits = inBits(pv2dll.length);
       // Exclude all high-bit data (overlays typically)
       this.andmask = (1<<pvBits)-1;
-      // Correct the number of bits to agree with how many values are
-      // avaialble in pv2dll.
-      if (bits > pvBits) {
-         this.rshift = bits - pvBits;           
-         this.lshift = 0;
-      } else {
-         this.lshift = pvBits - bits;           
-         this.rshift = 0;
-      }
       this.hashcode = hashcode(dataType, inverse, min, max,
          slope, intercept, center, width, pv2dll);      
    }
@@ -125,7 +116,7 @@ final class MonochromeParam extends BasicColorModelParam  {
    {
       StringBuffer sb = new StringBuffer();
       sb.append(dataType).append(inverse).append(min).append(max)
-      .append(slope).append(intercept).append(pv2dll);
+              .append(slope).append(intercept).append(pv2dll);
       if (Math.min(center.length, width.length) != 0) {
          sb.append(center[0]).append(width[0]);
       }
@@ -144,8 +135,6 @@ final class MonochromeParam extends BasicColorModelParam  {
       this.pv2dll = other.pv2dll;
       this.pvBits = other.pvBits;
       this.andmask = other.andmask;
-      this.lshift = other.lshift;
-      this.rshift = other.rshift;
       this.hashcode = hashcode(dataType, inverse, min, max,
       slope, intercept, center, width, pv2dll);
    }
@@ -212,8 +201,12 @@ final class MonochromeParam extends BasicColorModelParam  {
       return Math.min(center.length, width.length);
    }
    
+   public final Dataset getVOILUT() {
+       return voilut;
+   }
+    
    public final boolean isCacheable() {
-      return true;
+      return voilut == null;
    }
    
    public final boolean isInverse() {
@@ -239,20 +232,24 @@ final class MonochromeParam extends BasicColorModelParam  {
    public ColorModel newColorModel() {
       // This won't work if there is an actual LUT for the modality LUT
       int[] cmap = new int[size];
-      float centerV, widthV;
-      if (getNumberOfWindows() == 0) {
-    	  centerV = slope*(max + min)/2f+intercept;
-    	  widthV = (max-min) * slope;
+      if (voilut != null) {
+          createCMAPfromVOILUT(cmap);
       } else {
-    	  centerV = center[0];
-    	  widthV = width[0];
+          float centerV, widthV;
+          if (getNumberOfWindows() == 0) {
+        	  centerV = slope*(max + min)/2f+intercept;
+        	  widthV = (max-min) * slope;
+          } else {
+        	  centerV = center[0];
+        	  widthV = width[0];
+          }
+          log.debug("window level "+centerV+","+widthV + " intercept, slope="+intercept+","+slope + " isInverse "+isInverse());
+          createCMAP(cmap, (centerV - intercept)/slope,widthV/slope);
       }
-      log.debug("window level "+centerV+","+widthV + " intercept, slope="+intercept+","+slope + " isInverse "+isInverse());
-      createCMAP(cmap, (centerV - intercept)/slope,widthV/slope);
       return new IndexColorModel(bits, size, cmap, 0, false, -1, dataType);
    }
    
-   /** Create a colour map to digital driving levels
+/** Create a colour map to digital driving levels
     * 
     * @param cmap is the map to fill
     * @param c is the center
@@ -295,5 +292,204 @@ final class MonochromeParam extends BasicColorModelParam  {
          cmap[i+size] = toARGB(pv2dll[(((i-u)<<pvBits) / w ^ useInverse) & andmask]);
          //if( i % 120 == 0 ) log.info("cmap["+(i+size)+"]="+(cmap[i+size] & 0xFF) );
       }
+   }
+
+   private void createCMAPfromVOILUT(int[] cmap) {
+       int[] lutDescriptor = voilut.getInts(Tags.LUTDescriptor);
+       byte[] lutData = voilut.getByteBuffer(Tags.LUTData).array();
+       int lutLength = lutDescriptor[0] != 0 ? lutDescriptor[0] : 0x10000;
+       int lutOffset = lutDescriptor[1];
+       // assume VR=SS if otherwise lutOffset > max
+       if (lutOffset > max) {
+           lutOffset |= 0xFFFF0000;
+       }
+       int lutBits = lutDescriptor[2];
+       if (lutData.length == lutLength) {
+           if (lutBits != 8) {
+               throw new IllegalArgumentException(
+                       "VOI LUT Bit Depth in Descriptor:" + lutBits
+                       + " does not match 8 bits alloacted of VOI LUT Data");
+           }
+           if (isInverse()) {
+               createInverseCMAPfrom8bitVOILUT(cmap, lutData, lutOffset);
+           } else {
+               createCMAPfrom8bitVOILUT(cmap, lutData, lutOffset);
+           }
+       } else if (lutData.length == (lutLength<<1)) {
+           if (bits < lutBits) {
+               if (!containsBitsInHighByte(lutData, (-1<<(bits-8)) & 0xff)) {
+                   log.info("Detect Agfa ADC VOI LUT bug "
+                           + "=> assume VOI LUT Bit Depth = " + bits);
+                   lutBits = bits;
+               }
+           }
+           if (isInverse()) {
+               createInverseCMAPfrom16bitVOILUT(cmap, lutData, lutOffset,
+                       lutBits);
+           } else {
+               createCMAPfrom16bitVOILUT(cmap, lutData, lutOffset, lutBits);
+           }
+       } else {
+           throw new IllegalArgumentException(
+                   "VOI LUT Data Length in Descriptor:" + lutDescriptor[0]
+                   + " does not match length of VOI LUT Data:"
+                   + lutData.length);
+       }
+   }
+
+   private boolean containsBitsInHighByte(byte[] lutData, int bits) {
+       for (int i = 1; i < lutData.length; i++,i++) {
+           if ((lutData[i] & bits) != 0) {
+               return true;
+           }
+       }
+       return false;
+   }
+
+   private void createCMAPfrom8bitVOILUT(int[] cmap, byte[] lutData,
+           int offset) {
+       int u = (int) ((offset - intercept) / slope);
+       int o = u + (int) (lutData.length / slope);
+       int lshift = pvBits - 8;
+       int cmin = toARGB(pv2dll[(lutData[0] & 0xff)<<lshift]);
+       int cmax = toARGB(pv2dll[(lutData[lutData.length-1] & 0xff)<<lshift]);
+       if (u > 0) {
+           Arrays.fill(cmap, 0, Math.min(u,max), cmin);
+       }
+       if (o < max) {
+           Arrays.fill(cmap, Math.max(0,o), max, cmax);
+       }
+       for (int i = Math.max(0,u), n = Math.min(o,max), j = i-u; i < n;) {
+           cmap[i++] = toARGB(pv2dll[(lutData[j++] & 0xff)<<lshift]);
+       }
+       if (min == 0) {
+           return; // all done for unsigned px val
+       }
+       if (u > min) {
+           Arrays.fill(cmap, size>>1, Math.min(u+size, size), cmin);
+       }
+       if (o < 0) {
+           Arrays.fill(cmap, Math.max(o+size,size>>1), size, cmax);
+       }
+       for (int i = Math.max(min,u), n = Math.min(o,0), j = i-u; i < n;) {
+           cmap[size + i++] = toARGB(pv2dll[(lutData[j++] & 0xff)<<lshift]);
+       }
+   }
+
+   private void createInverseCMAPfrom8bitVOILUT(int[] cmap, byte[] lutData,
+           int offset) {
+       int u = (int) ((offset - intercept) / slope);
+       int o = u + (int) (lutData.length / slope);
+       int lshift = pvBits - 8;
+       int cmin = toARGB(pv2dll[pv2dll.length - 1
+                              - ((lutData[0] & 0xff)<<lshift)]);
+       int cmax = toARGB(pv2dll[pv2dll.length - 1
+                              - ((lutData[lutData.length-1] & 0xff)<<lshift)]);
+       if (u > 0) {
+           Arrays.fill(cmap, 0, Math.min(u,max), cmin);
+       }
+       if (o < max) {
+           Arrays.fill(cmap, Math.max(0,o), max, cmax);
+       }
+       for (int i = Math.max(0,u), n = Math.min(o,max), j = i-u; i < n;) {
+           cmap[i++] = toARGB(pv2dll[pv2dll.length - 1
+                                - ((lutData[j++] & 0xff)<<lshift)]);
+       }
+       if (min == 0) {
+           return; // all done for unsigned px val
+       }
+       if (u > min) {
+           Arrays.fill(cmap, size>>1, Math.min(u+size, size), cmin);
+       }
+       if (o < 0) {
+           Arrays.fill(cmap, Math.max(o+size,size>>1), size, cmax);
+       }
+       for (int i = Math.max(min,u), n = Math.min(o,0), j = i-u; i < n;) {
+           cmap[size + i++] = toARGB(pv2dll[pv2dll.length - 1
+                                          - ((lutData[j++] & 0xff)<<lshift)]);
+       }
+   }
+
+   private void createCMAPfrom16bitVOILUT(int[] cmap, byte[] lutData,
+           int offset, int lutBits) {
+       int u = (int) ((offset - intercept) / slope);
+       int o = u + (int) ((lutData.length>>1) / slope);
+       int rshift = lutBits - pvBits;
+       int lshift = -rshift;
+       if (rshift < 0) {
+           rshift = 0;
+       } else {
+           lshift = 0;
+       }
+       int cmin = toARGB(pv2dll[(((lutData[0] & 0xff)
+               |(lutData[1] & 0xff)<<8)<<lshift)>>rshift]);
+       int cmax = toARGB(pv2dll[(((lutData[lutData.length-2] & 0xff)
+               |(lutData[lutData.length-1] & 0xff)<<8)<<lshift)>>rshift]);
+       if (u > 0) {
+           Arrays.fill(cmap, 0, Math.min(u,max), cmin);
+       }
+       if (o < max) {
+           Arrays.fill(cmap, Math.max(0,o), max, cmax);
+       }
+       for (int i = Math.max(0,u), n = Math.min(o,max), j = (i-u)<<1; i < n;) {
+           cmap[i++] = toARGB(pv2dll[(((lutData[j++] & 0xff)
+                   |(lutData[j++] & 0xff)<<8)<<lshift)>>rshift]);
+       }
+       if (min == 0) {
+           return; // all done for unsigned px val
+       }
+       if (u > min) {
+           Arrays.fill(cmap, size>>1, Math.min(u+size, size), cmin);
+       }
+       if (o < 0) {
+           Arrays.fill(cmap, Math.max(o+size,size>>1), size, cmax);
+       }
+       for (int i = Math.max(min,u), n = Math.min(o,0), j = (i-u)<<1; i < n;) {
+           cmap[size + i++] = toARGB(pv2dll[(((lutData[j++] & 0xff)
+                   |(lutData[j++] & 0xff)<<8)<<lshift)>>rshift]);
+       }
+   }
+
+   private void createInverseCMAPfrom16bitVOILUT(int[] cmap, byte[] lutData,
+           int offset, int lutBits) {
+       int u = (int) ((offset - intercept) / slope);
+       int o = u + (int) ((lutData.length>>1) / slope);
+       int rshift = lutBits - pvBits;
+       int lshift = -rshift;
+       if (rshift < 0) {
+           rshift = 0;
+       } else {
+           lshift = 0;
+       }
+       int cmin = toARGB(pv2dll[pv2dll.length - 1 - ((((lutData[0] & 0xff)
+               |(lutData[1] & 0xff)<<8)<<lshift)>>rshift)]);
+       int cmax = toARGB(pv2dll[pv2dll.length - 1
+             - ((((lutData[lutData.length-2] & 0xff)
+                 |(lutData[lutData.length-1] & 0xff)<<8)<<lshift)>>rshift)]);
+       if (u > 0) {
+           Arrays.fill(cmap, 0, Math.min(u,max), cmin);
+       }
+       if (o < max) {
+           Arrays.fill(cmap, Math.max(0,o), max, cmax);
+       }
+       for (int i = Math.max(0,u), n = Math.min(o,max), j = (i-u)<<1; i < n;) {
+           cmap[i++] = toARGB(pv2dll[pv2dll.length - 1
+                 - ((((lutData[j++] & 0xff)
+                     |(lutData[j++] & 0xff)<<8)<<lshift)>>rshift)]);
+       }
+       if (min == 0) {
+           return; // all done for unsigned px val
+       }
+       if (u > min) {
+           Arrays.fill(cmap, size>>1, Math.min(u+size, size), cmin);
+       }
+       if (o < 0) {
+           Arrays.fill(cmap, Math.max(o+size,size>>1), size, cmax);
+       }
+       for (int i = Math.max(min,u), n = Math.min(o,0), j = (i-u)<<1; i < n;) {
+           cmap[size + i++] = toARGB(pv2dll[pv2dll.length - 1
+                 - ((((lutData[j++] & 0xff)
+                     |(lutData[j++] & 0xff)<<8)<<lshift)>>rshift)]);
+       }
    }
 }
