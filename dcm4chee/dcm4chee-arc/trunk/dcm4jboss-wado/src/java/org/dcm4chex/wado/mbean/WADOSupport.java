@@ -209,6 +209,8 @@ public class WADOSupport {
 
     private String srImageRows;
 
+    private boolean disableCache;
+
     public WADOSupport(MBeanServer mbServer) {
         if (server != null) {
             server = mbServer;
@@ -643,19 +645,32 @@ public class WADOSupport {
         String imageQuality = req.getImageQuality();
 
         try {
-            File file = getJpg(studyUID, seriesUID, instanceUID, rows, columns,
-                    frameNumber, region, windowWidth, windowCenter,
-                    imageQuality);
-            if (file != null) {
-                WADOStreamResponseObjectImpl resp = new WADOStreamResponseObjectImpl(
-                        new FileInputStream(file), CONTENT_TYPE_JPEG,
-                        HttpServletResponse.SC_OK, null);
-                resp.setPatInfo(req.getObjectInfo());
-                return resp;
+            int frame = 0;
+            if (frameNumber != null) {
+                frame = Integer.parseInt(frameNumber)-1;
+            }
+            if (disableCache) {
+                BufferedImage bi = getBufferedImage(studyUID, seriesUID, instanceUID, rows,
+                        columns, frame, region, windowWidth, windowCenter);
+                
+                return new WADOImageResponseObjectImpl(bi,
+                        CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK,
+                "Info: Caching disabled!");
             } else {
-                return new WADOStreamResponseObjectImpl(null,
-                        CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND,
-                "DICOM object not found!");
+                File file = getJpg(studyUID, seriesUID, instanceUID, rows, columns,
+                        frame, region, windowWidth, windowCenter,
+                        imageQuality);
+                if (file != null) {
+                    WADOStreamResponseObjectImpl resp = new WADOStreamResponseObjectImpl(
+                            new FileInputStream(file), CONTENT_TYPE_JPEG,
+                            HttpServletResponse.SC_OK, null);
+                    resp.setPatInfo(req.getObjectInfo());
+                    return resp;
+                } else {
+                    return new WADOStreamResponseObjectImpl(null,
+                            CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND,
+                    "DICOM object not found!");
+                }
             }
         } catch (NeedRedirectionException nre) {
             return handleNeedRedirectException(req, CONTENT_TYPE_JPEG, nre);
@@ -699,35 +714,27 @@ public class WADOSupport {
      * @throws ImageCachingException
      */
     public File getJpg(String studyUID, String seriesUID, String instanceUID,
-            String rows, String columns, String frameNumber, String region,
+            String rows, String columns, int frame, String region,
             String windowWidth, String windowCenter, String imageQuality)
     throws IOException, NeedRedirectionException, NoImageException,
     ImageCachingException {
-        int frame = 0;
-        String suffix = null;
-        if (frameNumber != null) {
-            frame = Integer.parseInt(frameNumber)-1;
-            if (frame > 0)
-                suffix = "-" + frameNumber;
-            else
-                frame = 0;
-        }
         WADOCache cache = WADOCacheImpl.getWADOCache();
         File file;
         BufferedImage bi = null;
 
+        String suffix = null;
+        if (frame > 0)
+            suffix = "-" + frame;
+        else
+            frame = 0;
+        
         file = cache.getImageFile(studyUID, seriesUID, instanceUID, rows,
                 columns, region, windowWidth, windowCenter, imageQuality,
                 suffix);
 
         if (file == null) {
-            File dicomFile = getDICOMFile(studyUID, seriesUID, instanceUID);
-            if (dicomFile != null) {
-                bi = getImage(dicomFile, frame, rows, columns, region,
-                        windowWidth, windowCenter);
-            } else {
-                return null;
-            }
+            bi = getBufferedImage(studyUID, seriesUID, instanceUID, rows,
+                    columns, frame, region, windowWidth, windowCenter);
             if (bi != null) {
                 try {
                     file = cache.putImage(bi, studyUID, seriesUID, instanceUID,
@@ -743,6 +750,18 @@ public class WADOSupport {
             }
         }
         return file;
+    }
+
+    private BufferedImage getBufferedImage(String studyUID, String seriesUID,
+            String instanceUID, String rows, String columns, int frame,
+            String region, String windowWidth, String windowCenter) throws IOException, NeedRedirectionException {
+        File dicomFile = getDICOMFile(studyUID, seriesUID, instanceUID);
+        if (dicomFile != null) {
+            return getImage(dicomFile, frame, rows, columns, region,
+                    windowWidth, windowCenter);
+        } else {
+            return null;
+        }
     }
 
     /* _ */
@@ -1246,6 +1265,14 @@ public class WADOSupport {
         this.disableDNS = disableDNS;
     }
 
+    public boolean isDisableCache() {
+        return disableCache;
+    }
+
+    public void setDisableCache(boolean disableCache) {
+        this.disableCache = disableCache;
+    }
+    
     /**
      * @return Returns the useTransferSyntaxOfFileAsDefault.
      */

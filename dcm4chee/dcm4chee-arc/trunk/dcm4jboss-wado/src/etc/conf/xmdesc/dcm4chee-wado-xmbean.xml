@@ -43,6 +43,17 @@
     </descriptors>
   </attribute>
 
+  <attribute access="read-write" getMethod="isDisableCache"
+    setMethod="setDisableCache">
+    <description>Disable/enable File caching of generated images. </description>
+    <name>DisableCache</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="false" />
+    </descriptors>
+  </attribute>
+
+
   <attribute access="read-write" getMethod="getDeleterThresholds"
     setMethod="setDeleterThresholds">
     <description><![CDATA[Defines thresholds dependent on hour of day, for deleting the most

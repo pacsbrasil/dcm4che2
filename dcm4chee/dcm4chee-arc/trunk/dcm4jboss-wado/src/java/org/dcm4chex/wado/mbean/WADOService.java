@@ -406,6 +406,15 @@ public class WADOService extends AbstractCacheService {
         support.setDisableDNS(disableDNS);
     }
 
+    public boolean isDisableCache() {
+        return support.isDisableCache();
+    }
+
+    public void setDisableCache(boolean disableCache) {
+        support.setDisableCache(disableCache);
+    }
+
+    
     /**
      * Get the requested DICOM object as File packed in a WADOResponseObject.
      * <p>
