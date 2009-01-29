@@ -250,7 +250,14 @@ public class MwlReplicaService extends AbstractScuService {
         this.priority = DicomPriority.toCode(priority);
     }
     
-    
+    public final String getCoerceConfigDir() {
+        return templates.getConfigDir();
+    }
+
+    public final void setCoerceConfigDir(String path) {
+        templates.setConfigDir(path);
+    }
+
     public int getErrorCount() {
     	return errorCount;
     }
