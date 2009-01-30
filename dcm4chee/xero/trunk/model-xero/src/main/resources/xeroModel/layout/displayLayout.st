@@ -120,12 +120,11 @@ StudyAreaLayout.prototype.navigateListener = function (navigate) {
 	if( !this.study ) return;
 	this.used = true;
 	this.patient = navigate.parent.external;
-	if( navigate.parent.conversation[navigate.KEY+"Show"]===false ) {
-		console.info("Nav show is false, not showing area.");
+	var showKey = navigate.KEY+"Show";
+	if( navigate.parent.conversation[showKey]===false ) {
 		this.used = false;
 		return;
 	};
-	console.info("Nav show isn't false, showing area.");
 	
 	var studies = navigate.parent.getExtChildren();
 	if( !studies ){
@@ -156,9 +155,11 @@ StudyAreaLayout.prototype.navigateListener = function (navigate) {
 StudyAreaLayout.prototype.namedListener = function StudyNavigateListener(nav,vname,val) {
 	console.info("show study changed",vname,"to",val);
 	var key = "nav"+this.nth+"Show";
-	if( vname!==key ) return;
+	// This object isn't responsible for modifying the display settings - that is done in the
+	// navigate listener.
+	if( vname!==key || val==null ) return;
 	var nUsed = (val!==false && this.navigate.external!=null);
-	console.info("StudyLayout set show this to",nUsed);
+	console.debug("StudyLayout set show",key,"to",nUsed);
 	if( nUsed!=this.used ) {
 		this.used = nUsed;
 		this.relayout = true;
