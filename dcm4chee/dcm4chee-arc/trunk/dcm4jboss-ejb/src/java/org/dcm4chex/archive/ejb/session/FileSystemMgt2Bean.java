@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.archive.ejb.session;
 
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,6 +45,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -61,11 +63,9 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
-import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
@@ -86,6 +86,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
+import org.dcm4chex.archive.ejb.jdbc.QueryFilesOfSeriesCmd;
 import org.dcm4chex.archive.exceptions.ConcurrentStudyStorageException;
 import org.dcm4chex.archive.exceptions.NoSuchStudyException;
 
@@ -883,6 +884,14 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         FileDTO[] dtos = toFileDTOs(instHome.findBySopIuid(iuid).getFiles());
         Arrays.sort(dtos, DESC_FILE_PK);
                 return dtos;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Map getBestFileLocationsOfSeries(String iuid) throws SQLException {
+        QueryFilesOfSeriesCmd queryCmd = new QueryFilesOfSeriesCmd(iuid);
+        return queryCmd.getBestFileDTOs();
     }
 
     /**
