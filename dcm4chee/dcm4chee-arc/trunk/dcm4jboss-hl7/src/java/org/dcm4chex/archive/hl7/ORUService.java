@@ -122,15 +122,15 @@ public class ORUService extends ORU_MDMService
 
     private String getOBXStatus(Document msg) {
         Element rootElement = msg.getRootElement();
-        log.info("rootElement:"+rootElement);
+//        log.info("rootElement:"+rootElement);
         List obxs = rootElement.elements("OBX");
-        log.info("obxs:"+obxs);
+//        log.info("obxs:"+obxs);
         if ( obxs.isEmpty()) return NO_OBX;
         List obxFields = ((Element) obxs.get(0)).elements("field");
-        log.info("obxFields:"+obxFields);
+//        log.info("obxFields:"+obxFields);
         if ( obxFields.size() < obxStatusFieldNr) 
             return NO_RESULT_STATUS;
-        log.info("obxFields.get(10)).getText():"+((Element) obxFields.get(obxStatusFieldNr)).getText());
+//        log.info("obxFields.get(10)).getText():"+((Element) obxFields.get(obxStatusFieldNr)).getText());
         return ((Element) obxFields.get(obxStatusFieldNr)).getText();
     }
     
