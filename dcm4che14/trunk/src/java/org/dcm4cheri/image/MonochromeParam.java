@@ -299,8 +299,9 @@ final class MonochromeParam extends BasicColorModelParam  {
        byte[] lutData = voilut.getByteBuffer(Tags.LUTData).array();
        int lutLength = lutDescriptor[0] != 0 ? lutDescriptor[0] : 0x10000;
        int lutOffset = lutDescriptor[1];
-       // assume VR=SS if otherwise lutOffset > max
-       if (lutOffset > max) {
+       // adjust VR=US to VR=SS if signed or negative intercept
+       if (lutOffset > 0 && (lutOffset & 0x8000) != 0 
+               && (min < 0 || intercept < 0)) {
            lutOffset |= 0xFFFF0000;
        }
        int lutBits = lutDescriptor[2];
