@@ -81,7 +81,7 @@ TabsLayout.prototype.selectTab = function TV_selectTab(name) {
 	if( this.activeTab===tab ) return false;
 	if( tab.tabInactive ) return false;
 	if( this.activeTab ) {
-		this.activeTab.used = false;
+		this.activeTab.deactivate();
 		if( this.activeTab.usedListener ) this.activeTab.usedListener();
 	}
 	this.activeTab = tab;

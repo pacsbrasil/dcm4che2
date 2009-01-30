@@ -17,7 +17,7 @@
  * Portions created by the Initial Developer are Copyright (C) 2009 the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Joe Boccanfuso <joe.boccanfuso@agfa.com>
+ * Bill Wallace <bill.wallace@agfa.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -45,7 +45,7 @@ import org.testng.annotations.Test;
 /**
  * Tests the JavaScript model
  * 
- * @author Joe Boccanfuso
+ * @author Bill Wallace
  * 
  */
 public class XeroJSControllerTest {

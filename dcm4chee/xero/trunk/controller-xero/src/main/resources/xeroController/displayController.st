@@ -7,8 +7,6 @@
 XeroController.prototype.displayPatient = function XC_displayPatient(id,patientId,uid) {
 	console.info("Display patient id",patientId);
 	
-	this.storeScrollPosition(id);
-	
 	console.time("Load Patient Data");
 	var model = this.model;
 	var searchLayout = model.idMap.SearchLayout;

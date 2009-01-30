@@ -21,10 +21,15 @@ XeroController.prototype.performSearch = function XC_performSearch(src) {
 	console.timeEnd("SearchQuery");
 };
 
-/** Causes the study query to be made immediately on loading - so that everything is available */
+/** Causes the study query to be made immediately on loading - so that everything is available.
+ * Also hooks up the de-activate listener for QueryLayout
+ */
 function onloadStudySearch() {
 	if( model.idMap.SearchLayout.search ) return;
 	controller.performSearch();
+	controller.findLayout("QueryLayout").deactivateListener = function() {
+		controller.storeScrollPosition("SearchLayout");
+	};
 };
 
 addLoadEvent(onloadStudySearch);
@@ -53,7 +58,11 @@ XeroController.prototype.manyStudy = function(id, pid, studyUID) {
 
 /** Finds the search results and causes them to be displayed */
 XeroController.prototype.findAction = function XC_findAction(src) {
-	this.performSearch(src);	
+	this.performSearch(src);
+	var sl = this.findLayout("SearchLayout");
+	if( sl ) {
+	   sl.scrollTop = 0;
+	}
 	this.updateView("findAction");	
 };
 
@@ -80,9 +89,9 @@ XeroController.prototype.clearQuery = function(id) {
 	var q = lay.query;
 	// TODO - figure out a better way to list all the query fields.
 	q.AccessionNumber="";
-	q.ModalitiesInStudy="";
+	q.ModalitiesInStudy=null;
 	q.PatientID="";
-	q.StudyDateTime="";
+	q.StudyDateTime=null;
 	q.PatientName="";
 	lay.relayout = true;
 	this.updateLayouts("clearQuery");

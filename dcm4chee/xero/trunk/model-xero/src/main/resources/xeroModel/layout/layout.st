@@ -60,6 +60,23 @@ Layout.prototype.computeId = function Layout_computeId(idMap) {
 	};
 };
 
+/** Deactivates the hierarchy - sets the used to false, and calls any store methods */
+Layout.prototype.deactivate = function(isChild) {
+	if( !this.used ) return;
+	if( !isChild ) {
+		this.used = false;
+	}
+	if( this.deactivateListener ) {
+		this.deactivateListener();
+	}
+
+	if( !this.children ) return;
+	var i,n=this.children.length;
+	for(i=0; i<n; i++) {
+		this.children[i].deactivate(true);
+	}
+};
+
 Layout.prototype.used = true;
 
 /** Resizes the edge components */

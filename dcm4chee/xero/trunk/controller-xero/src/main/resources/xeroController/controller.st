@@ -97,7 +97,7 @@ XeroController.prototype.getScrollNode = function(id) {
  */
 XeroController.prototype.fixScrollPosition = function(id) {
    var lay = this.findLayout(id);
-   if( !lay.scrollTop ) return;
+   if( lay.scrollTop==undefined ) return;
    var node = this.getScrollNode(lay.id);
    console.info("fixScrollPosition",id,"on",node,"to",lay.scrollTop);
    if( node ) node.scrollTop = lay.scrollTop;
