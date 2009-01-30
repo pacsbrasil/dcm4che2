@@ -347,7 +347,9 @@
     </item>
   </xsl:template>
   <xsl:template match="OBX" mode="txt">
-    <xsl:variable name="text" select="field[5]"/>
+    <xsl:variable name="text">
+      <xsl:apply-templates select="field[5]" mode="txt"/>
+    </xsl:variable>
     <xsl:choose>
       <xsl:when test="starts-with($text, 'History')">
         <xsl:call-template name="text">
@@ -382,6 +384,14 @@
         </xsl:call-template>
       </xsl:otherwise>
     </xsl:choose>
+  </xsl:template>
+  <xsl:template match="text()" mode="txt">
+    <xsl:value-of select='.'/>
+  </xsl:template>
+  <xsl:template match="escape" mode="txt">
+    <xsl:if test="text()='.br'">
+      <xsl:text>&#13;&#10;</xsl:text>
+    </xsl:if>
   </xsl:template>
   <xsl:template name="text">
     <xsl:param name="hcode">121070</xsl:param>
