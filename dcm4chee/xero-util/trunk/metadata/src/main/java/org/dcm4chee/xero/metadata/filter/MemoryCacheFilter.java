@@ -98,7 +98,7 @@ public class MemoryCacheFilter<T> implements Filter<T>, MetaDataUser {
    public T filter(FilterItem<T> filterItem, Map<String, Object> params) {
 	  boolean noCache = FilterUtil.getBoolean(params, NO_CACHE);
 	  if (noCache) {
-		 return filterItem.callNextFilter(params);
+		 return null;
 	  }
 	  String key = computeKey(params);
 	  if( key==null ) {
