@@ -40,9 +40,8 @@ XeroController.prototype.displayPatient = function XC_displayPatient(id,patientI
 	var navPat = navigate.getChild(0);
 	navPat.setNavigation(uids,"study");
 	navPat.setNavigation(uids[0],"nav0");
-	if( navPat.conversation.nav1Show==null ) {
-		navPat.conversation.nav1Show = (uids.length>1);
-	}
+    navPat.conversation.nav1Show = (uids.length>1);
+    
 	if( uids.length>1 ) {
 		navPat.setNavigation(uids[1],"nav1");
 	} else {
@@ -63,6 +62,15 @@ XeroController.prototype.displayPatient = function XC_displayPatient(id,patientI
 	}
 	
 	this.mergeExternal(external);
+	
+	if( uids.length==1 ) {
+		var navS0 = navPat.getChild(0,"nav0");
+		if(! navS0.conversation.seriesLayout ) {
+			if( navS0.external.series.length>4 ) {
+				navS0.setConversation("seriesLayout", "Layout4x2");
+			}
+		}  
+	}
 
 	model.layout.selectTab("Display");
 	console.timeEnd("Load Patient Data");
