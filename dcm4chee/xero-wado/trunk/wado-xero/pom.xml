@@ -170,7 +170,7 @@
     <dependency>
         <groupId>dcm4chee</groupId>
         <artifactId>ejb-client2</artifactId>
-        <version>2.14.1</version>
+        <version>2.14.3-alpha</version>
         <scope>provided</scope>
     </dependency>
     <dependency>

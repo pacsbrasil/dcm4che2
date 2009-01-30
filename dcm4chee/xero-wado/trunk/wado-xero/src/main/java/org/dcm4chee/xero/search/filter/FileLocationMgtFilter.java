@@ -50,7 +50,6 @@ import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
-import org.dcm4chee.xero.search.AEProperties;
 import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.wado.WadoParams;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
@@ -83,7 +82,7 @@ public class FileLocationMgtFilter implements Filter<URL> {
     * 
     * @throws IOException
     */
-   protected URL getDICOMFileURL(String host, String port, String instanceUID) throws IOException {
+   protected URL getDICOMFileURL(String host, String port, String instanceUID, Map<String, Object> params) throws IOException {
       URL url = null;
       try {
           FileDTO[] dtos = FileSystemMgtResolver.getDTOs(host, port, instanceUID);
@@ -92,18 +91,22 @@ public class FileLocationMgtFilter implements Filter<URL> {
                 return null; // not found!
 
             for (FileDTO dto : dtos) {
-                if (dto.getDirectoryPath().startsWith("ftp://")
-                        || dto.getDirectoryPath().startsWith("mvfhsm://"))
-                    url = new URL(dto.getDirectoryPath() + "/" + dto.getFilePath());
-                else
-                    url = new URL("file:///" + dto.getDirectoryPath().replace("\\", "/") + "/" + dto.getFilePath());
+            	params.put(FileLocationURLFilter.FILE_DTO, dto);
+            	try {
+            		url = fileLocationURL.filter(null, params);
+            	} catch (IllegalArgumentException e) {
+            		log.warn("Failed to get URL for file, continuing.", e);
+            		continue;
+            	} finally {
+    				params.remove(FileLocationURLFilter.FILE_DTO);
+            	}
                 break;
             }
 
             log.info("URL: " + url);
       }
       catch(ObjectNotFoundException e) {
-         log.warn("Object not available");
+         log.warn("Object not available",e);
       }
       catch (Exception e) {
          log.error("Failed to get DICOM file URL, unknown reason:", e);
@@ -114,36 +117,20 @@ public class FileLocationMgtFilter implements Filter<URL> {
 
    /** Get the URL of the local file - may not be updated for DB changes etc */
    public URL filter(FilterItem<URL> filterItem, Map<String, Object> params) {
-      Map<String,Object> aeMap = AEProperties.getAE(params);
-      String type = (String) aeMap.get("type");
       
+      FileLocationUtils fileUtil = new FileLocationUtils(params); 
       if( ! checker.isLocationTypeInParameters(params) ) {
          URL ret = filterItem.callNextFilter(params);
-         log.debug("Pacs type {}, calling next filter, returned {}", type,ret);
+         log.debug("Calling next filter, returned {}", ret);
          return ret;
       }
-      log.debug("Pacs type {}", type);
       long start = System.nanoTime();
-      
-       
-      if (params.get(WadoParams.AE) != null && AEProperties.getInstance().getAE((String)params.get(WadoParams.AE)) != null)   {
-    	  String ae = (String)params.get(WadoParams.AE);
-          aeMap = AEProperties.getInstance().getAE(ae);
-      } else {
-    	  aeMap = AEProperties.getInstance().getDefaultAE();
-      }
-      
+            
       String objectUID = (String) params.get("objectUID");
       try {
          URL url = null;
-         String hostname = (String)aeMap.get("host");
-         Integer port = (Integer)aeMap.get("ejbport");
 
-         String portStr = null;
-         if ( port != null )
-             portStr = port.toString();
-             
-         url = getDICOMFileURL(hostname, portStr, objectUID);
+         url = getDICOMFileURL(fileUtil.getHostName(), fileUtil.getPortStr(), objectUID, params);
  
          if (url == null) {
             if( ! tryNext ) return null; 
@@ -216,17 +203,30 @@ public class FileLocationMgtFilter implements Filter<URL> {
    private Filter<URL> fileLocation;
 
    public Filter<URL> getFileLocation() {	   
-      return fileLocation;
+	   return fileLocation;
    }
-
    /**
     * Sets the file location filter, that knows how to find files.
-    * 
     * @param fileLocation
     */
-   @MetaData(out = "${ref:fileLocation}")
+   @MetaData(out="${ref:fileLocation}")
    public void setFileLocation(Filter<URL> fileLocation) {
-      this.fileLocation = fileLocation;
+	   this.fileLocation = fileLocation;
    }
 
+   private Filter<URL> fileLocationURL;
+
+   public Filter<URL> getFileLocationURL() {
+	   return fileLocationURL;
+   }
+   /**
+    * Sets the file location URL filter, that knows how to construct various file URLs 
+    * from file locations.
+    * 
+    * @param fileLocationURL
+    */
+   @MetaData(out = "${ref:fileLocationURL}")
+   public void setFileLocationURL(Filter<URL> fileLocationURL) {
+	   this.fileLocationURL = fileLocationURL;
+   }
 }
