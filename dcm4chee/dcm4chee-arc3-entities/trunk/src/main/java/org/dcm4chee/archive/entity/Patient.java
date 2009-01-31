@@ -41,6 +41,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -57,6 +58,7 @@ import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.conf.AttributeFilter;
 import org.dcm4chee.archive.exceptions.ConfigurationException;
 import org.dcm4chee.archive.util.DicomObjectUtils;
+import org.hibernate.annotations.Cascade;
 
 /**
  * @author Damien Evans <damien.daddy@gmail.com>
@@ -113,11 +115,12 @@ public class Patient implements Serializable {
     // JPA definition in orm.xml
     private byte[] encodedAttributes;
 
-    @ManyToMany(fetch=FetchType.LAZY)
+    @ManyToMany(cascade = CascadeType.ALL, fetch=FetchType.EAGER)
     @JoinTable(
             name = "rel_pat_other_pid", 
             joinColumns = @JoinColumn(name = "patient_fk", referencedColumnName = "pk"), 
             inverseJoinColumns = @JoinColumn(name = "other_pid_fk", referencedColumnName = "pk"))
+    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     private Set<OtherPatientID> otherPatientIDs;
 
     @ManyToOne(fetch=FetchType.LAZY)
