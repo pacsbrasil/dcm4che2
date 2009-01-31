@@ -373,5 +373,25 @@ public class Patient implements Serializable {
         }
         return trim;
     }
+    
+    /**
+     * Given an issuer, find the corresponding patient id.
+     * 
+     * @param issuer A String containing the Issuer of Patient ID
+     * @return String The matching patient id, or null if no matches were found.
+     */
+    public OtherPatientID getOtherPatientIDForIssuer(String issuer) {
+        if(otherPatientIDs == null || otherPatientIDs.size() == 0) {
+            return null;
+        }
+        
+        for (OtherPatientID opid : otherPatientIDs) {
+            if(issuer.equals(opid.getIssuerOfPatientID())) {
+                return opid;
+            }
+        }
+        
+        return null;
+    }
 
 }
