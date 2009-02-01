@@ -1,4 +1,4 @@
+$utilities()$
 $model()$
 $xeroView()$
-$domUtils()$
 $controller()$

@@ -51,6 +51,12 @@ XeroController.prototype.debug = function() {};
  */
 XeroController.prototype.findLayout = function(id,lvl) {
 	if( typeof(id)==="object" ) return id;
+	
+	if(!model.layout)
+	{
+	    return null;
+	}
+	
 	var lay = this.model.layout.findLayout(id);
 	if( !lvl ) return lay;
 	while(lay) {
@@ -134,7 +140,7 @@ XeroController.prototype.replaceHtml = function XC_replaceHtml(node,text,isDiffU
 
 /** Fires the view rendered event recursively on this and child elements */
 XeroController.prototype.fireViewRendered = function(lay) {
-	if( !lay.used ) return;
+	if( !lay || !lay.used ) return;
 	// Fire event
 	var i,n;
 	if( lay.viewRenderedListeners ) {

@@ -6,6 +6,10 @@ metaDataProvider.propertyXeroView.model=xero-view.metadata
 model=${factory:org.dcm4chee.xero.metadata.access.MapWithDefaults}
 model.version=Xero
 
+# This defines the utilities plugin components for JavaScript
+static.xeroUtilities=${class:org.dcm4chee.xero.metadata.access.ValueList}
+static.xeroUtilities.domUtils=domUtils
+
 # This defines the controller plugin components for JavaScript - NOT the dynamic instances
 static.xeroControllers=${class:org.dcm4chee.xero.metadata.access.ValueList}
 static.xeroControllers.displayController=displayController

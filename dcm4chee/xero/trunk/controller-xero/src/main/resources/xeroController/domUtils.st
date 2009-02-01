@@ -3,7 +3,7 @@
  * exist for merging new node data (i.e. attributes and children differences) into an existing node.
  */
 
-function DOMUtils(){}
+function DOMUtils(){};
 
 /**
  * Updates an existing DOM element with an HTML string.
@@ -24,7 +24,7 @@ DOMUtils.updateHtml = function(elem, html)
     DOMUtils.updateNodes(oldElem, newElem);
     
 	return oldElem;    
-}
+};
 
 /**
  * Updates an existing node with data from a new node.  The attributes,
@@ -49,7 +49,7 @@ DOMUtils.updateNodes = function(oldNode, newNode)
         
         DOMUtils.updateChildNodes(oldNode, newNode, childNodeArr);
     }    
-}
+};
 
 /**
  * Updates an existing node's value with another node's value.
@@ -62,7 +62,7 @@ DOMUtils.updateNodeValue = function(oldNode, newNode)
     {
         oldNode.nodeValue = newNode.nodeValue;
     }
-}
+};
 
 /**
  * Updates the children of oldNode that are specified in childNodeArr.
@@ -91,7 +91,7 @@ DOMUtils.updateChildNodes = function(oldNode, newNode, childNodeArr)
             DOMUtils.updateNodes(oldChild, newChild);
         }
     }    
-}
+};
 
 /**
  * Inserts new child nodes to oldNode.  The new child nodes are taken from
@@ -127,7 +127,7 @@ DOMUtils.insertNewChildNodes = function(oldNode, newNode, childNodeArr)
             }
         }
     }
-}
+};
 
 /**
  * Gets an array of child nodes of oldNode that must be updated by child nodes of
@@ -173,7 +173,7 @@ DOMUtils.getChildNodesToUpdate = function(oldNode, newNode)
     }
     
     return childNodeArr;
-}
+};
 
 /**
  * Gets the child node of oldNode that should be matched with newChildNode.
@@ -247,7 +247,7 @@ DOMUtils.getIdLessChildMatch = function(oldNode, childNodeArr, newChildNode)
         return candidateNode;        
     }
     
-}
+};
 
 /**
  * Removes the child nodes of node that are not contained in nodesToKeepArr.
@@ -271,7 +271,7 @@ DOMUtils.removeChildNodes = function(node, nodesToKeepArr)
    {
        node.removeChild(childNodesToRemoveArr[i]);
    }
-}
+};
 
 /**
  * Determines if the given node is in nodeArr.
@@ -286,7 +286,7 @@ DOMUtils.isNodeInArray = function(node, nodeArr)
        }
    }
    return false;    
-}
+};
 
 /**
  * Gets the child of elem with the given id.
@@ -307,7 +307,7 @@ DOMUtils.getChildById = function(elem, id)
     }
     
     return null;
-}
+};
 
 /**
  * Updates the attributes of oldElem with those of newElem.
@@ -318,7 +318,7 @@ DOMUtils.updateAttributes = function(oldElem, newElem)
     DOMUtils.removeMissingAttributes(oldElem, newElem);
     
     DOMUtils.updateModifiedAttributes(oldElem, newElem);
-}
+};
 
 /**
  * Removes attributes in oldElem that do not exist in newElem.
@@ -345,7 +345,7 @@ DOMUtils.removeMissingAttributes = function(oldElem, newElem)
             oldElem.removeAttribute(oldAttrNamesToRemove[i]);
         }	    
     }    
-}
+};
 
 /**
  * Updates oldElem to have the attributes in newElem.
@@ -387,7 +387,7 @@ DOMUtils.updateModifiedAttributes = function(oldElem, newElem)
             }
         }
     }    
-}
+};
 
 /**
  * Sets the attribute with name attrName to have value attrValue
@@ -401,7 +401,7 @@ DOMUtils.setAttribute = function(elem, attrName, attrValue)
     {
         elem.setAttribute(attrName, attrValue);
     }    
-}
+};
 
 /**
  * Sets an attribute on elem with the given namespace (ns).   attrName is the attribute name
@@ -415,7 +415,7 @@ DOMUtils.setAttributeNS = function(elem, ns, attrName, attrValue)
     {
         elem.setAttributeNS(ns, attrName, attrValue);
     }                    
-}
+};
 
 /**
  * Sets the class (name) attribute on the given element.  The class name is only
@@ -427,7 +427,7 @@ DOMUtils.setClassName = function(elem, className)
     {
         elem.className = className;
     }    
-}
+};
 
 /**
  * Sets the style attribute on the given element.  The style is only updated if it
@@ -453,7 +453,7 @@ DOMUtils.setStyle = function(elem, style)
         
         elem.style.cssText = widthHeight + style;
     }    
-}
+};
 
 /**
  * Determines if the given node has an attribute with the given name.
@@ -478,7 +478,7 @@ DOMUtils.hasAttribute = function(node, attrName)
         }
     }
     return false;
-}
+};
 
 /**
  * Gets the id of the given element.
@@ -505,7 +505,7 @@ DOMUtils.getElementId = function(elem)
     nodeId = elem.getAttribute("ID");
     
     return nodeId;
-}
+};
 
 /**
  * Gets the item at the given index of nodeList.
@@ -520,7 +520,7 @@ DOMUtils.getNodeListItem = function(nodeList, index)
     {
         return null;
     }
-}
+};
 
 /**
  * Wraps the given string of html such that it can be parsed by a DOMParser.
@@ -528,4 +528,4 @@ DOMUtils.getNodeListItem = function(nodeList, index)
 DOMUtils.wrapHtml = function(html)
 {
 	return '<div xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="http://www.w3.org/2000/svg" xmlns:v="urn:schemas-microsoft-com:vml">' + html + "</div>";
-}
+};
