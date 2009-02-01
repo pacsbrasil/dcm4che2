@@ -37,7 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.archive.entity;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Set;
 
