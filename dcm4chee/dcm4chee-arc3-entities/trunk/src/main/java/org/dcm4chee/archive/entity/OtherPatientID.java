@@ -122,4 +122,46 @@ public class OtherPatientID implements Serializable {
         this.issuerOfPatientID = attrs.getString(Tag.IssuerOfPatientID);
     }
 
+    /**
+     * Override hashCode.
+     * 
+     * @return the Objects hashcode.
+     */
+    @Override
+    public int hashCode() {
+        int hashCode = 1;
+        hashCode = 31 * hashCode + (int) (+pk ^ (pk >>> 32));
+        hashCode = 31 * hashCode
+                + (patientID == null ? 0 : patientID.hashCode());
+        hashCode = 31
+                * hashCode
+                + (issuerOfPatientID == null ? 0 : issuerOfPatientID.hashCode());
+        return hashCode;
+    }
+
+    /**
+     * Returns <code>true</code> if this <code>OtherPatientID</code> is the
+     * same as the o argument.
+     * 
+     * @return <code>true</code> if this <code>OtherPatientID</code> is the
+     *         same as the o argument.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null) {
+            return false;
+        }
+        if (o.getClass() != getClass()) {
+            return false;
+        }
+        OtherPatientID castedObj = (OtherPatientID) o;
+        return ((this.pk == castedObj.pk)
+                && (this.patientID == null ? castedObj.patientID == null
+                        : this.patientID.equals(castedObj.patientID)) && (this.issuerOfPatientID == null ? castedObj.issuerOfPatientID == null
+                : this.issuerOfPatientID.equals(castedObj.issuerOfPatientID)));
+    }
+
 }
