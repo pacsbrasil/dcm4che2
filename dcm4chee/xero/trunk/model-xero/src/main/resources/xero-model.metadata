@@ -184,6 +184,8 @@ templateGroup.groupNames.jstemplate=jstemplate
 # The order can be set by defining priorities if needed - default priority is MAX_INT, NOT zero,
 # and order is increasing priority (highest priority last)
 static.xeroModels=${class:org.dcm4chee.xero.metadata.access.ValueList}
+static.xeroModels.displayAndFindModel=displayAndFindModel
+static.xeroModels.displayAndFindModel.priority=25
 static.xeroModels.urlFactory=urlFactory
 static.xeroModels.xmlModel=xmlModel
 static.xeroModels.xmlModel.priority=75
