@@ -23,10 +23,8 @@
   $endif$
   <title>Xero Query</title>
   
-  $if(firebug)$
-   <script type='text/javascript' src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script>
-  $endif$
-
+  $firebugInclude()$
+  
   <link rel="icon" href="favicon.ico?v=$version$" type="image/x-icon" />
   <link rel="shortcut icon" href="favicon.ico?v=$version$" type="image/x-icon" /> 
 </head>
