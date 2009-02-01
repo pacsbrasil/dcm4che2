@@ -97,8 +97,8 @@ public class EchoService extends AbstractScuService {
                 }
             }
         } catch (Exception e) {
-            log.error("Echo" + aeData + " failed", e);
-            return "Echo" + aeData + " failed: " + e;        
+            log.error("Echo " + aeData + " failed", e);
+            return "Echo " + aeData + " failed: " + e;        
         }
     }
     
@@ -126,7 +126,7 @@ public class EchoService extends AbstractScuService {
                 }
             }
         } catch (Exception e) {
-            log.error("Echo" + aeData + " failed", e);
+            log.error("Echo " + aeData + " failed", e);
             return false;        
         }
     }
