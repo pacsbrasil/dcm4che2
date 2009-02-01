@@ -9,6 +9,7 @@ import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.StringTemplateGroup;
 import org.antlr.stringtemplate.servlet.StringSafeRenderer;
 import org.dcm4chee.xero.metadata.MetaDataBean;
+import org.dcm4chee.xero.metadata.access.MapWithDefaults;
 import org.dcm4chee.xero.template.AutoStringTemplateGroup;
 import org.dcm4chee.xero.util.StringUtil;
 import org.mozilla.javascript.Context;
@@ -61,7 +62,7 @@ public class JSTemplate {
          log.debug("Found a non-null mdb to create the model {}", mdbModel.getPath());
          Map<String, Object> ret = (Map<String, Object>) mdbModel.getValue();
          if (ret == null)
-            return mdbModel;
+             return new MapWithDefaults(mdbModel);
          return ret;
       }
       log.info("No mdb model found, returning {}", model);
