@@ -55,7 +55,7 @@ public class XeroJSDOMUtilsTest {
 
 	@Test
 	public void doUtilsTest() {
-		runTestVerbose("domUtilsTest");
+		runTest("domUtilsTest");
 	}
 		
 	/** Run the named javascript object test */

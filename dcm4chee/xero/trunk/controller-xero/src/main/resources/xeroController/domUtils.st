@@ -39,7 +39,7 @@ DOMUtils.updateNodes = function(oldNode, newNode)
     DOMUtils.updateNodeValue(oldNode, newNode);
     
     // images are assumed to be leaf nodes, so there are no children to process
-    if(oldNode.nodeName.toLowerCase() != "image")
+    if(!DOMUtils.isImageNode(oldNode))
     {
         var childNodeArr = DOMUtils.getChildNodesToUpdate(oldNode, newNode);
         
@@ -50,6 +50,15 @@ DOMUtils.updateNodes = function(oldNode, newNode)
         DOMUtils.updateChildNodes(oldNode, newNode, childNodeArr);
     }    
 };
+
+/**
+ * Determines if the given node is an image.
+ */
+DOMUtils.isImageNode = function(node)
+{
+    var nodeName = node.nodeName;
+    return (nodeName == "image" || nodeName == "IMAGE");
+}
 
 /**
  * Updates an existing node's value with another node's value.
@@ -145,35 +154,53 @@ DOMUtils.getChildNodesToUpdate = function(oldNode, newNode)
     for(var i = 0; i < newNode.childNodes.length; i += 1)
     {
         var newChild = DOMUtils.getNodeListItem(newNode.childNodes, i);
-        var childId = DOMUtils.getElementId(newChild);
-        if(childId != null && childId != "")
+        
+        if(DOMUtils.isTableNode(newChild))
         {
-            var oldChild = DOMUtils.getChildById(oldNode, childId);
-            
-            if(oldChild != null)
-            {
-                childNodeArr[i] = oldChild;
-            }
-            else
-            {
-                var nodeFromDoc = document.getElementById(childId);
-                
-                childNodeArr[i] = nodeFromDoc;
-            }
+            childNodeArr[i] = null;
         }
         else
         {
-            childNodeArr[i] = DOMUtils.getIdLessChildMatch(oldNode, childNodeArr, newChild);
+            var childId = DOMUtils.getElementId(newChild);
+            if(childId != null && childId != "")
+            {
+                var oldChild = DOMUtils.getChildById(oldNode, childId);
+                
+                if(oldChild != null)
+                {
+                    childNodeArr[i] = oldChild;
+                }
+                else
+                {
+                    var nodeFromDoc = document.getElementById(childId);
+                    
+                    childNodeArr[i] = nodeFromDoc;
+                }
+            }
+            else
+            {
+                childNodeArr[i] = DOMUtils.getIdLessChildMatch(oldNode, childNodeArr, newChild);
+            }
+            
+            if(childNodeArr[i] != null)
+            {
+                childNodeArr.lastNodeMatchIndex = i;
+            }
         }
         
-        if(childNodeArr[i] != null)
-        {
-            childNodeArr.lastNodeMatchIndex = i;
-        }
     }
     
     return childNodeArr;
 };
+
+/**
+ * Determines if the given node is a table.
+ */
+DOMUtils.isTableNode = function(node)
+{
+    var nodeName = node.nodeName;
+    return (nodeName == "TABLE" || nodeName == "table");
+}
 
 /**
  * Gets the child node of oldNode that should be matched with newChildNode.

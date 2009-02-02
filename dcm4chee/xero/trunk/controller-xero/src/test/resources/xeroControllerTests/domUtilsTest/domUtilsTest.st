@@ -1,5 +1,6 @@
 $unittest()$
 $domUtils()$
+$boccMock()$
 
 org.w3c.dom.element.prototype.id = "";
 
@@ -225,6 +226,27 @@ domUtilsTest.testUpdateHtml_ShouldMatchIdLessChildrenUsingNodeType_WhenIdLessChi
 	var expectedHtml = "$noChildIdMatchUsingNodeType_Expected_Html();format="js"$";
 	
     this.doTestUpdateHtml(elementId, originalHtml, replacementHtml, expectedHtml);		
+}
+
+domUtilsTest.testGetChildNodesToUpdate_ShouldForceTableElementsToBeInsertedAnew = function()
+{
+    // oldNode should not be touched, so we set it to null 
+    var oldNode = null;
+    
+    // mock out the childNodes of newNode
+    var childNode = new Object();
+    childNode.nodeName = "table";
+    
+    var newNode = new Object();
+    newNode.childNodes = new Object();
+    newNode.childNodes.length = 1;
+    
+    newNode.childNodes.item = BoccMock.createMockFunction();
+    newNode.childNodes.item.returns = childNode;
+    
+    var childNodesToUpdate = DOMUtils.getChildNodesToUpdate(oldNode, newNode);
+    
+    $assertEquals(expected="null", actual="childNodesToUpdate[0]", msg="Table elements should always be inserted anew for performance reasons - artf18477.")$;
 }
 
 domUtilsTest.removeLineChars = function(str)
