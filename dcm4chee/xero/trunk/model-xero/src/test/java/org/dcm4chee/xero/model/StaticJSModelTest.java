@@ -51,7 +51,7 @@ public class StaticJSModelTest {
 	public void modelInterpretTest() {
 		runTest("modelInterpretTest");
 	}
-
+	
 	@Test
 	public void test_overallMenuLayout_children_available() {
 		Map<?,?> model = (Map<?,?>) stat.getValue();

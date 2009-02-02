@@ -60,22 +60,31 @@ Layout.prototype.computeId = function Layout_computeId(idMap) {
 	};
 };
 
-/** Deactivates the hierarchy - sets the used to false, and calls any store methods */
-Layout.prototype.deactivate = function(isChild) {
+/** Hides this object the hierarchy - sets the used to false, and calls any store methods */
+Layout.prototype.hide = function(isChild) {
 	if( !this.used ) return;
 	if( !isChild ) {
 		this.used = false;
 	}
-	if( this.deactivateListener ) {
-		this.deactivateListener();
+	if( this.hideListener ) {
+		this.hideListener();
 	}
 
 	if( !this.children ) return;
 	var i,n=this.children.length;
 	for(i=0; i<n; i++) {
-		this.children[i].deactivate(true);
+		this.children[i].hide(true);
 	}
 };
+
+/** Shows the given object - does not recursively show parents, so parents must
+ * also be visible for this to become visible - also tags it for relayout
+ */
+Layout.prototype.show = function() {
+ 	if( this.used ) return;
+ 	if( this.parent ) this.parent.relayout = true;
+ 	this.used = true;
+ };
 
 Layout.prototype.used = true;
 

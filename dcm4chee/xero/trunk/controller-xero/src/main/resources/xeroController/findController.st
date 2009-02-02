@@ -27,7 +27,7 @@ XeroController.prototype.performSearch = function XC_performSearch(src) {
 function onloadStudySearch() {
 	if( model.idMap.SearchLayout.search ) return;
 	controller.performSearch();
-	controller.findLayout("QueryLayout").deactivateListener = function() {
+	controller.findLayout("QueryLayout").hideListener = function() {
 		controller.storeScrollPosition("SearchLayout");
 	};
 };

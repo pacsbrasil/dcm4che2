@@ -90,7 +90,12 @@ public class XeroJSModelTest {
 	public void navConversationTest() {
 		runTest("navConversationTests", false);
 	}
-	
+
+    @Test
+    public void layoutTest() {
+        runTest("layoutTest");
+    }
+
 	@Test
 	public void studyDataTest() {
 		runTest("studyDataTests",false);
