@@ -265,7 +265,7 @@ MouseHandler.prototype.prepare = function (e) {
 MouseHandler.prototype.mhPrepare = MouseHandler.prototype.prepare; 
 
 MouseHandler.prototype.start = function MouseHandler_start(event) {
-	console.info("Hello, image mouse down target id %s imageDisplay %s button %d which %d at ", this.target, this.imageDisplay.id, event.button, event.which, this.startPosn);
+	console.info("Hello, image mouse down target id %s imageDisplay %s button %d which %d at ", this.target, this.downTarget.id, event.button, event.which, this.startPosn);
 	return true;
 };
 
@@ -321,7 +321,7 @@ ImageMouseHandler.prototype.getMouseDom = function(targ) { return targ; };
  */
 ImageMouseHandler.prototype.prepare = function (e) {
 	this.mhPrepare(e);
-	this.imageDisplay = null;
+	this.downTarget = target(e);
 	this.image = null;
 	this.started = false;
 
@@ -330,7 +330,6 @@ ImageMouseHandler.prototype.prepare = function (e) {
 		console.warn("No image found, not mousing.");
 		return false;
 	}
-	this.layout = this.findLayout();
 	if( !this.layout ) {
 		console.warn("No layout found, not mousing.");
 		return false;
@@ -347,6 +346,11 @@ ImageMouseHandler.prototype.prepareBase = ImageMouseHandler.prototype.prepare;
  * re-used.
  */
 ImageMouseHandler.prototype.getMouseDom = function (src) {
+	var pl = document.getElementById("PatientLayout");
+	if( pl ) {
+		console.info("Using patient layout for mouse dom.");
+		return pl;
+	}
 	var clazz = src.className;
 	var prevChild = src;
 	if( clazz && clazz.baseVal ) clazz = clazz.baseVal;
@@ -374,12 +378,17 @@ ImageMouseHandler.prototype.getMouseDom = function (src) {
 
 /** Finds the (primary) image object */
 ImageMouseHandler.prototype.getImage = function() {
-	if(!this.imageDisplay) this.imageDisplay = this.mouseDom;
-	var imageId = "im"+this.imageDisplay.id.substring(3);
+	var id = this.downTarget.id;
+	var imageLayPos = id.indexOf("ImageLay");
+	if( imageLayPos==-1 ) return;
+	var layId = this.downTarget.id.substring(imageLayPos);
+	var imageId = "im"+layId;
 	var ret = document.getElementById(imageId);
 	if(!ret) { 
-		console.warn("Looked for image id",imageId,"but not found, based on",this.imageDisplay.id);
+		console.warn("Looked for image id",imageId,"but not found, based on",this.downTarget.id);
+		return;
 	}
+	this.layout = this.controller.findLayout(layId);
 	return ret;
 };
 
@@ -401,11 +410,6 @@ ImageMouseHandler.prototype.setImageUrl = function MouseHandler_setImageUrl(url)
 		return;
 	}
 	this.image.setAttributeNS("http://www.w3.org/1999/xlink","href",url);
-};
-
-ImageMouseHandler.prototype.findLayout = function MouseHandler_findLayout() {
-	var id = this.mouseDom.parentNode.id;
-	return this.controller.model.layout.findLayout(id);
 };
 
 

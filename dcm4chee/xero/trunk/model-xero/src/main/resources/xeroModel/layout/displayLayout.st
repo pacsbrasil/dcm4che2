@@ -46,6 +46,7 @@ function CompareStudyLay(suffix) {
 CompareStudyLay.prototype = new Layout("CompareStudyPrototype", "image/compareStudyLay");
 CompareStudyLay.prototype.events=["/patient:0/conversation:nav0Show", "/patient:0/conversation:nav1Show"];
 CompareStudyLay.prototype.icon="CloseIcon";
+CompareStudyLay.prototype.tooltip="CompareSingleStudyTip";
 
 CompareStudyLay.prototype.namedListener = function(nav,vname,val) {
 	if(!(nav && nav.conversation) )return;
@@ -54,8 +55,10 @@ CompareStudyLay.prototype.namedListener = function(nav,vname,val) {
 	console.debug("Updating CompareStudyLay shows:", show0,show1);
 	if( show0===show1 ) {
 		this.icon = "CloseIcon";
+		this.tooltip = "CompareSingleStudyTip";
 	} else {
 		this.icon = "CompareStudyIcon";
+		this.tooltip = "CompareStudyTip";
 	}
 	//console.info("Icon set to", this.icon);
 	this.relayout = true;

@@ -1,6 +1,6 @@
-<div class="image" $html/style()$ xmlns="http://www.w3.org/1999/xhtml" onmousedown="return controller.mouseDown('$layout.id$',event);">
+<div class="image" $html/style()$ xmlns="http://www.w3.org/1999/xhtml">
  $if(HAS_VML)$
-   <v:group id="vml$layout.id$" class="imageDisplay"   	 
+   <v:group id="vml$layout.id$" class="imageDisplay" onmousedown="return controller.mouseDown('$layout.id$',event);"   	 
 $if(layout.sameSize)$
 	style="overflow: visible; left: $layout.negHalfRealWidth$; margin-left: 50%; margin-top: 50%; top: $layout.negHalfRealHeight$; width: $layout.realWidth$; height: $layout.realHeight$;"
 $else$
@@ -34,10 +34,10 @@ $endif$
    </v:group>
 $else$
 $if(layout.image)$
-<svg id="svg$layout.id$" class="imageDisplay" xmlns="http://www.w3.org/2000/svg">
+<svg id="svg$layout.id$" class="imageDisplay" xmlns="http://www.w3.org/2000/svg" onmousedown="return controller.mouseDown('$layout.id$',evt);">
 
 <svg id="gim$layout.id$" 
-	class="imageGroup" 
+	class="imageGroup"
 $if(layout.sameSize)$
 	preserveAspectRatio="xMidYMid slice"
 	x="$layout.negHalfRealWidth$" y="$layout.negHalfRealHeight$"
