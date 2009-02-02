@@ -55,39 +55,39 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is used to get the file path(s) from the correct FileSystemMgt EJB.
+ * This class is used to get the file path(s) from the correct FileSystemMgt
+ * EJB.
  * 
  * @author dsmith1547
- *
+ * 
  */
 public class FileSystemMgtResolver {
-    private static final Logger log = LoggerFactory
-            .getLogger(FileSystemMgtResolver.class);
+    private static final Logger log = LoggerFactory.getLogger(FileSystemMgtResolver.class);
 
-    public static FileDTO[] getDTOs(String host, String port, String instanceUID)
-            throws Exception, CreateException, RemoteException, FinderException {
-        FileDTO[] dtos = null;
-        boolean foundFsmgtBean = false;
-        try {
-            EJBHome home = (EJBHome) EJBServiceLocator.getInstance()
-                    .getRemoteHome(host, port, "ejb/FileSystemMgt2",
-                            FileSystemMgt2Home.class);
+    static boolean isFileSystem2NotFound = false;
 
-            EJBObject fileMgt = ((FileSystemMgt2Home) home).create();
-            dtos = ((FileSystemMgt2) fileMgt).getFilesOfInstance(instanceUID);
-            foundFsmgtBean = true;
-        } catch (ClassCastException e) {
-        } catch (NoClassDefFoundError e) {
+    public static FileDTO[] getDTOs(String host, String port, String instanceUID) throws Exception, CreateException,
+            RemoteException, FinderException {
+        if (!isFileSystem2NotFound) {
+            try {
+                EJBHome home = (EJBHome) EJBServiceLocator.getInstance().getRemoteHome(host, port, "ejb/FileSystemMgt2",
+                        FileSystemMgt2Home.class);
+
+                EJBObject fileMgt = ((FileSystemMgt2Home) home).create();
+                FileDTO[] dtos = ((FileSystemMgt2) fileMgt).getFilesOfInstance(instanceUID);
+                return dtos;
+            } catch (NoClassDefFoundError e) {
+                isFileSystem2NotFound = true;
+                log.warn("Using old file system management.");
+            }
         }
-        if (!foundFsmgtBean) {
-            log.info("Could not find FileSystemMgt2 ejb, falling back to the dcm4chee 2.13.6 version");
-            EJBHome home = (EJBHome) EJBServiceLocator.getInstance()
-                    .getRemoteHome(host, port, "ejb/FileSystemMgt",
-                            FileSystemMgtHome.class);
+        log.debug("Could not find FileSystemMgt2 ejb, falling back to the dcm4chee 2.13.6 version");
+        EJBHome home = (EJBHome) EJBServiceLocator.getInstance().getRemoteHome(host, port, "ejb/FileSystemMgt",
+                FileSystemMgtHome.class);
 
-            EJBObject fileMgt = ((FileSystemMgtHome) home).create();
-            dtos = ((FileSystemMgt) fileMgt).getFilesOfInstance(instanceUID);
-        }
+        EJBObject fileMgt = ((FileSystemMgtHome) home).create();
+        FileDTO[] dtos = ((FileSystemMgt) fileMgt).getFilesOfInstance(instanceUID);
+
         if (dtos == null)
             throw new NoSuchElementException("FileSystemMgt EJB not found");
 
