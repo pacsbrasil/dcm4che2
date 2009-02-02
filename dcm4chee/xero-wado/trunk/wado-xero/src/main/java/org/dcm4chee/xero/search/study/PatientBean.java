@@ -51,7 +51,6 @@ import javax.xml.datatype.DatatypeFactory;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.util.DateUtils;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
 import org.dcm4chee.xero.search.LocalModel;
 import org.dcm4chee.xero.search.ResultFromDicom;
