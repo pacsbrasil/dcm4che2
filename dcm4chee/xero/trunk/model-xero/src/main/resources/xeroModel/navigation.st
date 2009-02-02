@@ -311,10 +311,10 @@ Navigation.prototype.getIdFrom = function(obj) {
 	return obj;
 };
 
-/** Gets the external children list.
+/** Gets the external children list to be used.
  * Normally, this is just the simple children objects, but
- * for the series child list (of a study), it only returns series that contain images.  
- * Other types of listeners/data is needed for non-image series.
+ * the getCustomChildren call is also used to over-ride the external children
+ * defaults.
  */
 Navigation.prototype.getExtChildren = function Navigation_getExtChildren(key) {
     if( !key ) key = this.childType;
@@ -327,8 +327,10 @@ Navigation.prototype.getExtChildren = function Navigation_getExtChildren(key) {
 };
 
 /**
- * This method is used to compute a custom key value - currently, that
- * means the series level key.  Only returns a value if there is a conversation
+ * This method is used to compute a custom list of children elements for the
+ * given key - currently, that means the value defined in the conversation context,
+ * or, for series children, the series elements containing at least one image.
+ * Only returns a value if there is a conversation
  * context available (which can happen even without an external context).
  */
 Navigation.prototype.getCustomChildren = function(key) {

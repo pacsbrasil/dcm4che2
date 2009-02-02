@@ -31,6 +31,23 @@ var stuid1 = ""+study1.studyUID;
 console.info("Study id 0 %s", stuid0);
 console.info("Study id 1 %s", stuid1);
 
+/** Sets the patient level navigation, optinally the study nav
+ * uids, and optionally sets up the studyData to the given xmlText
+ */
+navigationTests.init = function(uids, xmlText) {
+	this.nav = new Navigation();
+	this.nav.setNavigation(patid);
+	this.pat = this.nav.getChild(0);
+	if(uids) {
+		this.pat.setNavigation(uids,"study");
+		console.info("Set navigation to %s", uids);
+	}
+	this.patS0 = this.pat.getChild(0);
+	this.patS1 = this.pat.getChild(1);
+	this.studyData = new StudyData();
+	if( xmlText ) this.studyData.parseString(xmlText);
+};
+
 /** Tests that the navigation object will deliver the correct study query URLs
  */
 navigationTests.testStudyQuery = function() {
@@ -75,51 +92,46 @@ navigationTests.testStudyQuery = function() {
  * Tests that the getExtChildren will:
  * 1. Use the external named child type if no other data is provided
  * 2. Use the conversational data in preference if it is available
- * 3. Compute the image series children to only contain image series objects.
- * 4. For image objects, return an instance offset lookup (todo- consider this for general
- *    return type - extend the array implementation perhaps?)
  */
 navigationTests.test_getExtChildren = function() {
-	var nav = new Navigation();
-	nav.setNavigation(patid);
-	var patNav = nav.getChild(0);
-	var c0 = patNav.getChild(0);
-	var uids = [stuid0,stuid1];
-	patNav.setNavigation(uids,"study");	
-	var c1 = patNav.getChild(1);
-	$assertTrue(condition="c0.id==stuid0")$;
-	$assertTrue(condition="c1.id==stuid1")$;
-	studyData = new StudyData();
-	studyData.parseString(twoStudy);
-	nav.mergeExternal(studyData);
+	this.init([stuid0,stuid1], twoStudy);
 	
-	var studyChildren = patNav.getExtChildren();
-	$assertTrue(condition="studyChildren.length==2",msg="Must have 2 study children from results.")$;
+	$assertTrue(condition="this.patS0.id==stuid0")$;
+	$assertTrue(condition="this.patS1.id==stuid1")$;
+	
+	
+	this.nav.mergeExternal(this.studyData);
+
+	var topChild = this.nav.getExtChildren();
+	$assertTrue(condition="topChild!=null",msg="getExtChildren must get the external data when none other provided.")$;
+	
+	var studyChildren = this.pat.getExtChildren();
+	$assertEquals(expected="2", actual="studyChildren.length",msg="Must have 2 study children from results.")$;
+	$assertEquals(expected="stuid0", actual="studyChildren[0]", msg="Must use the conversational data in preference.")$;
 };
 
 /**
- * Tests the computeCustomKey gets the conversation key and the custom series key.
+ * Tests the getCustomKey gets the conversation key and the custom series key.
+ * Ensures that study level computes the series list of items containing images,
+ * not all items, and that otherwise the conversation object is returned if
+ * available, or null/undefined.
  */
 navigationTests.test_getCustomChildren = function() {
-	var nav = new Navigation();
-	nav.setNavigation(patid);
-	var patNav = nav.getChild(0);
-	var uids = [stuid0];	
-	var s0 = patNav.getChild(0);
-	studyData = new StudyData();
-	studyData.parseString(images0);
-	nav.mergeExternal(studyData);
-	
-	var studyChildren = patNav.getCustomChildren();
+	this.init(null, images0);
+
+    // Check that nothing is returned if a custom list isn't defined	
+	var studyChildren = this.pat.getCustomChildren();
 	$assertTrue(condition="studyChildren==null",msg="No custom study children until navigation is set.")$;
 
-	patNav.setNavigation(uids,"study");
-	nav.mergeExternal(studyData);
-	console.info("Set navigation to %s", uids);
-	studyChildren = patNav.getCustomChildren(patNav.childType);
+	this.pat.setNavigation([stuid0,stuid1],"study");
+	this.nav.mergeExternal(this.studyData);
+
+    // Check that a custom, specified list is returned.	
+	studyChildren = this.pat.getCustomChildren(this.pat.childType);
 	$assertTrue(condition="studyChildren!=null",msg="Once conversational study is set, should be available")$;
 	
-	var seriesChildren = s0.getCustomChildren(s0.childType);
+	// Check that the series which contain images are returned.
+	var seriesChildren = this.patS0.getCustomChildren(this.patS0.childType);
 	$assertTrue(condition="seriesChildren.length===21",msg="Must have 21 series children.")$;
 };
  

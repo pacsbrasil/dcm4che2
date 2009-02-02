@@ -1,5 +1,5 @@
 $unittest()$
-$boccmock()$
+$boccMock()$
 $layout/layout()$
 
 var layoutTest = new UnitTest();
