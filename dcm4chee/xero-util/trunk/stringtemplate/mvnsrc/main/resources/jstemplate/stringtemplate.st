@@ -39,6 +39,7 @@ function StringTemplateModel(parent) {
  * via outer or inner HTML values.
  */
 StringTemplate.prototype.toString = function ST_toString(templateName, model) {
+	if(!templateName) return "StringTemplate Object";
 	var template = this.templates[templateName];
 	if( template===undefined ) {
 	   this.error("Unable to find template "+templateName);

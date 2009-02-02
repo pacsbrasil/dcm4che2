@@ -96,10 +96,14 @@ public class JSTemplate {
       runJSTest(js,verbose);
    }
    
-   /** Executes the Rhino debugger on the given test - the test will likely pass, as this
-    * just executes the rhino.cmd batch file on the test script, not waiting to
-    * see if it succeeds or fails.
+   /** 
     * Replace runTest with this version in order to debug your tests. 
+    * Executes the Rhino debugger on the given test - the test will likely pass, as this
+    * just executes the rhino.cmd batch file on the test script, not waiting to
+    * see if it succeeds or fails.  Requires the rhino.cmd and cmd.exe to be 
+    * available in the path, and to launch the debugger.   That in turn requires
+    * the debugger to be included in the Rhino run-time/jar file - see the Mozilla
+    * site for the rhino downloads.
     * @throws IOException 
     */
    public void debugTest(String suite, String test, boolean verbose) throws IOException {

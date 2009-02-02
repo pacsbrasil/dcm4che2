@@ -56,7 +56,8 @@ import org.slf4j.LoggerFactory;
  */
 public class LoggingDiagnosticContextFilter implements Filter
 {
-   private static Logger log = LoggerFactory.getLogger(LoggingDiagnosticContextFilter.class);
+   @SuppressWarnings("unused")
+private static Logger log = LoggerFactory.getLogger(LoggingDiagnosticContextFilter.class);
    
    public static final String REMOTE_HOST = "remote.host";
    public static final String REMOTE_ADDRESS = "remote.address";

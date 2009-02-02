@@ -8,7 +8,10 @@ BoccMock.createMock = function(toMock)
     }
 };
 
-BoccMock.createMockFunction = function()
+/** Create a mock funciton with the number of calls expected, and the
+ * value to return.
+ */
+BoccMock.createMockFunction = function(numCallsExpected, returns)
 {
     var mockFunc = function()
     {
@@ -33,6 +36,8 @@ BoccMock.createMockFunction = function()
     }
     mockFunc.numCalls = 0;
     mockFunc.numCallsExpected = 0;
+    if( numCallsExpected ) mockFunc.numCallsExpected = numCallsExpected;
+    mockFunc.returns = returns;
     mockFunc.bodyCallback = null;
     mockFunc.callArgs = new Array();
     
