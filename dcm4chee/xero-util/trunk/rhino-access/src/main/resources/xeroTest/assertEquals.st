@@ -1,5 +1,5 @@
 $! Defines an equals (==) assertion that is inline and can record the assertion results. !$
-if(!($expected$==$actual$)) {
+if(!($expected$===$actual$)) {
 	var message = "";
 	
 	$if(msg)$
