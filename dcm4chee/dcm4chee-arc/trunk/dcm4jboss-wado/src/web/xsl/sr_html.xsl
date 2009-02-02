@@ -63,7 +63,9 @@
         <xsl:template mode="contentItem" match="item">
 	  <xsl:choose>
 	    <xsl:when test="attr[@tag='0040A040']='TEXT'">
-             <p><xsl:value-of select="attr[@tag='0040A160']"/></p>
+            <p><xsl:call-template name="escape_crlf">
+                <xsl:with-param name="string" select="attr[@tag='0040A160']"/>
+            </xsl:call-template></p>
 		</xsl:when>
 	  
 	  <xsl:when test="attr[@tag='0040A040']='IMAGE ' or attr[@tag='0040A040']='IMAGE'">
@@ -71,7 +73,9 @@
 		</xsl:when>
 		
 	  <xsl:when test="attr[@tag='0040A040']='CODE'">
-             <xsl:value-of select="concat(': ',attr[@tag='0040A168']/item/attr[@tag='00080104'])"/>
+             <xsl:call-template name="escape_crlf">
+                <xsl:with-param name="string" select="concat(': ',attr[@tag='0040A168']/item/attr[@tag='00080104'])"/>
+             </xsl:call-template>
 	  </xsl:when>		
 
 	  <xsl:when test="attr[@tag='0040A040']='PNAME ' or attr[@tag='0040A040']='PNAME'">
@@ -106,6 +110,41 @@
 		</img>
 <br/>
 	</xsl:template>
+	
+    <xsl:template name="escape_crlf">
+        <xsl:param name="string"/>
+        <xsl:variable name="CR" select="'&#xD;'"/>
+        <xsl:variable name="LF" select="'&#xA;'"/> 
+        <xsl:variable name="CRLF" select="concat($CR, $LF)"/>     
+        
+        <xsl:choose> 
+            <!-- crlf -->
+            <xsl:when test="contains($string,$CRLF)">
+                <xsl:value-of select="substring-before($string,$CRLF)"/><br/>
+                <xsl:call-template name="escape_crlf">
+                    <xsl:with-param name="string" select="substring-after($string,$CRLF)"/>
+                </xsl:call-template>
+            </xsl:when>
+            <!-- carriage return -->
+            <xsl:when test="contains($string,$CR)">
+                <xsl:value-of select="substring-before($string,$CR)"/><br/>
+                <xsl:call-template name="escape_crlf">
+                    <xsl:with-param name="string" select="substring-after($string,$CR)"/>
+                </xsl:call-template>
+            </xsl:when>
+            <!-- line feed -->
+            <xsl:when test="contains($string,$LF)">
+                <xsl:value-of select="substring-before($string,$LF)"/><br/>
+                <xsl:call-template name="escape_crlf">
+                    <xsl:with-param name="string" select="substring-after($string,$LF)"/>
+                </xsl:call-template>
+            </xsl:when>
+                                                                
+            <xsl:otherwise>
+                <xsl:value-of select="$string"/>
+            </xsl:otherwise>
+        </xsl:choose>         
+    </xsl:template>
 	
 </xsl:stylesheet>
 
