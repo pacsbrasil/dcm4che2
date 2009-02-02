@@ -94,10 +94,6 @@
     </attr>
     <!--Continuity Of Content-->
     <attr tag="0040A050" vr="CS">SEPARATE</attr>
-    <!--Completion Flag-->
-    <attr tag="0040A491" vr="CS">COMPLETE</attr>
-    <!--Verification Flag-->
-    <attr tag="0040A493" vr="CS">VERIFIED</attr>
     <!--Content Template Sequence-->
     <attr tag="0040A504" vr="SQ"/>
   </xsl:template>
@@ -183,6 +179,21 @@
         <!-- Verifying Observer Identification Code Sequence -->
         <attr tag="0040A088" vr="SQ"/>
       </item>
+    </attr>
+    <xsl:variable name="resultStatus" select="normalize-space(field[25])"/>
+    <!--Completion Flag-->
+    <attr tag="0040A491" vr="CS">
+      <xsl:choose>
+        <xsl:when test="$resultStatus='P'">PARTIAL</xsl:when>
+        <xsl:otherwise>COMPLETE</xsl:otherwise>
+      </xsl:choose>
+    </attr>
+    <!--Verification Flag-->
+    <attr tag="0040A493" vr="CS">
+      <xsl:choose>
+        <xsl:when test="$resultStatus='P' or $resultStatus='F'">VERIFIED</xsl:when>
+        <xsl:otherwise>UNVERIFIED</xsl:otherwise>
+      </xsl:choose>
     </attr>
   </xsl:template>
   <xsl:template name="const-obsctx">
