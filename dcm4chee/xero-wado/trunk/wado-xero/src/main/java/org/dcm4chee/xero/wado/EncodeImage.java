@@ -62,6 +62,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
+import org.dcm4chee.xero.instrumentation.IInstrumentationObject;
+import org.dcm4chee.xero.instrumentation.InstrumentorFactory;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
@@ -126,7 +128,7 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 		boolean containsRelative = map.containsKey("relative");
 		if (contentType == null)
 			contentType = (containsRelative ? "image/png" : "image/jpeg");
-		log.debug("Encoding image in content type={}", contentType);
+		log.info("Encoding image in content type={}", contentType);
 		DicomObject ds = dicomImageHeader.filter(null,map);
 		if( ds!=null && !(ds.contains(Tag.PixelRepresentation) || containsRelative) ) {
 			log.info("DICOM does not contain pixel representation.");
@@ -267,8 +269,9 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 
 /** Does the actual writing to the stream */
 class ImageServletResponseItem implements ServletResponseItem {
+	
 	private static Logger log = LoggerFactory.getLogger(ImageServletResponseItem.class);
-
+	
 	String contentType;
 
 	ImageWriter writer;
@@ -354,6 +357,12 @@ class ImageServletResponseItem implements ServletResponseItem {
 			log.warn("Image not found.");
 			return;
 		}
+		
+		
+		String filename = wadoImage.getFilename();
+		
+		IInstrumentationObject instrumentAction = InstrumentorFactory.getInstrumentor().startDebug("EncodeImage", new Object[] { filename } );
+		
 		long start = System.nanoTime();
 		response.setContentType(contentType);
 		response.setHeader("Cache-Control", "max-age=" + maxAge);
@@ -362,7 +371,7 @@ class ImageServletResponseItem implements ServletResponseItem {
 		// to different values, and those need to be removed to get this cached.
 		response.setHeader("Pragma", null);
 		response.setHeader("Expires", null);
-		String filename = wadoImage.getFilename();
+		
 		if( filename!=null ) {
 			int extPos = 1+contentType.indexOf("/");
 			response.setHeader(CONTENT_DISPOSITION, "inline;filename="+filename+"."+contentType.substring(extPos));
@@ -400,6 +409,8 @@ class ImageServletResponseItem implements ServletResponseItem {
 		if( log.isInfoEnabled() ) {
 			log.info(msg+" took "+((mid-start)/1e6)+" Writing took " + ((System.nanoTime() - mid)/1e6));
 		}
+		
+		InstrumentorFactory.getInstrumentor().stop(instrumentAction);
 	}
 }
 
