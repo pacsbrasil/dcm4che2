@@ -115,7 +115,7 @@ public class Patient implements Serializable {
     // JPA definition in orm.xml
     private byte[] encodedAttributes;
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch=FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY)
     @JoinTable(
             name = "rel_pat_other_pid", 
             joinColumns = @JoinColumn(name = "patient_fk", referencedColumnName = "pk"), 
