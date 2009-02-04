@@ -1637,7 +1637,7 @@ public class DcmQR {
             return tc;
         throw new NoPresentationContextException(UIDDictionary.getDictionary()
                 .prompt(qrlevel.getFindClassUids()[0])
-                + " not supported by" + remoteAE.getAETitle());
+                + " not supported by " + remoteAE.getAETitle());
     }
 
     private String selectTransferSyntax(TransferCapability tc) {
@@ -1655,7 +1655,7 @@ public class DcmQR {
         if (tc == null)
             throw new NoPresentationContextException(UIDDictionary
                     .getDictionary().prompt(qrlevel.getMoveClassUids()[0])
-                    + " not supported by" + remoteAE.getAETitle());
+                    + " not supported by " + remoteAE.getAETitle());
         String cuid = tc.getSopClass();
         String tsuid = selectTransferSyntax(tc);
         for (int i = 0, n = Math.min(findResults.size(), cancelAfter); i < n; ++i) {
@@ -1691,7 +1691,7 @@ public class DcmQR {
         if (tc == null)
             throw new NoPresentationContextException(UIDDictionary
                     .getDictionary().prompt(qrlevel.getGetClassUids()[0])
-                    + " not supported by" + remoteAE.getAETitle());
+                    + " not supported by " + remoteAE.getAETitle());
         String cuid = tc.getSopClass();
         String tsuid = selectTransferSyntax(tc);
         for (int i = 0, n = Math.min(findResults.size(), cancelAfter); i < n; ++i) {
