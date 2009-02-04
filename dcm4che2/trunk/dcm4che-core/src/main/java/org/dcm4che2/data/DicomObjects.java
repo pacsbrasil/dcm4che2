@@ -91,6 +91,18 @@ public class DicomObjects {
             this.dcmobj = dcmobj;
         }
 
+        public String toString() {
+            return dcmobj.toString();
+        }
+
+        public int hashCode() {
+            return dcmobj.hashCode();
+        }
+
+        public boolean equals(Object other) {
+            return dcmobj.equals(other);
+        }
+
         public boolean accept(Visitor visitor) {
             return dcmobj.accept(new UnmodifiableVisitor(visitor));
         }
