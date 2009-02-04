@@ -125,15 +125,15 @@ instruction below. This is recommended if you are a beginner.
   </xsl:template>
 
   <xsl:template match="@objectUID" mode="render">
-  	 <a target="wadoTab"><xsl:attribute name="href">/wado2/wado?requestType=WADO<xsl:value-of select="concat('&amp;studyUID=',../../../@studyUID, '&amp;seriesUID=',../../@seriesUID,'&amp;objectUID=',.)" /><xsl:if test="count(/*/@ae)=1">&amp;ae=<xsl:value-of select="/*/@ae" /></xsl:if></xsl:attribute><xsl:call-template name="attrRender" /></a>
+  	 <a><xsl:attribute name="href">?requestType=WADO<xsl:value-of select="concat('&amp;studyUID=',../../../@studyUID, '&amp;seriesUID=',../../@seriesUID,'&amp;objectUID=',.)" /><xsl:if test="count(/*/@ae)=1">&amp;ae=<xsl:value-of select="/*/@ae" /></xsl:if></xsl:attribute><xsl:call-template name="attrRender" /></a>
   </xsl:template>
 
   <xsl:template match="@studyUID" mode="render">
-     <a target="studyTab"><xsl:attribute name="href">/wado2/series.xml?studyUID=<xsl:value-of select="." /><xsl:if test="count(/*/@ae)=1">&amp;ae=<xsl:value-of select="/*/@ae" /></xsl:if></xsl:attribute><xsl:call-template name="attrRender" /></a>
+     <a><xsl:attribute name="href">?requestType=SERIES&amp;studyUID=<xsl:value-of select="." /><xsl:if test="count(/*/@ae)=1">&amp;ae=<xsl:value-of select="/*/@ae" /></xsl:if></xsl:attribute><xsl:call-template name="attrRender" /></a>
   </xsl:template>
 
   <xsl:template match="@seriesUID" mode="render">
-     <a target="seriesTab"><xsl:attribute name="href">/wado2/image.xml?seriesUID=<xsl:value-of select="." /><xsl:if test="count(/*/@ae)=1">&amp;ae=<xsl:value-of select="/*/@ae" /></xsl:if></xsl:attribute><xsl:call-template name="attrRender" /></a>
+     <a><xsl:attribute name="href">?requestType=IMAGE&amp;seriesUID=<xsl:value-of select="." /><xsl:if test="count(/*/@ae)=1">&amp;ae=<xsl:value-of select="/*/@ae" /></xsl:if></xsl:attribute><xsl:call-template name="attrRender" /></a>
   </xsl:template>
 
   <xsl:template match="text()" mode="render">
