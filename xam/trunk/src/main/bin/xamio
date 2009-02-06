@@ -1,0 +1,59 @@
+#!/bin/sh
+### ====================================================================== ###
+##                                                                          ##
+##  xamio  Launch Script                                                    ##
+##                                                                          ##
+### ====================================================================== ###
+
+### $Id$ ###
+
+MAIN_CLASS=org.dcm4che.xam.XamIO
+MAIN_JAR=xamio-1.0-SNAPSHOT.jar
+XAMLIB_JAR=xamlib-1.0-SNAPSHOT.jar
+VIM_JAR=referenceVIM-1.0-SNAPSHOT.jar
+
+DIRNAME="`dirname "$0"`"
+
+# OS specific support (must be 'true' or 'false').
+cygwin=false;
+case "`uname`" in
+    CYGWIN*)
+        cygwin=true
+        ;;
+esac
+
+# For Cygwin, ensure paths are in UNIX format before anything is touched
+if $cygwin ; then
+    [ -n "$XAMIO_HOME" ] &&
+        XAMIO_HOME=`cygpath --unix "$XAMIO_HOME"`
+    [ -n "$JAVA_HOME" ] &&
+        JAVA_HOME=`cygpath --unix "$JAVA_HOME"`
+fi
+
+# Setup XAMIO_HOME
+if [ "x$XAMIO_HOME" = "x" ]; then
+    XAMIO_HOME=`cd "$DIRNAME"; pwd`
+fi
+
+# Setup the JVM
+if [ "x$JAVA_HOME" != "x" ]; then
+    JAVA=$JAVA_HOME/bin/java
+else
+    JAVA="java"
+fi
+
+# Setup the classpath
+CP="$XAMIO_HOME/"
+CP="$CP:$XAMIO_HOME/$MAIN_JAR"
+CP="$CP:$XAMIO_HOME/$XAMLIB_JAR"
+CP="$CP:$XAMIO_HOME/$VIM_JAR"
+CP="$CP:$XAMIO_HOME/commons-cli-1.1.jar"
+
+# For Cygwin, switch paths to Windows format before running java
+if $cygwin; then
+    JAVA=`cygpath --path --windows "$JAVA"`
+    CP=`cygpath --path --windows "$CP"`
+fi
+
+# Execute the JVM
+exec $JAVA $JAVA_OPTS -cp "$CP" $MAIN_CLASS "$@"

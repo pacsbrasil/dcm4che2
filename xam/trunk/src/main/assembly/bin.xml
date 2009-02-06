@@ -1,0 +1,34 @@
+<assembly>
+  <id>bin</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <dependencySets>
+    <dependencySet>
+    </dependencySet>
+  </dependencySets>
+  <fileSets>
+    <fileSet>
+      <directory>src/main/config</directory>
+      <outputDirectory></outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>src/main/bin</directory>
+      <outputDirectory></outputDirectory>
+      <includes>
+        <include>*.bat</include>
+      </includes>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>src/main/bin</directory>
+      <outputDirectory></outputDirectory>
+      <excludes>
+        <exclude>*.bat</exclude>
+      </excludes>
+      <lineEnding>unix</lineEnding>
+      <fileMode>755</fileMode>
+    </fileSet>
+  </fileSets>
+</assembly>
