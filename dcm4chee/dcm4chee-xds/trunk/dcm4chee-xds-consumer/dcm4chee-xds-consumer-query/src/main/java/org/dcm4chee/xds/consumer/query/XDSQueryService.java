@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.UUID;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
@@ -62,9 +63,13 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.ws.BindingProvider;
+import javax.xml.ws.handler.Handler;
+import javax.xml.ws.soap.SOAPBinding;
 
 import org.apache.log4j.Logger;
+import org.dcm4chee.xds.common.XDSConstants;
 import org.dcm4chee.xds.common.delegate.XdsHttpCfgDelegate;
+import org.dcm4chee.xds.common.ws.WSAddressingHandler;
 import org.dcm4chee.xds.infoset.v30.AdhocQueryRequest;
 import org.dcm4chee.xds.infoset.v30.AdhocQueryResponse;
 import org.dcm4chee.xds.infoset.v30.DocumentRegistryPortTypeAlt;
@@ -307,7 +312,17 @@ public class XDSQueryService extends ServiceMBeanSupport {
     public AdhocQueryResponse performQueryViaWS(AdhocQueryRequest rq) {
         DocumentRegistryServiceAlt s = new DocumentRegistryServiceAlt();
         DocumentRegistryPortTypeAlt port = s.getDocumentRegistryPortSoap12();
-        BindingProvider bindingProvider = (BindingProvider)port;
+		BindingProvider bindingProvider = (BindingProvider)port;
+		// NOTE: The correct way to support WSAddressing on the client is to do this:
+		//    ConfigProvider configProvider = (ConfigProvider)port;
+		//    configProvider.setConfigName("Standard WSAddressing Client");
+		// However, due to a JBoss bug (http://jira.jboss.com/jira/browse/JBWS-1880)
+		// we must add a custom handler to force the injection of WSAddressing attributes
+		List<Handler> customHandlerChain = new ArrayList<Handler>();
+		customHandlerChain.add(new WSAddressingHandler(
+				xdsQueryURI, XDSConstants.URN_IHE_ITI_2007_REGISTRY_STORED_QUERY, UUID.randomUUID().toString()));
+		SOAPBinding soapBinding = (SOAPBinding)bindingProvider.getBinding();
+		soapBinding.setHandlerChain(customHandlerChain);        
         Map<String, Object> reqCtx = bindingProvider.getRequestContext();
         reqCtx.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, xdsQueryURI);
         return port.documentRegistryRegistryStoredQuery(rq);

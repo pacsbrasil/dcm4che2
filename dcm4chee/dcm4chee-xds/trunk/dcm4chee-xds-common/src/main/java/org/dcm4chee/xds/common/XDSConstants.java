@@ -40,6 +40,8 @@ public interface XDSConstants {
 	public static final String URN_IHE_ITI_2007_REGISTER_DOCUMENT_SET_B_RESPONSE = "urn:ihe:iti:2007:RegisterDocumentSet-bResponse";
 	public static final String URN_IHE_ITI_2007_RETRIEVE_DOCUMENT_SET = "urn:ihe:iti:2007:RetrieveDocumentSet";
 	public static final String URN_IHE_ITI_2007_RETRIEVE_DOCUMENT_SET_RESPONSE = "urn:ihe:iti:2007:RetrieveDocumentSetResponse";
+	public static final String URN_IHE_ITI_2007_REGISTRY_STORED_QUERY = "urn:ihe:iti:2007:RegistryStoredQuery";
+	public static final String URN_IHE_ITI_2007_REGISTRY_STORED_QUERY_RESPONSE = "urn:ihe:iti:2007:RegistryStoredQueryResponse";
 
 //ERROR	const
         public static final String XDS_ERR_REPOSITORY_ERROR = "XDSRepositoryError";
