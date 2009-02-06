@@ -48,8 +48,9 @@ public class DicomDateTimeHandlerTest
    @BeforeMethod
    public void setup()
    {
-      DateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH.mm.ss SSS");
-      handler = new DicomDateTimeHandler(dateFormat);
+      DateFormat dateOnlyFormat = new SimpleDateFormat("yyyy.MM.dd");
+      DateFormat dateTimeFormat = new SimpleDateFormat("yyyy.MM.dd HH.mm.ss SSS");
+      handler = new DicomDateTimeHandler(dateTimeFormat,dateOnlyFormat);
    }
    
    /**
@@ -78,19 +79,36 @@ public class DicomDateTimeHandlerTest
    }
 
    @Test
-   public void testCreateDateTime_ShouldReturnNull_IfEitherDateOrTimeAreNull()
+   public void testCreateDateTime_ShouldReturnNull_IfDateIsNull()
    {
-      String date = "20020107";
+      String date = null;
       String time = "091828.046000";
       
-      assertNull(handler.createDateTime(date, null));
       assertNull(handler.createDateTime(null, time));
+   }
+   
+   @Test
+   public void testCreateDateTime_ShouldReturnDate_IfTimeIsNull()
+   {
+      String date = "20020107";
+      String time = null;
+      
+      assertEquals(handler.createDateTime(date, null),date);
    }
    
    @Test(expectedExceptions=IllegalArgumentException.class)
    public void testConstructor_ShouldRejectNullDateFormat()
    {
-      new DicomDateTimeHandler(null);
+      new DicomDateTimeHandler(null,null);
+   }
+   
+   @Test
+   public void testFormatDicomDateTime_ShouldOmitTheFormattedTime_WhenNoTimeField()
+   {
+      String dateTime = "20020107";
+      String dateTimeF = handler.formatDicomDateTime(dateTime);
+      assertEquals(dateTimeF,"2002.01.07", 
+            "Must format the date according to the format passed in constructor");
    }
    
 }

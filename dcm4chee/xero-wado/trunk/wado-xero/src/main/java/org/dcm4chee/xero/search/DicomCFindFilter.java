@@ -59,6 +59,7 @@ import org.dcm4che2.net.DimseRSP;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4chee.xero.dicom.AEConnection;
 import org.dcm4chee.xero.dicom.AESettings;
+import org.dcm4chee.xero.dicom.DicomDateTimeHandler;
 import org.dcm4chee.xero.dicom.TransferCapabilitySelector;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
@@ -80,16 +81,16 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 {
+   private static Logger log = LoggerFactory.getLogger(DicomCFindFilter.class);
+   
 	private static final int DEFAULT_MAX_RESULTS = 100000;
-
    public static final String EXTEND_RESULTS_KEY = "EXTEND_RESULTS";
-	
-	static Logger log = LoggerFactory.getLogger(DicomCFindFilter.class);
 	
     private int priority = 0;
     private int cancelAfter = Integer.MAX_VALUE;
 	
-    TransferCapabilitySelector tcs = new TransferCapabilitySelector();
+    private DicomDateTimeHandler dateTime = new DicomDateTimeHandler();
+    private TransferCapabilitySelector tcs = new TransferCapabilitySelector();
 
 
 	/**
@@ -114,22 +115,12 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     /** Return the set of key to negotiate for */
     protected abstract Set<Integer> getReturnKeys();
     
-    
-    /**
-     * Format a date to the DICOM internal format for dates only.
-     * @param d
-     * @return DICOM formatted date.
-     */
-    protected String formatDate(Calendar cal) {
-       SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.US);
-       return sdf.format(cal.getTime());
-    }
-        
     /**
      * Handles various types of date values such as Today, Yesterday etc
      * @param value
      * @return
      */
+    // TODO: Move to DicomDatTimeHandler
    protected String parseDateValue(String value) {
        if( value.length()==0 ) return "";
        if( Character.isDigit(value.charAt(0)) || value.charAt(0)=='-' ) return value;
@@ -186,7 +177,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     	  log.warn("Unknown date/time format string "+value);
     	  return value;
        }
-       ret = (start!=null ? formatDate(start) : "")+"-"+(end!=null ? formatDate(end) : "");
+       ret = (start!=null ? dateTime.toDicomDate(start) : "")+"-"+(end!=null ? dateTime.toDicomDate(end) : "");
        log.info("Using "+ret+" for date time key "+value);
        return ret;
     }

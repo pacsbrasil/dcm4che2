@@ -84,7 +84,7 @@ public class CMoveURLConnection extends URLConnection
 {
    private static Logger log = LoggerFactory.getLogger(CMoveURLConnection.class);
    
-   private static final String DEFAULT_QUERY_LEVEL = "SERIES";
+   private static final String DEFAULT_QUERY_LEVEL = "IMAGE"; //"SERIES";
 
    private static Executor executor = Executors.newCachedThreadPool(new NamedThreadFactory("XERO-CMOVE"));
    

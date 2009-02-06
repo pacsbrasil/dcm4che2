@@ -45,7 +45,8 @@ import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.search.AEProperties;
 
 /**
- * Accessor class that 
+ * Accessor class that extracts the C-MOVE specific settings from the AE properties
+ * file for the convenience of developers.
  * @author Andrew Cowan (amidx)
  */
 public class CMoveSettings
@@ -66,11 +67,17 @@ public class CMoveSettings
       this(DicomURLHandler.parseAETitle(dicomURL));
    }
    
+   /**
+    * Load the C-MOVE settings for the indicated aePath
+    */
    public CMoveSettings(String aePath)
    {
       this(AEProperties.getInstance().getAE(aePath));
    }
 
+   /**
+    * Load the C-MOVE settings from the indicated property map.
+    */
    public CMoveSettings(Map<String, Object> aeSettings)
    {
       this.aeSettings = aeSettings;
