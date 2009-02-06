@@ -90,15 +90,10 @@ public class FileLocationURLFilterTest {
 	 * @throws MalformedURLException
 	 */
 	@Test
-	public void filterTest_NearlineCacheFile_expectIllegalArgumentException() throws MalformedURLException {
-		try {
-			inputDTO.setDirectoryPath("tar://SomeDir");
-			params.put(FileLocationURLFilter.FILE_DTO, inputDTO);
-			URL fileUrl = filter.filter(null, params);
-			assertEquals(fileUrl, new URL("tar://SomeDir/SomePath.file"));
-			fail("Did not expect to be able to handle tar: URL protocol");
-		} catch (IllegalArgumentException e) {
-			// (Unfortunately) Expecting filter to fail
-		}
+	public void filterTest_NearlineCacheFile_expectTarUrl() throws MalformedURLException {
+		inputDTO.setDirectoryPath("tar://SomeDir");
+		params.put(FileLocationURLFilter.FILE_DTO, inputDTO);
+		URL fileUrl = filter.filter(null, params);
+		assertEquals(fileUrl.toString(), "tar://SomeDir/SomePath.file");
 	}	
 }

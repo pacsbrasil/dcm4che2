@@ -15,13 +15,13 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Dave Smith & Laura Peters, Agfa HealthCare Inc., 
+ * Bill Wallace, Agfa HealthCare Inc., 
  * Portions created by the Initial Developer are Copyright (C) 2007
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Laura Peters <laura.peters@agfa.com>
- * David Smith <david.smith@agfa.com>
+ * Bill Wallace <bill.wallace@agfa.com>
+ * Neil Hunt <neil.hunt@agfa.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -38,43 +38,24 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.filter;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URL;
-import java.util.Map;
-
-import org.dcm4chee.xero.metadata.filter.Filter;
-import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chex.archive.ejb.interfaces.FileDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
+import java.net.UnknownServiceException;
 
 /**
- * 
- * Generates URLs for file locations.
- * 
- * @author lpeters, dsmith1547
+ * @author neil
+ *
  */
-public class FileLocationURLFilter implements Filter<URL> {
-	public static Logger log = LoggerFactory.getLogger(FileLocationURLFilter.class);
-	public static final String FILE_DTO = "FileDTO";
+public class TarURLStreamHander extends URLStreamHandler {
 
-	public URL filter(FilterItem<URL> filterItem, Map<String,Object> params) {
-		FileDTO dto = (FileDTO)params.get(FILE_DTO);
-		if (dto == null) 
-			throw new IllegalArgumentException("No dto passed in params");
-		URL url = null;
-		String directoryPath = dto.getDirectoryPath();
-		String filePath = directoryPath.replace("\\", "/") + "/" + dto.getFilePath(); 
-		try {
-			if (directoryPath.startsWith("tar://"))
-				url = new URL(null, directoryPath + "/" + dto.getFilePath(), new TarURLStreamHander());
-			else
-				url = new URL("file:///" + filePath);
-		} catch (MalformedURLException e) {
-			throw new IllegalArgumentException("Unable to compose URL for file path" + filePath, e);
-		}
-		if ( log.isDebugEnabled() )
-			log.debug("Constructed url: " + url);
-		return url;
+	/* (non-Javadoc)
+	 * @see java.net.URLStreamHandler#openConnection(java.net.URL)
+	 */
+	@Override
+	protected URLConnection openConnection(URL u) throws IOException {
+		throw new UnknownServiceException("tar protocol doesn't support anything.");
 	}
+
 }
