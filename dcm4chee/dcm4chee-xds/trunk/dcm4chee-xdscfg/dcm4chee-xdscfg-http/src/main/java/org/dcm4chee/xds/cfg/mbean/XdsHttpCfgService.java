@@ -40,6 +40,8 @@
 package org.dcm4chee.xds.cfg.mbean;
 
 import java.io.File;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -79,7 +81,9 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
     public static final String HTTPS_PROXY_USER = "https.proxy.username";
     public static final String HTTPS_PROXY_PASSWD = "https.proxy.password";
     public static final String HTTPS_NON_PROXY_HOSTS = "https.nonProxyHosts";
-
+    public static final String HTTPS_PROTOCOLS = "https.protocols";
+    public static final String HTTPS_CIPHER_SUITES = "https.cipherSuites";
+    
     public static final String TRUST_STORE_PASSWORD = "javax.net.ssl.trustStorePassword";
     public static final String TRUST_STORE = "javax.net.ssl.trustStore";
     public static final String KEY_STORE_TYPE = "javax.net.ssl.keyStoreType";
@@ -88,6 +92,7 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
     
     private static final String SOCKS_PROXY_HOST = "socksProxyHost";
     private static final String SOCKS_PROXY_PORT = "socksProxyPort";
+    private static final String SOCKS_NON_PROXY_HOSTS = "socksNonProxyHosts";
     private static final String FTP_PROXY_HOST = "ftp.proxyHost";
     private static final String FTP_PROXY_PORT = "ftp.proxyPort";
     private static final String FTP_NON_PROXY_HOSTS = "ftp.nonProxyHosts";
@@ -108,6 +113,8 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
     private int proxyPort;
     private int secureProxyPort;
     private int socksProxyPort;
+    
+    final String[] authCredential = new String[2];
 
     private String keystoreURL = "resource:identity.p12";
     private String keystorePassword;
@@ -206,7 +213,36 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
     public void setSecureNonProxyHosts(String hosts) {
         setOrRemoveAttribute(HTTPS_NON_PROXY_HOSTS, hosts.trim());
     }
+
+    public String getHttpsProtocols() {
+        return System.getProperty(HTTPS_PROTOCOLS, NONE);
+    }
+    public void setHttpsProtocols(String p) {
+        setOrRemoveAttribute(HTTPS_PROTOCOLS, p.trim());
+    }
     
+    public String getHttpsCipherSuites() {
+        return System.getProperty(HTTPS_CIPHER_SUITES, NONE);
+    }
+    public void setHttpsCipherSuites(String ciphers) {
+        setOrRemoveAttribute(HTTPS_CIPHER_SUITES, ciphers.trim());
+    }
+
+    public String getAuthUser() {
+        return authCredential[0] == null ? NONE : authCredential[0];
+    }
+
+    public void setAuthUser(String authUser) {
+        authCredential[0] = NONE.equals(authUser) ? null : authUser;
+        if ( authCredential[0] != null ) {
+            Authenticator.setDefault(new ProxyAuth());
+        }
+    }
+
+    public void setAuthPasswd(String passwd) {
+        authCredential[1] = NONE.equals(passwd) ? null : passwd;
+    }
+
     public String getSocksProxyHost() {
         return System.getProperty(SOCKS_PROXY_HOST, NONE);
     }
@@ -228,6 +264,12 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
             if (System.getProperty(SOCKS_PROXY_HOST) != null)
                 System.setProperty(SOCKS_PROXY_PORT, String.valueOf(port));
         }
+    }
+    public String getSocksNonProxyHosts() {
+        return System.getProperty(SOCKS_NON_PROXY_HOSTS, NONE);
+    }
+    public void setSocksNonProxyHosts(String hosts) {
+        setOrRemoveAttribute(SOCKS_NON_PROXY_HOSTS, hosts.trim());
     }
     
     public void setKeyStorePassword(String keyStorePassword) {
@@ -340,9 +382,12 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
         sb.append("\n  ").append(HTTPS_PROXY_USER).append('=').append(System.getProperty(HTTPS_PROXY_USER, EMPTY));
         sb.append("\n  ").append(HTTPS_PROXY_PASSWD).append('=').append(System.getProperty(HTTPS_PROXY_PASSWD) == null ? EMPTY : HIDE_PASSWD);
         sb.append("\n  ").append(HTTPS_NON_PROXY_HOSTS).append('=').append(System.getProperty(HTTPS_NON_PROXY_HOSTS, EMPTY));
+        sb.append("\n  ").append(HTTPS_PROTOCOLS).append('=').append(System.getProperty(HTTPS_PROTOCOLS, EMPTY));
+        sb.append("\n  ").append(HTTPS_CIPHER_SUITES).append('=').append(System.getProperty(HTTPS_CIPHER_SUITES, EMPTY));
         sb.append("\nSocks Proxy:");
         sb.append("\n  ").append(SOCKS_PROXY_HOST).append('=').append(System.getProperty(SOCKS_PROXY_HOST, EMPTY));
         sb.append("\n  ").append(SOCKS_PROXY_PORT).append('=').append(System.getProperty(SOCKS_PROXY_PORT, EMPTY));
+        sb.append("\n  ").append(SOCKS_NON_PROXY_HOSTS).append('=').append(System.getProperty(SOCKS_NON_PROXY_HOSTS, EMPTY));
         sb.append("\nSSL Configuration:");
         sb.append("\n  ").append(TRUST_STORE).append('=').append(System.getProperty(TRUST_STORE, EMPTY));
         sb.append("\n  ").append(TRUST_STORE_PASSWORD).append('=').append(System.getProperty(TRUST_STORE_PASSWORD) == null ? EMPTY : HIDE_PASSWD);
@@ -369,4 +414,14 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
         sb.append("\n  ").append(NW_ADDR_CACHE_NEGATIVE_TTL).append('=').append(System.getProperty(NW_ADDR_CACHE_NEGATIVE_TTL, EMPTY));
         return sb.toString();
     }
+    
+    private class ProxyAuth extends Authenticator {
+        public ProxyAuth() {
+            log.info("################ create ProxyAuth!");
+        }
+        protected PasswordAuthentication getPasswordAuthentication() {
+            log.info("################ getPasswordAuthentication! user:"+authCredential[0]+" passwd:"+authCredential[1]);
+            return(new PasswordAuthentication(authCredential[0], authCredential[1].toCharArray()));
+        }
+    }    
 }

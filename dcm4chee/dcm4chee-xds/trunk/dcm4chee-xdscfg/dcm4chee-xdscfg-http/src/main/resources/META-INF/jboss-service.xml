@@ -123,6 +123,45 @@
          <value value="NONE"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="getHttpsProtocols" setMethod="setHttpsProtocols">
+      <!-- Network -->     
+      <description>List of protocols for TLS communication. (e.g. TLSv1,SSLv3,SSLv2Hello)
+      </description>
+      <name>HttpsProtocols</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getHttpsCipherSuites" setMethod="setHttpsCipherSuites">
+      <!-- Network -->     
+      <description>List of Cipher Suites used by TLS (Default: SSL_RSA_WITH_NULL_SHA,TLS_RSA_WITH_AES_128_CBC_SHA).
+      </description>
+      <name>HttpsCipherSuites</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getAuthUser" setMethod="setAuthUser">
+      <description>Authenticator user. This may be needed when proxy use windows authentication.
+      </description>
+      <name>AuthenticatorUser</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="write-only" setMethod="setAuthPasswd">
+      <description>Authenticator password if proxy needs windows authentication.
+      </description>
+      <name>AuthenticatorPasswd</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+
    <attribute access="read-write" getMethod="getSocksProxyHost" setMethod="setSocksProxyHost">
       <!-- Network -->     
       <description><![CDATA[ Socks Proxy host if http access should use a socks proxy. NONE = no socks proxy.<br/>
@@ -142,6 +181,16 @@
       <type>int</type>
       <descriptors>
          <value value="1080"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getSocksNonProxyHosts" setMethod="setSocksNonProxyHosts">
+      <!-- Network -->     
+      <description>List of hosts that must not use the socks Proxy (separated by '|', (leading) * can be used as wildcard). (dcm4chee extension!)
+      </description>
+      <name>SocksNonProxyHosts</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
       </descriptors>
    </attribute>
 
