@@ -361,7 +361,7 @@ class ImageServletResponseItem implements ServletResponseItem {
 		
 		String filename = wadoImage.getFilename();
 		
-		IInstrumentationObject instrumentAction = InstrumentorFactory.getInstrumentor().startDebug("EncodeImage", new Object[] { filename } );
+		IInstrumentationObject instrumentAction = InstrumentorFactory.getInstrumentor().start("EncodeImage", new Object[] { filename } );
 		
 		long start = System.nanoTime();
 		response.setContentType(contentType);
