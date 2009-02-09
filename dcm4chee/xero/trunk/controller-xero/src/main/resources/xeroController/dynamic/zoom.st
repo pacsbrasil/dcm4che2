@@ -7,7 +7,7 @@
 XeroController.prototype.zoomReset = function (lay,e) {
 	this.zoomMode(lay,e,"SCALE_TO_FIT");
 };
-XeroController.prototype.Zoom_clickImage = XeroController.prototype.zoomReset;
+XeroController.prototype.clickImage = XeroController.prototype.zoomReset;
 
 XeroController.prototype.magnify = function(lay,e) {
 	this.zoomMode(lay,e,"MAGNIFY");
