@@ -98,12 +98,12 @@ public class MemoryCacheFilter<T> implements Filter<T>, MetaDataUser {
    public T filter(FilterItem<T> filterItem, Map<String, Object> params) {
 	  boolean noCache = FilterUtil.getBoolean(params, NO_CACHE);
 	  if (noCache) {
-		 return null;
+		  return filterItem.callNextFilter(params);
 	  }
 	  String key = computeKey(params);
 	  if( key==null ) {
 	     log.warn("Unknown image cache key - image probably not found.");
-	     return filterItem.callNextFilter(params);
+	     return null;
 	  }
 	  SizeableFuture<T> sf = new SizeableFutureFilter<T>(filterItem, params);
 
