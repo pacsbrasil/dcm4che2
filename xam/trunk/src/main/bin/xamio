@@ -8,9 +8,15 @@
 ### $Id$ ###
 
 MAIN_CLASS=org.dcm4che.xam.XamIO
-MAIN_JAR=xamio-1.0-SNAPSHOT.jar
-XAMLIB_JAR=xamlib-1.0-SNAPSHOT.jar
-VIM_JAR=referenceVIM-1.0-SNAPSHOT.jar
+MAIN_JAR=xamio-0.5.jar
+XAMLIB_JAR=xamlib-0.5.jar
+VIM_JAR=referenceVIM-0.5.jar
+
+# Adjust according your C XAM and VIM Library installation
+CENTERA_XAM=/opt/Centera_XAM
+CENTERA_VIM=/opt/Centera_VIM
+XAMJNI_JAR=$CENTERA_XAM/lib/XAMLibrary.jar
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CENTERA_XAM/lib32:$CENTERA_VIM/lib32
 
 DIRNAME="`dirname "$0"`"
 
@@ -35,6 +41,11 @@ if [ "x$XAMIO_HOME" = "x" ]; then
     XAMIO_HOME=`cd "$DIRNAME"; pwd`
 fi
 
+# Setup XAM_CONFIG_PATH
+if [ "x$XAM_CONFIG_PATH" = "x" ]; then
+    XAM_CONFIG_PATH=$XAMIO_HOME/xam.properties
+fi
+
 # Setup the JVM
 if [ "x$JAVA_HOME" != "x" ]; then
     JAVA=$JAVA_HOME/bin/java
@@ -43,17 +54,21 @@ else
 fi
 
 # Setup the classpath
-CP="$XAMIO_HOME/"
-CP="$CP:$XAMIO_HOME/$MAIN_JAR"
+CP="$XAMIO_HOME/$MAIN_JAR"
 CP="$CP:$XAMIO_HOME/$XAMLIB_JAR"
 CP="$CP:$XAMIO_HOME/$VIM_JAR"
 CP="$CP:$XAMIO_HOME/commons-cli-1.1.jar"
+CP="$CP:$XAMJNI_JAR"
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
     JAVA=`cygpath --path --windows "$JAVA"`
     CP=`cygpath --path --windows "$CP"`
+    XAM_CONFIG_PATH=`cygpath --path --windows "$XAM_CONFIG_PATH"`
+    LD_LIBRARY_PATH=`cygpath --path --windows "$LD_LIBRARY_PATH"`
 fi
 
 # Execute the JVM
+export XAM_CONFIG_PATH
+export LD_LIBRARY_PATH
 exec $JAVA $JAVA_OPTS -cp "$CP" $MAIN_CLASS "$@"

@@ -59,15 +59,16 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.snia.xam.XAMException;
+import org.snia.xam.XAMLibrary;
 import org.snia.xam.XIterator;
 import org.snia.xam.XSet;
 import org.snia.xam.XStream;
 import org.snia.xam.XSystem;
 import org.snia.xam.XUID;
 import org.snia.xam.base.DefaultXUID;
-import org.snia.xam.base.XAMImplementation;
 import org.snia.xam.base.XRI;
 import org.snia.xam.util.SASLUtils;
+import org.snia.xam.util.XAMLibraryFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -75,6 +76,12 @@ import org.snia.xam.util.SASLUtils;
  * @since Feb 3, 2009
  */
 public class XamIO {
+
+    public static final String JAVA_XAM_LIBRARY =
+            "org.dcm4che.xam.XAMImplementation";
+
+    public static final String C_XAM_LIBRARY =
+            "org.snia.xam.XAMLibraryObj";
 
     private static final String USAGE = 
             "xamio [options] -o {file... | < file-list} [> xuid-list]\n"
@@ -86,25 +93,31 @@ public class XamIO {
             + "are archived into one XSet.\n.\nOptions:";
     private static final String EXAMPLE =
             "\nExamples:\n"
-            + "$ xamio -Pdir=/var/local/xam_storage -o /media/cdrom/dicom"
-            + " > xuid-list\n"
+            + "$ xamio -Pdir=/var/local/xam_storage -u testuser testpassed "
+            + "-o /media/cdrom/dicom  > xuid-list\n"
             + "Archive files in directory and sub-directories of "
             + "/media/cdrom/dicom to default XAM Storage System "
             + "(snia-xam://SNIA_Reference_VIM!localhost) with parameter "
-            + "dir=/var/local/xam_storage, authenticating with default "
-            + "username (=testuser) and password (=testpasswd).\n.\n"
-            + "$ xamio -Pdir=/var/local/xam_storage -i -d /tmp < xuid-list\n"
+            + "dir=/var/local/xam_storage, authentified by username "
+            + "'testuser' and password 'testpasswd'."
+            + "\n.\n"
+            + "$ xamio -C --vim centera_vim -s 172.25.13.183 -u myName "
+            + "myPassword -o /media/cdrom/dicom  > xuid-list\n"
+            + "Archive files to Centera Storage System at 172.25.13.183, "
+            + "authentified by username 'myName' and password 'myPassword'."
+            + "\n.\n"
+            + "$ xamio -Pdir=/var/local/xam_storage -u testuser testpassed "
+            + "-i -d /tmp < xuid-list\n"
             + "Retrieve files in XSets, specified by XUIDs read from stdin, "
             + "from default XAM Storage System "
             + "(snia-xam://SNIA_Reference_VIM!localhost) with parameter "
-            + "dir=/var/local/xam_storage to directory /tmp.";
+            + "dir=/var/local/xam_storage to directory /tmp, authentified "
+            + "by username 'testuser' and password 'testpasswd'";
 
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
-    private String username = "testuser";
-    private String password = "testpasswd";
+    private boolean clib;
     private String mimeType = "application/dicom";
-    private String confFile;
     private String openMode = XSet.MODE_READ_ONLY;
     private String destination;
     private boolean binding = false;
@@ -116,8 +129,10 @@ public class XamIO {
         xri.setVimInfo("SNIA_Reference_VIM");
         xri.setSystem("localhost");
         buffer = new byte[bufferSize];
-        confFile = XamIO.class.getClassLoader()
-                .getResource("XAMLibrary.config").toString().substring(5);
+    }
+
+    public void setUseCLib(boolean clib) {
+        this.clib = clib;
     }
 
     public void setVimInfo(String vimInfo) {
@@ -132,20 +147,8 @@ public class XamIO {
         xri.addParameter(name, value);
     }
 
-    public void setUser(String user) {
-        this.username = user;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public void setMimeType(String mimeType) {
         this.mimeType = mimeType;
-    }
-
-    public void setConfigFile(String confFile) {
-        this.confFile = confFile;
     }
 
     public void setOpenMode(String openMode) {
@@ -172,23 +175,14 @@ public class XamIO {
                 "You must specify one of -oi options");
         cmdOpt.addOption(OptionBuilder.create("i"));
         opts.addOptionGroup(cmdOpt);
-        OptionBuilder.hasArg();
-        OptionBuilder.withArgName("user_name");
+        OptionBuilder.hasArgs(2);
+        OptionBuilder.withArgName("user_name password");
         OptionBuilder.withDescription(
-                "username used for authentication, by default: \"testuser\"");
+                "username and password used for authentication, " +
+                "by default no authentification");
         opts.addOption(OptionBuilder.create("u"));
-        OptionBuilder.hasArg();
-        OptionBuilder.withArgName("password");
-        OptionBuilder.withDescription(
-                "password used for authentication, " +
-                "by default: \"testpasswd\"");
-        opts.addOption(OptionBuilder.create("p"));
-        OptionBuilder.hasArg();
-        OptionBuilder.withArgName("file");
-        OptionBuilder.withDescription(
-                "VIM configuration file, " +
-                "by default: \"$XAMIO_HOME/XAMLibrary.conf\"");
-        opts.addOption(OptionBuilder.create("c"));
+        opts.addOption("C", false, "Use C XAM Library via JNDI wrapper,"
+                + " use Java XAM Libray by default.");
         OptionBuilder.hasArg();
         OptionBuilder.withArgName("name");
         OptionBuilder.withDescription(
@@ -274,9 +268,7 @@ public class XamIO {
         XamIO xamio = new XamIO(cl.hasOption("bs")
                 ? ((Number) cl.getOptionObject("bs")).intValue()
                 : DEFAULT_BUFFER_SIZE);
-        if (cl.hasOption("c")) {
-            xamio.setConfigFile(cl.getOptionValue("c"));
-        }
+        xamio.setUseCLib(cl.hasOption("C"));
         if (cl.hasOption("vim")) {
             xamio.setVimInfo(cl.getOptionValue("vim"));
         }
@@ -288,12 +280,6 @@ public class XamIO {
             for (int i = 1; i < params.length; i++, i++) {
                 xamio.addParameter(params[i-1], params[i]);
             }
-        }
-        if (cl.hasOption("u")) {
-            xamio.setUser(cl.getOptionValue("u"));
-        }
-        if (cl.hasOption("p")) {
-            xamio.setPassword(cl.getOptionValue("p"));
         }
         if (cl.hasOption("m")) {
             xamio.setMimeType(cl.getOptionValue("m"));
@@ -311,7 +297,10 @@ public class XamIO {
         String[] remainingArgs = cl.getArgs();
         xamio.connect();
         try {
-            xamio.authenticate();
+            if (cl.hasOption("u")) {
+                String[] ss = cl.getOptionValues("u");
+                xamio.authenticate(ss[0], ss[1]);
+            }
             if (cl.hasOption("o")) {
                 Map<String, Set<File>> map =
                         new LinkedHashMap<String, Set<File>>();
@@ -391,23 +380,55 @@ public class XamIO {
         if (xsys != null) {
             throw new IllegalStateException("Already connected");
         }
-        XAMImplementation ximpl = new XAMImplementation(confFile);
+        XAMLibrary ximpl = XAMLibraryFactory.newXAMLibrary(clib
+                ? C_XAM_LIBRARY
+                : JAVA_XAM_LIBRARY);
+//        XamIO.printFields(ximpl);
         xsys = ximpl.connect(xri.toString());
     }
 
-    private void checkConnected() {
+    private void assertConnected() {
         if (xsys == null) {
             throw new IllegalStateException("Not connected");
         }
     }
 
-    public void authenticate() throws XAMException {
-        checkConnected();
+    public void authenticate(String username, String password)
+            throws XAMException {
+        assertConnected();
+//        XamIO.printFields(xsys);
         SASLUtils.authenticatePlain(xsys, username, password);
+//        XamIO.printFields(xsys);
     }
 
+//    private static void printFields(FieldContainer fc) throws XAMException {
+//      XIterator iter = fc.openFieldIterator("");
+//      while (iter.hasNext()) {
+//          String fieldName = (String) iter.next();
+//          String fieldType = fc.getFieldType(fieldName);
+//          long fieldLength = fc.getFieldLength(fieldName);
+//          System.out.print(fieldName + ':' + fieldType + '[' + fieldLength
+//                  + "]=");
+//          if (XAMLibrary.STYPE_BOOLEAN_MIME_TYPE.equals(fieldType)) {
+//              System.out.println(fc.getBoolean(fieldName));
+//          } else if (XAMLibrary.STYPE_DATETIME_MIME_TYPE.equals(fieldType)) {
+//              System.out.println(fc.getDateTime(fieldName));
+//          } else if (XAMLibrary.STYPE_DOUBLE_MIME_TYPE.equals(fieldType)) {
+//              System.out.println(fc.getDouble(fieldName));
+//          } else if (XAMLibrary.STYPE_INT_MIME_TYPE.equals(fieldType)) {
+//              System.out.println(fc.getLong(fieldName));
+//          } else if (XAMLibrary.STYPE_STRING_MIME_TYPE.equals(fieldType)) {
+//              System.out.println(fc.getString(fieldName));
+//          } else if (XAMLibrary.STYPE_XUID_MIME_TYPE.equals(fieldType)) {
+//              System.out.println(fc.getXUID(fieldName));
+//          } else{
+//              System.out.println();
+//          }
+//      }
+//    }
+
     public void close() throws XAMException {
-        checkConnected();
+        assertConnected();
         xsys.close();
         xsys = null;
     }

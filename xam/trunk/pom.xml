@@ -3,7 +3,7 @@
   <groupId>dcm4che.xam</groupId>
   <artifactId>xamio</artifactId>
   <name>XAM CLI Utility</name>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.5</version>
   <dependencies>
     <dependency>
       <groupId>commons-cli</groupId>
@@ -13,12 +13,12 @@
     <dependency>
       <groupId>xam</groupId>
       <artifactId>xamlib</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>0.5</version>
     </dependency>
     <dependency>
       <groupId>xam</groupId>
       <artifactId>referenceVIM</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>0.5</version>
       <scope>runtime</scope>
     </dependency>
   </dependencies>
