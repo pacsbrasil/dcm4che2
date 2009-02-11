@@ -56,6 +56,7 @@ import org.dcm4chee.xero.search.study.ImageBean;
 import org.dcm4chee.xero.search.study.ResultsBean;
 import org.dcm4chee.xero.wado.WadoParams;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 public class PartialImageInfoFixTest {
@@ -67,15 +68,19 @@ public class PartialImageInfoFixTest {
    ImageBean imageBeanWasOk;
    FilterItem<ResultsBean> filterItem;
    DicomObject mg1;
-   Map<String,Object> params = new HashMap<String,Object>();
+   Map<String,Object> params = null;
    Filter<DicomObject> dsFilter;
    
    @SuppressWarnings("unchecked")
    @BeforeMethod
    public void init() throws Exception {
+	  
+	  params = new HashMap<String,Object>();
+	   
       filterItem = createMock(FilterItem.class);
       expect(filterItem.callNextFilter(params)).andReturn(results);
       replay(filterItem);
+      
       mg1 = DicomTestData.findDicomObject("regroup/MG/MG0001.dcm");
       results.addResult(mg1);
       results.addResult(DicomTestData.findDicomObject("regroup/MG/MG0002.dcm"));
@@ -97,7 +102,7 @@ public class PartialImageInfoFixTest {
       verify(filterItem);
       assert imageBeanToFix.getRows()==-1;
    }
-
+   
    @Test
    public void test_filter_aeConfigured_returnFixedImage() {
       params.put(WadoParams.AE, "imageFix");
@@ -106,4 +111,5 @@ public class PartialImageInfoFixTest {
       assert imageBeanToFix.getRows()>0;
       assert imageBeanToFix.getColumns()>0;
    }
+   
 }
