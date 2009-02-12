@@ -16,6 +16,8 @@ import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.dcm4chee.xero.util.FilterCombineIterator;
 import org.dcm4chee.xero.wado.RecodeDicom;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This filter iterates over the available frames in an image, calling the next filters
@@ -31,6 +33,7 @@ import org.dcm4chee.xero.wado.RecodeDicom;
  * @author bwallace
  */
 public class FrameNumberItFilter implements Filter<Iterator<ServletResponseItem>> {
+    private static final Logger log = LoggerFactory.getLogger(FrameNumberItFilter.class);
 	
 	/** 
 	 * Calls the next filter with frameNumber set, and simpleFrameList un-set, once for every
@@ -47,6 +50,7 @@ public class FrameNumberItFilter implements Filter<Iterator<ServletResponseItem>
 	   if( frames.size()==0 ) return null;
    	// Optimization for the non multi-frames
    	if( ds.getInt(Tag.NumberOfFrames,1)==1 ) return filterItem.callNextFilter(params);
+   		log.debug("Found multiple frames for " + objectUID);
    	return new FrameIterator(frames,filterItem,params);
    }
    
@@ -84,13 +88,24 @@ public class FrameNumberItFilter implements Filter<Iterator<ServletResponseItem>
 		@Override
       protected void updateParams(Integer item, Map<String, Object> params) {
 			params.put(FRAME_NUMBER, item);
+			
+			// get proper object uid for frame
+			String currentObjectUid = (String) params.get("currentObjectUid"); 
+			if (currentObjectUid!=null)
+			    params.put(OBJECT_UID, currentObjectUid);
       }
 
 		/** Restore the original UID */
 		@Override
       protected void restoreParams(Integer item, Map<String, Object> params) {
 			params.remove(FRAME_NUMBER);
-      }
+
+			// restore original object uid for frame
+            String originalObjectUid = (String) params.get("originalObjectUid"); 
+            if (originalObjectUid!=null)
+                params.put(OBJECT_UID, originalObjectUid);
+
+		}
 		
    }
 

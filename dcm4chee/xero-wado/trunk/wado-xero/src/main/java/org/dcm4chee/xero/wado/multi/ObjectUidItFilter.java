@@ -37,6 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 
 package org.dcm4chee.xero.wado.multi;
+import static org.dcm4chee.xero.wado.WadoParams.OBJECT_UID;
+
 import java.util.Iterator;
 import java.util.Map;
 
@@ -45,8 +47,6 @@ import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.dcm4chee.xero.util.FilterCombineIterator;
 import org.dcm4chee.xero.util.StringUtil;
-
-import static org.dcm4chee.xero.wado.WadoParams.*;
 /**
  * The ObjectUidItFilter creates an iterator over all the specified UID's
  * For each UID, it calls the next filter, setting objectUID to the single, current objectUID.
@@ -55,7 +55,6 @@ import static org.dcm4chee.xero.wado.WadoParams.*;
  *
  */
 public class ObjectUidItFilter implements Filter<Iterator<ServletResponseItem>> {
-
 	/** Split out the object UID if necessary */
    public Iterator<ServletResponseItem> filter(FilterItem<Iterator<ServletResponseItem>> filterItem,
          Map<String, Object> params) {
@@ -68,6 +67,10 @@ public class ObjectUidItFilter implements Filter<Iterator<ServletResponseItem>> 
    		arrUID = StringUtil.split(sobjectUID,'\\', true);
    	}
    	else arrUID = (String[]) objectUID;
+
+	// make the original uid available in case the next iterator needs to restore 
+   	// it after it's replaced it with the ObjectUidIterator item
+   	params.put("originalObjectUid", objectUID);
    	Iterator<ServletResponseItem> it = new ObjectUidIterator(arrUID, filterItem, params);
    	return it;
    }
@@ -85,6 +88,10 @@ public class ObjectUidItFilter implements Filter<Iterator<ServletResponseItem>> 
 		@Override
       protected void updateParams(String item, Map<String, Object> params) {
 			params.put(OBJECT_UID, item);
+			
+			// make this uid available in case the next iterator needs it after
+			// we've restored the original
+            params.put("currentObjectUid", item);
       }
 
 		/** Restore the original UID */
