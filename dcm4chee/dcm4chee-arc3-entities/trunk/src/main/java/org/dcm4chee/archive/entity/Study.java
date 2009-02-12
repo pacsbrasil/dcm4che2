@@ -168,6 +168,11 @@ public class Study implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_fk")
     private Patient patient;
+    
+    // Read-only value mapped so that we don't always have to load the whole
+    // patient object if we just want to know the foreign key.
+    @Column(name = "patient_fk", insertable = false, updatable = false)
+    private Long patientFk;
 
     @OneToMany(mappedBy = "study", fetch = FetchType.LAZY)
     private Set<Series> series;
@@ -470,5 +475,9 @@ public class Study implements Serializable {
         }
         this.encodedAttributes = DicomObjectUtils.encode(filter.filter(attrs),
                 filter.getTransferSyntaxUID());
+    }
+
+    public Long getPatientFk() {
+        return patientFk;
     }
 }
