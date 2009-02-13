@@ -115,16 +115,16 @@ public class DicomImageFilter implements Filter<WadoImage> {
 	  try {
 		 long start = System.nanoTime();
 		 String op = "decompress";
+         int width = reader.getWidth(0);
+         int height = reader.getHeight(0);
+         
+         String filenameExtra = updateParamFromRegion(param, params, width, height);
 		 synchronized (reader) {
-			int width = reader.getWidth(0);
-			int height = reader.getHeight(0);
-			
-			String filenameExtra = updateParamFromRegion(param, params, width, height);
 			BufferedImage bi;
 			DicomStreamMetaData streamData = (DicomStreamMetaData) reader.getStreamMetadata();
 			DicomObject ds = streamData.getDicomObject();
 			ret = new WadoImage(streamData.getDicomObject(), ds.getInt(Tag.BitsStored), null);
-			ret.setFilename((String) params.get(OBJECT_UID)+"-f"+(frame+1)+filenameExtra);
+	        ret.setFilename((String) params.get(OBJECT_UID)+"-f"+(frame+1)+filenameExtra);
 			if (readRawBytes) {
 			   byte[] img = reader.readBytes(frame, param);
 			   ret.setParameter(WadoImage.IMG_AS_BYTES, img);
@@ -158,7 +158,8 @@ public class DicomImageFilter implements Filter<WadoImage> {
 				  + nanoTimeToString(System.nanoTime() - start));
 		 }
 	  } catch (IOException e) {
-		 log.error("Caught I/O exception reading image.", e);
+		 log.error("Caught I/O exception reading image "+params.get(OBJECT_UID)+" frame "+(frame+1)+" exception "+e);
+		 ret.setError(e);
 	  }
 	  // This might happen if the instance UID under request comes from
 	  // another

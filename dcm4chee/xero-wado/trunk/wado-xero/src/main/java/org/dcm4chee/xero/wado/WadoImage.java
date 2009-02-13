@@ -38,6 +38,7 @@
 package org.dcm4chee.xero.wado;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
@@ -54,7 +55,9 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem {
-   private static final Logger log = LoggerFactory.getLogger(WadoImage.class);
+   private static final String ERROR_KEY = "_ERROR";
+
+private static final Logger log = LoggerFactory.getLogger(WadoImage.class);
    
 	public static String WINDOW_CENTER = "windowCenter";
 	public static String WINDOW_WIDTH = "windowWidth";
@@ -155,4 +158,19 @@ public class WadoImage extends FilterReturn<BufferedImage> implements CacheItem 
    public void setFilename(String filename) {
    	this.filename = filename;
    }
+
+   /** Indicate that one of the required transforms failed - must have a null image as well to be non-recoverable */
+   public void setError(IOException e) {
+       this.setParameter(ERROR_KEY, e);
+   }
+   
+   public Throwable getError() {
+       return (Throwable) this.getParameter(ERROR_KEY);
+   }
+
+   /** Indicates a non-recoverable error has occurred */
+   public boolean hasError() {
+       return getValue()==null && getError()!=null;
+   }
+
 }

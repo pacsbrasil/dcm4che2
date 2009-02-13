@@ -43,6 +43,7 @@ import static org.dcm4chee.xero.wado.WadoParams.OBJECT_UID;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -357,9 +358,19 @@ class ImageServletResponseItem implements ServletResponseItem {
 			log.warn("Image not found.");
 			return;
 		}
+        String filename = wadoImage.getFilename();
+		if( wadoImage.hasError() ) {
+		    log.warn("Writing an error response, name:"+filename);
+            response.setHeader(CONTENT_DISPOSITION, "inline;filename="+filename+".error");
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            PrintWriter pw = response.getWriter();
+            pw.println("Image has internal problem:"+wadoImage.getError());
+            pw.println("Filename:"+filename);
+            pw.close();
+		    return;
+		}
 		
 		
-		String filename = wadoImage.getFilename();
 		
 		IInstrumentationObject instrumentAction = InstrumentorFactory.getInstrumentor().start("EncodeImage", new Object[] { filename } );
 		
