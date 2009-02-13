@@ -102,7 +102,7 @@ public class PixelPadding implements Filter<WadoImage> {
 			row = r.getPixels(0, y, w, 1, row);
 			retrow = rret.getPixels(0,y,w,1,retrow);
 			boolean rowChanged = false;
-			for(int x=0; x<h; x++) {
+			for(int x=0; x<w; x++) {
 				if( row[x]==pixpad ) {
 					rowChanged = true;
 					retrow[x] = useClr;
