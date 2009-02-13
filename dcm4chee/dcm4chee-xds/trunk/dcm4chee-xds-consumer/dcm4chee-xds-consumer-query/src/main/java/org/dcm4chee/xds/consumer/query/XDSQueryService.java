@@ -40,6 +40,7 @@ package org.dcm4chee.xds.consumer.query;
 
 import java.io.File;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +64,10 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.ws.BindingProvider;
+import javax.xml.ws.addressing.AddressingBuilder;
+import javax.xml.ws.addressing.AddressingConstants;
+import javax.xml.ws.addressing.AddressingProperties;
+import javax.xml.ws.addressing.JAXWSAConstants;
 import javax.xml.ws.handler.Handler;
 import javax.xml.ws.soap.SOAPBinding;
 
@@ -74,10 +79,18 @@ import org.dcm4chee.xds.infoset.v30.AdhocQueryRequest;
 import org.dcm4chee.xds.infoset.v30.AdhocQueryResponse;
 import org.dcm4chee.xds.infoset.v30.DocumentRegistryPortTypeAlt;
 import org.dcm4chee.xds.infoset.v30.DocumentRegistryServiceAlt;
+import org.dcm4chee.xds.infoset.v30.DocumentRegistryPortType12;
+import org.dcm4chee.xds.infoset.v30.DocumentRegistryService;
 import org.dcm4chee.xds.infoset.v30.util.InfoSetUtil;
 import org.dcm4chee.xds.infoset.v30.util.StoredQueryFactory;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
+import org.jboss.ws.core.CommonMessageContext;
+import org.jboss.ws.core.ConfigProvider;
+import org.jboss.ws.core.StubExt;
+import org.jboss.ws.core.soap.MessageContextAssociation;
+import org.jboss.ws.core.utils.UUIDGenerator;
+import org.jboss.ws.extensions.addressing.jaxws.WSAddressingClientHandler;
 import org.w3c.dom.Node;
 
 /**
@@ -86,6 +99,8 @@ import org.w3c.dom.Node;
  * @since Mar, 2007
  */
 public class XDSQueryService extends ServiceMBeanSupport {
+
+    private static final String STANDARD_SOAP_1_2_WSADDRESSING_CLIENT = "Standard SOAP 1.2 WSAddressing Client";
 
     private static Logger log = Logger.getLogger(XDSQueryService.class);
 
@@ -97,6 +112,8 @@ public class XDSQueryService extends ServiceMBeanSupport {
     private String affinityDomain;
 
     private boolean useSoap;
+    private boolean useInfoset;
+    private boolean useWSAddressHandler;
     
     private XdsHttpCfgDelegate httpCfgDelegate = new XdsHttpCfgDelegate();
 
@@ -134,9 +151,20 @@ public class XDSQueryService extends ServiceMBeanSupport {
     public boolean isUseSoap() {
         return useSoap;
     }
-
     public void setUseSoap(boolean useSoap) {
         this.useSoap = useSoap;
+    }
+    public boolean isUseInfoset() {
+        return useInfoset;
+    }
+    public void setUseInfoset(boolean b) {
+        this.useInfoset = b;
+    }
+    public boolean isUseWSAddressHandler() {
+        return useWSAddressHandler;
+    }
+    public void setUseWSAddressHandler(boolean b) {
+        this.useWSAddressHandler = b;
     }
 
     public boolean isLogRequestMessage() {
@@ -302,7 +330,8 @@ public class XDSQueryService extends ServiceMBeanSupport {
         if (logRequestMessage) {
             log.info("AdhocQueryRequest:"+InfoSetUtil.marshallObject(rq, true));
         }
-        AdhocQueryResponse rsp = useSoap ? performQueryViaSoap(rq) : performQueryViaWS(rq);
+        AdhocQueryResponse rsp = useSoap ? performQueryViaSoap(rq) : 
+            useInfoset ? performQueryViaWSInfoset(rq) : performQueryViaWS(rq);
         if (logResponseMessage) {
             log.info("AdhocQueryResponse:"+InfoSetUtil.marshallObject(rsp, true));
         }
@@ -323,8 +352,37 @@ public class XDSQueryService extends ServiceMBeanSupport {
 				xdsQueryURI, XDSConstants.URN_IHE_ITI_2007_REGISTRY_STORED_QUERY, UUID.randomUUID().toString()));
 		SOAPBinding soapBinding = (SOAPBinding)bindingProvider.getBinding();
 		soapBinding.setHandlerChain(customHandlerChain);        
+
         Map<String, Object> reqCtx = bindingProvider.getRequestContext();
         reqCtx.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, xdsQueryURI);
+        return port.documentRegistryRegistryStoredQuery(rq);
+    }
+    
+    public AdhocQueryResponse performQueryViaWSInfoset(AdhocQueryRequest rq) {
+        DocumentRegistryService s = new DocumentRegistryService();
+        DocumentRegistryPortType12 port =s.getDocumentRegistryPortSoap12();
+        BindingProvider bindingProvider = (BindingProvider)port;
+        Map<String, Object> reqCtx = bindingProvider.getRequestContext();
+        AddressingBuilder builder = AddressingBuilder.getAddressingBuilder();
+        AddressingProperties addrProps = builder.newAddressingProperties();
+        try {
+            addrProps.setTo(builder.newURI(xdsQueryURI));
+            addrProps.setAction(builder.newURI(XDSConstants.URN_IHE_ITI_2007_REGISTRY_STORED_QUERY));
+            addrProps.setMessageID(builder.newURI("urn:uuid:"+ UUIDGenerator.generateRandomUUIDString()));
+        } catch (URISyntaxException x) {
+            log.error("Failed to set AddressingProperties!",x);
+        }
+        reqCtx.put(JAXWSAConstants.CLIENT_ADDRESSING_PROPERTIES_OUTBOUND, addrProps);
+        if ( useWSAddressHandler ) {
+            List<Handler> customHandlerChain = new ArrayList<Handler>();
+            customHandlerChain.add(new WSAddressingClientHandler());
+            SOAPBinding soapBinding = (SOAPBinding)bindingProvider.getBinding();
+            soapBinding.setHandlerChain(customHandlerChain);        
+        } else {
+            ((ConfigProvider) port).setConfigName( STANDARD_SOAP_1_2_WSADDRESSING_CLIENT);
+        }
+        reqCtx.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, xdsQueryURI);
+        
         return port.documentRegistryRegistryStoredQuery(rq);
     }
     

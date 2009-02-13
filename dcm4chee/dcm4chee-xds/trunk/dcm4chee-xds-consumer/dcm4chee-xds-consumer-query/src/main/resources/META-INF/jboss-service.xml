@@ -76,6 +76,28 @@
 					<value value="false" />
 				</descriptors>
 			</attribute>
+            <attribute access="read-write" getMethod="isUseInfoset"
+                setMethod="setUseInfoset">
+                <description>
+                    Use Infoset classes instead of dcm4che-xds-common.
+                </description>
+                <name>UseInfoset</name>
+                <type>boolean</type>
+                <descriptors>
+                    <value value="true" />
+                </descriptors>
+            </attribute>
+            <attribute access="read-write" getMethod="isUseWSAddressHandler"
+                setMethod="setUseWSAddressHandler">
+                <description>
+                    Use WSAddressHandler from JBoss instead of setting configuration! (only effective when UseInfoset is enabled!).
+                </description>
+                <name>WSAddressHandler</name>
+                <type>boolean</type>
+                <descriptors>
+                    <value value="true" />
+                </descriptors>
+            </attribute>
 			<attribute access="read-write"
 				getMethod="isLogRequestMessage" setMethod="setLogRequestMessage">
 				<description>

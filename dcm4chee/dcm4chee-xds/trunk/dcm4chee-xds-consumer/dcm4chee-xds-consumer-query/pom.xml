@@ -81,6 +81,12 @@
 	      <version>3.0.1-native-2.0.4.GA</version>
 	      <scope>provided</scope>
 	    </dependency>
+	    <dependency>
+	      <groupId>jboss.jbossws</groupId>
+	      <artifactId>jbossws-core</artifactId>
+	      <version>3.0.1-native-2.0.4.GA</version>
+	      <scope>provided</scope>
+	    </dependency>
 		<dependency>
 			<groupId>dcm4che</groupId>
 			<artifactId>dcm4che-audit</artifactId>
