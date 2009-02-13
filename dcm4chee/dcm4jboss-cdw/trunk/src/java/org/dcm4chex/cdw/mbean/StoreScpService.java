@@ -72,82 +72,81 @@ import org.dcm4che.util.MD5Utils;
 
 /**
  * @author gunter.zeilinter@tiani.com
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2007-06-28 11:35:54 +0200 (Thu, 28 Jun
+ *          2007) $
  * @since 22.06.2004
- *
+ * 
  */
 public class StoreScpService extends AbstractScpService {
 
     private static final String NONE = "NONE";
 
-	private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
-            Tags.SeriesInstanceUID, Tags.SOPInstanceUID, Tags.SOPClassUID,};
+    private static final int[] TYPE1_ATTR = { Tags.StudyInstanceUID,
+            Tags.SeriesInstanceUID, Tags.SOPInstanceUID, Tags.SOPClassUID, };
 
     /*
-    private static final String[] IMAGE_CUIDS = {
-            UIDs.HardcopyGrayscaleImageStorage, UIDs.HardcopyColorImageStorage,
-            UIDs.ComputedRadiographyImageStorage,
-            UIDs.DigitalXRayImageStorageForPresentation,
-            UIDs.DigitalXRayImageStorageForProcessing,
-            UIDs.DigitalMammographyXRayImageStorageForPresentation,
-            UIDs.DigitalMammographyXRayImageStorageForProcessing,
-            UIDs.DigitalIntraoralXRayImageStorageForPresentation,
-            UIDs.DigitalIntraoralXRayImageStorageForProcessing,
-            UIDs.CTImageStorage, UIDs.UltrasoundMultiframeImageStorageRetired,
-            UIDs.UltrasoundMultiframeImageStorage, UIDs.MRImageStorage,
-            UIDs.EnhancedMRImageStorage,
-            UIDs.NuclearMedicineImageStorageRetired,
-            UIDs.UltrasoundImageStorageRetired, UIDs.UltrasoundImageStorage,
-            UIDs.SecondaryCaptureImageStorage,
-            UIDs.MultiframeSingleBitSecondaryCaptureImageStorage,
-            UIDs.MultiframeGrayscaleByteSecondaryCaptureImageStorage,
-            UIDs.MultiframeGrayscaleWordSecondaryCaptureImageStorage,
-            UIDs.MultiframeTrueColorSecondaryCaptureImageStorage,
-            UIDs.XRayAngiographicImageStorage,
-            UIDs.XRayRadiofluoroscopicImageStorage,
-            UIDs.XRayAngiographicBiPlaneImageStorageRetired,
-            UIDs.NuclearMedicineImageStorage, UIDs.VLImageStorageRetired,
-            UIDs.VLMultiframeImageStorageRetired,
-            UIDs.VLEndoscopicImageStorage, UIDs.VLMicroscopicImageStorage,
-            UIDs.VLSlideCoordinatesMicroscopicImageStorage,
-            UIDs.VLPhotographicImageStorage,
-            UIDs.PositronEmissionTomographyImageStorage, UIDs.RTImageStorage,};
-
-    private static final String[] OTHER_CUIDS = { UIDs.BasicTextSR,
-            UIDs.EnhancedSR, UIDs.ComprehensiveSR, UIDs.MammographyCADSR,
-            UIDs.GrayscaleSoftcopyPresentationStateStorage,
-            UIDs.KeyObjectSelectionDocument, UIDs.RTDoseStorage,
-            UIDs.RTStructureSetStorage, UIDs.RTBeamsTreatmentRecordStorage,
-            UIDs.RTPlanStorage, UIDs.RTBrachyTreatmentRecordStorage,
-            UIDs.RTTreatmentSummaryRecordStorage, UIDs.RawDataStorage,
-            UIDs.AmbulatoryECGWaveformStorage,
-            UIDs.BasicVoiceAudioWaveformStorage,
-            UIDs.CardiacElectrophysiologyWaveformStorage,
-            UIDs.GeneralECGWaveformStorage, UIDs.HemodynamicWaveformStorage,
-            UIDs.TwelveLeadECGWaveformStorage};
-   
-    private boolean acceptJPEGBaseline = true;
-
-    private boolean acceptJPEGExtended = true;
-
-    private boolean acceptJPEGLossless14 = false;
-
-    private boolean acceptJPEGLossless = true;
-
-    private boolean acceptJPEGLSLossless = false;
-
-    private boolean acceptJPEGLSLossy = false;
-
-    private boolean acceptJPEG2000Lossless = false;
-
-    private boolean acceptJPEG2000Lossy = false;
-
-    private boolean acceptRLELossless = false;
-	*/
+     * private static final String[] IMAGE_CUIDS = {
+     * UIDs.HardcopyGrayscaleImageStorage, UIDs.HardcopyColorImageStorage,
+     * UIDs.ComputedRadiographyImageStorage,
+     * UIDs.DigitalXRayImageStorageForPresentation,
+     * UIDs.DigitalXRayImageStorageForProcessing,
+     * UIDs.DigitalMammographyXRayImageStorageForPresentation,
+     * UIDs.DigitalMammographyXRayImageStorageForProcessing,
+     * UIDs.DigitalIntraoralXRayImageStorageForPresentation,
+     * UIDs.DigitalIntraoralXRayImageStorageForProcessing, UIDs.CTImageStorage,
+     * UIDs.UltrasoundMultiframeImageStorageRetired,
+     * UIDs.UltrasoundMultiframeImageStorage, UIDs.MRImageStorage,
+     * UIDs.EnhancedMRImageStorage, UIDs.NuclearMedicineImageStorageRetired,
+     * UIDs.UltrasoundImageStorageRetired, UIDs.UltrasoundImageStorage,
+     * UIDs.SecondaryCaptureImageStorage,
+     * UIDs.MultiframeSingleBitSecondaryCaptureImageStorage,
+     * UIDs.MultiframeGrayscaleByteSecondaryCaptureImageStorage,
+     * UIDs.MultiframeGrayscaleWordSecondaryCaptureImageStorage,
+     * UIDs.MultiframeTrueColorSecondaryCaptureImageStorage,
+     * UIDs.XRayAngiographicImageStorage,
+     * UIDs.XRayRadiofluoroscopicImageStorage,
+     * UIDs.XRayAngiographicBiPlaneImageStorageRetired,
+     * UIDs.NuclearMedicineImageStorage, UIDs.VLImageStorageRetired,
+     * UIDs.VLMultiframeImageStorageRetired, UIDs.VLEndoscopicImageStorage,
+     * UIDs.VLMicroscopicImageStorage,
+     * UIDs.VLSlideCoordinatesMicroscopicImageStorage,
+     * UIDs.VLPhotographicImageStorage,
+     * UIDs.PositronEmissionTomographyImageStorage, UIDs.RTImageStorage,};
+     * 
+     * private static final String[] OTHER_CUIDS = { UIDs.BasicTextSR,
+     * UIDs.EnhancedSR, UIDs.ComprehensiveSR, UIDs.MammographyCADSR,
+     * UIDs.GrayscaleSoftcopyPresentationStateStorage,
+     * UIDs.KeyObjectSelectionDocument, UIDs.RTDoseStorage,
+     * UIDs.RTStructureSetStorage, UIDs.RTBeamsTreatmentRecordStorage,
+     * UIDs.RTPlanStorage, UIDs.RTBrachyTreatmentRecordStorage,
+     * UIDs.RTTreatmentSummaryRecordStorage, UIDs.RawDataStorage,
+     * UIDs.AmbulatoryECGWaveformStorage, UIDs.BasicVoiceAudioWaveformStorage,
+     * UIDs.CardiacElectrophysiologyWaveformStorage,
+     * UIDs.GeneralECGWaveformStorage, UIDs.HemodynamicWaveformStorage,
+     * UIDs.TwelveLeadECGWaveformStorage};
+     * 
+     * private boolean acceptJPEGBaseline = true;
+     * 
+     * private boolean acceptJPEGExtended = true;
+     * 
+     * private boolean acceptJPEGLossless14 = false;
+     * 
+     * private boolean acceptJPEGLossless = true;
+     * 
+     * private boolean acceptJPEGLSLossless = false;
+     * 
+     * private boolean acceptJPEGLSLossy = false;
+     * 
+     * private boolean acceptJPEG2000Lossless = false;
+     * 
+     * private boolean acceptJPEG2000Lossy = false;
+     * 
+     * private boolean acceptRLELossless = false;
+     */
 
     private Map imageCUIDS = new LinkedHashMap();
     private Map imageTSUIDS = new LinkedHashMap();
-    
+
     private Map waveformCUIDS = new LinkedHashMap();
     private Map waveformTSUIDS = new LinkedHashMap();
 
@@ -158,10 +157,10 @@ public class StoreScpService extends AbstractScpService {
     private Map srTSUIDS = new LinkedHashMap();
 
     private Map otherCUIDS = new LinkedHashMap();
-    
+
     private String generatePatientID = "DCMCDW-##########";
-	
-	private String issuerOfPatientID = "DCMCDW";
+
+    private String issuerOfPatientID = "DCMCDW";
 
     private int bufferSize = 512;
 
@@ -175,33 +174,34 @@ public class StoreScpService extends AbstractScpService {
     };
 
     public final String getGeneratePatientID() {
-		return generatePatientID != null  ? generatePatientID : NONE;
-	}
+        return generatePatientID != null ? generatePatientID : NONE;
+    }
 
-	public final void setGeneratePatientID(String pattern) {
-		this.generatePatientID = pattern.equalsIgnoreCase(NONE) ? null : pattern;
-	}
+    public final void setGeneratePatientID(String pattern) {
+        this.generatePatientID = pattern.equalsIgnoreCase(NONE) ? null
+                : pattern;
+    }
 
-	public final String getIssuerOfPatientID() {
-		return issuerOfPatientID;
-	}
+    public final String getIssuerOfPatientID() {
+        return issuerOfPatientID;
+    }
 
-	public final void setIssuerOfPatientID(String issuerOfPatientID) {
-		this.issuerOfPatientID = issuerOfPatientID;
-	}
-    
+    public final void setIssuerOfPatientID(String issuerOfPatientID) {
+        this.issuerOfPatientID = issuerOfPatientID;
+    }
+
     public String getAcceptedImageSOPClasses() {
         return toString(imageCUIDS);
     }
- 
-    public void setAcceptedImageSOPClasses( String s ) {
+
+    public void setAcceptedImageSOPClasses(String s) {
         updateAcceptedSOPClass(imageCUIDS, s, service);
     }
 
     public String getAcceptedTransferSyntaxForImageSOPClasses() {
         return toString(imageTSUIDS);
     }
- 
+
     public void setAcceptedTransferSyntaxForImageSOPClasses(String s) {
         updateAcceptedTransferSyntax(imageTSUIDS, s);
     }
@@ -209,39 +209,39 @@ public class StoreScpService extends AbstractScpService {
     public String getAcceptedVideoSOPClasses() {
         return toString(videoCUIDS);
     }
- 
-    public void setAcceptedVideoSOPClasses( String s ) {
+
+    public void setAcceptedVideoSOPClasses(String s) {
         updateAcceptedSOPClass(videoCUIDS, s, service);
     }
 
     public String getAcceptedTransferSyntaxForVideoSOPClasses() {
         return toString(videoTSUIDS);
     }
- 
-    public void setAcceptedTransferSyntaxForVideoSOPClasses( String s ) {
+
+    public void setAcceptedTransferSyntaxForVideoSOPClasses(String s) {
         updateAcceptedTransferSyntax(videoTSUIDS, s);
     }
 
     public String getAcceptedSRSOPClasses() {
         return toString(srCUIDS);
     }
- 
-    public void setAcceptedSRSOPClasses( String s ) {
+
+    public void setAcceptedSRSOPClasses(String s) {
         updateAcceptedSOPClass(srCUIDS, s, service);
     }
 
     public String getAcceptedTransferSyntaxForSRSOPClasses() {
         return toString(srTSUIDS);
     }
- 
-    public void setAcceptedTransferSyntaxForSRSOPClasses( String s ) {
+
+    public void setAcceptedTransferSyntaxForSRSOPClasses(String s) {
         updateAcceptedTransferSyntax(srTSUIDS, s);
     }
 
     public String getAcceptedWaveformSOPClasses() {
         return toString(waveformCUIDS);
     }
- 
+
     public void setAcceptedWaveformSOPClasses(String s) {
         updateAcceptedSOPClass(waveformCUIDS, s, service);
     }
@@ -249,8 +249,8 @@ public class StoreScpService extends AbstractScpService {
     public String getAcceptedTransferSyntaxForWaveformSOPClasses() {
         return toString(waveformTSUIDS);
     }
- 
-    public void setAcceptedTransferSyntaxForWaveformSOPClasses( String s ) {
+
+    public void setAcceptedTransferSyntaxForWaveformSOPClasses(String s) {
         updateAcceptedTransferSyntax(waveformTSUIDS, s);
     }
 
@@ -261,7 +261,7 @@ public class StoreScpService extends AbstractScpService {
     public void setAcceptedOtherSOPClasses(String s) {
         updateAcceptedSOPClass(otherCUIDS, s, service);
     }
-    
+
     public final int getBufferSize() {
         return bufferSize;
     }
@@ -390,16 +390,10 @@ public class StoreScpService extends AbstractScpService {
                 parser.parseHeader();
             }
             ds
-                    .writeHeader(out,
-                            encParam,
-                            Tags.SeqDelimitationItem,
-                            VRs.NONE,
-                            0);
+                    .writeHeader(out, encParam, Tags.SeqDelimitationItem,
+                            VRs.NONE, 0);
         } else {
-            ds.writeHeader(out,
-                    encParam,
-                    Tags.PixelData,
-                    parser.getReadVR(),
+            ds.writeHeader(out, encParam, Tags.PixelData, parser.getReadVR(),
                     len);
             copy(in, out, len, buffer);
         }
@@ -408,26 +402,35 @@ public class StoreScpService extends AbstractScpService {
     private void checkDataset(Command rqCmd, Dataset ds, DcmParser parser)
             throws DcmServiceException {
         for (int i = 0; i < TYPE1_ATTR.length; ++i) {
-            if (!ds.containsValue(TYPE1_ATTR[i])) { throw new DcmServiceException(
-                    Status.DataSetDoesNotMatchSOPClassError,
-                    "Missing Type 1 Attribute " + Tags.toString(TYPE1_ATTR[i])); }
+            if (!ds.containsValue(TYPE1_ATTR[i])) {
+                throw new DcmServiceException(
+                        Status.DataSetDoesNotMatchSOPClassError,
+                        "Missing Type 1 Attribute "
+                                + Tags.toString(TYPE1_ATTR[i]));
+            }
         }
-        if (!rqCmd.getAffectedSOPInstanceUID().equals(ds
-                .getString(Tags.SOPInstanceUID))) { throw new DcmServiceException(
-                Status.DataSetDoesNotMatchSOPClassError,
-                "SOP Instance UID in Dataset differs from Affected SOP Instance UID"); }
-        if (!rqCmd.getAffectedSOPClassUID().equals(ds
-                .getString(Tags.SOPClassUID))) { throw new DcmServiceException(
-                Status.DataSetDoesNotMatchSOPClassError,
-                "SOP Class UID in Dataset differs from Affected SOP Class UID"); }
-        if (parser.getReadTag() != Tags.PixelData) return;
+        if (!rqCmd.getAffectedSOPInstanceUID().equals(
+                ds.getString(Tags.SOPInstanceUID))) {
+            throw new DcmServiceException(
+                    Status.DataSetDoesNotMatchSOPClassError,
+                    "SOP Instance UID in Dataset differs from Affected SOP Instance UID");
+        }
+        if (!rqCmd.getAffectedSOPClassUID().equals(
+                ds.getString(Tags.SOPClassUID))) {
+            throw new DcmServiceException(
+                    Status.DataSetDoesNotMatchSOPClassError,
+                    "SOP Class UID in Dataset differs from Affected SOP Class UID");
+        }
+        if (parser.getReadTag() != Tags.PixelData)
+            return;
         final int alloc = ds.getInt(Tags.BitsAllocated, 8);
         if (alloc != 8 && alloc != 16)
             throw new DcmServiceException(
                     Status.DataSetDoesNotMatchSOPClassError,
-                    "Illegal Value of Bits Allocated: " + alloc);            
+                    "Illegal Value of Bits Allocated: " + alloc);
         final int pixelDataLength = parser.getReadLength();
-        if (pixelDataLength == -1) return;
+        if (pixelDataLength == -1)
+            return;
         final int rows = ds.getInt(Tags.Rows, 0);
         final int columns = ds.getInt(Tags.Columns, 0);
         final int frames = ds.getInt(Tags.NumberOfFrames, 1);
@@ -435,54 +438,60 @@ public class StoreScpService extends AbstractScpService {
         if (rows * columns * frames * samples * alloc / 8 > pixelDataLength) {
             throw new DcmServiceException(
                     Status.DataSetDoesNotMatchSOPClassError,
-                    "Pixel Data Length[" + pixelDataLength
-                    +"] < Rows[" + rows + "]xColumns[" + columns
-                    +"]xFrames[" + frames + "]xSamples[" + samples
-                    +"]xBytes[" + (alloc/8) + "]");            
+                    "Pixel Data Length[" + pixelDataLength + "] < Rows[" + rows
+                            + "]xColumns[" + columns + "]xFrames[" + frames
+                            + "]xSamples[" + samples + "]xBytes[" + (alloc / 8)
+                            + "]");
         }
-		if (!ds.containsValue(Tags.PatientID)) {
-			final String pname = ds.getString(Tags.PatientName);
-			if (generatePatientID == null) {
-				log.warn("Receive object without Patient ID with Patient Name - "
-						+ pname 
-						+ " -> Creation of Media containing this object will fail!");
-			} else {
-				String pid = generatePatientID(ds);
-				ds.putLO(Tags.PatientID, pid);
-				ds.putLO(Tags.IssuerOfPatientID, issuerOfPatientID);
-				log.info("Receive object without Patient ID with Patient Name - "
-						+ pname + " -> add generated Patient ID - " + pid);
-			}
-		}
+        if (!ds.containsValue(Tags.PatientID)) {
+            final String pname = ds.getString(Tags.PatientName);
+            if (generatePatientID == null) {
+                log
+                        .warn("Receive object without Patient ID with Patient Name - "
+                                + pname
+                                + " -> Creation of Media containing this object will fail!");
+            } else {
+                String pid = generatePatientID(ds);
+                ds.putLO(Tags.PatientID, pid);
+                ds.putLO(Tags.IssuerOfPatientID, issuerOfPatientID);
+                log
+                        .info("Receive object without Patient ID with Patient Name - "
+                                + pname
+                                + " -> add generated Patient ID - "
+                                + pid);
+            }
+        }
     }
 
     private String generatePatientID(Dataset ds) {
-		int left = generatePatientID.indexOf('#');
-		if (left == -1) {
-			return generatePatientID;
-		}
-		StringBuffer sb = new StringBuffer(generatePatientID.substring(0,left));
-		// generate different Patient IDs for different studies
-		// if no Patient Name
-		String num = String.valueOf(0xffffffffL & (37
-				* ds.getString(Tags.PatientName,
-						ds.getString(Tags.StudyInstanceUID)).hashCode()
-				+ ds.getString(Tags.PatientBirthDate, "").hashCode()));
-		left += num.length();
-		final int right = generatePatientID.lastIndexOf('#') + 1;
-		while (left++ < right) {
-			sb.append('0');
-		}
-		sb.append(num);
-		sb.append(generatePatientID.substring(right));
-		return sb.toString();
-	}
+        int left = generatePatientID.indexOf('#');
+        if (left == -1) {
+            return generatePatientID;
+        }
+        StringBuffer sb = new StringBuffer(generatePatientID.substring(0, left));
+        // generate different Patient IDs for different studies
+        // if no Patient Name
+        String num = String.valueOf(0xffffffffL & (37 * ds.getString(
+                Tags.PatientName, ds.getString(Tags.StudyInstanceUID))
+                .hashCode() + ds.getString(Tags.PatientBirthDate, "")
+                .hashCode()));
+        left += num.length();
+        final int right = generatePatientID.lastIndexOf('#') + 1;
+        while (left++ < right) {
+            sb.append('0');
+        }
+        sb.append(num);
+        sb.append(generatePatientID.substring(right));
+        return sb.toString();
+    }
 
-	private void copy(InputStream in, OutputStream out, int totLen,
+    private void copy(InputStream in, OutputStream out, int totLen,
             byte[] buffer) throws IOException {
         for (int len, toRead = totLen; toRead > 0; toRead -= len) {
             len = in.read(buffer, 0, Math.min(toRead, buffer.length));
-            if (len == -1) { throw new EOFException(); }
+            if (len == -1) {
+                throw new EOFException();
+            }
             out.write(buffer, 0, len);
         }
     }
