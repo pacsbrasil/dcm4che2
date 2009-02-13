@@ -33,6 +33,8 @@ if( !console.info ) {
     console.timeMap = new Object();
 };
 
+XeroModel.prototype.version="$version$";
+
 /** Shared data is the static data that is shared between server and client. */
 XeroModel.prototype.shared = new Object();
 
