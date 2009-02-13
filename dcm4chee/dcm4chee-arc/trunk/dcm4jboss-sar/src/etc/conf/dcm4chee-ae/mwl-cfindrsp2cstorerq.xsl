@@ -3,6 +3,8 @@
   <xsl:output method="xml" indent="no"/>
   <xsl:template match="/dataset">
     <dataset>
+      <!-- Specific Character Set -->
+      <xsl:copy-of select="attr[@tag='00080005']"/>
       <!-- Accession Number -->
       <xsl:copy-of select="attr[@tag='00080050']"/>
       <!-- Admitting Diagnoses Description -->

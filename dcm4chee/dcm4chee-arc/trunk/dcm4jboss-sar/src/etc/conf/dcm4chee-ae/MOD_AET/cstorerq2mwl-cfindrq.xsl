@@ -15,6 +15,8 @@ for which MPPS N-CREATE was already received.
   <xsl:param name="time" select="'115600.000'"/>
   <xsl:template match="/dataset">
     <dataset>
+      <!-- Specific Character Set -->
+      <xsl:copy-of select="attr[@tag='00080005']"/>
       <!-- Accession Number -->
       <attr tag="00080050" vr="SH"/>
       <!-- Admitting Diagnoses Description -->
