@@ -71,11 +71,8 @@ public class TimeFilter  implements Filter{
 		else if( dur < 400 ) {
 			log.info(msg);
 		}
-		else if( dur < 1500 ) {
-			log.warn(msg);
-		}
 		else {
-			log.error(msg);
+			log.warn(msg);
 		}
 	}
 
