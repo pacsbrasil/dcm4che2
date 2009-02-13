@@ -53,8 +53,8 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.image.ByteLookupTable;
+import org.dcm4che2.image.LookupTable;
 import org.dcm4che2.image.ShortLookupTable;
-import org.dcm4che2.image.VOIUtils;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
@@ -124,22 +124,22 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 	  WadoImage wiRet = wi.clone();
 	  
 	  int previousBits = getPreviousReducedBits(wi);
+	  
 	  int originalSmallestPixelValue = getPreviousSmallestPixelValue(wi);
 	  int originalLargestPixelValue = getPreviousLargestPixelValue(wi);
-	  int currentSmallestPixelValue = originalSmallestPixelValue;
-	  int currentLargestPixelValue = originalLargestPixelValue;
+	  MinMaxResults minMaxResults = new MinMaxResults();
 	  if ( previousBits == 0 ) {
-		  int [] smlLrg = getSmallestLargest(wiRet);
-		  currentSmallestPixelValue = originalSmallestPixelValue = smlLrg[0];
-		  currentLargestPixelValue = originalLargestPixelValue = smlLrg[1];
+		  minMaxResults = getSmallestLargest(wiRet);
+		  originalSmallestPixelValue = minMaxResults.min;
+		  originalLargestPixelValue = minMaxResults.max;
 	  } else {
-		  currentSmallestPixelValue = 0;
-		  currentLargestPixelValue = (1 << previousBits)-1;
+		  minMaxResults.min = 0;
+		  minMaxResults.max = (1 << previousBits)-1;
 	  }
 	  
 	  WritableRaster r = wi.getValue().getRaster();
 
-	  if ( (currentSmallestPixelValue >= 0) && (currentLargestPixelValue <= maxAllowed) ) {
+	  if ( (minMaxResults.min >= 0) && (minMaxResults.max <= maxAllowed) ) {
 		 // This is actually just a bits sized raw image - don't need to
          // transcode it - could compute actual bits, but this is good enough.
 		 // This case is VERY common for CT images so it is worth including.  As well it doesn't
@@ -160,38 +160,70 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 	  
 	  addSmallestLargestToWadoImage(wiRet, originalSmallestPixelValue, originalLargestPixelValue, bits);
 
-	  int range = currentLargestPixelValue-currentSmallestPixelValue;
-	  int entries = range + 1;
+	  LookupTable lut = createLookupTable(minMaxResults, bits, maxAllowed, ds);
+	  BufferedImage bi = applyLUT(bits, wi, lut, r);
 	  
-	  BufferedImage bi;
-	  int stored = ds.getInt(Tag.BitsStored);
-	  boolean signed = ds.getInt(Tag.PixelRepresentation) == 1;
-
-	  if( bits>8 ) {
-		 ColorModel cm = new ComponentColorModel(gray, new int[]{bits}, false, false, ColorModel.OPAQUE, DataBuffer.TYPE_USHORT);
-		 bi = new BufferedImage(cm, r, false, null);
-		 short[] slut = new short[entries];
-		 for (int i = 0; i < entries; i++) {
-			slut[i] = (short) ((maxAllowed * i) / range);
-		 }
-		 ShortLookupTable lut = new ShortLookupTable(stored, signed, currentSmallestPixelValue, bits, slut);
-		 lut.lookup(r.getDataBuffer(), r.getDataBuffer());
-	  } else {
-		 if( bits!=8 ) throw new IllegalArgumentException("Only 8...15 bits supported for reduce bits filter.");
-		 bi = new BufferedImage( wi.getValue().getWidth(), wi.getValue().getHeight(), BufferedImage.TYPE_BYTE_GRAY); 
-		 byte[] blut = new byte[entries];
-		 for (int i = 0; i < entries; i++) {
-			blut[i] = (byte) ((maxAllowed * i) / range);
-		 }
-		 ByteLookupTable lut = new ByteLookupTable(stored, signed, currentSmallestPixelValue, bits, blut);
-		 lut.lookup(r.getDataBuffer(), bi.getRaster().getDataBuffer());
-	  }
-
 	  wiRet.setValue(bi);
-	  log.info(""+bits+" bit scaled " + nanoTimeToString(System.nanoTime() - start)+" small/large="+currentSmallestPixelValue+","+currentLargestPixelValue);
+	  
+	  log.info(""+bits+" bit scaled " + nanoTimeToString(System.nanoTime() - start)+" small/large="+minMaxResults.min+","+minMaxResults.max);
 
 	  return wiRet;
    }
+
+   
+   protected BufferedImage applyLUT(int bits, WadoImage wi, LookupTable lut, WritableRaster r) {
+
+	   BufferedImage bi;
+
+	   if( bits>8 ) {
+		   
+		   ColorModel cm = new ComponentColorModel(gray, new int[]{bits}, false, false, ColorModel.OPAQUE, DataBuffer.TYPE_USHORT);
+		   bi = new BufferedImage(cm, cm.createCompatibleWritableRaster(r.getWidth(), r.getHeight()), false, null);
+		   lut.lookup(r.getDataBuffer(), bi.getRaster().getDataBuffer());
+		   
+	   } else {
+		   
+		   if( bits!=8 ) throw new IllegalArgumentException("Only 8...15 bits supported for reduce bits filter.");
+		   bi = new BufferedImage( wi.getValue().getWidth(), wi.getValue().getHeight(), BufferedImage.TYPE_BYTE_GRAY); 
+		   lut.lookup(r.getDataBuffer(), bi.getRaster().getDataBuffer());
+	   }
+	   
+	   return bi;
+   }
+   
+   
+   protected LookupTable createLookupTable(MinMaxResults minMaxResults, int bits, int maxAllowed, DicomObject ds) {
+	   
+	   int range = minMaxResults.max - minMaxResults.min;
+	   int entries = range + 1;
+	   
+	   int stored = ds.getInt(Tag.BitsStored);
+	   boolean signed = ds.getInt(Tag.PixelRepresentation) == 1;
+	   
+	   LookupTable lut = null;
+	   
+	   if( bits > 8)
+	   {
+		   short[] slut = new short[entries];
+		   for (int i = 0; i < entries; i++) {
+			   slut[i] = (short) ((maxAllowed * i) / range);
+		   }
+		   lut = new ShortLookupTable(stored, signed, minMaxResults.min, bits, slut);
+	   }
+	   else {
+
+		   if( bits!=8 ) throw new IllegalArgumentException("Only 8...15 bits supported for reduce bits filter.");
+		   byte[] blut = new byte[entries];
+		   for (int i = 0; i < entries; i++) {
+			   blut[i] = (byte) ((maxAllowed * i) / range);
+		   }
+		   lut = new ByteLookupTable(stored, signed, minMaxResults.min, bits, blut);
+	   }
+	   
+	   return lut;
+   }
+   
+  
 
    /**
     * Adds the smallest and largest pixel value before data resampling, and the number
@@ -260,20 +292,11 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
     * @returns an array of the smallest/largest values.
     * @param wi
     */
-   public static int[] getSmallestLargest(WadoImage wi) {
+   public static MinMaxResults getSmallestLargest(WadoImage wi) {
 	  WritableRaster r = wi.getValue().getRaster();
 	  DicomObject ds = wi.getDicomObject();
-	  int smallest = ds.getInt(Tag.SmallestImagePixelValue);
-	  int largest = ds.getInt(Tag.LargestImagePixelValue);
-	  if (smallest >= largest) {
-		 int[] mm = VOIUtils.calcMinMax(ds, r.getDataBuffer());
-		 smallest = mm[0];
-		 largest = mm[1];
-		 ds.putInt(Tag.SmallestImagePixelValue, VR.IS, smallest);
-		 ds.putInt(Tag.LargestImagePixelValue, VR.IS, largest);
-	  }
-
-	  return new int[]{smallest,largest};
+	  
+	  return ExtractOverlaysAndPixelPadding.calcMinMax(ds, r.getDataBuffer());
    }
 
 
