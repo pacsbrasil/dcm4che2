@@ -79,6 +79,10 @@ public abstract class FilterCombineIterator<T, K> extends CombineIterator<K> {
 
 		/** Returns true if there are more object UIDs to iterate over */
 		public boolean hasNext() {
+		    if( item!=null ) {
+                restoreParams(item,params);
+		        item = null;
+		    }
 			return itemsIt.hasNext();
 		}
 
@@ -87,10 +91,12 @@ public abstract class FilterCombineIterator<T, K> extends CombineIterator<K> {
 		 * which case it means just skip this one.
 		 */
 		public Iterator<K> next() {
+		    if(item!=null) {
+		        restoreParams(item,params);
+		    }
 			item = itemsIt.next();
 			updateParams(item, params);
 			Iterator<K> ret = filterItem.callNextFilter(params);
-			restoreParams(item, params);
 			return ret;
 		}
 
