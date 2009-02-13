@@ -11,6 +11,14 @@
   <version>0.0.3-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Infoset classes for XDS.b (ebRS v3.0)</name>
+  <dependencies>
+        <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <version>1.1</version>
+        </dependency>
+
+  </dependencies>
   <build>
     <plugins>
       <plugin>
@@ -24,7 +32,7 @@
           </execution>
         </executions>
         <configuration>
-          <packageName>org.dcm4chee.xds.infoset.v30</packageName> <!-- The name of your generated source package -->
+          <packageName>org.dcm4chee.xds.infoset.v30</packageName>
           <extension>true</extension>
           <keep>true</keep>
           <verbose>true</verbose>
@@ -33,11 +41,11 @@
 
         <!-- if you want to use a specific version of JAX-WS, you can do so like this -->
         <dependencies>
-		  <dependency>
+		<dependency>
 	        <groupId>com.sun.xml.ws</groupId>
 	        <artifactId>jaxws-tools</artifactId>
 	        <version>2.1.1</version>
-		  </dependency>
+		</dependency>
         </dependencies>
       </plugin>
     </plugins>
