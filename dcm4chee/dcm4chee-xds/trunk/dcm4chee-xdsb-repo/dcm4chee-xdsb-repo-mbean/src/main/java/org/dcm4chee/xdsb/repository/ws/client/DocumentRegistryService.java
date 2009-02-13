@@ -55,18 +55,6 @@ public class DocumentRegistryService
 
     /**
      * 
-     * @param features
-     *     A list of {@link javax.xml.ws.WebServiceFeature} to configure on the proxy.  Supported features not in the <code>features</code> parameter will have their default values.
-     * @return
-     *     returns DocumentRegistryPortType
-     */
-    @WebEndpoint(name = "DocumentRegistry_Port_Soap11")
-    public DocumentRegistryPortType getDocumentRegistryPortSoap11(WebServiceFeature... features) {
-        return (DocumentRegistryPortType)super.getPort(new QName("urn:ihe:iti:xds-b:2007", "DocumentRegistry_Port_Soap11"), DocumentRegistryPortType.class, features);
-    }
-
-    /**
-     * 
      * @return
      *     returns DocumentRegistryPortType
      */
@@ -75,16 +63,4 @@ public class DocumentRegistryService
         return (DocumentRegistryPortType)super.getPort(new QName("urn:ihe:iti:xds-b:2007", "DocumentRegistry_Port_Soap12"), DocumentRegistryPortType.class);
     }
 
-    /**
-     * 
-     * @param features
-     *     A list of {@link javax.xml.ws.WebServiceFeature} to configure on the proxy.  Supported features not in the <code>features</code> parameter will have their default values.
-     * @return
-     *     returns DocumentRegistryPortType
-     */
-    @WebEndpoint(name = "DocumentRegistry_Port_Soap12")
-    public DocumentRegistryPortType getDocumentRegistryPortSoap12(WebServiceFeature... features) {
-        return (DocumentRegistryPortType)super.getPort(new QName("urn:ihe:iti:xds-b:2007", "DocumentRegistry_Port_Soap12"), DocumentRegistryPortType.class, features);
-    }
-    
 }
