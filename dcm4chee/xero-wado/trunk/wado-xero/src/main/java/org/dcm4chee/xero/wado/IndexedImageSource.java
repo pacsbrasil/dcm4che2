@@ -83,11 +83,13 @@ public class IndexedImageSource implements Filter<WadoImage> {
 		WadoImage orig = null;
 		if (needOriginalImage) {
 		    Object [] vals = FilterUtil.removeFromQuery(params, ROWS, COLUMNS, REGION);
+		    Object readRaw = params.remove(WadoImage.IMG_AS_BYTES);
 			orig = wadoImageFilter.filter(null, params);
             if( orig==null ) {
                log.error("Original source image must not be null, memory cache query string is {}",params.get(MemoryCacheFilter.KEY_NAME));
             }
 			FilterUtil.restoreQuery(params, vals, ROWS, COLUMNS, REGION );
+			if( readRaw!=null ) params.put(WadoImage.IMG_AS_BYTES, readRaw);
 			ds = orig.getDicomObject();
 		} else {
 			ds = dicomImageHeader.filter(null, params);

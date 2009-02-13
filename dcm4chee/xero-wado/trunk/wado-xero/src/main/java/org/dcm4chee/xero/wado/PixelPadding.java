@@ -88,6 +88,10 @@ public class PixelPadding implements Filter<WadoImage> {
 
 		WadoImage wi = (WadoImage) ret.getParameter(ImageDisplayRelative.NEEDS_IMAGE);
 		BufferedImage bi = wi.getValue();
+        if( bi==null ) {
+            log.error("No pixel data found for image/frame - can't read pixel padding.");
+            return null;
+        }
 		WritableRaster r = bi.getRaster();
 		
 		int w = biRet.getWidth();
