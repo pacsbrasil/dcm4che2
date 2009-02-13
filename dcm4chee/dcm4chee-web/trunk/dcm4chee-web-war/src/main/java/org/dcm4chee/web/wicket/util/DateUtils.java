@@ -101,7 +101,7 @@ public class DateUtils {
         do {
             sb.append(s.substring(pos, colon));
             pos = colon + 1;
-            s.indexOf(':', pos);
+            colon = s.indexOf(':', pos);
         } while (colon != -1);
         sb.append(s.substring(pos));
         return sb.toString();
