@@ -45,6 +45,7 @@ import javax.activation.DataHandler;
 
 import org.dcm4chee.docstore.Availability;
 import org.dcm4chee.docstore.BaseDocument;
+import org.dcm4chee.docstore.DataHandlerVO;
 import org.dcm4chee.docstore.DocumentStorageListener;
 import org.dcm4chee.docstore.Feature;
 
@@ -130,12 +131,21 @@ public interface DocumentStorage {
 	 * The mime type of the document is derived from DataHandler.
 	 *  
 	 * @param docUid Unique ID of the document
-	 * @param xdsDoc DataHandler with document data and contentType (mime type)
+	 * @param doc DataHandler with document data and contentType (mime type)
 	 * @return Document
 	 * @throws IOException
 	 */
-	BaseDocument storeDocument(String docUid, DataHandler xdsDoc) throws IOException;
+	BaseDocument storeDocument(String docUid, DataHandler doc) throws IOException;
 	
+        /**
+         * Store a set of documents in one transaction.
+         * <p/>
+         * @param docs Array of Document DataHandler Value Objects
+         * @return Documents
+         * @throws IOException
+         */
+        BaseDocument[] storeDocuments(Set<DataHandlerVO> docs) throws IOException;
+        
 	/**
 	 * Create a new empty document with given UID and mime type.
 	 * <p/>

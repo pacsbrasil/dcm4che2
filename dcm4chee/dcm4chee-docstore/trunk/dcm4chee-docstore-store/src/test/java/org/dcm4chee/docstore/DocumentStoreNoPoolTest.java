@@ -68,10 +68,10 @@ public class DocumentStoreNoPoolTest extends DocStoreTestBase {
     }
 
     protected void setUp() throws Exception {
+        this.initDocumentStoragePath();
     }
 
     protected void tearDown() throws Exception {
-        log.info("TEARDOWN");
         clearDocumentStorages();
     }
 
@@ -327,6 +327,66 @@ public class DocumentStoreNoPoolTest extends DocStoreTestBase {
         checkDocument(docUid, null, TestUtil.MIME_TEXT_PLAIN, TestUtil.DUMMY_PLAIN_DATA_SOURCE);
     }
 
+    public void testStoreDocumentsNoPool() throws IOException {
+        String docUid = "storeDocuments.nopool.";
+        DataHandler dh = new DataHandler(TestUtil.DUMMY_PLAIN_DATA_SOURCE);
+        Set<DataHandlerVO> docs = new HashSet<DataHandlerVO>();
+        int nrDocs = 3;
+        for ( int i = 0 ; i < nrDocs ; i++ ) {
+            docs.add(new DataHandlerVO(docUid+i, dh));
+        }
+        docStore.storeDocuments(null, docs );
+        for ( int i = 0 ; i < nrDocs ; i++ ) {
+            checkDocument(docUid+i, null, null, null);
+        }
+    }
+    
+    public void testStoreDocumentsPool1() throws IOException {
+        String docUid = "storeDocuments.pool1.";
+        DataHandler dh = new DataHandler(TestUtil.DUMMY_PLAIN_DATA_SOURCE);
+        Set<DataHandlerVO> docs = new HashSet<DataHandlerVO>();
+        int nrDocs = 3;
+        for ( int i = 0 ; i < nrDocs ; i++ ) {
+            docs.add(new DataHandlerVO(docUid+i, dh));
+        }
+        docStore.storeDocuments(TestUtil.POOL1, docs );
+        for ( int i = 0 ; i < nrDocs ; i++ ) {
+            checkDocument(docUid+i, null, null, null);
+        }
+    }
+    
+    public void testStoreDocumentsUnknownPool() throws IOException {
+        String docUid = "storeDocuments.unknown.pool.";
+        DataHandler dh = new DataHandler(TestUtil.DUMMY_PLAIN_DATA_SOURCE);
+        Set<DataHandlerVO> docs = new HashSet<DataHandlerVO>();
+        int nrDocs = 3;
+        for ( int i = 0 ; i < nrDocs ; i++ ) {
+            docs.add(new DataHandlerVO(docUid+i, dh));
+        }
+        docStore.storeDocuments("unknown", docs );
+        for ( int i = 0 ; i < nrDocs ; i++ ) {
+            checkDocument(docUid+i, null, null, null);
+        }
+    }
+
+    public void testStoreDocumentsFailed() throws IOException {
+        String docUid = "storeDocuments.failed.";
+        DataHandler dh = new DataHandler(TestUtil.DUMMY_PLAIN_DATA_SOURCE);
+        Set<DataHandlerVO> docs = new HashSet<DataHandlerVO>();
+        int nrDocs = 3;
+        for ( int i = 0 ; i < nrDocs ; i++ ) {
+            docs.add(new DataHandlerVO(docUid+i, i<2 ? dh : null));
+        }
+        try {
+            docStore.storeDocuments(null, docs );
+            fail("storeDocuments must throw a NullPointerException!");
+        } catch ( Exception ignore ) {}
+        for ( int i = 0 ; i < nrDocs ; i++ ) {
+            BaseDocument doc = docStore.getDocument(docUid+i, null);
+            assertNull("No Document should exist if storeDocuments failed! uid:"+docUid+i, doc);
+        }
+    }
+    
     public void testCommitDocument() {
         String docUid = "commit.pool.1.1";
         assertTrue("Commit not implemented and should return always true!", docStore.commitDocument(TestUtil.POOL1, docUid));

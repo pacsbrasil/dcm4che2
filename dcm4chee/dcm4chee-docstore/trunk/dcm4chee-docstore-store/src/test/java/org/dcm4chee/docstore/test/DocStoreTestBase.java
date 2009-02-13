@@ -41,7 +41,8 @@ package org.dcm4chee.docstore.test;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-
+import java.util.HashSet;
+import java.util.Set;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
@@ -58,9 +59,9 @@ public class DocStoreTestBase extends TestCase{
     protected static DocumentStore docStore;
 
     private static final String testStorageBaseDir="/docstore/test";
-    private static final String[] testStorageDirs= new String[]{"store","pool1_1","pool1_2","pool2_1","pool2_2"};
     
     private static Logger log = Logger.getLogger( DocStoreTestBase.class );
+    private static Set<File> storeDirs;
 
     protected DocStoreTestBase() {
         init();
@@ -89,12 +90,34 @@ public class DocStoreTestBase extends TestCase{
 
     protected void clearDocumentStorages() throws Exception {
         log.info("Clear document storages in base:"+testStorageBaseDir);
-        File f;
-        for ( String subdir : testStorageDirs) {
-            f = new File(testStorageBaseDir, subdir);
-            if ( f.exists() ) {
-                log.info("Delete all documents in "+f);
-                TestUtil.deleteDir(f, false);
+        File f = new File(testStorageBaseDir);
+        markStorageSubdirs(f);
+        TestUtil.deleteDir(f, false);
+    }
+    
+    private void markStorageSubdirs(File dir) {
+        File[] files = dir.listFiles();
+        if ( files == null ) return;
+        if ( storeDirs == null ) {
+            storeDirs = new HashSet<File>();
+        }
+        Set<File> dirs = new HashSet<File>();
+        for ( File f : files ) {
+            if ( f.isDirectory()) {
+                storeDirs.add(f);
+            }
+        }
+        log.debug("Marked directories:"+storeDirs);
+    }
+
+    protected void initDocumentStoragePath() {
+        log.info("Create document storages base dir:"+testStorageBaseDir);
+        File f = new File(testStorageBaseDir);
+        if ( storeDirs != null ) {
+            f.mkdirs();
+            for ( File subdir : storeDirs ) {
+                log.debug("initDocumentStoragePath create dir:"+subdir);
+                subdir.mkdirs();
             }
         }
     }

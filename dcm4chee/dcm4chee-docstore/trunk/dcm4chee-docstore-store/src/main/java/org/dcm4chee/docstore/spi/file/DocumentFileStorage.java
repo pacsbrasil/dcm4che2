@@ -10,6 +10,7 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -17,6 +18,7 @@ import javax.activation.FileDataSource;
 import org.apache.log4j.Logger;
 import org.dcm4chee.docstore.Availability;
 import org.dcm4chee.docstore.BaseDocument;
+import org.dcm4chee.docstore.DataHandlerVO;
 import org.dcm4chee.docstore.DocumentStore;
 import org.dcm4chee.docstore.Feature;
 import org.dcm4chee.docstore.spi.BaseDocumetStorage;
@@ -215,6 +217,27 @@ public class DocumentFileStorage extends BaseDocumetStorage {
         return doc;
     }
 
+    public BaseDocument[] storeDocuments(Set<DataHandlerVO> dhVOs)
+        throws IOException {
+        BaseDocument[] docs = new BaseDocument[dhVOs.size()];
+        int i = 0;
+        try {
+            for ( DataHandlerVO vo : dhVOs ) {
+                docs[i++] = storeDocument(vo.getUid(), vo.getDataHandler());
+            }
+        } catch ( Exception x) {
+            log.error("storeDocuments failed! RollBack "+(--i)+" Documents!",x);
+            for ( int j = 0 ; j < i ; j++ ) {
+                log.debug("   Rollback storeDocuments! ("+j+") Delete Document:"+docs[j]);
+                this.deleteDocument(docs[j].getDocumentUID());
+            }
+            IOException iox = new IOException("storeDocuments failed!");
+            iox.initCause(x);
+            throw iox;
+        }
+        return docs;
+    }
+
     public BaseDocument storeDocument(String docUid, DataHandler dh) throws IOException {
         File docPath = getDocumentPath(docUid);
         log.debug("#### Document Path:"+docPath);
@@ -375,4 +398,5 @@ public class DocumentFileStorage extends BaseDocumetStorage {
         return super.toString()+" baseDir:"+baseDir+"(minFree:"+this.minFree+") "+
         this.getStorageAvailability();
     }
+
 }

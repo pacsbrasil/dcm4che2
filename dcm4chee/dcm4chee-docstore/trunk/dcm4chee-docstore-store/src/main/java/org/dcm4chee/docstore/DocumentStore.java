@@ -42,9 +42,11 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.activation.DataHandler;
+import javax.activation.DataSource;
 
 import org.apache.log4j.Logger;
 import org.dcm4chee.docstore.spi.DocumentStorage;
@@ -363,6 +365,20 @@ public class DocumentStore {
     }
 
     /**
+     * Store/Create a document in given storage pool with content given in Datahandler.
+     * 
+     * @param docUid
+     * @param dh
+     * @return
+     * @throws IOException
+     */
+    public BaseDocument[] storeDocuments(String pool, Set<DataHandlerVO> docs) throws IOException {
+         DocumentStorage store = selectDocStorageFromPoolOrDomain(pool);
+         return store.storeDocuments(docs);
+    }
+
+
+    /** 
      * Delete document.
      * Deletes the document with docUid from given pool.
      * Documents stored on other pools are NOT deleted!

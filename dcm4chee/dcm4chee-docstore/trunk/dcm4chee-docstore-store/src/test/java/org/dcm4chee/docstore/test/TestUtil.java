@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Set;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -14,6 +15,7 @@ import javax.mail.util.ByteArrayDataSource;
 import org.apache.log4j.Logger;
 import org.dcm4chee.docstore.Availability;
 import org.dcm4chee.docstore.BaseDocument;
+import org.dcm4chee.docstore.DataHandlerVO;
 import org.dcm4chee.docstore.DocumentStore;
 import org.dcm4chee.docstore.DocumentStoreNoPoolTest;
 import org.dcm4chee.docstore.spi.BaseDocumetStorage;
@@ -135,6 +137,11 @@ public class TestUtil {
 
             public BaseDocument storeDocument(String docUid, DataHandler xdsDoc)
             throws IOException {
+                return null;
+            }
+
+            public BaseDocument[] storeDocuments(Set<DataHandlerVO> docs)
+                    throws IOException {
                 return null;
             }
 
