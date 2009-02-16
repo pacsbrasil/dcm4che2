@@ -53,6 +53,7 @@ public class FileSystemInfo {
                 log.warn("freeSpace using JDK6 getUsableSpace throws exception! try to get free space via DFCommand service!");
             }
         }
+        log.info("++++++++++++++ getServer().isRegistered("+dfCmdName+")"+getServer().isRegistered(dfCmdName));
         if ( getServer().isRegistered(dfCmdName) ) {
             return ((Long)getServer().invoke(dfCmdName, "freeSpace",
                 new Object[] {path},

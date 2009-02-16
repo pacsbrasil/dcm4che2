@@ -32,12 +32,10 @@ public class DocumentStorageListenerTest extends DocStoreTestBase {
     }
 
     protected void setUp(){
-        initDocumentStoragePath();
         listener.init();
     }
     
     protected void tearDown() throws Exception {
-        clearDocumentStorages();
     }
     
     public void testDocumentStored() throws IOException {

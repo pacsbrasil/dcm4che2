@@ -38,7 +38,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.docstore;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
@@ -50,7 +49,6 @@ import java.util.Set;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
-import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.log4j.Logger;
 import org.dcm4chee.docstore.spi.DocumentStorage;
@@ -65,14 +63,6 @@ public class DocumentStoreNoPoolTest extends DocStoreTestBase {
     public DocumentStoreNoPoolTest() throws IOException {
         super();
         initDocStore();
-    }
-
-    protected void setUp() throws Exception {
-        this.initDocumentStoragePath();
-    }
-
-    protected void tearDown() throws Exception {
-        clearDocumentStorages();
     }
 
     public void testGetDocStorageFromPool() {
@@ -182,15 +172,16 @@ public class DocumentStoreNoPoolTest extends DocStoreTestBase {
     }
 
     public void testGetDocument() throws IOException {
-        BaseDocument doc = docStore.getDocument(TestUtil.DUMMY_DOC_UID, TestUtil.MIME_TEXT_PLAIN);
-        assertNull("Document found for non existing document! uid:"+TestUtil.DUMMY_DOC_UID, doc);
-        TestUtil.createDummyDocument(docStore, TestUtil.DUMMY_DOC_UID, TestUtil.MIME_TEXT_PLAIN);
+        BaseDocument doc = docStore.getDocument(TestUtil.UNKNOWN, TestUtil.MIME_TEXT_PLAIN);
+        assertNull("Document found for non existing document! uid:"+TestUtil.UNKNOWN, doc);
+        String docUid = "get.document.1";
+        TestUtil.createDummyDocument(docStore, docUid, TestUtil.MIME_TEXT_PLAIN);
         
-        checkDocument(TestUtil.DUMMY_DOC_UID, TestUtil.MIME_TEXT_PLAIN, TestUtil.MIME_TEXT_PLAIN, TestUtil.DUMMY_PLAIN_DATA_SOURCE);
-        doc = docStore.getDocument(TestUtil.DUMMY_DOC_UID, "application/dicom");
-        assertNull("Document found for existing document with wrong mime type! uid:"+TestUtil.DUMMY_DOC_UID, doc);
-        doc = docStore.getDocument(TestUtil.DUMMY_DOC_UID, null);
-        checkDocument(TestUtil.DUMMY_DOC_UID, null, TestUtil.MIME_TEXT_PLAIN, TestUtil.DUMMY_PLAIN_DATA_SOURCE);
+        checkDocument(docUid, TestUtil.MIME_TEXT_PLAIN, TestUtil.MIME_TEXT_PLAIN, TestUtil.DUMMY_PLAIN_DATA_SOURCE);
+        doc = docStore.getDocument(docUid, "application/dicom");
+        assertNull("Document found for existing document with wrong mime type! uid:"+docUid, doc);
+        doc = docStore.getDocument(docUid, null);
+        checkDocument(docUid, null, TestUtil.MIME_TEXT_PLAIN, TestUtil.DUMMY_PLAIN_DATA_SOURCE);
     }
 
     public void testCreateDocument() throws IOException {

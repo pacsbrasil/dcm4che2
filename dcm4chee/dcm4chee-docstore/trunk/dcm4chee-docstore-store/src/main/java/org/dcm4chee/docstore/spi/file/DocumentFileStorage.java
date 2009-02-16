@@ -256,7 +256,8 @@ public class DocumentFileStorage extends BaseDocumetStorage {
             }
             BaseDocument doc = new BaseDocument(docUid, mime[0], 
                     new DataHandler(new FileDataSource(docFile)), Availability.ONLINE, docFile.length(), this);
-            doc.setHash(DocumentStore.toHexString(digest));
+            if ( digest != null )
+                doc.setHash(DocumentStore.toHexString(digest));
             notifyStored(doc);
             return doc;
         } catch (NoSuchAlgorithmException x) {

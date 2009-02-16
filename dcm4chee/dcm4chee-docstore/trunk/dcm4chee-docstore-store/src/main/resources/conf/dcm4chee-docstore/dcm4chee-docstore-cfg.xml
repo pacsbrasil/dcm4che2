@@ -11,7 +11,7 @@
                     disableHash.....If set no SHA1 hash calculation is performed. default: SHA1 is enabled.
             -->
     		<init>BASE_DIR=docstore/rid/store
-            	  disableHash=true;
+            	  ;disableHash=true
     		</init>
             <FeatureList>
                 <Feature name="CACHE"/>

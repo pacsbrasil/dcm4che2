@@ -272,7 +272,7 @@ public class DocumentStorageRegistry extends DefaultHandler {
     {
         if ( initStringSB != null ) {
             if ( log.isDebugEnabled() ) log.debug("initString characters:'"+new String(ch, start, length)+"'");
-            initStringSB.append(new String(ch, start, length)).append("\n");
+            initStringSB.append(new String(ch, start, length));
         }
     }
 

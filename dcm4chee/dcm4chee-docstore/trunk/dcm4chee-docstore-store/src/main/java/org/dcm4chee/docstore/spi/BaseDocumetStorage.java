@@ -38,14 +38,13 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.docstore.spi;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
-
 import org.dcm4chee.docstore.Availability;
 import org.dcm4chee.docstore.BaseDocument;
 import org.dcm4chee.docstore.DocumentStorageListener;
@@ -63,7 +62,6 @@ public abstract class BaseDocumetStorage implements DocumentStorage {
     }
 
     public BaseDocumetStorage(String name) {
-        this.desc = desc;
         this.name = name;
     }
 
@@ -120,8 +118,18 @@ public abstract class BaseDocumetStorage implements DocumentStorage {
 
     protected Properties readInitAsProperties(String initString) throws IOException{
         Properties p = new Properties();
-        if ( initString != null )
-            p.load(new ByteArrayInputStream( initString.getBytes()));
+        if ( initString != null ) {
+            StringTokenizer st = new StringTokenizer(initString);
+            String s;
+            int pos;
+            while ( st.hasMoreTokens()) {
+                s = st.nextToken().trim();
+                pos = s.indexOf('=');
+                if ( pos != -1) {
+                    p.setProperty(s.substring(0,pos), s.substring(++pos));
+                }
+            }
+        }
         return p;
     }
 
