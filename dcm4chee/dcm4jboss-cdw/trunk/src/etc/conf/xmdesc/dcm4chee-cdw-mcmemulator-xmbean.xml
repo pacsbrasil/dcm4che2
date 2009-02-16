@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- $Id: dcm4chee-cdw-mcmscp-xmbean.xml 8787 2008-12-16 12:29:11Z gunterze $ -->
+
+<!DOCTYPE mbean PUBLIC
+   "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
+   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+
+<mbean>
+   <description>DICOM Media Creation Request Emulator</description>
+
+   <descriptors>
+      <persistence persistPolicy="OnUpdate"/>
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+   </descriptors>
+
+   <class>org.dcm4chex.cdw.mbean.MediaCreationRequestEmulatorService</class>
+
+   <constructor>
+      <description>The default constructor</description>
+      <name>MediaCreationRequestEmulatorService</name>
+   </constructor>
+
+   <!-- Attributes -->
+   &defaultAttributes;
+   <attribute access="read-only"
+      getMethod="getSourceAET">
+      <description>AE Title of Storage SCU, for which Media Creation Requests
+       are emulated by this service on receive of objects belonging to one
+       Patient.
+      </description>
+      <name>SourceAETitle</name>
+      <type>java.lang.String</type>
+   </attribute>   
+   <attribute access="read-write"
+      getMethod="getCreateDelay"
+      setMethod="setCreateDelay">
+      <description>Minimal delay in minutes (##m) or seconds (##s) after
+      receive of last object belonging to one patient, before a Media Creation
+      Request for all objects received for that patient is emulated.
+      </description>
+      <name>CreateDelay</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="1m" />
+      </descriptors>
+   </attribute>   
+   <attribute access="read-write"
+      getMethod="getPollInterval"
+      setMethod="setPollInterval">
+      <description>Interval in minutes (##m) or seconds (##s) between checks
+      for received objects from specified Source AE Title, for which Media
+      Creation Requests shall be emulated.
+      </description>
+      <name>PollInterval</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="1m" />
+      </descriptors>
+   </attribute>   
+   <attribute access="read-write"
+      getMethod="getMediaWriter"
+      setMethod="setMediaWriter">
+      <description>Media Writer used for Media Creation Requests emulated by
+      this service.
+      </description>
+      <name>MediaWriter</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="CDRecord" />
+      </descriptors>
+   </attribute>   
+   <attribute access="read-write"
+      getMethod="getFilesetID"
+      setMethod="setFilesetID">
+      <description>Fileset ID in emulated Media Creation request.
+        0 or # will be replaced by NextFilesetIDSeqno.
+      </description>
+      <name>FilesetID</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="DISK_000" />
+      </descriptors>
+   </attribute>   
+   <attribute access="read-write"
+      getMethod="getNextFilesetIDSeqno"
+      setMethod="setNextFilesetIDSeqno">
+      <description>Used with FilesetID to generate the Fileset ID in emulated
+        Media Creation requests. Will automatic incremented for each generated
+        Fileset ID.
+      </description>
+      <name>NextFilesetIDSeqno</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1" />
+      </descriptors>
+   </attribute>   
+   <attribute access="read-write"
+      getMethod="getRequestPriority"
+      setMethod="setRequestPriority">
+      <description>Description not yet written.
+      </description>
+      <name>RequestPriority</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="LOW" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getNumberOfCopies"
+      setMethod="setNumberOfCopies">
+      <description>Description not yet written.
+      </description>
+      <name>NumberOfCopies</name>
+      <type>int</type>
+      <descriptors>
+         <value value="10" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getLabelText"
+      setMethod="setLabelText">
+      <description>Description not yet written.
+      </description>
+      <name>LabelText</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isLabelUsingInformationExtractedFromInstances"
+      setMethod="setLabelUsingInformationExtractedFromInstances">
+      <description>Description not yet written.
+      </description>
+      <name>LabelUsingInformationExtractedFromInstances</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getLabelStyleSelection"
+      setMethod="setLabelStyleSelection">
+      <description>Description not yet written.
+      </description>
+      <name>LabelStyleSelection</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isAllowMediaSplitting"
+      setMethod="setAllowMediaSplitting">
+      <description>Description not yet written.
+      </description>
+      <name>AllowMediaSplitting</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isAllowLossyCompression"
+      setMethod="setAllowLossyCompression">
+      <description>Description not yet written.
+      </description>
+      <name>AllowLossyCompression</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getIncludeNonDICOMObjects"
+      setMethod="setIncludeNonDICOMObjects">
+      <description>Description not yet written.
+      </description>
+      <name>IncludeNonDICOMObjects</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NO" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isIncludeDisplayApplication"
+      setMethod="setIncludeDisplayApplication">
+      <description>Description not yet written.
+      </description>
+      <name>IncludeDisplayApplication</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isPreserveInstances"
+      setMethod="setPreserveInstances">
+      <description>Description not yet written.
+      </description>
+      <name>PreserveInstances</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+  <attribute access="read-write"
+      getMethod="getMediaComposerQueueName"
+      setMethod="setMediaComposerQueueName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>MediaComposerQueueName</name>
+      <type>java.lang.String</type>
+     <descriptors>
+         <value value="MediaComposer" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getSpoolDirName"
+      setMethod="setSpoolDirName">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>SpoolDirName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getSchedulerServiceName"
+      setMethod="setSchedulerServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>SchedulerServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>  
+   
+   <!-- Operations -->
+   &defaultOperations;
+</mbean>

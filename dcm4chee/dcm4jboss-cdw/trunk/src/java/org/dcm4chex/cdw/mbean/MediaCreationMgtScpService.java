@@ -512,7 +512,7 @@ public class MediaCreationMgtScpService extends AbstractScpService {
 
         Association a = assoc.getAssociation();
         MediaCreationRequest mcrq = new MediaCreationRequest(f,
-                a.getCallingAET(), a.getSocket().getInetAddress());
+                a.getCallingAET());
         Dataset attrs;
         try {
             attrs = mcrq.readAttributes(log);

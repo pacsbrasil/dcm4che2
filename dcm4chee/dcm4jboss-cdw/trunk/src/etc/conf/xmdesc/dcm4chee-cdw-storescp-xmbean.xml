@@ -358,7 +358,15 @@
       <descriptors>
          <value value="512" />
       </descriptors>
-   </attribute>   
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMediaCreationRequestEmulatorServiceNamePrefix"
+      setMethod="setMediaCreationRequestEmulatorServiceNamePrefix">
+      <description>Used internally - do NOT modify.
+      </description>
+      <name>MediaCreationRequestEmulatorServiceNamePrefix</name>
+      <type>java.lang.String</type>
+   </attribute>
    <attribute access="read-write"
       getMethod="getDcmServerName"
       setMethod="setDcmServerName">

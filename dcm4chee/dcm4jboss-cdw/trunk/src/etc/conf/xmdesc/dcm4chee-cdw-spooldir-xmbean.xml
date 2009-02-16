@@ -110,6 +110,21 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getEmulateRequestDirPath"
+      setMethod="setEmulateRequestDirPath">
+      <description>Path of Spool Directory, where the DICOM Storage SCP
+      accumulates SOP Instance and SOP Class UIDs of DICOM objects received
+      from Storage SCUs, for which a Media Creation Request Emulator Service
+      is deployed. Relative path names will be resolved against directory
+      $DCM4CHEE_HOME/server/default/data/."
+      </description>
+      <name>EmulateRequestDirPath</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="emulate" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getFilesetDirPath"
       setMethod="setFilesetDirPath">
       <description>Path of File-set Spool Directory, where the File-set Composer
@@ -304,6 +319,36 @@
          <type>java.lang.String</type>
       </parameter>
       <return-type>java.io.File</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>Get Emulate Request File - Used Internally</description>
+      <name>getEmulateRequestFile</name>
+      <parameter>
+         <description>Source AET</description>
+         <name>aet</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+         <description>Patient ID</description>
+         <name>pid</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.io.File</return-type>
+   </operation>
+   <operation impact="INFO">
+      <description>Get Emulate Request Files - Used Internally</description>
+      <name>getEmulateRequestFiles</name>
+      <parameter>
+         <description>Source AET</description>
+         <name>aet</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+         <description>last modified before in ms</description>
+         <name>before</name>
+         <type>long</type>
+      </parameter>
+      <return-type>[Ljava.io.File;</return-type>
    </operation>
    <operation impact="ACTION">
       <description>Delete Instance File - Used Internally</description>

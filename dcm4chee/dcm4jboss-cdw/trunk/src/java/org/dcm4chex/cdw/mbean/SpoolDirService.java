@@ -39,9 +39,12 @@
 package org.dcm4chex.cdw.mbean;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 import javax.management.Notification;
 import javax.management.NotificationListener;
@@ -60,15 +63,17 @@ import org.jboss.system.server.ServerConfigLocator;
 public class SpoolDirService extends ServiceMBeanSupport 
         implements NotificationListener {
 
-    private static final long MIN_HWM = 10000000L;
+    static final long MIN_HWM = 10000000L;
 
-    private static final long MS_PER_MINUTE = 60000L;
+    static final long MS_PER_MINUTE = 60000L;
 
-    private static final long MS_PER_HOUR = MS_PER_MINUTE * 60;
+    static final long MS_PER_HOUR = MS_PER_MINUTE * 60;
 
-    private static final long MS_PER_DAY = MS_PER_HOUR * 24;
+    static final long MS_PER_DAY = MS_PER_HOUR * 24;
 
     private String archiveDirPath;
+
+    private String emulateRequestDirPath;
 
     private String filesetDirPath;
 
@@ -77,6 +82,8 @@ public class SpoolDirService extends ServiceMBeanSupport
     private String labelDirPath;
 
     private File archiveDir;
+
+    private File emulateRequestDir;
 
     private File filesetDir;
 
@@ -134,6 +141,17 @@ public class SpoolDirService extends ServiceMBeanSupport
         this.archiveDirPath = path;
         this.archiveDir = dir;
         aduRefreshTime = 0L;
+    }
+
+    public final String getEmulateRequestDirPath() {
+        return emulateRequestDirPath;
+    }
+
+    public void setEmulateRequestDirPath(String path) {
+        File dir = resolve(new File(path));
+        checkDir(dir);
+        this.emulateRequestDirPath = path;
+        this.emulateRequestDir = dir;
     }
 
     private File resolve(File dir) {
@@ -346,6 +364,40 @@ public class SpoolDirService extends ServiceMBeanSupport
 
     public File getMediaFilesetRootDir(String iuid) {
         return new File(filesetDir, iuid);
+    }
+
+    public File getEmulateRequestFile(String aet, String pid) {
+        File dir = new File(emulateRequestDir, aet);
+        if (!dir.exists()) {
+            dir.mkdirs();
+            if (dir.mkdirs()) log.debug("Success: M-WRITE " + dir);
+        }
+        File f;
+        try {
+            f = new File(dir, URLEncoder.encode(pid, "US-ASCII"));
+        } catch (UnsupportedEncodingException e) {
+            // should never happen
+            throw new RuntimeException(e);
+        }
+        if (!f.exists()) {
+            try {
+                f.createNewFile();
+                log.debug("Success: M-WRITE " + f);
+            } catch (IOException e) {
+                log.error("Failed: M-WRITE " + f, e);
+            }
+        }
+        return f;
+    }
+
+    public File[] getEmulateRequestFiles(String aet,
+            final long lastModifiedBefore) {
+        File dir = new File(emulateRequestDir, aet);
+        return dir.listFiles(new FileFilter() {
+
+            public boolean accept(File f) {
+                return f.lastModified() < lastModifiedBefore;
+            }});
     }
 
     public void purge() {

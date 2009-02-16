@@ -65,10 +65,8 @@ public class MediaCreationRequest implements Serializable {
     
     private final String requestAET;
 
-    private final InetAddress requestIP;
-    
     private final Date timestamp;
-    
+
     private String mediaWriterName;
 
     private String priority = Priority.LOW;
@@ -99,18 +97,15 @@ public class MediaCreationRequest implements Serializable {
 
     private boolean done = false;
 
-    public MediaCreationRequest(File requestFile, String requestAET,
-            InetAddress requestIP) {
+    public MediaCreationRequest(File requestFile, String requestAET) {
         this.requestFile = requestFile;
         this.requestAET = requestAET;
-        this.requestIP = requestIP;
         this.timestamp = new Date();
     }
 
     public MediaCreationRequest(MediaCreationRequest other) {
         this.requestFile = other.requestFile;
         this.requestAET = other.requestAET;
-        this.requestIP = other.requestIP;
         this.timestamp = other.timestamp;
         this.mediaWriterName = other.mediaWriterName;
         this.priority = other.priority;
@@ -142,10 +137,6 @@ public class MediaCreationRequest implements Serializable {
 
     public final String getRequestAET() {
         return requestAET;
-    }
-
-    public final InetAddress getRequestIP() {
-        return requestIP;
     }
 
     public final String getMediaWriterName() {

@@ -46,11 +46,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.io.Writer;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -164,6 +168,8 @@ public class StoreScpService extends AbstractScpService {
 
     private int bufferSize = 512;
 
+    private String mediaCreationRequestEmulatorServiceNamePrefix;
+
     private final DcmService service = new DcmServiceBase() {
 
         protected void doCStore(ActiveAssociation assoc, Dimse rq,
@@ -260,6 +266,24 @@ public class StoreScpService extends AbstractScpService {
 
     public void setAcceptedOtherSOPClasses(String s) {
         updateAcceptedSOPClass(otherCUIDS, s, service);
+    }
+
+    public String getMediaCreationRequestEmulatorServiceNamePrefix() {
+        return mediaCreationRequestEmulatorServiceNamePrefix;
+    }
+
+    public void setMediaCreationRequestEmulatorServiceNamePrefix(
+            String namePrefix) {
+        this.mediaCreationRequestEmulatorServiceNamePrefix = namePrefix;
+    }
+
+    private boolean emulateMediaCreationRequestForAET(String aet) {
+        try {
+            return server.isRegistered(new ObjectName(
+                    mediaCreationRequestEmulatorServiceNamePrefix + aet));
+        } catch (MalformedObjectNameException e) {
+            return false;
+        }
     }
 
     public final int getBufferSize() {
@@ -364,6 +388,17 @@ public class StoreScpService extends AbstractScpService {
                 } catch (IOException ignore) {
                 }
                 spoolDir.register(md5file);
+            }
+            String aet = assoc.getAssociation().getCallingAET();
+            if (emulateMediaCreationRequestForAET(aet)) {
+                File f = spoolDir.getEmulateRequestFile(aet,
+                        ds.getString(Tags.PatientID));
+                FileWriter fw = new FileWriter(f, true);
+                try {
+                    fw.write(iuid + '/' + cuid + '\n');
+                } finally {
+                    fw.close();
+                }
             }
         } catch (Throwable t) {
             log.error("Processing Failure during receive of instance[uid="
