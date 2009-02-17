@@ -369,12 +369,13 @@ public abstract class MediaWriterServiceSupport extends
     public void burn(File isoImageFile) throws MediaCreationException {
         int exitCode;
         OutputStream logout = null;
+        OutputStream stderr = new ByteArrayOutputStream();
         try {
             String[] cmdarray = makeBurnCmd(isoImageFile);
             if (logEnabled)
                     logout = new BufferedOutputStream(new FileOutputStream(
                             logFile));
-            exitCode = new Executer(cmdarray, logout, null).waitFor();
+            exitCode = new Executer(cmdarray, logout, stderr).waitFor();
         } catch (InterruptedException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);
@@ -387,7 +388,9 @@ public abstract class MediaWriterServiceSupport extends
             } catch (IOException ignore) {
             }
         }
-        if (exitCode != 0) { throw new MediaCreationException(
+        if (exitCode != 0) {
+            log.error(burncmd + " stderr: " + stderr.toString());
+            throw new MediaCreationException(
                 ExecutionStatusInfo.MCD_FAILURE, burncmd + " " + isoImageFile
                         + " returns " + exitCode); }
     }
@@ -422,10 +425,12 @@ public abstract class MediaWriterServiceSupport extends
     }
 
     private boolean exec(String[] cmd, String warning) {
+        ByteArrayOutputStream stderr = new ByteArrayOutputStream();
         try {
-            int exit = new Executer(cmd, null, null).waitFor();
+            int exit = new Executer(cmd, null, stderr).waitFor();
             if (exit == 0) return true;
-            log.warn(warning + " exit(" + exit + ")");
+            log.warn(warning + " exit(" + exit + ") + stderr: "
+                    + stderr.toString());
         } catch (Exception e) {
             log.warn(warning, e);
         }
@@ -436,11 +441,15 @@ public abstract class MediaWriterServiceSupport extends
             throws MediaCreationException {
         try {
             ByteArrayOutputStream stdout = new ByteArrayOutputStream();
-            Executer ex = new Executer(cmdarray, stdout, null);
+            ByteArrayOutputStream stderr = new ByteArrayOutputStream();
+            Executer ex = new Executer(cmdarray, stdout, stderr);
             int exit = ex.waitFor();
             String result = stdout.toString();
             if (log.isDebugEnabled())
                     log.debug(burncmd + " stdout: " + result);
+            if (exit != 0) {
+                log.warn(burncmd + " stderr: " + stderr.toString());
+            }
             return exit == 0 && result.indexOf(match) != -1;
         } catch (InterruptedException e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
