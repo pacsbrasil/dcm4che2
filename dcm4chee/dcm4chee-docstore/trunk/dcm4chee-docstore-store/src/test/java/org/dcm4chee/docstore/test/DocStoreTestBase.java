@@ -38,8 +38,10 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.docstore.test;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
@@ -50,6 +52,8 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 import org.dcm4chee.docstore.DocumentStorageRegistry;
 import org.dcm4chee.docstore.DocumentStore;
+import org.dcm4chee.docstore.spi.DocumentStorage;
+import org.dcm4chee.docstore.spi.file.DocumentFileStorage;
 
 public class DocStoreTestBase extends TestCase{
 
@@ -73,6 +77,18 @@ public class DocStoreTestBase extends TestCase{
             URL url = cl.getResource("test_docstore_cfg.xml");
             log.info("################## Test docstore cfg file:"+url);
             registry.config(url.toExternalForm());
+            purgeDocumentDirs(registry.getDocumentStorages("POOL"));
+            purgeDocumentDirs(registry.getDocumentStorages("TEST"));
+        }
+    }
+
+    private static void purgeDocumentDirs(Collection<DocumentStorage> stores) {
+        if ( stores == null ) return;
+        File f;
+        for ( DocumentStorage st : stores ) {
+            f = ((DocumentFileStorage) st).getBaseDir();
+            log.info("DELETE document storage directory initially! baseDir: "+f);
+            TestUtil.deleteDir(f, false);
         }
     }
 

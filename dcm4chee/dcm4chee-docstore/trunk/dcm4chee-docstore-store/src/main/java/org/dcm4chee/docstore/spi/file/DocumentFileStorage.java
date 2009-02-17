@@ -102,6 +102,10 @@ public class DocumentFileStorage extends BaseDocumetStorage {
             baseDir.mkdirs();
         }
     }
+    
+    public File getBaseDir() {
+        return baseDir;
+    }
 
     public Availability getStorageAvailability() {
         log.debug("getStorageAvailability called! currentAvailabilty:"+currentAvailabilty);
