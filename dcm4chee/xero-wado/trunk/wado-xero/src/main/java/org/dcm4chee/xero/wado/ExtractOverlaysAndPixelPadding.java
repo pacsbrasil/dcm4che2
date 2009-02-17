@@ -71,7 +71,7 @@ public class ExtractOverlaysAndPixelPadding {
         boolean signed = img.getInt(Tag.PixelRepresentation) != 0;
         int range = 1 << stored;
         int mask = range - 1;
-        int signbit = signed ? 1 << stored - 1 : 0;
+        int signbit = signed ? 1 << (stored - 1) : 0;
 
         int pixelPaddingValue = img.getInt(Tag.PixelPaddingValue, Integer.MIN_VALUE);
         boolean havePixelPaddingValue = false;
@@ -129,15 +129,24 @@ public class ExtractOverlaysAndPixelPadding {
         		maxVal = Math.max(val, maxVal);
         	}
         } else {
-            for(int i = 0; i < data.length; i++)
-            {
-                int val = data[i] & mask;
-                if((val & signbit) != 0)
-                    val |= ~mask;
+        	if ( mask == 0xffff ) {
+        		for(int i = 0; i < data.length; i++)
+        		{
+        			int val = data[i];
+        			minVal = Math.min(val, minVal);
+        			maxVal = Math.max(val, maxVal);
+        		}           		
+        	} else {
+        		for(int i = 0; i < data.length; i++)
+        		{
+        			int val = data[i] & mask;
+        			if((val & signbit) != 0)
+        				val |= ~mask;
 
-            	minVal = Math.min(val, minVal);
-            	maxVal = Math.max(val, maxVal);
-            }        	
+        			minVal = Math.min(val, minVal);
+        			maxVal = Math.max(val, maxVal);
+        		}   
+        	}
         }
 
         results.min = minVal;
@@ -181,22 +190,39 @@ public class ExtractOverlaysAndPixelPadding {
         		}
         	}        	
         } else {
-        	for(int i = 0; i < data.length; i++) {
+        	if ( mask == 0xffff ) {
+        		for(int i = 0; i < data.length; i++) {
 
-        		dataVal = data[i];
-        		val = dataVal & mask;
-        		accumVal |= dataVal;
+        			val = data[i];
+        			accumVal |= val;
 
-        		if((val & signbit) != 0)
-        			val |= ~mask;
+        			if ( ( val >= minPadding ) && ( val <= maxPadding ) ) {
+        				foundPixelPadding = true;
+        			}
+        			else
+        			{
+        				minVal = Math.min(val, minVal);
+        				maxVal = Math.max(val, maxVal);
+        			}
+        		}        		
+        	} else {
+        		for(int i = 0; i < data.length; i++) {
 
-        		if ( ( val >= minPadding ) && ( val <= maxPadding ) ) {
-        			foundPixelPadding = true;
-        		}
-        		else
-        		{
-        			minVal = Math.min(val, minVal);
-        			maxVal = Math.max(val, maxVal);
+        			dataVal = data[i];
+        			val = dataVal & mask;
+        			accumVal |= dataVal;
+
+        			if((val & signbit) != 0)
+        				val |= ~mask;
+
+        			if ( ( val >= minPadding ) && ( val <= maxPadding ) ) {
+        				foundPixelPadding = true;
+        			}
+        			else
+        			{
+        				minVal = Math.min(val, minVal);
+        				maxVal = Math.max(val, maxVal);
+        			}
         		}
         	}
         }
@@ -216,19 +242,20 @@ public class ExtractOverlaysAndPixelPadding {
     {
     	int minVal = results.min;
         int maxVal = results.max;
-        for(int i = 0; i < data.length; i++)
-        {
-            if ( signbit == 0 ) {
-                int val = data[i] & mask;
-    			minVal = Math.min(val, minVal);
-    			maxVal = Math.max(val, maxVal);            
-            } else {
-            	int val = data[i] & mask;
-            	if((val & signbit) != 0)
-            		val |= ~mask;
-            	minVal = Math.min(val, minVal);
-            	maxVal = Math.max(val, maxVal);
-            }
+        if ( signbit == 0 ) {
+        	for (int i = 0; i < data.length; i++) {
+        		int val = data[i] & mask;
+        		minVal = Math.min(val, minVal);
+        		maxVal = Math.max(val, maxVal);  
+        	}
+        } else {
+        	for (int i = 0; i < data.length; i++) {
+        		int val = data[i] & mask;
+        		if((val & signbit) != 0)
+        			val |= ~mask;
+        		minVal = Math.min(val, minVal);
+        		maxVal = Math.max(val, maxVal);
+        	}
         }
 
         results.min = minVal;
