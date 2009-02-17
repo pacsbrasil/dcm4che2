@@ -29,7 +29,7 @@
       <description><![CDATA[AE titles of Storage SCUs for which Media Creation
         Requests shall be emulated. Multiple AE titles are separated by new
         line. For each AE title, a minimum delay time between the time the last
-        object of the a patient is received and the emulation of the Media
+        object of a patient is received and the emulation of the Media
         Creation Request for all objects belonging to the patient can be
         explicit specified. If no delay is specified, a default delay of 1
         minute is used.
@@ -100,7 +100,7 @@
       <name>NumberOfCopies</name>
       <type>int</type>
       <descriptors>
-         <value value="10" />
+         <value value="1" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

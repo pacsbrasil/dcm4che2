@@ -148,12 +148,13 @@ public class SpoolDirDelegate {
         }
     }
 
-    public File[] getEmulateRequestFiles(String aet) {
+    public File[] getEmulateRequestFiles(String aet, long lastModifiedBefore) {
         try {
             return (File[]) service.getServer().invoke(spoolDirName,
                     GET_EMULATE_REQUEST_FILES,
-                    new Object[] { aet},
-                    new String[] { String.class.getName() });
+                    new Object[] { aet, Long.valueOf(lastModifiedBefore)},
+                    new String[] { String.class.getName(),
+                                     long.class.getName() });
         } catch (JMException e) {
             throw new ConfigurationException(e);
         }

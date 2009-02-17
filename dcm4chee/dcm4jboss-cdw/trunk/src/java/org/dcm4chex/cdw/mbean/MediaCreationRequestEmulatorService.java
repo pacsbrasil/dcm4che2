@@ -37,9 +37,14 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.cdw.mbean;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.text.DecimalFormat;
+import java.util.HashSet;
 import java.util.StringTokenizer;
 
+import javax.jms.JMSException;
 import javax.management.Attribute;
 import javax.management.Notification;
 import javax.management.NotificationListener;
@@ -49,7 +54,14 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
+import org.dcm4che.util.UIDGenerator;
+import org.dcm4chex.cdw.common.ExecutionStatus;
+import org.dcm4chex.cdw.common.ExecutionStatusInfo;
 import org.dcm4chex.cdw.common.Flag;
+import org.dcm4chex.cdw.common.JMSDelegate;
+import org.dcm4chex.cdw.common.MediaCreationException;
+import org.dcm4chex.cdw.common.MediaCreationRequest;
 import org.dcm4chex.cdw.common.Priority;
 import org.dcm4chex.cdw.common.SpoolDirDelegate;
 import org.jboss.system.ServiceMBeanSupport;
@@ -105,6 +117,8 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
     private String[] sourceAETs;
 
     private long[] delays;
+
+    private UIDGenerator uidGenerator = UIDGenerator.getInstance();
 
     public String getSourceAETitles() {
         StringBuffer sb = new StringBuffer();
@@ -199,7 +213,7 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
         this.nextFilesetIDSeqno = seqno;
     }   
 
-    private String nextFilesetID() {
+    private String nextFileSetID() {
         if (filesetIDFormat == null) {
             return filesetID;
         }
@@ -311,25 +325,6 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
         this.numberOfCopies = numberOfCopies;
     }
 
-    private Dataset createRequest() {
-        Dataset ds = DcmObjectFactory.getInstance().newDataset();
-        ds.putCS(Tags.LabelUsingInformationExtractedFromInstances,
-                Flag.valueOf(labelUsingInformationExtractedFromInstances));
-        ds.putCS(Tags.AllowMediaSplitting, Flag.valueOf(allowMediaSplitting));
-        ds.putCS(Tags.AllowLossyCompression,
-                Flag.valueOf(allowLossyCompression));
-        ds.putCS(Tags.IncludeDisplayApplication,
-                Flag.valueOf(includeDisplayApplication));
-        ds.putCS(Tags.PreserveCompositeInstancesAfterMediaCreation,
-                Flag.valueOf(preserveInstances));
-        ds.putUT(Tags.LabelText, labelText);
-        ds.putCS(Tags.LabelStyleSelection, labelStyleSelection);
-        ds.putCS(Tags.IncludeNonDICOMObjects,
-                        includeNonDICOMObjects);
-        DcmElement refSOPs = ds.putSQ(Tags.RefSOPSeq);
-        return ds;
-    }
-
     public final String getPollInterval() {
         return SpoolDirService.timeAsString(pollInterval);
     }
@@ -360,10 +355,101 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
         scheduler.stopScheduler(timerID, schedulerID, this);
     }
 
-    public void handleNotification(Notification notification, Object handback) {
-        // TODO Auto-generated method stub
-        
+    public void handleNotification(Notification notif, Object handback) {
+        poll();
     }
 
+    public int poll() {
+        if (sourceAETs == null) {
+            return 0;
+        }
+        log.info("Check for received objects from AEs for which Media "
+                + "Creation requests are emulated.");
+        int count = 0;
+        long now = System.currentTimeMillis();
+        for (int i = 0; i < sourceAETs.length; i++) {
+            File[] files = spoolDir.getEmulateRequestFiles(sourceAETs[i], 
+                    now - delays[i]);
+            for (File file : files) {
+                try {
+                    createRequest(file, sourceAETs[i]);
+                    count++;
+                } catch (Exception e) {
+                    log.error("Failed to emulate Media Creation Request for "
+                            + file, e);
+                }
+            }
+        }
+        return count;
+    }
+
+    private void createRequest(File sopListFile, String aet) throws Exception {
+        String iuid = uidGenerator .createUID();
+        File f = spoolDir.getMediaCreationRequestFile(iuid);
+        MediaCreationRequest mcrq = new MediaCreationRequest(f, aet);
+        mcrq.setPriority(requestPriority);
+        mcrq.setRemainingCopies(numberOfCopies);
+        mcrq.setFilesetID(nextFileSetID());
+
+        DcmObjectFactory dof = DcmObjectFactory.getInstance();
+        Dataset attrs = dof.newDataset();
+        attrs.setFileMetaInfo(
+                dof.newFileMetaInfo(iuid,
+                        UIDs.MediaCreationManagementSOPClass,
+                        UIDs.ExplicitVRLittleEndian));
+        attrs.putUI(Tags.SOPClassUID, UIDs.MediaCreationManagementSOPClass);
+        attrs.putUI(Tags.SOPInstanceUID, iuid);
+        attrs.putIS(Tags.NumberOfCopies, numberOfCopies);
+        attrs.putCS(Tags.RequestPriority, requestPriority);
+        attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.PENDING);
+        attrs.putCS(Tags.ExecutionStatusInfo,
+                ExecutionStatusInfo.QUEUED_BUILD);
+        attrs.putCS(Tags.LabelUsingInformationExtractedFromInstances,
+                Flag.valueOf(labelUsingInformationExtractedFromInstances));
+        attrs.putCS(Tags.AllowMediaSplitting,
+                Flag.valueOf(allowMediaSplitting));
+        attrs.putCS(Tags.AllowLossyCompression,
+                Flag.valueOf(allowLossyCompression));
+        attrs.putCS(Tags.IncludeDisplayApplication,
+                Flag.valueOf(includeDisplayApplication));
+        attrs.putCS(Tags.PreserveCompositeInstancesAfterMediaCreation,
+                Flag.valueOf(preserveInstances));
+        attrs.putUT(Tags.LabelText, labelText);
+        attrs.putCS(Tags.LabelStyleSelection, labelStyleSelection);
+        attrs.putCS(Tags.IncludeNonDICOMObjects,
+                        includeNonDICOMObjects);
+        log.info("M-READ " + sopListFile);
+        BufferedReader reader = new BufferedReader(
+                new FileReader(sopListFile));
+        try {
+            HashSet<String> iuids = new HashSet<String>();
+            mcrq.setMediaWriterName(reader.readLine());
+            DcmElement refSOPs = attrs.putSQ(Tags.RefSOPSeq);
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.length() == 0) continue;
+                int cuidEnd = line.indexOf('\t');
+                iuid = line.substring(cuidEnd + 1);
+                if (!iuids.add(iuid)) continue;
+                Dataset item = refSOPs.addNewItem();
+                item.putUI(Tags.RefSOPClassUID, line.substring(0, cuidEnd));
+                item.putUI(Tags.RefSOPInstanceUID, iuid);
+                item.putLO(Tags.RequestedMediaApplicationProfile,
+                        mediaApplicationProfile);
+            }
+        } finally {
+            reader.close();
+        }
+        attrs.writeFile(f, null);
+        JMSDelegate.queue(mediaComposerQueueName,
+                            "Schedule Composing media for " + sopListFile,
+                            log, mcrq, 0L);
+
+        if (sopListFile.delete()) {
+            log.info("M-DELETE " + sopListFile);
+        } else {
+            log.warn("Failed: M-DELETE " +  sopListFile);
+        }
+    }
 
 }
