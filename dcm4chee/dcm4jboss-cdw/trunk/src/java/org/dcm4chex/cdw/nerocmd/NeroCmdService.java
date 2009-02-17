@@ -86,26 +86,6 @@ public class NeroCmdService extends MediaWriterServiceSupport {
         return super.check(cmdarray, "not writeable");
     }
 
-    private boolean nerocmd(String option, String match)
-            throws MediaCreationException {
-        String[] cmdarray = { executable, option, "--drive", driveId};
-        try {
-            ByteArrayOutputStream stdout = new ByteArrayOutputStream();
-            Executer ex = new Executer(cmdarray, stdout, null);
-            int exit = ex.waitFor();
-            String result = stdout.toString();
-            if (log.isDebugEnabled())
-                    log.debug(executable + " stdout: " + result);
-            return exit == 0 && result.indexOf(match) != -1;
-        } catch (InterruptedException e) {
-            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
-                    e);
-        } catch (IOException e) {
-            throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
-                    e);
-        }
-    }
-
     protected String[] makeBurnCmd(File isoImageFile) {
         ArrayList cmd = new ArrayList();
         cmd.add(executable);
