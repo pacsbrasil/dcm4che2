@@ -367,27 +367,13 @@ public class SpoolDirService extends ServiceMBeanSupport
     }
 
     public File getEmulateRequestFile(String aet, String pid) {
-        File dir = new File(emulateRequestDir, aet);
-        if (!dir.exists()) {
-            dir.mkdirs();
-            if (dir.mkdirs()) log.debug("Success: M-WRITE " + dir);
-        }
-        File f;
         try {
-            f = new File(dir, URLEncoder.encode(pid, "US-ASCII"));
+            return new File(new File(emulateRequestDir, aet), 
+                    URLEncoder.encode(pid, "US-ASCII"));
         } catch (UnsupportedEncodingException e) {
             // should never happen
             throw new RuntimeException(e);
         }
-        if (!f.exists()) {
-            try {
-                f.createNewFile();
-                log.debug("Success: M-WRITE " + f);
-            } catch (IOException e) {
-                log.error("Failed: M-WRITE " + f, e);
-            }
-        }
-        return f;
     }
 
     public File[] getEmulateRequestFiles(String aet,

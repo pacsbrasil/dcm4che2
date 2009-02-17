@@ -360,12 +360,12 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getMediaCreationRequestEmulatorServiceNamePrefix"
-      setMethod="setMediaCreationRequestEmulatorServiceNamePrefix">
+      getMethod="getMediaCreationRequestEmulatorServiceName"
+      setMethod="setMediaCreationRequestEmulatorServiceName">
       <description>Used internally - do NOT modify.
       </description>
-      <name>MediaCreationRequestEmulatorServiceNamePrefix</name>
-      <type>java.lang.String</type>
+      <name>MediaCreationRequestEmulatorServiceName</name>
+      <type>javax.management.ObjectName</type>
    </attribute>
    <attribute access="read-write"
       getMethod="getDcmServerName"

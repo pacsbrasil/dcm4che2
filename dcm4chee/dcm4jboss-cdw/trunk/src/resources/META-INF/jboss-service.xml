@@ -32,8 +32,8 @@
   <mbean code="org.dcm4chex.cdw.mbean.StoreScpService"
     name="dcm4chee.cdw:service=StoreSCP"
     xmbean-dd="xmdesc/dcm4chee-cdw-storescp-xmbean.xml">
-    <attribute name="MediaCreationRequestEmulatorServiceNamePrefix"
-      >dcm4chee.cdw:service=MediaCreationRequestEmulator,aet=</attribute>
+    <depends optional-attribute-name="MediaCreationRequestEmulatorServiceName"
+      >dcm4chee.cdw:service=MediaCreationRequestEmulator</depends>
     <depends optional-attribute-name="DcmServerName"
       >dcm4chee.cdw:service=DcmServer</depends>
     <depends optional-attribute-name="SpoolDirName"
@@ -46,6 +46,17 @@
     <depends>dcm4chee.cdw:service=Queue,name=MediaComposer</depends>
     <depends optional-attribute-name="DcmServerName"
       >dcm4chee.cdw:service=DcmServer</depends>
+    <depends optional-attribute-name="SpoolDirName"
+      >dcm4chee.cdw:service=SpoolDir</depends>
+  </mbean>
+  <mbean code="org.dcm4chex.cdw.mbean.MediaCreationRequestEmulatorService"
+    name="dcm4chee.cdw:service=MediaCreationRequestEmulator"
+    xmbean-dd="xmdesc/dcm4chee-cdw-mcmemulator-xmbean.xml">
+    <attribute name="TimerID">MediaCreationRequestEmulatorTimer</attribute>
+    <depends>jboss.mq:service=InvocationLayer,type=JVM</depends>
+    <depends>dcm4chee.cdw:service=Queue,name=MediaComposer</depends>
+    <depends optional-attribute-name="SchedulerServiceName"
+      >dcm4chee.cdw:service=Scheduler</depends>
     <depends optional-attribute-name="SpoolDirName"
       >dcm4chee.cdw:service=SpoolDir</depends>
   </mbean>

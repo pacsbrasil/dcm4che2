@@ -46,7 +46,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.io.Writer;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
@@ -68,11 +67,13 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.net.ActiveAssociation;
+import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmService;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.util.MD5Utils;
+import org.dcm4chex.cdw.common.ConfigurationException;
 
 /**
  * @author gunter.zeilinter@tiani.com
@@ -82,6 +83,8 @@ import org.dcm4che.util.MD5Utils;
  * 
  */
 public class StoreScpService extends AbstractScpService {
+
+    private static final String LOOKUP_MEDIA_WRITER_NAME = "lookupMediaWriterName";
 
     private static final String NONE = "NONE";
 
@@ -168,7 +171,7 @@ public class StoreScpService extends AbstractScpService {
 
     private int bufferSize = 512;
 
-    private String mediaCreationRequestEmulatorServiceNamePrefix;
+    private ObjectName mediaCreationRequestEmulatorServiceName;
 
     private final DcmService service = new DcmServiceBase() {
 
@@ -268,21 +271,23 @@ public class StoreScpService extends AbstractScpService {
         updateAcceptedSOPClass(otherCUIDS, s, service);
     }
 
-    public String getMediaCreationRequestEmulatorServiceNamePrefix() {
-        return mediaCreationRequestEmulatorServiceNamePrefix;
+    public ObjectName getMediaCreationRequestEmulatorServiceName() {
+        return mediaCreationRequestEmulatorServiceName;
     }
 
-    public void setMediaCreationRequestEmulatorServiceNamePrefix(
-            String namePrefix) {
-        this.mediaCreationRequestEmulatorServiceNamePrefix = namePrefix;
+    public void setMediaCreationRequestEmulatorServiceName(ObjectName name) {
+        this.mediaCreationRequestEmulatorServiceName = name;
     }
 
     private boolean emulateMediaCreationRequestForAET(String aet) {
         try {
-            return server.isRegistered(new ObjectName(
-                    mediaCreationRequestEmulatorServiceNamePrefix + aet));
-        } catch (MalformedObjectNameException e) {
-            return false;
+            return ((Boolean) server.invoke(
+                    mediaCreationRequestEmulatorServiceName,
+                    "containsSourceAETitle",
+                    new Object[] { aet },
+                    new String[] { String.class.getName()})).booleanValue();
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
         }
     }
 
@@ -329,6 +334,17 @@ public class StoreScpService extends AbstractScpService {
         putPresContexts(valuesToStringArray(srCUIDS), null);
         putPresContexts(valuesToStringArray(waveformCUIDS), null);
         putPresContexts(valuesToStringArray(otherCUIDS), null);
+    }
+
+    private String lookupMediaWriterName(String aet) throws DcmServiceException {
+        try {
+            return (String) server.invoke(dcmServerName,
+                    LOOKUP_MEDIA_WRITER_NAME,
+                    new Object[] { aet},
+                    new String[] { String.class.getName()});
+        } catch (Exception e) {
+            throw new DcmServiceException(Status.ProcessingFailure, e);
+        }
     }
 
     private void doCStore(ActiveAssociation assoc, Dimse rq, Command rspCmd)
@@ -389,15 +405,26 @@ public class StoreScpService extends AbstractScpService {
                 }
                 spoolDir.register(md5file);
             }
-            String aet = assoc.getAssociation().getCallingAET();
-            if (emulateMediaCreationRequestForAET(aet)) {
-                File f = spoolDir.getEmulateRequestFile(aet,
+            Association a = assoc.getAssociation();
+            String sourceAET = a.getCallingAET();
+            if (emulateMediaCreationRequestForAET(sourceAET)) {
+                File f = spoolDir.getEmulateRequestFile(sourceAET,
                         ds.getString(Tags.PatientID));
+                boolean firstObject;
+                if (firstObject = !f.exists()) {
+                    File dir = f.getParentFile();
+                    if (dir.mkdirs()) log.info("M-WRITE " + dir);
+                }
                 FileWriter fw = new FileWriter(f, true);
                 try {
-                    fw.write(iuid + '/' + cuid + '\n');
+                    if (firstObject) {
+                         fw.write(lookupMediaWriterName(
+                                 a.getCalledAET()) + '\n');
+                    }
+                    fw.write(cuid + '\t' + iuid + '\n');
                 } finally {
                     fw.close();
+                    log.info((firstObject ? "M-WRITE " : "M-UPDATE ") + f);
                 }
             }
         } catch (Throwable t) {

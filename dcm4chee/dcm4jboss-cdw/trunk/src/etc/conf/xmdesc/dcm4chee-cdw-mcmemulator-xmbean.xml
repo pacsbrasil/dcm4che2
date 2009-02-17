@@ -23,28 +23,26 @@
 
    <!-- Attributes -->
    &defaultAttributes;
-   <attribute access="read-only"
-      getMethod="getSourceAET">
-      <description>AE Title of Storage SCU, for which Media Creation Requests
-       are emulated by this service on receive of objects belonging to one
-       Patient.
-      </description>
-      <name>SourceAETitle</name>
-      <type>java.lang.String</type>
-   </attribute>   
    <attribute access="read-write"
-      getMethod="getCreateDelay"
-      setMethod="setCreateDelay">
-      <description>Minimal delay in minutes (##m) or seconds (##s) after
-      receive of last object belonging to one patient, before a Media Creation
-      Request for all objects received for that patient is emulated.
+      getMethod="getSourceAETitles"
+      setMethod="setSourceAETitles">
+      <description><![CDATA[AE titles of Storage SCUs for which Media Creation
+        Requests shall be emulated. Multiple AE titles are separated by new
+        line. For each AE title, a minimum delay time between the time the last
+        object of the a patient is received and the emulation of the Media
+        Creation Request for all objects belonging to the patient can be
+        explicit specified. If no delay is specified, a default delay of 1
+        minute is used.
+        <br/>Format: <i>aeTitle</i>[:<i>delay</i>] 
+        <br/><i>delay</i> can be specified in seconds (##s) or minutes (##m).
+        <br>Sample: DCMSND:2m]]>
       </description>
-      <name>CreateDelay</name>
+      <name>SourceAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="1m" />
+         <value value="DCM4CHEE" />
       </descriptors>
-   </attribute>   
+   </attribute>
    <attribute access="read-write"
       getMethod="getPollInterval"
       setMethod="setPollInterval">
@@ -57,19 +55,7 @@
       <descriptors>
          <value value="1m" />
       </descriptors>
-   </attribute>   
-   <attribute access="read-write"
-      getMethod="getMediaWriter"
-      setMethod="setMediaWriter">
-      <description>Media Writer used for Media Creation Requests emulated by
-      this service.
-      </description>
-      <name>MediaWriter</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="CDRecord" />
-      </descriptors>
-   </attribute>   
+   </attribute>
    <attribute access="read-write"
       getMethod="getFilesetID"
       setMethod="setFilesetID">
@@ -81,7 +67,7 @@
       <descriptors>
          <value value="DISK_000" />
       </descriptors>
-   </attribute>   
+   </attribute>
    <attribute access="read-write"
       getMethod="getNextFilesetIDSeqno"
       setMethod="setNextFilesetIDSeqno">
@@ -94,7 +80,7 @@
       <descriptors>
          <value value="1" />
       </descriptors>
-   </attribute>   
+   </attribute>
    <attribute access="read-write"
       getMethod="getRequestPriority"
       setMethod="setRequestPriority">
@@ -205,7 +191,15 @@
          <value value="false" />
       </descriptors>
    </attribute>
-  <attribute access="read-write"
+   <attribute access="read-write"
+      getMethod="getTimerID"
+      setMethod="setTimerID">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TimerID</name>
+      <type>java.lang.String</type>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getMediaComposerQueueName"
       setMethod="setMediaComposerQueueName">
       <description>Used internally - do NOT modify.
@@ -235,4 +229,16 @@
    
    <!-- Operations -->
    &defaultOperations;
+   <operation impact="INFO">
+      <description>Determines if Media Creation Requests shall be emulated for
+      objects received by the Storage SCU with the specified AE title.
+      </description>
+      <name>containsSourceAETitle</name>
+      <parameter>
+         <description>AE title</description>
+         <name>aet</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
 </mbean>

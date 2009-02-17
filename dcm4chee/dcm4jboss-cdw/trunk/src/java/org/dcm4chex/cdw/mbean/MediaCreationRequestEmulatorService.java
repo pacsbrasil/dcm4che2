@@ -38,6 +38,7 @@
 package org.dcm4chex.cdw.mbean;
 
 import java.text.DecimalFormat;
+import java.util.StringTokenizer;
 
 import javax.management.Attribute;
 import javax.management.Notification;
@@ -61,11 +62,7 @@ import org.jboss.system.ServiceMBeanSupport;
 public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
     implements NotificationListener {
 
-    private static final String AET = "aet";
-
     private String mediaComposerQueueName;
-
-    private String mediaWriter;
 
     private String mediaApplicationProfile = "STD-GEN-CD";
 
@@ -97,16 +94,57 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
 
     private long pollInterval = SpoolDirService.MS_PER_MINUTE;
 
-    private long createDelay = SpoolDirService.MS_PER_MINUTE;
-
     private Integer schedulerID;
+
+    private String timerID;
 
     private final SpoolDirDelegate spoolDir = new SpoolDirDelegate(this);
 
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
-    public String getSourceAET() {
-        return serviceName.getKeyProperty(AET);
+    private String[] sourceAETs;
+
+    private long[] delays;
+
+    public String getSourceAETitles() {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < sourceAETs.length; i++) {
+            sb.append(sourceAETs[i]);
+            if (delays[i] != SpoolDirService.MS_PER_MINUTE) {
+                sb.append(':').append(SpoolDirService.timeAsString(delays[i]));
+            }
+            sb.append("\r\n");
+        }
+        return sb.toString();
+    }
+
+    public void setSourceAETitles(String s) {
+        StringTokenizer stk = new StringTokenizer(s, "\r\n");
+        sourceAETs = new String[stk.countTokens()];
+        delays = new long[sourceAETs.length];
+        int endAET;
+        for (int i = 0; i < sourceAETs.length; i++) {
+            sourceAETs[i] = stk.nextToken().trim();
+            delays[i] = SpoolDirService.MS_PER_MINUTE;
+            endAET = sourceAETs[i].indexOf(':');
+            if (endAET >= 0) {
+                delays[i] = SpoolDirService.timeFromString(
+                        sourceAETs[i].substring(endAET+1));
+                sourceAETs[i] = sourceAETs[i].substring(0, endAET);
+            }
+        }
+    }
+
+    public boolean containsSourceAETitle(String aet) {
+        if (sourceAETs == null) {
+            return false;
+        }
+        for (String sourceAET : sourceAETs) {
+            if (sourceAET.equals(aet)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public ObjectName getSpoolDirName() {
@@ -131,14 +169,6 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
 
     public final void setMediaComposerQueueName(String mediaComposerQueueName) {
         this.mediaComposerQueueName = mediaComposerQueueName;
-    }
-
-    public void setMediaWriter(String mediaWriter) {
-        this.mediaWriter = mediaWriter;
-    }
-
-    public String getMediaWriter() {
-        return mediaWriter;
     }
 
     public final String getDefaultMediaApplicationProfile() {
@@ -300,14 +330,6 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
         return ds;
     }
 
-    public final String getCreateDelay() {
-        return SpoolDirService.timeAsString(createDelay);
-    }
-
-    public void setCreateDelay(String createDelay) throws Exception {
-        this.createDelay = SpoolDirService.timeFromString(createDelay);
-    }
-
     public final String getPollInterval() {
         return SpoolDirService.timeAsString(pollInterval);
     }
@@ -315,28 +337,33 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
     public void setPollInterval(String interval) throws Exception {
         this.pollInterval = SpoolDirService.timeFromString(interval);
         if (getState() == STARTED) {
-            scheduler.stopScheduler(getSchedulerName(), schedulerID, this);
+            scheduler.stopScheduler(timerID, schedulerID, this);
             schedulerID = scheduler.startScheduler("PurgeSpoolDir",
                         pollInterval, this);
         }
     }
 
+    public void setTimerID(String timerID) {
+        this.timerID = timerID;
+    }
+
+    public String getTimerID() {
+        return timerID;
+    }
+
     protected void startService() throws Exception {
-        schedulerID = scheduler.startScheduler(getSchedulerName(),
+        schedulerID = scheduler.startScheduler(timerID,
                 pollInterval, this);
     }
 
     protected void stopService() throws Exception {
-        scheduler.stopScheduler(getSchedulerName(), schedulerID, this);
-    }
-
-    private String getSchedulerName() {
-        return "EmulateRequestsFor" + getSourceAET();
+        scheduler.stopScheduler(timerID, schedulerID, this);
     }
 
     public void handleNotification(Notification notification, Object handback) {
         // TODO Auto-generated method stub
         
     }
+
 
 }
