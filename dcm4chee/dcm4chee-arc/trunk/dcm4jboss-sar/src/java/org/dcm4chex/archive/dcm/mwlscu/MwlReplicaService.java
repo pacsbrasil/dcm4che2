@@ -312,7 +312,7 @@ public class MwlReplicaService extends AbstractScuService {
     public List replicateMWLEntries(final String[] aets, Dataset searchDS) {
 		List l;
 		try {
-			l = replicateMWLEntries(aets[0], null);
+			l = replicateMWLEntries(aets[0], searchDS);
 		} catch (Exception x) {
 			log.error("Replicate MWL Entries from "+aets[0]+" failed!",x);
             addError(aets[0],x);
@@ -320,7 +320,7 @@ public class MwlReplicaService extends AbstractScuService {
 		}
 		for ( int i = 1 ; i < aets.length ; i++){
 			try {
-				l.addAll(replicateMWLEntries(aets[i], null));
+				l.addAll(replicateMWLEntries(aets[i], searchDS));
 			} catch (Exception x) {
 				log.error("Replicate MWL Entries from "+aets[i]+" failed!",x);
 	            addError(aets[i],x);
