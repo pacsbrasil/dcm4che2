@@ -55,9 +55,11 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObject;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
+import org.dcm4che.dict.VRs;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
@@ -86,14 +88,14 @@ public class MwlReplicaService extends AbstractScuService {
     private static final String MWL_REPLICA_RQ_XSL = "mwl-replica-rq.xsl";
     private static final String MWL_REPLICA_RSP_XSL = "mwl-replica-rsp.xsl";
 
-	private static final int PCID = 1;
+    private static final int PCID = 1;
     private static final int MSG_ID = 1;
 
-	private static Logger log = Logger.getLogger(MwlReplicaService.class.getName());
-	private SimpleDateFormat dfDA = new SimpleDateFormat("yyyy/MM/dd");
-	private SimpleDateFormat dfDT = new SimpleDateFormat("yyyy/MM/dd hh:mm");
-	private SimpleDateFormat dfFull = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss,SSS");
-	
+    private static Logger log = Logger.getLogger(MwlReplicaService.class.getName());
+    private SimpleDateFormat dfDA = new SimpleDateFormat("yyyy/MM/dd");
+    private SimpleDateFormat dfDT = new SimpleDateFormat("yyyy/MM/dd hh:mm");
+    private SimpleDateFormat dfFull = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss,SSS");
+
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
     private long taskInterval = 0L;
     private Integer listenerID;
@@ -104,29 +106,29 @@ public class MwlReplicaService extends AbstractScuService {
     private long msBefore = -1;
     private long msAfter = -1;
     private List errorHistory = new ArrayList();
-    
+
     /** Holds the AET of modality worklist service. */
     private String[] calledAETs;
-	private Object lastErrorMsg;
-	private int countEqualErrors=0;
-	private int errorCount=0;
-	private int totalErrorCount=0;
-    
+    private Object lastErrorMsg;
+    private int countEqualErrors=0;
+    private int errorCount=0;
+    private int totalErrorCount=0;
+
     /** DICOM priority. Used for move and media creation action. */
     private int priority = 0;
-    
+
     protected TemplatesDelegate templates = new TemplatesDelegate(this);
-    
+
 
     private final NotificationListener mwlReplicationListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
-        	log.debug("mwlReplicationListener notified!");
-                try {
-                	process();
-                } catch (Exception e) {
-                    log.error("MWL Replication process failed!", e);
-                    errorHistory.add("process:"+e.getMessage());
-                }
+            log.debug("mwlReplicationListener notified!");
+            try {
+                process();
+            } catch (Exception e) {
+                log.error("MWL Replication process failed!", e);
+                errorHistory.add("process:"+e.getMessage());
+            }
         }
     };
 
@@ -137,56 +139,56 @@ public class MwlReplicaService extends AbstractScuService {
     public void setSchedulerServiceName(ObjectName schedulerServiceName) {
         scheduler.setSchedulerServiceName(schedulerServiceName);
     }
-    
+
     public String getTimerIDMwlReplica() {
-		return timerIDMwlReplica;
-	}
+        return timerIDMwlReplica;
+    }
 
-	public void setTimerIDMwlReplica(String timerIDMwlReplica) {
-		this.timerIDMwlReplica = timerIDMwlReplica;
-	}
+    public void setTimerIDMwlReplica(String timerIDMwlReplica) {
+        this.timerIDMwlReplica = timerIDMwlReplica;
+    }
 
-	public final String getTaskInterval() {
+    public final String getTaskInterval() {
         return RetryIntervalls.formatIntervalZeroAsNever(taskInterval);
     }
 
     public void setTaskInterval(String interval) throws Exception {
         long oldInterval = taskInterval;
-            taskInterval = RetryIntervalls.parseIntervalOrNever(interval);
+        taskInterval = RetryIntervalls.parseIntervalOrNever(interval);
         if (getState() == STARTED && oldInterval != taskInterval) {
             scheduler.stopScheduler(timerIDMwlReplica, listenerID,
-            		mwlReplicationListener);
+                    mwlReplicationListener);
             listenerID = scheduler.startScheduler(timerIDMwlReplica, taskInterval,
-            		mwlReplicationListener);
+                    mwlReplicationListener);
         }
     }
-    
+
     public String getTimeBefore() {
-		return msBefore == -1 ? NONE :RetryIntervalls.formatInterval(msBefore);
-	}
+        return msBefore == -1 ? NONE :RetryIntervalls.formatInterval(msBefore);
+    }
 
-	public void setTimeBefore(String timeBefore) {
-		this.msBefore = NONE.equals(timeBefore) ? -1 : RetryIntervalls.parseInterval(timeBefore);
-	}
+    public void setTimeBefore(String timeBefore) {
+        this.msBefore = NONE.equals(timeBefore) ? -1 : RetryIntervalls.parseInterval(timeBefore);
+    }
 
-	public String getTimeAfter() {
-		return msAfter == -1 ? NONE : RetryIntervalls.formatInterval(msAfter);
-	}
+    public String getTimeAfter() {
+        return msAfter == -1 ? NONE : RetryIntervalls.formatInterval(msAfter);
+    }
 
-	public void setTimeAfter(String timeAfter) {
-		this.msAfter = NONE.equals(timeAfter) ? -1 : RetryIntervalls.parseInterval(timeAfter);
-	}
+    public void setTimeAfter(String timeAfter) {
+        this.msAfter = NONE.equals(timeAfter) ? -1 : RetryIntervalls.parseInterval(timeAfter);
+    }
 
-	/**
+    /**
      * Returns the AET(s) that holds the work list (Modality Work List SCP).
      * 
      * @return The retrieve AET.
      */
     public final String getCalledAET() {
-    	StringBuilder sb = new StringBuilder(calledAETs[0]);
-    	for ( int i = 1 ; i < calledAETs.length ; i++) {
-    		sb.append("\\").append(calledAETs[i]);
-    	}
+        StringBuilder sb = new StringBuilder(calledAETs[0]);
+        for ( int i = 1 ; i < calledAETs.length ; i++) {
+            sb.append("\\").append(calledAETs[i]);
+        }
         return sb.toString();
     }
 
@@ -197,39 +199,39 @@ public class MwlReplicaService extends AbstractScuService {
      *            The retrieve AET to set.
      */
     public final void setCalledAET(String aet) {
-    	StringTokenizer st = new StringTokenizer(aet, "\\");
+        StringTokenizer st = new StringTokenizer(aet, "\\");
         calledAETs = new String[st.countTokens()];
         for ( int i = 0; st.hasMoreTokens() ; i++) {
-        	calledAETs[i] = st.nextToken();
+            calledAETs[i] = st.nextToken();
         }
     }
 
     public String getIssuerOfPatient() {
-		return issuerOfPatient == null ? NONE : issuerOfPatient;
-	}
+        return issuerOfPatient == null ? NONE : issuerOfPatient;
+    }
 
-	public void setIssuerOfPatient(String issuerOfPatient) {
-		this.issuerOfPatient = NONE.equalsIgnoreCase(issuerOfPatient) ? null : issuerOfPatient;
-	}
+    public void setIssuerOfPatient(String issuerOfPatient) {
+        this.issuerOfPatient = NONE.equalsIgnoreCase(issuerOfPatient) ? null : issuerOfPatient;
+    }
 
-	public boolean isForceIssuerCoercion() {
-		return forceIssuerCoercion;
-	}
+    public boolean isForceIssuerCoercion() {
+        return forceIssuerCoercion;
+    }
 
-	public void setForceIssuerCoercion(boolean forceIssuerCoercion) {
-		this.forceIssuerCoercion = forceIssuerCoercion;
-	}
+    public void setForceIssuerCoercion(boolean forceIssuerCoercion) {
+        this.forceIssuerCoercion = forceIssuerCoercion;
+    }
 
-	
-	public boolean isDebugMode() {
-		return debugMode;
-	}
 
-	public void setDebugMode(boolean debugMode) {
-		this.debugMode = debugMode;
-	}
+    public boolean isDebugMode() {
+        return debugMode;
+    }
 
-	/**
+    public void setDebugMode(boolean debugMode) {
+        this.debugMode = debugMode;
+    }
+
+    /**
      * Returns the DICOM priority as int value.
      * <p>
      * This value is used for CFIND. 0..MED, 1..HIGH, 2..LOW
@@ -249,7 +251,7 @@ public class MwlReplicaService extends AbstractScuService {
     public final void setPriority(String priority) {
         this.priority = DicomPriority.toCode(priority);
     }
-    
+
     public final String getCoerceConfigDir() {
         return templates.getConfigDir();
     }
@@ -259,35 +261,35 @@ public class MwlReplicaService extends AbstractScuService {
     }
 
     public int getErrorCount() {
-    	return errorCount;
+        return errorCount;
     }
     public int getTotalErrorCount() {
-    	return this.totalErrorCount;
+        return this.totalErrorCount;
     }
     public String showErrorHistory() {
-    	StringBuffer sb = new StringBuffer(errorHistory.size()*20);
-    	sb.append(errorCount).append(" (").append(totalErrorCount).append(" since service start) Errors:");
-    	for ( Iterator iter= errorHistory.iterator(); iter.hasNext() ; ) {
-    		sb.append("\n").append(iter.next());
-    	}
-    	return sb.toString();
+        StringBuffer sb = new StringBuffer(errorHistory.size()*20);
+        sb.append(errorCount).append(" (").append(totalErrorCount).append(" since service start) Errors:");
+        for ( Iterator iter= errorHistory.iterator(); iter.hasNext() ; ) {
+            sb.append("\n").append(iter.next());
+        }
+        return sb.toString();
     }
     public void resetErrorHistory() {
-    	errorHistory.clear();
-    	lastErrorMsg = null;
-    	countEqualErrors = 0;
-    	errorCount = 0;
+        errorHistory.clear();
+        lastErrorMsg = null;
+        countEqualErrors = 0;
+        errorCount = 0;
     }
-    
+
 
     protected void startService() throws Exception {
         listenerID = scheduler.startScheduler(timerIDMwlReplica, taskInterval,
-        		mwlReplicationListener);
+                mwlReplicationListener);
     }
 
     protected void stopService() throws Exception {
         scheduler.stopScheduler(timerIDMwlReplica, listenerID,
-        		mwlReplicationListener);
+                mwlReplicationListener);
         super.stopService();
     }
 
@@ -299,52 +301,52 @@ public class MwlReplicaService extends AbstractScuService {
     }
 
     private boolean process() {
-    	log.info("MWL Replication process started!");
-    	try {
-			List l = replicateMWLEntries(calledAETs, null);
-			log.debug(l);
-			return true;
-		} catch (Exception e) {
-			log.error("MWL replication process failed!", e);
-			return false;
-		}
+        log.info("MWL Replication process started!");
+        try {
+            List l = replicateMWLEntries(calledAETs, null);
+            log.debug(l);
+            return true;
+        } catch (Exception e) {
+            log.error("MWL replication process failed!", e);
+            return false;
+        }
     }
     public List replicateMWLEntries(final String[] aets, Dataset searchDS) {
-		List l;
-		try {
-			l = replicateMWLEntries(aets[0], searchDS);
-		} catch (Exception x) {
-			log.error("Replicate MWL Entries from "+aets[0]+" failed!",x);
+        List l;
+        try {
+            l = replicateMWLEntries(aets[0], searchDS);
+        } catch (Exception x) {
+            log.error("Replicate MWL Entries from "+aets[0]+" failed!",x);
             addError(aets[0],x);
-			l = new ArrayList();
-		}
-		for ( int i = 1 ; i < aets.length ; i++){
-			try {
-				l.addAll(replicateMWLEntries(aets[i], searchDS));
-			} catch (Exception x) {
-				log.error("Replicate MWL Entries from "+aets[i]+" failed!",x);
-	            addError(aets[i],x);
-			}
-		}
-    	return l;
+            l = new ArrayList();
+        }
+        for ( int i = 1 ; i < aets.length ; i++){
+            try {
+                l.addAll(replicateMWLEntries(aets[i], searchDS));
+            } catch (Exception x) {
+                log.error("Replicate MWL Entries from "+aets[i]+" failed!",x);
+                addError(aets[i],x);
+            }
+        }
+        return l;
     }
     public List replicateMWLEntries(final String aet, Dataset searchDS) throws Exception {
-    	log.info("Start MWL replication from "+aet);
+        log.info("Start MWL replication from "+aet);
         if ( searchDS == null ) {
-        	searchDS = getSearchDSForDate(new Date(), msBefore, msAfter);
-        	log.debug("No searchDS given! Use standard 'today list' searchDS instead:");
+            searchDS = getSearchDSForDate(new Date(), msBefore, msAfter);
+            log.debug("No searchDS given! Use standard 'today list' searchDS instead:");
         }
         searchDS = coerceAttributes(searchDS, aet, MWL_REPLICA_RQ_XSL);
-    	final List result = new ArrayList();
+        final List result = new ArrayList();
         if ( debugMode ) {
             log.info("Query MWL SCP: " + aet + " with keys:");log.info(searchDS);
-        	DcmElement spsSq = searchDS.get(Tags.SPSSeq);
-        	log.info("DEBUG Mode! No MWL Query will be performed!\nDate Time Range:"+spsSq == null ? 
-        			"No SPSSQ!" : getDateTimeRangeString(spsSq));
-        	return result;
+            DcmElement spsSq = searchDS.get(Tags.SPSSeq);
+            log.info("DEBUG Mode! No MWL Query will be performed!\nDate Time Range:"+spsSq == null ? 
+                    "No SPSSQ!" : getDateTimeRangeString(spsSq));
+            return result;
         }
         log.debug("Query MWL SCP: " + aet + " with keys:");log.debug(searchDS);
-    	final MWLManager manager = mwlMgt();
+        final MWLManager manager = mwlMgt();
         try {
             ActiveAssociation aa = openAssociation(aet,
                     UIDs.ModalityWorklistInformationModelFIND);
@@ -363,18 +365,18 @@ public class MwlReplicaService extends AbstractScuService {
                                 Dataset rsp = dimse.getDataset();
                                 logResponse(rsp,aet);
                                 if ( issuerOfPatient != null ) {
-                                	if ( forceIssuerCoercion || !rsp.containsValue(Tags.IssuerOfPatientID)) {
-                                		rsp.putSH(Tags.IssuerOfPatientID, issuerOfPatient);
-                                		log.debug("Issuer of patient coerced to "+issuerOfPatient);
-                                	}
+                                    if ( forceIssuerCoercion || !rsp.containsValue(Tags.IssuerOfPatientID)) {
+                                        rsp.putSH(Tags.IssuerOfPatientID, issuerOfPatient);
+                                        log.debug("Issuer of patient coerced to "+issuerOfPatient);
+                                    }
                                 }
                                 rsp = coerceAttributes(rsp, aet, MWL_REPLICA_RSP_XSL);
                                 if ( !manager.updateWorklistItem(rsp) ) {
-                                	manager.addWorklistItem(rsp);
+                                    manager.addWorklistItem(rsp);
                                 }
                                 result.add(rsp);
                             } catch (Exception e) {
-                            	log.error("Error occured!", e);
+                                log.error("Error occured!", e);
                                 addError("dimseReceived:",e);
                             }
                         } else {
@@ -383,9 +385,9 @@ public class MwlReplicaService extends AbstractScuService {
                                         + aet + " :" + dimse);
                             }                        
                         }
-                        
+
                     }});
-           } finally {
+            } finally {
                 try {
                     aa.release(true);
                 } catch (Exception e) {
@@ -400,51 +402,51 @@ public class MwlReplicaService extends AbstractScuService {
         return result;
     }
 
-	private void addError(final String aet, Exception e) {
-		errorCount++;
-		this.totalErrorCount++;
-		String msg = aet+":"+e.getMessage();
-		if ( msg.equals(lastErrorMsg)) {
-			msg = dfFull.format(new Date())+" Repeated "+(++countEqualErrors)+" times";
-			if (countEqualErrors > 1 ) {
-				int idx = errorHistory.size();idx--;
-				errorHistory.set(idx, msg);
-			} else {
-				errorHistory.add(msg);
-			}
-		} else {
-			lastErrorMsg = msg;
-			countEqualErrors = 0;
-			errorHistory.add(dfFull.format(new Date())+" "+msg);
-		}
-	}
-	
-    private String getDateTimeRangeString(DcmElement spsSq) {
-    	Date[] dates = spsSq.getItem().getDateTimeRange(Tags.SPSStartDate, Tags.SPSStartTime);
-    	if ( dates == null) return "NONE";
-    	StringBuffer sb = new StringBuffer();
-    	sb.append(dates[0]).append("-").append(dates[1]);
-		return sb.toString();
-	}
-
-	public List replicateMWLEntriesForDate(String aet, String date) throws Exception {
-    	Date d = isEmpty(date) ? new Date() : dfDA.parse(date);
-    	if ( isEmpty(aet) ) {
-    		return replicateMWLEntries(calledAETs, getSearchDSForDate(d,d) );
-    	} else {
-    		return replicateMWLEntries(aet, getSearchDSForDate(d,d) );
-    	}
+    private void addError(final String aet, Exception e) {
+        errorCount++;
+        this.totalErrorCount++;
+        String msg = aet+":"+e.getMessage();
+        if ( msg.equals(lastErrorMsg)) {
+            msg = dfFull.format(new Date())+" Repeated "+(++countEqualErrors)+" times";
+            if (countEqualErrors > 1 ) {
+                int idx = errorHistory.size();idx--;
+                errorHistory.set(idx, msg);
+            } else {
+                errorHistory.add(msg);
+            }
+        } else {
+            lastErrorMsg = msg;
+            countEqualErrors = 0;
+            errorHistory.add(dfFull.format(new Date())+" "+msg);
+        }
     }
-    
+
+    private String getDateTimeRangeString(DcmElement spsSq) {
+        Date[] dates = spsSq.getItem().getDateTimeRange(Tags.SPSStartDate, Tags.SPSStartTime);
+        if ( dates == null) return "NONE";
+        StringBuffer sb = new StringBuffer();
+        sb.append(dates[0]).append("-").append(dates[1]);
+        return sb.toString();
+    }
+
+    public List replicateMWLEntriesForDate(String aet, String date) throws Exception {
+        Date d = isEmpty(date) ? new Date() : dfDA.parse(date);
+        if ( isEmpty(aet) ) {
+            return replicateMWLEntries(calledAETs, getSearchDSForDate(d,d) );
+        } else {
+            return replicateMWLEntries(aet, getSearchDSForDate(d,d) );
+        }
+    }
+
     public List replicateMWLEntriesForDateRange(String aet, String startDate, String endDate) throws Exception {
-    	Date start = isEmpty(startDate) ? null : dfDT.parse(startDate);
-    	Date end = isEmpty(endDate) ? null : dfDT.parse(endDate);
-    	if ( isEmpty(aet) ) {
-    		return replicateMWLEntries(calledAETs, getSearchDSForDate(start,end) );
-    	} else {
-        	return replicateMWLEntries(aet, getSearchDSForDate(start,end) );
-    	
-    	}
+        Date start = isEmpty(startDate) ? null : dfDT.parse(startDate);
+        Date end = isEmpty(endDate) ? null : dfDT.parse(endDate);
+        if ( isEmpty(aet) ) {
+            return replicateMWLEntries(calledAETs, getSearchDSForDate(start,end) );
+        } else {
+            return replicateMWLEntries(aet, getSearchDSForDate(start,end) );
+
+        }
     }
 
     public final ObjectName getTemplatesServiceName() {
@@ -454,51 +456,52 @@ public class MwlReplicaService extends AbstractScuService {
     public final void setTemplatesServiceName(ObjectName serviceName) {
         templates.setTemplatesServiceName(serviceName);
     }
-    
-	private boolean isEmpty(String param) {
-		return param == null || param.length() < 1;
-	}
+
+    private boolean isEmpty(String param) {
+        return param == null || param.length() < 1;
+    }
 
     private Dataset getSearchDSForDate(Date baseDate, long msBefore, long msAfter) {
-    	if ( msBefore < 0 && msAfter < 0) 
-    		return getSearchDSForDate(baseDate, baseDate);
-		Date start = msBefore < 0 ? null : new Date( baseDate.getTime() - msBefore );
-		Date end = msAfter < 0 ? null : new Date( baseDate.getTime() + msAfter );
-		return getSearchDSForDate(start, end);
+        if ( msBefore < 0 && msAfter < 0) 
+            return getSearchDSForDate(baseDate, baseDate);
+        Date start = msBefore < 0 ? null : new Date( baseDate.getTime() - msBefore );
+        Date end = msAfter < 0 ? null : new Date( baseDate.getTime() + msAfter );
+        return getSearchDSForDate(start, end);
     }
-    
+
     private Dataset getSearchDSForDate(Date start, Date end) {
-		Dataset ds = DcmObjectFactory.getInstance().newDataset();
+        Dataset ds = DcmObjectFactory.getInstance().newDataset();
+        ds.putCS(Tags.SpecificCharacterSet, "ISO_IR 100");
         Dataset dsSPS = ds.putSQ(Tags.SPSSeq).addNewItem();
         dsSPS.putAE( Tags.ScheduledStationAET );
         addStartDate(start, end, dsSPS);
-		
-        
+
+
         dsSPS.putCS( Tags.Modality );
         dsSPS.putPN( Tags.ScheduledPerformingPhysicianName );
         dsSPS.putLO( Tags.SPSDescription );
         dsSPS.putSH( Tags.ScheduledStationName );
         dsSPS.putSH( Tags.SPSLocation );
-    	Dataset dsSpcs = addCodeSQ(ds, Tags.ScheduledProtocolCodeSeq);
-    	{
-    		DcmElement pCtxSq = dsSpcs.putSQ( Tags.ProtocolContextSeq );
-    		Dataset dsPCtxItem = pCtxSq.addNewItem();
-    		dsPCtxItem.putCS( Tags.ValueType );
-    		addCodeSQ(ds, Tags.ConceptNameCodeSeq);
-    		dsPCtxItem.putDT( Tags.DateTime );
-    		dsPCtxItem.putPN( Tags.PersonName );
-    		dsPCtxItem.putUT( Tags.TextValue );
-    		addCodeSQ(ds, Tags.ConceptCodeSeq);
-    		dsPCtxItem.putDS( Tags.NumericValue );
-        	addCodeSQ(ds, Tags.MeasurementUnitsCodeSeq);
-    		//TODO: all other from protocol code SQ 
-    	}
+        Dataset dsSpcs = addCodeSQ(ds, Tags.ScheduledProtocolCodeSeq);
+        {
+            DcmElement pCtxSq = dsSpcs.putSQ( Tags.ProtocolContextSeq );
+            Dataset dsPCtxItem = pCtxSq.addNewItem();
+            dsPCtxItem.putCS( Tags.ValueType );
+            addCodeSQ(ds, Tags.ConceptNameCodeSeq);
+            dsPCtxItem.putDT( Tags.DateTime );
+            dsPCtxItem.putPN( Tags.PersonName );
+            dsPCtxItem.putUT( Tags.TextValue );
+            addCodeSQ(ds, Tags.ConceptCodeSeq);
+            dsPCtxItem.putDS( Tags.NumericValue );
+            addCodeSQ(ds, Tags.MeasurementUnitsCodeSeq);
+            //TODO: all other from protocol code SQ 
+        }
         dsSPS.putLO( Tags.PreMedication );
         dsSPS.putSH( Tags.SPSID );
         dsSPS.putLO( Tags.RequestedContrastAgent );
         dsSPS.putCS(Tags.SPSStatus);
 
-//Requested Procedure        
+//      Requested Procedure        
         ds.putSH( Tags.RequestedProcedureID );
         ds.putLO( Tags.RequestedProcedureDescription );
         addCodeSQ(ds, Tags.RequestedProcedureCodeSeq);
@@ -520,8 +523,8 @@ public class MwlReplicaService extends AbstractScuService {
         ds.putSH(Tags.ReportingPriority);
         ds.putPN(Tags.NamesOfIntendedRecipientsOfResults);
         ds.putSQ(Tags.IntendedRecipientsOfResultsIdentificationSeq);
-        
-//imaging service request
+
+//      imaging service request
         ds.putLT( Tags.ImagingServiceRequestComments );
         ds.putPN( Tags.RequestingPhysician );
         ds.putSQ(Tags.RequestingPhysicianIdentificationSeq);
@@ -536,58 +539,58 @@ public class MwlReplicaService extends AbstractScuService {
         ds.putPN(Tags.OrderEnteredBy);
         ds.putSH(Tags.OrderEntererLocation);
         ds.putSH(Tags.OrderCallbackPhoneNumber);
-        
-//Patient/Visit Identification
+
+//      Patient/Visit Identification
         ds.putPN( Tags.PatientName );
         ds.putLO( Tags.PatientID);
         ds.putLO( Tags.AdmissionID );
-//Visit Status
+//      Visit Status
         ds.putLO(Tags.CurrentPatientLocation);
-        
-//Visit Relationship
+
+//      Visit Relationship
         {
             Dataset dsRefPat = ds.putSQ( Tags.RefPatientSeq ).addNewItem();
             dsRefPat.putUI( Tags.RefSOPClassUID );
             dsRefPat.putUI( Tags.RefSOPInstanceUID );
         }
-//Patient demographic
+//      Patient demographic
         ds.putDA( Tags.PatientBirthDate );
         ds.putCS( Tags.PatientSex );
         ds.putDS( Tags.PatientWeight );
         ds.putLO( Tags.ConfidentialityPatientData );
-//Patient medical
+//      Patient medical
         ds.putLO( Tags.PatientState );
         ds.putUS( Tags.PregnancyStatus );
         ds.putLO( Tags.MedicalAlerts );
         ds.putLO( Tags.ContrastAllergies );
         ds.putLO( Tags.SpecialNeeds );
         log.debug("### searchDS:");log.debug(ds);
-		return ds;
-	}
+        return ds;
+    }
 
-	private void addStartDate(Date start, Date end, Dataset dsSPS) {
-		if ( start != null && end != null ) {
-			if (dfDA.format(start).equals(dfDA.format(end)) ) {
-				dsSPS.putDA(Tags.SPSStartDate, start);
-				if ( start.getTime() != end.getTime() ) {
-					dsSPS.putTM(Tags.SPSStartTime, start, end);
-				} else {
-					dsSPS.putTM(Tags.SPSStartTime);
-				}
-			} else {
-				dsSPS.putDA(Tags.SPSStartDate, start, end);
-				dsSPS.putTM(Tags.SPSStartTime, start, end);
-			}
-		} else if ( start != end ) { //one is null
-			dsSPS.putDA(Tags.SPSStartDate, start, end);
-			dsSPS.putTM(Tags.SPSStartTime, start, end);
-		} else {
-			dsSPS.putDA(Tags.SPSStartDate);
-			dsSPS.putTM(Tags.SPSStartTime);
-		}
-	}
+    private void addStartDate(Date start, Date end, Dataset dsSPS) {
+        if ( start != null && end != null ) {
+            if (dfDA.format(start).equals(dfDA.format(end)) ) {
+                dsSPS.putDA(Tags.SPSStartDate, start);
+                if ( start.getTime() != end.getTime() ) {
+                    dsSPS.putTM(Tags.SPSStartTime, start, end);
+                } else {
+                    dsSPS.putTM(Tags.SPSStartTime);
+                }
+            } else {
+                dsSPS.putDA(Tags.SPSStartDate, start, end);
+                dsSPS.putTM(Tags.SPSStartTime, start, end);
+            }
+        } else if ( start != end ) { //one is null
+            dsSPS.putDA(Tags.SPSStartDate, start, end);
+            dsSPS.putTM(Tags.SPSStartTime, start, end);
+        } else {
+            dsSPS.putDA(Tags.SPSStartDate);
+            dsSPS.putTM(Tags.SPSStartTime);
+        }
+    }
 
-	private Dataset addCodeSQ(Dataset ds, int sqTag){
+    private Dataset addCodeSQ(Dataset ds, int sqTag){
         DcmElement sq = ds.putSQ( sqTag );
         Dataset item = sq.addNewItem();
         item.putSH( Tags.CodeValue );
@@ -596,24 +599,94 @@ public class MwlReplicaService extends AbstractScuService {
         item.putSH( Tags.CodingSchemeVersion );        
         return item;
     }
-	
-	private Dataset coerceAttributes(Dataset ds, String aet, String xsl) {
+
+    private Dataset coerceAttributes(Dataset ds, String aet, String xsl) {
         Templates stylesheet = templates.getTemplatesForAET(aet, xsl);
         if (stylesheet != null) {
-        	log.debug("Dataset before coercion:");log.debug(ds);
+            log.debug("Dataset before coercion:");log.debug(ds);
             Dataset out = DcmObjectFactory.getInstance().newDataset();
             try {
                 XSLTUtils.xslt(ds, stylesheet, out);
-                return out;
+                coerceAttributes(ds, out, null);
             } catch (Exception e) {
                 log.error("MWL Replica Attribute coercion failed:", e);
             }
+            log.debug("Dataset after coercion:");log.debug(ds);
         }
         return ds;
-	}
+    }
+
+    @SuppressWarnings( { "fallthrough", "unchecked" })
+    private void coerceAttributes(DcmObject ds, DcmObject coerce,
+            DcmElement parent) {
+        boolean coerced = false;
+        for (Iterator<DcmElement> it = coerce.iterator(); it.hasNext();) {
+            DcmElement el = it.next();
+            DcmElement oldEl = ds.get(el.tag());
+            if (el.isEmpty()) {
+                coerced = oldEl != null && !oldEl.isEmpty();
+                if (oldEl == null || coerced) {
+                    ds.putXX(el.tag(), el.vr());
+                }
+            } else {
+                Dataset item;
+                DcmElement sq = oldEl;
+                switch (el.vr()) {
+                case VRs.SQ:
+                    coerced = oldEl != null && sq.vr() != VRs.SQ;
+                    if (oldEl == null || coerced) {
+                        sq = ds.putSQ(el.tag());
+                    }
+                    for (int i = 0, n = el.countItems(); i < n; ++i) {
+                        item = sq.getItem(i);
+                        if (item == null) {
+                            item = sq.addNewItem();
+                        }
+                        Dataset coerceItem = el.getItem(i);
+                        coerceAttributes(item, coerceItem, el);
+                        if (!coerceItem.isEmpty()) {
+                            coerced = true;
+                        }
+                    }
+                    break;
+                case VRs.OB:
+                case VRs.OF:
+                case VRs.OW:
+                case VRs.UN:
+                    if (el.hasDataFragments()) {
+                        coerced = true;
+                        sq = ds.putXXsq(el.tag(), el.vr());
+                        for (int i = 0, n = el.countItems(); i < n; ++i) {
+                            sq.addDataFragment(el.getDataFragment(i));
+                        }
+                        break;
+                    }
+                    // fall through
+                default:
+                    coerced = oldEl != null && !oldEl.equals(el);
+                if (oldEl == null || coerced) {
+                    ds.putXX(el.tag(), el.vr(), el.getByteBuffer());
+                }
+                break;
+                }
+            }
+            if (coerced) {
+                log.info(parent == null ? ("Coerce " + oldEl + " to " + el)
+                        : ("Coerce " + oldEl + " to " + el
+                                + " in item of " + parent));
+            } else {
+                if (oldEl == null && log.isDebugEnabled()) {
+                    log.debug(parent == null ? ("Add " + el) : ("Add " + el
+                            + " in item of " + parent));
+                }
+                it.remove();
+            }
+        }
+    }
+
     private MWLManager mwlMgt() throws Exception {
         MWLManagerHome home = (MWLManagerHome) EJBHomeFactory.getFactory()
-                .lookup(MWLManagerHome.class, MWLManagerHome.JNDI_NAME);
+        .lookup(MWLManagerHome.class, MWLManagerHome.JNDI_NAME);
         return home.create();
     }
 
