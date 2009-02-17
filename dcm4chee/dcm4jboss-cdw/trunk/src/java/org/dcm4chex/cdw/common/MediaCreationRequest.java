@@ -41,7 +41,6 @@ package org.dcm4chex.cdw.common;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.util.Date;
 
 import org.dcm4che.data.Dataset;
