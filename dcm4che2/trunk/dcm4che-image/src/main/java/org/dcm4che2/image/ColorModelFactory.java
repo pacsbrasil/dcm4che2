@@ -213,7 +213,7 @@ public class ColorModelFactory {
         int x0 = off;
         int y0 = 0;
         int y1,dy;
-        for (int i = 0; i < in.length; i++) {
+        for (int i = 0; i < in.length; ) {
             int op = in[i++];
             int n = in[i++] & 0xffff;
             switch (op) {
