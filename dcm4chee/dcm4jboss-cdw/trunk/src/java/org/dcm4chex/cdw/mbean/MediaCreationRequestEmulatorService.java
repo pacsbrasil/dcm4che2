@@ -389,7 +389,9 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
         MediaCreationRequest mcrq = new MediaCreationRequest(f, aet);
         mcrq.setPriority(requestPriority);
         mcrq.setRemainingCopies(numberOfCopies);
-        mcrq.setFilesetID(nextFileSetID());
+        String fileID = nextFileSetID();
+        mcrq.setFilesetID(fileID);
+        mcrq.setVolsetID(fileID);
 
         DcmObjectFactory dof = DcmObjectFactory.getInstance();
         Dataset attrs = dof.newDataset();
