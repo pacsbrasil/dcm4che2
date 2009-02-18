@@ -41,6 +41,7 @@
 
   <target name="install" description="Perform a Maven Install">
      <exec executable="${mvn}" failonerror="true">
+	<env key="MAVEN_OPTS" value="-Xmx512m" />
         <arg line="${release.profiles} install" />
      </exec>
   </target>
