@@ -150,12 +150,14 @@ public class BasicDicomObject extends AbstractDicomObject {
     }
 
     public void shareElements() {
-        table.accept(new IntHashtable.Visitor() {
-            public boolean visit(int key, Object value) {
-                table.put(key, ((DicomElement) value).share());
-                return true;
-            }
-        });
+        synchronized (SimpleDicomElement.shared) {
+            table.accept(new IntHashtable.Visitor() {
+                public boolean visit(int key, Object value) {
+                    table.put(key, ((DicomElement) value).share());
+                    return true;
+                }
+            });
+        }
     }
 
     public Iterator<DicomElement> iterator() {
