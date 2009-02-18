@@ -426,6 +426,7 @@ public class WADOService extends AbstractCacheService {
      * @throws Exception 
      */
     public WADOResponseObject getWADOObject(WADORequestObject reqVO) throws Exception {
+        long t1 = System.currentTimeMillis();
         WADOResponseObject resp = support.getWADOObject(reqVO);
         if (support.isAuditLogEnabled(reqVO)) {
             if (support.isAuditLogIHEYr4() && resp.getPatInfo() != null) {
@@ -438,6 +439,8 @@ public class WADOService extends AbstractCacheService {
             log.debug("Suppress audit log! Disabled for host:"
                     + reqVO.getRemoteHost());
         }
+        long t2 = System.currentTimeMillis();
+        log.debug("getWADOObject(): " + (t2 - t1) + "ms");
         return resp;
     }
 

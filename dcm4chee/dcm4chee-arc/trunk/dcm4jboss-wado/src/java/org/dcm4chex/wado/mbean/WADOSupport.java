@@ -39,12 +39,17 @@
 
 package org.dcm4chex.wado.mbean;
 
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferUShort;
+import java.awt.image.IndexColorModel;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -55,6 +60,8 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -85,7 +92,6 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.log4j.Logger;
 import org.dcm4che.auditlog.AuditLoggerFactory;
 import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.auditlog.Patient;
@@ -99,6 +105,7 @@ import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.imageio.plugins.DcmMetadata;
+import org.dcm4cheri.imageio.plugins.DcmImageReadParamImpl;
 import org.dcm4cheri.imageio.plugins.SimpleYBRColorSpace;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
@@ -161,7 +168,7 @@ public class WADOSupport {
         "Error: use of simpleFrameList and calculatedFrameList parameter" +
         " are mutually exclusive.";
 
-    private static Logger log = Logger.getLogger(WADOService.class.getName());
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(WADOSupport.class);
 
     private static final AuditLoggerFactory alf = AuditLoggerFactory
     .getInstance();
@@ -258,6 +265,17 @@ public class WADOSupport {
                     HttpServletResponse.SC_UNAUTHORIZED,
                     "Permission denied for:" + req.getObjectUID());
         }
+
+        // Try to short-circuit the case where we want to retrieve
+        // an existing icon - we dont need to query the database for that
+        if((!disableCache) &&
+             req.getContentTypes().contains("image/jpeg")) {
+            WADOResponseObject scResp = tryToShortCircuitIconCacheLookup(req);
+            if(scResp != null) {
+                return scResp;
+            }
+        }
+        
         try {
             Dataset dsQ = dof.newDataset();
             dsQ.putUI(Tags.SOPInstanceUID, req.getObjectUID());
@@ -281,7 +299,7 @@ public class WADOSupport {
                 cmd.close();
         }
         log.debug("Found object:" + req.getObjectUID() + ":");
-        log.debug(objectDs);
+        log.trace("ObjectDS: {}", objectDs);
         if (objectDs == null) {
             return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_HTML,
                     HttpServletResponse.SC_NOT_FOUND,
@@ -351,6 +369,39 @@ public class WADOSupport {
                     + contentType);
         }
         return resp;
+    }
+
+
+    private WADOResponseObject tryToShortCircuitIconCacheLookup(WADORequestObject req) {
+        try {
+            log.debug("trying to short-circuit icon cache lookup!");
+            String frameNumber = req.getFrameNumber();
+            String suffix = null;
+            if(frameNumber != null) {
+                int frame = Integer.parseInt(frameNumber) - 1;
+                if (frame > 0) {
+                    suffix = "-" + frame;
+                }
+            }
+            File file = WADOCacheImpl.getWADOCache().getImageFile(req.getStudyUID(),
+                            req.getSeriesUID(), req.getObjectUID(),
+                            req.getRows(),req.getColumns(), req.getRegion(),
+                            req.getWindowWidth(), req.getWindowCenter(),
+                            req.getImageQuality(), suffix);
+            if(file != null) {
+                if(log.isDebugEnabled())
+                    log.debug("short-circuit sucessful!: " + file);
+                return new WADOStreamResponseObjectImpl(
+                            new FileInputStream(file), CONTENT_TYPE_JPEG,
+                            HttpServletResponse.SC_OK, null);
+            }
+
+            log.debug("no luck trying to short circuit icon lookup, following regular procedure");
+
+        } catch (Exception scEx) {
+            log.debug("Caught trying to shortcircuit Icon Wado Response:", scEx);
+        }
+        return null;
     }
 
     private WADOResponseObject handleNeedRedirectException(
@@ -782,8 +833,7 @@ public class WADOSupport {
                 ds.putAll(dsCoerce);
             }
             if (log.isDebugEnabled()) {
-                log.debug("Dataset for XSLT Transformation:");
-                log.debug(ds);
+                log.debug("Dataset for XSLT Transformation: {}", ds);
                 log.debug("Use XSLT stylesheet:" + xslURL);
             }
             TransformerHandler th = getTransformerHandler(xslURL);
@@ -1083,8 +1133,9 @@ public class WADOSupport {
             String columns, String region, String windowWidth,
             String windowCenter) throws IOException {
         Iterator it = ImageIO.getImageReadersByFormatName("DICOM");
-        if (!it.hasNext())
+        if (!it.hasNext()) {
             return null; // TODO more useful stuff
+        }
         ImageReader reader = (ImageReader) it.next();
         ImageInputStream in = new FileImageInputStream(file);
         try {
@@ -1115,11 +1166,19 @@ public class WADOSupport {
                     data.putDS(Tags.WindowCenter, windowCenter);
                 }
 
+                DcmImageReadParamImpl dcmParam = (DcmImageReadParamImpl) param;
+                dcmParam.setMaskPixelData(false);
+                dcmParam.setAutoWindowing(false); // ???
+                log.debug("getImage: ImageReadParam {}", dcmParam);
+
                 bi = reader.read(frame, param);
             } catch (Exception x) {
                 log.error("Can't read image:", x);
                 return null;
             }
+            
+            mergeOverlays(bi, ((DcmMetadata) reader.getStreamMetadata()).getDataset(), frame);
+
             float aspectRatio = reader.getAspectRatio(frame);
             if (rows != null || columns != null || aspectRatio != 1.0f) {
                 bi = resize(bi, rows, columns, aspectRatio);
@@ -1130,7 +1189,6 @@ public class WADOSupport {
             // icons in a tight loop
             in.close();
         }
-
     }
 
     /**
@@ -1186,6 +1244,219 @@ public class WADOSupport {
             return bi;
         }
     }
+
+        /**
+     * Merge the overlays into the buffered image.
+     *
+     * The overlay implementation is minimal.
+     *
+     *
+     * Currently
+     *
+     * <ul>
+     * <li>In-Pixel-Data overlays are not supported (they are retired
+     * as of the current dicom standard)</li>
+     * <li>More than 1 overlay data frame is not supported -
+     * there is nothing in the standard, no idea how this is supposed
+     * to look.</li>
+     * <li>Only the first overlay group is supported. Again,
+     * nothing in standard, will implement if given example images.</li>
+     * </ul>
+     *
+     * @param bi
+     * @param ds
+     */
+    private void mergeOverlays(BufferedImage bi, Dataset ds, int frame) {
+
+        long t1 = System.currentTimeMillis();
+
+        ArrayList<Integer> oldStyleOverlayPlanes = new ArrayList<Integer>();
+
+        for (int group = 0; group < 0x20; group += 2) {
+
+            int oBitPosition = getInt(ds, group, Tags.OverlayBitPosition, -1);
+            int oRows = getInt(ds, group, Tags.OverlayRows, -1);
+            int oCols = getInt(ds, group, Tags.OverlayColumns, -1);
+            int[] oOrigin = getInts(ds, group, Tags.OverlayOrigin);
+            int oBitsAllocated = getInt(ds, group, Tags.OverlayBitsAllocated, -1);
+            String oType = getString(ds, group, Tags.OverlayType);
+            int oNumberOfFrames = getInt(ds, group, 0x60000015, 1);
+            int oFrameStart = getInt(ds, group, 0x60000051, 1) - 1;
+            int oFrameEnd = oFrameStart + oNumberOfFrames;
+
+            if (oBitPosition == -1 &&
+                    oBitsAllocated == -1 &&
+                    oRows == -1 &&
+                    oCols == -1) {
+                log.trace("No overlay data associated with image for group {}", group);
+                continue;
+            }
+
+
+            if ("R".equals(oType)) {
+                log.debug("Overlay ROI bitmap, not doing anything");
+                continue;
+            }
+
+            if ((oBitsAllocated != 1) && (oBitPosition != 0)) {
+                log.debug("Overlay: {}  OldStyle bitPostion {}", group, oBitPosition);
+                oldStyleOverlayPlanes.add(oBitPosition);
+                continue;
+            }
+
+            if ("GR".indexOf(oType) < 0) {
+                log.warn("mergeOverlays(): Overlay Type {} not supported", oType);
+                continue;
+            }
+
+            int oX1 = 0;
+            int oY1 = 0;
+            if (oOrigin != null) {
+                oX1 = oOrigin[0] - 1;
+                oY1 = oOrigin[1] - 1;
+            }
+
+            log.debug("Overlay: {} OverlayType: {}", group, oType);
+            log.debug("Overlay: {} OverlayRows: {}", group, oRows);
+            log.debug("Overlay: {} OverlayColumns: {}", group, oCols);
+            log.debug("Overlay: {} OverlayOrigin: {} {}", new Object[]{group, oX1, oY1});
+            log.debug("Overlay: {} for Frames: [{}, {})", new Object[]{group, oFrameStart, oFrameEnd});
+
+            if (!((oFrameStart <= frame) && (frame < oFrameEnd))) {
+                log.debug("Overlay: frame {} not in range, skipping", frame);
+            }
+
+            int oFrameOffset = frame - oFrameStart;
+            long bitOffset = oFrameOffset * oRows * oCols;
+            long byteOffset = bitOffset / 8;  // dont round up!
+            int numBits = oRows * oCols;
+            int numBytes = (numBits + 7) / 8; // round up!
+
+            log.debug("Overlay: {} bitOffset: {}", group, bitOffset);
+            log.debug("Overlay: {} byteOffset: {}", group, byteOffset);
+            log.debug("Overlay: {} numBits: {}", group, numBits);
+            log.debug("Overlay: {} numBytes: {}", group, numBytes);
+
+            int xxx = groupedTag(group, Tags.OverlayData);
+            log.info("xxx {}", xxx);
+            log.info("xxx {}", Tags.OverlayData);
+
+            ByteBuffer bb = ds.get(groupedTag(group, Tags.OverlayData)).getByteBuffer();
+            log.debug("Overlay: {} ByteBuffer: {}", group, bb);
+            log.debug("Overlay: {} ByteBuffer ByteOrder: {}", group, (bb.order() == ByteOrder.BIG_ENDIAN) ? "BigEndian" : "LittleEndian");
+
+
+            IndexColorModel icm = new IndexColorModel(1, 2, icmColorValues, icmColorValues, icmColorValues, 0);
+            BufferedImage overBi = new BufferedImage(oCols, oRows, BufferedImage.TYPE_BYTE_BINARY, icm);
+            DataBufferByte dataBufferByte = (DataBufferByte) overBi.getRaster().getDataBuffer();
+
+
+            byte[] dest = dataBufferByte.getData();
+
+            bb.position((int) byteOffset);
+            bb.get(dest, 0, numBytes);
+
+            // java.awt cant handle non byte packed bitmaps
+            int bitsToMove = (int) (bitOffset % 8);
+            if (bitsToMove != 0) {
+                for (int i = 0, size = numBytes - 1; i < size; i++) {
+                    int b1 = dest[i] & 0xFF;
+                    int b2 = dest[i + 1] & 0xFF;
+                    dest[i] = (byte) ((b1 >> bitsToMove) &
+                            ((b2 << (8 - bitsToMove)) & 0xFF));
+                }
+            }
+
+            for (int i = 0; i < numBytes; i++) {
+                int idx = dest[i] & 0xFF;
+                dest[i] = bitSwapLut[idx];
+            }
+
+            log.debug("Overlay: {} BufferedImage: {}", group, overBi);
+            Graphics2D gBi = bi.createGraphics();
+            gBi.drawImage(overBi, oX1, oY1, null);
+
+        }
+        log.debug("Overlay: done combining overlays");
+
+
+        if (oldStyleOverlayPlanes.size() > 0) {
+            try {
+
+                int bitsStored = ds.getInt(Tags.BitsStored, -1);
+                short overlayValue = (short) ((1 << bitsStored) - 1);
+
+                DataBuffer _buffer = bi.getRaster().getDataBuffer();
+                if (_buffer.getDataType() == DataBuffer.TYPE_SHORT) {
+                    DataBufferUShort dataBuffer = (DataBufferUShort) bi.getRaster().getDataBuffer();
+                    short[] dest = dataBuffer.getData();
+                    int mask = 0;
+                    for (int i = 0, size = oldStyleOverlayPlanes.size(); i < size; i++) {
+                        int bit = oldStyleOverlayPlanes.get(i);
+                        mask |= (1 << bit);
+                    }
+                    log.debug("mergeOverlays(): setting oldStyleOverlays, mask used 0x" + Integer.toHexString(mask));
+                    for (int i = 0, size = dest.length; i < size; i++) {
+                        if ((dest[i] & mask) != 0) {
+                            dest[i] = overlayValue;
+                        }
+                    }
+                } else {
+                    log.warn("mergeOverlays(): data buffer type {} not supported", _buffer.getDataType());
+                }
+            } catch (Exception e) {
+                log.error("mergeOverlays(): ERROR", e);
+            }
+        }
+
+        long t2 = System.currentTimeMillis();
+
+        log.info("mergeOverlays(): {}ms", t2 -t1);
+    }
+
+    private static final byte[] icmColorValues = new byte[]{(byte) 0x00, (byte) 0xFF};
+    private static final byte[] bitSwapLut = makeBitSwapLut();
+
+    private static final byte[] makeBitSwapLut() {
+        byte[] rc = new byte[256];
+        for (int i = 0; i < 256; i++) {
+            rc[i] = byte_reverse((byte) i);
+        }
+        return rc;
+    }
+
+    // reverse the bits in a byte
+    private static final byte byte_reverse(byte b) {
+        int[] inOrder = new int[]{1, 2, 4, 8, 16, 32, 64, 128};
+        int[] revOrder = new int[]{128, 64, 32, 16, 8, 4, 2, 1};
+        byte out = 0;
+        for (int i = 0; i < 8; i++) {
+            int inPos = inOrder[i];
+            int revPos = revOrder[i];
+            if ((b & inPos) != 0) {
+                out |= revPos;
+            }
+        }
+        return out;
+    }
+
+    private static final int groupedTag(int group, int tag) {
+        int x = group << 16;
+        return tag + x;
+    }
+
+    private static final int getInt(Dataset ds, int group, int tag, int def) {
+        return ds.getInt(groupedTag(group, tag), def);
+    }
+
+    private static final int[] getInts(Dataset ds, int group, int tag) {
+        return ds.getInts(groupedTag(group, tag));
+    }
+
+    private static final String getString(Dataset ds, int group, int tag) {
+        return ds.getString(groupedTag(group, tag));
+    }
+
 
     public ObjectName getQueryRetrieveScpName() {
         return queryRetrieveScpName;
