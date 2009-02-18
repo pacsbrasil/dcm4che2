@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
         portName="DocumentRegistry_Port_Soap12",
         targetNamespace="urn:ihe:iti:xds-b:2007",
         wsdlLocation="/WEB-INF/wsdl/registry.wsdl",
-        endpointInterface="org.dcm4chee.xds.infoset.v30.DocumentRegistryPortType"
+        endpointInterface="org.dcm4chee.xds.infoset.v30.DocumentRegistryPortType12"
 )
 @SOAPBinding(style = SOAPBinding.Style.DOCUMENT)
 @EndpointConfig(configName = "Standard SOAP 1.2 WSAddressing Endpoint")

@@ -1,7 +1,5 @@
 package org.dcm4chee.xdsa.registry.ws;
 
-import java.util.List;
-
 import javax.annotation.Resource;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
@@ -11,12 +9,8 @@ import javax.xml.ws.WebServiceContext;
 import org.dcm4chee.xds.common.XDSConstants;
 import org.dcm4chee.xds.common.exception.XDSException;
 import org.dcm4chee.xds.infoset.v21.DocumentRegistryAPortType;
-import org.dcm4chee.xds.infoset.v21.ObjectFactory;
-import org.dcm4chee.xds.infoset.v21.RegistryError;
-import org.dcm4chee.xds.infoset.v21.RegistryErrorList;
 import org.dcm4chee.xds.infoset.v21.RegistryResponse;
 import org.dcm4chee.xds.infoset.v21.SubmitObjectsRequest;
-import org.dcm4chee.xdsa.registry.ws.XDSaRegistryDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
