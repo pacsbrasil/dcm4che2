@@ -299,6 +299,16 @@
     </descriptors>
   </attribute>
 
+  <attribute access="read-write" getMethod="isRenderOverlays"
+    setMethod="setRenderOverlays">
+    <description>Disable/enable rendering of overlays when generating JPEGS. </description>
+    <name>RenderOverlays</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="false" />
+    </descriptors>
+  </attribute>
+
   <attribute access="read-write" getMethod="getTimerID"
     setMethod="setTimerID">
     <description>Used internally. Do NOT modify. </description>

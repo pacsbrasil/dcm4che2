@@ -510,4 +510,12 @@ public class WADOService extends AbstractCacheService {
         cache.purgeStudy(studyIUID);
     }
 
+
+    public boolean isRenderOverlays() {
+        return support.isRenderOverlays();
+    }
+
+    public void setRenderOverlays(boolean b) {
+        support.setRenderOverlays(b);
+    }
 }

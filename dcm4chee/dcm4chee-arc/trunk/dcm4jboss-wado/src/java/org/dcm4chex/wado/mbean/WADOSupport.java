@@ -218,6 +218,16 @@ public class WADOSupport {
 
     private boolean disableCache;
 
+    private boolean renderOverlays = false;
+
+    public boolean isRenderOverlays() {
+        return renderOverlays;
+    }
+
+    public void setRenderOverlays(boolean renderOverlays) {
+        this.renderOverlays = renderOverlays;
+    }
+
     public WADOSupport(MBeanServer mbServer) {
         if (server != null) {
             server = mbServer;
@@ -1167,8 +1177,10 @@ public class WADOSupport {
                 }
 
                 DcmImageReadParamImpl dcmParam = (DcmImageReadParamImpl) param;
-                dcmParam.setMaskPixelData(false);
-                dcmParam.setAutoWindowing(false); // ???
+                if(renderOverlays) {
+                    dcmParam.setMaskPixelData(false);
+                    dcmParam.setAutoWindowing(false); // overlays & autowindowing do not play nice
+                }
                 log.debug("getImage: ImageReadParam {}", dcmParam);
 
                 bi = reader.read(frame, param);
@@ -1176,8 +1188,10 @@ public class WADOSupport {
                 log.error("Can't read image:", x);
                 return null;
             }
-            
-            mergeOverlays(bi, ((DcmMetadata) reader.getStreamMetadata()).getDataset(), frame);
+
+            if (renderOverlays) {
+                mergeOverlays(bi, ((DcmMetadata) reader.getStreamMetadata()).getDataset(), frame);
+            }
 
             float aspectRatio = reader.getAspectRatio(frame);
             if (rows != null || columns != null || aspectRatio != 1.0f) {
