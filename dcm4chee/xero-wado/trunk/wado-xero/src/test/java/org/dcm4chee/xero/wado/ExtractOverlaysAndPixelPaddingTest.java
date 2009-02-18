@@ -34,10 +34,10 @@ public class ExtractOverlaysAndPixelPaddingTest {
 		minTest = -4;
 		minUTest = 77;
 		maxTest = 8099;
-		bufferShort = createDataBuffer( DataBuffer.TYPE_SHORT, 4000000, minTest, maxTest, 16);
-		bufferUShort = createDataBuffer( DataBuffer.TYPE_USHORT, 4000000, minUTest, maxTest, 16);
-		bufferShort14 = createDataBuffer( DataBuffer.TYPE_SHORT, 4000000, minTest, maxTest, 14);
-		bufferUShort14 = createDataBuffer( DataBuffer.TYPE_USHORT, 4000000, minUTest, maxTest, 14);
+		bufferShort = createDataBuffer( DataBuffer.TYPE_SHORT, 400000, minTest, maxTest, 16);
+		bufferUShort = createDataBuffer( DataBuffer.TYPE_USHORT, 400000, minUTest, maxTest, 16);
+		bufferShort14 = createDataBuffer( DataBuffer.TYPE_SHORT, 400000, minTest, maxTest, 14);
+		bufferUShort14 = createDataBuffer( DataBuffer.TYPE_USHORT, 400000, minUTest, maxTest, 14);
 	}
 
 	@BeforeMethod
