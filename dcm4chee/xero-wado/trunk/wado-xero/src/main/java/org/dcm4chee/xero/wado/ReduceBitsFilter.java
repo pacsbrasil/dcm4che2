@@ -179,13 +179,13 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 		   
 		   ColorModel cm = new ComponentColorModel(gray, new int[]{bits}, false, false, ColorModel.OPAQUE, DataBuffer.TYPE_USHORT);
 		   bi = new BufferedImage(cm, cm.createCompatibleWritableRaster(r.getWidth(), r.getHeight()), false, null);
-		   lut.lookup(r, bi.getRaster() );
+		   lut.lookup(r.getDataBuffer(), bi.getRaster().getDataBuffer() );
 		   
 	   } else {
 		   
 		   if( bits!=8 ) throw new IllegalArgumentException("Only 8...15 bits supported for reduce bits filter.");
 		   bi = new BufferedImage( wi.getValue().getWidth(), wi.getValue().getHeight(), BufferedImage.TYPE_BYTE_GRAY); 
-		   lut.lookup(r, bi.getRaster() );
+		   lut.lookup(r.getDataBuffer(), bi.getRaster().getDataBuffer() );
 	   }
 	   
 	   return bi;

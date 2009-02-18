@@ -153,7 +153,7 @@ public class WLFilter implements Filter<WadoImage> {
 
 	  DicomObject voiObj = VOIUtils.selectVoiObject(img,pr,frame);
 	  if( func==null && voiObj==null) {
-		 float[] cw = VOIUtils.getMinMaxWindowCenterWidth(img, pr, frame, bi.getRaster());
+		 float[] cw = VOIUtils.getMinMaxWindowCenterWidth(img, pr, frame, bi.getRaster().getDataBuffer());
 		 windowCenter = cw[0];
 		 windowWidth = cw[1];
 		 func = LookupTable.LINEAR;
@@ -171,7 +171,7 @@ public class WLFilter implements Filter<WadoImage> {
 	  //}
 
 	  if (lut != null){
-		 lut.lookup( bi.getRaster(), dest.getRaster() );
+		 lut.lookup( bi.getRaster().getDataBuffer(), dest.getRaster().getDataBuffer() );
 	  }
 
 	  WadoImage ret = wi.clone();
