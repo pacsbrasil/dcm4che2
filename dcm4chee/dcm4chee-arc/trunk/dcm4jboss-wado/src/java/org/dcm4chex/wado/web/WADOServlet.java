@@ -41,6 +41,7 @@ package org.dcm4chex.wado.web;
 
 import java.io.IOException;
 
+import java.io.OutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -164,8 +165,12 @@ public class WADOServlet extends HttpServlet {
                 final String errMsg = "Exception while writing WADO response to client! reason:";
 				try {
 					log.debug("respObject execute");
-					respObject.execute( response.getOutputStream() );
-					response.getOutputStream().close();
+                    OutputStream respStream = response.getOutputStream();
+                    try {
+                        respObject.execute(respStream);
+                    } finally {
+                        respStream.close();
+                    }
                 } catch ( RequestedFrameNumbersOutOfRangeException e ) {
                     sendError(response, HttpServletResponse.SC_BAD_REQUEST,
                               "Error: Requested Frame Numbers Out of Range");

@@ -1087,48 +1087,50 @@ public class WADOSupport {
             return null; // TODO more useful stuff
         ImageReader reader = (ImageReader) it.next();
         ImageInputStream in = new FileImageInputStream(file);
-        reader.setInput(in);
-        BufferedImage bi = null;
-        Rectangle regionRectangle = null;
         try {
-            ImageReadParam param = reader.getDefaultReadParam();
-            if (region != null) {
-                String[] ss = StringUtils.split(region, ',');
-                int totWidth = reader.getWidth(0);
-                int totHeight = reader.getHeight(0);
+            reader.setInput(in);
+            BufferedImage bi = null;
+            Rectangle regionRectangle = null;
+            try {
+                ImageReadParam param = reader.getDefaultReadParam();
+                if (region != null) {
+                    String[] ss = StringUtils.split(region, ',');
+                    int totWidth = reader.getWidth(0);
+                    int totHeight = reader.getHeight(0);
 
-                int topX = (int) Math.round(Double.parseDouble(ss[0])
-                        * totWidth); // top left X value
-                int topY = (int) Math.round(Double.parseDouble(ss[1])
-                        * totHeight); // top left Y value
-                int botX = (int) Math.round(Double.parseDouble(ss[2])
-                        * totWidth); // bottom right X value
-                int botY = (int) Math.round(Double.parseDouble(ss[3])
-                        * totHeight); // bottom right Y value
+                    int topX = (int) Math.round(Double.parseDouble(ss[0]) * totWidth); // top left X value
+                    int topY = (int) Math.round(Double.parseDouble(ss[1]) * totHeight); // top left Y value
+                    int botX = (int) Math.round(Double.parseDouble(ss[2]) * totWidth); // bottom right X value
+                    int botY = (int) Math.round(Double.parseDouble(ss[3]) * totHeight); // bottom right Y value
 
-                int w = botX - topX;
-                int h = botY - topY;
+                    int w = botX - topX;
+                    int h = botY - topY;
 
-                regionRectangle = new Rectangle(topX, topY, w, h);
-                param.setSourceRegion(regionRectangle);
+                    regionRectangle = new Rectangle(topX, topY, w, h);
+                    param.setSourceRegion(regionRectangle);
+                }
+                if (windowWidth != null && windowCenter != null) {
+                    Dataset data = ((DcmMetadata) reader.getStreamMetadata()).getDataset();
+                    data.putDS(Tags.WindowWidth, windowWidth);
+                    data.putDS(Tags.WindowCenter, windowCenter);
+                }
+
+                bi = reader.read(frame, param);
+            } catch (Exception x) {
+                log.error("Can't read image:", x);
+                return null;
             }
-            if (windowWidth != null && windowCenter != null) {
-                Dataset data = ((DcmMetadata) reader.getStreamMetadata())
-                .getDataset();
-                data.putDS(Tags.WindowWidth, windowWidth);
-                data.putDS(Tags.WindowCenter, windowCenter);
+            float aspectRatio = reader.getAspectRatio(frame);
+            if (rows != null || columns != null || aspectRatio != 1.0f) {
+                bi = resize(bi, rows, columns, aspectRatio);
             }
+            return bi;
+        } finally {
+            // !!!! without this, we get "too many open files" when generating
+            // icons in a tight loop
+            in.close();
+        }
 
-            bi = reader.read(frame, param);
-        } catch (Exception x) {
-            log.error("Can't read image:", x);
-            return null;
-        }
-        float aspectRatio = reader.getAspectRatio(frame);
-        if (rows != null || columns != null || aspectRatio != 1.0f) {
-            bi = resize(bi, rows, columns, aspectRatio);
-        }
-        return bi;
     }
 
     /**
