@@ -161,15 +161,22 @@ public class WADOServlet extends HttpServlet {
 				long len = respObject.length();
 				if ( len != -1 ) 
 					response.setContentLength((int)len);
+                final String errMsg = "Exception while writing WADO response to client! reason:";
 				try {
 					log.debug("respObject execute");
 					respObject.execute( response.getOutputStream() );
 					response.getOutputStream().close();
-                                } catch ( RequestedFrameNumbersOutOfRangeException e ) {
-                                        sendError(response, HttpServletResponse.SC_BAD_REQUEST,
-                                                "Error: Requested Frame Numbers Out of Range");
+                } catch ( RequestedFrameNumbersOutOfRangeException e ) {
+                    sendError(response, HttpServletResponse.SC_BAD_REQUEST,
+                              "Error: Requested Frame Numbers Out of Range");
+                } catch ( IOException ioe) {
+                    if(ioe.toString().startsWith("ClientAbortException:")) {
+                        log.debug(errMsg + ioe);
+                    } else {
+                        log.error(errMsg + ioe.getMessage(), ioe);
+                    }
 				} catch ( Exception e ) {
-					log.error("Exception while writing WADO response to client! reason:"+e.getMessage(), e );
+					log.error(errMsg+e.getMessage(), e );
 				}
 				
 			}
