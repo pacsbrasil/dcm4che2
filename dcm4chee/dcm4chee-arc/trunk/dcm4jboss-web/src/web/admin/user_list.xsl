@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" 
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns:url="http://whatever/java/java.net.URLEncoder"
 	xmlns:internal="urn:my-internal-data">
 
 <xsl:output method="html" indent="yes" encoding="UTF-8"/>
@@ -55,7 +56,7 @@
 		</xsl:apply-templates>
 																
 		<td title="Delete user {userID}!" align="left" valign="top" border="0" >
-				<a href="user_editsubmit.m?userID={userID}&amp;cmd=deleteUser" 
+				<a href="user_editsubmit.m?userID={url:encode(userID)}&amp;cmd=deleteUser" 
 					onclick="return confirm('Are you sure you want to delete?')">
 				<img src="images/delete.gif" alt="delete" border="0"/>							
 				</a>					
@@ -89,13 +90,13 @@
         <xsl:choose>
 			<xsl:when test="/model/userList/item[userID=$userID]/roles[item=$role]">
             	<a title="Remove {$displayName} from user {$userID}"
-                	href="user_editsubmit.m?userID={$userID}&amp;cmd=removeRole&amp;role={$role}">
+                	href="user_editsubmit.m?userID={url:encode($userID)}&amp;cmd=removeRole&amp;role={$role}">
                 	<img src="images/granted_xxs.gif" alt="granted" border="0" />
             	</a>
             </xsl:when>
             <xsl:otherwise>
             	<a title="Add {$displayName} to user {$userID}"
-                	href="user_editsubmit.m?userID={$userID}&amp;cmd=addRole&amp;role={$role}">
+                	href="user_editsubmit.m?userID={url:encode($userID)}&amp;cmd=addRole&amp;role={$role}">
                     <img src="images/denied_xxs.gif" alt="denied" border="0" />
                 </a>
             </xsl:otherwise>
