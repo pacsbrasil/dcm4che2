@@ -81,7 +81,6 @@ public class DicomDateTimeHandlerTest
    @Test
    public void testCreateDateTime_ShouldReturnNull_IfDateIsNull()
    {
-      String date = null;
       String time = "091828.046000";
       
       assertNull(handler.createDateTime(null, time));
@@ -91,7 +90,6 @@ public class DicomDateTimeHandlerTest
    public void testCreateDateTime_ShouldReturnDate_IfTimeIsNull()
    {
       String date = "20020107";
-      String time = null;
       
       assertEquals(handler.createDateTime(date, null),date);
    }

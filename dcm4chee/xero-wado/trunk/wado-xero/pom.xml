@@ -18,6 +18,12 @@
            <finalName>wado2</finalName>
            <plugins>
               <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration> <argLine>-Xmx256m</argLine> </configuration>
+              </plugin> 
+	      
+              <plugin>
                  <artifactId>maven-antrun-plugin</artifactId>
                  <executions>
 

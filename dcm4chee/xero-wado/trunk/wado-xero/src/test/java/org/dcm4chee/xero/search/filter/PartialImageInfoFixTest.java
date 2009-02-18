@@ -56,7 +56,6 @@ import org.dcm4chee.xero.search.study.ImageBean;
 import org.dcm4chee.xero.search.study.ResultsBean;
 import org.dcm4chee.xero.wado.WadoParams;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 public class PartialImageInfoFixTest {
