@@ -409,7 +409,8 @@ public class StoreScpService extends AbstractScpService {
             String sourceAET = a.getCallingAET();
             if (emulateMediaCreationRequestForAET(sourceAET)) {
                 File f = spoolDir.getEmulateRequestFile(sourceAET,
-                        ds.getString(Tags.PatientID));
+                        ds.getString(Tags.PatientID),
+                        ds.getString(Tags.IssuerOfPatientID));
                 boolean firstObject;
                 if (firstObject = !f.exists()) {
                     File dir = f.getParentFile();

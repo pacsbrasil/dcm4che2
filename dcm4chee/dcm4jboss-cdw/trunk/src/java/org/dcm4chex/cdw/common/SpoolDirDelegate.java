@@ -136,12 +136,13 @@ public class SpoolDirDelegate {
         }
     }
 
-    public File getEmulateRequestFile(String aet, String pid) {
+    public File getEmulateRequestFile(String aet, String pid, String issuer) {
         try {
             return (File) service.getServer().invoke(spoolDirName,
                     GET_EMULATE_REQUEST_FILE,
-                    new Object[] { aet, pid},
+                    new Object[] { aet, pid, issuer},
                     new String[] { String.class.getName(),
+                            String.class.getName(),
                             String.class.getName()});
         } catch (JMException e) {
             throw new ConfigurationException(e);
