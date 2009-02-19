@@ -121,6 +121,32 @@
         <value value="true"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isLogIUIDsForStudyUpdate"
+      setMethod="setLogIUIDsForStudyUpdate">
+      <description><![CDATA[Enable or disable logging of SOP Instance UIDs in audit logs of
+      move/update/delete events on Study level.<br/>
+      If this is enabled the SOPClass element in ParticipantObjectDescription will contain all effected SOP IUIDs.
+      ]]></description>
+      <name>LogIUIDsForStudyUpdate</name>
+      <type>boolean</type>
+      <descriptors>
+        <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isLogIUIDsForSeriesUpdate"
+      setMethod="setLogIUIDsForSeriesUpdate">
+      <description><![CDATA[Enable or disable logging of SOP Instance UIDs in audit logs of
+      move/update/delete events on Series level.<br/>
+      If this is enabled the SOPClass element in ParticipantObjectDescription will contain all effected SOP IUIDs.
+      ]]></description>
+      <name>LogIUIDsForSeriesUpdate</name>
+      <type>boolean</type>
+      <descriptors>
+        <value value="false"/>
+      </descriptors>
+   </attribute>
 
    <attribute access="read-write"
       getMethod="getHL7SendServiceName"

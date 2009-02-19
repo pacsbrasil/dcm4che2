@@ -66,6 +66,7 @@ import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4che2.audit.message.PatientRecordMessage;
 import org.dcm4che2.audit.message.StudyDeletedMessage;
 import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
+import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
@@ -110,6 +111,9 @@ public class ContentEditService extends ServiceMBeanSupport {
     private ContentManager contentMgr;
 
     private PrivateManager privateMgr;
+    
+    private boolean logIUIDsForStudyUpdate;
+    private boolean logIUIDsForSeriesUpdate;
 
     public ContentEditService() {
     }
@@ -134,6 +138,22 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     public boolean getAuditEnabled() {
         return auditEnabled;
+    }
+
+    public boolean isLogIUIDsForStudyUpdate() {
+        return logIUIDsForStudyUpdate;
+    }
+
+    public void setLogIUIDsForStudyUpdate(boolean logIUIDsForStudyUpdate) {
+        this.logIUIDsForStudyUpdate = logIUIDsForStudyUpdate;
+    }
+
+    public boolean isLogIUIDsForSeriesUpdate() {
+        return logIUIDsForSeriesUpdate;
+    }
+
+    public void setLogIUIDsForSeriesUpdate(boolean logIUIDsForSeriesUpdate) {
+        this.logIUIDsForSeriesUpdate = logIUIDsForSeriesUpdate;
     }
 
     public final ObjectName getHL7SendServiceName() {
@@ -273,7 +293,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public Dataset createPatient(Dataset ds) throws RemoteException,
-            CreateException, HomeFactoryException, FinderException {
+    CreateException, HomeFactoryException, FinderException {
         if (log.isDebugEnabled())
             log.debug("create Partient");
         String pid = ds.getString(Tags.PatientID);
@@ -285,13 +305,13 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
         ds1 = lookupContentEdit().createPatient(ds);
         sendHL7PatientXXX(ds, "ADT^A04");// use update to create patient, msg
-                                         // type is 'Register a patient'
+        // type is 'Register a patient'
         logPatientRecord(ds, PatientRecordMessage.CREATE);
         return ds1;
     }
 
     public Map mergePatients(Long patPk, long[] mergedPks)
-            throws RemoteException, HomeFactoryException, CreateException {
+    throws RemoteException, HomeFactoryException, CreateException {
         if (log.isDebugEnabled())
             log.debug("merge Partient");
         Map map = lookupContentEdit().mergePatients(patPk.longValue(),
@@ -300,38 +320,40 @@ public class ContentEditService extends ServiceMBeanSupport {
             sendHL7PatientMerge((Dataset) map.get("DOMINANT"), (Dataset[]) map
                     .get("MERGED"));
             String patID = ((Dataset) map.get("DOMINANT"))
-                    .getString(Tags.PatientID);
+            .getString(Tags.PatientID);
             sendJMXNotification(new PatientUpdated(patID, "Patient merge"));
         }
         return map;
     }
 
     public Dataset createStudy(Dataset ds, Long patPk) throws CreateException,
-            RemoteException, HomeFactoryException {
+    RemoteException, HomeFactoryException {
         if (log.isDebugEnabled())
             log.debug("create study:");
         log.debug(ds);
-        Dataset ds1 = lookupContentEdit().createStudy(ds, patPk.longValue());
-        sendStudyMgt(ds1.getString(Tags.StudyInstanceUID), Command.N_CREATE_RQ,
-                0, ds1);
-        return ds1;
+        Dataset stdyMgtDs = lookupContentEdit().createStudy(ds, patPk.longValue());
+        logInstancesAccessed(stdyMgtDs, InstancesAccessedMessage.CREATE, false);
+        sendStudyMgt(stdyMgtDs.getString(Tags.StudyInstanceUID), Command.N_CREATE_RQ,
+                0, stdyMgtDs);
+        return stdyMgtDs;
     }
 
     public Dataset createSeries(Dataset ds, Long studyPk)
-            throws CreateException, RemoteException, HomeFactoryException,
-            FinderException {
-        Dataset ds1 = lookupContentEdit().createSeries(ds, studyPk.longValue());
+    throws CreateException, RemoteException, HomeFactoryException,
+    FinderException {
+        Dataset stdyMgtDs = lookupContentEdit().createSeries(ds, studyPk.longValue());
         log.debug("create Series ds1:");
-        log.debug(ds1);
-        sendStudyMgt(ds1.getString(Tags.StudyInstanceUID), Command.N_SET_RQ, 0,
-                ds1);
-        String seriesIUID = ds1.get(Tags.RefSeriesSeq).getItem().getString(
+        log.debug(stdyMgtDs);
+        logInstancesAccessed(stdyMgtDs, InstancesAccessedMessage.CREATE, false);
+        sendStudyMgt(stdyMgtDs.getString(Tags.StudyInstanceUID), Command.N_SET_RQ, 0,
+                stdyMgtDs);
+        String seriesIUID = stdyMgtDs.get(Tags.RefSeriesSeq).getItem().getString(
                 Tags.SeriesInstanceUID);
         return lookupContentManager().getSeriesByIUID(seriesIUID);
     }
 
     public void updatePatient(Dataset ds) throws RemoteException,
-            HomeFactoryException, CreateException {
+    HomeFactoryException, CreateException {
         log.debug("update Patient");
         Collection col = lookupContentEdit().updatePatient(ds);
         sendHL7PatientXXX(ds, "ADT^A08");
@@ -353,7 +375,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         try {
             Map map = (Map) server.invoke(mppsScpServiceName, "linkMppsToMwl",
                     new Object[] { o, mppsIUIDs }, new String[] {
-                            o.getClass().getName(), String[].class.getName() });
+                    o.getClass().getName(), String[].class.getName() });
             List studyDsN = (List) map.get("StudyMgtDS");
             Dataset dsN;
             for (Iterator iter = studyDsN.iterator(); iter.hasNext();) {
@@ -374,7 +396,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     private void sendStudyMgt(String iuid, int commandField, int actionTypeID,
             Dataset dataset) {
         String infoStr = "iuid: " + iuid + ", cmd:" + commandField
-                + ", action: " + actionTypeID + ", ds:";
+        + ", action: " + actionTypeID + ", ds:";
         if (log.isDebugEnabled()) {
             log.debug("send StudyMgt command: " + infoStr);
             log.debug(dataset);
@@ -404,15 +426,15 @@ public class ContentEditService extends ServiceMBeanSupport {
         try {
             server.invoke(this.hl7SendServiceName, "sendHL7PatientXXX",
                     new Object[] {
-                            ds,
-                            msgType,
-                            getSendingApplication() + "^"
-                                    + getSendingFacility(),
-                            getReceivingApplication() + "^"
-                                    + getReceivingFacility(), Boolean.TRUE },
+                    ds,
+                    msgType,
+                    getSendingApplication() + "^"
+                    + getSendingFacility(),
+                    getReceivingApplication() + "^"
+                    + getReceivingFacility(), Boolean.TRUE },
                     new String[] { Dataset.class.getName(),
-                            String.class.getName(), String.class.getName(),
-                            String.class.getName(), boolean.class.getName() });
+                    String.class.getName(), String.class.getName(),
+                    String.class.getName(), boolean.class.getName() });
         } catch (InstanceNotFoundException infe) {
             log.warn("The MBean service [" + hl7SendServiceName
                     + "] is not registered. Ignore sending HL7 message: "
@@ -427,20 +449,20 @@ public class ContentEditService extends ServiceMBeanSupport {
         try {
             server.invoke(this.hl7SendServiceName, "sendHL7PatientMerge",
                     new Object[] {
-                            dsDominant,
-                            priorPats,
-                            getSendingApplication() + "^"
-                                    + getSendingFacility(),
-                            getReceivingApplication() + "^"
-                                    + getReceivingFacility(), Boolean.TRUE },
+                    dsDominant,
+                    priorPats,
+                    getSendingApplication() + "^"
+                    + getSendingFacility(),
+                    getReceivingApplication() + "^"
+                    + getReceivingFacility(), Boolean.TRUE },
                     new String[] { Dataset.class.getName(),
-                            Dataset[].class.getName(), String.class.getName(),
-                            String.class.getName(), boolean.class.getName() });
+                    Dataset[].class.getName(), String.class.getName(),
+                    String.class.getName(), boolean.class.getName() });
         } catch (InstanceNotFoundException infe) {
             log
-                    .warn("The MBean service ["
-                            + hl7SendServiceName
-                            + "] is not registered. Ignore sending HL7 patient merge message.");
+            .warn("The MBean service ["
+                    + hl7SendServiceName
+                    + "] is not registered. Ignore sending HL7 patient merge message.");
         } catch (Exception e) {
             log.error("Failed to send HL7 patient merge message:", e);
             log.error(dsDominant);
@@ -449,17 +471,18 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public void updateStudy(Dataset ds) throws RemoteException,
-            HomeFactoryException, CreateException {
+    HomeFactoryException, CreateException {
         if (log.isDebugEnabled())
             log.debug("update Study");
         Dataset dsN = lookupContentEdit().updateStudy(ds);
+        logInstancesAccessed(dsN, InstancesAccessedMessage.UPDATE, logIUIDsForStudyUpdate);
         sendStudyMgt(dsN.getString(Tags.StudyInstanceUID), Command.N_SET_RQ, 0,
                 dsN);
         sendSeriesUpdatedNotifications(dsN, "Study update");
     }
 
     public void updateSeries(Dataset ds) throws RemoteException,
-            HomeFactoryException, CreateException {
+    HomeFactoryException, CreateException {
         if (log.isDebugEnabled())
             log.debug("update Series");
         Dataset dsN = lookupContentEdit().updateSeries(ds);
@@ -467,19 +490,20 @@ public class ContentEditService extends ServiceMBeanSupport {
             log.debug("update series: dsN:");
             log.debug(dsN);
         }
+        logInstancesAccessed(dsN, InstancesAccessedMessage.UPDATE, logIUIDsForSeriesUpdate);
         sendStudyMgt(dsN.getString(Tags.StudyInstanceUID), Command.N_SET_RQ, 0,
                 dsN);
         sendSeriesUpdatedNotifications(dsN, "Series update");
     }
 
     public void movePatientToTrash(long pk) throws RemoteException,
-            HomeFactoryException, CreateException {
+    HomeFactoryException, CreateException {
         Collection col = lookupPrivateManager().movePatientToTrash(pk);
         Dataset ds = null;
         for (Iterator iter = col.iterator(); iter.hasNext();) {
             ds = (Dataset) iter.next();
             if (ds.containsValue(Tags.StudyInstanceUID)) // patient without
-                                                         // study?
+                // study?
                 logStudyDeleted(ds);
         }
         sendHL7PatientXXX(ds, "ADT^A23");// Send Patient delete message
@@ -491,7 +515,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public void moveStudyToTrash(long pk) throws RemoteException,
-            HomeFactoryException, CreateException {
+    HomeFactoryException, CreateException {
         if (log.isDebugEnabled())
             log.debug("Move Study (pk=" + pk + ") to trash.");
         Dataset ds = lookupPrivateManager().moveStudyToTrash(pk);
@@ -507,7 +531,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public void moveSeriesToTrash(long pk) throws RemoteException,
-            HomeFactoryException, CreateException {
+    HomeFactoryException, CreateException {
         if (log.isDebugEnabled())
             log.debug("Move Series (pk=" + pk + ") to trash.");
         Dataset ds = lookupPrivateManager().moveSeriesToTrash(pk);
@@ -515,9 +539,7 @@ public class ContentEditService extends ServiceMBeanSupport {
             log.debug("sendStudyMgt N-ACTION Series (pk=" + pk + ").");
         sendStudyMgt(ds.getString(Tags.StudyInstanceUID), Command.N_ACTION_RQ,
                 1, ds);
-        Collection c = new ArrayList();
-        c.add(ds);
-        logInstancesAccessed(c, InstancesAccessedMessage.DELETE);
+        logInstancesAccessed(ds, InstancesAccessedMessage.DELETE, logIUIDsForSeriesUpdate);
         if (log.isDebugEnabled()) {
             log.debug("Series moved to trash. ds:");
             log.debug(ds);
@@ -525,7 +547,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public void moveInstanceToTrash(long pk) throws RemoteException,
-            HomeFactoryException, CreateException {
+    HomeFactoryException, CreateException {
         if (log.isDebugEnabled())
             log.debug("Move Instance (pk=" + pk + ") to trash.");
         Dataset ds = lookupPrivateManager().moveInstanceToTrash(pk);
@@ -533,9 +555,7 @@ public class ContentEditService extends ServiceMBeanSupport {
             log.debug("sendStudyMgt N-ACTION Instance (pk=" + pk + ").");
         sendStudyMgt(ds.getString(Tags.StudyInstanceUID), Command.N_ACTION_RQ,
                 2, ds);
-        Collection c = new ArrayList();
-        c.add(ds);
-        logInstancesAccessed(c, InstancesAccessedMessage.DELETE);
+        logInstancesAccessed(ds, InstancesAccessedMessage.DELETE, true);
         if (log.isDebugEnabled()) {
             log.debug("Instance moved to trash. ds:");
             log.debug(ds);
@@ -562,7 +582,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public List undeletePatient(long privPatPk) throws RemoteException,
-            FinderException, HomeFactoryException, CreateException {
+    FinderException, HomeFactoryException, CreateException {
         if (log.isDebugEnabled())
             log.debug("undelete Patient from trash. pk:" + privPatPk);
         List[] files = lookupContentManager().listPatientFilesToRecover(
@@ -576,7 +596,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public List undeleteStudy(long privStudyPk) throws RemoteException,
-            FinderException, HomeFactoryException, CreateException {
+    FinderException, HomeFactoryException, CreateException {
         if (log.isDebugEnabled())
             log.debug("undelete Study from trash. pk:" + privStudyPk);
         List[] files = lookupContentManager().listStudyFilesToRecover(
@@ -590,7 +610,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public List undeleteSeries(long privSeriesPk) throws RemoteException,
-            FinderException, HomeFactoryException, CreateException {
+    FinderException, HomeFactoryException, CreateException {
         if (log.isDebugEnabled())
             log.debug("undelete Series from trash. pk:" + privSeriesPk);
         List[] files = lookupContentManager().listSeriesFilesToRecover(
@@ -604,7 +624,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public List undeleteInstance(long privInstancePk) throws RemoteException,
-            FinderException, HomeFactoryException, CreateException {
+    FinderException, HomeFactoryException, CreateException {
         if (log.isDebugEnabled())
             log.debug("undelete Instance from trash. pk:" + privInstancePk);
         List[] files = lookupContentManager().listInstanceFilesToRecover(
@@ -646,47 +666,47 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public void deletePatient(long patPk) throws RemoteException,
-            HomeFactoryException, CreateException, FinderException {
+    HomeFactoryException, CreateException, FinderException {
         if (log.isDebugEnabled())
             log.debug("delete Patient from trash. pk:" + patPk);
         lookupPrivateManager().deletePrivatePatient(patPk);
     }
 
     public void deleteStudy(long studyPk) throws RemoteException,
-            HomeFactoryException, CreateException, FinderException {
+    HomeFactoryException, CreateException, FinderException {
         if (log.isDebugEnabled())
             log.debug("delete Study from trash. pk:" + studyPk);
         lookupPrivateManager().deletePrivateStudy(studyPk);
     }
 
     public void deleteSeries(long seriesPk) throws RemoteException,
-            HomeFactoryException, CreateException, FinderException {
+    HomeFactoryException, CreateException, FinderException {
         if (log.isDebugEnabled())
             log.debug("delete Series from trash. pk:" + seriesPk);
         lookupPrivateManager().deletePrivateSeries(seriesPk);
     }
 
     public void deleteInstance(long pk) throws RemoteException,
-            HomeFactoryException, CreateException, FinderException {
+    HomeFactoryException, CreateException, FinderException {
         if (log.isDebugEnabled())
             log.debug("delete Instance from trash. pk:" + pk);
         lookupPrivateManager().deletePrivateInstance(pk);// dont delete files of
-                                                         // instance (needed for
-                                                         // purge process)
+        // instance (needed for
+        // purge process)
     }
 
     public void emptyTrash() throws RemoteException, HomeFactoryException,
-            CreateException, FinderException {
+    CreateException, FinderException {
         if (log.isDebugEnabled())
             log
-                    .debug("EMPTY TRASH! (delete all entries of 'private' tables of privateType:"
-                            + DELETED + ")");
+            .debug("EMPTY TRASH! (delete all entries of 'private' tables of privateType:"
+                    + DELETED + ")");
         lookupPrivateManager().deleteAll(DELETED);
     }
 
     public void moveStudies(long[] study_pks, Long patient_pk)
-            throws FinderException, HomeFactoryException, CreateException,
-            RemoteException {
+    throws FinderException, HomeFactoryException, CreateException,
+    RemoteException {
         if (log.isDebugEnabled())
             log.debug("move Studies");
         Collection col = lookupContentEdit().moveStudies(study_pks,
@@ -702,8 +722,8 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public void moveSeries(long[] series_pks, Long study_pk)
-            throws RemoteException, HomeFactoryException, CreateException,
-            FinderException {
+    throws RemoteException, HomeFactoryException, CreateException,
+    FinderException {
         if (log.isDebugEnabled())
             log.debug("move Series");
         Dataset ds = lookupContentEdit().moveSeries(series_pks,
@@ -714,8 +734,8 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public void moveInstances(long[] instance_pks, Long series_pk)
-            throws RemoteException, HomeFactoryException, CreateException,
-            FinderException {
+    throws RemoteException, HomeFactoryException, CreateException,
+    FinderException {
         if (log.isDebugEnabled())
             log.debug("move Instances");
         Dataset ds = lookupContentEdit().moveInstances(instance_pks,
@@ -726,33 +746,33 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     private ContentEdit lookupContentEdit() throws HomeFactoryException,
-            RemoteException, CreateException {
+    RemoteException, CreateException {
         if (contentEdit != null)
             return contentEdit;
         ContentEditHome home = (ContentEditHome) EJBHomeFactory.getFactory()
-                .lookup(ContentEditHome.class, ContentEditHome.JNDI_NAME);
+        .lookup(ContentEditHome.class, ContentEditHome.JNDI_NAME);
         contentEdit = home.create();
         return contentEdit;
     }
 
     private ContentManager lookupContentManager() throws HomeFactoryException,
-            RemoteException, CreateException {
+    RemoteException, CreateException {
         if (contentMgr != null)
             return contentMgr;
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-                .getFactory().lookup(ContentManagerHome.class,
-                        ContentManagerHome.JNDI_NAME);
+        .getFactory().lookup(ContentManagerHome.class,
+                ContentManagerHome.JNDI_NAME);
         contentMgr = home.create();
         return contentMgr;
     }
 
     private PrivateManager lookupPrivateManager() throws HomeFactoryException,
-            RemoteException, CreateException {
+    RemoteException, CreateException {
         if (privateMgr != null)
             return privateMgr;
         PrivateManagerHome home = (PrivateManagerHome) EJBHomeFactory
-                .getFactory().lookup(PrivateManagerHome.class,
-                        PrivateManagerHome.JNDI_NAME);
+        .getFactory().lookup(PrivateManagerHome.class,
+                PrivateManagerHome.JNDI_NAME);
         privateMgr = home.create();
         return privateMgr;
     }
@@ -814,8 +834,14 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
     }
 
-    private void logInstancesAccessed(Collection studies,
-            AuditEvent.ActionCode actionCode) {
+    private void logInstancesAccessed(Dataset ds,AuditEvent.ActionCode actionCode, boolean addIUID) {
+        ArrayList<Dataset> l = new ArrayList<Dataset>();
+        l.add(ds);
+        logInstancesAccessed(l, actionCode, addIUID);
+    }
+
+    private void logInstancesAccessed(Collection<Dataset> studies,
+            AuditEvent.ActionCode actionCode, boolean addIUID) {
         if (auditLogger.isAuditLogIHEYr4())
             return;
         HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
@@ -826,15 +852,15 @@ public class ContentEditService extends ServiceMBeanSupport {
                     actionCode);
             msg.addUserPerson(userInfo.getUserId(), null, null, userInfo
                     .getHostName(), true);
-            Iterator iter = studies.iterator();
+            Iterator<Dataset> iter = studies.iterator();
             Dataset studyMgtDs = (Dataset) iter.next();
             PersonName pn = studyMgtDs.getPersonName(Tags.PatientName);
             String pname = pn != null ? pn.format() : null;
             msg.addPatient(studyMgtDs.getString(Tags.PatientID), pname);
             while (studyMgtDs != null) {
                 msg.addStudy(studyMgtDs.getString(Tags.StudyInstanceUID),
-                        getStudyDescription(studyMgtDs));
-                studyMgtDs = iter.hasNext() ? (Dataset) iter.next() : null;
+                        getStudyDescription(studyMgtDs, addIUID));
+                studyMgtDs = iter.hasNext() ? iter.next() : null;
             }
             msg.validate();
             Logger.getLogger("auditlog").info(msg);
@@ -857,7 +883,7 @@ public class ContentEditService extends ServiceMBeanSupport {
             String pname = pn != null ? pn.format() : null;
             msg.addPatient(studyMgtDs.getString(Tags.PatientID), pname);
             msg.addStudy(studyMgtDs.getString(Tags.StudyInstanceUID),
-                    getStudyDescription(studyMgtDs));
+                    getStudyDescription(studyMgtDs, logIUIDsForStudyUpdate));
             msg.validate();
             Logger.getLogger("auditlog").info(msg);
         } catch (Exception x) {
@@ -865,44 +891,47 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
     }
 
-    private ParticipantObjectDescription getStudyDescription(Dataset studyMgtDs) {
+    private ParticipantObjectDescription getStudyDescription(Dataset studyMgtDs, boolean addIUID) {
         ParticipantObjectDescription desc = new ParticipantObjectDescription();
         String accNr = studyMgtDs.getString(Tags.AccessionNumber);
         if (accNr != null)
             desc.addAccession(accNr);
-        addSOPClassInfo(desc, studyMgtDs.get(Tags.RefSeriesSeq));
+        addSOPClassInfo(desc, studyMgtDs, addIUID);
         return desc;
     }
 
     private void addSOPClassInfo(ParticipantObjectDescription desc,
-            DcmElement refSeries) {
+            Dataset studyMgtDs, boolean addIUID) {
+        DcmElement refSeries = studyMgtDs.get(Tags.RefSeriesSeq);
         if (refSeries == null)
             return;
+        String suid = studyMgtDs.getString(Tags.StudyInstanceUID);
+        InstanceSorter sorter = new InstanceSorter();
         Dataset ds;
         DcmElement refSopSeq;
-        String cuid;
-        HashMap map = new HashMap();
-        int[] noi;
         for (int i = 0, len = refSeries.countItems(); i < len; i++) {
             refSopSeq = refSeries.getItem(i).get(Tags.RefSOPSeq);
             if (refSopSeq != null) {
                 for (int j = 0, jlen = refSopSeq.countItems(); j < jlen; j++) {
                     ds = refSopSeq.getItem(j);
-                    cuid = ds.getString(Tags.RefSOPClassUID);
-                    noi = (int[]) map.get(cuid);
-                    if (noi == null) {
-                        map.put(cuid, new int[] { 1 });
-                    } else {
-                        noi[0]++;
-                    }
+                    sorter.addInstance(suid,
+                            ds.getString(Tags.RefSOPClassUID),
+                            ds.getString(Tags.RefSOPInstanceUID), null);
                 }
             }
         }
-        Map.Entry entry;
-        for (Iterator iter = map.entrySet().iterator(); iter.hasNext();) {
-            entry = (Map.Entry) iter.next();
-            desc.addSOPClass(new SOPClass((String) entry.getKey())
-                    .setNumberOfInstances(((int[]) entry.getValue())[0]));
+        
+        for (String cuid : sorter.getCUIDs(suid)) {
+            ParticipantObjectDescription.SOPClass sopClass = new ParticipantObjectDescription.SOPClass(
+                    cuid);
+            sopClass.setNumberOfInstances(sorter.countInstances(suid,
+                    cuid));
+            if ( addIUID ) {
+                for ( String iuid : sorter.getIUIDs(suid, cuid) ) {
+                    sopClass.addInstance(iuid);
+                }
+            }
+            desc.addSOPClass(sopClass);
         }
     }
 
