@@ -187,6 +187,11 @@
       <param name="mbean" value="dcm4chee.cdw:service=MediaCreationMgtSCP"/>
     </antcall>
     <antcall target="xslt">
+      <param name="in" value="${xmdesc.dir}/dcm4chee-cdw-mcmemulator-xmbean.xml"/>
+      <param name="out" value="cdw-mcmemulator-xmbean.xml"/>
+      <param name="mbean" value="dcm4chee.cdw:service=MediaCreationRequestEmulator"/>
+    </antcall>
+    <antcall target="xslt">
       <param name="in" value="${xmdesc.dir}/dcm4chee-cdw-composer-xmbean.xml"/>
       <param name="out" value="cdw-composer-xmbean.xml"/>
       <param name="mbean" value="dcm4chee.cdw:service=MediaComposer"/>
