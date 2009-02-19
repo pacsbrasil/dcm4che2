@@ -369,7 +369,9 @@ public class SpoolDirService extends ServiceMBeanSupport
     public File getEmulateRequestFile(String aet, String pid, String issuer) {
         try {
             return new File(new File(emulateRequestDir, aet), 
-                    URLEncoder.encode(pid + '@' + issuer, "US-ASCII"));
+                    URLEncoder.encode(
+                            issuer == null ? pid : (pid + '@' + issuer),
+                            "US-ASCII"));
         } catch (UnsupportedEncodingException e) {
             // should never happen
             throw new RuntimeException(e);
