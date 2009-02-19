@@ -80,13 +80,11 @@ public class PagedImageFilter implements Filter<ResultsType> {
      * instance of the overall result.
      */
    public ResultsType filter(FilterItem<ResultsType> filterItem, Map<String, Object> params) {
-	  String removedSeriesUID = removeSeriesParameterIfStudyUIDPresent(params);
-      
 	  int position = 0;
 	  int count = 0;
 	  
 	  Object[] page = FilterUtil.removeFromQuery(params,POSITION_KEY,COUNT_KEY, CONTAINS_OBJECT_UID, CONTAINS_FRAME_NUMBER);
-	  String objectUID = null;
+      String objectUID = null;
 	  String frameNo = null;
 	  if (page[0]!=null) {
 		 position = Integer.parseInt((String) page[0]);
@@ -123,7 +121,10 @@ public class PagedImageFilter implements Filter<ResultsType> {
 	  }
 	  else {
 		 log.debug("Not looking for paging image results - probably an ad-hoc query.");
+         return filterItem.callNextFilter(params);
 	  }
+
+	  String removedSeriesUID = removeSeriesParameterIfStudyUIDPresent(params);
 	  
 	  
 	  ResultsType results = filterItem.callNextFilter(params);

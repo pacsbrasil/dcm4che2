@@ -34,10 +34,8 @@
 package org.dcm4chee.xero.dicom;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 
 import org.dcm4che2.util.DateUtils;
 import org.slf4j.Logger;
