@@ -95,7 +95,9 @@
    <attribute access="read-write"
       getMethod="getDefaultRequestPriority"
       setMethod="setDefaultRequestPriority">
-      <description>Description not yet written.
+      <description>Used, if no Request Priority is specified in the received
+      Initiate Media Creation N-Action command.
+      Enumerated values: HIGH, MED, LOW.
       </description>
       <name>DefaultRequestPriority</name>
       <type>java.lang.String</type>      
@@ -106,7 +108,11 @@
    <attribute access="read-write"
       getMethod="getMaxNumberOfCopies"
       setMethod="setMaxNumberOfCopies">
-      <description>Description not yet written.
+      <description><![CDATA[Maximum value of attribute <i>Number Of Copies
+(2200,0010)</i> specified in the received Initiate Media Creation N-Action
+requests. Initiate Media Creation N-Action requests with higher values for
+attribute <i>Number Of Copies (2200,0010)</i> will be rejected with failure
+status code: <i>0115H - Invalid argument value</i>.]]>
       </description>
       <name>MaxNumberOfCopies</name>
       <type>int</type>      
@@ -117,7 +123,10 @@
    <attribute access="read-write"
       getMethod="isDefaultLabelUsingInformationExtractedFromInstances"
       setMethod="setDefaultLabelUsingInformationExtractedFromInstances">
-      <description>Description not yet written.
+      <description><![CDATA[Specifies whether or not to extract label
+information from the instances. Only effectiv, if no value for attribute
+<i>Label Using Information Extracted From Instances (2200,0001)</i> is
+specified in the received Media Creation Management N-Create request.]]>
       </description>
       <name>DefaultLabelUsingInformationExtractedFromInstances</name>
       <type>boolean</type>
@@ -128,7 +137,10 @@
    <attribute access="read-write"
       getMethod="getDefaultLabelText"
       setMethod="setDefaultLabelText">
-      <description>Description not yet written.
+      <description><![CDATA[Unformatted free text to include in the label
+instead of or in addition to information extracted from the instances. Only
+effective if no value for attribute <i>Label Text (2200,0002)</i> is specified
+in the received Media Creation Management N-Create request.]]>
       </description>
       <name>DefaultLabelText</name>
       <type>java.lang.String</type>      
@@ -139,7 +151,10 @@
    <attribute access="read-write"
       getMethod="getDefaultLabelStyleSelection"
       setMethod="setDefaultLabelStyleSelection">
-      <description>Description not yet written.
+      <description><![CDATA[An implementation-dependent code string that may
+be used as a hint to select a particular layout or format of label. Only
+effective, if no value for attribute <i>Label Style Selection (2200,0003)</i>
+is specified in the received Media Creation Management N-Create request.]]>
       </description>
       <name>DefaultLabelStyleSelection</name>
       <type>java.lang.String</type>      
@@ -150,18 +165,26 @@
    <attribute access="read-write"
       getMethod="isDefaultAllowMediaSplitting"
       setMethod="setDefaultAllowMediaSplitting">
-      <description>Description not yet written.
+      <description><![CDATA[Specifies whether or not the Media Composer Service
+is allowed to split the request over more than one piece of media. Only
+effective if no value for attribute <i>Allow Media Splitting (2200,0007)</i>
+is specified in the received Media Creation Management N-Create request.]]>
       </description>
       <name>DefaultAllowMediaSplitting</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false" />
+         <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="isDefaultAllowLossyCompression"
       setMethod="setDefaultAllowLossyCompression">
-      <description>Description not yet written.
+      <description><![CDATA[Specifies whether or not the Media Composer Service
+is allowed to perform lossy compression. Only effective if no value for
+attribute <i>Allow Lossy Compression (2200,000F)</i> is specified in the
+received Media Creation Management N-Create request. (As long the Media
+Composer Service does not support lossy compression, allowing lossy compression
+will not have any effect.)]]>
       </description>
       <name>DefaultAllowLossyCompression</name>
       <type>boolean</type>
@@ -172,7 +195,11 @@
    <attribute access="read-write"
       getMethod="getDefaultIncludeNonDICOMObjects"
       setMethod="setDefaultIncludeNonDICOMObjects">
-      <description>Description not yet written.
+      <description><![CDATA[A flag indicating if the Media Composer Service
+should include additional Non-DICOM information/objects on the media. Only
+effective, if no value for attribute <i>Include Non-DICOM Objects
+(2200,0008)</i> is specified in the received Media Creation Management
+N-Create request.]]>
       </description>
       <name>DefaultIncludeNonDICOMObjects</name>
       <type>java.lang.String</type>      
@@ -183,7 +210,11 @@
    <attribute access="read-write"
       getMethod="isDefaultIncludeDisplayApplication"
       setMethod="setDefaultIncludeDisplayApplication">
-      <description>Description not yet written.
+      <description><![CDATA[A flag indicating if the Media Composer Service
+should include a DICOM Instance Display Application on the media. Only
+effective, if no value for attribute <i>Include Display Application
+(2200,0009)</i> is specified in the received Media Creation Management
+N-Create request.]]>
       </description>
       <name>DefaultIncludeDisplayApplication</name>
       <type>boolean</type>
@@ -194,7 +225,11 @@
    <attribute access="read-write"
       getMethod="isDefaultPreserveInstances"
       setMethod="setDefaultPreserveInstances">
-      <description>Description not yet written.
+      <description><![CDATA[A flag indicating if the Media Composer Service
+shall not delete instances from the spool directory after including them into
+the DICOM File Set which is put on media. Only effective, if no value for
+attribute <i>Preserve Composite Instances After Media Creation (2200,000A)</i>
+is specified in the received Media Creation Management N-Create request.]]>
       </description>
       <name>DefaultPreserveInstances</name>
       <type>boolean</type>
