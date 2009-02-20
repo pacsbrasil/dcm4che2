@@ -58,7 +58,11 @@
    <attribute access="read-write"
       getMethod="getDefaultMediaApplicationProfile"
       setMethod="setDefaultMediaApplicationProfile">
-      <description>Description not yet written.
+      <description><![CDATA[The Media Application Profile to be used for
+SOP Instances, for which no value for attribute <i>Requested Media Application
+Profile (2200,000C)</i> is specified in the corresponding item of the
+<i>Referenced SOP Sequence (0008,1199)</i> in the received Media Creation
+Management N-Create request.]]>
       </description>
       <name>DefaultMediaApplicationProfile</name>
       <type>java.lang.String</type>      

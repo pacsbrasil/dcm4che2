@@ -185,11 +185,11 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
         this.mediaComposerQueueName = mediaComposerQueueName;
     }
 
-    public final String getDefaultMediaApplicationProfile() {
+    public final String getMediaApplicationProfile() {
         return mediaApplicationProfile;
     }
 
-    public final void setDefaultMediaApplicationProfile(String profile) {
+    public final void setMediaApplicationProfile(String profile) {
         this.mediaApplicationProfile = profile;
     }
 

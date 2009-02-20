@@ -57,6 +57,19 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getMediaApplicationProfile"
+      setMethod="setMediaApplicationProfile">
+      <description><![CDATA[Value of attribute <i>Requested Media Application
+Profile (2200,000C)</i> in items of the <i>Referenced SOP Sequence
+(0008,1199)</i> in emulated Media Creation requests.]]>
+      </description>
+      <name>MediaApplicationProfile</name>
+      <type>java.lang.String</type>      
+      <descriptors>
+         <value value="STD-GEN-CD" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getFilesetID"
       setMethod="setFilesetID">
       <description><![CDATA[Value of attribute <i>Storage Media File-Set ID
