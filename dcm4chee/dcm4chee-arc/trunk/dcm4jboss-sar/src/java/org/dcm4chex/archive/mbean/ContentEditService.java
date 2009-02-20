@@ -62,6 +62,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.InstancesAccessedMessage;
+import org.dcm4che2.audit.message.ParticipantObject;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4che2.audit.message.PatientRecordMessage;
 import org.dcm4che2.audit.message.StudyDeletedMessage;
@@ -332,7 +333,7 @@ public class ContentEditService extends ServiceMBeanSupport {
             log.debug("create study:");
         log.debug(ds);
         Dataset stdyMgtDs = lookupContentEdit().createStudy(ds, patPk.longValue());
-        logInstancesAccessed(stdyMgtDs, InstancesAccessedMessage.CREATE, false);
+        logInstancesAccessed(stdyMgtDs, InstancesAccessedMessage.CREATE, false, null);
         sendStudyMgt(stdyMgtDs.getString(Tags.StudyInstanceUID), Command.N_CREATE_RQ,
                 0, stdyMgtDs);
         return stdyMgtDs;
@@ -344,7 +345,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         Dataset stdyMgtDs = lookupContentEdit().createSeries(ds, studyPk.longValue());
         log.debug("create Series ds1:");
         log.debug(stdyMgtDs);
-        logInstancesAccessed(stdyMgtDs, InstancesAccessedMessage.CREATE, false);
+        logInstancesAccessed(stdyMgtDs, InstancesAccessedMessage.CREATE, false, "Created Series:");
         sendStudyMgt(stdyMgtDs.getString(Tags.StudyInstanceUID), Command.N_SET_RQ, 0,
                 stdyMgtDs);
         String seriesIUID = stdyMgtDs.get(Tags.RefSeriesSeq).getItem().getString(
@@ -475,7 +476,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         if (log.isDebugEnabled())
             log.debug("update Study");
         Dataset dsN = lookupContentEdit().updateStudy(ds);
-        logInstancesAccessed(dsN, InstancesAccessedMessage.UPDATE, logIUIDsForStudyUpdate);
+        logInstancesAccessed(dsN, InstancesAccessedMessage.UPDATE, logIUIDsForStudyUpdate, null);
         sendStudyMgt(dsN.getString(Tags.StudyInstanceUID), Command.N_SET_RQ, 0,
                 dsN);
         sendSeriesUpdatedNotifications(dsN, "Study update");
@@ -490,7 +491,7 @@ public class ContentEditService extends ServiceMBeanSupport {
             log.debug("update series: dsN:");
             log.debug(dsN);
         }
-        logInstancesAccessed(dsN, InstancesAccessedMessage.UPDATE, logIUIDsForSeriesUpdate);
+        logInstancesAccessed(dsN, InstancesAccessedMessage.UPDATE, logIUIDsForSeriesUpdate, "Updated Series:");
         sendStudyMgt(dsN.getString(Tags.StudyInstanceUID), Command.N_SET_RQ, 0,
                 dsN);
         sendSeriesUpdatedNotifications(dsN, "Series update");
@@ -539,7 +540,7 @@ public class ContentEditService extends ServiceMBeanSupport {
             log.debug("sendStudyMgt N-ACTION Series (pk=" + pk + ").");
         sendStudyMgt(ds.getString(Tags.StudyInstanceUID), Command.N_ACTION_RQ,
                 1, ds);
-        logInstancesAccessed(ds, InstancesAccessedMessage.DELETE, logIUIDsForSeriesUpdate);
+        logInstancesAccessed(ds, InstancesAccessedMessage.DELETE, logIUIDsForSeriesUpdate, "Deleted Series:");
         if (log.isDebugEnabled()) {
             log.debug("Series moved to trash. ds:");
             log.debug(ds);
@@ -555,7 +556,7 @@ public class ContentEditService extends ServiceMBeanSupport {
             log.debug("sendStudyMgt N-ACTION Instance (pk=" + pk + ").");
         sendStudyMgt(ds.getString(Tags.StudyInstanceUID), Command.N_ACTION_RQ,
                 2, ds);
-        logInstancesAccessed(ds, InstancesAccessedMessage.DELETE, true);
+        logInstancesAccessed(ds, InstancesAccessedMessage.DELETE, true, "Referenced Series of deleted Instances:");
         if (log.isDebugEnabled()) {
             log.debug("Instance moved to trash. ds:");
             log.debug(ds);
@@ -834,14 +835,14 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
     }
 
-    private void logInstancesAccessed(Dataset ds,AuditEvent.ActionCode actionCode, boolean addIUID) {
+    private void logInstancesAccessed(Dataset ds,AuditEvent.ActionCode actionCode, boolean addIUID, String detailMessage) {
         ArrayList<Dataset> l = new ArrayList<Dataset>();
         l.add(ds);
-        logInstancesAccessed(l, actionCode, addIUID);
+        logInstancesAccessed(l, actionCode, addIUID, detailMessage);
     }
 
     private void logInstancesAccessed(Collection<Dataset> studies,
-            AuditEvent.ActionCode actionCode, boolean addIUID) {
+            AuditEvent.ActionCode actionCode, boolean addIUID, String detailMessage) {
         if (auditLogger.isAuditLogIHEYr4())
             return;
         HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
@@ -857,9 +858,12 @@ public class ContentEditService extends ServiceMBeanSupport {
             PersonName pn = studyMgtDs.getPersonName(Tags.PatientName);
             String pname = pn != null ? pn.format() : null;
             msg.addPatient(studyMgtDs.getString(Tags.PatientID), pname);
+            ParticipantObject study;
             while (studyMgtDs != null) {
-                msg.addStudy(studyMgtDs.getString(Tags.StudyInstanceUID),
+                study = msg.addStudy(studyMgtDs.getString(Tags.StudyInstanceUID),
                         getStudyDescription(studyMgtDs, addIUID));
+                if ( detailMessage != null )
+                    study.addParticipantObjectDetail("Description", getStudySeriesDetail(detailMessage, studyMgtDs));
                 studyMgtDs = iter.hasNext() ? iter.next() : null;
             }
             msg.validate();
@@ -868,6 +872,20 @@ public class ContentEditService extends ServiceMBeanSupport {
             log.warn("Audit Log 'Instances Accessed' (actionCode:" + actionCode
                     + ") failed:", x);
         }
+    }
+
+    private String getStudySeriesDetail(String detailMessage, Dataset studyMgtDs) {
+        DcmElement refSeries = studyMgtDs.get(Tags.RefSeriesSeq);
+        StringBuffer sb = new StringBuffer();
+        sb.append(detailMessage);
+        int len = refSeries.countItems();
+        if ( len > 0 ) {
+            sb.append(refSeries.getItem(0).getString(Tags.SeriesInstanceUID));
+            for (int i = 1; i < len; i++) {
+                sb.append(", ").append(refSeries.getItem(i).getString(Tags.SeriesInstanceUID));
+            }
+        }
+        return sb.toString();
     }
 
     private void logStudyDeleted(Dataset studyMgtDs) {
