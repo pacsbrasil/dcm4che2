@@ -563,23 +563,22 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public Dataset moveInstancesToTrash(String[] iuids) throws Exception {
         if (log.isDebugEnabled())
-            log.debug("Move Instances to trash: " + iuids);
-        Collection dss = lookupPrivateManager().moveInstancesToTrash(iuids,
+            log.debug("Move "+iuids != null ? iuids.length : null +" Instances to trash: " + iuids);
+        Collection<Dataset> dss = (Collection<Dataset>)lookupPrivateManager().moveInstancesToTrash(iuids,
                 true);
         if (dss.size() != 1)
             throw new Exception("moveInstancesToTrash failed");
-        Dataset ds = (Dataset) dss.iterator().next();
-        if (log.isDebugEnabled())
-            log.debug("sendStudyMgt N-ACTION Instances: " + iuids);
-        sendStudyMgt(ds.getString(Tags.StudyInstanceUID), Command.N_ACTION_RQ,
-                2, ds);
-        if (log.isDebugEnabled()) {
-            log.debug("Instances moved to trash. ds:");
-            log.debug(ds);
-        }
-        return ds;
+        for ( Dataset ds : dss ) {
+            if (log.isDebugEnabled())
+                log.debug("sendStudyMgt N-ACTION for study "+ds.getString(Tags.StudyInstanceUID)+" :");
+                log.debug(ds);
+            sendStudyMgt(ds.getString(Tags.StudyInstanceUID), Command.N_ACTION_RQ,
+                    2, ds);
+            logInstancesAccessed(ds, InstancesAccessedMessage.DELETE, true, "Referenced Series of deleted Instances:");        }
+        return dss.iterator().next();
     }
 
     public List undeletePatient(long privPatPk) throws RemoteException,
