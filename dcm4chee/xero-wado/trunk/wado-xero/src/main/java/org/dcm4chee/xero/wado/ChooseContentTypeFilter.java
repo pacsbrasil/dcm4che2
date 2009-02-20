@@ -41,6 +41,7 @@ import java.util.Map;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.UID;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
@@ -93,6 +94,8 @@ public class ChooseContentTypeFilter implements Filter<ServletResponseItem> {
 			else contentType="text/html";
 		 } else if( dobj.contains(Tag.SpectroscopyData) ) {
 		    contentType="text/html";
+		 } else if( dobj.getString(Tag.TransferSyntaxUID).equals(UID.MPEG2) ) {
+		     contentType="video/mpeg2";
 		 }
 	  }
 	  if( contentType==null ) {
