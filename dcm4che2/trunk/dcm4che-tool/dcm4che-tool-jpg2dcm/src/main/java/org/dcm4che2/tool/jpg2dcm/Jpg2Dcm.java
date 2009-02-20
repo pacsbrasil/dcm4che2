@@ -288,8 +288,14 @@ public class Jpg2Dcm {
                        | (buffer[jpgHeaderLen+4] & 0xff);
                 int nf = buffer[jpgHeaderLen+5] & 0xff;
                 attrs.putInt(Tag.SamplesPerPixel, VR.US, nf);
-                attrs.putString(Tag.PhotometricInterpretation, VR.CS,
-                        nf == 3 ? "YBR_FULL_422" : "MONOCHROME2");
+                if (nf == 3) {
+                    attrs.putString(Tag.PhotometricInterpretation, VR.CS,
+                            "YBR_FULL_422");
+                    attrs.putInt(Tag.PlanarConfiguration, VR.US, 0);
+                } else {
+                    attrs.putString(Tag.PhotometricInterpretation, VR.CS,
+                            "MONOCHROME2");
+                }
                 attrs.putInt(Tag.Rows, VR.US, y);
                 attrs.putInt(Tag.Columns, VR.US, x);
                 attrs.putInt(Tag.BitsAllocated, VR.US, p > 8 ? 16 : 8);
