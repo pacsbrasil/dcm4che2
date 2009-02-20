@@ -71,8 +71,10 @@ public class CMoveSettings
     * Load the C-MOVE settings for the indicated aePath
     */
    public CMoveSettings(String aePath)
-   {
-      this(AEProperties.getInstance().getAE(aePath));
+   { 
+      this.aeSettings = AEProperties.getInstance().getAE(aePath);
+      if( this.aeSettings==null ) 
+          throw new NullPointerException("No ae settings for "+aePath);      
    }
 
    /**
@@ -80,6 +82,7 @@ public class CMoveSettings
     */
    public CMoveSettings(Map<String, Object> aeSettings)
    {
+      if( aeSettings==null ) throw new NullPointerException("Null AE provided.");
       this.aeSettings = aeSettings;
    }
 

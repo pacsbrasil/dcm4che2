@@ -40,13 +40,7 @@ body {
       Patient Sex:$ds.("0x100040")$<br />
       Accession Number:$ds.AccessionNumber$
     </p></td>
-    <td width="40%" valign="top">
-    	<img src="/agfa/icon/agfaLogo.gif?v=$version$" width="1388" height="511" style="width:138px; height:51px" />
-    	<h2>McCormick Hospital</h2>
-        <p>2301 S. Lake Shore Drive<br />
-          Chicago, Illinois, USA, 60616<br />
-
-    Ph. 312-791-7000</p></td>
+    <td width="40%" valign="top"><img src="http://sunnybrook.ca/images/logo.jpg" /></td>
   </tr>
 </table>
   
