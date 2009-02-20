@@ -141,7 +141,9 @@ public class ItemParser implements StreamSegmentMapper {
             int numberOfFrames, String tsuid) throws IOException {
         this.dis = dis;
         this.iis = iis;
-        this.numberOfFrames = numberOfFrames;
+        // Handle video type data - eventually there should be another way to compute this
+        if( UID.MPEG2.equals(tsuid) ) numberOfFrames = 1;
+        this.numberOfFrames = numberOfFrames; 
         this.firstItemOfFrame = new ArrayList<Item>(numberOfFrames);
         this.rle = UID.RLELossless.equals(tsuid);
         this.jpeg = !rle && JPEG_TS.contains(tsuid);
