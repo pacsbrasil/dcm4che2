@@ -6,7 +6,7 @@ XeroController.prototype.rotateRight = function(lay) {
 	this.rotateSeries(lay,90);
 };
 /** Handle left rotating the image */
-XeroController.prototype.rotateRight = function(lay) {
+XeroController.prototype.rotateLeft = function(lay) {
 	lay = this.findLayout(lay);
 	this.rotateSeries(lay,270);
 };

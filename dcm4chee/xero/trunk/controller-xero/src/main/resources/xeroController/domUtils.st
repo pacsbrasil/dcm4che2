@@ -464,21 +464,11 @@ DOMUtils.setStyle = function(elem, style)
 {
     if(elem.style.cssText != style)
     {
-        var top = elem.style.top;
-        var left = elem.style.left;
-                    
-        var widthHeight = "";
-        if(elem.style.height)
+        elem.style.cssText = elem.style.cssText + ";" + style;
+        if(elem.style.rotation !== undefined)
         {
-            widthHeight = "height: " + elem.style.height + ";";
+           elem.style.rotation = elem.style.rotation;
         }
-        
-        if(elem.style.width)
-        {
-            widthHeight = widthHeight + ";" + "width: " + elem.style.width + ";";
-        }
-        
-        elem.style.cssText = widthHeight + style;
     }    
 };
 

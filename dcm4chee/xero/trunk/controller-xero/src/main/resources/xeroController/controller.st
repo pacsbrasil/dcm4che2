@@ -39,6 +39,18 @@ function XeroController(view) {
 	if( this.isDebug ) this.debug = console.debug;
 };
 
+XeroController.convertToBase = function(val,length, scale) {
+	if( val=="" ) return 0;
+	var last = val.charAt(val.length-1);
+	if( last=='%' ) {
+		return Math.floor(parseInt(val.substring(0,val.length-1))*length*scale/100);
+	};
+	if( last=="x" ) return parseInt(val.substring(0,val.length-2))*scale;
+	// TODO - compute the 3.X from pixel spacing/sizes instead of a raw value. 
+	if( last=="m" ) return parseInt(val.substring(0,val.length-2))*3.75*scale
+	console.warn("Unknown length type left,top coordinate:",val,length,"last character", last);
+};
+
 $xeroControllers:{ $(it)()$ }$
 
 var xeroController = new XeroController(xeroView);
