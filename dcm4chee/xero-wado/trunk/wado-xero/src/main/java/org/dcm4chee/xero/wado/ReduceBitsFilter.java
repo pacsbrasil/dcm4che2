@@ -44,6 +44,9 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferShort;
+import java.awt.image.DataBufferUShort;
 import java.awt.image.WritableRaster;
 import java.util.Collection;
 import java.util.HashSet;
@@ -51,7 +54,6 @@ import java.util.Map;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.VR;
 import org.dcm4che2.image.ByteLookupTable;
 import org.dcm4che2.image.LookupTable;
 import org.dcm4che2.image.ShortLookupTable;
@@ -67,7 +69,8 @@ import org.slf4j.LoggerFactory;
  * image can be encoded using 12 bit JPEG. Also adds response headers to
  * indicate the transformation.
  * TODO Add Modality LUT transformation - send the image complete with the Modality LUT
- * having been applied.
+ * having been applied?  Actually, if we did this, it would have to be flagged so that
+ * future W/L filters do not apply the modality LUT.
  * 
  * @author bwallace
  */
@@ -86,6 +89,12 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
    static int[] bits12 = new int[] { 12 };
    static ColorModel cm12 = new ComponentColorModel(gray, bits12, false, false, ColorModel.OPAQUE, DataBuffer.TYPE_USHORT);
 
+   protected static final int NEEDS_NO_PROCESSING = 0;
+   protected static final int NEEDS_MASKING_FLAG = 0x01;
+   protected static final int NEEDS_BIT_REDUCTION_FLAG = 0x02;
+   protected static final int NEEDS_DATA_RANGE_SHIFT_FLAG = 0x04;
+   protected static final int NEEDS_PIXEL_PADDING_REMOVED_FLAG = 0x08;
+   
    /**
     * Reduces the number of bits from 13-16 to 12, only for contentType=image/jp12
     */
@@ -97,23 +106,30 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 	  }
 
 	  if( params.containsKey(WadoImage.IMG_AS_BYTES) ) {
-		 // Check up-front to see if the image can be returned as bytes so that no
-		 // decoding is necessary.  This only works if the correct number of bits is set.
-		 DicomObject ds = dicomImageHeader.filter(null,params);
-		 if( !needsRescale(null,bits,ds) ) {
-			 log.debug("Image doesn't need to be rescaled and can be returned as raw bytes.");
-			 return filterItem.callNextFilter(params);
-		 }
-		 // Can't get it as bytes....
-		 FilterUtil.removeFromQuery(params,WadoImage.IMG_AS_BYTES);
-		 params.remove(WadoImage.IMG_AS_BYTES);
+		  // TODO:
+		  // For IMG_AS_BYTES, we will not check for embedded overlay bits or junk bits.
+		  // We only check the signed flag, and the bits_stored.  If embedded overlays must
+		  // be stripped for raw (compressed) returned data, we need to check for them
+		  // in the header first.
+		  //
+		  // Check up-front to see if the image can be returned as bytes so that no
+		  // decoding is necessary.  This only works if the correct number of bits is set.
+		  DicomObject ds = dicomImageHeader.filter(null,params);
+		  if( !needsRescaleWhenRequestIsForRawBytes(null,bits,ds) ) {
+			  log.debug("Image doesn't need to be rescaled and can be returned as raw bytes.");
+			  return filterItem.callNextFilter(params);
+		  }
+		  // Can't get it as bytes....
+		  FilterUtil.removeFromQuery(params,WadoImage.IMG_AS_BYTES);
+		  params.remove(WadoImage.IMG_AS_BYTES);
 	  }
 
 	  WadoImage wi = (WadoImage) filterItem.callNextFilter(params);
 	  if( wi==null ) return wi;
+	  if ( wi.hasError() ) return null;
 	  DicomObject ds = wi.getDicomObject();
-	  if( !needsRescale(wi,bits,ds) )  {
-		  log.debug("Image doesn't need to be rescaled, and can be returned as a regular image.");
+	  if( !mayRequireRescale(wi,bits,ds) )  {
+		  log.debug("Image is 8-bit or color, doesn't need to be rescaled, and can be returned as a regular image.");
 		  return wi;
 	  }
 	  log.debug("Rescaling image.");
@@ -137,31 +153,45 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 		  minMaxResults.max = (1 << previousBits)-1;
 	  }
 	  
-	  WritableRaster r = wi.getValue().getRaster();
+	  int needsProcessingFlags = calculateNeedsProcessing( maxAllowed, minMaxResults);
+	  
+	  WritableRaster originalRaster = wi.getValue().getRaster();
 
-	  if ( (minMaxResults.min >= 0) && (minMaxResults.max <= maxAllowed) ) {
-		 // This is actually just a bits sized raw image - don't need to
-         // transcode it - could compute actual bits, but this is good enough.
-		 // This case is VERY common for CT images so it is worth including.  As well it doesn't
-		 // require any actual changes to the results - however, it should be fixed to work
-		 // with 8 bit actual images as well...
-	     // TODO - fix thread safety of this code.
-		 // FIXME: is changing BitsStored necessary?  We don't do it when we DO need to
-		 // reduce the bits, so why do it when we DON'T need to reduce the bits?  By only
-		 // changing the BitsStored, and not the HighBit and PixelRepresentation, we can be
-		 // making a corrupt header.
-		 ds.putInt(Tag.BitsStored, VR.IS, bits);
-		 BufferedImage bi = new BufferedImage(cm12, r, false, null);
-		 wi.setValue(bi);
-		 log.info("Within reduced bit range already - no image change " + nanoTimeToString(System.nanoTime() - start));
-
-		 return wi;
+	  if ( needsProcessingFlags == NEEDS_NO_PROCESSING ) {
+		  if ( bits <= 8 ) {
+			  BufferedImage oldBI = wi.getValue();
+			  if ( oldBI.getRaster().getDataBuffer().getDataType() != DataBuffer.TYPE_BYTE ) {
+				  BufferedImage bi = castDownToByteBufferedImage(bits, oldBI);
+				  wi.setValue(bi);
+				  if ( bi == null ) {
+					  return null;
+				  }
+				  log.debug("Within 8-bit reduced-bit unsigned range already - but needed to cast data down from 12-bit." + nanoTimeToString(System.nanoTime() - start));
+			  } 
+		  }
+		  else {
+			  BufferedImage bi = new BufferedImage(cm12, originalRaster, false, null);
+			  wi.setValue(bi);
+			  log.debug("Within 12-bit reduced-bit unsigned range already - no image change " + nanoTimeToString(System.nanoTime() - start));
+		  }
+		  return wi;
 	  }
 	  
+	  int[] smallestLargestOutput = new int[2];
+	  LookupTable lut = createLookupTable(minMaxResults, previousBits, bits, ds, needsProcessingFlags, smallestLargestOutput);
+	  if ( previousBits == 0 ) {
+		  //TODO: because we are not expanding smaller data ranges "up" to the desired bits,
+		  //it is possible that a 9-bit image is described as 12-bit here.  This is fine, but
+		  //if the data goes through the filter a second time with a desired bits = 8, we will
+		  //reduce what we think is 12 bits down to 8, rather than 9-bits down to 8.  This will
+		  //greatly reduce gray levels.  This can be fixed if needed, but we do not want to do the old
+		  //strategy of increasing the data range to match the desired bits.
+		  //
+		  originalSmallestPixelValue = smallestLargestOutput[0];
+		  originalLargestPixelValue = smallestLargestOutput[1];
+	  }
 	  addSmallestLargestToWadoImage(wiRet, originalSmallestPixelValue, originalLargestPixelValue, bits);
-
-	  LookupTable lut = createLookupTable(minMaxResults, bits, maxAllowed, ds);
-	  BufferedImage bi = applyLUT(bits, wi, lut, r);
+	  BufferedImage bi = applyLUT(bits, lut, originalRaster);
 	  
 	  wiRet.setValue(bi);
 	  
@@ -170,8 +200,67 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 	  return wiRet;
    }
 
+
+   protected static BufferedImage castDownToByteBufferedImage(int bits, BufferedImage oldBI) {
+	   ColorModel cm8 = new ComponentColorModel(gray, new int[] {bits}, false, false, ColorModel.OPAQUE, DataBuffer.TYPE_BYTE);
+	   WritableRaster raster = cm8.createCompatibleWritableRaster(oldBI.getWidth(), oldBI.getHeight());
+	   DataBuffer oldData = oldBI.getRaster().getDataBuffer();
+	   short [] source = null;
+	   int sourceOffset = oldData.getOffset();
+	   int sourceSize = oldData.getSize();
+	   if ( oldData instanceof DataBufferShort ) {
+		   source = ((DataBufferShort)oldData).getData();
+	   } else if ( oldData instanceof DataBufferUShort ) {
+		   source = ((DataBufferUShort)oldData).getData();
+	   }
+	   if ( source == null ) {
+		   log.error("Source data is not a short data type.  Cannot convert to 8-bits");
+		   return null;
+	   }
+	   DataBufferByte newData = (DataBufferByte)( raster.getDataBuffer() );
+	   byte [] destin = newData.getData();
+	   if ( destin.length < sourceSize ) {
+		   log.error("Source size is "+sourceSize+" but we generated output image of only "+destin.length+" pixels.");
+		   return null;
+	   }
+	   for ( int i = 0; i < destin.length; i++ ) {
+		   destin[i] = (byte)(source[i+sourceOffset] & 0xff);
+	   }
+	   BufferedImage bi = new BufferedImage(cm8, raster, false, null);
+	   return bi;
+   }
+
+
+   protected static int calculateNeedsProcessing(int maxAllowed, MinMaxResults minMaxResults) {
+	   boolean needsMasking = minMaxResults.bitsNeedMasking;
+	   boolean needsBitReduction = ( ( minMaxResults.max - minMaxResults.min) > maxAllowed );
+	   boolean needsDataRangeShift = ( (minMaxResults.min < 0) || (minMaxResults.max > maxAllowed ) );
+	   if ( (minMaxResults.min == 0) && needsBitReduction ) {
+		   needsDataRangeShift = false;
+	   }
+	   boolean needsPaddingRemoved = false;
+	   int minIncludingPadding = minMaxResults.min;
+	   int maxIncludingPadding = minMaxResults.max;
+	   if ( minMaxResults.pixelPaddingFound ) {
+		   minIncludingPadding = Math.min(minMaxResults.min, minMaxResults.minPixelPadding);
+		   maxIncludingPadding = Math.max(minMaxResults.max, minMaxResults.maxPixelPadding);
+		   needsPaddingRemoved = ( ( maxIncludingPadding - minIncludingPadding) > maxAllowed ) ;
+		   if ( ( ! needsDataRangeShift ) && ( ! needsPaddingRemoved ) ) {
+			   if ( ( (minIncludingPadding < 0) || (maxIncludingPadding > maxAllowed ) ) ) {
+				   needsDataRangeShift = true;
+			   }
+		   }
+	   }
+	   int needsProcessingFlags = NEEDS_NO_PROCESSING;
+	   if ( needsMasking ) { needsProcessingFlags |= NEEDS_MASKING_FLAG; }
+	   if ( needsBitReduction ) { needsProcessingFlags |= NEEDS_BIT_REDUCTION_FLAG; }
+	   if ( needsDataRangeShift ) { needsProcessingFlags |= NEEDS_DATA_RANGE_SHIFT_FLAG; }
+	   if ( needsPaddingRemoved ) { needsProcessingFlags |= NEEDS_PIXEL_PADDING_REMOVED_FLAG; }
+	   return needsProcessingFlags;
+   }
+
    
-   protected BufferedImage applyLUT(int bits, WadoImage wi, LookupTable lut, WritableRaster r) {
+   protected static BufferedImage applyLUT(int bits, LookupTable lut, WritableRaster r) {
 
 	   BufferedImage bi;
 
@@ -179,46 +268,67 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 		   
 		   ColorModel cm = new ComponentColorModel(gray, new int[]{bits}, false, false, ColorModel.OPAQUE, DataBuffer.TYPE_USHORT);
 		   bi = new BufferedImage(cm, cm.createCompatibleWritableRaster(r.getWidth(), r.getHeight()), false, null);
-		   lut.lookup(r.getDataBuffer(), bi.getRaster().getDataBuffer() );
 		   
 	   } else {
 		   
 		   if( bits!=8 ) throw new IllegalArgumentException("Only 8...15 bits supported for reduce bits filter.");
-		   bi = new BufferedImage( wi.getValue().getWidth(), wi.getValue().getHeight(), BufferedImage.TYPE_BYTE_GRAY); 
-		   lut.lookup(r.getDataBuffer(), bi.getRaster().getDataBuffer() );
+		   bi = new BufferedImage( r.getWidth(), r.getHeight(), BufferedImage.TYPE_BYTE_GRAY); 
 	   }
+	   lut.lookup(r.getDataBuffer(), bi.getRaster().getDataBuffer() );
 	   
 	   return bi;
    }
    
    
-   protected LookupTable createLookupTable(MinMaxResults minMaxResults, int bits, int maxAllowed, DicomObject ds) {
+   protected static LookupTable createLookupTable(MinMaxResults minMaxResults, int previousBitsIfNotZero, int outBits, DicomObject ds, int needsProcessingFlags, int[] smallestLargestOutput ) {
 	   
-	   int range = minMaxResults.max - minMaxResults.min;
+	   int maxAllowed = (1 << outBits )-1;
+	   int range = maxAllowed;
+	   int lowRampStart = 0;
+	   if ( (needsProcessingFlags & NEEDS_BIT_REDUCTION_FLAG) != 0 ) {
+		   range = minMaxResults.max;
+		   if ( (needsProcessingFlags & NEEDS_DATA_RANGE_SHIFT_FLAG) != 0 ) {
+			   lowRampStart = minMaxResults.min;
+			   range = minMaxResults.max - minMaxResults.min;
+		   }
+	   }
+	   else if ( (needsProcessingFlags & NEEDS_DATA_RANGE_SHIFT_FLAG) != 0 ) {
+		   lowRampStart = minMaxResults.min;
+		   // We could do special CT code here, but as long as we are going to apply
+		   // the pixel-padding as a separate overlay, I don't think it is necessary.
+	   }
 	   int entries = range + 1;
 	   
-	   int stored = ds.getInt(Tag.BitsStored);
-	   boolean signed = ds.getInt(Tag.PixelRepresentation) == 1;
+	   // We either have the results of a previous ReduceBitsFilter, or else we need to check
+	   // the DICOM header.
+	   int stored = previousBitsIfNotZero;
+	   boolean signed = false;
+	   if ( stored <= 0 ) {
+		   stored = ds.getInt(Tag.BitsStored, 16);
+		   signed = ds.getInt(Tag.PixelRepresentation) == 1;
+	   }
 	   
 	   LookupTable lut = null;
 	   
-	   if( bits > 8)
+	   if( outBits > 8)
 	   {
 		   short[] slut = new short[entries];
 		   for (int i = 0; i < entries; i++) {
 			   slut[i] = (short) ((maxAllowed * i) / range);
 		   }
-		   lut = new ShortLookupTable(stored, signed, minMaxResults.min, bits, slut);
+		   lut = new ShortLookupTable(stored, signed, lowRampStart, outBits, slut);
 	   }
 	   else {
 
-		   if( bits!=8 ) throw new IllegalArgumentException("Only 8...15 bits supported for reduce bits filter.");
+		   if( outBits!=8 ) throw new IllegalArgumentException("Only 8...15 bits supported for reduce bits filter.");
 		   byte[] blut = new byte[entries];
 		   for (int i = 0; i < entries; i++) {
 			   blut[i] = (byte) ((maxAllowed * i) / range);
 		   }
-		   lut = new ByteLookupTable(stored, signed, minMaxResults.min, bits, blut);
+		   lut = new ByteLookupTable(stored, signed, lowRampStart, outBits, blut);
 	   }
+	   smallestLargestOutput[0] = lowRampStart;
+	   smallestLargestOutput[1] = lowRampStart + range;
 	   
 	   return lut;
    }
@@ -300,30 +410,52 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
    }
 
 
-   public static boolean needsRescale(WadoImage wi, int bits, DicomObject ds) {
-	  boolean isGray = (ds.getInt(Tag.SamplesPerPixel)==1);
-	  if( !isGray ) {
-		 log.info("Not grayscale - not rescaling.");
-		 return false;
-	  }
-	  int previouslyResampledBits = 0;
-	  if ( wi != null ) { 
-		  previouslyResampledBits = getPreviousReducedBits(wi);
-	  }
-	  int stored = ds.getInt(Tag.BitsStored);
-	  boolean signed = ds.getInt(Tag.PixelRepresentation) == 1;
-	  if ( previouslyResampledBits != 0 ) {
-		  stored = previouslyResampledBits;
-		  signed = false;
-	  }
-	  // This will ensure that in current versions, colour images won't pass here,
-	  // and that regular images that don't need any translation will go directly through this filter.
-	  if( stored > bits || signed ) {
-		 log.info("Needs rescale - stored bits "+stored+" allowed "+bits+" signed "+signed);
-		 return true;
-	  }
-	  log.info("Does not need rescale - {} of {} unsigned",stored,bits);
-	  return false;
+   public static boolean mayRequireRescale(WadoImage wi, int bits, DicomObject ds) {
+	   boolean isGray = (ds.getInt(Tag.SamplesPerPixel)==1);
+	   if( !isGray ) {
+		   log.info("Color - not rescaling.");
+		   return false;
+	   }
+	   boolean signed = ds.getInt(Tag.PixelRepresentation) == 1;
+	   if ( signed ) {
+		   return true;
+	   }
+	   if ( ds.getInt(Tag.BitsAllocated,8) <= 8 ) {
+		   log.debug("8-bits allocated - not rescaling.");
+		   return false;
+	   }
+	   if ( wi != null ) {
+		   if ( wi.getValue().getRaster().getDataBuffer().getDataType() == DataBuffer.TYPE_BYTE ) {
+			   log.info("byte DataBuffer.  We cannot rescale bits, but why isn't it labelled as 8 bits allocated?");
+			   return false; 
+		   }
+	   }
+	  return true;
+   }
+   
+   public static boolean needsRescaleWhenRequestIsForRawBytes( WadoImage wi, int bits, DicomObject ds) {
+	   if ( ! mayRequireRescale( wi, bits, ds) ) {
+		   return false;
+	   }
+	   int previouslyResampledBits = 0;
+	   if ( wi != null ) { 
+		   previouslyResampledBits = getPreviousReducedBits(wi);
+	   }
+	   int stored = ds.getInt(Tag.BitsStored);
+	   boolean signed = ds.getInt(Tag.PixelRepresentation) == 1;
+	   if ( previouslyResampledBits != 0 ) {
+		   stored = previouslyResampledBits;
+		   signed = false;
+	   }
+	   // This will ensure that in current versions, colour images won't pass here,
+	   // and that regular images that don't need any translation will go directly through this filter.
+	   if( stored > bits || signed ) {
+		   log.info("Needs rescale - stored bits "+stored+" allowed "+bits+" signed "+signed);
+		   return true;
+	   }
+	   log.info("Does not need rescale - {} of {} unsigned",stored,bits);
+	   return false;
+
    }
    
    private Filter<DicomObject> dicomImageHeader;
