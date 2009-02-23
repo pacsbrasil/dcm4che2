@@ -1326,8 +1326,8 @@ public class WADOSupport {
             int oX1 = 0;
             int oY1 = 0;
             if (oOrigin != null) {
-                oX1 = oOrigin[0] - 1;
-                oY1 = oOrigin[1] - 1;
+                oX1 = oOrigin[1] - 1;
+                oY1 = oOrigin[0] - 1;
             }
 
             log.debug("Overlay: {} OverlayType: {}", group, oType);
@@ -1382,13 +1382,21 @@ public class WADOSupport {
                     int rowByteOffset = rowBitOffset / 8;
                     int packedRowByteOffset = y * packedRowBytes;
                     int bitsToMove = (rowBitOffset % 8);
-                    for (int i = 0, size = packedRowBytes - 2; i < size; i++) {
-                        int inOffset = rowByteOffset + i;
-                        int b1 = bb.get(inOffset) & 0xFF;
-                        int b2 = bb.get(inOffset + 1) & 0xFF;
-                        int rc = ((b1 >> bitsToMove) ^
-                                ((b2 << (8 - bitsToMove)) & 0xFF));
-                        dest[packedRowByteOffset + i] = bitSwapLut[rc];
+                    if(bitsToMove != 0) {
+                        for (int i = 0, size = packedRowBytes - 1; i < size; i++) {
+                            int inOffset = rowByteOffset + i;
+                            int b1 = bb.get(inOffset) & 0xFF;
+                            int b2 = bb.get(inOffset + 1) & 0xFF;
+                            int rc = ((b1 >> bitsToMove) ^
+                                    ((b2 << (8 - bitsToMove)) & 0xFF));
+                            dest[packedRowByteOffset + i] = bitSwapLut[rc];
+                        }
+                    } else {
+                        for(int i = 0, size=packedRowBytes - 1; i < size; i++) {
+                            int inOffset = rowByteOffset + i;
+                            int b1 = bb.get(inOffset) & 0xFF;
+                            dest[packedRowByteOffset + i] = bitSwapLut[b1];
+                        }
                     }
                 }
             }
