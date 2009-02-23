@@ -127,7 +127,7 @@ public class MemoryCache<K, V> {
 			   V ret = value.getValue();
 			   value.setIncrement(counter++);
 			   lruSet.add(value);
-			   log.debug("Found cached item "+key);
+			   log.debug(cacheName + ", found cached item "+key);
 			   return ret;
 			}
 		 } else {
@@ -140,6 +140,7 @@ public class MemoryCache<K, V> {
 	  if (valueGetter == null)
 		 return null;
 
+	  log.debug(cacheName + ", callFutureValue "+key);
 	  if (value.callFutureValue(valueGetter)) {
 		 log.debug("Returning concurrent fetch "+key);
 		 // Don't need to resynchronize on this, as the value is directly
