@@ -1341,8 +1341,8 @@ public class WADOSupport {
             }
 
             int oFrameOffset = frame - oFrameStart;
-            long bitOffset = oFrameOffset * oRows * oCols;
-            long byteOffset = bitOffset / 8;  // dont round up!
+            int bitOffset = oFrameOffset * oRows * oCols;
+            int byteOffset = bitOffset / 8;  // dont round up!
             int numBits = oRows * oCols;
             int numBytes = (numBits + 7) / 8; // round up!
 
@@ -1350,10 +1350,6 @@ public class WADOSupport {
             log.debug("Overlay: {} byteOffset: {}", group, byteOffset);
             log.debug("Overlay: {} numBits: {}", group, numBits);
             log.debug("Overlay: {} numBytes: {}", group, numBytes);
-
-            int xxx = groupedTag(group, Tags.OverlayData);
-            log.info("xxx {}", xxx);
-            log.info("xxx {}", Tags.OverlayData);
 
             ByteBuffer bb = ds.get(groupedTag(group, Tags.OverlayData)).getByteBuffer();
             log.debug("Overlay: {} ByteBuffer: {}", group, bb);
@@ -1367,24 +1363,36 @@ public class WADOSupport {
 
             byte[] dest = dataBufferByte.getData();
 
-            bb.position((int) byteOffset);
-            bb.get(dest, 0, numBytes);
+            // java awt cant even handle non byte packed lines
+            // so if a line lenght is not a multiple of 8, it gets really slow
+            int packedRowBits = (oCols + 7) & (~7);
+            log.debug("packed row bits: {}", packedRowBits);
 
-            // java.awt cant handle non byte packed bitmaps
-            int bitsToMove = (int) (bitOffset % 8);
-            if (bitsToMove != 0) {
-                for (int i = 0, size = numBytes - 1; i < size; i++) {
-                    int b1 = dest[i] & 0xFF;
-                    int b2 = dest[i + 1] & 0xFF;
-                    dest[i] = (byte) ((b1 >> bitsToMove) &
-                            ((b2 << (8 - bitsToMove)) & 0xFF));
+            if(packedRowBits == oCols) {
+                // overlay is 8-bit padded, we can do it fast
+                for (int i = 0; i < numBytes; i++) {
+                    int idx = bb.get(byteOffset + i) & 0xFF;
+                    dest[i] = bitSwapLut[idx];
+                }
+            } else {
+                // no joy, slow version
+                int packedRowBytes = packedRowBits / 8;
+                for (int y = 0; y < oRows; y++) {
+                    int rowBitOffset = bitOffset + y * oCols;
+                    int rowByteOffset = rowBitOffset / 8;
+                    int packedRowByteOffset = y * packedRowBytes;
+                    int bitsToMove = (rowBitOffset % 8);
+                    for (int i = 0, size = packedRowBytes - 2; i < size; i++) {
+                        int inOffset = rowByteOffset + i;
+                        int b1 = bb.get(inOffset) & 0xFF;
+                        int b2 = bb.get(inOffset + 1) & 0xFF;
+                        int rc = ((b1 >> bitsToMove) ^
+                                ((b2 << (8 - bitsToMove)) & 0xFF));
+                        dest[packedRowByteOffset + i] = bitSwapLut[rc];
+                    }
                 }
             }
 
-            for (int i = 0; i < numBytes; i++) {
-                int idx = dest[i] & 0xFF;
-                dest[i] = bitSwapLut[idx];
-            }
 
             log.debug("Overlay: {} BufferedImage: {}", group, overBi);
             Graphics2D gBi = bi.createGraphics();
