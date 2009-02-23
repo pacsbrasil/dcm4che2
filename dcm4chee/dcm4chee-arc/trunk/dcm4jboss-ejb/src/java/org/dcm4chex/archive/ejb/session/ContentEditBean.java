@@ -390,41 +390,124 @@ public abstract class ContentEditBean implements SessionBean {
         return getStudyMgtDataset( series.getStudy(), col, instances );
     }
 
+    /**
+     * @throws FinderException 
+     * @ejb.interface-method
+     */
+    public Dataset[] getStudyMgtDatasetForStudies( long[] study_pks ) throws FinderException {
+        if ( study_pks == null || study_pks.length < 1 )
+            return new Dataset[0];
+        Dataset[] dsStdyMgt = new Dataset[study_pks.length];
+        for ( int i = 0 ; i < study_pks.length ; i++ ) {
+            dsStdyMgt[i] = getStudyMgtDatasetForStudy(study_pks[i]);
+        }
+        return dsStdyMgt;
+    }
+    /**
+     * @throws FinderException 
+     * @ejb.interface-method
+     */
+    public Dataset getStudyMgtDatasetForStudy( long study_pk ) throws FinderException {
+        StudyLocal study = studyHome.findByPrimaryKey(new Long(study_pk));
+        
+        return getStudyMgtDataset(study, study.getSeries(), null);
+    }
+    /**
+     * @throws FinderException 
+     * @ejb.interface-method
+     */
+    public Dataset getStudyMgtDatasetForSeries( long[] seriesPks ) throws FinderException {
+        if ( seriesPks == null || seriesPks.length < 1 )
+            return null;
+        SeriesLocal series = seriesHome.findByPrimaryKey(new Long(seriesPks[0]));
+        StudyLocal study = series.getStudy();
+        ArrayList seriess = new ArrayList();
+        seriess.add(series);
+        for ( int i = 1 ; i < seriesPks.length ; i++) {
+            seriess.add(seriesHome.findByPrimaryKey(new Long(seriesPks[i])));
+        }
+        return getStudyMgtDataset(study, seriess, null);
+    }
+    /**
+     * @throws FinderException 
+     * @ejb.interface-method
+     */
+    public Dataset getStudyMgtDatasetForInstances( long[] instancePks ) throws FinderException {
+        if ( instancePks == null || instancePks.length < 1 )
+            return null;
+        InstanceLocal il = instHome.findByPrimaryKey(instancePks[0]);
+        SeriesLocal series = il.getSeries();
+        StudyLocal study = series.getStudy();
+        Dataset ds = dof.newDataset();
+        ds.putUI( Tags.StudyInstanceUID, study.getStudyIuid() );
+        ds.putSH( Tags.AccessionNumber, study.getAccessionNumber());
+        ds.putLO(Tags.PatientID, study.getPatient().getPatientId() );
+        ds.putLO(Tags.IssuerOfPatientID, study.getPatient().getIssuerOfPatientId() );
+        ds.putPN(Tags.PatientName, study.getPatient().getPatientName() );
+        DcmElement refSeriesSeq = ds.putSQ( Tags.RefSeriesSeq );
+        DcmElement refSopSeq;
+        Dataset dsInst;
+        HashMap seriesMap = new HashMap();
+        int i = 0;
+        while ( il != null) {
+            series = il.getSeries();
+            Dataset dsSer = (Dataset)seriesMap.get(series.getPk());
+            if ( dsSer == null ) {
+                dsSer = refSeriesSeq.addNewItem();
+                refSopSeq = dsSer.putSQ( Tags.RefSOPSeq );
+                dsSer.putUI( Tags.SeriesInstanceUID, series.getSeriesIuid() );
+                seriesMap.put(series.getPk(), dsSer);
+            } else {
+                refSopSeq = dsSer.get(Tags.RefSOPSeq);
+            }
+            dsInst = refSopSeq.addNewItem();
+            dsInst.putUI( Tags.RefSOPClassUID, il.getSopCuid() );
+            dsInst.putUI( Tags.RefSOPInstanceUID, il.getSopIuid() );
+            dsInst.putAE( Tags.RetrieveAET, il.getRetrieveAETs() );
+            il = ( ++i < instancePks.length ) ? 
+                    instHome.findByPrimaryKey(instancePks[i]) : null;
+        }
+        return ds;
+    }
+    
     private Dataset getStudyMgtDataset( StudyLocal study, Collection series, Collection instances ) {
     	return getStudyMgtDataset( study, series, instances, 0, null );
     }
 
     private Dataset getStudyMgtDataset( StudyLocal study, Collection series, Collection instances, int chgMode, Dataset changes ) {
-    	Dataset ds = dof.newDataset();
-    	ds.putUI( Tags.StudyInstanceUID, study.getStudyIuid() );
-    	log.debug("getStudyMgtDataset: studyIUID:"+study.getStudyIuid());
+        Dataset ds = dof.newDataset();
+        ds.putUI( Tags.StudyInstanceUID, study.getStudyIuid() );
+        log.debug("getStudyMgtDataset: studyIUID:"+study.getStudyIuid());
         ds.putSH( Tags.AccessionNumber, study.getAccessionNumber());
         ds.putLO(Tags.PatientID, study.getPatient().getPatientId() );
         ds.putLO(Tags.IssuerOfPatientID, study.getPatient().getIssuerOfPatientId() );
         ds.putPN(Tags.PatientName, study.getPatient().getPatientName() );
-    	if ( chgMode == CHANGE_MODE_STUDY) ds.putAll( changes );
-		DcmElement refSeriesSeq = ds.putSQ( Tags.RefSeriesSeq );
-		Iterator iter = series.iterator();
-		while ( iter.hasNext() ) {
-			SeriesLocal sl = (SeriesLocal) iter.next();
-			Dataset dsSer = refSeriesSeq.addNewItem();
-	    	if ( chgMode == CHANGE_MODE_SERIES ) dsSer.putAll( changes );
-			dsSer.putUI( Tags.SeriesInstanceUID, sl.getSeriesIuid() );
-			Collection colInstances = ( instances != null && series.size() == 1 ) ? instances : sl.getInstances();
-			Iterator iter2 = colInstances.iterator();
-			DcmElement refSopSeq = null;
-			if ( iter2.hasNext() )
-				refSopSeq = dsSer.putSQ( Tags.RefSOPSeq );
-			while ( iter2.hasNext() ) {
-				InstanceLocal il = (InstanceLocal) iter2.next();
-				Dataset dsInst = refSopSeq.addNewItem();
-		    	if ( chgMode == CHANGE_MODE_INSTANCE ) dsInst.putAll( changes );
-				dsInst.putUI( Tags.RefSOPClassUID, il.getSopCuid() );
-				dsInst.putUI( Tags.RefSOPInstanceUID, il.getSopIuid() );
-				dsInst.putAE( Tags.RetrieveAET, il.getRetrieveAETs() );
-			}
-		}
-		if ( log.isDebugEnabled() ) { log.debug("return StgMgtDataset:");log.debug(ds);}
-    	return ds;
+        if ( chgMode == CHANGE_MODE_STUDY) 
+            ds.putAll( changes );
+        DcmElement refSeriesSeq = ds.putSQ( Tags.RefSeriesSeq );
+        Iterator iter = series.iterator();
+        while ( iter.hasNext() ) {
+            SeriesLocal sl = (SeriesLocal) iter.next();
+            Dataset dsSer = refSeriesSeq.addNewItem();
+            if ( chgMode == CHANGE_MODE_SERIES ) 
+                dsSer.putAll( changes );
+            dsSer.putUI( Tags.SeriesInstanceUID, sl.getSeriesIuid() );
+            Collection colInstances = ( instances != null && series.size() == 1 ) ? instances : sl.getInstances();
+            Iterator iter2 = colInstances.iterator();
+            DcmElement refSopSeq = null;
+            if ( iter2.hasNext() )
+                refSopSeq = dsSer.putSQ( Tags.RefSOPSeq );
+            while ( iter2.hasNext() ) {
+                InstanceLocal il = (InstanceLocal) iter2.next();
+                Dataset dsInst = refSopSeq.addNewItem();
+                if ( chgMode == CHANGE_MODE_INSTANCE ) 
+                    dsInst.putAll( changes );
+                dsInst.putUI( Tags.RefSOPClassUID, il.getSopCuid() );
+                dsInst.putUI( Tags.RefSOPInstanceUID, il.getSopIuid() );
+                dsInst.putAE( Tags.RetrieveAET, il.getRetrieveAETs() );
+            }
+        }
+        if ( log.isDebugEnabled() ) { log.debug("return StgMgtDataset:");log.debug(ds);}
+        return ds;
     }
 }
