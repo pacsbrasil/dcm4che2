@@ -237,7 +237,7 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
 
     protected void schedule(BaseJmsOrder order, long scheduledTime) {
         try {
-            log.info("Scheduling " + order.toIdString());
+            log.info("Scheduling " + order);
             jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
                     scheduledTime);
         } catch (Exception e) {
@@ -249,22 +249,21 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
         ObjectMessage om = (ObjectMessage) message;
         try {
             BaseJmsOrder order = (BaseJmsOrder) om.getObject();
-            log.info("Start processing " + order.toIdString());
+            log.info("Start processing " + order);
             try {
                 process(order);
-                log.info("Finished processing " + order.toIdString());
+                log.info("Finished processing " + order);
             } catch (Exception e) {
+                order.setThrowable(e);
                 final int failureCount = order.getFailureCount() + 1;
                 order.setFailureCount(failureCount);
                 final long delay = retryIntervalls.getIntervall(failureCount);
                 if (delay == -1L) {
                     log.error("Give up to process " + order, e);
-                    giveUpMessage(order);
+                    jmsDelegate.fail(queueName,order);
                 } else {
                     log.warn("Failed to process " + order
                             + ". Scheduling retry.", e);
-                    // Record this exception
-					order.setThrowable(e);
                     schedule(order, System.currentTimeMillis() + delay);
                 }
             }
@@ -272,10 +271,6 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
             log.error("unexpected error during processing message: " + message,
                     e);
         }
-    }
-
-    protected void giveUpMessage(BaseJmsOrder order) throws Exception {
-    	// Do nothing by default
     }
 
     protected abstract BaseJmsOrder createOrder(Dataset ian);

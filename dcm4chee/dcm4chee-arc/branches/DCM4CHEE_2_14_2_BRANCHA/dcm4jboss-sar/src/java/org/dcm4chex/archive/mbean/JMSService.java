@@ -77,4 +77,8 @@ public class JMSService extends ServiceMBeanSupport {
             throw new IllegalStateException("No listener on queue " + name);
         jms.queueMessage(obj, prior, scheduledTime);
     }
+    
+    public void fail(String name, Serializable obj ) throws JMSException {
+    	/* Stub */
+    }
 }

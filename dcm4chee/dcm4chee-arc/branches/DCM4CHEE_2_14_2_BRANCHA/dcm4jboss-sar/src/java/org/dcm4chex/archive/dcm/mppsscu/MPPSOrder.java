@@ -43,6 +43,7 @@ import java.io.Serializable;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.common.BaseJmsOrder;
 
 
 /**
@@ -51,7 +52,7 @@ import org.dcm4che.dict.Tags;
  * @since 15.11.2004
  *
  */
-public class MPPSOrder implements Serializable {
+public class MPPSOrder extends BaseJmsOrder implements Serializable {
 
 	private static final long serialVersionUID = 4049078245976520754L;
 
@@ -60,8 +61,6 @@ public class MPPSOrder implements Serializable {
     private final Dataset ds;
 
     private final String dest;
-
-    private int failureCount;
 
     public MPPSOrder(Dataset ds, String dest) {
         if (dest == null) throw new NullPointerException();
@@ -83,20 +82,11 @@ public class MPPSOrder implements Serializable {
         return dest;
     }
 
-    public final int getFailureCount() {
-        return failureCount;
-    }
-
-    public final void setFailureCount(int failureCount) {
-        this.failureCount = failureCount;
-    }
-
-    public String toString() {
+    public String getOrderDetails() {
         return (create
-                ? "MPPSOrder[N-CREATE, iuid="
-                : "MPPSOrder[N-SET, iuid=")
+                ? "N-CREATE, iuid="
+                : "N-SET, iuid=")
                 + ds.getString(Tags.SOPInstanceUID)
-                + ", dest=" + dest
-                + ", failureCount=" + failureCount + "]";
+                + ", dest=" + dest;
     }
 }

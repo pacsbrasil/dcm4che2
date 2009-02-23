@@ -42,13 +42,14 @@ package org.dcm4chex.archive.dcm.stgcmt;
 import java.io.Serializable;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4chex.archive.common.BaseJmsOrder;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  * @version $Revision$ $Date$
  * @since Jan 5, 2005
  */
-class StgCmtOrder implements Serializable {
+class StgCmtOrder extends BaseJmsOrder implements Serializable {
 
     private static final long serialVersionUID = 3256437014860936248L;
 
@@ -60,22 +61,12 @@ class StgCmtOrder implements Serializable {
 
     private final boolean scpRole;
 
-    private int failureCount;
-
     public StgCmtOrder(String callingAET, String calledAET, Dataset actionInfo,
             boolean scpRole) {
         this.callingAET = callingAET;
         this.calledAET = calledAET;
         this.actionInfo = actionInfo;
         this.scpRole = scpRole;
-    }
-
-    public final int getFailureCount() {
-        return failureCount;
-    }
-
-    public final void setFailureCount(int failureCount) {
-        this.failureCount = failureCount;
     }
 
     public final Dataset getActionInfo() {
@@ -95,8 +86,7 @@ class StgCmtOrder implements Serializable {
     }
     
     public String toString() {
-        return "StgCmtOrder[calling=" + callingAET + ", called=" + calledAET
-        	+ ", role=" + (scpRole ? "SCP, failures=" : "SCU, failures=")
-        	+ failureCount + "]";
+        return "calling=" + callingAET + ", called=" + calledAET
+            + ", role=" + (scpRole ? "SCP" : "SCU");
     }
 }

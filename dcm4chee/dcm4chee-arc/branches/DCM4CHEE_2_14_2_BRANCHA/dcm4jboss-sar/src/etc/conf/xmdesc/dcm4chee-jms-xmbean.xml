@@ -77,8 +77,24 @@
        <type>long</type>
      </parameter>
      <return-type>void</return-type>
-	 </operation>
-	
-   &defaultOperations;
+  </operation>
+
+   <operation impact="ACTION">
+     <description>Indicate Message has exceeded maximum retry attempts</description>
+     <name>fail</name>
+     <parameter>
+       <description>Originating Queue Name</description>
+       <name>name</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Message Object</description>
+       <name>obj</name>
+       <type>java.io.Serializable</type>
+     </parameter>
+     <return-type>void</return-type>
+    </operation>
+
+    &defaultOperations;
 </mbean>
 
