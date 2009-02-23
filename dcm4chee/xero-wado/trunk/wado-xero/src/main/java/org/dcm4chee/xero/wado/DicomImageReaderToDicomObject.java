@@ -63,11 +63,14 @@ public class DicomImageReaderToDicomObject implements Filter<DicomObject> {
 		if (dir == null)
 			return null;
 		try {
-			DicomObject ds = ((DicomStreamMetaData) dir.getStreamMetadata()).getDicomObject();
+			DicomObject ds = null;
+			synchronized (dir) {
+				ds = ((DicomStreamMetaData) dir.getStreamMetadata()).getDicomObject();
+			}
 			return ds;
 		} catch (IOException e) {
 			log.warn("Unable to read dicom file:", e);
-			throw new RuntimeException("Unalbe to read dicom file", e);
+			throw new RuntimeException("Unable to read dicom file", e);
 		}
 	}
 

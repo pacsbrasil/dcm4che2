@@ -88,13 +88,23 @@ public class RecodeDicom implements Filter<ServletResponseItem> {
 	  try {
 		 String tsuid = (String) params.get(TRANSFER_SYNTAX);
 		 DicomImageReader reader = dicomImageReaderFilter.filter(null, params);
-		 if( reader==null || reader.getStreamMetadata()==null ) {
+		 if( reader==null ) {
 			log.warn("No image/dicom object found for objectUID="+params.get(OBJECT_UID));
 			return new ErrorResponseItem(HttpServletResponse.SC_NOT_FOUND,"Object not found.");
 		 }
-		 DicomStreamMetaData streamData = (DicomStreamMetaData) reader.getStreamMetadata();
-		 DicomObject ds = streamData.getDicomObject();
-
+		 DicomObject ds = null;
+		 synchronized (reader) {
+			 if( reader.getStreamMetadata()==null ) {
+				 log.warn("No image/dicom stream found for objectUID="+params.get(OBJECT_UID));
+				 return new ErrorResponseItem(HttpServletResponse.SC_NOT_FOUND,"Object not found.");
+			 }
+			 DicomStreamMetaData streamData = (DicomStreamMetaData) reader.getStreamMetadata();
+			 ds = streamData.getDicomObject();
+		 }
+		 if (ds == null) {
+			 log.warn("Unable to parse dicom object for objectUID="+params.get(OBJECT_UID));
+			 return new ErrorResponseItem(HttpServletResponse.SC_NOT_FOUND,"No dicom object.");
+		 }
 		 tsuid = selectTransferSyntax(ds, tsuid);
 		 log.info("Transfer syntax chosen "+tsuid);
 		 if (isNoPixelData(tsuid)) {

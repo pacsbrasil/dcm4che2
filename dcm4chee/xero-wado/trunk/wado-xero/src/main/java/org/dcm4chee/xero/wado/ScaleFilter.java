@@ -88,10 +88,10 @@ public class ScaleFilter implements Filter<WadoImage> {
 	  // Size can't change per-image, so just get the overall sizes.
 	  int width, height;
 	  try {
-		  // Read the StreamMetadata to ensure we can get the width and height.		
-		 dir.getStreamMetadata();
-		 width = dir.getWidth(0);
-		 height = dir.getHeight(0);
+		  synchronized (dir) {
+			  width = dir.getWidth(0);
+			  height = dir.getHeight(0);
+		  }
 
 		 if( width<=0 || height<=0 ) {
 			log.error("Image width/height is zero.");
@@ -161,7 +161,7 @@ public class ScaleFilter implements Filter<WadoImage> {
 	  params.put(MemoryCacheFilter.KEY_NAME, queryStr);
 	  log.debug("Calling the next filter with queryStr=" + queryStr);
 	  WadoImage wi = (WadoImage) filterItem.callNextFilter(params);
-	  if (wi == null)
+	  if (wi == null || wi.hasError())
 		 return null;
 	  log.debug("Got wado image from next filter.");
 	  BufferedImage bi = wi.getValue();

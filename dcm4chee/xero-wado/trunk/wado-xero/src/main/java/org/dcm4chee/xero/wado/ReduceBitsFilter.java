@@ -125,8 +125,7 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 	  }
 
 	  WadoImage wi = (WadoImage) filterItem.callNextFilter(params);
-	  if( wi==null ) return wi;
-	  if ( wi.hasError() ) return null;
+	  if( wi==null || wi.hasError()) return wi;
 	  DicomObject ds = wi.getDicomObject();
 	  if( !mayRequireRescale(wi,bits,ds) )  {
 		  log.debug("Image is 8-bit or color, doesn't need to be rescaled, and can be returned as a regular image.");

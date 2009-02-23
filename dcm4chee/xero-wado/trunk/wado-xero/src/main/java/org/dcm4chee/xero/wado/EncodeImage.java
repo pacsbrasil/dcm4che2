@@ -169,10 +169,11 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 			}
 		}
 		if( eri==null ) {
+			log.warn("No EncodeResponeItem for contentType: " + contentType);
 			return new ErrorResponseItem(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,"Content type "+contentType+" isn't supported.");
 		}
 		WadoImage image = wadoImageFilter.filter(null, map);
-		if( image==null ) return new ErrorResponseItem(HttpServletResponse.SC_NO_CONTENT,"No content found.");
+		if( image==null || image.hasError() ) return new ErrorResponseItem(HttpServletResponse.SC_NO_CONTENT,"No content found.");
 		return new ImageServletResponseItem(image, eri, quality);
 	}
 

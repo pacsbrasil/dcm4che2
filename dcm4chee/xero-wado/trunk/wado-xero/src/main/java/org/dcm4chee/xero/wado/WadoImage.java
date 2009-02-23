@@ -160,7 +160,7 @@ private static final Logger log = LoggerFactory.getLogger(WadoImage.class);
    }
 
    /** Indicate that one of the required transforms failed - must have a null image as well to be non-recoverable */
-   public void setError(IOException e) {
+   public void setError(Exception e) {
        this.setParameter(ERROR_KEY, e);
    }
    

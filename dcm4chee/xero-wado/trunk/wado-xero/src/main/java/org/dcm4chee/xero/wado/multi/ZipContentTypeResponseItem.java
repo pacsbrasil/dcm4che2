@@ -51,6 +51,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.dcm4chee.xero.metadata.servlet.ErrorResponseItem;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,7 +119,10 @@ public class ZipContentTypeResponseItem implements MultiPartHandler {
 				log.info("Skipping a servlet response with an empty response item.");
 				continue;
 			}
-			
+			if ( sri instanceof ErrorResponseItem ) {
+				log.warn("Skipping an ErrorResponseItem with code: " + ((ErrorResponseItem)sri).getCode());
+				continue;
+			}
 			log.debug("Found a response item to add.");
 			try {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();

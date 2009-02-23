@@ -115,50 +115,51 @@ public class DicomImageFilter implements Filter<WadoImage> {
 	  try {
 		 long start = System.nanoTime();
 		 String op = "decompress";
-         int width = reader.getWidth(0);
-         int height = reader.getHeight(0);
-         
-         String filenameExtra = updateParamFromRegion(param, params, width, height);
 		 synchronized (reader) {
-			BufferedImage bi;
-			DicomStreamMetaData streamData = (DicomStreamMetaData) reader.getStreamMetadata();
-			DicomObject ds = streamData.getDicomObject();
-			ret = new WadoImage(streamData.getDicomObject(), ds.getInt(Tag.BitsStored), null);
-	        ret.setFilename((String) params.get(OBJECT_UID)+"-f"+(frame+1)+filenameExtra);
-			if (readRawBytes) {
-			   byte[] img = reader.readBytes(frame, param);
-			   ret.setParameter(WadoImage.IMG_AS_BYTES, img);
-			   bi = null;
-			   op="read raw";
-			} else if (OverlayUtils.isOverlay(frame) || !ColorModelFactory.isMonochrome(ds)) {
-			   // This object can't be window levelled, so just get it as
-			   // a buffered image directly.
-			   bi = reader.read(frame, param);
-			   log.debug("ColorSpace of returned buffered image is " + bi.getColorModel().getColorSpace());
-			   op="read overlay/colour";
-			}  else {
-			   log.debug("Requested source {}", param.getSourceRegion());
-			   log.debug("Requested subsampling {},{}", param.getSourceXSubsampling(), param.getSourceYSubsampling());
-			   WritableRaster r = (WritableRaster) reader.readRaster(frame, param);
-			   log.debug("Size of returned raster {}", r.getBounds());
-			   ColorModel cm = ColorModelFactory.createColorModel(ds);
-			   log.debug("Color model for image is " + cm);
-			   bi = new BufferedImage(cm, r, false, null);
-			}
-		   Object input = reader.getInput();
-			if( ds.getInt(Tag.NumberOfFrames,1)==1 && (input instanceof ReopenableImageInputStream) ) {
-			   log.info("Closing re-openable stream for {}",ret.getFilename());
-			  ((ReopenableImageInputStream) input).close();
-			}
-			else log.info("Not closing re-openable multi-frame stream {}",ret.getFilename());
-			
-			ret = setPixelRangeInformation(reader, frame, ret);
-			ret.setValue(bi);
-			log.info("Time to "+op+" image "+ret.getFilename()+" ts=" + ds.getString(Tag.TransferSyntaxUID) + " only is "
-				  + nanoTimeToString(System.nanoTime() - start));
+			 int width = reader.getWidth(0);
+			 int height = reader.getHeight(0);
+
+			 String filenameExtra = updateParamFromRegion(param, params, width, height);
+
+			 BufferedImage bi;
+			 DicomStreamMetaData streamData = (DicomStreamMetaData) reader.getStreamMetadata();
+			 DicomObject ds = streamData.getDicomObject();
+			 ret = new WadoImage(streamData.getDicomObject(), ds.getInt(Tag.BitsStored), null);
+			 ret.setFilename((String) params.get(OBJECT_UID)+"-f"+(frame+1)+filenameExtra);
+			 if (readRawBytes) {
+				 byte[] img = reader.readBytes(frame, param);
+				 ret.setParameter(WadoImage.IMG_AS_BYTES, img);
+				 bi = null;
+				 op="read raw";
+			 } else if (OverlayUtils.isOverlay(frame) || !ColorModelFactory.isMonochrome(ds)) {
+				 // This object can't be window leveled, so just get it as
+				 // a buffered image directly.
+				 bi = reader.read(frame, param);
+				 log.debug("ColorSpace of returned buffered image is " + bi.getColorModel().getColorSpace());
+				 op="read overlay/colour";
+			 }  else {
+				 log.debug("Requested source {}", param.getSourceRegion());
+				 log.debug("Requested subsampling {},{}", param.getSourceXSubsampling(), param.getSourceYSubsampling());
+				 WritableRaster r = (WritableRaster) reader.readRaster(frame, param);
+				 log.debug("Size of returned raster {}", r.getBounds());
+				 ColorModel cm = ColorModelFactory.createColorModel(ds);
+				 log.debug("Color model for image is " + cm);
+				 bi = new BufferedImage(cm, r, false, null);
+			 }
+			 Object input = reader.getInput();
+			 if( ds.getInt(Tag.NumberOfFrames,1)==1 && (input instanceof ReopenableImageInputStream) ) {
+				 log.info("Closing re-openable stream for {}",ret.getFilename());
+				 ((ReopenableImageInputStream) input).close();
+			 }
+			 else log.info("Not closing re-openable multi-frame stream {}",ret.getFilename());
+
+			 ret = setPixelRangeInformation(reader, frame, ret);
+			 ret.setValue(bi);
+			 log.info("Time to "+op+" image "+ret.getFilename()+" ts=" + ds.getString(Tag.TransferSyntaxUID) + " only is "
+					 + nanoTimeToString(System.nanoTime() - start));
 		 }
-	  } catch (IOException e) {
-		 log.error("Caught I/O exception reading image "+params.get(OBJECT_UID)+" frame "+(frame+1)+" exception "+e);
+	  } catch (Exception e) {
+		 log.error("Caught Exception reading image "+params.get(OBJECT_UID)+" frame "+(frame+1)+" exception ",e);
 		 ret.setError(e);
 	  }
 	  // This might happen if the instance UID under request comes from

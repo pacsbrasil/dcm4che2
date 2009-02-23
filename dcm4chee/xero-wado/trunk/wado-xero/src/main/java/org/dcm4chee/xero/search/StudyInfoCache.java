@@ -19,6 +19,10 @@ public class StudyInfoCache extends MemoryCache<String,StudyInfo> {
 
 	private static StudyInfoCache singleton = new StudyInfoCache();
 	
+	public StudyInfoCache() {
+		cacheName = "StudyInfoCache";
+	}
+	
 	/** Gets the default, singleton instance of the study information cache */
 	public static final StudyInfoCache getSingleton() {
 		return singleton;

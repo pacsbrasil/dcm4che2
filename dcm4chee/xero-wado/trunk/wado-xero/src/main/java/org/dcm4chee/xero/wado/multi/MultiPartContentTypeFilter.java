@@ -93,6 +93,7 @@ public class MultiPartContentTypeFilter implements Filter<ServletResponseItem> {
 		Iterator<ServletResponseItem> sri = iteratorFilter.filter(null,params);
 		
 		if( sri==null || !sri.hasNext() ) {
+			log.warn("No results for contentType: " + contentTypes);
 			return new ErrorResponseItem(HttpServletResponse.SC_NO_CONTENT);
 		}
 
