@@ -42,19 +42,18 @@ import java.io.Serializable;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.common.BaseJmsOrder;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Nov 30, 2006
  */
-public class PrefetchOrder implements Serializable {
+public class PrefetchOrder extends BaseJmsOrder implements Serializable {
     
     private static final long serialVersionUID = -2393931515395601697L;
 
     private final Dataset ds;
-
-    private int failureCount = 0;
 
     public PrefetchOrder(Dataset ds) {
         this.ds = ds;
@@ -64,18 +63,10 @@ public class PrefetchOrder implements Serializable {
         return ds;
     }
 
-    public final int getFailureCount() {
-        return failureCount;
-    }
-
-    public final void setFailureCount(int failureCount) {
-        this.failureCount = failureCount;
-    }
-    
-    public String toString() {
-        return "PrefetchOrder[pid=" + ds.getString(Tags.PatientID)
-                + "^" + ds.getString(Tags.IssuerOfPatientID) 
-                + ", failureCount=" + failureCount + "]";
+    public String getOrderDetails() {
+        return "pid=" + ds.getString(Tags.PatientID)
+                + "^" + ds.getString(Tags.IssuerOfPatientID); 
+                
     }
 
 }

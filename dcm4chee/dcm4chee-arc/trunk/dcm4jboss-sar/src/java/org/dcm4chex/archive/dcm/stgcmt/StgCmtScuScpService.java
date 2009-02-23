@@ -335,6 +335,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
                 process(order);
                 log.info("Finished processing " + order);
             } catch (Exception e) {
+                order.setThrowable(e);
                 final int failureCount = order.getFailureCount() + 1;
                 order.setFailureCount(failureCount);
                 final RetryIntervalls retryIntervalls = order.isScpRole() ? scpRetryIntervalls
@@ -342,6 +343,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
                 final long delay = retryIntervalls.getIntervall(failureCount);
                 if (delay == -1L) {
                     log.error("Give up to process " + order, e);
+                    jmsDelegate.fail(queueName, order);
                 } else {
                     log.warn("Failed to process " + order
                             + ". Scheduling retry.", e);

@@ -312,20 +312,20 @@ public class HL7SendService extends ServiceMBeanSupport implements
         try {
             HL7SendOrder order = (HL7SendOrder) om.getObject();
             try {
-                log.info("Start processing " + order);
+            	log.info("Start processing " + order);
                 sendTo(order.getHL7Message(), order.getReceiving());
-                order.setException(null);
                 log.info("Finished processing " + order);
             } catch (Exception e) {
-                order.setException(e);
+                order.setThrowable(e);
                 final int failureCount = order.getFailureCount() + 1;
                 order.setFailureCount(failureCount);
                 final long delay = retryIntervalls.getIntervall(failureCount);
                 if (delay == -1L) {
                     log.error("Give up to process " + order);
+                    jmsDelegate.fail(queueName,order);
                 } else {
                     log.warn("Failed to process " + order
-                            + ". Scheduling retry.");
+                            + ". Scheduling retry.", e);
                     jmsDelegate.queue(queueName, order, 0, System
                             .currentTimeMillis()
                             + delay);

@@ -43,6 +43,7 @@ import java.io.Serializable;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.common.BaseJmsOrder;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -51,7 +52,7 @@ import org.dcm4che.dict.Tags;
  * @since 28.08.2004
  * 
  */
-public class IANOrder implements Serializable {
+public class IANOrder extends BaseJmsOrder implements Serializable {
 
     private static final long serialVersionUID = -9036249052896177876L;
 
@@ -100,17 +101,8 @@ public class IANOrder implements Serializable {
         return ian;
     }
 
-    public final int getFailureCount() {
-        return failureCount;
-    }
-
-    public final void setFailureCount(int failureCount) {
-        this.failureCount = failureCount;
-    }
-
-    public String toString() {
-        return "IanOrder[dest=" + dest + ", suid="
-                + ian.getString(Tags.StudyInstanceUID) + ", failureCount="
-                + failureCount + "]";
+    public String getOrderDetails() {
+        return "dest=" + dest + ", suid="
+                + ian.getString(Tags.StudyInstanceUID);
     }
 }

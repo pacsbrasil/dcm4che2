@@ -218,6 +218,7 @@ public class MoveScuService extends AbstractScuService implements
                 process(order);
                 log.info("Finished processing " + order);
             } catch (Exception e) {
+                order.setThrowable(e);
                 final int failureCount = order.getFailureCount() + 1;
                 order.setFailureCount(failureCount);
                 RetryIntervalls retry = (RetryIntervalls)retryIntervalls.get(order.getMoveDestination());
@@ -225,6 +226,7 @@ public class MoveScuService extends AbstractScuService implements
                 final long delay = retry == null ? -1l : retry.getIntervall(failureCount);
                 if (delay == -1L) {
                     log.error("Give up to process " + order, e);
+                    jmsDelegate.fail(queueName, order);
                 } else {
                     log.warn("Failed to process " + order
                             + ". Scheduling retry.", e);

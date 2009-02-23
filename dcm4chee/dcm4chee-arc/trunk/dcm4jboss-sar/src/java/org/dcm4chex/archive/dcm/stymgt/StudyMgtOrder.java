@@ -43,8 +43,9 @@ import java.io.Serializable;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+import org.dcm4chex.archive.common.BaseJmsOrder;
 
-public class StudyMgtOrder implements Serializable {
+public class StudyMgtOrder extends BaseJmsOrder implements Serializable {
 	
 	private static final long serialVersionUID = 3258417226779603505L;
 
@@ -59,10 +60,6 @@ public class StudyMgtOrder implements Serializable {
 	private final String iuid;
 
 	private final Dataset ds;
-
-	private int failureCount;
-
-	private Exception exception;
 
 	public StudyMgtOrder(String callingAET, String calledAET,
 			int cmdField, int actionID, String iuid, Dataset dataset){
@@ -98,28 +95,9 @@ public class StudyMgtOrder implements Serializable {
 		return ds;
 	}
 	
-    public final int getFailureCount() {
-        return failureCount;
-    }
-
-    public final void setFailureCount(int failureCount) {
-        this.failureCount = failureCount;
-    }
-
-	public Exception getException() {
-		return exception;
-	}
-
-	public void setException(Exception exception) {
-		this.exception = exception;
-	}
-
-    public String toString() {
-        return "StudyMgtOrder[" + cmdFieldAsString()
-        		+ ", iuid=" + iuid
-        		+ ", failureCount=" + failureCount 
-                + ", exception=" + exception
-                + "]";
+    public String getOrderDetails() {
+        return cmdFieldAsString()
+               + ", iuid=" + iuid;
     }
 
 	private String cmdFieldAsString() {

@@ -231,15 +231,15 @@ public class StudyMgtScuService extends AbstractScuService implements
                         throw e;
                     log.info("No such SOP Instance for " + order);
                 }
-                order.setException(null);
                 log.info("Finished processing " + order);
             } catch (Exception e) {
+                order.setThrowable(e);
                 final int failureCount = order.getFailureCount() + 1;
                 order.setFailureCount(failureCount);
-                order.setException(e);
                 final long delay = retryIntervalls.getIntervall(failureCount);
                 if (delay == -1L) {
                     log.error("Give up to process " + order);
+                    jmsDelegate.fail(queueName,order);
                 } else {
                     log.warn("Failed to process " + order
                             + ". Scheduling retry.");

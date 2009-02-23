@@ -41,13 +41,15 @@ package org.dcm4chex.archive.dcm.movescu;
 
 import java.io.Serializable;
 
+import org.dcm4chex.archive.common.BaseJmsOrder;
+
 /**
  * @author gunter.zeilinger@tiani.com
  * @version $Revision$ $Date$
  * @since 26.08.2004
  *
  */
-public final class MoveOrder implements Serializable {
+public final class MoveOrder extends BaseJmsOrder implements Serializable {
 
 	private static final long serialVersionUID = 3617856386927702068L;
 
@@ -64,8 +66,6 @@ public final class MoveOrder implements Serializable {
     private String[] sopIuids;
 
     private int priority;
-
-    private int failureCount;
 
     public MoveOrder(String retrieveAET, String moveDestination, int priority,
             String patientId, String[] studyIuids, String[] seriesIuids,
@@ -107,8 +107,8 @@ public final class MoveOrder implements Serializable {
 		this(retrieveAET, moveDestination, priority, patientId, studyIuids, null, null);
 	}
 	
-    public String toString() {
-        StringBuffer sb = new StringBuffer("MoveOrder[");
+    public String getOrderDetails() {
+        StringBuffer sb = new StringBuffer();
         if (sopIuids != null) {
             sb.append(sopIuids.length).append(" Instances, dest=");
         } else if (seriesIuids != null) {
@@ -121,8 +121,6 @@ public final class MoveOrder implements Serializable {
         sb.append(moveDestination);
         sb.append(", qrscp=").append(retrieveAET);
         sb.append(", priority=").append(priority);
-        sb.append(", failureCount=").append(failureCount);
-        sb.append("]");
         return sb.toString();
     }
 
@@ -137,14 +135,6 @@ public final class MoveOrder implements Serializable {
 
     public final void setPriority(int priority) {
         this.priority = priority;
-    }
-
-    public final int getFailureCount() {
-        return failureCount;
-    }
-
-    public final void setFailureCount(int failureCount) {
-        this.failureCount = failureCount;
     }
 
     public final String getMoveDestination() {

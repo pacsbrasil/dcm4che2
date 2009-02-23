@@ -160,7 +160,7 @@ public class DeleteStudyService extends ServiceMBeanSupport
             String scheduledTimeStr = scheduledTime > 0
                     ? new Date(scheduledTime).toString()
                     : "now";
-            log.info("Scheduling job [" + order.toIdString() + "] at "
+            log.info("Scheduling job [" + order + "] at "
                     + scheduledTimeStr + ". Retry times: "
                     + order.getFailureCount());
         }
@@ -196,14 +196,20 @@ public class DeleteStudyService extends ServiceMBeanSupport
                     } 
                 }
                 if (log.isDebugEnabled())
-                    log.debug("Finished processing " + order.toIdString());
+                    log.debug("Finished processing " + order);
             } catch (Exception e) {
                 final int failureCount = order.getFailureCount() + 1;
                 order.setFailureCount(failureCount);
                 final long delay = retryIntervalsForJmsOrder
                         .getIntervall(failureCount);
                 if (delay == -1L) {
-                    log.error("Give up to process " + order, e);
+                    order.setThrowable(e);
+                    log.error("Give up to process " + order);
+                    try {
+                        jmsDelegate.fail(deleteStudyQueueName, order);
+                    } catch (Exception e2) {
+                        log.error("Failed to notify JMSDelgate of failed job! Give up to process" + order, e2);
+                    }
                 } else {
                     Throwable thisThrowable = e;
                     if (e instanceof InvocationTargetException)
@@ -223,7 +229,7 @@ public class DeleteStudyService extends ServiceMBeanSupport
                     } else {
                         // otherwise, if it's the same exception as before
                         log.warn("Failed to process "
-                                + order.toIdString()
+                                + order
                                 + ". Details should have been provided. Will schedule retry.");
                     }
                     try {

@@ -344,11 +344,13 @@ public class PPSScuService extends AbstractScuService implements
                         .getDestination());
                 log.info("Finished processing " + order);
             } catch (Exception e) {
+                order.setThrowable(e);
                 final int failureCount = order.getFailureCount() + 1;
                 order.setFailureCount(failureCount);
                 final long delay = retryIntervalls.getIntervall(failureCount);
                 if (delay == -1L) {
                     log.error("Give up to process " + order, e);
+                    jmsDelegate.fail(queueName, order);
                 } else {
                     log.warn("Failed to process " + order
                             + ". Scheduling retry.", e);

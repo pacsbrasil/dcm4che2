@@ -116,4 +116,18 @@ public class JMSDelegate {
             service.getLog().fatal("Failed to invoke operation queue on " + jmsServiceName, e);
         }
     }
+    
+    public void fail(String name, Serializable obj ) throws Exception {
+         try {
+             service.getServer().invoke(jmsServiceName, "fail",
+                     new Object[] { name, obj},
+                     new String[] { String.class.getName(),
+                         Serializable.class.getName()});
+         } catch (MBeanException e) {
+             throw e.getTargetException();
+         } catch (Exception e) {
+             service.getLog().fatal("Failed to invoke operation fail on " + jmsServiceName, e);
+         }
+    }
+
 }
