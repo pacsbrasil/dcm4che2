@@ -147,6 +147,19 @@
         <value value="false"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isLogDeletedOnMoveEntities"
+      setMethod="setLogDeletedOnMoveEntities">
+      <description><![CDATA[Enable or disable logging of Delete events for 'Move Studies/Series/Instances' <br/>
+      If enabled a 'Move xxx' will create a DELETE and a CREATE Instances Accessed audit log.<br/>
+      If disabled only a single UPDATE log will be created (without info of the source of the moved entities).
+      ]]></description>
+      <name>LogDeletedOnMoveEntities</name>
+      <type>boolean</type>
+      <descriptors>
+        <value value="true"/>
+      </descriptors>
+   </attribute>
 
    <attribute access="read-write"
       getMethod="getHL7SendServiceName"

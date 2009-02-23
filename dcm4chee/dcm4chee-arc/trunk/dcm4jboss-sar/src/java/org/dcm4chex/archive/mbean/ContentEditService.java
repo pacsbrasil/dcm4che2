@@ -66,6 +66,7 @@ import org.dcm4che2.audit.message.ParticipantObject;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4che2.audit.message.PatientRecordMessage;
 import org.dcm4che2.audit.message.StudyDeletedMessage;
+import org.dcm4che2.audit.message.AuditEvent.ActionCode;
 import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
 import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
@@ -115,6 +116,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     
     private boolean logIUIDsForStudyUpdate;
     private boolean logIUIDsForSeriesUpdate;
+    private boolean logDeletedOnMoveEntities;
 
     public ContentEditService() {
     }
@@ -155,6 +157,14 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     public void setLogIUIDsForSeriesUpdate(boolean logIUIDsForSeriesUpdate) {
         this.logIUIDsForSeriesUpdate = logIUIDsForSeriesUpdate;
+    }
+
+    public boolean isLogDeletedOnMoveEntities() {
+        return logDeletedOnMoveEntities;
+    }
+
+    public void setLogDeletedOnMoveEntities(boolean logDeletedOnMoveEntities) {
+        this.logDeletedOnMoveEntities = logDeletedOnMoveEntities;
     }
 
     public final ObjectName getHL7SendServiceName() {
@@ -709,15 +719,25 @@ public class ContentEditService extends ServiceMBeanSupport {
     RemoteException {
         if (log.isDebugEnabled())
             log.debug("move Studies");
+        Dataset dsStdyMgt;
+        ActionCode action;
+        if ( auditEnabled && logDeletedOnMoveEntities ) {
+            Dataset[] ds = lookupContentEdit().getStudyMgtDatasetForStudies(study_pks);
+             for ( int i = 0 ; i < ds.length ; i++ ) {
+                 logInstancesAccessed(ds[i], InstancesAccessedMessage.DELETE, true, "Affected Series (Move Studies):");
+             }
+            action = InstancesAccessedMessage.CREATE;
+        } else {
+            action = InstancesAccessedMessage.UPDATE;
+        }
         Collection col = lookupContentEdit().moveStudies(study_pks,
                 patient_pk.longValue());
         Iterator iter = col.iterator();
-        Dataset ds;
         while (iter.hasNext()) {
-            ds = (Dataset) iter.next();
-            sendStudyMgt(ds.getString(Tags.StudyInstanceUID), Command.N_SET_RQ,
-                    0, ds);
-            sendSeriesUpdatedNotifications(ds, "Move studies");
+            dsStdyMgt = (Dataset) iter.next();
+            logInstancesAccessed(dsStdyMgt, action, true, "Affected Series (Move Studies):");
+            sendStudyMgt(dsStdyMgt.getString(Tags.StudyInstanceUID), Command.N_SET_RQ, 0, dsStdyMgt);
+            sendSeriesUpdatedNotifications(dsStdyMgt, "Move studies");
         }
     }
 
@@ -726,23 +746,39 @@ public class ContentEditService extends ServiceMBeanSupport {
     FinderException {
         if (log.isDebugEnabled())
             log.debug("move Series");
-        Dataset ds = lookupContentEdit().moveSeries(series_pks,
+        Dataset dsStdyMgt;
+        if ( auditEnabled && logDeletedOnMoveEntities ) {
+            dsStdyMgt= lookupContentEdit().getStudyMgtDatasetForSeries(series_pks);
+            logInstancesAccessed(dsStdyMgt, InstancesAccessedMessage.DELETE, true, "Affected Series (Move Series):");
+        }
+        dsStdyMgt = lookupContentEdit().moveSeries(series_pks,
                 study_pk.longValue());
-        sendStudyMgt(ds.getString(Tags.StudyInstanceUID), Command.N_SET_RQ, 0,
-                ds);
-        sendSeriesUpdatedNotifications(ds, "Move series");
+        logInstancesAccessed(dsStdyMgt, 
+                logDeletedOnMoveEntities ? InstancesAccessedMessage.CREATE : InstancesAccessedMessage.UPDATE, 
+                true, "Affected Series (Move Series):");
+        sendStudyMgt(dsStdyMgt.getString(Tags.StudyInstanceUID), Command.N_SET_RQ, 0,
+                dsStdyMgt);
+        sendSeriesUpdatedNotifications(dsStdyMgt, "Move series");
     }
 
     public void moveInstances(long[] instance_pks, Long series_pk)
     throws RemoteException, HomeFactoryException, CreateException,
     FinderException {
+        Dataset dsStdyMgt;
+        if ( auditEnabled && logDeletedOnMoveEntities ) {
+            dsStdyMgt= lookupContentEdit().getStudyMgtDatasetForInstances(instance_pks);
+            logInstancesAccessed(dsStdyMgt, InstancesAccessedMessage.DELETE, true, "Affected Series (Move Instances):");
+        }
         if (log.isDebugEnabled())
             log.debug("move Instances");
-        Dataset ds = lookupContentEdit().moveInstances(instance_pks,
+        dsStdyMgt = lookupContentEdit().moveInstances(instance_pks, 
                 series_pk.longValue());
-        sendStudyMgt(ds.getString(Tags.StudyInstanceUID), Command.N_SET_RQ, 0,
-                ds);
-        this.sendSeriesUpdatedNotifications(ds, "Move instances");
+        logInstancesAccessed(dsStdyMgt, 
+                logDeletedOnMoveEntities ? InstancesAccessedMessage.CREATE : InstancesAccessedMessage.UPDATE, 
+                true, "Affected Series (Move Instances):");
+        sendStudyMgt(dsStdyMgt.getString(Tags.StudyInstanceUID), Command.N_SET_RQ, 0,
+                dsStdyMgt);
+        this.sendSeriesUpdatedNotifications(dsStdyMgt, "Move instances");
     }
 
     private ContentEdit lookupContentEdit() throws HomeFactoryException,
@@ -842,7 +878,7 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     private void logInstancesAccessed(Collection<Dataset> studies,
             AuditEvent.ActionCode actionCode, boolean addIUID, String detailMessage) {
-        if (auditLogger.isAuditLogIHEYr4())
+        if (auditLogger.isAuditLogIHEYr4() || !auditEnabled)
             return;
         HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
                 .isEnableDNSLookups());
@@ -888,7 +924,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     private void logStudyDeleted(Dataset studyMgtDs) {
-        if (auditLogger.isAuditLogIHEYr4())
+        if (auditLogger.isAuditLogIHEYr4() || !auditEnabled)
             return;
         HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
                 .isEnableDNSLookups());
