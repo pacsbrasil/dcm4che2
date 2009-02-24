@@ -115,4 +115,10 @@
       <xsl:value-of select="java:org.dcm4chee.arr.seam.ejb.Base64Decoder.decodeToUTF8(@value)"/>
     </span>
   </xsl:template>
+  <xsl:template match="ParticipantObjectDetail[@type='Description']">
+    <xsl:text>, </xsl:text>
+    <span title="Description">
+      <xsl:value-of select="java:org.dcm4chee.arr.seam.ejb.Base64Decoder.decodeToUTF8(@value)"/>
+    </span>
+  </xsl:template>
 </xsl:stylesheet>
