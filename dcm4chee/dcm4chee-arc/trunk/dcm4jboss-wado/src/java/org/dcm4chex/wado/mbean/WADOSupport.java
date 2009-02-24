@@ -20,8 +20,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunter.zeilinger@tiani.com>
- * Franz Willer <franz.willer@gwi-ag.com>
+ * See listed authors below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -126,10 +125,10 @@ import org.dcm4chex.wado.mbean.xml.DatasetXMLResponseObject;
 import org.jboss.mx.util.MBeanServerLocator;
 
 /**
- * @author franz.willer
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Franz Willer <franz.willer@agfa.com>
+ * @author Juergen Gmeiner <gmeinerj@users.sourceforge.net>
  * 
- * TODO To change the template for this generated type comment go to Window -
- * Preferences - Java - Code Style - Code Templates
  */
 public class WADOSupport {
 
@@ -1450,24 +1449,18 @@ public class WADOSupport {
     private static final byte[] makeBitSwapLut() {
         byte[] rc = new byte[256];
         for (int i = 0; i < 256; i++) {
-            rc[i] = byte_reverse((byte) i);
+            rc[i] = byte_reverse(i);
         }
         return rc;
     }
 
     // reverse the bits in a byte
-    private static final byte byte_reverse(byte b) {
-        int[] inOrder = new int[]{1, 2, 4, 8, 16, 32, 64, 128};
-        int[] revOrder = new int[]{128, 64, 32, 16, 8, 4, 2, 1};
-        byte out = 0;
+    private static final byte byte_reverse(int b) {
+        int out = 0;
         for (int i = 0; i < 8; i++) {
-            int inPos = inOrder[i];
-            int revPos = revOrder[i];
-            if ((b & inPos) != 0) {
-                out |= revPos;
-            }
+            out = (out << 1) | ((b >> i) & 1);
         }
-        return out;
+        return (byte) out;
     }
 
     private static final int groupedTag(int group, int tag) {
