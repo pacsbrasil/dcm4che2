@@ -140,6 +140,18 @@
          <value value="NONE" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isDisableForceMTOMResponse"
+      setMethod="setDisableForceMTOMResponse">
+      <description><![CDATA[ If activated the responce will be Simple SOAP instead of MTOM format.
+            ]]>
+      </description>
+      <name>DisableForceMTOMResponse</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="getDocumentStoreService" setMethod="setDocumentStoreService">
       <description>Used internally - do NOT modify.</description>
       <name>DocumentStoreService</name>

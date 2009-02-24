@@ -117,7 +117,6 @@ import org.w3c.dom.Node;
  */
 public class XDSbRepositoryService extends ServiceMBeanSupport {
 
-
     private static final String CERT = "CERT";
     private static final String NONE = "NONE";
 
@@ -140,6 +139,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
 
     private ObjectFactory objFac = new ObjectFactory();
     private XDSDocumentWriterFactory wrFac = XDSDocumentWriterFactory.getInstance();
+    private boolean disableForceMTOMResponse;
 
     public String getRepositoryUniqueId() {
         return repositoryUniqueId;
@@ -221,6 +221,12 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         this.mockError = NONE.equals(mockError) ? null : mockError.trim();
     }
 
+    public boolean isDisableForceMTOMResponse() {
+        return disableForceMTOMResponse;
+    }
+    public void setDisableForceMTOMResponse(boolean disableForceMTOMResponse) {
+        this.disableForceMTOMResponse = disableForceMTOMResponse;
+    }
     public ObjectName getDocumentStoreService() {
         return docStoreDelegate.getDocumentStoreService();
     }
@@ -294,6 +300,8 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
                 log.info("Received RegistryResponse:"+InfoSetUtil.marshallObject(objFac.createRegistryResponse(rsp), indentXmlLog));
             }
             perfLogger.endSubEvent();
+            CommonMessageContext ctx = MessageContextAssociation.peekMessageContext();
+            ctx.put("DISABLE_FORCE_MTOM_RESPONSE", Boolean.toString(disableForceMTOMResponse));
             return rsp;
         } catch (XDSException x) {
             throw x;
