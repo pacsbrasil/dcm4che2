@@ -77,8 +77,7 @@ public class IntHashtable<T> {
     private int[] keyList;
     private T[] values;
     private T value0;
-    private int[] sortedKeys;
-    private boolean sorted;
+    private volatile int[] sortedKeys;
 
     public IntHashtable() {
         initialize(3);
@@ -101,7 +100,7 @@ public class IntHashtable<T> {
         Arrays.fill(keyList, 0);
         Arrays.fill(values, null);
         value0 = null;
-        sorted = false;
+        sortedKeys = null;
     }
 
     public void put(int key, T value) {
@@ -114,7 +113,7 @@ public class IntHashtable<T> {
             value0 = value;
             return;
         }
-        sorted = false;
+        sortedKeys = null;
         int index = find(key);
         if (values[index] == null)
             count++;
@@ -140,7 +139,7 @@ public class IntHashtable<T> {
             final int index = find(key);
             if (values[index] != null) {
                 retval = values[index];
-                sorted = false;
+                sortedKeys = null;
                 values[index] = null;
                 --count;
                 if (count < lowWaterMark) {
@@ -301,13 +300,11 @@ public class IntHashtable<T> {
                     next = value0;
                 return;
             }
-            if (!sorted) {
-                if (sortedKeys == null) {
-                    sortedKeys = new int[keyList.length];
-                }
-                System.arraycopy(keyList, 0, sortedKeys, 0, keyList.length);
-                Arrays.sort(sortedKeys);
-                sorted = true;
+            if (sortedKeys==null) {
+            	int[] tSortedKeys = new int[keyList.length]; 
+                System.arraycopy(keyList, 0, tSortedKeys, 0, keyList.length);
+                Arrays.sort(tSortedKeys);
+                sortedKeys = tSortedKeys;
             }
             endIndex = Arrays.binarySearch(sortedKeys, end);
             if (endIndex < 0) {
