@@ -98,8 +98,10 @@ public  class XdsHttpCfgDelegate {
      * @return List of StoredDocument objects.
      */
     public int configTLS( String url ) {
-        if (tlsIsConfigured) 
+        if (tlsIsConfigured) {
+            log.debug("Already configured! Omit call of HttpCfgService!");
             return CFG_RSP_ALREADY;
+        }
         try {
             int rsp = ((Integer) server.invoke(xdsHttpCfgServiceName,
                     "configTLS",
@@ -108,6 +110,7 @@ public  class XdsHttpCfgDelegate {
             if ( rsp == CFG_RSP_OK || rsp == CFG_RSP_ALREADY ) {
                 tlsIsConfigured  = true;
             }
+            log.debug("configTLS of HttpCfgService return (1..OK, 2..already configured, 0..ignored, -1..error):"+rsp);
             return rsp;
         } catch ( Exception x ) {
             log.error( "Exception occured in configTLS: "+x.getMessage(), x );
