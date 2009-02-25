@@ -117,6 +117,50 @@ function docCoords(e) {
    }
 };
 
+
+/**
+ * Gets the top, left coordinates of the given element in document space.
+ * An optional offset that will be added to the result can be supplied.
+ * For example, to determine the document position that is 10 pixels to
+ * the right and 5 pixels down from the top, left corner of the element e, invoke
+ * this function as such:
+ *      getElementDocCoords(e, [10, 5]); 
+ */
+function getElementDocCoords(elem, offset)
+{
+    var coords = new Array(2);
+    
+    coords[0] = offset ? offset[0] : 0;
+    coords[1] = offset ? offset[1] : 0;
+    
+    var e = elem;
+    while(e)
+    {
+        coords[0] += e.offsetLeft;
+        coords[1] += e.offsetTop;
+        
+        e = e.offsetParent;
+    }
+    
+    e = elem.parentNode;
+    while(e && e != document.body)
+    {
+        if(e.scrollLeft)
+        {
+            coords[0] -= e.scrollLeft;
+        }
+        
+        if(e.scrollTop)
+        {
+            coords[1] -= e.scrollTop;
+        }
+        
+        e = e.parentNode;
+    }
+    
+    return coords;
+};
+
 /** Strips the provided elements from the URL and returns the new URL */
 function stripUrl(url, rem) {
 	if( !url ) {
