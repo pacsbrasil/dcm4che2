@@ -3,6 +3,18 @@ $logging()$
 
 function UnitTest() {};
 
+UnitTest.areEqual = function(val1, val2) {
+    if(val1 !== val2)
+    {
+        if(val1 == null || val1 instanceof Number || !val1.equals(val2))
+        {
+            return false;
+        }
+    }
+    
+    return true;
+};
+
 UnitTest.prototype.runUnitTests = function() {
 	var key;
 	var errorCount = 0;
