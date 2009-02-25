@@ -75,7 +75,7 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
     public static final String HTTP_PROXY_USER = "http.proxy.username";
     public static final String HTTP_PROXY_PASSWD = "http.proxy.password";
     public static final String HTTP_NON_PROXY_HOSTS = "http.nonProxyHosts";
-    
+
     public static final String HTTPS_PROXY_HOST = "https.proxyHost";
     public static final String HTTPS_PROXY_PORT = "https.proxyPort";
     public static final String HTTPS_PROXY_USER = "https.proxy.username";
@@ -83,20 +83,20 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
     public static final String HTTPS_NON_PROXY_HOSTS = "https.nonProxyHosts";
     public static final String HTTPS_PROTOCOLS = "https.protocols";
     public static final String HTTPS_CIPHER_SUITES = "https.cipherSuites";
-    
+
     public static final String TRUST_STORE_PASSWORD = "javax.net.ssl.trustStorePassword";
     public static final String TRUST_STORE = "javax.net.ssl.trustStore";
     public static final String KEY_STORE_TYPE = "javax.net.ssl.keyStoreType";
     public static final String KEY_STORE_PASSWORD = "javax.net.ssl.keyStorePassword";
     public static final String KEY_STORE = "javax.net.ssl.keyStore";
-    
+
     private static final String SOCKS_PROXY_HOST = "socksProxyHost";
     private static final String SOCKS_PROXY_PORT = "socksProxyPort";
     private static final String SOCKS_NON_PROXY_HOSTS = "socksNonProxyHosts";
     private static final String FTP_PROXY_HOST = "ftp.proxyHost";
     private static final String FTP_PROXY_PORT = "ftp.proxyPort";
     private static final String FTP_NON_PROXY_HOSTS = "ftp.nonProxyHosts";
-    
+
     private static final String HTTP_AGENT = "http.agent";
     private static final String HTTP_AUTH_VALIDATE_SERVER = "http.auth.digest.validateServer";
     private static final String HTTP_AUTH_VALIDATE_PROXY = "http.auth.digest.validateProxy";
@@ -113,7 +113,7 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
     private int proxyPort;
     private int secureProxyPort;
     private int socksProxyPort;
-    
+
     final String[] authCredential = new String[2];
 
     private String keystoreURL = "resource:identity.p12";
@@ -122,7 +122,7 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
     private String trustStorePassword;
     private HostnameVerifier origHostnameVerifier = null;
     private String allowedUrlHost = null;
-    
+
     private boolean sslConfigured = false;
 
     static Logger log = LoggerFactory.getLogger(XdsHttpCfgService.class);
@@ -220,7 +220,7 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
     public void setHttpsProtocols(String p) {
         setOrRemoveAttribute(HTTPS_PROTOCOLS, p.trim());
     }
-    
+
     public String getHttpsCipherSuites() {
         return System.getProperty(HTTPS_CIPHER_SUITES, NONE);
     }
@@ -271,7 +271,7 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
     public void setSocksNonProxyHosts(String hosts) {
         setOrRemoveAttribute(SOCKS_NON_PROXY_HOSTS, hosts.trim());
     }
-    
+
     public void setKeyStorePassword(String keyStorePassword) {
         if ( NONE.equals(keyStorePassword)) keyStorePassword = null;
         this.keystorePassword = keyStorePassword.trim();
@@ -304,15 +304,17 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
     }
 
     public int configTLS(String url) {
+        int rsp = XdsHttpCfgDelegate.CFG_RSP_OK;
+        log.debug("configTLS called for URL:"+url);
         if ( !url.toLowerCase().startsWith("https") ) {
             log.debug("NO TLS connection required! Do not configure SSL!");
-            return XdsHttpCfgDelegate.CFG_RSP_IGNORED;
+            rsp = XdsHttpCfgDelegate.CFG_RSP_IGNORED;
         } else if ( sslConfigured ) {
             log.debug("SSL is already configured! You have to restart JBoss to apply changes!");
-            return XdsHttpCfgDelegate.CFG_RSP_ALREADY;
-        } else if ( trustStoreURL == System.getProperty(KEY_STORE) ) {
+            rsp = XdsHttpCfgDelegate.CFG_RSP_ALREADY;
+        } else if ( trustStoreURL == null ) {
             log.warn("NO Trust Store URL configured!");
-            return XdsHttpCfgDelegate.CFG_RSP_ERROR;
+            rsp = XdsHttpCfgDelegate.CFG_RSP_ERROR;
         } else {
             String keyStorePath = resolvePath(keystoreURL);
             String trustStorePath = resolvePath(trustStoreURL);
@@ -348,9 +350,11 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
                 HttpsURLConnection.setDefaultHostnameVerifier(hv);
             }
             sslConfigured = true;
-            return XdsHttpCfgDelegate.CFG_RSP_OK;
         }
-
+        if ( log.isDebugEnabled()) {
+            log.debug("Current http configuration:\n"+listProperties());
+        }
+        return rsp;
     }
 
     public static String resolvePath(String fn) {
@@ -367,7 +371,7 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
             System.setProperty(name, value);
         }
     }
-    
+
     public String listProperties() {
         StringBuffer sb = new StringBuffer();
         sb.append("HTTP Proxy:");
@@ -399,7 +403,7 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
         sb.append("\n  ").append(FTP_PROXY_HOST).append('=').append(System.getProperty(FTP_PROXY_HOST, EMPTY));
         sb.append("\n  ").append(FTP_PROXY_PORT).append('=').append(System.getProperty(FTP_PROXY_PORT, EMPTY));
         sb.append("\n  ").append(FTP_NON_PROXY_HOSTS).append('=').append(System.getProperty(FTP_NON_PROXY_HOSTS, EMPTY));
-        
+
         sb.append("\n  ").append(HTTP_AGENT).append('=').append(System.getProperty(HTTP_AGENT, EMPTY));
         sb.append("\n  ").append(HTTP_AUTH_VALIDATE_SERVER).append('=').append(System.getProperty(HTTP_AUTH_VALIDATE_SERVER, EMPTY));
         sb.append("\n  ").append(HTTP_AUTH_VALIDATE_PROXY).append('=').append(System.getProperty(HTTP_AUTH_VALIDATE_PROXY, EMPTY));
@@ -414,7 +418,7 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
         sb.append("\n  ").append(NW_ADDR_CACHE_NEGATIVE_TTL).append('=').append(System.getProperty(NW_ADDR_CACHE_NEGATIVE_TTL, EMPTY));
         return sb.toString();
     }
-    
+
     private class ProxyAuth extends Authenticator {
         public ProxyAuth() {
             log.info("################ create ProxyAuth!");
