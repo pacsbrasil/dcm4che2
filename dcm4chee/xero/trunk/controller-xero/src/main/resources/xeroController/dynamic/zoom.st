@@ -5,31 +5,6 @@
  * already scale to fit.
  */
  
-function ZoomRectangle(topLeft, bottomRight) 
-{
-    if(topLeft && bottomRight)
-    {
-        this.topLeft = [topLeft[0], topLeft[1]];
-        
-        this.bottomRight = [bottomRight[0], bottomRight[1]];
-    }
-    else
-    {
-        this.topLeft = [0, 0];
-        this.bottomRight = [0, 0];
-    }
-};
-
-ZoomRectangle.prototype.getXSize = function()
-{
-    return this.bottomRight[0] - this.topLeft[0];        
-};
-
-ZoomRectangle.prototype.getYSize = function()
-{
-    return this.bottomRight[1] - this.topLeft[1];        
-};
-
 XeroController.prototype.zoomReset = function (lay,e) {
 	this.zoomMode(lay,e,"SCALE_TO_FIT");
 };
@@ -103,14 +78,14 @@ XeroController.prototype.zoomChange = function(lay,e,delta,isZoomToMousePoint) {
     	var preZoomRect = new ZoomRectangle(tl, br);
     	
     	var zoomDelta = new Array(2);
-	    zoomDelta[0] = Math.floor(preZoomRect.getXSize()*0.05*delta);
-		zoomDelta[1] = Math.floor(preZoomRect.getYSize()*0.05*delta);
+	    zoomDelta[0] = Math.floor(preZoomRect.getWidth()*0.05*delta);
+		zoomDelta[1] = Math.floor(preZoomRect.getHeight()*0.05*delta);
 
-		if( (preZoomRect.getXSize() - 2 * zoomDelta[0] < 16) || (preZoomRect.getYSize( ) - 2 * zoomDelta[1] < 16) ) {
+		if( (preZoomRect.getWidth() - 2 * zoomDelta[0] < 16) || (preZoomRect.getHeight( ) - 2 * zoomDelta[1] < 16) ) {
 			console.warn("Too small a zoom.");
 			return;
 		}
-		if( (preZoomRect.getXSize() - 2 * zoomDelta[0] > cols * 16) || (preZoomRect.getYSize() - 2 * zoomDelta[1] > rows * 16) ) {
+		if( (preZoomRect.getWidth() - 2 * zoomDelta[0] > cols * 16) || (preZoomRect.getHeight() - 2 * zoomDelta[1] > rows * 16) ) {
 			console.warn("Too large a zoom."); 
 			return;
 		}
@@ -185,12 +160,12 @@ XeroController.prototype.calculateZoomRectangle = function(preZoomRect, zoomDelt
 XeroController.prototype.getSvgZoomRectangle = function(svgElem, mousePtInDocCoords, imageLayout, preZoomRect, zoomDelta)
 {
     var postZoomCoordSize = new Array(2);
-    postZoomCoordSize[0] = preZoomRect.getXSize() - 2 * zoomDelta[0];
-    postZoomCoordSize[1] = preZoomRect.getYSize() - 2 * zoomDelta[1];
+    postZoomCoordSize[0] = preZoomRect.getWidth() - 2 * zoomDelta[0];
+    postZoomCoordSize[1] = preZoomRect.getHeight() - 2 * zoomDelta[1];
     
     var scale = new Array(2);
-    scale[0] = postZoomCoordSize[0] / preZoomRect.getXSize();
-    scale[1] = postZoomCoordSize[1] / preZoomRect.getYSize();
+    scale[0] = postZoomCoordSize[0] / preZoomRect.getWidth();
+    scale[1] = postZoomCoordSize[1] / preZoomRect.getHeight();
     
     var toDocMatrix = svgElem.parentNode.getScreenCTM();
     
@@ -254,7 +229,7 @@ XeroController.prototype.getVmlZoomRectangle = function(vmlElem, mousePtInDocCoo
     vmlParentCenter[0] = vmlParentOrigin[0] + (vmlElem.offsetParent.offsetWidth / 2);
     vmlParentCenter[1] = vmlParentOrigin[1] + (vmlElem.offsetParent.offsetHeight / 2);
     
-    var preZoomCoordSize = [preZoomRect.getXSize(), preZoomRect.getYSize()];
+    var preZoomCoordSize = [preZoomRect.getWidth(), preZoomRect.getHeight()];
     
     var vmlElemSize = new Array(2);
     vmlElemSize[0] = XeroController.convertToBase(vmlElem.style.width, vmlElem.offsetParent.offsetWidth, 1);
@@ -490,19 +465,18 @@ PanController.prototype.end = function(e) {
 		dy = Math.floor(dy*this.finalScaleY);
 		console.info("VML dx,dy=",dx,dy);
 	}
+	
 	// Convert dx,dy into IMAGE coordinate changes
-	// Apply dx,dy to tl, br
-	tl = this.sumPoint(tl,-dx,-dy);
+	// Apply dx,dy to tl, br	
 	var rows = this.lay.navigate.external.Rows;
 	var cols = this.lay.navigate.external.Columns;
-	if( tl[0] < -cols/2 ) tl[0] = -cols/2;
-	if( tl[1] < -rows/2 ) tl[1] = -rows/2;
-	br = this.sumPoint(br,-dx,-dy);
-	if( br[0] > cols*1.5 ) br[0] = cols*1.5;
-	if( br[1] > rows*1.5 ) br[1] = rows*1.5;
+	
+	var zoomRect = new ZoomRectangle(this.sumPoint(tl,-dx,-dy), this.sumPoint(br,-dx,-dy));
+    zoomRect = XeroController.getOnScreenZoomRectangle(zoomRect, rows, cols);
+		
 	// The pre-load image should not be created for this, so just call the notify on the br
-	this.lay.navigate.parent.merged.topLeft=tl;
-	this.lay.navigate.parent.setMerged("bottomRight", br, true);
+	this.lay.navigate.parent.merged.topLeft=zoomRect.topLeft;
+	this.lay.navigate.parent.setMerged("bottomRight", zoomRect.bottomRight, true);
 
 	this.controller.waitUpdate("pan",5);
 };

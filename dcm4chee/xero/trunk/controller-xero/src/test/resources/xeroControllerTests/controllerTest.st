@@ -5,6 +5,7 @@ function XeroModel() {
 
 var xeroView = new Object();
 
+$zoomRectangle()$
 $controller()$
 
 var controllerTest = new UnitTest();
@@ -82,3 +83,102 @@ controllerTest.test_fixScrollPosition = function() {
 	
 };
 
+controllerTest.testGetOnScreenZoomRectangle_ShouldNotAlterRectangle_WhenImageMidPtInView = function()
+{
+    var zoomRect = new ZoomRectangle([1,1], [9, 9]);
+    var expectedZoomRect = zoomRect;
+    var rows = 10;
+    var cols = 13;
+    
+    var actualZoomRect = XeroController.getOnScreenZoomRectangle(zoomRect, rows, cols);
+    
+    $assertEquals(expected="expectedZoomRect", actual="actualZoomRect", msg="Zoom rectangle should not be adjusted.")$;
+}
+
+controllerTest.testGetOnScreenZoomRectangle_ShouldAlignImageLeftEdgeWithImagePortCenter_WhenImageZoomedInAndLeftEdgePastPortCenter = function()
+{
+    var zoomRect = new ZoomRectangle([-4, 5], [2, 9]);
+    var expectedZoomRect = new ZoomRectangle([-3, 5], [3, 9]);
+    var rows = 10;
+    var cols = 13;
+    
+    var actualZoomRect = XeroController.getOnScreenZoomRectangle(zoomRect, rows, cols);
+    $assertEquals(expected="expectedZoomRect", actual="actualZoomRect", msg="Zoom rectangle not adjusted correctly.")$;
+}
+
+controllerTest.testGetOnScreenZoomRectangle_ShouldAlignImageMidPtWithAreaRightEdge_WhenImageZoomedOutAndMidPtPastAreaRightEdge = function()
+{
+    var zoomRect = new ZoomRectangle([-15, -2], [-1, 12]);
+    var expectedZoomRect = new ZoomRectangle([-8, -2], [6, 12]);
+    var rows = 10;
+    var cols = 13;
+    
+    var actualZoomRect = XeroController.getOnScreenZoomRectangle(zoomRect, rows, cols);
+    $assertEquals(expected="expectedZoomRect", actual="actualZoomRect", msg="Zoom rectangle not adjusted correctly.")$;
+}
+
+controllerTest.testGetOnScreenZoomRectangle_ShouldAlignImageRightEdgeWithImagePortCenter_WhenImageZoomedInAndRightEdgePastPortCenter = function()
+{
+    var zoomRect = new ZoomRectangle([13, -1], [18, 5]);
+    var expectedZoomRect = new ZoomRectangle([9, -1], [14, 5]);
+    var rows = 10;
+    var cols = 13;
+    
+    var actualZoomRect = XeroController.getOnScreenZoomRectangle(zoomRect, rows, cols);
+    $assertEquals(expected="expectedZoomRect", actual="actualZoomRect", msg="Zoom rectangle not adjusted correctly.")$;
+}
+
+controllerTest.testGetOnScreenZoomRectangle_ShouldAlignImageMidPtWithAreaLeftEdge_WhenImageZoomedOutAndMidPtPastAreaLeftEdge = function()
+{
+    var zoomRect = new ZoomRectangle([9, 0], [30, 20]);
+    var expectedZoomRect = new ZoomRectangle([6, 0], [27, 20]);
+    var rows = 10;
+    var cols = 13;
+    
+    var actualZoomRect = XeroController.getOnScreenZoomRectangle(zoomRect, rows, cols);
+    $assertEquals(expected="expectedZoomRect", actual="actualZoomRect", msg="Zoom rectangle not adjusted correctly.")$;
+};
+
+controllerTest.testGetOnScreenZoomRectangle_ShouldAlignImageTopEdgeWithImagePortCenter_WhenImageZoomedInAndTopEdgeBelowPortCenter = function()
+{
+    var zoomRect = new ZoomRectangle([4, -4], [7, 2]);
+    var expectedZoomRect = new ZoomRectangle([4, -3], [7, 3]);
+    var rows = 10;
+    var cols = 13;
+    
+    var actualZoomRect = XeroController.getOnScreenZoomRectangle(zoomRect, rows, cols);
+    $assertEquals(expected="expectedZoomRect", actual="actualZoomRect", msg="Zoom rectangle not adjusted correctly.")$;
+}
+
+controllerTest.testGetOnScreenZoomRectangle_ShouldAlignImageMidPtWithAreaBottomEdge_WhenImageZoomedOutAndMidPtBelowAreaBottomEdge = function()
+{
+    var zoomRect = new ZoomRectangle([-10, -10], [23, 3]);
+    var expectedZoomRect = new ZoomRectangle([-10, -8], [23, 5]);
+    var rows = 10;
+    var cols = 13;
+    
+    var actualZoomRect = XeroController.getOnScreenZoomRectangle(zoomRect, rows, cols);
+    $assertEquals(expected="expectedZoomRect", actual="actualZoomRect", msg="Zoom rectangle not adjusted correctly.")$;
+}
+
+controllerTest.testGetOnScreenZoomRectangle_ShouldAlignImageBottomEdgeWithImagePortCenter_WhenImageZoomedInAndBottomEdgeAbovePortCenter = function()
+{
+    var zoomRect = new ZoomRectangle([0, 8], [4, 13]);
+    var expectedZoomRect = new ZoomRectangle([0, 6], [4, 11]);
+    var rows = 10;
+    var cols = 13;
+    
+    var actualZoomRect = XeroController.getOnScreenZoomRectangle(zoomRect, rows, cols);
+    $assertEquals(expected="expectedZoomRect", actual="actualZoomRect", msg="Zoom rectangle not adjusted correctly.")$;
+}
+
+controllerTest.testGetOnScreenZoomRectangle_ShouldAlignImageMidPtWithAreaTopEdge_WhenImageZoomedOutAndMidPtAboveAreaTopEdge = function()
+{
+    var zoomRect = new ZoomRectangle([2, 6], [18, 25]);
+    var expectedZoomRect = new ZoomRectangle([2, 5], [18, 24]);
+    var rows = 10;
+    var cols = 13;
+    
+    var actualZoomRect = XeroController.getOnScreenZoomRectangle(zoomRect, rows, cols);
+    $assertEquals(expected="expectedZoomRect", actual="actualZoomRect", msg="Zoom rectangle not adjusted correctly.")$;
+};

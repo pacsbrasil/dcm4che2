@@ -51,6 +51,115 @@ XeroController.convertToBase = function(val,length, scale) {
 	console.warn("Unknown length type left,top coordinate:",val,length,"last character", last);
 };
 
+/**
+ * Gets an adjusted zoom rectangle that is at least partially visible on screen.
+ * 
+ * For images that are zoomed in, the method ensures that the top and left image 
+ * edges are not positioned greater than the image port's center.  Likewise, the 
+ * bottom and right image edges will not be positioned less than the image port's 
+ * center.
+ * 
+ * For images that are zoomed out, the method ensures that the image mid-point is 
+ * never outside the original (zoom-to-fit) image rectangle.  The computation to 
+ * ensure that the mid-point is never panned outside the image port was considered 
+ * to be more complex and expensive than actually worth (i.e. just need to ensure 
+ * that the image is partially in view).
+ */
+XeroController.getOnScreenZoomRectangle = function(zoomRect, rows, cols)
+{
+    var onScreenZoomRect = new ZoomRectangle(zoomRect.topLeft, zoomRect.bottomRight);
+    
+	var halfCols = Math.floor(cols/2);
+	
+	var halfRectWidth = Math.floor(onScreenZoomRect.getWidth() / 2);
+	if(onScreenZoomRect.topLeft[0] + halfRectWidth < 0)
+	{
+	    if(onScreenZoomRect.bottomRight[0] < halfCols)
+	    {
+	        var deltaX = -halfRectWidth - onScreenZoomRect.topLeft[0];
+	        if(onScreenZoomRect.bottomRight[0] + deltaX < halfCols)
+	        {
+	            // zoomed-in; image left edge panned to greater than the image port mid-point 
+	            onScreenZoomRect.topLeft[0] = -halfRectWidth;
+	            onScreenZoomRect.bottomRight[0] += deltaX;
+	        }
+	        else
+	        {
+	            // zoomed-out; image mid-point panned past the right edge of the view area
+	            deltaX = halfCols - onScreenZoomRect.bottomRight[0];
+	            onScreenZoomRect.bottomRight[0] = halfCols;
+	            onScreenZoomRect.topLeft[0] += deltaX;
+	        }
+	    }
+	} 
+	else if(onScreenZoomRect.topLeft[0] + halfRectWidth > cols)
+	{
+	    if(onScreenZoomRect.topLeft[0] > halfCols)
+	    {
+       	    var deltaX = cols - 1 - halfRectWidth - onScreenZoomRect.topLeft[0];
+    	    if(onScreenZoomRect.topLeft[0] + deltaX > halfCols)
+    	    {
+	            // zoomed-in; image right edge panned to less than the image port mid-point 
+    	        onScreenZoomRect.topLeft[0] = cols - 1 - halfRectWidth;
+    	        onScreenZoomRect.bottomRight[0] += deltaX;
+    	    }
+    	    else
+    	    {
+	            // zoomed-out; image mid-point panned past the left edge of the view area
+    	        deltaX = halfCols - onScreenZoomRect.topLeft[0];
+    	        onScreenZoomRect.topLeft[0] = halfCols;
+    	        onScreenZoomRect.bottomRight[0] += deltaX;
+    	    }
+	    }
+	};
+	
+	var halfRows = Math.floor(rows/2);
+	
+	var halfRectHeight = Math.floor(onScreenZoomRect.getHeight() / 2);
+	if(onScreenZoomRect.topLeft[1] + halfRectHeight < 0)
+	{
+	    if(onScreenZoomRect.bottomRight[1] < halfRows)
+	    {
+	        var deltaY = -halfRectHeight - onScreenZoomRect.topLeft[1];
+	        if(onScreenZoomRect.bottomRight[1] + deltaY < halfRows)
+	        {
+	            // zoomed-in; image top edge panned to greater than the image port mid-point 
+	            onScreenZoomRect.topLeft[1] = -halfRectHeight;
+	            onScreenZoomRect.bottomRight[1] += deltaY;
+	        }
+	        else
+	        {
+	            // zoomed-out; image mid-point panned below the bottom edge of the view area
+	            deltaY = halfRows - onScreenZoomRect.bottomRight[1];
+	            onScreenZoomRect.bottomRight[1] = halfRows;
+	            onScreenZoomRect.topLeft[1] += deltaY;
+	        }
+	    }
+	} 
+	else if(onScreenZoomRect.topLeft[1] + halfRectHeight > rows)
+	{
+	    if(onScreenZoomRect.topLeft[1] > halfRows)
+	    {
+       	    var deltaY = rows - 1 - halfRectHeight - onScreenZoomRect.topLeft[1];
+    	    if(onScreenZoomRect.topLeft[1] + deltaY > halfRows)
+    	    {
+	            // zoomed-in; image bottom edge panned to less than the image port mid-point 
+    	        onScreenZoomRect.topLeft[1] = rows - 1 - halfRectHeight;
+    	        onScreenZoomRect.bottomRight[1] += deltaY;
+    	    }
+    	    else
+    	    {
+	            // zoomed-out; image mid-point panned above the top edge of the view area
+    	        var deltaY = halfRows - onScreenZoomRect.topLeft[1];
+    	        onScreenZoomRect.topLeft[1] = halfRows;
+    	        onScreenZoomRect.bottomRight[1] += deltaY;
+    	    }
+	    }
+	};
+	
+	return onScreenZoomRect;    
+};    
+
 $xeroControllers:{ $(it)()$ }$
 
 var xeroController = new XeroController(xeroView);
