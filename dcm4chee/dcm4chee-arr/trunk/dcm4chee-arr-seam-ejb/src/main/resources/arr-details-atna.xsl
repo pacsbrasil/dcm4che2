@@ -128,6 +128,8 @@
     <xsl:apply-templates select="ParticipantObjectQuery"/>
     <xsl:apply-templates
       select="ParticipantObjectDetail[@type='AlertDescription']"/>
+    <xsl:apply-templates
+      select="ParticipantObjectDetail[@type='Description']"/>
   </xsl:template>
   <xsl:template match="ParticipantObjectIDTypeCode">
     <xsl:choose>
