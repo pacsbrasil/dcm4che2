@@ -330,6 +330,7 @@ public class XDSQueryService extends ServiceMBeanSupport {
         if (logRequestMessage) {
             log.info("AdhocQueryRequest:"+InfoSetUtil.marshallObject(rq, true));
         }
+        httpCfgDelegate.configTLS(xdsQueryURI);
         AdhocQueryResponse rsp = useSoap ? performQueryViaSoap(rq) : 
             useInfoset ? performQueryViaWSInfoset(rq) : performQueryViaWS(rq);
         if (logResponseMessage) {
@@ -395,7 +396,6 @@ public class XDSQueryService extends ServiceMBeanSupport {
         soapBody.addDocument(InfoSetUtil.getDocumentForObject(rq));
         logMessage("Request: ", requestMsg);
         log.debug("Query URI: " + xdsQueryURI);
-        httpCfgDelegate.configTLS(xdsQueryURI);
         SOAPConnectionFactory connFactory = SOAPConnectionFactory.newInstance();
         SOAPConnection conn = null;
         try {
