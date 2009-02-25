@@ -83,8 +83,7 @@ public class MemoryCache<K, V> {
    
    protected String cacheName;
 
-   // TODO Figure out if this counter will overflow at some point
-   protected int counter = 0;
+   protected long counter = 1;
 
    /** Contains the items in least recently used ordering, to allow removal */
    protected SortedSet<InternalKey<K, V>> lruSet = new TreeSet<InternalKey<K, V>>();
@@ -275,7 +274,7 @@ public class MemoryCache<K, V> {
 
 	  private K key;
 
-	  private int increment;
+	  private long increment;
 
 	  private long originalAge;
 
@@ -325,7 +324,7 @@ public class MemoryCache<K, V> {
          * Sets the current increment value - the ordering information for
          * access times.
          */
-	  public void setIncrement(int increment) {
+	  public void setIncrement(long increment) {
 		 this.increment = increment;
 	  }
 
@@ -381,7 +380,9 @@ public class MemoryCache<K, V> {
 	  public int compareTo(InternalKey<K, V> o) {
 		 // Increments are guaranteed unique, so just compare by increment
 		 // value.
-		 return increment - o.increment;
+		  if(increment<o.increment) return -1;
+		  else if (increment==o.increment) return 0;
+		  return 1;
 	  }
 
 	  /** Close this item if it is closeable */
