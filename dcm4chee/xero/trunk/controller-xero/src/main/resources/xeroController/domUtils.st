@@ -464,10 +464,20 @@ DOMUtils.setStyle = function(elem, style)
 {
     if(elem.style.cssText != style)
     {
+        // This entire block of code basically 'jiggles' the style element for IE.
+        
+        elem.style.flip = undefined;
+        
         elem.style.cssText = elem.style.cssText + ";" + style;
+        
         if(elem.style.rotation !== undefined)
         {
            elem.style.rotation = elem.style.rotation;
+        }
+        
+        if(elem.style.flip !== undefined)
+        {
+           elem.style.flip = elem.style.flip;
         }
     }    
 };
