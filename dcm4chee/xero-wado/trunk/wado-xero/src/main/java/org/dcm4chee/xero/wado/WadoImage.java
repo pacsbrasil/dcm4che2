@@ -38,7 +38,6 @@
 package org.dcm4chee.xero.wado;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.xero.metadata.filter.CacheItem;

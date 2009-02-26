@@ -37,14 +37,14 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado;
 
+import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
 import static org.dcm4chee.xero.wado.WadoImage.WINDOW_CENTER;
 import static org.dcm4chee.xero.wado.WadoImage.WINDOW_WIDTH;
-import static org.dcm4chee.xero.wado.WadoParams.*;
+import static org.dcm4chee.xero.wado.WadoParams.FRAME_NUMBER;
 
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
-import java.awt.image.DataBuffer;
 import java.util.Map;
 
 import org.dcm4che2.data.BasicDicomObject;
@@ -58,7 +58,6 @@ import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
 
 /**
  * This class applies the DICOM window level operation directly to the pixel
