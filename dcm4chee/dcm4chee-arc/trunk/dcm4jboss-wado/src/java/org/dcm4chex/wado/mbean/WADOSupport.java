@@ -1148,7 +1148,7 @@ public class WADOSupport {
         ImageReader reader = (ImageReader) it.next();
         ImageInputStream in = new FileImageInputStream(file);
         try {
-            reader.setInput(in);
+            reader.setInput(in, false);
             BufferedImage bi = null;
             Rectangle regionRectangle = null;
             try {
@@ -1169,27 +1169,34 @@ public class WADOSupport {
                     regionRectangle = new Rectangle(topX, topY, w, h);
                     param.setSourceRegion(regionRectangle);
                 }
+
+                Dataset data = ((DcmMetadata) reader.getStreamMetadata()).getDataset();
+
                 if (windowWidth != null && windowCenter != null) {
-                    Dataset data = ((DcmMetadata) reader.getStreamMetadata()).getDataset();
                     data.putDS(Tags.WindowWidth, windowWidth);
                     data.putDS(Tags.WindowCenter, windowCenter);
                 }
 
                 DcmImageReadParamImpl dcmParam = (DcmImageReadParamImpl) param;
-                if(renderOverlays) {
-                    dcmParam.setMaskPixelData(false);
-                    dcmParam.setAutoWindowing(false); // overlays & autowindowing do not play nice
+                if ((data.get(Tags.WindowCenter) == null)
+                    && (data.get(Tags.WindowCenter) == null)
+                    && (data.get(Tags.SharedFunctionalGroupsSeq) == null)
+                    && (data.get(Tags.RescaleIntercept) == null)
+                    && (data.get(Tags.RescaleSlope) == null)) {
+                    // these result in full white image
+                    // param.setMaskPixelData(false);
+                    log.warn("Possible full white image, investigate!");
+                    dcmParam.setAutoWindowing(false);
                 }
-                log.debug("getImage: ImageReadParam {}", dcmParam);
 
-                bi = reader.read(frame, param);
+                bi = reader.read(frame, dcmParam);
             } catch (Exception x) {
                 log.error("Can't read image:", x);
                 return null;
             }
 
             if (renderOverlays) {
-                mergeOverlays(bi, ((DcmMetadata) reader.getStreamMetadata()).getDataset(), frame);
+                mergeOverlays(bi, reader, frame);
             }
 
             float aspectRatio = reader.getAspectRatio(frame);
@@ -1279,7 +1286,10 @@ public class WADOSupport {
      * @param bi
      * @param ds
      */
-    private void mergeOverlays(BufferedImage bi, Dataset ds, int frame) {
+    private void mergeOverlays(BufferedImage bi, ImageReader reader, int frame)
+            throws IOException {
+
+        Dataset ds = ((DcmMetadata) reader.getStreamMetadata()).getDataset();
 
         long t1 = System.currentTimeMillis();
 
@@ -1416,17 +1426,28 @@ public class WADOSupport {
                 short overlayValue = (short) ((1 << bitsStored) - 1);
 
                 DataBuffer _buffer = bi.getRaster().getDataBuffer();
-                if (_buffer.getDataType() == DataBuffer.TYPE_SHORT) {
-                    DataBufferUShort dataBuffer = (DataBufferUShort) bi.getRaster().getDataBuffer();
-                    short[] dest = dataBuffer.getData();
+                if (_buffer.getDataType() == DataBuffer.TYPE_SHORT ||
+                        _buffer.getDataType() == DataBuffer.TYPE_USHORT) {
                     int mask = 0;
                     for (int i = 0, size = oldStyleOverlayPlanes.size(); i < size; i++) {
                         int bit = oldStyleOverlayPlanes.get(i);
                         mask |= (1 << bit);
                     }
+
+                    // get the image again, this time without windowing/maskpixeldata
+                    DcmImageReadParamImpl param = (DcmImageReadParamImpl) reader.getDefaultReadParam();
+                    param.setMaskPixelData(false);
+                    param.setAutoWindowing(false);
+                    BufferedImage oBi = reader.read(frame, param);
+
+                    DataBufferUShort oDataBuffer = (DataBufferUShort) oBi.getRaster().getDataBuffer();
+                    short[] src = oDataBuffer.getData();
+                    DataBufferUShort dataBuffer = (DataBufferUShort) bi.getRaster().getDataBuffer();
+                    short[] dest = dataBuffer.getData();
+
                     log.debug("mergeOverlays(): setting oldStyleOverlays, mask used 0x" + Integer.toHexString(mask));
                     for (int i = 0, size = dest.length; i < size; i++) {
-                        if ((dest[i] & mask) != 0) {
+                        if ((src[i] & mask) != 0) {
                             dest[i] = overlayValue;
                         }
                     }
