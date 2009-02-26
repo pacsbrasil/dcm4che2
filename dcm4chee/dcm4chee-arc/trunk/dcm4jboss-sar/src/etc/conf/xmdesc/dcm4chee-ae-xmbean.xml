@@ -102,6 +102,7 @@
          dcm4chee.archive:service=ECHOService#CallingAETitle
          dcm4chee.archive:service=ExportManager#CallingAETitle
          dcm4chee.archive:service=Forward#ForwardModifiedToAETitles
+         dcm4chee.archive:service=FileSystemMgt,group=NEARLINE_STORAGE#DefaultRetrieveAETitle
          dcm4chee.archive:service=FileSystemMgt,group=ONLINE_STORAGE#DefaultRetrieveAETitle
          dcm4chee.archive:service=FileSystemMgt#RetrieveAETitle
          dcm4chee.archive:service=GPWLScp#CalledAETitles
@@ -110,6 +111,8 @@
          dcm4chee.archive:service=GPWLScu#CalledAETitle
          dcm4chee.archive:service=HPScp#CalledAETitles
          dcm4chee.archive:service=HPScp#CallingAETitles
+         dcm4chee.archive:service=IANScp#CalledAETitles
+         dcm4chee.archive:service=IANScp#CallingAETitles
          dcm4chee.archive:service=IANScu#NotifiedAETitles
          dcm4chee.archive:service=IANScu#CallingAETitle
          dcm4chee.archive:service=MCMScu#CallingAETitle

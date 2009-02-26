@@ -743,10 +743,17 @@ public abstract class SeriesBean implements EntityBean {
         } catch (FinderException e) {
             throw new EJBException(e);
         }
-        if (availability == getAvailabilitySafe()) {
+        int prevAvailability = getAvailabilitySafe();
+        if (availability == prevAvailability) {
             return false;
         }
         setAvailability(availability);
+        if (log.isDebugEnabled()) {
+            log.debug("update Availability of Series[pk=" + getPk()
+                    + ", uid=" + getSeriesIuid() + "] from " 
+                    + Availability.toString(prevAvailability) + " to "
+                    + Availability.toString(availability));
+        }
         return true;
     }
 

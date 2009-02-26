@@ -392,6 +392,12 @@
     </antcall>
     <antcall target="xslt">
       <param name="in"
+             value="${dcm4jboss-sar.xmdesc}/dcm4chee-ianscp-xmbean.xml" />
+      <param name="out" value="ianscp-xmbean.xml" />
+      <param name="mbean" value="dcm4chee.archive:service=IANScp" />
+    </antcall>
+    <antcall target="xslt">
+      <param name="in"
              value="${dcm4jboss-sar.xmdesc}/dcm4chee-ianscu-xmbean.xml" />
       <param name="out" value="ianscu-xmbean.xml" />
       <param name="mbean" value="dcm4chee.archive:service=IANScu" />

@@ -550,10 +550,17 @@ public abstract class InstanceBean implements EntityBean {
                 && (media = getMedia()) != null
                 && media.getMediaStatus() == MediaDTO.COMPLETED)
             availability = Availability.OFFLINE;
-        if (availability == getAvailabilitySafe()) {
+        int prevAvailability = getAvailabilitySafe();
+        if (availability == prevAvailability) {
             return false;
         }
         setAvailability(availability);
+        if (log.isDebugEnabled()) {
+            log.debug("update Availability of Instance[pk=" + getPk()
+                    + ", uid=" + getSopIuid() + "] from " 
+                    + Availability.toString(prevAvailability) + " to "
+                    + Availability.toString(availability));
+        }
         return true;
     }
 
