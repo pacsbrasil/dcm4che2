@@ -3,6 +3,13 @@ $logging()$
 
 function UnitTest() {};
 
+/**
+ * Determines if the given two values are strictly (i.e. no type conversion)
+ * equal to each other.  First a === is performed.  If === returns true then
+ * true is returned.  If === returns false, then the first value (val1) is 
+ * inspected to determine if it contains a method named equals.  If it does, 
+ * val1.equals(val2) is returned.  Otherwise false is returned.
+ */
 UnitTest.areEqual = function(val1, val2) {
     if(val1 === val2)
     {
@@ -10,7 +17,7 @@ UnitTest.areEqual = function(val1, val2) {
     }
     else
     {
-        if(val1.equals)
+        if(val1 !== null && (val1.equals instanceof Function))
         {
             return val1.equals(val2);
         }
