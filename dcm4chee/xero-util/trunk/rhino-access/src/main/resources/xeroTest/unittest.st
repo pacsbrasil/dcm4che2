@@ -4,15 +4,21 @@ $logging()$
 function UnitTest() {};
 
 UnitTest.areEqual = function(val1, val2) {
-    if(val1 !== val2)
+    if(val1 === val2)
     {
-        if(val1 == null || val1 instanceof Number || !val1.equals(val2))
+        return true;   
+    }
+    else
+    {
+        if(val1.equals)
+        {
+            return val1.equals(val2);
+        }
+        else
         {
             return false;
         }
     }
-    
-    return true;
 };
 
 UnitTest.prototype.runUnitTests = function() {
