@@ -11,7 +11,7 @@
   $if(IS_IE)$
     <style> v\:* { behavior: url(#default#VML); display: inline-block; overflow: hidden; position: absolute; }
     $if(IS_IE6)$
-    div.hoverMenu ul {	visibility: visible;  }
+    div.hoverMenu li {	filter:alpha(opacity=100);  }
     $endif$
       </style>
     <link type="text/cass" rel="stylesheet" href="style/ie.css?v=$version$"> </link>

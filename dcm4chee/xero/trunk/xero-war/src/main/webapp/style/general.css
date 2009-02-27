@@ -401,12 +401,16 @@ div.tabHeader {
 
 /*======================== MENU Customizations ========================*/
 
-div.hoverMenu ul {
-	visibility: hidden;
+div.hoverMenu li {
+	filter:alpha(opacity=0);
+	opacity: 0.0;
+	-moz-opacity:0.0;
 }
 
-div.hoverMenu:hover ul {
-	visibility:visible;
+div.hoverMenu:hover li {
+	filter:alpha(opacity=100);
+	opacity: 1.0;
+	-moz-opacity:1.0;
 }
 
 /* Need to change the root menu z-index so later indices are hidden under it */
