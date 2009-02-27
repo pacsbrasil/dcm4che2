@@ -96,6 +96,7 @@ public class ResultsBean extends ResultsType implements ResultFromDicom, CacheIt
      */
    public ResultsBean(ResultsType results) {
 	  getPatient().addAll(results.getPatient());
+	  setAe(results.getAe());
    }
    
    /** Formats a DICOM name */

@@ -66,15 +66,15 @@ public class FileLocationURLFilter implements Filter<URL> {
 		String directoryPath = dto.getDirectoryPath();
 		String filePath = directoryPath.replace("\\", "/") + "/" + dto.getFilePath(); 
 		try {
-			if (directoryPath.startsWith("tar://"))
-				url = new URL(null, directoryPath + "/" + dto.getFilePath(), new TarURLStreamHander());
-			else
+		    // Single letter drive paths are fine, as is no url indicator type
+			if (directoryPath.indexOf(":") <= 1)
 				url = new URL("file:///" + filePath);
 		} catch (MalformedURLException e) {
 			throw new IllegalArgumentException("Unable to compose URL for file path" + filePath, e);
 		}
 		if ( log.isDebugEnabled() )
 			log.debug("Constructed url: " + url);
-		return url;
+		if( url!=null || filterItem==null ) return url;
+		return filterItem.callNextFilter(params);
 	}
 }

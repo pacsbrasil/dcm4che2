@@ -37,6 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.dicom;
 
+import static org.dcm4chee.xero.wado.WadoParams.CONTENT_DISPOSITION;
+
 import java.io.IOException;
 import java.util.Map;
 
@@ -74,13 +76,20 @@ public class BlockedServletResponseItem implements ServletResponseItem, ResultFr
    
    protected ServletOutputStream sos;
    protected DicomOutputStream dos;
+   
+   protected String filename = "cfind.dcm";
 
    public BlockedServletResponseItem(Filter<ResultFromDicom> cfind, Map<String,Object> params) {
 	  this.cfind = cfind;
 	  this.params = params;
    }
+   
+   public void setFilename(String filename) {
+       this.filename =filename;
+   }
 
    public void writeResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
+      response.setHeader(CONTENT_DISPOSITION, "inline;filename="+filename); 
 	  response.setContentType("application/dicom");
 	  sos = response.getOutputStream();
 	  dos = new DicomOutputStream(sos);

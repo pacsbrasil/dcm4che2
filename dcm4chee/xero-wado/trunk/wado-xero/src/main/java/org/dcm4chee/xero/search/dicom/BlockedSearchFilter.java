@@ -77,7 +77,9 @@ public class BlockedSearchFilter implements Filter<ServletResponseItem>, MetaDat
 	     log.warn("Unable to find CFIND query results - likely the level is undefined:{}",level);
 	     return null;
 	  }
-	  return new BlockedServletResponseItem(filter, params);
+	  BlockedServletResponseItem ret = new BlockedServletResponseItem(filter, params);
+	  ret.setFilename("cfind"+level+".dcm");
+	  return ret;
    }
 
    /** Read all the available child filters */

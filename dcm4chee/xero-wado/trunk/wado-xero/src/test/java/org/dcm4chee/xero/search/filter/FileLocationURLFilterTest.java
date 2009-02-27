@@ -94,6 +94,6 @@ public class FileLocationURLFilterTest {
 		inputDTO.setDirectoryPath("tar://SomeDir");
 		params.put(FileLocationURLFilter.FILE_DTO, inputDTO);
 		URL fileUrl = filter.filter(null, params);
-		assertEquals(fileUrl.toString(), "tar://SomeDir/SomePath.file");
+		assertNull(fileUrl);
 	}	
 }

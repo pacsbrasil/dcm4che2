@@ -75,9 +75,7 @@ public class PartialImageInfoFix implements Filter<ResultsBean> {
    public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
       ResultsBean ret = filterItem.callNextFilter(params);
       Map<String, Object> aep = AEProperties.getAE(params);
-      if (ret != null && aep != null && (
-            FilterUtil.getBoolean(aep, PartialImageInfoFix_KEY) 
-            || "mvf".equals(aep.get("type")))) {
+      if (ret != null && aep != null && FilterUtil.getBoolean(aep, PartialImageInfoFix_KEY)) {
          fixPartialImage(params, ret);
       }
       return ret;

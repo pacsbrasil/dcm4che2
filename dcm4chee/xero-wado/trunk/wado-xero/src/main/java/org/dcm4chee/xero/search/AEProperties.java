@@ -66,7 +66,7 @@ public class AEProperties {
    public static final String AE_TITLE_KEY = "title";
    public static final String AE_PORT_KEY = "aeport";
    public static final String AE_HOST_KEY = "host";
-
+   
    private static final String FILE_NAME_PREPEND = "ae-";
    private static final String FILE_NAME_EXT = ".properties";
 
