@@ -288,6 +288,10 @@ public class IntHashtable<T> {
         int endIndex;
         int index;
         T next;
+        /** Contains the sorted keys for the iterator to use - makes it quite a bit more efficient to 
+         * access each instance as no synchronization is required per-access. 
+         */
+        int[] itrSortedKeys;
 
         private Itr(int start, int end) {
             if ((start & 0xffffffffL) > (end & 0xffffffffL))
@@ -301,28 +305,30 @@ public class IntHashtable<T> {
                 return;
             }
             if (sortedKeys==null) {
+            	// Create a copy to operate on
             	int[] tSortedKeys = new int[keyList.length]; 
                 System.arraycopy(keyList, 0, tSortedKeys, 0, keyList.length);
                 Arrays.sort(tSortedKeys);
                 sortedKeys = tSortedKeys;
             }
-            endIndex = Arrays.binarySearch(sortedKeys, end);
+            itrSortedKeys = sortedKeys;
+            endIndex = Arrays.binarySearch(itrSortedKeys, end);
             if (endIndex < 0) {
                 if (endIndex == -1)
-                    endIndex = sortedKeys.length - 1;
+                    endIndex = itrSortedKeys.length - 1;
                 else
                     endIndex = -(endIndex + 1) - 1;
             }
-            index = Arrays.binarySearch(sortedKeys, start != 0 ? start : 1);
+            index = Arrays.binarySearch(itrSortedKeys, start != 0 ? start : 1);
             if (index < 0) {
-                index = -(index + 1) % sortedKeys.length;
+                index = -(index + 1) % itrSortedKeys.length;
             }
             if (start == 0 && value0 != null) {
                 next = value0;
                 --index;
             } else {
                 if (index != incIndex(endIndex)) {
-                    while ((next = get(sortedKeys[index])) == null
+                    while ((next = get(itrSortedKeys[index])) == null
                             && index != endIndex)
                         index = incIndex(index);
                 }
@@ -330,7 +336,7 @@ public class IntHashtable<T> {
         }
 
         private int incIndex(int index) {
-            return (index + 1) % sortedKeys.length;
+            return (index + 1) % itrSortedKeys.length;
         }
 
         public boolean hasNext() {
@@ -344,7 +350,7 @@ public class IntHashtable<T> {
             next = null;
             while (next == null && index != endIndex) {
                 index = incIndex(index);
-                next = get(sortedKeys[index]);
+                next = get(itrSortedKeys[index]);
             }
             return v;
         }
