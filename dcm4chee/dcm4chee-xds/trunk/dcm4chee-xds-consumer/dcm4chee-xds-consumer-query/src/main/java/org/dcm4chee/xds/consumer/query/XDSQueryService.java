@@ -485,16 +485,33 @@ public class XDSQueryService extends ServiceMBeanSupport {
         }
     }
     private boolean isFromDomain(String pid) {
+        String assAuth = getAssigningAuthority(pid);
+        if (assAuth == null)
+            return false;
+        if (assAuth.charAt(0) != '&') { //is namespace id subcomponent not empty?
+            //we only compare <universal ID> and <universal ID type
+            //leave subcomponent delimiter! (affinityDomain will almost always have no namespace id)
+            assAuth = assAuth.substring(assAuth.indexOf('&'));
+        }
+        if (affinityDomain.charAt(0) == '&') {
+            return assAuth.equals(affinityDomain);
+        } else { //affinityDomain has namespace id but we ignore that!
+            return assAuth.equals(affinityDomain.substring(affinityDomain.indexOf('&')));
+        }
+    }
+
+    private String getAssigningAuthority(String pid) {
         int pos = 0;
         for ( int i = 0 ; i < 3 ; i++) {
             pos = pid.indexOf('^', pos);
             if ( pos == -1 ) {
-                log.warn("patient id does not contain domain (issuer)! :"+pid);
-                return false;
+                log.warn("patient id does not contain AssigningAuthority component! :"+pid);
+                return null;
             }
             pos++;
         }
-        return pid.substring(pos).equals(this.affinityDomain);
+        int end = pid.indexOf('^', pos);
+        return end == -1 ? pid.substring(pos) : pid.substring(pos, end);
     }
 
     private String toPIDString(String[] pid) {
