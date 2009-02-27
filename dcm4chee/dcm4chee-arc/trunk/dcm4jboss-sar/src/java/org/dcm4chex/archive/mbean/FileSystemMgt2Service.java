@@ -46,6 +46,7 @@ import java.util.Iterator;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 import javax.management.Attribute;
 import javax.management.Notification;
@@ -699,8 +700,13 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public FileSystemDTO removeFileSystem(String dirPath) throws Exception {
-        return fileSystemMgt()
+        FileSystemDTO fsDTO = fileSystemMgt()
                 .removeFileSystem(getFileSystemGroupID(), dirPath);
+        if (storageFileSystem != null
+                && storageFileSystem.getPk() == fsDTO.getPk()) {
+            storageFileSystem = null;
+        }
+        return fsDTO;
     }
 
     public FileSystemDTO linkFileSystems(String dirPath, String next)
@@ -711,8 +717,14 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     public FileSystemDTO updateFileSystemStatus(String dirPath, String status)
             throws Exception {
-        return fileSystemMgt().updateFileSystemStatus(getFileSystemGroupID(),
-                dirPath, FileSystemStatus.toInt(status));
+        FileSystemDTO fsDTO = fileSystemMgt().updateFileSystemStatus(
+                getFileSystemGroupID(), dirPath,
+                FileSystemStatus.toInt(status));
+        if (storageFileSystem != null
+                && storageFileSystem.getPk() == fsDTO.getPk()) {
+            storageFileSystem = null;
+        }
+        return fsDTO;
     }
 
     public FileSystemDTO updateFileSystemAvailability(String dirPath,
@@ -833,12 +845,17 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     private void checkStorageFileSystemStatus(FileSystemMgt2 fsMgt)
             throws FinderException, RemoteException {
-        storageFileSystem = fsMgt.getFileSystem(storageFileSystem.getPk());
-        if (storageFileSystem.getStatus() == FileSystemStatus.DEF_RW) {
-            return;
+        try {
+            storageFileSystem = fsMgt.getFileSystem(storageFileSystem.getPk());
+            if (storageFileSystem.getStatus() == FileSystemStatus.DEF_RW) {
+                return;
+            }
+            log.info("Status of previous storage file system changed: "
+                    + storageFileSystem);
+        } catch (ObjectNotFoundException onfe) {
+            log.info("Previous storage file system: " + storageFileSystem
+                    + " was removed from configuration");
         }
-        log.info("Status of previous storage file system changed: "
-                + storageFileSystem);
         storageFileSystem = fsMgt.getDefRWFileSystemsOfGroup(
                 getFileSystemGroupID());
         if (storageFileSystem != null) {
