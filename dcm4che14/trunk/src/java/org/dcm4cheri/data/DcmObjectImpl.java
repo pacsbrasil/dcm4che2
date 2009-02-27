@@ -2615,20 +2615,21 @@ abstract class DcmObjectImpl implements DcmObject {
         ByteBuffer value;
         for (Iterator it = dcmObj.iterator(); it.hasNext();) {
             DcmElement el = (DcmElement) it.next();
+            int tag = el.tag();
             if (skipSpecificCharacterSet
-                    && el.tag() == Tags.SpecificCharacterSet) {
+                    && tag == Tags.SpecificCharacterSet) {
                 continue;
             }
             if (el.isEmpty()) {
-                putXX(el.tag(), el.vr());
+                putXX(tag, el.vr());
             } else {
                 DcmElement sq;
                 Dataset item;
                 switch (el.vr()) {
                 case VRs.SQ:
-                    sq = itemTreatment != REPLACE_ITEMS ? get(el.tag()) : null;
+                    sq = itemTreatment != REPLACE_ITEMS ? get(tag) : null;
                     if (sq == null || sq.vr() != VRs.SQ)
-                        sq = putSQ(el.tag());
+                        sq = putSQ(tag);
                     for (int i = 0, n = el.countItems(); i < n; ++i) {
                         item = itemTreatment == MERGE_ITEMS ? sq.getItem(i)
                                 : null;
@@ -2642,7 +2643,7 @@ abstract class DcmObjectImpl implements DcmObject {
                 case VRs.OW:
                 case VRs.UN:
                     if (el.hasDataFragments()) {
-                        sq = putXXsq(el.tag(), el.vr());
+                        sq = putXXsq(tag, el.vr());
                         for (int i = 0, n = el.countItems(); i < n; ++i) {
                             sq.addDataFragment(el.getDataFragment(i));
                         }
@@ -2650,18 +2651,30 @@ abstract class DcmObjectImpl implements DcmObject {
                     }
                 default:
                     value = el.getByteBuffer();
-                    if (transcodeStringValues) {
-                        switch (el.vr()) {
-                        case VRs.LO:
-                        case VRs.LT:
-                        case VRs.PN:
-                        case VRs.SH:
-                        case VRs.ST:
-                        case VRs.UT:
-                            value = transcodeString(value, srcCharSet, dstCharSet);
+                    if(Tags.isPrivateCreatorDataElement(tag)) {
+                        String privateCreatorID;
+                        try {
+                            privateCreatorID = el.getString(
+                                    dcmObj.getSpecificCharacterSet());
+                        } catch (DcmValueException e) {
+                            // StringElement.getString does not throw DcmValueException
+                            throw new RuntimeException(e);
                         }
+                        setPrivateCreatorID(privateCreatorID);
+                    } else {
+                        if (transcodeStringValues) {
+                            switch (el.vr()) {
+                            case VRs.LO:
+                            case VRs.LT:
+                            case VRs.PN:
+                            case VRs.SH:
+                            case VRs.ST:
+                            case VRs.UT:
+                                value = transcodeString(value, srcCharSet, dstCharSet);
+                            }
+                        }
+                        putXX(tag, el.vr(), value);
                     }
-                    putXX(el.tag(), el.vr(), value);
                     break;
                 }
             }
