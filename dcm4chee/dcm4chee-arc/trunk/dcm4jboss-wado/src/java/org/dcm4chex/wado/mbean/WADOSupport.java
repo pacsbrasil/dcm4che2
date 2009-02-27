@@ -277,7 +277,7 @@ public class WADOSupport {
 
         // Try to short-circuit the case where we want to retrieve
         // an existing icon - we dont need to query the database for that
-        if((!disableCache) &&
+        if( !disableCache && req.getContentTypes() != null &&
              req.getContentTypes().contains("image/jpeg")) {
             WADOResponseObject scResp = tryToShortCircuitIconCacheLookup(req);
             if(scResp != null) {
