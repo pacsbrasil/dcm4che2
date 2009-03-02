@@ -1,0 +1,440 @@
+tr {
+	text-align: left; 
+}
+
+tr.header {
+}
+
+tr.even {
+  background: #dfefff;
+}
+
+div {
+	margin: 0;
+	border: 0;
+	padding: 0;
+}
+
+body {
+	margin: 0;
+	border: 0;
+	padding: 0.25%;
+	color: black;
+	position: absolute;
+	overflow: hidden;
+	width: 99.3%;
+	height: 99.3%;
+}
+
+#XeroRootTab {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+#innerBody {
+	width: 100%;
+	height: 100%;
+	background: #909090;
+	overflow: hidden;
+}
+
+
+button {
+	float: right;
+	margin: 0;
+	border: 0;
+	background: white;
+}
+
+#Find {
+	width:100%;
+	height:100%;
+	overflow: hidden;
+}
+
+.queryLayout {
+	width: 100%;
+	height: 8em;
+	overflow: auto;
+}
+
+.studyTable {
+	width: 100%;
+	top: 8em;
+	bottom: 0%;
+	overflow: auto;
+	position: absolute;
+}
+
+iframe {
+	position: relative;
+	width:99.3%;
+	height:99%;
+}
+
+div.iReport {
+	float: left;
+}
+
+.jslink {
+	text-decoration: underline;
+	color: blue;
+	cursor: pointer;
+}
+
+#SearchLayoutTable {
+	width: 100%;	
+}
+
+div.studyTray, div.seriesToolbar {
+	float: left;
+	height: 100%;
+}
+
+div.rootMenu {
+	float: right;
+	z-index: 60;
+}
+
+.toolItem {
+	display: block;
+}
+
+.warning {
+	color: red;
+	font-weight: bold;
+}
+
+.image {
+	background: black;
+	overflow: hidden;
+	position: relative;
+	color: white;
+	float: left;
+}
+
+.imageDisplay {
+	margin: 0;
+	border: 0;
+	padding: 0;
+	background: black;
+	color: white;
+	overflow: hidden;
+	width: 100%; height: 100%;
+}
+
+.icon {
+	margin: 0px;
+	border: solid 1px green;
+	background: blue;
+	width: 20px;
+	height: 20px;
+}
+
+.actionIcon, th.sortableHeader {
+	cursor: pointer;
+}
+
+div.layout {
+	float: left;
+	overflow: hidden;
+	background: #D0D0D0;
+	width: 100%; height: 100%;
+}
+
+
+/*====================== Study Tray/Thumbnails ===========================*/
+div.studyTray {
+	overflow: auto;
+	padding: 4px 2px 2px 1px;
+}
+
+ul.thumbnail {
+	list-style-type:none;          /* we don't want to view the list as a list */
+	margin:0;
+	padding:0;
+	border:0;
+}
+
+li.thumbnail span {
+	clear: both;
+	display: block;
+	font-size: 11px;
+}
+	
+li.thumbnail img {
+	width:96px;
+	height: auto;
+	margin: 1px;
+}
+
+span.thumbnail, span.report, span.gsps, span.keyObject {
+	font-size: 13px;
+	font-weight: bold;
+}
+
+ul.report, ul.gsps, ul.keyObject {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+li.report, li.gsps, li.keyObject {
+	clear: both;
+	display: block;
+	font-size: 11px;
+	text-decoration: underline;
+}
+
+/*====================== Tabs Layout ==========================*/
+div.tab, div.activeTab {
+	float: left;
+	background: #999999;
+	color: black;
+	width: 6em;
+	height: 22px; /* Must match menu bar height. */
+	padding-left: 0.2em;
+	border-bottom: solid 1px #999999;
+}
+
+div.activeTab {
+	background: #D0D0D0;
+	border-bottom: solid 1px #D0D0D0;
+}
+
+div.tab {
+	cursor: pointer;
+}
+
+div.tabBody {
+	clear: both;
+	background: #D0D0D0;
+	width:  100%;
+	height: 98%;
+	float: left;
+}
+
+div.tabHeader {
+	width: 98%;
+	height: 22px;
+}
+
+/*========================= TOP OF THE MENU CASCADE =========================*/
+
+.menu {
+	position:relative;        /* establish a menu-relative positioning context */
+	z-index:10;
+	margin:0;
+	padding:0;
+	border:0;
+	float: left;
+	font-size:12px;         /* this (and also below) sets the menu's font size */
+	overflow: visible;
+}
+
+.menu img {
+	vertical-align: top;      /* prevent images from being pushed down by text */
+}
+
+.menu ul {
+	padding:0;
+	margin:0;
+	border:0;
+	list-style-type:none;          /* we don't want to view the list as a list */
+	line-height:1.5em;           /* globally set the menu's item spacing. note */
+}                               /* this must be 1.0 or 1.5 or 2.0 for Mozilla */
+
+.menu li {
+	float:left;    /* this creates the side-by-side array of top-level buttons */
+	position:relative;    /* create local positioning contexts for each button */
+	margin:0;
+}
+
+.menu ul.leftmenu li {
+	display: block;
+	clear: both;
+	height: 24px;
+}
+
+.menu ul li table {
+	margin:-1px 0;              /* IE5 needs -1px top and bottom table margins */
+	margin:0;               /* re-zero the table margins for everyone but IE5 */
+	border-collapse:collapse;      /* IE5 needs this for the sub-menus to work */
+	font-size:12px;        /* this sets the base font size for our entire menu */
+}
+
+.drop {
+	display:block;
+	padding:0px 0.33em;	       /* this sets the l/r margins for our menu item */
+	margin:0;
+	text-align:right;   /* this right alignment goes with the float:left below */
+	cursor:pointer;      /* IE tries to switch back to an I-beam, don't let it */
+}
+
+.drop span {        /* this simultaneously left and right aligns the text and */
+	float:left;       /* the >> in the drop-down menus which link to sub-menus */
+}
+
+
+/*======================== TOP LEVEL MENU DEFINITIONS ========================*/
+
+.menu ul li ul {
+	display:none;                  /* initially hide the entire list hierarchy */
+	padding:1px;                               /* this is our box border width */
+}
+
+.menu ul li {
+   padding-left: 3px;
+}
+
+.menu ul li a,
+.menu ul li span,
+.menu ul li a:visited {                    /* unselected top-level menu items */
+	display:block;
+	float:left;
+	text-decoration:none;
+	height:18px;
+	margin: 0px;
+}
+
+.menu ul li:hover a,
+.menu ul li a:hover {                        /* selected top-level menu items */
+	border-top:1px solid #0000FF;    /* these 2 lines create the push-in illusion */
+}
+
+/*======================== 2ND LEVEL MENU DEFINITIONS ========================*/
+
+.menu ul li:hover ul,
+.menu ul li a:hover ul {                           /* 2nd level drop-down box */
+	display:block;
+	position:absolute;
+	margin:0;
+	top:18px;              /* place us just up underneath the top-level images */
+	left:-1px;       /* left-align our drop-down to the previous button border */
+	height:auto;      /* the drop-down height will be determiend by line count */
+	width:22.5em;
+	color:black;                        /* this sets the unselected-text color */
+	z-index: 200;
+}
+
+.menu ul li:hover ul.leftbutton,
+.menu ul li a:hover ul.leftbutton {/* our first dropdown should not be skewed */
+	left:0px;
+}
+
+.menu ul li:hover ul.skinny,
+.menu ul li a:hover ul.skinny {             /* 2nd level skinny drop-down box */
+	width:8.08333em;   /* with a 12px default font, this is 97px width (97/12) */
+}
+
+.menu ul.rightmenu li:hover ul,
+.menu ul.rightmenu li a:hover ul {    /* 2nd level neighborhood drop-down box */
+	left:auto;
+	right:0;         /* nudge the right menu right to line up under the border */
+}
+
+* html .menu ul.rightmenu li a:hover ul {         /* IE5/6 needs a tweak here */
+	right:-1px;
+}
+
+.menu ul li:hover ul li a,
+.menu ul li:hover ul li span,
+.menu ul li a:hover ul li a {                   /* 2nd level unselected items */
+	border:0;
+	margin:0;
+	padding:0;
+	height:auto;
+	color:black;               /* this sets the unselected drop-down text color */
+	width:22.5em;
+}
+
+.menu ul li:hover ul li:hover a,
+.menu ul li a:hover ul li a:hover {                /* 2nd level selected item */
+	color:black;
+}
+
+.menu ul li:hover ul.skinny li a,
+.menu ul li a:hover ul.skinny li a,
+.menu ul li:hover ul.skinny li a:hover,
+.menu ul li a:hover ul.skinny li a:hover {     /* 2nd level un+selected items */
+	width:8.08333em;
+}
+
+.menu ul li:hover ul.wide li a,
+.menu ul li a:hover ul.wide li a,
+.menu ul li:hover ul.wide li a:hover,
+.menu ul li a:hover ul.wide li a:hover {
+	width: 64em;
+}
+
+/*======================== 3RD LEVEL MENU DEFINITIONS ========================*/
+
+.menu ul li:hover ul li ul,
+.menu ul li a:hover ul li a ul {             /* hide inactive 3rd-level menus */
+	visibility:hidden;
+}
+     
+.menu ul li:hover ul li:hover ul,
+.menu ul li a:hover ul li a:hover ul {             /* 3rd level drop-down box */
+	visibility:visible;
+	position:absolute;
+	margin-top:-1px;	      /* bring the top edge of the 3rd level menu up one */
+	top:0;
+	left:8.08333em;
+	width:14em;
+}
+
+.menu ul li:hover ul li:hover ul li a,
+.menu ul li a:hover ul li a:hover ul li a {     /* 3rd level unselected items */
+	width:14em;
+	background:white;
+}
+
+.menu ul li:hover ul li:hover ul li a:hover,
+.menu ul li a:hover ul li a:hover ul li a:hover {    /* level3 selected items */
+	width:14em;
+	background:white;
+}
+
+
+/*======================== MENU Customizations ========================*/
+
+div.hoverMenu li {
+	filter:alpha(opacity=0);
+	opacity: 0.0;
+	-moz-opacity:0.0;
+}
+
+div.hoverMenu:hover li {
+	filter:alpha(opacity=100);
+	opacity: 1.0;
+	-moz-opacity:1.0;
+}
+
+/* Need to change the root menu z-index so later indices are hidden under it */
+#PatientMenu {
+	z-index: 120;
+}
+
+div.studyInfo {
+	z-index: 75;
+}
+div.studyToolbar {
+	z-index: 50;
+}
+
+.menu ul li a.koTitle {
+	text-decoration: underline;
+	color: white;
+}
+
+div.imageMenu {
+	position: absolute; 
+	width: 7em; 
+	height: 8em; 
+	top: 2%; 
+	left:1%;
+}
+
