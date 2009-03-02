@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="2.0"
+  targetNamespace="http://www.w3.org/1999/xhtml">
+    <annotation><appinfo>
+    <jxb:schemaBindings>
+      <jxb:package name="org.w3.svg" />
+    </jxb:schemaBindings>
+  </appinfo></annotation>
+  <element name="p" type="xhtml:p" />
+  <complexType name="p">
+    <annotation>
+      <documentation source="http://www.w3.org/TR/html5/the-root.html#p"/>
+    </annotation>  
+    <complexContent mixed="true">
+      <restriction base="anyType" />
+    </complexContent>
+  </complexType>
+</schema>
