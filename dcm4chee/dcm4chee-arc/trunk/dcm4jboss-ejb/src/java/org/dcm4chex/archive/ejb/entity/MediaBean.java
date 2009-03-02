@@ -203,7 +203,7 @@ public abstract class MediaBean implements EntityBean {
      * @ejb.interface-method
      */
     public boolean checkInstancesAvailable() throws FinderException {
-    	return ejbSelectInstanceAvailability( getPk() ) == Availability.ONLINE;
+    	return ejbSelectInstanceAvailability( getPk() ) <= Availability.NEARLINE;
     }
     
     /**

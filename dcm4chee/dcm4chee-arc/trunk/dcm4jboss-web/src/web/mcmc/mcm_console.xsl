@@ -207,10 +207,10 @@
 	        <td title="Instances online">
 				<xsl:choose>
 					<xsl:when test="instancesAvailable = 'true'">
-						<img src="images/avail.gif" alt="Instances online" border="0" title="All instances online!"/>		
+						<img src="images/avail.gif" alt="Instances online" border="0" title="All instances online or nearline available!"/>		
 	 				</xsl:when>
 					<xsl:otherwise>
-						<img src="images/not_avail.gif" alt="Missing instances!" border="0" title="One or more instances are not online!"/>		
+						<img src="images/not_avail.gif" alt="Missing instances!" border="0" title="One or more instances are neither online nor nearline available!"/>		
 					</xsl:otherwise>
 				</xsl:choose>
 	        </td>
@@ -244,7 +244,7 @@
 	        	<table>
 		        	<td width="20">
 		        		<xsl:choose>
-							<xsl:when test="instancesAvailable = 'false'"><!-- Dont allow burn if not online! -->
+							<xsl:when test="instancesAvailable = 'false'"><!-- Dont allow burn if not online or nearline! -->
 								&#160;
 			 				</xsl:when>
 							<xsl:when test="mediaStatus = /model/statiForQueue and /model/mcmNotAvail = 'false'">
