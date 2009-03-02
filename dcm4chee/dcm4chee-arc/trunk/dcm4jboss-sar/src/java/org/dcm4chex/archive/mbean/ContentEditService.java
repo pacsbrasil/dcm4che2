@@ -65,6 +65,7 @@ import org.dcm4che2.audit.message.InstancesAccessedMessage;
 import org.dcm4che2.audit.message.ParticipantObject;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4che2.audit.message.PatientRecordMessage;
+import org.dcm4che2.audit.message.ProcedureRecordMessage;
 import org.dcm4che2.audit.message.StudyDeletedMessage;
 import org.dcm4che2.audit.message.AuditEvent.ActionCode;
 import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
@@ -387,7 +388,7 @@ public class ContentEditService extends ServiceMBeanSupport {
             Map map = (Map) server.invoke(mppsScpServiceName, "linkMppsToMwl",
                     new Object[] { o, mppsIUIDs }, new String[] {
                     o.getClass().getName(), String[].class.getName() });
-            List studyDsN = (List) map.get("StudyMgtDS");
+            List<Dataset> studyDsN = (List<Dataset>) map.get("StudyMgtDS");
             Dataset dsN;
             for (Iterator iter = studyDsN.iterator(); iter.hasNext();) {
                 dsN = (Dataset) iter.next();
@@ -988,4 +989,5 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
     }
 
+    
 }

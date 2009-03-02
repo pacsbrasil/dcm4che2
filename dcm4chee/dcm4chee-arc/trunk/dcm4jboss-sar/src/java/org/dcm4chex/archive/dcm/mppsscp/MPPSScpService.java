@@ -55,19 +55,28 @@ import javax.management.NotificationFilter;
 import javax.management.ReflectionException;
 import javax.xml.transform.Templates;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
+import org.dcm4che2.audit.message.AuditEvent;
+import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.ParticipantObject;
+import org.dcm4che2.audit.message.ParticipantObjectDescription;
+import org.dcm4che2.audit.message.ProcedureRecordMessage;
+import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
+import org.dcm4chex.archive.mbean.HttpUserInfo;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.dcm4chex.archive.util.XSLTUtils;
@@ -292,37 +301,75 @@ public class MPPSScpService extends AbstractScpService {
     
     public void unlinkMpps(String mppsIUID) throws RemoteException, CreateException, HomeFactoryException, FinderException {
         MPPSManager mgr = getMPPSManagerHome().create();
-    	mgr.unlinkMpps(mppsIUID);
+    	Dataset mppsAttrs = mgr.unlinkMpps(mppsIUID);
+    	if (auditLogger.isAuditLogIHEYr4())
+    	    return;
+    	DcmElement ssaSQ = mppsAttrs.get(Tags.ScheduledStepAttributesSeq);
+    	String spsID;
+    	StringBuffer sb = new StringBuffer();
+    	sb.append("Unlink MPPS iuid:").append(mppsAttrs.getString(Tags.SOPInstanceUID)).append(" from SPS ID(s): ");
+    	for (int i = 0 ,len = ssaSQ.countItems() ; i < len ; i++) {
+    	    spsID = ssaSQ.getItem(i).getString(Tags.SPSID);
+    	    sb.append(spsID).append(", ");
+        }
+        logProcedureRecord(mppsAttrs, ssaSQ.getItem().getString(Tags.AccessionNumber), sb.substring(0,sb.length()-2));
     }
     
     public void logMppsLinkRecord(Map map, String spsID, String mppsIUID ) {
-        if (!auditLogger.isAuditLogIHEYr4()) {
-            return;
-        }
-    	Dataset mppsAttrs = (Dataset) map.get("mppsAttrs");
-    	Dataset mwlAttrs = (Dataset) map.get("mwlAttrs");
-        try {
-            server.invoke(auditLogger.getAuditLoggerName(),
-                    "logProcedureRecord",
-                    new Object[] { "Modify", 
-            		mppsAttrs.getString(Tags.PatientID), 
-            		mppsAttrs.getString(Tags.PatientName),
-            		mwlAttrs.getString(Tags.PlacerOrderNumber), 
-            		mwlAttrs.getString(Tags.FillerOrderNumber), 
-            		mppsAttrs.getItem(Tags.ScheduledStepAttributesSeq).getString(Tags.StudyInstanceUID), 
-					mwlAttrs.getString(Tags.AccessionNumber),
-					"MPPS "+mppsIUID+" linked with MWL entry "+spsID},
-                    new String[] { String.class.getName(),
-                            String.class.getName(), String.class.getName(),
-                            String.class.getName(), String.class.getName(),
-                            String.class.getName(), String.class.getName(),
-                            String.class.getName()});
-        } catch (Exception e) {
-            log.warn("Failed to log procedureRecord:", e);
+        Dataset mppsAttrs = (Dataset) map.get("mppsAttrs");
+        Dataset mwlAttrs = (Dataset) map.get("mwlAttrs");
+        String desc = "MPPS "+mppsIUID+" linked with MWL entry "+spsID;
+        if (auditLogger.isAuditLogIHEYr4()) {
+            try {
+                server.invoke(auditLogger.getAuditLoggerName(),
+                        "logProcedureRecord",
+                        new Object[] { "Modify", 
+                		mppsAttrs.getString(Tags.PatientID), 
+                		mppsAttrs.getString(Tags.PatientName),
+                		mwlAttrs.getString(Tags.PlacerOrderNumber), 
+                		mwlAttrs.getString(Tags.FillerOrderNumber), 
+                		mppsAttrs.getItem(Tags.ScheduledStepAttributesSeq).getString(Tags.StudyInstanceUID), 
+    					mwlAttrs.getString(Tags.AccessionNumber),
+    					desc},
+                        new String[] { String.class.getName(),
+                                String.class.getName(), String.class.getName(),
+                                String.class.getName(), String.class.getName(),
+                                String.class.getName(), String.class.getName(),
+                                String.class.getName()});
+            } catch (Exception e) {
+                log.warn("Failed to log procedureRecord:", e);
+            }
+        } else {
+            logProcedureRecord(mppsAttrs, mwlAttrs.getString(Tags.AccessionNumber), desc);
         }
     }
 
-    
+    private void logProcedureRecord(Dataset mppsAttrs, String accNr,
+            String desc) {
+        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
+                .isEnableDNSLookups());
+        log.debug("log Procedure Record! actionCode:" + ProcedureRecordMessage.UPDATE);
+        try {
+            ProcedureRecordMessage msg = new ProcedureRecordMessage(
+                    ProcedureRecordMessage.UPDATE);
+            msg.addUserPerson(userInfo.getUserId(), null, null, userInfo
+                    .getHostName(), true);
+            PersonName pn = mppsAttrs.getPersonName(Tags.PatientName);
+            String pname = pn != null ? pn.format() : null;
+            msg.addPatient(mppsAttrs.getString(Tags.PatientID), pname);
+            ParticipantObjectDescription poDesc = new ParticipantObjectDescription();
+            if (accNr != null)
+                poDesc.addAccession(accNr);
+            ParticipantObject study = msg.addStudy(mppsAttrs.getItem(Tags.ScheduledStepAttributesSeq).getString(Tags.StudyInstanceUID),
+                    poDesc);
+            study.addParticipantObjectDetail("Description", desc);
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
+         } catch (Exception x) {
+            log.warn("Audit Log 'Procedure Record' failed:", x);
+        }
+    }
+
     private MPPSManagerHome getMPPSManagerHome() throws HomeFactoryException {
         return (MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
                 MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME);
