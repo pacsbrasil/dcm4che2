@@ -525,9 +525,10 @@ public abstract class MPPSManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void unlinkMpps(String mppsIUID) throws FinderException {
+    public Dataset unlinkMpps(String mppsIUID) throws FinderException {
         MPPSLocal mpps = mppsHome.findBySopIuid(mppsIUID);
         Dataset mppsAttrs = mpps.getAttributes();
+        Dataset mppsAttrsSav = mpps.getAttributes();
         DcmElement ssaSQ = mppsAttrs.get(Tags.ScheduledStepAttributesSeq);
         Dataset ds = null;
         String rpID, spsID;
@@ -559,6 +560,7 @@ public abstract class MPPSManagerBean implements SessionBean {
         ds.putSQ(Tags.ScheduledProtocolCodeSeq);
         mppsAttrs.putSQ(Tags.ScheduledStepAttributesSeq).addItem(ds);
         mpps.setAttributes(mppsAttrs);
+        return mppsAttrsSav;
     }
 
     /**
