@@ -72,18 +72,18 @@ public class MWLFilter extends ModalityBaseFilterModel {
         dsSPS.putLO( Tags.SPSDescription );
         dsSPS.putSH( Tags.ScheduledStationName );
         dsSPS.putSH( Tags.SPSLocation );
-    	Dataset dsSpcs = addCodeSQ(ds, Tags.ScheduledProtocolCodeSeq);
+    	Dataset dsSpcs = addCodeSQ(dsSPS, Tags.ScheduledProtocolCodeSeq);
     	{
     		DcmElement pCtxSq = dsSpcs.putSQ( Tags.ProtocolContextSeq );
     		Dataset dsPCtxItem = pCtxSq.addNewItem();
     		dsPCtxItem.putCS( Tags.ValueType );
-    		addCodeSQ(ds, Tags.ConceptNameCodeSeq);
+    		addCodeSQ(dsPCtxItem, Tags.ConceptNameCodeSeq);
     		dsPCtxItem.putDT( Tags.DateTime );
     		dsPCtxItem.putPN( Tags.PersonName );
     		dsPCtxItem.putUT( Tags.TextValue );
-    		addCodeSQ(ds, Tags.ConceptCodeSeq);
+    		addCodeSQ(dsPCtxItem, Tags.ConceptCodeSeq);
     		dsPCtxItem.putDS( Tags.NumericValue );
-        	addCodeSQ(ds, Tags.MeasurementUnitsCodeSeq);
+        	addCodeSQ(dsPCtxItem, Tags.MeasurementUnitsCodeSeq);
     		//TODO: all other from protocol code SQ 
     	}
         dsSPS.putLO( Tags.PreMedication );
