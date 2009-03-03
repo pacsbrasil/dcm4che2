@@ -70,6 +70,16 @@ import org.dcm4che.dict.UIDs;
  */
 public class DatasetTest extends TestCase {
 
+    private final static File OUT_FILE = new File("data/TMP_TEST");
+    private final static String EVR_LE = "data/examplef9.dcm";
+    private final static String EVR_LE_XML = "data/examplef9.xml";
+    private final static String DICOMDIR = "data/DICOMDIR";
+    private final static String DICOMDIR_XML = "data/DICOMDIR.xml";
+    private final static String PART10_EVR_LE = "data/6AF8_10";
+    private Dataset ds;
+    private TagDictionary dict;
+
+
     /**
      *  Constructor for the DatasetTest object
      *
@@ -101,16 +111,6 @@ public class DatasetTest extends TestCase {
         TestSuite suite = new TestSuite(DatasetTest.class);
         return suite;
     }
-
-
-    private final static File OUT_FILE = new File("data/TMP_TEST");
-    private final static String EVR_LE = "data/examplef9.dcm";
-    private final static String EVR_LE_XML = "data/examplef9.xml";
-    private final static String DICOMDIR = "data/DICOMDIR";
-    private final static String DICOMDIR_XML = "data/DICOMDIR.xml";
-    private final static String PART10_EVR_LE = "data/6AF8_10";
-    private Dataset ds;
-    private TagDictionary dict;
 
 
     /**
@@ -583,6 +583,45 @@ public class DatasetTest extends TestCase {
         assertEquals(UMLAUT, ds.get(Tags.VerifyingObserverSeq).getItem()
                 .getString(Tags.VerifyingObserverName));
     }
-}
 
+    private void testPutAllPrivate(String creator1, int tag1, String value1,
+            String creator2, int tag2, String value2) {
+        ds.setPrivateCreatorID(creator1);
+        ds.putSH(tag1, value1);
+        Dataset ds2 = DcmObjectFactory.getInstance().newDataset();
+        ds2.setPrivateCreatorID(creator2);
+        ds2.putSH(tag2, value2);
+        ds.putAll(ds2);
+        ds.setPrivateCreatorID(creator2);
+        assertEquals(value2, ds.getString(tag2));
+    }
+
+    private static final String CREATOR1 = "CREATOR1";
+    private static final String CREATOR2 = "CREATOR2";
+    private static final String VALUE1 = "VALUE1";
+    private static final String VALUE2 = "VALUE2";
+    private static final int TAG_00090010 = 0x00090010;
+    private static final int TAG_00090020 = 0x00090020;
+    private static final int TAG_00110020 = 0x00110020;
+
+    public void testPutAllPrivateDiffCreatorDiffGroup() {
+        testPutAllPrivate(CREATOR1, TAG_00090010, VALUE1,
+                CREATOR2, TAG_00110020, VALUE2);
+    }
+
+    public void testPutAllPrivateDiffCreatorEqualGroup() {
+        testPutAllPrivate(CREATOR1, TAG_00090010, VALUE1,
+                CREATOR2, TAG_00090020, VALUE2);
+    }
+
+    public void testPutAllPrivateEqualCreatorDiffGroup() {
+        testPutAllPrivate(CREATOR1, TAG_00090010, VALUE1,
+                CREATOR1, TAG_00110020, VALUE2);
+    }
+
+    public void testPutAllPrivateEqualCreatorEqualGroup() {
+        testPutAllPrivate(CREATOR1, TAG_00090010, VALUE1,
+                CREATOR1, TAG_00090020, VALUE2);
+    }
+}
 
