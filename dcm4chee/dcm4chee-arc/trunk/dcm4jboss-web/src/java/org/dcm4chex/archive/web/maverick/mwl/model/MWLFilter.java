@@ -72,20 +72,7 @@ public class MWLFilter extends ModalityBaseFilterModel {
         dsSPS.putLO( Tags.SPSDescription );
         dsSPS.putSH( Tags.ScheduledStationName );
         dsSPS.putSH( Tags.SPSLocation );
-    	Dataset dsSpcs = addCodeSQ(dsSPS, Tags.ScheduledProtocolCodeSeq);
-    	{
-    		DcmElement pCtxSq = dsSpcs.putSQ( Tags.ProtocolContextSeq );
-    		Dataset dsPCtxItem = pCtxSq.addNewItem();
-    		dsPCtxItem.putCS( Tags.ValueType );
-    		addCodeSQ(dsPCtxItem, Tags.ConceptNameCodeSeq);
-    		dsPCtxItem.putDT( Tags.DateTime );
-    		dsPCtxItem.putPN( Tags.PersonName );
-    		dsPCtxItem.putUT( Tags.TextValue );
-    		addCodeSQ(dsPCtxItem, Tags.ConceptCodeSeq);
-    		dsPCtxItem.putDS( Tags.NumericValue );
-        	addCodeSQ(dsPCtxItem, Tags.MeasurementUnitsCodeSeq);
-    		//TODO: all other from protocol code SQ 
-    	}
+    	dsSPS.putSQ( Tags.ScheduledProtocolCodeSeq);
         dsSPS.putLO( Tags.PreMedication );
         dsSPS.putSH( Tags.SPSID );
         dsSPS.putLO( Tags.RequestedContrastAgent );
@@ -118,7 +105,7 @@ public class MWLFilter extends ModalityBaseFilterModel {
         //other Attrs from requested procedure Module
         ds.putLO(Tags.ReasonForTheRequestedProcedure);
         ds.putLT(Tags.RequestedProcedureComments);
-        addCodeSQ(ds, Tags.ReasonforRequestedProcedureCodeSeq);
+        ds.putSQ(Tags.ReasonforRequestedProcedureCodeSeq);
         ds.putSQ(Tags.RefStudySeq);
         ds.putLO(Tags.RequestedProcedureLocation);
         ds.putLO(Tags.ConfidentialityCode);
@@ -168,18 +155,7 @@ public class MWLFilter extends ModalityBaseFilterModel {
         ds.putLO( Tags.ContrastAllergies );
         ds.putLO( Tags.SpecialNeeds );
     }
-    
-
-	private Dataset addCodeSQ(Dataset ds, int sqTag){
-        DcmElement sq = ds.putSQ( sqTag );
-        Dataset item = sq.addNewItem();
-        item.putSH( Tags.CodeValue );
-        item.putLO( Tags.CodeMeaning );
-        item.putSH( Tags.CodingSchemeDesignator );
-        item.putSH( Tags.CodingSchemeVersion );
-        return item;
-    }
-	
+    	
 	/**
 	 * Set the start date.
 	 * <p>
