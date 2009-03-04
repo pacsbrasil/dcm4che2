@@ -18,7 +18,6 @@ ImageLayout.prototype.fetchSize = 256;
 ImageLayout.prototype.MAGNIFY = "MAGNIFY";
 ImageLayout.prototype.SCALE_TO_FIT = "SCALE_TO_FIT";
 ImageLayout.prototype.TRUE_SIZE = "TRUE_SIZE";
-ImageLayout.prototype.urlCount = 0;
 ImageLayout.prototype.events = [".","../merged:windowWidth","../merged:windowCenter","../merged:invert","../merged:rotation","../merged:horizontalFlip","../merged:size", "../merged:topLeft","../merged:bottomRight"];
 ImageLayout.prototype.area="Image";
 ImageLayout.prototype.isDiffUpdate = true;
@@ -56,8 +55,6 @@ ImageLayout.prototype.namedListener = function(nav,vname,val,prevVal) {
 ImageLayout.prototype.addImageUrl = function AddImageUrl(clear) {
 	if( clear ) {
 	   this.imageUrls = new Array();
-	} else if(this.imageUrls.length>0 ) {
-	   this.imageUrls[this.imageUrls.length-1].imageId = this.imageUrls[this.imageUrls.length-1].fullImageId; 
 	}
 	if( (!this.image) || !(this.width) || !(this.height) ) return;
 	if( this.navigate.merged.get("smallImage") ) {
@@ -136,7 +133,7 @@ ImageLayout.prototype.isComplete = function ImageLayout_isComplete() {
 /** This generates a small URL reference for the entire image area, but at a reduced resolution/quality */
 ImageLayout.prototype.createSmallImage = function(base) {
 	var ret = this.createBaseUrl(base);
-	ret.imageId = ret.fullImageId;
+	ret.imageId += "Small";
 	ret.imageUrl = ret.imageUrl + "&amp;imageQuality=0.4";
 	var rows = this.image.Rows;
 	while(rows>512) rows = rows/2;
@@ -150,7 +147,7 @@ ImageLayout.prototype.createSmallImage = function(base) {
 /** Creates the base URL object */
 ImageLayout.prototype.createBaseUrl = function (base) {
 	var uids = "&amp;studyUID="+this.image.get("studyUID")+"&amp;seriesUID="+this.image.get("seriesUID");
-	var ret = { "imageUrl" : base+uids+"&amp;objectUID="+this.image.objectUID, "top":0, "left":0, "imageId":"im"+this.id, "fullImageId": this.urlCount++};
+	var ret = { "imageUrl" : base+uids+"&amp;objectUID="+this.image.objectUID, "top":0, "left":0, "imageId":"im"+this.id};
 	if( this.ae ) {
 		ret.imageUrl = ret.imageUrl + "&amp;ae="+this.ae;
 	}

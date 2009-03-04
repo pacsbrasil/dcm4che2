@@ -1,4 +1,5 @@
 $unittest()$
+$string()$
 $domUtils()$
 $boccMock()$
 
@@ -247,6 +248,120 @@ domUtilsTest.testGetChildNodesToUpdate_ShouldForceTableElementsToBeInsertedAnew 
     var childNodesToUpdate = DOMUtils.getChildNodesToUpdate(oldNode, newNode);
     
     $assertEquals(expected="null", actual="childNodesToUpdate[0]", msg="Table elements should always be inserted anew for performance reasons - artf18477.")$;
+}
+
+domUtilsTest.testSetStyle_ShouldClearTheCSSTextField = function()
+{
+    var elem = new Object();
+    elem.style = new Object();
+    elem.style.cssText = "top:10;left:4";
+    
+    var emptyStr = "";
+    DOMUtils.setStyle(elem, "");
+    
+    $assertEquals(expected="emptyStr", actual="elem.style.cssText", msg="The cssText field must be cleared.")$;    
+};
+
+domUtilsTest.testSetStyle_ShouldClearTheFlipField = function()
+{
+    var elem = new Object();
+    elem.style = new Object();
+    elem.style.flip = "x"
+    
+    var emptyStr = "";
+    DOMUtils.setStyle(elem, "");
+    
+    $assertEquals(expected="emptyStr", actual="elem.style.flip", msg="The flip field must be cleared.")$;    
+};
+
+domUtilsTest.testSetStyle_ShouldParseTheStyleAndAssignTheStyleValuesAsFields = function()
+{
+    var elem = new Object();
+    elem.style = new Object();
+    
+    var topVal = "15px";
+    var rotVal = "270";
+    DOMUtils.setStyle(elem, "top:15px;rotation:270");
+    
+    $assertEquals(expected="topVal", actual="elem.style.top", msg="The top field must be set.")$;    
+    $assertEquals(expected="rotVal", actual="elem.style.rotation", msg="The rotation field must be set.")$;    
+};
+
+domUtilsTest.testSetStyle_ShouldParseAndEvaluateExpressionStyleValues = function()
+{
+    var elem = new Object();
+    elem.style = new Object();
+    
+    var rotVal = "270";
+    DOMUtils.setStyle(elem, "rotation:expression(180 + 90)");
+    
+    $assertEquals(expected="rotVal", actual="elem.style.rotation", msg="The rotation field must be set.")$;    
+};
+
+domUtilsTest.testSetStyle_ShouldTrimSubElements = function()
+{
+    var elem = new Object();
+    elem.style = new Object();
+    
+    var topVal = "15px";
+    var rotVal = "270";
+    var customVal = "2 2";
+    DOMUtils.setStyle(elem, " top:  15px  ; rotation : 270 ; custom: 2 2  ");
+    
+    $assertEquals(expected="topVal", actual="elem.style.top", msg="The top field must be set.")$;    
+    $assertEquals(expected="rotVal", actual="elem.style.rotation", msg="The rotation field must be set.")$;    
+    $assertEquals(expected="customVal", actual="elem.style.custom", msg="The custom field must be set.")$;    
+};
+
+domUtilsTest.testSetStyle_ShouldGracefullyHandleSemiColonPrefixedAndSuffixedStyles = function()
+{
+    var elem = new Object();
+    elem.style = new Object();
+    
+    var topVal = "15px";
+    var rotVal = "270";
+    DOMUtils.setStyle(elem, ";top:15px;rotation:270;");
+    
+    $assertEquals(expected="topVal", actual="elem.style.top", msg="The top field must be set.")$;    
+    $assertEquals(expected="rotVal", actual="elem.style.rotation", msg="The rotation field must be set.")$;    
+};
+
+domUtilsTest.testSetStyle_ShouldConvertToJavaScriptStyleAttributeName = function()
+{
+    var elem = new Object();
+    elem.style = new Object();
+    
+    var marginLeftVal = "15px";
+    DOMUtils.setStyle(elem, "margin-left:15px");
+    
+    $assertEquals(expected="marginLeftVal", actual="elem.style.marginLeft", msg="The marginLeft field must be set.")$;    
+};
+
+domUtilsTest.testGetJSCSSAttrName_ShouldHandleNonHyphenatedAttributes = function()
+{
+    var expected = "top";
+    
+    var actual = DOMUtils.getJSCSSAttrName("top");
+    
+    $assertEquals(expected="expected", actual="actual", msg="The top CSS attribute name is top in JavaScript.")$;
+}
+
+domUtilsTest.testGetJSCSSAttrName_ShouldHandleHyphenatedAttributes = function()
+{
+    var expected = "borderBottomWidth";
+    
+    var actual = DOMUtils.getJSCSSAttrName("border-bottom-width");
+    
+    $assertEquals(expected="expected", actual="actual", msg="The border-bottom-width CSS attribute name is borderBottomWidth in JavaScript.")$;
+}
+
+domUtilsTest.testGetJSCSSAttrName_ShouldHandleCSSFloat = function()
+{
+    var expected = "cssFloat";
+    
+    var actual = DOMUtils.getJSCSSAttrName("float");
+    
+    $assertEquals(expected="expected", actual="actual", msg="The float CSS attribute name is cssFloat in JavaScript.")$;
 }
 
 domUtilsTest.removeLineChars = function(str)

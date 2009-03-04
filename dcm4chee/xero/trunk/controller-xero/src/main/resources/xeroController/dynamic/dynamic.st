@@ -321,7 +321,7 @@ ImageMouseHandler.prototype.getMouseDom = function(targ) { return targ; };
  */
 ImageMouseHandler.prototype.prepare = function (e) {
 	this.mhPrepare(e);
-	this.downTarget = target(e);
+	this.downTarget = this.getTarget(e);
 	this.image = null;
 	this.started = false;
 
@@ -412,6 +412,21 @@ ImageMouseHandler.prototype.setImageUrl = function MouseHandler_setImageUrl(url)
 	this.image.setAttributeNS("http://www.w3.org/1999/xlink","href",url);
 };
 
+ImageMouseHandler.prototype.getTarget = function(e)
+{
+    var targ = target(e);
+    if(targ.nodeName == "shape")
+    {
+        // In IE images are wrapped in shape elements.
+        var imagedata = targ.getElementsByTagName("imagedata");
+        if(imagedata.length == 1)
+        {
+            targ = imagedata[0];
+        }
+    }
+    
+    return targ;
+};
 
 /** Defines the individual dynamic controllers */
 $dynamic/windowLevel()$

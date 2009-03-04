@@ -10,6 +10,7 @@ model.version=Xero
 static.xeroUtilities=${class:org.dcm4chee.xero.metadata.access.ValueList}
 static.xeroUtilities.domUtils=domUtils
 static.xeroUtilities.zoomRectangle=zoomRectangle
+static.xeroUtilities.string=string
 
 # This defines the controller plugin components for JavaScript - NOT the dynamic instances
 static.xeroControllers=${class:org.dcm4chee.xero.metadata.access.ValueList}

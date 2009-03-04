@@ -65,6 +65,17 @@ XeroController.prototype.zoomChange = function(lay,e,delta,isZoomToMousePoint) {
 		nav.parent.setMerge("magnify",mag);
 	}
 	else {
+		// In IE, remove the full-resolution image (shape) to speed up zoom.
+    	var small = document.getElementById("im" + lay.id + "SmallShape");
+    	if(small)
+    	{
+    		var full = document.getElementById("im" + lay.id + "Shape");
+    	    if(full)
+    	    {
+    	    	full.parentNode.removeChild(full);
+    	    }
+    	}
+    	
 		// Make sure we have an image level instance.
 		if( !nav.external.Rows ) nav = nav.getChild(0);
 		
@@ -95,7 +106,7 @@ XeroController.prototype.zoomChange = function(lay,e,delta,isZoomToMousePoint) {
 		{
     	   var mousePtInDocCoords = docCoords(e);
     	
-	       zoomRect = this.getZoomRectangle(mousePtInDocCoords, lay.children[0], preZoomRect, zoomDelta);
+	       zoomRect = this.getZoomRectangle(mousePtInDocCoords, lay, preZoomRect, zoomDelta);
 		}
 		else
 		{
@@ -323,7 +334,7 @@ XeroController.prototype.getDocPtInVmlImage = function(docPt, vmlElem, imageLayo
 };
 
 XeroController.prototype.Zoom_wheelSeries = function(id,e) {
-	var lay = this.findLayout(id);
+	var lay = this.findLayout(id, Navigation.IMAGE).children[0];
 	
 	var wheelData = e.detail ? (-e.detail) : e.wheelDelta/40;
 	if(! e.shiftKey ) wheelData = wheelData/3;
@@ -335,11 +346,11 @@ XeroController.prototype.Zoom_wheelSeries = function(id,e) {
 XeroController.prototype.Zoom_shift_wheelSeries = XeroController.prototype.Zoom_wheelSeries;
 
 XeroController.prototype.zoomIn = function(id,e) {
-	var lay = this.findLayout(id);
+	var lay = this.findLayout(id,Navigation.IMAGE);
 	this.zoomChange(lay,e,1,false);
 };
 XeroController.prototype.zoomOut = function(id,e) {
-	var lay = this.findLayout(id);
+	var lay = this.findLayout(id,Navigation.IMAGE);
 	this.zoomChange(lay,e,-1,false);
 };
 

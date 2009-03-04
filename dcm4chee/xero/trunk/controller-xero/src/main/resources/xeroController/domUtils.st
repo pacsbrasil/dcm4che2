@@ -457,29 +457,66 @@ DOMUtils.setClassName = function(elem, className)
 };
 
 /**
- * Sets the style attribute on the given element.  The style is only updated if it
- * indeed changed.
+ * Sets the style attribute on the given element.  The style attribute is always
+ * updated because there is no good mechanism to determine if it indeed changed.
  */
 DOMUtils.setStyle = function(elem, style)
 {
-    if(elem.style.cssText != style)
+    // In IE flip has to be explicitly cleared.  Note this has to be done before
+    // we clear the cssText or else it will not get cleared properly.
+    if(elem.style.flip)
     {
-        // This entire block of code basically 'jiggles' the style element for IE.
-        
-        elem.style.flip = undefined;
-        
-        elem.style.cssText = elem.style.cssText + ";" + style;
-        
-        if(elem.style.rotation !== undefined)
+        elem.style.flip = "";
+    }
+
+    // Clear the current style by setting the cssText property to the empty string.
+    elem.style.cssText = "";
+
+    // Split up the style value into key-value pairs.
+    var pairs = style.split(";");
+    for(var i = 0; i < pairs.length; i += 1)
+    {
+        var keyAndVal = pairs[i].split(":");
+        if(keyAndVal.length === 2)
         {
-           elem.style.rotation = elem.style.rotation;
-        }
-        
-        if(elem.style.flip !== undefined)
+            var val = keyAndVal[1].trim();
+            if(val.indexOf("expression") == 0)
+            {
+               val = eval(val.substring(11, val.length - 1));
+            }
+                
+            var key = DOMUtils.getJSCSSAttrName(keyAndVal[0].trim());
+            elem.style[key] = val;
+         }
+     }
+};
+
+/**
+ * Gets the JavaScript CSS attribute name that is equivalent to the given CSS attribute
+ * name as it appears in HTML.
+ */
+DOMUtils.getJSCSSAttrName = function(attrName)
+{
+    if(attrName=="float")
+    {
+        return "cssFloat";
+    }
+    else
+    {
+        var splitAttrName = attrName.split("-");
+        if(splitAttrName.length == 1)
         {
-           elem.style.flip = elem.style.flip;
+            return splitAttrName[0];
         }
-    }    
+        else
+        {
+            for(var i = 1; i < splitAttrName.length; i += 1)
+            {
+                splitAttrName[i] = splitAttrName[i].charAt(0).toUpperCase() + splitAttrName[i].substring(1);
+            }
+            return splitAttrName.join("");
+        };
+    };
 };
 
 /**

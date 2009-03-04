@@ -14,7 +14,9 @@ $if(layout.aspectPercent)$
    <v:group style="overflow: visible; width: 100; height: $layout.aspectPercent$;" coordsize="100,100">
 $endif$
 $layout.imageUrls:{
-		<v:image id="$it.imageId$" src="$it.imageUrl$" style="width: $it.cols$px; height:$it.rows$px; left: $it.left$px;top:$it.top$;" />
+    <v:shape id="$it.imageId$Shape" style="width: $it.cols$px; height:$it.rows$px; left: $it.left$px;top:$it.top$px" filled="f" stroked="f">
+        <v:imagedata id="$it.imageId$" src="$it.imageUrl$"/>
+    </v:shape>
 }$
 		
 		$image/imageRelativeVml()$
