@@ -315,7 +315,7 @@ abstract class FilteredDicomObject extends AbstractDicomObject
         {
             while (itr.hasNext())
             {
-                next = (DicomElement) itr.next();
+                next = itr.next();
                 if (filter(next.tag()))
                     return;
             }

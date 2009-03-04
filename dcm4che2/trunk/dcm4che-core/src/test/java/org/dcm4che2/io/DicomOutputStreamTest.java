@@ -171,7 +171,7 @@ public class DicomOutputStreamTest extends TestCase {
     }
     
     private byte[] loadBytes(InputStream in) throws IOException {
-        int remain = (int) in.available();
+        int remain = in.available();
         byte[] b = new byte[remain];
         try {
             while (remain > 0) {

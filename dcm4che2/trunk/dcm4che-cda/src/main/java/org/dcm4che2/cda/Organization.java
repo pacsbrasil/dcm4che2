@@ -114,7 +114,6 @@ class Organization<T> extends BaseElement {
         return (T) this;
     }
 
-    @SuppressWarnings("unchecked")
     public T setName(String text) {
         return setName(new Name(text));
     }
@@ -135,7 +134,6 @@ class Organization<T> extends BaseElement {
         return (T) this;
     }
 
-    @SuppressWarnings("unchecked")
     public T addName(String text) {
         return addName(new Name(text));
     }

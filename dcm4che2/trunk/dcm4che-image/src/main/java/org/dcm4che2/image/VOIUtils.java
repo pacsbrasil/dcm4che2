@@ -44,7 +44,6 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
-import java.awt.image.SampleModel;
 
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;

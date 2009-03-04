@@ -44,6 +44,7 @@ public class Tag {
 
     /** Private constructor */
     private Tag() {
+        // Suppresses default constructor, ensuring non-instantiability.
     }
     
     public static final int forName(String name) {

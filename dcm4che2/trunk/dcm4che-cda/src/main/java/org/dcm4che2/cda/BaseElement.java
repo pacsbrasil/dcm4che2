@@ -202,7 +202,6 @@ class BaseElement {
      * @throws IOException
      *                 Can be thrown by one of the derived classes if an error occurs.
      */
-    @SuppressWarnings("unused")
     protected void writeContentTo(Writer out) throws IOException {
         // empty
     }

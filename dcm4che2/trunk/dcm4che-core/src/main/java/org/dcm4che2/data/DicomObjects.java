@@ -53,8 +53,8 @@ import org.dcm4che2.data.DicomObject.Visitor;
  */
 public class DicomObjects {
 
-    // Suppresses default constructor, ensuring non-instantiability.
     private DicomObjects() {
+        // Suppresses default constructor, ensuring non-instantiability.
     }
 
     /**
@@ -91,14 +91,17 @@ public class DicomObjects {
             this.dcmobj = dcmobj;
         }
 
+        @Override
         public String toString() {
             return dcmobj.toString();
         }
 
+        @Override
         public int hashCode() {
             return dcmobj.hashCode();
         }
 
+        @Override
         public boolean equals(Object other) {
             return dcmobj.equals(other);
         }

@@ -672,6 +672,7 @@ public class NetworkApplicationEntity {
      * @return An int value signifying the timeout in milliseconds.
      * @deprecated use {@link #getRetrieveRspTimeout}
      */
+    @Deprecated
     public int getMoveRspTimeout() {
         return retrieveRspTimeout;
     }
@@ -685,6 +686,7 @@ public class NetworkApplicationEntity {
      *                An int value signifying the timeout in milliseconds.
      * @deprecated use {@link #setRetrieveRspTimeout}
      */
+    @Deprecated
     public void setMoveRspTimeout(int moveRspTimeout) {
         this.retrieveRspTimeout = moveRspTimeout;
     }
@@ -1080,7 +1082,7 @@ public class NetworkApplicationEntity {
             for (Iterator<Map.Entry<String, LinkedHashSet<String>>> iter =
                     cuid2ts.entrySet().iterator(); freePc > 0 && iter.hasNext();) {
                 Map.Entry<String, LinkedHashSet<String>> e = iter.next();
-                String cuid = (String) e.getKey();
+                String cuid = e.getKey();
                 LinkedHashSet<String> ts = e.getValue();
                 Iterator<String> tsiter = ts.iterator();
                 PresentationContext pctx = new PresentationContext();

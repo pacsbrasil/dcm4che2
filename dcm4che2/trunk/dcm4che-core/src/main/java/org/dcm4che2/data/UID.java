@@ -42,6 +42,7 @@ public class UID {
 
     /** Private constructor */
     private UID() {
+        // Suppresses default constructor, ensuring non-instantiability.
     }
     
     public static final String forName(String name) {
