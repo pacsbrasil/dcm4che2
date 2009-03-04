@@ -50,8 +50,10 @@ import java.util.Set;
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.dcm4chee.docstore.spi.DocumentStorage;
+import org.dcm4chee.docstore.spi.file.DocumentFileStorage;
 import org.dcm4chee.docstore.test.DocStoreTestBase;
 import org.dcm4chee.docstore.test.DummyDFCommandMBean;
 import org.dcm4chee.docstore.test.TestUtil;
@@ -368,10 +370,14 @@ public class DocumentStoreNoPoolTest extends DocStoreTestBase {
         for ( int i = 0 ; i < nrDocs ; i++ ) {
             docs.add(new DataHandlerVO(docUid+i, i<2 ? dh : null));
         }
+        Logger logDFS = Logger.getLogger(DocumentFileStorage.class.getName());
+        Level logLevel = logDFS.getLevel();
+        logDFS.setLevel(Level.OFF);
         try {
             docStore.storeDocuments(null, docs );
             fail("storeDocuments must throw a NullPointerException!");
         } catch ( Exception ignore ) {}
+        logDFS.setLevel(logLevel);
         for ( int i = 0 ; i < nrDocs ; i++ ) {
             BaseDocument doc = docStore.getDocument(docUid+i, null);
             assertNull("No Document should exist if storeDocuments failed! uid:"+docUid+i, doc);
