@@ -64,20 +64,20 @@ import org.jboss.system.server.ServerConfigLocator;
 /**
  * @author franz.willer
  * 
- * TODO To change the template for this generated type comment go to Window -
- * Preferences - Java - Code Style - Code Templates
+ *         TODO To change the template for this generated type comment go to
+ *         Window - Preferences - Java - Code Style - Code Templates
  */
 public class WADOCacheImpl implements WADOCache {
 
-	public static final String DEFAULT_CACHE_ROOT = "/wadocache";
+    public static final String DEFAULT_CACHE_ROOT = "/wadocache";
 
     public static final String DEFAULT_WADO_SUBDIR = "default";
 
     public static final String DEFAULT_IMAGE_QUALITY = "75";
-    
+
     /** Buffer size for read/write */
     private static final int BUF_LEN = 65536;
-    
+
     public static final String NEWLINE = System.getProperty("line.separator",
             "\n");
 
@@ -92,7 +92,8 @@ public class WADOCacheImpl implements WADOCache {
 
     private static WADOCacheImpl singletonWADO = null;
 
-    protected static Logger log = Logger.getLogger(WADOCacheImpl.class.getName());
+    protected static Logger log = Logger.getLogger(WADOCacheImpl.class
+            .getName());
 
     /** the root folder where this cache stores the image files. */
     private File cacheRoot = null;
@@ -102,8 +103,7 @@ public class WADOCacheImpl implements WADOCache {
 
     /**
      * Default subdirectory. this is used to split directory structer for WADO
-     * cache to split 'default' requests and requests
-     * with rows and columns.
+     * cache to split 'default' requests and requests with rows and columns.
      */
     private String defaultSubdir = "default";
 
@@ -129,39 +129,40 @@ public class WADOCacheImpl implements WADOCache {
 
     protected String imageWriterClass;
 
-	protected WADOCacheImpl() {}
+    protected WADOCacheImpl() {
+    }
 
     public final String getImageQuality() {
         return imageQuality;
     }
 
     public final void setImageQuality(String imageQuality) {
-        int intval = Integer.parseInt( imageQuality );
+        int intval = Integer.parseInt(imageQuality);
         if (intval <= 0 || intval > 100) {
-            throw new IllegalArgumentException("imageQuality: "
-                    + imageQuality + " not between 1 and 100.");
+            throw new IllegalArgumentException("imageQuality: " + imageQuality
+                    + " not between 1 and 100.");
         }
         this.imageQuality = imageQuality;
     }
-        
-    public final String getImageWriterClass() {
-		return imageWriterClass;
-	}
 
-	public void setImageWriterClass(String imageWriterClass) {
-		getImageWriterWriter(imageWriterClass).dispose();
-		this.imageWriterClass = imageWriterClass;
-	}
+    public final String getImageWriterClass() {
+        return imageWriterClass;
+    }
+
+    public void setImageWriterClass(String imageWriterClass) {
+        getImageWriterWriter(imageWriterClass).dispose();
+        this.imageWriterClass = imageWriterClass;
+    }
 
     private static WADOCacheImpl createWADOCache() {
-		try {
-			Class.forName("com.sun.image.codec.jpeg.JPEGImageEncoder");
-			return new WADOCacheImplSun();
-		} catch (ClassNotFoundException e) {
-			log.info("com.sun.image.codec.jpeg.JPEGImageEncoder not available");
-			return new WADOCacheImpl();
-		}
-	}
+        try {
+            Class.forName("com.sun.image.codec.jpeg.JPEGImageEncoder");
+            return new WADOCacheImplSun();
+        } catch (ClassNotFoundException e) {
+            log.info("com.sun.image.codec.jpeg.JPEGImageEncoder not available");
+            return new WADOCacheImpl();
+        }
+    }
 
     /**
      * Returns the singleton instance of WADOCache.
@@ -198,8 +199,8 @@ public class WADOCacheImpl implements WADOCache {
      * @param windowCenter
      *            Decimal string representing the luminosity of the image.
      * @param imageQuality
-     *            Integer string (1-100) representing required quality of
-     *            the image to be returned within the range 1 to 100
+     *            Integer string (1-100) representing required quality of the
+     *            image to be returned within the range 1 to 100
      * 
      * @return The image if in cache or null.
      */
@@ -235,8 +236,8 @@ public class WADOCacheImpl implements WADOCache {
      * @param windowCenter
      *            Decimal string representing the luminosity of the image.
      * @param imageQuality
-     *            Integer string (1-100) representing required quality of
-     *            the image to be returned within the range 1 to 100
+     *            Integer string (1-100) representing required quality of the
+     *            image to be returned within the range 1 to 100
      * 
      * @return The File object of the image if in cache or null.
      */
@@ -245,18 +246,19 @@ public class WADOCacheImpl implements WADOCache {
             String windowWidth, String windowCenter, String imageQuality,
             String suffix) {
         File file = this._getImageFile(rows + "-" + columns + "-" + region
-                + "-" + windowWidth + "-" + windowCenter + "-" 
-                + maskNull(imageQuality, this.imageQuality),
-                studyUID, seriesUID, instanceUID, suffix, null);
-        if ( log.isDebugEnabled() ) log.debug("check cache file(exist:"+file.exists()+"):"+file);
+                + "-" + windowWidth + "-" + windowCenter + "-"
+                + maskNull(imageQuality, this.imageQuality), studyUID,
+                seriesUID, instanceUID, suffix, null);
+        if (log.isDebugEnabled())
+            log.debug("check cache file(exist:" + file.exists() + "):" + file);
         if (file.exists()) {
             file.setLastModified(System.currentTimeMillis()); // set last
-                                                                // modified
-                                                                // because File
-                                                                // has only
-                                                                // lastModified
-                                                                // timestamp
-                                                                // visible.
+            // modified
+            // because File
+            // has only
+            // lastModified
+            // timestamp
+            // visible.
             return file;
         } else {
             return null;
@@ -291,8 +293,8 @@ public class WADOCacheImpl implements WADOCache {
      * @param windowCenter
      *            Decimal string representing the luminosity of the image.
      * @param imageQuality
-     *            Integer string (1-100) representing required quality of
-     *            the image to be returned within the range 1 to 100
+     *            Integer string (1-100) representing required quality of the
+     *            image to be returned within the range 1 to 100
      * 
      * @return The File object of the image in this cache.
      * @throws IOException
@@ -331,8 +333,8 @@ public class WADOCacheImpl implements WADOCache {
      * @param windowCenter
      *            Decimal string representing the luminosity of the image.
      * @param imageQuality
-     *            Integer string (1-100) representing required quality of
-     *            the image to be returned within the range 1 to 100
+     *            Integer string (1-100) representing required quality of the
+     *            image to be returned within the range 1 to 100
      * 
      * @return The stored File object.
      * 
@@ -345,9 +347,9 @@ public class WADOCacheImpl implements WADOCache {
         File file;
 
         file = this._getImageFile(rows + "-" + columns + "-" + region + "-"
-                + windowWidth + "-" + windowCenter + "-" 
-                + maskNull(imageQuality, imageQuality),
-                studyUID, seriesUID, instanceUID, suffix, null);
+                + windowWidth + "-" + windowCenter + "-"
+                + maskNull(imageQuality, imageQuality), studyUID, seriesUID,
+                instanceUID, suffix, null);
 
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
@@ -402,13 +404,17 @@ public class WADOCacheImpl implements WADOCache {
             log.info("Clear WADO cache!");
             File[] files = getAbsCacheRoot().listFiles();
             if (files == null) {
-                log.warn("WADO cache not cleared! Reason: cache root is not a directory or cant be read.");
+                log
+                        .warn("WADO cache not cleared! Reason: cache root is not a directory or cant be read.");
                 return;
             }
             for (int i = 0, len = files.length; i < len; i++) {
                 delTree(files[i]);
-                if (!files[i].getName().equals(DEFAULT_WADO_SUBDIR)) {// dont del default dir
-                	files[i].delete();
+                if (!files[i].getName().equals(DEFAULT_WADO_SUBDIR)) {// dont
+                                                                      // del
+                                                                      // default
+                                                                      // dir
+                    files[i].delete();
                 }
             }
         }
@@ -458,9 +464,9 @@ public class WADOCacheImpl implements WADOCache {
      * JMX console) or in a seperate thread (if clean is handled automatically
      * by WADOCache).
      * <DL>
-     * <DD> 1) check if clean is necessary:
+     * <DD>1) check if clean is necessary:
      * <code>showFreeSpace &lt; getMinFreeSpace </code></DD>
-     * <DD> 2) delete the oldest files until
+     * <DD>2) delete the oldest files until
      * <code>showFreeSpace &gt; getPreferredFreeSpace</code></DD>
      * </DL>
      * 
@@ -492,24 +498,25 @@ public class WADOCacheImpl implements WADOCache {
                 log.debug("WADOCache.freeDiskSpace: nothing todo");
         }
     }
-    
+
     /**
      * Remove cache entries for given study!
      * <p>
-     * May delete cache entries for other studies because hashCode directory name is ambiguous! 
+     * May delete cache entries for other studies because hashCode directory
+     * name is ambiguous!
      */
     public void purgeStudy(String studyIUID) {
-        log.info("Delete WADO CACHE Entries for Study:"+studyIUID);
+        log.info("Delete WADO CACHE Entries for Study:" + studyIUID);
         File f = getStudyDir(studyIUID);
-        if ( f.exists()) {
+        if (f.exists()) {
             delDir(f);
         }
     }
-    
+
     private void delDir(File f) {
-        log.debug("M_DELETE:"+f);
-        if ( f.isDirectory() ) {
-            for ( File child : f.listFiles() ) {
+        log.debug("M_DELETE:" + f);
+        if (f.isDirectory()) {
+            for (File child : f.listFiles()) {
                 delDir(child);
             }
         }
@@ -570,10 +577,10 @@ public class WADOCacheImpl implements WADOCache {
 
     public void setDeleterThresholds(String s) {
         this.deleterThresholds = new DeleterThresholds(s, false);// does not
-                                                                    // support
-                                                                    // time
-                                                                    // based
-                                                                    // tresholds
+        // support
+        // time
+        // based
+        // tresholds
     }
 
     public long getMinFreeSpace() {
@@ -651,7 +658,7 @@ public class WADOCacheImpl implements WADOCache {
         if (cacheRoot != null) {
             try {
                 cacheRoot.renameTo(newRootFile); // move only possible if
-                                                    // same partition.
+                // same partition.
             } catch (Throwable t) {
                 // TODO copy cache to new dest?
                 delTree(cacheRoot);
@@ -702,12 +709,14 @@ public class WADOCacheImpl implements WADOCache {
      * The subdir argument is used to seperate default images and special sized
      * images.
      * <p>
-     * The directory names are hex-string values of hashCode from studyUID, seriesUID and instaneUID.
-     * (so they are not unique!)
+     * The directory names are hex-string values of hashCode from studyUID,
+     * seriesUID and instaneUID. (so they are not unique!)
      * <DL>
      * <DT>The File object was build like:</DT>
      * <DD>
-     * &lt;root&gt;/6lt;studyUIDasHex&gt;/&lt;seriesUIDasHex&gt;/&lt;instanceUIDasHex&gt;/[&lt;subdir&gt;/&lt;]/&lt;instanceUID&gt;.&lt;ext&gt;</DD>
+     * &lt;root&gt;/6lt;studyUIDasHex&gt;/&lt;seriesUIDasHex&gt;/&lt;
+     * instanceUIDasHex
+     * &gt;/[&lt;subdir&gt;/&lt;]/&lt;instanceUID&gt;.&lt;ext&gt;</DD>
      * </DL>
      * 
      * @param subdir
@@ -728,10 +737,10 @@ public class WADOCacheImpl implements WADOCache {
             String contentType) {
         if (contentType == null)
             contentType = "image/jpg";// use jpg instead of jpeg here because
-                                        // for extension jpeg is set to jpg.
+        // for extension jpeg is set to jpg.
         File file = getStudyDir(studyUID);
-        file = new File(file, Integer.toHexString( seriesUID.hashCode()) );
-        file = new File(file, Integer.toHexString( instanceUID.hashCode()) );
+        file = new File(file, Integer.toHexString(seriesUID.hashCode()));
+        file = new File(file, Integer.toHexString(instanceUID.hashCode()));
         if (subdir != null)
             file = new File(file, subdir);
         String ext = getFileExtension(contentType);
@@ -744,7 +753,8 @@ public class WADOCacheImpl implements WADOCache {
     }
 
     private File getStudyDir(String studyUID) {
-        return new File( getAbsCacheRoot(), Integer.toHexString( studyUID.hashCode()) );
+        return new File(getAbsCacheRoot(), Integer.toHexString(studyUID
+                .hashCode()));
     }
 
     /**
@@ -776,8 +786,8 @@ public class WADOCacheImpl implements WADOCache {
      * 
      * @throws IOException
      */
-    private void _writeImageFile(BufferedImage bi, File file, String imageQuality)
-            throws IOException {
+    private void _writeImageFile(BufferedImage bi, File file,
+            String imageQuality) throws IOException {
         if (!file.getParentFile().exists()) {
             if (!file.getParentFile().mkdirs()) {
                 throw new IOException("Can not create directory:"
@@ -785,9 +795,9 @@ public class WADOCacheImpl implements WADOCache {
             }
         }
         try {
-        	log.debug("Create JPEG (" + imageQuality 
-        			+ " quality) for WADO request. file: " + file);
-	        createJPEG(bi, file, Float.parseFloat(imageQuality)/100);
+            log.debug("Create JPEG (" + imageQuality
+                    + " quality) for WADO request. file: " + file);
+            createJPEG(bi, file, Float.parseFloat(imageQuality) / 100);
         } catch (Throwable x) {
             log.error("Can not create JPEG for WADO request. file:" + file);
             if (file.exists()) {
@@ -804,43 +814,44 @@ public class WADOCacheImpl implements WADOCache {
         }
     }
 
-	protected void createJPEG(BufferedImage bi, File file, float quality)
-			throws IOException {
-		ImageWriter writer = getImageWriterWriter(imageWriterClass);
-		ImageOutputStream out = ImageIO.createImageOutputStream(file);
-		try {
-			writer.setOutput(out);
-			ImageWriteParam iwparam = writer.getDefaultWriteParam();
-			iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+    protected void createJPEG(BufferedImage bi, File file, float quality)
+            throws IOException {
+        ImageWriter writer = getImageWriterWriter(imageWriterClass);
+        ImageOutputStream out = ImageIO.createImageOutputStream(file);
+        try {
+            writer.setOutput(out);
+            ImageWriteParam iwparam = writer.getDefaultWriteParam();
+            iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             String[] compressionTypes = iwparam.getCompressionTypes();
             if (compressionTypes != null && compressionTypes.length > 0) {
-            	for (int i=0; i<compressionTypes.length; i++) {
-            		if (compressionTypes[i].compareToIgnoreCase("jpeg") == 0) {
-            			iwparam.setCompressionType(compressionTypes[i]);
-            			break;            			
-            		}
-            	}
-            }			
-			iwparam.setCompressionQuality(quality);
-			writer.write(null, new IIOImage(bi, null, null), iwparam);
-		} finally {
-			out.close();
-			writer.dispose();
-		}
-	}
+                for (int i = 0; i < compressionTypes.length; i++) {
+                    if (compressionTypes[i].compareToIgnoreCase("jpeg") == 0) {
+                        iwparam.setCompressionType(compressionTypes[i]);
+                        break;
+                    }
+                }
+            }
+            iwparam.setCompressionQuality(quality);
+            writer.write(null, new IIOImage(bi, null, null), iwparam);
+        } finally {
+            out.close();
+            writer.dispose();
+        }
+    }
 
     private ImageWriter getImageWriterWriter(String imageWriterClass) {
-        for (Iterator writers = ImageIO.getImageWritersByFormatName("JPEG");
-        	writers.hasNext();) {
-        	ImageWriter writer = (ImageWriter) writers.next();
-        	if (writer.getClass().getName().equals(imageWriterClass)) {
-        		return writer;
-        	}
-    	}
-        throw new ConfigurationException("No such ImageWriter - " +  imageWriterClass);
-	}
+        for (Iterator writers = ImageIO.getImageWritersByFormatName("JPEG"); writers
+                .hasNext();) {
+            ImageWriter writer = (ImageWriter) writers.next();
+            if (writer.getClass().getName().equals(imageWriterClass)) {
+                return writer;
+            }
+        }
+        throw new ConfigurationException("No such ImageWriter - "
+                + imageWriterClass);
+    }
 
-	/**
+    /**
      * Reads an jpg file into a BufferedImage.
      * 
      * @param jpgFile
@@ -853,5 +864,4 @@ public class WADOCacheImpl implements WADOCache {
         return null;
     }
 
-    
 }
