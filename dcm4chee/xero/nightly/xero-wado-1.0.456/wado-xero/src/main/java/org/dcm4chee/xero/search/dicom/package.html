@@ -1,0 +1,20 @@
+<html>
+  <head><title>Web Service DICOM C-Find Search</title></head>
+<body>
+  <h1>Web Service DICOM C-Find Search</h1>
+  <p>This package provides a web interface to the DICOM C-Find searches.  This allows access to web clients
+  of the search results without needing to create an AE for every web client, and without needing generic DICOM access 
+  to the server.</p>
+  
+  <p>The general design is quite simple - the existing C-Find search mechanism for XML is used, except that instead
+  of converting internally to an object, the result is just directly returned.  This, then uses exactly the same
+  search criteria and columns that are available to the XML web study services.</p>
+  
+  <h2>Usage</h2>
+  An example usage would be:
+<pre>
+http://HOSTNAME/wado2/cfind?studyUID=1.2.3&amp;level=study
+</pre>
+
+  
+</body></html> 
