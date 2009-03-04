@@ -30,6 +30,10 @@ public class FileSystemInfo {
             jdk6getUsableSpace = File.class.getMethod("getUsableSpace", (Class[]) null);
         } catch (Exception ignore) {}        
     }
+    
+    public static final void disableJDK6Support() {
+        jdk6getUsableSpace = null;
+    }
 
     public static ObjectName getFilesystemMgtName() {
         return dfCmdName;

@@ -57,6 +57,7 @@ import org.dcm4chee.docstore.spi.file.DocumentFileStorage;
 import org.dcm4chee.docstore.test.DocStoreTestBase;
 import org.dcm4chee.docstore.test.DummyDFCommandMBean;
 import org.dcm4chee.docstore.test.TestUtil;
+import org.dcm4chee.docstore.util.FileSystemInfo;
 
 public class DocumentStoreNoPoolTest extends DocStoreTestBase {
 
@@ -92,6 +93,7 @@ public class DocumentStoreNoPoolTest extends DocStoreTestBase {
     }
 
     public void testSelectStorageByAvailability() {
+        FileSystemInfo.disableJDK6Support(); //to force DummyDFCommandMBean usage!
         Collection<DocumentStorage> stores = new ArrayList<DocumentStorage>(5);
         DocumentStorage store = docStore.selectStorageByAvailability(null);
         assertNull("Storage found for list of DocumentStorage=null", store);
@@ -105,44 +107,26 @@ public class DocumentStoreNoPoolTest extends DocStoreTestBase {
         DummyDFCommandMBean.setFreeSpace("pool1_2", 0);
         DummyDFCommandMBean.setFreeSpace("pool2_1", 0);
         DummyDFCommandMBean.setFreeSpace("pool2_2", 0);
-        updateStorageAvailability(stores);
         stores = registry.getDocumentStorages("POOL");
         store = docStore.selectStorageByAvailability(stores);
         assertEquals("Wrong storage found in domain POOL! available:1_1", "PoolStore_1_1", store == null ? null : store.getName());
         DummyDFCommandMBean.setFreeSpace("pool1_1", 0);
         DummyDFCommandMBean.setFreeSpace("pool1_2", 100000000);
-        updateStorageAvailability(stores);
         store = docStore.selectStorageByAvailability(stores);
         assertEquals("Wrong storage found in domain POOL! available:1_2", "PoolStore_1_2", store == null ? null : store.getName());
         DummyDFCommandMBean.setFreeSpace("pool1_2", 0);
         DummyDFCommandMBean.setFreeSpace("pool2_1", 100000000);
-        updateStorageAvailability(stores);
         store = docStore.selectStorageByAvailability(stores);
         assertEquals("Wrong storage found in domain POOL! available:2_1", "PoolStore_2_1", store == null ? null : store.getName());
         DummyDFCommandMBean.setFreeSpace("pool2_1", 0);
         DummyDFCommandMBean.setFreeSpace("pool2_2", 100000000);
-        updateStorageAvailability(stores);
         store = docStore.selectStorageByAvailability(stores);
         assertEquals("Wrong storage found in domain POOL! available:2_2", "PoolStore_2_2", store == null ? null : store.getName());
         DummyDFCommandMBean.setFreeSpace("pool2_2", 0);
-        updateStorageAvailability(stores);
         store = docStore.selectStorageByAvailability(stores);
         assertNotNull("No Storage found for list of unavailable DocumentStorages", store);
         assertTrue("Found storage is not unavailable!", store.getStorageAvailability().equals(Availability.UNAVAILABLE));
     }
-    
-    private void updateStorageAvailability(Collection<DocumentStorage> storages) {
-        if ( storages != null ) {
-            for ( DocumentStorage st : storages  ) {
-                if ( st instanceof DocumentFileStorage ) {
-                    ((DocumentFileStorage) st).checkAvailabilty();
-                } else {
-                    log.warn("DocumentStorage "+st+" is not a DocumentFileStorage and therefore the Availability test may be fail!");
-                }
-            }
-        }
-    }
-    
 
     public void testGetRetrieveDocStorages() {
         Set<DocumentStorage> stores = docStore.getRetrieveDocStorages();
