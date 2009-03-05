@@ -154,7 +154,7 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 		if ( tryReturningRawBytes ) {
 			ArrayList<String> allowedTransferSyntaxList = getAllowedTransferSyntaxesFromContentType( possibleResponses );
 			String allowedTransferSyntaxes = getAllowedTransferSyntaxesString( allowedTransferSyntaxList );
-			if ( ! allowedTransferSyntaxes.isEmpty() ) {
+			if ( allowedTransferSyntaxes.length() > 0 ) {
 				FilterUtil.addToQuery(map, WadoImage.IMG_AS_BYTES_ONLY_FOR_TRANSFER_SYNTAXES, allowedTransferSyntaxes);
 			}
 			map.put(MAX_BITS, eri.maxBits);
