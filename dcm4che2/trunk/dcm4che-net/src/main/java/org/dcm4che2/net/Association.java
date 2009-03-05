@@ -880,12 +880,16 @@ public class Association implements Runnable {
     }
 
     void receivedAssociateRQ(AAssociateRQ rq) throws IOException {
-        log.info("{} >> {}", name, rq);
+        log.info("{}: A-ASSOCIATE-RQ {} >> {}", new String[] { name, rq.getCallingAET(),
+                rq.getCalledAET() });
+        log.debug("{}", rq);
         state.receivedAssociateRQ(this, rq);
     }
 
     void receivedAssociateAC(AAssociateAC ac) throws IOException {
-        log.info("{} >> {}", name, ac);
+        log.info("{}: A-ASSOCIATE-AC {} >> {}", new String[] { name, ac.getCallingAET(),
+                ac.getCalledAET() });
+        log.debug("{}", ac);
         state.receivedAssociateAC(this, ac);
     }
 

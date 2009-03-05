@@ -144,14 +144,18 @@ class PDUEncoder extends PDVOutputStream
     public synchronized void write(AAssociateRQ rq)
     throws IOException
     {
-        log.info("{} << {}", as, rq);
+        log.info("{}: A-ASSOCIATE-RQ {} << {}", new Object[] { as, rq.getCalledAET(),
+                rq.getCallingAET() });
+        log.debug("{}", rq);
         write(rq, PDUType.A_ASSOCIATE_RQ, ItemType.RQ_PRES_CONTEXT);        
     }
 
     public synchronized void write(AAssociateAC ac)
     throws IOException
     {
-        log.info("{} << {}", as, ac);
+        log.info("{}: A-ASSOCIATE-AC {} << {}", new Object[] { as, ac.getCalledAET(),
+                ac.getCallingAET() });
+        log.debug("{}", ac);
         write(ac, PDUType.A_ASSOCIATE_AC, ItemType.AC_PRES_CONTEXT);        
     }
 
