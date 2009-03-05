@@ -53,6 +53,7 @@ import static org.testng.Assert.assertTrue;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -341,7 +342,36 @@ public class DicomImageFilterTest {
 		assertEquals(UID.JPEGExtended24,tsUID);
 	}
 	
-	
-	
+	@Test
+	public void testGetReadAsRawBytes_whenSupportedTransferSyntaxStringsAreSubsetsOrSupersetsOfTheReturnedOne_ShouldReturnFalse() {
+		Point subsampleForTest = new Point(2,4);
+		DicomImageFilter dicomFilter = new DicomImageFilter() {
+			protected Point getReaderRawSubsampleIndices( DicomImageReader reader,
+					   int frame) { return new Point(2,4); }
+			protected String getReaderRawTransferSyntax( 
+					   DicomObject ds, 
+					   DicomImageReader reader,
+					   int frame) { return "1.2.4.222"; }
+		};
+		ImageReadParam readParamMock = createNiceMock(ImageReadParam.class);
+		expect(readParamMock.getSourceXSubsampling()).andStubReturn(subsampleForTest.x);
+		expect(readParamMock.getSourceYSubsampling()).andStubReturn(subsampleForTest.y);
+		replay(readParamMock);
+		
+		//First check for "equal" match.
+		Map<String,Object> params = new HashMap<String,Object>();
+		ArrayList<String> allowedTsList = new ArrayList<String>();
+		allowedTsList.add("1.2");
+		allowedTsList.add("1.2.4");
+		allowedTsList.add("1.2.4.222");
+		params.put(WadoImage.IMG_AS_BYTES_ONLY_FOR_TRANSFER_SYNTAXES, allowedTsList);
+		assertTrue(dicomFilter.getReadAsRawBytes( params, null, readParamMock, 0, null)); 
+		
+		//Next check that the substrings and superstrings do NOT match.
+		params = new HashMap<String,Object>();
+		allowedTsList.remove("1.2.4.222");
+		allowedTsList.add("1.2.4.222.3");
+		assertFalse(dicomFilter.getReadAsRawBytes( params, null, readParamMock, 0, null)); 
+	}
 	
 }

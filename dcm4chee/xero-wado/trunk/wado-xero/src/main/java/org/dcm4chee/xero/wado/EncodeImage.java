@@ -69,7 +69,6 @@ import org.dcm4chee.xero.instrumentation.InstrumentorFactory;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.servlet.ErrorResponseItem;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.slf4j.Logger;
@@ -153,9 +152,8 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 		
 		if ( tryReturningRawBytes ) {
 			ArrayList<String> allowedTransferSyntaxList = getAllowedTransferSyntaxesFromContentType( possibleResponses );
-			String allowedTransferSyntaxes = getAllowedTransferSyntaxesString( allowedTransferSyntaxList );
-			if ( allowedTransferSyntaxes.length() > 0 ) {
-				FilterUtil.addToQuery(map, WadoImage.IMG_AS_BYTES_ONLY_FOR_TRANSFER_SYNTAXES, allowedTransferSyntaxes);
+			if ( ! allowedTransferSyntaxList.isEmpty() ) {
+				map.put(WadoImage.IMG_AS_BYTES_ONLY_FOR_TRANSFER_SYNTAXES, allowedTransferSyntaxList);
 			}
 			map.put(MAX_BITS, eri.maxBits);
 		}
@@ -208,23 +206,6 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 			}
 		}		
 		return contentTypeResponeInfo;
-	}
-	
-	protected String getAllowedTransferSyntaxesString( ArrayList<String> allowedTransferSyntaxList ) {
-		if ( ( allowedTransferSyntaxList != null ) && ( ! allowedTransferSyntaxList.isEmpty() ) ) {
-			StringBuilder builderForTsStringList = new StringBuilder();
-			boolean first = true;
-			for ( String ts : allowedTransferSyntaxList ) {
-				if ( ! first ) {
-					builderForTsStringList.append(",");
-					first = false;
-				}
-				builderForTsStringList.append( ts );
-			}
-			return builderForTsStringList.toString();
-		} else {
-			return "";
-		}
 	}
 	
 	protected ArrayList<String> getAllowedTransferSyntaxesFromContentType( List<EncodeResponseInfo> responseList ) {

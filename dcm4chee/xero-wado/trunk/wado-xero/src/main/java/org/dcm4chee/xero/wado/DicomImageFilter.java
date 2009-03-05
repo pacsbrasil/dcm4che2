@@ -49,6 +49,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -174,13 +175,14 @@ public class DicomImageFilter implements Filter<WadoImage> {
 	  return ret;
    }
 
+   @SuppressWarnings("unchecked")
    protected boolean getReadAsRawBytes( Map<String, Object> params,
-		   							  DicomImageReader reader, 
-		   							  ImageReadParam param, 
-		   							  int frame, 
-		   							  DicomObject ds) {
+		   							    DicomImageReader reader, 
+		   							    ImageReadParam param, 
+		   							    int frame, 
+		   							    DicomObject ds) {
 	   boolean readRawBytes = params.containsKey(WadoImage.IMG_AS_BYTES);
-	   String rawBytesForTransferSyntaxes = (String)params.get(WadoImage.IMG_AS_BYTES_ONLY_FOR_TRANSFER_SYNTAXES);
+	   List<String> rawBytesForTransferSyntaxes = (List<String>)params.get(WadoImage.IMG_AS_BYTES_ONLY_FOR_TRANSFER_SYNTAXES);
 	   String tsUID = getReaderRawTransferSyntax( ds, reader, frame );
 	   if ( (rawBytesForTransferSyntaxes != null) && rawBytesForTransferSyntaxes.contains(tsUID) ) {
 		   readRawBytes = true;
