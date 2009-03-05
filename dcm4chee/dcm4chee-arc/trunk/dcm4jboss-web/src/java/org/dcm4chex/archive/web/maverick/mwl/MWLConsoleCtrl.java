@@ -59,65 +59,65 @@ import org.dcm4chex.archive.web.maverick.mwl.model.MWLModel;
 public class MWLConsoleCtrl extends Dcm4cheeFormController {
 
 
-	/** the view model. */
-	private MWLModel model;
-	
-	private static MWLScuDelegate delegate = null;
+    /** the view model. */
+    private MWLModel model;
 
-	/**
-	 * Get the model for the view.
-	 */
+    private static MWLScuDelegate delegate = null;
+
+    /**
+     * Get the model for the view.
+     */
     protected Object makeFormBean() {
         if ( delegate == null ) {
-        	delegate = new MWLScuDelegate();
-        	delegate.init( getCtx().getServletConfig() );
+            delegate = new MWLScuDelegate();
+            delegate.init( getCtx().getServletConfig() );
         }
         model =  MWLModel.getModel(getCtx().getRequest());
         model.getFilter().setStationAetGroups(getStationAEFilterGroups(), getStationAEFilter()!=null);
         return model;
     }
-	
 
-	
+
+
     protected String perform() throws Exception {
         try {
             HttpServletRequest request = getCtx().getRequest();
-    		model = MWLModel.getModel(request);
-    		model.clearPopupMsg();
-    		model.setPatMergeAttributes(null);
+            model = MWLModel.getModel(request);
+            model.clearPopupMsg();
+            model.setPatMergeAttributes(null);
             if ( request.getParameter("filter.x") != null ) {//action from filter button
-            	try {
-	        		checkFilter( request );
-	            	model.filterWorkList( true );
-            	} catch ( Exception x ) {
-            		model.setPopupMsg("folder.err_datetime", "yyyy/MM/dd" );
-            	}
+                try {
+                    checkFilter( request );
+                    model.filterWorkList( true );
+                } catch ( Exception x ) {
+                    model.setPopupMsg("folder.err_datetime", "yyyy/MM/dd" );
+                }
             } else if ( request.getParameter("nav") != null ) {//action from a nav button. (next or previous)
-            	String nav = request.getParameter("nav");
-            	if ( nav.equals("prev") ) {
-            		model.performPrevious();
-            	} else if ( nav.equals("next") ) {
-            		model.performNext();
-            	}
+                String nav = request.getParameter("nav");
+                if ( nav.equals("prev") ) {
+                    model.performPrevious();
+                } else if ( nav.equals("next") ) {
+                    model.performNext();
+                }
             } else if ( request.getParameter("link.x") != null ) {//action from a global link button.
-            	return performAction( "link", request );
+                return performAction( "link", request );
             } else if ( request.getParameter("doLink.x") != null ) {
-            	return performAction( "doLink", request );
+                return performAction( "doLink", request );
             } else if ( request.getParameter("del.x") != null ) {//action from delete button.
-        		String[] spsIDs = getSPSIds(request);
-        		if ( spsIDs == null || spsIDs.length < 1) {
-        			model.setPopupMsg("mwl.err_delete", "");
-        		} else {
-        			for ( int i = 0 ; i < spsIDs.length ; i++ ) {
-        				delegate.deleteMWLEntry( spsIDs[i] );
-        			}
-        			model.filterWorkList( false );
-        		}
+                String[] spsIDs = getSPSIds(request);
+                if ( spsIDs == null || spsIDs.length < 1) {
+                    model.setPopupMsg("mwl.err_delete", "");
+                } else {
+                    for ( int i = 0 ; i < spsIDs.length ; i++ ) {
+                        delegate.deleteMWLEntry( spsIDs[i] );
+                    }
+                    model.filterWorkList( false );
+                }
             } else {
-            	String action = request.getParameter("action");
-            	if ( action != null ) {
-            		return performAction( action, request );
-            	}
+                String action = request.getParameter("action");
+                if ( action != null ) {
+                    return performAction( action, request );
+                }
             }
             return SUCCESS;
         } catch (Exception e) {
@@ -126,42 +126,42 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
         }
     }
 
-	/**
-	 * @param action
-	 * @param request
-	 * @throws ParseException
-	 */
-	private String performAction(String action, HttpServletRequest request) throws ParseException {
-		if ( "delete".equalsIgnoreCase( action ) ) {
-			if ( delegate.deleteMWLEntry( request.getParameter("spsid") ) ) {
-				model.filterWorkList( false );
-			} else {
-				model.setPopupMsg( "mwl.err_delete_failed", request.getParameter("spsid") );
-			}
-		} else if ("link".equals(action)) {
-			MWLFilter filter = model.getFilter();
+    /**
+     * @param action
+     * @param request
+     * @throws ParseException
+     */
+    private String performAction(String action, HttpServletRequest request) throws ParseException {
+        if ( "delete".equalsIgnoreCase( action ) ) {
+            if ( delegate.deleteMWLEntry( request.getParameter("spsid") ) ) {
+                model.filterWorkList( false );
+            } else {
+                model.setPopupMsg( "mwl.err_delete_failed", request.getParameter("spsid") );
+            }
+        } else if ("link".equals(action)) {
+            MWLFilter filter = model.getFilter();
             MPPSModel mppsModel = MPPSModel.getModel(request);
             String mppsIUID = request.getParameter("mppsIUID");
-			if ( mppsIUID != null ) {
-				model.setMppsIDs( request.getParameterValues("mppsIUID")); // direct url call
-			} else {
-				model.setMppsIDs( mppsModel.getMppsIUIDs() );//redirect from mpps controller
-			}
+            if ( mppsIUID != null ) {
+                model.setMppsIDs( request.getParameterValues("mppsIUID")); // direct url call
+            } else {
+                model.setMppsIDs( mppsModel.getMppsIUIDs() );//redirect from mpps controller
+            }
             prepareLinkPreset(filter, mppsModel, mppsIUID);
-			filter.setAccessionNumber(null);
-			filter.setStationAET(request.getParameter("stationAET"));
-			model.filterWorkList( true );
-		} else if ("doLink".equals(action)) {
-			return doLink(request);
-		} else if ("cancelLink".equals(action)) {
-			model.setMppsIDs(null);
-			return "cancelLink";
+            filter.setAccessionNumber(null);
+            filter.setStationAET(request.getParameter("stationAET"));
+            model.filterWorkList( true );
+        } else if ("doLink".equals(action)) {
+            return doLink(request);
+        } else if ("cancelLink".equals(action)) {
+            model.setMppsIDs(null);
+            return "cancelLink";
         } else if ("inspect".equals(action)) {
             return inspect(request.getParameter("spsID"));
-		}
-		return SUCCESS;
-	}
-    
+        }
+        return SUCCESS;
+    }
+
     private void prepareLinkPreset(MWLFilter filter, MPPSModel mppsModel, String mppsIUID) throws ParseException {
         String patRule = getCtx().getServletConfig().getInitParameter("linkPresetPatientName");
         if ( patRule != null ) {
@@ -183,10 +183,10 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
             if ( "today".equalsIgnoreCase(dateRule) ) {
                 date = MWLFilter.getDateString(new Date());
             } else if ( !"delete".equalsIgnoreCase(dateRule)) {
-                 date = mppsModel.getStartDateOfSelectedMpps(mppsIUID);
-                 if ( date == null ) {
-                     date = MWLFilter.getDateString(new Date());//set today
-                 }
+                date = mppsModel.getStartDateOfSelectedMpps(mppsIUID);
+                if ( date == null ) {
+                    date = MWLFilter.getDateString(new Date());//set today
+                }
             }
             filter.setStartDate(date);
         }
@@ -202,47 +202,47 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
 
 
 
-	/**
-	 * @param request
-	 * @return
-	 */
-	private String doLink(HttpServletRequest request) {
-		String[] mppsIUIDs = model.getMppsIDs();
-		model.setMppsIDs(null);
-		String[] spsIDs = getSPSIds(request);
-		if ( spsIDs == null || spsIDs.length < 1) {
-			model.setPopupMsg("mwl.err_link_selection", "");
-			return SUCCESS;
-		} else if ( spsIDs.length > 1 ) {
-			String patID = (String) model.getMWLEntry(spsIDs[0]).getPatientID();
-			for ( int i = 1 ; i < spsIDs.length ; i++ ) {
-				if ( ! patID.equals(model.getMWLEntry(spsIDs[i]).getPatientID())) {
-					model.setPopupMsg("mwl.err_link_pat", 
+    /**
+     * @param request
+     * @return
+     */
+    private String doLink(HttpServletRequest request) {
+        String[] mppsIUIDs = model.getMppsIDs();
+        model.setMppsIDs(null);
+        String[] spsIDs = getSPSIds(request);
+        if ( spsIDs == null || spsIDs.length < 1) {
+            model.setPopupMsg("mwl.err_link_selection", "");
+            return SUCCESS;
+        } else if ( spsIDs.length > 1 ) {
+            String patID = (String) model.getMWLEntry(spsIDs[0]).getPatientID();
+            for ( int i = 1 ; i < spsIDs.length ; i++ ) {
+                if ( ! patID.equals(model.getMWLEntry(spsIDs[i]).getPatientID())) {
+                    model.setPopupMsg("mwl.err_link_pat", 
                             new String[]{patID,model.getMWLEntry(spsIDs[i]).getPatientID()});
-					return SUCCESS;
-				}
-			}
-		}
-		if ( mppsIUIDs != null ) {
-			Map map;
+                    return SUCCESS;
+                }
+            }
+        }
+        if ( mppsIUIDs != null ) {
+            Map map;
             if ( model.isLocal() ) {
                 map= delegate.linkMppsToMwl( spsIDs, mppsIUIDs );
             } else {
                 map= delegate.linkMppsToMwl( model.getMWLAttributes(spsIDs), mppsIUIDs );
             }
-			if ( map == null ) {
-				MPPSModel.getModel(request).setExternalPopupMsg("mwl.err_link_failed", null);
-			} else if ( map.get("dominant") != null ) {
-				model.setPatMergeAttributes(map);
-				return "mergePatient";
-			}
-		}
-		return "linkDone";
-	}
+            if ( map == null ) {
+                MPPSModel.getModel(request).setExternalPopupMsg("mwl.err_link_failed", null);
+            } else if ( map.get("dominant") != null ) {
+                model.setPatMergeAttributes(map);
+                return "mergePatient";
+            }
+        }
+        return "linkDone";
+    }
 
     private String inspect(String spsID) {
-	    if ( spsID != null ) {
-	        MWLEntry entry = model.getMWLEntry(spsID);
+        if ( spsID != null ) {
+            MWLEntry entry = model.getMWLEntry(spsID);
             if ( entry != null ) {
                 this.getCtx().getRequest().getSession().setAttribute("dataset2view", entry.toDataset());
                 return INSPECT;
@@ -250,53 +250,53 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
                 model.setPopupMsg("mwl.err_inspect",spsID);
             }
         }
-	    return SUCCESS;   
+        return SUCCESS;   
     }
 
-	/**
-	 * @param request
-	 * @return
-	 */
-	private String[] getSPSIds(HttpServletRequest request) {
-		String[] result;
-		if ( request.getParameter("spsID") != null ) {
-			result = new String[]{request.getParameter("spsID")};
-		} else {
-			result = request.getParameterValues("sticky");
-		}
-		return result;
-	}
+    /**
+     * @param request
+     * @return
+     */
+    private String[] getSPSIds(HttpServletRequest request) {
+        String[] result;
+        if ( request.getParameter("spsID") != null ) {
+            result = new String[]{request.getParameter("spsID")};
+        } else {
+            result = request.getParameterValues("sticky");
+        }
+        return result;
+    }
 
 
 
-	/**
-	 * Checks the http parameters for filter params and update the filter.
-	 * 
-	 * @param rq The http request.
-	 * 
-	 * @throws ParseException
-	 * 
-	 */
-	private void checkFilter(HttpServletRequest rq) throws ParseException {
-		MWLFilter filter = model.getFilter();
-		if ( rq.getParameter("patientName") != null ) filter.setPatientName(rq.getParameter("patientName") );
-		if ( rq.getParameter("startDate") != null ) filter.setStartDate(rq.getParameter("startDate") );
-		if ( rq.getParameter("modality") != null ) filter.setModality(rq.getParameter("modality") );
-		filter.setStationAET(rq.getParameter("stationAET") );//we need always set StationAET to update also with StationAET groups
-		if ( rq.getParameter("accessionNumber") != null ) filter.setAccessionNumber(rq.getParameter("accessionNumber") );
-	}
+    /**
+     * Checks the http parameters for filter params and update the filter.
+     * 
+     * @param rq The http request.
+     * 
+     * @throws ParseException
+     * 
+     */
+    private void checkFilter(HttpServletRequest rq) throws ParseException {
+        MWLFilter filter = model.getFilter();
+        if ( rq.getParameter("patientName") != null ) filter.setPatientName(rq.getParameter("patientName") );
+        if ( rq.getParameter("startDate") != null ) filter.setStartDate(rq.getParameter("startDate") );
+        if ( rq.getParameter("modality") != null ) filter.setModality(rq.getParameter("modality") );
+        filter.setStationAET(rq.getParameter("stationAET") );//we need always set StationAET to update also with StationAET groups
+        if ( rq.getParameter("accessionNumber") != null ) filter.setAccessionNumber(rq.getParameter("accessionNumber") );
+    }
 
-	/**
-	 * Returns the delegater that is used to query the MWLSCP or delete an MWL Entry (only if MWLSCP AET is local)
-	 * 
-	 * @return The delegator.
-	 */
-	public static MWLScuDelegate getMwlScuDelegate() {
-		return delegate;
-	}
-	
-	protected String getCtrlName() {
-		return "mwl_console";
-	}
-	
+    /**
+     * Returns the delegater that is used to query the MWLSCP or delete an MWL Entry (only if MWLSCP AET is local)
+     * 
+     * @return The delegator.
+     */
+    public static MWLScuDelegate getMwlScuDelegate() {
+        return delegate;
+    }
+
+    protected String getCtrlName() {
+        return "mwl_console";
+    }
+
 }
