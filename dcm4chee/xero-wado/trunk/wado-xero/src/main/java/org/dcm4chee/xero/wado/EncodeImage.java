@@ -38,15 +38,16 @@
 package org.dcm4chee.xero.wado;
 
 import static org.dcm4chee.xero.wado.WadoParams.CONTENT_DISPOSITION;
-import static org.dcm4chee.xero.wado.WadoParams.OBJECT_UID;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -142,39 +143,105 @@ public class EncodeImage implements Filter<ServletResponseItem> {
 			quality = Float.parseFloat(sQuality);
 		String queryStr = computeQueryStr(map);
 		map.put(org.dcm4chee.xero.metadata.filter.MemoryCacheFilter.KEY_NAME, queryStr);
-		EncodeResponseInfo eri = contentTypeMap.get(contentType);
-		boolean multipleEncoding = contentType.indexOf(',')>=0;
-		if ((eri != null && eri.maxBits > 8) || multipleEncoding) {
-			String tsuid = ds.getString(Tag.TransferSyntaxUID);
-			EncodeResponseInfo tsEri = contentTypeMap.get(tsuid);
-			log.info("Source tsuid="+tsuid);
-			if (tsEri != null && contentType.indexOf(tsEri.mimeType) >= 0) {
-				contentType = tsEri.mimeType;
-				log.debug("Trying to read raw image for {}",map.get(OBJECT_UID));
-				FilterUtil.addToQuery(map, WadoImage.IMG_AS_BYTES, "true");
-				eri = tsEri;
-				contentType = eri.mimeType;
-				multipleEncoding = false;
-			}
-			if( eri!=null && eri.maxBits!=0 && map.containsKey(MAX_BITS)==false) map.put(MAX_BITS, eri.maxBits);
+		
+		ArrayList<EncodeResponseInfo> possibleResponses = getAllowedContentTypes( contentType );
+		EncodeResponseInfo eri = null;
+		if ( possibleResponses.size() > 0 ) {
+			eri = possibleResponses.get(0);
 		}
-		if( multipleEncoding ) {
-			// This won't happen if we found the encoding that exists in the actual image, eg IMG_AS_BYTES return.
-			for( String testType : contentType.split(",") ) {
-				int semi = testType.indexOf(';');
-				if( semi>0 ) testType = testType.substring(0,semi);
-				testType = testType.trim();
-				eri = contentTypeMap.get(testType);
-				if( eri!=null ) break;
+		boolean tryReturningRawBytes = ((eri != null && eri.maxBits > 8) );
+		
+		if ( tryReturningRawBytes ) {
+			ArrayList<String> allowedTransferSyntaxList = getAllowedTransferSyntaxesFromContentType( possibleResponses );
+			String allowedTransferSyntaxes = getAllowedTransferSyntaxesString( allowedTransferSyntaxList );
+			if ( ! allowedTransferSyntaxes.isEmpty() ) {
+				FilterUtil.addToQuery(map, WadoImage.IMG_AS_BYTES_ONLY_FOR_TRANSFER_SYNTAXES, allowedTransferSyntaxes);
 			}
+			map.put(MAX_BITS, eri.maxBits);
 		}
+		
 		if( eri==null ) {
 			log.warn("No EncodeResponeItem for contentType: " + contentType);
 			return new ErrorResponseItem(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,"Content type "+contentType+" isn't supported.");
 		}
-		WadoImage image = wadoImageFilter.filter(null, map);
+		WadoImage image = null;
+		try {
+			image = wadoImageFilter.filter(null, map);
+		}
+		catch ( Exception e ) {
+			log.error("Error running WadoImage filter chain.", e);
+			return new ErrorResponseItem(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,e.toString());
+		}
 		if( image==null || image.hasError() ) return new ErrorResponseItem(HttpServletResponse.SC_NO_CONTENT,"No content found.");
+
+		if ( image.getValue() == null ) {
+			if ( image.getParameter(WadoImage.IMG_AS_BYTES) != null ) {
+				String rawTransferSyntax = (String)image.getParameter(WadoImage.AS_BYTES_RETURNED_TRANSFER_SYNTAX);
+				EncodeResponseInfo tsEri = contentTypeMap.get(rawTransferSyntax);
+				if (tsEri == null ) {
+					return new ErrorResponseItem(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,"Internal error, retrieved an unknown content type that doesn't match "+contentType);
+				}
+				if ( ! eri.transferSyntaxUIDs.contains( rawTransferSyntax ) ) {
+					eri = tsEri;
+				}
+				log.info("Source tsuid="+rawTransferSyntax);
+			}
+		}
+		
 		return new ImageServletResponseItem(image, eri, quality);
+	}
+	
+	protected ArrayList<EncodeResponseInfo> getAllowedContentTypes( String contentType ) {
+		ArrayList<EncodeResponseInfo> contentTypeResponeInfo = new ArrayList<EncodeResponseInfo>();		
+		for( String testType : contentType.split(",") ) {
+			//
+			// throw away any quality factors or parameters (after a semicolon).  
+			// In the future, we could actually encode
+			// a new EncodeResponseInfo that contained the extra parameters.
+			//
+			int semi = testType.indexOf(';');
+			if( semi>0 ) testType = testType.substring(0,semi);
+			testType = testType.trim();
+			EncodeResponseInfo response = contentTypeMap.get(contentType);
+			if ( response != null ) {
+				contentTypeResponeInfo.add(response);
+			}
+		}		
+		return contentTypeResponeInfo;
+	}
+	
+	protected String getAllowedTransferSyntaxesString( ArrayList<String> allowedTransferSyntaxList ) {
+		if ( ( allowedTransferSyntaxList != null ) && ( ! allowedTransferSyntaxList.isEmpty() ) ) {
+			StringBuilder builderForTsStringList = new StringBuilder();
+			boolean first = true;
+			for ( String ts : allowedTransferSyntaxList ) {
+				if ( ! first ) {
+					builderForTsStringList.append(",");
+					first = false;
+				}
+				builderForTsStringList.append( ts );
+			}
+			return builderForTsStringList.toString();
+		} else {
+			return "";
+		}
+	}
+	
+	protected ArrayList<String> getAllowedTransferSyntaxesFromContentType( List<EncodeResponseInfo> responseList ) {
+		ArrayList<String> UidList = new ArrayList<String>();
+		for ( EncodeResponseInfo ri : responseList ) {
+			UidList.addAll(ri.transferSyntaxUIDs);
+		}
+		// If we want JP12, then we also support JPEG!
+		if ( UidList.contains(UID.JPEGExtended24) ) {
+			if ( ! UidList.contains(UID.JPEGBaseline1 ) ) {
+				UidList.add( UID.JPEGBaseline1 );
+			}
+		}
+		if ( log.isDebugEnabled() ) {
+			log.debug( "Accept raw bytes for the following UIDs." + UidList.toString() );
+		}
+		return UidList;
 	}
 
 	/**
@@ -427,6 +494,7 @@ class ImageServletResponseItem implements ServletResponseItem {
 }
 
 class EncodeResponseInfo {
+	private static final List<String> EMPTY_STRING_LIST = new ArrayList<String>(0);
 	// Read from this mime type.
 	public String mimeType;
 
@@ -441,6 +509,8 @@ class EncodeResponseInfo {
 
 	// Set the compression type to this value
 	public String compressionType;
+	
+	public List<String> transferSyntaxUIDs = EMPTY_STRING_LIST;
 
 	public EncodeResponseInfo(String mimeType, String lookupMimeType, boolean isLossyQuality, int maxBits, String compressionType,
 			String... transferSyntaxes) {
@@ -451,8 +521,10 @@ class EncodeResponseInfo {
 		this.maxBits = maxBits;
 		this.compressionType = compressionType;
 		if (transferSyntaxes != null) {
-			for (String ts : transferSyntaxes) {
+			transferSyntaxUIDs = new ArrayList<String>();
+			for ( String ts : transferSyntaxes ) {
 				EncodeImage.contentTypeMap.put(ts, this);
+				transferSyntaxUIDs.add(ts);
 			}
 		}
 		EncodeImage.contentTypeMap.put(mimeType, this);

@@ -96,7 +96,7 @@ public class DicomImageFilter implements Filter<WadoImage> {
    public WadoImage filter(FilterItem<WadoImage> filterItem, Map<String, Object> params) {
 	  WadoImage ret = null;
 	  DicomImageReader reader = dicomImageReaderFilter.filter(null, params);
-	  boolean readRawBytes = params.containsKey(WadoImage.IMG_AS_BYTES);
+	  
 	  if (reader == null) {
 		 log.warn("Couldn't find reader for DICOM object.");
 		 return null;
@@ -111,7 +111,7 @@ public class DicomImageFilter implements Filter<WadoImage> {
 	  // Overlays are specified as the actual overlay number, not as an
 	  // offset value.
 	  if ((frame & 0x60000000) != 0)	frame++;
-	  
+
 	  try {
 		 long start = System.nanoTime();
 		 String op = "decompress";
@@ -120,15 +120,19 @@ public class DicomImageFilter implements Filter<WadoImage> {
 			 int height = reader.getHeight(0);
 
 			 String filenameExtra = updateParamFromRegion(param, params, width, height);
-
+			 
 			 BufferedImage bi;
 			 DicomStreamMetaData streamData = (DicomStreamMetaData) reader.getStreamMetadata();
 			 DicomObject ds = streamData.getDicomObject();
+			 
+			 boolean readRawBytes = getReadAsRawBytes(params, reader, param, frame, ds);			 
+			 
 			 ret = new WadoImage(streamData.getDicomObject(), ds.getInt(Tag.BitsStored), null);
 			 ret.setFilename((String) params.get(OBJECT_UID)+"-f"+(frame+1)+filenameExtra);
 			 if (readRawBytes) {
 				 byte[] img = reader.readBytes(frame, param);
 				 ret.setParameter(WadoImage.IMG_AS_BYTES, img);
+				 setAsBytesTransferSyntax(ret, ds, reader, frame);
 				 bi = null;
 				 op="read raw";
 			 } else if (OverlayUtils.isOverlay(frame) || !ColorModelFactory.isMonochrome(ds)) {
@@ -168,6 +172,88 @@ public class DicomImageFilter implements Filter<WadoImage> {
 	  if (ret == null)
 		 return (WadoImage) filterItem.callNextFilter(params);
 	  return ret;
+   }
+
+   protected boolean getReadAsRawBytes( Map<String, Object> params,
+		   							  DicomImageReader reader, 
+		   							  ImageReadParam param, 
+		   							  int frame, 
+		   							  DicomObject ds) {
+	   boolean readRawBytes = params.containsKey(WadoImage.IMG_AS_BYTES);
+	   String rawBytesForTransferSyntaxes = (String)params.get(WadoImage.IMG_AS_BYTES_ONLY_FOR_TRANSFER_SYNTAXES);
+	   String tsUID = getReaderRawTransferSyntax( ds, reader, frame );
+	   if ( (rawBytesForTransferSyntaxes != null) && rawBytesForTransferSyntaxes.contains(tsUID) ) {
+		   readRawBytes = true;
+	   }
+	   if ( readRawBytes ) {
+		   Point rawSubsamping = getReaderRawSubsampleIndices( reader, frame);
+		   if ( ( rawSubsamping.x != param.getSourceXSubsampling() ) ||
+				( rawSubsamping.y != param.getSourceYSubsampling() ) ) {
+			   log.debug("Not reading raw bytes because raw subsample factor is not the same as the required value.");
+			   readRawBytes = false;
+		   }
+	   }
+	   return readRawBytes;
+   }
+   
+   protected Point getReaderRawSubsampleIndices( DicomImageReader reader,
+		   int frame) {
+	   int subX = 1;
+	   int subY = 1;
+	   try {
+		   IIOMetadata metadata = reader.getImageMetadata(frame);
+		   if ( metadata != null ) {
+			   final String nodeName = "transferSyntax";
+			   Element node = (Element) metadata.getAsTree(nodeName);
+			   String subsampleX = node.getAttribute("subsampleX");
+			   String subsampleY = node.getAttribute("subsampleY");
+			   if ( subsampleX != null ) {
+				   subX = Integer.parseInt(subsampleX);
+				   if ( subX < 1 ) {
+					   subX = 1;
+				   }
+			   }
+			   if ( subsampleY != null ) {
+				   subY = Integer.parseInt(subsampleY);
+				   if ( subY < 1 ) {
+					   subY = 1;
+				   }
+			   }
+		   }
+	   } catch (Exception e) {
+	   }
+	   return new Point(subX, subY);
+	   
+   }
+   
+   protected String getReaderRawTransferSyntax( 
+		   DicomObject ds, 
+		   DicomImageReader reader,
+		   int frame) {
+	   String tsUID = null;
+	   try {
+		   IIOMetadata metadata = reader.getImageMetadata(frame);
+		   if ( metadata != null ) {
+			   final String nodeName = "transferSyntax";
+			   Element node = (Element) metadata.getAsTree(nodeName);
+			   tsUID = node.getAttribute("transferSyntax");
+		   }
+	   } catch (Exception e) {
+	   }
+	   if ( tsUID == null ) {
+		   tsUID = ds.getString(Tag.TransferSyntaxUID);
+	   }
+	   return tsUID;
+   }
+
+   protected void setAsBytesTransferSyntax(
+		   WadoImage ret, 
+		   DicomObject ds, 
+		   DicomImageReader reader,
+		   int frame) {
+	   String tsUID = getReaderRawTransferSyntax( ds, reader, frame );
+	   ret.setParameter(WadoImage.AS_BYTES_RETURNED_TRANSFER_SYNTAX, tsUID);
+	   
    }
    
    /**

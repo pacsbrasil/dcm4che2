@@ -105,27 +105,17 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 		  return filterItem.callNextFilter(params);
 	  }
 
-	  if( params.containsKey(WadoImage.IMG_AS_BYTES) ) {
-		  // TODO:
-		  // For IMG_AS_BYTES, we will not check for embedded overlay bits or junk bits.
-		  // We only check the signed flag, and the bits_stored.  If embedded overlays must
-		  // be stripped for raw (compressed) returned data, we need to check for them
-		  // in the header first.
-		  //
-		  // Check up-front to see if the image can be returned as bytes so that no
-		  // decoding is necessary.  This only works if the correct number of bits is set.
-		  DicomObject ds = dicomImageHeader.filter(null,params);
-		  if( !needsRescaleWhenRequestIsForRawBytes(null,bits,ds) ) {
-			  log.debug("Image doesn't need to be rescaled and can be returned as raw bytes.");
-			  return filterItem.callNextFilter(params);
-		  }
-		  // Can't get it as bytes....
-		  FilterUtil.removeFromQuery(params,WadoImage.IMG_AS_BYTES);
-		  params.remove(WadoImage.IMG_AS_BYTES);
-	  }
-
 	  WadoImage wi = (WadoImage) filterItem.callNextFilter(params);
 	  if( wi==null || wi.hasError()) return wi;
+	  if ( wi.getValue() == null ) {
+		  if ( wi.getParameter(WadoImage.IMG_AS_BYTES) != null ) {
+			  log.debug("Raw bytes returned.  We can assume no rescale is needed.");
+		  } else {
+			  log.info("Neither raw bytes, nor a BufferedImage is returned.");
+		  }
+		  return wi;
+	  }
+	  
 	  DicomObject ds = wi.getDicomObject();
 	  if( !mayRequireRescale(wi,bits,ds) )  {
 		  log.debug("Image is 8-bit or color, doesn't need to be rescaled, and can be returned as a regular image.");

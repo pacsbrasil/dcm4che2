@@ -50,6 +50,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.IOException;
 import java.util.HashMap;
@@ -61,6 +62,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.UID;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.imageioimpl.plugins.dcm.DicomImageReader;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -235,6 +241,19 @@ public class DicomImageFilterTest {
 		return pixelRangeNode;
 	}
 	
+	protected Element makeTransferSyntaxNode( String transferSyntax, int subsampleX, int subsampleY ) throws ParserConfigurationException {
+		final String nodeName = "transferSyntax";
+		Element rawTransferSyntaxNode;
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder parser = factory.newDocumentBuilder();
+		Document document = parser.newDocument();
+		rawTransferSyntaxNode = document.createElement(nodeName);		
+		rawTransferSyntaxNode.setAttribute("transferSyntax", transferSyntax);
+		rawTransferSyntaxNode.setAttribute("subsampleX", String.valueOf(subsampleX));
+		rawTransferSyntaxNode.setAttribute("subsampleY", String.valueOf(subsampleY));
+		return rawTransferSyntaxNode;
+	}
+	
 	@Test
 	public void setPixelRangeInformationTest() throws IOException, ParserConfigurationException {
 		WadoImage wi = new WadoImage(null, 0, null);
@@ -258,4 +277,71 @@ public class DicomImageFilterTest {
 		assertEquals(7889, ReduceBitsFilter.getPreviousLargestPixelValue(wi));
 		assertEquals(12, ReduceBitsFilter.getPreviousReducedBits(wi));
 	}
+	
+	@Test
+	public void testGetReaderRawSubsampleIndices() throws ParserConfigurationException, IOException {
+		DicomImageFilter dicomFilter = new DicomImageFilter();
+		
+		final String nodeName = "transferSyntax";
+		Element rawTransferSyntaxNode = makeTransferSyntaxNode(UID.JPEGExtended24, 2, 4);
+		
+		IIOMetadata metadataMock = createNiceMock(IIOMetadata.class);
+		expect(metadataMock.getAsTree(eq(nodeName))).andReturn(rawTransferSyntaxNode);
+		replay(metadataMock);
+
+		DicomImageReader readerMock = createNiceMock(DicomImageReader.class);
+		expect(readerMock.getImageMetadata(0)).andReturn(metadataMock);
+		replay(readerMock);
+		
+		int frame = 0;
+		Point subsample = dicomFilter.getReaderRawSubsampleIndices( readerMock, frame );
+		assertEquals(2,subsample.x);
+		assertEquals(4,subsample.y);
+	}
+	
+	@Test
+	public void testGetReaderRawTransferSyntax_whenIIOMetadataIsAvailable_shouldReturnRawTransferSyntaxFromMetadata( ) throws ParserConfigurationException, IOException {
+		DicomImageFilter dicomFilter = new DicomImageFilter();
+		
+		final String nodeName = "transferSyntax";
+		Element rawTransferSyntaxNode = makeTransferSyntaxNode(UID.JPEGExtended24, 2, 4);
+		
+		IIOMetadata metadataMock = createNiceMock(IIOMetadata.class);
+		expect(metadataMock.getAsTree(eq(nodeName))).andReturn(rawTransferSyntaxNode);
+		replay(metadataMock);
+
+		DicomImageReader readerMock = createNiceMock(DicomImageReader.class);
+		expect(readerMock.getImageMetadata(0)).andReturn(metadataMock);
+		replay(readerMock);
+		
+		int frame = 0;
+		
+		String tsUID = dicomFilter.getReaderRawTransferSyntax( null, 
+				readerMock,
+			   frame);
+		assertEquals(UID.JPEGExtended24,tsUID);
+	}
+	
+	@Test
+	public void testGetReaderRawTransferSyntax_whenIIOMetadataIsNotAvailable_shouldReturnRawTransferSyntaxFromDicomHeader( ) throws ParserConfigurationException, IOException {
+		DicomImageFilter dicomFilter = new DicomImageFilter();
+		
+		DicomImageReader readerMock = createNiceMock(DicomImageReader.class);
+		expect(readerMock.getImageMetadata(0)).andReturn(null);
+		replay(readerMock);
+		
+		DicomObject header = new BasicDicomObject();
+		header.putString(Tag.TransferSyntaxUID, VR.UI, UID.JPEGExtended24);
+		
+		int frame = 0;
+		
+		String tsUID = dicomFilter.getReaderRawTransferSyntax( header, 
+				readerMock,
+			    frame);
+		assertEquals(UID.JPEGExtended24,tsUID);
+	}
+	
+	
+	
+	
 }

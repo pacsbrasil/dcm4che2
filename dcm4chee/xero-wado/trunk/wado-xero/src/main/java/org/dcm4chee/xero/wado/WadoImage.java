@@ -62,8 +62,11 @@ private static final Logger log = LoggerFactory.getLogger(WadoImage.class);
 	public static String WINDOW_WIDTH = "windowWidth";
 	public static String FRAME_NUMBER= "frameNumber";
 	
-	public static String IMG_AS_BYTES = " asBytes";
+	public static String IMG_AS_BYTES = "asBytes";
+	public static String AS_BYTES_RETURNED_TRANSFER_SYNTAX = "asBytesReturnedTransferSyntax";
 
+	public static String IMG_AS_BYTES_ONLY_FOR_TRANSFER_SYNTAXES = "asBytesOnlyForTransferSyntaxes";
+	
 	private DicomObject ds;
 	private int stored;
 	private String filename;
