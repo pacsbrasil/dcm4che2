@@ -80,6 +80,9 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  *  query="SELECT OBJECT(a) FROM MWLItem AS a WHERE a.requestedProcedureId = ?1 AND a.spsId = ?2"
  *  transaction-type="Supports"
  *
+ * @ejb.finder signature="java.util.Collection findByStudyIuid(java.lang.String suid)"
+ *             query="SELECT OBJECT(a) FROM MWLItem a where a.studyIuid = ?1" transaction-type="Supports"
+ *
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
  *
  */

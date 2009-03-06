@@ -67,6 +67,10 @@ public class MPPSQueryCmd extends BaseReadCmd {
     private static final String[] RELATIONS = { "Patient.pk",
     		"MPPS.patient_fk"};
 
+    private static final int[] PATIENT_ATTRS = { Tags.RefPatientSeq,
+        Tags.PatientName, Tags.PatientID, Tags.IssuerOfPatientID,
+        Tags.PatientBirthDate, Tags.PatientSex, };
+    
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
     /**
@@ -145,8 +149,8 @@ public class MPPSQueryCmd extends BaseReadCmd {
 
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();       
-        DatasetUtils.fromByteArray( rs.getBytes(1), ds);
-        DatasetUtils.fromByteArray( rs.getBytes(2), ds);
+        DatasetUtils.fromByteArray( rs.getBytes(2), ds); //mpps attrs
+        DatasetUtils.fromByteArray( rs.getBytes(1), ds); //pat attrs
         return ds;
     }
 }

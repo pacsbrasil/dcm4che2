@@ -160,8 +160,8 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
 
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();       
-        DatasetUtils.fromByteArray(rs.getBytes(1), ds);
-        DatasetUtils.fromByteArray(rs.getBytes(2), ds);
+        DatasetUtils.fromByteArray(rs.getBytes(2), ds); //mwl item
+        DatasetUtils.fromByteArray(rs.getBytes(1), ds); //patient
         adjustDataset(ds, keys);
         return ds.subSet(keys);
     }

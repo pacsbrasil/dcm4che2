@@ -61,8 +61,13 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.ejb.interfaces.GPSPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
+import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.MWLItemLocal;
+import org.dcm4chex.archive.ejb.interfaces.MWLItemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
@@ -90,47 +95,51 @@ import org.dcm4chex.archive.util.Convert;
  *  type="Required"
  * 
  * @ejb.ejb-ref ejb-name="Patient" view-type="local" ref-name="ejb/Patient" 
- * 
  * @ejb.ejb-ref ejb-name="Study" view-type="local" ref-name="ejb/Study" 
- * 
  * @ejb.ejb-ref ejb-name="Series" view-type="local" ref-name="ejb/Series" 
- * 
  * @ejb.ejb-ref ejb-name="Instance" view-type="local" ref-name="ejb/Instance" 
- *  
  * @ejb.ejb-ref ejb-name="File" view-type="local" ref-name="ejb/File"
+ * @ejb.ejb-ref ejb-name="MPPS" view-type="local" ref-name="ejb/MPPS" 
+ * @ejb.ejb-ref ejb-name="MWLItem" view-type="local" ref-name="ejb/MWLItem"
  *  
  */
 public abstract class ContentEditBean implements SessionBean {
 
-	private static final int CHANGE_MODE_NO = 0;
-	private static final int CHANGE_MODE_STUDY = 0x04;
-	private static final int CHANGE_MODE_SERIES = 0x02;
-	private static final int CHANGE_MODE_INSTANCE = 0x01;
+    private static final int CHANGE_MODE_NO = 0;
+    private static final int CHANGE_MODE_STUDY = 0x04;
+    private static final int CHANGE_MODE_SERIES = 0x02;
+    private static final int CHANGE_MODE_INSTANCE = 0x01;
 
-	private static final int DELETED = 1;
-	
+    private static final int DELETED = 1;
+
     private PatientLocalHome patHome;
     private StudyLocalHome studyHome;
     private SeriesLocalHome seriesHome;
     private InstanceLocalHome instHome;
+    private MPPSLocalHome mppsHome;
+    private MWLItemLocalHome mwlHome;
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
-    
+
     private static Logger log = Logger.getLogger( ContentEditBean.class.getName() );
 
     public void setSessionContext(SessionContext arg0) throws EJBException,
-            RemoteException {
+    RemoteException {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
             patHome = (PatientLocalHome) jndiCtx
-                    .lookup("java:comp/env/ejb/Patient");
+            .lookup("java:comp/env/ejb/Patient");
             studyHome = (StudyLocalHome) jndiCtx
-                    .lookup("java:comp/env/ejb/Study");
+            .lookup("java:comp/env/ejb/Study");
             seriesHome = (SeriesLocalHome) jndiCtx
-                    .lookup("java:comp/env/ejb/Series");
+            .lookup("java:comp/env/ejb/Series");
             instHome = (InstanceLocalHome) jndiCtx
-                    .lookup("java:comp/env/ejb/Instance");
+            .lookup("java:comp/env/ejb/Instance");
+            mppsHome = (MPPSLocalHome) jndiCtx
+            .lookup("java:comp/env/ejb/MPPS");
+            mwlHome = (MWLItemLocalHome) jndiCtx
+            .lookup("java:comp/env/ejb/MWLItem");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -148,6 +157,7 @@ public abstract class ContentEditBean implements SessionBean {
         studyHome = null;
         seriesHome = null;
         instHome = null;
+        mppsHome = null;
     }
 
     /**
@@ -157,14 +167,14 @@ public abstract class ContentEditBean implements SessionBean {
     public Dataset createPatient(Dataset ds) throws CreateException {
         return patHome.create(ds).getAttributes(true);
     }
-    
+
     /**
      * @ejb.interface-method
      */
     public Map mergePatients(long patPk, long[] mergedPks) {
-    	Map map = new HashMap();
-    	try {
-	        PatientLocal dominant = patHome.findByPrimaryKey(new Long(patPk));
+        Map map = new HashMap();
+        try {
+            PatientLocal dominant = patHome.findByPrimaryKey(new Long(patPk));
             if ( checkCircularMerge(dominant, mergedPks) ) {
                 log.warn("Circular merge detected (dominant:"+dominant.getPatientId()+
                         "^^^"+dominant.getIssuerOfPatientId()+")! Merge order ignored!");
@@ -174,24 +184,25 @@ public abstract class ContentEditBean implements SessionBean {
             map.put("DOMINANT",dominant.getAttributes(false) );
             Dataset[] mergedPats = new Dataset[mergedPks.length];
             map.put("MERGED",mergedPats);
-	        ArrayList list = new ArrayList();
-	        for (int i = 0; i < mergedPks.length; i++) {
-	            if ( patPk == mergedPks[i] ) continue;
-	            PatientLocal priorPat = patHome.findByPrimaryKey(new Long(mergedPks[i]));
-	            mergedPats[i] = priorPat.getAttributes(false);
-            	list.addAll(priorPat.getStudies());
-	            dominant.getStudies().addAll(priorPat.getStudies());
-	            dominant.getMpps().addAll(priorPat.getMpps());
-	            dominant.getMwlItems().addAll(priorPat.getMwlItems());                
+            ArrayList list = new ArrayList();
+            for (int i = 0; i < mergedPks.length; i++) {
+                if ( patPk == mergedPks[i] ) continue;
+                PatientLocal priorPat = patHome.findByPrimaryKey(new Long(mergedPks[i]));
+                mergedPats[i] = priorPat.getAttributes(false);
+                list.addAll(priorPat.getStudies());
+                dominant.getStudies().addAll(priorPat.getStudies());
+                dominant.getMpps().addAll(priorPat.getMpps());
+                dominant.getMwlItems().addAll(priorPat.getMwlItems());                
+                dominant.getGppps().addAll(priorPat.getGppps());                
                 dominant.getGsps().addAll(priorPat.getGsps());
-	            priorPat.setMergedWith(dominant);
+                priorPat.setMergedWith(dominant);
             }
-	        ArrayList col = new ArrayList();
+            ArrayList col = new ArrayList();
             Iterator iter = list.iterator();
             StudyLocal sl;
             while ( iter.hasNext() ) {
-            	sl = (StudyLocal) iter.next();
-            	col.add( getStudyMgtDataset( sl, sl.getSeries(), null ) );
+                sl = (StudyLocal) iter.next();
+                col.add( getStudyMgtDataset( sl, sl.getSeries(), null ) );
             }
             map.put("NOTIFICATION_DS", col);
             return map;
@@ -206,7 +217,7 @@ public abstract class ContentEditBean implements SessionBean {
             long pk = mergedWith.getPk().longValue();
             for ( int i = 0 ; i < mergedPks.length ; i++) {
                 if ( pk == mergedPks[i]) {
-                   return true;
+                    return true;
                 }
             }
             return checkCircularMerge(pat, mergedPks);
@@ -214,65 +225,65 @@ public abstract class ContentEditBean implements SessionBean {
         return false;
     }
 
-	/**
+    /**
      * @throws CreateException
      * @ejb.interface-method
      */
     public Dataset createStudy(Dataset ds, long patPk) throws CreateException {
-    	try {
-	        PatientLocal patient = patHome.findByPrimaryKey(new Long(patPk));
-	        Dataset ds1 = studyHome.create(ds, patient).getAttributes(true);
-	        if ( log.isDebugEnabled() ) { 
+        try {
+            PatientLocal patient = patHome.findByPrimaryKey(new Long(patPk));
+            Dataset ds1 = studyHome.create(ds, patient).getAttributes(true);
+            if ( log.isDebugEnabled() ) { 
                 log.debug("createStudy ds1:");
                 log.debug(ds1);
             }
-	        ds1.putAll(patient.getAttributes(true));
-	        if ( log.isDebugEnabled() ) { 
+            ds1.putAll(patient.getAttributes(true));
+            if ( log.isDebugEnabled() ) { 
                 log.debug("createStudy ds1 with patient:");
                 log.debug(ds1);
             }
-	        return ds1;
+            return ds1;
         } catch (FinderException e) {
             throw new EJBException(e);
         }
-	        
+
     }
-    
+
     /**
      * @throws CreateException
      * @ejb.interface-method
      */
     public Dataset createSeries(Dataset ds, long studyPk) throws CreateException {
-    	try {
-	        StudyLocal study = studyHome.findByPrimaryKey(new Long(studyPk));
-	        SeriesLocal series =  seriesHome.create(ds, study);
-	        Collection col = new ArrayList(); col.add( series );
-	        return getStudyMgtDataset( study, col, null, CHANGE_MODE_SERIES, 
+        try {
+            StudyLocal study = studyHome.findByPrimaryKey(new Long(studyPk));
+            SeriesLocal series =  seriesHome.create(ds, study);
+            Collection col = new ArrayList(); col.add( series );
+            return getStudyMgtDataset( study, col, null, CHANGE_MODE_SERIES, 
                     series.getAttributes(true) );
         } catch (FinderException e) {
             throw new EJBException(e);
         }
-	        
+
     }
-    
+
     /**
      * @ejb.interface-method
      */
     public Collection updatePatient(Dataset ds) {
 
         try {
-        	Collection col = new ArrayList();
+            Collection col = new ArrayList();
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             final long pk = Convert.toLong(ds.getByteBuffer(PrivateTags.PatientPk).array());
             PatientLocal patient = patHome
-                    .findByPrimaryKey(new Long(pk));
+            .findByPrimaryKey(new Long(pk));
             patient.setAttributes(ds);
             Collection studies = patient.getStudies();
             Iterator iter = patient.getStudies().iterator();
             StudyLocal sl;
             while ( iter.hasNext() ) {
-            	sl = (StudyLocal) iter.next();
-            	col.add( getStudyMgtDataset( sl, sl.getSeries(), null ) );
+                sl = (StudyLocal) iter.next();
+                col.add( getStudyMgtDataset( sl, sl.getSeries(), null ) );
             }
             return col;
         } catch (FinderException e) {
@@ -289,7 +300,7 @@ public abstract class ContentEditBean implements SessionBean {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             final long pk = Convert.toLong(ds.getByteBuffer(PrivateTags.StudyPk).array());
             StudyLocal study = studyHome
-                    .findByPrimaryKey(new Long(pk));
+            .findByPrimaryKey(new Long(pk));
             study.setAttributes(ds);
             return getStudyMgtDataset( study, study.getSeries(), null,
                     CHANGE_MODE_STUDY, study.getAttributes(true) );            
@@ -297,7 +308,7 @@ public abstract class ContentEditBean implements SessionBean {
             throw new EJBException(e);
         }
     }
-    
+
     /**
      * @ejb.interface-method
      */
@@ -307,7 +318,7 @@ public abstract class ContentEditBean implements SessionBean {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             final long pk = Convert.toLong(ds.getByteBuffer(PrivateTags.SeriesPk).array());
             SeriesLocal series = seriesHome.findByPrimaryKey(new Long(pk));
-	        series.setAttributes(ds);
+            series.setAttributes(ds);
             StudyLocal study = series.getStudy();
             study.updateModalitiesInStudy();
             study.updateSOPClassesInStudy();
@@ -319,15 +330,16 @@ public abstract class ContentEditBean implements SessionBean {
             throw new EJBException(e);
         }
     }
-    
+
     /**
      * @throws FinderException
      * @ejb.interface-method
      */
     public Collection moveStudies(long[] study_pks, long patient_pk) throws FinderException {
-    	Collection col = new ArrayList();
+        Collection col = new ArrayList();
         PatientLocal pat = patHome.findByPrimaryKey(new Long(patient_pk));
         Collection studies = pat.getStudies();
+
         Dataset dsPat = pat.getAttributes(true);
         Dataset ds1;
         for (int i = 0; i < study_pks.length; i++) {
@@ -335,16 +347,32 @@ public abstract class ContentEditBean implements SessionBean {
                     study_pks[i]));
             PatientLocal oldPat = study.getPatient();
             if (oldPat.isIdentical(pat)) continue;
+            moveReferencedEntities(study, pat);
             studies.add(study);
             ds1 = getStudyMgtDataset( study, study.getSeries(), null, 
                     CHANGE_MODE_STUDY, dsPat );
             col.add( ds1 );
-            
+
         }
         return col;
     }
 
-    
+
+    private void moveReferencedEntities (StudyLocal study, PatientLocal pat) throws FinderException {
+        String suid = study.getStudyIuid();
+        Collection mpps = mppsHome.findByStudyIuid(suid);
+        Collection mwlItems = mwlHome.findByStudyIuid(suid);
+        if ( log.isDebugEnabled() ) {
+            log.debug("Update patient references of MWL and MPPS entities because Study has moved!"); 
+            String msgPart = "for study:"+study.getStudyIuid()+" from patient:"+study.getPatient().getPatientId()+
+                " to patient:"+pat.getPatientId();
+            log.debug("Move MPPS ("+mpps+") "+msgPart );
+            log.debug("Move MWLItems ("+mwlItems+") "+msgPart );
+        }
+        pat.getMpps().addAll(mpps);
+        pat.getMwlItems().addAll(mwlItems);
+    }
+
     /**
      * @throws FinderException
      * @ejb.interface-method
@@ -366,12 +394,12 @@ public abstract class ContentEditBean implements SessionBean {
         UpdateDerivedFieldsUtils.updateDerivedFieldsOf(study);
         return getStudyMgtDataset( study, movedSeriess, null );
     }
-    
+
     /**
      * @ejb.interface-method
      */
     public Dataset moveInstances(long[] instance_pks, long series_pk)
-    		throws FinderException {
+    throws FinderException {
         SeriesLocal series = seriesHome.findByPrimaryKey(new Long(
                 series_pk));
         Collection instances = series.getInstances();
@@ -409,7 +437,7 @@ public abstract class ContentEditBean implements SessionBean {
      */
     public Dataset getStudyMgtDatasetForStudy( long study_pk ) throws FinderException {
         StudyLocal study = studyHome.findByPrimaryKey(new Long(study_pk));
-        
+
         return getStudyMgtDataset(study, study.getSeries(), null);
     }
     /**
@@ -469,9 +497,9 @@ public abstract class ContentEditBean implements SessionBean {
         }
         return ds;
     }
-    
+
     private Dataset getStudyMgtDataset( StudyLocal study, Collection series, Collection instances ) {
-    	return getStudyMgtDataset( study, series, instances, 0, null );
+        return getStudyMgtDataset( study, series, instances, 0, null );
     }
 
     private Dataset getStudyMgtDataset( StudyLocal study, Collection series, Collection instances, int chgMode, Dataset changes ) {
