@@ -74,8 +74,12 @@ public class FilterUtil {
    }
    
    public static boolean getBoolean(Map<String,Object> params, String key) {
+       return getBoolean(params,key,false);
+   }
+   
+   public static boolean getBoolean(Map<String,Object> params, String key, boolean def) {
 	  Object v = params.get(key);
-	  if( v==null ) return false;
+	  if( v==null ) return def;
 	  if( v instanceof String ) {
 		 String s= (String) v;
 		 return "1".equals(s) || "true".equalsIgnoreCase(s);
