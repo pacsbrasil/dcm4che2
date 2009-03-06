@@ -49,7 +49,7 @@ public class RequestValidatorTest {
 	  String url = (String) rv.get("url");
 	  assert url!=null;
 	  log.info("URL for request validator="+url);
-	  assert "/wado2/study.xml?maxResults=500&ModalitiesInStudy=CT".equals(url);
+	  assert "/wado2/?requestType=STUDY&maxResults=500&ModalitiesInStudy=CT".equals(url);
    }
    
    @Test

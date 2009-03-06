@@ -234,6 +234,7 @@ function StudyMenu(suffix,nth) {
 };
 StudyMenu.prototype = new Layout("StudyMenu","html/toolItem");
 StudyMenu.prototype.events="merged:external";
+StudyMenu.prototype.displayClass="wide";
 
 /** Setup the child menu */
 StudyMenu.prototype.namedListener = function(nav) {

@@ -1,4 +1,4 @@
-<a class="jslink" $if(layout.action)$ onclick="$layout.action$('$layout.id$'$if(layout.arg)$,'$layout.arg;format="js"$'$endif$); return cancelEvent(event);" href="#"
+<a class="jslink" $if(layout.action)$ onmouseup="$layout.action$('$layout.id$'$if(layout.arg)$,'$layout.arg;format="js"$'$endif$); return cancelEvent(event);" href="#"
 $elseif(layout.href)$ href="$layout.href;format="xml"$?v=$version$" $if(layout.target)$target="$layout.target$"$endif$$else$ onclick="return cancelEvent(event);" href="#"$endif$>
 $if(layout.i18n)$
 $if(i18n.(layout.icon))$
@@ -19,7 +19,7 @@ Unknown label
 $endif$
 $if(layout.layouts)$
 $if(IS_IE6)$<table cellspacing="0" cellpadding="0" border="0"><tr><td>$else$</a>$endif$
-<ul>
+<ul id="sub$layout.id$" $if(layout.displayClass)$class="$layout.displayClass$"$endif$>
 $layout.layouts:{layout|$if(layout.used)$$(layout.template)()$$endif$}$
 </ul>
 $if(IS_IE6)$</td></tr></table></a>$endif$

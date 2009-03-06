@@ -94,7 +94,6 @@ div.studyTray, div.seriesToolbar {
 
 div.rootMenu {
 	float: right;
-	z-index: 60;
 }
 
 .toolItem {
@@ -138,7 +137,7 @@ div.rootMenu {
 
 div.layout {
 	float: left;
-	overflow: hidden;
+	overflow: visible;
 	background: #D0D0D0;
 	width: 100%; height: 100%;
 }
@@ -225,7 +224,6 @@ div.tabHeader {
 
 .menu {
 	position:relative;        /* establish a menu-relative positioning context */
-	z-index:10;
 	margin:0;
 	padding:0;
 	border:0;
@@ -239,6 +237,7 @@ div.tabHeader {
 }
 
 .menu ul {
+	z-index:10;
 	padding:0;
 	margin:0;
 	border:0;
@@ -295,7 +294,7 @@ div.tabHeader {
 	display:block;
 	float:left;
 	text-decoration:none;
-	height:18px;
+	height:20px;
 	margin: 0px;
 }
 
@@ -304,19 +303,36 @@ div.tabHeader {
 	border-top:1px solid #0000FF;    /* these 2 lines create the push-in illusion */
 }
 
+.menu ul li:hover a img.icon,
+.menu ul li a:hover img.icon {
+	border-bottom: 0px;
+}
+
 /*======================== 2ND LEVEL MENU DEFINITIONS ========================*/
 
-.menu ul li:hover ul,
-.menu ul li a:hover ul {                           /* 2nd level drop-down box */
-	display:block;
-	position:absolute;
+.menu ul li ul {                           /* 2nd level drop-down box */
+	z-index: 20;
+	display:none;                  /* initially hide the entire list hierarchy */
+	padding:1px;                               /* this is our box border width */
 	margin:0;
 	top:18px;              /* place us just up underneath the top-level images */
 	left:-1px;       /* left-align our drop-down to the previous button border */
 	height:auto;      /* the drop-down height will be determiend by line count */
-	width:22.5em;
 	color:black;                        /* this sets the unselected-text color */
-	z-index: 200;
+}
+
+.menu ul.click li ul {
+    /* The next two should be in the previous definition, but that breaks IE menu hiding */
+	position:absolute;
+	width:22.5em;
+}
+
+.menu ul li:hover ul,
+.menu ul li a:hover ul {                           /* 2nd level drop-down box */
+	display:block;
+    /* The next two should be in the previous definition, but that breaks IE menu hiding */
+	position:absolute;
+	width:22.5em;
 }
 
 .menu ul li:hover ul.leftbutton,
@@ -339,6 +355,9 @@ div.tabHeader {
 	right:-1px;
 }
 
+.menu ul li ul li a,
+.menu ul li ul li a:visited,
+.menu ul li ul li span,
 .menu ul li:hover ul li a,
 .menu ul li:hover ul li span,
 .menu ul li a:hover ul li a {                   /* 2nd level unselected items */
@@ -362,11 +381,13 @@ div.tabHeader {
 	width:8.08333em;
 }
 
-.menu ul li:hover ul.wide li a,
+.menu ul.click li ul.wide,
+.menu ul li ul.wide li,
+.menu ul li ul.wide li a,
 .menu ul li a:hover ul.wide li a,
-.menu ul li:hover ul.wide li a:hover,
-.menu ul li a:hover ul.wide li a:hover {
-	width: 64em;
+.menu ul li:hover ul.wide,
+.menu ul li a:hover ul.wide {
+	width: 48em;
 }
 
 /*======================== 3RD LEVEL MENU DEFINITIONS ========================*/
@@ -413,16 +434,19 @@ div.hoverMenu:hover li {
 	-moz-opacity:1.0;
 }
 
-/* Need to change the root menu z-index so later indices are hidden under it */
-#PatientMenu {
-	z-index: 120;
+/* Need to change the root menu z-index so later indices are hidden under it
+ * ONLY required for IE, as it doesn't properly apply the z-index otherwise
+ */
+#PatientMenu, #XeroRootMenu {
+	z-index: 18;
 }
 
+
 div.studyInfo {
-	z-index: 75;
+	z-index: 16;
 }
 div.studyToolbar {
-	z-index: 50;
+	z-index: 14;
 }
 
 .menu ul li a.koTitle {
@@ -433,7 +457,7 @@ div.studyToolbar {
 div.imageMenu {
 	position: absolute; 
 	width: 7em; 
-	height: 8em; 
+	height: 16em; 
 	top: 2%; 
 	left:1%;
 }

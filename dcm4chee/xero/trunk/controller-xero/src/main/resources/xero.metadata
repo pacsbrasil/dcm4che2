@@ -53,7 +53,7 @@ controller.query.StudyID=${class:org.dcm4chee.xero.parsers.StringParser}
 controller.query.StudyDateTime=${class:org.dcm4chee.xero.parsers.StringParser}
 controller.query.ModalitiesInStudy=${class:org.dcm4chee.xero.parsers.StringParser}
 controller.query.url=${class:org.dcm4chee.xero.controller.UrlFactory}
-controller.query.url.base=/wado2/study.xml?maxResults=500
+controller.query.url.base=/wado2/?requestType=STUDY&maxResults=500
 controller.query.url.ModalitiesInStudy=query
 controller.query.url.PatientID=query
 controller.query.url.PatientName=query
