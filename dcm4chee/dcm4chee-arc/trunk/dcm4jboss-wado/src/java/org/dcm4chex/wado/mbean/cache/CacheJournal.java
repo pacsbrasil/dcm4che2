@@ -103,7 +103,8 @@ public class CacheJournal {
     public synchronized void record(File f) throws IOException {
         String path = f.getPath().substring(
                     dataRootDir.getPath().length() + 1);
-        File journalFile = getJournalFile(f);
+        long time = System.currentTimeMillis();
+        File journalFile = getJournalFile(time);
         mkdirs(journalFile.getParentFile());
         log.debug(journalFile.exists() ? "M-UPDATE {}" : "M-WRITE {}", journalFile);
         FileWriter journal = new FileWriter(journalFile, true);
@@ -112,6 +113,7 @@ public class CacheJournal {
         } finally {
             journal.close();
         }
+        f.setLastModified(time);
     }
 
     private static void mkdirs(File dir) {
@@ -124,9 +126,9 @@ public class CacheJournal {
         }
     }
 
-    private File getJournalFile(File f) {
+    private File getJournalFile(long time) {
         return new File(journalRootDir,
-                journalFilePathFormat.format(new Date(f.lastModified())));
+                journalFilePathFormat.format(new Date(time)));
     }
 
     public long free(long size) throws IOException {
@@ -190,7 +192,7 @@ public class CacheJournal {
                         log.debug("{} already deleted", f);
                         continue;
                     }
-                    if (!getJournalFile(f).equals(dir)) {
+                    if (!getJournalFile(f.lastModified()).equals(dir)) {
                         log.debug("{} was accessed after record in {}", f, dir);
                         continue;
                     }

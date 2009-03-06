@@ -280,13 +280,10 @@ public class WADOCacheImpl implements WADOCache {
         if (log.isDebugEnabled())
             log.debug("check cache file(exist:" + file.exists() + "):" + file);
         if (file.exists()) {
-            long lastModified = file.lastModified();
-            file.setLastModified(System.currentTimeMillis());
             try {
                 journal.record(file);
             } catch (IOException e) {
                 log.warn("Failed to record access to cache file: ", e);
-                file.setLastModified(lastModified);
             }
             return file;
         } else {
