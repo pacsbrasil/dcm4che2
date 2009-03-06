@@ -66,7 +66,7 @@ public class UrlServletResponseItem implements ServletResponseItem {
 	URL url;
 	String contentType;
 	String filename;
-	Boolean memoryMap = null;
+	private Boolean memoryMap = null;
 	int bufSize = 64*1024;
 
 	/** Record the URL for playback */
@@ -108,11 +108,13 @@ public class UrlServletResponseItem implements ServletResponseItem {
 			log.info("Reading from URL connection " + surl);
 			fileSize = conn.getContentLength();
 			is = conn.getInputStream();
-			if (fileSize != -1) {
+			if (fileSize > 0) {
 				log.info("Returning {} bytes for file {}", fileSize, url);
 				response.setContentLength((int) fileSize);
+				bufSize = (int) Math.min(fileSize,bufSize);
+			} else {
 			}
-			streamFile(os,is,(int) Math.min(fileSize,bufSize));
+			streamFile(os,is,bufSize);
 		}
 	}
 

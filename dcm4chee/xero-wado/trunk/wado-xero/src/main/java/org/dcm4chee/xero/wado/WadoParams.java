@@ -69,4 +69,9 @@ public class WadoParams {
    public static final String CONTENT_DISPOSITION="Content-Disposition";
    public static final String AE = "ae";
    public static final String MODALITY = "modality";
+   
+   /** Use the original, raw format.  Disallows changes to the returned object
+    * such as size/rotation etc.
+    */
+   public static final String USE_ORIG = "useOrig";
 }

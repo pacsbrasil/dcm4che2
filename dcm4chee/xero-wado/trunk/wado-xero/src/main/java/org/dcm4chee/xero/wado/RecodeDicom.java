@@ -81,10 +81,7 @@ public class RecodeDicom implements Filter<ServletResponseItem> {
      * directly returned without any changes at all.
      */
    public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
-	  if (params.get("useOrig") != null) {
-		 return filterItem.callNextFilter(params);
-	  }
-
+      log.info("Recoding the DICOM - updating headers etc.");
 	  try {
 		 String tsuid = (String) params.get(TRANSFER_SYNTAX);
 		 DicomImageReader reader = dicomImageReaderFilter.filter(null, params);

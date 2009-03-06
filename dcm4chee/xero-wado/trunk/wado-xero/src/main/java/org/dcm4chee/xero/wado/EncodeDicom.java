@@ -67,7 +67,13 @@ public class EncodeDicom implements Filter<ServletResponseItem>{
    private static int DEFAULT_BUFFER_SIZE = MIN_BUFFER_SIZE*10;
    
    public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
-     long start = System.nanoTime();
+      boolean useOrig = FilterUtil.getBoolean(params,WadoParams.USE_ORIG,false);
+      if( !useOrig ) {
+          return filterItem.callNextFilter(params);
+      }
+      log.debug("Return useOrig dicom - raw, unchanged");
+      
+      long start = System.nanoTime();
 	  URL url = fileLocation.filter(null, params);
 	  if( url==null ) {
 		 log.warn("DICOM File not found.");
@@ -77,8 +83,7 @@ public class EncodeDicom implements Filter<ServletResponseItem>{
 	  if( filename!=null ) filename = filename+".dcm";
 	  log.info("Time to find file to read {}", ((System.nanoTime()-start)/1e6));
 	  UrlServletResponseItem ret = new UrlServletResponseItem(url,"application/dicom",filename);
-	  Boolean memoryMap = null;
-	  if( params.containsKey("memoryMap") ) memoryMap = FilterUtil.getBoolean(params,"memoryMap");
+	  boolean memoryMap = FilterUtil.getBoolean(params,"memoryMap");
 	  int bufSize = FilterUtil.getInt(params,"bufferSize",DEFAULT_BUFFER_SIZE);
 	  if( bufSize < MIN_BUFFER_SIZE || bufSize > MAX_BUFFER_SIZE ) {
 		  log.warn("User attempted to request in-appropriate buffer size {}, using default instead.", bufSize);

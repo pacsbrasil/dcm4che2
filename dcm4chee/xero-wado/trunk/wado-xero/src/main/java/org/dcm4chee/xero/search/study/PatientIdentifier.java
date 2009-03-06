@@ -62,7 +62,7 @@ public class PatientIdentifier {
 		}
 		// Add the domain to the identifier as a URL type identifier.
 		String idDomain = data.getString(Tag.IssuerOfPatientID);
-		if( idDomain!=null && idDomain.length()>0 ) this.patientID = idDomain+":"+this.patientID;
+		if( idDomain!=null && idDomain.length()>0 && !idDomain.equals(this.patientID) ) this.patientID = idDomain+":"+this.patientID;
 	}
 	
 	/** Empty constructor for use by JAXB - not actually used anywhere */

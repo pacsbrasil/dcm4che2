@@ -200,9 +200,9 @@ dcmImg.reduceBits.priority=6300
 
 # Encode the response as DICOM - either raw or filtered.
 wadoDcm=${class:org.dcm4chee.xero.metadata.filter.FilterList}
-wadoDcm.header=${class:org.dcm4chee.xero.wado.EncodeDicom}
 wadoDcm.recodeDicom=${class:org.dcm4chee.xero.wado.RecodeDicom}
-wadoDcm.recodeDicom.priority=1000
+wadoDcm.useOrig=${class:org.dcm4chee.xero.wado.EncodeDicom}
+wadoDcm.useOrig.priority=2000
 
 # Encode the response as XML
 xmlReport=${class:org.dcm4chee.xero.metadata.filter.FilterList}
