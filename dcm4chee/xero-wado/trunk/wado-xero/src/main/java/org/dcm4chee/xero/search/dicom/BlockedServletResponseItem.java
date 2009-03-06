@@ -107,7 +107,7 @@ public class BlockedServletResponseItem implements ServletResponseItem, ResultFr
 		 if( uid==null ) uid = data.getString(Tag.SeriesInstanceUID);
 		 if( uid==null ) uid = data.getString(Tag.StudyInstanceUID);
 		 if( uid==null ) uid = data.getString(Tag.PatientID);
-		 log.info("Adding cfind result "+uid);
+		 log.debug("Adding cfind result {}",uid);
 		 dos.writeHeader(Tag.Item, null, -1);
 		 dos.writeDataset(data,TransferSyntax.NoPixelData);
 		 dos.writeHeader(Tag.ItemDelimitationItem, null, 0);

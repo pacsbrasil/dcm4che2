@@ -331,4 +331,4 @@ cfind.audit.priority=9000
 cfind.blocked=${class:org.dcm4chee.xero.search.dicom.BlockedSearchFilter}
 cfind.blocked.study=${class:org.dcm4chee.xero.search.study.StudySearch}
 cfind.blocked.series=${class:org.dcm4chee.xero.search.study.SeriesSearch}
-cfind.blocked.image=${class:org.dcm4chee.xero.search.study.ImageSearch}
+cfind.blocked.image=${ref:imageSource.imageSearch}

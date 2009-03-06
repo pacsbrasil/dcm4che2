@@ -44,7 +44,11 @@ public class GspsBean extends GspsType implements LocalModel<String>, DicomObjec
 	   
 	}
 	
-	/** Create a GSPS Bean object */
+    public GspsBean(SeriesBean series) {
+        this.series = series;
+    }
+
+        /** Create a GSPS Bean object */
 	public GspsBean(SeriesBean series, DicomObject dobj) {
 	    this.series = series;
 		addResult(dobj);
@@ -58,7 +62,7 @@ public class GspsBean extends GspsType implements LocalModel<String>, DicomObjec
 	 *            to copy image level data into this from.
 	 */
 	public void addResult(DicomObject dcmobj) {
-		setObjectUID(dcmobj.getString(Tag.SOPInstanceUID));
+	    setObjectUID(dcmobj.getString(Tag.SOPInstanceUID));
 		setContentLabel(sanitizeString(dcmobj.getString(Tag.ContentLabel)));
 		Date date = null;
 		try {

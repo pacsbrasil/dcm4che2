@@ -81,7 +81,8 @@ public class StudySearch extends DicomCFindFilter {
         Tag.ModalitiesInStudy,
         Tag.ReferringPhysicianName,
         Tag.NameOfPhysiciansReadingStudy,
-        Tag.AdmittingDiagnosesDescription
+        Tag.AdmittingDiagnosesDescription,
+        Tag.StudyCommentsRET,
      };
     
     protected static Set<Integer> returnKeys = new HashSet<Integer>(Arrays.asList(STUDY_RETURN_KEYS));
