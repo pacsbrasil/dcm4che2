@@ -992,8 +992,9 @@ public class WADOSupport {
         Object dicomObject = null;
         try {
             dicomObject = server.invoke(queryRetrieveScpName, "locateInstance",
-                    new Object[] { instanceUID }, new String[] { String.class
-                    .getName() });
+                    new Object[] { instanceUID,  studyUID},
+                    new String[] { String.class.getName(),
+                            String.class.getName() });
 
         } catch (Exception e) {
             if (e.getCause() instanceof UnknownAETException) {

@@ -41,7 +41,6 @@ package org.dcm4chex.archive.dcm.qrscp;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.sql.Types;
@@ -1293,6 +1292,17 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     }
 
+    private void updateStudyAccessTime(String studyIUID, String dirpath) {
+        if (recordStudyAccessTime) {
+            try {
+                getFileSystemMgt().touchStudyOnFileSystem(studyIUID, dirpath);
+            } catch (Exception e) {
+                log.warn("Failed to update access time for study "
+                        + studyIUID + " on " + dirpath, e);
+            }
+        }
+    }
+
     Dataset getVMFConfig(String cuid) throws DcmServiceException {
         if (UIDs.MRImageStorage.equals(cuid))
             return getVirtualEnhancedMRConfig();
@@ -1426,20 +1436,30 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return file;
     }
 
-    public Object locateInstance(String iuid) throws Exception {
+    public Object locateInstance(String sopIUID) throws Exception {
+        return locateInstance(sopIUID, null);
+    }
+
+    public Object locateInstance(String sopIUID, String studyIUID)
+            throws Exception {
         FileDTO[] fileDTOs = null;
         String aet = null;
         FileSystemMgt2 fsMgt = getFileSystemMgt();
         try {
-            fileDTOs = fsMgt.getFilesOfInstance(iuid);
+            fileDTOs = fsMgt.getFilesOfInstance(sopIUID);
             if (fileDTOs.length == 0) {
-                aet = fsMgt.getExternalRetrieveAET(iuid);
+                aet = fsMgt.getExternalRetrieveAET(sopIUID);
             } else {
                 FileDTO dto;
                 for (int i = 0; i < fileDTOs.length; ++i) {
                     dto = fileDTOs[i];
-                    if (isLocalRetrieveAET(dto.getRetrieveAET()))
+                    if (isLocalRetrieveAET(dto.getRetrieveAET())) {
+                        if (studyIUID != null) {
+                            updateStudyAccessTime(studyIUID,
+                                    dto.getDirectoryPath());
+                        }
                         return getFile(dto);
+                    }
                 }
                 aet = fileDTOs[0].getRetrieveAET();
             }

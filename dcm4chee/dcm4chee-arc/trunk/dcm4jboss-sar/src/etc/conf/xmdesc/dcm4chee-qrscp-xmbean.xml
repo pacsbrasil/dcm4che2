@@ -653,9 +653,10 @@ QueryRetrieveScp service.</description>
    <attribute access="read-write"
       getMethod="isRecordStudyAccessTime"
       setMethod="setRecordStudyAccessTime">
-      <description>Record last retrieve time of instances of a study. Should be enabled,
-      if delete functions of the File System Management Service are activated, to delete
-      the most infrequently accessed studies.      
+      <description>Record last time instances of a study was retrieved by
+      C-GET, C-MOVE or WADO. Should be enabled, if delete functions of the
+      File System Management Service are activated, to delete the least recent
+      accessed studies.
       </description>
       <name>RecordStudyAccessTime</name>
       <type>boolean</type>
@@ -667,7 +668,7 @@ QueryRetrieveScp service.</description>
       getMethod="isCheckMatchingKeySupported"
       setMethod="setCheckMatchingKeySupported">
       <description>Enable check if unsupported matching key(s) are used in C-FIND. 
-      	In this case the C-FIND PENDING status is changed from 0xff00 to 0xff01.      
+      In this case the C-FIND PENDING status is changed from 0xff00 to 0xff01.      
       </description>
       <name>CheckMatchingKeySupported</name>
       <type>boolean</type>
@@ -1120,6 +1121,25 @@ QueryRetrieveScp service.</description>
       <parameter>
         <description>SOP Instance UID</description>
         <name>iuid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.lang.Object</return-type>
+   </operation>
+
+   <operation impact="INFO">
+      <description>Locate SOP Instance. Return a File object, if the instance
+      is locally available, or the hostname as String object if a file
+      of the instance is located on another host. Update study access time if
+      studyIUID != null and RecordStudyAccessTime = true.</description>
+      <name>locateInstance</name>
+      <parameter>
+        <description>SOP Instance UID</description>
+        <name>sopIUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Study Instance UID</description>
+        <name>studyIUID</name>
         <type>java.lang.String</type>
       </parameter>
       <return-type>java.lang.Object</return-type>
