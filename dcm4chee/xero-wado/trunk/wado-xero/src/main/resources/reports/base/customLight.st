@@ -40,7 +40,7 @@ body {
       Patient Sex:$ds.("0x100040")$<br />
       Accession Number:$ds.AccessionNumber$
     </p></td>
-    <td width="40%" valign="top"><img src="http://sunnybrook.ca/images/logo.jpg" /></td>
+    <td width="40%" valign="top"><img src="/icon/logo.gif" style="width: 138px; height: 51px;" /></td>
   </tr>
 </table>
   
