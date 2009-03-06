@@ -32,14 +32,68 @@
     <name>WADOService</name>
   </constructor>
 
-  <attribute access="read-write" getMethod="getCacheRoot"
-    setMethod="setCacheRoot">
-    <description>Root directory where jpegs are stored for caching. 
+  <attribute access="read-write" getMethod="getCacheDataRootDir"
+    setMethod="setCacheDataRootDir">
+    <description><![CDATA[Root directory of JPEG file cache. 
+A relative path name is resolved relative to
+<i>&lt;archive-install-directory&gt;</i>/server/default/.<br/>
+<b>Attention:</b> You have to take care for moving existing JPEG files in the
+cache to the new location yourself!]]>
     </description>
-    <name>CacheRoot</name>
+    <name>CacheDataRootDirectory</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="wadocache" />
+      <value value="wadocachedata" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write" getMethod="getCacheNumberOfStudyBags"
+    setMethod="setCacheNumberOfStudyBags">
+    <description><![CDATA[Defines numbers of sub-directories to which study
+directories are distributed to reduce the number of sub-directories in the
+root directory. Examples:<br/>
+'1' - no distribution of study directores - the root directory
+contains as many sub-directories as different studies in the cache.<br/>
+'67'- study directories are distributed across 67 sub-directories of the root
+directory.<br/>
+'67*71' - study directories are distributed across 67*71 sub-directories,
+where the root directory contains 67 sub-directories, which each is itself
+splitted into 71 sub-directories.<br/>
+<b>Attention:</b> Can only be modified if the cache is empty!]]>
+    </description>
+    <name>CacheNumbersOfStudyBags</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="1" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write" getMethod="getCacheJournalRootDir"
+    setMethod="setCacheJournalRootDir">
+    <description><![CDATA[Root directory for JPEG file cache journal files.
+A relative path name is resolved relative to
+<i>&lt;archive-install-directory&gt;</i>/server/default/.<br/>
+<b>Attention:</b> You have to take care for moving existing journal files to
+the new location yourself!]]>
+    </description>
+    <name>CachJournalRootDirectory</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="wadocachejournal" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write" getMethod="getCacheJournalFilePathFormat"
+    setMethod="setCacheJournalFilePathFormat">
+    <description><![CDATA[Defines Journal File path, with 'yyyy' will be
+replaced by the current year, 'MM' by the current month, 'dd' by the current
+date, 'HH' by the current hour and 'mm' by the current minute.<br/>
+<b>Attention:</b> Can only be modified if the cache is empty!]]>
+    </description>
+    <name>CacheJournalFilePathFormat</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="yyyy/MM/dd/HH/mm" />
     </descriptors>
   </attribute>
 
@@ -63,18 +117,7 @@
     <name>DeleterThresholds</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="23:50MB" />
-    </descriptors>
-  </attribute>
-
-  <attribute access="read-write" getMethod="getPreferredFreeSpace"
-    setMethod="setPreferredFreeSpace">
-    <description>Preferred free disk space (MB = 1000000 Bytes,
-      GB = 1000MB). </description>
-    <name>PreferredFreeSpace</name>
-    <type>java.lang.String</type>
-    <descriptors>
-      <value value="100MB" />
+      <value value="7:10MB;19:100MB" />
     </descriptors>
   </attribute>
 
@@ -356,7 +399,9 @@
    </operation>
 
    <operation impact="INFO">
-      <description>Show free disk space</description>
+      <description><![CDATA[Show current effective deleter threshold according
+configured <i>DeleterThreshold</i>.]]>
+      </description>
       <name>showMinFreeSpace</name>
       <return-type>java.lang.String</return-type>
    </operation>

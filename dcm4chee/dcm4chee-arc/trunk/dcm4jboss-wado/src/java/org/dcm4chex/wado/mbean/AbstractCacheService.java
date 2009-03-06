@@ -68,9 +68,6 @@ public abstract class AbstractCacheService extends ServiceMBeanSupport {
     protected Logger log = Logger.getLogger(getClass().getName());
     protected WADOCache cache = null;
 
-    private static final long MIN_FREE = 1 * FileUtils.MEGA;
-    private static final long MIN_PREF_FREE = 2 * FileUtils.MEGA;
-
     private String timerID;
 
     private final NotificationListener freeDiskSpaceListener = new NotificationListener() {
@@ -97,13 +94,57 @@ public abstract class AbstractCacheService extends ServiceMBeanSupport {
         return cache;
     }
 
-    public void setCacheRoot(String newRoot) {
-        cache.setCacheRoot(newRoot);
+    public String getCacheDataRootDir() {
+        return cache.getDataRootDir();
     }
 
-    public String getCacheRoot() {
-        return cache.getCacheRoot();
+    public void setCacheDataRootDir(String cacheDataRootDir) {
+        cache.setDataRootDir(cacheDataRootDir);
     }
+
+    public String getCacheNumberOfStudyBags() {
+        return cache.getNumberOfStudyBags();
+    }
+
+    public void setCacheNumberOfStudyBags(String s) {
+        if (getState() == STARTED) {
+            if (s.equals(getCacheNumberOfStudyBags())) {
+                return;
+            }
+            assertEmptyCache();
+        }
+        cache.setNumberOfStudyBags(s);
+    }
+
+    private void assertEmptyCache() {
+        if (!cache.isEmpty()) {
+            throw new IllegalStateException("cache not empty!");
+        }
+    }
+
+    public String getCacheJournalRootDir() {
+        return cache.getJournalRootDir();
+    }
+
+    public void setCacheJournalRootDir(String cacheJournalRootDir) {
+        cache.setJournalRootDir(cacheJournalRootDir);
+    }
+
+    public String getCacheJournalFilePathFormat() {
+        return cache.getJournalFilePathFormat();
+    }
+
+    public void setCacheJournalFilePathFormat(String journalFilePathFormat) {
+        if (getState() == STARTED) {
+            if (journalFilePathFormat.equals(
+                    getCacheJournalFilePathFormat())) {
+                return;
+            }
+            assertEmptyCache();
+        }
+        cache.setJournalFilePathFormat(journalFilePathFormat);
+    }
+
 
     public String getDeleterThresholds() {
         return ((WADOCacheImpl) cache).getDeleterThresholds();
@@ -115,15 +156,6 @@ public abstract class AbstractCacheService extends ServiceMBeanSupport {
 
     public String showMinFreeSpace() {
         return FileUtils.formatSize(cache.getMinFreeSpace());
-    }
-
-    public void setPreferredFreeSpace(String minFree) {
-        ((WADOCacheImpl) cache).setPreferredFreeSpace(FileUtils.parseSize(
-                minFree, MIN_PREF_FREE));
-    }
-
-    public String getPreferredFreeSpace() {
-        return FileUtils.formatSize(cache.getPreferredFreeSpace());
     }
 
     /**
@@ -150,11 +182,6 @@ public abstract class AbstractCacheService extends ServiceMBeanSupport {
         if (after < cache.getMinFreeSpace()) {
             sb.append(" WARNING: INSUFFICIANT Free disk space! Should be ")
                     .append(this.showMinFreeSpace());
-        } else if (after < cache.getPreferredFreeSpace()) {
-            sb
-                    .append(
-                            " WARNING: Free disk space is less than preferred free space (")
-                    .append(this.getPreferredFreeSpace()).append(")");
         }
         return sb.toString();
     }

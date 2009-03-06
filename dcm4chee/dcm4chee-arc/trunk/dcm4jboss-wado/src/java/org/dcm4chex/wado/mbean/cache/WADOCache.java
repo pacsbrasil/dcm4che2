@@ -54,39 +54,22 @@ import java.io.InputStream;
  */
 public interface WADOCache {
 
-	
-    /**
-     * Get an image as BufferedImage from cache.
-     * <p>
-     * This method returns the image from the default path of this cache.<br>
-     * 
-     * @param studyUID
-     *            Unique identifier of the study.
-     * @param seriesUID
-     *            Unique identifier of the series.
-     * @param instanceUID
-     *            Unique identifier of the instance.
-     * @param rows
-     *            Image height in pixel.
-     * @param columns
-     *            Image width in pixel.
-     * @param region
-     *            Image region defined by two points in opposing corners
-     * @param windowWidth
-     *            Decimal string representing the contrast of the image.
-     * @param windowCenter
-     *            Decimal string representing the luminosity of the image.
-     * @param imageQuality
-     *            Integer string (1-100) representing required quality of
-     *            the image to be returned within the range 1 to 100
-     * 
-     * @return The image if in cache or null.
-     */
-    BufferedImage getImage(String studyUID, String seriesUID,
-            String instanceUID, String rows, String columns, String region,
-            String windowWidth, String windowCenter, String imageQuality,
-            String suffix);
+    public String getDataRootDir();
 
+    public void setDataRootDir(String dataRootDir);
+
+    public String getNumberOfStudyBags();
+
+    public void setNumberOfStudyBags(String s);
+
+    public String getJournalRootDir();
+
+    public void setJournalRootDir(String journalRootDir);
+
+    public String getJournalFilePathFormat();
+
+    public void setJournalFilePathFormat(String journalFilePathFormat);
+ 
     /**
      * Get an image of special size from cache.
      * <p>
@@ -189,31 +172,13 @@ public interface WADOCache {
             String imageQuality, String suffix) throws IOException;
 
     /**
-     * Return the File object to get or store a file for given arguments.
-     * <p>
-     * If the cache object referenced with arguments is'nt in this cache the
-     * returned file object exists() method will result false!
-     * 
-     * @param studyUID
-     *            Unique identifier of the study.
-     * @param seriesUID
-     *            Unique identifier of the series.
-     * @param instanceUID
-     *            Unique identifier of the instance.
-     * @param key
-     *            TODO
-     * 
-     * @return File object to get or store a file.
-     */
-    File getFileObject(String studyUID, String seriesUID, String instanceUID,
-            String key);
-
-    /**
      * Clears this cache.
      * <p>
      * Remove all images in this cache.
      */
     void clearCache();
+
+    boolean isEmpty();
 
     /**
      * Removes old entries to shrink this cache.
@@ -232,32 +197,6 @@ public interface WADOCache {
      */
     void purgeStudy(String studyIUID);
     
-    /**
-     * Setter for root directory of this cache.
-     * <p>
-     * If a relative path is given, the resulting absolute path is relative to
-     * the servers home dir.
-     * 
-     * @param newRoot
-     *            The root directory for this cache.
-     */
-    void setCacheRoot(String newRoot);
-
-    /**
-     * Getter for root directory of this cache.
-     * <p>
-     * This method returns always the same String used in setCacheRoot!
-     * 
-     * @return The root directory for this cache (relative or absolute)
-     */
-    String getCacheRoot();
-
-    /**
-     * Getter for the absolute root directory of this cache.
-     * 
-     * @return The root directory for this cache (absolute)
-     */
-    File getAbsCacheRoot();
 
     /**
      * Returns the min drive space that must be available on the caches drive.
@@ -267,15 +206,6 @@ public interface WADOCache {
      * @return Min allowed free diskspace in bytes.
      */
     long getMinFreeSpace();
-
-    /**
-     * Returns the free space that should be remain after cleaning the cache.
-     * <p>
-     * This value is used as lower watermark of the cleaning process.
-     * 
-     * @return Preferred free diskspace in bytes.
-     */
-    long getPreferredFreeSpace();
 
     /**
      * Returns the current free space on drive where this cache is stored.
@@ -324,4 +254,5 @@ public interface WADOCache {
     public String getImageWriterClass();
 
 	public void setImageWriterClass(String imageWriterClass);
+
 }

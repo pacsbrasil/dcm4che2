@@ -59,56 +59,33 @@ import org.apache.log4j.Logger;
 import org.dcm4chex.archive.config.DeleterThresholds;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.util.FileSystemUtils;
-import org.jboss.system.server.ServerConfigLocator;
+import org.dcm4chex.archive.util.FileUtils;
 
 /**
  * @author franz.willer
  * 
- *         TODO To change the template for this generated type comment go to
- *         Window - Preferences - Java - Code Style - Code Templates
  */
 public class WADOCacheImpl implements WADOCache {
 
-    public static final String DEFAULT_CACHE_ROOT = "/wadocache";
-
-    public static final String DEFAULT_WADO_SUBDIR = "default";
+    private static final int[] EMPTY_INTS = {};
 
     public static final String DEFAULT_IMAGE_QUALITY = "75";
 
     /** Buffer size for read/write */
     private static final int BUF_LEN = 65536;
 
-    public static final String NEWLINE = System.getProperty("line.separator",
-            "\n");
-
-    private static final int[] PRIMES = new int[] { 3, 5, 7, 13, 23, 37, 47,
-            59, 71, 83, 97, 107, 127, 137, 149, 163, 173, 191, 211, 223, 233,
-            251, 263, 277, 293, 307, 317, 331, 347, 359, 373, 383, 397, 409,
-            419, 431, 443, 457, 467, 479, 491, 503, 521, 541, 557, 569, 587,
-            599, 613, 631, 641, 653, 673, 683, 701, 719, 733, 743, 757, 769,
-            787, 797, 809, 821, 839, 853, 863, 877, 887, 907, 919, 929, 941,
-            953, 967, 977, 991, 1009, 1019, 1031, 1049, 1061, 1087, 1097, 1109,
-            1123 };
-
     private static WADOCacheImpl singletonWADO = null;
 
     protected static Logger log = Logger.getLogger(WADOCacheImpl.class
             .getName());
 
-    /** the root folder where this cache stores the image files. */
-    private File cacheRoot = null;
+    private String dataRootDir;
 
-    /** The config string that is used to set cacheRoot. */
-    private String cacheRootCfgString = null;
+    private String journalRootDir;
 
-    /**
-     * Default subdirectory. this is used to split directory structer for WADO
-     * cache to split 'default' requests and requests with rows and columns.
-     */
-    private String defaultSubdir = "default";
+    private CacheJournal journal = new CacheJournal();
 
-    /** holds the min cache size. */
-    private long preferredFreeSpace = 300000000;
+    private int[] numberOfStudyBags = EMPTY_INTS;
 
     private DeleterThresholds deleterThresholds = new DeleterThresholds(
             "23:50MB", true);
@@ -130,6 +107,94 @@ public class WADOCacheImpl implements WADOCache {
     protected String imageWriterClass;
 
     protected WADOCacheImpl() {
+    }
+
+    public String getDataRootDir() {
+        return dataRootDir;
+    }
+
+    public void setDataRootDir(String dataRootDir) {
+        journal.setDataRootDir(FileUtils.resolve(new File(dataRootDir)));
+        this.dataRootDir = dataRootDir;
+    }
+
+    public String getJournalRootDir() {
+        return journalRootDir;
+    }
+
+    public void setJournalRootDir(String journalRootDir) {
+        journal.setJournalRootDir(FileUtils.resolve(new File(journalRootDir)));
+        this.journalRootDir = journalRootDir;
+    }
+
+    public String getJournalFilePathFormat() {
+        return journal.getJournalFilePathFormat();
+    }
+
+    public void setJournalFilePathFormat(String journalFilePathFormat) {
+        journal.setJournalFilePathFormat(journalFilePathFormat);
+    }
+
+    public String getNumberOfStudyBags() {
+        if (numberOfStudyBags.length == 0) {
+            return "1";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(numberOfStudyBags[0]);
+        for (int i = 1; i < numberOfStudyBags.length; i++) {
+            sb.append('*').append(numberOfStudyBags[i]);
+        }
+        return sb.toString();
+    }
+
+    public static int leastPrimeAsLargeAs(int target) {
+        int prime = target;
+        while (!isPrime(prime)) {
+            prime++;
+        }
+        return prime;
+    }
+
+    public static boolean isPrime(int candidate) {
+        int sqrt = (int) Math.sqrt(candidate) + 1;
+        for (int i = 2; i <= sqrt; ++i) {
+            if (candidate % i == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void setNumberOfStudyBags(String s) {
+        if (s.trim().equals("1")) {
+            numberOfStudyBags = EMPTY_INTS;
+            return;
+        }
+        StringTokenizer tokens = new StringTokenizer(s, "* ");
+        int[] tmp = new int[tokens.countTokens()];
+        if (tmp.length == 0) {
+            throw new IllegalArgumentException(s);
+        }
+         for (int i = 0; i < tmp.length; i++) {
+            int v;
+            try {
+                v = Integer.parseInt(tokens.nextToken());
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(s);
+            }
+            if (v <= 1) {
+                throw new IllegalArgumentException(s);
+            }
+            v = leastPrimeAsLargeAs(v);
+            for (int j = 0; j < i; ++j) {
+                if (v == tmp[j]) {
+                    v = leastPrimeAsLargeAs(v+1);
+                    j = -1;
+                }
+            }
+            tmp[i] = v;
+        }
+        numberOfStudyBags = tmp;
     }
 
     public final String getImageQuality() {
@@ -172,45 +237,8 @@ public class WADOCacheImpl implements WADOCache {
     public static WADOCache getWADOCache() {
         if (singletonWADO == null) {
             singletonWADO = createWADOCache();
-            singletonWADO.defaultSubdir = DEFAULT_WADO_SUBDIR;
         }
         return singletonWADO;
-    }
-
-    /**
-     * Get an image as BufferedImage from cache.
-     * <p>
-     * This method returns the image from the default path of this cache.<br>
-     * 
-     * @param studyUID
-     *            Unique identifier of the study.
-     * @param seriesUID
-     *            Unique identifier of the series.
-     * @param instanceUID
-     *            Unique identifier of the instance.
-     * @param rows
-     *            Image height in pixel.
-     * @param columns
-     *            Image width in pixel.
-     * @param region
-     *            Image region defined by two points in opposing corners
-     * @param windowWidth
-     *            Decimal string representing the contrast of the image.
-     * @param windowCenter
-     *            Decimal string representing the luminosity of the image.
-     * @param imageQuality
-     *            Integer string (1-100) representing required quality of the
-     *            image to be returned within the range 1 to 100
-     * 
-     * @return The image if in cache or null.
-     */
-    public BufferedImage getImage(String studyUID, String seriesUID,
-            String instanceUID, String rows, String columns, String region,
-            String windowWidth, String windowCenter, String imageQuality,
-            String suffix) {
-        return _readJpgFile(getImageFile(studyUID, seriesUID, instanceUID,
-                rows, columns, region, windowWidth, windowCenter, imageQuality,
-                suffix));
     }
 
     /**
@@ -252,13 +280,14 @@ public class WADOCacheImpl implements WADOCache {
         if (log.isDebugEnabled())
             log.debug("check cache file(exist:" + file.exists() + "):" + file);
         if (file.exists()) {
-            file.setLastModified(System.currentTimeMillis()); // set last
-            // modified
-            // because File
-            // has only
-            // lastModified
-            // timestamp
-            // visible.
+            long lastModified = file.lastModified();
+            file.setLastModified(System.currentTimeMillis());
+            try {
+                journal.record(file);
+            } catch (IOException e) {
+                log.warn("Failed to record access to cache file: ", e);
+                file.setLastModified(lastModified);
+            }
             return file;
         } else {
             return null;
@@ -308,6 +337,12 @@ public class WADOCacheImpl implements WADOCache {
                 + "-" + windowWidth + "-" + windowCenter + "-" + imageQuality,
                 studyUID, seriesUID, instanceUID, suffix, null);
         _writeImageFile(image, file, imageQuality);
+        try {
+            journal.record(file);
+        } catch (IOException e) {
+            file.delete();
+            throw e;
+        }
         return file;
     }
 
@@ -369,28 +404,13 @@ public class WADOCacheImpl implements WADOCache {
             out.flush();
             out.close();
         }
+        try {
+            journal.record(file);
+        } catch (IOException e) {
+            file.delete();
+            throw e;
+        }
         return file;
-    }
-
-    /**
-     * Return the File object to get or store a file for given arguments.
-     * <p>
-     * If the cache object referenced with arguments is'nt in this cache the
-     * returned file object exists() method will result false!
-     * 
-     * @param studyUID
-     *            Unique identifier of the study.
-     * @param seriesUID
-     *            Unique identifier of the series.
-     * @param instanceUID
-     *            Unique identifier of the instance.
-     * 
-     * @return File object to get or store a file.
-     */
-    public File getFileObject(String studyUID, String seriesUID,
-            String instanceUID, String contentType) {
-        return this._getImageFile(defaultSubdir, studyUID, seriesUID,
-                instanceUID, null, contentType);
     }
 
     /**
@@ -399,62 +419,11 @@ public class WADOCacheImpl implements WADOCache {
      * Remove all images in this cache.
      */
     public void clearCache() {
-        log.info("Clear cache called: cacheRoot:" + getAbsCacheRoot());
-        if (this == singletonWADO) {
-            log.info("Clear WADO cache!");
-            File[] files = getAbsCacheRoot().listFiles();
-            if (files == null) {
-                log
-                        .warn("WADO cache not cleared! Reason: cache root is not a directory or cant be read.");
-                return;
-            }
-            for (int i = 0, len = files.length; i < len; i++) {
-                delTree(files[i]);
-                if (!files[i].getName().equals(DEFAULT_WADO_SUBDIR)) {// dont
-                                                                      // del
-                                                                      // default
-                                                                      // dir
-                    files[i].delete();
-                }
-            }
-        }
+        journal.clearCache();
     }
 
-    /**
-     * Deletes all files in given directory.
-     * <p>
-     * Do nothing if <code>file</code> is not a directory or is
-     * <code>null</code>!
-     * 
-     * @param file
-     *            A directory.
-     */
-    public static void delTree(File file) {
-        if (file == null)
-            return;
-        if (!file.isDirectory())
-            return;
-
-        File[] files = file.listFiles();
-        if (files == null) {
-            log.warn("WADOCache: File " + file
-                    + " should be a directory! But listFiles returns null!");
-            return;
-        }
-        for (int i = 0, len = files.length; i < len; i++) {
-            if (files[i].isDirectory()) {
-                delTree(files[i]);
-                if (!files[i].delete()) {
-                    log
-                            .warn("WADOCache: Diretory can't be deleted:"
-                                    + files[i]);
-                }
-            } else {
-                if (!files[i].delete()) {
-                    log.warn("WADOCache: File can't be deleted:" + files[i]);
-                }
-            }
-        }
+    public boolean isEmpty() {
+        return journal.isEmpty();
     }
 
     /**
@@ -476,22 +445,25 @@ public class WADOCacheImpl implements WADOCache {
      */
     public void freeDiskSpace(boolean background) throws IOException {
         long currFree = showFreeSpace();
+        long minFree = getMinFreeSpace();
         if (log.isDebugEnabled())
             log.debug("WADOCache.freeDiskSpace: free:" + currFree
-                    + " minFreeSpace:" + getMinFreeSpace());
-        long minFree = getMinFreeSpace();
-        if (currFree < minFree) {
-            long pref = getPreferredFreeSpace();
-            final long sizeToDel = (pref > minFree ? pref : minFree) - currFree;
+                    + " minFreeSpace:" + minFree);
+        final long sizeToDel = minFree - currFree;
+        if (sizeToDel > 0L) {
             if (background) {
                 Thread t = new Thread(new Runnable() {
                     public void run() {
-                        _clean(sizeToDel);
+                        try {
+                            journal.free(sizeToDel);
+                        } catch (IOException e) {
+                            log.error("Failed to free disk space: ", e);
+                        }
                     }
                 });
                 t.start();
             } else {
-                _clean(sizeToDel);
+                journal.free(sizeToDel);
             }
         } else {
             if (log.isDebugEnabled())
@@ -509,65 +481,7 @@ public class WADOCacheImpl implements WADOCache {
         log.info("Delete WADO CACHE Entries for Study:" + studyIUID);
         File f = getStudyDir(studyIUID);
         if (f.exists()) {
-            delDir(f);
-        }
-    }
-
-    private void delDir(File f) {
-        log.debug("M_DELETE:" + f);
-        if (f.isDirectory()) {
-            for (File child : f.listFiles()) {
-                delDir(child);
-            }
-        }
-        f.delete();
-    }
-
-    /**
-     * Deletes old files to free the given amount of disk space.
-     * <p>
-     * If a directory is empty after deleting a file, the directory will also be
-     * deleted.
-     */
-    private void _clean(long sizeToDel) {
-        log.info("Free disk space for WADO cache!");
-        FileToDelContainer ftd = new FileToDelContainer(new File(
-                getAbsCacheRoot(), defaultSubdir), sizeToDel);
-        if (this == singletonWADO) {
-            File[] files = getAbsCacheRoot().listFiles();
-            if (files != null) {
-                for (int i = 0, len = files.length; i < len; i++) {
-                    if (!files[i].getName().equals(DEFAULT_WADO_SUBDIR)) {
-                        ftd.searchDirectory(new File(this.getAbsCacheRoot(),
-                                files[i].getName()));
-                    }
-                }
-            }
-        }
-        Iterator iter = ftd.getFilesToDelete().iterator();
-        File file;
-        while (iter.hasNext()) {
-            file = (File) iter.next();
-            file.delete();
-            _deleteDirWhenEmpty(file.getParentFile());
-        }
-    }
-
-    /**
-     * Deletes the given directory and all parents if they are empty.
-     * 
-     * @param dir
-     *            Directory
-     */
-    private void _deleteDirWhenEmpty(File dir) {
-        if (dir.equals(getAbsCacheRoot()))
-            return;
-        if (dir == null)
-            return;
-        File[] files = dir.listFiles();
-        if (files != null && files.length == 0) {
-            dir.delete();
-            _deleteDirWhenEmpty(dir.getParentFile());
+            CacheJournal.deleteFileOrDirectory(f);
         }
     }
 
@@ -589,87 +503,16 @@ public class WADOCacheImpl implements WADOCache {
     }
 
     /**
-     * Returns the free space that should be remain after cleaning the cache.
-     * <p>
-     * This value is used as lower watermark of the cleaning process.
-     * 
-     * @return Preferred free diskspace in bytes.
-     */
-    public long getPreferredFreeSpace() {
-        return preferredFreeSpace;
-    }
-
-    /**
-     * Setter of preferredFreeSpace.
-     * 
-     * @param preferredFreeSpace
-     *            The preferredFreeSpace to set.
-     */
-    public void setPreferredFreeSpace(long preferredFreeSpace) {
-        this.preferredFreeSpace = preferredFreeSpace;
-    }
-
-    /**
      * Returns current free disk space in bytes.
      * 
      * @return disk space available on the drive where this cache is stored.
      * @throws IOException
      */
     public long showFreeSpace() throws IOException {
-        File dir = getAbsCacheRoot();
+        File dir = journal.getDataRootDir();
         long free = FileSystemUtils.freeSpace(dir.getPath());
         log.info("getFreeDiskSpace from :" + dir + " free:" + free);
         return free;
-    }
-
-    /**
-     * Returns the root directory of this cache.
-     * <p>
-     * Returns the absolute or relative path as set with setCacheRoot.
-     * 
-     * @return root directory of this cache (absolute or relative).
-     */
-    public String getCacheRoot() {
-        if (cacheRootCfgString == null) {
-            setCacheRoot(DEFAULT_CACHE_ROOT);
-        }
-        return cacheRootCfgString;
-    }
-
-    public File getAbsCacheRoot() {
-        if (cacheRoot == null)
-            setCacheRoot(DEFAULT_CACHE_ROOT);
-        return cacheRoot;
-    }
-
-    public void setCacheRoot(String newRoot) {
-        if (newRoot == null)
-            return;
-        cacheRootCfgString = newRoot;
-        File newRootFile = new File(newRoot);
-        if (!newRootFile.isAbsolute()) {
-            try {
-                File serverHomeDir = ServerConfigLocator.locate()
-                        .getServerHomeDir();
-                newRootFile = new File(serverHomeDir, newRoot);
-            } catch (Throwable t) {
-            }
-        }
-        if (cacheRoot != null) {
-            try {
-                cacheRoot.renameTo(newRootFile); // move only possible if
-                // same partition.
-            } catch (Throwable t) {
-                // TODO copy cache to new dest?
-                delTree(cacheRoot);
-                cacheRoot.delete();
-            }
-        }
-        cacheRoot = newRootFile;
-
-        if (!cacheRoot.exists())
-            new File(cacheRoot, defaultSubdir).mkdirs();
-
     }
 
     /**
@@ -753,8 +596,12 @@ public class WADOCacheImpl implements WADOCache {
     }
 
     private File getStudyDir(String studyUID) {
-        return new File(getAbsCacheRoot(), Integer.toHexString(studyUID
-                .hashCode()));
+        File dir = journal.getDataRootDir();
+        int hashCode = studyUID.hashCode();
+        for (int prime : numberOfStudyBags) {
+            dir = new File(dir, Integer.toString(hashCode % prime));
+        }
+        return new File(dir, Integer.toHexString(hashCode));
     }
 
     /**
@@ -851,17 +698,5 @@ public class WADOCacheImpl implements WADOCache {
                 + imageWriterClass);
     }
 
-    /**
-     * Reads an jpg file into a BufferedImage.
-     * 
-     * @param jpgFile
-     * @return BufferedImage from jpg file.
-     */
-    private BufferedImage _readJpgFile(File jpgFile) {
-        if (jpgFile == null)
-            return null;
-        // TODO real work!
-        return null;
-    }
 
 }
