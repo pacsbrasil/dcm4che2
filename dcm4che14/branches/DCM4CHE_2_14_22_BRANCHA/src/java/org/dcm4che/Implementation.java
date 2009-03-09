@@ -63,7 +63,7 @@ public class Implementation
    
    // Static --------------------------------------------------------
    private final static ResourceBundle rb =
-      ResourceBundle.getBundle("org/dcm4che/Implementation");
+      ResourceBundle.getBundle(Implementation.class.getName());
    
    public static String getClassUID() {
       return rb.getString("dcm4che.ImplementationClassUID");
