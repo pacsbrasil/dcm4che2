@@ -327,6 +327,8 @@ public class XDSQueryService extends ServiceMBeanSupport {
     }
     
     public AdhocQueryResponse performQuery(AdhocQueryRequest rq) throws SOAPException, JAXBException {
+        if ( rq == null )
+            return null;
         if (logRequestMessage) {
             log.info("AdhocQueryRequest:"+InfoSetUtil.marshallObject(rq, true));
         }
@@ -484,7 +486,7 @@ public class XDSQueryService extends ServiceMBeanSupport {
             }
         }
     }
-    private boolean isFromDomain(String pid) {
+    protected boolean isFromDomain(String pid) {
         String assAuth = getAssigningAuthority(pid);
         if (assAuth == null)
             return false;
@@ -514,7 +516,7 @@ public class XDSQueryService extends ServiceMBeanSupport {
         return end == -1 ? pid.substring(pos) : pid.substring(pos, end);
     }
 
-    private String toPIDString(String[] pid) {
+    protected String toPIDString(String[] pid) {
         if (pid == null || pid.length < 1) return "";
         StringBuffer sb = new StringBuffer(pid[0]);
         log.debug("pid[0]:"+pid[0]);
