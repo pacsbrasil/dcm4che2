@@ -52,6 +52,7 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.util.SystemUtils;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.jboss.resource.adapter.jdbc.WrappedStatement;
 
@@ -63,8 +64,9 @@ public abstract class BaseCmd {
     protected static final Logger log = Logger.getLogger(BaseCmd.class);
     protected static final Method defineColumnType;
     static {
-        if (JdbcProperties.getInstance().getDatabase()
-                == JdbcProperties.ORACLE) {
+        if ((JdbcProperties.getInstance().getDatabase()
+                == JdbcProperties.ORACLE) && 
+                Boolean.valueOf(SystemUtils.getSystemProperty("enabledOracleDefinedColumnType", "true"))){
             try {
                 Class clazz = Class.forName("oracle.jdbc.OracleStatement");
                 defineColumnType = clazz.getMethod("defineColumnType",
