@@ -191,19 +191,20 @@ public class XDSQueryService extends ServiceMBeanSupport {
 
     public AdhocQueryResponse findDocuments(String patId, String status,
             boolean useLeafClass) throws SOAPException, JAXBException {
-        return performQuery( queryFac.createFindDocumentsRequest(getAffinityDomainPatientID(patId), getListString(status), useLeafClass) );
+        patId = getAffinityDomainPatientID(patId);
+        return patId == null ? null : performQuery( queryFac.createFindDocumentsRequest(patId, getListString(status), useLeafClass) );
     }
 
     public AdhocQueryResponse findFolders(String patId, String status,
             boolean useLeafClass) throws SOAPException, JAXBException {
-        return performQuery( queryFac.createFindFoldersRequest(
-                getAffinityDomainPatientID(patId), getListString(status), useLeafClass));
+        patId = getAffinityDomainPatientID(patId);
+        return patId == null ? null : performQuery( queryFac.createFindFoldersRequest(patId, getListString(status), useLeafClass));
     }
 
     public AdhocQueryResponse findSubmissionSets(String patId, String status, boolean useLeafClass)
     throws SOAPException, JAXBException {
-        return performQuery(queryFac.createFindSubmissionSetsRequest(
-                getAffinityDomainPatientID(patId), getListString(status), useLeafClass));
+        patId = getAffinityDomainPatientID(patId);
+        return patId == null ? null : performQuery(queryFac.createFindSubmissionSetsRequest(patId, getListString(status), useLeafClass));
     }
 
     public String findAsXML(String cmd, String patId, String status,
@@ -218,8 +219,8 @@ public class XDSQueryService extends ServiceMBeanSupport {
     public AdhocQueryResponse getAll(String patId, String docStatus,
             String submissionSetStatus, String folderStatus)
     throws SOAPException, JAXBException {
-        return performQuery(queryFac.createGetAllRequest(
-                getAffinityDomainPatientID(patId), getListString(docStatus), getListString(submissionSetStatus), getListString(folderStatus)));
+        patId = getAffinityDomainPatientID(patId);
+        return patId == null ? null : performQuery(queryFac.createGetAllRequest(patId, getListString(docStatus), getListString(submissionSetStatus), getListString(folderStatus)));
 
     }
 
