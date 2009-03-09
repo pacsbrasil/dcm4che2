@@ -439,7 +439,6 @@ public abstract class MPPSManagerBean implements SessionBean {
             log.debug("new mppsAttrs:");
             log.debug(mppsAttrs);
         }
-        mppsAttrs.putAll(mpps.getPatient().getAttributes(false));
         mpps.setAttributes(mppsAttrs);
         map.put("mppsAttrs", mppsAttrs);
         map.put("mwlAttrs", mwlAttrs);
