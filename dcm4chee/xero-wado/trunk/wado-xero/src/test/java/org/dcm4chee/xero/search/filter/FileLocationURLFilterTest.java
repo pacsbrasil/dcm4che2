@@ -76,11 +76,32 @@ public class FileLocationURLFilterTest {
 	}
 
 	@Test
-	public void filterTest_OnlineCacheFile_expectFileUrl() throws MalformedURLException {
+	public void filterTest_OnlineRelativePath_expectFileUrl() throws MalformedURLException {
 		params.put(FileLocationURLFilter.FILE_DTO, inputDTO);
 		URL fileUrl = filter.filter(null, params);
-		assertEquals(fileUrl, new URL("file:///SomeDir/SomePath.file"));
+		assertEquals(fileUrl, new URL("file:../server/default/SomeDir/SomePath.file"));
 	}
+
+    @Test
+    public void filterTest_OnlineAbsolutePath_expectFileUrl() throws MalformedURLException {
+        inputDTO.setDirectoryPath("/"+baseDir);
+        params.put(FileLocationURLFilter.FILE_DTO, inputDTO);
+        URL fileUrl = filter.filter(null, params);
+        assertEquals(fileUrl, new URL("file:///SomeDir/SomePath.file"));
+
+        inputDTO.setDirectoryPath("\\"+baseDir);
+        params.put(FileLocationURLFilter.FILE_DTO, inputDTO);
+        fileUrl = filter.filter(null, params);
+        assertEquals(fileUrl, new URL("file:///SomeDir/SomePath.file"));
+    }
+
+    @Test
+    public void filterTest_OnlineWindowsDirPath_expectFileUrl() throws MalformedURLException {
+        inputDTO.setDirectoryPath("C:\\"+baseDir);
+        params.put(FileLocationURLFilter.FILE_DTO, inputDTO);
+        URL fileUrl = filter.filter(null, params);
+        assertEquals(fileUrl, new URL("file:///C:/SomeDir/SomePath.file"));
+    }
 
 	/**
 	 * 

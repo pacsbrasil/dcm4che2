@@ -67,8 +67,16 @@ public class FileLocationURLFilter implements Filter<URL> {
 		String filePath = directoryPath.replace("\\", "/") + "/" + dto.getFilePath(); 
 		try {
 		    // Single letter drive paths are fine, as is no url indicator type
-			if (directoryPath.indexOf(":") <= 1)
+		    int colon = directoryPath.indexOf(":");
+			if ( colon == -1 ) {
+	            if( filePath.charAt(0) =='/' ) url = new URL("file://"+filePath);
+	            else {
+	                //TODO - extract the real base directory instead of guessing.
+	                url = new URL("file:../server/default/"+filePath);
+	            }
+			} else if( colon==1 ) {
 				url = new URL("file:///" + filePath);
+            }
 		} catch (MalformedURLException e) {
 			throw new IllegalArgumentException("Unable to compose URL for file path" + filePath, e);
 		}
