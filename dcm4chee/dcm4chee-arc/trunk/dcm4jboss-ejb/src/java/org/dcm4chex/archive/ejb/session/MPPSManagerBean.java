@@ -385,25 +385,6 @@ public abstract class MPPSManagerBean implements SessionBean {
         for (int i = 0, len = ssaSQ.countItems(); i < len; i++) {
             ssa = ssaSQ.getItem(i);
             if (ssa != null) {
-                if (studyIUID == null) {
-                    studyIUID = ssa.getString(Tags.StudyInstanceUID);
-                    if (!studyIUID.equals(mwlAttrs
-                            .getString(Tags.StudyInstanceUID))) {
-                        if (mwlItem != null) {
-                            log.info("StudyInstanceUID corrected for spsID "
-                                    + spsid);
-                            mwlAttrs.putUI(Tags.StudyInstanceUID, studyIUID);
-                            mwlItem.setAttributes(mwlAttrs);
-                        } else {
-                            log
-                                    .warn("StudyInstanceUID of external MWL entry can not be corrected! spsID "
-                                            + spsid);
-                            log.warn("--- StudyIUID MWL:"
-                                    + mwlAttrs.getString(Tags.StudyInstanceUID)
-                                    + "   StudyIUID MPPS:" + studyIUID);
-                        }
-                    }
-                }
                 ssaSpsID = ssa.getString(Tags.SPSID);
                 if (ssaSpsID == null || spsid.equals(ssaSpsID)) {
                     ssa.putSH(Tags.AccessionNumber, accNo);
