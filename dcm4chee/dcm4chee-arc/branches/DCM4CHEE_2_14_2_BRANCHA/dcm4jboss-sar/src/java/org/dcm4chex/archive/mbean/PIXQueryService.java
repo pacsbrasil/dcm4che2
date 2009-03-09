@@ -207,7 +207,7 @@ public class PIXQueryService extends ServiceMBeanSupport {
         });
     }
 
-    private PIXQuery pixQuery() throws Exception {
+    protected PIXQuery pixQuery() throws Exception {
         return ((PIXQueryHome) EJBHomeFactory.getFactory().lookup(
                 PIXQueryHome.class, PIXQueryHome.JNDI_NAME)).create();
     }
