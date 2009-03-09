@@ -25,6 +25,8 @@
 
   <property name="jmeterhome" location="${integration.cdp}/jmeter" />
 
+  <property name="testPackage" value="cdp-integration" />
+
   <!-- Define various integration test properties, useful for setting up servers for automated testing. -->
   <property name="userPasswordPropertyFile" value="../../server-setup/test-users.properties" />
   <property name="dicomObjectsPropertyFile" value="../../server-setup/test-objects.properties" />
@@ -288,6 +290,7 @@
      <xslt style="${jmeterhome}/extras/jmeter-results-to-junit.xsl"
 	basedir="target"
 	includes="**/*.jtl" destdir="target/junit-jmeter" extension=".xml" filenameparameter="testSuiteName">
+	<param name="packageName" expression="${testPackage}.${ant.project.name}" />
      </xslt>
   </target>
 
