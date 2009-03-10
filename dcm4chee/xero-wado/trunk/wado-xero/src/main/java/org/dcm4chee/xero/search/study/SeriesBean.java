@@ -208,6 +208,12 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	  if (modality.equals("PR")) {
 		 return new GspsBean(this,data);
 	  }
+	  if( UID.VideoPhotographicImageStorage.equals(sopClass)
+	          || UID.VideoEndoscopicImageStorage.equals(sopClass)
+	          || UID.VideoMicroscopicImageStorage.equals(sopClass)
+	        ) {
+	      return new VideoBean(this,data);
+	  }
 	  int frameCount = data.getInt(Tag.NumberOfFrames);
 	  if (frameCount > 1) {
 		 log.debug("Creating a multi-frame image bean on NumberOfFrames={}",frameCount);
