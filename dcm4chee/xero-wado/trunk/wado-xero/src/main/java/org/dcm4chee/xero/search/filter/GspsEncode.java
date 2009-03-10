@@ -790,7 +790,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 	protected void addGraphicObject(GType g, GraphicObject go, float pixSize) {
 		String type = go.getGraphicType();
 		if (type.equalsIgnoreCase(GraphicObject.POLYLINE)) {
-			addPolyline(g, go, pixSize);
+			addPolyline(g, go, pixSize,false);
 		} else if (type.equalsIgnoreCase(GraphicObject.CIRCLE)) {
 			addCircle(g, go, pixSize);
 		} else if (type.equalsIgnoreCase(GraphicObject.ELLIPSE)) {
@@ -799,7 +799,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 			addPoint(g, go, pixSize);
 		} else if (type.equalsIgnoreCase(GraphicObject.INTERPOLATED)) {
 			// TODO replace this with something better.
-			addPolyline(g, go, pixSize);
+			addPolyline(g, go, pixSize, true);
 		} else {
 			log.warn("Unsupported graphic object type:" + type);
 		}
@@ -964,7 +964,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 	 * @param go
 	 *           to add the polyline from.
 	 */
-	protected void addPolyline(GType g, GraphicObject go, float pixSize) {
+	protected void addPolyline(GType g, GraphicObject go, float pixSize, boolean smooth) {
 		float[] points = go.getGraphicData();
 		if (points == null || points.length < 2) {
 			log.warn("Invalid polyline provided in graphic object.");
@@ -973,15 +973,46 @@ public class GspsEncode implements Filter<ResultsBean> {
 		for (int i = 0; i < points.length; i++)
 			points[i] *= pixSize;
 		PathType path = new PathType();
-		StringBuffer d = new StringBuffer();
-		d.append("M").append((int) points[X_OFFSET]).append(',').append((int) points[Y_OFFSET]);
+		StringBuffer v = new StringBuffer();
+		appendPoint(v,"M",points,0);
+        StringBuffer d = null;
+        boolean closed = false;
+        if( smooth ) {
+            d = new StringBuffer(v);
+            closed = (points[0]==points[points.length-2] && points[1]==points[points.length-1]); 
+        }
 		// Start at 3 so that if the length happens to be odd, we don't throw an
 		// exception, but just ignore the extra value.
 		for (int i = 3; i < points.length; i += 2) {
 			// Note the order is x,y NOT y,x as it is for shutters (shudder)
-			d.append(" L").append((int) points[i - 1]).append(',').append((int) points[i]);
+			appendPoint(v," L",points,i - 1);
+			if( smooth ) {
+			    float[] c1 = new float[]{points[i-3],points[i-2]};
+			    float[] c2 = new float[]{points[i-1],points[i]};
+			    int prevPosn = i-5;
+			    int nextPosn = i+1;
+			    if( prevPosn < 0 && closed ) prevPosn = points.length-4;
+			    if( nextPosn >= points.length && closed) nextPosn = 2;
+			    if( nextPosn < points.length ) {
+                    c2[0] = c2[0]+(c2[0] - points[nextPosn])/10;
+                    c2[1] = c2[1]+(c2[1] - points[nextPosn+1])/10;
+			    }
+			    if( prevPosn >=0 ) {
+			        c1[0] = c1[0]+(c1[0] - points[prevPosn])/10;
+			        c1[1] = c1[1]+(c1[1] - points[prevPosn+1])/10;
+			    }
+			    appendPoint(d,"C ", c1, 0);
+			    appendPoint(d," ", c2, 0);
+			    appendPoint(d," ", points, i-1);
+	            appendPoint(d," L",points,i - 1);
+			}
 		}
-		path.setD(d.toString());
+		if( smooth ) {
+	        path.setD(d.toString());
+		    path.setV(v.toString());
+		} else {
+		    path.setD(v.toString());
+		}
 		path.setId(ResultsBean.createId("p"));
 		if (!go.getGraphicFilled()) {
 			path.setFill("none");
@@ -990,7 +1021,15 @@ public class GspsEncode implements Filter<ResultsBean> {
 		g.getChildren().add(path);
 	}
 
-	/**
+	/** Add a point to the end of d, along with base. */
+	public static void appendPoint(StringBuffer d, String base, float[] points, int i) {
+	    d.append(base);
+	    d.append(points[i]);
+	    d.append(",");
+	    d.append(points[i+1]);
+    }
+
+    /**
 	 * Adds min/max pixel information from the GSPS instead of from the image
 	 * header.
 	 */

@@ -154,8 +154,11 @@ public class WLFilter implements Filter<WadoImage> {
 	  if( func==null && (voiObj==null || !(voiObj.contains(Tag.WindowWidth) || 
 	          voiObj.contains(Tag.VOILUTSequence)))) {
 		 float[] cw = VOIUtils.getMinMaxWindowCenterWidth(img, pr, frame, bi.getRaster().getDataBuffer());
-		 windowCenter = cw[0];
+		 windowCenter = cw[0]+0.5f;
 		 windowWidth = cw[1];
+		 //log.info("Original c/w={},{}", windowCenter, windowWidth);
+		 if( windowWidth < 2 ) windowWidth = 2;
+         //log.info("Final c/w={},{}", windowCenter, windowWidth);
 		 func = LookupTable.LINEAR;
 	  }
 
