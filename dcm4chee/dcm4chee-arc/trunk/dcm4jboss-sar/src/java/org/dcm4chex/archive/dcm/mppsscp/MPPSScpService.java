@@ -349,6 +349,7 @@ public class MPPSScpService extends AbstractScpService {
         HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
                 .isEnableDNSLookups());
         log.debug("log Procedure Record! actionCode:" + ProcedureRecordMessage.UPDATE);
+        log.info("mppsAttrs:");log.info(mppsAttrs);
         try {
             ProcedureRecordMessage msg = new ProcedureRecordMessage(
                     ProcedureRecordMessage.UPDATE);
