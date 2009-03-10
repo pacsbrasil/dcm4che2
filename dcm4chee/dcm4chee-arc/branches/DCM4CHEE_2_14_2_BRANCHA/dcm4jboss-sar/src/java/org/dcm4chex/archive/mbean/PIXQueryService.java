@@ -132,6 +132,10 @@ public class PIXQueryService extends ServiceMBeanSupport {
         return mockResponse == null ? "-" : pids2cx(mockResponse);
     }
 
+    protected List getMockResponseInternal() {
+        return mockResponse;
+    }
+
     private String pids2cx(List pids) {
         StringBuffer sb = new StringBuffer();
         for (Iterator iter = pids.iterator(); iter.hasNext();) {
