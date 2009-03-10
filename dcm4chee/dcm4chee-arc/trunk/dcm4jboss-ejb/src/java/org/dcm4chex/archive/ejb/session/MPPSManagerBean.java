@@ -354,7 +354,7 @@ public abstract class MPPSManagerBean implements SessionBean {
             PatientLocal mwlPat = mwlItem.getPatient();
             PatientLocal mppsPat = mpps.getPatient();
             Dataset mwlAttrs = mwlItem.getAttributes();
-            Map map = updateLinkedMpps(mpps, mwlItem, mwlAttrs);
+            Map map = updateLinkedMpps(mpps, mwlItem, mwlAttrs, mwlPat.getAttributes(true));
             if (!mwlPat.equals(mppsPat)) {
                 map.put("mwlPat", mwlPat.getAttributes(true));
                 map.put("mppsPat", mppsPat.getAttributes(true));
@@ -367,8 +367,8 @@ public abstract class MPPSManagerBean implements SessionBean {
         }
     }
 
-    private Map updateLinkedMpps(MPPSLocal mpps, MWLItemLocal mwlItem,
-            Dataset mwlAttrs) {
+    private Map updateLinkedMpps(MPPSLocal mpps, MWLItemLocal mwlItem, Dataset mwlAttrs,
+            Dataset mwlPat) {
         Map map = new HashMap();
         Dataset ssa;
         Dataset mppsAttrs = mpps.getAttributes();
@@ -385,6 +385,9 @@ public abstract class MPPSManagerBean implements SessionBean {
         for (int i = 0, len = ssaSQ.countItems(); i < len; i++) {
             ssa = ssaSQ.getItem(i);
             if (ssa != null) {
+                if (studyIUID == null) {
+                    studyIUID = ssa.getString(Tags.StudyInstanceUID);
+                }
                 ssaSpsID = ssa.getString(Tags.SPSID);
                 if (ssaSpsID == null || spsid.equals(ssaSpsID)) {
                     ssa.putSH(Tags.AccessionNumber, accNo);
@@ -421,6 +424,9 @@ public abstract class MPPSManagerBean implements SessionBean {
             log.debug(mppsAttrs);
         }
         mpps.setAttributes(mppsAttrs);
+        mppsAttrs.putAll(mwlPat);
+        log.info("mwlPat:");log.info(mwlPat);
+        log.info("mppsAttrs:");log.info(mppsAttrs);
         map.put("mppsAttrs", mppsAttrs);
         map.put("mwlAttrs", mwlAttrs);
         return map;
@@ -466,7 +472,7 @@ public abstract class MPPSManagerBean implements SessionBean {
         AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
         Dataset mwlPatDs = filter.filter(mwlAttrs);
         PatientLocal mppsPat = mpps.getPatient();
-        Map map = updateLinkedMpps(mpps, null, mwlAttrs);
+        Map map = updateLinkedMpps(mpps, null, mwlAttrs, mwlPatDs);
         if (!isSamePatient(mwlPatDs, mppsPat)) {
             PatientLocal mwlPat;
             try {
@@ -540,6 +546,7 @@ public abstract class MPPSManagerBean implements SessionBean {
         ds.putSQ(Tags.ScheduledProtocolCodeSeq);
         mppsAttrs.putSQ(Tags.ScheduledStepAttributesSeq).addItem(ds);
         mpps.setAttributes(mppsAttrs);
+        mppsAttrsSav.putAll(mpps.getPatient().getAttributes(true));
         return mppsAttrsSav;
     }
 
