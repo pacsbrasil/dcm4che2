@@ -149,4 +149,12 @@ function toggle(check1, check2) {
     }
 }
   
+function setCheckValue(value1, check1) {
+    if (check1.checked) {
+        value1.value = "true";
+    } else {
+        value1.value = "false";
+    }
+}
+  
   

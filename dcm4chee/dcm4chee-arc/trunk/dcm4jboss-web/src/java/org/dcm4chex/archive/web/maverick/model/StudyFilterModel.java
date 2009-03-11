@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.web.maverick.model;
 
 
+import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.PrivateTags;
@@ -132,8 +133,14 @@ public class StudyFilterModel extends AbstractModel {
         ds.putSH(Tags.StudyID, s);
     }
     
-    public final void setStudyUID(String s) {
+    public final void setStudyUID(String s, boolean alternativeQuery) {
         ds.putUI(Tags.StudyInstanceUID, s);
+        if ( s != null && alternativeQuery ) {
+            Dataset item = ds.putSQ(Tags.RequestAttributesSeq).addNewItem();
+            item.putUI(Tags.StudyInstanceUID, s);
+        } else {
+            ds.remove(Tags.RequestAttributesSeq);
+        }
     }
     public final void setSeriesUID(String s) {
         ds.putUI(Tags.SeriesInstanceUID, s);

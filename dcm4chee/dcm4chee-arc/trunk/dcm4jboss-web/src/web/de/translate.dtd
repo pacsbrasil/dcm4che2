@@ -165,3 +165,6 @@
 <!ENTITY QueryHasIssuer_text1 "">
 <!ENTITY QueryHasIssuer_text2 "Mit ">
 <!ENTITY QueryHasIssuer_text3 "Ohne Issuer of PID">
+<!ENTITY AlternativeStudyUID "Alternative Suche mit Study IUID eines Auftrags wenn diese nicht mit der Study IUID des empfangenen Objekts uebereinstimmt.">
+<!ENTITY AlternativeStudyUID_text "von Auftrag">
+

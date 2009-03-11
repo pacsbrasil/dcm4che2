@@ -291,6 +291,16 @@
 						<xsl:choose>
 							<xsl:when test="showStudyIUID='true'">
 								<td class="label">&StudyIUID;:
+                                    <div title="&AlternativeStudyUID;">
+                                       <input name="alternativeStudyUID" type="hidden" value="{alternativeStudyUID}"/>
+                                       <input name="tmpCheckASUID" type="checkbox" value="true" 
+                                          onclick="return setCheckValue(this.form.alternativeStudyUID, this.form.tmpCheckASUID)">
+                                          <xsl:if test="alternativeStudyUID = 'true'">
+                                             <xsl:attribute name="checked" />
+                                          </xsl:if>
+                                       </input>
+                                          <xsl:text>&AlternativeStudyUID_text;</xsl:text>
+                                    </div>
 								</td>
 								<td>
 									<input size="45" name="studyUID"

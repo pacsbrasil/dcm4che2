@@ -185,7 +185,9 @@ public class FolderSubmitCtrl extends FolderCtrl {
                 if (rq.getParameter("exportXDSI") != null
                         || rq.getParameter("exportXDSI.x") != null) { return exportXDSI(); }
             }
-            if (rq.getParameter("showStudyIUID") != null ) folderForm.setShowStudyIUID( "true".equals( rq.getParameter("showStudyIUID") ) ); 
+            if (rq.getParameter("showStudyIUID") != null ) folderForm.setShowStudyIUID( "true".equals( rq.getParameter("showStudyIUID") ) );
+            log.info("###### rq.getParameter(alternativeStudyUID):"+rq.getParameter("alternativeStudyUID"));
+            folderForm.setAlternativeStudyUID( "true".equals( rq.getParameter("alternativeStudyUID") ) );
             if (rq.getParameter("showSeriesIUID") != null ) folderForm.setShowSeriesIUID( "true".equals( rq.getParameter("showSeriesIUID") ) );
 
             if (rq.getParameter("addWorklist") != null ) return "worklist";

@@ -104,6 +104,8 @@ public class FolderForm extends BasicFolderForm {
     
     private boolean showIssuerOfPID;
 
+    private boolean alternativeStudyUID;
+
     protected static Logger log = Logger.getLogger(FolderForm.class);
 
     public static FolderForm getFolderForm(ControllerContext ctx) {
@@ -367,7 +369,7 @@ public class FolderForm extends BasicFolderForm {
             studyFilter.setPatientName(patientName);
             studyFilter.setAccessionNumber(accessionNumber);
             studyFilter.setStudyID(studyID);
-            studyFilter.setStudyUID( studyUID );
+            studyFilter.setStudyUID( studyUID, alternativeStudyUID );
             studyFilter.setSeriesUID( seriesUID );
             studyFilter.setStudyDateRange(studyDateRange);
             studyFilter.setModality(modality);
@@ -435,6 +437,15 @@ public class FolderForm extends BasicFolderForm {
 
     public void setShowIssuerOfPID(boolean showIssuerOfPID) {
         this.showIssuerOfPID = showIssuerOfPID;
+    }
+
+    public boolean isAlternativeStudyUID() {
+        return alternativeStudyUID;
+    }
+
+    public void setAlternativeStudyUID(boolean alternateStudyUID) {
+        log.info("#### setAlternativeStudyUID:"+alternateStudyUID);
+        this.alternativeStudyUID = alternateStudyUID;
     }
 
     /* (non-Javadoc)

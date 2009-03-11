@@ -319,7 +319,7 @@
 		<tr>
 			<td>&#160;&#160;</td><!-- intend -->
 	        <td title="StudyIUID:{studyUID}">
-				<a href="foldersubmit.m?studyUID={studyUID}&amp;filter.x=1">
+				<a href="foldersubmit.m?studyUID={studyUID}&amp;alternativeStudyUID=true&amp;filter.x=1">
 				    <xsl:variable name="uid"><xsl:value-of select="studyUID"/></xsl:variable>
 				    <xsl:variable name="uid_len"><xsl:value-of select="string-length($uid)"/></xsl:variable>
 					<xsl:choose>

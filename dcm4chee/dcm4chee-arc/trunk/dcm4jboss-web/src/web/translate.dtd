@@ -165,3 +165,5 @@
 <!ENTITY QueryHasIssuer_text1 "Show only With">
 <!ENTITY QueryHasIssuer_text2 "Without">
 <!ENTITY QueryHasIssuer_text3 "Issuer of PID">
+<!ENTITY AlternativeStudyUID "Alternative query to find study with Study IUID of an order that doesn't match with StudyIUID of received composite object.">
+<!ENTITY AlternativeStudyUID_text "of Order">
