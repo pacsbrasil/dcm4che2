@@ -123,7 +123,8 @@ public class QueryStudiesCmd extends BaseReadCmd {
         checkPermissions = subject != null;
         boolean type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
         sqlBuilder.setFrom(getTables());
-        sqlBuilder.setLeftJoin( getLeftJoin(filter.containsValue(Tags.SeriesInstanceUID)));
+        sqlBuilder.setLeftJoin( getLeftJoin(filter.containsValue(Tags.SeriesInstanceUID) || 
+                filter.containsValue(Tags.RequestAttributesSeq)));
         sqlBuilder.setRelations(getRelations());
         sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
         sqlBuilder.addWildCardMatch(null, "Patient.patientId",
@@ -143,8 +144,25 @@ public class QueryStudiesCmd extends BaseReadCmd {
         filter.getString(Tags.PatientName));
         sqlBuilder.addWildCardMatch(null, "Study.studyId", type2,
                 filter.getStrings(Tags.StudyID));
-        sqlBuilder.addListOfStringMatch(null, "Study.studyIuid",
-                SqlBuilder.TYPE1, filter.getStrings( Tags.StudyInstanceUID));
+        if (filter.containsValue(Tags.RequestAttributesSeq) && 
+                filter.getItem(Tags.RequestAttributesSeq).containsValue(Tags.StudyInstanceUID)) {
+            Match.Node node0 = sqlBuilder.addNodeMatch("OR", false);
+            node0.addMatch(new Match.ListOfString(null, "Study.studyIuid", SqlBuilder.TYPE1, filter.getStrings(Tags.StudyInstanceUID)));
+            Dataset rqAttrs = filter.getItem(Tags.RequestAttributesSeq);
+    
+            SqlBuilder subQuery = new SqlBuilder();
+            subQuery.setSelect(new String[] { "SeriesRequest.pk" });
+            subQuery.setFrom(new String[] { "SeriesRequest" });
+            subQuery.addFieldValueMatch(null, "Series.pk", SqlBuilder.TYPE1, null,
+                    "SeriesRequest.series_fk");
+            subQuery.addListOfUidMatch(null, "SeriesRequest.studyIuid", type2,
+                    rqAttrs.getStrings(Tags.StudyInstanceUID));
+            node0.addMatch(new Match.Subquery(subQuery, null, null));
+        } else {
+            sqlBuilder.addListOfStringMatch(null, "Study.studyIuid",
+                    SqlBuilder.TYPE1, filter.getStrings( Tags.StudyInstanceUID));
+        }
+        
         sqlBuilder.addListOfStringMatch(null, "Series.seriesIuid",
                 SqlBuilder.TYPE1, filter.getStrings( Tags.SeriesInstanceUID));
         sqlBuilder.addRangeMatch(null, "Study.studyDateTime", type2,
