@@ -105,6 +105,8 @@ ImageLayout.prototype.updatePosition = function ImageLayout_updatePosition() {
 	    // The points are all backwards and the first set are offset by 1 each as they are starting/ending points
 		var br = this.merged.get("bottomRight");
 		this.region = parsePoint(tl+","+br);
+		this.region[0] = this.region[0]-1;
+		this.region[1] = this.region[1]-1;
 		this.debug("Using specified region %s", this.region);
 	} else {
 		this.region = [0,0,this.image.Columns, this.image.Rows];

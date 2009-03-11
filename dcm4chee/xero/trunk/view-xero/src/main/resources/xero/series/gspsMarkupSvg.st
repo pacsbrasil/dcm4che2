@@ -12,7 +12,7 @@ $it.TEXT; format="xml"$
 </svg:text>
 }$
 $it.path:{
-<svg:path id="$it.id$" stroke-width="$it.("stroke-width")$" fill="$it.fill$" d="$it.d$" />
+<svg:path id="$it.id$" stroke-width="$it.("stroke-width")$" fill="$it.fill$" stroke="$it.stroke$" d="$it.d$" />
 }$
 </svg:g>
 }$

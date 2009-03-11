@@ -78,13 +78,15 @@ static.imageMenu.children.reset.mode=default
 
 ######## Zoom Menu
 
-#static.imageMenu.children.magnify.inherit=displayModeItem
-#static.imageMenu.children.magnify.priority=200
-#static.imageMenu.children.magnify.i18n=Magnify
-
 static.imageMenu.children.scaleToFit.inherit=displayModeItem
 static.imageMenu.children.scaleToFit.i18n=Zoom
 static.imageMenu.children.scaleToFit.priority=210
+
+#static.imageMenu.children.magnify.inherit=toolItem
+#static.imageMenu.children.magnify.i18n=Magnify
+#static.imageMenu.children.magnify.mode=Zoom
+#static.imageMenu.children.magnify.priority=1215
+#static.imageMenu.children.magnify.action=controller.sizeToggle
 
 static.imageMenu.children.zoomIn.inherit=toolItem
 static.imageMenu.children.zoomIn.i18n=ZoomIn

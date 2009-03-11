@@ -6,16 +6,35 @@
  */
  
 XeroController.prototype.zoomReset = function (lay,e) {
-	this.zoomMode(lay,e,"SCALE_TO_FIT");
+	this.zoomMode(lay,e);
 };
 XeroController.prototype.clickImage = XeroController.prototype.zoomReset;
 
+/** Sets the scale to fit mode */
+XeroController.prototype.scaleToFit = function (lay,e) {
+	this.zoomMode(lay,e,"SCALE_TO_FIT");
+};
+
+/** Sets magnify mode */
 XeroController.prototype.magnify = function(lay,e) {
 	this.zoomMode(lay,e,"MAGNIFY");
 };
 
+/** Sets true size mode */
 XeroController.prototype.trueSize = function(lay,e) {
 	this.zoomMode(lay,e,"TRUE_SIZE");
+};
+
+/** Toggles modes */
+XeroController.prototype.sizeToggle = function(lay,e) {
+	lay = this.findLayout(lay);
+	var nav = this.getNavigate(lay);
+	var size = nav.parent.merged.get("size");
+    console.warn("Toggling size from",size);
+	if( size=="MAGNIFY" ) size = "TRUE_SIZE";
+	else if( size==="TRUE_SIZE" ) size = "SCALE_TO_FIT";
+	else size = "MAGNIFY";
+	this.zoomMode(lay,e,size);
 };
 
 /** Handles setting a given zoom mode, and re-setting the region */
@@ -25,6 +44,7 @@ XeroController.prototype.zoomMode = function(lay,e,mode) {
 	nav.setMerged("smallImage",true);
 	console.info("Resetting region on",lay.id);
 	// Reset the topLeft/bottomRight instead of setting the mode
+	nav.parent.setMerged("size", mode);
 	nav.parent.setMerged("topLeft");
 	nav.parent.setMerged("bottomRight");
 	nav.parent.setMerged("magnify");
