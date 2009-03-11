@@ -1392,35 +1392,38 @@ public class GspsEncode implements Filter<ResultsBean> {
 	 */
 	protected void addCircularShutter(GspsType gspsType, DisplayShutterModule shutter, GType g, String width,
 	      String height) {
-		log.info("Found a circular shutter.");
+		log.debug("Found a circular shutter.");
 		int[] center = shutter.getCenterOfCircularShutter();
 		int radius = shutter.getRadiusOfCircularShutter();
-		if (center == null || radius == 0.0 || center.length != 2) {
+		if (center == null || radius <= 2 || center.length != 2) {
 			log.warn("Invalid circular shutter.");
 			return;
 		}
-		log.info("Adding circular shutter to object.");
+		int centerX = center[1];
+		int centerY = center[0];
+		
+		log.debug("Adding circular shutter to object.");
 		PathType path = new PathType();
 		StringBuffer d = new StringBuffer("M");
-		d.append(center[1]).append(',').append(center[0] - radius);
+		d.append(centerX).append(',').append(centerY - radius);
 		d.append(" L0,0 L");
 		d.append(width).append(",0 L").append(width).append(',').append(height);
 		d.append(" L0,").append(height).append(" L0,0 L");
-		d.append(center[1]).append(',').append(center[0] - radius);
+		d.append(centerX).append(',').append(centerY - radius);
 		StringBuffer v = new StringBuffer(d);
 		d.append(" A").append(radius).append(',').append(radius);
 		d.append(" 0 1,0 ");
-		d.append(center[1]).append(',').append(center[0] + radius);
+		d.append(centerX).append(',').append(centerY + radius);
 		d.append(" A").append(radius).append(',').append(radius);
 		d.append(" 0 1,0 ");
-		d.append(center[1]).append(',').append(center[0] - radius);
+		d.append(centerX).append(',').append(centerY - radius);
 
-		v.append(" at ").append(center[1] - radius).append(',');
-		v.append(center[0] - radius).append(' ');
-		v.append(center[1] + radius).append(',');
-		v.append(center[0] + radius).append(' ');
-		v.append(center[1]).append(',').append(center[0] - radius).append(' ');
-		v.append(center[1]).append(',').append(center[0] - radius);
+		v.append(" at ").append(centerX - radius).append(',');
+		v.append(centerY - radius).append(' ');
+		v.append(centerX + radius).append(',');
+		v.append(centerY + radius).append(' ');
+		v.append(centerX).append(',').append(centerY - radius).append(' ');
+		v.append(centerX).append(',').append(centerY - radius);
 		String rgb = toRGB(shutter.getShutterPresentationValue(), shutter.getFloatLab(), null);
 		path.setStroke(rgb);
 		path.setFill(rgb);
@@ -1485,6 +1488,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 			svg = new SvgType();
 			svg.setWidth("0");
 			svg.setHeight("0");
+			svg.setId("svg"+gspsType.getObjectUID());
 			gspsType.setSvg(svg);
 		}
 		return svg;
