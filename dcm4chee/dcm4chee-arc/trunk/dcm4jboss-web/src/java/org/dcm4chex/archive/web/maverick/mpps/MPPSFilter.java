@@ -55,11 +55,11 @@ import org.dcm4chex.archive.web.maverick.model.ModalityBaseFilterModel;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class MPPSFilter extends ModalityBaseFilterModel{
-	private boolean emptyAccNo;
-	
-	public MPPSFilter() {
+    private boolean emptyAccNo;
+
+    public MPPSFilter() {
         super();
-	}
+    }
 
     /**
      * Set the start date.
@@ -74,7 +74,7 @@ public class MPPSFilter extends ModalityBaseFilterModel{
         this.startDate = startDate;
         setDateRange(ds, Tags.PPSStartDate, startDate );
     }
- 
+
     /**
      * @return Returns the status.
      */
@@ -93,7 +93,7 @@ public class MPPSFilter extends ModalityBaseFilterModel{
     public String getSopIuid() {
         return ds.getString(Tags.SOPInstanceUID);
     }
-    
+
     public void setSopIuid( String uid ) {
         ds.putUI(Tags.SOPInstanceUID, uid);
     }
@@ -103,34 +103,34 @@ public class MPPSFilter extends ModalityBaseFilterModel{
     public String getPatientID() {
         return ds.getString(Tags.PatientID);
     }
-    
+
     public void setPatientID( String id ) {
         ds.putLO(Tags.PatientID, id);
     }
-    
-	/**
-	 * returns the modality filter value.
-	 * 
-	 * @return Filter value of modality field or null.
-	 */
-	public String getModality() {
-	    String[] sa = ds.getStrings(Tags.Modality);
-	    if ( sa == null || sa.length < 1 ) return null;
-	    StringBuffer sb = new StringBuffer(sa[0]);
-	    for ( int i = 1 ; i < sa.length ; i++ ) {
-	        sb.append('\\').append(sa[i]);
-	    }
-	    return sb.toString();
-	}
-	
-	/**
-	 * set the filter modality.
-	 * @param name
-	 */
-	public void setModality( String mod ){
-		ds.putCS(Tags.Modality, mod);
-	}
-	
+
+    /**
+     * returns the modality filter value.
+     * 
+     * @return Filter value of modality field or null.
+     */
+    public String getModality() {
+        String[] sa = ds.getStrings(Tags.Modality);
+        if ( sa == null || sa.length < 1 ) return null;
+        StringBuffer sb = new StringBuffer(sa[0]);
+        for ( int i = 1 ; i < sa.length ; i++ ) {
+            sb.append('\\').append(sa[i]);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * set the filter modality.
+     * @param name
+     */
+    public void setModality( String mod ){
+        ds.putCS(Tags.Modality, mod);
+    }
+
     /**
      * 
      */
@@ -138,29 +138,29 @@ public class MPPSFilter extends ModalityBaseFilterModel{
         super.setStationAET(ds, Tags.PerformedStationAET, aet);
     }
 
-	/**
-	 * @return Returns the accessionNumber.
-	 */
-	public String getAccessionNumber() {
-		return ds.getString(Tags.AccessionNumber);
-	}
-	/**
-	 * @param accessionNumber The accessionNumber to set.
-	 */
-	public void setAccessionNumber(String accessionNumber) {
-		ds.putAE( Tags.AccessionNumber, accessionNumber );
-	}
-	
-	
-	public boolean isEmptyAccNo() {
-		return emptyAccNo;
-	}
-	/**
-	 * @param parameter
-	 */
-	public void setEmptyAccNo(String parameter) {
-		emptyAccNo = "true".equals( parameter );
-	}
+    /**
+     * @return Returns the accessionNumber.
+     */
+    public String getAccessionNumber() {
+        return ds.getString(Tags.AccessionNumber);
+    }
+    /**
+     * @param accessionNumber The accessionNumber to set.
+     */
+    public void setAccessionNumber(String accessionNumber) {
+        ds.putAE( Tags.AccessionNumber, accessionNumber );
+    }
+
+
+    public boolean isEmptyAccNo() {
+        return emptyAccNo;
+    }
+    /**
+     * @param parameter
+     */
+    public void setEmptyAccNo(String parameter) {
+        emptyAccNo = "true".equals( parameter );
+    }
 
     public void init() {
         String d = new SimpleDateFormat(DATE_FORMAT).format(new Date());
