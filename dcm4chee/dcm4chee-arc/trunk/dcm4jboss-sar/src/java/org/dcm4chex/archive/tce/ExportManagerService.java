@@ -152,7 +152,7 @@ public class ExportManagerService extends AbstractScuService
 
     private static final UIDGenerator uidgen = UIDGenerator.getInstance();
 
-    private static final String[] NONE = {};
+    private static final String NONE = "NONE";
 
     private ObjectName storeScpServiceName;
 
@@ -162,9 +162,9 @@ public class ExportManagerService extends AbstractScuService
 
     private int concurrency = 1;
 
-    private String[] exportSelectorTitles = NONE;
+    private String[][] exportSelectorTitles = null;
 
-    private String[] delayReasons = NONE;
+    private String[][] delayReasons = null;
 
     private String[][] personNames = null;
     
@@ -313,24 +313,37 @@ public class ExportManagerService extends AbstractScuService
         this.exportDelay = exportDelay;
     }
 
-    private String codes2str(String[] codes) {
-        if (codes.length == 0)
-            return "NONE";
+    private String codes2str(String[][] codes) {
+        if (codes == null)
+            return NONE;
         String sep = System.getProperty("line.separator", "\n");
-        StringBuffer sb = new StringBuffer(codes[0]);
-        for (int i = 1; i < codes.length; ++i)
-            sb.append((i & 1) != 0 ? "^" : sep).append(codes[i]);
-
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0 ; i < codes.length ; i++ ) {
+            sb.append(codes[i][0]).append('^')
+            .append(codes[i][1]).append('^')
+            .append(codes[i][2]).append(sep);
+        }
         return sb.toString();
     }
 
-    private String[] str2codes(String s) {
-        if (s.equalsIgnoreCase("NONE"))
-            return NONE;
-        StringTokenizer stk = new StringTokenizer(s, "^,; \r\n\t");
-        String[] tmp = new String[stk.countTokens() & ~1];
-        for (int i = 0; i < tmp.length; i++)
-            tmp[i] = stk.nextToken();
+    private String[][] str2codes(String s) {
+        if (s.equalsIgnoreCase(NONE))
+            return null;
+        StringTokenizer st = new StringTokenizer(s, ";\r\n\t");
+        String[][] tmp = new String[st.countTokens()][3];
+        String[] code;
+        StringTokenizer stCode;
+        String line;
+        for (int i = 0; i < tmp.length; i++) {
+            code = new String[3];
+            line = st.nextToken().trim();
+            log.info("line string:"+line);
+            stCode = new StringTokenizer(line, "^");
+            code[0] = stCode.nextToken().trim();
+            code[1] = stCode.hasMoreTokens() ? stCode.nextToken().trim() : "";
+            code[2] = stCode.hasMoreTokens() ? stCode.nextToken().trim() : "";
+            tmp[i] = code;
+        }
         return tmp;
     }
 
@@ -442,9 +455,9 @@ public class ExportManagerService extends AbstractScuService
     private void onSeriesStored(SeriesStored seriesStored) {
         Dataset ian = seriesStored.getIAN();
         String suid = ian.getString(Tags.StudyInstanceUID);
-        for (int i = 1; i < exportSelectorTitles.length; i++, i++)
-            onSeriesStored(suid, exportSelectorTitles[i - 1],
-                    exportSelectorTitles[i]);
+        for (int i = 0, len = exportSelectorTitles.length; i < len; i++ )
+            onSeriesStored(suid, exportSelectorTitles[i][0],
+                    exportSelectorTitles[i][1]);
     }
 
     private void onSeriesStored(String suid, String code, String designator) {
@@ -558,9 +571,9 @@ public class ExportManagerService extends AbstractScuService
                 log.info("Detect Document Title Modifier in Export Selector:"
                         + cv + "^" + cs + "^"
                         + code.getString(Tags.CodeMeaning));
-                for (int j = 1; j < delayReasons.length; j++, j++) {
-                    if (cv.equals(delayReasons[j - 1])
-                            && cs.equals(delayReasons[j])) {
+                for (int j = 0; j < delayReasons.length; j++) {
+                    if (cv.equals(delayReasons[j][0])
+                            && cs.equals(delayReasons[j][1])) {
                         log.info("Delay Export of teaching files");
                         return true;
                     }

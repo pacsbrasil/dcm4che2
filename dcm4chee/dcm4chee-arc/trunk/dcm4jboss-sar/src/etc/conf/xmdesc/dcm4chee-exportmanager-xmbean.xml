@@ -35,20 +35,21 @@
       (Manifest) considered by this service.
       Format: CODE_VALUE^CODING_SCHEME_DESIGNATOR.
       Separate multiple values by new line. NONE = service disabled.
-      Default:
-         TCE001^IHERADTF,
-         TCE002^IHERADTF,
-         TCE007^IHERADTF,
-         113019^99DCM4CHE]]>
+      <dl><dt>Default:</dt>
+         <dd>TCE001^IHERADTF^For Teaching File Export</dd>
+         <dd>TCE002^IHERADTF^For Clinical Trial Export</dd>
+         <dd>TCE007^IHERADTF^For Research Collection Export</dd>
+         <dd>113019^99DCM4CHE^For Media Export</dd>
+      </dl>]]>
       </description>
       <name>ExportSelectorTitles</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="
-         TCE001^IHERADTF
-         TCE002^IHERADTF
-         TCE007^IHERADTF
-         113019^99DCM4CHE"/>
+         TCE001^IHERADTF^For Teaching File Export;
+         TCE002^IHERADTF^For Clinical Trial Export;
+         TCE007^IHERADTF^For Research Collection Export;
+         113019^99DCM4CHE^For Media Export"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -58,28 +59,29 @@
       Format: CODE_VALUE^CODING_SCHEME_DESIGNATOR.
       Separate multiple values by new line. NONE = ignore Delay Reason Codes in
       Export Selection Key Object.
-      Default:
-       TCE011^IHERADTF,
-       TCE012^IHERADTF,
-       TCE013^IHERADTF,
-       TCE014^IHERADTF,
-       TCE015^IHERADTF,
-       TCE016^IHERADTF,
-       TCE017^IHERADTF,
-       TCE018^IHERADTF]]>
+      <dl><dt>Default:</dt>
+       <dd>TCE011^IHERADTF^Delay export until final report is available</dd>
+       <dd>TCE012^IHERADTF^Delay export until clinical information is available</dd>
+       <dd>TCE013^IHERADTF^Delay export until confirmation of diagnosis is available</dd>
+       <dd>TCE014^IHERADTF^Delay export until histopathology is available</dd>
+       <dd>TCE015^IHERADTF^Delay export until other laboratory results is available</dd>
+       <dd>TCE016^IHERADTF^Delay export until patient is discharged</dd>
+       <dd>TCE017^IHERADTF^Delay export until patient dies</dd>
+       <dd>TCE018^IHERADTF^Delay export until expert review is available</dd>
+      </dl>]]>
       </description>
       <name>DelayReasons</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="
-         TCE011^IHERADTF
-         TCE012^IHERADTF
-         TCE013^IHERADTF
-         TCE014^IHERADTF
-         TCE015^IHERADTF
-         TCE016^IHERADTF
-         TCE017^IHERADTF
-         TCE018^IHERADTF"/>
+         TCE011^IHERADTF^Delay export until final report is available;
+         TCE012^IHERADTF^Delay export until clinical information is available;
+         TCE013^IHERADTF^Delay export until confirmation of diagnosis is available;
+         TCE014^IHERADTF^Delay export until histopathology is available;
+         TCE015^IHERADTF^Delay export until other laboratory results is available;
+         TCE016^IHERADTF^Delay export until patient is discharged;
+         TCE017^IHERADTF^Delay export until patient dies;
+         TCE018^IHERADTF^Delay export until expert review is available"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
