@@ -43,10 +43,14 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.web.maverick.admin.DCMUser;
+import org.infohazard.maverick.flow.ControllerContext;
+import org.jboss.mx.util.MBeanServerLocator;
 
 /**
  * @author franz.willer@gwi-ag.com
@@ -59,7 +63,7 @@ public abstract class BasicFormModel {
 
     private String currentUser;
     private final boolean admin;
-    
+
     /** Popup message */
     private String popupMsg = null;
     /** externalPopup message (from a foreign controller) */
@@ -67,50 +71,53 @@ public abstract class BasicFormModel {
     private Locale locale = Locale.ENGLISH;
     private ResourceBundle[] messages;
 
-    protected Logger log = Logger.getLogger( getClass().getName() );
-    
-	protected BasicFormModel( HttpServletRequest request ) {
-		currentUser = request.getUserPrincipal().getName();
-    	admin = request.isUserInRole(DCMUser.WEBADMIN);
+    private static Boolean webViewer;
+    private static String webViewerWindowName = "webView";
+
+    protected static Logger log = Logger.getLogger( BasicFormModel.class.getName() );
+
+    protected BasicFormModel( HttpServletRequest request ) {
+        currentUser = request.getUserPrincipal().getName();
+        admin = request.isUserInRole(DCMUser.WEBADMIN);
         messages = (ResourceBundle[]) request.getSession().getAttribute("dcm4chee-web-messages");
         if ( messages == null ) {
             messages = new ResourceBundle[]{ResourceBundle.getBundle(RESOURCE_BUNDLE_MESSAGES, locale)};
             request.getSession().setAttribute("dcm4chee-web-messages", messages);
         }
-   }
-	
-	public String getModelName() { return "BASIC"; }
+    }
+
+    public String getModelName() { return "BASIC"; }
 
     protected String formatMessage(String key, Object[] args) {
         return MessageFormat.format(messages[0].getString(key), args);
     }
 
-	/**
-	 * @return Returns the currentUser.
-	 */
-	public String getCurrentUser() {
-		return currentUser;
-	}
-	/**
-	 * @return Returns the admin.
-	 */
-	public boolean isAdmin() {
-		return admin;
-	}
-	
-	/**
-	 * Returns the popup message.
-	 * <p>
-	 * if popupMsg is null this Method returns the externalPopupMsg.
-	 * @return Returns the popupMsg.
-	 */
-	public String getPopupMsg() {
-		if ( popupMsg == null ) {
-			popupMsg = externalPopupMsg;
-			externalPopupMsg = null;
-		}
-		return popupMsg;
-	}
+    /**
+     * @return Returns the currentUser.
+     */
+    public String getCurrentUser() {
+        return currentUser;
+    }
+    /**
+     * @return Returns the admin.
+     */
+    public boolean isAdmin() {
+        return admin;
+    }
+
+    /**
+     * Returns the popup message.
+     * <p>
+     * if popupMsg is null this Method returns the externalPopupMsg.
+     * @return Returns the popupMsg.
+     */
+    public String getPopupMsg() {
+        if ( popupMsg == null ) {
+            popupMsg = externalPopupMsg;
+            externalPopupMsg = null;
+        }
+        return popupMsg;
+    }
 
     public void clearPopupMsg() {
         this.popupMsg = null;
@@ -122,18 +129,18 @@ public abstract class BasicFormModel {
         this.popupMsg = msgId != null ? formatMessage(msgId, args) : null;
     }
 
-	/**
-	 * @return Returns the externalPopupMsg.
-	 */
-	public String getExternalPopupMsg() {
-		return externalPopupMsg;
-	}
-	/**
-	 * @param externalPopupMsg The externalPopupMsg to set.
-	 */
-	public void setExternalPopupMsg(String msgId, String[] args) {
-		this.externalPopupMsg = formatMessage(msgId, args);
-	}
+    /**
+     * @return Returns the externalPopupMsg.
+     */
+    public String getExternalPopupMsg() {
+        return externalPopupMsg;
+    }
+    /**
+     * @param externalPopupMsg The externalPopupMsg to set.
+     */
+    public void setExternalPopupMsg(String msgId, String[] args) {
+        this.externalPopupMsg = formatMessage(msgId, args);
+    }
 
     /**
      * @return the locale
@@ -156,8 +163,40 @@ public abstract class BasicFormModel {
             Locale.setDefault(defaultLocale);
         }
     }
-    
+
     public Locale currentLocale() {
-    	return locale;
+        return locale;
     }
+
+    public static boolean checkWebViewer(ControllerContext ctx) {
+        if ( webViewer != null )
+            return webViewer.booleanValue();
+        try {
+            ObjectName webviewServiceName = new ObjectName(ctx.getServletConfig().getInitParameter("webviewServiceName"));
+            MBeanServer server = MBeanServerLocator.locate();
+            if ( server.isRegistered(webviewServiceName) ) {
+                log.info("Webviewer is enabled!");
+                webViewer = Boolean.TRUE;
+                webViewerWindowName = ctx.getServletConfig().getInitParameter("webViewerWindowName");
+                return true;
+            } else {
+                log.debug("Webviewer is disabled!");
+            }
+        } catch (Exception ignore) {
+            log.debug("Failure while check if Webviewer Service is available! Disabled!",ignore);
+        }
+        return false;
+    }
+
+    /**
+     * @return Returns true if webViewer is available.
+     */
+    public Boolean isWebViewer() {
+        return webViewer == null ? false : webViewer.booleanValue();
+    }
+
+    public String getWebViewerWindowName() {
+        return webViewerWindowName;
+    }
+
 }

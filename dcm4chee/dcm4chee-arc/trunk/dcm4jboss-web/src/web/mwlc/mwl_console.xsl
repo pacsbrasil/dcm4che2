@@ -30,7 +30,7 @@
 								of
 							<b>
 								<xsl:value-of select="total"/>
-							</b>matching procedure steps.
+							</b> matching procedure steps.
 						</xsl:if>
 						<xsl:if test="total = 0">
 							<b>Modality Worklist:</b> No matching procedure steps found!
@@ -38,14 +38,33 @@
  					</td>
 					<xsl:if test="/model/linkMode > 0">
 						<td title="MPPS Link mode" class="mppsLinkMode">
-							LINK MPPS (id:<xsl:value-of select="mppsIUID"/>) to a MWL entry!&#160;&#160;
-							<a href="mwl_console.m?action=cancelLink&amp;mppsIUID={mppsIUID}">
-								<img src="images/cancel.gif" alt="cancel" border="0" title="Cancel LINK mode!"/>		
-							</a>
+						  <div style="width:90%;float:left;line-height:18px" >
+							  LINK <xsl:value-of select="/model/linkMode"/> MPPS to a MWL entry!<br/>
+								<xsl:if test="mppsInfo">
+									PPS ID:<xsl:value-of select="mppsInfo/PPSID"/>&#160;
+									Patient:<xsl:value-of select="mppsInfo/patientName"/>&#160;
+									Descr:
+									<xsl:choose>
+									    <xsl:when test="mppsInfo/PPSTypeDescription=''" >
+									        <xsl:value-of select="mppsInfo/PPSDescription"/>
+									    </xsl:when>
+	                                    <xsl:otherwise>
+	                                        <xsl:value-of select="mppsInfo/PPSTypeDescription"/>
+	                                    </xsl:otherwise>
+									</xsl:choose>
+									&#160;Start:<xsl:value-of select="mppsInfo/ppsStartDateTime"/>
+								</xsl:if>
+								<xsl:apply-templates select="mppsInfo/scheduledStepAttrs/item" />
+							</div>
+							<div style="width:8%;float:right;line-height:18px">
+	                            <a href="mwl_console.m?action=cancelLink">
+								   <img src="images/cancel.gif" alt="cancel" border="0" title="Cancel LINK mode!"/>		
+							    </a>
+							</div>
 						</td>	
 					</xsl:if>
 
-					<td width="150" bgcolor="eeeeee">
+					<td width="20" bgcolor="eeeeee">
 					</td>
 					<td width="40" bgcolor="eeeeee">
 						<input type="image" value="Search" name="filter" src="images/search.gif" border="0"
@@ -284,8 +303,8 @@
 			<td title="Function" align="center" valign="bottom">
 				<xsl:if test="/model/linkMode > 0">
 					&#160;
-					<a href="mwl_console.m?action=doLink&amp;spsID={rqSpsID}&amp;mppsIUID={/model/mppsIUID}">
-						<xsl:attribute name="onclick">return confirm('Link this worklist entry <xsl:value-of select="spsID"/> with MPPS <xsl:value-of select="/model/mppsIUID"/> ?')</xsl:attribute>
+					<a href="mwl_console.m?action=doLink&amp;spsID={rqSpsID}">
+						<xsl:attribute name="onclick">return confirm('Link this worklist entry <xsl:value-of select="spsID"/> with MPPS <xsl:value-of select="/model/mppsInfo/PPSID"/> ?')</xsl:attribute>
 						<img src="images/link.gif" alt="link" border="0" title="Link this worklist entry with a MPPS !"/>		
 					</a>
 				</xsl:if>
@@ -359,6 +378,21 @@
 
 </table>
 </xsl:template>
-	   
+
+<xsl:template match="item[@type='org.dcm4chex.archive.web.maverick.mpps.model.MPPSEntry$SSAttr']">
+    Study:<xsl:value-of select="studyUID" />&#160;
+	<a href="/dcm4chee-webview/webviewer.jsp?studyUID={studyUID}">
+	    <xsl:attribute name="onclick">
+	        <xsl:text>return openWin('MPPSlinkMWL','/dcm4chee-webview/webviewer.jsp?studyUID=</xsl:text>
+	        <xsl:value-of select="studyUID" />
+	        <xsl:text>')</xsl:text>
+	    </xsl:attribute>
+	    <xsl:if test="/model/webViewer='true'">
+		    <img src="images/webview.gif" alt="icon"
+		        border="0" title="View Study in Webviewer" />
+		</xsl:if>
+	</a>
+</xsl:template>	   
+
 </xsl:stylesheet>
 

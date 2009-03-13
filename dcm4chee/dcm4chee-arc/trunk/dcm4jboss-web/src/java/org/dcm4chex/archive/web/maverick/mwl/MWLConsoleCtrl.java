@@ -45,7 +45,9 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.log4j.Logger;
 import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
+import org.dcm4chex.archive.web.maverick.mpps.model.MPPSEntry;
 import org.dcm4chex.archive.web.maverick.mpps.model.MPPSModel;
 import org.dcm4chex.archive.web.maverick.mwl.model.MWLEntry;
 import org.dcm4chex.archive.web.maverick.mwl.model.MWLFilter;
@@ -64,6 +66,8 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
 
     private static MWLScuDelegate delegate = null;
 
+    private static Logger log = Logger.getLogger(MWLConsoleCtrl.class.getName());
+            
     /**
      * Get the model for the view.
      */
@@ -145,8 +149,12 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
             if ( mppsIUID != null ) {
                 model.setMppsIDs( request.getParameterValues("mppsIUID")); // direct url call
             } else {
+                MWLModel.checkWebViewer(getCtx());
                 model.setMppsIDs( mppsModel.getMppsIUIDs() );//redirect from mpps controller
+                mppsIUID = model.getMppsIDs()[0];
+                model.setMppsInfo(mppsModel.getMppsEntry(mppsIUID));
             }
+
             prepareLinkPreset(filter, mppsModel, mppsIUID);
             filter.setAccessionNumber(null);
             filter.setStationAET(request.getParameter("stationAET"));

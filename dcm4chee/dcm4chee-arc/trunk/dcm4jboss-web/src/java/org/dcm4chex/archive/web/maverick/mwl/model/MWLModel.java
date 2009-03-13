@@ -58,6 +58,7 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.web.maverick.BasicFormPagingModel;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
+import org.dcm4chex.archive.web.maverick.mpps.model.MPPSEntry;
 import org.dcm4chex.archive.web.maverick.mwl.MWLConsoleCtrl;
 
 /**
@@ -93,6 +94,8 @@ public class MWLModel extends BasicFormPagingModel {
     private String mergeReason=null;
     /** Used to preselect dominant patient in patient_merge view */
     private PatientModel dominantPat;
+
+    private MPPSEntry mppsInfo;
 
     /**
      * Creates the model.
@@ -356,5 +359,13 @@ public class MWLModel extends BasicFormPagingModel {
 
     public void setSelectedStationAetGroups(String[] selected) {
         getFilter().selectStationAetGroupNames(selected);
+    }
+
+    public MPPSEntry getMppsInfo() {
+        return mppsInfo;
+    }
+
+    public void setMppsInfo(MPPSEntry mppsInfo) {
+        this.mppsInfo = mppsInfo;
     }
 }

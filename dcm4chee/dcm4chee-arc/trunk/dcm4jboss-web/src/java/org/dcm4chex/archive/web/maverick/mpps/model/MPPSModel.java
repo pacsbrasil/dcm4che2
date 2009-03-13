@@ -73,7 +73,7 @@ public class MPPSModel extends BasicFormPagingModel {
 
     private static final SimpleDateFormat dFormatter = new SimpleDateFormat("yyyy/MM/dd");
 
-    private String[] mppsIDs = null;
+    private String[] mppsIUIDs = null;
     //Holds MPPSEntries with sticky
     Map<String, MPPSEntry> stickyList;
 
@@ -131,25 +131,25 @@ public class MPPSModel extends BasicFormPagingModel {
      * @return Returns the stickies.
      */
     public String[] getMppsIUIDs() {
-        return mppsIDs;
+        return mppsIUIDs;
     }
     /**
      * @param stickies The stickies to set.
      * @param check
      */
     public void setMppsIUIDs(String[] stickies, boolean check) {
-        this.mppsIDs = stickies;
+        this.mppsIUIDs = stickies;
         stickyList = new HashMap();
-        if ( mppsEntries.isEmpty() || mppsIDs == null || mppsIDs.length < 1) return;
-        MPPSEntry stickyEntry = (MPPSEntry) mppsEntries.get(mppsIDs[0]);
+        if ( mppsEntries.isEmpty() || mppsIUIDs == null || mppsIUIDs.length < 1) return;
+        MPPSEntry stickyEntry = (MPPSEntry) mppsEntries.get(mppsIUIDs[0]);
         String patID = stickyEntry.getPatientID(); 
-        stickyList.put( mppsIDs[0], stickyEntry );
-        for ( int i = 1; i < mppsIDs.length ; i++ ) {
-            stickyEntry = (MPPSEntry) mppsEntries.get(mppsIDs[i]);
+        stickyList.put( mppsIUIDs[0], stickyEntry );
+        for ( int i = 1; i < mppsIUIDs.length ; i++ ) {
+            stickyEntry = (MPPSEntry) mppsEntries.get(mppsIUIDs[i]);
             if ( check && ! patID.equals( stickyEntry.getPatientID() )) {
                 throw new IllegalArgumentException("All selected MPPS must have the same patient!");
             }
-            stickyList.put( mppsIDs[i], stickyEntry );
+            stickyList.put( mppsIUIDs[i], stickyEntry );
         }
     }
     /**

@@ -87,8 +87,6 @@ public class FolderForm extends BasicFolderForm {
 
     private String destination;
 
-    private boolean webViewer;
-    private String webViewerWindowName = "webView";
     private boolean xdsConsumer;
 
     /** Base URL for WADO service. Used for image view */
@@ -101,7 +99,7 @@ public class FolderForm extends BasicFolderForm {
     private boolean filterAET = false;
 
     private boolean noMatchForNoValue = false;
-    
+
     private boolean showIssuerOfPID;
 
     private boolean alternativeStudyUID;
@@ -132,7 +130,7 @@ public class FolderForm extends BasicFolderForm {
             } catch (MalformedURLException e) {
                 log.error("Init Parameter 'wadoBaseURL' is invalid:"+wadoBase);
             }
-            checkWebViewer(ctx, form);
+            FolderForm.checkWebViewer(ctx);
             checkXDSQuery(ctx, form);
             request.getSession().setAttribute(FOLDER_ATTRNAME, form);
             initLimit(ctx.getServletConfig().getInitParameter("limitNrOfStudies"), form);
@@ -160,22 +158,6 @@ public class FolderForm extends BasicFolderForm {
         return form;
     }
 
-    private static void checkWebViewer(ControllerContext ctx, FolderForm form) {
-        try {
-            ObjectName webviewServiceName = new ObjectName(ctx.getServletConfig().getInitParameter("webviewServiceName"));
-            MBeanServer server = MBeanServerLocator.locate();
-            if ( server.isRegistered(webviewServiceName) ) {
-                log.info("Webviewer is enabled!");
-                form.enableWebViewer();
-                form.setWebViewerWindowName(ctx.getServletConfig().getInitParameter("webViewerWindowName"));
-            } else {
-                log.debug("Webviewer is disabled!");
-            }
-        } catch (Exception ignore) {
-            log.debug("Failure while check if Webviewer Service is available! Disabled!",ignore);
-        }
-    }
-
     private static void checkXDSQuery(ControllerContext ctx, FolderForm form) {
         try {
             ObjectName name = new ObjectName(ctx.getServletConfig().getInitParameter("xdsQueryServiceName"));
@@ -197,28 +179,6 @@ public class FolderForm extends BasicFolderForm {
 
     public String getModelName() { return "FOLDER"; }
 
-
-    /**
-     * 
-     */
-    private void enableWebViewer() {
-        webViewer = true;
-
-    }
-    /**
-     * @return Returns the webViewer.
-     */
-    public boolean isWebViewer() {
-        return webViewer;
-    }
-
-    public String getWebViewerWindowName() {
-        return webViewerWindowName;
-    }
-
-    public void setWebViewerWindowName(String webViewerWindowName) {
-        this.webViewerWindowName = webViewerWindowName;
-    }
 
     private void enableXDSConsumer() {
         xdsConsumer = true;
