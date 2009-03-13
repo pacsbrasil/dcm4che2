@@ -174,6 +174,7 @@ public class StoredQueryFactory {
     private AdhocQueryRequest getBasicRequest(String id, boolean useLeafClass) {
         ResponseOptionType respOption = objFac.createResponseOptionType();
         respOption.setReturnType(useLeafClass ? LEAF_CLASS : OBJECT_REF);
+        respOption.setReturnComposedObjects(true);
         AdhocQueryRequest request = objFac.createAdhocQueryRequest();
         request.setResponseOption(respOption);
         AdhocQueryType query = objFac.createAdhocQueryType();
