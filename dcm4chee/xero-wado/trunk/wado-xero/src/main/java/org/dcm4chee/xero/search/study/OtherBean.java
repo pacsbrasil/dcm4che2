@@ -57,8 +57,8 @@ import org.slf4j.LoggerFactory;
  *
  */
 @XmlRootElement(name = "video")
-public class VideoBean extends VideoType implements Image, LocalModel<String>, MacroMixIn {
-   private static final Logger log = LoggerFactory.getLogger(VideoBean.class);
+public class OtherBean extends OtherType implements DicomObjectInterface, LocalModel<String>, MacroMixIn {
+   private static final Logger log = LoggerFactory.getLogger(OtherBean.class);
 
    @XmlTransient
    protected SeriesBean seriesBean;
@@ -71,14 +71,14 @@ public class VideoBean extends VideoType implements Image, LocalModel<String>, M
      * Create an empty image bean object.  
      * @deprecated Not recommended for use except through JAXB deserialization.
      */
-   protected VideoBean() {
+   protected OtherBean() {
    };
 
    /**
     * Create an image bean with a specified parent.
     * @param series
     */
-   public VideoBean(SeriesBean series) {
+   public OtherBean(SeriesBean series) {
 	  this.seriesBean = series;
    }
    
@@ -88,7 +88,7 @@ public class VideoBean extends VideoType implements Image, LocalModel<String>, M
      * @param data
      *            to use for the DICOM information
      */
-   public VideoBean(SeriesBean seriesBean, DicomObject data) {
+   public OtherBean(SeriesBean seriesBean, DicomObject data) {
 	  this(seriesBean);
 	  addResult(data);
    }
@@ -96,14 +96,18 @@ public class VideoBean extends VideoType implements Image, LocalModel<String>, M
    /** Make a clone of this image into the given image, or create a new one if necessary.
     * Copies any macros by reference.
     */
-   public VideoBean clone(VideoBean video) {
-	  if( video==null ) video = new VideoBean(seriesBean);
-	  video.columns = this.columns;
-	  video.rows = this.rows;
-	  video.objectUID = this.objectUID;
-	  video.instanceNumber = this.instanceNumber;
-	  video.macroItems = getMacroItems();
-	  return video;
+   public OtherBean clone(OtherBean other) {
+	  if( other==null ) other = new OtherBean(seriesBean);
+	  other.objectUID = this.objectUID;
+	  other.instanceNumber = this.instanceNumber;
+	  other.macroItems = getMacroItems();
+	  other.play = play;
+	  other.external = external;
+	  other.mimetype = getMimetype();
+	  other.contentDateTime = getContentDateTime();
+	  other.name = getName();
+	  other.description = getDescription();
+	  return other;
    }
    
    /**
@@ -121,12 +125,14 @@ public class VideoBean extends VideoType implements Image, LocalModel<String>, M
      
       this.setCfindHeader(data);
       
-	  setColumns(data.getInt(Tag.Columns,-1));
-	  setRows(data.getInt(Tag.Rows,-1));
 	  // setSOPClassUID(data.getString(Tag.SOPClassUID));
 	  setObjectUID(data.getString(Tag.SOPInstanceUID));
 	  setInstanceNumber(data.getInt(Tag.InstanceNumber));
-	  setNumberOfFrames(data.getInt(Tag.NumberOfFrames));
+	  
+      // Should really have custom objects - but leave as reports for now...
+	  String modality = data.getString(Tag.Modality);
+      setName(modality + "-" + getInstanceNumber());
+      setContentDateTime(data.getString(Tag.ContentDate)+data.getString(Tag.ContentTime));
    }
 
    /**

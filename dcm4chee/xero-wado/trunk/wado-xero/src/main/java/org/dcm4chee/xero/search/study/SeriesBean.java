@@ -194,13 +194,22 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
    /** Create different types of children based on the modality of the series */
    protected DicomObjectType createChildByModality(DicomObject data) {
 	  String sopClass = data.getString(Tag.SOPClassUID);
-	  if (modality.equals("SR") || UID.EncapsulatedPDFStorage.equals(sopClass)
-	        || modality.equals("ECG") || modality.equals("AU")) {
-	     // TODO - create a real audio and ECG record type.
+	  if (modality.equals("SR") || UID.EncapsulatedPDFStorage.equals(sopClass) ) {
 		 return new ReportBean(this,data);
 	  }
-	  if( UID.MRSpectroscopyStorage.equals(sopClass) ) {
-	     return new ReportBean(this,data);
+	  if( modality.equals("AU") ) {
+          OtherBean ret =new OtherBean(this,data);
+          ret.setPlay(true);
+          ret.setExternal(true);
+          ret.setMimetype("audio/basic");
+          return ret;
+	  }
+	  if( UID.MRSpectroscopyStorage.equals(sopClass) || modality.equals("ECG")) {
+	      // TODO - add spectroscopy and ECG display options - probably looking like
+	      // a report "object" in another window.
+          OtherBean ret =new OtherBean(this,data);
+          ret.setPlay(false);
+          return ret;
 	  }
 	  if (modality.equals("KO")) {
 		 return new KeyObjectBean(this,data);
@@ -208,11 +217,22 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	  if (modality.equals("PR")) {
 		 return new GspsBean(this,data);
 	  }
+	  if( modality.equals("CC" ) ) {
+	      // Never render CC objects - we could add information about these in the future,
+	      // but not for now.
+	      OtherBean ret =new OtherBean(this,data);
+	      ret.setPlay(false);
+	      return ret;
+	  }
 	  if( UID.VideoPhotographicImageStorage.equals(sopClass)
 	          || UID.VideoEndoscopicImageStorage.equals(sopClass)
 	          || UID.VideoMicroscopicImageStorage.equals(sopClass)
 	        ) {
-	      return new VideoBean(this,data);
+	      OtherBean ret = new OtherBean(this,data);
+	      ret.setPlay(true);
+	      ret.setExternal(true);
+	      ret.setMimetype("video/mpeg2");
+	      return ret;
 	  }
 	  int frameCount = data.getInt(Tag.NumberOfFrames);
 	  if (frameCount > 1) {

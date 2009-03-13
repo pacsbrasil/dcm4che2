@@ -3,7 +3,7 @@ PatientBean
 StudyBean
 SeriesBean
 ImageBean
-VideoBean
+OtherBean
 ReportBean
 GspsBean
 KeyObjectBean

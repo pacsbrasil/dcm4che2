@@ -47,28 +47,37 @@
        </complexType>
    	</element>
     
-    <element name="video">
+    <element name="other">
        <annotation><appinfo>
-     	<jxb:class name="VideoType" />
+     	<jxb:class name="OtherType" />
    	   </appinfo></annotation>
        <complexType>
     	<annotation>
     		<documentation>
-    			Video is MPEG-2 embedded in a DICOM object.
-    			@param rows is the number of available pixels in the y dimension.
-    			@param columns is the number of avaialble pixels in the x dimension.
+    			Other, non-image type objects.  Eventually one expects individual types,
+    			but in the meantime having a basic definition is useful to include.
+    			Set play to false for objects which shouldn't be seen at all by users
+    			true for objects that are viewable.  external for things like audio files 
+    			that are not easily included embedded in a browser window (eg a word doc, although
+    			that all partly depends on the browser implementation).
+    			@param play if the object is something the user can see or hear, eg an ECG, audio file etc.
+    			@param mimetype is the basic type of the object.
+    			@param external is true if the object can't be embedded in a window typcially.
     		</documentation>
     	</annotation>
     	<complexContent>
 	   		<extension base="tns:dicomObjectType">
-    			<attribute name="Rows" type="int" />
-    			<attribute name="Columns" type="int" />
-    			<attribute name="NumberOfFrames" type="int" />
+	   			<attribute name="play" type="boolean" />
+	   			<attribute name="mimetype" type="string" />
+	   			<attribute name="external"  type="boolean" />
+	   			<attribute name="name" type="string" />
+	   			<attribute name="description" type="string" />
+	   			<attribute name="contentDateTime" type="string" />
     		</extension>
     	</complexContent>
        </complexType>
    	</element>
-    
+
     <element name="gsps" >
        <annotation><appinfo>
      	<jxb:class name="GspsType" />
@@ -155,7 +164,7 @@
     		<element ref="tns:image" />
     		<element ref="tns:gsps" />
     		<element ref="tns:report" />
-    		<element ref="tns:video" />
+    		<element ref="tns:other" />
     		<element ref="tns:keyObject" />
     	</sequence>
     	<attribute name="seriesUID" type="tns:UID" />
