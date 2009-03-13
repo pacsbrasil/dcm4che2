@@ -159,9 +159,11 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
     }
 
     public Dataset getDataset() throws SQLException {
-        Dataset ds = DcmObjectFactory.getInstance().newDataset();       
+        Dataset ds = DcmObjectFactory.getInstance().newDataset();    
+        Dataset dsPat = DcmObjectFactory.getInstance().newDataset(); //It seems that Oracle has problems to read 1st BLOB after 2nd! 
+        DatasetUtils.fromByteArray(rs.getBytes(1), dsPat); //patient
         DatasetUtils.fromByteArray(rs.getBytes(2), ds); //mwl item
-        DatasetUtils.fromByteArray(rs.getBytes(1), ds); //patient
+        ds.putAll(dsPat);
         adjustDataset(ds, keys);
         return ds.subSet(keys);
     }
