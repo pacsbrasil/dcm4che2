@@ -151,8 +151,10 @@ public class WLFilter implements Filter<WadoImage> {
 	  if( dest==null ) return wi;
 
 	  DicomObject voiObj = VOIUtils.selectVoiObject(img,pr,frame);
-	  if( func==null && (voiObj==null || !(voiObj.contains(Tag.WindowWidth) || 
-	          voiObj.contains(Tag.VOILUTSequence)))) {
+	  // Figure out the WL to use - if the width isn't at least 2 or isn't found,
+	  // then compute the value as a width of under 2 doesn't make sense.
+	  if( func==null && (voiObj==null || (voiObj.getFloat(Tag.WindowWidth)<2 && 
+	          !voiObj.contains(Tag.VOILUTSequence)))) {
 		 float[] cw = VOIUtils.getMinMaxWindowCenterWidth(img, pr, frame, bi.getRaster().getDataBuffer());
 		 windowCenter = cw[0]+0.5f;
 		 windowWidth = cw[1];

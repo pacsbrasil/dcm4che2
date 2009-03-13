@@ -93,16 +93,11 @@ public class ReportBean extends ReportType implements DicomObjectInterface {
       if (data == null)
          throw new IllegalArgumentException("A valid dicom object must be supplied to initialize the report from.");
 
-      String modality = data.getString(Tag.Modality);
       setObjectUID(data.getString(Tag.SOPInstanceUID));
       setInstanceNumber(data.getInt(Tag.InstanceNumber));
       setCompletion(data.getString(Tag.CompletionFlag));
       setVerification(data.getString(Tag.VerificationFlag));
       initConcept(data.get(Tag.ConceptNameCodeSequence));
-      // Should really have custom objects - but leave as reports for now...
-      if (modality.equals("ECG") || modality.equals("AU")) {
-         setConceptMeaning(modality + "-" + getInstanceNumber());
-      }
    }
 
    /**
