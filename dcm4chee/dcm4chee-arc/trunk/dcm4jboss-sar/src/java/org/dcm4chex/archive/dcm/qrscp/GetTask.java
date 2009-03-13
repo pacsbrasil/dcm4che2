@@ -240,7 +240,7 @@ class GetTask implements Runnable {
             Dimse rq;
             try {
                 rq = service.makeCStoreRQ(assoc,
-                        fileInfo, priority, null, 0, null);
+                        fileInfo, null, priority, null, 0, null);
             } catch (NoPresContextException e) {
                 if (!service.isIgnorableSOPClass(fileInfo.sopCUID, 
                         a.getCallingAET())) {

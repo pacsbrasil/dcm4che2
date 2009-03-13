@@ -1358,7 +1358,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return ds;
     }
 
-    Dimse makeCStoreRQ(ActiveAssociation activeAssoc, FileInfo info,
+    Dimse makeCStoreRQ(ActiveAssociation activeAssoc, FileInfo info, AEDTO aeData,
             int priority, String moveOriginatorAET, int moveRqMsgID,
             PerfMonDelegate perfMon) throws Exception {
         Association assoc = activeAssoc.getAssociation();
@@ -1384,7 +1384,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 DatasetUtils.fromByteArray(info.studyAttrs, DatasetUtils
                         .fromByteArray(info.seriesAttrs, DatasetUtils
                                 .fromByteArray(info.instAttrs))));
-        coerceOutboundCStoreRQ(mergeAttrs);
+        coerceOutboundCStoreRQ(mergeAttrs, aeData);
         byte[] buf = (byte[]) assoc.getProperty(SEND_BUFFER);
         if (buf == null) {
             buf = new byte[bufferSize];
@@ -1404,8 +1404,12 @@ public class QueryRetrieveScpService extends AbstractScpService {
      * C-STORE rq
      * @param ds
      *              the current dataset
+     * @param aeData
+     *              {@link AEDTO} object representing the destination AET.
+     *              This may be null (e.g. C-GET code doesn't currently pass 
+     *              any value, so check first before using it.
      */
-    protected void coerceOutboundCStoreRQ(Dataset ds){}
+    protected void coerceOutboundCStoreRQ(Dataset ds, AEDTO aeData){}
     
     private PresContext selectAcceptedPresContext(Association a, FileInfo info) {
         String[] tsuids = { UIDs.NoPixelDataDeflate, UIDs.NoPixelData,

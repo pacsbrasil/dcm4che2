@@ -376,7 +376,7 @@ public class MoveTask implements Runnable {
             Dimse rq;
             try {
                 rq = service.makeCStoreRQ(storeAssoc,
-                        fileInfo, priority, moveOriginatorAET, msgID, perfMon);
+                        fileInfo, aeData, priority, moveOriginatorAET, msgID, perfMon);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 failedIUIDs.add(iuid);
