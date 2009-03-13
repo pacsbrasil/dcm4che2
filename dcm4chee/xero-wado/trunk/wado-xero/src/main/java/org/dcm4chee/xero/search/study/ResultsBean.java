@@ -69,8 +69,12 @@ public class ResultsBean extends ResultsType implements ResultFromDicom, CacheIt
 
    @XmlTransient
    MacroItems macroItems;
+   
+   /** The default patient id issuer */
+   @XmlTransient
+   String defaultIssuer;
 
-   /** Create an empty results */
+/** Create an empty results */
    public ResultsBean() {
    }
 
@@ -139,9 +143,19 @@ public class ResultsBean extends ResultsType implements ResultFromDicom, CacheIt
 	  }
    }
 
+   public String getDefaultIssuer() {
+       return defaultIssuer;
+   }
+
+     
+    /** Sets the default patient ID issuer */
+    public void setDefaultIssuer(String defaultIssuer) {
+        this.defaultIssuer = defaultIssuer;
+    }
+
    /** Add a single result to the results list */
    public void addResult(DicomObject data) {
-	  PatientIdentifier pi = new PatientIdentifier(data);
+	  PatientIdentifier pi = new PatientIdentifier(data, defaultIssuer);
 	  if (children.containsKey(pi)) {
 		 ResultFromDicom pb = (ResultFromDicom) children.get(pi);
 		 pb.addResult(data);

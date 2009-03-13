@@ -48,7 +48,7 @@ public class PatientIdentifier {
 	String patientID;
 
 	/** Identify the patient via the patient ID */
-	public PatientIdentifier(DicomObject data) {
+	public PatientIdentifier(DicomObject data, String defaultIssuer) {
 		// Read the patient ID and use it as the only comparison for now.
 		this.patientID = data.getString(Tag.PatientID);
 		if (this.patientID == null) {
@@ -61,7 +61,7 @@ public class PatientIdentifier {
 			log.warn("Unable to find a patient ID - probably an anonymized study, choose ID={} as an alternate ID", this.patientID);
 		}
 		// Add the domain to the identifier as a URL type identifier.
-		String idDomain = data.getString(Tag.IssuerOfPatientID);
+		String idDomain = data.getString(Tag.IssuerOfPatientID, defaultIssuer);
 		if( idDomain!=null && idDomain.length()>0 && !idDomain.equals(this.patientID) ) this.patientID = idDomain+":"+this.patientID;
 	}
 	

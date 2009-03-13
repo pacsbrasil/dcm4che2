@@ -338,6 +338,10 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 		if( resultFromDicom instanceof RecordsAE ) {
 		   ((RecordsAE) resultFromDicom).setAe(name);
 		}
+		if( settings.getDefaultIssuer()!=null && 
+		        (resultFromDicom instanceof ResultsBean) ) {
+		    ((ResultsBean) resultFromDicom).setDefaultIssuer(settings.getDefaultIssuer());
+		}
 		
 		int maxResults = FilterUtil.getInt(params,"maxResults",DEFAULT_MAX_RESULTS);
 		SearchCriteria searchCriteria= searchParser.filter(null,params);

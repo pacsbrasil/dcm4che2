@@ -76,6 +76,14 @@ public class AEProperties {
 
    /** The key to use for a particular ae */
    public static final String AE="ae";
+
+   /** Set the local ae title for this object - NOT necessarily the 
+    * ae properties file name, but the DICOM name
+    */
+   public static final String LOCAL_TITLE = "localTitle";
+
+   /** Set this property to control which issuer is the default one */
+   public static final String DEFAULT_ISSUER = "defaultIssuer";
    
    private Map<String, Object> defaultProperties = null;
 
@@ -106,12 +114,12 @@ public class AEProperties {
       loadRemoteProperty("local");
       defaultProperties = remoteProperties.get("local");
       if( defaultProperties!=null ) return;
+      log.info("Loading local properties from default.");
       Map<String, Object> temp = new HashMap<String, Object>();
       temp.put(AE_HOST_KEY, "localhost");
       temp.put(AE_PORT_KEY, 11112);
       temp.put(AE_TITLE_KEY, "DCM4CHEE");
-      temp.put("localTitle", "XERO");
-      temp.put("wadoPath", "http://localhost:8080/wado");
+      temp.put(LOCAL_TITLE, "XERO");
       defaultProperties = Collections.unmodifiableMap(temp);
    }
 
@@ -136,9 +144,9 @@ public class AEProperties {
             if( ejbport==null ) ejbport = "1099";
             String title = props.getProperty(AE_TITLE_KEY);
             if( title==null ) props.put(AE_TITLE_KEY,"DCM4CHEE");
-            String localTitle = props.getProperty("localTitle");
-            if( localTitle==null ) props.put("localTitle","XERO");
- 
+            String localTitle = props.getProperty(LOCAL_TITLE);
+            if( localTitle==null ) props.put(LOCAL_TITLE,"XERO");
+             
             if (hostname != null ) {
                Map mprops = props;
                Map<String, Object> map = (Map<String,Object>) mprops;
@@ -149,7 +157,7 @@ public class AEProperties {
                      .putIfAbsent(aePath, map);
 
             } else {
-               log.error("The host must be specified.");
+               log.error("The host must be specified in ae properties file "+aePath);
             }
          } catch (Exception e) {
             // Do nothing

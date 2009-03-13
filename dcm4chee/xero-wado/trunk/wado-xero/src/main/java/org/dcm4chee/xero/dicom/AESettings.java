@@ -55,6 +55,7 @@ public class AESettings {
    private Integer port;
    private String remoteTitle;
    private String localTitle;
+   private String defaultIssuer;
 
    /**
     * @param aeProps
@@ -63,7 +64,8 @@ public class AESettings {
       hostName = (String) aeProps.get(AEProperties.AE_HOST_KEY);
       port=(Integer) aeProps.get(AEProperties.AE_PORT_KEY);
       remoteTitle=(String) aeProps.get(AEProperties.AE_TITLE_KEY);
-      localTitle = (String) aeProps.get("localTitle");
+      localTitle = (String) aeProps.get(AEProperties.LOCAL_TITLE);
+      defaultIssuer = (String) aeProps.get(AEProperties.DEFAULT_ISSUER);
    }
 
 
@@ -96,5 +98,15 @@ public class AESettings {
     */
    public String getLocalTitle() {
       return localTitle;
+   }
+
+
+   public String getDefaultIssuer() {
+    return defaultIssuer;
+   }
+
+
+   public void setDefaultIssuer(String defaultIssuer) {
+    this.defaultIssuer = defaultIssuer;
    }
 }
