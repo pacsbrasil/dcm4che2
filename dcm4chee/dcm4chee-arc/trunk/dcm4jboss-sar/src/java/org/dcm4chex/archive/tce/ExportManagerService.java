@@ -333,12 +333,9 @@ public class ExportManagerService extends AbstractScuService
         String[][] tmp = new String[st.countTokens()][3];
         String[] code;
         StringTokenizer stCode;
-        String line;
         for (int i = 0; i < tmp.length; i++) {
             code = new String[3];
-            line = st.nextToken().trim();
-            log.info("line string:"+line);
-            stCode = new StringTokenizer(line, "^");
+            stCode = new StringTokenizer(st.nextToken().trim(), "^");
             code[0] = stCode.nextToken().trim();
             code[1] = stCode.hasMoreTokens() ? stCode.nextToken().trim() : "";
             code[2] = stCode.hasMoreTokens() ? stCode.nextToken().trim() : "";
