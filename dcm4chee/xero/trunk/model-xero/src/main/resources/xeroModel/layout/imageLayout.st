@@ -58,13 +58,11 @@ ImageLayout.prototype.addImageUrl = function AddImageUrl(clear) {
 	}
 	if( (!this.image) || !(this.width) || !(this.height) ) return;
 	if( this.navigate.merged.get("smallImage") ) {
-		this.imageUrls.push(this.createSmallImage(WADO_QUERY+"&amp;v="+model.version));
+		this.imageUrls.push(this.createSmallImage(XERO_QUERY));
 	}
-	this.imageUrls.push(this.createFullUrl(WADO_QUERY+"&amp;v="+model.version));
+	this.imageUrls.push(this.createFullUrl(XERO_QUERY));
 	this.preloadImage = new Image();
 	var src = this.imageUrls[this.imageUrls.length-1].imageUrl;
-	// This needs to be the unexpanded form as the src assignment does not undo this.
-	src = src.replace(/&amp;/g,"&");
 	this.preloadImage.src = src;
 	console.info("Created a pre-load image for", src);
 };
@@ -136,41 +134,41 @@ ImageLayout.prototype.isComplete = function ImageLayout_isComplete() {
 ImageLayout.prototype.createSmallImage = function(base) {
 	var ret = this.createBaseUrl(base);
 	ret.imageId += "Small";
-	ret.imageUrl = ret.imageUrl + "&amp;imageQuality=0.4";
+	ret.imageUrl = ret.imageUrl + "&imageQuality=0.4";
 	var rows = this.image.Rows;
 	while(rows>512) rows = rows/2;
 	rows = Math.floor(rows);
 	ret.rows = this.image.Rows;
 	ret.cols = this.image.Columns;	
-	ret.imageUrl = ret.imageUrl + "&amp;rows="+rows;
+	ret.imageUrl = ret.imageUrl + "&rows="+rows;
 	return ret;
 };
 
 /** Creates the base URL object */
 ImageLayout.prototype.createBaseUrl = function (base) {
-	var uids = "&amp;studyUID="+this.image.get("studyUID")+"&amp;seriesUID="+this.image.get("seriesUID");
-	var ret = { "imageUrl" : base+uids+"&amp;objectUID="+this.image.objectUID, "top":0, "left":0, "imageId":"im"+this.id};
+	var uids = "&studyUID="+this.image.get("studyUID")+"&seriesUID="+this.image.get("seriesUID");
+	var ret = { "imageUrl" : base+uids+"&objectUID="+this.image.objectUID, "top":0, "left":0, "imageId":"im"+this.id};
 	if( this.ae ) {
-		ret.imageUrl = ret.imageUrl + "&amp;ae="+this.ae;
+		ret.imageUrl = ret.imageUrl + "&ae="+this.ae;
 	}
 	if( this.image.frame ) {
-		ret.imageUrl = ret.imageUrl + "&amp;frameNumber="+this.image.frame;
+		ret.imageUrl = ret.imageUrl + "&frameNumber="+this.image.frame;
 	}
 	var ww = this.merged.get("windowWidth");
 	if( ww ) {
 		var wc = this.merged.get("windowCenter");
-		ret.imageUrl = ret.imageUrl + "&amp;windowWidth="+ww+"&amp;windowCenter="+wc;
+		ret.imageUrl = ret.imageUrl + "&windowWidth="+ww+"&windowCenter="+wc;
 	}
 	var isinvert = this.merged.get("invert");
 	if( isinvert && isinvert!=="FALSE" && isinvert!=="false" ) {
 		console.info("Invert is true.");
 		// Changes from the natural presentation to the inverted presentation - this is an OVERRIDE
 		// on the base value or base value + GSPS value, it isn't the base value itself.
-		ret.imageUrl = ret.imageUrl+"&amp;invert=true";
+		ret.imageUrl = ret.imageUrl+"&invert=true";
 	} else console.info("Invert is false.");
 	var puid = this.merged.get("gspsUID");
 	if( puid ) {
-		ret.imageUrl = ret.imageUrl + "&amp;presentationUID="+puid;
+		ret.imageUrl = ret.imageUrl + "&presentationUID="+puid;
 	}
 	return ret;
 };
@@ -228,12 +226,12 @@ ImageLayout.prototype.createFullUrl = function ImageLayout_createFullUrl(base) {
 	ret.left = xmin;
 	if( xmin!==0 || ymin!==0 || xmax!==this.image.Columns || ymax!==this.image.Rows ) {
 		this.debug("Fetching sub-region %d,%d,%d,%d", xmin,ymin,xmax,ymax);
-		ret.imageUrl = ret.imageUrl + "&amp;region="+xmin/this.image.Columns+","+ymin/this.image.Rows+","+xmax/this.image.Columns+","+ymax/this.image.Rows;
+		ret.imageUrl = ret.imageUrl + "&region="+xmin/this.image.Columns+","+ymin/this.image.Rows+","+xmax/this.image.Columns+","+ymax/this.image.Rows;
 		ret.isSubregion = true;
 	}
 	if( ret.fetchScale!=1 ) {
 		this.debug("Fetching at scale %d",ret.fetchScale);
-		ret.imageUrl = ret.imageUrl + "&amp;rows=" + Math.floor((ymax-ymin)/ret.fetchScale);
+		ret.imageUrl = ret.imageUrl + "&rows=" + Math.floor((ymax-ymin)/ret.fetchScale);
 	}
 	return ret;
 };

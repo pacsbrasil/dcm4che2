@@ -6,7 +6,7 @@
  *  if it isn't already in that mode, and changes the UID to view.
  */
 XeroController.prototype.viewReport = function RC_viewReport(layId,uid) {
-	var lay = this.model.patientLayout.findLayout(layId);
+	var lay = this.findLayout(layId);
 	console.info("Trying to view report", uid,"in",lay.id);
 
 	var nav = lay.navigate;
@@ -21,6 +21,23 @@ XeroController.prototype.viewReport = function RC_viewReport(layId,uid) {
 	}
 
 	this.displayResize("viewReport");
+};
+
+XeroController.prototype.viewOther = function (id,uid) {
+	var lay = this.findLayout(id);
+	var nav = lay.navigate;
+	var other = nav.external.findInstance(uid);
+	if( !other ) {
+	   console.warn("Unable to find other view object",uid);
+	   return;
+	}
+	var studyUID = other.get("studyUID");
+	var seriesUID = other.get("seriesUID");
+	var ae = other.get("ae");
+	var url = WADO_QUERY + "&studyUID="+studyUID+"&seriesUID="+seriesUID+"&objectUID="+uid;
+	if( ae ) url = url+"&ae="+ae;
+	console.info("Opening window",url);
+	window.open(url);
 };
 
 /** Changes the report/study layout to the one specified in layId */

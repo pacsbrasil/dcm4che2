@@ -61,8 +61,6 @@ Navigation.prototype.INVALID = 110;
 Navigation.prototype.EXTERNAL_CHANGED = 120;
 Navigation.prototype.EXTERNAL_UPDATED = "external";
 
-Navigation.prototype.QUERY = "/wado2/image.xml";
-Navigation.prototype.STUDY_QUERY = "/wado2/study.xml";
 
 Navigation.prototype.error = function(msg) {
 	console.error(msg);
@@ -90,19 +88,19 @@ Navigation.prototype.generateQuery = function Navigation_generateQuery(child, re
 		position = childId - this.QUERY_SIZE;
 		position -= (position % this.IMAGE_QUERY_SIZE);
 		position += this.QUERY_SIZE;
-		url = this.QUERY+"?regroup=*&studyUID="+this.parent.id+"&seriesUID="+this.id+"&Count="+this.IMAGE_QUERY_SIZE+"&Position="+position;
+		url = IMAGE_QUERY+"&regroup=*&studyUID="+this.parent.id+"&seriesUID="+this.id+"&Count="+this.IMAGE_QUERY_SIZE+"&Position="+position;
 		console.debug("Adding series extension query %s",url); 
 	} else if( this.level===2 ) {
-		url = this.QUERY+"?regroup=*&studyUID="+this.id+"&Position=0&Count="+this.QUERY_SIZE;
+		url = IMAGE_QUERY+"&regroup=*&studyUID="+this.id+"&Position=0&Count="+this.QUERY_SIZE;
 		console.debug("Adding image query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
 	} else if( this.level===1 && modifiers!=null && modifiers[2]!=undefined) {
 		// Fix the modifiers, and do an image level query.
-		url = this.QUERY+"?regroup=*&studyUID="+child.id+"&Position=0&Count="+this.QUERY_SIZE;
+		url = IMAGE_QUERY+"&regroup=*&studyUID="+child.id+"&Position=0&Count="+this.QUERY_SIZE;
 		console.debug("Adding updated image, with study query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
 	} else if( this.level===1 ) {
 		// This happens when the user views a new study in the same patient, or an updated study in 
 		// the same patient.
-		url = this.STUDY_QUERY+"?gsps=*&ko=*&studyUID="+childId;
+		url = STUDY_QUERY+"&gsps=*&ko=*&studyUID="+childId;
 		console.debug("Adding new study query %s", url);
 	} else {
 		console.error("Unknown id/query level %d for child id %s", this.level, childId);

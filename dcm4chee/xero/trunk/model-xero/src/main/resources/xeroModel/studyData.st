@@ -13,7 +13,7 @@ function StudyData(uids,ae) {
 		for(i=1; i<n; i++) {
 			uidsBack = uidsBack + "\\\\"+uids[i];
 		}
-		this.url = STUDY_QUERY+"?gsps=*&ko=*&studyUID="+uidsBack;
+		this.url = STUDY_QUERY+"&gsps=*&ko=*&studyUID="+uidsBack;
 		if( ae ) this.url = this.url + ae;
 	}
 };
@@ -33,7 +33,7 @@ StudyData.prototype.queryForStudies = function(uids, studies, ae) {
 		uidsBack = uidsBack + uids[i];
 	}
 	if(!uidsBack ) return;
-	this.url = STUDY_QUERY+"?gsps=*&ko=*&studyUID="+uidsBack;
+	this.url = STUDY_QUERY+"&gsps=*&ko=*&studyUID="+uidsBack;
 	if( ae ) this.url = this.url + ae;
 	this.request();
 };

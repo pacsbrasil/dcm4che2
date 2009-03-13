@@ -41,6 +41,8 @@ var XeroStudyColumns = {
 // TODO - remove this - it is a bit of test code being used temporarily.
 var i=3;
 
-var STUDY_QUERY="/wado2/study.xml";
-var IMAGE_QUERY="/wado2/image.xml";
-var WADO_QUERY="/wado2/wado?requestType=XERO";
+var BASE_QUERY="/wado2/?v=$version$";
+var STUDY_QUERY=BASE_QUERY+"&requestType=STUDY";
+var IMAGE_QUERY=BASE_QUERY+"&requestType=IMAGE";
+var XERO_QUERY=BASE_QUERY+"&requestType=XERO";
+var WADO_QUERY=BASE_QUERY+"&requestType=WADO";

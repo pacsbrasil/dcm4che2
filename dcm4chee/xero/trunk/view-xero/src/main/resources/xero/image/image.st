@@ -15,7 +15,7 @@ $if(layout.aspectPercent)$
 $endif$
 $layout.imageUrls:{
     <v:shape id="$it.imageId$Shape" style="width: $it.cols$px; height:$it.rows$px; left: $it.left$px;top:$it.top$px" filled="f" stroked="f">
-        <v:imagedata id="$it.imageId$" src="$it.imageUrl$"/>
+        <v:imagedata id="$it.imageId$" src="$it.imageUrl;format="xml"$"/>
     </v:shape>
 }$
 		
@@ -52,7 +52,7 @@ $endif$
 >
 <g id="tr$layout.id$" transform="$if(layout.flip)$scale(-1,1)$endif$ $if(layout.rotation)$rotate($layout.rotation$,0,0)$endif$ $if(layout.aspect)$ scale(1,$layout.aspect$)$endif$">
 $layout.imageUrls:{
-<image id="$it.imageId$" preserveAspectRatio="none" xlink:href="$it.imageUrl$" width="$it.cols$" height="$it.rows$" transform="translate($it.left$,$it.top$)"/>
+<image id="$it.imageId$" preserveAspectRatio="none" xlink:href="$it.imageUrl;format="xml"$" width="$it.cols$" height="$it.rows$" transform="translate($it.left$,$it.top$)"/>
 }$
 
 
