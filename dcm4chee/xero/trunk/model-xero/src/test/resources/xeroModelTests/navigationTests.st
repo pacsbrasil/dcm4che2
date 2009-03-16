@@ -4,6 +4,8 @@ $navConversation()$
 $studyData()$
 $xmlModel()$
 $navigation()$
+function XeroModel() {};
+$displayAndFindModel()$
 
 navigationTests = new UnitTest();
 
