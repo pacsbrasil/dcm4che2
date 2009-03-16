@@ -185,4 +185,10 @@ public class FilterItem<T> implements Comparable<FilterItem<?>> {
 	public T callThisFilter(Map<String, Object> params) {
 		return filter.filter(this,params);
 	}
+	
+	
+	public String toString()
+	{
+	   return "FilterItem:"+name;
+	}
 }
