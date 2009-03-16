@@ -3,8 +3,8 @@
   <property file="build.properties"/>
   <property file="../build.properties"/>
 
-  <property name="version" value="2.14.2"/>
-  <property name="audit-version" value="2.14.2"/>
+  <property name="version" value="2.14.3"/>
+  <property name="audit-version" value="2.14.3"/>
   <property name="docstore-version" value="0.0.2"/>
   <property name="target.dir" value="${basedir}/target"/>
 
