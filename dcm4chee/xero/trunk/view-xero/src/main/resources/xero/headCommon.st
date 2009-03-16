@@ -12,9 +12,9 @@
     <style> v\:* { behavior: url(#default#VML); display: inline-block; overflow: hidden; position: absolute; }
     $if(IS_IE6)$
     div.hoverMenu li {	filter:alpha(opacity=100);  }
+    #SearchLayout { height: 85%; overflow: scroll; }
     $endif$
       </style>
-    <link type="text/cass" rel="stylesheet" href="style/ie.css?v=$version$"> </link>
   $elseif(IS_FIREFOX)$
   	<style>
   		table { height: 100%; }
