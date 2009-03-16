@@ -222,6 +222,12 @@ htmlReport.stringTemplateFilter.contentType=text/html
 wado=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 wado.WADO.inherit=WADO
 
+# Add the shared WADO filters that are inserted infront of the requestType specific code.
+wado.requestTypeFilter=${class:org.dcm4chee.xero.metadata.filter.InvokeByRequestTypeFilter}
+wado.requestTypeFilter.priority=200
+wado.help=${class:org.dcm4chee.xero.search.filter.DocumentationResponseFilter}
+wado.help.priority=500
+
 wado.XERO=${class:org.dcm4chee.xero.wado.EncodeImage}
 wado.XERO.wadoImageFilter=${ref:xeroImg}
 // Xero will NOT be called by default.

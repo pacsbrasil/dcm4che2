@@ -52,6 +52,7 @@ import java.nio.channels.FileChannel;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.dcm4che2.util.CloseUtils;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,35 +131,47 @@ public class UrlServletResponseItem implements ServletResponseItem {
 		FileInputStream fis = new FileInputStream(fileName);
 		FileChannel fc = fis.getChannel();
 		ByteBuffer bb = ByteBuffer.allocate(32 * 1024);
-		int s = fc.read(bb);
-		while (s > 0) {
+		
+		try
+		{
+		   int s = -1;
+   		while ((s = fc.read(bb)) > 0) {
 			os.write(bb.array(), 0, s);
 			bb.clear();
-			s = fc.read(bb);
 		}
-		fc.close();
-		fis.close();
-		os.close();
+		}
+		finally
+		{
+		   CloseUtils.safeClose(fc);
+		   CloseUtils.safeClose(fis);
+	      CloseUtils.safeClose(os);
+		}
+		
 		return;
 	}
 	
 	/** Streams the input stream to the output stream, reading bufSize elements at a time.
 	 * 
-	 * @param os
-	 * @param is
-	 * @param bufSize
-	 * @throws IOException
+	 * @param os Stream to write to
+	 * @param is Stream to read from
+	 * @param bufSize Size of the read buffer
+	 * @throws IOException Thrown if the streams are crossed.
 	 */
 	public static void streamFile(OutputStream os, InputStream is, int bufSize) throws IOException {
 		  byte[] data = new byte[bufSize];
-		  int size = is.read(data);
-		  while(size>0) {
+		  try
+		  {
+		     // TODO:  Try invoking flush() in finally.
+   		  int size = -1;
+   		  while((size = is.read(data))>0)
 			 os.write(data,0,size);
-			 os.flush();
-			 size = is.read(data);
 		  }
-		  is.close();
-		  os.close();
+		  finally
+		  {
+			 os.flush();
+	        CloseUtils.safeClose(os);
+           CloseUtils.safeClose(is);
+		  }
 	}
 
 	public Boolean getMemoryMap() {
