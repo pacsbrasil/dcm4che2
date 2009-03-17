@@ -375,7 +375,7 @@ public class MoveTask implements Runnable {
             
             try {
                 Dimse rq = service.makeCStoreRQ(storeAssoc,
-                        fileInfo, priority, moveOriginatorAET, msgID, perfMon);
+                        fileInfo, aeData, priority, moveOriginatorAET, msgID, perfMon);
                 perfMon.start(storeAssoc, rq, PerfCounterEnum.C_STORE_SCU_OBJ_OUT );
                 perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.REQ_DIMSE, rq);
                 perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.STUDY_IUID, fileInfo.studyIUID);
