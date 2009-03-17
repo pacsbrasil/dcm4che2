@@ -46,6 +46,7 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 import org.dcm4che2.data.DicomObject;
@@ -60,6 +61,9 @@ import org.dcm4che2.data.Tag;
  */
 @Entity
 @Table(name = "other_pid")
+@NamedQuery(name="OtherPatientID.findByPatientIdAndIssuer",
+  query="select opid from OtherPatientID opid where patientID = :pid and issuerOfPatientID = :issuer"
+)
 public class OtherPatientID implements Serializable {
 
     private static final long serialVersionUID = -7983218873187437331L;
