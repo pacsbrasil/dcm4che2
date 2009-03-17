@@ -4,12 +4,12 @@
   <parent>
     <groupId>dcm4che</groupId>
     <artifactId>dcm4chee-arr</artifactId>
-    <version>3.0.7</version>
+    <version>3.0.8</version>
   </parent>
   <name>UDP Listener of ARR</name>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-arr-listeners-udp</artifactId>
-  <version>3.0.7</version>
+  <version>3.0.8</version>
   <packaging>sar</packaging>
   <dependencies>
     <dependency>

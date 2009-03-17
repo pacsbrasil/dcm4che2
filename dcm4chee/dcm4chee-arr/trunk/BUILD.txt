@@ -22,7 +22,7 @@ by following build task for the Audit Record Repository.
 
 After that,
 
-$ cd dcm4chee-arr-3.0.7
+$ cd dcm4chee-arr-3.0.8
 $ mvn -Ddb=<database>  install
 
 with
@@ -39,6 +39,6 @@ Finally,
 $ cd dcm4chee-arr-dist
 $ mvn -Ddb=<database> assembly:assembly
 
-will assembly the binary distribution package dcm4chee-arr-<db>-3.0.7.zip,
+will assembly the binary distribution package dcm4chee-arr-<db>-3.0.8.zip,
 including the EAR archive built before, but also dcm4che-audit-logger,
 dcm4che-audit-login and JBoss configuration files.
