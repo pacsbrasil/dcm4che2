@@ -20,7 +20,7 @@ http downloads (s.  http://maven.apache.org/guides/mini/guide-proxies.html ).
 
 After that,
 
-$ cd dcm4chee-audit-2.13.0
+$ cd dcm4chee-audit-2.14.3
 $ mvn install
 
 will download necessary artifacts from public Maven Repositories by http,
