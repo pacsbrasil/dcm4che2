@@ -133,7 +133,7 @@ public class DicomImageFilter implements Filter<WadoImage> {
 			 if (readRawBytes) {
 				 byte[] img = reader.readBytes(frame, param);
 				 ret.setParameter(WadoImage.IMG_AS_BYTES, img);
-				 setAsBytesTransferSyntax(ret, ds, reader, frame);
+				 setAsBytesTransferSyntaxAndSubsampleFactor(ret, ds, reader, frame);
 				 bi = null;
 				 op="read raw";
 			 } else if (OverlayUtils.isOverlay(frame) || !ColorModelFactory.isMonochrome(ds)) {
@@ -248,13 +248,14 @@ public class DicomImageFilter implements Filter<WadoImage> {
 	   return tsUID;
    }
 
-   protected void setAsBytesTransferSyntax(
+   protected void setAsBytesTransferSyntaxAndSubsampleFactor(
 		   WadoImage ret, 
 		   DicomObject ds, 
 		   DicomImageReader reader,
 		   int frame) {
 	   String tsUID = getReaderRawTransferSyntax( ds, reader, frame );
 	   ret.setParameter(WadoImage.AS_BYTES_RETURNED_TRANSFER_SYNTAX, tsUID);
+	   ret.setParameter(WadoImage.AS_BYTES_RETURNED_SUBSAMPLE_FACTOR, getReaderRawSubsampleIndices(reader,frame));
 	   
    }
    

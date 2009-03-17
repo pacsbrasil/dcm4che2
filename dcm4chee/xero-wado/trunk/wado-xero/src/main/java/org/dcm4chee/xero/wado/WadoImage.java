@@ -37,9 +37,12 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado;
 
+import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 import org.dcm4chee.xero.metadata.filter.CacheItem;
 import org.dcm4chee.xero.metadata.filter.FilterReturn;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
@@ -64,6 +67,12 @@ private static final Logger log = LoggerFactory.getLogger(WadoImage.class);
 	
 	public static String IMG_AS_BYTES = "asBytes";
 	public static String AS_BYTES_RETURNED_TRANSFER_SYNTAX = "asBytesReturnedTransferSyntax";
+	
+	/** 
+	 * A return parameter value when IMG_AS_BYTES is a returned byte[] parameter,
+	 *  will have this as the key, and a java.awt.Point as the subsample factors. 
+	 */
+	public static String AS_BYTES_RETURNED_SUBSAMPLE_FACTOR = "asBytesReturnedSubsampleFactor";
 
 	public static String IMG_AS_BYTES_ONLY_FOR_TRANSFER_SYNTAXES = "asBytesOnlyForTransferSyntaxes";
 	
@@ -71,14 +80,14 @@ private static final Logger log = LoggerFactory.getLogger(WadoImage.class);
 	private int stored;
 	private String filename;
 	
-	/** Create a wado image on the given buffered image object
-	 * For images where 1 is black, minValue will be 1, and maxValue 0.
-	 * minValue and maxValue should be the min/max AFTER the previous lookup table is applied,
-	 * or the raw min/max values in the source data if no lookups have yet been applied.
+	/** 
+	 * Create a Wado image on the given buffered image object
+	 * 
 	 * @param value is the source image
-	 * @param is the current query information (key to find this object)
-	 * @param minValue is the minimum pixel value, corresponding to ushort internal value 0
-	 * @param maxVluae is the maximum pixel value, corresponding to ushort 2^n-1  
+	 * @param stored the number of bits stored for this image.  May not agree with the header value
+     *        if this is computed based on other factors to get the right value.
+	 * @param value the BufferedImage value of the object.  If this is null, and there is no
+	 *        IMG_AS_BYTES parameter set (for raw data), then this is no pixel data.
      */
 	public WadoImage(DicomObject ds, int stored, BufferedImage value) {
 		super(value);
@@ -101,6 +110,41 @@ private static final Logger log = LoggerFactory.getLogger(WadoImage.class);
 		return ret;
 	}
 
+	/**
+	 * Gets the dimension of the image data returned, which could be a BufferedImage
+	 * or a byte[] in the IMG_AS_BYTES parameter.
+	 * @return the actual buffer dimensions (which may not match the DICOM dimensions),
+	 *         or null if there is no image data here.
+	 */
+	public Dimension getBufferDimension() {
+		BufferedImage image = getValue();
+		if (image != null) {
+			int width = image.getWidth();
+			int height = image.getHeight();
+			return new Dimension(width,height);
+		} else {
+			Point subsample = (Point)getParameter(	WadoImage.AS_BYTES_RETURNED_SUBSAMPLE_FACTOR);
+			if ( (ds != null ) && ( subsample != null ) && ( subsample.x > 0 ) && ( subsample.y > 0 ) ) {
+				int width = ds.getInt(Tag.Columns);
+				int height = ds.getInt(Tag.Rows);
+				if ( ( width > 0) && ( height > 0 ) ) {
+					width = ( width + subsample.x - 1 ) / subsample.x;
+					height = ( height + subsample.y - 1 ) / subsample.y;
+					return new Dimension( width, height );
+				} else {
+					log.warn("Dicom dimensions of " + width + "x" + height + " are invalid.");
+				}
+			} else {
+				if ( ds == null ) {
+					log.warn("No DICOM header.  Can't get dimensions.");
+				} else {
+					log.warn("No valid set subsample indices for raw asBytes buffer.  Can't get buffer dimensions");
+				}
+			}
+		}
+		return null;
+	}
+	
 	/**
 	 * Figure out the size of this object - somewhat of a hueristic, as we don't
 	 * want to go through all the map data, but assuming that the map isn't too

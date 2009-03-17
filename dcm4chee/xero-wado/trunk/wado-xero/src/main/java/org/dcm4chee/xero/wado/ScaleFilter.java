@@ -164,9 +164,13 @@ public class ScaleFilter implements Filter<WadoImage> {
 	  if (wi == null || wi.hasError())
 		 return null;
 	  log.debug("Got wado image from next filter.");
-	  BufferedImage bi = wi.getValue();
-	  int nWidth = bi.getWidth();
-	  int nHeight = bi.getHeight();
+	  Dimension bufferDimension = wi.getBufferDimension();
+	  if ( bufferDimension == null ) {
+	  	 log.error("Can't get buffer dimension.  Image errors out.");
+	  	 return null;
+	  }
+	  int nWidth = bufferDimension.width;
+	  int nHeight = bufferDimension.height;
 	  if ((Math.abs(nWidth - neededSize.width) <= 3) && (Math.abs(nHeight - neededSize.height) <= 3) && rot==0 && !flip) {
 		 log.debug("Within 3 pixels of desired size, returning directly.");
 		 return wi;
@@ -232,6 +236,11 @@ public class ScaleFilter implements Filter<WadoImage> {
 	  log.debug("Overall affine transform="+firstAffine);
 	  
 	  AffineTransformOp scaleOp = new AffineTransformOp(firstAffine, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+	  BufferedImage bi = wi.getValue();
+	  if ( bi == null ) {
+		  log.error("BufferedImage is null in WadoImage.  Can't scale image.");
+		  return null;
+	  }
 	  biScale = scaleOp.filter(bi, biScale);
 	  WadoImage ret = wi.clone();
 	  ret.setValue(biScale);
