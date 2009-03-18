@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.Map.Entry;
 
 import javax.jms.JMSException;
@@ -79,7 +80,6 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.DocumentSource;
 import org.dom4j.io.SAXContentHandler;
-import org.regenstrief.xhl7.HL7XMLLiterate;
 import org.regenstrief.xhl7.HL7XMLReader;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -93,7 +93,9 @@ public class PrefetchService extends AbstractScuService implements
         NotificationListener, MessageListener {
 
     private static final String ONLINE = "ONLINE";
+    private static final String NONE = "NONE";
 
+    private MessageTypeMatcher[] prefetchMessageTypes;
     private String prefetchSourceAET;
     private String destinationQueryAET;
     private String destinationStorageAET;
@@ -111,12 +113,39 @@ public class PrefetchService extends AbstractScuService implements
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
     private TemplatesDelegate templates = new TemplatesDelegate(this);
     
+    public String getPrefetchMessageTypes() {
+        if (prefetchMessageTypes == null || prefetchMessageTypes.length == 0) {
+            return NONE;
+        }
+        StringBuffer sb = new StringBuffer();
+        for (MessageTypeMatcher prefetchMessageType : prefetchMessageTypes) {
+            prefetchMessageType.toString(sb).append(',');
+        }
+        sb.setLength(sb.length()-1);
+        return sb.toString();
+    }
+
+    public void setPrefetchMessageTypes(String messageTypes) {
+        String trim = messageTypes.trim();
+        if (NONE.equalsIgnoreCase(trim)) {
+            prefetchMessageTypes = null;
+        } else {
+            StringTokenizer stk = new StringTokenizer(messageTypes, ", ");
+            MessageTypeMatcher[] tmp =
+                    new MessageTypeMatcher[stk.countTokens()];
+            for (int i = 0; i < tmp.length; i++) {
+                tmp[i] = new MessageTypeMatcher(stk.nextToken());
+            }
+            prefetchMessageTypes = tmp;
+        }
+    }
+
     public final String getPrefetchSourceAET() {
-        return prefetchSourceAET != null ? prefetchSourceAET : "NONE";
+        return prefetchSourceAET;
     }
 
     public final void setPrefetchSourceAET(String aet) {
-        this.prefetchSourceAET = "NONE".equalsIgnoreCase(aet) ? null : aet;
+        this.prefetchSourceAET = aet;
     }
     
     public final String getDestinationQueryAET() {
@@ -246,12 +275,9 @@ public class PrefetchService extends AbstractScuService implements
     }
     
     public void handleNotification(Notification notif, Object handback) {
-        if (prefetchSourceAET == null) {
-            return;
-        }
         Object[] hl7msg = (Object[]) notif.getUserData();
         Document hl7doc = (Document) hl7msg[1];
-        if (isORM_O01_NW(hl7doc)) {
+        if (matchPrefetchMessageTypes(hl7doc)) {
             Dataset findRQ = DcmObjectFactory.getInstance().newDataset();
             try {
                 File xslFile = FileUtils.toExistingFile(xslPath);
@@ -277,11 +303,17 @@ public class PrefetchService extends AbstractScuService implements
         }
     }
 
-    private boolean isORM_O01_NW(Document hl7doc) {
+    private boolean matchPrefetchMessageTypes(Document hl7doc) {
+        if (prefetchMessageTypes == null || prefetchMessageTypes.length == 0) {
+            return false;
+        }
         MSH msh = new MSH(hl7doc);
-        return "ORM".equals(msh.messageType) && "O01".equals(msh.triggerEvent)
-            && "NW".equals(hl7doc.getRootElement().element("ORC")
-                    .element(HL7XMLLiterate.TAG_FIELD).getText());
+        for (MessageTypeMatcher prefetchMessageType : prefetchMessageTypes) {
+            if (prefetchMessageType.match(msh, hl7doc)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void onMessage(Message message) {

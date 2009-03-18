@@ -24,26 +24,46 @@
    <attribute access="read-write"
       getMethod="getStylesheet"
       setMethod="setStylesheet">
-      <description><![CDATA[Stylesheet for HL7 ORM^O01 to C-FIND RQ mapping.
+      <description><![CDATA[Stylesheet for HL7 to C-FIND RQ mapping.
       A relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>
       </description>
       <name>Stylesheet</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="conf/dcm4chee-hl7/orm2prefetch.xsl" />
+         <value value="conf/dcm4chee-hl7/hl72prefetch.xsl" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPrefetchMessageTypes"
+      setMethod="setPrefetchMessageTypes">
+      <description><![CDATA[Comma separated list of HL7 message types which
+shall trigger prefetch of studies. For each listed message type a value for a
+particular message field can be specified as additional condition.
+<p>Format:<br/>
+<i>message-type</i> '^' <i>trigger-event</i> [<i>condition</i>] [,...]<br/>
+ | 'NONE' (* prefetch disabled *)<br/>
+<i>condition</i> := '[' <i>field-name</i> '=' <i>field-value</i> ']'<br/>
+<i>field-name</i> := <i>segment</i> '-' <i>seq</i>
+<p>Example:<br/>
+<tt>ORM^O01[ORC-1=NW]</tt> (* trigger prefetch on receive of new order *)]]>
+      </description>
+      <name>PrefetchMessageTypes</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getPrefetchSourceAET"
       setMethod="setPrefetchSourceAET">
       <description><![CDATA[AE title of C-FIND SCP, which shall be queried for
-        available studies of a particular patient. NONE = prefetch disabled.]]>
+      available studies of a particular patient.]]>
       </description>
       <name>PrefetchSourceAETitle</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="NONE" />
+         <value value="PACS_CENTRAL" />
       </descriptors>
    </attribute>
    <attribute access="read-write" 
