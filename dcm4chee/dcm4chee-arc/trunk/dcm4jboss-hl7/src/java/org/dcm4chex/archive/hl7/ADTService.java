@@ -39,8 +39,6 @@
 
 package org.dcm4chex.archive.hl7;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -85,7 +83,7 @@ public class ADTService extends AbstractHL7Service {
 
     private String pixUpdateNotificationMessageType;
 
-    private List issuersOfOnlyOtherPatientIDs;
+    private String[] issuersOfOnlyOtherPatientIDs;
 
     private boolean ignoreDeleteErrors;
 
@@ -105,12 +103,16 @@ public class ADTService extends AbstractHL7Service {
     }
 
     public final void setPatientMergeMessageTypes(String messageTypes) {
-        StringTokenizer stk = new StringTokenizer(messageTypes, ", ");
+        this.patientMergeMessageTypes = split(messageTypes);
+    }
+
+    private static String[] split(String s) {
+        StringTokenizer stk = new StringTokenizer(s, ", ");
         String[] tmp = new String[stk.countTokens()];
         for (int i = 0; i < tmp.length; i++) {
             tmp[i] = stk.nextToken();
         }
-        this.patientMergeMessageTypes = tmp;
+        return tmp;
     }
 
     public final String getChangePatientIdentifierListMessageType() {
@@ -140,29 +142,12 @@ public class ADTService extends AbstractHL7Service {
     }
 
     public final String getIssuersOfOnlyOtherPatientIDs() {
-        if (issuersOfOnlyOtherPatientIDs == null
-                || issuersOfOnlyOtherPatientIDs.isEmpty()) {
-            return "-";
-        }
-        Iterator iter = issuersOfOnlyOtherPatientIDs.iterator();
-        StringBuffer sb = new StringBuffer((String) iter.next());
-        while (iter.hasNext()) {
-            sb.append(',').append((String) iter.next());
-        }
-        return sb.toString();
+        return issuersOfOnlyOtherPatientIDs == null ? "-"
+                : StringUtils.toString(issuersOfOnlyOtherPatientIDs, ',');
     }
 
     public final void setIssuersOfOnlyOtherPatientIDs(String s) {
-        if (s.trim().equals("-")) {
-            issuersOfOnlyOtherPatientIDs = null;
-        }
-        else {
-            String[] a = StringUtils.split(s, ',');
-            issuersOfOnlyOtherPatientIDs = new ArrayList(a.length);
-            for (int i = 0; i < a.length; i++) {
-                issuersOfOnlyOtherPatientIDs.add(a[i].trim());
-            }
-        }
+        issuersOfOnlyOtherPatientIDs = s.trim().equals("-") ? null : split(s);
     }
 
     public final String getMrgStylesheet() {
@@ -351,7 +336,7 @@ public class ADTService extends AbstractHL7Service {
         PatientUpdate patUpdate = getPatientUpdate();
         for (int i = 0, n = pids.size(); i < n; ++i) {
             String[] pid = (String[]) pids.get(i);
-            if (!issuersOfOnlyOtherPatientIDs.contains(pid[ISSUER])) {
+            if (!contains(issuersOfOnlyOtherPatientIDs, pid[ISSUER])) {
                 Dataset ds = toDataset(pid);
                 DcmElement opids = ds.putSQ(Tags.OtherPatientIDSeq);
                 for (int j = 0, m = pids.size(); j < m; ++j) {
