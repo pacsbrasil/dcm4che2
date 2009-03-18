@@ -1,6 +1,6 @@
 <project>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>dcm4che</groupId>
+  <groupId>dcm4che.dcm4chee</groupId>
   <artifactId>dcm4chee-arr</artifactId>
   <version>3.0.8</version>
   <packaging>pom</packaging>

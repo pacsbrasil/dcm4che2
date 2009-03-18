@@ -78,7 +78,7 @@
     <dependencySet>
       <outputDirectory>server/default/deploy</outputDirectory>
       <includes>
-        <include>dcm4che:dcm4chee-arr-${db}</include>
+        <include>dcm4che.dcm4chee:dcm4chee-arr-${db}</include>
       </includes>
     </dependencySet>
   </dependencySets>

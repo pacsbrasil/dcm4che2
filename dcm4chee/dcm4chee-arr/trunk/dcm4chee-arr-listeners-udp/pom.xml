@@ -2,12 +2,12 @@
 <project>
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>dcm4che</groupId>
+    <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-arr</artifactId>
     <version>3.0.8</version>
   </parent>
   <name>UDP Listener of ARR</name>
-  <groupId>dcm4che</groupId>
+  <groupId>dcm4che.dcm4chee</groupId>
   <artifactId>dcm4chee-arr-listeners-udp</artifactId>
   <version>3.0.8</version>
   <packaging>sar</packaging>
