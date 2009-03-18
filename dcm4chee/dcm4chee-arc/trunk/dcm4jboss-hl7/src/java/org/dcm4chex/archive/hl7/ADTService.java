@@ -42,6 +42,7 @@ package org.dcm4chex.archive.hl7;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -76,7 +77,7 @@ public class ADTService extends AbstractHL7Service {
 
     private String patientArrivingMessageType;
 
-    private String patientMergeMessageType;
+    private String[] patientMergeMessageTypes;
 
     private String changePatientIdentifierListMessageType;
 
@@ -99,12 +100,17 @@ public class ADTService extends AbstractHL7Service {
         this.patientArrivingMessageType = patientArrivingMessageType;
     }
 
-    public final String getPatientMergeMessageType() {
-        return patientMergeMessageType;
+    public final String getPatientMergeMessageTypes() {
+        return StringUtils.toString(patientMergeMessageTypes, ',');
     }
 
-    public final void setPatientMergeMessageType(String patientMergeMessageType) {
-        this.patientMergeMessageType = patientMergeMessageType;
+    public final void setPatientMergeMessageTypes(String messageTypes) {
+        StringTokenizer stk = new StringTokenizer(messageTypes, ", ");
+        String[] tmp = new String[stk.countTokens()];
+        for (int i = 0; i < tmp.length; i++) {
+            tmp[i] = stk.nextToken();
+        }
+        this.patientMergeMessageTypes = tmp;
     }
 
     public final String getChangePatientIdentifierListMessageType() {
@@ -209,7 +215,7 @@ public class ADTService extends AbstractHL7Service {
             Dataset pat = xslt(msg, pidXslPath);
             checkPID(pat);
             PatientUpdate update = getPatientUpdate();
-            if (patientMergeMessageType.equals(msgtype)) {
+            if (contains(patientMergeMessageTypes, msgtype)) {
                 Dataset mrg = xslt(msg, mrgXslPath);
                 try {
                     checkMRG(mrg);
@@ -259,6 +265,15 @@ public class ADTService extends AbstractHL7Service {
             throw new HL7Exception("AE", e.getMessage(), e);
         }
         return true;
+    }
+
+    private static boolean contains(String[] ss, String v) {
+        for (String s : ss) {
+            if (s.equals(v)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void updatePatient(Document msg) throws HL7Exception {

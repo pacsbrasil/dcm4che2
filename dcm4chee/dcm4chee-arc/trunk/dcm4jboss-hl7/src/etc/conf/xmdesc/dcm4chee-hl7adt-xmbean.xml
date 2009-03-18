@@ -71,14 +71,14 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getPatientMergeMessageType"
-      setMethod="setPatientMergeMessageType">
-      <description><![CDATA[Message Type for merge of two Patients.
-       Messages of this type will cause to merge two Patients.<br/>
-       The message type must be also listed in configured <i>MessageTypes</i>
-       handled by this service.]]>
+      getMethod="getPatientMergeMessageTypes"
+      setMethod="setPatientMergeMessageTypes">
+      <description><![CDATA[Comma separated list of message types for merge of
+two Patients. Messages of this type will cause to merge two Patients.<br/>
+The message type must be also listed in configured <i>MessageTypes</i>
+handled by this service.]]>
       </description>
-      <name>PatientMergeMessageType</name>
+      <name>PatientMergeMessageTypes</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="ADT^A40" />
