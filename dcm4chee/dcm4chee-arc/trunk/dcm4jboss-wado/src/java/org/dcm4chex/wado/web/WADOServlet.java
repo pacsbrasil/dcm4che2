@@ -60,111 +60,121 @@ import org.dcm4chex.wado.common.WADOResponseObject;
  */
 public class WADOServlet extends HttpServlet {
 
-	private static final int BUF_LEN = 65536;
-	
-	/** holds the WADOServiceDelegate instance */
+    private static final int BUF_LEN = 65536;
+
+    /** holds the WADOServiceDelegate instance */
     private static WADOServiceDelegate delegate;
-	
+
     /** serialVersionUID because super class is serializable. */
-	private static final long serialVersionUID = 3257008748022085682L;
+    private static final long serialVersionUID = 3257008748022085682L;
 
-	private static Logger log = Logger.getLogger( WADOServlet.class.getName() );
-	
-	/**
-	 * Initialize the WADOServiceDelegator.
-	 * <p>
-	 * Set the name of the MBean from servlet init param.
-	 */
-	public void init() {
-		delegate = new WADOServiceDelegate();
-		delegate.init( getServletConfig() );
-	}
+    private static Logger log = Logger.getLogger( WADOServlet.class.getName() );
 
-	/**
-	 * Handles the POST requset in the doGet method.
-	 * 
-	 * @param request 	The http request.
-	 * @param response	The http response.
-	 */
-	public void doPost( HttpServletRequest request, HttpServletResponse response ){
-		doGet( request, response);
-	}
+    /**
+     * Initialize the WADOServiceDelegator.
+     * <p>
+     * Set the name of the MBean from servlet init param.
+     */
+    public void init() {
+        delegate = new WADOServiceDelegate();
+        delegate.init( getServletConfig() );
+    }
 
-	/**
-	 * Handles the GET requset.
-	 * 
-	 * @param request 	The http request.
-	 * @param response	The http response.
-	 */
-	public void doGet( HttpServletRequest request, HttpServletResponse response ){
-		log.debug("WADO URL:"+request.getRequestURI()+"?"+request.getQueryString());
-		BasicRequestObject reqObject = RequestObjectFactory.getRequestObject( request );
-		if ( reqObject == null || ! (reqObject instanceof WADORequestObject) ) {
-			reqObject = RequestObjectFactory.getRequestObject( request );
-			if ( reqObject == null ) {
-				sendError( response, HttpServletResponse.SC_BAD_REQUEST, "Not A WADO URL" );
-				return;
-			}
-		}
-		int iErr = reqObject.checkRequest();
-		if ( iErr < 0 ) {
-			sendError( response, HttpServletResponse.SC_BAD_REQUEST, reqObject.getErrorMsg() );//required params missing or invalid!
-			return;
-		}
-		WADOResponseObject respObject = delegate.getWADOObject( (WADORequestObject)reqObject );
-		int returnCode = respObject.getReturnCode();
-		if ( returnCode == HttpServletResponse.SC_OK ) {
-			sendWADOFile( response, respObject );
-		} else if ( returnCode == HttpServletResponse.SC_TEMPORARY_REDIRECT ) {
-			try {
-				response.sendRedirect( respObject.getErrorMessage() ); //error message contains redirect host.
-			} catch (IOException e) {
-				sendError( response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error: cant send redirect to client! Redirect to host "+respObject.getErrorMessage()+" failed!" );
-			}
-		} else {
-			sendError( response, returnCode, respObject.getErrorMessage() );
-		}
-	}
-	
-	/**
-	 * Send an error response with given response code and message to the client.
-	 * <p>
-	 * It is recommended that this method is only called once per erequest!<br>
-	 * Otherwise a IllegalStateException will be thrown!
-	 * 
-	 * @param response	The HttpServletResponse of the request.
-	 * @param errCode	One of the response code defined in HttpServletResponse.
-	 * @param msg		A description for the reason to send the error.
-	 */
-	private void sendError( HttpServletResponse response, int errCode, String msg ) {
-		try {
-			response.sendError( errCode, msg );
-		} catch (IOException e) {
-			log.error("Cant perform sendError( "+errCode+", "+msg+" )! reason:"+e.getMessage(), e );
-		}
-	}
-	
-	/**
-	 * Send the retrieved file to the client.
-	 * <p>
-	 * Sets the content type as defined in the WADOResponseObject object.
-	 * 
-	 * @param response
-	 * @param respObject
-	 */
-	private void sendWADOFile( HttpServletResponse response, WADOResponseObject respObject ) {
-		response.setHeader("Expires","0");//disables client side caching!!!
-		log.debug("sendResponse:"+respObject);
-		try {
-			if ( respObject != null ) {
-				log.info("send WADO response: "+respObject.getContentType());
-				response.setContentType( respObject.getContentType() );
-				long len = respObject.length();
-				if ( len != -1 ) 
-					response.setContentLength((int)len);
+    /**
+     * Handles the POST requset in the doGet method.
+     * 
+     * @param request 	The http request.
+     * @param response	The http response.
+     */
+    public void doPost( HttpServletRequest request, HttpServletResponse response ){
+        doGet( request, response);
+    }
+
+    /**
+     * Handles the GET requset.
+     * 
+     * @param request 	The http request.
+     * @param response	The http response.
+     */
+    public void doGet( HttpServletRequest request, HttpServletResponse response ){
+        long twrsp1 = System.currentTimeMillis();
+
+        log.info("WADO URL:"+request.getRequestURI()+"?"+request.getQueryString());
+        BasicRequestObject reqObject = RequestObjectFactory.getRequestObject( request );
+        if ( reqObject == null || ! (reqObject instanceof WADORequestObject) ) {
+            reqObject = RequestObjectFactory.getRequestObject( request );
+            if ( reqObject == null ) {
+                sendError( response, HttpServletResponse.SC_BAD_REQUEST, "Not A WADO URL" );
+                return;
+            }
+        }
+        int iErr = reqObject.checkRequest();
+        if ( iErr < 0 ) {
+            sendError( response, HttpServletResponse.SC_BAD_REQUEST, reqObject.getErrorMsg() );//required params missing or invalid!
+            return;
+        }
+        long twget1 = System.currentTimeMillis();
+        WADOResponseObject respObject = delegate.getWADOObject( (WADORequestObject)reqObject );
+        long twget2 = System.currentTimeMillis();
+        int returnCode = respObject.getReturnCode();
+        if ( returnCode == HttpServletResponse.SC_OK ) {
+            sendWADOFile( response, respObject );
+        } else if ( returnCode == HttpServletResponse.SC_TEMPORARY_REDIRECT ) {
+            try {
+                response.sendRedirect( respObject.getErrorMessage() ); //error message contains redirect host.
+            } catch (IOException e) {
+                sendError( response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error: cant send redirect to client! Redirect to host "+respObject.getErrorMessage()+" failed!" );
+            }
+        } else {
+            sendError( response, returnCode, respObject.getErrorMessage() );
+        }
+        long twrsp2 = System.currentTimeMillis();
+        log.debug("TimesToDeliverDICOMObject "+((WADORequestObject)reqObject).getObjectUID()+
+                ", with requesttype: "+respObject.getContentType()+" to "+((WADORequestObject)reqObject).getRemoteHost()+
+                " took total [ms]: " +(twrsp2 -twrsp1)+", FetchObject took [ms]: "+(twget2 -twget1)+
+                ", Transmission took [ms]: "+((twrsp2 -twrsp1)-(twget2-twget1)));
+    }
+
+
+    /**
+     * Send an error response with given response code and message to the client.
+     * <p>
+     * It is recommended that this method is only called once per erequest!<br>
+     * Otherwise a IllegalStateException will be thrown!
+     * 
+     * @param response	The HttpServletResponse of the request.
+     * @param errCode	One of the response code defined in HttpServletResponse.
+     * @param msg		A description for the reason to send the error.
+     */
+    private void sendError( HttpServletResponse response, int errCode, String msg ) {
+        try {
+            response.sendError( errCode, msg );
+        } catch (IOException e) {
+            log.error("Cant perform sendError( "+errCode+", "+msg+" )! reason:"+e.getMessage(), e );
+        }
+    }
+
+    /**
+     * Send the retrieved file to the client.
+     * <p>
+     * Sets the content type as defined in the WADOResponseObject object.
+     * 
+     * @param response
+     * @param respObject
+     */
+    private void sendWADOFile( HttpServletResponse response, WADOResponseObject respObject ) {
+        response.setHeader("Expires","0");//disables client side caching!!!
+        log.debug("sendResponse:"+respObject);
+        try {
+            if ( respObject != null ) {
+                log.info("send WADO response: "+respObject.getContentType());
+                response.setContentType( respObject.getContentType() );
+                long len = respObject.length();
+                if ( len != -1 ) 
+                    response.setContentLength((int)len);
                 final String errMsg = "Exception while writing WADO response to client! reason:";
-				try {
-					log.debug("respObject execute");
+                try {
+                    log.debug("respObject execute");
                     OutputStream respStream = response.getOutputStream();
                     try {
                         respObject.execute(respStream);
@@ -173,22 +183,22 @@ public class WADOServlet extends HttpServlet {
                     }
                 } catch ( RequestedFrameNumbersOutOfRangeException e ) {
                     sendError(response, HttpServletResponse.SC_BAD_REQUEST,
-                              "Error: Requested Frame Numbers Out of Range");
+                    "Error: Requested Frame Numbers Out of Range");
                 } catch ( IOException ioe) {
                     if(ioe.toString().startsWith("ClientAbortException:")) {
                         log.debug(errMsg + ioe);
                     } else {
                         log.error(errMsg + ioe.getMessage(), ioe);
                     }
-				} catch ( Exception e ) {
-					log.error(errMsg+e.getMessage(), e );
-				}
-				
-			}
-		} catch ( Exception x ) {
-			x.printStackTrace();
-			sendError(	response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, x.getMessage() );
-		}
-	}
+                } catch ( Exception e ) {
+                    log.error(errMsg+e.getMessage(), e );
+                }
+
+            }
+        } catch ( Exception x ) {
+            x.printStackTrace();
+            sendError(	response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, x.getMessage() );
+        }
+    }
 
 }
