@@ -20,7 +20,10 @@
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
-      <artifactId>dcm4chee-arc-entities-psql</artifactId>
+      <!-- The artifact id is set to hsql, but only because it does not matter. -->
+      <!-- This DAO module only depends on the Java code, and has no database -->
+      <!-- specific dependencies.  The hsql version was simply chosen as a reasonable default. -->
+      <artifactId>dcm4chee-arc-entities-hsql</artifactId>
       <version>3.0.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
