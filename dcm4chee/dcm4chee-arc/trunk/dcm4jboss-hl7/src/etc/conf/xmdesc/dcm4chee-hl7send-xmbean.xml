@@ -286,6 +286,63 @@
        <return-type>java.util.List</return-type>
    </operation>
    
+   <operation impact="ACTION">
+      <description><![CDATA[Send HL7 message from a Dataset given in a file.<br/>
+                        The XSL stylesheet given by filename is used to transform the dataset into a HL7 message.
+      ]]></description>
+      <name>sendHl7FromDataset</name>
+      <parameter>
+        <description>Filename of a Dataset file</description>
+        <name>dsFilename</name>
+        <type>java.lang.String</type>
+      </parameter>     
+      <parameter>
+        <description>Filename of the XSLT stylesheet</description>
+        <name>xslFilename</name>
+        <type>java.lang.String</type>
+      </parameter>     
+      <parameter>
+        <description><![CDATA[Sender in format: &lt;SendingApplication&gt;^&lt;SendingFacility&gt;]]></description>
+        <name>sender</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description><![CDATA[Receiver in format: &lt;ReceivingApplication&gt;^&lt;ReceivingFacility&gt;]]>
+        </description>
+        <name>receiver</name>
+        <type>java.lang.String</type>
+      </parameter>
+       <return-type>boolean</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[Send HL7 message from a Dataset to given reveiver.<br/>
+                        The receiver (except LOCAL^LOCAL) must be configured in AE Managment!
+                        The XSL stylesheet given as Templates object is used to transform the Dataset into a HL7 message.
+      ]]></description>
+      <name>sendHl7FromDataset</name>
+      <parameter>
+        <description>Dataset</description>
+        <name>ds</name>
+        <type>org.dcm4che.data.Dataset</type>
+      </parameter>     
+      <parameter>
+        <description>Templates object of an XSLT stylesheet</description>
+        <name>tpl</name>
+        <type>javax.xml.transform.Templates</type>
+      </parameter>     
+      <parameter>
+        <description><![CDATA[Sender in format: &lt;SendingApplication&gt;^&lt;SendingFacility&gt;]]></description>
+        <name>sender</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description><![CDATA[Receiver in format: &lt;ReceivingApplication&gt;^&lt;ReceivingFacility&gt;]]>
+        </description>
+        <name>receiver</name>
+        <type>java.lang.String</type>
+      </parameter>
+       <return-type>boolean</return-type>
+   </operation>
    
 </mbean>
     

@@ -40,13 +40,14 @@
 package org.dcm4chex.archive.hl7;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
-import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -63,16 +64,24 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.security.jacc.PolicyContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che2.audit.message.ActiveParticipant;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
-import org.dcm4che2.audit.message.QueryMessage;
 import org.dcm4che2.audit.message.ParticipantObject;
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
+import org.dcm4che2.audit.message.QueryMessage;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
@@ -82,9 +91,9 @@ import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.XSLTUtils;
 import org.dom4j.Document;
 import org.dom4j.io.SAXContentHandler;
-import org.jboss.security.SecurityAssociation;
 import org.jboss.system.ServiceMBeanSupport;
 import org.regenstrief.xhl7.HL7XMLReader;
 import org.regenstrief.xhl7.MLLPDriver;
@@ -371,6 +380,10 @@ public class HL7SendService extends ServiceMBeanSupport implements
 
     public void sendTo(byte[] message, String receiver) throws Exception {
         Document rsp = invoke(message, receiver);
+        checkResponse(rsp);
+    }
+
+    private void checkResponse(Document rsp) throws HL7Exception {
         MSH msh = new MSH(rsp);
         if ("ACK".equals(msh.messageType)) {
             ACK ack = new ACK(rsp);
@@ -693,5 +706,102 @@ public class HL7SendService extends ServiceMBeanSupport implements
         AEManagerHome home = (AEManagerHome) EJBHomeFactory.getFactory()
                 .lookup(AEManagerHome.class, AEManagerHome.JNDI_NAME);
         return home.create();
+    }
+    
+    public boolean sendHl7FromDataset( String dsFilename, String xslFilename, String sender, String receiver) throws IOException, TransformerConfigurationException, TransformerFactoryConfigurationError {
+        Dataset ds = DcmObjectFactory.getInstance().newDataset(); 
+        ds.readFile(new File(dsFilename), null, Tags.PixelData);
+        Templates tpl = TransformerFactory.newInstance().newTemplates(new StreamSource(new File(xslFilename)));
+        return sendHl7FromDataset( ds, tpl, sender, receiver);
+    }
+    public boolean sendHl7FromDataset( Dataset ds, Templates tpl, String sender, String receiver) {
+        Socket s = null;
+        try {
+            AEDTO localAE = new AEDTO(-1, receiver, "127.0.0.1", getLocalHL7Port(),
+                    null, null, null, null, null, null, null);
+            AEDTO remoteAE = LOCAL_HL7_AET.equals(receiver) 
+                    ? localAE : aeMgt().findByAET(receiver);
+            s = tlsConfig.createSocket(localAE, remoteAE);
+            MLLPDriver mllpDriver = new MLLPDriver(s.getInputStream(), s
+                    .getOutputStream(), true);
+            OutputStream out = mllpDriver.getOutputStream();
+            writeDatasetAsHL7msg(ds, tpl, sender, receiver, out);         
+            mllpDriver.turn();
+            if (acTimeout > 0) {
+                s.setSoTimeout(acTimeout);
+            }
+            if (!mllpDriver.hasMoreInput()) {
+                throw new IOException("Receiver " + receiver
+                        + " closed socket " + s
+                        + " during waiting on response.");
+            }
+            Document rsp = readMessage(mllpDriver.getInputStream());
+            checkResponse(rsp);
+            return true;
+        } catch (Exception x) {
+            log.warn("Sending HL7 message from Dataset failed! Reason:"+x.getMessage(), x);
+            final long delay = retryIntervalls.getIntervall(1);
+            if (delay != -1L) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                try {
+                    writeDatasetAsHL7msg(ds, tpl, sender, receiver, baos);
+                    byte[] msg = baos.toByteArray();
+                    if ( msg.length > 3 && msg[0]=='M' && msg[1]=='S' && msg[2]=='H') {
+                        HL7SendOrder order = new HL7SendOrder(msg, receiver);
+                        order.setFailureCount(1);
+                        jmsDelegate.queue(queueName, order, 0, System.currentTimeMillis() + delay);
+                    } else {
+                        log.error("Message generated from Dataset is not valid (Does not start with MSH!) and will not be scheduled for retry!");
+                        log.debug("Dataset:");log.debug(ds);
+                    }
+                } catch (Exception e) {
+                    log.error("Cannot schedule 'retry' order for failed 'send HL7 message from Dataset'!",e);
+                    return false;
+                }         
+            }
+            return false;
+        } finally {
+            if ( s != null ) {
+                if (soCloseDelay > 0)
+                    try {
+                        Thread.sleep(soCloseDelay);
+                    } catch (InterruptedException ignore) {
+                    }
+                try {
+                    s.close();
+                } catch (IOException ignore) {
+                }
+            }
+        }
+    }
+
+    private void writeDatasetAsHL7msg(Dataset ds, Templates tpl, String sender,
+            String receiver, OutputStream out)
+            throws TransformerConfigurationException, IOException {
+        TransformerHandler th = getTransformHandler(tpl, sender, receiver);
+        th.setResult(new StreamResult(out));
+        ds.writeDataset2(th, null, null, 64, null);
+    }
+
+    private TransformerHandler getTransformHandler(Templates tpl, String sender, String receiver)
+            throws TransformerConfigurationException {
+        TransformerHandler th = XSLTUtils.transformerFactory.newTransformerHandler(tpl);
+        XSLTUtils.setDateParameters(th);
+        Transformer t = th.getTransformer();
+        final SimpleDateFormat tsFormat = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+        t.setParameter("messageControlID", String.valueOf(++messageControlID) );
+        t.setParameter("messageDateTime", tsFormat.format(new Date()));
+        int pos = receiver.indexOf('^');
+        t.setParameter("receivingApplication", receiver.substring(0, pos++));
+        t.setParameter("receivingFacility", receiver.substring(pos));
+        if ( sender != null ) {
+            pos = sender.indexOf('^');
+            t.setParameter("sendingApplication", sender.substring(0, pos++));
+            t.setParameter("sendingFacility", sender.substring(pos));
+        } else {
+            t.setParameter("sendingApplication", sendingApplication);
+            t.setParameter("sendingFacility", sendingFacility);
+        }
+        return th;
     }
 }
