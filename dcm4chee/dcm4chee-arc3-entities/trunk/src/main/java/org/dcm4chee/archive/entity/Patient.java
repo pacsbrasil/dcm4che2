@@ -52,16 +52,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import org.apache.log4j.Logger;
-import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.conf.AttributeFilter;
-import org.dcm4chee.archive.dao.OtherPatientIDHomeLocal;
 import org.dcm4chee.archive.exceptions.ConfigurationException;
 import org.dcm4chee.archive.util.DicomObjectUtils;
-import org.dcm4chee.archive.util.JNDIUtils;
 import org.hibernate.annotations.Cascade;
 
 /**
@@ -77,10 +73,6 @@ public class Patient implements Serializable {
 
     private static final long serialVersionUID = -1348274766865261645L;
     
-    private static final Logger logger = Logger.getLogger(Patient.class.getName());
-    
-    private transient OtherPatientIDHomeLocal opidDAO;
-
     // JPA definition in orm.xml
     private long pk;
 
@@ -434,79 +426,5 @@ public class Patient implements Serializable {
         }
 
         return null;
-    }
-    
-    public boolean updateOtherPatientIDs(DicomObject ds) {
-        DicomObject attrs = getAttributes();
-        DicomElement opidsq = attrs.remove(Tag.OtherPatientIDsSequence);
-        DicomElement nopidsq = ds.get(Tag.OtherPatientIDsSequence);
-        boolean update = false;
-        if (opidsq != null) {
-            for (int i = 0, n = opidsq.countItems(); i < n; i++) {
-                DicomObject opid = opidsq.getDicomObject(i);
-                String pid = opid.getString(Tag.PatientID);
-                String issuer = opid.getString(Tag.IssuerOfPatientID);
-                if (nopidsq == null || !containsPID(pid, issuer, nopidsq)) {
-                    OtherPatientID otherPatientId = getOpidDAO()
-                            .findByPatientIdAndIssuer(pid, issuer);
-                    getOtherPatientIDs().remove(otherPatientId);
-                    if (otherPatientId.getPatients().isEmpty()) {
-                        getOpidDAO().remove(otherPatientId);
-                    }
-                    update = true;
-                    logger.info("Remove Other Patient ID: " + pid + "^^^"
-                            + issuer + " from " + toString());
-                }
-            }
-        }
-        if (nopidsq != null) {
-            for (int i = 0, n = nopidsq.countItems(); i < n; i++) {
-                DicomObject nopid = nopidsq.getDicomObject(i);
-                String pid = nopid.getString(Tag.PatientID);
-                String issuer = nopid.getString(Tag.IssuerOfPatientID);
-                if (opidsq == null || !containsPID(pid, issuer, opidsq)) {
-                    getOtherPatientIDs().add(
-                            getOpidDAO().findOrCreate(pid, issuer));
-                    update = true;
-                    logger.info("Add additional Other Patient ID: " + pid
-                            + "^^^" + issuer + " to " + toString());
-                }
-            }
-            if (update) {
-                int numItems = nopidsq.countItems();
-                opidsq = attrs.putSequence(Tag.OtherPatientIDsSequence,
-                        numItems);
-                for (int i = 0, n = numItems; i < n; i++) {
-                    opidsq.addDicomObject(nopidsq.getDicomObject(i));
-                }
-            }
-        }
-        if (update) {
-            setAttributes(attrs);
-        }
-        return update;
-    }
-
-    private boolean containsPID(String pid, String issuer, DicomElement opidsq) {
-        for (int i = 0, n = opidsq.countItems(); i < n; i++) {
-            DicomObject opid = opidsq.getDicomObject(i);
-            if (opid.getString(Tag.PatientID).equals(pid)
-                    && opid.getString(Tag.IssuerOfPatientID).equals(issuer)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public OtherPatientIDHomeLocal getOpidDAO() {
-        if (opidDAO == null) {
-            opidDAO = (OtherPatientIDHomeLocal) JNDIUtils.lookup(OtherPatientIDHomeLocal.JNDI_NAME);
-        }
-        return opidDAO;
-    }
-
-    // setter mainly for use in standalone tests
-    public void setOpidDAO(OtherPatientIDHomeLocal opidDAO) {
-        this.opidDAO = opidDAO;
     }
 }
