@@ -45,6 +45,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
 import javax.ejb.EJBObject;
 import javax.ejb.FinderException;
+import javax.naming.NameNotFoundException;
 
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
@@ -79,7 +80,14 @@ public class FileSystemMgtResolver {
             } catch (NoClassDefFoundError e) {
                 isFileSystem2NotFound = true;
                 log.warn("Using old file system management.");
+            } catch(ClassNotFoundException e) {
+                isFileSystem2NotFound = true;
+                log.warn("Using old file system management.");
+            } catch(NameNotFoundException e) {
+                isFileSystem2NotFound = true;
+                log.warn("Using old file system management.");
             }
+            
         }
         log.debug("Could not find FileSystemMgt2 ejb, falling back to the dcm4chee 2.13.6 version");
         EJBHome home = (EJBHome) EJBServiceLocator.getInstance().getRemoteHome(host, port, "ejb/FileSystemMgt",

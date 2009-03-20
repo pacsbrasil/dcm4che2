@@ -84,10 +84,11 @@ public class EJBServiceLocator {
     * @throws NamingException
     */
    public static InitialContext getInitialContext(String host, String port) throws NamingException {
-       log.debug("getInitialContext host "+host+", port "+port);
        if (host.equals("localhost") && (port == null || port.equals(""))) {
+           log.debug("getInitialContext using default context.");
             return new InitialContext();
        }
+       log.debug("getInitialContext host "+host+", port "+port);
        Properties prop = new Properties();
        prop.put(Context.INITIAL_CONTEXT_FACTORY,
                "org.jnp.interfaces.NamingContextFactory");
@@ -125,9 +126,7 @@ public class EJBServiceLocator {
             cache.put(jndiHomeName, home);
          }
       } catch (NamingException ne) {
-         throw new RuntimeException(ne);
-      } catch (Exception e) {
-         throw new RuntimeException(e);
+         throw ne;
       }
       return home;
    }
