@@ -82,6 +82,13 @@
     </dependencySet>
     <dependencySet>
       <outputDirectory>server/default/lib</outputDirectory>
+      <outputFileNameMapping>dcm4che14.jar</outputFileNameMapping>
+      <includes>
+        <include>dcm4che:dcm4che14</include>
+      </includes>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>server/default/lib</outputDirectory>
       <outputFileNameMapping>ejb-client.jar</outputFileNameMapping>
       <includes>
         <include>dcm4chee:ejb-client</include>

@@ -122,6 +122,9 @@
       <priority value="WARN"/>
    </category>
 
+   <category name="com.agfa">
+      <priority value="WARN"/>
+   </category>
    <category name="org.dcm4chee.xero">
       <priority value="WARN"/>
    </category>
