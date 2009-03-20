@@ -80,5 +80,19 @@
         <include>org.dcm4chee.xero:wado2-war</include>
       </includes>
     </dependencySet>
+    <dependencySet>
+      <outputDirectory>server/default/lib</outputDirectory>
+      <outputFileNameMapping>ejb-client.jar</outputFileNameMapping>
+      <includes>
+        <include>dcm4chee:ejb-client</include>
+      </includes>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>server/default/lib</outputDirectory>
+      <outputFileNameMapping>ejb-client2.jar</outputFileNameMapping>
+      <includes>
+        <include>dcm4chee:ejb-client2</include>
+      </includes>
+    </dependencySet>
   </dependencySets>
 </assembly>
