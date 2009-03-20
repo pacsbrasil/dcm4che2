@@ -3,7 +3,7 @@
   <formats>
     <format>zip</format>
   </formats>
-  <baseDirectory>dcm4jboss-xero-${version}</baseDirectory>
+  <baseDirectory>xero-${version}</baseDirectory>
   <fileSets>
     <fileSet>
       <directory>src/main/resources</directory>
