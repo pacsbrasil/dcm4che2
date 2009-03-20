@@ -87,7 +87,12 @@ imageFilter.inherit=servletFilter
 imageFilter.jaxbFilter.sourceFilter=${ref:imageSource}
 
 imageSource.inherit=source
-imageSource.imageSearch=${class:org.dcm4chee.xero.search.study.ImageSearch}
+imageSource.imageSearch=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+imageSource.imageSearch.cfind=${class:org.dcm4chee.xero.search.study.ImageSearch}
+imageSource.imageSearch.hierarchicalImage=${class:org.dcm4chee.xero.search.HierarchicalSearchFilter}
+imageSource.imageSearch.hierarchicalImage.priority=5
+imageSource.imageSearch.hierarchicalImage.level=IMAGE
+
 imageSource.emptyFilter.searchParser=${class:org.dcm4chee.xero.search.study.ImageSearchConditionParser}
 imageSource.ko=${class:org.dcm4chee.xero.search.filter.KeyObjectFilter}
 imageSource.ko.priority=25
@@ -127,8 +132,12 @@ seriesFilter.inherit=servletFilter
 seriesFilter.jaxbFilter.sourceFilter=${ref:seriesSource}
 
 seriesSource.inherit=source
-seriesSource.seriesSearch=${class:org.dcm4chee.xero.search.study.SeriesSearch}
 seriesSource.emptyFilter.searchParser=${class:org.dcm4chee.xero.search.study.ImageSearchConditionParser}
+seriesSource.seriesSearch=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+seriesSource.seriesSearch.cfind=${class:org.dcm4chee.xero.search.study.SeriesSearch}
+seriesSource.seriesSearch.hierarchicalSeries=${class:org.dcm4chee.xero.search.HierarchicalSearchFilter}
+seriesSource.seriesSearch.hierarchicalSeries.priority=5
+
 seriesSource.kin=${class:org.dcm4chee.xero.search.filter.KeyObjectSeries}
 seriesSource.kin.priority=25
 seriesSource.sortFilter=${class:org.dcm4chee.xero.search.filter.SortImageFilter}
@@ -335,6 +344,6 @@ cfind.rename=${class:org.dcm4chee.xero.search.study.RenameAttributeFilter}
 cfind.audit=${class:org.dcm4chee.xero.search.filter.QueryAudit}
 cfind.audit.priority=9000
 cfind.blocked=${class:org.dcm4chee.xero.search.dicom.BlockedSearchFilter}
-cfind.blocked.study=${class:org.dcm4chee.xero.search.study.StudySearch}
-cfind.blocked.series=${class:org.dcm4chee.xero.search.study.SeriesSearch}
+cfind.blocked.study=${ref:studySource.studySearch}
+cfind.blocked.series=${ref:seriesSource.seriesSearch}
 cfind.blocked.image=${ref:imageSource.imageSearch}

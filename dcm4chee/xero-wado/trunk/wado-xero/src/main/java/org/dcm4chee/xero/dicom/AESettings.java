@@ -51,7 +51,8 @@ import org.dcm4chee.xero.search.DicomCFindFilter;
  */
 public class AESettings {
    
-   private String hostName;
+   public static final String HIERARCHICAL_ONLY = "hierarchicalOnly";
+private String hostName;
    private Integer port;
    private String remoteTitle;
    private String localTitle;

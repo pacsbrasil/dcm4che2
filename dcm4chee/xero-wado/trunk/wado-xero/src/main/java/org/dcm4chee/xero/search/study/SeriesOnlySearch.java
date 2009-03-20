@@ -52,7 +52,7 @@ import org.dcm4chee.xero.search.SearchCriteria;
  *
  * @author bwallace
  */
-public class SeriesSearch extends StudySearch{
+public class SeriesOnlySearch extends StudySearch{
 
 	static final String SERIES_SEARCH_LEVEL = "SERIES";
 	
@@ -74,10 +74,6 @@ public class SeriesSearch extends StudySearch{
     
     protected static Set<Integer> returnKeys = new HashSet<Integer>(Arrays.asList(SERIES_RETURN_KEYS));
     
-    static {
-    	returnKeys.addAll(StudySearch.returnKeys);
-    }
-
 	@Override
 	protected String[] getCuids() {
 		return (String[])SOPClassUIDs.CFindSeriesLevel.toArray();
@@ -90,7 +86,7 @@ public class SeriesSearch extends StudySearch{
 
 	@Override
 	protected Set<Integer> getReturnKeys() {
-		return SeriesSearch.returnKeys;
+		return SeriesOnlySearch.returnKeys;
 	}
 
 	/**

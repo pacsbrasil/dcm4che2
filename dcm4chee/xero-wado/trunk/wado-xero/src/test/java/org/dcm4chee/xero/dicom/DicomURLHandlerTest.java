@@ -46,6 +46,7 @@ import java.util.Map;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4chee.xero.search.AEProperties;
 import org.testng.annotations.Test;
 
 
@@ -74,7 +75,7 @@ public class DicomURLHandlerTest
 
       URL dicomURL = handler.createURL(params);
       assertEquals(dicomURL.getProtocol(),"dicom");
-      assertEquals(dicomURL.getHost(),"DCM4CHEE@marlin");
+      assertEquals(dicomURL.getHost(),"cmoveType@marlin");
       assertEquals(dicomURL.getPort(),11112);
       assertTrue(dicomURL.getQuery().contains("objectUID="+expectedObjectUID));
    }
@@ -123,7 +124,7 @@ public class DicomURLHandlerTest
 
       URL dicomURL = handler.createURL(params);
       assertEquals(dicomURL.getProtocol(),"dicom");
-      assertEquals(dicomURL.getHost(),"DCM4CHEE@marlin");
+      assertEquals(dicomURL.getHost(),"cmoveType@marlin");
       assertEquals(dicomURL.getPort(),11112);
       assertEquals(dicomURL.getQuery(),null);
    }

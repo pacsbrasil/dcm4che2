@@ -87,11 +87,11 @@ public class DicomURLHandler // Manipulator?
    {
       Map<String,Object> ae = AEProperties.getAE(filterParams);
 
-      String aeTitle = (String)ae.get(AEProperties.AE_TITLE_KEY);
+      String name = (String) ae.get(AEProperties.AE_PROPERTY_NAME);
       String host = (String)ae.get(AEProperties.AE_HOST_KEY);
       int port = (Integer)ae.get(AEProperties.AE_PORT_KEY);
       
-      String aeAndHost = String.format("%s@%s", aeTitle,host);
+      String aeAndHost = String.format("%s@%s", name,host);
       String queryStr = extractQueryStr(filterParams);
       
       return new URL("dicom",aeAndHost,port,"/"+queryStr,handler);

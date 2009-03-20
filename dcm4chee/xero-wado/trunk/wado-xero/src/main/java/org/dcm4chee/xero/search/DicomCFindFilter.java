@@ -194,7 +194,8 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     	Iterator<Integer> it = returnKeys.iterator();
     	while (it.hasNext())
     	{
-     		ret.putNull(it.next().intValue(),null);
+    	    int tag = it.next().intValue();
+     		ret.putNull(tag,null);
     	}
     	Map<String,TableColumn> searchCondition = searchCriteria.getAttributeByName();
     	for(String key : searchCondition.keySet()) {
@@ -321,9 +322,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 		AESettings settings = null;
 		
 		String name = (String) params.get("ae");
-		
-        ResultFromDicom resultFromDicom = (ResultFromDicom) params.get(EXTEND_RESULTS_KEY);
-        if( resultFromDicom==null ) resultFromDicom = new ResultsBean();
+		ResultFromDicom resultFromDicom = getResultFromDicom(params);
         
 		if (name != null )   {
 		   if (aeConCache.containsKey(name))   {
@@ -335,13 +334,6 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 		} else    {
 		   settings = aeConCache.get("local");
 		}
-		if( resultFromDicom instanceof RecordsAE ) {
-		   ((RecordsAE) resultFromDicom).setAe(name);
-		}
-		if( settings.getDefaultIssuer()!=null && 
-		        (resultFromDicom instanceof ResultsBean) ) {
-		    ((ResultsBean) resultFromDicom).setDefaultIssuer(settings.getDefaultIssuer());
-		}
 		
 		int maxResults = FilterUtil.getInt(params,"maxResults",DEFAULT_MAX_RESULTS);
 		SearchCriteria searchCriteria= searchParser.filter(null,params);
@@ -352,6 +344,23 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 		cfind(searchCriteria, resultFromDicom, new AEConnection (getCuids(),settings), maxResults);
 		log.debug("Found result(s) - returning from filter.");
 		return resultFromDicom;
+	}
+	
+	/** Handles creating the results bean, given the ae information */
+	public static ResultFromDicom getResultFromDicom(Map<String,Object> params) {
+        ResultFromDicom resultFromDicom = (ResultFromDicom) params.get(EXTEND_RESULTS_KEY);
+        if( resultFromDicom==null ) resultFromDicom = new ResultsBean();
+        Map<String,Object> ae = AEProperties.getAE(params);
+        String name = (String) ae.get(AEProperties.AE_PROPERTY_NAME);
+        String defaultIssuer = (String) ae.get(AEProperties.DEFAULT_ISSUER);
+        
+        if( resultFromDicom instanceof RecordsAE ) {
+            ((RecordsAE) resultFromDicom).setAe(name);
+         }
+         if( defaultIssuer!=null && (resultFromDicom instanceof ResultsBean) ) {
+             ((ResultsBean) resultFromDicom).setDefaultIssuer(defaultIssuer);
+         }
+         return resultFromDicom;
 	}
 
 	private Filter<SearchCriteria> searchParser;

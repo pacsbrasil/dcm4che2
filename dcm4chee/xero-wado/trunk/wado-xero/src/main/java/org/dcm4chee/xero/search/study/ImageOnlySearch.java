@@ -37,61 +37,46 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Arrays;
 
 import org.dcm4che2.data.Tag;
-import org.dcm4chee.xero.dicom.SOPClassUIDs;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.search.SearchCriteria;
 
-/** A C-Find searcher for series level data.
- * Uses the private SOP classes to get all the available series level data, if these are supported.
- *
+/** Search for image level information.
+ * There isn't an image specific query, so just extend the SeriesSearch as 
+ * needed.
  * @author bwallace
+ *
  */
-public class SeriesSearch extends StudySearch{
+public class ImageOnlySearch extends SeriesSearch 
+{
+	public static final String IMAGE_QUERY_LEVEL="IMAGE";
+	public static final int InstanceSeq =  0x7FD90040;
 
-	static final String SERIES_SEARCH_LEVEL = "SERIES";
+	public static final Integer[] IMAGE_LEVEL_RETURN_KEYS = {
+        Tag.InstanceNumber,
+        Tag.SOPClassUID,
+        Tag.SOPInstanceUID,
+        Tag.Rows, Tag.Columns, Tag.WindowCenter, Tag.WindowWidth, Tag.NumberOfFrames,
+        InstanceSeq
+	};
+
+    protected static Set<Integer> returnKeys = new HashSet<Integer>(Arrays.asList(IMAGE_LEVEL_RETURN_KEYS));
 	
-    public static final Integer[] SERIES_RETURN_KEYS = {
-    	Tag.Modality,
-        Tag.SeriesNumber,
-        Tag.SeriesInstanceUID,
-        Tag.NumberOfSeriesRelatedInstances,
-        Tag.Manufacturer,
-        Tag.InstitutionName,
-        Tag.PerformingPhysicianName,
-        Tag.StationName,
-        Tag.SeriesDate,
-        Tag.SeriesTime,
-        Tag.OperatorName,
-        Tag.InstitutionalDepartmentName,
-        Tag.ManufacturerModelName,
-        Tag.RequestingPhysician};
-    
-    protected static Set<Integer> returnKeys = new HashSet<Integer>(Arrays.asList(SERIES_RETURN_KEYS));
-    
-    static {
-    	returnKeys.addAll(StudySearch.returnKeys);
-    }
-
-	@Override
-	protected String[] getCuids() {
-		return (String[])SOPClassUIDs.CFindSeriesLevel.toArray();
-	}
-
 	@Override
 	protected String getQueryLevel() {
-		return SERIES_SEARCH_LEVEL;
+		return IMAGE_QUERY_LEVEL;
 	}
 
 	@Override
 	protected Set<Integer> getReturnKeys() {
-		return SeriesSearch.returnKeys;
+		return ImageOnlySearch.returnKeys;
 	}
+
 
 	/**
 	 * Set the filter that determines the search criteria to use for this query.
@@ -103,5 +88,4 @@ public class SeriesSearch extends StudySearch{
 	public void setSearchParser(Filter<SearchCriteria> searchParser) {
    	super.setSearchParser(searchParser);
    }
-
 }

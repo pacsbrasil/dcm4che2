@@ -59,7 +59,7 @@ public class StudySearch extends DicomCFindFilter {
  
  
     // TODO - generate this list dynamically from the contents of the class...
-    static protected final Integer[] STUDY_RETURN_KEYS = {
+    public static final Integer[] STUDY_RETURN_KEYS = {
         Tag.PatientID,
         Tag.PatientName,
 		Tag.PatientBirthDate, 

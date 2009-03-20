@@ -81,6 +81,9 @@ public class AEProperties {
     * ae properties file name, but the DICOM name
     */
    public static final String LOCAL_TITLE = "localTitle";
+   
+   /** The name of hte AE property file. */
+   public static final String AE_PROPERTY_NAME = "_aePropertyName";
 
    /** Set this property to control which issuer is the default one */
    public static final String DEFAULT_ISSUER = "defaultIssuer";
@@ -120,6 +123,7 @@ public class AEProperties {
       temp.put(AE_PORT_KEY, 11112);
       temp.put(AE_TITLE_KEY, "DCM4CHEE");
       temp.put(LOCAL_TITLE, "XERO");
+      temp.put(AE_PROPERTY_NAME, "local");
       defaultProperties = Collections.unmodifiableMap(temp);
    }
 
@@ -152,6 +156,7 @@ public class AEProperties {
                Map<String, Object> map = (Map<String,Object>) mprops;
                map.put(AE_PORT_KEY, Integer.parseInt(aeport));
                map.put("ejbport", Integer.parseInt(ejbport));
+               map.put(AE_PROPERTY_NAME, aePath);
 
                remoteProperties
                      .putIfAbsent(aePath, map);
