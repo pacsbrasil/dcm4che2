@@ -98,8 +98,8 @@ $Revision: 5212 $
        <authentication>
           <login-module code="org.jboss.security.auth.spi.UsersRolesLoginModule"
              flag="required">
-             <module-option name="usersProperties">props/dcm4jboss-xero-users.properties</module-option>
-             <module-option name="rolesProperties">props/dcm4jboss-xero-roles.properties</module-option>
+             <module-option name="usersProperties">props/xero-users.properties</module-option>
+             <module-option name="rolesProperties">props/xero-roles.properties</module-option>
           </login-module>
        </authentication>
     </application-policy>
@@ -108,8 +108,8 @@ $Revision: 5212 $
        <authentication>
           <login-module code="org.jboss.security.auth.spi.UsersRolesLoginModule"
              flag="required">
-             <module-option name="usersProperties">props/dcm4jboss-xero-users.properties</module-option>
-             <module-option name="rolesProperties">props/dcm4jboss-xero-roles.properties</module-option>
+             <module-option name="usersProperties">props/xero-users.properties</module-option>
+             <module-option name="rolesProperties">props/xero-roles.properties</module-option>
           </login-module>
        </authentication>
     </application-policy>
@@ -122,8 +122,8 @@ $Revision: 5212 $
        <authentication>
           <login-module code="org.jboss.security.auth.spi.UsersRolesLoginModule"
              flag="required">
-             <module-option name="usersProperties">props/dcm4jboss-xero-users.properties</module-option>
-             <module-option name="rolesProperties">props/dcm4jboss-xero-roles.properties</module-option>
+             <module-option name="usersProperties">props/xero-users.properties</module-option>
+             <module-option name="rolesProperties">props/xero-roles.properties</module-option>
           </login-module>
        </authentication>
     </application-policy>
@@ -162,8 +162,8 @@ $Revision: 5212 $
        <authentication>
           <login-module code="org.jboss.security.auth.spi.UsersRolesLoginModule"
              flag="required">
-             <module-option name="usersProperties">props/dcm4jboss-xero-users.properties</module-option>
-             <module-option name="rolesProperties">props/dcm4jboss-xero-roles.properties</module-option>
+             <module-option name="usersProperties">props/xero-users.properties</module-option>
+             <module-option name="rolesProperties">props/xero-roles.properties</module-option>
           </login-module>
        </authentication>
     </application-policy>
