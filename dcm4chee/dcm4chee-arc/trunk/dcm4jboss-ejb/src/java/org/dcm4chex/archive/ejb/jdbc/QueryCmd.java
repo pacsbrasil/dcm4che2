@@ -580,24 +580,26 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     }
 
     private void addOtherPatientSeq(Dataset ds, Dataset keys)
-    		throws SQLException {
-    	DcmElement sq = keys.get(Tags.OtherPatientIDSeq);
-    	if (sq != null) {
-    		AttributeFilter patientFilter = AttributeFilter.getPatientAttributeFilter();
-    		Dataset patientAttrs = patientFilter.filter(ds);
-    		checkPatAttrs(patientAttrs);
-    		if ( coercePatientIds ) {
-    			if (log.isDebugEnabled()) {
-    				log.debug("PatientID in response:"
-    						+ keys.getString(Tags.PatientID) + "^"
-    						+ keys.getString(Tags.IssuerOfPatientID));
-    				log.debug("PatientID of match:" + ds.getString(Tags.PatientID)
-    						+ "^" + ds.getString(Tags.IssuerOfPatientID));
-    			}
-    			ds.putAll(keys.subSet(new int[] { Tags.PatientID,
-    					Tags.IssuerOfPatientID, Tags.OtherPatientIDSeq }));
-    		}
-    	}
+            throws SQLException {
+        DcmElement sq = keys.get(Tags.OtherPatientIDSeq);
+        if (sq != null) {
+            AttributeFilter patientFilter = AttributeFilter
+                    .getPatientAttributeFilter();
+            Dataset patientAttrs = patientFilter.filter(ds);
+            checkPatAttrs(patientAttrs);
+            if (coercePatientIds) {
+                if (log.isDebugEnabled()) {
+                    log.debug("PatientID in response:"
+                            + keys.getString(Tags.PatientID) + "^"
+                            + keys.getString(Tags.IssuerOfPatientID));
+                    log.debug("PatientID of match:"
+                            + ds.getString(Tags.PatientID) + "^"
+                            + ds.getString(Tags.IssuerOfPatientID));
+                }
+                ds.putAll(keys.subSet(new int[] { Tags.PatientID,
+                        Tags.IssuerOfPatientID, Tags.OtherPatientIDSeq }));
+            }
+        }
     }
 
     private void checkPatAttrs(Dataset ds) throws SQLException {
