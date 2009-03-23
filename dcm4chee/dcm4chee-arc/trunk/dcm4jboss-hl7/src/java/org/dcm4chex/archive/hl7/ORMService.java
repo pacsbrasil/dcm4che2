@@ -44,7 +44,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -86,7 +85,7 @@ public class ORMService extends AbstractHL7Service {
         "SC(SCHEDULED)", "SC(ARRIVED)", "SC(READY)", "SC(STARTED)",
         "SC(COMPLETED)", "SC(DISCONTINUED)" };
     
-    private static final List OP_CODES_LIST = Arrays.asList(OP_CODES);
+    private static final List<String> OP_CODES_LIST = Arrays.asList(OP_CODES);
 
     private static final int NW = 0;
 
@@ -98,7 +97,7 @@ public class ORMService extends AbstractHL7Service {
     
     private static final int SC_OFF = 4;
 
-    private List orderControls;
+    private List<String> orderControls;
     
     private int[] ops = {};
     
@@ -141,7 +140,7 @@ public class ORMService extends AbstractHL7Service {
         StringTokenizer stk = new StringTokenizer(s, " \r\n\t,;");
         int lines = stk.countTokens();
         int[] newops = new int[lines];
-        List newocs = new ArrayList(lines);
+        List<String> newocs = new ArrayList<String>(lines);
         for (int i = 0; i < lines; i++) {
             String[] ocop = StringUtils.split(stk.nextToken(), ':');
             if (ocop.length != 2
@@ -267,20 +266,20 @@ public class ORMService extends AbstractHL7Service {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void updateRequestAttributes(Dataset mwlitem,
             MWLManager mwlManager) throws Exception {
         MPPSManager mppsManager = getMPPSManager();
-        List mppsList = mppsManager.updateScheduledStepAttributes(mwlitem);
+        List<Dataset> mppsList = mppsManager.updateScheduledStepAttributes(mwlitem);
         if (!mppsList.isEmpty()) {
-            updateSPSStatus(mwlitem, (Dataset) mppsList.get(0), mwlManager);
+            updateSPSStatus(mwlitem, mppsList.get(0), mwlManager);
             updateRequestAttributesInSeries(mwlitem, mppsList, mppsManager);
         }
     }
 
-    private void updateRequestAttributesInSeries(Dataset mwlitem, List mppsList,
-            MPPSManager mppsManager) throws Exception {
-        for (Iterator it = mppsList.iterator(); it.hasNext();) {
-            Dataset mpps = (Dataset) it.next();
+    private void updateRequestAttributesInSeries(Dataset mwlitem,
+            List<Dataset> mppsList, MPPSManager mppsManager) throws Exception {
+        for (Dataset mpps : mppsList) {
             String aet = mpps.getString(Tags.PerformedStationAET);
             Templates xslt = templates.getTemplatesForAET(aet, MWL2STORE_XSL);
             if (xslt == null) {
@@ -357,21 +356,22 @@ public class ORMService extends AbstractHL7Service {
                 MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME)).create();
     }
 
+    @SuppressWarnings("unchecked")
     private int[] toOp(Document msg) throws HL7Exception {
         Element rootElement = msg.getRootElement();
-        List orcs = rootElement.elements("ORC");
-        List obrs = rootElement.elements("OBR");
+        List<Element> orcs = rootElement.elements("ORC");
+        List<Element> obrs = rootElement.elements("OBR");
         if (orcs.isEmpty()) {
             throw new HL7Exception("AR", "Missing ORC Segment");                             
         }
         int[] op = new int[orcs.size()];
         for (int i = 0; i < op.length; i++) {           
-            List orc = ((Element) orcs.get(i)).elements("field");
+            List<Element> orc = orcs.get(i).elements("field");
             String orderControl = getText(orc, 0);
             String orderStatus = getText(orc, 4);
             if (orderStatus.length() == 0 && obrs.size() > i) {
                 // use Result Status (OBR-25), if no Order Status (ORC-5);
-                List obr = ((Element) obrs.get(i)).elements("field");
+                List<Element> obr = obrs.get(i).elements("field");
                 orderStatus = getText(obr, 24);
             }
             op[i] = toOp(orderControl, orderStatus);
@@ -392,9 +392,9 @@ public class ORMService extends AbstractHL7Service {
         return ops[opIndex];
     }
 
-    private String getText(List fields, int i) throws HL7Exception {
+    private String getText(List<Element> fields, int i) throws HL7Exception {
         try {
-            return ((Element) fields.get(i)).getText();
+            return fields.get(i).getText();
         } catch (IndexOutOfBoundsException e) {
             return "";
         }
@@ -474,7 +474,7 @@ public class ORMService extends AbstractHL7Service {
     private void mergeProtocolCodes(Dataset orm, int[] op) {
         DcmElement prevSpsSq = orm.remove(Tags.SPSSeq);
         DcmElement newSpsSq = orm.putSQ(Tags.SPSSeq);
-        HashMap spcSqMap = new HashMap();
+        HashMap<String,DcmElement> spcSqMap = new HashMap<String,DcmElement>();
         DcmElement spcSq0, spcSqI;
         Dataset sps;
         String spsid;
@@ -482,7 +482,7 @@ public class ORMService extends AbstractHL7Service {
             sps = prevSpsSq.getItem(i);
             spsid = sps.getString(Tags.SPSID);
             spcSqI = sps.get(Tags.ScheduledProtocolCodeSeq);
-            spcSq0 = (DcmElement) spcSqMap.get(spsid);
+            spcSq0 = spcSqMap.get(spsid);
             if (spcSq0 != null) {
                 spcSq0.addItem(spcSqI.getItem());
             } else {
