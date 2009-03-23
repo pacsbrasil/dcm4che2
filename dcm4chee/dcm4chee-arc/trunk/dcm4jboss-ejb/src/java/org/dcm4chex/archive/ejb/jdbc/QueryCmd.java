@@ -41,7 +41,6 @@ package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -153,7 +152,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     private boolean otherPatientIDMatchNotSupported = false;
 
-    private HashMap chkPatAttrs;
+    private HashMap<String,Dataset> chkPatAttrs;
 
     private boolean coercePatientIds = false;
 
@@ -605,24 +604,25 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     private void checkPatAttrs(Dataset ds) throws SQLException {
         String key = getPatIdString(ds);
         if (chkPatAttrs == null) {
-            chkPatAttrs = new HashMap();
+            chkPatAttrs = new HashMap<String,Dataset>();
             chkPatAttrs.put(key, ds);
         } else if (!chkPatAttrs.containsKey(key)) {
-            for (Iterator iter = chkPatAttrs.values().iterator(); iter
-                    .hasNext();) {
-                logDiffs(ds, (Dataset) iter.next(), key);
+            for (Dataset checkDs : chkPatAttrs.values()) {
+                logDiffs(ds, checkDs, key);
+                
             }
             chkPatAttrs.put(key, ds);
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void logDiffs(Dataset ds, Dataset ds1, String dsPrefix) {
         DcmElement elem, elem1;
         int tag;
         String ds1Prefix = getPatIdString(ds1);
-        for (Iterator iter = ds.subSet(ATTR_IGNORE_DIFF_LOG, true, false)
+        for (Iterator<DcmElement> iter = ds.subSet(ATTR_IGNORE_DIFF_LOG, true, false)
                 .iterator(); iter.hasNext();) {
-            elem = (DcmElement) iter.next();
+            elem = iter.next();
             tag = elem.tag();
             elem1 = ds1.get(tag);
             if (log.isDebugEnabled())
@@ -878,7 +878,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     public static class ImageQueryCmd extends QueryCmd {
 
-        HashMap seriesAttrsCache = new HashMap();
+        HashMap<String,Dataset> seriesAttrsCache =
+                new HashMap<String,Dataset>();
 
         protected ImageQueryCmd(Dataset keys, boolean filterResult,
                 boolean noMatchForNoValue,
@@ -964,18 +965,11 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
 
         protected String[] getLeftJoin() {
-            ArrayList list = new ArrayList(12);
-            if (isMatchSrCode()) {
-                list.add("Code");
-                list.add(SR_CODE);
-                list.add("Instance.srcode_fk");
-                list.add("Code.pk");
-            }
-            list.add("Media");
-            list.add(null);
-            list.add("Instance.media_fk");
-            list.add("Media.pk");
-            return (String[]) list.toArray(new String[list.size()]);
+            return isMatchSrCode() ? new String[] {
+                        "Code", SR_CODE, "Instance.srcode_fk", "Code.pk",
+                        "Media", null, "Instance.srcode_fk", "Media.pk" }
+                    : new String[] {
+                        "Media", null, "Instance.srcode_fk", "Media.pk" };
         }
 
         protected String[] getRelations() {

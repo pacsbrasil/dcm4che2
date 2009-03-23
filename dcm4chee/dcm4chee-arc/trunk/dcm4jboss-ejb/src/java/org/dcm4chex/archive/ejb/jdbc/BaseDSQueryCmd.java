@@ -59,7 +59,8 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
     /** Contains all supported matching keys of the 'root' Dataset (have to include Seq.Tag if match is supported in SQ)  */
     protected final IntList matchingKeys= new IntList();
     /** Contains supported matching keys of sequence Items. key=SQ tag, value=list of supported tags) */
-    protected final HashMap seqMatchingKeys = new HashMap();
+    protected final HashMap<Integer,IntList> seqMatchingKeys =
+            new HashMap<Integer,IntList>();
 
     protected final SqlBuilder sqlBuilder = new SqlBuilder();
 
@@ -110,11 +111,12 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
      * 
      * @return true if an unsupported key is found.
      */
+    @SuppressWarnings("unchecked")
     protected boolean findUnsupportedMatchingKey(Dataset ds, IntList matchingKeys) {
         DcmElement el;
         int tag;
-        for ( Iterator iter=ds.iterator() ; iter.hasNext() ; ) {
-            el = (DcmElement) iter.next();
+        for ( Iterator<DcmElement> iter = ds.iterator() ; iter.hasNext() ; ) {
+            el = iter.next();
             tag = el.tag();
             if (el.isEmpty() || tag == Tags.SpecificCharacterSet
                     || Tags.isPrivate(tag)) {
@@ -127,7 +129,7 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
                 }
             } else {
                 IntList il = matchingKeys.contains(tag) ? //is matching of this sequence allowed?
-                        (IntList)seqMatchingKeys.get(new Integer(tag)) : null;
+                        seqMatchingKeys.get(new Integer(tag)) : null;
                 for ( int i=0; i<el.countItems() ; i++ ) {
                     if( findUnsupportedMatchingKey(el.getItem(i),il) ) {
                         log.warn("QueryCmd: Unsupported matching key found in SQ "+el);
@@ -139,9 +141,10 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
         return false;
     }
     
+    @SuppressWarnings("unchecked")
     protected void adjustDataset(Dataset ds, Dataset keys) {
-        for (Iterator it = keys.iterator(); it.hasNext();) {
-            DcmElement key = (DcmElement) it.next();
+        for (Iterator<DcmElement> it = keys.iterator(); it.hasNext();) {
+            DcmElement key = it.next();
             final int tag = key.tag();
             if (tag == Tags.SpecificCharacterSet || Tags.isPrivate(tag))
                 continue;
