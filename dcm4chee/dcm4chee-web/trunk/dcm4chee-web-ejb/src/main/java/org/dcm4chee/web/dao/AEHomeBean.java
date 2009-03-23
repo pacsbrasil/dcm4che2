@@ -59,14 +59,12 @@ public class AEHomeBean implements AEHomeLocal {
     private EntityManager em;
 
     @SuppressWarnings("unchecked")
-    @Override
     public List<String> listAETitles() {
         return em.createQuery("SELECT ae.title FROM AE ae ORDER BY ae.title")
                 .getResultList();
     }
 
     @SuppressWarnings("unchecked")
-    @Override
     public List<AE> findAll() {
         return em.createQuery("FROM AE ae ORDER BY ae.title")
                 .getResultList();
