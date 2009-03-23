@@ -58,7 +58,6 @@ import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.common.SecurityUtils;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
-import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
 import org.dcm4chex.archive.ejb.jdbc.Match.Node;
 
 /**
@@ -602,17 +601,17 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     }
 
     private void checkPatAttrs(Dataset ds) throws SQLException {
-    	String key = getPatIdString(ds);
-    	if (chkPatAttrs == null) {
-    		chkPatAttrs = new HashMap();
-    		chkPatAttrs.put(key, ds);
-    	} else if (!chkPatAttrs.containsKey(key)) {
-    		for (Iterator iter = chkPatAttrs.values().iterator(); iter
-    		.hasNext();) {
-    			logDiffs(ds, (Dataset) iter.next(), key);
-    		}
-    		chkPatAttrs.put(key, ds);
-    	}
+        String key = getPatIdString(ds);
+        if (chkPatAttrs == null) {
+            chkPatAttrs = new HashMap();
+            chkPatAttrs.put(key, ds);
+        } else if (!chkPatAttrs.containsKey(key)) {
+            for (Iterator iter = chkPatAttrs.values().iterator(); iter
+                    .hasNext();) {
+                logDiffs(ds, (Dataset) iter.next(), key);
+            }
+            chkPatAttrs.put(key, ds);
+        }
     }
 
     private void logDiffs(Dataset ds, Dataset ds1, String dsPrefix) {
