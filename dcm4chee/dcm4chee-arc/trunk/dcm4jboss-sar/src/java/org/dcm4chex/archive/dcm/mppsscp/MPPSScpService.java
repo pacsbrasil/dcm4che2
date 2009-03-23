@@ -90,19 +90,19 @@ public class MPPSScpService extends AbstractScpService {
 
     public static final String EVENT_TYPE_MPPS_RECEIVED = "org.dcm4chex.archive.dcm.mppsscp";
     public static final String EVENT_TYPE_MPPS_LINKED = "org.dcm4chex.archive.dcm.mppsscp#linked";
-    
+
     public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
 
-		private static final long serialVersionUID = 3688507684001493298L;
+        private static final long serialVersionUID = 3688507684001493298L;
 
-		public boolean isNotificationEnabled(Notification notif) {
+        public boolean isNotificationEnabled(Notification notif) {
             return EVENT_TYPE_MPPS_RECEIVED.equals(notif.getType());
         }
     };
 
     //should be the same as in StoreSCP.
     private static final String MWL2STORE_XSL = "mwl-cfindrsp2cstorerq.xsl";
-    
+
     private MPPSScp mppsScp = new MPPSScp(this);
 
     protected void bindDcmServices(DcmServiceRegistry services) {
@@ -117,18 +117,18 @@ public class MPPSScpService extends AbstractScpService {
         policy.putPresContext(UIDs.ModalityPerformedProcedureStep,
                 valuesToStringArray(tsuidMap));
     }
-    
+
     protected void disablePresContexts(AcceptorPolicy policy) {
         policy.putPresContext(UIDs.ModalityPerformedProcedureStep, null);
     }
-    
+
     void sendMPPSNotification(Dataset ds, String eventType) {
         long eventID = super.getNextNotificationSequenceNumber();
         Notification notif = new Notification(eventType, this, eventID);
         notif.setUserData(ds);
         super.sendNotification(notif);
     }
-    
+
     /**
      * Link MPPS entries to local available MWL entries.
      * 
@@ -240,13 +240,13 @@ public class MPPSScpService extends AbstractScpService {
                     log.error("Cant coerce MWL attributes to series)",x);
                 }
                 if ( i == 0 ) {
-                   sendMPPSNotification((Dataset) map.get("mppsAttrs"), MPPSScpService.EVENT_TYPE_MPPS_LINKED);
+                    sendMPPSNotification((Dataset) map.get("mppsAttrs"), MPPSScpService.EVENT_TYPE_MPPS_LINKED);
                 }
             } //MPPS loop
         }//SPS loop
         ArrayList studyDsN = updateStudySeries(mgr, mapCoercedSeries);
         map.put("StudyMgtDS",studyDsN);
-      
+
         if ( dominant != null ) {
             Dataset[] priorPats = (Dataset[])mapPrior.values().toArray(new Dataset[mapPrior.size()]);
             map.put("dominant", dominant );
@@ -279,7 +279,7 @@ public class MPPSScpService extends AbstractScpService {
         }
         return studyDsN;
     }
-    
+
     private Dataset getCoercionDS(Dataset ds) throws InstanceNotFoundException, MBeanException, ReflectionException {
         if ( ds == null ) return null;        
         Dataset sps = ds.getItem(Tags.SPSSeq);
@@ -298,23 +298,23 @@ public class MPPSScpService extends AbstractScpService {
         }
         return out;
     }
-    
+
     public void unlinkMpps(String mppsIUID) throws RemoteException, CreateException, HomeFactoryException, FinderException {
         MPPSManager mgr = getMPPSManagerHome().create();
-    	Dataset mppsAttrs = mgr.unlinkMpps(mppsIUID);
-    	if (auditLogger.isAuditLogIHEYr4())
-    	    return;
-    	DcmElement ssaSQ = mppsAttrs.get(Tags.ScheduledStepAttributesSeq);
-    	String spsID;
-    	StringBuffer sb = new StringBuffer();
-    	sb.append("Unlink MPPS iuid:").append(mppsAttrs.getString(Tags.SOPInstanceUID)).append(" from SPS ID(s): ");
-    	for (int i = 0 ,len = ssaSQ.countItems() ; i < len ; i++) {
-    	    spsID = ssaSQ.getItem(i).getString(Tags.SPSID);
-    	    sb.append(spsID).append(", ");
+        Dataset mppsAttrs = mgr.unlinkMpps(mppsIUID);
+        if (auditLogger.isAuditLogIHEYr4())
+            return;
+        DcmElement ssaSQ = mppsAttrs.get(Tags.ScheduledStepAttributesSeq);
+        String spsID;
+        StringBuffer sb = new StringBuffer();
+        sb.append("Unlink MPPS iuid:").append(mppsAttrs.getString(Tags.SOPInstanceUID)).append(" from SPS ID(s): ");
+        for (int i = 0 ,len = ssaSQ.countItems() ; i < len ; i++) {
+            spsID = ssaSQ.getItem(i).getString(Tags.SPSID);
+            sb.append(spsID).append(", ");
         }
         logProcedureRecord(mppsAttrs, ssaSQ.getItem().getString(Tags.AccessionNumber), sb.substring(0,sb.length()-2));
     }
-    
+
     public void logMppsLinkRecord(Map map, String spsID, String mppsIUID ) {
         Dataset mppsAttrs = (Dataset) map.get("mppsAttrs");
         Dataset mwlAttrs = (Dataset) map.get("mwlAttrs");
@@ -324,18 +324,18 @@ public class MPPSScpService extends AbstractScpService {
                 server.invoke(auditLogger.getAuditLoggerName(),
                         "logProcedureRecord",
                         new Object[] { "Modify", 
-                		mppsAttrs.getString(Tags.PatientID), 
-                		mppsAttrs.getString(Tags.PatientName),
-                		mwlAttrs.getString(Tags.PlacerOrderNumber), 
-                		mwlAttrs.getString(Tags.FillerOrderNumber), 
-                		mppsAttrs.getItem(Tags.ScheduledStepAttributesSeq).getString(Tags.StudyInstanceUID), 
-    					mwlAttrs.getString(Tags.AccessionNumber),
-    					desc},
-                        new String[] { String.class.getName(),
-                                String.class.getName(), String.class.getName(),
-                                String.class.getName(), String.class.getName(),
-                                String.class.getName(), String.class.getName(),
-                                String.class.getName()});
+                    mppsAttrs.getString(Tags.PatientID), 
+                    mppsAttrs.getString(Tags.PatientName),
+                    mwlAttrs.getString(Tags.PlacerOrderNumber), 
+                    mwlAttrs.getString(Tags.FillerOrderNumber), 
+                    mppsAttrs.getItem(Tags.ScheduledStepAttributesSeq).getString(Tags.StudyInstanceUID), 
+                    mwlAttrs.getString(Tags.AccessionNumber),
+                    desc},
+                    new String[] { String.class.getName(),
+                    String.class.getName(), String.class.getName(),
+                    String.class.getName(), String.class.getName(),
+                    String.class.getName(), String.class.getName(),
+                    String.class.getName()});
             } catch (Exception e) {
                 log.warn("Failed to log procedureRecord:", e);
             }
@@ -366,7 +366,7 @@ public class MPPSScpService extends AbstractScpService {
             study.addParticipantObjectDetail("Description", desc);
             msg.validate();
             Logger.getLogger("auditlog").info(msg);
-         } catch (Exception x) {
+        } catch (Exception x) {
             log.warn("Audit Log 'Procedure Record' failed:", x);
         }
     }
@@ -375,5 +375,5 @@ public class MPPSScpService extends AbstractScpService {
         return (MPPSManagerHome) EJBHomeFactory.getFactory().lookup(
                 MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME);
     }
-    
+
 }
