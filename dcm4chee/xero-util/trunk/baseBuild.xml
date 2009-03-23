@@ -24,6 +24,8 @@
   <property name="integration.server.service" value="DCM4CHEE Image Archive" />
 
   <property name="jmeterhome" location="${integration.cdp}/jmeter" />
+  
+  <property name="jmeter.user.classpath" value="" />
 
   <property name="testPackage" value="cdp-integration" />
 
@@ -276,6 +278,7 @@
      <jmeter jmeterhome="${jmeterhome}"
         resultlogdir="${basedir}/target">
 	<testplans refid="integration.scripts"/>
+	<property name="user.classpath" value="${jmeter.user.classpath}" />
         <property name="SERVER" value="${integration.server}" />
         <property name="integration.cdp" value="${integration.cdp}" />
 	<property name="includecontroller.prefix" value="${integration.cdp}/" />
