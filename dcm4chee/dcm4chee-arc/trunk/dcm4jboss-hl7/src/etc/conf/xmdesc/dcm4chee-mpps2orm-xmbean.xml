@@ -23,9 +23,17 @@
    </constructor>
 
    <!-- Attributes -->
-   <attribute access="read-write" getMethod="isEnabled" setMethod="setEnabled">
-      <description>Enable/disable this service</description>
-      <name>Enabled</name>
+   <attribute access="read-write" getMethod="isMPPSReceivedEnabled" setMethod="setMPPSReceivedEnabled">
+      <description>Enable/disable this service for MPPS Received Notifications</description>
+      <name>MPPSReceivedEnabled</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="isMPPSLinkedEnabled" setMethod="setMPPSLinkedEnabled">
+      <description>Enable/disable this service for MPPS Linked Notifications</description>
+      <name>MPPSLinkedEnabled</name>
       <type>boolean</type>
       <descriptors>
          <value value="false"/>

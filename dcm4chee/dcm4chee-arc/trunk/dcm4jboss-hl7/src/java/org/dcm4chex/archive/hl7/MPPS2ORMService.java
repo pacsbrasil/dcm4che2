@@ -45,6 +45,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 
 import javax.management.Notification;
+import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.xml.transform.Transformer;
@@ -83,6 +84,9 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
 
     private static final int INIT_BUFFER_SIZE = 512;
 
+    private static final NotificationFilterSupport mppsFilter = 
+        new NotificationFilterSupport();
+    
     private ObjectName mppsScpServiceName;
 
     private ObjectName hl7SendServiceName;
@@ -99,7 +103,8 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
 
     private String receivingFacility;
     
-    private boolean enabled;
+    private boolean mppsReceivedEnabled;
+    private boolean mppsLinkedEnabled;
 
     private boolean ignoreUnscheduled;
 
@@ -159,14 +164,31 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
         this.receivingFacility = receivingFacility;
     }
 
-    public final boolean isEnabled() {
-        return enabled;
+    public final boolean isMPPSReceivedEnabled() {
+        return mppsReceivedEnabled;
     }
 
-    public final void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    public final void setMPPSReceivedEnabled(boolean enabled) {
+        if (enabled)
+            mppsFilter.enableType(MPPSScpService.EVENT_TYPE_MPPS_RECEIVED);
+        else
+            mppsFilter.disableType(MPPSScpService.EVENT_TYPE_MPPS_RECEIVED);
+        this.mppsReceivedEnabled = enabled;
     }
 
+    public final boolean isMPPSLinkedEnabled() {
+        return mppsLinkedEnabled;
+    }
+    
+    public final void setMPPSLinkedEnabled(boolean enabled) {
+        if (enabled)
+            mppsFilter.enableType(MPPSScpService.EVENT_TYPE_MPPS_LINKED);
+        else
+            mppsFilter.disableType(MPPSScpService.EVENT_TYPE_MPPS_LINKED);
+        mppsLinkedEnabled = enabled;
+    }
+
+    
     public final boolean isIgnoreUnscheduled() {
         return ignoreUnscheduled;
     }
@@ -219,17 +241,17 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
     public final void setHl7SendServiceName(ObjectName hl7SendServiceName) {
         this.hl7SendServiceName = hl7SendServiceName;
     }
-
+    
     protected void startService() throws Exception {
         server.addNotificationListener(mppsScpServiceName, this,
-                MPPSScpService.NOTIF_FILTER, null);
+                mppsFilter, null);
         logDir = new File(ServerConfigLocator.locate().getServerHomeDir(),
                 "log");
     }
 
     protected void stopService() throws Exception {
         server.removeNotificationListener(mppsScpServiceName, this,
-                MPPSScpService.NOTIF_FILTER, null);
+                mppsFilter, null);
     }
 
     /*
@@ -239,9 +261,7 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
      *      java.lang.Object)
      */
     public void handleNotification(Notification notif, Object handback) {
-        if (!enabled) {
-            return;
-        }
+        log.debug("handleNotification called! type:"+notif.getType());
         Dataset mpps = (Dataset) notif.getUserData();
         if (ignoreInProgress
                 && "IN PROGRESS".equals(mpps.getString(Tags.PPSStatus)))
