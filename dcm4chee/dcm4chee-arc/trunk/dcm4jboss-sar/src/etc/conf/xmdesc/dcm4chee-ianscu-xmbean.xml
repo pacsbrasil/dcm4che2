@@ -55,6 +55,17 @@
          <value value="true" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isOnMppsLinkedEnabled"
+      setMethod="setOnMppsLinkedEnabled">
+      <description>Enable sending of IAN when MPPS was linked with MWL. 
+      </description>
+      <name>OnMppsLinkedEnabled</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="getCallingAET" setMethod="setCallingAET">
       <description>Calling AE title used in the Association Request.
       </description>

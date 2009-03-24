@@ -48,6 +48,7 @@ import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
+import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
@@ -129,6 +130,13 @@ public class IANScuService extends AbstractScuService implements
             }
         }
     };
+    
+    private static final NotificationFilterSupport mppsFilter = 
+        new NotificationFilterSupport();
+    
+    static {
+        mppsFilter.enableType(MPPSScpService.EVENT_TYPE_MPPS_RECEIVED); 
+    }
 
     private final NotificationListener studyDeletedListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
@@ -159,6 +167,8 @@ public class IANScuService extends AbstractScuService implements
     private boolean sendOneIANforEachMPPS;
 
     private int concurrency = 1;
+
+    private boolean onMppsLinkedEnabled;
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
 
@@ -211,6 +221,18 @@ public class IANScuService extends AbstractScuService implements
 
     public final void setSendOneIANforEachMPPS(boolean sendOneIANforEachMPPS) {
         this.sendOneIANforEachMPPS = sendOneIANforEachMPPS;
+    }
+
+    public boolean isOnMppsLinkedEnabled() {
+        return onMppsLinkedEnabled;
+    }
+
+    public void setOnMppsLinkedEnabled(boolean enable) {
+        if ( enable) 
+            mppsFilter.enableType(MPPSScpService.EVENT_TYPE_MPPS_LINKED);
+        else
+            mppsFilter.disableType(MPPSScpService.EVENT_TYPE_MPPS_LINKED);
+        this.onMppsLinkedEnabled = enable;
     }
 
     public final String getRetryIntervalls() {
@@ -284,7 +306,7 @@ public class IANScuService extends AbstractScuService implements
         server.addNotificationListener(deleteStudyServiceName, studyDeletedListener,
                 StudyDeleted.NOTIF_FILTER, null);
         server.addNotificationListener(mppsScpServiceName,
-                mppsReceivedListener, MPPSScpService.NOTIF_FILTER, null);
+                mppsReceivedListener, mppsFilter, null);
 
     }
 
