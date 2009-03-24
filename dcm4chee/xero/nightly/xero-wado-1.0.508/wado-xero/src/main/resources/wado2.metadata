@@ -1,0 +1,349 @@
+# This value provider allows the application context to provide meta-data
+# by registering an instance with an @Name that matches some meta-data path.
+# This will cause nested-lookups for other value providers for $ notation value lookups,
+# and also add a meta-data provider for the Seam configuration values.
+#Define the default servlet filter - eventually this meta-data should probably
+# come from meta-data annotations instead of direct setting the values.
+servletFilter=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+servletFilter.jaxbFilter=${class:org.dcm4chee.xero.metadata.servlet.JaxbFilter}
+servletFilter.jaxbFilter.contextPath=org.dcm4chee.xero.search.study
+servletFilter.jaxbFilter.sourceFilter=${ref:studySource}
+
+
+# The source filter set is a default set of filters used for determining the source data for the JAXB filter
+source=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+source.rename=${class:org.dcm4chee.xero.search.study.RenameAttributeFilter}
+source.rename.priority=10000
+source.audit=${class:org.dcm4chee.xero.search.filter.QueryAudit}
+source.audit.priority=9000
+source.emptyFilter=${class:org.dcm4chee.xero.search.EmptyQueryParameterFilter}
+source.emptyFilter.priority=9500
+
+# Need to be able to find the files.  Returns a URL
+fileLocation=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+
+# Activated by wado or xeroWado as the type in the ae properties file.
+fileLocation.wadoFileLocation=${class:org.dcm4chee.xero.search.filter.WadoFileLocation}
+fileLocation.wadoFileLocation.priority=500
+
+# Check a file location to see whether the AE is configured for cmove
+fileLocation.cmove=${class:org.dcm4chee.xero.wado.cmove.FileLocationCMoveFilter}
+fileLocation.cmove.priority=800
+
+# Actived by fileLocationMgt or null as the type
+fileLocation.fileLocationMgt=${class:org.dcm4chee.xero.search.filter.FileLocationMgtFilter}
+fileLocation.fileLocationMgt.priority=1000
+
+fileLocation.locationCache=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
+fileLocation.locationCache.priority=10000
+fileLocation.locationCache.cacheSize=2000000
+fileLocation.locationCache.queryStr=objectUID
+
+fileLocationURL=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+fileLocationURL.fileLocationUrl=${class:org.dcm4chee.xero.search.filter.FileLocationURLFilter}
+fileLocationURL.fileLocationUrl.priority=1
+
+# Defines the list of items to read DicomImageReader objects for a given SOP Instance
+dicomImageReader=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+dicomImageReader.dicom=${class:org.dcm4chee.xero.wado.DicomFilter}
+dicomImageReader.dicom.priority=100
+dicomImageReader.memcache=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
+dicomImageReader.memcache.cacheSize=2000000
+dicomImageReader.memcache.priority=200
+dicomImageReader.memcache.queryStr=objectUID
+# Need to audit after memory cache in case the user name is different.  Also after update if that is done.
+dicomImageReader.audit=${class:org.dcm4chee.xero.wado.ViewAudit}
+dicomImageReader.audit.priority=300
+
+dicomUpdated=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+dicomUpdated.dicomImageReader=${ref:dicomImageReader}
+# Dicom Update happens relatively late.
+dicomUpdated.update=${class:org.dcm4chee.xero.wado.DicomUpdateFilter}
+dicomUpdated.update.priority=250
+
+# A dicom object reader that reads the un-corrected image object - not necessarily a full header
+dicomImageHeader=${class:org.dcm4chee.xero.wado.DicomImageReaderToDicomObject}
+# A dicom full header is the complete header (all tags), but not updated from the DB.
+# Currently no different than the image object header, but maybe in the future.
+dicomFullHeader=${ref:dicomImageHeader}
+# A dicom updated header is the full header, with everything updated
+dicomUpdatedHeader=${class:org.dcm4chee.xero.wado.DicomImageReaderToDicomObject}
+dicomUpdatedHeader.imageReaderFilter=${ref:dicomUpdated}
+
+#Now, add a study filter that provides study searches.
+studyFilter.inherit=servletFilter
+
+studySource.inherit=source
+studySource.studySearch=${class:org.dcm4chee.xero.search.study.StudySearch}
+studySource.gsps=${class:org.dcm4chee.xero.search.filter.GspsDiscover}
+studySource.gsps.priority=100
+studySource.ko=${class:org.dcm4chee.xero.search.filter.KeyObjectStudyFilter}
+studySource.ko.priority=50
+studySource.sortPatientStudy=${class:org.dcm4chee.xero.search.filter.SortPatientsByNameStudiesByDateFilter}
+studySource.sortPatientStudy.priority=350
+
+# And also have a filter for series and/or images or the complete study.
+imageFilter.inherit=servletFilter
+imageFilter.jaxbFilter.sourceFilter=${ref:imageSource}
+
+imageSource.inherit=source
+imageSource.imageSearch=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+imageSource.imageSearch.cfind=${class:org.dcm4chee.xero.search.study.ImageSearch}
+imageSource.imageSearch.hierarchicalImage=${class:org.dcm4chee.xero.search.HierarchicalSearchFilter}
+imageSource.imageSearch.hierarchicalImage.priority=5
+imageSource.imageSearch.hierarchicalImage.level=IMAGE
+
+imageSource.emptyFilter.searchParser=${class:org.dcm4chee.xero.search.study.ImageSearchConditionParser}
+imageSource.ko=${class:org.dcm4chee.xero.search.filter.KeyObjectFilter}
+imageSource.ko.priority=25
+imageSource.gspsUid=${class:org.dcm4chee.xero.search.filter.GspsUid}
+imageSource.gspsUid.priority=100
+imageSource.regroupNon=${class:org.dcm4chee.xero.search.filter.RegroupNonImage}
+imageSource.regroupNon.priority=200
+imageSource.regroupMammo=${class:org.dcm4chee.xero.search.filter.RegroupByLateralityAndOrientationFilter}
+imageSource.regroupMammo.priority=225
+imageSource.regroupMultiframe=${class:org.dcm4chee.xero.search.filter.RegroupMultiframesByInstanceNumberFilter}
+imageSource.regroupMultiframe.priority=250
+imageSource.sortImageFilter=${class:org.dcm4chee.xero.search.filter.SortImageFilter}
+imageSource.sortImageFilter.priority=350
+imageSource.sortPatientStudy=${class:org.dcm4chee.xero.search.filter.SortPatientsByNameStudiesByDateFilter}
+imageSource.sortPatientStudy.priority=360
+
+imageSource.clearCfind=${class:org.dcm4chee.xero.search.filter.ClearCfindHeaders}
+imageSource.clearCfind.priority=395
+
+imageSource.cacheFilter=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
+# Cache 1 mb of data at time - probably too small for production usage.
+imageSource.cacheFilter.cacheSize=10000000
+imageSource.cacheFilter.priority=400
+imageSource.pagedFilter=${class:org.dcm4chee.xero.search.study.PagedImageFilter}
+imageSource.pagedFilter.priority=500
+imageSource.partialImageInfoFix=${class:org.dcm4chee.xero.search.filter.PartialImageInfoFix}
+imageSource.partialImageInfoFix.priority=525
+imageSource.addFileLocation=${class:org.dcm4chee.xero.search.filter.AddFileLocationFilter}
+imageSource.addFileLocation.priority=550
+imageSource.gsps=${class:org.dcm4chee.xero.search.filter.GspsEncode}
+imageSource.gsps.priority=600
+imageSource.minMaxPixelInfo=${class:org.dcm4chee.xero.search.filter.MinMaxPixelInfo}
+imageSource.minMaxPixelInfo.priority=650
+
+# The series level query
+seriesFilter.inherit=servletFilter
+seriesFilter.jaxbFilter.sourceFilter=${ref:seriesSource}
+
+seriesSource.inherit=source
+seriesSource.emptyFilter.searchParser=${class:org.dcm4chee.xero.search.study.ImageSearchConditionParser}
+seriesSource.seriesSearch=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+seriesSource.seriesSearch.cfind=${class:org.dcm4chee.xero.search.study.SeriesSearch}
+seriesSource.seriesSearch.hierarchicalSeries=${class:org.dcm4chee.xero.search.HierarchicalSearchFilter}
+seriesSource.seriesSearch.hierarchicalSeries.priority=5
+
+seriesSource.kin=${class:org.dcm4chee.xero.search.filter.KeyObjectSeries}
+seriesSource.kin.priority=25
+seriesSource.sortFilter=${class:org.dcm4chee.xero.search.filter.SortImageFilter}
+seriesSource.sortFilter.priority=375
+seriesSource.sortPatientStudy=${class:org.dcm4chee.xero.search.filter.SortPatientsByNameStudiesByDateFilter}
+seriesSource.sortPatientStudy.priority=380
+
+seriesSource.cacheFilter=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
+seriesSource.cacheFilter.cacheSize=3000000
+seriesSource.cacheFilter.priority=400
+
+#Filters for image,series and study meta-data.
+# The single image per series query is no longer used, as the image level
+# query is required for re-grouping and general determination of what to display.
+#seriesSource.singleImagePerSeriesFilter=${class:org.dcm4chee.xero.search.filter.SingleImagePerSeriesFilter}
+#seriesSource.singleImagePerSeriesFilter.priority=15
+seriesSource.gsps=${class:org.dcm4chee.xero.search.filter.GspsDiscover}
+seriesSource.gsps.priority=20
+
+#seriesSource.cacheFilter=OVERRIDE TO NULL
+
+# Base Wado filters - used by both Xero and full WADO implementation
+imageCache=${class:org.dcm4chee.xero.wado.ImageCache}
+# 10 megabytes by default.
+imageCache.cacheSize=10124124
+
+baseImg=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+baseImg.memcache=${ref:imageCache}
+baseImg.memcache.priority=5000
+baseImg.src=${class:org.dcm4chee.xero.wado.DicomImageFilter}
+
+imageRel=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+imageRel.pixelPadding=${class:org.dcm4chee.xero.wado.PixelPadding}
+imageRel.pixelPadding.priority=500
+imageRel.overlay=${class:org.dcm4chee.xero.wado.Overlay}
+imageRel.overlay.priority=400
+imageRel.source=${class:org.dcm4chee.xero.wado.IndexedImageSource}
+
+displayRel=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+displayRel.source=${class:org.dcm4chee.xero.wado.IndexedImageSource}
+
+
+xeroImg.inherit=baseImg
+xeroImg.wl=${class:org.dcm4chee.xero.wado.WLFilter}
+xeroImg.wl.priority=6000
+xeroImg.reduceBits=${class:org.dcm4chee.xero.wado.ReduceBitsFilter}
+xeroImg.reduceBits.priority=6300
+xeroImg.relative=${class:org.dcm4chee.xero.wado.ImageDisplayRelative}
+xeroImg.relative.priority=7000
+
+
+# Items belonging to the wadoImg area, but not used by Xero directly,
+# including burn-in of various information.
+wadoImg.inherit=xeroImg
+wadoImg.scale=${class:org.dcm4chee.xero.wado.ScaleFilter}
+wadoImg.scale.priority=6100
+wadoImg.imageSource=${ref:imageSource}
+wadoImg.imageSource.priority=-2
+wadoImg.gspsBurn=${class:org.dcm4chee.xero.wado.GspsBurnIn}
+wadoImg.gspsBurn.priority=7300
+
+# Provide images for re-encoding as DICOM etc.  Exclude window levelling as that
+# does weird things to the image.
+dcmImg.inherit=baseImg
+dcmImg.scale=${class:org.dcm4chee.xero.wado.ScaleFilter}
+dcmImg.scale.priority=6100
+dcmImg.reduceBits=${class:org.dcm4chee.xero.wado.ReduceBitsFilter}
+dcmImg.reduceBits.priority=6300
+
+# Encode the response as DICOM - either raw or filtered.
+wadoDcm=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+wadoDcm.recodeDicom=${class:org.dcm4chee.xero.wado.RecodeDicom}
+wadoDcm.useOrig=${class:org.dcm4chee.xero.wado.EncodeDicom}
+wadoDcm.useOrig.priority=2000
+
+# Encode the response as XML
+xmlReport=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+xmlReport.stringTemplateFilter=${class:org.dcm4chee.xero.template.StringTemplateFilter}
+xmlReport.stringTemplateFilter.defaultView=xml
+xmlReport.stringTemplateFilter.defaultGroup=${class:org.dcm4chee.xero.template.AutoStringTemplateGroup}
+xmlReport.stringTemplateFilter.defaultGroup.refreshInterval=10
+xmlReport.stringTemplateFilter.defaultGroup.groupNames=reports/base
+xmlReport.stringTemplateFilter.priority=1000
+xmlReport.dsmodel=${class:org.dcm4chee.xero.wado.DSModel}
+
+htmlReport.inherit=xmlReport
+htmlReport.stringTemplateFilter.defaultView=srhtml
+htmlReport.stringTemplateFilter.contentType=text/html
+
+# Defines the filters that are allowed as child elements of this filter.
+wado=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+wado.WADO.inherit=WADO
+
+# Add the shared WADO filters that are inserted infront of the requestType specific code.
+wado.requestTypeFilter=${class:org.dcm4chee.xero.metadata.filter.InvokeByRequestTypeFilter}
+wado.requestTypeFilter.priority=200
+wado.help=${class:org.dcm4chee.xero.search.filter.DocumentationResponseFilter}
+wado.help.priority=500
+
+wado.XERO=${class:org.dcm4chee.xero.wado.EncodeImage}
+wado.XERO.wadoImageFilter=${ref:xeroImg}
+// Xero will NOT be called by default.
+wado.XERO.priority=-1
+
+wado.STUDY=${ref:studyFilter}
+wado.STUDY.priority=-1
+wado.SERIES=${ref:seriesFilter}
+wado.SERIES.priority=-1
+wado.IMAGE=${ref:imageFilter}
+wado.IMAGE.priority=-1
+wado.CFIND=${ref:cfind}
+wado.CFIND.priority=-1
+
+WADO=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+WADO.choose=${class:org.dcm4chee.xero.wado.ChooseContentTypeFilter}
+WADO.choose.priority=100
+
+WADO.encapsulated=${class:org.dcm4chee.xero.wado.EncapsulatedFilter}
+WADO.encapsulated.priority=50
+WADO.image=${class:org.dcm4chee.xero.wado.EncodeImage}
+WADO.image.priority=25
+WADO.video/mpeg2=${class:org.dcm4chee.xero.wado.EncodeVideo}
+WADO.video/mpeg2.priority=35
+WADO.video/mpeg=${class:org.dcm4chee.xero.wado.EncodeVideo}
+WADO.video/mpeg.priority=-1
+WADO.audio/*=${class:org.dcm4chee.xero.wado.EncodeAudio}
+WADO.audio/*.priority=20
+WADO.application/xml=${ref:xmlReport}
+WADO.application/xml.priority=15
+WADO.text/xml=${ref:xmlReport}
+WADO.text/xml.priority=-1
+WADO.text/html=${ref:htmlReport}
+WADO.text/html.priority=-1
+WADO.application/dicom=${ref:wadoDcm}
+WADO.application/dicom.priority=10
+WADO.multipart/mixed=${class:org.dcm4chee.xero.wado.multi.MultiPartContentTypeFilter}
+WADO.multipart/mixed.priority=-1
+WADO.application/zip=${class:org.dcm4chee.xero.wado.multi.MultiPartContentTypeFilter}
+WADO.application/zip.priority=-1
+
+multipart=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+
+multipart.seriesUidItFilter=${class:org.dcm4chee.xero.wado.multi.SeriesUidItFilter}
+multipart.seriesUidItFilter.priority=9400
+
+multipart.objectUidItFilter=${class:org.dcm4chee.xero.wado.multi.ObjectUidItFilter}
+multipart.objectUidItFilter.priority=9000
+
+multipart.original=${class:org.dcm4chee.xero.wado.multi.MultipartCallFilter}
+multipart.original.addDefaults=${class:org.dcm4chee.xero.metadata.access.MapWithDefaults}
+multipart.original.addDefaults.useOrig=true
+multipart.original.childName=original
+multipart.original.childFilter=${ref:wadoDcm}
+multipart.original.default=false
+multipart.original.priority=8500
+
+multipart.dicomHeader=${class:org.dcm4chee.xero.wado.multi.MultipartCallFilter}
+multipart.dicomHeader.addDefaults=${class:org.dcm4chee.xero.metadata.access.MapWithDefaults}
+multipart.dicomHeader.addDefaults.transferSyntax=1.2.840.10008.1.2.4.96
+multipart.dicomHeader.childName=dicomHeader
+multipart.dicomHeader.childFilter=${ref:wadoDcm}
+multipart.dicomHeader.default=true
+multipart.dicomHeader.priority=8000
+
+
+# This version will get the full DICOM object, not just the header - allows for multi-part mime responses of 
+# entire DICOM objects.
+multipart.dicom=${class:org.dcm4chee.xero.wado.multi.MultipartCallFilter}
+multipart.dicom.childName=dicom
+multipart.dicom.childFilter=${ref:wadoDcm}
+multipart.dicom.priority=7500
+
+multipart.frameNumberItFilter=${class:org.dcm4chee.xero.wado.multi.FrameNumberItFilter}
+multipart.frameNumberItFilter.priority=7000
+
+multipart.image=${class:org.dcm4chee.xero.wado.multi.MultipartCallFilter}
+multipart.image.childName=image
+multipart.image.childFilter=${ref:wado.XERO}
+multipart.image.default=true
+multipart.image.priority=6000
+
+multipart.padding=${class:org.dcm4chee.xero.wado.multi.MultipartCallFilter}
+multipart.padding.addDefaults=${class:org.dcm4chee.xero.metadata.access.MapWithDefaults}
+multipart.padding.addDefaults.padding=true
+multipart.padding.addDefaults.relative=image
+multipart.padding.childName=padding
+multipart.padding.childFilter=${ref:wado.XERO}
+multipart.padding.default=true
+multipart.padding.priority=5000
+
+multipart.overlay=${class:org.dcm4chee.xero.wado.multi.MultipartCallFilter}
+multipart.overlay.addDefaults=${class:org.dcm4chee.xero.metadata.access.MapWithDefaults}
+multipart.overlay.addDefaults.overlay=true
+multipart.overlay.addDefaults.relative=image
+multipart.overlay.childName=overlay
+multipart.overlay.childFilter=${ref:wado.XERO}
+multipart.overlay.default=true
+multipart.overlay.priority=4000
+
+# This section contains the series level C-FIND setup
+cfind=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+cfind.priority=10000
+cfind.rename=${class:org.dcm4chee.xero.search.study.RenameAttributeFilter}
+cfind.audit=${class:org.dcm4chee.xero.search.filter.QueryAudit}
+cfind.audit.priority=9000
+cfind.blocked=${class:org.dcm4chee.xero.search.dicom.BlockedSearchFilter}
+cfind.blocked.study=${ref:studySource.studySearch}
+cfind.blocked.series=${ref:seriesSource.seriesSearch}
+cfind.blocked.image=${ref:imageSource.imageSearch}
