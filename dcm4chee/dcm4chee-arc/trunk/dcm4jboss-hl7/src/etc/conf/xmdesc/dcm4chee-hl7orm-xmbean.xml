@@ -68,6 +68,26 @@
       </descriptors>
    </attribute>   
    <attribute access="read-write"
+      getMethod="isUpdateDifferentPatientOfExistingStudy"
+      setMethod="setUpdateDifferentPatientOfExistingStudy">
+      <description><![CDATA[Controls the behavior on receive of an order
+message to an already performed procedure (=matching Study Instance UID),
+where the Patient referenced in the HL7 order message differs from the Patient
+referenced in the DICOM Performed Procedure Step message(s) received  before:
+<br/>If <b>UpdateDifferentPatientOfExistingStudy</b>=<tt>true</tt>, already
+existing DICOM Performed Procedure Step(s) and DICOM Study for that order will
+be moved to the Patient referenced in the HL7 order message.
+<br/>If <b>UpdateDifferentPatientOfExistingStudy</b>=<tt>false</tt>, the HL7
+order message will be rejected, if the referenced Patient differs from the
+Patient associated with an already existing Performed Procedure Step(s) for
+that order.]]></description>
+      <name>UpdateDifferentPatientOfExistingStudy</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getDefaultStationName"
       setMethod="setDefaultStationName">
       <description>Scheduled Station Name in generated MWL item,

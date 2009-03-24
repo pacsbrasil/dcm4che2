@@ -101,6 +101,8 @@ public class ORMService extends AbstractHL7Service {
     
     private int[] ops = {};
     
+    private boolean updateDifferentPatientOfExistingStudy;
+    
     private ObjectName deviceServiceName;
 
     private String xslPath;
@@ -153,6 +155,14 @@ public class ORMService extends AbstractHL7Service {
         orderControls = newocs;
     }
     
+    public final boolean isUpdateDifferentPatientOfExistingStudy() {
+        return updateDifferentPatientOfExistingStudy;
+    }
+
+    public final void setUpdateDifferentPatientOfExistingStudy(boolean update) {
+        this.updateDifferentPatientOfExistingStudy = update;
+    }
+
     public final String getDefaultModality() {
         return defaultModality;
     }
@@ -270,7 +280,9 @@ public class ORMService extends AbstractHL7Service {
     private void updateRequestAttributes(Dataset mwlitem,
             MWLManager mwlManager) throws Exception {
         MPPSManager mppsManager = getMPPSManager();
-        List<Dataset> mppsList = mppsManager.updateScheduledStepAttributes(mwlitem);
+        List<Dataset> mppsList = 
+            mppsManager.updateScheduledStepAttributes(mwlitem,
+                    updateDifferentPatientOfExistingStudy);
         if (!mppsList.isEmpty()) {
             updateSPSStatus(mwlitem, mppsList.get(0), mwlManager);
             updateRequestAttributesInSeries(mwlitem, mppsList, mppsManager);

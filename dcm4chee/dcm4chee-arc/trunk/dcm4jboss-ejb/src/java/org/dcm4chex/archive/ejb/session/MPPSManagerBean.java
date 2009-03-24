@@ -67,6 +67,8 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
+import org.dcm4chex.archive.ejb.interfaces.GPSPSLocal;
+import org.dcm4chex.archive.ejb.interfaces.GPSPSRequestLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
@@ -645,7 +647,8 @@ public abstract class MPPSManagerBean implements SessionBean {
      * @throws PatientMismatchException
      * @ejb.interface-method
      */
-    public List updateScheduledStepAttributes(Dataset mwlitem)
+    public List updateScheduledStepAttributes(Dataset mwlitem,
+            boolean updateDifferentPatientOfExistingStudy)
             throws PatientMismatchException {
         // query for already received MPPS for scheduled/updated procedure
         String suid = mwlitem.getString(Tags.StudyInstanceUID);
@@ -673,14 +676,17 @@ public abstract class MPPSManagerBean implements SessionBean {
         List updated = new ArrayList(c.size());
         for (Iterator it = c.iterator(); it.hasNext();) {
             MPPSLocal mpps = (MPPSLocal) it.next();
-            if (!pat.isIdentical(mpps.getPatient())) {
-                String prompt = "Patient[pid="
-                        + mwlitem.getString(Tags.PatientID) + ", issuer="
-                        + mwlitem.getString(Tags.IssuerOfPatientID)
-                        + "] does not match Patient associated with "
+            PatientLocal priorPat = mpps.getPatient();
+            if (!pat.isIdentical(priorPat)) {
+                String prompt = pat.asString() + " does not match "
+                        + priorPat.asString() + " associated with "
                         + mpps.asString();
-                log.warn(prompt);
-                throw new PatientMismatchException(prompt);
+                if (!updateDifferentPatientOfExistingStudy) {
+                    log.warn(prompt);
+                    throw new PatientMismatchException(prompt);
+                }
+                log.info(prompt);
+                updatePatientOfMppsAndStudy(suid, mpps, pat);
             }
             Dataset attrs = mpps.getAttributes();
             if (log.isDebugEnabled()) {
@@ -700,6 +706,42 @@ public abstract class MPPSManagerBean implements SessionBean {
             }
         }
         return updated;
+    }
+
+    private void updatePatientOfMppsAndStudy(String suid, MPPSLocal mpps,
+            PatientLocal pat) {
+        PatientLocal priorPat = mpps.getPatient();
+        String patPrompt = pat.asString();
+        String priorPatPrompt = priorPat.asString();
+        log.info("Move " + mpps.asString() + " from " + priorPatPrompt
+                + " to " + patPrompt);
+        mpps.setPatient(pat);
+        Collection studies = priorPat.getStudies();
+        for (Iterator it = studies.iterator(); it.hasNext();) {
+            StudyLocal study = (StudyLocal) it.next();
+            String studyPrompt = study.asString();
+            if (study.getStudyIuid().equals(suid)) {
+                log.info("Move " + studyPrompt + " from " + priorPatPrompt
+                        + " to " + patPrompt);
+                it.remove();
+                study.setPatient(pat);
+            } else {
+                log.warn(studyPrompt + " still associated with "
+                        + priorPatPrompt);
+            }
+        }
+    }
+
+    private boolean contains(DcmElement refRequestSeq, String suid) {
+        if (refRequestSeq != null) {
+            for (int i = 0, n = refRequestSeq.countItems(); i < n; i++) {
+                Dataset refRequest = refRequestSeq.getItem(i);
+                if (suid.equals(refRequest.getString(Tags.StudyInstanceUID))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private boolean updateScheduledStepAttributes(Dataset mwlitem,

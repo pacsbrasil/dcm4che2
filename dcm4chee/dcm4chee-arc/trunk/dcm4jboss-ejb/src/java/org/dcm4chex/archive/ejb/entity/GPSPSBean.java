@@ -461,7 +461,7 @@ public abstract class GPSPSBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
-    public String toString() {
+    public String asString() {
         return prompt();
     }
 
