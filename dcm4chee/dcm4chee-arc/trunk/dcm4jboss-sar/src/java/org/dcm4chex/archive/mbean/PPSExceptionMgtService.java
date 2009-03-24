@@ -67,13 +67,13 @@ import org.jboss.system.ServiceMBeanSupport;
 public class PPSExceptionMgtService extends ServiceMBeanSupport
 implements NotificationListener, MessageListener {
 
-	/** Name of the JMS queue to 'serialize' SeriesStored and MPPSReceived Notifictions. */ 
+    /** Name of the JMS queue to 'serialize' SeriesStored and MPPSReceived Notifictions. */ 
     private String queueName;
-	
-	private ObjectName mppsScpServiceName;
-	private PrivateManager privateManager;
 
-	private long delay = 0;
+    private ObjectName mppsScpServiceName;
+    private PrivateManager privateManager;
+
+    private long delay = 0;
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
 
@@ -84,84 +84,84 @@ implements NotificationListener, MessageListener {
     public final void setJmsServiceName(ObjectName jmsServiceName) {
         jmsDelegate.setJmsServiceName(jmsServiceName);
     }
-        
-        public final String getQueueName() {
-            return queueName;
-        }
-        
-        public final void setQueueName(String queueName) {
-            this.queueName = queueName;
-        }
-            
-	/**
-	 * @return Returns the delay.
-	 */
-	public long getDelay() {
-		return delay;
-	}
-	/**
-	 * @param delay The delay to set.
-	 */
-	public void setDelay(long delay) {
-		this.delay = delay;
-	}
-	public final ObjectName getMppsScpServiceName() {
 
-		return mppsScpServiceName;
-	}
+    public final String getQueueName() {
+        return queueName;
+    }
 
-	public final void setMppsScpServiceName(ObjectName mppsScpServiceName) {
-		this.mppsScpServiceName = mppsScpServiceName;
-	}
-	
-	protected void startService() throws Exception {
+    public final void setQueueName(String queueName) {
+        this.queueName = queueName;
+    }
+
+    /**
+     * @return Returns the delay.
+     */
+    public long getDelay() {
+        return delay;
+    }
+    /**
+     * @param delay The delay to set.
+     */
+    public void setDelay(long delay) {
+        this.delay = delay;
+    }
+    public final ObjectName getMppsScpServiceName() {
+
+        return mppsScpServiceName;
+    }
+
+    public final void setMppsScpServiceName(ObjectName mppsScpServiceName) {
+        this.mppsScpServiceName = mppsScpServiceName;
+    }
+
+    protected void startService() throws Exception {
         jmsDelegate.startListening(queueName, this, 1);
-		server.addNotificationListener(mppsScpServiceName, this,
-				MPPSScpService.NOTIF_FILTER, null);
-	}
+        server.addNotificationListener(mppsScpServiceName, this,
+                MPPSScpService.NOTIF_FILTER, null);
+    }
 
-	protected void stopService() throws Exception {
-		server.removeNotificationListener(mppsScpServiceName, this,
-				MPPSScpService.NOTIF_FILTER, null);
-		jmsDelegate.stopListening(queueName);
-	}
+    protected void stopService() throws Exception {
+        server.removeNotificationListener(mppsScpServiceName, this,
+                MPPSScpService.NOTIF_FILTER, null);
+        jmsDelegate.stopListening(queueName);
+    }
 
-	public void handleNotification(Notification notif, Object handback) {
+    public void handleNotification(Notification notif, Object handback) {
 
-		Dataset mppsDS = null;
+        Dataset mppsDS = null;
         try {
-	        if ( notif.getType().equals(MPPSScpService.EVENT_TYPE_MPPS_RECEIVED) ) {
-	        	mppsDS = (Dataset)notif.getUserData();
-	        	if ( log.isDebugEnabled() ) {
-	        		log.debug("MPPS received. mpps:");log.debug(mppsDS);
-	        	}
-	        	Dataset item = mppsDS.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
-	        	if ( item != null && "110514".equals(item.getString(Tags.CodeValue)) && 
-	        		 "DCM".equals(item.getString(Tags.CodingSchemeDesignator))) {
-	        			String mppsIUID = mppsDS.getString( Tags.SOPInstanceUID );
-		    			log.debug("Scheduled: Move discontinued Series (IncorrectWorklistEntry) to trash folder! mppsIuid:"+mppsIUID);
-		                jmsDelegate.queue(queueName, mppsIUID, Message.DEFAULT_PRIORITY, System.currentTimeMillis()+getDelay());
-	        	}
-	        }
-		} catch (Exception e) {
-			log.error("Can not schedule: Move discontinued Series (IncorrectWorklistEntry) to trash folder!", e);
-		}
-	}
-	
+            if ( notif.getType().equals(MPPSScpService.EVENT_TYPE_MPPS_RECEIVED) ) {
+                mppsDS = (Dataset)notif.getUserData();
+                if ( log.isDebugEnabled() ) {
+                    log.debug("MPPS received. mpps:");log.debug(mppsDS);
+                }
+                Dataset item = mppsDS.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
+                if ( item != null && "110514".equals(item.getString(Tags.CodeValue)) && 
+                        "DCM".equals(item.getString(Tags.CodingSchemeDesignator))) {
+                    String mppsIUID = mppsDS.getString( Tags.SOPInstanceUID );
+                    log.debug("Scheduled: Move discontinued Series (IncorrectWorklistEntry) to trash folder! mppsIuid:"+mppsIUID);
+                    jmsDelegate.queue(queueName, mppsIUID, Message.DEFAULT_PRIORITY, System.currentTimeMillis()+getDelay());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Can not schedule: Move discontinued Series (IncorrectWorklistEntry) to trash folder!", e);
+        }
+    }
+
     private PrivateManager lookupPrivateManager() throws HomeFactoryException, RemoteException, CreateException {
-    	if ( privateManager != null ) return privateManager;
-    	privateManager = ((PrivateManagerHome) EJBHomeFactory.getFactory().lookup(
-        		PrivateManagerHome.class, PrivateManagerHome.JNDI_NAME)).create();
+        if ( privateManager != null ) return privateManager;
+        privateManager = ((PrivateManagerHome) EJBHomeFactory.getFactory().lookup(
+                PrivateManagerHome.class, PrivateManagerHome.JNDI_NAME)).create();
         return privateManager;
     }
 
-	public void onMessage(Message message) {
+    public void onMessage(Message message) {
         try {
-			String mppsIUID = (String)((ObjectMessage) message).getObject();
-			log.info("Move discontinued Series (IncorrectWorklistEntry) to trash folder! mppsIuid:"+mppsIUID);
-			lookupPrivateManager().moveSeriesOfPPSToTrash(mppsIUID, true);
-		} catch (Exception e) {
-			getLog().error("Can not move Series with MPPS 'IncorrectWorklistEntry' to trash folder!", e);
-		}
-	}
+            String mppsIUID = (String)((ObjectMessage) message).getObject();
+            log.info("Move discontinued Series (IncorrectWorklistEntry) to trash folder! mppsIuid:"+mppsIUID);
+            lookupPrivateManager().moveSeriesOfPPSToTrash(mppsIUID, true);
+        } catch (Exception e) {
+            getLog().error("Can not move Series with MPPS 'IncorrectWorklistEntry' to trash folder!", e);
+        }
+    }
 }
