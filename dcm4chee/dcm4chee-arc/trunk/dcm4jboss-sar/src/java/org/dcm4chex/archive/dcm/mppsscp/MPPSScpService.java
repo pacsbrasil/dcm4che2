@@ -88,7 +88,7 @@ import org.dcm4chex.archive.util.XSLTUtils;
  */
 public class MPPSScpService extends AbstractScpService {
 
-    public static final String EVENT_TYPE_MPPS_RECEIVED = "org.dcm4chex.archive.dcm.mppsscp";
+    public static final String EVENT_TYPE_MPPS_RECEIVED = "org.dcm4chex.archive.dcm.mppsscp#received";
     public static final String EVENT_TYPE_MPPS_LINKED = "org.dcm4chex.archive.dcm.mppsscp#linked";
 
     public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
