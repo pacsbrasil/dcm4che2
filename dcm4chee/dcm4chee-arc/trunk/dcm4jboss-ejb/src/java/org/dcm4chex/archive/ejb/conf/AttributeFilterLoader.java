@@ -138,7 +138,7 @@ class AttributeFilterLoader extends DefaultHandler {
         boolean inst = qName.equals("instance");
         if (inst || qName.equals("series") || qName.equals("study")
                 || qName.equals("patient")) {
-            int[] tags = parseInts(tagList);
+            int[] tags = parseInts(tagList, true);
             int[] vrs = parseVRs(vrList);
             if (inst && filter.isExclude()) {
                 if (AttributeFilter.patientFilter == null) {
@@ -161,9 +161,9 @@ class AttributeFilterLoader extends DefaultHandler {
                         AttributeFilter.seriesFilter.getVRs(), vrs);
             }
             filter.setTags(tags);
-            filter.setFieldTags(parseInts(fieldTagList));
+            filter.setFieldTags(parseInts(fieldTagList, false));
             filter.setFields((String[]) fieldList.toArray(new String[] {}));
-            filter.setNoCoercion(parseInts(noCoerceList));
+            filter.setNoCoercion(parseInts(noCoerceList, true));
             filter.setVRs(vrs);
             tagList.clear();
             fieldTagList.clear();
@@ -187,12 +187,14 @@ class AttributeFilterLoader extends DefaultHandler {
         return dst;
     }
 
-    private static int[] parseInts(ArrayList list) {
+    private static int[] parseInts(ArrayList list, boolean sort) {
         int[] array = new int[list.size()];
         for (int i = 0; i < array.length; i++) {
             array[i] = Integer.parseInt((String) list.get(i), 16);
         }
-        Arrays.sort(array);
+        if (sort) {
+            Arrays.sort(array);
+        }
         return array;
     }
 

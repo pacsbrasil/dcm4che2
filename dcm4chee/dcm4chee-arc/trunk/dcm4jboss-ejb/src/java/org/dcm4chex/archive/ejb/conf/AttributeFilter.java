@@ -159,8 +159,12 @@ public final class AttributeFilter {
     }
     
     public String getField(int tag) {
-        int index = Arrays.binarySearch(fieldTags, tag);
-        return index < 0 ? null : fields[index];
+        for (int i = 0; i < fieldTags.length; i++) {
+            if (fieldTags[i] == tag) {
+                return fields[i];
+            }
+        }
+        return null;
     }
     
     final void setVRs(int[] vrs) {
