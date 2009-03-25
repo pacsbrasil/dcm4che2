@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ejb.CreateException;
+import javax.ejb.FinderException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
@@ -197,14 +198,14 @@ public class StoreScpService extends AbstractScpService {
 
     public final String getCheckPendingSeriesStoredInterval() {
         return RetryIntervalls
-                .formatIntervalZeroAsNever(checkPendingSeriesStoredInterval);
+                .formatInterval(checkPendingSeriesStoredInterval);
     }
 
     public void setCheckPendingSeriesStoredInterval(String interval)
             throws Exception {
         long oldInterval = checkPendingSeriesStoredInterval;
         checkPendingSeriesStoredInterval = RetryIntervalls
-                .parseIntervalOrNever(interval);
+                .parseInterval(interval);
         if (getState() == STARTED
                 && oldInterval != checkPendingSeriesStoredInterval) {
             scheduler.stopScheduler(timerIDCheckPendingSeriesStored,
@@ -646,7 +647,7 @@ public class StoreScpService extends AbstractScpService {
         }
     }
 
-    void logInstancesStored(Socket s, SeriesStored seriesStored) {
+    private void logInstancesStored(Socket s, SeriesStored seriesStored) {
         try {
             if (auditLogger.isAuditLogIHEYr4()) {
                 final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
@@ -755,13 +756,9 @@ public class StoreScpService extends AbstractScpService {
     public void importFile(FileDTO fileDTO, Dataset ds, String prevseriuid,
             boolean last) throws Exception {
         Storage store = getStorage();
-        String seriud = ds.getString(Tags.SeriesInstanceUID);
-        if (prevseriuid != null && !prevseriuid.equals(seriud)) {
-            SeriesStored seriesStored = store.makeSeriesStored(prevseriuid);
-            if (seriesStored != null) {
-                log.debug("Send SeriesStoredNotification - series changed");
-                scp.doAfterSeriesIsStored(store, null, seriesStored);
-            }
+        String seriuid = ds.getString(Tags.SeriesInstanceUID);
+        if (prevseriuid != null && !prevseriuid.equals(seriuid)) {
+            logInstancesStoredAndSendSeriesStoredNotification(store, prevseriuid);
         }
         String cuid = ds.getString(Tags.SOPClassUID);
         String iuid = ds.getString(Tags.SOPInstanceUID);
@@ -774,11 +771,34 @@ public class StoreScpService extends AbstractScpService {
         scp.updateDB(store, ds, fileDTO.getFileSystemPk(), filePath, f.length(),
                 fileDTO.getFileMd5(), true);
         if (last) {
-            SeriesStored seriesStored = store.makeSeriesStored(seriud);
-            if (seriesStored != null) {
-                scp.doAfterSeriesIsStored(store, null, seriesStored);
-            }
+            logInstancesStoredAndSendSeriesStoredNotification(store, seriuid);
         }
+    }
+
+    private void logInstancesStoredAndSendSeriesStoredNotification(
+            Storage store, String seriuid)
+            throws FinderException, RemoteException {
+        SeriesStored seriesStored = store.makeSeriesStored(seriuid);
+        if (seriesStored == null) {
+            return;
+        }
+        logInstancesStored(null, seriesStored);
+        sendSeriesStoredNotification(store, seriesStored);
+    }
+
+    void logInstancesStoredAndUpdateDerivedFields(Storage store,
+            Socket s, SeriesStored seriesStored)
+            throws FinderException, RemoteException {
+        logInstancesStored(s, seriesStored);
+        store.updateDerivedStudyAndSeriesFields(
+                seriesStored.getSeriesInstanceUID());
+    }
+
+    private void sendSeriesStoredNotification(Storage store,
+            SeriesStored seriesStored)
+            throws FinderException, RemoteException {
+        sendJMXNotification(seriesStored);
+        store.commitSeriesStored(seriesStored);
     }
 
     private void checkPendingSeriesStored() throws Exception {
@@ -786,8 +806,7 @@ public class StoreScpService extends AbstractScpService {
         SeriesStored[] seriesStored = store
                 .checkSeriesStored(pendingSeriesStoredTimeout);
         for (int i = 0; i < seriesStored.length; i++) {
-            log.info("Detect pending " + seriesStored[i]);
-            scp.doAfterSeriesIsStored(store, null, seriesStored[i]);
+            sendSeriesStoredNotification(store, seriesStored[i]);
         }
     }
 

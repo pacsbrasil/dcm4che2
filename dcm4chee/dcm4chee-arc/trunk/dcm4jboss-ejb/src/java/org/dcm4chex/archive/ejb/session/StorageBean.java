@@ -282,7 +282,7 @@ public abstract class StorageBean implements SessionBean {
         if (remaining == 0) {
             series.setSeriesStatus(STORED);
         }
-    }
+   }
     
     /**
      * @ejb.interface-method
@@ -310,6 +310,8 @@ public abstract class StorageBean implements SessionBean {
     private SeriesStored makeSeriesStored(SeriesLocal series)
             throws FinderException {
         StudyLocal study = series.getStudy();
+        UpdateDerivedFieldsUtils.updateDerivedFieldsOf(series);
+        UpdateDerivedFieldsUtils.updateDerivedFieldsOf(study);
         Dataset ian = DcmObjectFactory.getInstance().newDataset();
         ian.putUI(Tags.StudyInstanceUID, study.getStudyIuid());
         Dataset refSeries = ian.putSQ(Tags.RefSeriesSeq).addNewItem();

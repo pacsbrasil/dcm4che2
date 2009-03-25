@@ -862,6 +862,9 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     public void sendJMXNotification(Object o) {
+        if (log.isDebugEnabled()) {
+            log.debug("Send JMX Notification: " + o);
+        }
         long eventID = super.getNextNotificationSequenceNumber();
         Notification notif = new Notification(o.getClass().getName(), this,
                 eventID);

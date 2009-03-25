@@ -620,8 +620,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             SeriesStored seriesStored = (SeriesStored) assoc.getProperty(SERIES_STORED);
             if (seriesStored != null
                     && !seriuid.equals(seriesStored.getSeriesInstanceUID())) {
-                log.debug("Send SeriesStoredNotification - series changed");
-                doAfterSeriesIsStored(store, assoc, seriesStored);
+                service.logInstancesStoredAndUpdateDerivedFields(store,
+                        assoc.getSocket(), seriesStored);
                 seriesStored = null;
             }
             boolean newSeries = seriesStored == null;
@@ -1148,9 +1148,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         SeriesStored seriesStored = (SeriesStored) assoc.getProperty(SERIES_STORED);
         if (seriesStored != null) {
             try {
-                log.debug("Send SeriesStoredNotification - association closed");
-                doAfterSeriesIsStored(getStorage(assoc), assoc, seriesStored);
-            } catch (Exception e) {
+                service.logInstancesStoredAndUpdateDerivedFields(
+                        getStorage(assoc), assoc.getSocket(), seriesStored);
+             } catch (Exception e) {
                 log.error("Clean up on Association close failed:", e);
             }
         }
@@ -1159,25 +1159,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     public void closed(Association assoc) {
         if (assoc.getAAssociateAC() != null)
             perfMon.assocRelEnd(assoc, Command.C_STORE_RQ);
-    }
-
-    /**
-     * Finalize a stored series.
-     * <p>
-     * <dl>
-     * <dd>1) Update derived Study and Series fields in DB</dd>
-     * <dd>1) Create Audit log entries for instances stored</dd>
-     * <dd>2) send SeriesStored JMX notification</dd>
-     * <dd>3) Set Series/Instance status in DB from RECEIVED to STORED</dd>
-     * </dl>
-     */
-    protected void doAfterSeriesIsStored(Storage store, Association assoc,
-            SeriesStored seriesStored) throws RemoteException, FinderException {
-        store.updateDerivedStudyAndSeriesFields(
-                seriesStored.getSeriesInstanceUID());
-        service.logInstancesStored(assoc == null ? null : assoc.getSocket(), seriesStored);
-        service.sendJMXNotification(seriesStored);
-        store.commitSeriesStored(seriesStored);
     }
 
 }

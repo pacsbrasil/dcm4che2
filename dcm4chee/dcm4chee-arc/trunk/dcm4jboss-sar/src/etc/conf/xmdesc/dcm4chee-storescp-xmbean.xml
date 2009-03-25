@@ -404,15 +404,14 @@ StoreSCP service.
    <attribute access="read-write"
       getMethod="getCheckPendingSeriesStoredInterval"
       setMethod="setCheckPendingSeriesStoredInterval">
-      <description><![CDATA[Interval in days (#d), hours (#h) or minutes (#m) of
-      check for pending Series Stored Notifications, which were not emitted
-      caused by a crash of the Storage Service during an open association.
-      NEVER = disable check. ]]>
+      <description><![CDATA[Interval in hours (#h) or minutes (#m) of check
+for received Series, for which no Series Stored Notifications were not yet
+emitted.]]>
       </description>
       <name>CheckPendingSeriesStoredInterval</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="1h"/>
+         <value value="1m"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -1032,9 +1031,9 @@ StoreSCP service.
    <!-- Notifications -->
    <notification>
         <description>The notification sent whenever a Series of DICOM composite
-        object was received. It is triggered by the receive of an object
-        belonging to a different Series than the objects received before and
-        at the latests when the association is released.</description>
+        object was stored. It is triggered by the periodic check for received
+        Series, for which no Series Stored Notifications were not yet emitted.
+        </description>
         <name>javax.management.Notification</name>
         <notification-type>org.dcm4chex.archive.common.SeriesStored</notification-type>
     </notification>
