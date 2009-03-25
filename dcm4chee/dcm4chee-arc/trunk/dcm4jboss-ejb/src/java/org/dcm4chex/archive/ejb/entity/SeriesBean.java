@@ -106,8 +106,8 @@ import org.dcm4chex.archive.util.Convert;
  *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.ppsIuid = ?1"
  *             transaction-type="Supports"
  * 
- * @ejb.finder signature="java.util.Collection findByStatusReceivedBefore(int status, java.sql.Timestamp updatedBefore)"
- *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.seriesStatus = ?1 AND s.createdTime < ?2"
+ * @ejb.finder signature="java.util.Collection findByStatusAndUpdatedBefore(int status, java.sql.Timestamp updatedBefore)"
+ *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.seriesStatus = ?1 AND s.updatedTime < ?2"
  *             transaction-type="Supports"
  *             
  * @ejb.finder signature="java.util.Collection findWithNoPpsIuidFromSrcAETReceivedLastOfStudyBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore)"
@@ -123,6 +123,8 @@ import org.dcm4chex.archive.util.Convert;
  *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.pk = ?1"
  * @jboss.query signature="int ejbSelectAvailability(java.lang.Long pk)"
  *              query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.pk = ?1"
+ * @jboss.query signature="java.sql.Timestamp ejbSelectMaxUpdatedTimeOfSeriesRelatedInstances(java.lang.Long pk)"
+ *              query="SELECT MAX(i.updatedTime) FROM Instance i WHERE i.series.pk = ?1"
  * @jboss.query signature="java.util.Collection ejbSelectSeriesIuidsByModalityAndSrcAETAndUpdatedTime(int availability, java.lang.String modality, java.lang.String srcAET, java.sql.Timestamp updatedAfter, java.sql.Timestamp updatedBefore, int limit)"
  *              query="SELECT s.seriesIuid FROM Series AS s WHERE s.availability = ?1 AND s.modality = ?2 AND s.sourceAET = ?3 AND s.updatedTime BETWEEN ?4 AND ?5 ORDER BY s.pk DESC LIMIT ?6"
  * @jboss.query signature="java.util.Collection ejbSelectSeriesIuidsByModalityAndUpdatedTime(int availability, java.lang.String modality, java.sql.Timestamp updatedAfter, java.sql.Timestamp updatedBefore, int limit)"
@@ -556,6 +558,11 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.select query=""
      */ 
+    public abstract Timestamp ejbSelectMaxUpdatedTimeOfSeriesRelatedInstances(Long pk) throws FinderException;
+    
+    /**
+     * @ejb.select query=""
+     */ 
     public abstract int ejbSelectAvailability(Long pk) throws FinderException;
     
     /**
@@ -772,6 +779,17 @@ public abstract class SeriesBean implements EntityBean {
         }
         setNumberOfSeriesRelatedInstances(numI);
         return true;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Timestamp getMaxUpdatedTimeOfSeriesRelatedInstances() {
+        try {
+            return ejbSelectMaxUpdatedTimeOfSeriesRelatedInstances(getPk());
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
     }
 
     /**
