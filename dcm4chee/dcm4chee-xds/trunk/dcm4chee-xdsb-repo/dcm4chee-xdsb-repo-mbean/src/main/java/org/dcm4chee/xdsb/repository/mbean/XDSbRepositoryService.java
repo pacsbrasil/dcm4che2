@@ -360,6 +360,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         } else {
             rsp.setStatus(XDSConstants.XDS_B_STATUS_FAILURE);
             RegistryErrorList errList = objFac.createRegistryErrorList();
+            rsp.setRegistryErrorList(errList);
             List<RegistryError> errors = errList.getRegistryError();
             RegistryError err = objFac.createRegistryError();
             int pos = mockError.indexOf('|');
