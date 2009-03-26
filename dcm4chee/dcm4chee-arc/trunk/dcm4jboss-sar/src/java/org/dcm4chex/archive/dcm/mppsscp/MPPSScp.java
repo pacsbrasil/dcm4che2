@@ -99,6 +99,7 @@ public class MPPSScp extends DcmServiceBase {
             Command rspCmd) throws IOException, DcmServiceException {
         Association as = assoc.getAssociation();
         String callingAET = as.getCallingAET();
+        String calledAET = as.getCalledAET();
         final Command cmd = rq.getCommand();
         final Dataset mpps = rq.getDataset();
         final String cuid = cmd.getAffectedSOPClassUID();
@@ -113,15 +114,18 @@ public class MPPSScp extends DcmServiceBase {
             service.coerceAttributes(mpps, coerce);
         }
         checkCreateAttributs(mpps);
-        service.ignorePatientIDForUnscheduled(mpps,
-                Tags.ScheduledStepAttributesSeq, callingAET);
-        service.supplementIssuerOfPatientID(mpps, callingAET);
-        service.generatePatientID(mpps, mpps.getItem(Tags.ScheduledStepAttributesSeq));
+        if (!callingAET.equals(calledAET)) {
+            service.ignorePatientIDForUnscheduled(mpps,
+                    Tags.ScheduledStepAttributesSeq, callingAET);
+            service.supplementIssuerOfPatientID(mpps, callingAET);
+            service.generatePatientID(mpps,
+                    mpps.getItem(Tags.ScheduledStepAttributesSeq));
+        }
         mpps.putUI(Tags.SOPClassUID, cuid);
         mpps.putUI(Tags.SOPInstanceUID, iuid);
         createMPPS(mpps);
         mpps.setPrivateCreatorID(PrivateTags.CreatorID);
-        mpps.putAE(PrivateTags.CallingAET, as.getCallingAET());
+        mpps.putAE(PrivateTags.CallingAET, callingAET);
         service.sendMPPSNotification(mpps, MPPSScpService.EVENT_TYPE_MPPS_RECEIVED);
         return null;
     }
