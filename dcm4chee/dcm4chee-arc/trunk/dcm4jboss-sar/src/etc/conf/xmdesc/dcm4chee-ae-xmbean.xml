@@ -157,7 +157,6 @@
          dcm4chee.archive:service=StoreScp#CallingAETitles
          dcm4chee.archive:service=StoreScp#UnrestrictedAppendPermissionsToAETitles
          dcm4chee.archive:service=StoreScp#WarnForCoercedAETitles
-         dcm4chee.archive:service=StoreScp#IgnorePatientIDAETitles
          dcm4chee.archive:service=StoreScp#LogAETitles
          dcm4chee.archive:service=StudyReconciliation#FindSCPAETitle
          dcm4chee.archive:service=StudyReconciliation#CallingAETitle
