@@ -1,3 +1,6 @@
+alter database [pacsdb] set read_committed_snapshot on with rollback after 5 seconds;
+GO
+
 CREATE TABLE ae (
 	pk          	NUMERIC(19,0) IDENTITY(1,1) NOT NULL CONSTRAINT ae_pk PRIMARY KEY,
 	aet          	VARCHAR(255) NOT NULL,
