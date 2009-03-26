@@ -458,6 +458,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             Command rqCmd = rq.getCommand();
             Association assoc = activeAssoc.getAssociation();
             String callingAET = assoc.getCallingAET();
+            String calledAET = assoc.getCalledAET();
             String iuid = checkSOPInstanceUID(rqCmd, ds, callingAET);
             checkAppendPermission(assoc, ds);
             List duplicates = new QueryFilesCmd(iuid).getFileDTOs();
@@ -606,7 +607,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putAE(PrivateTags.CallingAET, callingAET);
-            ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
+            ds.putAE(PrivateTags.CalledAET, calledAET);
             ds.putAE(Tags.RetrieveAET, retrieveAET);
             if ( ! coerceBeforeWrite ) {
                 if (coerced != null) {
@@ -634,10 +635,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     coerced = merge(coerced, mergeMatchingMWLItem(assoc, ds,
                             seriuid, mwlFilter));
                 }
-                service.ignorePatientIDForUnscheduled(ds,
-                        Tags.RequestAttributesSeq, callingAET);
-                service.supplementIssuerOfPatientID(ds, callingAET);
-                service.generatePatientID(ds, ds);
+                if (!callingAET.equals(calledAET)) {
+                    service.ignorePatientIDForUnscheduled(ds,
+                            Tags.RequestAttributesSeq, callingAET);
+                    service.supplementIssuerOfPatientID(ds, callingAET);
+                    service.generatePatientID(ds, ds);
+                }
             }
             appendInstanceToSeriesStored(seriesStored, ds, retrieveAET,
                     availability);
