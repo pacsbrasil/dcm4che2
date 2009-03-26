@@ -1,0 +1,112 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+     <artifactId>xero-wado</artifactId>
+    <groupId>org.dcm4chee.xero</groupId>
+    <version>1.0.512</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>wado2-war</artifactId>
+  <name>Xero WADO 2 WAR File</name>
+  <packaging>war</packaging>
+
+  <build>
+     <plugins>
+        <plugin>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <executions>
+             <execution>
+               <id>HudsonNotify</id>
+               <phase>deploy</phase>
+               <configuration>
+                 <tasks>
+		           <echo>Hudson-External-Artifact: wado2.war=http://hap.mitra.com/maven-repository/org/dcm4chee/xero/wado2-war/${project.version}/wado2-war-${project.version}.war</echo>
+                 </tasks>
+               </configuration>
+             <goals><goal>run</goal></goals>
+          </execution>
+          <execution>
+               <id>VersionCreate</id>
+               <phase>compile</phase>
+               <configuration>
+                 <tasks>
+                   <mkdir dir="target/wado2/WEB-INF/classes" />
+				   <echo file="target/wado2/WEB-INF/classes/wadoVersion.metadata">
+model.version=${project.version}
+model.wado2Version=${project.version}
+				   </echo>	           
+                 </tasks>
+               </configuration>
+             <goals><goal>run</goal></goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+     <profile>
+        <id>devDeploy</id>
+        <activation>
+           <property><name>env.developmentServer</name></property>
+        </activation>
+        <build>
+           <finalName>wado2</finalName>
+           <plugins>
+              <plugin>
+                 <artifactId>maven-antrun-plugin</artifactId>
+                 <executions>
+                    <execution>
+                       <id>ViewCopy</id>
+                       <phase>package</phase>
+                       <configuration>
+                          <tasks>
+                             <echo>Copying view to ${developmentServer} wado2</echo>
+                             <copy todir="${developmentServer}/server/default/deploy/wado2.war" preserveLastModified="true">
+                                <fileset dir="src/main/webapp" includes="**/*" />
+                             </copy>
+                          </tasks>
+                       </configuration>
+                       <goals><goal>run</goal></goals>
+                    </execution>
+
+ 
+                    <execution>
+                       <id>WARCopy</id>
+                       <phase>install</phase>
+                       <configuration>
+                          <tasks>
+                             <echo>Deploying to ${developmentServer} wado2</echo>
+                             <copy todir="${developmentServer}/server/default/deploy/wado2.war" preserveLastModified="true">
+                                <fileset dir="target/wado2" includes="**/*" />
+                             </copy>
+                          </tasks>
+                       </configuration>
+                       <goals><goal>run</goal></goals>
+                    </execution>
+                 </executions>
+              </plugin>
+           </plugins>
+        </build>
+     </profile>
+  </profiles>
+
+  <dependencies>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.4</version>
+      <scope>provided</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.dcm4chee.xero</groupId>
+      <artifactId>util-jar</artifactId>
+      <version>1.0.517</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4chee.xero</groupId>
+      <artifactId>wado-xero</artifactId>
+      <version>1.0.512</version>
+    </dependency>
+  </dependencies>
+</project>
