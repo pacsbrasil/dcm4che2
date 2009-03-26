@@ -39,6 +39,7 @@
 package org.dcm4chee.xero.search.filter;
 
 import java.rmi.RemoteException;
+import java.util.NoSuchElementException;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
@@ -47,6 +48,8 @@ import javax.ejb.FinderException;
 import javax.naming.NameNotFoundException;
 
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgtHome;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.slf4j.Logger;
@@ -62,23 +65,40 @@ import org.slf4j.LoggerFactory;
 public class FileSystemMgtResolver {
     private static final Logger log = LoggerFactory.getLogger(FileSystemMgtResolver.class);
 
+    static boolean isFileSystem2NotFound = false;
+
     public static FileDTO[] getDTOs(String host, String port, String instanceUID) throws Exception, CreateException,
             RemoteException, FinderException {
+        if (!isFileSystem2NotFound) {
          try {
              EJBHome home = (EJBHome) EJBServiceLocator.getInstance().getRemoteHome(host, port, "ejb/FileSystemMgt2",
                      FileSystemMgt2Home.class);
-
+log.warn("Using FileSystemMgt2.");
              EJBObject fileMgt = ((FileSystemMgt2Home) home).create();
              FileDTO[] dtos = ((FileSystemMgt2) fileMgt).getFilesOfInstance(instanceUID);
              return dtos;
          } catch (NoClassDefFoundError e) {
+                isFileSystem2NotFound = true;
              log.warn("Using old file system management.");
          } catch(ClassNotFoundException e) {
+                isFileSystem2NotFound = true;
              log.warn("Using old file system management.");
          } catch(NameNotFoundException e) {
+                isFileSystem2NotFound = true;
              log.warn("Using old file system management.");
          }
             
-        return null;
+        }
+        log.warn("Could not find FileSystemMgt2 ejb, falling back to the dcm4chee 2.13.6 version");
+        EJBHome home = (EJBHome) EJBServiceLocator.getInstance().getRemoteHome(host, port, "ejb/FileSystemMgt",
+                FileSystemMgtHome.class);
+
+        EJBObject fileMgt = ((FileSystemMgtHome) home).create();
+        FileDTO[] dtos = ((FileSystemMgt) fileMgt).getFilesOfInstance(instanceUID);
+
+        if (dtos == null)
+            throw new NoSuchElementException("FileSystemMgt EJB not found");
+
+        return dtos;
     }
 }

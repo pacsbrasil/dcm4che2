@@ -47,7 +47,10 @@ public class KeySelection {
    String objectUid;
    String gspsUid;
    int frame;
+   String studyUid;
+   String seriesUid;
    
+
    /** Create a key selection */
    public KeySelection(String objectUid, String gspsUid, int frame) {
 	  this.objectUid = objectUid;
@@ -66,4 +69,21 @@ public class KeySelection {
    public String getObjectUid() {
       return objectUid;
    }
+
+   public String getStudyUid() {
+       return studyUid;
+   }
+
+   public void setStudyUid(String studyUid) {
+       this.studyUid = studyUid;
+   }
+
+   public String getSeriesUid() {
+       return seriesUid;
+   }
+
+   public void setSeriesUid(String seriesUid) {
+       this.seriesUid = seriesUid;
+   }
+
 }

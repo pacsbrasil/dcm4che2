@@ -40,6 +40,7 @@ package org.dcm4chee.xero.search.filter;
 
 import java.util.Map;
 
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.search.AEProperties;
 import org.dcm4chee.xero.wado.WadoParams;
 import org.slf4j.Logger;
@@ -52,7 +53,7 @@ import org.slf4j.LoggerFactory;
 public class FileLocationUtils {
 	private static Logger log = LoggerFactory.getLogger(FileLocationUtils.class);
 	private String hostName;
-	private String portStr;
+	private int port;
 
 	public FileLocationUtils(Map<String, Object> params) {
 	      Map<String,Object> aeMap = AEProperties.getAE(params);
@@ -66,19 +67,19 @@ public class FileLocationUtils {
 	    	  aeMap = AEProperties.getInstance().getDefaultAE();
 	      }
 	         
-	      hostName = (String)aeMap.get("host");
-	      Integer port = (Integer)aeMap.get("ejbport");
-
-	      portStr = null;
-	      if ( port != null )
-	    	  portStr = port.toString();
+	      hostName = (String)aeMap.get(AEProperties.AE_HOST_KEY);
+	      port = FilterUtil.getInt(aeMap,AEProperties.EJB_PORT,1099);
 	}
 
 	public String getHostName() {
 		return hostName;
 	}
 
+	public int getPort() {
+		return port;
+	}
+	
 	public String getPortStr() {
-		return portStr;
+	    return Integer.toString(port);
 	}
 }

@@ -120,12 +120,15 @@ public class EJBServiceLocator {
             home = (EJBHome) cache.get(jndiHomeName);
          } else {
             InitialContext ic = getInitialContext(host, port);
+            log.warn("Looked up host "+host+" port "+port);
             Object objref = ic.lookup(jndiHomeName);
+            log.warn("Found object "+jndiHomeName);
             Object obj = PortableRemoteObject.narrow(objref, className);
             home = (EJBHome) obj;
             cache.put(jndiHomeName, home);
          }
       } catch (NamingException ne) {
+         log.warn("Unable to lookup "+jndiHomeName+" on "+host+":"+port );
          throw ne;
       }
       return home;

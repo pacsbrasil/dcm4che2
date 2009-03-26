@@ -133,7 +133,7 @@ instruction below. This is recommended if you are a beginner.
   </xsl:template>
 
   <xsl:template match="@seriesUID" mode="render">
-     <a><xsl:attribute name="href">?requestType=IMAGE&amp;seriesUID=<xsl:value-of select="." /><xsl:if test="count(/*/@ae)=1">&amp;ae=<xsl:value-of select="/*/@ae" /></xsl:if></xsl:attribute><xsl:call-template name="attrRender" /></a>
+     <a><xsl:attribute name="href">?requestType=IMAGE&amp;studyUID=<xsl:value-of select="ancestor-or-self::*[@studyUID]/@studyUID[last()]" />&amp;seriesUID=<xsl:value-of select="." /><xsl:if test="count(/*/@ae)=1">&amp;ae=<xsl:value-of select="/*/@ae" /></xsl:if></xsl:attribute><xsl:call-template name="attrRender" /></a>
   </xsl:template>
 
   <xsl:template match="text()" mode="render">

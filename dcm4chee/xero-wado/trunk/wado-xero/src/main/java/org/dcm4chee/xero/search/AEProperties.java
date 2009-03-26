@@ -66,6 +66,7 @@ public class AEProperties {
    public static final String AE_TITLE_KEY = "title";
    public static final String AE_PORT_KEY = "aeport";
    public static final String AE_HOST_KEY = "host";
+   public static final String EJB_PORT = "ejbport";
    
    private static final String FILE_NAME_PREPEND = "ae-";
    private static final String FILE_NAME_EXT = ".properties";
@@ -124,6 +125,7 @@ public class AEProperties {
       temp.put(AE_TITLE_KEY, "DCM4CHEE");
       temp.put(LOCAL_TITLE, "XERO");
       temp.put(AE_PROPERTY_NAME, "local");
+      temp.put(EJB_PORT,1099);
       defaultProperties = Collections.unmodifiableMap(temp);
    }
 

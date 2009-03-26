@@ -100,7 +100,7 @@ public class HierarchicalSearchFilter implements Filter<ResultFromDicom> {
             log.debug("Not performing hierarchical search on ae {}", ae.get(AEProperties.AE_PROPERTY_NAME));
             return filterItem.callNextFilter(params);
         }
-        log.info("Doing a hierarchical only search at image level? {}", isObjectLevel);
+        log.info("Doing a hierarchical only search at study.");
         
         ResultFromDicom resultFromDicom = DicomCFindFilter.getResultFromDicom(params); 
         
@@ -128,6 +128,7 @@ public class HierarchicalSearchFilter implements Filter<ResultFromDicom> {
         Map<String, TableColumn> atts = sc.getAttributeByName();
         if( atts==null || atts.isEmpty() ) return null;
         for(String key : atts.keySet()) {
+            if( key.equals(WadoParams.OBJECT_UID) ) continue;
             ret.remove(key);
         }
         return ret;
@@ -139,12 +140,13 @@ public class HierarchicalSearchFilter implements Filter<ResultFromDicom> {
         CollectDicomObject cdo = new CollectDicomObject();
         params.put(DicomCFindFilter.EXTEND_RESULTS_KEY, cdo);
 
+        params.put(WadoParams.STUDY_UID, ds.getString(Tag.StudyInstanceUID));
         if( isSeries ) {
-            params.put(WadoParams.STUDY_UID, ds.getString(Tag.StudyInstanceUID));
+            log.info("Doing a series level hierarchical query on study UID {}", params.get(WadoParams.STUDY_UID ));
             seriesSearch.filter(null,params);
         } else {
             params.put(WadoParams.SERIES_UID, ds.getString(Tag.SeriesInstanceUID));
-            log.info("Doing an image level hierarchical search with {}", imageSearch);
+            log.info("Doing an image level hierarchical search on series {}",params.get(WadoParams.SERIES_UID));
             imageSearch.filter(null,params);
         }
         DicomObject[] dobjs = cdo.getDicomObjects();

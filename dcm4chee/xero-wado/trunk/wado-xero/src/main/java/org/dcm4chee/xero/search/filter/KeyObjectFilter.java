@@ -461,23 +461,63 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
       return availSeries;
    }
 
-   /** Handle any missing items - by default, does nothing */
+   /** Handle any missing items - by default, does nothing unless items are missing.   */
    protected ResultsBean queryForMissingImages(FilterItem<ResultsBean> filterItem, Map<String, Object> params, ResultsBean ret,
          List<KeySelection> missing) {
       Map<String, Object> newParams = new HashMap<String, Object>();
-      Set<String> uids = new HashSet<String>(newParams.size());
+      Set<String> uids = new HashSet<String>();
       StringBuffer queryStr = new StringBuffer("&koUID=").append(params.get(KEY_UID));
+      List<String> studyUids = new ArrayList<String>(1);
+      List<String> seriesUids = new ArrayList<String>(1);
       for (KeySelection key : missing) {
          if (uids.contains(key.getObjectUid()))
             continue;
          uids.add(key.getObjectUid());
          queryStr.append("&objectUID=").append(key.getObjectUid());
+
+         String seriesUid = key.getSeriesUid();
+         if(seriesUid!=null && !seriesUids.contains(seriesUid) ) {
+             seriesUids.add(seriesUid);
+             queryStr.append("&seriesUID=").append(seriesUid);
+         }
+         String studyUid = key.getStudyUid();
+         if( studyUid!=null && !studyUids.contains(studyUid) ) {
+             studyUids.add(studyUid);
+             queryStr.append("&studyUID=").append(studyUid);
+         }
       }
       String[] uidArr = uids.toArray(EMPTY_STRING_ARR);
       log.info("Querying for " + uidArr.length + " additional images: " + queryStr);
       newParams.put("objectUID", uidArr);
+      if( !studyUids.isEmpty() ) {
+          newParams.put(WadoParams.STUDY_UID, studyUids.toArray(EMPTY_STRING_ARR));
+          log.info("Additionally querying on study UID {}", toString((String[]) newParams.get(WadoParams.STUDY_UID)));
+      }
+      if( !seriesUids.isEmpty()) {
+          newParams.put(WadoParams.SERIES_UID, seriesUids.toArray(EMPTY_STRING_ARR));
+          log.info("Additionally querying on {}", toString((String[]) newParams.get(WadoParams.SERIES_UID)));
+      }
+      String ae = (String) params.get(WadoParams.AE);
+      if( ae!=null ) {
+          newParams.put(WadoParams.AE,ae);
+          queryStr.append("&ae=").append(ae);
+      }
       newParams.put(MemoryCacheFilter.KEY_NAME, queryStr.toString());
       return (ResultsBean) imageSource.filter(null, newParams);
+   }
+   
+   public static String toString(String[] arr) {
+       StringBuffer ret = new StringBuffer("[");
+       boolean first = true;
+       for(String s : arr) {
+          if( !first ) ret.append(", ");
+          first = false;
+          ret.append('"');
+          ret.append(s);
+          ret.append('"');
+       }
+       ret.append(']');
+       return ret.toString();
    }
 
    /** Handle any missing items - by default, does nothing */
