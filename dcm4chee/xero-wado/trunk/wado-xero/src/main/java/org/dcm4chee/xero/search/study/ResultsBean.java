@@ -119,12 +119,12 @@ public class ResultsBean extends ResultsType implements ResultFromDicom, CacheIt
 	   }
 	   String[] parts = StringUtil.split(name,'^', true);
        if( parts.length==1 ) return parts[0];
-	   StringBuffer ret = new StringBuffer();
-	   if( parts.length>=4 ) ret.append(parts[3]).append(" ");
-	   ret.append(parts[1]).append(" ");
-	   if( parts.length>=3 ) ret.append(parts[2]).append(" ");
-	   ret.append(parts[0]).append(" ");
-	   if( parts.length>=5 ) ret.append(parts[4]);
+	   StringBuffer ret = new StringBuffer(parts[0]);
+	   ret.append(",");
+	   if( parts.length>=4 ) ret.append(" ").append(parts[3]);
+	   ret.append(" ").append(parts[1]);
+	   if( parts.length>=3 ) ret.append(" ").append(parts[2]);
+	   if( parts.length>=5 ) ret.append(", ").append(parts[4]);
 	   return ret.toString();
    }
 
