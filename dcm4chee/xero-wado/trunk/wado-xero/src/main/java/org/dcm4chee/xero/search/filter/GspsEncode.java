@@ -891,9 +891,9 @@ public class GspsEncode implements Filter<ResultsBean> {
 		float sx = 0;
 		float sy = ry;
 		if (rotation != 0f) {
-			sx = (float) (Math.sin(rotation * Math.PI / 180f) * rx);
-			sy = (float) (Math.cos(rotation * Math.PI / 180f) * ry);
-			log.warn("TODO: broken for displaying rotated ellipses in IE.");
+			sx = (float) (Math.cos(rotation * Math.PI / 180f) * rx);
+			sy = (float) (Math.sin(rotation * Math.PI / 180f) * rx);
+			log.warn("TODO: broken for displaying rotated ellipses in IE, rotation={}", rotation);
 		}
 		float topX = cx - sx;
 		float topY = cy - sy;
@@ -902,10 +902,10 @@ public class GspsEncode implements Filter<ResultsBean> {
 
 		StringBuffer v = new StringBuffer(d);
 		d.append(" A").append((int) rx).append(',').append((int) ry);
-		d.append(" 0 1,0 ");
+		d.append(" ").append((int)rotation).append(" 1,0 ");
 		d.append((int) (cx + sx)).append(',').append((int) (cy + sy));
 		d.append(" A").append((int) rx).append(',').append((int) ry);
-		d.append(" 0 1,0 ");
+		d.append(" ").append((int) rotation).append(" 1,0 ");
 		d.append((int) topX).append(',').append((int) topY);
 
 		// TODO fix this for arbitrary rotations around cx,cy
@@ -1458,6 +1458,11 @@ public class GspsEncode implements Filter<ResultsBean> {
 			r = rgbColour[0];
 			g = rgbColour[1];
 			b = rgbColour[2];
+			if( r>255 || g>255 || b>255 ) {
+			    r >>= 8;
+				g >>= 8;
+			    b >>= 8;
+			}
 		} else {
 			r = g = b = (pGray >> 8);
 		}
