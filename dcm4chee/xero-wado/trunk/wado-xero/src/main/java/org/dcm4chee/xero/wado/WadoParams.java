@@ -37,41 +37,62 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.wado;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
- * Contains public static constants for the various parameters for WADO and
- * for search queries generally.
+ * Contains public static constants for the various parameters for WADO and for
+ * search queries generally.
  * 
  * @author bwallace
  */
 public class WadoParams {
-	// Keys that have UID values
-	public static final String STUDY_UID = "studyUID";
-	public static final String SERIES_UID = "seriesUID";
-	public static final String OBJECT_UID = "objectUID";
-	public static final String TRANSFER_SYNTAX="transferSyntax";
-	public static final String PRESENTATION_UID="presentationUID";
+    // Keys that have UID values
+    public static final String STUDY_UID = "studyUID";
+    public static final String SERIES_UID = "seriesUID";
+    public static final String OBJECT_UID = "objectUID";
+    public static final String TRANSFER_SYNTAX = "transferSyntax";
+    public static final String PRESENTATION_UID = "presentationUID";
 
-	// Common/standard keys that are other types of values
-   public static final String CONTENT_TYPE = "contentType";
-	public static final String ROWS = "rows";
-	public static final String COLUMNS = "cols";
-	public static final String REGION = "region";
-	public static final String SIMPLE_FRAME_LIST="simpleFrameList";
-	public static final String FRAME_NUMBER="frameNumber";
-	
-	// Custom keys 
-	public static final String MULTIPART_KEY = "multipart";
+    // Common/standard keys that are other types of values
+    public static final String CONTENT_TYPE = "contentType";
+    public static final String ROWS = "rows";
+    public static final String COLUMNS = "cols";
+    public static final String REGION = "region";
+    public static final String SIMPLE_FRAME_LIST = "simpleFrameList";
+    public static final String FRAME_NUMBER = "frameNumber";
 
-	/** The separator to use when specifying a colour */
-	public static final String COLOUR_SEPARATOR = ":";
-	
-   /** Keys for headers to return */
-   public static final String CONTENT_DISPOSITION="Content-Disposition";
-   public static final String AE = "ae";
-   public static final String MODALITY = "modality";
-   
-   /** Use the original, raw format.  Disallows changes to the returned object
-    * such as size/rotation etc.
-    */
-   public static final String USE_ORIG = "useOrig";
+    // Custom keys
+    public static final String MULTIPART_KEY = "multipart";
+
+    /** The separator to use when specifying a colour */
+    public static final String COLOUR_SEPARATOR = ":";
+
+    /** Keys for headers to return */
+    public static final String CONTENT_DISPOSITION = "Content-Disposition";
+    public static final String AE = "ae";
+    public static final String MODALITY = "modality";
+    public static final String MODALITIES_IN_STUDY = "ModalitiesInStudy";
+
+    /** The set of modality names */
+    public static Set<String> MODALITIES = new HashSet<String>();
+    static {
+        MODALITIES.add("CT");
+        MODALITIES.add("CR");
+        MODALITIES.add("DX");
+        MODALITIES.add("MG");
+        MODALITIES.add("XA");
+        MODALITIES.add("AU");
+        MODALITIES.add("ES");
+        MODALITIES.add("SR");
+    }
+
+    /**
+     * Use the original, raw format. Disallows changes to the returned object
+     * such as size/rotation etc.
+     */
+    public static final String USE_ORIG = "useOrig";
+    public static final String PATIENT_ID = "PatientID";
+    public static final String STUDY_DATE_TIME = "StudyDateTime";
+    public static final String PatientName = "PatientName";
 }
