@@ -94,5 +94,6 @@ public class WadoParams {
     public static final String USE_ORIG = "useOrig";
     public static final String PATIENT_ID = "PatientID";
     public static final String STUDY_DATE_TIME = "StudyDateTime";
-    public static final String PatientName = "PatientName";
+    public static final String PATIENT_NAME = "PatientName";
+    public static final String ACCESSION_NUMBER = "AccessionNumber";
 }
