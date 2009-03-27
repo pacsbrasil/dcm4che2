@@ -1733,6 +1733,8 @@ public class WADOSupport {
         textSopCuids.put("KeyObjectSelectionDocument",
                 UIDs.KeyObjectSelectionDocument);
         textSopCuids.put("MammographyCADSR", UIDs.MammographyCADSR);
+        textSopCuids.put("ProcedureLogStorage", UIDs.ProcedureLogStorage);
+        textSopCuids.put("XRayRadiationDoseSR", UIDs.XRayRadiationDoseSR);
     }
 
     public Map uidsString2map(String uids) {
