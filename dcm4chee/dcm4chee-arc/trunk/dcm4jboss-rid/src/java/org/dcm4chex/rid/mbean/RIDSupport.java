@@ -44,7 +44,6 @@ import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,7 +51,6 @@ import java.io.OutputStream;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -62,7 +60,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.activation.DataHandler;
 import javax.ejb.FinderException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -75,7 +72,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.fop.apps.Driver;
@@ -89,7 +85,6 @@ import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che.net.DataSource;
 import org.dcm4che.util.ISO8601DateFormat;
 import org.dcm4che2.audit.message.ActiveParticipant;
 import org.dcm4che2.audit.message.AuditEvent;
@@ -826,19 +821,14 @@ public class RIDSupport {
      */
     private RIDResponseObject handleJPEG(final RIDRequestObject reqObj) {
         File file;
-        try {
-            String sn = String.class.getName();
-            file = (File) server.invoke(null, "getJpgFile", 
-                    new Object[] { "rid", "rid", reqObj.getParam("documentUID") }, 
-                    new String[] { sn, sn, sn,});
-            if ( file != null ) {
-                return new RIDStreamResponseObjectImpl( new FileInputStream( file ), CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, null );
-            } else {
-                return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND, "Requested Document not found! documentID:"+reqObj.getParam("documentUID") );
+        String instUid = reqObj.getParam("documentUID");
+        String url = wadoURL + "?requestType=WADO&contentType=image/jpeg&studyUID=1&seriesUID=1&objectUID=" + instUid;
+        return new BasicRIDResponseObject("text/plain", HttpServletResponse.SC_TEMPORARY_REDIRECT, url) {
+
+            public void execute(OutputStream out) throws TransformerConfigurationException, SAXException, IOException {
+                throw new UnsupportedOperationException("Not supported yet.");
             }
-        } catch (Exception e) {
-            return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_JPEG, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error:"+e.getMessage() );
-        }
+        };
     }
 
     /**

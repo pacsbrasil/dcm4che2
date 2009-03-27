@@ -72,6 +72,7 @@ public class RIDStreamResponseObjectImpl extends BasicRIDResponseObject {
         this.maxLen = maxLen;
     }
 
+    @Override
     public long length() {
         return maxLen;
     }

@@ -53,10 +53,8 @@ import org.dcm4che.dict.Tags;
 /**
  * @author franz.willer
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
-class ConceptNameCodeConfig {
+public class ConceptNameCodeConfig {
 
     private static final String ALL = "A";
     private static final String RADIOLOGY = "R";

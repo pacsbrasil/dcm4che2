@@ -39,8 +39,6 @@
 
 package org.dcm4chex.rid.mbean;
 
-import java.util.Properties;
-
 import org.dcm4che.data.Dataset;
 import org.dcm4chex.rid.common.RIDResponseObject;
 

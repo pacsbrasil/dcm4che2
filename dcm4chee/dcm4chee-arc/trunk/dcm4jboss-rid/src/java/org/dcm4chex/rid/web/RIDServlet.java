@@ -74,6 +74,7 @@ public class RIDServlet extends HttpServlet {
      * <p>
      * Set the name of the MBean from servlet init param.
      */
+    @Override
     public void init() {
         delegate = new RIDServiceDelegate();
         delegate.getLogger().info("RIDServiceDelegate initialized");
@@ -87,6 +88,7 @@ public class RIDServlet extends HttpServlet {
      * @param response	The http response.
      * @throws IOException
      */
+    @Override
     public void doPost( HttpServletRequest request, HttpServletResponse response ) throws IOException{
         doGet( request, response);
     }
@@ -98,6 +100,7 @@ public class RIDServlet extends HttpServlet {
      * @param response	The http response.
      * @throws IOException
      */
+    @Override
     public void doGet( HttpServletRequest request, HttpServletResponse response ) throws IOException{
         log.debug("RID URL:"+request.getRequestURI()+"?"+request.getQueryString());
         if ( request.getParameter("requestType") == null ) {
@@ -132,6 +135,8 @@ public class RIDServlet extends HttpServlet {
             delegate.getLogger().info("doGet: resp returnCode:"+returnCode);
             if ( returnCode == HttpServletResponse.SC_OK ) {
                 sendResponse( response, resp );
+            } else if ( returnCode == HttpServletResponse.SC_TEMPORARY_REDIRECT ) {
+                response.sendRedirect( resp.getErrorMessage() ); //error message contains redirect host.
             } else {
                 sendError( response, returnCode, resp.getErrorMessage() );
             }
