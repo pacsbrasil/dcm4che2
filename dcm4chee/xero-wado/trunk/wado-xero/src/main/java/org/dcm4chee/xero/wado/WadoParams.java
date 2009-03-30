@@ -61,6 +61,7 @@ public class WadoParams {
     public static final String REGION = "region";
     public static final String SIMPLE_FRAME_LIST = "simpleFrameList";
     public static final String FRAME_NUMBER = "frameNumber";
+    public static final String WINDOW_FUNCTION = "windowFunction";
 
     // Custom keys
     public static final String MULTIPART_KEY = "multipart";

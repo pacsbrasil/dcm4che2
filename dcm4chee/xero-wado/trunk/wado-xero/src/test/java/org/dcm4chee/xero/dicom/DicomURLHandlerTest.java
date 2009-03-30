@@ -37,7 +37,9 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.dicom;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -46,7 +48,6 @@ import java.util.Map;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4chee.xero.search.AEProperties;
 import org.testng.annotations.Test;
 
 

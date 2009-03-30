@@ -1,2 +1,2 @@
 Image
-<img src="wado?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=$it.ReferencedSOPInstanceUID$&amp;rows=256&amp;v=$version$" align="top"/>
+<img src="?requestType=WADO&amp;studyUID=1&amp;seriesUID=1&amp;objectUID=$it.ReferencedSOPInstanceUID$&amp;rows=256$if(version)$&amp;v=$version;format="xml"$$endif$$if(ae)$&amp;ae=$ae;format="xml"$$endif$" align="top"/>

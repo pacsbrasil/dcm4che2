@@ -39,41 +39,33 @@ package org.dcm4chee.xero.wado;
 
 import java.util.Map;
 
-import org.dcm4che2.data.DicomObject;
-import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
+import org.dcm4chee.xero.search.AEProperties;
 
 /**
- * This class adds the dicom object to the model so that it can be rendered or
- * otherwise used.
+ * Adds information about the AE being queries to the model, things like the image manager.
+ * @author bwallace
+ *
  */
-public class DSModel implements Filter<ServletResponseItem> {
+public class AEModel implements Filter<ServletResponseItem> {
 
-	/** Add the ds (dicom object) to the model in the params */
-	public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
-		DicomObject ds = dicomUpdatedHeader.filter(null, params);
-		if (ds != null) {
-			FilterUtil.getModel(params).put("ds", new DicomObjectMap(ds));
-		}
-		String template = FilterUtil.getString(params,"template");
-		if( template!=null )
-			FilterUtil.getModel(params).put("template", template);
-		return filterItem.callNextFilter(params);
-	}
+    public static final String IMAGE_MANAGER = "imageManager";
 
+    /** Adds information about the AE to the model */
+    public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
+        Map<String,Object> model = FilterUtil.getModel(params);
+        Map<String,Object> ae = AEProperties.getAE(params);
+        String imgmanager = FilterUtil.getString(ae,IMAGE_MANAGER);
+        if( imgmanager==null ) imgmanager = (String) model.get(WadoParams.AE);
+        if(imgmanager!=null ) model.put("ae",imgmanager);
+        
+        String v = (String) params.get("v");
+        if( v!=null ) model.put("version",v);
+        
+        return filterItem.callNextFilter(params);
+    }
 
-	private Filter<DicomObject> dicomUpdatedHeader;
-
-   /** Gets the filter that returns the dicom object image header */
-	public Filter<DicomObject> getDicomUpdatedHeader() {
-   	return dicomUpdatedHeader;
-   }
-
-	@MetaData(out="${ref:dicomUpdatedHeader}")
-	public void setDicomUpdatedHeader(Filter<DicomObject> dicomUpdatedHeader) {
-   	this.dicomUpdatedHeader = dicomUpdatedHeader;
-   }
 }

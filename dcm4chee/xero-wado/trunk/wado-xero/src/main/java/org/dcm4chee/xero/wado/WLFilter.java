@@ -89,7 +89,7 @@ public class WLFilter implements Filter<WadoImage> {
    };
 
    public WadoImage filter(FilterItem<WadoImage> filterItem, Map<String, Object> params) {
-	  Object[] values = FilterUtil.removeFromQuery(params, WINDOW_WIDTH, WINDOW_CENTER, PRESENTATION_UID, INVERT);
+	  Object[] values = FilterUtil.removeFromQuery(params, WINDOW_WIDTH, WINDOW_CENTER, PRESENTATION_UID, INVERT, WadoParams.WINDOW_FUNCTION);
 
 	  WadoImage wi = filterItem.callNextFilter(params);
 	  if (wi == null) {
@@ -125,6 +125,14 @@ public class WLFilter implements Filter<WadoImage> {
 			windowWidth = Float.parseFloat((String) values[0]);
 			windowCenter = Float.parseFloat((String) values[1]);
 			func = LookupTable.LINEAR;
+			if( values[4]!=null ) {
+			    func = (String) values[4];
+			    if( func.equalsIgnoreCase("LINEAR")) func = LookupTable.LINEAR;
+			    else if( func.equalsIgnoreCase("SIGMOID")) func = LookupTable.SIGMOID;
+			    else {
+			        log.warn("Unknown window level type:"+func);
+			    }
+			}
 		 }
 	  } catch (NumberFormatException nfe) {
 		 log.warn("Caught number format exception, ignoring and using default values:" + nfe);

@@ -221,6 +221,10 @@ xmlReport.stringTemplateFilter.defaultGroup=${class:org.dcm4chee.xero.template.A
 xmlReport.stringTemplateFilter.defaultGroup.refreshInterval=10
 xmlReport.stringTemplateFilter.defaultGroup.groupNames=reports/base
 xmlReport.stringTemplateFilter.priority=1000
+
+xmlReport.aemodel=${class:org.dcm4chee.xero.wado.AEModel}
+xmlReport.aemodel.priority=100
+
 xmlReport.dsmodel=${class:org.dcm4chee.xero.wado.DSModel}
 
 htmlReport.inherit=xmlReport
