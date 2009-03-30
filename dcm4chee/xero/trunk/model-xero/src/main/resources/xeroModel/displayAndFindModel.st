@@ -42,7 +42,9 @@ var XeroStudyColumns = {
 var i=3;
 
 var BASE_QUERY="/wado2/?v=$version$";
+XeroModel.prototype.BASE_QUERY = BASE_QUERY;
 var STUDY_QUERY=BASE_QUERY+"&requestType=STUDY";
 var IMAGE_QUERY=BASE_QUERY+"&requestType=IMAGE";
 var XERO_QUERY=BASE_QUERY+"&requestType=XERO";
 var WADO_QUERY=BASE_QUERY+"&requestType=WADO";
+XeroModel.prototype.WADO_QUERY=WADO_QUERY;
