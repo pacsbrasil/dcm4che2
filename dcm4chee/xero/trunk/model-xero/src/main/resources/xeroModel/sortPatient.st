@@ -112,7 +112,7 @@ SortPatient.prototype.sortColumn = function (col)   {
     };    
   
     // Check if it's Patient Name or Patient ID
-    if (data[0][col])  {
+    if (data[0][col] || col == "PatientName")  {
         if (this[col] == undefined || this[col] == "desc")  {
             this[col]="asc";
             this.img[col] = "icon/up_arrow_32.png";
