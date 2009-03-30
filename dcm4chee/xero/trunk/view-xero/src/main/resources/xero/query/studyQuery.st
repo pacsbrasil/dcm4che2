@@ -1,7 +1,7 @@
 <div style="float: left;"><table>
 
-<tr><td>$i18n.PatientName;format="xml"$</td><td><input type="text" name="PatientName" value="$query.PatientName$" onkeypress="controller.keyPress('find',event)"/></td></tr>
-<tr><td>$i18n.PatientID;format="xml"$</td><td><input type="text" name="PatientID" value="$query.PatientID$" onkeypress="controller.keyPress('find',event)"/></td></tr>
+<tr><td>$i18n.PatientName;format="xml"$</td><td><input id="patientNameInput" type="text" name="PatientName" value="$query.PatientName$" onkeypress="controller.keyPress('find',event)"/></td></tr>
+<tr><td>$i18n.PatientID;format="xml"$</td><td><input id="patientIdInput" type="text" name="PatientID" value="$query.PatientID$" onkeypress="controller.keyPress('find',event)"/></td></tr>
 
 </table></div>
 
