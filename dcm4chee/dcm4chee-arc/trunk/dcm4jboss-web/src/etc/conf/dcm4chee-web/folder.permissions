@@ -7,10 +7,10 @@
 # Format: <application>.*[<grpid>]=<method1>[,<method2>[,<method3>]..]
 # e.g. 'folder.*=delete,export_tf' 
 
-# add_worklist currently hides "Add Series" function in Web Folder  
 # folder.*=edit,move,delete,*export,add_worklist,edit.newStudyUID,xds_consumer,mergepat,study_permission,query_has_issuer
 # study_permission.free_role_action: show role and action input field to allow unconfigured roles and actions.
 # study_permission.show_only_studyPermissionRoles: hide all roles that are not of type StudyPermission.
+# add_worklist: show 'Add Worklist' button on study level for creating simple General Purpose Worklist entries.  
 #
 folder.*=edit,move,delete,*export,edit.newStudyUID,mergepat,study_permission,study_permission.free_role_action,query_has_issuer
 folder.*export=export_tf,export_xds
