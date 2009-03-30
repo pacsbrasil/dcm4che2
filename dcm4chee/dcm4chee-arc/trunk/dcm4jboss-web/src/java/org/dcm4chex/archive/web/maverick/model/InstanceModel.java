@@ -67,7 +67,10 @@ public class InstanceModel extends AbstractModel {
                 return new PresentationStateModel(ds);
         if (UIDs.BasicTextSR.equals(cuid) || UIDs.EnhancedSR.equals(cuid)
                 || UIDs.ComprehensiveSR.equals(cuid)
-                || UIDs.KeyObjectSelectionDocument.equals(cuid))
+                || UIDs.KeyObjectSelectionDocument.equals(cuid)
+                || UIDs.MammographyCADSR.equals(cuid)
+                || UIDs.ProcedureLogStorage.equals(cuid)
+                || UIDs.XRayRadiationDoseSR.equals(cuid))
                 return new StructuredReportModel(ds);
         if ( UIDs.TwelveLeadECGWaveformStorage.equals(cuid)
         	|| UIDs.GeneralECGWaveformStorage.equals(cuid)
