@@ -355,10 +355,8 @@ public class XDSbSourceService extends ServiceMBeanSupport {
             }
             String submissionUID = InfoSetUtil.getExternalIdentifierValue(UUID.XDSSubmissionSet_uniqueId,registryPackage); 
             String patId = InfoSetUtil.getExternalIdentifierValue(UUID.XDSSubmissionSet_patientId,registryPackage);
-            String patName = "hidden";
             log.info("SubmissionUID:"+submissionUID);
             log.info("patId:"+patId);
-            log.info("patName:"+patName);
             httpCfgDelegate.configTLS(xdsRepositoryURI);
             DocumentRepositoryPortType port = null;
             if (useSOAP11) {
@@ -383,7 +381,7 @@ public class XDSbSourceService extends ServiceMBeanSupport {
                         objFac.createRegistryResponse(rsp), indentXmlLog) );
             }
             boolean success = checkResponse( rsp );
-            logExport(submissionUID, patId, patName, success);
+            logExport(submissionUID, patId, success);
             log.info("ProvideAndRegisterDocumentSetRequest success:"+success);
             return rsp;
             /*_*/
@@ -439,23 +437,26 @@ public class XDSbSourceService extends ServiceMBeanSupport {
         return new File(serverHomeDir, f.getPath()).getAbsolutePath();
     }
 
-    private void logExport(String submissionUID, String patId, String patName, boolean success) {
+    private void logExport(String submissionUID, String patId, boolean success) {
         HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
         String user = userInfo.getUserId();
-        XDSExportMessage msg = XDSExportMessage.createDocumentSourceExportMessage(submissionUID, patId, patName);
+        XDSExportMessage msg = XDSExportMessage.createDocumentSourceExportMessage(submissionUID, patId);
         msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
             AuditEvent.OutcomeIndicator.MINOR_FAILURE);
         msg.setSource(AuditMessage.getProcessID(), 
                 AuditMessage.getLocalAETitles(),
                 AuditMessage.getProcessName(),
-                AuditMessage.getLocalHostName());
-        msg.setHumanRequestor(user != null ? user : "unknown", null, null);
+                AuditMessage.getLocalHostName(),
+                user == null);
+        if (user != null) {
+            msg.setHumanRequestor(user, null, null, true);
+        }
         String host = "unknown";
         try {
             host = new URL(xdsRepositoryURI).getHost();
         } catch (MalformedURLException ignore) {
         }
-        msg.setDestination(xdsRepositoryURI, null, "XDS Export", host );
+        msg.setDestination(xdsRepositoryURI, null, "XDS Export", host, false );
         msg.validate();
         Logger.getLogger("auditlog").info(msg);
     }
