@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -64,6 +65,7 @@ import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4chee.xds.common.XDSConstants;
 import org.dcm4chee.xds.common.XDSPerformanceLogger;
 import org.dcm4chee.xds.common.audit.HttpUserInfo;
+import org.dcm4chee.xds.common.audit.XDSExportMessage;
 import org.dcm4chee.xds.common.audit.XDSRetrieveMessage;
 import org.dcm4chee.xds.common.delegate.XdsHttpCfgDelegate;
 import org.dcm4chee.xds.common.exception.XDSException;
@@ -110,6 +112,8 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
     private XdsHttpCfgDelegate httpCfgDelegate = new XdsHttpCfgDelegate();
     
     private ObjectFactory objFac = new ObjectFactory();
+    private boolean auditLogIti17;
+    private boolean auditLogIti43;
 
     public String getExternalRepositories() {
         if (mapExternalRepositories == null) return NONE;
@@ -130,6 +134,22 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
                 mapExternalRepositories.put( st.nextToken().trim(), st.nextToken().trim());
             }
         }
+    }
+
+    public boolean isAuditLogIti17() {
+        return auditLogIti17;
+    }
+
+    public void setAuditLogIti17(boolean auditLogIti17) {
+        this.auditLogIti17 = auditLogIti17;
+    }
+
+    public boolean isAuditLogIti43() {
+        return auditLogIti43;
+    }
+
+    public void setAuditLogIti43(boolean auditLogIti43) {
+        this.auditLogIti43 = auditLogIti43;
     }
 
     public boolean isLogRequestMessage() {
@@ -343,25 +363,62 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
 
 
     private void logRetrieve(List<String> docUids, boolean success) {
-        try {
-            HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
-            String user = userInfo.getUserId();
-            XDSRetrieveMessage msg = XDSRetrieveMessage.createDocumentRepositoryRetrieveMessage(docUids);
-            msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
-                AuditEvent.OutcomeIndicator.MINOR_FAILURE);
-            msg.setSource(AuditMessage.getProcessID(), 
-                    AuditMessage.getLocalAETitles(),
-                    AuditMessage.getProcessName(),
-                    AuditMessage.getLocalHostName());
-            msg.setHumanRequestor(user != null ? user : "unknown", null, null);
-            msg.setDestination(userInfo.getRequestURI(), null, userInfo.getHostName(), userInfo.getIP() );
-            msg.validate();
-            Logger.getLogger("auditlog").info(msg);
-        } catch ( Throwable t) {
-            log.error("Cant send Audit Log for Retrieve Document Set! Ignored");
+        if ( auditLogIti17 ) {
+            try {
+                HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+                String docUri = userInfo.getRequestURI();
+                for ( String docUid : docUids ) {
+                    this.logExport(docUri, docUid, userInfo, success);
+                }
+            } catch ( Throwable t) {
+                log.error("Cant send Audit Log for Retrieve Document (ITI-17)! Ignored");
+            }
+        }
+        if ( auditLogIti43 ) {
+            try {
+                HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+                String user = userInfo.getUserId();
+                XDSRetrieveMessage msg = XDSRetrieveMessage.createDocumentRepositoryRetrieveMessage(docUids);
+                msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
+                    AuditEvent.OutcomeIndicator.MINOR_FAILURE);
+                msg.setSource(AuditMessage.getProcessID(), 
+                        AuditMessage.getLocalAETitles(),
+                        AuditMessage.getProcessName(),
+                        AuditMessage.getLocalHostName(),
+                        true);
+                msg.setHumanRequestor(user != null ? user : "unknown", null, null, true);
+                msg.setDestination(userInfo.getRequestURI(), null, userInfo.getHostName(), userInfo.getIP(), false );
+                msg.validate();
+                Logger.getLogger("auditlog").info(msg);
+            } catch ( Throwable t) {
+                log.error("Cant send Audit Log for Retrieve Document Set (ITI-43)! Ignored");
+            }
         }
     }
 
+    private void logExport(String docUri, String docUid, HttpUserInfo userInfo, boolean success) {
+        String user = userInfo.getUserId();
+        XDSExportMessage msg = XDSExportMessage.createDocumentRepositoryRetrieveMessage(docUri, docUid);
+        msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
+            AuditEvent.OutcomeIndicator.MAJOR_FAILURE);
+        msg.setSource(AuditMessage.getProcessID(), 
+                AuditMessage.getLocalAETitles(),
+                AuditMessage.getProcessName(),
+                AuditMessage.getLocalHostName(),
+                false);
+
+        String requestURI = userInfo.getRequestURI();
+        String host = "unknown";
+        try {
+            host = new URL(requestURI).getHost();
+        } catch (MalformedURLException ignore) {
+        }
+        msg.setDestination(requestURI, null, "XDS Export", host, true );
+        msg.setDocumentUri(docUri, docUid);
+        msg.validate();
+        Logger.getLogger("auditlog").info(msg);
+    }
+      
     public class XdsDataHandler extends DataHandler {
         private XDSDocumentWriter writer;
         public XdsDataHandler(XDSDocumentWriter wr, String mime) {

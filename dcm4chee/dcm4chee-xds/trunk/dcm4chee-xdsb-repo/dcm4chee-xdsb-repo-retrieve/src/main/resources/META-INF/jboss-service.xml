@@ -36,6 +36,29 @@
          <value value="NONE"/>
       </descriptors>
    </attribute>
+
+   <attribute access="read-write"
+      getMethod="isAuditLogIti17"
+      setMethod="setAuditLogIti17">
+      <description>Enable/Disable Audit logging of ITI-17 (Export, Retrieve Document) log messages.
+      </description>
+      <name>AuditLogIti17</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isAuditLogIti43"
+      setMethod="setAuditLogIti43">
+      <description>Enable/Disable Audit logging of ITI-43 (Report, Retrieve Document Set) log messages. (retired)
+      </description>
+      <name>AuditLogIti43</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
  
    <attribute access="read-write"
       getMethod="isLogRequestMessage"

@@ -54,9 +54,6 @@ import java.util.Map;
 
 import javax.activation.DataHandler;
 import javax.management.ObjectName;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSession;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.soap.SOAPMessage;
@@ -65,6 +62,7 @@ import javax.xml.ws.BindingProvider;
 import javax.xml.ws.soap.SOAPBinding;
 
 import org.apache.log4j.Logger;
+import org.dcm4che2.audit.message.ActiveParticipant;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4chee.xds.common.UUID;
@@ -264,7 +262,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
                 throw new XDSException( XDSConstants.XDS_ERR_REPOSITORY_ERROR, 
                         XDSConstants.XDS_ERR_MISSING_REGISTRY_PACKAGE, null);
             }
-            checkPatientIDs(req, submissionSet);
+            String patId = checkPatientIDs(req, submissionSet);
             String submissionUID = InfoSetUtil.getExternalIdentifierValue(UUID.XDSSubmissionSet_uniqueId, submissionSet);
 
             perfLogger.setEventProperty("SubmissionSetUID", submissionUID);
@@ -290,11 +288,11 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
                 log.info("'Register Document Set' SubmitRequest:"+xmlReq);
             }
             log.info("SubmissionUID:"+submissionUID);
-            logImport(submissionUID, true);
+            logImport(submissionUID, patId, true);
             RegistryResponseType rsp = dispatchSubmitObjectsRequest(submitRequest, perfLogger);
             success = checkResponse( rsp );
             perfLogger.startSubEvent("AuditAndBuildResponse");
-            logExport(submissionUID, success);
+            logExport(submissionUID, patId, success);
             log.info("ProvideAndRegisterDocumentSetRequest success:"+success);
             if ( logResponseMessage ) {
                 log.info("Received RegistryResponse:"+InfoSetUtil.marshallObject(objFac.createRegistryResponse(rsp), indentXmlLog));
@@ -468,7 +466,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         return storedDocuments;
     }
 
-    private void checkPatientIDs(ProvideAndRegisterDocumentSetRequestType req, RegistryPackageType registryPackage) throws XDSException {
+    private String checkPatientIDs(ProvideAndRegisterDocumentSetRequestType req, RegistryPackageType registryPackage) throws XDSException {
         String submissionPatId = InfoSetUtil.getExternalIdentifierValue(UUID.XDSSubmissionSet_patientId, registryPackage);
         Map<String, ExtrinsicObjectType> extrObjs = InfoSetUtil.getExtrinsicObjects(req.getSubmitObjectsRequest());
         String docPatId;
@@ -489,6 +487,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
             throw new XDSException(XDSConstants.XDS_ERR_PATID_DOESNOT_MATCH,
                     msg, null);
         }
+        return submissionPatId;
     }
     
     private void addOrOverwriteSlot(RegistryObjectType ro, Map slots, String slotName, String val) throws JAXBException {
@@ -548,37 +547,40 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         return new File(serverHomeDir, f.getPath()).getAbsolutePath();
     }
 
-    private void logExport(String submissionUID, boolean success) {
+    private void logExport(String submissionUID, String patId, boolean success) {
         HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
         String user = userInfo.getUserId();
-        XDSExportMessage msg = XDSExportMessage.createDocumentRepositoryExportMessage(submissionUID);
+        XDSExportMessage msg = XDSExportMessage.createDocumentRepositoryExportMessage(submissionUID, patId);
         msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
             AuditEvent.OutcomeIndicator.MINOR_FAILURE);
         msg.setSource(AuditMessage.getProcessID(), 
                 AuditMessage.getLocalAETitles(),
                 AuditMessage.getProcessName(),
-                AuditMessage.getLocalHostName());
-        msg.setHumanRequestor(user != null ? user : "unknown", null, null);
+                AuditMessage.getLocalHostName(),
+                false);
+        ActiveParticipant humanReq = msg.setHumanRequestor(user != null ? user : "unknown", null, null, true);
         String host = "unknown";
         try {
             host = new URL(xdsRegistryURI).getHost();
         } catch (MalformedURLException ignore) {
         }
-        msg.setDestination(xdsRegistryURI, null, "XDS Export", host );
+        msg.setDestination(xdsRegistryURI, null, null, host, true );
         msg.validate();
         Logger.getLogger("auditlog").info(msg);
     }
-    private void logImport(String submissionUID, boolean success) {
+    
+    private void logImport(String submissionUID, String patId, boolean success) {
         HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
         String user = userInfo.getUserId();
-        XDSImportMessage msg = new XDSImportMessage();
+        XDSImportMessage msg = XDSImportMessage.createDocumentRepositoryImportMessage(submissionUID, patId);
         msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
             AuditEvent.OutcomeIndicator.MAJOR_FAILURE);
         msg.setSource(AuditMessage.getProcessID(), 
                 AuditMessage.getLocalAETitles(),
                 AuditMessage.getProcessName(),
-                AuditMessage.getLocalHostName() );
-        msg.setHumanRequestor(user != null ? user : "unknown", null, null);
+                AuditMessage.getLocalHostName(),
+                true);
+        msg.setHumanRequestor(user != null ? user : "unknown", null, null, true);
 
         String requestURI = userInfo.getRequestURI();
         String host = "unknown";
@@ -586,12 +588,12 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
             host = new URL(requestURI).getHost();
         } catch (MalformedURLException ignore) {
         }
-        msg.setDestination(requestURI, null, "XDS Export", host );
+        msg.setDestination(requestURI, null, null, host, false );
         msg.setSubmissionSet(submissionUID);
         msg.validate();
         Logger.getLogger("auditlog").info(msg);
     }
-
+    
     public RetrieveDocumentSetResponseType retrieveDocumentSet(String docUid, String repositoryUID, String homeUid, boolean useLocalRepo) throws XDSException {
         RetrieveDocumentSetRequestType rq = objFac.createRetrieveDocumentSetRequestType();
         rq.getDocumentRequest().add( createDocRequest(docUid, repositoryUID, homeUid) );
