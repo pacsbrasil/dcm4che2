@@ -191,6 +191,17 @@
          <value value="2000"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getBufferSize"
+      setMethod="setBufferSize">
+      <description>Size of byte buffer used for copying data from file to TCP channel.
+      </description>
+      <name>BufferSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="8192"/>
+      </descriptors>
+   </attribute>
 
    &defaultSCUAttributes;
 
