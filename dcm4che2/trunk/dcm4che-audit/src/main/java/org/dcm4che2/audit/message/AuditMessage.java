@@ -70,6 +70,7 @@ public class AuditMessage extends BaseElement {
     private static boolean timezonedDateTime = true;
     private static boolean utcDateTime = false;
     private static boolean qualifyHostname = false;
+    private static boolean allowMultipleRequestors = false;
 
     private static InetAddress localHost;
     static {
@@ -152,7 +153,7 @@ public class AuditMessage extends BaseElement {
     }
            
     public ActiveParticipant addActiveParticipant(ActiveParticipant apart) {
-        if (apart.isUserIsRequestor()
+        if (!allowMultipleRequestors && apart.isUserIsRequestor()
                 && getRequestingActiveParticipants() != null) {
             throw new IllegalStateException(
                     "Message already contains requesting Active Participant");
@@ -395,5 +396,13 @@ public class AuditMessage extends BaseElement {
         int dotpos = hostname.indexOf('.');
         return dotpos > 0 && !Character.isDigit(hostname.charAt(0))
                 ? hostname.substring(0, dotpos) : hostname;
+    }
+
+    public static void setAllowMultipleRequestors(boolean allowMultipleRequestors) {
+        AuditMessage.allowMultipleRequestors = allowMultipleRequestors;
+    }
+
+    public static boolean isAllowMultipleRequestors() {
+        return allowMultipleRequestors;
     }
 }
