@@ -56,7 +56,7 @@ public class HttpUserInfo {
     private String userId;
     private String ip;
     private String hostName;
-    private String requestURI;
+    private String requestURL;
 
     public HttpUserInfo(boolean enableDNSLookups) {
         try {
@@ -76,7 +76,7 @@ public class HttpUserInfo {
             userId = "process_user";
             ip = "127.0.0.1";
             hostName = "localhost";
-            requestURI = "http://localhost"; 
+            requestURL = "http://localhost"; 
         } else {
             userId = rq.getRemoteUser();
             String xForward = (String) rq.getHeader("x-forwarded-for");
@@ -95,7 +95,7 @@ public class HttpUserInfo {
             } else {
                 hostName = ip;
             }
-            requestURI = rq.getRequestURI();
+            requestURL = rq.getRequestURL().toString();
         }
     }
 
@@ -109,8 +109,8 @@ public class HttpUserInfo {
     public String getHostName() {
         return hostName;
     }
-    public String getRequestURI() {
-        return requestURI;
+    public String getRequestURL() {
+        return requestURL;
     }
 
 }

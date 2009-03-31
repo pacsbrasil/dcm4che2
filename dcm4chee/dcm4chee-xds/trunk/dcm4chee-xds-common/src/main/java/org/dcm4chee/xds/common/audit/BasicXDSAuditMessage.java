@@ -47,6 +47,8 @@ import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.ParticipantObject;
 import org.dcm4che2.audit.message.AuditEvent.ID;
 import org.dcm4che2.audit.message.AuditEvent.TypeCode;
+import org.dcm4che2.audit.message.ParticipantObject.IDTypeCode;
+import org.dcm4che2.audit.message.ParticipantObject.TypeCodeRole;
 
 /**
  * <DL>
@@ -108,7 +110,12 @@ public abstract class BasicXDSAuditMessage extends AuditMessage {
     }
 
     public ParticipantObject setPatient(String id, String name) {
-        return addParticipantObject(ParticipantObject.createPatient(id, name));
+        //IN IHE we need full IDTypecode for patientId: 2,RFC-3881,Patient Number 
+        ParticipantObject pat = new ParticipantObject(id, new IDTypeCode(IDTypeCode.PATIENT_ID.getCode(),"RFC-3881","Patient Number"));
+        pat.setParticipantObjectTypeCode(ParticipantObject.TypeCode.PERSON);
+        pat.setParticipantObjectTypeCodeRole(TypeCodeRole.PATIENT);            
+        pat.setParticipantObjectName(name);
+        return addParticipantObject(pat);
     }
 
 
@@ -161,9 +168,6 @@ public abstract class BasicXDSAuditMessage extends AuditMessage {
         }
         if (source == null) {
             throw new IllegalStateException("No Source identification");
-        }
-        if (requestor == null) {
-            throw new IllegalStateException("No Human Requestor");
         }
     }    
     // Workaround to get UserIsRequestor=true in Audit message without change in dcm4chee-audit!
