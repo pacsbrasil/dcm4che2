@@ -49,10 +49,12 @@ import org.dcm4che2.audit.message.AuditEvent.TypeCode;
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision:  $ $Date: $
  * @since Jan 02, 2008
- * @see <a href="http://www.ihe.net/Technical_Framework/upload/IHE_ITI_TF_4.0_Vol2_FT_2007-08-22.pdf">
- * IT Infrastructure Technical Framework: Vol. 2 (ITI TF-2), Transactions: 3.14.4.1.4 Document Repository: Security considerations</a>
- * @see <a href="http://www.ihe.net/Technical_Framework/upload/IHE_ITI_TF_4.0_Vol2_FT_2007-08-22.pdf">
- * IT Infrastructure Technical Framework: Vol. 2 (ITI TF-2), Transactions: 3.15.4.1.4 Document Source: Security considerations</a>
+ * @see <a href="http://www.ihe.net/Technical_Framework/upload/IHE_ITI_TF_5-0_Vol2_FT_2008-12-12.pdf">
+ * IT Infrastructure Technical Framework: Vol. 2 (ITI TF-2), 3.14.5.2.1 Document Repository or Integrated Document Source/Repository audit message</a>
+ * @see <a href="http://www.ihe.net/Technical_Framework/upload/IHE_ITI_TF_5-0_Vol2_FT_2008-12-12.pdf">
+ * IT Infrastructure Technical Framework: Vol. 2 (ITI TF-2), 3.15.6.1.1 Document Source audit message:</a>
+ * @see <a href="http://www.ihe.net/Technical_Framework/upload/IHE_ITI_TF_5-0_Vol2_FT_2008-12-12.pdf">
+ * IT Infrastructure Technical Framework: Vol. 2 (ITI TF-2), 3.17.5.1.2 Document Repository audit message</a>
  */
 public class XDSExportMessage extends BasicXDSAuditMessage {
 
@@ -60,14 +62,22 @@ public class XDSExportMessage extends BasicXDSAuditMessage {
         super(AuditEvent.ID.EXPORT, AuditEvent.ActionCode.READ, typeCode);
     }
     
-    public static XDSExportMessage createDocumentSourceExportMessage(String submissionUID, String patID, String patName) {
+    public static XDSExportMessage createDocumentSourceExportMessage(String submissionUID, String patID) {
     	XDSExportMessage msg = createMessage(submissionUID, TYPE_CODE_ITI15);
-    	msg.setPatient(patID, patName);
+    	msg.setPatient(patID, null);
     	return msg;
     }
     
-    public static XDSExportMessage createDocumentRepositoryExportMessage(String submissionUID) {
-    	return createMessage(submissionUID, TYPE_CODE_ITI14);
+    public static XDSExportMessage createDocumentRepositoryExportMessage(String submissionUID, String patID) {
+        XDSExportMessage msg = createMessage(submissionUID, TYPE_CODE_ITI14);
+    	msg.setPatient(patID, null);
+    	return msg;
+    }
+
+    public static XDSExportMessage createDocumentRepositoryRetrieveMessage(String docUri, String docUid) {
+        XDSExportMessage msg = new XDSExportMessage(TYPE_CODE_ITI17);
+        msg.setDocumentUri(docUri, docUid);
+        return msg;
     }
     
     private static XDSExportMessage createMessage(String submissionUID, TypeCode typeCode) {

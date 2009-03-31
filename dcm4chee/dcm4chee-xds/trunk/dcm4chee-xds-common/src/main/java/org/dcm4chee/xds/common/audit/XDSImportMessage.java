@@ -35,10 +35,11 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
- 
+
 package org.dcm4chee.xds.common.audit;
 
 import org.dcm4che2.audit.message.AuditEvent;
+import org.dcm4che2.audit.message.AuditEvent.TypeCode;
 
 /**
  * This message describes the event audited by Repository when importing data from a XDS Document Consumer.
@@ -52,7 +53,25 @@ import org.dcm4che2.audit.message.AuditEvent;
  */
 public class XDSImportMessage extends BasicXDSAuditMessage {
 
-	public XDSImportMessage() {
-        super(AuditEvent.ID.IMPORT, AuditEvent.ActionCode.READ, TYPE_CODE_ITI15);
+    public XDSImportMessage(TypeCode typeCode) {
+        super(AuditEvent.ID.IMPORT, AuditEvent.ActionCode.CREATE, typeCode);
+    }
+    
+    public static XDSImportMessage createDocumentRegistryImportMessage(String submissionUID, String patID) {
+        XDSImportMessage msg = createMessage(submissionUID, TYPE_CODE_ITI14);
+        msg.setPatient(patID, null);
+        return msg;
+    }
+    
+    public static XDSImportMessage createDocumentRepositoryImportMessage(String submissionUID, String patID) {
+        XDSImportMessage msg = createMessage(submissionUID, TYPE_CODE_ITI15);
+        msg.setPatient(patID, null);
+        return msg;
+    }
+    
+    private static XDSImportMessage createMessage(String submissionUID, TypeCode typeCode) {
+        XDSImportMessage msg = new XDSImportMessage(typeCode);
+        msg.setSubmissionSet(submissionUID);
+        return msg;
     }
 }

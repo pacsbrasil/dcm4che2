@@ -35,7 +35,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
- 
+
 package org.dcm4chee.xds.common.audit;
 
 import java.util.Iterator;
@@ -68,57 +68,68 @@ import org.dcm4che2.audit.message.AuditEvent.TypeCode;
  */
 public abstract class BasicXDSAuditMessage extends AuditMessage {
 
-	public static final TypeCode TYPE_CODE_ITI14 = new AuditEvent.TypeCode("ITI-14", "IHE Transactions", "Register Document Set");
+    public static final TypeCode TYPE_CODE_ITI14 = new AuditEvent.TypeCode("ITI-14", "IHE Transactions", "Register Document Set");
     public static final TypeCode TYPE_CODE_ITI15 = new AuditEvent.TypeCode("ITI-15", "IHE Transactions", "Provide and Register Document Set");
     public static final TypeCode TYPE_CODE_ITI16 = new AuditEvent.TypeCode("ITI-16", "IHE Transactions", "Registry SQL Query");
+    public static final TypeCode TYPE_CODE_ITI17 = new AuditEvent.TypeCode("ITI-17", "IHE Transactions", "Retrieve Document");
     public static final TypeCode TYPE_CODE_ITI18 = new AuditEvent.TypeCode("ITI-18", "IHE Transactions", "Registry Stored Query");
     public static final TypeCode TYPE_CODE_ITI43 = new AuditEvent.TypeCode("ITI-43", "IHE Transactions", "Retrieve Document Set");
 
     public static final AuditEvent.ID AUDIT_EVENT_ID_REPORT = new ID("3","IHE","Report");
-    
+
     private static final ActiveParticipant.RoleIDCode ROLE_ID_HUMAN_REQUESTOR = new ActiveParticipant.RoleIDCode("HumanRequestor");
 
     public BasicXDSAuditMessage(AuditEvent.ID eventID, AuditEvent.ActionCode actionCode, TypeCode typeCode) {
         super(new AuditEvent(eventID,
-        		actionCode).addEventTypeCode(typeCode));
+                actionCode).addEventTypeCode(typeCode));
     }
-        
+
     public ActiveParticipant setSource(String processID, String[] alternateIDs, 
-            String processName, String hostname) {
+            String processName, String hostname, boolean requestor) {
         return addActiveParticipant(
-        		XDSActiveParticipant.createActiveProcess(processID, alternateIDs, 
-                        processName, hostname, true)
-                .addRoleIDCode(ActiveParticipant.RoleIDCode.SOURCE));
+                XDSActiveParticipant.createActiveProcess(processID, alternateIDs, 
+                        processName, hostname, requestor)
+                        .addRoleIDCode(ActiveParticipant.RoleIDCode.SOURCE));
     }
-    
+
     public ActiveParticipant setDestination(String uri, String[] alternateIDs, 
-            String userName, String hostname) {
+            String userName, String hostname, boolean requestor) {
         return addActiveParticipant(
-        		XDSActiveParticipant.createActiveProcess(uri, alternateIDs, 
-                        userName, hostname, false)
+                XDSActiveParticipant.createActiveProcess(uri, alternateIDs, 
+                        userName, hostname, requestor)
                         .addRoleIDCode(ActiveParticipant.RoleIDCode.DESTINATION));
     }
 
-    public ActiveParticipant setHumanRequestor(String userID, String altUserID, String userName) {
+    public ActiveParticipant setHumanRequestor(String userID, String altUserID, String userName, boolean requestor) {
         return addActiveParticipant(
-        		XDSActiveParticipant.createActivePerson(userID, altUserID, 
-                        userName, null, false))
-                .addRoleIDCode(ROLE_ID_HUMAN_REQUESTOR);
+                XDSActiveParticipant.createActivePerson(userID, altUserID, 
+                        userName, null, requestor))
+                        .addRoleIDCode(ROLE_ID_HUMAN_REQUESTOR);
     }
-    
+
     public ParticipantObject setPatient(String id, String name) {
         return addParticipantObject(ParticipantObject.createPatient(id, name));
     }
 
-    
+
     public ParticipantObject setSubmissionSet(String uid) {
         ParticipantObject subm = new ParticipantObject(uid, 
-                new ParticipantObject.IDTypeCode("urn:uuid:a54d6aa5-d40d-43f9-88c5-b4633d873bdd","dcm4chee","Submission Set ClassificationNode UID"));
+                new ParticipantObject.IDTypeCode("urn:uuid:a54d6aa5-d40d-43f9-88c5-b4633d873bdd","IHE XDS Metadata","Submission Set ClassificationNode UID"));
         subm.setParticipantObjectTypeCode(ParticipantObject.TypeCode.SYSTEM);
         subm.setParticipantObjectTypeCodeRole(ParticipantObject.TypeCodeRole.JOB);
         return addParticipantObject(subm);
     }
-    
+
+    public ParticipantObject setDocumentUri(String docUri, String docUid) {
+        ParticipantObject po = new ParticipantObject(docUri, 
+                new ParticipantObject.IDTypeCode("12","RFC-3881","URI"));
+        po.setParticipantObjectTypeCode(ParticipantObject.TypeCode.SYSTEM);
+        po.setParticipantObjectTypeCodeRole(ParticipantObject.TypeCodeRole.REPORT);
+        if ( docUid != null )
+            po.addParticipantObjectDetail("DOC_UID", docUid);
+        return addParticipantObject(po);
+    }
+
     public void validate() {
         super.validate();
         ActiveParticipant source = null;
@@ -128,17 +139,17 @@ public abstract class BasicXDSAuditMessage extends AuditMessage {
             ActiveParticipant ap = (ActiveParticipant) iter.next();
             List roleIDCodeIDs = ap.getRoleIDCodes();
             if (roleIDCodeIDs.contains(
-                ActiveParticipant.RoleIDCode.DESTINATION)) {
+                    ActiveParticipant.RoleIDCode.DESTINATION)) {
                 if (dest != null) {
                     throw new IllegalStateException(
-                            "Multiple Destination identification");
+                    "Multiple Destination identification");
                 }
                 dest = ap;               
             } else if (roleIDCodeIDs.contains(
-                ActiveParticipant.RoleIDCode.SOURCE)) {
+                    ActiveParticipant.RoleIDCode.SOURCE)) {
                 if (source != null) {
                     throw new IllegalStateException(
-                            "Multiple Source identification");
+                    "Multiple Source identification");
                 }
                 source = ap;               
             } else if (roleIDCodeIDs.contains(ROLE_ID_HUMAN_REQUESTOR) ) {
@@ -157,32 +168,32 @@ public abstract class BasicXDSAuditMessage extends AuditMessage {
     }    
     // Workaround to get UserIsRequestor=true in Audit message without change in dcm4chee-audit!
     //TODO: Add setter method for encodeUserIsRequestorTrue in dcm4che-audit to make this switch available.
-    
+
     static class XDSActiveParticipant extends ActiveParticipant {
-    	
+
         private static final String USER_IS_REQUESTOR = "UserIsRequestor";
 
-		public XDSActiveParticipant(String userID, boolean userIsRequestor) {
+        public XDSActiveParticipant(String userID, boolean userIsRequestor) {
             super(userID, userIsRequestor);
             if (this.getAttribute(USER_IS_REQUESTOR) == null ) {
                 addAttribute(USER_IS_REQUESTOR, Boolean.valueOf(userIsRequestor), true);
             }
         }
- 
-	    public static ActiveParticipant createActiveProcess(String processID,
-	            String[] aets, String processName, String nodeID, boolean requestor) {
-	        return createActivePerson(processID, AuditMessage.aetsToAltUserID(aets), 
-	                processName, nodeID, requestor) ;
-	    }
-		
-	    public static ActiveParticipant createActivePerson(String userID,
-	            String altUserID, String userName, String napID, boolean requestor) {
-	    	XDSActiveParticipant ap = new XDSActiveParticipant(userID, requestor);
-	        ap.setAlternativeUserID(altUserID);
-	        ap.setUserName(userName);
-	        ap.setNetworkAccessPointID(napID);
-	        return ap;
-	    }
-		
+
+        public static ActiveParticipant createActiveProcess(String processID,
+                String[] aets, String processName, String nodeID, boolean requestor) {
+            return createActivePerson(processID, AuditMessage.aetsToAltUserID(aets), 
+                    processName, nodeID, requestor) ;
+        }
+
+        public static ActiveParticipant createActivePerson(String userID,
+                String altUserID, String userName, String napID, boolean requestor) {
+            XDSActiveParticipant ap = new XDSActiveParticipant(userID, requestor);
+            ap.setAlternativeUserID(altUserID);
+            ap.setUserName(userName);
+            ap.setNetworkAccessPointID(napID);
+            return ap;
+        }
+
     }
 }
