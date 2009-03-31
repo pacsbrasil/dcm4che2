@@ -52,16 +52,16 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class HttpUserInfo {
     private static final String WEB_REQUEST_KEY =
-            "javax.servlet.http.HttpServletRequest";
+        "javax.servlet.http.HttpServletRequest";
     private String userId;
     private String ip;
     private String hostName;
-	private String requestURI;
+    private String requestURI;
 
     public HttpUserInfo(boolean enableDNSLookups) {
         try {
             HttpServletRequest rq = (HttpServletRequest)
-                    PolicyContext.getContext(WEB_REQUEST_KEY);
+            PolicyContext.getContext(WEB_REQUEST_KEY);
             init(rq, enableDNSLookups);
         } catch (PolicyContextException e) {
             userId = "UNKOWN_USER";
@@ -70,47 +70,47 @@ public class HttpUserInfo {
     public HttpUserInfo(HttpServletRequest rq, boolean enableDNSLookups) {
         init(rq, enableDNSLookups);
     }
-    
+
     private void init(HttpServletRequest rq, boolean enableDNSLookups) {
-    	if ( rq == null ) { //direct JMX call? (no http request)
-    		userId = "process_user";
-    		ip = "127.0.0.1";
-    		hostName = "localhost";
-    		requestURI = "http://localhost"; 
-    	} else {
-	        userId = rq.getRemoteUser();
-	        String xForward = (String) rq.getHeader("x-forwarded-for");
-	        if (xForward != null) {
-	            int pos = xForward.indexOf(',');
-	            ip = (pos > 0 ? xForward.substring(0,pos) : xForward).trim();
-	        } else {
-	            ip = rq.getRemoteAddr();
-	        }
-	        if ( enableDNSLookups ) {
-	            try {
-	                hostName = InetAddress.getByName(ip).getHostName();
-	            } catch (UnknownHostException ignore) {
-	                hostName = ip;
-	            }
-	        } else {
-	            hostName = ip;
-	        }
-	        requestURI = rq.getRequestURI();
-    	}
+        if ( rq == null ) { //direct JMX call? (no http request)
+            userId = "process_user";
+            ip = "127.0.0.1";
+            hostName = "localhost";
+            requestURI = "http://localhost"; 
+        } else {
+            userId = rq.getRemoteUser();
+            String xForward = (String) rq.getHeader("x-forwarded-for");
+            if (xForward != null) {
+                int pos = xForward.indexOf(',');
+                ip = (pos > 0 ? xForward.substring(0,pos) : xForward).trim();
+            } else {
+                ip = rq.getRemoteAddr();
+            }
+            if ( enableDNSLookups ) {
+                try {
+                    hostName = InetAddress.getByName(ip).getHostName();
+                } catch (UnknownHostException ignore) {
+                    hostName = ip;
+                }
+            } else {
+                hostName = ip;
+            }
+            requestURI = rq.getRequestURI();
+        }
     }
-    
+
     public String getUserId() {
         return userId;
     }
     public String getIP() {
         return ip;
     }
-    
+
     public String getHostName() {
         return hostName;
     }
-	public String getRequestURI() {
-		return requestURI;
-	}
+    public String getRequestURI() {
+        return requestURI;
+    }
 
 }
