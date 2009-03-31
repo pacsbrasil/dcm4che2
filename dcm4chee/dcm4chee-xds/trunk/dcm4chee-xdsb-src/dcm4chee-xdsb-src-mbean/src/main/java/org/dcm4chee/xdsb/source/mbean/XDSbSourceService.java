@@ -118,6 +118,7 @@ public class XDSbSourceService extends ServiceMBeanSupport {
     private boolean logResponse;
     private boolean indentXmlLog;
     private boolean useSOAP11=false;
+    private boolean forceSourceAsRequestor;
     
     private XdsHttpCfgDelegate httpCfgDelegate = new XdsHttpCfgDelegate();
 
@@ -221,6 +222,12 @@ public class XDSbSourceService extends ServiceMBeanSupport {
     }
     public void setUseSOAP11(boolean useSOAP11) {
         this.useSOAP11 = useSOAP11;
+    }
+    public boolean isForceSourceAsRequestor() {
+        return forceSourceAsRequestor;
+    }
+    public void setForceSourceAsRequestor(boolean forceSourceAsRequestor) {
+        this.forceSourceAsRequestor = forceSourceAsRequestor;
     }
     private boolean isRimV2(Node n) {
         if ( n instanceof org.w3c.dom.Document)
@@ -447,7 +454,7 @@ public class XDSbSourceService extends ServiceMBeanSupport {
                 AuditMessage.getLocalAETitles(),
                 AuditMessage.getProcessName(),
                 AuditMessage.getLocalHostName(),
-                user == null);
+                forceSourceAsRequestor || user == null);
         if (user != null) {
             msg.setHumanRequestor(user, null, null, true);
         }
@@ -456,7 +463,7 @@ public class XDSbSourceService extends ServiceMBeanSupport {
             host = new URL(xdsRepositoryURI).getHost();
         } catch (MalformedURLException ignore) {
         }
-        msg.setDestination(xdsRepositoryURI, null, "XDS Export", host, false );
+        msg.setDestination(xdsRepositoryURI, null, null, host, false );
         msg.validate();
         Logger.getLogger("auditlog").info(msg);
     }
