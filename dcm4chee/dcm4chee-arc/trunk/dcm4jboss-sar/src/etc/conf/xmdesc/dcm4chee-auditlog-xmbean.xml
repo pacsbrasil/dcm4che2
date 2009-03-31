@@ -159,6 +159,17 @@
       <value value="false"/>
     </descriptors>
   </attribute>
+  <attribute access="read-write" getMethod="isAllowMultipleRequestors"
+    setMethod="setAllowMultipleRequestors">
+    <description><![CDATA[Determines, if multiple requestors are allowed in a single Audit Message.<br/>
+    In RFC 3881 only one initiator/requestor is allowed!<br/>
+    Default: <code>false</code>]]></description>
+    <name>AllowMultipleRequestors</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="false"/>
+    </descriptors>
+  </attribute>
   <attribute access="read-write" getMethod="getConfigurationDirectory"
     setMethod="setConfigurationDirectory">
     <description><![CDATA[Directory which contains configuration files
