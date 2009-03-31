@@ -293,6 +293,14 @@ public class AuditLogger extends ServiceMBeanSupport {
         ActiveParticipant.setEncodeUserIsRequestorTrue(enable);
     }
 
+    public boolean isAllowMultipleRequestors() {
+        return AuditMessage.isAllowMultipleRequestors();
+    }
+
+    public void setAllowMultipleRequestors(boolean enable) {
+        AuditMessage.setAllowMultipleRequestors(enable);
+    }
+    
     public final String getConfigurationDirectory() {
         return configDir;
     }
