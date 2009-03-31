@@ -152,6 +152,19 @@
          <value value="false" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isForceSourceAsRequestor"
+      setMethod="setForceSourceAsRequestor">
+      <description><![CDATA[ If activated the 'Source' ActiveParticipant (110153,DCM,Source) is set as Requestor.<br/>
+             If not activated (default) Source is only Requester if user (HumanRequestor) is not known!
+            ]]>
+      </description>
+      <name>ForceSourceAsRequestor</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="getDocumentStoreService" setMethod="setDocumentStoreService">
       <description>Used internally - do NOT modify.</description>
       <name>DocumentStoreService</name>
