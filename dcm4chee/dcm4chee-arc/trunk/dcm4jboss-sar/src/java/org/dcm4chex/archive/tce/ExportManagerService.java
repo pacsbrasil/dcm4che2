@@ -550,6 +550,9 @@ public class ExportManagerService extends AbstractScuService
     }
 
     private boolean isDelayed(Dataset manifest) {
+        if (delayReasons == null) {
+            return false;
+        }
         DcmElement sq = manifest.get(Tags.ContentSeq);
         for (int i = 0, n = sq.countItems(); i < n; i++) {
             Dataset item = sq.getItem(i);
