@@ -138,7 +138,8 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
     private ObjectFactory objFac = new ObjectFactory();
     private XDSDocumentWriterFactory wrFac = XDSDocumentWriterFactory.getInstance();
     private boolean disableForceMTOMResponse;
-
+    private boolean forceSourceAsRequestor;
+    
     public String getRepositoryUniqueId() {
         return repositoryUniqueId;
     }
@@ -224,6 +225,12 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
     }
     public void setDisableForceMTOMResponse(boolean disableForceMTOMResponse) {
         this.disableForceMTOMResponse = disableForceMTOMResponse;
+    }
+    public boolean isForceSourceAsRequestor() {
+        return forceSourceAsRequestor;
+    }
+    public void setForceSourceAsRequestor(boolean forceSourceAsRequestor) {
+        this.forceSourceAsRequestor = forceSourceAsRequestor;
     }
     public ObjectName getDocumentStoreService() {
         return docStoreDelegate.getDocumentStoreService();
@@ -557,14 +564,16 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
                 AuditMessage.getLocalAETitles(),
                 AuditMessage.getProcessName(),
                 AuditMessage.getLocalHostName(),
-                false);
-        ActiveParticipant humanReq = msg.setHumanRequestor(user != null ? user : "unknown", null, null, true);
+                forceSourceAsRequestor || user == null);
+        if (user != null) {
+            msg.setHumanRequestor(user, null, null, true);
+        }
         String host = "unknown";
         try {
             host = new URL(xdsRegistryURI).getHost();
         } catch (MalformedURLException ignore) {
         }
-        msg.setDestination(xdsRegistryURI, null, null, host, true );
+        msg.setDestination(xdsRegistryURI, null, null, host, false );
         msg.validate();
         Logger.getLogger("auditlog").info(msg);
     }
@@ -579,17 +588,18 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
                 AuditMessage.getLocalAETitles(),
                 AuditMessage.getProcessName(),
                 AuditMessage.getLocalHostName(),
-                true);
-        msg.setHumanRequestor(user != null ? user : "unknown", null, null, true);
+                forceSourceAsRequestor || user == null);
+        if (user != null) {
+            msg.setHumanRequestor(user, null, null, true);
+        }
 
-        String requestURI = userInfo.getRequestURI();
+        String requestURI = userInfo.getRequestURL();
         String host = "unknown";
         try {
             host = new URL(requestURI).getHost();
         } catch (MalformedURLException ignore) {
         }
-        msg.setDestination(requestURI, null, null, host, false );
-        msg.setSubmissionSet(submissionUID);
+        msg.setDestination(requestURI, new String[]{AuditMessage.getProcessID()}, null, host, false );
         msg.validate();
         Logger.getLogger("auditlog").info(msg);
     }

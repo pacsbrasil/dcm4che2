@@ -366,7 +366,7 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
         if ( auditLogIti17 ) {
             try {
                 HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
-                String docUri = userInfo.getRequestURI();
+                String docUri = userInfo.getRequestURL();
                 for ( String docUid : docUids ) {
                     this.logExport(docUri, docUid, userInfo, success);
                 }
@@ -387,7 +387,7 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
                         AuditMessage.getLocalHostName(),
                         true);
                 msg.setHumanRequestor(user != null ? user : "unknown", null, null, true);
-                msg.setDestination(userInfo.getRequestURI(), null, userInfo.getHostName(), userInfo.getIP(), false );
+                msg.setDestination(userInfo.getRequestURL(), null, userInfo.getHostName(), userInfo.getIP(), false );
                 msg.validate();
                 Logger.getLogger("auditlog").info(msg);
             } catch ( Throwable t) {
@@ -407,7 +407,7 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
                 AuditMessage.getLocalHostName(),
                 false);
 
-        String requestURI = userInfo.getRequestURI();
+        String requestURI = userInfo.getRequestURL();
         String host = "unknown";
         try {
             host = new URL(requestURI).getHost();
