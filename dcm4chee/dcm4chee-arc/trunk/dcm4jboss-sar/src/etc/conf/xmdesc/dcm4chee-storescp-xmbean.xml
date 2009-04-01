@@ -408,7 +408,7 @@ StoreSCP service.
 seconds (#s) in which the data base is polled for new received Series, for
 which Series Stored Notifications were not yet emitted.]]>
       </description>
-      <name>CheckPendingSeriesStoredInterva</name>
+      <name>CheckPendingSeriesStoredInterval</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="1m"/>
