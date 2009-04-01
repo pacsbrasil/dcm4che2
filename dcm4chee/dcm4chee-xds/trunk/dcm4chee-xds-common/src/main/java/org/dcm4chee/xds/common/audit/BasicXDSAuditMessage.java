@@ -133,7 +133,7 @@ public abstract class BasicXDSAuditMessage extends AuditMessage {
         po.setParticipantObjectTypeCode(ParticipantObject.TypeCode.SYSTEM);
         po.setParticipantObjectTypeCodeRole(ParticipantObject.TypeCodeRole.REPORT);
         if ( docUid != null )
-            po.addParticipantObjectDetail("DOC_UID", docUid);
+            po.addParticipantObjectDetail("Document Unique Id", docUid);
         return addParticipantObject(po);
     }
 
