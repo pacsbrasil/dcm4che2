@@ -414,7 +414,6 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
         } catch (MalformedURLException ignore) {
         }
         msg.setDestination(requestURI, null, "XDS Export", host, true );
-        msg.setDocumentUri(docUri, docUid);
         msg.validate();
         Logger.getLogger("auditlog").info(msg);
     }
