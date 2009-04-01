@@ -7,7 +7,7 @@
 
 <div style="float: left;"><table>
 
-<tr><td>$i18n.AccessionNumber;format="xml"$</td><td><input type="text" name="AccessionNumber" value="$query.AccessionNumber$" onkeypress="controller.keyPress('find',event)"/></td></tr>
+<tr><td>$i18n.AccessionNumber;format="xml"$</td><td><input id="accessionNumberInput" type="text" name="AccessionNumber" value="$query.AccessionNumber$" onkeypress="controller.keyPress('find',event)"/></td></tr>
 
 <tr><td>$i18n.StudyDateTimeF;format="xml"$</td><td>
   <select id="studyDateTimeSelect" name="StudyDateTime" onkeypress="controller.keyPress('find',event)">
