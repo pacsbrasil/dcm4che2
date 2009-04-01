@@ -121,9 +121,9 @@
     <xsl:apply-templates select="ParticipantObjectIDTypeCode"/>
     <xsl:text>=</xsl:text>
     <xsl:value-of select="@ParticipantObjectID"/>
-    <xsl:if test="@ParticipantObjectName">
+    <xsl:if test="ParticipantObjectName">
       <xsl:text>,&#32;Name=</xsl:text>
-      <xsl:value-of select="@ParticipantObjectName"/>
+      <xsl:value-of select="ParticipantObjectName"/>
     </xsl:if>
     <xsl:apply-templates select="ParticipantObjectQuery"/>
     <xsl:apply-templates

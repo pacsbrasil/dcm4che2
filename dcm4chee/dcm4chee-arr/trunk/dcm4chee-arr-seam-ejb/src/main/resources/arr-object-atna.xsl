@@ -81,10 +81,10 @@
       </xsl:attribute>
       <xsl:value-of select="@ParticipantObjectID"/>
     </span>
-    <xsl:if test="@ParticipantObjectName">
+    <xsl:if test="ParticipantObjectName">
       <xsl:text>, </xsl:text>
       <span title="Name">
-        <xsl:value-of select="@ParticipantObjectName"/>
+        <xsl:value-of select="ParticipantObjectName"/>
       </span>
     </xsl:if>
     <xsl:apply-templates select="ParticipantObjectDetail"/>
