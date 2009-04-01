@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -72,6 +73,9 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.handler.Handler;
+import javax.xml.ws.soap.SOAPBinding;
 
 import org.apache.log4j.Logger;
 import org.dcm4che2.audit.message.AuditEvent;
@@ -128,6 +132,7 @@ public class XDSbSourceService extends ServiceMBeanSupport {
     private String v3Tov2Xslt;
     private Templates v2toV3tpl;
     private Templates v3toV2tpl;
+    private boolean forceMTOMRequest;
 
     public String getSourceId() {
         return sourceID;
@@ -228,6 +233,12 @@ public class XDSbSourceService extends ServiceMBeanSupport {
     }
     public void setForceSourceAsRequestor(boolean forceSourceAsRequestor) {
         this.forceSourceAsRequestor = forceSourceAsRequestor;
+    }
+    public boolean isForceMTOMRequest() {
+        return forceMTOMRequest;
+    }
+    public void setForceMTOMRequest(boolean forceMTOMRequest) {
+        this.forceMTOMRequest = forceMTOMRequest;
     }
     private boolean isRimV2(Node n) {
         if ( n instanceof org.w3c.dom.Document)
@@ -377,6 +388,15 @@ public class XDSbSourceService extends ServiceMBeanSupport {
                         XDSConstants.URN_IHE_ITI_2007_PROVIDE_AND_REGISTER_DOCUMENT_SET_B, 
                         java.util.UUID.randomUUID().toString());
             }
+            if ( forceMTOMRequest ) {
+                SOAPBinding binding = (SOAPBinding)((BindingProvider)port).getBinding();
+                List<Handler> handlerChain = binding.getHandlerChain();
+                if ( handlerChain == null ) {
+                    handlerChain = new ArrayList();
+                }
+                handlerChain.add(new EnsureMtomHandler());
+                binding.setHandlerChain(handlerChain);               
+            }            
             log.info("####################################################");
             log.info("####################################################");
             log.info("XDS.b: Send provide and register document-b request to repository:"+xdsRepositoryURI);

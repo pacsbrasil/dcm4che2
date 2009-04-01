@@ -121,6 +121,19 @@
          <value value="false" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isForceMTOMRequest"
+      setMethod="setForceMTOMRequest">
+      <description><![CDATA[ If activated the the Provide And Register Request is forced to be MTOM! <br/>
+            This is necessary when request doesn't contain a Document! (e.g. create Folder) 
+            ]]>
+      </description>
+      <name>ForceMTOMRequest</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
 
    <operation impact="ACTION">
       <description><![CDATA[ Send the given ProvideAndRegister request to configured XDS.b Repository.<br/>
