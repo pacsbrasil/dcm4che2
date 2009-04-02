@@ -397,25 +397,30 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
     }
 
     private void logExport(String docUri, String docUid, HttpUserInfo userInfo, boolean success) {
-        String user = userInfo.getUserId();
-        XDSExportMessage msg = XDSExportMessage.createDocumentRepositoryRetrieveMessage(docUri, docUid);
-        msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
-            AuditEvent.OutcomeIndicator.MAJOR_FAILURE);
-        msg.setSource(AuditMessage.getProcessID(), 
-                AuditMessage.getLocalAETitles(),
-                AuditMessage.getProcessName(),
-                AuditMessage.getLocalHostName(),
-                false);
-
-        String requestURI = userInfo.getRequestURL();
-        String host = "unknown";
         try {
-            host = new URL(requestURI).getHost();
-        } catch (MalformedURLException ignore) {
+            String user = userInfo.getUserId();
+            XDSExportMessage msg = XDSExportMessage.createDocumentRepositoryRetrieveMessage(docUri, docUid);
+            msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
+                AuditEvent.OutcomeIndicator.MAJOR_FAILURE);
+            msg.setSource(AuditMessage.getProcessID(), 
+                    AuditMessage.getLocalAETitles(),
+                    AuditMessage.getProcessName(),
+                    AuditMessage.getLocalHostName(),
+                    false);
+    
+            String requestURI = userInfo.getRequestURL();
+            String host = "unknown";
+            try {
+                host = new URL(requestURI).getHost();
+            } catch (MalformedURLException ignore) {
+            }
+            msg.setDestination(requestURI, null, null, host, true );
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
+        } catch ( Throwable t ) {
+            log.warn("Audit Log (Import) failed! Ignored!",t);
         }
-        msg.setDestination(requestURI, null, "XDS Export", host, true );
-        msg.validate();
-        Logger.getLogger("auditlog").info(msg);
+        
     }
       
     public class XdsDataHandler extends DataHandler {
