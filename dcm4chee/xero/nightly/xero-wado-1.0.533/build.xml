@@ -1,0 +1,22 @@
+<project name="xero-wado" default="install">
+  <property name="version.ownVersion" value="true" />
+  <property name="version.increment" value="533" />
+
+  <property file="build.properties" />
+  <property name="baseAntDefns" value="../xero-util/baseBuild.xml" />
+  <property name="version.tags" value="https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4chee/xero/${version.parent.tagdir}" />
+
+  <import file="${baseAntDefns}" />
+
+  <!-- Recursively calls "childCall" on all child elements -->
+  <target name="recurseChildrenAll">
+     <ant dir="wado-xero" target="${childCall}" inheritAll="false">
+      <propertyset refid="childProperties" />
+     </ant>
+     <ant dir="wado2-war" target="${childCall}" inheritAll="false">
+      <propertyset refid="childProperties" />
+     </ant>
+  </target>
+
+</project>
+
