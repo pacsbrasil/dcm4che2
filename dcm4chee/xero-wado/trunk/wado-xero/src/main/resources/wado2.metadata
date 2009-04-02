@@ -233,6 +233,8 @@ htmlReport.stringTemplateFilter.contentType=text/html
 
 # Defines the filters that are allowed as child elements of this filter.
 wado=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+wado.lifecycle=${class:org.dcm4chee.xero.search.WadoLifecycle}
+
 wado.WADO.inherit=WADO
 
 # Add the shared WADO filters that are inserted infront of the requestType specific code.
@@ -254,6 +256,12 @@ wado.IMAGE=${ref:imageFilter}
 wado.IMAGE.priority=-1
 wado.CFIND=${ref:cfind}
 wado.CFIND.priority=-1
+wado.CLEARCACHE=${class:org.dcm4chee.xero.metadata.filter.CacheCleanup}
+wado.CLEARCACHE.priority=-1
+wado.CLEARCACHE.caches.locationCache=${ref:fileLocation.locationCache}
+wado.CLEARCACHE.caches.dicomImageReaderCache=${ref:dicomImageReader.memcache}
+wado.CLEARCACHE.caches.imageSourceCache=${ref:imageSource.cacheFilter}
+wado.CLEARCACHE.caches.seriesSourceCache=${ref:seriesSource.cacheFilter}
 
 WADO=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 WADO.choose=${class:org.dcm4chee.xero.wado.ChooseContentTypeFilter}

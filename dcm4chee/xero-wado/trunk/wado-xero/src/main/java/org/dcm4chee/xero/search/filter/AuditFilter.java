@@ -61,17 +61,17 @@ import org.dcm4chee.xero.metadata.servlet.MetaDataServlet;
  */
 public abstract class AuditFilter<T> implements Filter<T> {
 	// Need raw access to the log4j logger as it handles the audit message directly.
-	private Logger auditLogger = Logger.getLogger("auditlog");
+	private Logger auditlog = Logger.getLogger("auditlog");
 	private Logger log = Logger.getLogger(AuditFilter.class);
 
 	/** Sets the audit logger to use */
 	public void setAuditLogger(Logger auditLogger) {
-		this.auditLogger = auditLogger;
+		this.auditlog = auditLogger;
 	}
 	
 	/** Log the given audit message */
 	public void log(AuditMessage msg) {
-		auditLogger.info(msg);
+		auditlog.info(msg);
 	}
 
 	/** Override to create the appropriate type of audit message, and to fill with any

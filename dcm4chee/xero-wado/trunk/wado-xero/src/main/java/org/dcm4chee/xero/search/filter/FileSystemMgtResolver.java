@@ -78,14 +78,15 @@ log.warn("Using FileSystemMgt2.");
              FileDTO[] dtos = ((FileSystemMgt2) fileMgt).getFilesOfInstance(instanceUID);
              return dtos;
          } catch (NoClassDefFoundError e) {
-                isFileSystem2NotFound = true;
-             log.warn("Using old file system management.");
+             isFileSystem2NotFound = true;
+             log.warn("Using old file system management, no class def error:"+e);
          } catch(ClassNotFoundException e) {
-                isFileSystem2NotFound = true;
-             log.warn("Using old file system management.");
+             isFileSystem2NotFound = true;
+             log.warn("Using old file system management, class not found:"+e);
          } catch(NameNotFoundException e) {
-                isFileSystem2NotFound = true;
-             log.warn("Using old file system management.");
+             isFileSystem2NotFound = true;
+             log.warn("Using old file system management, ejb2 name not found:"+e);
+             //e.printStackTrace();
          }
             
         }

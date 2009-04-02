@@ -128,7 +128,7 @@ public class EJBServiceLocator {
             cache.put(jndiHomeName, home);
          }
       } catch (NamingException ne) {
-         log.warn("Unable to lookup "+jndiHomeName+" on "+host+":"+port );
+         log.warn("Unable to lookup "+jndiHomeName+" on "+host+":"+port,ne);
          throw ne;
       }
       return home;
