@@ -44,7 +44,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import javax.ejb.CreateException;
@@ -70,7 +69,6 @@ import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
@@ -753,8 +751,7 @@ public abstract class InstanceBean implements EntityBean {
         params.add(pat);
         int idx = 2;
         if (srCodes != null && srCodes.size() > 0) {
-            jbossQl
-                    .append(" AND CONCAT(i.srCode.codeValue, CONCAT('^', i.srCode.codingSchemeDesignator) )");
+            jbossQl.append(" AND i.srCode.pk");
             idx = addIN(jbossQl, idx, srCodes.size());
             params.addAll(srCodes);
         }

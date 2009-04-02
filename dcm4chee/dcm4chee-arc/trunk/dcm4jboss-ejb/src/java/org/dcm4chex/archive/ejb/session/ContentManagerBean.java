@@ -64,6 +64,8 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
+import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
@@ -101,6 +103,7 @@ import org.dcm4chex.archive.util.Convert;
  * @ejb.ejb-ref ejb-name="Study" view-type="local" ref-name="ejb/Study" 
  * @ejb.ejb-ref ejb-name="Series" view-type="local" ref-name="ejb/Series" 
  * @ejb.ejb-ref ejb-name="Instance" view-type="local" ref-name="ejb/Instance"
+ * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code" 
  * 
  * @ejb.ejb-ref ejb-name="PrivatePatient" view-type="local" ref-name="ejb/PrivatePatient" 
  * @ejb.ejb-ref ejb-name="PrivateStudy" view-type="local" ref-name="ejb/PrivateStudy" 
@@ -126,6 +129,7 @@ public abstract class ContentManagerBean implements SessionBean {
     private StudyLocalHome studyHome;
     private SeriesLocalHome seriesHome;
     private InstanceLocalHome instanceHome;
+    private CodeLocalHome codeHome;
 
     private PrivatePatientLocalHome privPatHome;
     private PrivateStudyLocalHome privStudyHome;
@@ -147,6 +151,8 @@ public abstract class ContentManagerBean implements SessionBean {
                 (SeriesLocalHome) jndiCtx.lookup("java:comp/env/ejb/Series");
             instanceHome =
                 (InstanceLocalHome) jndiCtx.lookup("java:comp/env/ejb/Instance");
+            codeHome =
+                (CodeLocalHome) jndiCtx.lookup("java:comp/env/ejb/Code");
 
             privPatHome =
                 (PrivatePatientLocalHome) jndiCtx.lookup("java:comp/env/ejb/PrivatePatient");
@@ -176,6 +182,7 @@ public abstract class ContentManagerBean implements SessionBean {
         studyHome = null;
         seriesHome = null;
         instanceHome = null;
+        codeHome = null;
         privPatHome = null;
         privStudyHome = null;
         privSeriesHome = null;
@@ -299,7 +306,16 @@ public abstract class ContentManagerBean implements SessionBean {
             Dataset ds;
             for ( Iterator iter = codes.iterator() ; iter.hasNext() ; ) {
                 ds = (Dataset) iter.next();
-                srCodes.add( ds.getString(Tags.CodeValue)+"^"+ds.getString(Tags.CodingSchemeDesignator) );
+                Collection c = codeHome.findByValueAndDesignator(
+                        ds.getString(Tags.CodeValue),
+                        ds.getString(Tags.CodingSchemeDesignator));
+                for (Iterator iterator = c.iterator(); iterator.hasNext();) {
+                    CodeLocal code = (CodeLocal) iterator.next();
+                    srCodes.add(code.getPk());
+                }
+            }
+            if (srCodes.isEmpty()) {
+                return Collections.EMPTY_LIST;
             }
         }
         Collection c = instanceHome.listByPatientAndSRCode(pat, srCodes, cuids);
