@@ -822,53 +822,61 @@ public class XDSService extends ServiceMBeanSupport {
     /*_*/
 
     private void logExport(String submissionUID, String patId, boolean success) {
-        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
-        String user = userInfo.getUserId();
-        XDSExportMessage msg = XDSExportMessage.createDocumentRepositoryExportMessage(submissionUID, patId);
-        msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
-            AuditEvent.OutcomeIndicator.MINOR_FAILURE);
-        msg.setSource(AuditMessage.getProcessID(), 
-                AuditMessage.getLocalAETitles(),
-                AuditMessage.getProcessName(),
-                AuditMessage.getLocalHostName(),
-                forceSourceAsRequestor || user == null);
-        if (user != null) {
-            msg.setHumanRequestor(user, null, null, true);
-        }
-        String host = "unknown";
         try {
-            host = new URL(xdsRegistryURI).getHost();
-        } catch (MalformedURLException ignore) {
+            HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+            String user = userInfo.getUserId();
+            XDSExportMessage msg = XDSExportMessage.createDocumentRepositoryExportMessage(submissionUID, patId);
+            msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
+                AuditEvent.OutcomeIndicator.MINOR_FAILURE);
+            msg.setSource(AuditMessage.getProcessID(), 
+                    AuditMessage.getLocalAETitles(),
+                    AuditMessage.getProcessName(),
+                    AuditMessage.getLocalHostName(),
+                    forceSourceAsRequestor || user == null);
+            if (user != null) {
+                msg.setHumanRequestor(user, null, null, true);
+            }
+            String host = "unknown";
+            try {
+                host = new URL(xdsRegistryURI).getHost();
+            } catch (MalformedURLException ignore) {
+            }
+            msg.setDestination(xdsRegistryURI, null, null, host, false );
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
+        } catch ( Throwable t ) {
+            log.warn("Audit Log (Export) failed! Ignored!",t);
         }
-        msg.setDestination(xdsRegistryURI, null, null, host, false );
-        msg.validate();
-        Logger.getLogger("auditlog").info(msg);
-    }
+}
     
     private void logImport(String submissionUID, String patId, boolean success) {
-        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
-        String user = userInfo.getUserId();
-        XDSImportMessage msg = XDSImportMessage.createDocumentRepositoryImportMessage(submissionUID, patId);
-        msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
-            AuditEvent.OutcomeIndicator.MAJOR_FAILURE);
-        msg.setSource(AuditMessage.getProcessID(), 
-                AuditMessage.getLocalAETitles(),
-                AuditMessage.getProcessName(),
-                AuditMessage.getLocalHostName(),
-                forceSourceAsRequestor || user == null);
-        if (user != null) {
-            msg.setHumanRequestor(user, null, null, true);
-        }
-
-        String requestURI = userInfo.getRequestURL();
-        String host = "unknown";
         try {
-            host = new URL(requestURI).getHost();
-        } catch (MalformedURLException ignore) {
+            HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+            String user = userInfo.getUserId();
+            XDSImportMessage msg = XDSImportMessage.createDocumentRepositoryImportMessage(submissionUID, patId);
+            msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
+                AuditEvent.OutcomeIndicator.MAJOR_FAILURE);
+            msg.setSource(AuditMessage.getProcessID(), 
+                    AuditMessage.getLocalAETitles(),
+                    AuditMessage.getProcessName(),
+                    AuditMessage.getLocalHostName(),
+                    forceSourceAsRequestor || user == null);
+            if (user != null) {
+                msg.setHumanRequestor(user, null, null, true);
+            }
+    
+            String requestURI = userInfo.getRequestURL();
+            String host = "unknown";
+            try {
+                host = new URL(requestURI).getHost();
+            } catch (MalformedURLException ignore) {
+            }
+            msg.setDestination(requestURI, new String[]{AuditMessage.getProcessID()}, null, host, false );
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
+        } catch ( Throwable t ) {
+            log.warn("Audit Log (Import) failed! Ignored!",t);
         }
-        msg.setDestination(requestURI, new String[]{AuditMessage.getProcessID()}, null, host, false );
-        msg.validate();
-        Logger.getLogger("auditlog").info(msg);
     }
 
 }
