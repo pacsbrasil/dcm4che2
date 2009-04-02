@@ -1,8 +1,10 @@
 package org.dcm4chee.xero.search.filter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
@@ -38,6 +40,16 @@ public class RegroupNonImage implements Filter<ResultsBean> {
    public RegroupNonImage() {
 	  log.info("RegroupNonImage created.");
    }
+   
+   static final Set<String> MODALITIES_TO_REGROUP = new HashSet<String>();
+   static {
+       MODALITIES_TO_REGROUP.add("SR");
+       MODALITIES_TO_REGROUP.add("PR");
+       MODALITIES_TO_REGROUP.add("KO");
+       MODALITIES_TO_REGROUP.add("AU");
+       MODALITIES_TO_REGROUP.add("ECG");
+   };
+   
    /**
     * Regroups KO, SR and PR into a single series with the Modality type being
     * the series UID for the synthetic series. Also arranges the new series with
@@ -69,9 +81,7 @@ public class RegroupNonImage implements Filter<ResultsBean> {
 			   // Handle encapsulated documents that aren't SR or KO and convert them to SR
 			   if( se.getDicomObject().size()>0 && (se.getDicomObject().get(0) instanceof ReportType) 
 					   && modality.equals("KO")==false) modality="SR"; 
-			   if (("PR".equals(modality) || "SR".equals(modality) || "KO".equals(modality)
-			         || "AU".equals(modality) || "ECG".equals(modality))
-					 && !se.getSeriesUID().startsWith(modality)) {
+			   if ( MODALITIES_TO_REGROUP.contains(modality) && !se.getSeriesUID().startsWith(modality)) {
 				  SeriesBean ser = addSeries(sb, modality, (SeriesBean) se);
 				  if (ser != null)
 					 addedSeries.add(ser);

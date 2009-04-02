@@ -18,6 +18,7 @@ import javax.sound.sampled.AudioSystem;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.util.CloseUtils;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
@@ -99,22 +100,29 @@ class AudioServletResponseItem implements ServletResponseItem {
       int bits = waveDs.getInt(Tag.WaveformBitsStored,8);
       byte[] data = waveDs.getBytes(Tag.WaveformData);
       int size = data.length;
-      
-      AudioFormat af = new AudioFormat(interpretation, rate, bits, 1, 1, 1 /rate, false);
+
       InputStream is = new ByteArrayInputStream(data);
-      AudioInputStream stream = new AudioInputStream(is, af, size);
-      AudioFileFormat.Type type = CONTENT_TYPES.get(encoding);
-      if( type==null ) {
-         log.info("Content type {} not found - using audio/wav", encoding);
-         encoding = "audio/wav";
-         type = AudioFileFormat.Type.WAVE;
-      }
-      log.info("Encoding response as {}", encoding);
-      response.setContentType("audio/wav");
-      response.setHeader(CONTENT_DISPOSITION, "inline;filename="+ds.getString(Tag.SOPInstanceUID)+"."+type.getExtension());
-      OutputStream os = response.getOutputStream();
-      AudioSystem.write(stream, type, os);
-      os.close();
+      OutputStream os = null;
+      try {
+            AudioFileFormat.Type type = CONTENT_TYPES.get(encoding);
+            AudioFormat af = new AudioFormat(interpretation, rate, bits, 1, 1, 1 / rate, false);
+            AudioInputStream stream = new AudioInputStream(is, af, size);
+            if (type == null) {
+                log.info("Content type {} not found - using audio/wav", encoding);
+                encoding = "audio/wav";
+                type = AudioFileFormat.Type.WAVE;
+            }
+            log.info("Encoding response as {}", encoding);
+            response.setContentType("audio/wav");
+            response.setHeader(CONTENT_DISPOSITION, "inline;filename=" + ds.getString(Tag.SOPInstanceUID) + "."
+                    + type.getExtension());
+            os = response.getOutputStream();
+            AudioSystem.write(stream, type, os);
+            os.close();
+        } finally {
+            CloseUtils.safeClose(is);
+            CloseUtils.safeClose(os);
+        }
    }
 
 }
