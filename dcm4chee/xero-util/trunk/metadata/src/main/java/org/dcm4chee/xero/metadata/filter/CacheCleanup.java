@@ -40,17 +40,25 @@ package org.dcm4chee.xero.metadata.filter;
 import java.util.List;
 import java.util.Map;
 
-import org.dcm4chee.xero.metadata.MetaData;
-import org.dcm4chee.xero.metadata.servlet.Lifecycle;
+import javax.servlet.http.HttpServletResponse;
 
-public class CacheCleanup<T> implements Filter<T>, Lifecycle {
+import org.dcm4chee.xero.metadata.MetaData;
+import org.dcm4chee.xero.metadata.servlet.ErrorResponseItem;
+import org.dcm4chee.xero.metadata.servlet.Lifecycle;
+import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
+
+public class CacheCleanup implements Filter<ServletResponseItem>, Lifecycle {
 
     List<MemoryCacheFilter<?> > caches;
     
     /** Cleans up the plugged in filters. */
-    public T filter(FilterItem<T> filterItem, Map<String, Object> params) {
+    public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
         clearCaches();
-        return filterItem.callNextFilter(params);
+        ServletResponseItem ret = filterItem.callNextFilter(params);
+        if(ret==null ) {
+            ret = new ErrorResponseItem(HttpServletResponse.SC_NO_CONTENT);
+        }
+        return ret;
     }
 
     public void start(String name) {
