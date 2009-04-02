@@ -40,7 +40,9 @@ package org.dcm4chee.xds.consumer.query;
 
 import java.io.File;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -68,12 +70,17 @@ import javax.xml.ws.addressing.AddressingBuilder;
 import javax.xml.ws.addressing.AddressingConstants;
 import javax.xml.ws.addressing.AddressingProperties;
 import javax.xml.ws.addressing.JAXWSAConstants;
+import javax.xml.ws.addressing.soap.SOAPAddressingProperties;
 import javax.xml.ws.handler.Handler;
 import javax.xml.ws.soap.SOAPBinding;
 
 import org.apache.log4j.Logger;
+import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4chee.xds.common.XDSConstants;
+import org.dcm4chee.xds.common.audit.HttpUserInfo;
+import org.dcm4chee.xds.common.audit.XDSQueryMessage;
 import org.dcm4chee.xds.common.delegate.XdsHttpCfgDelegate;
+import org.dcm4chee.xds.common.infoset.RegistryResponseType;
 import org.dcm4chee.xds.common.ws.WSAddressingHandler;
 import org.dcm4chee.xds.infoset.v30.AdhocQueryRequest;
 import org.dcm4chee.xds.infoset.v30.AdhocQueryResponse;
@@ -330,8 +337,11 @@ public class XDSQueryService extends ServiceMBeanSupport {
     public AdhocQueryResponse performQuery(AdhocQueryRequest rq) throws SOAPException, JAXBException {
         if ( rq == null )
             return null;
+        String queryRequest = InfoSetUtil.marshallObject(rq, true);
+        String queryId = rq.getAdhocQuery().getId();
+        String patId = InfoSetUtil.getSlotValue(rq.getAdhocQuery().getSlot(), StoredQueryFactory.QRY_DOCUMENT_ENTRY_PATIENT_ID, null);
         if (logRequestMessage) {
-            log.info("AdhocQueryRequest:"+InfoSetUtil.marshallObject(rq, true));
+            log.info("AdhocQueryRequest:"+queryRequest);
         }
         httpCfgDelegate.configTLS(xdsQueryURI);
         AdhocQueryResponse rsp = useSoap ? performQueryViaSoap(rq) : 
@@ -339,6 +349,7 @@ public class XDSQueryService extends ServiceMBeanSupport {
         if (logResponseMessage) {
             log.info("AdhocQueryResponse:"+InfoSetUtil.marshallObject(rsp, true));
         }
+        logQuery(queryId, patId, queryRequest, checkResponse(rsp));
         return rsp;
     }
 
@@ -551,5 +562,43 @@ public class XDSQueryService extends ServiceMBeanSupport {
             }
         }
         return sb.toString();
+    }
+
+    private boolean checkResponse(AdhocQueryResponse rsp) throws JAXBException {
+        if ( rsp == null ){
+            log.error("No AdhocQueryResponse from registry!");
+            return false;
+        }
+        log.debug("Check AdhocQueryResponse:"+InfoSetUtil.marshallObject(rsp, true) );
+        String status = rsp.getStatus();
+        log.debug("Rsp status:"+status );
+        return status == null ? false : XDSConstants.XDS_B_STATUS_SUCCESS.equalsIgnoreCase(rsp.getStatus());
+    }
+    
+    private void logQuery(String queryId, String patId, String queryRequest, boolean success) {
+        try {
+            HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+            String user = userInfo.getUserId();
+            //TODO: get replyTo from real WS Addressing Header
+            String replyTo = AddressingBuilder.getAddressingBuilder().newAddressingConstants().getAnonymousURI();
+            XDSQueryMessage msg = XDSQueryMessage.createConsumerStoredQueryMessage(replyTo, success, true);
+            if (user != null) {
+                msg.setHumanRequestor(user, null, null, true);
+            }
+            String host = "unknown";
+            try {
+                host = new URL(xdsQueryURI).getHost();
+            } catch (MalformedURLException ignore) {
+            }
+            msg.setDestination(xdsQueryURI, null, null, host, false );
+            if ( patId != null ) {
+                msg.setPatient(patId, null);
+            }
+            msg.addQuery(queryId, queryRequest);
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
+        } catch ( Throwable t ) {
+            log.warn("Audit Log (Query) failed! Ignored!",t);
+        }
     }
 }
