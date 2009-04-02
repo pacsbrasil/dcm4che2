@@ -5,7 +5,7 @@
 /** Causes the given report to be viewed - sets the layout to one of the viewable layouts
  *  if it isn't already in that mode, and changes the UID to view.
  */
-XeroController.prototype.viewReport = function RC_viewReport(layId,uid) {
+XeroController.prototype.viewReport = function RC_viewReport(layId,event,uid) {
 	var lay = this.findLayout(layId);
 	console.info("Trying to view report", uid,"in",lay.id);
 
@@ -23,7 +23,23 @@ XeroController.prototype.viewReport = function RC_viewReport(layId,uid) {
 	this.displayResize("viewReport");
 };
 
-XeroController.prototype.viewOther = function (id,uid) {
+/** Closes the report area */
+XeroController.prototype.closeArea = function (id,event,area) {
+	var lay = this.findLayout(id);
+	var nav = this.getNavigate(lay);
+	var studyLayout = nav.conversation.studyLayout;
+	console.info("Changing study layout from", studyLayout);
+	var newLay = "ShowReportAndImages";
+	if( studyLayout==="ShowImages" ) newLay = "ShowReport";
+	else if( studyLayout==="ShowReport" || area==="Report") newLay = "ShowImages";
+	else newLay = "ShowReport"; 
+	nav.setConversation("studyLayout", newLay);
+
+	this.displayResize(newLay);
+};
+
+/** View another object type */
+XeroController.prototype.viewOther = function (id,event,uid) {
 	var lay = this.findLayout(id);
 	var nav = lay.navigate;
 	var other = nav.external.findInstance(uid);
@@ -40,14 +56,3 @@ XeroController.prototype.viewOther = function (id,uid) {
 	window.open(url);
 };
 
-/** Changes the report/study layout to the one specified in layId */
-XeroController.prototype.reportLayout = function RC_viewReport(id, newLay) {
-	var lay = this.model.layout.findLayout(id);
-	if( !newLay ) newLay = lay.arg;
-	console.info("Trying to change report layout to",lay.i18n,"id",newLay);
-
-	var nav = this.getNavigate(lay);
-	nav.setConversation("studyLayout", newLay);
-
-	this.displayResize(newLay);
-};

@@ -55,6 +55,7 @@ displayTemplates.seriesPresentation=series/presentation
 displayTemplates.seriesThumbnails=series/thumbnails
 displayTemplates.seriesGspsMarkup=series/gspsMarkup
 displayTemplates.studyMenuItem=image/studyMenuItem
+displayTemplates.closeSeriesAreas=image/closeSeriesAreas
 displayTemplates.imageNav=image/imageNav
 displayTemplates.imageMenu=image/imageMenu
 displayTemplates.imageMenuWithDescription=image/imageMenuWithDescription

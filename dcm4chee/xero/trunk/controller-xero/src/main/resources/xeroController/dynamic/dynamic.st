@@ -4,6 +4,8 @@
  * The dynamic events are:
  *    Window Level - while actually interacting
  *	  Panning
+ *    Image Navigation within a series (TODO still)
+ *	  Menu display/handling
  *
  * The non-dynamic events include things like rotation, flip, reset that 
  * get applied on image mouse down, but don't add any mouse listening controls.  These
@@ -87,13 +89,22 @@ XeroController.prototype.dblMoveDistance=2;
 
 
 /**
- * Handles the mouse down events - this is typically called underneath a
- * wrapper function that computes the mode to try to use.
+ * Handles the mouse-down for an image area.
+ *
+ * There are 3 mouse button handlers for different types of mouse listening.
+ * mouseClickDrag is a mouse-down handler that handles click/drag operations on
+ * non-menu areas.  It can distinguish between single and double and click and drag
+ * actions. 
+ *
+ * @see mouseMenu for mouse-down actions for a menu event
+ * @see itemAction for actions on a specific button.
+ * 
  */
-XeroController.prototype.mouseDown = function(id,e) {
-	if( this.mousing ) return;
+XeroController.prototype.mouseClickDrag = function(id,e) {
+	if( this.mousing ) return this.mousing.mouseDown(id,e);
+	if( this.hideMenu(id,e) ) return;
 	if(!e) e = window.event;
-	var lay = this.model.layout.findLayout(id);
+	var lay = this.findLayout(id);
 	var area = lay.area; 
 	var handler = this.getShiftInfo(e);
 	var clickHandler = handler;
@@ -112,7 +123,8 @@ XeroController.prototype.mouseDown = function(id,e) {
 		clickHandler = clickHandler + "click"+but;
 	};
 	if( area ) {
-		var mode = this["getMode"+area](lay,e)+"_";
+		var mode = "";
+		if( this["getMode"+area] ) mode = this["getMode"+area](lay,e)+"_";
 		handler = mode+handler+area;
 		clickHandler = mode+clickHandler+area;
 	} 
@@ -148,7 +160,7 @@ XeroController.prototype.mouseDown = function(id,e) {
 		console.warn("Mouse prepare for",handler,"returned false, not mousing.");
 		return;
 	}
-	console.info("Area prepared - now about to hook listeners.");
+	console.info("Area prepared - now about to hook listeners to", mouseDom.id);
 	
 	hookEvent(mouseDom,"mouseout", XC_callMouseOut);
 	hookEvent(mouseDom,"mouseup", XC_callMouseUp);
@@ -159,16 +171,16 @@ XeroController.prototype.mouseDown = function(id,e) {
 };
 
 /** Call the Xero controller mouse move. */
-function XC_callMouseMove(evt) {
-	return controller.mouseMove(evt);
+function XC_callMouseMove(e) {
+	return controller.mouseMove(e);
 };
 /** Call the Xero controller mouse move. */
-function XC_callMouseOut(evt) {
-	return controller.mouseOut(evt);
+function XC_callMouseOut(e) {
+	return controller.mouseOut(e);
 };
 /** Call the Xero controller mouse move. */
-function XC_callMouseUp(evt) {
-	return controller.mouseUp(evt);
+function XC_callMouseUp(e) {
+	return controller.mouseUp(e);
 };
 
 /** Handle the mouse movement events */
@@ -178,9 +190,6 @@ XeroController.prototype.mouseMove = function(e) {
 		unhookEvent(target(e),"mousemove", XC_callMouseMove);
 		return;
 	};
-	if( !isMouseDown(e) ) {
-		return this.mouseUp(e);
-	}
 	// Only start sending events to the child element once the double click
 	// time/distance is exceeded so that no updates are done before that.
 	// The return value will be true on started once it is ready.
@@ -231,14 +240,13 @@ function runSingleClickMousing() {
 XeroController.prototype.mouseOut = function(e) {
 	if( !this.mousing ) return;
 	if( !e ) e = window.event;
-	var targ = target(e);
+	var tg = this.mousing.mouseDom;
 	var reltg = (e.relatedTarget) ? e.relatedTarget : e.toElement;
-	var src = this.mousing.getMouseDom(targ);
-	var dest = this.mousing.getMouseDom(reltg);
-	console.info("Mouse out test src id dest id",(src==null ? "null src" : src.id), (dest==null ? "null dest" : dest.id));
-	if( dest===null || src!==dest ) return this.mouseUp(e);
-	console.info("Same target - just ignoring this.");
-	return cancelEvent(e);
+	console.info("tg=",tg.id,"reltg=",reltg.id,e.nodeName);
+	while (reltg!=null && reltg !== tg && reltg.nodeName != 'BODY') 
+		reltg= reltg.parentNode
+	if (reltg===tg) return;
+	return this.mouseUp(e);
 };
 
 
@@ -285,6 +293,9 @@ MouseHandler.prototype.runClickEvent = function(e) {
 	this.controller[this.clickHandler](this.lay,e);
 	this.clickHandler = undefined;
 };
+
+/** Handles another mouse-down event - default is to do nothing */
+MouseHandler.prototype.mouseDown = function(lay,e) {};
 
 /** Determines if the object was a drag */
 MouseHandler.prototype.isDrag = function(e) {
@@ -432,3 +443,4 @@ ImageMouseHandler.prototype.getTarget = function(e)
 $dynamic/windowLevel()$
 $dynamic/spat()$
 $dynamic/zoom()$
+$dynamic/menu()$

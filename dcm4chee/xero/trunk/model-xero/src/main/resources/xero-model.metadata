@@ -35,6 +35,10 @@ static.patientMenu.inherit=toolbar
 ######## Window Level Menu
 static.imageMenu.inherit=toolbar
 
+static.imageMenu.children.def.inherit=displayModeItem
+static.imageMenu.children.def.priority=0
+static.imageMenu.children.def.i18n=default
+
 static.imageMenu.children.wl.inherit=displayModeItem
 static.imageMenu.children.wl.priority=100
 static.imageMenu.children.wl.i18n=WindowLevel

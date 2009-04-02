@@ -45,7 +45,7 @@ XeroController.prototype.displayPatient = function XC_displayPatient(id,patientI
 	if( uids.length>1 ) {
 		navPat.setNavigation(uids[1],"nav1");
 	} else {
-		navPat.setNavigation(uids[0]+"&c=1","nav1");
+		navPat.setNavigation(uids[0]+"&c=1","nav1"); 
 	}
 	var keyObjects = model.layout.findLayout("KeyObjects");
 	navigate.conversation.keyObjectDefault = (keyObjects && keyObjects.isActive);
@@ -66,7 +66,7 @@ XeroController.prototype.displayPatient = function XC_displayPatient(id,patientI
 	if( uids.length==1 ) {
 		var navS0 = navPat.getChild(0,"nav0");
 		if(! navS0.conversation.seriesLayout ) {
-			if( navS0.external.series.length>4 ) {
+			if( navS0.getExtChildren().length>4 ) {
 				navS0.setConversation("seriesLayout", "Layout4x2");
 			}
 		}  
@@ -134,14 +134,40 @@ XeroController.prototype.displayMode = function(layId) {
 };
 
 /** Sets the current display mode - that is, the operation that controls click etc */
-XeroController.prototype.seriesLayout = function(layId, arg) {
-	var lay = this.model.layout.findLayout(layId);
+XeroController.prototype.seriesLayout = function(id, event, arg) {
+	var lay = this.model.layout.findLayout(id);
 	console.info("Changing series layout to",lay.i18n);
 	var nav = lay.navigate;
 	if( nav==null ) nav = lay.parent.navigate;
 	if( !arg ) arg = lay.i18n;
 	nav.setConversation("seriesLayout", arg);
+	if( nav.conversation.studyLayout === "ShowReport" ) {
+		nav.setConversation("studyLayout", "ShowReportAndImages");
+	}
+
+	// Navigate backwards to ensure all positions are shown.
+	var cnt = this.getSeriesLayoutCount(arg);
+	if( cnt>1 ) {
+		var posn;
+		var navTo = 0;
+		var c0 = nav.getChild(0);
+		while(posn==null && cnt>0) {
+			if( c0.lookupId(--cnt)!=null ) break;
+			if( c0.lookupId(navTo)==null ) break;
+			navTo--;
+		}
+		console.info("Trying to back-navigate to", navTo);
+		if( navTo<0 ) nav.setNavigation(c0.lookupId(navTo));
+	}
 	this.displayResize("seriesLayout");
+};
+
+/** From the layout name, figure out how many objects could be shown. */
+XeroController.prototype.getSeriesLayoutCount = function(layout) {
+	if( layout==="Layout1x1" ) return 1;
+	if( layout==="Layout2x2" ) return 4;
+	if( layout==="Layout4x2" ) return 8;
+	return 2;
 };
 
 /** Chooses between the compare study mode and single study mode */
@@ -184,10 +210,12 @@ XeroController.prototype.mergeExternal = function(external) {
 
 };
 
-XeroController.prototype.selectGsps = function XC_selectGsps(id, gsps) {
+XeroController.prototype.selectGsps = function XC_selectGsps(id, event, gsps) {
 	console.info("You selected to apply %s to %s", gsps, id);
-	var lay = this.model.layout.findLayout(id);
+	var lay = this.findLayout(id);
 	var nav = this.getNavigate(lay);
+	var curGsps = nav.conversation.getQueryModifier("pr");
+	if( curGsps!=null && curGsps.substring(6)==gsps ) gsps = null;
 	if( gsps==null || gsps==="" ) nav.conversation.setQueryModifier("pr");
 	else nav.conversation.setQueryModifier("pr","&gsps="+gsps,true);
 	nav.setConversation("gspsLabel",gsps);
@@ -197,10 +225,12 @@ XeroController.prototype.selectGsps = function XC_selectGsps(id, gsps) {
 	console.info("Completed applying gsps %s", gsps);	
 };
 
-XeroController.prototype.selectKo = function (id, koUID) {
+XeroController.prototype.selectKo = function (id, event, koUID) {
 	console.info("You selected to apply ko %s to %s", koUID, id);
 	var lay = this.model.layout.findLayout(id);
 	var nav = this.getNavigate(lay);
+	var curKo = nav.conversation.getQueryModifier("ko");
+	if( curKo!=null && curKo.substring(7)==koUID ) koUID = null;
 	if( koUID==null || koUID==="" ) {
 		var qm = nav.conversation.setQueryModifier("ko","&koUID=*");
 		qm.infoOnly = true;
@@ -244,7 +274,7 @@ XeroController.prototype.displayStudy = function XC_displayStudy(src,patientId, 
 /** Navigates a given study next/previous - skips next/prev if they are
  * shown in the alt screen.
  */
-XeroController.prototype.navStudy = function(id,dir) {
+XeroController.prototype.navStudy = function(id,event,dir) {
 	console.info("Navigating study dir",dir,"in",id);
 	var lay = this.findLayout(id);
 	var nav = this.getNavigate(lay);
@@ -268,7 +298,7 @@ XeroController.prototype.navStudy = function(id,dir) {
 };
 
 /** Navigates to a given study for a given study slot */
-XeroController.prototype.navToStudy = function(id,uid) {
+XeroController.prototype.navToStudy = function(id,event,uid) {
 	var lay = this.findLayout(id);
 	var nav = this.getNavigate(lay);
 	if( !(nav && nav.external) ) return;
@@ -284,7 +314,7 @@ XeroController.prototype.navToStudy = function(id,uid) {
 };
 
 /** Navigates at the series level to a specific series */
-XeroController.prototype.navToSer = function XC_NavToSer(id,uid) {
+XeroController.prototype.navToSer = function XC_NavToSer(id,event,uid) {
 	console.info("Trying %s to navigate to %s", id, uid);
 	var lay = this.model.patientLayout.findLayout(id);
 	var navigate = lay.navigate;
@@ -295,7 +325,7 @@ XeroController.prototype.navToSer = function XC_NavToSer(id,uid) {
 };
 
 /** Navigates at the series level by dir +/- forward/backwards */
-XeroController.prototype.navSer = function XC_navSer(id,dir) {
+XeroController.prototype.navSer = function XC_navSer(id,event,dir) {
 	var lay = this.model.layout.findLayout(id);
 	console.info("You are trying to navigate %s in dir %d found lay %s", id,dir,lay.id);
 	var nav = lay.navigate;
@@ -306,12 +336,21 @@ XeroController.prototype.navSer = function XC_navSer(id,dir) {
 		return;
 	}
 	dir = Math.floor(dir);
-	// TODO - this should operate as a child of hte series it belongs to,
+	// TODO - this should operate as a child of the series it belongs to,
 	// then the getChild would not be required.
 	var dirSeries = nav.getChild(0).lookupId(dir);
 	if(!dirSeries ) {
 		console.warn("Didn't find a next/previous series to navigate to.");
 		return;
+	}
+	var sl = nav.conversation.seriesLayout;
+	var cnt = this.getSeriesLayoutCount(sl);
+	if( dir>0 && cnt>1) {
+		var dirTest = nav.getChild(0).lookupId(cnt);
+		if( !dirTest ) {
+			console.info("Not able to navigate past series end points.");
+			return;
+		} 
 	}
 	console.info("You are trying to navigate to %s", dirSeries);
 	nav.setNavigation(dirSeries);
@@ -319,7 +358,7 @@ XeroController.prototype.navSer = function XC_navSer(id,dir) {
 };
 
 /** Navigates at the image level - can be called against either the imageToolbar or imageArea */
-XeroController.prototype.navImg = function XC_navImg(id,dir) {
+XeroController.prototype.navImg = function XC_navImg(id,event,dir) {
 	var lay = this.findLayout(id);
 	console.info("You are trying to navigate",id,"in dir",dir,"found lay", id,dir,lay.id);
 	var navigate = this.getNavigate(lay);
@@ -361,7 +400,7 @@ XeroController.prototype.wheelSeries = function(id,e) {
 	else wheelData = (wheelData * id.gridX * id.gridY)/3;
 	wheelData = Math.floor(-wheelData);
 	console.info("Trying to navigate %d", wheelData);
-	this.navImg(id,wheelData);
+	this.navImg(id,e,wheelData);
 	console.info("Wheel isComplete=%s",id.isComplete());
 	return cancelEvent(e);
 };
@@ -371,7 +410,7 @@ XeroController.prototype.wheelSeries = function(id,e) {
  */
 XeroController.prototype.dblImage = function(id,e) {
 	console.info("dbl image on",id);
-	var lay =this.model.patientLayout.findLayout(id);
+	var lay =this.findLayout(id);
 	var nav = this.getNavigate(lay);
 	var nth = nav.parent.offset;
 	nav = nav.parent.parent;
@@ -385,7 +424,6 @@ XeroController.prototype.dblImage = function(id,e) {
 	  	nav.setConversation("dblSeries");
 	  } else mode = "Layout2x2";
 	} else {
-	  if(!mode) mode = "Layout2x2";
 	  nav.conversation.wasSeriesLayout = mode;
 	  mode="Layout1x1";
 	  nav.setConversation("dblSeries", nav.getChild(0).lookupId(0));
@@ -393,11 +431,10 @@ XeroController.prototype.dblImage = function(id,e) {
 	}
 	nav.setConversation("seriesLayout", mode);
 	if( navTo ) {
-		console.debug("DBl click navigating seris to",navTo);
+		console.debug("DBl click navigating series to",navTo);
 		nav.setNavigation(navTo);		
 	}
 	this.updateDisplayTab(true);
-	//this.displayResize("doubleImage");
 };
 
 /** Changes the image layout */

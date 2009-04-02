@@ -74,6 +74,7 @@ iframe {
 }
 
 div.iReport {
+	position: relative;
 	float: left;
 }
 
@@ -255,6 +256,7 @@ div.tabHeader {
 	display: block;
 	clear: both;
 	height: 24px;
+	background: black;
 }
 
 .menu ul li table {
@@ -333,6 +335,11 @@ div.tabHeader {
     /* The next two should be in the previous definition, but that breaks IE menu hiding */
 	position:absolute;
 	width:22.5em;
+}
+
+.menu ul.click li:hover ul,
+.menu ul.click li a:hover ul {
+	display: none;
 }
 
 .menu ul li:hover ul.leftbutton,
@@ -462,3 +469,16 @@ div.imageMenu {
 	left:1%;
 }
 
+div.closeArea {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	width: 20px;
+	height: 20px;
+	z-index: 1;
+}
+
+div.hoverMenu:hover div {
+	background: black;
+	height: 2em;
+}

@@ -67,7 +67,7 @@ XeroController.prototype.findAction = function XC_findAction(src) {
 };
 
 /** Sort the selected columns */
-XeroController.prototype.sortQuery = function SC_sortQuery(src,col) {
+XeroController.prototype.sortQuery = function SC_sortQuery(src,event,col) {
   var lay = model.idMap.SearchLayout
   console.info("Found sort layout %s",lay);
   if(! lay.search ) {

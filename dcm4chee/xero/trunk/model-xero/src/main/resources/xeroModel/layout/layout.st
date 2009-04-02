@@ -148,7 +148,7 @@ Layout.prototype.resize = function Layout_resize(width,height,style) {
 			if( i+j*this.gridX>=usedLay.length ) break;
 			layout = usedLay[i+j*this.gridX];
 			subWidth = layout.absWidth;
-			if(!subWidth ) {
+			if( subWidth==null ) {
 				subWidth = layout.relWidth;
 				if( !subWidth ) subWidth = 100;
 				subWidth = subWidth*width/sumRelWidth;
@@ -160,7 +160,7 @@ Layout.prototype.resize = function Layout_resize(width,height,style) {
 			style = "width:"+Math.floor((subWidth)*998/this.width)/10+"%;";
 			
 			subHeight = layout.absHeight;
-			if(! subHeight ) {
+			if( subHeight==null ) {
 				this.debug("Didn't find subHeight - computing it from height %d and sumRelHeight %d",height, sumRelHeight);
 				subHeight = layout.relHeight;
 				if( !subHeight ) subHeight = 100;
@@ -242,7 +242,7 @@ Layout.prototype.sumRelWidth = function Layout_sumRelWidth(usedLay) {
 		layout = usedLay[i];
 		if( layout.relWidth ) {
 			ret = ret+layout.relWidth;
-		} else if( ! layout.absWidth ) {
+		} else if( layout.absWidth==null ) {
 			ret = ret+100;
 		}
 	};
@@ -255,7 +255,7 @@ Layout.prototype.sumRelHeight = function Layout_sumRelHeight(usedLay) {
 		layout = usedLay[i];
 		if( layout.relHeight ) {
 			ret = ret+layout.relHeight;
-		} else if( !layout.absHeight ) {
+		} else if( layout.absHeight==null ) {
 			ret = ret+100;
 		}
 	};
@@ -324,11 +324,10 @@ Layout.prototype.findRotate = function (i18n, dir, lst) {
 };
 
 /** Copies relevant attributes from another layout - should be over-ridden if
- * more than just the i18n, icon, label, arg are to be copied.
+ * more than just the i18n, icon, label are to be copied.
  */
 Layout.prototype.copyFrom = function(lay) {
 	this.i18n = lay.i18n;
 	this.label = lay.label;
 	this.icon = lay.icon;
-	this.arg = lay.arg;
 };

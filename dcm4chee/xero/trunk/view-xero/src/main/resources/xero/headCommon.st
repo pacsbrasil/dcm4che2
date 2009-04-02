@@ -21,7 +21,7 @@
   		tbody { overflow: auto; height: 95%; }
   	</style>
   $endif$
-  <title>Xero Query</title>
+  <title>$i18n.Title$</title>
   
   $firebugInclude()$
   

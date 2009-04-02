@@ -80,6 +80,13 @@ NavConversation.prototype.setQueryModifier = function (name,modifier,isMerged) {
 	return qm;
 };
 
+NavConversation.prototype.getQueryModifier = function (name) {
+	var modifier = this.modifier;
+	if( !modifier ) return;
+	if( !modifier[name] ) return;
+	return modifier[name].modifier;
+};
+
 /** 
  * This assigns any modifiers for the query that come from a parent query, only the first time through.
  * Both first and subsequent times, returns the modifier object contain all parent level modifiers.

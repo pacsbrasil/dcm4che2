@@ -27,14 +27,14 @@ XeroModel.prototype.init = function()
 var XeroStudyColumns = {
 	"template":"xeroStudyColumns",
 	"header":[
-		{"i18n":"PatientName", "var":"patientNameF",  "sort":"PatientName", "template":"query/patientNameSel","action":"controller.sortQuery","id":"patientNameColHead" },
-		{"i18n":"PatientID", "var":"PatientID", "sort":"PatientID", "template":"html/displayFirst","action":"controller.sortQuery","id":"patientIdColHead" },
-		{"i18n":"StudyDescription", "var":"StudyDescription", "sort":"StudyDescription", "template":"query/studyDescriptionSel","action":"controller.sortQuery","id":"studyDescColHead" },
-		{"i18n":"Modality", "var":"ModalitiesInStudy", "sort":"ModalitiesInStudy", "template":"html/displayIt","action":"controller.sortQuery", "id":"modalityColHead" },
-		{"i18n":"AccessionNumber", "var":"AccessionNumber", "sort":"AccessionNumber", "template":"html/displayIt","action":"controller.sortQuery", "id":"accessionNumberColHead" },
-		{"i18n":"StudyDateTimeF", "var":"StudyDateF", "sort":"StudyDateTime", "template":"html/displayIt","action":"controller.sortQuery", "id":"studyDateTimeColHead" },
-		{"name":"# Series", "var":"NumberOfStudyRelatedSeries", "sort":"NumberOfStudyRelatedSeries", "template":"html/displayIt","action":"controller.sortQuery", "id":"numSeriesColHead" },
-		{"name":"# Objects", "var":"NumberOfStudyRelatedInstances", "sort":"NumberOfStudyRelatedInstances", "template":"html/displayIt","action":"controller.sortQuery", "id":"numObjectsColHead" }
+		{"i18n":"PatientName", "var":"patientNameF",  "sort":"PatientName", "template":"query/patientNameSel","action":"sortQuery","id":"patientNameColHead" },
+		{"i18n":"PatientID", "var":"PatientID", "sort":"PatientID", "template":"html/displayFirst","action":"sortQuery","id":"patientIdColHead" },
+		{"i18n":"StudyDescription", "var":"StudyDescription", "sort":"StudyDescription", "template":"query/studyDescriptionSel","action":"sortQuery","id":"studyDescColHead" },
+		{"i18n":"Modality", "var":"ModalitiesInStudy", "sort":"ModalitiesInStudy", "template":"html/displayIt","action":"sortQuery", "id":"modalityColHead" },
+		{"i18n":"AccessionNumber", "var":"AccessionNumber", "sort":"AccessionNumber", "template":"html/displayIt","action":"sortQuery", "id":"accessionNumberColHead" },
+		{"i18n":"StudyDateTimeF", "var":"StudyDateF", "sort":"StudyDateTime", "template":"html/displayIt","action":"sortQuery", "id":"studyDateTimeColHead" },
+		{"name":"# Series", "var":"NumberOfStudyRelatedSeries", "sort":"NumberOfStudyRelatedSeries", "template":"html/displayIt","action":"sortQuery", "id":"numSeriesColHead" },
+		{"name":"# Objects", "var":"NumberOfStudyRelatedInstances", "sort":"NumberOfStudyRelatedInstances", "template":"html/displayIt","action":"sortQuery", "id":"numObjectsColHead" }
 	]
 };
 

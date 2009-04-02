@@ -6,6 +6,7 @@ function FindLayout(suffix) {
 	 
 	var searchLayout = new Layout("SearchLayout","query/studyTable");
 	searchLayout.columns = XeroStudyColumns;
+	searchLayout.action = "sortQuery";
 	searchLayout.query = queryBox.query;
 	searchLayout.sortPatient = new SortPatient(searchLayout);
 	searchLayout.viewRenderedListeners = ["fixScrollPosition"];
@@ -36,7 +37,7 @@ function ReportSelect(suffix) {
 };
 
 ReportSelect.prototype = new Layout("ReportSelect","html/toolItem");
-ReportSelect.prototype.action="controller.rotateButton";
+ReportSelect.prototype.action="rotateButton";
 
 function ReportSelectItem(i18n) {
 	this.baseConstructor(i18n);
@@ -44,5 +45,5 @@ function ReportSelectItem(i18n) {
 	this.icon = i18n+"Icon";
 };
 ReportSelectItem.prototype = new Layout("ReportSelectItem", "html/toolItem");
-ReportSelectItem.prototype.action = "controller.rotateButton";
+ReportSelectItem.prototype.action = "rotateButton";
 ReportSelectItem.prototype.showLabel = true;

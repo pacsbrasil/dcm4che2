@@ -90,9 +90,9 @@ function isRightMouse(evt) {
 };
 
 /** Telss if any mouse button is down. */
-function isMouseDown(evt) {
-	if( evt.which ) return true;
-	return event.button!=0;
+function isMouseDown(e) {
+	if( e.which ) return true;
+	return e.button!=0;
 };
 
 /**
