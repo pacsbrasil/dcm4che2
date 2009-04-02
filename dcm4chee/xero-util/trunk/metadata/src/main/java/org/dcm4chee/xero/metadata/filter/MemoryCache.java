@@ -110,6 +110,20 @@ public class MemoryCache<K, V> {
 	  this.cacheSize = cacheSize;
    }
 
+   /** Clears all items from the cache - except that those in progress will be returned without adding the value to the cache.
+    * It is NOT recommended that any values be being looked up when a clear occurs.
+    */
+   public synchronized void clear() {
+       if( closeAge>0 ) {
+           for (InternalKey<K, V> ikey : lruSet) {
+               ikey.close();
+           }    
+       }
+       findMap.clear();
+       lruSet.clear();
+       currentSize = 0;
+   }
+
    /**
      * Get the matching item from the cache, if available, otherwise it calls
      * the Future item to get the new value. Does not lock this while calling
@@ -166,7 +180,9 @@ public class MemoryCache<K, V> {
 		 value.updateOriginalAge();
 		 if (!isToBig(value)) {
 			log.debug("Adding to "+cacheName+" item "+key+" of size "+size);
-			lruSet.add(value);
+			// The key may have been removed if caches are cleared.
+			if( findMap.containsKey(key) )
+			    lruSet.add(value);
 		 } else {
 			// Don't want it in the find map either - but anyone else who found
 			// it while

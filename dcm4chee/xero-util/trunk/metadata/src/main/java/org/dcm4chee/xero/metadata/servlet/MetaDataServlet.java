@@ -53,7 +53,6 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.FilterList;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,7 +97,7 @@ public class MetaDataServlet extends HttpServlet {
 
    public static final String REQUEST_TYPE = "requestType";
 
-   private static Logger log = LoggerFactory.getLogger(MetaDataServlet.class.getName());
+   private static Logger log = LoggerFactory.getLogger(MetaDataServlet.class);
 
    /** A key value to use to fetch the full request URI - t */
    public static final String REQUEST_URI = "_requestURI";
@@ -110,6 +109,10 @@ public class MetaDataServlet extends HttpServlet {
    /** The meta data needs to be read from the appropriate location. */
    MetaDataBean metaData;
 
+   /** The lifecycle listener */
+   Lifecycle lifecycle;
+   static Map<String,Integer> counters =new HashMap<String,Integer>();
+   
    /**
     * The filterItem contains the fixed information about how to handle this
     * request
@@ -244,7 +247,9 @@ public class MetaDataServlet extends HttpServlet {
     * 
     * The FILTER used for this object is the filter list named by the filter
     * servlet parameter found in the above MetaData file (or in anything
-    * referenced/used by that file)
+    * referenced/used by that file) <br />
+    * 
+    * The lifecycle metadata value is used to control lifecycle events - start/stop overall.
     * 
     * @throws MalformedURLException
     */
@@ -264,6 +269,18 @@ public class MetaDataServlet extends HttpServlet {
       if (filter == null)
          throw new IllegalArgumentException("Filter not found for " + filterName);
       filterItem = new FilterItem(metaData);
+      
+      lifecycle = (Lifecycle) metaData.getValue("lifecycle");
+      
+      synchronized(counters) {
+          Integer cnt = counters.get(getServletName());
+          if( cnt!=null ) counters.put(getServletName(), 1+cnt);
+          else {
+             counters.put(getServletName(),1);
+             log.info("Starting overall application "+getServletName());
+             if( lifecycle!=null ) lifecycle.start(getServletName());
+          }
+      }
 
       Object val = metaData.getValue("maxAge");
       if (val != null) {
@@ -271,6 +288,24 @@ public class MetaDataServlet extends HttpServlet {
       }
    }
 
+   /** Destroys this object - just handles the counter increment/decrement. */
+   @Override
+   public void destroy() {
+       synchronized(counters) {
+           Integer cnt = counters.get(getServletName());
+           if( cnt==null ) log.error("Already destroyed all instances, and trying to destroy another.");
+           else if( cnt>1 ) counters.put(getServletName(),cnt-1);
+           else {
+              counters.remove(getServletName());
+              log.info("Stopping overall servlet "+getServletName());
+              if( lifecycle!=null ) lifecycle.stop(getServletName());
+           }
+       }
+       super.destroy();
+   }
+
+
+   
    /**
     * Get requests can return last modified information. so add the cache
     * control headings and then proceed with a doFilter.

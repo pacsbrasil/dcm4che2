@@ -33,8 +33,9 @@
 // ***** END LICENSE BLOCK *****
 package org.dcm4chee.xero.metadata.json;
 
-import static org.testng.Assert.*;
-import static org.easymock.EasyMock.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -43,11 +44,9 @@ import java.io.Writer;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.*;
+import javax.xml.stream.events.Attribute;
 
-import org.dcm4chee.xero.metadata.json.JSONXMLEventWriter;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 

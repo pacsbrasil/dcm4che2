@@ -33,13 +33,13 @@
 // ***** END LICENSE BLOCK *****
 package org.dcm4chee.xero.metadata.json;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

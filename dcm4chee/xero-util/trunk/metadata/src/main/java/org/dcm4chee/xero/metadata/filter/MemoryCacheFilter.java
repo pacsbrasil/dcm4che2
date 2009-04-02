@@ -143,6 +143,11 @@ public class MemoryCacheFilter<T> implements Filter<T>, MetaDataUser {
 	  return okey.toString();
    }
 
+   public void clear() {
+       log.info("Clearing cache "+cacheName);
+       cache.clear();
+   }
+   
    /**
      * Sets the size of the cache in bytes.
      */
@@ -227,5 +232,6 @@ public class MemoryCacheFilter<T> implements Filter<T>, MetaDataUser {
 		 return size;
 	  }
 
-   };
+   }
+
 }
