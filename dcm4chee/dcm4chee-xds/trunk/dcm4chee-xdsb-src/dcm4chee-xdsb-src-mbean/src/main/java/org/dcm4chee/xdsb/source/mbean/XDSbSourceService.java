@@ -465,27 +465,31 @@ public class XDSbSourceService extends ServiceMBeanSupport {
     }
 
     private void logExport(String submissionUID, String patId, boolean success) {
-        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
-        String user = userInfo.getUserId();
-        XDSExportMessage msg = XDSExportMessage.createDocumentSourceExportMessage(submissionUID, patId);
-        msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
-            AuditEvent.OutcomeIndicator.MINOR_FAILURE);
-        msg.setSource(AuditMessage.getProcessID(), 
-                AuditMessage.getLocalAETitles(),
-                AuditMessage.getProcessName(),
-                AuditMessage.getLocalHostName(),
-                forceSourceAsRequestor || user == null);
-        if (user != null) {
-            msg.setHumanRequestor(user, null, null, true);
-        }
-        String host = "unknown";
         try {
-            host = new URL(xdsRepositoryURI).getHost();
-        } catch (MalformedURLException ignore) {
+            HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+            String user = userInfo.getUserId();
+            XDSExportMessage msg = XDSExportMessage.createDocumentSourceExportMessage(submissionUID, patId);
+            msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
+                AuditEvent.OutcomeIndicator.MINOR_FAILURE);
+            msg.setSource(AuditMessage.getProcessID(), 
+                    AuditMessage.getLocalAETitles(),
+                    AuditMessage.getProcessName(),
+                    AuditMessage.getLocalHostName(),
+                    forceSourceAsRequestor || user == null);
+            if (user != null) {
+                msg.setHumanRequestor(user, null, null, true);
+            }
+            String host = "unknown";
+            try {
+                host = new URL(xdsRepositoryURI).getHost();
+            } catch (MalformedURLException ignore) {
+            }
+            msg.setDestination(xdsRepositoryURI, null, null, host, false );
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
+        } catch ( Throwable t ) {
+            log.warn("Audit Log (Export) failed! Ignored!",t);
         }
-        msg.setDestination(xdsRepositoryURI, null, null, host, false );
-        msg.validate();
-        Logger.getLogger("auditlog").info(msg);
     }
 
     public void logNode(String msg, Node node) {
