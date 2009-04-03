@@ -137,9 +137,9 @@ static.overallMenuLayout.children.logout.template=html/logout
 static.overallMenuLayout.children.logout.i18n=Logout
 static.overallMenuLayout.children.logout.priority=1000
 
-# Define the javascript model
+# Define the javascript model that is used server side
 model.js=${class:org.dcm4chee.xero.rhino.JavaScriptMapFactory}
-model.js.script=var model=new XeroModel(_SARISSA_IS_IE,i18n);
+model.js.script=var model=new XeroModel(_SARISSA_IS_IE,i18n);var controller=new XeroController(model,"ChangeMe");
 model.js.parentScopeName=js_static
 model.js.imported=${class:org.dcm4chee.xero.metadata.access.MapWithDefaults}
 model.js.imported._SARISSA_IS_IE=IS_IE
@@ -185,6 +185,7 @@ templateGroup.attributeRenderersName=js
 templateGroup.groupNames=${class:org.dcm4chee.xero.metadata.access.ValueList}
 templateGroup.groupNames.xeroModel=xeroModel
 templateGroup.groupNames.jstemplate=jstemplate
+templateGroup.groupNames.rhino=rhinoAccess
 
 # Define the JavaScript templates to include to define the xero model data.  
 # The order can be set by defining priorities if needed - default priority is MAX_INT, NOT zero,
@@ -193,8 +194,9 @@ static.xeroModels=${class:org.dcm4chee.xero.metadata.access.ValueList}
 static.xeroModels.displayAndFindModel=displayAndFindModel
 static.xeroModels.displayAndFindModel.priority=25
 static.xeroModels.urlFactory=urlFactory
-static.xeroModels.xmlModel=xmlModel
-static.xeroModels.xmlModel.priority=75
+static.xeroModels.serviceRequest=serviceRequest
+static.xeroModels.jsonModel=jsonModel
+static.xeroModels.jsonModel.priority=75
 static.xeroModels.layout=layout/layout
 static.xeroModels.layout.priority=100
 static.xeroModels.sortPatient=sortPatient

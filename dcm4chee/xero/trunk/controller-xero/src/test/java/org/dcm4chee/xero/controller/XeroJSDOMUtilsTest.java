@@ -51,7 +51,7 @@ import org.testng.annotations.Test;
 public class XeroJSDOMUtilsTest {
 	static final Logger log = LoggerFactory.getLogger(XeroJSDOMUtilsTest.class);
 
-	static final JSTemplate jst = new JSTemplate("xeroTest", "xeroControllerTests", "xeroControllerTests/domUtilsTest", "xeroController");
+	static final JSTemplate jst = new JSTemplate("rhinoAccess", "xeroTest", "xeroControllerTests", "xeroControllerTests/domUtilsTest", "xeroController");
 
 	@Test
 	public void doUtilsTest() {

@@ -3,20 +3,23 @@
  * methods dealing with laying out the overall patient display.
  */
 
+XeroController.prototype.service = new ServiceRequest();
+
  /** Displays all studies for the selected patient */
 XeroController.prototype.displayPatient = function XC_displayPatient(id,patientId,uid) {
-	console.info("Display patient id",patientId);
-	
+	console.info("Display patientID: "+patientId+", studyUID="+uid);
 	console.time("Load Patient Data");
+	
 	var model = this.model;
 	var searchLayout = model.idMap.SearchLayout;
 	if(! searchLayout.search ) {
+		console.info("Search not yet populated.  Performing basic query");
 		this.performSearch();
-	};
+	}
 	
 	var patient = searchLayout.search.find("patient","PatientIdentifier", patientId);
 	if(!patient) {
-		console.warn("Unable to find patient.");
+		console.warn("Unable to find patient: "+patientId);
 		// TODO - use the actual selected objects to read the patient IDs
 		return;
 	}
@@ -54,11 +57,11 @@ XeroController.prototype.displayPatient = function XC_displayPatient(id,patientI
 	if( (!external) || (!external.children[patientId]) ) {
 		external = new StudyData(uids, model.ae);
 		console.info("Setup external study data root on url %s", external.url);
-		external.request();
+		external.request(this.service);
 		console.info("Loaded study data.");
 	} else {
 		// Need to ensure all the studies are available for the base information
-		external.queryForStudies(uids, external.children[patientId].children, model.ae);
+		external.queryForStudies(this.service,uids, external.children[patientId].children, model.ae);
 	}
 	
 	this.mergeExternal(external);
@@ -199,7 +202,7 @@ XeroController.prototype.mergeExternal = function(external) {
 	// Have to allow 3 queries, top level, series and image.
 	var i=3, queries;
 	do { 
-		if( queries ) external.addQueries(queries);
+		if( queries ) external.addQueries(this.service, queries);
 		console.warn("Delivering queries to mergeExternal.");
 		queries = navigate.mergeExternal(external);
 		i--;

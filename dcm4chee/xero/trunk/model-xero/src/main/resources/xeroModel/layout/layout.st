@@ -227,7 +227,7 @@ Layout.prototype.sumAbsWidth = function Layout_sumAbsWidth(usedLay) {
 Layout.prototype.sumAbsHeight = function Layout_sumAbsHeight(usedLay) {
 	var ret = 0;
 	var layout,y;
-	for(i=0; i<usedLay.length; i+=this.gridX) {
+	for(var i=0; i<usedLay.length; i+=this.gridX) {
 		layout = usedLay[i];
 		if( layout.absHeight ) ret = ret+layout.absHeight;
 	}

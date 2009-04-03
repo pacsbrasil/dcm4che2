@@ -21,7 +21,7 @@ public class StaticJSModelTest {
 
 	MetaDataBean mdb = StaticMetaData.getMetaData("test-model.metadata");
 	MetaDataBean stat = mdb.getChild("static");
-	JSTemplate jst = new JSTemplate(stat, "xeroModelTests", "xeroModel", "xeroTest");
+	JSTemplate jst = new JSTemplate(stat, "rhinoAccess","xeroModelTests", "xeroModel", "xeroTest");
 
 	/**
 	 * Tests that the scripts value is well defined and contains the value required for the script plugin test

@@ -1,5 +1,5 @@
 /**
- * The StudyData object is an extension of XmlModel that
+ * The StudyData object is an extension of JSONModel that
  * adds support for merging data at various levels, and creating a "children" index that
  * indexes the available children by the appropriate key.
  * The default constructor uses the uids to query for the study level information, and requests that gsps and key object defaults
@@ -14,16 +14,16 @@ function StudyData(uids,ae) {
 			uidsBack = uidsBack + "\\\\"+uids[i];
 		}
 		this.url = STUDY_QUERY+"&gsps=*&ko=*&studyUID="+uidsBack;
-		if( ae ) this.url = this.url + ae;
+		//if( ae ) this.url = this.url + ae; // FIX the AE problem properly
 	}
 };
 
-StudyData.prototype = new XmlModel();
+StudyData.prototype = new JSONModel();
 StudyData.prototype.level = 0;
 StudyData.prototype.idVars = {"patient":"PatientIdentifier", "study":"studyUID", "series":"seriesUID", "image":"Position", "gsps":"objectUID", "report":"objectUID", "keyObject":"objectUID", "objectRef":"objectUID"};
 
 /** For for additional studies - whichever ones are missing */
-StudyData.prototype.queryForStudies = function(uids, studies, ae) {
+StudyData.prototype.queryForStudies = function(service, uids, studies, ae) {
 	var i,n=uids.length;
 	var uidsBack;
 	for(i=1; i<n; i++) {
@@ -35,7 +35,7 @@ StudyData.prototype.queryForStudies = function(uids, studies, ae) {
 	if(!uidsBack ) return;
 	this.url = STUDY_QUERY+"&gsps=*&ko=*&studyUID="+uidsBack;
 	if( ae ) this.url = this.url + ae;
-	this.request();
+	this.request(service);
 };
 
 /** Finds a given object instance child by UID */
@@ -71,11 +71,11 @@ StudyData.prototype.getChild = function StudyData_getChild(name,el,modifiers,i) 
 	
 	var childId = this.idVars[name];
 	// Detect a non-DICOM image object child, and just use id for those.
-	if( name=="image" && el.getAttribute("objectUID")==null ) this.childId = "id";
+	if( name=="image" && el["objectUID"]==null ) this.childId = "id";
 	if( !childId ) childId = "id";
 	this.debug("Choose childID %s for level %d on child %s", childId,this.level,name); 
 
-	var id = el.getAttribute(childId);
+	var id = el[childId];
 	if( id==null ) id = ""+i;
 	if( modifier ) id = id+modifier;
 	this.debug("Found child %s=%s modifier %s modifiers %s", childId,id, modifier, modifiers);
@@ -93,11 +93,11 @@ StudyData.prototype.getChild = function StudyData_getChild(name,el,modifiers,i) 
 /**
  * Makes the requested queries for additional information to merge.
  */
-StudyData.prototype.addQueries = function StudyData_addQueries(queries, lazy) {
+StudyData.prototype.addQueries = function StudyData_addQueries(service, queries, lazy) {
 	var key;
 	for(key in queries) {
 		this.debug("Adding information from %s",key);
-		this.requestUrl(key, queries[key],lazy);
+		this.requestUrl(service, key, queries[key],lazy);
 	}
 };
 

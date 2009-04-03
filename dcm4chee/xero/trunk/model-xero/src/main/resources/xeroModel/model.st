@@ -15,9 +15,14 @@ function XeroModel(is_ie,i18n) {
 };
 
 if( !console.info ) {
+	// Ensure that the basic logging features are present.
 	console.info = console.log;
 	console.debug = console.log;
 	console.warn = console.log;
+};
+
+if( !console.time) {
+	// Ensure that the timing functions are available.
     console.time = function(name)
         {
             this.timeMap[name] = (new Date()).getTime();
@@ -26,7 +31,7 @@ if( !console.info ) {
             if (name in this.timeMap)
             {
                 var delta = (new Date()).getTime() - this.timeMap[name];
-                this.log([name+ ":"+ delta+"ms"]);
+                this.info([name+ ":"+ delta+"ms"]);
                 delete this.timeMap[name];
             }
         };

@@ -4,11 +4,13 @@ function XeroModel() {
 };
 
 var xeroView = new Object();
+var controller = new XeroController(new XeroModel(),"");
 
 $zoomRectangle()$
 $controller()$
 
 var controllerTest = new UnitTest();
+function ServiceRequest() {};
 
 controllerTest.init = function() {
 	this.origDocument = document;

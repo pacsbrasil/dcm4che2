@@ -2,7 +2,7 @@ $unittest()$
 $merged()$
 $navConversation()$
 $studyData()$
-$xmlModel()$
+$jsonModel()$
 $navigation()$
 function XeroModel() {};
 $displayAndFindModel()$
@@ -17,10 +17,10 @@ function CreateTestStudyData(patId, studyIds) {
 	var sd = new StudyData();
 };
 
-var twoStudy = "$twoStudyXml();format="js"$";
-var prStudy = "$prStudyXml();format="js"$";
-var images0 = "$study0Images();format="js"$";
-var images1 = "$study1Images();format="js"$";
+var twoStudy = "$twoStudyJSON();format="js"$";
+var prStudy = "$prStudyJSON();format="js"$";
+var images0 = "$study0ImagesJSON();format="js"$";
+var images1 = "$study1ImagesJSON();format="js"$";
 
 var studyData = new StudyData();
 studyData.parseString(twoStudy);
@@ -134,7 +134,8 @@ navigationTests.test_getCustomChildren = function() {
 	
 	// Check that the series which contain images are returned.
 	var seriesChildren = this.patS0.getCustomChildren(this.patS0.childType);
-	$assertTrue(condition="seriesChildren.length===21",msg="Must have 21 series children.")$;
+		console.info("seriesChildren.length"+seriesChildren.length);
+	$assertTrue(condition="seriesChildren.length===9",msg="Must have 9 series children.")$;
 };
  
 /**
@@ -158,7 +159,8 @@ navigationTests.test_lookupId = function() {
 	console.info("s0.id=",s0.id);
 	console.info("s0se0.id=",s0se0.id);
 	console.info("s0se0i0.id=",s0se0i0.id);
-	var seuid = "1.2.276.0.7230010.3.200.3.1";
+	
+	var seuid = "1.3.51.0.7.99.2160121055.1018.1012301819.1";
 	$assertTrue(condition="patNav.id==patid",msg="Patient navigation lookup id is incorrect.")$;
 	$assertTrue(condition="s0.id==stuid0",msg="Study UID in navigation object is incorrect.")$;
 	$assertTrue(condition="s0se0.id==seuid",msg="Series UID in navigation is incorrect.")$;

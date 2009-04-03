@@ -20,6 +20,9 @@ static.xeroControllers.dynamic=dynamic/dynamic
 static.xeroControllers.findController=findController
 static.xeroControllers.tabsController=tabsController
 
+# The controller is available now, so include it in the js_static inclusion.
+static.HAS_CONTROLLER=true
+
 # Define the template groups to include the controller components now.
 templateGroup.groupNames.xeroController=xeroController
 
@@ -60,9 +63,10 @@ controller.query.url.PatientName=query
 controller.query.url.AccessionNumber=query
 controller.query.url.StudyDateTime=query
 
-# Contains the query components for initial display - relies on query validation having been done.
-controller.queryController=${class:org.dcm4chee.xero.controller.QueryController}
-controller.queryController.priority=5000
+
+# Contains the pre-rendering component for initial display - relies on query validation having been done.
+controller.renderController=${class:org.dcm4chee.xero.controller.ClientRenderingController}
+controller.renderController.priority=5000
 
 # Define the JSController - the controller that handles the JavaScript generation/creation.
 jscontroller=${class:org.dcm4chee.xero.metadata.filter.FilterList}

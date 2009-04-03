@@ -25,8 +25,8 @@ PatientLayout.prototype.init = function PatientLayout_init() {
 	var patientMenu = new PatientMenu();
 	this.add(patientMenu, TabsLayout.TabMenu);
 	
-	for(j=0; j<this.gridY; j++) {
-		for(i=0; i<this.gridX; i++) {
+	for(var j=0; j<this.gridY; j++) {
+		for(var i=0; i<this.gridX; i++) {
 			var nth = j*this.gridX+i;
 			var studyArea = new StudyAreaLayout(nth);
 			this.add(studyArea);

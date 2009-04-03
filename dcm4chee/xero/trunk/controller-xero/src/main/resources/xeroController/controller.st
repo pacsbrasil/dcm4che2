@@ -21,9 +21,11 @@
  */
 
 /** Creates a XeroController object, typically called xeroController */
-function XeroController(view) {
-	this.model = new XeroModel(_SARISSA_IS_IE);
-	var ua = navigator.userAgent;
+function XeroController(model, ua, view) {
+	this.model = model;
+	this.view = view;
+	
+	// TODO:  Move into a method on the model?
 	if(_SARISSA_IS_IE) {
 		this.model.IS_IE6 = (ua.indexOf("MSIE 6")>=0);
 		this.model.HAS_SVG = false;
@@ -34,7 +36,6 @@ function XeroController(view) {
 	}
 	this.model.IS_FIREFOX = _SARISSA_IS_MOZ;
 	this.model.IS_MOBILE = (ua.indexOf("Mobile")>=0 || ua.indexOf("BlackBerry")>=0);
-	this.view = view;
 	
 	if( this.isDebug ) this.debug = console.debug;
 };
@@ -162,8 +163,6 @@ XeroController.getOnScreenZoomRectangle = function(zoomRect, rows, cols)
 
 $xeroControllers:{ $(it)()$ }$
 
-var xeroController = new XeroController(xeroView);
-
 XeroController.prototype.isDebug = false;
 XeroController.prototype.debug = function() {};
 
@@ -173,7 +172,7 @@ XeroController.prototype.debug = function() {};
 XeroController.prototype.findLayout = function(id,lvl) {
 	if( typeof(id)==="object" ) return id;
 	
-	if(!model.layout)
+	if(!this.model.layout)
 	{
 	    return null;
 	}
@@ -282,6 +281,7 @@ XeroController.prototype.fireViewRendered = function(lay) {
 /** Updates the view in its entirety.
  */
 XeroController.prototype.updateView = function XC_action(actionName) {
+    if( !this.view ) return;
 	console.time(actionName);
 	var render = this.view.toString("xeroBody",this.model);
 	if( render==null || render==="" ) {
@@ -413,7 +413,3 @@ XeroController.prototype.rotateButton = function XC_rotateButton(layId,arg) {
 	this.waitUpdate("rotateButton");
 };
 
-// Define short versions of the MVC components.
-var controller = xeroController;
-var model = controller.model;
-var view = xeroView;

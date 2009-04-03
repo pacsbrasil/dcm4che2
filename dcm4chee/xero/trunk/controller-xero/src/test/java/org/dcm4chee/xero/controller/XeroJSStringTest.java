@@ -45,7 +45,7 @@ public class XeroJSStringTest
 {
     static final Logger log = LoggerFactory.getLogger(XeroJSStringTest.class);
 
-    private JSTemplate jst = new JSTemplate("xeroTest", "xeroController", "xeroControllerTests");
+    private JSTemplate jst = new JSTemplate("rhinoAccess","xeroTest", "xeroController", "xeroControllerTests");
     
     private boolean isVerbose = false;
 
