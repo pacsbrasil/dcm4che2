@@ -19,7 +19,6 @@
 
   <property name="integration.cdp" location="cdp-integration" />
   <property name="integration.server" value="wtlswbw02" />
-  <property name="selenium.servers" value="xpie7.ts.mitra.com" />
   <property name="integration.path" value="${integration.cdp}/server-setup/${integration.server}" />
   <property name="integration" location="${integration.path}/server.properties" />
   <property name="integration.server.service" value="DCM4CHEE Image Archive" />
@@ -27,6 +26,7 @@
   <property name="jmeterhome" location="${integration.cdp}/jmeter" />
   
   <property name="jmeter.user.classpath" value="" />
+  <property name="jmeter.user.properties" value="${integration.cdp}/jmeter/bin/user.properties" />
 
   <property name="testPackage" value="cdp-integration" />
 
@@ -278,12 +278,9 @@
      <mkdir dir="target" />
      <jmeter jmeterhome="${jmeterhome}"
         resultlogdir="${basedir}/target">
+        <jmeterarg value="-q${jmeter.user.properties}"/>
 	<testplans refid="integration.scripts"/>
-	<property name="user.classpath" value="${jmeter.user.classpath}" />
-        <property name="SERVER" value="${integration.server}" />
-        <property name="seleniumServers" value="${selenium.servers}" />
-        <property name="integration.cdp" value="${integration.cdp}" />
-	<property name="includecontroller.prefix" value="${integration.cdp}/" />
+	<property name="user.classpath" value="${jmeter.user.classpath}"/>
      </jmeter>
      <move todir="target">
         <fileset dir="${jmeterhome}/bin" includes="**/*.jtl" />
