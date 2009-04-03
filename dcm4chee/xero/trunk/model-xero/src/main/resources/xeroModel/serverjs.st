@@ -15,13 +15,20 @@ function Image(){};
 
 $model()$
 
-
+// Server-side data request method:  uses URIResolver to bind the required data.
 ServiceRequest.prototype.requestDocumentByURL = function SR_requestDocumentByURL(url)
 {
 	var source = this.resolver.resolve(url,null);
 	var reader = new java.io.BufferedReader(source.getReader());
-	var data = reader.readLine();
-	return data;
+	
+	var document = new java.lang.StringBuilder();
+	while(true)
+	{
+		var line = reader.readLine();
+		if(line == null) break;
+		document.append(line);
+	}
+	return document.toString();
 };
 
 $if(HAS_CONTROLLER)$
