@@ -36,7 +36,7 @@ $endif$
    </v:group>
 $else$
 $if(layout.image)$
-<svg id="svg$layout.id$" class="imageDisplay" xmlns="http://www.w3.org/2000/svg" onmousedown="return controller.mouseClickDrag('$layout.id$',evt);">
+<svg id="svg$layout.id$" class="imageDisplay" xmlns="http://www.w3.org/2000/svg" onclick="return false;" onmousedown="return controller.mouseClickDrag('$layout.id$',evt);">
 
 <svg id="gim$layout.id$" 
 	class="imageGroup"

@@ -47,3 +47,5 @@ XeroController.prototype.spatReset = function(lay) {
 	nav.setMerged("rotation");
 	this.waitUpdate("mouseUp",2);
 };
+
+XeroController.prototype.alt_clickImage = XeroController.prototype.rotateRight;

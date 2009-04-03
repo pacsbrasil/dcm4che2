@@ -8,7 +8,7 @@
 XeroController.prototype.zoomReset = function (lay,e) {
 	this.zoomMode(lay,e);
 };
-XeroController.prototype.clickImage = XeroController.prototype.zoomReset;
+XeroController.prototype.shift_clickImage = XeroController.prototype.zoomReset;
 
 /** Sets the scale to fit mode */
 XeroController.prototype.scaleToFit = function (lay,e) {
@@ -383,6 +383,7 @@ PanController.prototype = new ImageMouseHandler();
 
 XeroController.prototype.Zoom_dragImage = new PanController();
 XeroController.prototype.dragImage = XeroController.prototype.Zoom_dragImage;
+XeroController.prototype.shift_dragImage = XeroController.prototype.Zoom_dragImage;
 XeroController.prototype.WindowLevel_dblDragImage = XeroController.prototype.Zoom_dragImage; 
 
 PanController.prototype.prepare= function(e) {

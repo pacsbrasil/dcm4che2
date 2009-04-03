@@ -11,7 +11,7 @@ XeroController.prototype.WindowLevel_dragImage = new WLController();
 // Over-ride the double-drag mode
 XeroController.prototype.dblDragImage = XeroController.prototype.WindowLevel_dragImage;
 
-XeroController.prototype.ctrl_dragImage = XeroController.prototype.WindowLevel_clickImage;
+XeroController.prototype.ctrl_dragImage = XeroController.prototype.WindowLevel_dragImage;
 
 /** Handle the window level reset operation */
 XeroController.prototype.wlReset = function(lay) {
@@ -30,7 +30,7 @@ XeroController.prototype.wlReset = function(lay) {
 	this.waitUpdate("mouseUp",2);
 };
 
-XeroController.prototype.WindowLevel_clickImage = XeroController.prototype.wlReset; 
+XeroController.prototype.ctrl_clickImage = XeroController.prototype.wlReset; 
 
 /** Handle inverting the image */
 XeroController.prototype.wlInvert = function(lay) {
@@ -105,19 +105,21 @@ WLController.prototype.start = function WLC_start(e) {
 }; 
 
 /** Update the displayed window level, at least if the image isn't currently fetching */
-WLController.prototype.mousemove = function WLC_mousemove(event) {
-	var posn = docCoords(event);
-	var dx = posn[0]-this.startPosn[0];
-	var dy = posn[1]-this.startPosn[1];
-	var center = Math.floor(this.origCenter - (dy*this.pixelRange/512));
-	var width = Math.floor(this.origWidth - (dx*this.pixelRange/512));
+WLController.prototype.mousemove = function WLC_mousemove(e) {
+	var dx = e.screenX-this.startScreen[0];
+	var dy = e.screenY-this.startScreen[1];
+	var center = Math.floor(this.origCenter - (dy*this.origWidth/512));
+	var width = Math.floor(this.origWidth - (dx*this.origWidth/512));
 	if( center >= this.minPixel && center < this.maxPixel ) {
 		this.center = center;
 	}
 	if( width>10 && width < 2*this.pixelRange ) {
 		this.width = width;
 	}
-	//console.info("dx,dy=%d,%d c/w=%d,%d", dx,dy,center,width);
+	if( !this.displayCount ) {
+		this.displayCount = 20;
+		console.info("dx,dy=%d,%d c/w=%d,%d", dx,dy,this.center,this.width);
+	} else this.displayCount--;
 	this.updateImage();
 };
 

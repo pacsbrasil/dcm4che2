@@ -265,6 +265,7 @@ function MouseHandler() {
 MouseHandler.prototype.prepare = function (e) {
 	this.startTime = (new Date()).getTime();
 	this.startPosn = docCoords(e);
+	this.startScreen = [e.screenX,e.screenY];
 	console.info("Start position",this.startPosn,"at",this.startTime);
 	this.drag = undefined;
 	return this.clickHandler!=null;

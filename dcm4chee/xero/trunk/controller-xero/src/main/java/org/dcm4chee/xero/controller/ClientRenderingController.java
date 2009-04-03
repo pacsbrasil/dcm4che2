@@ -34,24 +34,13 @@
 
 package org.dcm4chee.xero.controller;
 
-import java.io.StringWriter;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
-import javax.xml.transform.stream.StreamResult;
 
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
-import org.dcm4chee.xero.model.XmlModel;
 import org.dcm4chee.xero.rhino.JavaScriptObjectWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,12 +52,10 @@ import org.slf4j.LoggerFactory;
  */
 public class ClientRenderingController<T> implements Filter<T>
 {
+   @SuppressWarnings("unused")
    private static Logger log = LoggerFactory.getLogger(ClientRenderingController.class);
    
    private static final String PRERENDER_KEY = "prerender";
-   private static final String DEFAULT_TAB = "Find";
-   
-   private Set<String> validTabs = new HashSet<String>(Arrays.asList("Find", "Display"));
    
    public ClientRenderingController()
    {

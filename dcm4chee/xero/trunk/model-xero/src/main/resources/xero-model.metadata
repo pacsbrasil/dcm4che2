@@ -47,37 +47,37 @@ static.imageMenu.children.invert.inherit=toolItem
 static.imageMenu.children.invert.i18n=WLInvert
 static.imageMenu.children.invert.priority=1110
 static.imageMenu.children.invert.mode=WindowLevel
-static.imageMenu.children.invert.action=controller.wlInvert
+static.imageMenu.children.invert.action=wlInvert
 
 static.imageMenu.children.wlreset.inherit=toolItem
 static.imageMenu.children.wlreset.i18n=WLReset
 static.imageMenu.children.wlreset.priority=1120
 static.imageMenu.children.wlreset.mode=WindowLevel
-static.imageMenu.children.wlreset.action=controller.wlReset
+static.imageMenu.children.wlreset.action=wlReset
 
 ######## Spatial Transform Menu
 
 static.imageMenu.children.rotateRight.inherit=toolItem
 static.imageMenu.children.rotateRight.priority=1300
 static.imageMenu.children.rotateRight.i18n=RotateRight
-static.imageMenu.children.rotateRight.action=controller.rotateRight
+static.imageMenu.children.rotateRight.action=rotateRight
 static.imageMenu.children.rotateRight.mode=default
 
 #static.imageMenu.children.rotateLeft.inherit=toolItem
 #static.imageMenu.children.rotateLeft.priority=1310
 #static.imageMenu.children.rotateLeft.i18n=RotateLeft
-#static.imageMenu.children.rotateLeft.action=controller.rotateLeft
+#static.imageMenu.children.rotateLeft.action=rotateLeft
 
 static.imageMenu.children.flip.inherit=toolItem
 static.imageMenu.children.flip.priority=1320
 static.imageMenu.children.flip.i18n=FlipHorizontal
-static.imageMenu.children.flip.action=controller.flipHorizontal
+static.imageMenu.children.flip.action=flipHorizontal
 static.imageMenu.children.flip.mode=default
 
 static.imageMenu.children.reset.inherit=toolItem
 static.imageMenu.children.reset.priority=1330
 static.imageMenu.children.reset.i18n=SpatReset
-static.imageMenu.children.reset.action=controller.spatReset
+static.imageMenu.children.reset.action=spatReset
 static.imageMenu.children.reset.mode=default
 
 ######## Zoom Menu
@@ -90,19 +90,19 @@ static.imageMenu.children.scaleToFit.priority=210
 #static.imageMenu.children.magnify.i18n=Magnify
 #static.imageMenu.children.magnify.mode=Zoom
 #static.imageMenu.children.magnify.priority=1215
-#static.imageMenu.children.magnify.action=controller.sizeToggle
+#static.imageMenu.children.magnify.action=sizeToggle
 
 static.imageMenu.children.zoomIn.inherit=toolItem
 static.imageMenu.children.zoomIn.i18n=ZoomIn
 static.imageMenu.children.zoomIn.priority=1220
 static.imageMenu.children.zoomIn.mode=Zoom
-static.imageMenu.children.zoomIn.action=controller.zoomIn
+static.imageMenu.children.zoomIn.action=zoomIn
 
 static.imageMenu.children.zoomOut.inherit=toolItem
 static.imageMenu.children.zoomOut.i18n=ZoomOut
 static.imageMenu.children.zoomOut.priority=1230
 static.imageMenu.children.zoomOut.mode=Zoom
-static.imageMenu.children.zoomOut.action=controller.zoomOut
+static.imageMenu.children.zoomOut.action=zoomOut
 
 #static.imageMenu.children.trueSize.inherit=toolItem
 #static.imageMenu.children.trueSize.priority=1240
@@ -112,7 +112,7 @@ static.imageMenu.children.zoomReset.inherit=toolItem
 static.imageMenu.children.zoomReset.priority=1250
 static.imageMenu.children.zoomReset.i18n=ZoomReset
 static.imageMenu.children.zoomReset.mode=Zoom
-static.imageMenu.children.zoomReset.action=controller.zoomReset
+static.imageMenu.children.zoomReset.action=zoomReset
 
 ######## Study Tray Layout Menu
 static.studyTrayLayout.children.seriesNumber.inherit=toolItem

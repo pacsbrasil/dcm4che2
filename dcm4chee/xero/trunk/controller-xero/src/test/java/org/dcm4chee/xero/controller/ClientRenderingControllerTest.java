@@ -33,8 +33,6 @@
 // ***** END LICENSE BLOCK *****
 package org.dcm4chee.xero.controller;
 
-import static org.testng.Assert.*;
-
 import org.testng.annotations.Test;
 
 public class ClientRenderingControllerTest
