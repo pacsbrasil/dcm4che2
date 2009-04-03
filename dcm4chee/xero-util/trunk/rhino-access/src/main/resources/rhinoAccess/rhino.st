@@ -206,7 +206,6 @@ if (this.DOMParser == undefined) {
 
     DOMParser.prototype.parseFromString = function(str, contentType) {
         // ignore contentType for now...
-
             var fac = javax.xml.parsers.DocumentBuilderFactory.newInstance();
             var docBuilder = fac.newDocumentBuilder();
             var r = new java.io.StringReader(str);
@@ -281,6 +280,10 @@ if (this.alert == undefined) {
 function ajaxInit(url) {
    window.location = { pathname: url };
 }
+
+/** Don't ever actually load for now. */
+function addLoadEvent() {
+};
 
 
 var Node = new Object();

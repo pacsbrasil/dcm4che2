@@ -131,7 +131,7 @@ public class JavaScriptMapFactory implements MapFactory<JavaScriptObjectWrapper>
 		try {
 			if (compile) {
 				synchronized (script) {
-					if (mscript != null) {
+					if (mscript == null) {
 						cx.setWrapFactory(SUGAR_WRAP_FACTORY);
 						mscript = cx.compileString(script, scriptName, 1, null);
 					}
@@ -161,7 +161,7 @@ public class JavaScriptMapFactory implements MapFactory<JavaScriptObjectWrapper>
 		int line = e.lineNumber();
 		log.warn("Caught Rhino exception {}", e.getMessage(), line);
 		String[] splits = StringUtil.split(script, '\n', true);
-		for (int i = Math.max(0, line - 5), n = Math.min(splits.length - 1, line + 5); i < n; i++) {
+		for (int i = Math.max(0, line - 5), n = Math.min(splits.length, line + 5); i < n; i++) {
 			log.warn("{}: {}", i + 1, splits[i]);
 		}
 		throw e;

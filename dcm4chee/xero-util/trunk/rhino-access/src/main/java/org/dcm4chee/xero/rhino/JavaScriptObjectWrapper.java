@@ -46,6 +46,7 @@ import java.util.Set;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
 import org.mozilla.javascript.NativeArray;
+import org.mozilla.javascript.NativeJavaArray;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Undefined;
@@ -66,7 +67,7 @@ public class JavaScriptObjectWrapper extends AbstractMap<String, Object> {
 
 	public JavaScriptObjectWrapper(Scriptable scriptable) {
 		this.scriptable = scriptable;
-		this.isArray = scriptable instanceof NativeArray;
+		this.isArray = scriptable instanceof NativeArray || scriptable instanceof NativeJavaArray;
 	}
 
 	protected int intKey(Object key) {

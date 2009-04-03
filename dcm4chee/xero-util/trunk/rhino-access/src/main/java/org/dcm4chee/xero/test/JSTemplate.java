@@ -149,6 +149,7 @@ public class JSTemplate {
          log.warn("Caught exception {} on line {}", e.getMessage(), e.lineNumber());
          int line = e.lineNumber();
          String[] splits = StringUtil.split(js, '\n', true);
+         log.warn("Number of lines "+splits.length);
          for (int i = Math.max(0, line - 5), n = Math.min(splits.length - 1, line + 5); i < n; i++) {
             log.info("{}: {}", i + 1, splits[i]);
          }

@@ -51,7 +51,7 @@ public class XeroJSBoccMockTest
 {
     static final Logger log = LoggerFactory.getLogger(XeroJSBoccMockTest.class);
 
-    private JSTemplate jst = new JSTemplate("xeroTest", "xeroTestTests");
+    private JSTemplate jst = new JSTemplate("rhinoAccess", "xeroTest", "xeroTestTests");
     
     private boolean isVerbose = false;
 
