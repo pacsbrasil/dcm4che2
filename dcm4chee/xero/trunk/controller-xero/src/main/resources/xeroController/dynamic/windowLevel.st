@@ -66,7 +66,7 @@ WLController.prototype.prepare = function(e) {
 		console.warn("Need to compute min/max pixel value for window levelling using query",squery,"at position",pos);
 		query = new Object();
 		query[squery] = mods;
-		this.controller.model.navigate.external.addQueries(this.service,query,true);
+		this.controller.model.navigate.external.addQueries(this.controller.service,query,true);
 	};
 
 	return true;
