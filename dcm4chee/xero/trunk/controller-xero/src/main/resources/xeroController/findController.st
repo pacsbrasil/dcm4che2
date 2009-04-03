@@ -122,12 +122,11 @@ XeroController.prototype.updateClient = function(url) {
 	// Populate the query criteria.
 	this.model.idMap.QueryLayout.query.updateFormFromURL(url);
 
-	// Populate the client with data from the server
-	this.performSearch(url);
-
-	// Open the display page if we are instructed to.
 	if(url.indexOf("tab=Display") >= 0)
 	{
+		// Populate the client with data from the server
+		this.performSearch(url);
+		// Show the 'Display' tab first.
 		var patients = this.findLayout("SearchLayout").search.patient;
 		if(patients && patients.length > 0)
 		{
@@ -137,4 +136,10 @@ XeroController.prototype.updateClient = function(url) {
 			this.displayPatient('SearchLayout',pid);
 		}
 	}
+	else
+	{
+		// Show the 'Find' tab first
+		this.findAction();
+	}
 };
+
