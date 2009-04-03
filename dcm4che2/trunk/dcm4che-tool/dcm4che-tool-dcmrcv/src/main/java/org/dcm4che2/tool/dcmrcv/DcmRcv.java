@@ -74,6 +74,7 @@ import org.dcm4che2.net.Status;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4che2.net.service.StorageService;
 import org.dcm4che2.net.service.VerificationService;
+import org.dcm4che2.util.CloseUtils;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -98,7 +99,7 @@ public class DcmRcv extends StorageService {
             + "are stored to /tmp.";
 
     private static char[] SECRET = { 's', 'e', 'c', 'r', 'e', 't' };
-    
+
     private static final String[] ONLY_DEF_TS = { UID.ImplicitVRLittleEndian };
 
     private static final String[] NATIVE_TS = { UID.ExplicitVRLittleEndian,
@@ -202,15 +203,15 @@ public class DcmRcv extends StorageService {
     private int rspdelay = 0;
 
     private String keyStoreURL = "resource:tls/test_sys_2.p12";
-    
-    private char[] keyStorePassword = SECRET; 
 
-    private char[] keyPassword; 
-    
+    private char[] keyStorePassword = SECRET;
+
+    private char[] keyPassword;
+
     private String trustStoreURL = "resource:tls/mesa_certs.jks";
-    
-    private char[] trustStorePassword = SECRET; 
-    
+
+    private char[] trustStorePassword = SECRET;
+
     public DcmRcv() {
         super(CUIDS);
         device.setNetworkApplicationEntity(ae);
@@ -244,35 +245,35 @@ public class DcmRcv extends StorageService {
     public final void setTlsAES_128_CBC() {
         nc.setTlsAES_128_CBC();
     }
-    
+
     public final void disableSSLv2Hello() {
         nc.disableSSLv2Hello();
     }
-    
+
     public final void setTlsNeedClientAuth(boolean needClientAuth) {
         nc.setTlsNeedClientAuth(needClientAuth);
     }
-    
+
     public final void setKeyStoreURL(String url) {
         keyStoreURL = url;
     }
-    
+
     public final void setKeyStorePassword(String pw) {
         keyStorePassword = pw.toCharArray();
     }
-    
+
     public final void setKeyPassword(String pw) {
         keyPassword = pw.toCharArray();
     }
-    
+
     public final void setTrustStorePassword(String pw) {
         trustStorePassword = pw.toCharArray();
     }
-    
+
     public final void setTrustStoreURL(String url) {
         trustStoreURL = url;
     }
-        
+
     public final void setPackPDV(boolean packPDV) {
         ae.setPackPDV(packPDV);
     }
@@ -327,13 +328,13 @@ public class DcmRcv extends StorageService {
 
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
-        
+
         OptionBuilder.withArgName("NULL|3DES|AES");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
                 "enable TLS connection without, 3DES or AES encryption");
         opts.addOption(OptionBuilder.create("tls"));
-        
+
         opts.addOption("nossl2", false, "disable acceptance of SSLv2Hello TLS handshake");
         opts.addOption("noclientauth", false, "disable client authentification for TLS");        
 
@@ -366,7 +367,7 @@ public class DcmRcv extends StorageService {
         OptionBuilder.withDescription(
                 "password for truststore file, 'secret' by default");
         opts.addOption(OptionBuilder.create("truststorepw"));
-        
+
         OptionBuilder.withArgName("dir");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
@@ -388,7 +389,7 @@ public class DcmRcv extends StorageService {
         opts.addOption(OptionBuilder.create("async"));
 
         opts.addOption("pdv1", false, "send only one PDV in one P-Data-TF PDU, "
-                + "pack command and data PDV in one P-DATA-TF PDU by default.");
+                                + "pack command and data PDV in one P-DATA-TF PDU by default.");
         opts.addOption("tcpdelay", false,
                 "set TCP_NODELAY socket option to false, true by default");
 
@@ -598,7 +599,7 @@ public class DcmRcv extends StorageService {
                         + e.getMessage());
                 System.exit(2);
             }
-        }        
+        }
         try {
             dcmrcv.start();
         } catch (IOException e) {
@@ -642,7 +643,7 @@ public class DcmRcv extends StorageService {
                 keyPassword != null ? keyPassword : keyStorePassword,
                 trustStore);
     }
-    
+
     private static KeyStore loadKeyStore(String url, char[] password)
             throws GeneralSecurityException, IOException {
         KeyStore key = KeyStore.getInstance(toKeyStoreType(url));
@@ -671,21 +672,21 @@ public class DcmRcv extends StorageService {
         return fname.endsWith(".p12") || fname.endsWith(".P12")
                  ? "PKCS12" : "JKS";
     }
-    
+
     public void start() throws IOException {
         device.startListening(executor);
         System.out.println("Start Server listening on port " + nc.getPort());
     }
-    
+
     public void stop() {
         if (device != null)
             device.stopListening();
-        
+
         if (nc != null)
             System.out.println("Stop Server listening on port " + nc.getPort());
         else
             System.out.println("Stop Server");
-    }    
+    }
 
     private static String[] split(String s, char delim, int defPos) {
         String[] s2 = new String[2];
@@ -721,8 +722,8 @@ public class DcmRcv extends StorageService {
      * the open association is not blocked.
      */
     @Override
-    public void cstore(final Association as, final int pcid, DicomObject rq, 
-            PDVInputStream dataStream, String tsuid) 
+    public void cstore(final Association as, final int pcid, DicomObject rq,
+            PDVInputStream dataStream, String tsuid)
             throws DicomServiceException, IOException {
         final DicomObject rsp = CommandUtils.mkRSP(rq, CommandUtils.SUCCESS);
         onCStoreRQ(as, pcid, rq, dataStream, tsuid, rsp);
@@ -743,30 +744,41 @@ public class DcmRcv extends StorageService {
         onCStoreRSP(as, pcid, rq, dataStream, tsuid, rsp);
     }
 
-    
     @Override
     protected void onCStoreRQ(Association as, int pcid, DicomObject rq,
             PDVInputStream dataStream, String tsuid, DicomObject rsp)
             throws IOException, DicomServiceException {
         if (destination == null) {
             super.onCStoreRQ(as, pcid, rq, dataStream, tsuid, rsp);
-        } else {
+        }
+        else {
+            BufferedOutputStream bos = null;
+            DicomOutputStream dos = null;
+            String iuid = null;
             try {
                 String cuid = rq.getString(Tag.AffectedSOPClassUID);
-                String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+                iuid = rq.getString(Tag.AffectedSOPInstanceUID);
                 BasicDicomObject fmi = new BasicDicomObject();
                 fmi.initFileMetaInformation(cuid, iuid, tsuid);
                 File file = devnull ? destination : new File(destination, iuid);
-                FileOutputStream fos = new FileOutputStream(file);
-                BufferedOutputStream bos = new BufferedOutputStream(fos,
-                        fileBufferSize);
-                DicomOutputStream dos = new DicomOutputStream(bos);
+                bos = new BufferedOutputStream(new FileOutputStream(file), fileBufferSize);
+                dos = new DicomOutputStream(bos);
                 dos.writeFileMetaInformation(fmi);
                 dataStream.copyTo(dos);
-                dos.close();
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 throw new DicomServiceException(rq, Status.ProcessingFailure, e
                         .getMessage());
+            }
+            finally {
+                CloseUtils.safeClose(dos);
+            }
+            
+            // Rename the file after it has been written. See DCM-279
+            File old = new File(destination, iuid);
+            if (!devnull && old.exists()) {
+                File rename = new File(destination, iuid + ".dcm");
+                old.renameTo(rename);
             }
         }
     }
