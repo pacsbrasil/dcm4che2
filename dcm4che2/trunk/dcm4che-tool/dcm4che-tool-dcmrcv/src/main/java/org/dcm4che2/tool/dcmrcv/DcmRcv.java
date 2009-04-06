@@ -755,12 +755,13 @@ public class DcmRcv extends StorageService {
             BufferedOutputStream bos = null;
             DicomOutputStream dos = null;
             String iuid = null;
+            File file = null;
             try {
                 String cuid = rq.getString(Tag.AffectedSOPClassUID);
                 iuid = rq.getString(Tag.AffectedSOPInstanceUID);
                 BasicDicomObject fmi = new BasicDicomObject();
                 fmi.initFileMetaInformation(cuid, iuid, tsuid);
-                File file = devnull ? destination : new File(destination, iuid);
+                file = devnull ? destination : new File(destination, iuid + ".part");
                 bos = new BufferedOutputStream(new FileOutputStream(file), fileBufferSize);
                 dos = new DicomOutputStream(bos);
                 dos.writeFileMetaInformation(fmi);
@@ -775,10 +776,9 @@ public class DcmRcv extends StorageService {
             }
             
             // Rename the file after it has been written. See DCM-279
-            File old = new File(destination, iuid);
-            if (!devnull && old.exists()) {
-                File rename = new File(destination, iuid + ".dcm");
-                old.renameTo(rename);
+            if (!devnull && file != null && file.exists()) {
+                File rename = new File(destination, iuid);
+                file.renameTo(rename);
             }
         }
     }
