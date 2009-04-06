@@ -33,7 +33,7 @@ XeroController.prototype.displayPatient = function XC_displayPatient(id,patientI
 
 	if( ! model.navigate ) {
 		model.navigate = new Navigation();
-		model.navigate.conversation.mode="default";
+		model.navigate.conversation.mode="ImageMode";
 		model.patientLayout.navigate = model.navigate;
 		model.patientLayout.init();
 	}
@@ -129,7 +129,7 @@ XeroController.prototype.displayMode = function(layId) {
 	var lay = this.model.layout.findLayout(layId);
 	var toMode = lay.i18n;
 	var wasMode = this.getModeImage();
-	if( lay.isActive ) toMode = "default";
+	if( lay.isActive ) toMode = "ImageMode";
 	console.info("Changing display mode to",toMode,"from",wasMode);
 	
 	this.model.navigate.setConversation("mode", toMode);

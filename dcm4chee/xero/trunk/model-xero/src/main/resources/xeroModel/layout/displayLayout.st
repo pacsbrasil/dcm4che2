@@ -511,15 +511,17 @@ function DisplayModeLay(suffix,i18n) {
 	this.baseConstructor(id);
 	this.i18n = i18n;
 	this.icon = i18n+"Icon";
+	this.isActive = ( this.i18n==this.BASE_MODE);
 };
 DisplayModeLay.prototype = new Layout("DisplayModeLay","html/toolItem");
 DisplayModeLay.prototype.events="/conversation:mode";
 DisplayModeLay.prototype.action="displayMode";
+DisplayModeLay.prototype.BASE_MODE = "ImageMode";
 
 /** A general mode listener - activates/de-actives given modes, plus promoting child to parent mode */
 DisplayModeLay.prototype.namedListener = function (navigate, varName, newVal) {
 	var wasActive = this.isActive;
-	if( !newVal ) newVal = "default";
+	if( !newVal ) newVal = this.BASE_MODE;
 	this.isActive = (newVal===this.i18n);
 	if( wasActive!==this.isActive ) this.relayout = true;
 };
@@ -531,7 +533,7 @@ DisplayModeLay.prototype.namedListener = function (navigate, varName, newVal) {
 function ImageMenu(suffix) {
 	this.baseConstructor("ImageMenu"+suffix);
 $layout/addChildren(children=imageMenu.children)$
-	this.namedListener(null,null,"default");	
+	this.namedListener();	
 };
 
 ImageMenu.prototype = new Layout("ImageMenu", "image/imageMenu");
@@ -542,7 +544,7 @@ ImageMenu.prototype.showLabel = false;
 ImageMenu.prototype.events="/conversation:mode";
 
 ImageMenu.prototype.namedListener = function(navigate,varName,newVal) {
-	if( !newVal ) newVal = "default";
+	if( !newVal ) newVal = DisplayModeLay.prototype.BASE_MODE;
 	var i, child;
 	for(i in this.children ) {
 		child = this.children[i];
