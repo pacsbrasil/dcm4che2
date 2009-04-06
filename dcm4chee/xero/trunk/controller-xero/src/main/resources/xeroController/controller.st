@@ -40,6 +40,11 @@ function XeroController(model, ua, view) {
 	if( this.isDebug ) this.debug = console.debug;
 };
 
+/**
+ * Converts the given style size (i.e. width or height) value to a pixel value.  For
+ * a percent value, a pixel length must be specified.  An optional scale value can be
+ * passed to scale the given value.
+ */
 XeroController.convertToBase = function(val,length, scale) {
 	if( val=="" ) return 0;
 	var last = val.charAt(val.length-1);
@@ -47,8 +52,13 @@ XeroController.convertToBase = function(val,length, scale) {
 		return Math.floor(parseInt(val.substring(0,val.length-1))*length*scale/100);
 	};
 	if( last=="x" ) return parseInt(val.substring(0,val.length-2))*scale;
-	// TODO - compute the 3.X from pixel spacing/sizes instead of a raw value. 
-	if( last=="m" ) return parseInt(val.substring(0,val.length-2))*3.75*scale
+	// TODO - compute the 3.X from pixel spacing/sizes instead of a raw value.
+	//  
+	if( last=="m" ) 
+	{
+	    console.warn("Unable to accurately convert metric sizes to pixels.");
+	    return parseInt(val.substring(0,val.length-2))*3.75*scale
+	}
 	console.warn("Unknown length type left,top coordinate:",val,length,"last character", last);
 };
 
