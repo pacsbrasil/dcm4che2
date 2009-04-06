@@ -68,13 +68,14 @@ XeroController.prototype.manyStudy = function(id, pid, studyUID) {
 };
 
 /** Finds the search results and causes them to be displayed */
-XeroController.prototype.findAction = function XC_findAction(src) {
-	// Update the query based on the current form state
-	var queryLayout = this.model.idMap.QueryLayout;
-	queryLayout.query.updateUrlFromForm();
+XeroController.prototype.findAction = function XC_findAction(url) {
+	if(!url) {
+		var queryLayout = this.model.idMap.QueryLayout;
+		url = queryLayout.query.updateUrlFromForm();
+	}
 	
 	// Invoke a query based on the updated URL
-	this.performSearch();
+	this.performSearch(url);
 	
 	var sl = this.findLayout("SearchLayout");
 	if( sl ) {
@@ -119,13 +120,11 @@ XeroController.prototype.updateClient = function(url) {
 	console.info("Controller.updateClient invoked with url="+url);
 	if(!url) url = "";
 
-	// Populate the query criteria.
-	this.model.idMap.QueryLayout.query.updateFormFromURL(url);
+	// Populate the 'Find' tab with search results
+	this.findAction(url);
 
 	if(url.indexOf("tab=Display") >= 0)
 	{
-		// Populate the client with data from the server
-		this.performSearch(url);
 		// Show the 'Display' tab first.
 		var patients = this.findLayout("SearchLayout").search.patient;
 		if(patients && patients.length > 0)
@@ -136,10 +135,8 @@ XeroController.prototype.updateClient = function(url) {
 			this.displayPatient('SearchLayout',pid);
 		}
 	}
-	else
-	{
-		// Show the 'Find' tab first
-		this.findAction();
-	}
+
+	// Populate the query criteria.
+	this.model.idMap.QueryLayout.query.updateFormFromURL(url);
 };
 
