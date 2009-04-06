@@ -161,7 +161,7 @@ XeroController.getOnScreenZoomRectangle = function(zoomRect, rows, cols)
 	return onScreenZoomRect;    
 };    
 
-$controllers:{ $(it)()$ }$
+$xeroControllers:{ $(it)()$ }$
 
 XeroController.prototype.isDebug = false;
 XeroController.prototype.debug = function() {};
