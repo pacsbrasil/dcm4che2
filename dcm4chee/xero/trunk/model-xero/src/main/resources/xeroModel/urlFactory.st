@@ -44,7 +44,7 @@ UrlFactory.prototype.updateUrlFromForm = function() {
 		console.info("Not updating url %s as no form found named %s",this.url,this.formId);
 	}
 	
-	return url;
+	return this.url;
 };
 
 // Update the URL based on the current contents of the query form.
