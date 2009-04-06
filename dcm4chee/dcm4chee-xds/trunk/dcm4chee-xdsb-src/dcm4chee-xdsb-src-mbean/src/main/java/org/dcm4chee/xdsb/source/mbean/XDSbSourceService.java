@@ -464,7 +464,7 @@ public class XDSbSourceService extends ServiceMBeanSupport {
         return new File(serverHomeDir, f.getPath()).getAbsolutePath();
     }
 
-    private void logExport(String submissionUID, String patId, boolean success) {
+    public void logExport(String submissionUID, String patId, boolean success) {
         try {
             HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
             String user = userInfo.getUserId();

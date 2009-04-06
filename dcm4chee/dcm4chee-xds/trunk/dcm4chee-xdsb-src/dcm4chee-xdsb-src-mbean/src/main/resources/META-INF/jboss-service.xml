@@ -205,6 +205,28 @@
       </parameter>
       <return-type>void</return-type>
    </operation>
+   
+   <operation impact="ACTION">
+      <description><![CDATA[ Send a audit log Export message.<br/>
+            ]]> </description>
+      <name>logExport</name>
+      <parameter>
+        <description>SubmissionSet Unique ID</description>
+        <name>sumissionSetUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Submissionset Patient ID</description>
+        <name>patId</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Success</description>
+        <name>success</name>
+        <type>boolean</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
     </xmbean>
   </mbean>
 </server>
