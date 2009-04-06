@@ -245,6 +245,21 @@
          <value value="true" />
       </descriptors>
    </attribute>
+
+   <attribute access="read-write"
+      getMethod="isLogITI15"
+      setMethod="setLogITI15">
+      <description><![CDATA[ Enable/disable audit logging of ITI-15 export message (XDS audit log).<br/>
+           If enabled an XDS audit message will be sent in addition to the Dicom export audit log message.<br/>
+           Note: ITI-15 logging requires XdsbSourceServiceName!
+           ]]>
+      </description>
+      <name>LogITI15</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
    
    <attribute access="read-write"
       getMethod="getPixQueryServiceName"

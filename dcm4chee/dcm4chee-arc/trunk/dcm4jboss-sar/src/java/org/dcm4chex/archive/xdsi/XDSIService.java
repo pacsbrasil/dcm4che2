@@ -190,6 +190,7 @@ public class XDSIService extends ServiceMBeanSupport {
         }
 
     };
+    private boolean logITI15;
 
     /**
      * @return Returns the property file path.
@@ -465,6 +466,12 @@ public class XDSIService extends ServiceMBeanSupport {
                 }
             }
         }
+    }
+    public boolean isLogITI15() {
+        return logITI15;
+    }
+    public void setLogITI15(boolean logIti15) {
+        this.logITI15 = logIti15;
     }
     public final String getAutoPublishAETs() {
         return autoPublishAETs.length > 0 ? StringUtils.toString(autoPublishAETs,
@@ -776,6 +783,20 @@ public class XDSIService extends ServiceMBeanSupport {
             return false;
         }
     }
+    
+    private void logITI15(String submissionUid, String patId, boolean success) {
+        if ( log.isDebugEnabled() )
+                log.debug("log ITI-15 (XDS export) message! submissionUid:"+submissionUid+" patId:"+patId+" success:"+success);
+        try {
+            server.invoke(this.xdsbSourceServiceName,
+                    "logExport",
+                    new Object[] { submissionUid, patId, new Boolean(success) },
+                    new String[] { String.class.getName(), String.class.getName(), "boolean" });
+        } catch (Exception x) {
+            log.error("Audit log ITI-15 failed!",x);
+        }
+    }
+
     public static String resolvePath(String fn) {
         File f = new File(fn);
         if (f.isAbsolute()) return f.getAbsolutePath();
@@ -841,7 +862,7 @@ public class XDSIService extends ServiceMBeanSupport {
         XDSMetadata md = new XDSMetadata(kos, mdProps, docs);
         Document metadata = md.getMetadata();
         boolean b = sendSOAP(metadata, docs , null);
-        logExport(kos, user, b);
+        logExport(md, user, b);
         if ( b ) {
             logIHEYr4Export( kos.getString(Tags.PatientID), 
                     kos.getString(Tags.PatientName),
@@ -889,7 +910,7 @@ public class XDSIService extends ServiceMBeanSupport {
         XDSMetadata md = new XDSMetadata(ds, mdProps, docs);
         Document metadata = md.getMetadata();
         boolean b = sendSOAP(metadata,docs , null);
-        logExport(ds, user, b);
+        logExport(md, user, b);
         if ( b ) {
             logIHEYr4Export( ds.getString(Tags.PatientID), 
                     ds.getString(Tags.PatientName),
@@ -946,42 +967,51 @@ public class XDSIService extends ServiceMBeanSupport {
             log.warn("Audit Log failed:", e);
         }		
     }
-    private void logExport(Dataset dsKos, String user, boolean success) {
-        String requestHost = null;
-        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
-        user = userInfo.getUserId();
-        requestHost = userInfo.getHostName();
-        DataExportMessage msg = new DataExportMessage();
-        msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
-            AuditEvent.OutcomeIndicator.MINOR_FAILURE);
-        msg.addExporterProcess(AuditMessage.getProcessID(), 
-                AuditMessage.getLocalAETitles(),
-                AuditMessage.getProcessName(), user == null,
-                AuditMessage.getLocalHostName());
-        if (user != null) {
-            msg.addExporterPerson(user, null, null, true, requestHost);
-        }
-        String host = "unknown";
+    private void logExport(XDSMetadata metaData, String user, boolean success) {
+        Dataset manifest = metaData.getManifest();
         try {
-            host = new URL(docRepositoryURI).getHost();
-        } catch (MalformedURLException ignore) {
-        }
-        msg.addDestinationMedia(docRepositoryURI, null, "XDS-I Export", false, host );
-        msg.addPatient(dsKos.getString(Tags.PatientID), dsKos.getString(Tags.PatientName));
-        InstanceSorter sorter = getInstanceSorter(dsKos);
-        for (String suid : sorter.getSUIDs()) {
-            ParticipantObjectDescription desc = new ParticipantObjectDescription();
-            for (String cuid : sorter.getCUIDs(suid)) {
-                ParticipantObjectDescription.SOPClass sopClass =
-                    new ParticipantObjectDescription.SOPClass(cuid);
-                sopClass.setNumberOfInstances(
-                        sorter.countInstances(suid, cuid));
-                desc.addSOPClass(sopClass);
+            String requestHost = null;
+            HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+            user = userInfo.getUserId();
+            requestHost = userInfo.getHostName();
+            DataExportMessage msg = new DataExportMessage();
+            msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
+                AuditEvent.OutcomeIndicator.MINOR_FAILURE);
+            msg.addExporterProcess(AuditMessage.getProcessID(), 
+                    AuditMessage.getLocalAETitles(),
+                    AuditMessage.getProcessName(), user == null,
+                    AuditMessage.getLocalHostName());
+            if (user != null) {
+                msg.addExporterPerson(user, null, null, true, requestHost);
             }
-            msg.addStudy(suid, desc);
+            String host = "unknown";
+            try {
+                host = new URL(docRepositoryURI).getHost();
+            } catch (MalformedURLException ignore) {
+            }
+            msg.addDestinationMedia(docRepositoryURI, null, "XDS-I Export", false, host );
+            msg.addPatient(manifest.getString(Tags.PatientID), manifest.getString(Tags.PatientName));
+            InstanceSorter sorter = getInstanceSorter(manifest);
+            for (String suid : sorter.getSUIDs()) {
+                ParticipantObjectDescription desc = new ParticipantObjectDescription();
+                for (String cuid : sorter.getCUIDs(suid)) {
+                    ParticipantObjectDescription.SOPClass sopClass =
+                        new ParticipantObjectDescription.SOPClass(cuid);
+                    sopClass.setNumberOfInstances(
+                            sorter.countInstances(suid, cuid));
+                    desc.addSOPClass(sopClass);
+                }
+                msg.addStudy(suid, desc);
+            }
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
+        } catch (Exception ignore) {
+            log.error("Audit log of XDS-I Dicom Export message failed! Ignored!", ignore);
         }
-        msg.validate();
-        Logger.getLogger("auditlog").info(msg);
+        if ( logITI15 && xdsbSourceServiceName != null) {
+            this.logITI15(metaData.getSubmissionSetUID(), metaData.getSubmissionSetPatId(), success);
+        }
+        
     }
 
     private InstanceSorter getInstanceSorter(Dataset dsKos) {

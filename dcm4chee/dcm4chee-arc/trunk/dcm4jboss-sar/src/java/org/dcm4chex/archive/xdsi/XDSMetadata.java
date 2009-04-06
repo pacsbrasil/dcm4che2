@@ -118,15 +118,17 @@ public class XDSMetadata {
 
     private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
 
-    private Dataset dsKO;
+    private Dataset manifest;
     private Properties mdValues;
     XDSIDocument[] docs;
     private URL xslt;
 
     private boolean newFolder = false;
+    private String submissionSetUID;
+    private String submissionSetPatId;
 
     public XDSMetadata( Dataset ds, Properties props, XDSIDocument[] docs ) {
-        dsKO = ds;
+        manifest = ds;
         this.docs = docs;
         this.mdValues = props != null ? props : new Properties();
         initProperties(props);            
@@ -174,6 +176,9 @@ public class XDSMetadata {
         } else {
             this.xslt = null;
         }
+    }
+    public Dataset getManifest() {
+        return manifest;
     }
     /**
      * 
@@ -232,11 +237,11 @@ public class XDSMetadata {
             addClassification("Folder", UUID.XDSFolder);
         }
         String title;
-        if ( this.dsKO != null ) {
+        if ( this.manifest != null ) {
             for ( int i = 0 ; i < docs.length ; i++ ) {
                 addExtrinsicObject(docs[i]);
             }
-            Dataset cnDS = dsKO.getItem(Tags.ConceptNameCodeSeq);
+            Dataset cnDS = manifest.getItem(Tags.ConceptNameCodeSeq);
             title = cnDS != null ? cnDS.getString(Tags.CodeMeaning) : mdValues.getProperty("docTitle","Title?");
         } else {
             title = mdValues.getProperty("submissionSetTitle","TITLE");
@@ -380,7 +385,7 @@ public class XDSMetadata {
         attr.addAttribute("", ATTR_MIMETYPE, ATTR_MIMETYPE, "", mime);		
         attr.addAttribute("", ATTR_OBJECTTYPE, ATTR_OBJECTTYPE, "", UUID.XDSDocumentEntry);		
         th.startElement("", TAG_EXTRINSICOBJECT, TAG_EXTRINSICOBJECT, attr );
-        Dataset cnDS = dsKO.getItem(Tags.ConceptNameCodeSeq);
+        Dataset cnDS = manifest.getItem(Tags.ConceptNameCodeSeq);
         String title = cnDS != null ? cnDS.getString(Tags.CodeMeaning) : mdValues.getProperty("docTitle","Title?");
         addLocalized(TAG_NAME, EMPTY_ATTRIBUTES, title);
         addLocalized("Description", EMPTY_ATTRIBUTES, mdValues.getProperty("description",null));
@@ -396,7 +401,7 @@ public class XDSMetadata {
         addSlot( "creationTime", getTime(Tags.InstanceCreationDate,Tags.InstanceCreationTime, Tags.ContentDate, Tags.ContentTime));
         addSlot( "languageCode", mdValues.getProperty("languageCode", "en-us"));
         addSlot( "serviceStartTime", getTime(Tags.StudyDate,Tags.StudyTime, -1,-1));
-        addSlot( "sourcePatientId", getPatID(dsKO.getString(Tags.PatientID), dsKO.getString(Tags.IssuerOfPatientID)));
+        addSlot( "sourcePatientId", getPatID(manifest.getString(Tags.PatientID), manifest.getString(Tags.IssuerOfPatientID)));
         addSlot( "sourcePatientInfo", getPatientInfo());
         if( "true".equals( mdValues.getProperty("useOldAuthorSlot") ) ) {
             addSlot( XDSIService.AUTHOR_SPECIALITY, mdValues.getProperty(XDSIService.AUTHOR_SPECIALITY, null));
@@ -475,22 +480,22 @@ public class XDSMetadata {
         }
     }
     private String getTime(int dateTag, int timeTag, int alternateDateTag, int alternateTimeTag) {
-        String date = dsKO.getString(dateTag);
+        String date = manifest.getString(dateTag);
         String time;
         if ( date == null ) {
             if ( alternateDateTag > 0) {
-                date = dsKO.getString(alternateDateTag);
+                date = manifest.getString(alternateDateTag);
             }
             if (date == null ) {
                 return DEFAULT_DATE_STRING+DEFAULT_TIME_STRING;
             } else if (alternateTimeTag != -1){
-                time = dsKO.getString(alternateTimeTag);
+                time = manifest.getString(alternateTimeTag);
                 if ( time == null ) time =DEFAULT_TIME_STRING;
             } else {
                 time =DEFAULT_TIME_STRING;
             }
         } else if (timeTag != -1) {
-            time = dsKO.getString(timeTag);
+            time = manifest.getString(timeTag);
             if ( time == null ) time =DEFAULT_TIME_STRING;
 
         } else {
@@ -503,22 +508,22 @@ public class XDSMetadata {
      */
     private String[] getPatientInfo() {
         String[] values = new String[5];
-        values[0] = "PID-3|"+getPatID(dsKO.getString(Tags.PatientID), dsKO.getString(Tags.IssuerOfPatientID));
-        values[1] = "PID-5|"+dsKO.getString(Tags.PatientName);
-        String birthdate = dsKO.getString(Tags.PatientBirthDate);
+        values[0] = "PID-3|"+getPatID(manifest.getString(Tags.PatientID), manifest.getString(Tags.IssuerOfPatientID));
+        values[1] = "PID-5|"+manifest.getString(Tags.PatientName);
+        String birthdate = manifest.getString(Tags.PatientBirthDate);
         if (birthdate == null ) {
             values[2] = null;
         } else {
-            String birthtime = dsKO.getString(Tags.PatientBirthTime);
+            String birthtime = manifest.getString(Tags.PatientBirthTime);
             values[2] = "PID-7|"+birthdate+(birthtime != null ? birthtime : DEFAULT_TIME_STRING);
         }
-        String sex = dsKO.getString(Tags.PatientSex);
+        String sex = manifest.getString(Tags.PatientSex);
         values[3] = "PID-8|"+(sex != null ? sex : "U");
-        String addr = dsKO.getString(Tags.PatientAddress);
+        String addr = manifest.getString(Tags.PatientAddress);
         if (addr == null) {
             values[4] = null;
         } else {
-            values[4] = "PID-11|"+dsKO.getString(Tags.PatientAddress);
+            values[4] = "PID-11|"+manifest.getString(Tags.PatientAddress);
         }
         return values;
     }
@@ -531,6 +536,12 @@ public class XDSMetadata {
         patID += "^^^";
         if ( issuer == null ) return patID;
         return patID+issuer;
+    }
+    public String getSubmissionSetUID() {
+        return submissionSetUID;
+    }
+    public String getSubmissionSetPatId() {
+        return submissionSetPatId;
     }
     /**
      * @param string
@@ -602,10 +613,11 @@ public class XDSMetadata {
         if ( uniqueId == null ) {
             uniqueId = UIDGeneratorImpl.getInstance().createUID();
         }
+        submissionSetUID = uniqueId;
+        submissionSetPatId = mdValues.getProperty("xadPatientID");
         addExternalIdentifier(UUID.XDSSubmissionSet_uniqueId,"XDSSubmissionSet.uniqueId", uniqueId);
         addExternalIdentifier(UUID.XDSSubmissionSet_sourceId,"XDSSubmissionSet.sourceId", mdValues.getProperty("sourceId", uniqueId));
-        addExternalIdentifier(UUID.XDSSubmissionSet_patientId,"XDSSubmissionSet.patientId", 
-                mdValues.getProperty("xadPatientID"));
+        addExternalIdentifier(UUID.XDSSubmissionSet_patientId,"XDSSubmissionSet.patientId", submissionSetPatId);
     }
 
     private void addFolderRegistryPackage(String id, String title) throws SAXException {
