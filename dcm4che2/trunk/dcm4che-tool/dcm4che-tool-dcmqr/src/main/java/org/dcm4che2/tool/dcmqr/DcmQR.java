@@ -1235,32 +1235,32 @@ public class DcmQR {
         }
     }
 
-    private void addStoreTransferCapability(String cuid, String[] tsuids) {
+    public void addStoreTransferCapability(String cuid, String[] tsuids) {
         storeTransferCapability.add(new TransferCapability(
                 cuid, tsuids, TransferCapability.SCP));
     }
 
-    private void setEvalRetrieveAET(boolean evalRetrieveAET) {
+    public void setEvalRetrieveAET(boolean evalRetrieveAET) {
        this.evalRetrieveAET = evalRetrieveAET;
     }
 
-    private boolean isEvalRetrieveAET() {
+    public boolean isEvalRetrieveAET() {
         return evalRetrieveAET;
     }
 
-    private void setNoExtNegotiation(boolean b) {
+    public void setNoExtNegotiation(boolean b) {
         this.noExtNegotiation = b;
     }
 
-    private void setFuzzySemanticPersonNameMatching(boolean b) {
+    public void setFuzzySemanticPersonNameMatching(boolean b) {
         this.fuzzySemanticPersonNameMatching = b;
     }
 
-    private void setDateTimeMatching(boolean b) {
+    public void setDateTimeMatching(boolean b) {
         this.dateTimeMatching = b;
     }
 
-    private void setRelationQR(boolean b) {
+    public void setRelationQR(boolean b) {
         this.relationQR = b;
     }
 
@@ -1272,23 +1272,23 @@ public class DcmQR {
         return warning;
     }
 
-    private final int getTotalRetrieved() {
+    public final int getTotalRetrieved() {
         return completed + warning;
     }
 
-    private void setCancelAfter(int limit) {
+    public void setCancelAfter(int limit) {
         this.cancelAfter = limit;
     }
 
-    private void addMatchingKey(int[] tagPath, String value) {
+    public void addMatchingKey(int[] tagPath, String value) {
         keys.putString(tagPath, null, value);
     }
 
-    private void addReturnKey(int[] tagPath) {
+    public void addReturnKey(int[] tagPath) {
         keys.putNull(tagPath, null);
     }
 
-    private void configureTransferCapability(boolean ivrle) {
+    public void configureTransferCapability(boolean ivrle) {
         String[] findcuids = qrlevel.getFindClassUids();
         String[] movecuids = moveDest != null ? qrlevel.getMoveClassUids()
                 : EMPTY_STRING;
@@ -1376,7 +1376,7 @@ public class DcmQR {
         return tc;
     }
 
-    private void setQueryLevel(QueryRetrieveLevel qrlevel) {
+    public void setQueryLevel(QueryRetrieveLevel qrlevel) {
         this.qrlevel = qrlevel;
         keys.putString(Tag.QueryRetrieveLevel, VR.CS, qrlevel.getCode());
         for (int tag : qrlevel.getReturnKeys()) {
@@ -1388,19 +1388,19 @@ public class DcmQR {
         privateFind.add(cuid);
     }
 
-    private void setCGet(boolean cget) {
+    public void setCGet(boolean cget) {
         this.cget = cget;
     }
 
-    private boolean isCGet() {
+    public boolean isCGet() {
         return cget;
     }
 
-    private void setMoveDest(String aet) {
+    public void setMoveDest(String aet) {
         moveDest = aet;
     }
 
-    private boolean isCMove() {
+    public boolean isCMove() {
         return moveDest != null;
     }
 
@@ -1628,7 +1628,7 @@ public class DcmQR {
         return keylist;
     }
 
-    private TransferCapability selectFindTransferCapability()
+    public TransferCapability selectFindTransferCapability()
             throws NoPresentationContextException {
         TransferCapability tc;
         if ((tc = selectTransferCapability(privateFind)) != null)
@@ -1640,7 +1640,7 @@ public class DcmQR {
                 + " not supported by " + remoteAE.getAETitle());
     }
 
-    private String selectTransferSyntax(TransferCapability tc) {
+    public String selectTransferSyntax(TransferCapability tc) {
         String[] tcuids = tc.getTransferSyntax();
         if (Arrays.asList(tcuids).indexOf(UID.DeflatedExplicitVRLittleEndian) != -1)
             return UID.DeflatedExplicitVRLittleEndian;
@@ -1720,7 +1720,7 @@ public class DcmQR {
 
     }
 
-    private TransferCapability selectTransferCapability(String[] cuid) {
+    public TransferCapability selectTransferCapability(String[] cuid) {
         TransferCapability tc;
         for (int i = 0; i < cuid.length; i++) {
             tc = assoc.getTransferCapabilityAsSCU(cuid[i]);
@@ -1730,7 +1730,7 @@ public class DcmQR {
         return null;
     }
 
-    private TransferCapability selectTransferCapability(List<String> cuid) {
+    public TransferCapability selectTransferCapability(List<String> cuid) {
         TransferCapability tc;
         for (int i = 0, n = cuid.size(); i < n; i++) {
             tc = assoc.getTransferCapabilityAsSCU(cuid.get(i));
@@ -1744,7 +1744,7 @@ public class DcmQR {
         assoc.release(true);
     }
 
-    private void setStoreDestination(String filePath) {
+    public void setStoreDestination(String filePath) {
         this.storeDest = new File(filePath);
         this.devnull = "/dev/null".equals(filePath);
         if (!devnull)
