@@ -390,6 +390,7 @@ CloseSeriesAreas.prototype = new Layout("CloseSeriesAreas","image/closeSeriesAre
 CloseSeriesAreas.prototype.absHeight = 0;
 CloseSeriesAreas.prototype.absWidth = 0;
 CloseSeriesAreas.prototype.arg = "Image";
+CloseSeriesAreas.prototype.action = "closeArea";
 
 /** Create an images areas object */
 function ImageAreasLayout(suffix, nth) {

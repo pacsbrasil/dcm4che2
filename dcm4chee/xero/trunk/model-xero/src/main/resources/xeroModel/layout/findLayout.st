@@ -26,18 +26,20 @@ $layout/addChildren(children=findMenuLayout.children)$
 };
 
 FindMenuLayout.prototype = new Layout("FindMenuPrototype", "html/menu");
+FindMenuLayout.prototype.ulClass="click";
 
 function ReportSelect(suffix) {
-	this.baseConstructor("ReportSelect");
+	this.baseConstructor("ReportSelect"+suffix);
 	this.add(new ReportSelectItem("ShowReportAndImages"));
 	this.add(new ReportSelectItem("ShowReport"));
 	this.add(new ReportSelectItem("ShowImages"));
-	this.copyFrom(this.layouts[0]);
-	this.arg="ShowReport";
+	var active = this.layouts[0];
+	this.copyFrom(active);
+	active.isActive = true;
 };
 
 ReportSelect.prototype = new Layout("ReportSelect","html/toolItem");
-ReportSelect.prototype.action="rotateButton";
+ReportSelect.prototype.area="Menu";
 
 function ReportSelectItem(i18n) {
 	this.baseConstructor(i18n);

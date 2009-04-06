@@ -27,14 +27,14 @@ XeroModel.prototype.init = function()
 var XeroStudyColumns = {
 	"template":"xeroStudyColumns",
 	"header":[
-		{"i18n":"PatientName", "var":"patientNameF",  "sort":"PatientName", "template":"query/patientNameSel","action":"sortQuery","id":"patientNameColHead" },
-		{"i18n":"PatientID", "var":"PatientID", "sort":"PatientID", "template":"html/displayFirst","action":"sortQuery","id":"patientIdColHead" },
-		{"i18n":"StudyDescription", "var":"StudyDescription", "sort":"StudyDescription", "template":"query/studyDescriptionSel","action":"sortQuery","id":"studyDescColHead" },
-		{"i18n":"Modality", "var":"ModalitiesInStudy", "sort":"ModalitiesInStudy", "template":"html/displayIt","action":"sortQuery", "id":"modalityColHead" },
-		{"i18n":"AccessionNumber", "var":"AccessionNumber", "sort":"AccessionNumber", "template":"html/displayIt","action":"sortQuery", "id":"accessionNumberColHead" },
-		{"i18n":"StudyDateTimeF", "var":"StudyDateF", "sort":"StudyDateTime", "template":"html/displayIt","action":"sortQuery", "id":"studyDateTimeColHead" },
-		{"name":"# Series", "var":"NumberOfStudyRelatedSeries", "sort":"NumberOfStudyRelatedSeries", "template":"html/displayIt","action":"sortQuery", "id":"numSeriesColHead" },
-		{"name":"# Objects", "var":"NumberOfStudyRelatedInstances", "sort":"NumberOfStudyRelatedInstances", "template":"html/displayIt","action":"sortQuery", "id":"numObjectsColHead" }
+		{"i18n":"PatientName", "var":"patientNameF",  "sort":"PatientName", "template":"query/patientNameSel","id":"patientNameColHead" },
+		{"i18n":"PatientID", "var":"PatientID", "sort":"PatientID", "template":"html/displayFirst","id":"patientIdColHead" },
+		{"i18n":"StudyDescription", "var":"StudyDescription", "sort":"StudyDescription", "template":"query/studyDescriptionSel","id":"studyDescColHead" },
+		{"i18n":"Modality", "var":"ModalitiesInStudy", "sort":"ModalitiesInStudy", "template":"html/displayIt", "id":"modalityColHead" },
+		{"i18n":"AccessionNumber", "var":"AccessionNumber", "sort":"AccessionNumber", "template":"html/displayIt", "id":"accessionNumberColHead" },
+		{"i18n":"StudyDateTimeF", "var":"StudyDateF", "sort":"StudyDateTime", "template":"html/displayIt", "id":"studyDateTimeColHead" },
+		{"name":"# Series", "var":"NumberOfStudyRelatedSeries", "sort":"NumberOfStudyRelatedSeries", "template":"html/displayIt", "id":"numSeriesColHead" },
+		{"name":"# Objects", "var":"NumberOfStudyRelatedInstances", "sort":"NumberOfStudyRelatedInstances", "template":"html/displayIt", "id":"numObjectsColHead" }
 	]
 };
 
