@@ -101,14 +101,21 @@ public class JavaScriptObjectWrapper extends AbstractMap<String, Object> {
 	 * @return
 	 */
 	public Object get(Object key) {
-		if( isArray ) {
-			int index = intKey(key);
-			if( index>=0 ) {
-				Object ret = ScriptableObject.getProperty(scriptable, index);
-				return wrapScriptable(ret);
-			}
+      if( isArray ) {
+         int index = intKey(key);
+         if( index>=0 ) {
+            Object ret = ScriptableObject.getProperty(scriptable, index);
+            return wrapScriptable(ret);
+         }
+      }
+      
+      Object ret = ScriptableObject.getProperty(scriptable, (String) key);
+		if(ret == UniqueTag.NOT_FOUND && ScriptableObject.hasProperty(scriptable, "_parent"))
+		{
+		   JavaScriptObjectWrapper parent = getObject("_parent");
+		   ret = parent.get(key);
 		}
-		Object ret = ScriptableObject.getProperty(scriptable, (String) key);
+		
 		return wrapScriptable(ret);
 	}
 
