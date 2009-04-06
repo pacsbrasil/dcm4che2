@@ -242,7 +242,6 @@ XeroController.prototype.mouseOut = function(e) {
 	if( !e ) e = window.event;
 	var tg = this.mousing.mouseDom;
 	var reltg = (e.relatedTarget) ? e.relatedTarget : e.toElement;
-	console.info("tg=",tg.id,"reltg=",reltg.id,e.nodeName);
 	while (reltg!=null && reltg !== tg && reltg.nodeName != 'BODY') 
 		reltg= reltg.parentNode
 	if (reltg===tg) return;
