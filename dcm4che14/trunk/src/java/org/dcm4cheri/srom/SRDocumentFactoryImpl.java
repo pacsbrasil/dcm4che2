@@ -105,6 +105,10 @@ public class SRDocumentFactoryImpl extends SRDocumentFactory
         return new EquipmentImpl(manufacturer, modelName, stationName);
     }
 
+    public Code newCode(String spec) {
+        return new CodeImpl(spec);
+    }
+
     public Code newCode(String codeValue, String codingSchemeDesignator,
             String codingSchemeVersion, String codeMeaning) {
         return new CodeImpl(codeValue, codingSchemeDesignator,
@@ -195,7 +199,7 @@ public class SRDocumentFactoryImpl extends SRDocumentFactory
         return new EquipmentImpl(ds);
     }
 
-    public Code newCode(Dataset ds) throws DcmValueException {
+    public Code newCode(Dataset ds) {
         return CodeImpl.newCode(ds);
     }
 

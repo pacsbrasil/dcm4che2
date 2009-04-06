@@ -38,13 +38,14 @@
 
 package org.dcm4cheri.srom;
 
-import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmElement;
-import org.dcm4che.data.DcmValueException;
-import org.dcm4che.dict.Tags;
-import org.dcm4che.srom.Code;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.dict.Tags;
+import org.dcm4che.srom.Code;
 
 /**
  *
@@ -54,7 +55,8 @@ import org.apache.log4j.Logger;
 class CodeImpl implements Code {
     // Constants -----------------------------------------------------
     static final Code[] EMPTY_ARRAY = {};
-    private static final int MEANING_PROMPT_LEN = 32;
+    private static final Pattern PATTERN = Pattern.compile(
+            "\\( *([^,]+), *([^,\\[]+)(\\[ *([^\\]]+)\\])?, *\"([^\"]+)\"\\)");
 
     // Attributes ----------------------------------------------------
     static Logger log = Logger.getLogger(CodeImpl.class);
@@ -73,6 +75,18 @@ class CodeImpl implements Code {
         return val;
     }
     
+    public CodeImpl(String spec) {
+        Matcher m = PATTERN.matcher(spec);
+        if (!m.matches()) {
+            throw new IllegalArgumentException(spec);
+        }
+        this.codeValue = m.group(1).trim();
+        this.codingSchemeDesignator = m.group(2).trim();
+        String version = m.group(4);
+        this.codingSchemeVersion = version == null ? null : version.trim();
+        this.codeMeaning = m.group(5);
+    }
+
     public CodeImpl(
         String codeValue,
         String codingSchemeDesignator,
@@ -91,18 +105,18 @@ class CodeImpl implements Code {
             "__NULL__");
     }
 
-    public CodeImpl(Dataset ds) throws DcmValueException { 
+    public CodeImpl(Dataset ds) { 
         this(ds.getString(Tags.CodeValue),
             ds.getString(Tags.CodingSchemeDesignator),
             ds.getString(Tags.CodingSchemeVersion),
             ds.getString(Tags.CodeMeaning));
     }
     
-    public static Code newCode(Dataset ds) throws DcmValueException {
+    public static Code newCode(Dataset ds) {
         return ds != null ? new CodeImpl(ds) : null;
     }
         
-    public static Code[] newCodes(DcmElement sq) throws DcmValueException {
+    public static Code[] newCodes(DcmElement sq) {
         if (sq == null || sq.isEmpty())
             return EMPTY_ARRAY;
         Code[] a = new Code[sq.countItems()];
@@ -144,11 +158,11 @@ class CodeImpl implements Code {
     public int hashCode() { return codeValue.hashCode(); }
     
     public String toString() {
-        return "(" + codeValue
-             + "," + codingSchemeDesignator
-             + ",\"" + (codeMeaning.length() <= MEANING_PROMPT_LEN ? codeMeaning
-                        : (codeMeaning.substring(0,MEANING_PROMPT_LEN) + ".."))
-             + "\")";
+        return codingSchemeVersion != null
+                ? "(" + codeValue + ", " + codingSchemeDesignator + " ["
+                      + codingSchemeVersion + "], \"" + codeMeaning + "\")"
+                : "(" + codeValue + ", " + codingSchemeDesignator
+                                             + ", \"" + codeMeaning + "\")";
     }
 
     public void toDataset(Dataset ds) {

@@ -365,8 +365,27 @@ public abstract class SRDocumentFactory {
     
     public abstract Equipment newEquipment(Dataset ds) throws DcmValueException;
     
-    public abstract Code newCode(Dataset ds) throws DcmValueException;
-    
+    public abstract Code newCode(Dataset ds);
+
+    /**
+     * Creates a <code>Code</code> object from the <code>String</code>
+     * representation.
+     * <p>
+     * The format of the String representation must match:
+     * <blockquote><pre>
+     * (&lt;code-value&gt;, &lt;coding-scheme-designator&gt;, "&lt;coding-meaning&gt;")
+     * </pre></blockquote>
+     * or with specifying also a coding scheme version:
+     * <blockquote><pre>
+     * (&lt;code-value&gt;, &lt;coding-scheme-designator&gt; [&lt;coding-scheme-version&gt;], "&lt;coding-meaning&gt;")
+     * </pre></blockquote>
+     * @param spec
+     *            the <code>String</code> to parse as a Code.
+     * @return <code>Code</code> object of the <code>String</code>
+     *         representation
+     */
+    public abstract Code newCode(String spec);
+
     public abstract RefSOP newRefSOP(Dataset ds) throws DcmValueException;
     
     public abstract IconImage newIconImage(Dataset ds) throws DcmValueException;
