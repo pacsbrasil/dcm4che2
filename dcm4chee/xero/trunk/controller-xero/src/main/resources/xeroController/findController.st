@@ -7,11 +7,9 @@
  * Perform a search based on the indicated queryStr.  If queryStr is undefined then the
  * current query is refreshed. 
  */
-XeroController.prototype.performSearch = function XC_performSearch(queryStr) {
+XeroController.prototype.performSearch = function XC_performSearch() {
     var model = this.model;
 	var queryLayout = model.idMap.QueryLayout;
-	if(queryStr)
-		queryLayout.query.updateQueryStr(queryStr);
 	
 	var url = queryLayout.query.url;
 	console.info("Performing search with URL:" + url);
@@ -35,6 +33,8 @@ function onLoadStudySearch() {
 
 	// Update the client based on the URL that has been passed.
 	var url = document.location.search.substring(1);
+	if(url == null) url = "";
+	
 	controller.updateClient(url);
 
 	controller.findLayout("QueryLayout").hideListener = function() {
@@ -68,21 +68,13 @@ XeroController.prototype.manyStudy = function(id, pid, studyUID) {
 };
 
 /** Finds the search results and causes them to be displayed */
-XeroController.prototype.findAction = function XC_findAction(url) {
-	if(!url) {
-		var queryLayout = this.model.idMap.QueryLayout;
-		url = queryLayout.query.updateUrlFromForm();
-	}
-	
-	// Invoke a query based on the updated URL
-	this.performSearch(url);
-	
-	var sl = this.findLayout("SearchLayout");
-	if( sl ) {
-	   sl.scrollTop = 0;
-	}
-	this.updateView("findAction");	
+XeroController.prototype.findAction = function XC_findAction(src) {
+	var queryLayout = this.model.idMap.QueryLayout;
+	var queryUrl = queryLayout.query.updateUrlFromForm();
+	this.updateFindTab();
 };
+
+
 
 /** Sort the selected columns */
 XeroController.prototype.sortQuery = function SC_sortQuery(src,event,col) {
@@ -98,7 +90,7 @@ XeroController.prototype.sortQuery = function SC_sortQuery(src,event,col) {
 
 /** Submit the find form on enter press */
 XeroController.prototype.find_key13 = function(e) {
-	this.findAction('QueryLayout');
+	this.findAction();
 };
 
 /** Clear the query criteria */
@@ -117,26 +109,38 @@ XeroController.prototype.clearQuery = function(id) {
 
 // Update the client based on the passed URL
 XeroController.prototype.updateClient = function(url) {
-	console.info("Controller.updateClient invoked with url="+url);
-	if(!url) url = "";
-
 	// Populate the 'Find' tab with search results
-	this.findAction(url);
-
-	if(url.indexOf("tab=Display") >= 0)
+	var queryLayout = this.findLayout("QueryLayout");
+	queryLayout.query.updateQueryStr(url);
+	queryLayout.query.updateFormFromURL(url);
+	this.performSearch();
+	
+	if(url && url.indexOf("tab=Display") >= 0)
 	{
-		// Show the 'Display' tab first.
-		var patients = this.findLayout("SearchLayout").search.patient;
-		if(patients && patients.length > 0)
-		{
-			var pid = patients[0].PatientIdentifier;
-			
-			console.info("Displaying studies for PatientIdentifer="+pid);
-			this.displayPatient('SearchLayout',pid);
-		}
+		this.updateDisplayTab();
 	}
+};
 
-	// Populate the query criteria.
-	this.model.idMap.QueryLayout.query.updateFormFromURL(url);
+XeroController.prototype.updateDisplayTab = function() {
+	// Show the 'Display' tab first.
+	var patients = this.findLayout("SearchLayout").search.patient;
+	if(patients && patients.length > 0)
+	{
+		var pid = patients[0].PatientIdentifier;
+		
+		console.info("Displaying studies for PatientIdentifer="+pid);
+		this.displayPatient('SearchLayout',pid);
+	}
+};
+
+XeroController.prototype.updateFindTab = function() {
+	// Invoke a query based on the updated URL
+	this.performSearch();
+	
+	var sl = this.findLayout("SearchLayout");
+	if( sl ) {
+	   sl.scrollTop = 0;
+	}
+	this.updateView("findAction");	
 };
 

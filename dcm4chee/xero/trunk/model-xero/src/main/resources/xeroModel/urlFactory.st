@@ -16,8 +16,10 @@ UrlFactory.prototype.debug = function() {};
 
 
 /** Update the internal URL with the indicated queryStr */
-UrlFactory.prototype.updateQueryStr = function(queryStr) {
+UrlFactory.prototype.updateQueryStr = function(queryStr) {	
 	this.url = this.base;
+	if(!queryStr)
+		return;
 
 	if( this.url.indexOf("?")<0 ) 
 		this.sep = "?";
@@ -78,6 +80,8 @@ UrlFactory.prototype.updateUrlFromFormNode = function(node) {
 // Update the form based on the content of the indicated URL.
 // Form is not cleared before the URL is read.
 UrlFactory.prototype.updateFormFromURL = function(url) {
+	if(!url) return;
+	
 	// Read the criteria off the URL into a Map
 	var criteria = this.readCriteriaFromURL(url);
 	
