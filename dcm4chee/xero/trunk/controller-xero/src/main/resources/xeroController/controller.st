@@ -20,7 +20,7 @@
  *	Display Page - including series tray, report view, series view, image view etc
  */
 
-/** Creates a XeroController object, typically called xeroController */
+/** Creates a XeroController object, typically called controller */
 function XeroController(model, ua, view) {
 	this.model = model;
 	this.view = view;
@@ -161,7 +161,7 @@ XeroController.getOnScreenZoomRectangle = function(zoomRect, rows, cols)
 	return onScreenZoomRect;    
 };    
 
-$xeroControllers:{ $(it)()$ }$
+$controllers:{ $(it)()$ }$
 
 XeroController.prototype.isDebug = false;
 XeroController.prototype.debug = function() {};
