@@ -1,14 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/main/java"/>
-	<classpathentry kind="src" path="src/main/config"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="DCM4CHE2_LIB/dcm4che-core-2.0.12.jar" sourcepath="/DCM4CHE2_SRC/dcm4che-core/src/main/java"/>
-	<classpathentry kind="var" path="DCM4CHE2_LIB/commons-cli-1.1.jar"/>
-	<classpathentry kind="var" path="DCM4CHE2_LIB/dcm4che-net-2.0.12.jar" sourcepath="/DCM4CHE2_SRC/dcm4che-net/src/main/java"/>
-	<classpathentry kind="var" path="DCM4CHE2_LIB/slf4j-api-1.4.3.jar"/>
-	<classpathentry kind="var" path="DCM4CHE2_LIB/slf4j-log4j12-1.4.3.jar"/>
-	<classpathentry kind="var" path="DCM4CHE2_LIB/log4j-1.2.13.jar"/>
-	<classpathentry kind="var" path="DCM4CHE2_LIB/dcm4che-iod-2.0.12.jar" sourcepath="/DCM4CHE2_SRC/dcm4che-iod/src/main/java"/>
+	<classpathentry kind="con" path="org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
