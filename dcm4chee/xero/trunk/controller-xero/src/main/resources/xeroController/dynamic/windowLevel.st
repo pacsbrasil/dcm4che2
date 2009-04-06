@@ -14,7 +14,7 @@ XeroController.prototype.dblDragImage = XeroController.prototype.WindowLevel_dra
 XeroController.prototype.ctrl_dragImage = XeroController.prototype.WindowLevel_dragImage;
 
 /** Handle the window level reset operation */
-XeroController.prototype.wlReset = function(lay) {
+XeroController.prototype.wlReset = function(lay,event, preventUpdate) {
 	lay = this.findLayout(lay);
 	console.info("Image clicked - trying to reset the image, layout",lay.id);
 	var nav = this.getNavigate(lay);
@@ -27,7 +27,7 @@ XeroController.prototype.wlReset = function(lay) {
 		nav.merged.windowWidth = undefined;
 		nav.setMerged("windowCenter");
 	}
-	this.waitUpdate("mouseUp",2);
+	if( !preventUpdate ) this.waitUpdate("mouseUp",2);
 };
 
 XeroController.prototype.ctrl_clickImage = XeroController.prototype.wlReset; 

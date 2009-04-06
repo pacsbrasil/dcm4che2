@@ -5,8 +5,8 @@
  * already scale to fit.
  */
  
-XeroController.prototype.zoomReset = function (lay,e) {
-	this.zoomMode(lay,e);
+XeroController.prototype.zoomReset = function (lay,e, preventUpdate) {
+	this.zoomMode(lay,e,null,preventUpdate);
 };
 XeroController.prototype.shift_clickImage = XeroController.prototype.zoomReset;
 
@@ -38,7 +38,7 @@ XeroController.prototype.sizeToggle = function(lay,e) {
 };
 
 /** Handles setting a given zoom mode, and re-setting the region */
-XeroController.prototype.zoomMode = function(lay,e,mode) {
+XeroController.prototype.zoomMode = function(lay,e,mode,preventUpdate) {
 	lay = this.findLayout(lay);
 	var nav = this.getNavigate(lay);
 	nav.setMerged("smallImage",true);
@@ -49,7 +49,7 @@ XeroController.prototype.zoomMode = function(lay,e,mode) {
 	nav.parent.setMerged("bottomRight");
 	nav.parent.setMerged("magnify");
 	
-	this.waitUpdate("zoomMode",5);
+	if( !preventUpdate ) this.waitUpdate("zoomMode",5);
 };
 
 /** 

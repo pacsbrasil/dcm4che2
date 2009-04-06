@@ -440,6 +440,13 @@ ImageMouseHandler.prototype.getTarget = function(e)
     return targ;
 };
 
+/** Calls the 3 base resets */
+XeroController.prototype.allReset = function(lay,e) {
+	this.wlReset(lay,e,true);
+	this.zoomReset(lay,e,true);
+	this.spatReset(lay,e);
+};
+
 /** Defines the individual dynamic controllers */
 $dynamic/windowLevel()$
 $dynamic/spat()$
