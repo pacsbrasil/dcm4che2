@@ -38,14 +38,14 @@ XeroController.prototype.flipHorizontal = function(lay) {
 };
 
 /** Handle the spatial transform reset operation */
-XeroController.prototype.spatReset = function(lay) {
+XeroController.prototype.spatReset = function(lay,e,preventUpdate) {
 	lay = this.findLayout(lay);
 	console.info("Image clicked - trying to spat reset the image, layout",lay.id);
 	var nav = this.getNavigate(lay);
 	nav=nav.parent;
 	nav.setMerged("horizontalFlip");
 	nav.setMerged("rotation");
-	this.waitUpdate("mouseUp",2);
+	if(! preventUpdate ) this.waitUpdate("mouseUp",2);
 };
 
 XeroController.prototype.alt_clickImage = XeroController.prototype.rotateRight;

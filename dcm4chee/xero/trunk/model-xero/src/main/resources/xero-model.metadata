@@ -41,7 +41,7 @@ static.imageMenu.children.imageMode.i18n=ImageMode
 
 static.imageMenu.children.allReset.inherit=toolItem
 static.imageMenu.children.allReset.i18n=AllReset
-static.imageMenu.children.allReset.priority=250
+static.imageMenu.children.allReset.priority=2500
 static.imageMenu.children.allReset.action=allReset
 
 static.imageMenu.children.wl.inherit=displayModeItem
@@ -54,12 +54,6 @@ static.imageMenu.children.invert.priority=1110
 static.imageMenu.children.invert.mode=WindowLevel
 static.imageMenu.children.invert.action=wlInvert
 
-#static.imageMenu.children.wlreset.inherit=toolItem
-#static.imageMenu.children.wlreset.i18n=WLReset
-#static.imageMenu.children.wlreset.priority=1120
-#static.imageMenu.children.wlreset.mode=WindowLevel
-#static.imageMenu.children.wlreset.action=wlReset
-
 ######## Spatial Transform Menu
 
 static.imageMenu.children.rotateRight.inherit=toolItem
@@ -68,22 +62,11 @@ static.imageMenu.children.rotateRight.i18n=RotateRight
 static.imageMenu.children.rotateRight.action=rotateRight
 static.imageMenu.children.rotateRight.mode=ImageMode
 
-#static.imageMenu.children.rotateLeft.inherit=toolItem
-#static.imageMenu.children.rotateLeft.priority=1310
-#static.imageMenu.children.rotateLeft.i18n=RotateLeft
-#static.imageMenu.children.rotateLeft.action=rotateLeft
-
 static.imageMenu.children.flip.inherit=toolItem
 static.imageMenu.children.flip.priority=1320
 static.imageMenu.children.flip.i18n=FlipHorizontal
 static.imageMenu.children.flip.action=flipHorizontal
 static.imageMenu.children.flip.mode=ImageMode
-
-#static.imageMenu.children.reset.inherit=toolItem
-#static.imageMenu.children.reset.priority=1330
-#static.imageMenu.children.reset.i18n=SpatReset
-#static.imageMenu.children.reset.action=spatReset
-#static.imageMenu.children.reset.mode=ImageMode
 
 ######## Zoom Menu
 
