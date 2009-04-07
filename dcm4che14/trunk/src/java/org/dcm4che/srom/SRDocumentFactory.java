@@ -38,11 +38,11 @@
 
 package org.dcm4che.srom;
 
+import java.util.Date;
+
 import org.dcm4che.Implementation;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmValueException;
-
-import java.util.Date;
 
 /**
  * Factory for DICOM SR Documents.
@@ -54,16 +54,14 @@ import java.util.Date;
  * Annex A.35 Structured Report Document Information Object Definitions"
  */
 public abstract class SRDocumentFactory {
-    // Constants -----------------------------------------------------
-    
-    // Constructor ---------------------------------------------------
-   public static SRDocumentFactory getInstance() {
-      return (SRDocumentFactory)Implementation.findFactory(
-            "dcm4che.srom.SRDocumentFactory");
-   }
-    
-    // Public --------------------------------------------------------
-    
+
+    private static SRDocumentFactory instance = (SRDocumentFactory)
+            Implementation.findFactory("dcm4che.srom.SRDocumentFactory");
+
+    public static SRDocumentFactory getInstance() {
+      return instance;
+    }
+
     /**
      * Creates a new <i>SOP Class/SOP Instance</i> pair.
      *
