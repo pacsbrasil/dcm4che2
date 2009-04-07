@@ -74,6 +74,7 @@ import org.dcm4chee.docstore.Feature;
 import org.dcm4chee.docstore.spi.DocumentStorage;
 import org.dcm4chee.xds.common.XDSConstants;
 import org.dcm4chee.xds.common.exception.XDSException;
+import org.dcm4chee.xds.common.store.InputStreamDataSource;
 import org.dcm4chee.xds.common.store.XDSDocument;
 import org.dcm4chee.xds.common.store.XDSDocumentWriter;
 import org.dcm4chee.xds.common.store.XDSDocumentWriterFactory;
@@ -197,7 +198,7 @@ public class XDSStoreService extends ServiceMBeanSupport {
                 }
             } else { //DocumentStorage does not support createDocument! (trust to get correct SHA1 hash)
                 log.debug("DocumentStorage does not support createDocument! Use storeDocument with DataHandler and trust to get SHA1 hash!");
-                storedDoc = storeDoc(documentUID, xdsDoc.getXdsDocWriter().getDataHandler(), metadata);
+                storedDoc = storeDoc(documentUID, xdsDoc, metadata);
                 if ( storedDoc != null ) {
                     docAdded = true;
                 }
@@ -221,8 +222,12 @@ public class XDSStoreService extends ServiceMBeanSupport {
         }
     }
 
-    private XDSDocument storeDoc(String documentUID, DataHandler dh, Source metadata) throws IOException, XDSException, TransformerConfigurationException, TransformerFactoryConfigurationError, TransformerException {
+    private XDSDocument storeDoc(String documentUID, XDSDocument xdsDoc, Source metadata) throws IOException, XDSException, TransformerConfigurationException, TransformerFactoryConfigurationError, TransformerException {
         Set<DataHandlerVO> dhVOs = new HashSet<DataHandlerVO>(2);
+        DataHandler dh = xdsDoc.getXdsDocWriter().getDataHandler();
+        if ( ! xdsDoc.getMimeType().equals(dh.getContentType())) {
+            dh = this.correctContentType(dh, xdsDoc.getMimeType());
+        }
         dhVOs.add( new DataHandlerVO(documentUID, dh));
         if ( metadata != null && this.storeMetadata && metadataStoragePool != null) {
             DataSource ds = toDataSource(metadata);
@@ -239,7 +244,7 @@ public class XDSStoreService extends ServiceMBeanSupport {
                 docs = docStore.storeDocuments( metadataStoragePool, dhVOs );
             }
         } else {
-            String mime = dh.getContentType(); 
+            String mime = xdsDoc.getMimeType(); 
             for ( BaseDocument doc1 : docs ) {
                 if ( mime.equals(doc1.getMimeType()) ) {
                    doc = doc1;
@@ -264,6 +269,15 @@ public class XDSStoreService extends ServiceMBeanSupport {
         }
         return storedDoc;
     }
+    
+    private DataHandler correctContentType(DataHandler dh, String mime) throws IOException {
+        DataSource ds = dh.getDataSource();
+        if ( ds != null ) {
+            return new DataHandler( new InputStreamDataSource(ds.getInputStream(), mime) );
+        }
+        throw new IllegalArgumentException("Can't correct ContentType! DataHandler has no DataSource!");
+    }
+    
 
     private XDSDocument writeDocument(BaseDocument doc, XDSDocumentWriter xdsDocWriter) throws IOException, NoSuchAlgorithmException {
         MessageDigest md = null;
@@ -293,10 +307,10 @@ public class XDSStoreService extends ServiceMBeanSupport {
 
     private XDSDocumentWriter getXdsDocWriter(BaseDocument doc) throws IOException {
         if ( doc.getDataHandler() == null) {
-            return XDSDocumentWriterFactory.getInstance().getDocumentWriter(doc.getSize());
+            return XDSDocumentWriterFactory.getInstance().getDocumentWriter(doc.getSize(), doc.getMimeType());
         } else {
             InputStream is = doc.getInputStream();
-            return XDSDocumentWriterFactory.getInstance().getDocumentWriter(is, is.available());
+            return XDSDocumentWriterFactory.getInstance().getDocumentWriter(is, is.available(), doc.getMimeType());
         }
     }
 
