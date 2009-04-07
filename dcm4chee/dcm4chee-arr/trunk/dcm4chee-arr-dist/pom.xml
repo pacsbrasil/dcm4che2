@@ -1,11 +1,11 @@
 <project>
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>dcm4che</groupId>
+    <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-arr</artifactId>
     <version>3.0.8</version>
   </parent>
-  <groupId>dcm4che</groupId>
+  <groupId>dcm4che.dcm4chee</groupId>
   <artifactId>dcm4chee-arr-dist-${db}</artifactId>
   <packaging>pom</packaging>
   <version>3.0.8</version>
