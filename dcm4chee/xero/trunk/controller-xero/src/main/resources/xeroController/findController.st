@@ -117,19 +117,15 @@ XeroController.prototype.updateClient = function(url) {
 	
 	if(url && url.indexOf("tab=Display") >= 0)
 	{
-		this.updateDisplayTab();
-	}
-};
-
-XeroController.prototype.updateDisplayTab = function() {
-	// Show the 'Display' tab first.
-	var patients = this.findLayout("SearchLayout").search.patient;
-	if(patients && patients.length > 0)
-	{
-		var pid = patients[0].PatientIdentifier;
-		
-		console.info("Displaying studies for PatientIdentifer="+pid);
-		this.displayPatient('SearchLayout',pid);
+		// Show the 'Display' tab first.
+		var patients = this.findLayout("SearchLayout").search.patient;
+		if(patients && patients.length > 0)
+		{
+			var pid = patients[0].PatientIdentifier;
+			
+			console.info("Displaying studies for PatientIdentifer="+pid);
+			this.displayPatient('SearchLayout',pid);
+		}
 	}
 };
 
