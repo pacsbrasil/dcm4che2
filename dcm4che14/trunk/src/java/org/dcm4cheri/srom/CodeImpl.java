@@ -56,7 +56,7 @@ class CodeImpl implements Code {
     // Constants -----------------------------------------------------
     static final Code[] EMPTY_ARRAY = {};
     private static final Pattern PATTERN = Pattern.compile(
-            "\\( *([^,]+), *([^,\\[]+)(\\[ *([^\\]]+)\\])?, *\"([^\"]+)\"\\)");
+            "\\( *([^,]+), *([^,\\[]+)(\\[ *([^\\]]+)\\])?, *\"([^\"]+)\" *\\)");
 
     // Attributes ----------------------------------------------------
     static Logger log = Logger.getLogger(CodeImpl.class);
