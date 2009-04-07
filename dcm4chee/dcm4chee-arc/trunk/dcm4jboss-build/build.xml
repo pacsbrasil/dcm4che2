@@ -168,7 +168,7 @@
       </zipfileset>
       <zipfileset dir="../dcm4jboss-sar" prefix="${dist.db.config}">
         <include name="lib/commons-compress-20050911.jar"/>
-        <include name="lib/dcm4che-audit-2.0.17.jar"/>
+        <include name="lib/dcm4che-audit-2.0.19.jar"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-sar/src/etc" prefix="${dist.db.config}">
         <include name="conf/**"/>
