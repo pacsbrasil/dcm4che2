@@ -3,19 +3,19 @@
   <parent>
     <groupId>dcm4che</groupId>
     <artifactId>dcm4chee-arr</artifactId>
-    <version>3.0.7</version>
+    <version>3.0.8</version>
   </parent>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-arr-dist-${db}</artifactId>
   <packaging>pom</packaging>
-  <version>3.0.7</version>
+  <version>3.0.8</version>
   <name>Assemble Distribution for ARR</name>
   <dependencies>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-arr-${db}</artifactId>
       <type>ear</type>
-      <version>3.0.7</version>
+      <version>3.0.8</version>
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
@@ -35,7 +35,7 @@
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4che-core</artifactId>
-      <version>2.0.17</version>
+      <version>2.0.19</version>
     </dependency>
     <dependency>
       <groupId>postgresql</groupId>
