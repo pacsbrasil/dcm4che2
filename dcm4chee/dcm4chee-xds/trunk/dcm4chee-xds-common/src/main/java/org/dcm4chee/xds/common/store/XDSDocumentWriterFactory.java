@@ -44,6 +44,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,6 +60,7 @@ import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.SOAPException;
 import javax.xml.transform.stream.StreamSource;
 
+import org.jboss.ws.core.soap.attachment.MimeConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,8 +90,8 @@ public class XDSDocumentWriterFactory {
         return new DataHandlerWriter(new DataHandler(ds), fileSize);
     }
 
-    public XDSDocumentWriter getDocumentWriter(InputStream inputStream, long size) throws IOException {
-        InputStreamDataSource ds = new InputStreamDataSource(inputStream);
+    public XDSDocumentWriter getDocumentWriter(InputStream inputStream, long size, String contentType) throws IOException {
+        InputStreamDataSource ds = new InputStreamDataSource(inputStream, contentType);
         return new DataHandlerWriter(new DataHandler(ds), size);
     }
 
@@ -99,18 +101,22 @@ public class XDSDocumentWriterFactory {
             log.debug("part contentType:"+part.getContentType());
         }
         if ( "application/dicom".equalsIgnoreCase(part.getContentType() ) ) { //ImageIO isn't the right handler to handle basic DICOM objects like manifest KOS
-            InputStream is = part.getDataHandler().getInputStream();
-            return new CachedWriter( is );
+            String[] encoding = part.getMimeHeader(MimeConstants.CONTENT_TRANSFER_ENCODING);
+            if ( encoding != null && MimeConstants.BASE64_ENCODING.equals(encoding[0])) {
+                part.setBase64Content(part.getRawContent(), part.getContentType());
+            }
+            InputStream is = part.getRawContent();
+            return new CachedWriter( is, part.getContentType() );
         }
         Object content = part.getContent();
         log.debug("part:"+part.getClass().getName());
         log.debug("content:"+content.getClass().getName());
         if ( content instanceof String ) {
-            return new DataWriter(content.toString());
+            return new DataWriter(content.toString(), part.getContentType());
         } else if ( content instanceof StreamSource ) {
-            return new CachedWriter(((StreamSource) content).getInputStream());
+            return new CachedWriter(((StreamSource) content).getInputStream(), part.getContentType());
         } else if ( content instanceof InputStream ) {
-            return new CachedWriter( (InputStream) content );
+            return new CachedWriter( (InputStream) content, part.getContentType() );
         } else if ( content instanceof MimeMultipart ) {
             return new CachedWriter( (MimeMultipart) content );
         } else {
@@ -118,20 +124,20 @@ public class XDSDocumentWriterFactory {
         }
     }
 
-    public XDSDocumentWriter getDocumentWriter(String s) throws IOException {
-        return new DataWriter(s);
+    public XDSDocumentWriter getDocumentWriter(String s, String contentType) throws IOException {
+        return new DataWriter(s, contentType);
     }
 
-    public XDSDocumentWriter getDocumentWriter(byte[] data) throws IOException {
-        return new DataWriter(data);
+    public XDSDocumentWriter getDocumentWriter(byte[] data, String contentType) throws IOException {
+        return new DataWriter(data, contentType);
     }
 
     public XDSDocumentWriter getDocumentWriter(DataHandler dh, long size) throws IOException {
         return new DataHandlerWriter(dh, size);
     }
 
-    public XDSDocumentWriter getDocumentWriter(long size) throws IOException {
-        return new DummyWriter(size);
+    public XDSDocumentWriter getDocumentWriter(long size, String contentType) throws IOException {
+        return new DummyWriter(size, contentType);
     }
 
     // TODO: remove if not needed
@@ -140,11 +146,13 @@ public class XDSDocumentWriterFactory {
         private byte[] buffer;
         private File cacheFile;
         private boolean deleteCacheFileOnClose = true;
+        private String contentType;
 
-        public CachedWriter( InputStream is ) throws IOException {
-            this(is, MAX_MEMORY_CACHESIZE);
+        public CachedWriter( InputStream is, String contentType ) throws IOException {
+            this(is, MAX_MEMORY_CACHESIZE, contentType);
         }
-        public CachedWriter( InputStream is, int maxMemory ) throws IOException {
+        public CachedWriter( InputStream is, int maxMemory, String contentType ) throws IOException {
+            this.contentType = contentType;
             if ( is.available() > maxMemory ) {
                 writeCacheFile(null, is);
             } else {
@@ -166,6 +174,7 @@ public class XDSDocumentWriterFactory {
         }
 
         public CachedWriter( MimeMultipart mmp ) throws IOException {
+            this.contentType = mmp.getContentType();
             BufferedOutputStream bos = null;
             try {
                 cacheFile = File.createTempFile("xds_cache", "tmp");
@@ -182,8 +191,9 @@ public class XDSDocumentWriterFactory {
             }
         }
 
-        public CachedWriter( File f ) throws IOException {
+        public CachedWriter( File f, String contentType ) throws IOException {
             cacheFile = f;
+            this.contentType = contentType;
             deleteCacheFileOnClose = false;
         }
 
@@ -238,21 +248,29 @@ public class XDSDocumentWriterFactory {
         }
 
         public DataHandler getDataHandler() {
-            DataSource ds = cacheFile == null ?
-                    new InputStreamDataSource(new ByteArrayInputStream(buffer)) :
-                    new FileDataSource(cacheFile);
-            return new DataHandler(ds);
+            try {
+                DataSource ds = cacheFile == null ?
+                        new InputStreamDataSource(new ByteArrayInputStream(buffer), contentType) :
+                        new InputStreamDataSource( new FileInputStream(cacheFile), contentType);
+                return new DataHandler(ds);
+            } catch (FileNotFoundException e) {
+                log.error("Can't create DataHandler for CachedWriter! Cache file not found:"+cacheFile);
+                return null;
+            }
         } 		
     }
 
     // TODO: remove if not needed
     class DataWriter implements XDSDocumentWriter {
-        byte[] data;
-        DataWriter( String s ) {
-            this.data = s.getBytes();
+        private byte[] data;
+        private String contentType;
+        
+        DataWriter( String s, String contentType ) {
+            this( s.getBytes(), contentType);
         }
-        DataWriter( byte[] data ) {
+        DataWriter( byte[] data, String contentType ) {
             this.data = data;
+            this.contentType = contentType;
         }
         public void writeTo(OutputStream os) throws IOException {
             log.info("@@@@@ Write data:"+data);
@@ -264,7 +282,7 @@ public class XDSDocumentWriterFactory {
             return data.length;
         }
         public DataHandler getDataHandler() {
-            return new DataHandler( new InputStreamDataSource(new ByteArrayInputStream(data)));
+            return new DataHandler( new InputStreamDataSource(new ByteArrayInputStream(data), contentType));
         }
     }
 
@@ -300,16 +318,18 @@ public class XDSDocumentWriterFactory {
      *
      */
     class DummyWriter implements XDSDocumentWriter {
-        long size = 0;
-        DataHandler dh = null;
-        byte fillByte;
+        private long size = 0;
+        private DataHandler dh = null;
+        private byte fillByte;
+        private String contentType;
         
-        DummyWriter(long size ){
-            this(size, (byte)'#');
+        DummyWriter(long size, String contentType ){
+            this(size, (byte)'#', contentType);
         }
-        DummyWriter(long size, byte b ){
+        DummyWriter(long size, byte b, String contentType ){
             this.size = size;
             fillByte = b;
+            this.contentType = contentType;
         }
         
         public void writeTo(OutputStream os) throws IOException {
@@ -325,7 +345,7 @@ public class XDSDocumentWriterFactory {
                 //TODO use tmp File if size > Integer.MAX_VALUE
                 byte[] buffer = new byte[(int)size];
                 Arrays.fill(buffer, fillByte);
-                dh = new DataHandler( new InputStreamDataSource(new ByteArrayInputStream(buffer)));
+                dh = new DataHandler( new InputStreamDataSource(new ByteArrayInputStream(buffer), contentType));
             }
             return dh;
         }        

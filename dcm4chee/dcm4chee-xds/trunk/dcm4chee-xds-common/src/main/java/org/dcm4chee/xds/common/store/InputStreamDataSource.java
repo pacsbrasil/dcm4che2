@@ -8,25 +8,27 @@ import javax.activation.DataSource;
 
 public class InputStreamDataSource implements DataSource {
 
-	private InputStream inputStream;
-	
-	public InputStreamDataSource(InputStream inputStream) {
-		this.inputStream = inputStream;
-	}
-	
-	public String getContentType() {
-		return "application/octet-stream";
-	}
+    private InputStream inputStream;
+    private String contentType;
 
-	public InputStream getInputStream() throws IOException {
-		return inputStream;
-	}
+    public InputStreamDataSource(InputStream inputStream, String contentType) {
+        this.inputStream = inputStream;
+        this.contentType = contentType;
+    }
 
-	public String getName() {
-		return "InputStreamDataSource";
-	}
+    public String getContentType() {
+        return contentType;
+    }
 
-	public OutputStream getOutputStream() throws IOException {
-		return null;
-	}
+    public InputStream getInputStream() throws IOException {
+        return inputStream;
+    }
+
+    public String getName() {
+        return "InputStreamDataSource";
+    }
+
+    public OutputStream getOutputStream() throws IOException {
+        return null;
+    }
 }
