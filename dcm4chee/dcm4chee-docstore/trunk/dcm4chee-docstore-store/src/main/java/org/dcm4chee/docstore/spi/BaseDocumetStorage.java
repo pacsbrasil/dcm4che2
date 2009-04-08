@@ -102,6 +102,11 @@ public abstract class BaseDocumetStorage implements DocumentStorage {
     public void init(String initString) {
     }
 
+    public boolean setHash(BaseDocument doc, String hash) {
+        log.debug("setHash(BaseDocument doc, String hash) not supported!");
+        return false;
+    }
+    
     public boolean commitDocument(String docUid) {
         log.debug("commitDocument:"+docUid+" ignored (with success status true)!");
         return true;

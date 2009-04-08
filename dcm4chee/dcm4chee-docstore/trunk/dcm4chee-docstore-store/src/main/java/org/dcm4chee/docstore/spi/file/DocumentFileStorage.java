@@ -31,6 +31,7 @@ public class DocumentFileStorage extends BaseDocumetStorage {
     private static final String DEFAULT_MIME_FILENAME = "default.mime";
     public static final String STORAGE_TYPE = "SimpleFileStorage";
     private static final String DEFAULT_BASE_DIR = "store/docs";
+    private static final String HASH_EXTENSION = ".hash";
 
     private int[] directoryTree = new int[]{347, 331, 317};
 
@@ -197,6 +198,10 @@ public class DocumentFileStorage extends BaseDocumetStorage {
             if ( f.exists() ){
                 doc = new BaseDocument(docUid, m[0], new DataHandler(new FileDataSource(f)), 
                         Availability.ONLINE, docPath.length(), this);
+                byte[] ba = readFile(getHashFile(f));
+                if ( ba != null ) {
+                    doc.setHash(new String(ba));
+                }
                 notifyRetrieved(doc);
             }
         }
@@ -219,6 +224,27 @@ public class DocumentFileStorage extends BaseDocumetStorage {
                 new DataHandler(new FileDataSource(docFile)), Availability.UNAVAILABLE, docFile.length(), this);
         notifyCreated(doc);
         return doc;
+    }
+    
+    public boolean setHash(BaseDocument doc, String hash) {
+        if ( hash != null ) {
+            try {
+                File docFile = getDocumentFile(getDocumentPath(doc.getDocumentUID()), new String[]{doc.getMimeType()});
+                if ( docFile.exists() ) {
+                    File hashFile = getHashFile(docFile);
+                    if ( ! hashFile.exists() ) {
+                        writeFile(getHashFile(docFile), hash.getBytes());
+                        return true;
+                    }
+                    log.error("Hash File already exists for document! docUID:"+doc.getDocumentUID());
+                } else {
+                    log.error("setHash called for non existing document! docUID:"+doc.getDocumentUID());
+                }
+            } catch (IOException e) {
+                log.error("Error write Hash File for docUid:"+doc.getDocumentUID()+"! hash:"+hash, e);
+            }
+        }
+        return false;
     }
 
     public BaseDocument[] storeDocuments(Set<DataHandlerVO> dhVOs)
@@ -260,8 +286,10 @@ public class DocumentFileStorage extends BaseDocumetStorage {
             }
             BaseDocument doc = new BaseDocument(docUid, mime[0], 
                     new DataHandler(new FileDataSource(docFile)), Availability.ONLINE, docFile.length(), this);
-            if ( digest != null )
+            if ( digest != null ) {
                 doc.setHash(DocumentStore.toHexString(digest));
+                writeFile(getHashFile(docFile), doc.getHash().getBytes());
+            }
             notifyStored(doc);
             return doc;
         } catch (NoSuchAlgorithmException x) {
@@ -399,6 +427,10 @@ public class DocumentFileStorage extends BaseDocumetStorage {
         return sb.toString();
     }
 
+    private File getHashFile(File f) {
+        return new File(f.getAbsolutePath()+HASH_EXTENSION);
+    }
+    
     public String toString() {
         return super.toString()+" baseDir:"+baseDir+"(minFree:"+this.minFree+") "+
         this.getStorageAvailability();

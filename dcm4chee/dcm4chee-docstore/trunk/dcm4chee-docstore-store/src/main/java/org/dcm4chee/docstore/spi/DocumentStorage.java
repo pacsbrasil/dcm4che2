@@ -165,6 +165,22 @@ public interface DocumentStorage {
 	BaseDocument createDocument(String docUid, String mime) throws IOException;
 	
 	/**
+	 * Store a Hash value to given document.
+	 * <p/>
+	 * Used to store a hash value for a document that is created by createDocument and stored externally.
+	 * <p/>
+	 * <dl><dt>Should return false:</dt>
+         * <dd>1) Store of hash values is not supported by storage implementation.</dd>
+         * <dd>2) Document doesn't exist.</dd>
+         * <dd>3) Document has already a hash value.</dd>
+	 *  
+	 * @param doc  BaseDocument (usually from createDocument, with docUid and mime to reference document).
+	 * @param hash Hash value as Hex String.
+	 * @return     true if hash value is stored, false when this method isn't supported or a failure occurs.
+	 */
+	boolean setHash(BaseDocument doc, String hash);
+	
+	/**
 	 * Get a URL to retrieve a document for given document UID.
 	 * <p/>
 	 * Return null if the implementation does not support URL access to documents.
