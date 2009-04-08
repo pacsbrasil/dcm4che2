@@ -63,10 +63,16 @@ import org.slf4j.LoggerFactory;
 public class AEProperties {
    private static final Logger log = LoggerFactory.getLogger(AEProperties.class);
    
+   public static final String DEFAULT_LOCAL_TITLE =  "XERO";
+   public static final String DEFAULT_AE_TITLE = "DCM4CHEE";
+   public static final int DEFAULT_AE_PORT = 0;
+   public static final int DEFAULT_EJB_PORT = 1099;
+      
    public static final String AE_TITLE_KEY = "title";
    public static final String AE_PORT_KEY = "aeport";
    public static final String AE_HOST_KEY = "host";
    public static final String EJB_PORT = "ejbport";
+   public static final String LOCAL_TITLE = "localTitle";
    
    private static final String FILE_NAME_PREPEND = "ae-";
    private static final String FILE_NAME_EXT = ".properties";
@@ -78,16 +84,14 @@ public class AEProperties {
    /** The key to use for a particular ae */
    public static final String AE="ae";
 
-   /** Set the local ae title for this object - NOT necessarily the 
-    * ae properties file name, but the DICOM name
-    */
-   public static final String LOCAL_TITLE = "localTitle";
    
    /** The name of hte AE property file. */
    public static final String AE_PROPERTY_NAME = "_aePropertyName";
 
    /** Set this property to control which issuer is the default one */
    public static final String DEFAULT_ISSUER = "defaultIssuer";
+
+
    
    private Map<String, Object> defaultProperties = null;
 
@@ -122,8 +126,8 @@ public class AEProperties {
       Map<String, Object> temp = new HashMap<String, Object>();
       temp.put(AE_HOST_KEY, "localhost");
       temp.put(AE_PORT_KEY, 11112);
-      temp.put(AE_TITLE_KEY, "DCM4CHEE");
-      temp.put(LOCAL_TITLE, "XERO");
+      temp.put(AE_TITLE_KEY, DEFAULT_AE_TITLE);
+      temp.put(LOCAL_TITLE, DEFAULT_LOCAL_TITLE);
       temp.put(AE_PROPERTY_NAME, "local");
       temp.put(EJB_PORT,1099);
       defaultProperties = Collections.unmodifiableMap(temp);
@@ -145,13 +149,13 @@ public class AEProperties {
 
             String hostname = props.getProperty(AE_HOST_KEY);
             String aeport = props.getProperty(AE_PORT_KEY);
-            if( aeport==null ) aeport = "11112";
+            if( aeport==null ) aeport = Integer.toString(DEFAULT_AE_PORT);
             String ejbport = props.getProperty("ejbport");
-            if( ejbport==null ) ejbport = "1099";
+            if( ejbport==null ) ejbport = Integer.toString(DEFAULT_EJB_PORT);
             String title = props.getProperty(AE_TITLE_KEY);
-            if( title==null ) props.put(AE_TITLE_KEY,"DCM4CHEE");
+            if( title==null ) props.put(AE_TITLE_KEY,DEFAULT_AE_TITLE);
             String localTitle = props.getProperty(LOCAL_TITLE);
-            if( localTitle==null ) props.put(LOCAL_TITLE,"XERO");
+            if( localTitle==null ) props.put(LOCAL_TITLE,DEFAULT_LOCAL_TITLE);
              
             if (hostname != null ) {
                Map mprops = props;
@@ -162,7 +166,6 @@ public class AEProperties {
 
                remoteProperties
                      .putIfAbsent(aePath, map);
-
             } else {
                log.error("The host must be specified in ae properties file "+aePath);
             }

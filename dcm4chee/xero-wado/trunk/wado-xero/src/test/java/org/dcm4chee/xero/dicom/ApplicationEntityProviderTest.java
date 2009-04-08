@@ -113,7 +113,8 @@ public class ApplicationEntityProviderTest
    public void testGetLocalAE_ShouldLoadLocalProperties() throws IOException
    {
       NetworkApplicationEntity ae = aes.getLocalAE("uknownAE");
-      assertLocalPropertiesRead(ae);
+      assertEquals(ae.getAETitle(),"XERO");
+      assertEquals(ae.getNetworkConnection().length,1);
    }
 
    @Test(expectedExceptions=IllegalArgumentException.class)
@@ -128,8 +129,6 @@ public class ApplicationEntityProviderTest
       NetworkApplicationEntity ae = aes.getAE("allSettings");
       assertEquals(ae.getDevice().getDeviceName(),"myTestDevice");
    }
-
-
    
    @Test
    public void getLocalAE_ShouldReturnTheAESpecificedInLocalTitle() throws IOException

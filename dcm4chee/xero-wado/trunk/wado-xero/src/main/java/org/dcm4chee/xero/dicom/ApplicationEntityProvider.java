@@ -70,7 +70,7 @@ public class ApplicationEntityProvider
       UID.ImplicitVRLittleEndian,
       UID.ExplicitVRLittleEndian  };
 
-   private static final String DEFAULT_LOCAL_AE_NAME = "local";
+   private static final String DEFAULT_LOCAL_AE_TITLE = "XERO";
    
    private final KeyStoreLoader keyStoreLoader;
    
@@ -103,6 +103,9 @@ public class ApplicationEntityProvider
 
       NetworkApplicationEntity ae = createAE(settings);
       NetworkConnection connection = createNetworkConnection(settings);
+      if(connection.getPort() == 0)
+         log.warn("The port for AE {} is not set and will be set automatically by the system.");
+      
       Device device = createDevice(settings);
       
       ae.setNetworkConnection(connection);
@@ -179,15 +182,31 @@ public class ApplicationEntityProvider
     */
    private NetworkApplicationEntity createAE( Map<String, Object> settings)
    {
+      String aeTitle = FilterUtil.getString(settings, AEProperties.AE_TITLE_KEY);
       NetworkApplicationEntity ae = new NetworkApplicationEntity();
-      ae.setAETitle((String)settings.get(AEProperties.AE_TITLE_KEY));  
-      
-      // Make configurable...
+      ae.setAETitle(aeTitle);
       ae.setPackPDV(true);
       ae.setMaxOpsInvoked(1);
+      return ae;
+   }
+   
+   private NetworkApplicationEntity createDefaultLocalAE( String aeTitle, String... sopClassUIDs )
+   {
+      Device device = new Device("XERO");
+      NetworkConnection connection = new NetworkConnection();
+      device.setNetworkConnection(connection);
+      
+      NetworkApplicationEntity ae = new NetworkApplicationEntity();
+      ae.setAETitle(aeTitle);  
+      ae.setPackPDV(true);
+      ae.setMaxOpsInvoked(1);
+      ae.setNetworkConnection(connection);
+      
+      configureTransferCapabilities(ae,sopClassUIDs);
       
       return ae;
    }
+
    
    /**
     * Create a new network device that is configured from the client 
@@ -244,38 +263,39 @@ public class ApplicationEntityProvider
     * @param url
     * @return
     */
-   public NetworkApplicationEntity getAE(URL dicomURL)
+   public NetworkApplicationEntity getAE(URL dicomURL,String... sopClassUIDs)
       throws IOException
    {
       String aeTitle = DicomURLHandler.parseAETitle(dicomURL);
-      return getAE(aeTitle);
+      return getAE(aeTitle,sopClassUIDs);
    }
    
    /**
     * Get the local AE that has been configured to connect to the indicated 
-    * remote AE title.
+    * remote AE title.  
+    * <p>
+    * Local AEs 
     */
    public NetworkApplicationEntity getLocalAE(String remoteAE, String... sopClassUIDs)
       throws IOException
    {
-      Map<String,Object> p = AEProperties.getInstance().getAE(remoteAE);
-      String localTitle = (String)(p==null?null:p.get(AEProperties.LOCAL_TITLE));
+      String localTitle = DEFAULT_LOCAL_AE_TITLE;
+      Map<String,Object> p = AEProperties.getInstance().getAE(remoteAE);   
+      if(p!=null)
+         localTitle = FilterUtil.getString(p,AEProperties.LOCAL_TITLE);
       
       NetworkApplicationEntity localAE = null;
-      try
+      try 
       {
-         if(localTitle!=null)
-            localAE = getAE(localTitle,sopClassUIDs);
+         localAE = getAE(localTitle,sopClassUIDs);   
       }
       catch(IllegalArgumentException ex)
       {
-         log.debug("Unable to load AE "+remoteAE+".  Default AE will be used instead.");
+         log.debug("Unable to find local AE {}, default values will be used.");
+         localAE = createDefaultLocalAE(localTitle, sopClassUIDs);
       }
-      
-      if(localAE == null)
-         localAE = getAE(DEFAULT_LOCAL_AE_NAME, sopClassUIDs);
-      
       localAE.setAssociationInitiator(true); // make configurable?
+      
       return localAE;
    }
 }
