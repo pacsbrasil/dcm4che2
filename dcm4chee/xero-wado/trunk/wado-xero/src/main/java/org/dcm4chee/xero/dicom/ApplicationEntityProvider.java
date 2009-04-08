@@ -259,18 +259,21 @@ public class ApplicationEntityProvider
       throws IOException
    {
       Map<String,Object> p = AEProperties.getInstance().getAE(remoteAE);
-      String localTitle = (String)p.get(AEProperties.LOCAL_TITLE);
+      String localTitle = (String)(p==null?null:p.get(AEProperties.LOCAL_TITLE));
       
       NetworkApplicationEntity localAE = null;
       try
       {
-         localAE = getAE(localTitle,sopClassUIDs);
+         if(localTitle!=null)
+            localAE = getAE(localTitle,sopClassUIDs);
       }
       catch(IllegalArgumentException ex)
       {
          log.debug("Unable to load AE "+remoteAE+".  Default AE will be used instead.");
-         localAE = getAE(DEFAULT_LOCAL_AE_NAME, sopClassUIDs);
       }
+      
+      if(localAE == null)
+         localAE = getAE(DEFAULT_LOCAL_AE_NAME, sopClassUIDs);
       
       localAE.setAssociationInitiator(true); // make configurable?
       return localAE;
