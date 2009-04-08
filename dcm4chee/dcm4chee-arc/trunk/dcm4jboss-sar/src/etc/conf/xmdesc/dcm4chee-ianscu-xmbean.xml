@@ -17,6 +17,7 @@
    </constructor>
 
    <!-- Attributes -->
+   &defaultAttributes;
    <attribute access="read-write" getMethod="getNotifiedAETs" setMethod="setNotifiedAETs">
       <description>List of AE titles of notified application entities, separated by \(backslash).
       NONE = do not notify any application entity.
@@ -174,6 +175,14 @@
       <name>DeleteStudyServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getContentEditServiceName"
+      setMethod="setContentEditServiceName">
+      <description>Used internally. Do not modify.
+      </description>
+      <name>ContentEditServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
    <attribute access="read-write" 
       getMethod="getTLSConfigName"
       setMethod="setTLSConfigName">
@@ -182,7 +191,6 @@
       <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
-   &defaultAttributes;
 
    <!-- Operations -->
    &defaultOperations;

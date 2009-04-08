@@ -150,6 +150,8 @@ public class IANScuService extends AbstractScuService implements
 
     private ObjectName deleteStudyServiceName;
 
+    private ObjectName contentEditServiceName;
+
     private String queueName;
 
     private boolean preferInstanceAvailableNotification = true;
@@ -291,6 +293,14 @@ public class IANScuService extends AbstractScuService implements
         this.deleteStudyServiceName = name;
     }
 
+    public void setContentEditServiceName(ObjectName name) {
+        this.contentEditServiceName = name;
+    }
+
+    public ObjectName getContentEditServiceName() {
+        return contentEditServiceName;
+    }
+
     public final String getQueueName() {
         return queueName;
     }
@@ -305,6 +315,8 @@ public class IANScuService extends AbstractScuService implements
                 seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
         server.addNotificationListener(deleteStudyServiceName, studyDeletedListener,
                 StudyDeleted.NOTIF_FILTER, null);
+        server.addNotificationListener(contentEditServiceName, studyDeletedListener,
+                StudyDeleted.NOTIF_FILTER, null);
         server.addNotificationListener(mppsScpServiceName,
                 mppsReceivedListener, mppsFilter, null);
 
@@ -314,6 +326,8 @@ public class IANScuService extends AbstractScuService implements
         server.removeNotificationListener(storeScpServiceName,
                 seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
         server.removeNotificationListener(deleteStudyServiceName,
+                studyDeletedListener, StudyDeleted.NOTIF_FILTER, null);
+        server.removeNotificationListener(contentEditServiceName,
                 studyDeletedListener, StudyDeleted.NOTIF_FILTER, null);
         server.removeNotificationListener(mppsScpServiceName,
                 mppsReceivedListener, MPPSScpService.NOTIF_FILTER, null);

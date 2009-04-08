@@ -43,6 +43,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -62,11 +63,14 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
+import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocalHome;
@@ -366,7 +370,7 @@ public abstract class PrivateManagerBean implements SessionBean {
             Iterator iter = mapStudies.keySet().iterator();
             while (iter.hasNext()) {
                 StudyLocal study = (StudyLocal) iter.next();
-                dss.add(getStudyMgtDataset(study, (Map) mapStudies.get(study)));
+                dss.add(makeIAN(study, (Map) mapStudies.get(study)));
                 Iterator iter2 = ((Map) mapStudies.get(study)).keySet()
                         .iterator();
                 while (iter2.hasNext()) {
@@ -419,7 +423,7 @@ public abstract class PrivateManagerBean implements SessionBean {
             SeriesLocal series = instance.getSeries();
             Map mapSeries = new HashMap();
             mapSeries.put(series, colInstance);
-            Dataset ds = getStudyMgtDataset(series.getStudy(), mapSeries);
+            Dataset ds = makeIAN(series.getStudy(), mapSeries);
             getPrivateInstance(instance, DELETED, null);
             instance.remove();
             UpdateDerivedFieldsUtils.updateDerivedFieldsOf(series);
@@ -446,7 +450,7 @@ public abstract class PrivateManagerBean implements SessionBean {
             StudyLocal study = series.getStudy();
             Map mapSeries = new HashMap();
             mapSeries.put(series, series.getInstances());
-            Dataset ds = getStudyMgtDataset(series.getStudy(), mapSeries);
+            Dataset ds = makeIAN(series.getStudy(), mapSeries);
             getPrivateSeries(series, DELETED, null, true);
             series.remove();
             UpdateDerivedFieldsUtils.updateDerivedFieldsOf(study);
@@ -514,7 +518,7 @@ public abstract class PrivateManagerBean implements SessionBean {
     public Dataset moveStudyToTrash(long study_pk) throws RemoteException {
         try {
             StudyLocal study = studyHome.findByPrimaryKey(new Long(study_pk));
-            Dataset ds = getStudyMgtDataset(study, null);
+            Dataset ds = makeIAN(study, null);
             getPrivateStudy(study, DELETED, null, true);
             study.remove();
             return ds;
@@ -538,7 +542,7 @@ public abstract class PrivateManagerBean implements SessionBean {
             Collection col = patient.getStudies();
             Collection result = new ArrayList();
             for (Iterator iter = col.iterator(); iter.hasNext();) {
-                result.add(getStudyMgtDataset((StudyLocal) iter.next(), null));
+                result.add(makeIAN((StudyLocal) iter.next(), null));
             }
             Dataset ds = patient.getAttributes(true);
             getPrivatePatient(patient, DELETED, true);
@@ -662,24 +666,38 @@ public abstract class PrivateManagerBean implements SessionBean {
         return privPat;
     }
 
-    private Dataset getStudyMgtDataset(StudyLocal study, Map mapSeries) {
+    private Dataset makeIAN(StudyLocal study, Map mapSeries) {
+        log.debug("makeIAN: studyIUID:" + study.getStudyIuid());
+        PatientLocal pat = study.getPatient();
         Dataset ds = dof.newDataset();
         ds.putUI(Tags.StudyInstanceUID, study.getStudyIuid());
-        ds.putOB(PrivateTags.StudyPk, Convert
-                .toBytes(study.getPk().longValue()));
+//      Don't think attribute PrivateTags.StudyPk is actually used [gz]
+//        ds.putOB(PrivateTags.StudyPk, Convert
+//                .toBytes(study.getPk().longValue()));
         ds.putSH(Tags.AccessionNumber, study.getAccessionNumber());
-        ds.putLO(Tags.PatientID, study.getPatient().getPatientId());
-        ds.putLO(Tags.IssuerOfPatientID, study.getPatient()
+        ds.putLO(Tags.PatientID, pat.getPatientId());
+        ds.putLO(Tags.IssuerOfPatientID, pat
                 .getIssuerOfPatientId());
-        ds.putPN(Tags.PatientName, study.getPatient().getPatientName());
-
-        log.debug("getStudyMgtDataset: studyIUID:" + study.getStudyIuid());
+        ds.putPN(Tags.PatientName, pat.getPatientName());
+        DcmElement refPPSSeq = ds.putSQ(Tags.RefPPSSeq);
+        HashSet mppsuids = new HashSet();
         DcmElement refSeriesSeq = ds.putSQ(Tags.RefSeriesSeq);
 
         Iterator iter = (mapSeries == null) ? study.getSeries().iterator()
                 : mapSeries.keySet().iterator();
         while (iter.hasNext()) {
             SeriesLocal sl = (SeriesLocal) iter.next();
+            MPPSLocal mpps = sl.getMpps();
+            if (mpps != null) {
+                String mppsuid = mpps.getSopIuid();
+                if (mppsuids.add(mppsuid)) {
+                    Dataset refmpps = refPPSSeq.addNewItem();
+                    refmpps.putUI(Tags.RefSOPClassUID, 
+                            UIDs.ModalityPerformedProcedureStep);
+                    refmpps.putUI(Tags.RefSOPInstanceUID, mppsuid);
+                    refmpps.putSQ(Tags.PerformedWorkitemCodeSeq);
+                }
+            }
             Dataset dsSer = refSeriesSeq.addNewItem();
             dsSer.putUI(Tags.SeriesInstanceUID, sl.getSeriesIuid());
             Collection instances = (mapSeries == null) ? sl.getInstances()
@@ -691,13 +709,14 @@ public abstract class PrivateManagerBean implements SessionBean {
             while (iter2.hasNext()) {
                 InstanceLocal il = (InstanceLocal) iter2.next();
                 Dataset dsInst = refSopSeq.addNewItem();
+                dsInst.putAE(Tags.RetrieveAET, il.getRetrieveAETs());
+                dsInst.putCS(Tags.InstanceAvailability, "UNAVAILABLE");
                 dsInst.putUI(Tags.RefSOPClassUID, il.getSopCuid());
                 dsInst.putUI(Tags.RefSOPInstanceUID, il.getSopIuid());
-                dsInst.putAE(Tags.RetrieveAET, il.getRetrieveAETs());
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("return StgMgtDataset:");
+            log.debug("return IAN:");
             log.debug(ds);
         }
         return ds;

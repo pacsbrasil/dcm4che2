@@ -2,21 +2,31 @@
 <!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description><![CDATA[Content Edit service. <br>
-   		 Identifies where patient information and study information updates are sent and received. <br>
-   		 Use the values in <tt>ReceivingApplication</tt> and <tt>ReceivingFacility</tt> attributes or the 
-         <tt>SendingApplication</tt> or <tt>SendingFacility</tt> attributes to configure specific
-         forwarding rules in the <b>HL7SendService</b> for patient information updates received from this
-         Content Edit Service. <br>
-         Use the values in the <tt>CalledAETitle</tt> and the <tt>CallingAETitle</tt> attributes to configure
-         specific forwarding rules in the <b>StudyMgtScu</b> Service for study information updates
-         received from this Content Edit Service.
-         <p>
-         The Content Edit Service sends also <tt>PatientUpdated</tt> and <tt>SeriesUpdated</tt> <b>JMX Notifications</b>.<br> 
-         This allows to forward instances to systems not supporting either StudyMgtScu or HL7 ADT patient updates.<br>
-         In this case the receiver must use the received instances for updating!<br>
-         Use the <b>ForwardService</b> to configure this forward option.
-         </p>]]>
+   <description><![CDATA[<b>Content Edit Service</b>. Identifies where patient
+information and study information updates are sent and received. Also used by
+the <b>Rejection Note Stored Service</b> to move instances referenced in
+received Rejection Notes to the trash.
+<p>
+Use the values in <tt>ReceivingApplication</tt> and <tt>ReceivingFacility</tt>
+attributes or the <tt>SendingApplication</tt> or <tt>SendingFacility</tt>
+attributes to configure specific forwarding rules in the <b>HL7Send Service</b>
+for patient information updates received from this Content Edit Service.
+</p><p>
+Use the values in the <tt>CalledAETitle</tt> and the <tt>CallingAETitle</tt>
+attributes to configure specific forwarding rules in the <b>StudyMgtScu
+Service</b> for study information updates received from this Content Edit Service.
+</p><p>
+The Content Edit Service sends <tt>PatientUpdated</tt> and
+<tt>SeriesUpdated</tt> <i>JMX Notifications</i> to allow to forward instances
+to systems not supporting either StudyMgtScu or HL7 ADT patient updates. In
+this case the receiver must use the received instances for updating! Use the
+<b>ForwardService</b> to configure this forward option.
+</p><p>
+If <tt>CreateIANonMoveToTrash=true</tt>, <i>Application Entities</i> configured
+in the <b>IAN SCU Service</b> are notified by <i>Instance Availability
+Notifications</i> with <i>Instance Availability</i> = <tt>UNAVAILABLE</tt> 
+about instances moved to trash.
+</p>]]>
       </description>
 
    <descriptors>
@@ -30,6 +40,9 @@
       <description>The default constructor</description>
       <name>ContentEditService</name>
    </constructor>
+
+  <!-- Attributes -->
+  &defaultAttributes;
 
    <attribute access="read-write" getMethod="getReceivingApplication" setMethod="setReceivingApplication">
       <description>Identifies the Receiving Application in HL7 messages that are  directed to
@@ -109,6 +122,22 @@
          <value value="DCM4CHEE"/>
       </descriptors>
    </attribute>
+
+  <attribute access="read-write" getMethod="isCreateIANonMoveToTrash"
+    setMethod="setCreateIANonMoveToTrash">
+    <description><![CDATA[Defines if <i>Application Entities</i> configured
+in the <b>IAN SCU Service</b> are notified by <i>Instance Availability
+Notifications</i> with <i>Instance Availability</i> = <tt>UNAVAILABLE</tt> 
+about instances moved to trash. Must be activated for compliance with 
+<i>IHE Mammography Acquistion Workflow (MAWF) Integration Profile</i>.]]>
+    </description>
+    <name>CreateIANonMoveToTrash</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="true" />
+    </descriptors>
+  </attribute>
+
    <attribute access="read-write"
       getMethod="getAuditEnabled"
       setMethod="setAuditEnabled">
@@ -201,7 +230,6 @@
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
-   &defaultAttributes;
 
    <!-- Operations -->
    &defaultOperations;

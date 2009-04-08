@@ -42,7 +42,6 @@ package org.dcm4chex.archive.mbean;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -65,10 +64,8 @@ import org.dcm4che2.audit.message.InstancesAccessedMessage;
 import org.dcm4che2.audit.message.ParticipantObject;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4che2.audit.message.PatientRecordMessage;
-import org.dcm4che2.audit.message.ProcedureRecordMessage;
 import org.dcm4che2.audit.message.StudyDeletedMessage;
 import org.dcm4che2.audit.message.AuditEvent.ActionCode;
-import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
 import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
@@ -79,6 +76,7 @@ import org.dcm4chex.archive.ejb.interfaces.PrivateManager;
 import org.dcm4chex.archive.ejb.interfaces.PrivateManagerHome;
 import org.dcm4chex.archive.notif.PatientUpdated;
 import org.dcm4chex.archive.notif.SeriesUpdated;
+import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.ServiceMBeanSupport;
@@ -95,6 +93,8 @@ public class ContentEditService extends ServiceMBeanSupport {
     private AuditLoggerDelegate auditLogger = new AuditLoggerDelegate(this);
 
     private boolean auditEnabled;
+
+    private boolean createIANonMoveToTrash;
 
     private ContentEdit contentEdit;
 
@@ -142,6 +142,14 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     public boolean getAuditEnabled() {
         return auditEnabled;
+    }
+
+    public void setCreateIANonMoveToTrash(boolean createIAN) {
+        this.createIANonMoveToTrash = createIAN;
+    }
+
+    public boolean isCreateIANonMoveToTrash() {
+        return createIANonMoveToTrash;
     }
 
     public boolean isLogIUIDsForStudyUpdate() {
@@ -514,9 +522,12 @@ public class ContentEditService extends ServiceMBeanSupport {
         Dataset ds = null;
         for (Iterator iter = col.iterator(); iter.hasNext();) {
             ds = (Dataset) iter.next();
-            if (ds.containsValue(Tags.StudyInstanceUID)) // patient without
-                // study?
+            if (ds.containsValue(Tags.StudyInstanceUID)) { // patient without  study?
+                if (createIANonMoveToTrash) {
+                    sendJMXNotification(new StudyDeleted(ds));
+                }
                 logStudyDeleted(ds);
+            }
         }
         sendHL7PatientXXX(ds, "ADT^A23");// Send Patient delete message
         logPatientRecord(ds, PatientRecordMessage.DELETE);
@@ -535,6 +546,9 @@ public class ContentEditService extends ServiceMBeanSupport {
             log.debug("sendStudyMgt N-DELETE Study (pk=" + pk + ").");
         sendStudyMgt(ds.getString(Tags.StudyInstanceUID), Command.N_DELETE_RQ,
                 0, ds);
+        if (createIANonMoveToTrash) {
+            sendJMXNotification(new StudyDeleted(ds));
+        }
         logStudyDeleted(ds);
         if (log.isDebugEnabled()) {
             log.debug("Study moved to trash. ds:");
@@ -551,6 +565,9 @@ public class ContentEditService extends ServiceMBeanSupport {
             log.debug("sendStudyMgt N-ACTION Series (pk=" + pk + ").");
         sendStudyMgt(ds.getString(Tags.StudyInstanceUID), Command.N_ACTION_RQ,
                 1, ds);
+        if (createIANonMoveToTrash) {
+            sendJMXNotification(new StudyDeleted(ds));
+        }
         logInstancesAccessed(ds, InstancesAccessedMessage.DELETE, logIUIDsForSeriesUpdate, "Deleted Series:");
         if (log.isDebugEnabled()) {
             log.debug("Series moved to trash. ds:");
@@ -567,6 +584,9 @@ public class ContentEditService extends ServiceMBeanSupport {
             log.debug("sendStudyMgt N-ACTION Instance (pk=" + pk + ").");
         sendStudyMgt(ds.getString(Tags.StudyInstanceUID), Command.N_ACTION_RQ,
                 2, ds);
+        if (createIANonMoveToTrash) {
+            sendJMXNotification(new StudyDeleted(ds));
+        }
         logInstancesAccessed(ds, InstancesAccessedMessage.DELETE, true, "Referenced Series of deleted Instances:");
         if (log.isDebugEnabled()) {
             log.debug("Instance moved to trash. ds:");
@@ -588,6 +608,9 @@ public class ContentEditService extends ServiceMBeanSupport {
                 log.debug(ds);
             sendStudyMgt(ds.getString(Tags.StudyInstanceUID), Command.N_ACTION_RQ,
                     2, ds);
+            if (createIANonMoveToTrash) {
+                sendJMXNotification(new StudyDeleted(ds));
+            }
             logInstancesAccessed(ds, InstancesAccessedMessage.DELETE, true, "Referenced Series of deleted Instances:");        }
         return dss.iterator().next();
     }
@@ -831,7 +854,6 @@ public class ContentEditService extends ServiceMBeanSupport {
             sendJMXNotification(new SeriesUpdated(sq.getItem(i).getString(
                     Tags.SeriesInstanceUID), description));
         }
-
     }
 
     protected void sendJMXNotification(Object o) {
@@ -989,5 +1011,4 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
     }
 
-    
 }
