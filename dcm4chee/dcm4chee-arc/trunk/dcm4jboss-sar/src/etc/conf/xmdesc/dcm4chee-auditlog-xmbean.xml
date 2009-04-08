@@ -18,6 +18,7 @@
     <name>AuditLogger</name>
   </constructor>
   <!-- Attributes -->
+  &defaultAttributes;
   <attribute access="read-write" getMethod="getAuditSourceID"
     setMethod="setAuditSourceID">
     <description><![CDATA[Identifier of this application as source where
