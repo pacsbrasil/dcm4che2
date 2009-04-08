@@ -12,6 +12,12 @@
 	<packaging>jboss-sar</packaging>
 	<name>Generic XDS Store Service</name>
 	<build>
+	    <testResources>
+	      <testResource>
+	        <directory>src/test/resources</directory>
+	        <filtering>true</filtering>
+	      </testResource>
+	    </testResources>
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -34,6 +40,12 @@
             <version>4.2.3.GA</version>
             <scope>provided</scope>
         </dependency>
+	    <dependency>
+	        <groupId>jboss</groupId>
+	        <artifactId>jboss-common</artifactId>
+	        <version>4.2.3.GA</version>
+	        <scope>provided</scope>
+	    </dependency>   
 		<dependency>
 			<groupId>dcm4che</groupId>
 			<artifactId>dcm4chee-xds-common</artifactId>
@@ -64,6 +76,18 @@
 			<version>3.8.1</version>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-log4j</artifactId>
+            <version>2.0.5.GA</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>oswego-concurrent</groupId>
+            <artifactId>concurrent</artifactId>
+            <version>1.3.4-jboss</version>
+            <scope>test</scope>
+        </dependency>
 		<dependency>
 			<groupId>dcm4che</groupId>
 			<artifactId>dcm4chee-docstore-store</artifactId>

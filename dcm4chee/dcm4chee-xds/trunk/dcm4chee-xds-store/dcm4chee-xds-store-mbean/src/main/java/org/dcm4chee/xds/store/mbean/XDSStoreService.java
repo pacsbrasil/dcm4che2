@@ -79,6 +79,7 @@ import org.dcm4chee.xds.common.store.XDSDocument;
 import org.dcm4chee.xds.common.store.XDSDocumentWriter;
 import org.dcm4chee.xds.common.store.XDSDocumentWriterFactory;
 import org.jboss.system.ServiceMBeanSupport;
+import org.jboss.util.stream.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -181,7 +182,7 @@ public class XDSStoreService extends ServiceMBeanSupport {
         if ( avail.compareTo(Availability.NONEEXISTENT) < 0 ) {
             if ( log.isDebugEnabled() )
                 log.debug("Document "+documentUID+" already exists with availability "+avail);
-            return null;//Document with given documentUID already exists!
+            return checkIdenticalHash(xdsDoc, documentUID);
         }
         log.info("#### Store Document:"+documentUID+" to pool "+storeBeforeRegisterPool+"\nmetadata:"+metadata);
         boolean error = false;
@@ -219,6 +220,33 @@ public class XDSStoreService extends ServiceMBeanSupport {
             if (error && docAdded) {
                 docStore.deleteDocument(documentUID);
             }
+        }
+    }
+
+    private XDSDocument checkIdenticalHash(XDSDocument xdsDoc,
+            String documentUID) throws XDSException {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA1");
+            DigestOutputStream dos = new DigestOutputStream(NullOutputStream.STREAM, md);
+            xdsDoc.getXdsDocWriter().writeTo(dos);
+            String newHash = DocumentStore.toHexString(md.digest());
+            BaseDocument doc = docStore.getDocument(documentUID, xdsDoc.getMimeType());
+            if ( log.isDebugEnabled() ) {
+                log.debug("checkIdenticalHash verification:\nstored  :"+doc.getHash()+
+                    "\nreceived:"+newHash);
+            }
+            if ( ! newHash.equals(doc.getHash()) ) {
+                throw new XDSException(XDSConstants.XDS_ERR_NON_IDENTICAL_HASH, 
+                        "Document "+documentUID+" already exists with non identical hash value!", null);
+            }
+            return new XDSDocument( doc.getDocumentUID(), doc.getMimeType(), 
+                    getXdsDocWriter(doc), doc.getHash(), null);
+        } catch (XDSException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Cant check hash!",e);
+            throw new XDSException(XDSConstants.XDS_ERR_REPOSITORY_ERROR, 
+                    "Document "+documentUID+" already exists! Failed to check HASH value!", e);
         }
     }
 
@@ -300,9 +328,14 @@ public class XDSStoreService extends ServiceMBeanSupport {
                 }
             }
         }
-        return md == null ? null : 
-            new XDSDocument( doc.getDocumentUID(), doc.getMimeType(), 
-                    getXdsDocWriter(doc), DocumentStore.toHexString(md.digest()), null);
+        if ( md != null ) { 
+            String hash = DocumentStore.toHexString(md.digest());
+            doc.getStorage().setHash(doc, hash);
+            return new XDSDocument( doc.getDocumentUID(), doc.getMimeType(), 
+                    getXdsDocWriter(doc), hash, null);
+        } else {
+            return null;
+        }
     }
 
     private XDSDocumentWriter getXdsDocWriter(BaseDocument doc) throws IOException {
