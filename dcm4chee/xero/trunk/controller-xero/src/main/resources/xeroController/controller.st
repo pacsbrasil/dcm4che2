@@ -252,6 +252,7 @@ XeroController.prototype.storeScrollPosition = function(id) {
  */
 XeroController.prototype.replaceHtml = function XC_replaceHtml(node,text,isDiffUpdate) {
    var ret;
+   console.info("Replacing html on node",node);
    if( this.model.IS_IE ) {
       if( isDiffUpdate ) {
    	     ret = DOMUtils.updateHtml(node,text);

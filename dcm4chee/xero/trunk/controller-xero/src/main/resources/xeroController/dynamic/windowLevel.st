@@ -8,9 +8,6 @@ WLController.prototype.isWLController = true;
 
 XeroController.prototype.WindowLevel_dragImage = new WLController();
 
-// Over-ride the double-drag mode
-XeroController.prototype.dblDragImage = XeroController.prototype.WindowLevel_dragImage;
-
 XeroController.prototype.ctrl_dragImage = XeroController.prototype.WindowLevel_dragImage;
 
 /** Handle the window level reset operation */
@@ -63,7 +60,7 @@ WLController.prototype.prepare = function(e) {
 		
 		var count = squery.indexOf("&Count");
 		squery = squery.substring(0,count)+"&Count=1&Position="+pos+"&pixelInfo=true";
-		console.warn("Need to compute min/max pixel value for window levelling using query",squery,"at position",pos);
+		this.debug("Need to compute min/max pixel value for window levelling using query",squery,"at position",pos);
 		query = new Object();
 		query[squery] = mods;
 		this.controller.model.navigate.external.addQueries(this.controller.service,query,true);

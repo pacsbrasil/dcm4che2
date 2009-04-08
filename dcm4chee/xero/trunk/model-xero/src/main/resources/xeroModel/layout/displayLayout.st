@@ -52,7 +52,7 @@ CompareStudyLay.prototype.namedListener = function(nav,vname,val) {
 	if(!(nav && nav.conversation) )return;
 	var show0 = (nav.conversation.nav0Show!==false);
 	var show1 = (nav.conversation.nav1Show!==false);
-	console.debug("Updating CompareStudyLay shows:", show0,show1);
+	this.debug("Updating CompareStudyLay shows:", show0,show1);
 	if( show0===show1 ) {
 		this.icon = "CloseIcon";
 		this.tooltip = "CompareSingleStudyTip";
@@ -60,7 +60,7 @@ CompareStudyLay.prototype.namedListener = function(nav,vname,val) {
 		this.icon = "CompareStudyIcon";
 		this.tooltip = "CompareStudyTip";
 	}
-	//console.info("Icon set to", this.icon);
+	//this.debug("Icon set to", this.icon);
 	this.relayout = true;
 };
 
@@ -148,7 +148,7 @@ StudyAreaLayout.prototype.navigateListener = function (navigate) {
 		console.warn("Didn't find study uid in list:",uid);
 		return;
 	}
-	console.info("Found",studies.length,"Studies position",posn);
+	this.debug("Found",studies.length,"Studies position",posn);
 	this.isFirst = (posn==0 || (showAlt && posn==1 && altPosn==0));
 	this.isLast = ((posn==studies.length-1) || (showAlt && posn==studies.length-2 && altPosn==studies.length-1));
 };
@@ -156,13 +156,13 @@ StudyAreaLayout.prototype.navigateListener = function (navigate) {
 
 /** Listen for changes in the compare study type */
 StudyAreaLayout.prototype.namedListener = function StudyNavigateListener(nav,vname,val) {
-	console.info("show study changed",vname,"to",val);
+	this.debug("show study changed",vname,"to",val);
 	var key = "nav"+this.nth+"Show";
 	// This object isn't responsible for modifying the display settings - that is done in the
 	// navigate listener.
 	if( vname!==key || val==null ) return;
 	var nUsed = (val!==false && this.navigate.external!=null);
-	console.debug("StudyLayout set show",key,"to",nUsed);
+	this.debug("StudyLayout set show",key,"to",nUsed);
 	if( nUsed!=this.used ) {
 		this.used = nUsed;
 		this.relayout = true;
@@ -197,7 +197,7 @@ ReportArea.prototype.namedListener=function(nav,vname,val) {
 	var studyLayout = nav.conversation.studyLayout;
 	this.closeReportAreaUsed = (studyLayout==="ShowReportAndImages");
 	var displayReport = nav.conversation.displayReport;
-	console.info("Report area layout",studyLayout,"report",displayReport);
+	this.debug("Report area layout",studyLayout,"report",displayReport);
 	
 	if( !(studyLayout && displayReport && studyLayout!=="ShowImages") ) return;
 	var reportExt = nav.external.findInstance(displayReport);
@@ -205,7 +205,7 @@ ReportArea.prototype.namedListener=function(nav,vname,val) {
 		console.warn("Can't find report information.");
 		return;
 	}
-	console.info("Displaying report",val);
+	this.debug("Displaying report",val);
 	this.used = true;
 	this.src = "studyUID="+reportExt.get("studyUID")+"&amp;seriesUID="+reportExt.get("seriesUID")+"&amp;objectUID="+displayReport;
 	var ae = reportExt.get("ae");
@@ -250,7 +250,7 @@ StudyMenu.prototype.namedListener = function(nav) {
 		else this.layouts = this.baseLayouts;
 	this.StudyMenuItems.items = new Array();
 	var study, i,n=navStudy.length;
-	console.info("StudyMenu navigate listener level",nav.level,this.label,"on",n,"Child studies.");
+	this.debug("StudyMenu navigate listener level",nav.level,this.label,"on",n,"Child studies.");
 	// TODO - move this code into navigate proper.
 	for(i=0; i<n; i++) {
 		if( i==this.nth ) continue;
@@ -287,12 +287,12 @@ XofNSeries.prototype.navigateListener = function(nav) {
 	this.n = this.series.length;
 	if( this.n<2 ) return;
 	this.used = true;
-	console.info("Series UID navigated to", nav.external.seriesUID);
+	this.debug("Series UID navigated to", nav.external.seriesUID);
 	this.relayout=true;
 	for(this.x = 1;this.x<=this.series.length; this.x++) {
 		if( nav.external.seriesUID == this.series[this.x-1].seriesUID ) break;
 	}
-	console.info("xofn series x=",this.x);
+	this.debug("xofn series x=",this.x);
 	this.isFirst = (this.x===1);
 	this.isLast = (this.x===this.n);
 };
@@ -354,20 +354,20 @@ SeriesAreas.prototype.navigateListener = function(nav) {
 	   var studyLayout = nav.parent.conversation.studyLayout;
 	   if( studyLayout=="ShowReport" ) this.used = false;
 	}
-	console.info("SeriesAreas navList used,hasSeries=",this.used,this.hasSeries);
+	this.debug("SeriesAreas navList used,hasSeries=",this.used,this.hasSeries);
 };
 
 /** Handle the series layout settings grid X/Y wise. */
 SeriesAreas.prototype.namedListener = function(nav,vname,val) {
-	console.info("SeriesAreas",vname,val);
+	this.debug("SeriesAreas",vname,val);
 	var studyLayout = nav.conversation.studyLayout;;
 	if( studyLayout==="ShowReport" ) {
-		console.info("ShowReport only - not displaying series areas.");
+		this.debug("ShowReport only - not displaying series areas.");
 		this.used = false;
 		return;
 	};
 	this.used = this.hasSeries;
-	console.info("SeriesArea listener",vname,"used",this.used);
+	this.debug("SeriesArea listener",vname,"used",this.used);
 	if( vname==="studyLayout" ) {
 		this.closeSeriesAreas.used = (val=="ShowReportAndImages"); 
 		return;
@@ -496,7 +496,7 @@ ImageAreasLayout.prototype.namedListener = function(nav,vname,val) {
 	else if( val=="Layout2x2" ) maxSeries = 4;
 	else if( val=="Layout4x2" ) maxSeries = 8;
 	this.used = (this.nth < maxSeries);
-	console.info("ImageAreas used",this.used,"nth",this.nth,"max series",maxSeries,val);
+	this.debug("ImageAreas used",this.used,"nth",this.nth,"max series",maxSeries,val);
 }; 
 
 /**

@@ -17,7 +17,6 @@ function XeroModel(is_ie,i18n) {
 if( !console.info ) {
 	// Ensure that the basic logging features are present.
 	console.info = console.log;
-	console.debug = console.log;
 	console.warn = console.log;
 };
 

@@ -25,10 +25,10 @@ ImageLayout.prototype.isDiffUpdate = true;
 
 /** This defines the listeners for navigate changes to the layout */
 ImageLayout.prototype.navigateListener = function ImageMergedListener(navigate) {
-	console.info("Image merged listener");
+	this.debug("Image merged listener");
 	this.navigate = navigate;
 	if( navigate && this.image!==navigate.external ) {
-		console.info("Updating the merged setting:",this.id);
+		this.debug("Updating the merged setting:",this.id);
 		this.relayout = true;
 		this.image = navigate.external;
 		this.merged = navigate.getMerged();
@@ -43,7 +43,7 @@ ImageLayout.prototype.navigateListener = function ImageMergedListener(navigate) 
 /** Update the URLs if the window width changes */
 ImageLayout.prototype.namedListener = function(nav,vname,val,prevVal) {
 	if( prevVal===val && val===undefined ) return;
-	console.info("Updating all image URLs for",nav.external.seriesUID);
+	this.debug("Updating all image URLs for",nav.external.seriesUID);
 	this.relayout = true;
 	if( vname==="horizontalFlip" || vname==="rotation" || vname==="size" || vname==="bottomRight" || vname==="topLeft") {
 		this.updatePosition();
@@ -64,7 +64,7 @@ ImageLayout.prototype.addImageUrl = function AddImageUrl(clear) {
 	this.preloadImage = new Image();
 	var src = this.imageUrls[this.imageUrls.length-1].imageUrl;
 	this.preloadImage.src = src;
-	console.info("Created a pre-load image for", src);
+	this.debug("Created a pre-load image for", src);
 };
 
 /** Listens for changes in size and re-calculates the URLs to use - LEAVING the old one in place
@@ -161,11 +161,11 @@ ImageLayout.prototype.createBaseUrl = function (base) {
 	}
 	var isinvert = this.merged.get("invert");
 	if( isinvert && isinvert!=="FALSE" && isinvert!=="false" ) {
-		console.info("Invert is true.");
+		this.debug("Invert is true.");
 		// Changes from the natural presentation to the inverted presentation - this is an OVERRIDE
 		// on the base value or base value + GSPS value, it isn't the base value itself.
 		ret.imageUrl = ret.imageUrl+"&invert=true";
-	} else console.info("Invert is false.");
+	};
 	var puid = this.merged.get("gspsUID");
 	if( puid ) {
 		ret.imageUrl = ret.imageUrl + "&presentationUID="+puid;

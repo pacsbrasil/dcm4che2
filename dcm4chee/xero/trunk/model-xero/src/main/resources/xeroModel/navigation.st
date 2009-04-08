@@ -84,24 +84,24 @@ Navigation.prototype.generateQuery = function Navigation_generateQuery(child, re
 	modifiers = this.conversation.assignDefaultModifiers(this.external, childId);
 	this.debug("Modifiers ",modifiers);
 	if( this.level===3 ) {
-		console.debug("Adding image level query at %d of size %d initial offset %d", childId, this.IMAGE_QUERY_SIZE, this.QUERY_SIZE);
+		this.debug("Adding image level query at %d of size %d initial offset %d", childId, this.IMAGE_QUERY_SIZE, this.QUERY_SIZE);
 		position = childId - this.QUERY_SIZE;
 		position -= (position % this.IMAGE_QUERY_SIZE);
 		position += this.QUERY_SIZE;
 		url = IMAGE_QUERY+"&regroup=*&studyUID="+this.parent.id+"&seriesUID="+this.id+"&Count="+this.IMAGE_QUERY_SIZE+"&Position="+position;
-		console.debug("Adding series extension query %s",url); 
+		this.debug("Adding series extension query %s",url); 
 	} else if( this.level===2 ) {
 		url = IMAGE_QUERY+"&regroup=*&studyUID="+this.id+"&Position=0&Count="+this.QUERY_SIZE;
-		console.debug("Adding image query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
+		this.debug("Adding image query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
 	} else if( this.level===1 && modifiers!=null && modifiers[2]!=undefined) {
 		// Fix the modifiers, and do an image level query.
 		url = IMAGE_QUERY+"&regroup=*&studyUID="+child.id+"&Position=0&Count="+this.QUERY_SIZE;
-		console.debug("Adding updated image, with study query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
+		this.debug("Adding updated image, with study query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
 	} else if( this.level===1 ) {
 		// This happens when the user views a new study in the same patient, or an updated study in 
 		// the same patient.
 		url = STUDY_QUERY+"&gsps=*&ko=*&studyUID="+childId;
-		console.debug("Adding new study query %s", url);
+		this.debug("Adding new study query %s", url);
 	} else {
 		console.error("Unknown id/query level %d for child id %s", this.level, childId);
 		return ret;
@@ -132,7 +132,7 @@ Navigation.prototype.mergeExternal = function Navigation_mergeExternal(external,
 	} else {
 		this.fire(this.EXTERNAL_UPDATED,external,external);
 	}
-	console.info("Adding external data to %s at level %d", this.id,this.level);
+	this.debug("Adding external data to %s at level %d", this.id,this.level);
 	var child,childKey;
 	var childExt,url,position,extId;
 	for(childKey in this.children) {
@@ -144,7 +144,7 @@ Navigation.prototype.mergeExternal = function Navigation_mergeExternal(external,
 		if( child.id===null ) continue;
 		if( child.id!==undefined && external.children) {
 			extId = child.conversation.getExternalId();
-			console.info("Looking for external id %s on base id %s",extId,child.id);
+			this.debug("Looking for external id %s on base id %s",extId,child.id);
 			childExt = external.children[extId];
 			if( childExt ) {
 				ret = child.mergeExternal(childExt,ret);
@@ -585,7 +585,7 @@ Navigation.prototype.fire = function(key,value,oldValue) {
 Navigation.prototype.setMerged = function(key,value,internalChange) {
 	this.createMerged();
 	var oldValue = this.merged[key];
-	console.info("setMerged",key,"old",oldValue,"new value",value); 
+	this.debug("setMerged",key,"old",oldValue,"new value",value); 
 	if( oldValue===value && !internalChange ) return;
 	this.merged[key] = value;
 	this.fire(key,value,oldValue);

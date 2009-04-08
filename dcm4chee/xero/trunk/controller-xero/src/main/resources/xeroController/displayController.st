@@ -56,9 +56,9 @@ XeroController.prototype.displayPatient = function XC_displayPatient(id,patientI
 	var external = navigate.external;
 	if( (!external) || (!external.children[patientId]) ) {
 		external = new StudyData(uids, model.ae);
-		console.info("Setup external study data root on url %s", external.url);
+		this.debug("Setup external study data root on url %s", external.url);
 		external.request(this.service);
-		console.info("Loaded study data.");
+		this.debug("Loaded study data.");
 	} else {
 		// Need to ensure all the studies are available for the base information
 		external.queryForStudies(this.service,uids, external.children[patientId].children, model.ae);
@@ -92,7 +92,7 @@ XeroController.prototype.selectManyStudies = function(patient,uid) {
 		if( study.isSelected && study.studyUID!=uid) uids.push(study.studyUID);
 	}
 	if( uids.length>0 ) {
-		console.info("Found",uids.length,"seleted studies:",uids);
+		this.debug("Found",uids.length,"seleted studies:",uids);
 		return uids;
 	}
 	for(i=0; i<n; i++) {
@@ -149,7 +149,16 @@ XeroController.prototype.seriesLayout = function(id, event, arg) {
 	}
 
 	// Navigate backwards to ensure all positions are shown.
-	var cnt = this.getSeriesLayoutCount(arg);
+	this.fixSeriesLayoutNav(nav,arg);
+	this.displayResize("seriesLayout");
+};
+
+/** Given a study level navigate object, fix the series layout/position to
+ * not extend beyond the end, for the given layout name (null/undefined mean
+ * default layout).  Does not re-render.
+ */
+XeroController.prototype.fixSeriesLayoutNav = function(nav, layout) {
+	var cnt = this.getSeriesLayoutCount(layout);
 	if( cnt>1 ) {
 		var posn;
 		var navTo = 0;
@@ -162,13 +171,12 @@ XeroController.prototype.seriesLayout = function(id, event, arg) {
 		console.info("Trying to back-navigate to", navTo);
 		if( navTo<0 ) nav.setNavigation(c0.lookupId(navTo));
 	}
-	this.displayResize("seriesLayout");
 };
 
 /** From the layout name, figure out how many objects could be shown. */
 XeroController.prototype.getSeriesLayoutCount = function(layout) {
 	if( layout==="Layout1x1" ) return 1;
-	if( layout==="Layout2x2" ) return 4;
+	if( layout==="Layout2x2" || !layout) return 4;
 	if( layout==="Layout4x2" ) return 8;
 	return 2;
 };
@@ -186,10 +194,10 @@ XeroController.prototype.studyCompare = function(id) {
 	
 	if( showAlt===false ) {
 		// Display the compare mode again
-		console.debug("Showing alternate panel.");
+		console.info("Showing study compare mode.");
 		nav.parent.setConversation(altKey,true);
 	} else {
-		console.debug("Hiding this panel.");
+		console.info("Hiding study compare mode");
 		nav.parent.setConversation(key,false);
 	}
 	this.displayResize("studyCompare");
@@ -203,7 +211,7 @@ XeroController.prototype.mergeExternal = function(external) {
 	var i=3, queries;
 	do { 
 		if( queries ) external.addQueries(this.service, queries);
-		console.warn("Delivering queries to mergeExternal.");
+		this.debug("Delivering queries to mergeExternal.");
 		queries = navigate.mergeExternal(external);
 		i--;
 	} while(queries && i>0);
@@ -257,7 +265,7 @@ XeroController.prototype.updateDisplayTab = function XC_updateDisplayTab(forceCo
 	console.info("mergeExternal completed.");
 
 	var size = getViewportSize();
-	console.info("Viewport size %d,%d",size[0],size[1]);
+	this.debug("Viewport size %d,%d",size[0],size[1]);
 	this.model.patientLayout.resize(size[0]-8,size[1]-32, "width:100%; height:100%;");
 
 	if( sameTab && forceComplete!==true ) {
@@ -420,12 +428,16 @@ XeroController.prototype.dblImage = function(id,e) {
 	var mode = nav.conversation.seriesLayout;
 	var navTo;
 	if( mode==="Layout1x1" ) {
+	  navTo = nav.conversation.dblSeries;
+	  nav.conversation.dblSeries = undefined;
 	  if( nav.conversation.wasSeriesLayout ) {
 	  	mode = nav.conversation.wasSeriesLayout;
 	  	nav.conversation.wasSeriesLayout = undefined;
-	  	navTo = nav.conversation.dblSeries;
 	  	nav.setConversation("dblSeries");
-	  } else mode = "Layout2x2";
+	  } else {
+	  	mode = undefined;
+	  	this.fixSeriesLayoutNav(nav);
+	  }
 	} else {
 	  nav.conversation.wasSeriesLayout = mode;
 	  mode="Layout1x1";
@@ -442,7 +454,8 @@ XeroController.prototype.dblImage = function(id,e) {
 
 /** Changes the image layout */
 XeroController.prototype.setImgLay = function XC_setImgLay(id,w,h) {
-	id = this.model.patientLayout.findLayout(id);
+	id = this.findLayout(id);
+	console.info("Set image layout on ",id.id,"to",w,h);
 	if( id.imageArea ) id = id.imageArea;
 	id.origGridX = w;
 	id.origGridY = h;

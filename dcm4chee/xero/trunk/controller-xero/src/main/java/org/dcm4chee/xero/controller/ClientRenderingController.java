@@ -34,10 +34,7 @@
 
 package org.dcm4chee.xero.controller;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import javax.xml.transform.URIResolver;
 
@@ -55,6 +52,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ClientRenderingController<T> implements Filter<T>
 {
+   @SuppressWarnings("unused")
    private static Logger log = LoggerFactory.getLogger(ClientRenderingController.class);
    
    private static final String PRERENDER_KEY = "prerender";

@@ -52,9 +52,9 @@ XeroController.prototype.wheelMouse = function (id,e) {
 	var handler = this.getShiftInfo(e);
 	handler = handler+"wheel";
 	if( area ) handler = this["getMode"+area](lay,e)+"_"+handler+area; 
-	console.debug("Looking for handler for",handler);
+	this.debug("Looking for handler for",handler);
 	handler = this.findModeHandler(handler);
-	console.info("Found mouse click handler",handler);
+	this.debug("Found mouse click handler",handler);
 	if( handler ) return this[handler](lay,e);
 };
 
@@ -77,9 +77,9 @@ XeroController.prototype.keyPress = function(area, e) {
 	var shift = this.getShiftInfo(e);	
 	var handler= shift+"key"+e.keyCode;
 	if( area ) handler = area+"_"+handler;
-	//console.debug("Key press handler initial",handler);
+	//this.debug("Key press handler initial",handler);
 	handler = this.findModeHandler(handler);
-	//console.debug("Found handler",handler);
+	//this.debug("Found handler",handler);
 	if(!handler) return;
 	return this[handler](e);
 };
@@ -112,11 +112,11 @@ XeroController.prototype.mouseClickDrag = function(id,e) {
 	if( isRightMouse(e) ) but = "Right";
 	else if( !isLeftMouse(e) ) but = "Mid";
 	var dbl = (this.singleClickMousing && this.singleClickMousing.singleClickTime()!=0);
-	console.info("Button pressed:",(but==""?"left":but),"is double",dbl);
+	console.debug("Button pressed:",(but==""?"left":but),"is double",dbl);
 	if( dbl ) {
 		handler = handler+"dblDrag"+but;
 		clickHandler = clickHandler + "dbl"+but;
-		console.info("Looking for double click handler",clickHandler);
+		console.debug("Looking for double click handler",clickHandler);
 		this.singleClickMousing = null;
 	} else {
 		handler = handler+"drag"+but;
@@ -131,10 +131,10 @@ XeroController.prototype.mouseClickDrag = function(id,e) {
 	handler = this.findModeHandler(handler);
 	clickHandler = this.findModeHandler(clickHandler);
 	if(!(handler || clickHandler)) {
-		console.info("No click handlers found.");
+		console.debug("No click handlers found.");
 		return;
 	}
-	console.info("Found mouse handler",handler,"click",clickHandler);
+	console.debug("Found mouse handler",handler,"click",clickHandler);
 	
 	var mousing;
 	if( handler ) {
@@ -148,7 +148,7 @@ XeroController.prototype.mouseClickDrag = function(id,e) {
 		console.warn("No mouse DOM area to hook mouse events to for",handler);
 		return;
 	}
-	console.info("Found mouse DOM area",mouseDom.id);
+	this.debug("Found mouse DOM area",mouseDom.id);
 	this.mousing = mousing;
 	mousing.clickHandler = clickHandler;
 	mousing.lay = lay;
@@ -160,13 +160,13 @@ XeroController.prototype.mouseClickDrag = function(id,e) {
 		console.warn("Mouse prepare for",handler,"returned false, not mousing.");
 		return;
 	}
-	console.info("Area prepared - now about to hook listeners to", mouseDom.id);
+	this.debug("Area prepared - now about to hook listeners to", mouseDom.id);
 	
 	hookEvent(mouseDom,"mouseout", XC_callMouseOut);
 	hookEvent(mouseDom,"mouseup", XC_callMouseUp);
 	if(mousing.mousemove) hookEvent(mouseDom, "mousemove", XC_callMouseMove);
 	
-	console.info("Hooked events, returning and awaiting the next call at",this.mousing.startTime);
+	this.debug("Hooked events, returning and awaiting the next call at",this.mousing.startTime);
 	return cancelEvent(e);
 };
 
@@ -206,17 +206,17 @@ XeroController.prototype.mouseUp = function(e) {
 	if( !this.mousing ) return true;
 	if( !e ) e = window.event;
 	if( this.mousing.isDrag(e) ) {
-		console.info("Drag, not click.");
+		console.debug("Drag, not click.");
 		this.mousing.end(e);
 	} else {
 		var clickTime = this.mousing.singleClickTime();
 		// Browsers can't usually delay less than 25 ms
 		if( clickTime>25 ) {
 			this.singleClickMousing = this.mousing;
-			console.info("Waiting for",clickTime,"to determine double click.");
+			console.debug("Waiting for",clickTime,"to determine double click.");
 			window.setTimeout(runSingleClickMousing, clickTime);
 		} else {
-			console.info("Click, not drag - todo, check if double click.");	
+			console.debug("Click, not drag - todo, check if double click.");	
 			this.mousing.runClickEvent();
 		}
 	}
@@ -261,11 +261,13 @@ XeroController.prototype.mouseOut = function(e) {
 function MouseHandler() {
 };
 
+MouseHandler.prototype.debug = function() {};
+
 MouseHandler.prototype.prepare = function (e) {
 	this.startTime = (new Date()).getTime();
 	this.startPosn = docCoords(e);
 	this.startScreen = [e.screenX,e.screenY];
-	console.info("Start position",this.startPosn,"at",this.startTime);
+	this.debug("Start position",this.startPosn,"at",this.startTime);
 	this.drag = undefined;
 	return this.clickHandler!=null;
 };
@@ -273,7 +275,7 @@ MouseHandler.prototype.prepare = function (e) {
 MouseHandler.prototype.mhPrepare = MouseHandler.prototype.prepare; 
 
 MouseHandler.prototype.start = function MouseHandler_start(event) {
-	console.info("Hello, image mouse down target id %s imageDisplay %s button %d which %d at ", this.target, this.downTarget.id, event.button, event.which, this.startPosn);
+	this.debug("Image mouse down target id %s imageDisplay %s button %d which %d at ", this.target, this.downTarget.id, event.button, event.which, this.startPosn);
 	return true;
 };
 
@@ -283,7 +285,7 @@ MouseHandler.prototype.getMouseDom = function(src) { return src; };
 MouseHandler.prototype.end = function MouseHandler_showMouseMoveEnd(event) {
 	var posn = docCoords(event);
 	var delta = [posn[0]-this.startPosn[0],posn[1]-this.startPosn[1]];
-	console.debug("Show Mouse Move End button %d which %d at %s", event.button, event.which, delta);
+	this.debug("Show Mouse Move End button %d which %d at %s", event.button, event.which, delta);
 };
 
 /** Runs the click event instead of the drag event */
@@ -302,7 +304,7 @@ MouseHandler.prototype.isDrag = function(e) {
 	if(this.drag!==undefined ) return this.drag;
 	var cposn = docCoords(e);
 	var delta = Math.abs(cposn[0]-this.startPosn[0])+Math.abs(cposn[1]-this.startPosn[1]);
-	console.info("Delta",delta);
+	console.debug("Delta",delta);
 	if( delta>this.controller.dblMoveDistance ) {
 		this.drag = true;
 		return true;
@@ -314,7 +316,7 @@ MouseHandler.prototype.isDrag = function(e) {
 MouseHandler.prototype.singleClickTime = function() {
 	if( this.dblClick ) return 0;
 	var ret =  this.controller.dblClickTime - (new Date()).getTime() + this.startTime;
-	console.info("singleClickTime:",ret);
+	console.debug("singleClickTime:",ret);
 	if( ret<0 ) return 0;
 	return ret;
 };
@@ -359,26 +361,26 @@ ImageMouseHandler.prototype.prepareBase = ImageMouseHandler.prototype.prepare;
 ImageMouseHandler.prototype.getMouseDom = function (src) {
 	var pl = document.getElementById("PatientLayout");
 	if( pl ) {
-		console.info("Using patient layout for mouse dom.");
+		console.debug("Using patient layout for mouse dom.");
 		return pl;
 	}
 	var clazz = src.className;
 	var prevChild = src;
 	if( clazz && clazz.baseVal ) clazz = clazz.baseVal;
 	while( src && clazz!="imageDisplay" && src.nodeName!=="BODY" && src.nodeName!=="body") {
-		console.debug("findImageTarget", src.id, src.nodeName, clazz);
+		this.debug("findImageTarget", src.id, src.nodeName, clazz);
 		prevChild = src;
 		src = src.parentNode;
 		clazz = src.className;
 		if( clazz && clazz.baseVal ) clazz = clazz.baseVal;
 		// Safari and Opera don't provide easy access to svg class.
 		if( clazz==="image" ) {
-			console.info("Returning previous child - not really a good test.");
+			console.debug("Returning previous child - not really a good test.");
 			return prevChild;
 		}
 	} 
 	if( clazz==="imageDisplay" ) {
-		console.debug("findImageTarget Found", src.id, src.nodeName, clazz);
+		this.debug("findImageTarget Found", src.id, src.nodeName, clazz);
 		return src;
 	}
 	return undefined;

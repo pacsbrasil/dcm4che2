@@ -20,6 +20,8 @@ function NavConversation(id, level) {
 	if( amp>0 ) this.baseId = id.substring(0,amp);
 };
 
+NavConversation.prototype.debug = function() {};
+
 /** Gets a child by the given name.  Adds the conversation id to the fetched child.
  */
 NavConversation.prototype.getChild = function NC_getChild(id) {
@@ -93,7 +95,7 @@ NavConversation.prototype.getQueryModifier = function (name) {
  * Returns the combined modifiers.
  */
 NavConversation.prototype.assignDefaultModifiers = function NC_assignDefaultModifiers(external, childId) {
-	console.debug("Assign default modifiers, level",this.level);
+	this.debug("Assign default modifiers, level",this.level);
 	if( (this.modifier!==undefined) || !external ) return this.getChild(childId).getCombinedModifiers();
 	if( this.level==2 ) {
 		if( external.gspsLabel ) {
