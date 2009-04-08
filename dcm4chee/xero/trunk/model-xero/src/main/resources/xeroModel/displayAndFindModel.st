@@ -33,6 +33,9 @@ var XeroStudyColumns = {
 		{"i18n":"Modality", "var":"ModalitiesInStudy", "sort":"ModalitiesInStudy", "template":"html/displayIt", "id":"modalityColHead" },
 		{"i18n":"AccessionNumber", "var":"AccessionNumber", "sort":"AccessionNumber", "template":"html/displayIt", "id":"accessionNumberColHead" },
 		{"i18n":"StudyDateTimeF", "var":"StudyDateF", "sort":"StudyDateTime", "template":"html/displayIt", "id":"studyDateTimeColHead" },
+		{"i18n":"PatientBirthDate", "var":"birthDateF", "sort":"PatientBirthDate", "template":"html/displayFirst", "id":"birthDateColHead" },
+		{"i18n":"PatientSex", "var":"PatientSex", "sort":"PatientSex", "template":"html/displayFirst", "id":"patientSexColHead" },
+		{"i18n":"InstanceAvailability", "var":"InstanceAvailability", "sort":"InstanceAvailability", "template":"html/displayIt", "id":"instanceAvailabilityColHead" },
 		{"name":"# Series", "var":"NumberOfStudyRelatedSeries", "sort":"NumberOfStudyRelatedSeries", "template":"html/displayIt", "id":"numSeriesColHead" },
 		{"name":"# Objects", "var":"NumberOfStudyRelatedInstances", "sort":"NumberOfStudyRelatedInstances", "template":"html/displayIt", "id":"numObjectsColHead" }
 	]
