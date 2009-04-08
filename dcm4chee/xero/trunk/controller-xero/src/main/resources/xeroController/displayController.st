@@ -129,7 +129,6 @@ XeroController.prototype.displayMode = function(layId) {
 	var lay = this.model.layout.findLayout(layId);
 	var toMode = lay.i18n;
 	var wasMode = this.getModeImage();
-	if( lay.isActive ) toMode = "ImageMode";
 	console.info("Changing display mode to",toMode,"from",wasMode);
 	
 	this.model.navigate.setConversation("mode", toMode);
