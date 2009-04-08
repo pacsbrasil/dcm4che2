@@ -263,7 +263,7 @@ public class ReduceBitsFilter implements Filter<WadoImage> {
 		   if( bits!=8 ) throw new IllegalArgumentException("Only 8...15 bits supported for reduce bits filter.");
 		   bi = new BufferedImage( r.getWidth(), r.getHeight(), BufferedImage.TYPE_BYTE_GRAY); 
 	   }
-	   lut.lookup(r.getDataBuffer(), bi.getRaster().getDataBuffer() );
+	   lut.lookup(r, bi.getRaster() );
 	   
 	   return bi;
    }

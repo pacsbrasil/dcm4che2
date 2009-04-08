@@ -164,7 +164,7 @@ public class WLFilter implements Filter<WadoImage> {
 	  // then compute the value as a width of under 2 doesn't make sense.
 	  if( func==null && (voiObj==null || (voiObj.getFloat(Tag.WindowWidth)<2 && 
 	          !voiObj.contains(Tag.VOILUTSequence)))) {
-		 float[] cw = VOIUtils.getMinMaxWindowCenterWidth(img, pr, frame, bi.getRaster().getDataBuffer());
+		 float[] cw = VOIUtils.getMinMaxWindowCenterWidth(img, pr, frame, bi.getRaster());
 		 windowCenter = cw[0]+0.5f;
 		 windowWidth = cw[1];
 		 //log.info("Original c/w={},{}", windowCenter, windowWidth);
@@ -185,7 +185,7 @@ public class WLFilter implements Filter<WadoImage> {
 	  //}
 
 	  if (lut != null){
-		 lut.lookup( bi.getRaster().getDataBuffer(), dest.getRaster().getDataBuffer() );
+		 lut.lookup( bi.getRaster(), dest.getRaster() );
 	  }
 
 	  WadoImage ret = wi.clone();
