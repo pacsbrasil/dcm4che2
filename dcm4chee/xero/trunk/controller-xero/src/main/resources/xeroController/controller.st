@@ -377,11 +377,58 @@ XeroController.prototype.updateLayouts = function XC_updateLayouts(actionName,la
 	this.renderComplete(this.model.layout.layouts,true);	 
 };
 
-/** Switch to the given tab */
+/** Switch to the given tab - switching to the Display tab
+ * has the behaviour of:
+ * 1. If no query results are available, perform a search and display all 
+ *    results for the first patient.
+ * 2. If current query results are available, then display the first patient,
+ *    that has a selected study, or the first patient in the list.
+ * 3. If query results are out of date, re-query and display all results for the
+ *    first patient. 
+ * The re-query display of the selected/ordered patient depends on selection
+ * and ordering being preserved durign a performSearch re-query.
+ */
 XeroController.prototype.switchTab = function XC_switchTab(src,tabName) {
-	if( this.model.layout.selectTab(tabName) ) {
+	console.info("Switch tab to", tabName);
+	if( !this.model.layout.selectTab(tabName) ) return;
+	if( tabName=="Display" ) {
+		var urlFactory = this.findLayout("QueryLayout").query;
+		var origUrl = urlFactory.url;
+		var newUrl = urlFactory.updateUrlFromForm();
+		var searchLayout = this.findLayout("SearchLayout");
+		if( origUrl!==newUrl || !searchLayout.search) {
+			console.info("The search isn't up to date - requerying.");
+			this.performSearch();
+		}
+		var pid = this.selectPatientToDisplay(searchLayout.search);
+		if( pid==null ) {
+			this.model.layout.selectTab("Find");
+			return;
+		}
+		this.displayPatient(src,pid);				
+	} else {
 		this.updateView("switchTab");
 	}
+};
+
+/** When switching tabs, selects a patient that has selected studies, OR
+ * selects the first patient.
+ */
+XeroController.prototype.selectPatientToDisplay = function(results) {
+	if( !(results && results.patient && results.patient.length) ) return;
+	var n = results.patient.length;
+	for(var i=0; i<n; i++) {
+		var patient = results.patient[i];
+		if( !patient.study ) continue;
+		var m = patient.study.length;
+		for(var j=0; j<m; j++) {
+			var study = patient.study[j];
+			if( study.isSelected ) {
+				return patient.PatientIdentifier;
+			}
+		}
+	};
+	return results.patient[0].PatientIdentifier;
 };
 
 /** Switch a button */
