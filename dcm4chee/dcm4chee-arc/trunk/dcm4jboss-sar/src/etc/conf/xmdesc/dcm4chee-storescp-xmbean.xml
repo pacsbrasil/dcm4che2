@@ -22,6 +22,7 @@
    </constructor>
 
    <!-- Attributes -->
+   &defaultAttributes;
    <attribute access="read-write"
       getMethod="getCalledAETs"
       setMethod="setCalledAETs">
@@ -984,8 +985,6 @@ Notifications for one Series.]]>
       <type>javax.management.ObjectName</type>
    </attribute>
 
-   &defaultAttributes;
-
    <!-- Operations -->
    &defaultOperations;
    <operation impact="ACTION">
@@ -1038,6 +1037,13 @@ Notifications for one Series.]]>
         </description>
         <name>javax.management.Notification</name>
         <notification-type>org.dcm4chex.archive.common.SeriesStored</notification-type>
+    </notification>
+   <notification>
+        <description>The notification sent whenever a DICOM composite object
+        was stored.
+        </description>
+        <name>javax.management.Notification</name>
+        <notification-type>org.dcm4chex.archive.dcm.storescp</notification-type>
     </notification>
 </mbean>
 

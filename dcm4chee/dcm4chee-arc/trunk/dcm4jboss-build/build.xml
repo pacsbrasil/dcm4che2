@@ -495,6 +495,18 @@
     </antcall>
     <antcall target="xslt">
       <param name="in"
+             value="${dcm4jboss-sar.xmdesc}/dcm4chee-rejectionnotestored-xmbean.xml" />
+      <param name="out" value="rejectionnotestored-xmbean.xml" />
+      <param name="mbean" value="dcm4chee.archive:service=RejectionNoteStored" />
+    </antcall>
+    <antcall target="xslt">
+      <param name="in"
+             value="${dcm4jboss-sar.xmdesc}/dcm4chee-routeonpps-xmbean.xml" />
+      <param name="out" value="routeonpps-xmbean.xml" />
+      <param name="mbean" value="dcm4chee.archive:service=RouteOnPPS" />
+    </antcall>
+    <antcall target="xslt">
+      <param name="in"
              value="${dcm4jboss-sar.xmdesc}/dcm4chee-routeonpps-xmbean.xml" />
       <param name="out" value="routeonpps-xmbean.xml" />
       <param name="mbean" value="dcm4chee.archive:service=RouteOnPPS" />

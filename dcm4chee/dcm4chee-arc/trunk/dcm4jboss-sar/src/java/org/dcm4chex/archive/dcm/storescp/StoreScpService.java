@@ -54,6 +54,7 @@ import java.util.Map;
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 import javax.management.Notification;
+import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
@@ -98,6 +99,18 @@ import org.dcm4chex.archive.util.HomeFactoryException;
  * @since 03.08.2003
  */
 public class StoreScpService extends AbstractScpService {
+
+    public static final String EVENT_TYPE_OBJECT_STORED = 
+            "org.dcm4chex.archive.dcm.storescp";
+
+    public static final NotificationFilter NOTIF_FILTER = 
+            new NotificationFilter() {
+        private static final long serialVersionUID = -7557458153348143439L;
+
+        public boolean isNotificationEnabled(Notification notif) {
+            return EVENT_TYPE_OBJECT_STORED.equals(notif.getType());
+        }
+    };
 
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
@@ -801,6 +814,14 @@ public class StoreScpService extends AbstractScpService {
         store.commitSeriesStored(seriesStored);
     }
 
+    private void sendObjectStoredNotification(Dataset ds) {
+        long eventID = super.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(EVENT_TYPE_OBJECT_STORED,
+                this, eventID);
+        notif.setUserData(ds);
+        super.sendNotification(notif);
+    }
+
     private void checkPendingSeriesStored() throws Exception {
         Storage store = getStorage();
         SeriesStored[] seriesStored = store
@@ -847,6 +868,7 @@ public class StoreScpService extends AbstractScpService {
      * @throws Exception
      */
     void postProcess(Dataset ds) throws Exception {
+        sendObjectStoredNotification(ds);
         doPostProcess(ds);
     }
 
