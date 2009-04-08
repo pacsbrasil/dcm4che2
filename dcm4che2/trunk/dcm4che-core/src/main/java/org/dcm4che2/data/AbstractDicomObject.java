@@ -262,10 +262,10 @@ abstract class AbstractDicomObject implements DicomObject {
         if (keys.isEmpty())
             return true;
         for (int i = 0, n = sq.countItems(); i < n; i++) {
-            if (!sq.getDicomObject(i).matches(keys, ignoreCaseOfPN))
-                return false;
+            if (sq.getDicomObject(i).matches(keys, ignoreCaseOfPN))
+                return true;
         }
-        return true;
+        return false;
     }
 
     public boolean isRoot() {
