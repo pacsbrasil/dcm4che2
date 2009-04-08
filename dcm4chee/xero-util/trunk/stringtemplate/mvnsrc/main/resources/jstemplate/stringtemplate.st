@@ -42,7 +42,7 @@ StringTemplate.prototype.toString = function ST_toString(templateName, model) {
 	if(!templateName) return "StringTemplate Object";
 	var template = this.templates[templateName];
 	if( template===undefined ) {
-	   this.error("Unable to find template "+templateName);
+	   this.error("Unable to find template",templateName);
 	}
 	this.debug("Applying "+templateName+" with "+template.chunks.length+" items.");
 	var result = this.evalChunks(template.chunks,model);
@@ -121,7 +121,7 @@ StringTemplate.prototype.evalChunks = function ST_evalChunks(chunks,model) {
 
 /** Calls the given AST */
 StringTemplate.prototype.call=function ST_call(ast,model) {
-	if( this[ast.type]===undefined ) this.error("Unknown ast type "+ast.type);
+	if( this[ast.type]===undefined ) this.error("Unknown ast type",ast.type);
 	return this[ast.type](ast,model);
 };
 
@@ -199,7 +199,7 @@ StringTemplate.prototype[7] = function ST_Include(chunk,model)
 	  // The nesting on the AST for this is VERY ugly - it would be much nicer to have
 	  // this look like type 20 with arguments after the value of the template to instantiate
 	  name = this.call(nameT.ast[0],model);
-	  if( !name ) this.error("No name returned executing "+nameT.ast[0]);
+	  if( !name ) this.error("No name returned executing",nameT.ast[0]);
 	  argsT = nameT.ast[1];
 	}
 	else {
@@ -249,7 +249,7 @@ StringTemplate.prototype[10] = StringTemplate.prototype[7];
 StringTemplate.prototype.checkif = function ST_checkif(test,model) {
 	if( test===true ) return true;
 	if( this[test.type]===undefined ) {
-		this.error("Undefined function for test type "+test.type);
+		this.error("Undefined function for test type",test.type);
 	}
 	test = this[test.type](test,model);
 	if( test===undefined || test===null || test===false || test==="false") return false;
@@ -289,11 +289,11 @@ StringTemplate.prototype[24] = function ST_concat(chunk,model) {
 /** Handle the dot object */
 StringTemplate.prototype[25] = function ST_dot(chunk,model) {
 	var root = this.call(chunk.ast[0],model);
+	var child = chunk.ast[1];
 	if( root==undefined ) {
-		console.warn("Unable to find parent %s", chunk.ast[0]); 
+		this.debug("Unable to find parent", chunk.ast[0],"looking for",child); 
 		return undefined;
 	}
-	var child = chunk.ast[1];
 	if( child.type==20 ) {
 		var val= this.get(root,child.text);
 		return val;
