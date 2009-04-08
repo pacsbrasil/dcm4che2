@@ -37,14 +37,13 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search;
 
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
@@ -54,9 +53,11 @@ import org.dcm4che2.data.VR;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.DimseRSP;
+import org.dcm4che2.net.NetworkApplicationEntity;
+import org.dcm4che2.net.NetworkConnection;
 import org.dcm4che2.net.TransferCapability;
-import org.dcm4chee.xero.dicom.AEConnection;
-import org.dcm4chee.xero.dicom.AESettings;
+import org.dcm4chee.xero.dicom.ApplicationEntityProvider;
+import org.dcm4chee.xero.dicom.DicomConnector;
 import org.dcm4chee.xero.dicom.DicomDateTimeHandler;
 import org.dcm4chee.xero.dicom.TransferCapabilitySelector;
 import org.dcm4chee.xero.metadata.filter.Filter;
@@ -81,24 +82,20 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 {
    private static Logger log = LoggerFactory.getLogger(DicomCFindFilter.class);
    
-	private static final int DEFAULT_MAX_RESULTS = 100000;
+   private static final int DEFAULT_MAX_RESULTS = 100000;
    public static final String EXTEND_RESULTS_KEY = "EXTEND_RESULTS";
-	
-    private int priority = 0;
-    private int cancelAfter = Integer.MAX_VALUE;
-	
-    private DicomDateTimeHandler dateTime = new DicomDateTimeHandler();
-    private TransferCapabilitySelector tcs = new TransferCapabilitySelector();
+   
+   private static DicomConnector dicomConnector = new DicomConnector();
 
+   private int priority = 0;
+   private int cancelAfter = Integer.MAX_VALUE;
 
-	/**
-	 * cache for the AE connection details
-	 */
-	private ConcurrentMap<String, AESettings> aeConCache = new ConcurrentHashMap<String, AESettings>();
-    
-    
-    public DicomCFindFilter() {
-        aeConCache.put("local", new AESettings(AEProperties.getInstance().getDefaultAE()));
+   private DicomDateTimeHandler dateTime = new DicomDateTimeHandler();
+   private TransferCapabilitySelector tcs = new TransferCapabilitySelector();
+   private ApplicationEntityProvider aeProvider = new ApplicationEntityProvider();
+
+   
+   public DicomCFindFilter() {
 	}
     
     /**
@@ -258,19 +255,25 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
      * This method performs a remote query against the local DCM4CHEE ae instance, on port 11112, and
      * returns the result as a set of objects of type E.
      */
-	public void cfind(SearchCriteria searchCriteria, ResultFromDicom resultFromDicom, AEConnection aeConn, int maxResults) {
-		try {
-		   log.info("Connecting to "+aeConn.getRemoteHost()+" remoteAE="+aeConn.getRemoteAE().getAETitle()+" on conn="+aeConn.getConnection().getHostname()+" at level "+getQueryLevel());
-		   long start = System.nanoTime();
+	public void cfind(SearchCriteria searchCriteria, ResultFromDicom resultFromDicom, NetworkApplicationEntity remoteAE, NetworkApplicationEntity localAE, int maxResults) {
+	   if (log.isInfoEnabled()) {
+         NetworkConnection conn = remoteAE.getNetworkConnection()[0];
+         log.info("Connecting to {}@{} from AE="+localAE.getAETitle(),remoteAE.getAETitle(),conn.getHostname());
+      }
 
-		   Association assoc = aeConn.getAE().connect(aeConn.getRemoteAE(), aeConn.getExecutor());
-	       TransferCapability tc = tcs.selectTransferCapability(assoc, getCuids());
+
+      long start = System.nanoTime();
+      Association association = null;
+      try {   
+         // Use the remote AE to start the connection so it dictates the security context
+          association = dicomConnector.connect(localAE, remoteAE);
+	       TransferCapability tc = tcs.selectTransferCapability(association, getCuids());
 	       if ( tc==null )
 	    	   throw new RuntimeException("Can't agree on any transfer capabilities with device.");
 	       String cuid = tc.getSopClass();
 	       String tsuid = tcs.selectBestTransferSyntaxUID(tc);
 	       DicomObject keys = generateKeys(searchCriteria);
-	       DimseRSP rsp = assoc.cfind(cuid, priority, keys, tsuid, cancelAfter);
+	       DimseRSP rsp = association.cfind(cuid, priority, keys, tsuid, cancelAfter);
 	       int cntResults = 0;
 	       while(rsp.next()) {
 	    	   DicomObject cmd = rsp.getCommand();
@@ -299,7 +302,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 	    		   }
 	    	   }
 	       }
-	       assoc.release(true);
+	       association.release(true);
 	       log.debug("Found "+cntResults+" in "+(System.nanoTime()-start)/1e6+" ms");
 		} catch (RuntimeException e) {
 			throw e;
@@ -307,9 +310,13 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
+		finally {
+		   dicomConnector.release(association, true);
+		}
 	}
 
-	/**
+
+   /**
 	 * Perform the query by using the search criteria named filter to get the criteria to search on,
 	 * and using the default configuration for where to search.
 	 * @param filterItem
@@ -318,31 +325,29 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 	 */
 	public ResultFromDicom filter(FilterItem<ResultFromDicom> filterItem, Map<String, Object> params) {
 		log.debug("DICOM CFind filter starting to search.");
-		
-		AESettings settings = null;
-		
-		String name = (String) params.get("ae");
-		ResultFromDicom resultFromDicom = getResultFromDicom(params);
-        
-		if (name != null )   {
-		   if (aeConCache.containsKey(name))   {
-		      settings = aeConCache.get(name);
-		   } else {
-		      aeConCache.putIfAbsent(name, new AESettings(AEProperties.getAE(params)));
-		      settings = aeConCache.get(name);
-		   }
-		} else    {
-		   settings = aeConCache.get("local");
-		}
-		
+
 		int maxResults = FilterUtil.getInt(params,"maxResults",DEFAULT_MAX_RESULTS);
 		SearchCriteria searchCriteria= searchParser.filter(null,params);
 		if( searchCriteria==null ) {
 			log.warn("No search conditions found for parameters "+params);
 			return null;
 		}
-		cfind(searchCriteria, resultFromDicom, new AEConnection (getCuids(),settings), maxResults);
-		log.debug("Found result(s) - returning from filter.");
+		
+      ResultFromDicom resultFromDicom = getResultFromDicom(params);
+      String remoteAETitle = FilterUtil.getString(params, "ae", "local");
+	   try
+	   {
+         NetworkApplicationEntity remoteAE = aeProvider.getAE(remoteAETitle);
+         NetworkApplicationEntity localAE = aeProvider.getLocalAE(remoteAETitle,getCuids());
+
+   		cfind(searchCriteria, resultFromDicom, remoteAE, localAE, maxResults);
+   		log.debug("Found result(s) - returning from filter.");
+	   }
+	   catch(IOException e)
+	   {
+	      throw new RuntimeException("C-FIND failed for ae="+remoteAETitle,e);
+	   }
+	   
 		return resultFromDicom;
 	}
 	
@@ -380,4 +385,5 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 	public void setSearchParser(Filter<SearchCriteria> searchParser) {
    	this.searchParser = searchParser;
    }
+
 }

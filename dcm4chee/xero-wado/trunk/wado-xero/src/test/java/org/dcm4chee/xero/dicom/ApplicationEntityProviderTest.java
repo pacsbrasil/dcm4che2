@@ -37,10 +37,15 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.dicom;
 
+import static org.easymock.EasyMock.*;
 import static org.testng.Assert.*;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URL;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.dcm4che2.net.NetworkApplicationEntity;
 import org.dcm4che2.net.NetworkConnection;
@@ -77,9 +82,10 @@ public class ApplicationEntityProviderTest
    
    /**
     * Test method for {@link org.dcm4chee.xero.dicom.ApplicationEntityProvider#getAE(java.lang.String)}.
+    * @throws IOException 
     */
    @Test
-   public void testGetAE_FromAETitle_AllSettingsAreLoaded()
+   public void testGetAE_FromAETitle_AllSettingsAreLoaded() throws IOException
    {
       NetworkApplicationEntity ae = aes.getAE("allSettings");
       assertAllSettingsRead(ae);
@@ -88,10 +94,10 @@ public class ApplicationEntityProviderTest
    
    /**
     * Test method for {@link org.dcm4chee.xero.dicom.ApplicationEntityProvider#getAE(java.net.URL)}.
-    * @throws MalformedURLException 
+    * @throws IOException 
     */
    @Test
-   public void testGetAE_FromDicomURL_ShouldReturnValuesForCorrectAE() throws MalformedURLException
+   public void testGetAE_FromDicomURL_ShouldReturnValuesForCorrectAE() throws IOException
    {
       DicomURLHandler handler = new DicomURLHandler();
       URL url = handler.createURL("dicom://allSettings@marlin:105/?seriesUID=1.2.3.4.5");
@@ -101,18 +107,101 @@ public class ApplicationEntityProviderTest
 
    /**
     * Test method for {@link org.dcm4chee.xero.dicom.ApplicationEntityProvider#getLocalAE()}.
+    * @throws IOException 
     */
    @Test
-   public void testGetLocalAE_ShouldLoadLocalProperties()
+   public void testGetLocalAE_ShouldLoadLocalProperties() throws IOException
    {
-      NetworkApplicationEntity ae = aes.getLocalAE();
+      NetworkApplicationEntity ae = aes.getLocalAE("uknownAE");
       assertLocalPropertiesRead(ae);
    }
 
    @Test(expectedExceptions=IllegalArgumentException.class)
-   public void testGetAE_ShouldThrowIllegalArgument_WhenAEIsUnknown()
+   public void testGetAE_ShouldThrowIllegalArgument_WhenAEIsUnknown() throws IOException
    {
       aes.getAE("unknownAEPath");
    }
+   
+   @Test
+   public void getAE_DeviceNameIsRead() throws IOException
+   {
+      NetworkApplicationEntity ae = aes.getAE("allSettings");
+      assertEquals(ae.getDevice().getDeviceName(),"myTestDevice");
+   }
 
+
+   
+   @Test
+   public void getLocalAE_ShouldReturnTheAESpecificedInLocalTitle() throws IOException
+   {
+      // allSettings is pointing at cmoveLocal as it's local AE
+      NetworkApplicationEntity localAE = aes.getLocalAE("allSettings");
+      assertEquals(localAE.getAETitle(),"XERO-REQUEST");
+      assertEquals(localAE.getNetworkConnection()[0].getPort(),11119);
+      assertEquals(localAE.getNetworkConnection()[0].getHostname(), "localhost");
+   }
+   
+   @Test
+   public void getLocalAE_ShouldReturnDefaultAEWhenNoLocalAEIsSpecified() throws IOException
+   {
+      // allSettings is pointing at cmoveLocal as it's local AE
+      NetworkApplicationEntity localAE = aes.getLocalAE("cmoveType");
+      assertEquals(localAE.getAETitle(),"XERO");
+      assertEquals(localAE.getNetworkConnection()[0].getPort(),11116);
+      assertEquals(localAE.getNetworkConnection()[0].getHostname(), "marlin");
+   }
+   
+   @Test
+   public void getAE_TlsEncryptionConfiguredOnConnection() throws IOException
+   {
+      MockKeyStoreLoader loader = new MockKeyStoreLoader();
+      ApplicationEntityProvider provider = new ApplicationEntityProvider(loader);
+      
+      try
+      {
+         NetworkApplicationEntity ae = provider.getAE("tls");
+         NetworkConnection conn = ae.getDevice().getNetworkConnection()[0];
+         assertTrue(conn.isTLS());
+      }
+      catch(IOException ie)
+      {
+         // Can't work with a 
+         assertTrue(ie.getCause() instanceof GeneralSecurityException);
+      }
+      
+      
+      assertTrue(loader.fileNames.contains("D:/dev/xero/keystore"));
+      assertTrue(loader.fileNames.contains("D:/dev/xero/truststore"));
+      assertTrue(loader.passwords.contains("ks_secret"));
+      assertTrue(loader.passwords.contains("ts_secret"));
+   }
+   
+   @Test(expectedExceptions=IllegalArgumentException.class)
+   public void getAE_TlsPropertyMustBeKnownValue() throws IOException
+   {
+      aes.getAE("badTLS");
+   }
+   
+   public class MockKeyStoreLoader implements KeyStoreLoader
+   {
+      public List<String> fileNames = new ArrayList<String>();
+      public List<String> passwords = new ArrayList<String>();
+      
+      public MockKeyStoreLoader()
+      {
+         
+      }
+
+      @Override
+      public KeyStore loadKeyStore(String fileName, String password) throws GeneralSecurityException, IOException
+      {
+         fileNames.add(fileName);
+         passwords.add(new String(password));
+         
+         String type = KeyStore.getDefaultType();
+         return KeyStore.getInstance(type);
+      }
+      
+   }
+   
 }

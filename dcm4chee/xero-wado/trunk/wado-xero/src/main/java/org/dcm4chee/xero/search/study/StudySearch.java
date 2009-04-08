@@ -89,7 +89,7 @@ public class StudySearch extends DicomCFindFilter {
 
 	@Override
 	protected String[] getCuids() {
-		return (String[])SOPClassUIDs.CFindStudyLevel.toArray();
+		return SOPClassUIDs.CFindStudyLevel;
 	}
 
 	@Override

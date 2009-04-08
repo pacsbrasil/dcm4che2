@@ -37,9 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.dicom;
 
-import java.util.Arrays;
-import java.util.List;
-
 import static org.dcm4che2.data.UID.*;
 
 /**
@@ -54,23 +51,23 @@ public class SOPClassUIDs
    // Static Class
    private SOPClassUIDs() {}
    
-   public static final List<String> CMove = Arrays.asList(
+   public static final String[] CMove = {
       StudyRootQueryRetrieveInformationModelMOVE,
       PatientRootQueryRetrieveInformationModelMOVE,
       PatientStudyOnlyQueryRetrieveInformationModelMOVERetired
-   );
+   };
    
-   public static final List<String> CFindStudyLevel = Arrays.asList(
+   public static final String[] CFindStudyLevel = {
       PrivateStudyRootQueryRetrieveInformationModelFIND,
       StudyRootQueryRetrieveInformationModelFIND,
       PatientRootQueryRetrieveInformationModelFIND,
       PatientStudyOnlyQueryRetrieveInformationModelFINDRetired 
-   );
+   };
    
-   public static final List<String> CFindSeriesLevel = Arrays.asList(
+   public static final String[] CFindSeriesLevel = {
       PrivateStudyRootQueryRetrieveInformationModelFIND,
       StudyRootQueryRetrieveInformationModelFIND,
       PatientRootQueryRetrieveInformationModelFIND
-   );
+   };
    
 }

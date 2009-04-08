@@ -45,6 +45,7 @@ import static org.dcm4chee.xero.wado.WadoParams.FRAME_NUMBER;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.dcm4che2.data.BasicDicomObject;
@@ -287,10 +288,34 @@ public class WLFilter implements Filter<WadoImage> {
 	  } else if( type==BufferedImage.TYPE_INT_RGB || type==BufferedImage.TYPE_3BYTE_BGR ) {
 		 return new BufferedImage(src.getWidth(), src.getHeight(), src.getType());
 	  }
-	  log.warn("Unsupported buffered image type "+type);
+	  
+	  log.warn("Unsupported buffered image type {}",createImageDescription(src));
 	  return null;
    }
 
+   /**
+    * Create a description of the BufferedImage type so that we can identify it.
+    */
+   private Object createImageDescription(BufferedImage src)
+   {
+      StringBuilder sb = new StringBuilder();
+      
+      sb.append("ImageType=");
+      sb.append(src.getType() == 0 ? "CustomImage" : "KnownImage");
+      sb.append(", PixelSize=");
+      sb.append(src.getColorModel().getPixelSize());
+      sb.append(", ComponentSizes=(");
+      for(int i : src.getColorModel().getComponentSize())
+      {
+         sb.append(i);
+         sb.append(' ');
+      }
+      sb.append(")");
+      
+      return sb.toString();
+   }
+
+   
    private Filter<DicomObject> dicomImageHeader;
 
    /** Gets the filter that returns the dicom object image header */

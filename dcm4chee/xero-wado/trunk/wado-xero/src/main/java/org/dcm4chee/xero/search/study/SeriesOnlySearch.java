@@ -76,7 +76,7 @@ public class SeriesOnlySearch extends StudySearch{
     
 	@Override
 	protected String[] getCuids() {
-		return (String[])SOPClassUIDs.CFindSeriesLevel.toArray();
+		return SOPClassUIDs.CFindSeriesLevel;
 	}
 
 	@Override

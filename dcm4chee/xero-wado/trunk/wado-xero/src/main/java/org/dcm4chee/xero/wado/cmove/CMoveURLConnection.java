@@ -61,6 +61,7 @@ import org.dcm4che2.net.NetworkApplicationEntity;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4chee.xero.dicom.ApplicationEntityProvider;
 import org.dcm4chee.xero.dicom.DicomCommandChecker;
+import org.dcm4chee.xero.dicom.DicomConnector;
 import org.dcm4chee.xero.dicom.DicomException;
 import org.dcm4chee.xero.dicom.DicomURLHandler;
 import org.dcm4chee.xero.dicom.FilesystemWatcher;
@@ -86,7 +87,7 @@ public class CMoveURLConnection extends URLConnection
    
    private static final String DEFAULT_QUERY_LEVEL = "IMAGE"; //"SERIES";
 
-   private static Executor executor = Executors.newCachedThreadPool(new NamedThreadFactory("XERO-CMOVE"));
+   private static DicomConnector dicomConnector = new DicomConnector();
    
    private DicomURLHandler urlHandler;
    private TransferCapabilitySelector tcs;
@@ -149,7 +150,7 @@ public class CMoveURLConnection extends URLConnection
       }
       finally
       {
-         // Check result and if it's not successful, then stop polling file.
+         // TODO: Check result and if it's not successful, then stop polling file.
       }
       
       
@@ -160,14 +161,14 @@ public class CMoveURLConnection extends URLConnection
     */
    private DimseRSP cmove() throws IOException
    {
-      NetworkApplicationEntity localAE = aes.getAE("cmoveLocal",SOPClassUIDs.CMove);
       NetworkApplicationEntity remoteAE = aes.getAE(getURL());
-      
+      NetworkApplicationEntity localAE = aes.getLocalAE(remoteAE.getAETitle(),SOPClassUIDs.CMove);
+
       Association association = null;
       try
       {
          log.info("Performing a C-MOVE from {} to {}",remoteAE.getAETitle(),settings.getDestinationAET());
-         association = localAE.connect(remoteAE, executor);
+         association = dicomConnector.connect(localAE, remoteAE);
          
          String transferSyntaxUID;
          TransferCapability capability = tcs.selectTransferCapability(association,SOPClassUIDs.CMove);
@@ -204,10 +205,7 @@ public class CMoveURLConnection extends URLConnection
       }
       finally 
       {
-         // TODO:  Potentially move the release up a level to reduce the overhead of open/close 
-         if(association != null)
-            try { association.release(true); } 
-            catch(InterruptedException e){}
+         dicomConnector.release(association, true);
       }
    }
    
