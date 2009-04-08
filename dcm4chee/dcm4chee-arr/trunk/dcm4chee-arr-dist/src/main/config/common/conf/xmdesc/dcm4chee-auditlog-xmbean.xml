@@ -17,6 +17,7 @@
     <description>The default constructor</description>
     <name>AuditLogger</name>
   </constructor>
+  &defaultAttributes;
   <!-- Attributes -->
   <attribute access="read-write" getMethod="getAuditSourceID"
     setMethod="setAuditSourceID">
