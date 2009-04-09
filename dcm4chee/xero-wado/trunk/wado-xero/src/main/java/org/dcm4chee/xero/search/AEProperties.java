@@ -65,7 +65,7 @@ public class AEProperties {
    
    public static final String DEFAULT_LOCAL_TITLE =  "XERO";
    public static final String DEFAULT_AE_TITLE = "DCM4CHEE";
-   public static final int DEFAULT_AE_PORT = 0;
+   public static final int DEFAULT_AE_PORT = 11112;
    public static final int DEFAULT_EJB_PORT = 1099;
       
    public static final String AE_TITLE_KEY = "title";
