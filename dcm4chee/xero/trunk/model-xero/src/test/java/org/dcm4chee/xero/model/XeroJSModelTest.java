@@ -70,20 +70,20 @@ public class XeroJSModelTest {
 	@DataProvider(name="navigationProvider")
 	public Object[][] navigationProvider() {
 	   return new Object[][]{
-//             new Object[]{"test_lookupId"},
-//             new Object[]{"test_getExtChildren"},
-//             new Object[]{"test_getCustomChildren"},
+             new Object[]{"test_lookupId"},
+             new Object[]{"test_getExtChildren"},
+             new Object[]{"test_getCustomChildren"},
              new Object[]{"test_setNavigation_expectEvent"},
-//             new Object[]{"test_setConversation_expectEvent"},
-//             new Object[]{"test_setMerged_expectEvent"},
-//             new Object[]{"testStudyQuery"},
-//             new Object[]{"testModifiedQuery"},
+             new Object[]{"test_setConversation_expectEvent"},
+             new Object[]{"test_setMerged_expectEvent"},
+             new Object[]{"testStudyQuery"},
+             //new Object[]{"testModifiedQuery"},
        };
 	}
 	
 	@Test(dataProvider="navigationProvider")
 	public void navigationTests(String test) throws IOException {
-	   jst.runTest("navigationTests", test, true);
+	   jst.runTest("navigationTests", test, false);
 	}
 
 	@Test

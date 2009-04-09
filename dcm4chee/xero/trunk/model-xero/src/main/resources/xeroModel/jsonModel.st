@@ -58,7 +58,9 @@ JSONModel.prototype.requestUrl = function JM_requestUrl(service, url, modifiers)
 
 // Load the JSON script into a local object
 JSONModel.prototype.parseJSON = function SR_parseJSON(jsonStr)
-{
+{	
+	if(!jsonStr) return null;
+	
     try {
     	return eval("("+jsonStr+")");
     } catch(e) {
