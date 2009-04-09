@@ -10,6 +10,8 @@ import org.antlr.stringtemplate.language.ASTExpr;
 import org.antlr.stringtemplate.language.ActionEvaluatorTokenTypes;
 import org.antlr.stringtemplate.language.ConditionalExpr;
 import org.antlr.stringtemplate.language.StringRef;
+import org.antlr.stringtemplate.language.StringTemplateAST;
+import org.antlr.stringtemplate.language.StringTemplateToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,15 +74,22 @@ public class FindAllTemplates {
    
    static void addAllTemplates(StringTemplateGroup stg, AST ast, Map<String,StringTemplate> templates) {
 	  if( ast==null ) return;
-	  if( ast.getType()==ActionEvaluatorTokenTypes.INCLUDE || ast.getType()==ActionEvaluatorTokenTypes.TEMPLATE) {
+	  int astype = ast.getType();
+	  if( astype==ActionEvaluatorTokenTypes.INCLUDE || astype==ActionEvaluatorTokenTypes.TEMPLATE) {
 		 AST includeNameAst = ast.getFirstChild();
 		 if( includeNameAst.getType()==ActionEvaluatorTokenTypes.ID ) {
 			addAllTemplates(stg,includeNameAst.getText(),templates);
-			return;
 		 }
 	  }
-	  else if( ast.getType()==ActionEvaluatorTokenTypes.CONDITIONAL ) {
-		 
+	  else if( astype==ActionEvaluatorTokenTypes.ANONYMOUS_TEMPLATE ) {
+          StringTemplateAST stast = (StringTemplateAST) ast;
+	      StringTemplate anonymous = stast.getStringTemplate(); 
+	      if( anonymous==null ) {
+	          String text = ast.getText();
+              anonymous = new StringTemplate(stg,text);
+              stast.setStringTemplate(anonymous);
+	      }
+          addAllTemplates(stg,anonymous,templates);
 	  }
 	  addAllTemplates(stg,ast.getFirstChild(),templates);
 	  addAllTemplates(stg,ast.getNextSibling(),templates);
