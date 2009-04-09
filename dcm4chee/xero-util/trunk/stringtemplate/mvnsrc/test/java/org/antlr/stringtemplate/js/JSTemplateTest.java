@@ -54,6 +54,11 @@ public class JSTemplateTest {
    public void elseifTest() throws Exception {
 	  runTest("elseif",false);
    }
+
+   @Test
+   public void anonTemplateArgTest() throws Exception {
+      runTest("anonTemplateArg",true);
+   }
    @Test
    public void ifTest() throws Exception {
 	  runTest("if",false);
