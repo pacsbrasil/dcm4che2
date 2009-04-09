@@ -5,6 +5,22 @@ function SortPatient(src) {
     this.layout = src;
 };
 
+/**
+ * Gets the given item as a lower-case string.  If the given item
+ * is null or undefined, them empty string is returned.
+ */
+SortPatient.getItemString = function(item)
+{
+    if(item)
+    {
+        return String(item).toLowerCase();
+    }
+    else
+    {
+        return "";
+    }
+};
+
 SortPatient.prototype.img = new Object();
 
 /**
@@ -18,8 +34,8 @@ SortPatient.prototype.sortColumn = function (col)   {
      */
     var compareAsc = function (item1, item2)  {
         if (isNaN(item1) && isNaN(item2))   {
-            var a = String(item1[col]).toLowerCase(); 
-            var b = String(item2[col]).toLowerCase();  
+            var a = SortPatient.getItemString(item1[col]); 
+            var b = SortPatient.getItemString(item2[col]);  
             if(a < b) return -1;
             if(a==b) return 0;
             return 1;
@@ -33,8 +49,8 @@ SortPatient.prototype.sortColumn = function (col)   {
      */      
     var compareDesc = function (item1, item2)  {
         if (isNaN(item1) && isNaN(item2))   {
-            var a = String(item1[col]).toLowerCase(); 
-            var b = String(item2[col]).toLowerCase();          
+            var a = SortPatient.getItemString(item1[col]); 
+            var b = SortPatient.getItemString(item2[col]);  
             if(a > b) return -1;
             if(a == b) return 0;
             return 1;
@@ -49,8 +65,8 @@ SortPatient.prototype.sortColumn = function (col)   {
      */      
     var compareAscFirstChild = function (item1, item2)  {
         if (isNaN(item1.study[0][col]) && isNaN(item2.study[0][col]))   {
-            var a = String(item1.study[0][col]).toLowerCase(); 
-            var b = String(item2.study[0][col]).toLowerCase();           
+            var a = SortPatient.getItemString(item1.study[0][col]); 
+            var b = SortPatient.getItemString(item2.study[0][col]);           
             if(a < b) return -1;
             if(a == b) return 0;
             return 1;
@@ -65,8 +81,8 @@ SortPatient.prototype.sortColumn = function (col)   {
      */            
     var compareDescFirstChild = function (item1, item2)  {
         if (isNaN(item1.study[0][col]) && isNaN(item2.study[0][col]))   {
-            var a = String(item1.study[0][col]).toLowerCase(); 
-            var b = String(item2.study[0][col]).toLowerCase();                       
+            var a = SortPatient.getItemString(item1.study[0][col]); 
+            var b = SortPatient.getItemString(item2.study[0][col]);           
             if(a > b) return -1;
             if(a == b) return 0;
             return 1;
@@ -125,7 +141,7 @@ SortPatient.prototype.sortColumn = function (col)   {
     }
   
     // For Study Columns
-    if (data[0].study[0][col])    {
+    if (data[0].study[0][col] || col == "StudyDescription")    {
         if (this[col] == undefined || this[col] == "desc")  {
             this[col]="asc";
             this.img[col] = "icon/up_arrow_32.png";
