@@ -48,7 +48,8 @@ public interface XDSConstants {
         public static final String XDS_ERR_REGISTRY_ERROR = "XDSRegistryError";
 	public static final String XDS_ERR_MISSING_DOCUMENT_METADATA = "XDSMissingDocumentMetadata";
 	public static final String XDS_ERR_MISSING_DOCUMENT = "XDSMissingDocument";
-	public static final String XDS_ERR_PATID_DOESNOT_MATCH = "XDSPatientIdDoesNotMatch";
+        public static final String XDS_ERR_PATID_DOESNOT_MATCH = "XDSPatientIdDoesNotMatch";
+        public static final String XDS_ERR_NON_IDENTICAL_HASH = "XDSNonIdenticalHash";
 	public static final String XDS_ERR_REG_NOT_AVAIL = "XDSRegistryNotAvailable";
 	public static final String XDS_ERR_REP_BUSY = "XDSRepositoryBusy";
 	public static final String XDS_ERR_REP_OUT_OF_RESOURCES = "XDSRepositoryOutOfResources";
