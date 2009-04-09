@@ -143,7 +143,7 @@ public abstract class GPPPSManagerBean implements SessionBean {
     private PatientLocal findOrCreatePatient(Dataset ds)
             throws DcmServiceException {
         try {
-            Collection c = patHome.selectByPatientDemographic(ds);
+            Collection c = patHome.selectPatients(ds);
             if (c.size() == 1) {
                 return patHome.followMergedWith(
                         (PatientLocal) c.iterator().next());

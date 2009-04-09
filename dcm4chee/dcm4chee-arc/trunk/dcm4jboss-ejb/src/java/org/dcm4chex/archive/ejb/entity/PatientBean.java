@@ -508,21 +508,15 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @ejb.home-method
      */
-    public PatientLocal ejbHomeSelectByPatientId(Dataset ds)
+    public PatientLocal ejbHomeSelectPatient(Dataset ds)
             throws FinderException {
-        PatientLocalHome patHome = (PatientLocalHome) ctx.getEJBLocalHome();
-        String pid = ds.getString(Tags.PatientID);
-        String issuer = ds.getString(Tags.IssuerOfPatientID);
-        if (issuer != null) {
-            return patHome.findByPatientIdWithIssuer(pid, issuer);
-        }
-        Collection c = patHome.findByPatientId(pid);
+        Collection c = ejbHomeSelectPatients(ds);
         if (c.isEmpty()) {
             throw new ObjectNotFoundException();
         }
         if (c.size() > 1) {
             throw new NonUniquePatientException("Patient ID[id="
-                    + pid + " ambiguous");
+                    + ds.getString(Tags.PatientID) + " ambiguous");
         }
         PatientLocal pat = (PatientLocal) c.iterator().next();
         PatientLocal merged = pat.getMergedWith();
@@ -542,7 +536,7 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @ejb.home-method
      */
-    public Collection ejbHomeSelectByPatientDemographic(Dataset ds)
+    public Collection ejbHomeSelectPatients(Dataset ds)
             throws FinderException {
         PatientLocalHome patHome = (PatientLocalHome) ctx.getEJBLocalHome();
         String pid = ds.getString(Tags.PatientID);

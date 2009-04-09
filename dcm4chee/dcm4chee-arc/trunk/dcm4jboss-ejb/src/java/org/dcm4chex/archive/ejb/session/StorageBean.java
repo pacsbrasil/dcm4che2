@@ -432,7 +432,7 @@ public abstract class StorageBean implements SessionBean {
 
     private PatientLocal getPatient(Dataset ds, Dataset coercedElements)
             throws Exception {
-        Collection c = patHome.selectByPatientDemographic(ds);
+        Collection c = patHome.selectPatients(ds);
         if (c.size() != 1) {
             return patHome.create(ds);
         }

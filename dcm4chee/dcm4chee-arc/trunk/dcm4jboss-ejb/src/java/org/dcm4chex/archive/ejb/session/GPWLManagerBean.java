@@ -188,7 +188,7 @@ public abstract class GPWLManagerBean implements SessionBean {
 
     private PatientLocal findOrCreatePatient(Dataset ds)
             throws FinderException, CreateException {
-        Collection c = patHome.selectByPatientDemographic(ds);
+        Collection c = patHome.selectPatients(ds);
         if (c.size() == 1) {
             return patHome.followMergedWith((PatientLocal) c.iterator().next());
         }
