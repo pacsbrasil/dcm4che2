@@ -448,19 +448,43 @@ public abstract class StorageBean implements SessionBean {
     }
 
     private void coerceStudyIdentity(StudyLocal study, Dataset ds,
-            Dataset coercedElements) throws DcmServiceException, CreateException {
-        coercePatientIdentity(study.getPatient(), ds, coercedElements);
+            Dataset coercedElements) throws Exception {
+        coercePatientIdentity(getPatient(study, ds), ds, coercedElements);
         study.coerceAttributes(ds, coercedElements);
     }
 
+    private PatientLocal getPatient(StudyLocal study, Dataset ds)
+            throws Exception{
+        String pid = ds.getString(Tags.PatientID);
+        String issuer = ds.getString(Tags.IssuerOfPatientID);
+        PatientLocal priorPat = study.getPatient();
+        if (priorPat.getIssuerOfPatientId() == null && issuer != null) {
+            try {
+                PatientLocal dominantPat =
+                        patHome.findByPatientIdWithIssuer(pid, issuer);
+                log.info("Detect duplicate Patient Record: "
+                        + dominantPat.asString());
+                dominantPat.getStudies().addAll(priorPat.getStudies());
+                dominantPat.getMpps().addAll(priorPat.getMpps());
+                dominantPat.getMwlItems().addAll(priorPat.getMwlItems());
+                dominantPat.getGsps().addAll(priorPat.getGsps());
+                dominantPat.getGppps().addAll(priorPat.getGppps());
+                dominantPat.getMerged().addAll(priorPat.getMerged());
+                priorPat.remove();
+                return dominantPat;
+            } catch (ObjectNotFoundException e) {}
+        }
+        return priorPat ;
+    }
+
     private void coerceSeriesIdentity(SeriesLocal series, Dataset ds,
-            Dataset coercedElements) throws DcmServiceException, CreateException {
+            Dataset coercedElements) throws Exception {
         coerceStudyIdentity(series.getStudy(), ds, coercedElements);
         series.coerceAttributes(ds, coercedElements);
     }
 
     private void coerceInstanceIdentity(InstanceLocal instance, Dataset ds,
-            Dataset coercedElements) throws DcmServiceException, CreateException {
+            Dataset coercedElements) throws Exception {
         coerceSeriesIdentity(instance.getSeries(), ds, coercedElements);
         instance.coerceAttributes(ds, coercedElements);
     }
