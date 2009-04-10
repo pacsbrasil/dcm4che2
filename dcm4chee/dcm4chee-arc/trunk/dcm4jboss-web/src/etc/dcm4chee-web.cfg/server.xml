@@ -17,7 +17,7 @@
 
       <!-- Add this option to the connector to avoid problems with 
           .NET clients that don't implement HTTP/1.1 correctly 
-         restrictedUserAgents="^.*MS Web Services Client Protocol 1.1.4322.*$"
+         restrictedUserAgents="^.*MS Web Services Client Protocol 1.1.4.23.*$"
       -->
 	
       <!-- A AJP 1.3 Connector on port 8009 -->

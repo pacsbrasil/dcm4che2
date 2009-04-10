@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     <xsl:output method="xml" indent="yes"/>
     <xsl:include href="common.xsl"/>
-    <xsl:variable name="suid-prefix" select="'1.2.4.0.13.1.432252867.'"/>
+    <xsl:variable name="suid-prefix" select="'1.2.4.0.13.1.4.2252867.'"/>
     <xsl:template match="/hl7">
         <dataset>
             <attr tag="00080005" vr="CS">ISO_IR 100</attr>
