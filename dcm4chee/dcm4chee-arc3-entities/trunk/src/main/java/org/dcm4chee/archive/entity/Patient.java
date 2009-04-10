@@ -406,7 +406,7 @@ public class Patient implements Serializable {
      * @return String The matching patient id, or null if no matches were found.
      */
     public String getPatientIDForIssuer(String issuer) {
-        if (issuer == null || issuer.isEmpty())
+        if (issuer == null || issuer.length() == 0)
             return patientID;
 
         if (issuerOfPatientID != null) {
