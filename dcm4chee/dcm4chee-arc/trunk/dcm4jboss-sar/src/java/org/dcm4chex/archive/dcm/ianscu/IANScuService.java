@@ -330,7 +330,7 @@ public class IANScuService extends AbstractScuService implements
         server.removeNotificationListener(contentEditServiceName,
                 studyDeletedListener, StudyDeleted.NOTIF_FILTER, null);
         server.removeNotificationListener(mppsScpServiceName,
-                mppsReceivedListener, MPPSScpService.NOTIF_FILTER, null);
+                mppsReceivedListener, mppsFilter, null);
         jmsDelegate.stopListening(queueName);
     }
 
