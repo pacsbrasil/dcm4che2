@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+  <title>Study Metadata Service</title>
+  </head>
+<body>
+
+<h2>Study Metadata Service</h2>
+
+<h3>Overview</h3>
+C-FIND metadata service that will return a patient root hierarchy of results in a
+specified text format.  Constraints to the C-FIND are applied by adding parameters
+that correspond to the DICOM tag names.  As with any C-FIND query, constraints on the containing types can be applied as 
+well as the requested level. 
+<p>
+An empty result set will be returned if query constraints
+are not provided.
+
+
+<h3>Parameters</h3>
+
+<table border="1">
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+<th>Notes</th>
+</tr>
+<tr>
+<td>PatientName</td>
+<td>Constrain by patient name</td>
+<td>DICOM formatted</td>
+</tr>
+<tr>
+<td>AccessionNumber</td>
+<td>Constrain by the accession number of the study</td>
+<td></td>
+</tr>
+<tr>
+<td>studyUID</td>
+<td>Constrain by the UID of the study</td>
+<td></td>
+</tr>
+<tr>
+<td>ModalitiesInStudy</td>
+<td>Constrain by the modalities in the study</td>
+<td></td>
+</tr>
+<tr>
+<td>PatientID</td>
+<td>Constrain by the patient ID</td>
+<td></td>
+</tr>
+<tr>
+<td>StudyDescription</td>
+<td>Constrain by the study description</td>
+<td>Allows wildcards</td>
+</tr>
+<tr>
+<td>contentType</td>
+<td>
+Determines how the metadata will be formatted:
+<ul>
+<li>
+<b>text/xml</b>
+Formats the metadata as an XML document according to the <a href="study.xsd">study.xsd</a> schema</dt>
+</li>
+<li>
+<b>text/javascript</b>
+Formats the metadata as a JSON document which groups sub elements in a 'children' property
+</li>
+</ul>
+</td>
+<td>Defaults to text/xml</td>
+</tr>
+<td>help</td>
+<td>Whether to show this help message.</td>
+<td>Defaults to false</td>
+</tr>
+</table>
+
+
+</body>
