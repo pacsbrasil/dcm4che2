@@ -34,8 +34,8 @@ SortPatient.prototype.sortColumn = function (col)   {
      */
     var compareAsc = function (item1, item2)  {
         if (isNaN(item1) && isNaN(item2))   {
-            var a = SortPatient.getItemString(item1[col]); 
-            var b = SortPatient.getItemString(item2[col]);  
+            var a = SortPatient.getItemString(item1[col.sort]); 
+            var b = SortPatient.getItemString(item2[col.sort]);  
             if(a < b) return -1;
             if(a==b) return 0;
             return 1;
@@ -49,8 +49,8 @@ SortPatient.prototype.sortColumn = function (col)   {
      */      
     var compareDesc = function (item1, item2)  {
         if (isNaN(item1) && isNaN(item2))   {
-            var a = SortPatient.getItemString(item1[col]); 
-            var b = SortPatient.getItemString(item2[col]);  
+            var a = SortPatient.getItemString(item1[col.sort]); 
+            var b = SortPatient.getItemString(item2[col.sort]);  
             if(a > b) return -1;
             if(a == b) return 0;
             return 1;
@@ -64,14 +64,14 @@ SortPatient.prototype.sortColumn = function (col)   {
      * comparison based on the first child.
      */      
     var compareAscFirstChild = function (item1, item2)  {
-        if (isNaN(item1.study[0][col]) && isNaN(item2.study[0][col]))   {
-            var a = SortPatient.getItemString(item1.study[0][col]); 
-            var b = SortPatient.getItemString(item2.study[0][col]);           
+        if (isNaN(item1.study[0][col.sort]) && isNaN(item2.study[0][col.sort]))   {
+            var a = SortPatient.getItemString(item1.study[0][col.sort]); 
+            var b = SortPatient.getItemString(item2.study[0][col.sort]);           
             if(a < b) return -1;
             if(a == b) return 0;
             return 1;
         } else  {
-            return item1.study[0][col]-item2.study[0][col];
+            return item1.study[0][col.sort]-item2.study[0][col.sort];
         }        
     }
       
@@ -80,14 +80,14 @@ SortPatient.prototype.sortColumn = function (col)   {
      * comparison based on the first child.
      */            
     var compareDescFirstChild = function (item1, item2)  {
-        if (isNaN(item1.study[0][col]) && isNaN(item2.study[0][col]))   {
-            var a = SortPatient.getItemString(item1.study[0][col]); 
-            var b = SortPatient.getItemString(item2.study[0][col]);           
+        if (isNaN(item1.study[0][col.sort]) && isNaN(item2.study[0][col.sort]))   {
+            var a = SortPatient.getItemString(item1.study[0][col.sort]); 
+            var b = SortPatient.getItemString(item2.study[0][col.sort]);           
             if(a > b) return -1;
             if(a == b) return 0;
             return 1;
         } else  {
-            return item2.study[0][col]-item1.study[0][col];
+            return item2.study[0][col.sort]-item1.study[0][col.sort];
         }
     }  
     
@@ -128,29 +128,29 @@ SortPatient.prototype.sortColumn = function (col)   {
     };    
   
     // Check if it's Patient Name or Patient ID
-    if (data[0][col] || col == "PatientName")  {
-        if (this[col] == undefined || this[col] == "desc")  {
-            this[col]="asc";
-            this.img[col] = "icon/up_arrow_32.png";
+    if (col.level == "one")  {
+        if (this[col.sort] == undefined || this[col.sort] == "desc")  {
+            this[col.sort]="asc";
+            this.img[col.sort] = "icon/up_arrow_32.png";
         } else  {
-            this[col]="desc";
-            this.img[col] = "icon/down_arrow_32.png";
+            this[col.sort]="desc";
+            this.img[col.sort] = "icon/down_arrow_32.png";
         }
-        sortLevelOne(data, this[col]);
-        console.info("%s IMAGE %s",col, SortPatient.prototype.img[col]);
+        sortLevelOne(data, this[col.sort]);
+        console.info("%s IMAGE %s",col.sort, SortPatient.prototype.img[col.sort]);
     }
   
-    // For Study Columns
-    if (data[0].study[0][col] || col == "StudyDescription")    {
-        if (this[col] == undefined || this[col] == "desc")  {
-            this[col]="asc";
-            this.img[col] = "icon/up_arrow_32.png";
+    // For Study columns
+    if (col.level == "two")    {
+        if (this[col.sort] == undefined || this[col.sort] == "desc")  {
+            this[col.sort]="asc";
+            this.img[col.sort] = "icon/up_arrow_32.png";
         } else  {
-            this[col]="desc";
-            this.img[col] = "icon/down_arrow_32.png";
+            this[col.sort]="desc";
+            this.img[col.sort] = "icon/down_arrow_32.png";
         }
-        sortLevelTwo(data, this[col]);
-        console.info("%s IMAGE %s",col,SortPatient.prototype.img[col]);
+        sortLevelTwo(data, this[col.sort]);
+        console.info("%s IMAGE %s",col.sort,SortPatient.prototype.img[col.sort]);
     }    
 };
 

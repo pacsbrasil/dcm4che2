@@ -39,26 +39,38 @@ studyDataTests.testSort_parent = function StudyDataTests_sortTest_parent()  {
     var sortPat = new SortPatient(sd.searchLayout);
     var pat = sd.searchLayout.search.patient;
     
+    console.info("Asserting pre-sort order.");
+    
     assertEquals(pat[0].PatientName,"HEMITHORAX","(unsorted) PatientName[0] should match");
     assertEquals(pat[1].PatientName, "SPONDYLDISCITIS^C6-C7","(unsorted) PatientName[1] should match");
     assertEquals(pat[2].PatientName, "LUXATION","(unsorted) PatientName[2] should match");
     
+    var column = new Object();
+    column.level = "one";
+    
     // Ascending
-    sortPat.sortColumn ("PatientName");
+    column.sort = "PatientName";
+    sortPat.sortColumn (column);
+    
+    console.info("Sorted ascending.");
     
     assertEquals(pat[0].PatientName,"HEMITHORAX","(Ascending) PatientName[0] should match");
     assertEquals(pat[1].PatientName , "LUXATION","(Ascending) PatientName[1] should match");
     assertEquals(pat[2].PatientName , "SPONDYLDISCITIS^C6-C7","(Ascending) PatientName[2] should match");
 
     // Ascending
-    sortPat.sortColumn ("PatientID");
+    column.sort = "PatientID";
+    sortPat.sortColumn (column);
+
+    console.info("Sorted descending.");
     
     assertEquals(pat[0].PatientID , "12", "(Ascending) PatientID[0] should match");
     assertEquals(pat[1].PatientID , "66", "(Ascending) PatientID[1] should match");
     assertEquals(pat[2].PatientID , "93", "(Ascending) PatientID[2] should match");
 
     // Descending
-    sortPat.sortColumn ("PatientName");
+    column.sort = "PatientName";
+    sortPat.sortColumn (column);
     
     assertEquals(pat[0].PatientName , "SPONDYLDISCITIS^C6-C7","(Descending) PatientName[0] should match");
     assertEquals(pat[1].PatientName , "LUXATION","(Descending) PatientName[1] should match");
@@ -66,7 +78,8 @@ studyDataTests.testSort_parent = function StudyDataTests_sortTest_parent()  {
     
     
     // Descending
-    sortPat.sortColumn ("PatientID");
+    column.sort = "PatientID";
+    sortPat.sortColumn (column);
     
     assertEquals(pat[0].PatientID, "93", "(Descending) PatientID[0] should match");
     assertEquals(pat[1].PatientID , "66", "(Descending) PatientID[1] should match");
@@ -98,8 +111,12 @@ studyDataTests.testSort_child = function StudyDataTests_sortTest_child()  {
     assertEquals(pat[2].study[1].StudyDescription , "RX SHOULDER LEFT_N", "(unsorted) StudyDescription [2,1] should match");
     assertEquals(pat[2].study[2].StudyDescription , "RX UPPERARM LEFT", "(unsorted) StudyDescription [2,2] should match");
 
+    var column = new Object();
+    column.level = "two";
+    
     // Ascending    
-    sortPat.sortColumn ("StudyDescription");
+    column.sort = "StudyDescription";
+    sortPat.sortColumn (column);
     
     assertEquals(pat.length,3, "Should be three patients");
     assertEquals(pat[0].study.length,3,"Should be three studies in the first patient");
@@ -116,7 +133,8 @@ studyDataTests.testSort_child = function StudyDataTests_sortTest_child()  {
     assertEquals(pat[2].study[2].StudyDescription , "RX THORAX_Z", "(ascending) StudyDescription [2,2] should match");
     
     // Ascending
-    sortPat.sortColumn ("StudyDateTime");
+    column.sort = "StudyDateTime";
+    sortPat.sortColumn (column);
 
     assertEquals(pat[0].study[0].StudyDateTime , "20011024112650.000000", "(ascending) StudyDateTime [0,0] should match");
     assertEquals(pat[0].study[1].StudyDateTime , "20011107095413.000000", "(ascending) StudyDateTime [0,1] should match");
@@ -132,7 +150,8 @@ studyDataTests.testSort_child = function StudyDataTests_sortTest_child()  {
     assertEquals(pat[2].study[2].StudyDateTime , "20020308091506.000000", "(ascending) StudyDateTime [2,2] should match");
         
     // Descending    
-    sortPat.sortColumn ("StudyDescription");
+    column.sort = "StudyDescription";
+    sortPat.sortColumn (column);
     
     assertEquals(pat[0].study[0].StudyDescription , "RX UPPERARM LEFT", "(descending) StudyDescription [0,0] should match");
     assertEquals(pat[0].study[1].StudyDescription , "RX SHOULDER LEFT_N", "(descending) StudyDescription [0,1] should match");
@@ -148,7 +167,8 @@ studyDataTests.testSort_child = function StudyDataTests_sortTest_child()  {
     
     
     // Descending
-    sortPat.sortColumn ("StudyDateTime");
+    column.sort = "StudyDateTime";
+    sortPat.sortColumn (column);
 
     assertEquals(pat[0].study[0].StudyDateTime , "20020308091506.000000", "StudyDateTime [0,0] should match");
     assertEquals(pat[0].study[1].StudyDateTime , "20020304181250.000000", "StudyDateTime [0,1] should match");
