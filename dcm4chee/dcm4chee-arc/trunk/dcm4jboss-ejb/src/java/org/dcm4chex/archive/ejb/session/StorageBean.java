@@ -433,6 +433,29 @@ public abstract class StorageBean implements SessionBean {
     private PatientLocal getPatient(Dataset ds, Dataset coercedElements)
             throws Exception {
         Collection c = patHome.selectPatients(ds);
+        if (c.isEmpty()) {
+            try {
+                PatientLocal pat = patHome.create(ds);
+                // Check if patient record was also inserted by concurrent thread
+                c = patHome.selectPatients(ds);
+                if (c.size() == 1) {
+                    return pat;
+                }
+                for (Iterator it = c.iterator(); it.hasNext();) {
+                    pat.isIdentical((PatientLocal) it.next());
+                    it.remove();
+                    break;
+                }
+                pat.remove();
+            } catch (CreateException ce) {
+                // Check if patient record was inserted by concurrent thread
+                // with unique index on (pat_id, pat_id_issuer)
+                if ((c = patHome.selectPatients(ds)).isEmpty()) {
+                    throw ce;
+                }
+            }
+            
+        }
         if (c.size() != 1) {
             return patHome.create(ds);
         }
