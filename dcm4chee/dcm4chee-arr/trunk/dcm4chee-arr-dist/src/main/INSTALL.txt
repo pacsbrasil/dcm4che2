@@ -59,10 +59,10 @@ mysql> \q
 dcm4chee-arr-xxx-3.0.8/sql/dcm4chee-arr-xxx.ddl
 
 E.g.: PostgreSQL
-> psql arrdb -f dcm4chee-arr-psql-3.0.8/sql/dcm4chee-arr-psql.dll
+> psql arrdb -f dcm4chee-arr-psql-3.0.8/sql/dcm4chee-arr-psql.ddl
 
 E.g.: MySQL
-> mysql -uarr -parr arrdb < dcm4chee-arr-mysql-3.0.8/sql/dcm4chee-arr-mysql.dll
+> mysql -uarr -parr arrdb < dcm4chee-arr-mysql-3.0.8/sql/dcm4chee-arr-mysql.ddl
 
 Otherwise, the database will be initialized automatically at first startup
 of the application.
