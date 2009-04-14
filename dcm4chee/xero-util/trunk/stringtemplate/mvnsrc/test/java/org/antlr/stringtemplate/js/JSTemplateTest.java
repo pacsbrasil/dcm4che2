@@ -57,7 +57,7 @@ public class JSTemplateTest {
 
    @Test
    public void anonTemplateArgTest() throws Exception {
-      runTest("anonTemplateArg",true);
+      runTest("anonTemplateArg",false);
    }
    @Test
    public void ifTest() throws Exception {
