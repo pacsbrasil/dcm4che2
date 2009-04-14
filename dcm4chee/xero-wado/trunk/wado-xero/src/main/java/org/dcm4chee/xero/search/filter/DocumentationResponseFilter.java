@@ -33,8 +33,11 @@
 // ***** END LICENSE BLOCK *****
 package org.dcm4chee.xero.search.filter;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
@@ -68,30 +71,27 @@ public class DocumentationResponseFilter implements Filter<ServletResponseItem>
       if(help || requestType == null)
       {
          log.debug("Showing documentation page for requestType={}",requestType);
-         return createDocumentationResponseItem(requestType);
+         try
+         {
+            HttpServletResponse response = (HttpServletResponse)params.get("_response");
+            redirectToHelp(response,requestType);
+         }
+         catch(IOException e)
+         {
+            throw new RuntimeException("Unable to redirect to documentation for "+requestType,e);
+         }
       }
       
       return filterItem.callNextFilter(params);
    }
-   
-   /**
-    * Generate a URL that points at the help topic for the indicated requestType
-    */
-   private ServletResponseItem createDocumentationResponseItem(String requestType)
-   {
-      if(requestType == null)
-         requestType = "overview";
-      
-      URL helpURL = findHelpURL(requestType);
-      return new UrlServletResponseItem(helpURL,"text/html",null);
-   }
 
-   /**
-    * Find the URL of the help file that corresponds to this help topic
-    */
-   private URL findHelpURL(String topic)
+   private void redirectToHelp(HttpServletResponse response,String requestType) 
+      throws IOException
    {
-      topic = topic.toLowerCase();
-      return getClass().getClassLoader().getResource("help/"+topic+".html");
+      String relativePath = "help/";
+      if(requestType!=null)
+         relativePath += requestType.toLowerCase() + ".html";
+      
+      response.sendRedirect(relativePath);
    }
 }
