@@ -23,7 +23,7 @@ source.emptyFilter.priority=9500
 fileLocation=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 
 # Activated by wado or xeroWado as the type in the ae properties file.
-fileLocation.wadoFileLocation=${class:org.dcm4chee.xero.search.filter.WadoFileLocation}
+fileLocation.wadoFileLocation=${class:org.dcm4chee.xero.search.filter.WadoFileLocationFilter}
 fileLocation.wadoFileLocation.priority=500
 
 # Check a file location to see whether the AE is configured for cmove

@@ -37,9 +37,9 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.study;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Arrays;
 
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.xero.metadata.MetaData;
@@ -55,7 +55,7 @@ import org.dcm4chee.xero.search.SearchCriteria;
 public class ImageSearch extends SeriesSearch 
 {
 	public static final String IMAGE_QUERY_LEVEL="IMAGE";
-	public static final int InstanceSeq =  0x7FD90040;
+	public static final int InstanceSeq =  0x7FD91040;
 
 	public static final Integer[] IMAGE_LEVEL_RETURN_KEYS = {
 		Tag.NumberOfPatientRelatedStudies,
@@ -64,8 +64,7 @@ public class ImageSearch extends SeriesSearch
         Tag.InstanceNumber,
         Tag.SOPClassUID,
         Tag.SOPInstanceUID,
-        Tag.Rows, Tag.Columns, Tag.WindowCenter, Tag.WindowWidth, Tag.NumberOfFrames,
-        InstanceSeq
+        Tag.Rows, Tag.Columns, Tag.WindowCenter, Tag.WindowWidth, Tag.NumberOfFrames
 	};
 
     protected static Set<Integer> returnKeys = new HashSet<Integer>(Arrays.asList(IMAGE_LEVEL_RETURN_KEYS));
@@ -95,4 +94,5 @@ public class ImageSearch extends SeriesSearch
 	public void setSearchParser(Filter<SearchCriteria> searchParser) {
    	super.setSearchParser(searchParser);
    }
+
 }

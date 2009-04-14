@@ -57,14 +57,14 @@ import org.slf4j.LoggerFactory;
  * @author bwallace
  * 
  */
-public class DicomFileLocationFilter implements Filter<URL> {
-   private static final Logger log = LoggerFactory.getLogger(DicomFileLocationFilter.class);
+public class WadoFileLocationFilter implements Filter<URL> {
+   private static final Logger log = LoggerFactory.getLogger(WadoFileLocationFilter.class);
    
    public static final String DICOM_FILE_LOCATION = " DICOM_FILE_LOCATION";
    public static final String WADO_TYPE = "wado";
    public static final String XERO_WADO_TYPE = "xeroWado";
    
-   private FileLocationParameterChecker checker = new FileLocationParameterChecker(null,WADO_TYPE, XERO_WADO_TYPE);
+   private FileLocationParameterChecker checker = new FileLocationParameterChecker(WADO_TYPE, XERO_WADO_TYPE);
 
    protected static final String wadoRequired[] = new String[] { "studyUID", "seriesUID", "objectUID", };
 
@@ -96,7 +96,13 @@ public class DicomFileLocationFilter implements Filter<URL> {
     * @todo change the host to be configurable.
     */
    protected String createWadoUrl(Map<String, ?> args, Map<String,Object> ae, String type) {
-      StringBuffer ret = new StringBuffer(FilterUtil.getString(ae,"wadoPath"));
+      StringBuffer ret = new StringBuffer();
+      String wadoPath = FilterUtil.getString(ae,"wadoPath");
+      if( wadoPath==null) {
+          ret.append("http://").append(FilterUtil.getString(ae,"host")).append("/wado");
+      } else {
+          ret.append(wadoPath);          
+      }
       ret.append("?requestType=WADO&contentType=application%2Fdicom");
       for (String key : wadoRequired) {
          Object value = args.get(key);

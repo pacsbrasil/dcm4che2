@@ -192,7 +192,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     	while (it.hasNext())
     	{
     	    int tag = it.next().intValue();
-     		ret.putNull(tag,null);
+    	    ret.putNull(tag,null);
     	}
     	Map<String,TableColumn> searchCondition = searchCriteria.getAttributeByName();
     	for(String key : searchCondition.keySet()) {
@@ -271,6 +271,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 	       if ( tc==null )
 	    	   throw new RuntimeException("Can't agree on any transfer capabilities with device.");
 	       String cuid = tc.getSopClass();
+	       log.debug("Selected sop q/r class {}",cuid);
 	       String tsuid = tcs.selectBestTransferSyntaxUID(tc);
 	       DicomObject keys = generateKeys(searchCriteria);
 	       DimseRSP rsp = association.cfind(cuid, priority, keys, tsuid, cancelAfter);
