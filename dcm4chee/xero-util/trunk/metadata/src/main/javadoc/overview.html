@@ -3,8 +3,11 @@
 <body>
 <h1>Xero MetaData Framework</h1>
 
-<p>The Xero MetaData Framework is a library that provides multiple ways to declare and use meta-data. 
-The intent was to allow meta-data to be both used and declared from a variety of types of components, not just Java.
+<p>The Xero MetaData Framework is a library that provides multiple ways to declare and use meta-data.
+In this case, meta-data means data about the overall application organization and configuration from a
+static, structural point of view. 
+The intent was to allow meta-data to be both used and declared from a variety of types of components, not just Java, and
+to allow meta-data to be re-used to reconfigure applications for different deployment types and organizations.
 Further, the intent is to provide a few standard types of uses - a straight name/value use, a list of values use, and
 an implementation of the 
 <a href="http://www.cs.cmu.edu/afs/cs/project/tinker-arch/www/html/1997/lectures/15.Patterns/base.026.html">pipe-and-filter</a>
@@ -20,6 +23,44 @@ an implementation of the
  detail.  This is a bit of a fine line in some cases.  The recommendation is to err on the side of making fewer items
  configurable and then modifying the code to add configuration as required.  This should fairly quicly result in the
  correct set of configuraiton, without making it over-configurable and too difficult to manage.</p>
+ 
+ <h2>Usage of MetaData</h2>
+ <p>The meta-data bean object implements the map interface.  It is thus quite easy to use
+ from various applications such as JavaScript, Java and so on, as well as providing an injection mechanism
+ described later than can be used to create and tie Java objects together.</p>
+ 
+ <h3>MetaData File Format</h3>
+ <p>The basic file format for metadata is a properties file, with properties starting with ${ being
+ a declarable instance, that is, a value that is replaced with another value in some way.  Additionally,
+ the metadata can declare inherittable metadata - the highest (first included) metadata
+ takes priority, followed by the various includes.  For example, a customization of wado2.metadata looks like:
+ 
+ <pre>
+# Include the underlying wado2.metadata file
+metaDataProvider.propertyWado2=${class:org.dcm4chee.xero.metadata.PropertyProvider}
+metaDataProvider.propertyWado2.wado2=wado2.metadata
+metaDataProvider.propertyWado2.wado2.priority=10
+
+# Declare and instance value, and a property (priority) on that instance value.  
+dicomImageReader.wadoDiverter=${class:com.agfa.xero.lightweight.cache.WadoCacheDiverterFilter}
+dicomImageReader.wadoDiverter.priority=250
+</pre>
+ </p>
+ 
+ <h3>Reading a MetaData File</h3>
+ <p>See <a href="org/dcm4chee/xero/metadata/StaticMetaData.html">StaticMetaData</a> methods to 
+ statically read a meta-data file.  Alternatively, to use it from a servlet, consider using the 
+ <a href="org/dcm4chee/xero/metadata/servlet/MetaDataServlet.html">MetaDataServlet</a> that can declare which metadata file to use and where to use it from.</p>
+ 
+ <h3>Injecting MetaData dependencies</h3>
+ <p>The <a href="org/dcm4chee/xero/metadata/MetaData.html">MetaData</a>
+ tag is used to indicate to inject a meta-data dependency.  This is only done for
+ objects created by the MetaDataBean itself, and thus declared by the meta data framework, although
+ it is also possible to use the <a href="org/dcm4chee/xero/metadata/Injector.html">Injector</a> class to manually inject changes.</p>
+ 
+ <h3>Convenient Types That Use MetaData</h3>
+ <p>See the <a href="org/dcm4chee/xero/metadata/access/package-summary.html">org.dcm4chee.xero.metadata.access</a> package for lists, maps and 
+ filter/pipe implementations that use the metadata to create more complex structures.</p>
  
  <h2>Comparison With Other MetaData Libraries/Frameworks</h2>
  <p>Why is yet another meta-data library required?  The answer to that question lies in the goals for this project.
