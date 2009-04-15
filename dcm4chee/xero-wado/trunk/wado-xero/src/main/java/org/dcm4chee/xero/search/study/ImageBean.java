@@ -65,6 +65,7 @@ import org.slf4j.LoggerFactory;
 @XmlRootElement
 public class ImageBean extends ImageType implements Image, LocalModel<String>, MacroMixIn {
    private static final Logger log = LoggerFactory.getLogger(ImageBean.class);
+   public static final int SharedObjectValues = 0x7FD91041;
 
    @XmlTransient
    protected SeriesBean seriesBean;
@@ -124,7 +125,7 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
          return;
       if(data == null)
          return;
-     
+
       this.setCfindHeader(data);
       
 	  setColumns(data.getInt(Tag.Columns,-1));
@@ -132,6 +133,14 @@ public class ImageBean extends ImageType implements Image, LocalModel<String>, M
 	  // setSOPClassUID(data.getString(Tag.SOPClassUID));
 	  setObjectUID(data.getString(Tag.SOPInstanceUID));
 	  setInstanceNumber(data.getInt(Tag.InstanceNumber));
+
+	  // Handle image data stored in series object
+      DicomObject parent = data.getParent();
+      if( parent!=null && parent.contains(SharedObjectValues)) {
+          DicomObject shared = parent.getNestedDicomObject(SharedObjectValues);
+          if( columns==-1 ) setColumns(shared.getInt(Tag.Columns,-1));
+          if( rows==-1 ) setRows(shared.getInt(Tag.Rows,-1));
+      }
    }
 
    /**

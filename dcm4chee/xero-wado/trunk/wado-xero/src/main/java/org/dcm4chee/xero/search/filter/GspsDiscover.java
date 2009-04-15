@@ -154,7 +154,9 @@ public class GspsDiscover implements Filter<ResultsBean> {
 		 return null;
 	  prParams.put("Modality", "PR");
 	  prParams.put("studyUID", uids.toArray(STRING_ARRAY_TYPE));
-	  FilterUtil.computeQueryString(prParams, "Modality", "studyUID");
+	  String ae = rb.getAe();
+	  if( ae!=null ) prParams.put("ae", ae);
+	  FilterUtil.computeQueryString(prParams, "Modality", "studyUID","ae");
 	  log.debug("Doing a search on {} Study UID's for PR objects uid[0]={}", uids.size(), uids.get(0));
 	  ResultsBean gspsRB = (ResultsBean) imageSource.filter(null,prParams);
 	  return gspsRB;

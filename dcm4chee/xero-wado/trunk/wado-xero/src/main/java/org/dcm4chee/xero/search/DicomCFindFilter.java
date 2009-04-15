@@ -247,15 +247,16 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     }
     
     /** Adds this object to the result - allows overriding to test for specific conditions in the data */
-    protected void addResult(ResultFromDicom resultFromDicom, DicomObject data) {
+    protected boolean addResult(ResultFromDicom resultFromDicom, DicomObject data) {
        resultFromDicom.addResult(data);
+       return true;
     }
     
     /**
      * This method performs a remote query against the local DCM4CHEE ae instance, on port 11112, and
      * returns the result as a set of objects of type E.
      */
-	public void cfind(SearchCriteria searchCriteria, ResultFromDicom resultFromDicom, NetworkApplicationEntity remoteAE, NetworkApplicationEntity localAE, int maxResults) {
+	public boolean cfind(SearchCriteria searchCriteria, ResultFromDicom resultFromDicom, NetworkApplicationEntity remoteAE, NetworkApplicationEntity localAE, int maxResults) {
 	   if (log.isInfoEnabled()) {
          NetworkConnection conn = remoteAE.getNetworkConnection()[0];
          log.info("Connecting to {}@{} from AE="+localAE.getAETitle(),remoteAE.getAETitle(),conn.getHostname());
@@ -285,13 +286,13 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 	    			  DicomElement dir = data.get(Tag.DirectoryRecordSequence);
 	    			  for(int i=0, n=dir.countItems(); i<n; i++) {
 	    				 data = dir.getDicomObject(i);
-	    				 addResult(resultFromDicom,data);
+	    				 if( !addResult(resultFromDicom,data) ) return false;
 	    				 cntResults++;
 	    				 maxResults--;
 	    			  }
 	    		   } 
 	    		   else {
-	    			  addResult(resultFromDicom,data);
+	    			  if( !addResult(resultFromDicom,data) ) return false;
 	    			  cntResults++;
 	    			  maxResults--;
 	    		   }
@@ -314,6 +315,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 		finally {
 		   dicomConnector.release(association, true);
 		}
+		return true;
 	}
 
 
@@ -341,7 +343,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
          NetworkApplicationEntity remoteAE = aeProvider.getAE(remoteAETitle);
          NetworkApplicationEntity localAE = aeProvider.getLocalAE(remoteAETitle,getCuids());
 
-   		cfind(searchCriteria, resultFromDicom, remoteAE, localAE, maxResults);
+   		if( !cfind(searchCriteria, resultFromDicom, remoteAE, localAE, maxResults) ) return null;
    		log.debug("Found result(s) - returning from filter.");
 	   }
 	   catch(IOException e)
