@@ -30,7 +30,7 @@
             <xsl:value-of select="string(field[19]/text())"/>
         </attr>
         <xsl:variable name="issuerOfAdmissionID"
-                      select="string(field[9]/component[3]/text())" />
+                      select="string(field[19]/component[3]/text())" />
         <xsl:if test="$issuerOfAdmissionID">
             <!-- Issuer of Admission ID Sequence -->
             <attr tag="00380014" vr="SQ">
