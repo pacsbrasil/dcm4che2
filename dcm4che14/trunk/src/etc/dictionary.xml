@@ -149,6 +149,7 @@
   <element tag="(0008,0041)" name="Data Set Subtype (Retired)" key="DataSetSubtypeRetired" retired="true"/>
   <element tag="(0008,0042)" name="Nuclear Medicine Series Type (Retired)" vr="CS" vm="1" key="NuclearMedicineSeriesTypeRetired" retired="true"/>
   <element tag="(0008,0050)" name="Accession Number" vr="SH" vm="1" key="AccessionNumber" />
+  <element tag="(0008,0051)" name="Issuer of Accession Number Sequence" vr="SQ" vm="1" key="IssuerOfAccessionNumberSeq" />
   <element tag="(0008,0052)" name="Query/Retrieve Level" vr="CS" vm="1" key="QueryRetrieveLevel" />
   <element tag="(0008,0054)" name="Retrieve AE Title" vr="AE" vm="1-n" key="RetrieveAET" />
   <element tag="(0008,0056)" name="Instance Availability" vr="CS" vm="1" key="InstanceAvailability" />
@@ -273,6 +274,7 @@
   <element tag="(0010,0020)" name="Patient ID" vr="LO" vm="1" key="PatientID" />
   <element tag="(0010,0021)" name="Issuer of Patient ID" vr="LO" vm="1" key="IssuerOfPatientID" />
   <element tag="(0010,0022)" name="Type of Patient ID" vr="CS" vm="1" key="TypeOfPatientID" />
+  <element tag="(0010,0024)" name="Issuer of Patient ID Qualifiers Sequence" vr="SQ" vm="1" key="IssuerOfPatientIDQualifiersSeq" />
   <element tag="(0010,0030)" name="Patient's Birth Date" vr="DA" vm="1" key="PatientBirthDate" />
   <element tag="(0010,0032)" name="Patient's Birth Time" vr="TM" vm="1" key="PatientBirthTime" />
   <element tag="(0010,0040)" name="Patient's Sex" vr="CS" vm="1" key="PatientSex" />
@@ -1142,7 +1144,8 @@
   <element tag="(0038,0004)" name="Referenced Patient Alias Sequence" vr="SQ" vm="1" key="RefPatientAliasSeq" />
   <element tag="(0038,0008)" name="Visit Status ID" vr="CS" vm="1" key="VisitStatusID" />
   <element tag="(0038,0010)" name="Admission ID" vr="LO" vm="1" key="AdmissionID" />
-  <element tag="(0038,0011)" name="Issuer of Admission ID" vr="LO" vm="1" key="IssuerOfAdmissionID" />
+  <element tag="(0038,0011)" name="Issuer of Admission ID (Retired)" vr="LO" vm="1" key="IssuerOfAdmissionIDRetired" retired="true" />
+  <element tag="(0038,0014)" name="Issuer of Admission ID Sequence" vr="SQ" vm="1" key="IssuerOfAdmissionIDSeq" />
   <element tag="(0038,0016)" name="Route of Admissions" vr="LO" vm="1" key="RouteOfAdmissions" />
   <element tag="(0038,001A)" name="Scheduled Admission Date" vr="DA" vm="1" key="ScheduledAdmissionDate" />
   <element tag="(0038,001B)" name="Scheduled Admission Time" vr="TM" vm="1" key="ScheduledAdmissionTime" />
@@ -1156,6 +1159,10 @@
   <element tag="(0038,0040)" name="Discharge Diagnosis Description" vr="LO" vm="1" key="DischargeDiagnosisDescription" />
   <element tag="(0038,0044)" name="Discharge Diagnosis Code Sequence" vr="SQ" vm="1" key="DischargeDiagnosisCodeSeq" />
   <element tag="(0038,0050)" name="Special Needs" vr="LO" vm="1" key="SpecialNeeds" />
+  <element tag="(0038,0060)" name="Service Episode ID" vr="LO" vm="1" key="ServiceEpisodeID" />
+  <element tag="(0038,0061)" name="Issuer of Service Episode ID (Retired)" vr="LO" vm="1" key="IssuerOfServiceEpisodeIDRET" retired="true" />
+  <element tag="(0038,0062)" name="Service Episode Description" vr="LO" vm="1" key="ServiceEpisodeDescription" />
+  <element tag="(0038,0064)" name="Issuer of Service Episode ID Sequence" vr="SQ" vm="1" key="IssuerOfServiceEpisodeIDSeq" />
   <element tag="(0038,0100)" name="Pertinent Documents Sequence" vr="SQ" vm="1" key="PertinentDocumentsSeq" />
   <element tag="(0038,0300)" name="Current Patient Location" vr="LO" vm="1" key="CurrentPatientLocation" />
   <element tag="(0038,0400)" name="Patient's Institution Residence" vr="LO" vm="1" key="PatientInstitutionResidence" />
@@ -1205,6 +1212,16 @@
   <element tag="(0040,0011)" name="Scheduled Procedure Step Location" vr="SH" vm="1" key="SPSLocation" />
   <element tag="(0040,0012)" name="Pre-Medication" vr="LO" vm="1" key="PreMedication" />
   <element tag="(0040,0020)" name="Scheduled Procedure Step Status" vr="CS" vm="1" key="SPSStatus" />
+  <element tag="(0040,0026)" name="Order Placer Identifier Sequence" vr="SQ" vm="1" key="OrderPlacerIdentifierSeq" />
+  <element tag="(0040,0027)" name="Order Filler Identifier Sequence" vr="SQ" vm="1" key="OrderFillerIdentifierSeq" />
+  <element tag="(0040,0031)" name="Local Namespace Entity ID" vr="UT" vm="1" key="LocalNamespaceEntityID" />
+  <element tag="(0040,0032)" name="Universal Entity ID" vr="UT" vm="1" key="UniversalEntityID" />
+  <element tag="(0040,0033)" name="Universal Entity ID Type" vr="CS" vm="1" key="UniversalEntityIDType" />
+  <element tag="(0040,0035)" name="Identifier Type Code" vr="CS" vm="1" key="IdentifierTypeCode" />
+  <element tag="(0040,0036)" name="Assigning Facility Sequence" vr="SQ" vm="1" key="AssigningFacilitySeq" />
+  <element tag="(0040,0039)" name="Assigning Jurisdiction Code Sequence" vr="SQ" vm="1" key="AssigningJurisdictionCodeSeq" />
+  <element tag="(0040,003A)" name="Assigning Agency or Department Code Sequence" vr="SQ" vm="1" key="AssigningAgencyOrDepartmentCodeSeq" />
+
   <element tag="(0040,0440)" name="Protocol Context Sequence" vr="SQ" vm="1" key="ProtocolContextSeq" />
   <element tag="(0040,0441)" name="Content Item Modifier Sequence" vr="SQ" vm="1" key="ContentItemModifierSeq" />
   <element tag="(0040,0100)" name="Scheduled Procedure Step Sequence" vr="SQ" vm="1" key="SPSSeq" />
