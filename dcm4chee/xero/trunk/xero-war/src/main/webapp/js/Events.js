@@ -255,6 +255,7 @@ function unhookEvent(element, eventName, callback)
 function cancelEvent(e)
 {
   e = e ? e : window.event;
+  if( !e ) return false;
   if(e.stopPropagation)
     e.stopPropagation();
   if(e.preventDefault)

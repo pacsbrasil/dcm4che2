@@ -3,6 +3,8 @@
 <tr><td>$i18n.PatientName;format="xml"$</td><td><input id="patientNameInput" type="text" name="PatientName" value="$query.PatientName$" onkeypress="controller.keyPress('find',event)"/></td></tr>
 <tr><td>$i18n.PatientID;format="xml"$</td><td><input id="patientIdInput" type="text" name="PatientID" value="$query.PatientID$" onkeypress="controller.keyPress('find',event)"/></td></tr>
 
+<input id="aeInput" type="hidden" name="ae" value="$query.ae$" onkeypress="controller.keyPress('find',event)"/>
+
 </table></div>
 
 <div style="float: left;"><table>

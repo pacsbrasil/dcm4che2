@@ -55,7 +55,7 @@ XeroController.prototype.displayPatient = function XC_displayPatient(id,patientI
 	
 	var external = navigate.external;
 	if( (!external) || (!external.children[patientId]) ) {
-		external = new StudyData(uids, model.ae);
+		external = new StudyData(uids, searchLayout.search.ae);
 		this.debug("Setup external study data root on url %s", external.url);
 		external.request(this.service);
 		this.debug("Loaded study data.");

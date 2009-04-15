@@ -59,7 +59,7 @@ public class XeroJSControllerTest {
 
 	@Test
 	public void doUtilsTest() {
-		jst.runTest("controllerTest",true);
+		jst.runTest("controllerTest",false);
 	}
 	
 }

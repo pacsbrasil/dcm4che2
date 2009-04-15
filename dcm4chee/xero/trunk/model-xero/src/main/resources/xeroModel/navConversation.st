@@ -48,7 +48,7 @@ NavConversation.prototype.getMergedId = function NC_getMergedId() {
  */
 NavConversation.prototype.getExternalId = function() {
 	if( this.externalId ) return this.externalId;
-	this.mergeId = this.baseId;
+	this.mergeId = this.id;
 	this.queryModifier = "";
 	for(var name in this.modifier) {
 		var qm = this.modifier[name];

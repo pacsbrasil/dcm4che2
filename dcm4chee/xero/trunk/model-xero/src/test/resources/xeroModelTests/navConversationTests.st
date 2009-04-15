@@ -30,7 +30,7 @@ navConversationTests.testComplexChild = function() {
 	c1.setQueryModifier("ko",koMod,false);
 	assertNotNull(c1,"c1");
 	assertEquals(c1.id,"mypid&c=1", "base id");
-	assertEquals(c1.getMergedId(),"mypid&gsps=g", "match id");
+	assertEquals(c1.getMergedId(),"mypid&c=1&gsps=g", "match id");
 	var ui = c1.getExternalId();
 	if( (ui!="mypid"+prMod+koMod) && (ui!="mypid"+koMod+prMod) ) {
 		fail("UrlId must be mypid + "+presMod+" + "+ queryMod +" in either order, but is "+ui);

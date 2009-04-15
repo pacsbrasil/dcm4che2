@@ -13,6 +13,5 @@ $model/scripts(version=version)$
 <script>
 /** Define per-user information as required TODO - move this to a child script */
 model.userName = "$userName$";  
-model.ae = "$ae;format="xml"$";
 model.version = "$version$";
 </script>

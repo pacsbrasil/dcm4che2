@@ -14,7 +14,7 @@ function StudyData(uids,ae) {
 			uidsBack = uidsBack + "\\\\"+uids[i];
 		}
 		this.url = STUDY_QUERY+"&gsps=*&ko=*&studyUID="+uidsBack;
-		//if( ae ) this.url = this.url + ae; // FIX the AE problem properly
+		if( ae ) this.url = this.url + "&ae="+ae;
 	}
 };
 

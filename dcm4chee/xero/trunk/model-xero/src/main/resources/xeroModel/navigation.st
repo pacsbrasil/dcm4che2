@@ -88,14 +88,14 @@ Navigation.prototype.generateQuery = function Navigation_generateQuery(child, re
 		position = childId - this.QUERY_SIZE;
 		position -= (position % this.IMAGE_QUERY_SIZE);
 		position += this.QUERY_SIZE;
-		url = IMAGE_QUERY+"&regroup=*&studyUID="+this.parent.id+"&seriesUID="+this.id+"&Count="+this.IMAGE_QUERY_SIZE+"&Position="+position;
-		this.debug("Adding series extension query %s",url); 
+		url = IMAGE_QUERY+"&regroup=*&studyUID="+this.parent.getBaseId()+"&seriesUID="+this.getBaseId()+"&Count="+this.IMAGE_QUERY_SIZE+"&Position="+position;
+		this.debug("Adding series extension query",url,"modifiers",modifiers); 
 	} else if( this.level===2 ) {
-		url = IMAGE_QUERY+"&regroup=*&studyUID="+this.id+"&Position=0&Count="+this.QUERY_SIZE;
-		this.debug("Adding image query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
+		url = IMAGE_QUERY+"&regroup=*&studyUID="+this.getBaseId()+"&Position=0&Count="+this.QUERY_SIZE;
+		this.debug("Adding image query to study uid %s because child with id %s and external children %s", this.id, childId, this.external.children);
 	} else if( this.level===1 && modifiers!=null && modifiers[2]!=undefined) {
 		// Fix the modifiers, and do an image level query.
-		url = IMAGE_QUERY+"&regroup=*&studyUID="+child.id+"&Position=0&Count="+this.QUERY_SIZE;
+		url = IMAGE_QUERY+"&regroup=*&studyUID="+child.getBaseId()+"&Position=0&Count="+this.QUERY_SIZE;
 		this.debug("Adding updated image, with study query to %s because child with id %s and external children %s", this.id, childId, this.external.children);
 	} else if( this.level===1 ) {
 		// This happens when the user views a new study in the same patient, or an updated study in 
@@ -108,6 +108,17 @@ Navigation.prototype.generateQuery = function Navigation_generateQuery(child, re
 	}
 	if( url ) ret[url] = modifiers;
 	return ret;
+};
+
+/** Gets the base ID that identifies this object level - without copy identifiers etc */
+Navigation.prototype.getBaseId = function() {
+   return this.conversation.baseId;
+};
+
+/** Gets the external id - this is the ID to query against at this level */
+Navigation.prototype.getExternalId = function() {
+	this.createConversation();
+	return this.conversation.getExternalId();
 };
 
 /** 
@@ -143,7 +154,7 @@ Navigation.prototype.mergeExternal = function Navigation_mergeExternal(external,
 		// Null means no object there, whereas undefined means unknown, so if it is null, just continue.
 		if( child.id===null ) continue;
 		if( child.id!==undefined && external.children) {
-			extId = child.conversation.getExternalId();
+			extId = child.getExternalId();
 			this.debug("Looking for external id %s on base id %s",extId,child.id);
 			childExt = external.children[extId];
 			if( childExt ) {
@@ -398,7 +409,7 @@ Navigation.prototype.createExternal = function Navigation_createExternal() {
 	if( this.external ) return true;
 	if( !this.parent.createExternal() ) return false;
 	if( !this.parent.external.children ) this.parent.external.children = new Object();
-	var eid = this.conversation.getExternalId();
+	var eid = this.getExternalId();
 	this.external = this.parent.external.children[eid];
 	return this.external!=undefined;
 };
