@@ -200,7 +200,7 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
         }
         
         private void resize() {
-           int[] tmp = new int[pos+20];
+           int[] tmp = new int[values.length+20];
            System.arraycopy(values,0,tmp,0,pos);
            values = tmp;
         }
