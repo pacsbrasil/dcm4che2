@@ -277,6 +277,7 @@
      <delete dir="target" quiet="true" />
      <mkdir dir="target" />
      <jmeter jmeterhome="${jmeterhome}"
+        failureproperty="jmeterTestsFailed"
         resultlogdir="${basedir}/target">
         <jmeterarg value="-q${jmeter.user.properties}"/>
 	<testplans refid="integration.scripts"/>
