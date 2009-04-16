@@ -46,7 +46,8 @@ studyDataTests.testSort_parent = function StudyDataTests_sortTest_parent()  {
     assertEquals(pat[2].PatientName, "LUXATION","(unsorted) PatientName[2] should match");
     
     var column = new Object();
-    column.level = "one";
+    column.level = "1";
+    column.sortType = "lexicographic";
     
     // Ascending
     column.sort = "PatientName";
@@ -112,7 +113,8 @@ studyDataTests.testSort_child = function StudyDataTests_sortTest_child()  {
     assertEquals(pat[2].study[2].StudyDescription , "RX UPPERARM LEFT", "(unsorted) StudyDescription [2,2] should match");
 
     var column = new Object();
-    column.level = "two";
+    column.level = "2";
+    column.sortType = "lexicographic";
     
     // Ascending    
     column.sort = "StudyDescription";
@@ -182,9 +184,6 @@ studyDataTests.testSort_child = function StudyDataTests_sortTest_child()  {
     assertEquals(pat[2].study[1].StudyDateTime , "20011107095413.000000", "StudyDateTime [2,1] should match");
     assertEquals(pat[2].study[2].StudyDateTime , "20011024112650.000000", "StudyDateTime [2,2] should match");
 };
-
-
-
 
 studyDataTests.runUnitTests();
 
