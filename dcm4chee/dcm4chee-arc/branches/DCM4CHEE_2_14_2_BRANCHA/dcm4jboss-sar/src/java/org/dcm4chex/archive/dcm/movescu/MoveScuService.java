@@ -239,7 +239,7 @@ public class MoveScuService extends AbstractScuService implements
         }
     }
 
-    private void process(MoveOrder order) throws Exception {
+    protected void process(MoveOrder order) throws Exception {
         String aet = order.getRetrieveAET();
         if (forceCalledAET || aet == null) {
             aet = calledAET;
