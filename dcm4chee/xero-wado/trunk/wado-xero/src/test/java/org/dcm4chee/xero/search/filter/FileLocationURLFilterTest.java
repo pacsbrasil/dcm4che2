@@ -117,4 +117,16 @@ public class FileLocationURLFilterTest {
 		URL fileUrl = filter.filter(null, params);
 		assertNull(fileUrl);
 	}	
+	
+	@Test
+	public void filter_FilePrefixReplacesDirectoryPathIfDefined()
+	{
+      inputDTO.setDirectoryPath("/shared"); // Unix path
+      inputDTO.setFilePath("/cache/foo/bar");
+      params.put("ae", "FilePrefix");
+      params.put(FileLocationURLFilter.FILE_DTO, inputDTO);
+      URL fileUrl = filter.filter(null, params);
+      assertEquals(fileUrl.toString(),"file:/D:/grill/cache/foo/bar");
+	}
+
 }

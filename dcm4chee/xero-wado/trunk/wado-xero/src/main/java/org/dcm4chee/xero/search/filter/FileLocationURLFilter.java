@@ -44,6 +44,8 @@ import java.util.Map;
 
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
+import org.dcm4chee.xero.search.AEProperties;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +58,9 @@ import org.slf4j.LoggerFactory;
  */
 public class FileLocationURLFilter implements Filter<URL> {
 	public static Logger log = LoggerFactory.getLogger(FileLocationURLFilter.class);
+	
+	public static final String RELATIVE_FILE_PREFIX = "../server/default/";
+	public static final String FILE_PREFIX = "filePrefix";
 	public static final String FILE_DTO = "FileDTO";
 
 	public URL filter(FilterItem<URL> filterItem, Map<String,Object> params) {
@@ -63,20 +68,30 @@ public class FileLocationURLFilter implements Filter<URL> {
 		if (dto == null) 
 			throw new IllegalArgumentException("No dto passed in params");
 		URL url = null;
-		String directoryPath = dto.getDirectoryPath();
-		String filePath = directoryPath.replace("\\", "/") + "/" + dto.getFilePath(); 
+		String directoryPath = dto.getDirectoryPath().replace("\\", "/");
+		String filePath = dto.getFilePath().replace("\\", "/"); 
 		try {
+		   String ae = FilterUtil.getString(params, "ae","local");
+		   String filePrefix = getPrefixForAE(ae);
+		   if(filePrefix != null)
+		      directoryPath = filePrefix;
+		   
+		   String fullyQualifiedPath = combinePath(directoryPath,filePath,'/'); 
+		   
+		   // AC:  Not sure whether any sort of differentiation matters at this point...
+	      int colon = fullyQualifiedPath.indexOf(":");
+         if (colon == -1) {
+            if (fullyQualifiedPath.charAt(0) == '/')
+               url = new URL("file://" + fullyQualifiedPath);
+            else 
+               url = new URL("file:" + RELATIVE_FILE_PREFIX + fullyQualifiedPath);
+         }
+         else if (colon == 1) {
+            url = new URL("file:///" + fullyQualifiedPath);
+         }
+		      
 		    // Single letter drive paths are fine, as is no url indicator type
-		    int colon = directoryPath.indexOf(":");
-			if ( colon == -1 ) {
-	            if( filePath.charAt(0) =='/' ) url = new URL("file://"+filePath);
-	            else {
-	                //TODO - extract the real base directory instead of guessing.
-	                url = new URL("file:../server/default/"+filePath);
-	            }
-			} else if( colon==1 ) {
-				url = new URL("file:///" + filePath);
-            }
+
 		} catch (MalformedURLException e) {
 			throw new IllegalArgumentException("Unable to compose URL for file path" + filePath, e);
 		}
@@ -85,4 +100,33 @@ public class FileLocationURLFilter implements Filter<URL> {
 		if( url!=null || filterItem==null ) return url;
 		return filterItem.callNextFilter(params);
 	}
+
+   /**
+    * Combine two parts of a path and ensure that only a single '/' is used
+    * between the fields.
+    */
+   private String combinePath(String directoryPath, String filePath, char separator)
+   {
+      char lastDirectoryChar = directoryPath.charAt(directoryPath.length()-1);
+      char firstFileChar = filePath.charAt(0);
+      
+      StringBuilder sb = new StringBuilder(directoryPath);
+      if(lastDirectoryChar == separator && firstFileChar == separator)
+         sb.deleteCharAt(sb.length()-1);
+      else if(lastDirectoryChar != separator && firstFileChar != separator)
+         sb.append(separator);
+      
+      return sb.append(filePath).toString();
+   }
+
+   /**
+    * Determine the prefix to use for the particular AE that is being accessed based
+    * on the appropriate configuration file.
+    * @return 
+    */
+   private String getPrefixForAE(String ae)
+   {
+      Map<String,Object> aeMap = AEProperties.getInstance().getAE(ae);
+      return FilterUtil.getString(aeMap, FILE_PREFIX);
+   }
 }
