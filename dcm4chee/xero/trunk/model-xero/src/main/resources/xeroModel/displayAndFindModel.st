@@ -33,7 +33,7 @@ var XeroStudyColumns = {
 		{"i18n":"PatientSex", "var":"PatientSex", "sort":"PatientSex", "template":"html/displayFirst", "id":"patientSexColHead", "level":"1", "sortType":"lexicographic" },
 		{"i18n":"StudyDescription", "var":"StudyDescription", "sort":"StudyDescription", "template":"query/studyDescriptionSel","id":"studyDescColHead", "level":"2", "sortType":"lexicographic" },
 		{"i18n":"Modality", "var":"ModalitiesInStudy", "sort":"ModalitiesInStudy", "template":"html/displayIt", "id":"modalityColHead", "level":"2", "sortType":"lexicographic" },
-		//{"i18n":"AccessionNumber", "var":"AccessionNumber", "sort":"AccessionNumber", "template":"html/displayIt", "id":"accessionNumberColHead", "level":"2", "sortType":"lexicographic" },
+		{"i18n":"AccessionNumber", "var":"AccessionNumber", "sort":"AccessionNumber", "template":"html/displayIt", "id":"accessionNumberColHead", "level":"2", "sortType":"lexicographic" },
 		{"i18n":"StudyDateTimeF", "var":"StudyDateF", "sort":"StudyDateTime", "template":"html/displayIt", "id":"studyDateTimeColHead", "level":"2", "sortType":"lexicographic" },
 		//{"i18n":"InstanceAvailability", "var":"InstanceAvailability", "sort":"InstanceAvailability", "template":"html/displayIt", "id":"instanceAvailabilityColHead", "level":"2", "sortType":"numeric" },
 		{"name":"# Objects", "var":"NumberOfStudyRelatedInstances", "sort":"NumberOfStudyRelatedInstances", "template":"html/displayIt", "id":"numObjectsColHead", "level":"2", "sortType":"numeriic" }
