@@ -36,7 +36,7 @@ var XeroStudyColumns = {
 		{"i18n":"AccessionNumber", "var":"AccessionNumber", "sort":"AccessionNumber", "template":"html/displayIt", "id":"accessionNumberColHead", "level":"2", "sortType":"lexicographic" },
 		{"i18n":"StudyDateTimeF", "var":"StudyDateF", "sort":"StudyDateTime", "template":"html/displayIt", "id":"studyDateTimeColHead", "level":"2", "sortType":"lexicographic" },
 		//{"i18n":"InstanceAvailability", "var":"InstanceAvailability", "sort":"InstanceAvailability", "template":"html/displayIt", "id":"instanceAvailabilityColHead", "level":"2", "sortType":"numeric" },
-		{"name":"# Objects", "var":"NumberOfStudyRelatedInstances", "sort":"NumberOfStudyRelatedInstances", "template":"html/displayIt", "id":"numObjectsColHead", "level":"2", "sortType":"numeriic" }
+		{"name":"# Objects", "var":"NumberOfStudyRelatedInstances", "sort":"NumberOfStudyRelatedInstances", "template":"html/displayIt", "id":"numObjectsColHead", "level":"2", "sortType":"numeric" }
 	]
 };
 
