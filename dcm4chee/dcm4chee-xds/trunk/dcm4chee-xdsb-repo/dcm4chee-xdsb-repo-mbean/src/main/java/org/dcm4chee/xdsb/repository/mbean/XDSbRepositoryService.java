@@ -40,17 +40,21 @@ package org.dcm4chee.xdsb.repository.mbean;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.activation.DataHandler;
 import javax.management.ObjectName;
@@ -62,7 +66,6 @@ import javax.xml.ws.BindingProvider;
 import javax.xml.ws.soap.SOAPBinding;
 
 import org.apache.log4j.Logger;
-import org.dcm4che2.audit.message.ActiveParticipant;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4chee.xds.common.UUID;
@@ -115,7 +118,6 @@ import org.w3c.dom.Node;
  */
 public class XDSbRepositoryService extends ServiceMBeanSupport {
 
-    private static final String CERT = "CERT";
     private static final String NONE = "NONE";
 
     private String repositoryUniqueId;
@@ -139,6 +141,8 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
     private XDSDocumentWriterFactory wrFac = XDSDocumentWriterFactory.getInstance();
     private boolean disableForceMTOMResponse;
     private boolean forceSourceAsRequestor;
+
+    private RetrieveDocumentSetResponseType rsp;
     
     public String getRepositoryUniqueId() {
         return repositoryUniqueId;
@@ -612,12 +616,52 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         }
     }
     
-    public RetrieveDocumentSetResponseType retrieveDocumentSet(String docUid, String repositoryUID, String homeUid, boolean useLocalRepo) throws XDSException {
+    public RetrieveDocumentSetResponseType retrieveDocumentSet(String docUids, String repositoryUID, String homeUid, boolean useLocalRepo) throws XDSException {
         RetrieveDocumentSetRequestType rq = objFac.createRetrieveDocumentSetRequestType();
-        rq.getDocumentRequest().add( createDocRequest(docUid, repositoryUID, homeUid) );
+        StringTokenizer st = new StringTokenizer(docUids, "|");
+        while ( st.hasMoreTokens()) {
+            rq.getDocumentRequest().add( createDocRequest(st.nextToken(), repositoryUID, homeUid) );
+        }
         return retrieveDocumentSet(rq, useLocalRepo ? repositoryUniqueId : null);
     }
 
+    public String saveDocumentSet(String docUids, String repositoryUID, String homeUid, String baseDir, boolean useLocalRepo) throws XDSException, IOException {
+        RetrieveDocumentSetRequestType rq = objFac.createRetrieveDocumentSetRequestType();
+        StringTokenizer st = new StringTokenizer(docUids, "|");
+        while ( st.hasMoreTokens()) {
+            rq.getDocumentRequest().add( createDocRequest(st.nextToken(), repositoryUID, homeUid) );
+        }
+        rsp = retrieveDocumentSet(rq, useLocalRepo ? repositoryUniqueId : null);
+        saveDocuments(baseDir, rsp.getDocumentResponse());
+        return rsp.getRegistryResponse().getStatus();
+    }
+    
+    private void saveDocuments(String baseDir,
+            List<DocumentResponse> documentResponse) throws IOException {
+        if ( documentResponse == null) return;
+        File dir = new File(baseDir);
+        if (!dir.isAbsolute()) {
+            File serverHomeDir = ServerConfigLocator.locate().getServerHomeDir();
+            dir = new File(serverHomeDir, dir.getPath());
+        }
+        if ( !dir.exists() )
+            dir.mkdirs();
+        File f;
+        for ( DocumentResponse doc : documentResponse ) {
+            f = new File(dir, URLEncoder.encode(doc.getDocumentUniqueId(), "UTF-8"));
+            writeDoc(f,doc.getDocument());
+        }
+        
+    }
+    private void writeDoc(File f, DataHandler dh) throws IOException {
+        log.info("Save Document in file:"+f+ " Mime:"+dh.getContentType());
+        FileOutputStream fos = new FileOutputStream(f);
+        try {
+            dh.writeTo(fos);
+        } finally {
+            fos.close();
+        }
+    }
     public DataHandler retrieveDocument(String docUid, String repositoryUID, String homeUid, boolean useLocalRepo) throws XDSException {
         RetrieveDocumentSetResponseType rsp = retrieveDocumentSet(docUid, repositoryUID, homeUid, useLocalRepo);
         try {

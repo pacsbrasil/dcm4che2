@@ -228,12 +228,13 @@
    </operation>
 
    <operation impact="ACTION">
-      <description><![CDATA[ Retrieve Document Set for single document.<br/>
+      <description><![CDATA[ Retrieve Document Set.<br/>
+             Perform a Retrieve Document Set transaction for one ore more documents.<br/>
             ]]> </description>
       <name>retrieveDocumentSet</name>
       <parameter>
-        <description>Document Unique ID.</description>
-        <name>DocumentUID</name>
+        <description>Document Unique ID(s) (separated by '|').</description>
+        <name>DocumentUIDs</name>
         <type>java.lang.String</type>
       </parameter>
       <parameter>
@@ -252,6 +253,42 @@
         <type>boolean</type>
       </parameter>
       <return-type>org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType</return-type>
+   </operation>
+
+           <operation impact="ACTION">
+      <description><![CDATA[ Save Documents of a Retrieve Document Set.<br/>
+             Perform a Retrieve Document Set transaction for one ore more documents and save the documents in files.<br/>
+            ]]> </description>
+      <name>saveDocumentSet</name>
+      <parameter>
+        <description>Document Unique ID(s) (separated by '|').</description>
+        <name>DocumentUIDs</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Repository Unique ID. Default: this RepositoryUniqueId</description>
+        <name>RepositoryUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Home Community ID. Default: no optional Home Community ID</description>
+        <name>HomeCommunityID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description><![CDATA[Base Directory where documents are stored. <br/>
+            A relative path name is resolved relative to &lt;archive-install-directory&gt;/server/default/.<br/>
+            Use the URLEncoded documentUID as filename.
+            ]]></description>
+        <name>baseDir</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Use local Repository Unique ID to avoid webservice round trip for local retrieve requests.</description>
+        <name>UseLocalRepository</name>
+        <type>boolean</type>
+      </parameter>
+      <return-type>java.lang.String</return-type>
    </operation>
         
    <operation impact="ACTION">
