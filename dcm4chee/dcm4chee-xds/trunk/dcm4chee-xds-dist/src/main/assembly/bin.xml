@@ -156,6 +156,7 @@
       <outputDirectory>patches</outputDirectory>
       <includes>
         <include>*/deploy/jbossws.sar/*.jar</include>
+        <include>*/deploy/jbossws.sar/META-INF/*.xml</include>
       </includes>
     </fileSet>
   </fileSets> 
