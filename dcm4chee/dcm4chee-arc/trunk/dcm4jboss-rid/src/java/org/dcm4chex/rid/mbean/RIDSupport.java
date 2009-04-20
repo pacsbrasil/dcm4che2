@@ -58,11 +58,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
 
 import javax.ejb.FinderException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.rmi.PortableRemoteObject;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
@@ -97,10 +101,15 @@ import org.dcm4chee.docstore.BaseDocument;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
+import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
+import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveStudyDatesCmd;
 import org.dcm4chex.archive.mbean.HttpUserInfo;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
+import org.dcm4chex.archive.util.HomeFactoryException;
 import org.dcm4chex.rid.common.RIDRequestObject;
 import org.dcm4chex.rid.common.RIDResponseObject;
 import org.dcm4chex.rid.mbean.xml.IHEDocumentList;
@@ -228,9 +237,22 @@ public class RIDSupport {
         sopCuidGroups.put(CUID_GRP_ECG, ecgSopCuids);
     }
 
-    /**
-     * 
-     */
+    private InstanceLocal getInstanceLocalByIUID(String instUid) 
+            throws HomeFactoryException, FinderException, IOException, NamingException {
+        Properties jndiProps = getJndiProperties();
+        InitialContext ctx = new InitialContext(jndiProps);
+        InstanceLocalHome ih = (InstanceLocalHome) PortableRemoteObject.narrow(ctx.lookup(InstanceLocalHome.JNDI_NAME), InstanceLocalHome.class);
+        InstanceLocal inst = ih.findBySopIuid(instUid);
+        return inst;
+    }
+
+    private Properties getJndiProperties() throws IOException {
+        Properties jndiProps = new Properties();
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        jndiProps.load(cl.getResourceAsStream("ejb-jndi.properties"));
+        return jndiProps;
+    }
+    
     private void setDefaultECGSopCuids() {
         ecgSopCuids.clear();
         ecgSopCuids.put( "TwelveLeadECGWaveformStorage", UIDs.TwelveLeadECGWaveformStorage );
@@ -718,7 +740,8 @@ public class RIDSupport {
         return doc != null ? doc : getStorage().createDocument(objectUID, contentType);
     }
 
-    private RIDResponseObject getDocument( RIDRequestObject reqObj ) {
+    private RIDResponseObject getDocument( RIDRequestObject reqObj)
+            throws Exception {
         String docUID = reqObj.getParam("documentUID");
         if ( log.isDebugEnabled() ) log.debug(" Document UID:"+docUID);
         String contentType = reqObj.getParam("preferredContentType");
@@ -819,10 +842,15 @@ public class RIDSupport {
      * @param reqObj
      * @return
      */
-    private RIDResponseObject handleJPEG(final RIDRequestObject reqObj) {
-        File file;
+    private RIDResponseObject handleJPEG(final RIDRequestObject reqObj) throws Exception {
         String instUid = reqObj.getParam("documentUID");
-        String url = wadoURL + "?requestType=WADO&contentType=image/jpeg&studyUID=1&seriesUID=1&objectUID=" + instUid;
+        InstanceLocal inst = getInstanceLocalByIUID(instUid);
+        SeriesLocal series = inst.getSeries();
+        StudyLocal study = series.getStudy();
+        String url = wadoURL + "?requestType=WADO&contentType=image/jpeg&" +
+                "studyUID=" + study.getStudyIuid() +
+                "&seriesUID=" + series.getSeriesIuid() +
+                "&objectUID=" + instUid;
         return new BasicRIDResponseObject("text/plain", HttpServletResponse.SC_TEMPORARY_REDIRECT, url) {
 
             public void execute(OutputStream out) throws TransformerConfigurationException, SAXException, IOException {
