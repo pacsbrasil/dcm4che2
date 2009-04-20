@@ -3,6 +3,9 @@
 	<name>dcm4che-tool-dcmmv</name>
 	<comment></comment>
 	<projects>
+		<project>dcm4che-core</project>
+		<project>dcm4che-net</project>
+		<project>dcm4che-iod</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
