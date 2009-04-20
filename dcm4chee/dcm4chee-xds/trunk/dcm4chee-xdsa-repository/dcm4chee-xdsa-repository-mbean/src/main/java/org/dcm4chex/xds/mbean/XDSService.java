@@ -73,6 +73,7 @@ import org.apache.log4j.Logger;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.util.UIDUtils;
+import org.dcm4chee.xds.common.XDSConstants;
 import org.dcm4chee.xds.common.audit.HttpUserInfo;
 import org.dcm4chee.xds.common.audit.XDSExportMessage;
 import org.dcm4chee.xds.common.audit.XDSImportMessage;
@@ -376,7 +377,13 @@ public class XDSService extends ServiceMBeanSupport {
             MessageFactory messageFactory = MessageFactory.newInstance();
             SOAPMessage msg = messageFactory.createMessage();
             msg.getSOAPPart().setContent(message.getSOAPPart().getContent());
-            SOAPMessage response = sendSOAP(msg, getXDSRegistryURI());
+            SOAPMessage response;
+            try {
+                response = sendSOAP(msg, getXDSRegistryURI());
+            } catch ( Exception x) {
+                log.info("@@@@@\n@@@@@\n@@@@@\n@@@@@\n");
+                return new XDSRegistryResponse( false, XDSConstants.XDS_ERR_REG_NOT_AVAIL, "Document Registry not available: "+xdsRegistryURI,x);
+            }
             boolean success = checkResponse( response, "RegistryResponse" );
             logExport(submissionUID, metadata.getPatientID(), success);
             if ( ! success ) {
