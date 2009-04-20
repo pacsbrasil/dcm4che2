@@ -352,7 +352,12 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         log.info("XDS.b: Send register document-b request to registry:"+xdsRegistryURI);
         log.info("####################################################");
         log.info("####################################################");
-        RegistryResponseType rsp = port.documentRegistryRegisterDocumentSetB(submitRequest);
+        RegistryResponseType rsp;
+        try {
+            rsp = port.documentRegistryRegisterDocumentSetB(submitRequest);
+        } catch ( Exception x) {
+            throw new XDSException( XDSConstants.XDS_ERR_REG_NOT_AVAIL, "Document Registry not available: "+xdsRegistryURI,x);
+        }
         log.info("Received RegistryResponse:"+InfoSetUtil.marshallObject(
                 objFac.createRegistryResponse(rsp), indentXmlLog) );
         perfLogger.endSubEvent();
