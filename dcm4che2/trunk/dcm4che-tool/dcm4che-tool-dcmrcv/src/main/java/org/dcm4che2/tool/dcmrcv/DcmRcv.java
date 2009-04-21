@@ -54,7 +54,9 @@ import java.util.concurrent.Executor;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che2.data.BasicDicomObject;
@@ -97,6 +99,16 @@ public class DcmRcv extends StorageService {
             + "=> Starts server listening on port 11112, accepting association "
             + "requests with DCMRCV as called AE title. Received objects "
             + "are stored to /tmp.";
+
+    private static String[] TLS1 = { "TLSv1" };
+
+    private static String[] SSL3 = { "SSLv3" };
+
+    private static String[] NO_TLS1 = { "SSLv3", "SSLv2Hello" };
+
+    private static String[] NO_SSL2 = { "TLSv1", "SSLv3" };
+
+    private static String[] NO_SSL3 = { "TLSv1", "SSLv2Hello" };
 
     private static char[] SECRET = { 's', 'e', 'c', 'r', 'e', 't' };
 
@@ -234,6 +246,10 @@ public class DcmRcv extends StorageService {
         nc.setPort(port);
     }
 
+    public final void setTlsProtocol(String[] tlsProtocol) {
+        nc.setTlsProtocol(tlsProtocol);
+    }
+
     public final void setTlsWithoutEncyrption() {
         nc.setTlsWithoutEncyrption();
     }
@@ -244,10 +260,6 @@ public class DcmRcv extends StorageService {
 
     public final void setTlsAES_128_CBC() {
         nc.setTlsAES_128_CBC();
-    }
-
-    public final void disableSSLv2Hello() {
-        nc.disableSSLv2Hello();
     }
 
     public final void setTlsNeedClientAuth(boolean needClientAuth) {
@@ -335,8 +347,21 @@ public class DcmRcv extends StorageService {
                 "enable TLS connection without, 3DES or AES encryption");
         opts.addOption(OptionBuilder.create("tls"));
 
-        opts.addOption("nossl2", false, "disable acceptance of SSLv2Hello TLS handshake");
-        opts.addOption("noclientauth", false, "disable client authentification for TLS");        
+        OptionGroup tlsProtocol = new OptionGroup();
+        tlsProtocol.addOption(new Option("tls1",
+                "disable the use of SSLv3 and SSLv2 for TLS connections"));
+        tlsProtocol.addOption(new Option("ssl3",
+                "disable the use of TLSv1 and SSLv2 for TLS connections"));
+        tlsProtocol.addOption(new Option("no_tls1",
+                "disable the use of TLSv1 for TLS connections"));
+        tlsProtocol.addOption(new Option("no_ssl3",
+                "disable the use of SSLv3 for TLS connections"));
+        tlsProtocol.addOption(new Option("no_ssl2",
+                "disable the use of SSLv2 for TLS connections"));
+        opts.addOptionGroup(tlsProtocol);
+
+        opts.addOption("noclientauth", false,
+                "disable client authentification for TLS");        
 
         OptionBuilder.withArgName("file|url");
         OptionBuilder.hasArg();
@@ -569,8 +594,16 @@ public class DcmRcv extends StorageService {
             } else {
                 exit("Invalid parameter for option -tls: " + cipher);
             }
-            if (cl.hasOption("nossl2")) {
-                dcmrcv.disableSSLv2Hello();
+            if (cl.hasOption("tls1")) {
+                dcmrcv.setTlsProtocol(TLS1);
+            } else if (cl.hasOption("ssl3")) {
+                dcmrcv.setTlsProtocol(SSL3);
+            } else if (cl.hasOption("no_tls1")) {
+                dcmrcv.setTlsProtocol(NO_TLS1);
+            } else if (cl.hasOption("no_ssl3")) {
+                dcmrcv.setTlsProtocol(NO_SSL3);
+            } else if (cl.hasOption("no_ssl2")) {
+                dcmrcv.setTlsProtocol(NO_SSL2);
             }
             dcmrcv.setTlsNeedClientAuth(!cl.hasOption("noclientauth"));
 

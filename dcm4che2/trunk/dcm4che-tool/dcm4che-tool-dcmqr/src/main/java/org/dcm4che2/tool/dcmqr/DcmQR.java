@@ -56,6 +56,7 @@ import java.util.concurrent.Executor;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
@@ -121,6 +122,16 @@ public class DcmQR {
         + "to own Application Entity QRSCU listing on local port 11113, "
         + "storing received CT images and Grayscale Softcopy Presentation "
         + "states to /tmp.";
+
+    private static String[] TLS1 = { "TLSv1" };
+
+    private static String[] SSL3 = { "SSLv3" };
+
+    private static String[] NO_TLS1 = { "SSLv3", "SSLv2Hello" };
+
+    private static String[] NO_SSL2 = { "TLSv1", "SSLv3" };
+
+    private static String[] NO_SSL3 = { "TLSv1", "SSLv2Hello" };
 
     private static char[] SECRET = { 's', 'e', 'c', 'r', 'e', 't' };
 
@@ -473,6 +484,10 @@ public class DcmQR {
         remoteConn.setPort(port);
     }
 
+    public final void setTlsProtocol(String[] tlsProtocol) {
+        conn.setTlsProtocol(tlsProtocol);
+    }
+
     public final void setTlsWithoutEncyrption() {
         conn.setTlsWithoutEncyrption();
         remoteConn.setTlsWithoutEncyrption();
@@ -486,10 +501,6 @@ public class DcmQR {
     public final void setTlsAES_128_CBC() {
         conn.setTlsAES_128_CBC();
         remoteConn.setTlsAES_128_CBC();
-    }
-
-    public final void disableSSLv2Hello() {
-        conn.disableSSLv2Hello();
     }
 
     public final void setTlsNeedClientAuth(boolean needClientAuth) {
@@ -630,8 +641,19 @@ public class DcmQR {
                 "enable TLS connection without, 3DES or AES encryption");
         opts.addOption(OptionBuilder.create("tls"));
 
-        opts.addOption("nossl2", false, 
-                "disable SSLv2Hello TLS handshake");
+        OptionGroup tlsProtocol = new OptionGroup();
+        tlsProtocol.addOption(new Option("tls1",
+                "disable the use of SSLv3 and SSLv2 for TLS connections"));
+        tlsProtocol.addOption(new Option("ssl3",
+                "disable the use of TLSv1 and SSLv2 for TLS connections"));
+        tlsProtocol.addOption(new Option("no_tls1",
+                "disable the use of TLSv1 for TLS connections"));
+        tlsProtocol.addOption(new Option("no_ssl3",
+                "disable the use of SSLv3 for TLS connections"));
+        tlsProtocol.addOption(new Option("no_ssl2",
+                "disable the use of SSLv2 for TLS connections"));
+        opts.addOptionGroup(tlsProtocol);
+
         opts.addOption("noclientauth", false, 
                 "disable client authentification for TLS");
 
@@ -1137,8 +1159,16 @@ public class DcmQR {
             } else {
                 exit("Invalid parameter for option -tls: " + cipher);
             }
-            if (cl.hasOption("nossl2")) {
-                dcmqr.disableSSLv2Hello();
+            if (cl.hasOption("tls1")) {
+                dcmqr.setTlsProtocol(TLS1);
+            } else if (cl.hasOption("ssl3")) {
+                dcmqr.setTlsProtocol(SSL3);
+            } else if (cl.hasOption("no_tls1")) {
+                dcmqr.setTlsProtocol(NO_TLS1);
+            } else if (cl.hasOption("no_ssl3")) {
+                dcmqr.setTlsProtocol(NO_SSL3);
+            } else if (cl.hasOption("no_ssl2")) {
+                dcmqr.setTlsProtocol(NO_SSL2);
             }
             dcmqr.setTlsNeedClientAuth(!cl.hasOption("noclientauth"));
             if (cl.hasOption("keystore")) {

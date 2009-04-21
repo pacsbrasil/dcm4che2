@@ -52,7 +52,9 @@ import java.util.concurrent.Executor;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che2.data.BasicDicomObject;
@@ -98,6 +100,16 @@ public class DcmHPQR {
             + "=> Query Application Entity HPSCP listening on local port 11112 "
             + "for hanging protocol with name 'NeurosurgeryPlan' and user with "
             + "code 'T1234:HOSP1'.";
+
+    private static String[] TLS1 = { "TLSv1" };
+
+    private static String[] SSL3 = { "SSLv3" };
+
+    private static String[] NO_TLS1 = { "SSLv3", "SSLv2Hello" };
+
+    private static String[] NO_SSL2 = { "TLSv1", "SSLv3" };
+
+    private static String[] NO_SSL3 = { "TLSv1", "SSLv2Hello" };
 
     private static char[] SECRET = { 's', 'e', 'c', 'r', 'e', 't' };
     
@@ -209,6 +221,10 @@ public class DcmHPQR {
         remoteConn.setPort(port);
     }
 
+    public final void setTlsProtocol(String[] tlsProtocol) {
+        conn.setTlsProtocol(tlsProtocol);
+    }
+
     public final void setTlsWithoutEncyrption() {
         conn.setTlsWithoutEncyrption();
         remoteConn.setTlsWithoutEncyrption();
@@ -224,6 +240,10 @@ public class DcmHPQR {
         remoteConn.setTlsAES_128_CBC();
     }
     
+    public final void setTlsNeedClientAuth(boolean needClientAuth) {
+        conn.setTlsNeedClientAuth(needClientAuth);
+    }  
+
     public final void setKeyStoreURL(String url) {
         keyStoreURL = url;
     }
@@ -587,6 +607,18 @@ public class DcmHPQR {
             } else {
                 exit("Invalid parameter for option -tls: " + cipher);
             }
+            if (cl.hasOption("tls1")) {
+                dcmhpqr.setTlsProtocol(TLS1);
+            } else if (cl.hasOption("ssl3")) {
+                dcmhpqr.setTlsProtocol(SSL3);
+            } else if (cl.hasOption("no_tls1")) {
+                dcmhpqr.setTlsProtocol(NO_TLS1);
+            } else if (cl.hasOption("no_ssl3")) {
+                dcmhpqr.setTlsProtocol(NO_SSL3);
+            } else if (cl.hasOption("no_ssl2")) {
+                dcmhpqr.setTlsProtocol(NO_SSL2);
+            }
+            dcmhpqr.setTlsNeedClientAuth(!cl.hasOption("noclientauth"));
             if (cl.hasOption("keystore")) {
                 dcmhpqr.setKeyStoreURL(cl.getOptionValue("keystore"));
             }
@@ -691,6 +723,22 @@ public class DcmHPQR {
         OptionBuilder.withDescription(
                 "enable TLS connection without, 3DES or AES encryption");
         opts.addOption(OptionBuilder.create("tls"));
+
+        OptionGroup tlsProtocol = new OptionGroup();
+        tlsProtocol.addOption(new Option("tls1",
+                "disable the use of SSLv3 and SSLv2 for TLS connections"));
+        tlsProtocol.addOption(new Option("ssl3",
+                "disable the use of TLSv1 and SSLv2 for TLS connections"));
+        tlsProtocol.addOption(new Option("no_tls1",
+                "disable the use of TLSv1 for TLS connections"));
+        tlsProtocol.addOption(new Option("no_ssl3",
+                "disable the use of SSLv3 for TLS connections"));
+        tlsProtocol.addOption(new Option("no_ssl2",
+                "disable the use of SSLv2 for TLS connections"));
+        opts.addOptionGroup(tlsProtocol);
+
+        opts.addOption("noclientauth", false,
+                "disable client authentification for TLS");
 
         OptionBuilder.withArgName("file|url");
         OptionBuilder.hasArg();

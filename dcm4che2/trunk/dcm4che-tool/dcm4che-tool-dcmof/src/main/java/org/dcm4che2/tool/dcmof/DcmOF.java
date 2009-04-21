@@ -62,6 +62,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
@@ -133,6 +134,16 @@ public class DcmOF {
             + "requests with DCM4CHE_OF as called AE title, storing received messages "
             + "to /tmp.";
 
+    private static String[] TLS1 = { "TLSv1" };
+
+    private static String[] SSL3 = { "SSLv3" };
+
+    private static String[] NO_TLS1 = { "SSLv3", "SSLv2Hello" };
+
+    private static String[] NO_SSL2 = { "TLSv1", "SSLv3" };
+
+    private static String[] NO_SSL3 = { "TLSv1", "SSLv2Hello" };
+
     private static char[] SECRET = { 's', 'e', 'c', 'r', 'e', 't' };
     
     private static final String[] ONLY_DEF_TS = { UID.ImplicitVRLittleEndian };
@@ -187,6 +198,10 @@ public class DcmOF {
         nc.setPort(port);
     }
 
+    public final void setTlsProtocol(String[] tlsProtocol) {
+        nc.setTlsProtocol(tlsProtocol);
+    }
+
     public final void setTlsWithoutEncyrption() {
         nc.setTlsWithoutEncyrption();
     }
@@ -197,10 +212,6 @@ public class DcmOF {
 
     public final void setTlsAES_128_CBC() {
         nc.setTlsAES_128_CBC();
-    }
-    
-    public final void disableSSLv2Hello() {
-        nc.disableSSLv2Hello();
     }
     
     public final void setTlsNeedClientAuth(boolean needClientAuth) {
@@ -284,8 +295,21 @@ public class DcmOF {
                 "enable TLS connection without, 3DES or AES encryption");
         opts.addOption(OptionBuilder.create("tls"));
         
-        opts.addOption("nossl2", false, "disable acceptance of SSLv2Hello TLS handshake");
-        opts.addOption("noclientauth", false, "disable client authentification for TLS");        
+        OptionGroup tlsProtocol = new OptionGroup();
+        tlsProtocol.addOption(new Option("tls1",
+                "disable the use of SSLv3 and SSLv2 for TLS connections"));
+        tlsProtocol.addOption(new Option("ssl3",
+                "disable the use of TLSv1 and SSLv2 for TLS connections"));
+        tlsProtocol.addOption(new Option("no_tls1",
+                "disable the use of TLSv1 for TLS connections"));
+        tlsProtocol.addOption(new Option("no_ssl3",
+                "disable the use of SSLv3 for TLS connections"));
+        tlsProtocol.addOption(new Option("no_ssl2",
+                "disable the use of SSLv2 for TLS connections"));
+        opts.addOptionGroup(tlsProtocol);
+
+        opts.addOption("noclientauth", false,
+                "disable client authentification for TLS");        
 
         OptionBuilder.withArgName("file|url");
         OptionBuilder.hasArg();
@@ -565,8 +589,16 @@ public class DcmOF {
             } else {
                 exit("Invalid parameter for option -tls: " + cipher);
             }
-            if (cl.hasOption("nossl2")) {
-                dcmof.disableSSLv2Hello();
+            if (cl.hasOption("tls1")) {
+                dcmof.setTlsProtocol(TLS1);
+            } else if (cl.hasOption("ssl3")) {
+                dcmof.setTlsProtocol(SSL3);
+            } else if (cl.hasOption("no_tls1")) {
+                dcmof.setTlsProtocol(NO_TLS1);
+            } else if (cl.hasOption("no_ssl3")) {
+                dcmof.setTlsProtocol(NO_SSL3);
+            } else if (cl.hasOption("no_ssl2")) {
+                dcmof.setTlsProtocol(NO_SSL2);
             }
             dcmof.setTlsNeedClientAuth(!cl.hasOption("noclientauth"));
 
