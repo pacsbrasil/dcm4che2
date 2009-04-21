@@ -73,6 +73,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.MessageFactory;
+import javax.xml.soap.MimeHeaders;
 import javax.xml.soap.SOAPBody;
 import javax.xml.soap.SOAPConnection;
 import javax.xml.soap.SOAPConnectionFactory;
@@ -705,6 +706,9 @@ public class XDSIService extends ServiceMBeanSupport {
             configTLS(url);
             MessageFactory messageFactory = MessageFactory.newInstance();
             SOAPMessage message = messageFactory.createMessage();
+            MimeHeaders hd = message.getMimeHeaders();
+            hd.addHeader("SOAPAction", "urn:ihe:iti:2007:ProvideAndRegisterDocumentSet");
+            
             SOAPEnvelope envelope = message.getSOAPPart().getEnvelope();
             SOAPBody soapBody = envelope.getBody();
             SOAPElement bodyElement = soapBody.addDocument(metaData);
