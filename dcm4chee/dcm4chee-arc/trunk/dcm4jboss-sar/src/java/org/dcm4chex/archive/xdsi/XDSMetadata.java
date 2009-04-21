@@ -247,13 +247,16 @@ public class XDSMetadata {
             title = mdValues.getProperty("submissionSetTitle","TITLE");
         }
         addSubmissionRegistryPackage(SUBMISSION_SET, title);
+        int fldrDocIdx = 0;
+        String folderDocAssocID;
         if ( newFolder ) {
             addFolderRegistryPackage("Folder", mdValues.getProperty("folder.name","FOLDER"));
             addAssociation(null, SUBMISSION_SET,"Folder", HAS_MEMBER, null);
             if ( docs != null ) {
                 for ( int i = 0 ; i < docs.length ; i++ ) {
-                    addAssociation( FOLDER_DOC_ASSOC+i, "Folder", docs[i].getDocumentID(),HAS_MEMBER, null);
-                    addAssociation( null, SUBMISSION_SET, FOLDER_DOC_ASSOC+i, HAS_MEMBER, null );
+                    folderDocAssocID = FOLDER_DOC_ASSOC+fldrDocIdx++;
+                    addAssociation( folderDocAssocID, "Folder", docs[i].getDocumentID(),HAS_MEMBER, null);
+                    addAssociation( null, SUBMISSION_SET, folderDocAssocID, HAS_MEMBER, null );
                 }
             }
         }
@@ -269,8 +272,9 @@ public class XDSMetadata {
                 while ( st.hasMoreTokens() ) {
                     uuid = st.nextToken();
                     for ( int i = 0 ; i < docs.length ; i++ ) {
-                        addAssociation(null, uuid,docs[i].getDocumentID(), HAS_MEMBER, null);
-                        addAssociation( null, SUBMISSION_SET, FOLDER_DOC_ASSOC+i, HAS_MEMBER, null );
+                        folderDocAssocID = FOLDER_DOC_ASSOC+fldrDocIdx++;
+                        addAssociation(folderDocAssocID, uuid,docs[i].getDocumentID(), HAS_MEMBER, null);
+                        addAssociation( null, SUBMISSION_SET, folderDocAssocID, HAS_MEMBER, null );
                     }
                     addObjectRef(uuid);
                 }
