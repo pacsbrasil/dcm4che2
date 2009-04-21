@@ -43,9 +43,8 @@ import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -67,7 +66,9 @@ import org.dcm4chee.xero.dicom.DicomURLHandler;
 import org.dcm4chee.xero.dicom.FilesystemWatcher;
 import org.dcm4chee.xero.dicom.SOPClassUIDs;
 import org.dcm4chee.xero.dicom.TransferCapabilitySelector;
-import org.dcm4chee.xero.util.NamedThreadFactory;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
+import org.dcm4chee.xero.search.AEProperties;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,8 +86,9 @@ public class CMoveURLConnection extends URLConnection
 {
    private static Logger log = LoggerFactory.getLogger(CMoveURLConnection.class);
    
-   private static final String DEFAULT_QUERY_LEVEL = "IMAGE"; //"SERIES";
-
+   private static final String DEFAULT_QUERY_LEVEL = "SERIES";
+   private static final String QUERY_LEVEL_KEY = "level";
+   
    private static DicomConnector dicomConnector = new DicomConnector();
    
    private DicomURLHandler urlHandler;
@@ -157,7 +159,8 @@ public class CMoveURLConnection extends URLConnection
    }
 
    /**
-    * @throws IOException
+    * Perform a C-MOVE on the ae that is specified by the associated URL
+    * @throws IOException Thrown when an error is encountered during the C-MOVE request.
     */
    private DimseRSP cmove() throws IOException
    {
@@ -174,11 +177,13 @@ public class CMoveURLConnection extends URLConnection
          TransferCapability capability = tcs.selectTransferCapability(association,SOPClassUIDs.CMove);
          if(capability == null || (transferSyntaxUID = tcs.selectBestTransferSyntaxUID(capability)) == null)
             throw new DicomException("Could not negotiate a transfer capability between "+localAE.getAETitle()+" and "+remoteAE.getAETitle());
-         log.debug("Transfer syntax of {} was selected.",transferSyntaxUID);
+         
+         String queryLevel = getQueryLevel(remoteAE.getAETitle());
+         log.debug("Transfer syntax of {} was selected for query level {}",transferSyntaxUID,queryLevel);
          
          // Query at a series level to avoid excessive requests.
          DicomObject query = urlHandler.createDicomQuery(getURL());
-         query.putString(Tag.QueryRetrieveLevel, VR.CS, DEFAULT_QUERY_LEVEL);
+         query.putString(Tag.QueryRetrieveLevel, VR.CS, queryLevel);
          
          // Set query level from transfer capability
          
@@ -210,6 +215,17 @@ public class CMoveURLConnection extends URLConnection
    }
    
    
+   /**
+    * Determine the query retrieve level to use for the C-MOVE operation.
+    * @param aeTitle AE Title that is being queried.
+    * @return The query retrieve level:  STUDY,SERIES, or IMAGE.  Default to {@link #DEFAULT_QUERY_LEVEL}.
+    */
+   private String getQueryLevel(String aeTitle)
+   {
+      Map<String,Object> aeMap = AEProperties.getInstance().getAE(aeTitle);
+      return FilterUtil.getString(aeMap, QUERY_LEVEL_KEY, DEFAULT_QUERY_LEVEL);
+   }
+
    @Override
    public InputStream getInputStream() 
       throws IOException
