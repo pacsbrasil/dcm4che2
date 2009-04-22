@@ -189,6 +189,7 @@ public class DcmRcv extends StorageService {
             UID.ProcedureLogStorage, UID.MammographyCADSRStorage,
             UID.KeyObjectSelectionDocumentStorage,
             UID.ChestCADSRStorage, UID.XRayRadiationDoseSRStorage,
+            UID.EncapsulatedPDFStorage, UID.EncapsulatedCDAStorage,
             UID.StandaloneCurveStorageRetired,
             UID._12leadECGWaveformStorage, UID.GeneralECGWaveformStorage,
             UID.AmbulatoryECGWaveformStorage, UID.HemodynamicWaveformStorage,
