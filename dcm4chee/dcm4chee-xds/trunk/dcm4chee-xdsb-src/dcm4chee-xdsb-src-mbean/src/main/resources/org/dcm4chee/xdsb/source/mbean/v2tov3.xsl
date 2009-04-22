@@ -27,14 +27,23 @@
         <xsl:element name="{$name}" namespace="urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0">
             <xsl:copy-of select="@*" />
             <xsl:if test="$name='Classification' or $name='Association' or $name='ExternalIdentifier' ">
-                <xsl:attribute name="id"><xsl:value-of select="concat($prefix,'_',position())"/></xsl:attribute>
+                <xsl:if test="not(@id)">
+                    <xsl:attribute name="id"><xsl:value-of select="concat($prefix,'_',position())"/></xsl:attribute>
+                </xsl:if>
             </xsl:if>
             <xsl:if test="$name='ExternalIdentifier' ">
                 <xsl:attribute name="registryObject"><xsl:value-of select="../@id"/></xsl:attribute>
             </xsl:if>
             <xsl:if test="$name='Association' ">
                 <xsl:variable name="type" select="@associationType"/>
-                <xsl:attribute name="associationType"><xsl:value-of select="concat('urn:oasis:names:tc:ebxml-regrep:AssociationType:',$type)"/></xsl:attribute>
+                <xsl:choose>
+	                <xsl:when test="$type='HasMember'">
+	                    <xsl:attribute name="associationType"><xsl:value-of select="concat('urn:oasis:names:tc:ebxml-regrep:AssociationType:',$type)"/></xsl:attribute>
+	                </xsl:when>
+	                <xsl:otherwise>
+                        <xsl:attribute name="associationType"><xsl:value-of select="concat('urn:ihe:iti:2007:AssociationType:',$type)"/></xsl:attribute>
+	                </xsl:otherwise>
+	            </xsl:choose>
             </xsl:if>
             <xsl:apply-templates select="*|text()" mode="addId"/>
         </xsl:element>
