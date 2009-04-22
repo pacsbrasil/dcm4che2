@@ -508,9 +508,21 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @ejb.home-method
      */
-    public PatientLocal ejbHomeSelectPatient(Dataset ds)
+    public PatientLocal ejbHomeSelectPatientByID(Dataset ds)
             throws FinderException {
-        Collection c = ejbHomeSelectPatients(ds);
+        PatientLocalHome patHome = (PatientLocalHome) ctx.getEJBLocalHome();
+        String pid = ds.getString(Tags.PatientID);
+        String issuer = ds.getString(Tags.IssuerOfPatientID);
+        Collection c = patHome.findByPatientId(pid);
+        if (issuer != null) {
+            for (Iterator iter = c.iterator(); iter.hasNext();) {
+                PatientLocal pat = (PatientLocal) iter.next();
+                String issuer2 = pat.getIssuerOfPatientId();
+                if (issuer2 != null && !issuer2.equals(issuer)) {
+                    iter.remove();
+                }
+            }
+        }
         if (c.isEmpty()) {
             throw new ObjectNotFoundException();
         }
@@ -536,7 +548,7 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @ejb.home-method
      */
-    public Collection ejbHomeSelectPatients(Dataset ds)
+    public Collection ejbHomeSelectPatientsByDemographics(Dataset ds)
             throws FinderException {
         PatientLocalHome patHome = (PatientLocalHome) ctx.getEJBLocalHome();
         String pid = ds.getString(Tags.PatientID);

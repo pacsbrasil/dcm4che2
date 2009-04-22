@@ -168,7 +168,7 @@ public abstract class MWLManagerBean implements SessionBean {
                     sps.getString(Tags.SPSID));
         PatientLocal pat = mwlItem.getPatient();
         try {
-            if (patHome.selectPatient(ds).isIdentical(pat)) {
+            if (patHome.selectPatientByID(ds).isIdentical(pat)) {
                 if (updatePatient) {
                     pat.updateAttributes(ds.subSet(PATIENT_ATTRS_WITH_CHARSET));
                 }
@@ -224,7 +224,7 @@ public abstract class MWLManagerBean implements SessionBean {
     private PatientLocal updateOrCreatePatient(Dataset ds)
             throws FinderException, CreateException  {
         try {
-            return patHome.selectPatient(ds);
+            return patHome.selectPatientByID(ds);
         } catch (ObjectNotFoundException onfe) {
             return patHome.create(ds.subSet(PATIENT_ATTRS_WITH_CHARSET));
         }           

@@ -153,7 +153,7 @@ public abstract class StudyMgtBean implements SessionBean {
 
     private PatientLocal findOrCreatePatient(Dataset ds)
             throws FinderException, CreateException {
-        Collection c = patHome.selectPatients(ds);
+        Collection c = patHome.selectPatientsByDemographics(ds);
         if (c.size() != 1) {
             return patHome.create(ds);
         }

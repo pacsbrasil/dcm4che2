@@ -127,7 +127,7 @@ public abstract class PatientUpdateBean implements SessionBean {
                 + " from " + prior.getString(Tags.PatientID)
                 + " to " + correct.getString(Tags.PatientID));
         try {
-            patHome.selectPatient(correct);
+            patHome.selectPatientByID(correct);
             String prompt = "Patient with PID "
                 + correct.getString(Tags.PatientID) + "^^^"
                 + correct.getString(Tags.IssuerOfPatientID, "")
@@ -222,7 +222,7 @@ public abstract class PatientUpdateBean implements SessionBean {
             // Check if patient record was also inserted by concurrent thread
             // with non-unique index on (pat_id, pat_id_issuer)
             try {
-                patHome.selectPatient(ds);
+                patHome.selectPatientByID(ds);
                 return pat;
             } catch (NonUniquePatientException nupe) {
                 try {
@@ -236,7 +236,7 @@ public abstract class PatientUpdateBean implements SessionBean {
     }
 
     private PatientLocal findAndUpdatePatient(Dataset ds) throws FinderException {
-        PatientLocal pat = patHome.selectPatient(ds);
+        PatientLocal pat = patHome.selectPatientByID(ds);
         pat.updateAttributes(ds);
         return pat;
     }
@@ -249,7 +249,7 @@ public abstract class PatientUpdateBean implements SessionBean {
         LOG.info("Delete " + ds.getString(Tags.PatientName)
                 + " with PID " + ds.getString(Tags.PatientID));
         try {
-            patHome.selectPatient(ds).remove();
+            patHome.selectPatientByID(ds).remove();
             return true;
         } catch (ObjectNotFoundException e) {
             return false;
@@ -263,7 +263,7 @@ public abstract class PatientUpdateBean implements SessionBean {
         LOG.info("Change status of SPS for " + ds.getString(Tags.PatientName)
                 + " with PID " + ds.getString(Tags.PatientID) + " to ARRIVED");
         try {
-            PatientLocal pat = patHome.selectPatient(ds);
+            PatientLocal pat = patHome.selectPatientByID(ds);
             Collection c = pat.getMwlItems();
             for (Iterator iter = c.iterator(); iter.hasNext();) {
                 MWLItemLocal mwlitem = (MWLItemLocal) iter.next();
@@ -280,7 +280,7 @@ public abstract class PatientUpdateBean implements SessionBean {
     public void updateOtherPatientIDsOrCreate(Dataset ds)
     throws FinderException, CreateException {
         try {
-            patHome.selectPatient(ds).updateOtherPatientIDs(ds);
+            patHome.selectPatientByID(ds).updateOtherPatientIDs(ds);
         } catch (ObjectNotFoundException e) {
             patHome.create(ds);
         }

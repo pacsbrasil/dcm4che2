@@ -181,7 +181,7 @@ public abstract class MPPSManagerBean implements SessionBean {
     private PatientLocal findOrCreatePatient(Dataset ds)
             throws DcmServiceException {
         try {
-            Collection c = patHome.selectPatients(ds);
+            Collection c = patHome.selectPatientsByDemographics(ds);
             if (c.size() == 1) {
                 return patHome.followMergedWith(
                         (PatientLocal) c.iterator().next());
@@ -669,7 +669,7 @@ public abstract class MPPSManagerBean implements SessionBean {
         }
         PatientLocal pat;
         try {
-            pat = patHome.selectPatient(mwlitem);
+            pat = patHome.selectPatientByID(mwlitem);
         } catch (FinderException e) {
             throw new EJBException(e);
         }
