@@ -23,10 +23,13 @@
   <property name="integration" location="${integration.path}/server.properties" />
   <property name="integration.server.service" value="DCM4CHEE Image Archive" />
 
+  <!-- JMeter properties -->
   <property name="jmeterhome" location="${integration.cdp}/jmeter" />
   
   <property name="jmeter.user.classpath" value="" />
+  <property name="jmeter.failureproperty" value="" />
   <property name="jmeter.user.properties" value="${integration.cdp}/jmeter/bin/user.properties" />
+  <property name="jmeter.beanshell.init.file" value="" />
 
   <property name="testPackage" value="cdp-integration" />
 
@@ -277,16 +280,24 @@
      <delete dir="target" quiet="true" />
      <mkdir dir="target" />
      <jmeter jmeterhome="${jmeterhome}"
-        failureproperty="jmeterTestsFailed"
+        failureproperty="${jmeter.failureproperty}"
         resultlogdir="${basedir}/target">
         <jmeterarg value="-q${jmeter.user.properties}"/>
 	<testplans refid="integration.scripts"/>
 	<property name="user.classpath" value="${jmeter.user.classpath}"/>
+	<property name="beanshell.init.file" value="${jmeter.beanshell.init.file}"/>
+	<jvmarg value="-Xms256m"/>
+	<jvmarg value="-Xmx256m"/>
      </jmeter>
      <move todir="target">
         <fileset dir="${jmeterhome}/bin" includes="**/*.jtl" />
      </move>
      <antcall target="runJMeterXslt" />
+     <fail message="One or more JMeter tests failed.  See the target/junit-jmeter/*.xml files for exact failures.">  
+        <condition>
+           <isset property="${jmeter.failureproperty}"/>
+  	</condition>
+     </fail>     
   </target>
 
   <target name="runJMeterXslt">
