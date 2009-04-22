@@ -1,0 +1,100 @@
+<html>
+<body>
+<h1>
+org.dcm4chee.xero.dicom
+</h1>
+<h2>XERO DICOM Utilities Package</h2>
+<h3>Purpose</h3>
+The org.dcm4chee.xero.dicom package contains utility classes that are used with the 
+DCM4CHE DICOM libraries.  
+
+<h3>Design</h3>
+The package is broken into three types of utility:  DICOM helper classes, General utilities
+and Network AE handlers.  The classes in this module have been pulled in from the CFIND module
+to consolidate the DICOM handling into one easy to find place.
+
+<h3>Contents</h3>
+<h4>DICOM AE Utilities</h4>
+<dl>
+<dt>AEConnection</dt>
+<dd>
+Network AE configuration class.  Loads AE / machine settings from properties files in 
+the server classpath.
+</dd>
+
+<dt>AESettings</dt>
+<dd>
+Legacy AE configuration accessor.  Writes AE settings into local variables.  Has been
+replaced by the ApplicationEntityProvider class for new code.
+</dd>
+
+<dt>ApplicationEntityProvider</dt>
+<dd>
+Factory class that generates DCM4CE NetworkApplicationEntity instances based on
+the AE configuration properties files.
+</dd>
+</dl>
+
+<h4>DICOM Manipulation Tools</h4>
+<dl>
+<dt>DicomCommandChecker</dt>
+<dd>
+DICOM command status code checking utility.  Will identify successful and pending operations
+and automatically throw DicomException when problems are encountered.
+</dd>
+
+<dt>DicomException</dt>
+<dd>
+Basic exception for indicating a DICOM based exception to the system.  The IOException is
+extended to allow for it to be transparently thrown from URL methods.
+</dd>
+
+<dt>DicomDateTimeHandler</dt>
+<dd>
+Utility that handles concatenation, parsing and formating of DICOM date, time and datetime
+fields.  This class was extracted from the date / time handling that was introduced as a 
+part of the IMPAX spftp integration.
+</dd>
+
+<dt>DicomElementAccessor</dt>
+<dd>
+Lightweight metadata access proxy that encapsulates whether the full header or the C-FIND
+response is used to return a particular DICOM element. 
+</dd>
+
+<dt>DicomURLHandler</dt>
+<dd>The DICOM C-MOVE code uses a DICOM URL syntax to specify resources:  <code>dicom://ae@host:port/query</code>
+This class will generate properly formatted URLs and associate them with a URL handler 
+that can retrieve the data when the URLConnection.openStream() call is invoked.
+</dd>
+
+<dt>SOPClassUIDs</dt>
+<dd>
+Static class that contains useful Lists of SOP Instance UIDs.  The content of 
+this file has been centralized here from various DICOM sources in the codebase.
+</dd>
+
+<dt>TransferSyntaxCapabilitySelector</dt>
+<dd>
+The logic for choosing the best transfer syntax for a DICOM association based
+on the transfer capabilities of the SCP and SCU.
+</dd>
+
+</dl>
+
+<h4>Miscellaneous Utilities</h4>
+<dl>
+<dt>FilesystemWatcher</dt>
+<dd>
+Utility class that can watch for a file to be created at a particular file
+path and return a stream to it when it is available.  This class is a bit 
+out of place in the *.dicom package, and might move to a general utility
+package in the future.
+</dd>
+</dl>
+
+
+
+
+</body>
+</html>
