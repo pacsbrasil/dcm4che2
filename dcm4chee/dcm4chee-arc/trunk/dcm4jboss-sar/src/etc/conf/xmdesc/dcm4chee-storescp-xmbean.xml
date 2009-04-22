@@ -744,6 +744,7 @@ Notifications for one Series.]]>
            RealWorldValueMappingStorage
            StereometricRelationshipStorage
            EncapsulatedPDFStorage
+           EncapsulatedCDAStorage
            RTDoseStorage
            RTStructureSetStorage
            RTBeamsTreatmentRecordStorage
