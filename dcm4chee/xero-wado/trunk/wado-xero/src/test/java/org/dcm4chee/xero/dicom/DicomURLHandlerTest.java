@@ -86,10 +86,30 @@ public class DicomURLHandlerTest
    public void createDicomQuery_ShouldIncludeAllUIDsInDicomObject() throws MalformedURLException
    {
       URL dicomURL = handler.createURL(fullDicomURLStr);
-      DicomObject dcm = handler.createDicomQuery(dicomURL);
+      DicomObject dcm = handler.createDicomQuery(dicomURL,"IMAGE");
       assertEquals(dcm.getString(Tag.StudyInstanceUID),expectedStudyUID);
       assertEquals(dcm.getString(Tag.SeriesInstanceUID),expectedSeriesUID);
       assertEquals(dcm.getString(Tag.SOPInstanceUID), expectedObjectUID);
+   }
+   
+   @Test
+   public void createDicomQuery_ShouldIncludeSeriesUIDsInSeriesLevel() throws MalformedURLException
+   {
+      URL dicomURL = handler.createURL(fullDicomURLStr);
+      DicomObject dcm = handler.createDicomQuery(dicomURL,"SERIES");
+      assertEquals(dcm.getString(Tag.StudyInstanceUID),expectedStudyUID);
+      assertEquals(dcm.getString(Tag.SeriesInstanceUID),expectedSeriesUID);
+      assert !dcm.contains(Tag.SOPInstanceUID);
+   }
+   
+   @Test
+   public void createDicomQuery_ShouldIncludeAllStudyUIDInImageLevel() throws MalformedURLException
+   {
+      URL dicomURL = handler.createURL(fullDicomURLStr);
+      DicomObject dcm = handler.createDicomQuery(dicomURL,"STUDY");
+      assertEquals(dcm.getString(Tag.StudyInstanceUID),expectedStudyUID);
+      assert !dcm.contains(Tag.SeriesInstanceUID);
+      assert !dcm.contains(Tag.SOPInstanceUID);
    }
    
    @Test

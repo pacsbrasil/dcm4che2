@@ -117,14 +117,16 @@ public class RegroupNonImage implements Filter<ResultsBean> {
 		 sb.getSeries().add(seb);
 		 ret = seb;
 	  }
-	  seb.getDicomObject().addAll(origSer.getDicomObject());
 	  String seriesUID = origSer.getSeriesUID();
-	  OriginalSeriesUID origUid = new OriginalSeriesUID(seriesUID);
-	  seb.getChildren().remove(origSer.getId());
-	  for(DicomObjectType dot : seb.getDicomObject()) {
-	     DicomObjectInterface doi = (DicomObjectInterface) dot;
-	     doi.addMacro(origUid);
+	  OriginalSeriesUID origSeriesUid = new OriginalSeriesUID(seriesUID);
+	  for(DicomObjectType dot : origSer.getDicomObject()) {
+		  if( dot instanceof DicomObjectInterface) {
+			  DicomObjectInterface doi = (DicomObjectInterface) dot;
+			  doi.addMacro(origSeriesUid);
+		  }
 	  }
+	  seb.getDicomObject().addAll(origSer.getDicomObject());
+	  seb.getChildren().remove(origSer.getId());
 	  return ret;
    }
 }

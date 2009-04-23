@@ -49,6 +49,9 @@ public interface Series {
 	@Column(searchable=true,type="DateTime")
 	String getSeriesDateTime();
 	
+	@Column(searchable=true,type="DateTime")
+	String getPPSStartDateTime();
+	
 	@Column(searchable=true,type="string")
 	String getInstitutionalDepartmentName();
 	
@@ -63,6 +66,12 @@ public interface Series {
 	
 	@Column(searchable=true,type="string")
 	String getInstitutionName();
+	
+	@Column(searchable=true,type="string")
+	String getRequestedProcedureID();
+	
+	@Column(searchable=true,type="string")
+	String getScheduledProcedureStepID();
 	
 	@Column(type="string")
 	String getManufacturer();

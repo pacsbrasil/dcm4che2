@@ -70,7 +70,12 @@ public class SeriesSearch extends StudySearch{
         Tag.OperatorName,
         Tag.InstitutionalDepartmentName,
         Tag.ManufacturerModelName,
-        Tag.RequestingPhysician};
+        Tag.RequestingPhysician,
+        Tag.RequestedProcedureID,
+        Tag.ScheduledProcedureStepID,
+        Tag.PerformedProcedureStepStartDate,
+        Tag.PerformedProcedureStepEndDate,
+        };
     
     protected static Set<Integer> returnKeys = new HashSet<Integer>(Arrays.asList(SERIES_RETURN_KEYS));
     

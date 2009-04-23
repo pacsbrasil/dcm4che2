@@ -189,6 +189,9 @@
     	<attribute name="InstitutionalDepartmentName" />
     	<attribute name="ManufacturerModelName" />
     	<attribute name="RequestingPhysician" />
+    	<attribute name="RequestedProcedureID" />
+    	<attribute name="ScheduledProcedureStepID" />
+    	<attribute name="PPSStartDateTime" />
     </complexType>
     
     <simpleType name="PresentationSizeMode">

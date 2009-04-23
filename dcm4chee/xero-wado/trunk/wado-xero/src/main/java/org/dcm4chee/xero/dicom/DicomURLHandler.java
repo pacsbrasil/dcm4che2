@@ -47,9 +47,12 @@ import java.util.Map;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.search.AEProperties;
 import org.dcm4chee.xero.wado.cmove.DicomURLStreamHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for creating, parsing and manipulating DICOM URLs
@@ -57,6 +60,7 @@ import org.dcm4chee.xero.wado.cmove.DicomURLStreamHandler;
  */
 public class DicomURLHandler // Manipulator?
 {
+   private static Logger log = LoggerFactory.getLogger(DicomURLHandler.class);
    private final URLStreamHandler handler;
 
    public DicomURLHandler(URLStreamHandler handler)
@@ -135,24 +139,59 @@ public class DicomURLHandler // Manipulator?
       sb.append(paramValue);
    }
 
+   /** Figures out whtat query level to use based on what is available in the query string */
+   public static String chooseLevel(boolean hasStudy, boolean hasSeries, boolean hasImage, String level) {
+	   if( !(hasStudy||hasSeries||hasImage) ) throw new IllegalArgumentException("No UID specified - not retrievable.");
+	   if(!hasStudy) log.warn("Shouldn't query without STUDY.");
+	   if( level.equals("STUDY") ) {
+		   if( hasStudy ) return level;
+		   log.warn("Can't query at study level because no study UID specified.");
+		   if( hasSeries ) return "SERIES";
+		   return "IMAGE";
+	   }
+	   if( level.equals("SERIES") ) {
+		   if( hasSeries ) return level;
+		   log.warn("Trying to query at the SERIES level, but no SERIES UID specified.");
+		   if( hasStudy ) return "STUDY";
+		   return "IMAGE";
+	   }
+	   if( hasImage ) {
+		   if( !hasSeries ) log.warn("No series level UID provided - not necessarily safe to retrieve at image level");
+		   return level;
+	   }
+	   if( hasStudy ) return "STUDY";
+	   return "SERIES";
+   }
+
+
    /**
     * Create a DICOM query object based on the arguments of the indicated DICOM URL.
     */
-   public DicomObject createDicomQuery(URL dicomURL)
+   public DicomObject createDicomQuery(URL dicomURL, String level)
    {
       Map<String,String> parameters = parseQueryParameters(dicomURL);
+      
+      boolean hasStudy = parameters.containsKey("studyUID");
+      boolean hasSeries = parameters.containsKey("seriesUID");
+      boolean hasObject =parameters.containsKey("objectUID"); 
+      level = chooseLevel(hasStudy, hasSeries, hasObject, level);
 
       // VR of null will lookup the VR of the Tag.
       DicomObject dcm = new BasicDicomObject();
-      if(parameters.containsKey("studyUID"))
+      if(hasStudy)
          dcm.putString(Tag.StudyInstanceUID, null, parameters.get("studyUID"));
       
-      if(parameters.containsKey("seriesUID"))
-         dcm.putString(Tag.SeriesInstanceUID, null, parameters.get("seriesUID"));
-      
-      if(parameters.containsKey("objectUID"))
-         dcm.putString(Tag.SOPInstanceUID, null, parameters.get("objectUID"));
-      
+      if (!level.equals("STUDY")) {
+			if (hasSeries)
+				dcm.putString(Tag.SeriesInstanceUID, null, parameters
+						.get("seriesUID"));
+
+			if (hasObject && !level.equals("SERIES"))
+				dcm.putString(Tag.SOPInstanceUID, null, parameters
+						.get("objectUID"));
+		}
+      dcm.putString(Tag.QueryRetrieveLevel, VR.CS, level);
+
       return dcm;
    }
 

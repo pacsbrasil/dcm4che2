@@ -328,8 +328,10 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
 	  int cmp=0;
 	  if( d1!=null && d2!=null ) cmp = d1.compareTo(d2);
 	  if( cmp!=0 ) return cmp>0;
-	  cmp = sdo1.getContentName().compareTo(sdo2.getContentName());
-	  if( cmp!=0 ) return cmp>0;
+	  if( sdo1.getContentName()!=null && sdo2.getContentName()!=null ) {
+		  cmp = sdo1.getContentName().compareTo(sdo2.getContentName());
+		  if( cmp!=0 ) return cmp>0;
+	  }
 	  cmp = sdo1.getObjectUID().compareTo(sdo2.getObjectUID());
 	  return cmp>0;
    }

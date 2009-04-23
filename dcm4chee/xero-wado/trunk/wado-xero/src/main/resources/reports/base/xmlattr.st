@@ -2,4 +2,4 @@
 $it.dicomObjects:{
 <item>
 $it:xmlattr()$</item>$\n$}$
-$else$$it.value$$endif$</attr>$endif$$\n$
+$else$$it.value;format="xml"$$endif$</attr>$endif$$\n$

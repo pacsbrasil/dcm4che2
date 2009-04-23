@@ -154,8 +154,8 @@ public class GspsEncode implements Filter<ResultsBean> {
 
 	private static final ICC_ColorSpace lab = new ICC_ColorSpace(ICC_Profile.getInstance(ICC_ColorSpace.CS_sRGB));
 
-	private static final int MIN_FONT_SIZE = 12;
-	private static final int MIN_DISPLAY_FONT_SIZE = 20;
+	private static final int MIN_FONT_SIZE = 24;
+	private static final int MIN_DISPLAY_FONT_SIZE = 32;
 
 	/** The string to use for the wado image references */
 	private String wadoUrl = "/wado2/wado";
@@ -262,13 +262,13 @@ public class GspsEncode implements Filter<ResultsBean> {
 			int[] aspectPair = dam.getPresentationPixelAspectRatio();
 			float aspect = 1.0f;
 			ImageSOPInstanceReference[] sops = dam.getImageSOPInstanceReferences();
-			if (spacing != null) {
+			if (spacing != null && spacing.length>1) {
 				if (spacing[0] != spacing[1]) {
 					aspect = spacing[0] / spacing[1];
 				}
 				PixelSpacingMacro spacingMacro = new PixelSpacingMacro(spacing);
 				addMacro(images, spacingMacro, sops);
-			} else if (aspectPair != null && aspectPair[0] != aspectPair[1]) {
+			} else if (aspectPair != null && aspectPair.length>1 && aspectPair[0] != aspectPair[1]) {
 				aspect = aspectPair[0] / (float) aspectPair[1];
 			}
 
@@ -748,6 +748,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 
 	/** Get the maximum line length of the set of lines provided */
 	public static int lineLength(String[] lines) {
+		if( lines.length==0 ) return 0;
 		int ret = lines[0].length();
 		for (int i = 1; i < lines.length; i++) {
 			if (ret < lines[i].length())
@@ -764,6 +765,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 	 * @return Array of strings, one per line.
 	 */
 	public static String[] convertToLines(String unformatted) {
+		if(unformatted==null ) return new String[0];
 		int lfPos = unformatted.indexOf('\n');
 		int crPos = unformatted.indexOf('\r');
 		if (crPos < 0 && lfPos < 0) {
@@ -919,6 +921,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 		circle.setD(d.toString());
 		circle.setV(v.toString());
 		circle.setId(ResultsBean.createId("el"));
+		circle.setStrokeWidth("6");
 		return circle;
 	}
 
@@ -1016,7 +1019,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 		path.setId(ResultsBean.createId("p"));
 		if (!go.getGraphicFilled()) {
 			path.setFill("none");
-			path.setStrokeWidth("2");
+			path.setStrokeWidth("6");
 		}
 		g.getChildren().add(path);
 	}

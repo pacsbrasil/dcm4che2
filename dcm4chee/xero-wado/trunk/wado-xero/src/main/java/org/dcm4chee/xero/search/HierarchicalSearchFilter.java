@@ -129,6 +129,7 @@ public class HierarchicalSearchFilter implements Filter<ResultFromDicom> {
         if( atts==null || atts.isEmpty() ) return null;
         for(String key : atts.keySet()) {
             if( key.equals(WadoParams.OBJECT_UID) ) continue;
+            if( key.equals("InstanceNumber") ) continue;
             ret.remove(key);
         }
         return ret;

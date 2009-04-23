@@ -96,6 +96,9 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	  setInstitutionalDepartmentName(series.getInstitutionalDepartmentName());
 	  setManufacturerModelName(series.getManufacturerModelName());
 	  setRequestingPhysician(series.getRequestingPhysician());
+	  setRequestedProcedureID(series.getRequestedProcedureID());
+	  setScheduledProcedureStepID(series.getScheduledProcedureStepID());
+	  setPPSStartDateTime(series.getPPSStartDateTime());
    }
 
    /**
@@ -142,6 +145,10 @@ public class SeriesBean extends SeriesType implements Series, ResultFromDicom, C
 	  } catch (NumberFormatException nfe) {
 		 log.warn("Series number was incorrectly formatted - sometimes happens for SR data:" + nfe);
 	  }
+	  setRequestedProcedureID(data.getString(Tag.RequestedProcedureID));
+	  setScheduledProcedureStepID(data.getString(Tag.ScheduledProcedureStepID));
+	  setPPSStartDateTime(dateTime.createDateTime(data.getString(Tag.PerformedProcedureStepStartDate),
+			  data.getString(Tag.PerformedProcedureStepStartTime)));
    }
 
    /**

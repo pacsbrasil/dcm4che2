@@ -59,7 +59,7 @@ public class AEModel implements Filter<ServletResponseItem> {
         Map<String,Object> model = FilterUtil.getModel(params);
         Map<String,Object> ae = AEProperties.getAE(params);
         String imgmanager = FilterUtil.getString(ae,IMAGE_MANAGER);
-        if( imgmanager==null ) imgmanager = (String) model.get(WadoParams.AE);
+        if( imgmanager==null ) imgmanager = (String) params.get(WadoParams.AE);
         if(imgmanager!=null ) model.put("ae",imgmanager);
         
         String v = (String) params.get("v");

@@ -461,7 +461,8 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
       return availSeries;
    }
 
-   /** Handle any missing items - by default, does nothing unless items are missing.   */
+   /** Handle any missing items - by default, does nothing unless items are missing. 
+     */
    protected ResultsBean queryForMissingImages(FilterItem<ResultsBean> filterItem, Map<String, Object> params, ResultsBean ret,
          List<KeySelection> missing) {
       Map<String, Object> newParams = new HashMap<String, Object>();

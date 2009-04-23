@@ -1,1 +1,1 @@
-$it.TextValue;format="xml"$
+$it.TextValue.value;format="xml"$

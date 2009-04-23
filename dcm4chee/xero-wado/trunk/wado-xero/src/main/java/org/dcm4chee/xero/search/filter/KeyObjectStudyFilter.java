@@ -47,11 +47,11 @@ import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.search.ResultFromDicom;
 import org.dcm4chee.xero.search.macro.KeyObjectGspsMacro;
 import org.dcm4chee.xero.search.macro.KeyObjectMacro;
+import org.dcm4chee.xero.search.study.DicomObjectInterface;
 import org.dcm4chee.xero.search.study.KeyObjectBean;
 import org.dcm4chee.xero.search.study.KeySelection;
 import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;
-import org.dcm4chee.xero.search.study.SearchableDicomObject;
 import org.dcm4chee.xero.search.study.StudyBean;
 import org.dcm4chee.xero.search.study.StudyType;
 import org.dcm4chee.xero.wado.DicomFilter;
@@ -147,14 +147,17 @@ public class KeyObjectStudyFilter implements Filter<ResultsBean> {
 					log.warn("Returned study {} but not found in original query?",imgStudy.getStudyUID());
 					continue;
 				}
-				SearchableDicomObject kobDicom = (SearchableDicomObject) imgStudy
+				DicomObjectInterface kobDicom = (DicomObjectInterface) imgStudy
 						.searchStudy((String) params.get(KO), "KO");
 					
 				if (kobDicom != null) {
 					log.debug("Found key object info for study {}", resultStudy.getStudyUID());
 					DicomObject dobj = DicomFilter.callInstanceFilter(
-							dicomFullHeader, params, kobDicom
-									.getObjectUID());
+							dicomFullHeader,  kobDicom, (String) params.get(WadoParams.AE));
+					if( dobj==null ) {
+						log.warn("Unable to read key object uid "+kobDicom.getObjectUID());
+						continue;
+					}
 					KeyObjectBean kob = (KeyObjectBean) kobDicom;
 					kob.initKeySelection(dobj);
 					addMacros(resultStudy, kob);

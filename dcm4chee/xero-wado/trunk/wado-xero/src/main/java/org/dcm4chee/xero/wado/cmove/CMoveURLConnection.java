@@ -50,8 +50,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.VR;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.ConfigurationException;
@@ -68,7 +66,6 @@ import org.dcm4chee.xero.dicom.SOPClassUIDs;
 import org.dcm4chee.xero.dicom.TransferCapabilitySelector;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.search.AEProperties;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,7 +145,7 @@ public class CMoveURLConnection extends URLConnection
       }
       catch (Exception e)
       {
-         throw new IOException("C-MOVE failed for "+getURL()+", error="+e);
+         throw new IOException("C-MOVE failed for "+getURL()+", error="+e,e);
       }
       finally
       {
@@ -182,8 +179,7 @@ public class CMoveURLConnection extends URLConnection
          log.debug("Transfer syntax of {} was selected for query level {}",transferSyntaxUID,queryLevel);
          
          // Query at a series level to avoid excessive requests.
-         DicomObject query = urlHandler.createDicomQuery(getURL());
-         query.putString(Tag.QueryRetrieveLevel, VR.CS, queryLevel);
+         DicomObject query = urlHandler.createDicomQuery(getURL(),queryLevel);
          
          // Set query level from transfer capability
          
