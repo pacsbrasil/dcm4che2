@@ -87,11 +87,6 @@ JSONModel.prototype.parse = function JM_parse(data, modifiers) {
 		
 		for(i=0; i<n; i++) {
 			child = children[i];
-			if( child.TEXT ) {
-				if(! this.TEXT ) this.TEXT="";
-				this.TEXT = this.TEXT+child.data;
-				continue;
-			}
 			
 			// Create new nodes for each element
 			name = child.tagName;

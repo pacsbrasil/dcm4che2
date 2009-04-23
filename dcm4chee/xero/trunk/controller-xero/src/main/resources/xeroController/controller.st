@@ -434,6 +434,7 @@ XeroController.prototype.selectPatientToDisplay = function(results) {
 /** Switch a button */
 XeroController.prototype.pushButton = function XC_pushButton(layId) {
 	var lay = this.findLayout(layId);
+	console.info("Pushed button", lay.id);
 	if(!lay ) {
 		console.warn("No layout named",layId,"found.");
 		return;

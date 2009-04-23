@@ -78,7 +78,7 @@ StudyData.prototype.getChild = function StudyData_getChild(name,el,modifiers,i) 
 	var id = el[childId];
 	if( id==null ) id = ""+i;
 	if( modifier ) id = id+modifier;
-	this.debug("Found child %s=%s modifier %s modifiers %s", childId,id, modifier, modifiers);
+	this.debug("Found child %s=%s modifier %s modifiers %s tagName %s", childId,id, modifier, modifiers,el["tagName"]);
 	var xchild = this.children[id];
 	if( !xchild ) {
 		xchild = new StudyData();
