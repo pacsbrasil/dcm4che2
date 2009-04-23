@@ -83,6 +83,8 @@ public class AutoStringTemplateGroup extends StringTemplateGroup implements Meta
     @MetaData(required = false)
 	public void setSuperGroup(StringTemplateGroup superGroup) {
 		super.setSuperGroup(superGroup);
+		this.setAttributeRenderers(StringSafeRenderer.RENDERERS);
+		superGroup.setAttributeRenderers(StringSafeRenderer.RENDERERS);
 	}
 
 	/**
@@ -125,6 +127,7 @@ public class AutoStringTemplateGroup extends StringTemplateGroup implements Meta
 						log.info("Loading string template group file {}", url);
 						InputStreamReader r = new InputStreamReader(url.openStream());
 						ret = new StringTemplateGroup(r);
+				        ret.setAttributeRenderers(StringSafeRenderer.RENDERERS);
 					} catch (IOException e) {
 						throw new RuntimeException("Unable to read " + url);
 					}
@@ -132,6 +135,7 @@ public class AutoStringTemplateGroup extends StringTemplateGroup implements Meta
 				} else {
 					log.info("Loading string template directory {}", rootDir);
 					ret = new StringTemplateGroup(parents[i], rootDir);
+			        ret.setAttributeRenderers(StringSafeRenderer.RENDERERS);
 				}
 				if (refresh > 0)
 					ret.setRefreshInterval(refresh);
