@@ -77,7 +77,7 @@ public class DicomURLHandlerTest
 
       URL dicomURL = handler.createURL(params);
       assertEquals(dicomURL.getProtocol(),"dicom");
-      assertEquals(dicomURL.getHost(),"cmoveType@marlin");
+      assertEquals(dicomURL.getHost(),"DCM4TEST@marlin");
       assertEquals(dicomURL.getPort(),AEProperties.DEFAULT_AE_PORT);
       assertTrue(dicomURL.getQuery().contains("objectUID="+expectedObjectUID));
    }
@@ -146,7 +146,7 @@ public class DicomURLHandlerTest
 
       URL dicomURL = handler.createURL(params);
       assertEquals(dicomURL.getProtocol(),"dicom");
-      assertEquals(dicomURL.getHost(),"cmoveType@marlin");
+      assertEquals(dicomURL.getHost(),"DCM4TEST@marlin");
       assertEquals(dicomURL.getPort(),AEProperties.DEFAULT_AE_PORT);
       assertEquals(dicomURL.getQuery(),null);
    }

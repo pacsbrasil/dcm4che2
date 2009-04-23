@@ -285,6 +285,13 @@ public class DicomCommandChecker
          log.error("FAILURE: Resource limmitation");
          throw new DicomException(statusCode, "FAILURE: Resource limmitation");
       }
+      case 0xC001:
+      {
+         log.error("Status: " + Integer.toHexString(statusCode));
+         log.error("FAILURE: unable to process");
+         throw new DicomException(statusCode, "FAILURE: Unable to process.");
+      
+      }
       }
    }
 

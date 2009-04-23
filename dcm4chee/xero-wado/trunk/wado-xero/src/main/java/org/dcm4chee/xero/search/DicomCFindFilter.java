@@ -38,6 +38,7 @@
 package org.dcm4chee.xero.search;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
@@ -271,7 +272,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
           association = dicomConnector.connect(localAE, remoteAE);
 	       TransferCapability tc = tcs.selectTransferCapability(association, getCuids());
 	       if ( tc==null )
-	    	   throw new RuntimeException("Can't agree on any transfer capabilities with device.");
+	    	   throw new RuntimeException("Can't agree on any transfer capabilities with device.  Attempted: "+ Arrays.asList(getCuids()));
 	       String cuid = tc.getSopClass();
 	       log.debug("Selected sop q/r class {}",cuid);
 	       String tsuid = tcs.selectBestTransferSyntaxUID(tc);
