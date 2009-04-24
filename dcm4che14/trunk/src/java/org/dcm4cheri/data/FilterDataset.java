@@ -108,7 +108,7 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
                 DcmElement el;
                 while (backendIter.hasNext()) {
                     el = (DcmElement)backendIter.next();
-                    if (filter(el.tag(), el.tag())) {
+                    if (filter(el.tag(), el.vr())) {
                         return el;
                     }
                 }
