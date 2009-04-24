@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://www.dcm4chee.org/xero/search/" targetNamespace="http://www.dcm4chee.org/xero/search/">
+    <!-- A searchCriteria is the root element, with children being the columns or
+         search conditions to use.  Columns maybe repeated, omitted or otherwise modified.
+     -->
+  <element name="searchCriteria" type="tns:searchCriteriaType"/>
+  
+  <element name="attribute" type="tns:attributeType"/>
+   
+  <element name="between" type="tns:betweenType"/>
+  
+  <element name="or" type="tns:orAnyAttributeType" />
+  
+  <group name="orGroup">
+    <choice>
+      <element ref="tns:between" />
+    </choice>
+  </group>
+  
+  <complexType name="orAnyAttributeType" mixed="true">
+     <group ref="tns:orGroup" maxOccurs="unbounded" />
+  </complexType>
+  
+  <complexType name="betweenType">
+     <attribute name="min" />
+     <attribute name="max" />
+  </complexType>
+  
+  <complexType name="attributeType" mixed="true">
+     <choice>
+       <group ref="tns:orGroup" />
+       <element ref="tns:or" />
+     </choice>
+     <attribute name="label" />
+     <attribute name="column" type="boolean" />
+     <attribute name="searchable" type="boolean" />
+     <attribute name="name" />
+     <attribute name="sort" type="int" />
+     <attribute name="type" />
+  </complexType>
+  
+  <complexType name="searchCriteriaType">
+     <sequence minOccurs="0" maxOccurs="unbounded">
+       <element ref="tns:attribute" />
+     </sequence>
+  </complexType>
+
+</schema>
