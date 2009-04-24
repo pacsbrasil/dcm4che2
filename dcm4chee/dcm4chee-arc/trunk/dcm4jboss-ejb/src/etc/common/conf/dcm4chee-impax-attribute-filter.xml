@@ -102,7 +102,6 @@
     <attr tag="00201040"/> <!-- Position Reference Indicator -->
     <attr tag="00280108"/> <!-- Smallest Pixel Value in Series -->
     <attr tag="00280109"/> <!-- Largest Pixel Value in Series -->
-    <attr tag="00280120"/> <!-- Pixel Padding Value -->
     <attr tag="00321032"/> <!-- Requesting Physician -->
     <attr tag="00400244"/> <!-- Performed Procedure Step Start Date -->
     <attr tag="00400245"/> <!-- Performed Procedure Step Start Time -->
@@ -220,6 +219,7 @@
         <attr tag="00280101"/> <!-- Bits Stored -->
         <attr tag="00280102"/> <!-- High Bit -->
         <attr tag="00280103"/> <!-- Pixel Representation -->
+        <attr tag="00280120"/> <!-- Pixel Padding Value -->
         <attr tag="00281050"/> <!-- Window Center -->
         <attr tag="00281051"/> <!-- Window Width -->
         <attr tag="00281052"/> <!-- Rescale Intercept -->
