@@ -500,7 +500,7 @@ public class XDSQueryService extends ServiceMBeanSupport {
     }
     protected boolean isFromDomain(String pid) {
         String assAuth = getAssigningAuthority(pid);
-        if (assAuth == null)
+        if (assAuth == null || assAuth.indexOf('&') == -1)
             return false;
         if (assAuth.charAt(0) != '&') { //is namespace id subcomponent not empty?
             //we only compare <universal ID> and <universal ID type
