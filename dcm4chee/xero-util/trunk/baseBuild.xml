@@ -30,6 +30,7 @@
   <property name="jmeter.failureproperty" value="" />
   <property name="jmeter.user.properties" value="${integration.cdp}/jmeter/bin/user.properties" />
   <property name="jmeter.beanshell.init.file" value="" />
+  <property name="jmeter.beanshell.sampler.init" value="" />
 
   <property name="testPackage" value="cdp-integration" />
 
@@ -286,6 +287,7 @@
 	<testplans refid="integration.scripts"/>
 	<property name="user.classpath" value="${jmeter.user.classpath}"/>
 	<property name="beanshell.init.file" value="${jmeter.beanshell.init.file}"/>
+	<property name="beanshell.sampler.init" value="${jmeter.beanshell.sampler.init}"/>
 	<jvmarg value="-Xms256m"/>
 	<jvmarg value="-Xmx256m"/>
      </jmeter>
