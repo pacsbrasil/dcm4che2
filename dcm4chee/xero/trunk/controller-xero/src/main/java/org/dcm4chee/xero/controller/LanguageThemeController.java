@@ -46,10 +46,13 @@ import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.dcm4chee.xero.metadata.access.ResourceBundleMap;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
+import org.dcm4chee.xero.metadata.servlet.MetaDataServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,15 +86,31 @@ public class LanguageThemeController<T> implements Filter<T> {
 	public T filter(FilterItem<T> filterItem, Map<String, Object> params) {
 		Map<String, Object> model = FilterUtil.getModel(params);
 
-		String sTheme = FilterUtil.getString(params, THEME_KEY,
-				"theme");
-		Properties theme = getTheme(sTheme);
-		if (theme == null) {
-			log.warn("Theme {} not found, using default theme.", sTheme);
-			theme = getTheme("theme");
-		} else {
-			log.info("Using theme {}", sTheme);
+		Properties theme = null;
+
+		String sTheme = FilterUtil.getString(params, THEME_KEY);
+		if( sTheme!=null ) {
+			theme = getTheme(sTheme);
+			if (theme == null) {
+				log.warn("Theme {} not found, using default theme.", sTheme);
+			}
 		}
+
+		// Get a theme from the http servlet request
+		HttpServletRequest req = (HttpServletRequest) params.get(MetaDataServlet.REQUEST);
+		if( theme==null && req!=null ) {
+			String serverName = req.getServerName();
+			log.info("Server Name="+serverName);
+			int dot = serverName.indexOf(".");
+			if( dot>0 ) serverName = serverName.substring(0,dot);
+			theme = getTheme(serverName);
+			if( theme!=null ) {
+				log.info("Using theme from request server name {}", serverName);
+			}
+		}
+		
+		if( theme==null ) theme = getTheme("theme");
+		log.info("Using theme {}", theme.get("theme"));
 
 		Locale locale = FilterUtil.getLocale(params);
 		ResourceBundle rb = getI18N(theme, locale);

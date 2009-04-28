@@ -64,7 +64,7 @@ JSONModel.prototype.parseJSON = function SR_parseJSON(jsonStr)
     try {
     	return eval("("+jsonStr+")");
     } catch(e) {
-    	console.error("Caught exception evaluating json:\n"+jsonStr);
+    	console.error("Caught exception evaluating json:'"+jsonStr+"'");
     	throw e;
     }
 };

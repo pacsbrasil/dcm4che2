@@ -3,7 +3,21 @@
 <tr><td>$i18n.PatientName;format="xml"$</td><td><input id="patientNameInput" type="text" name="PatientName" value="$query.PatientName$" onkeypress="controller.keyPress('find',event)"/></td></tr>
 <tr><td>$i18n.PatientID;format="xml"$</td><td><input id="patientIdInput" type="text" name="PatientID" value="$query.PatientID$" onkeypress="controller.keyPress('find',event)"/></td></tr>
 
+$if(i18n.queryAE)$
+<td>$i18n.AE;format="xml"$</td><td>
+  <select id="aeSelect" name="ae" onkeypress="controller.keyPress('find',event)">
+	$if(query.ae)$<option selected="true" value="$query.ae;format="xml"$">$query.ae;format="xml"$</option>$endif$
+	<option value="local"> </option>
+  	<option value="PACS_AGFA">IDC Pacs Agfa</option>
+  	<option value="PACS_TELEMIS">Pacs Telemis</option>
+  	<option value="PACS_CERNER">Pacs Cerner</option>
+  	<option value="DCM4CHEE">Central Archive</option>
+  	<option value="PACS_J4C_DATACEN">J4C DataCenter</option>
+  </select>
+</td>
+$else$
 <input id="aeInput" type="hidden" name="ae" value="$query.ae$" onkeypress="controller.keyPress('find',event)"/>
+$endif$
 
 </table></div>
 
@@ -54,4 +68,12 @@
   </select></td>
 </tr>
 
-</table></div>
+</table>
+</div>
+
+$if( i18n.queryAdvanced )$
+<div style="float: left;"><table>
+</table>
+</div>
+$endif$
+
