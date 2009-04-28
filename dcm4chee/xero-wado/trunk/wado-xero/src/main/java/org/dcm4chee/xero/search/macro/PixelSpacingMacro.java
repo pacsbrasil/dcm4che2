@@ -56,6 +56,7 @@ public class PixelSpacingMacro implements Macro {
 
    /** The spacing is y first, then x */
    public PixelSpacingMacro(float[] spacing) {
+	  if( spacing==null ) throw new NullPointerException("Spacing must not be null.");
 	  spacingX = spacing[1];
 	  spacingY = spacing[0];
    }

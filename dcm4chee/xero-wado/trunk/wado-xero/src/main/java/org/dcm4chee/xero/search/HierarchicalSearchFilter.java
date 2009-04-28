@@ -100,6 +100,14 @@ public class HierarchicalSearchFilter implements Filter<ResultFromDicom> {
             log.debug("Not performing hierarchical search on ae {}", ae.get(AEProperties.AE_PROPERTY_NAME));
             return filterItem.callNextFilter(params);
         }
+        Object studyUID = params.get(WadoParams.STUDY_UID);
+        if( studyUID!=null && (studyUID instanceof String) && ((String) studyUID).indexOf('\\')==-1) {
+        	if( !isObjectLevel ) return filterItem.callNextFilter(params);
+        	Object seriesUID = params.get(WadoParams.SERIES_UID);
+            if( seriesUID!=null && (seriesUID instanceof String) && ((String) seriesUID).indexOf('\\')==-1) {
+            	return filterItem.callNextFilter(params);
+            }
+        }
         log.info("Doing a hierarchical only search at study.");
         
         ResultFromDicom resultFromDicom = DicomCFindFilter.getResultFromDicom(params); 

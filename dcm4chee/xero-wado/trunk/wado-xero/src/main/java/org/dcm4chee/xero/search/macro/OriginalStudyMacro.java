@@ -62,6 +62,7 @@ public class OriginalStudyMacro implements Macro {
 	private String orgStudyUID;
 
 	public OriginalStudyMacro(String studyUID) {
+		if( studyUID==null ) throw new NullPointerException("Study UID must not be null.");
 		this.orgStudyUID = studyUID;
 	}
 

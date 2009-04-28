@@ -163,6 +163,16 @@ public class AEProperties {
                map.put(AE_PORT_KEY, Integer.parseInt(aeport));
                map.put("ejbport", Integer.parseInt(ejbport));
                map.put(AE_PROPERTY_NAME, aePath);
+               for(Map.Entry<String,Object> me : map.entrySet()) {
+            	   Object v = me.getValue();
+            	   if( !(v instanceof String) ) continue;
+            	   String sv = (String) v;
+            	   if( !(sv.startsWith("${array:[") && sv.endsWith("]}"))) continue;
+            	   sv = sv.substring(9,sv.length()-2);
+            	   String sva[] = sv.split("[ \t]*,[ \t]*");
+            	   log.info("Split array "+sv+" in ae property "+me.getKey()+" to an array with "+sva.length+" elements");
+            	   me.setValue(sva);
+               }
 
                remoteProperties
                      .putIfAbsent(aePath, map);

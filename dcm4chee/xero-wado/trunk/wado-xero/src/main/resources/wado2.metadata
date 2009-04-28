@@ -79,6 +79,8 @@ studySource.gsps=${class:org.dcm4chee.xero.search.filter.GspsDiscover}
 studySource.gsps.priority=100
 studySource.ko=${class:org.dcm4chee.xero.search.filter.KeyObjectStudyFilter}
 studySource.ko.priority=50
+studySource.multipleAE=${class:org.dcm4chee.xero.search.filter.MultipleAEFilter}
+studySource.multipleAE.priority=325
 studySource.sortPatientStudy=${class:org.dcm4chee.xero.search.filter.SortPatientsByNameStudiesByDateFilter}
 studySource.sortPatientStudy.priority=350
 
@@ -138,8 +140,6 @@ seriesSource.seriesSearch.cfind=${class:org.dcm4chee.xero.search.study.SeriesSea
 seriesSource.seriesSearch.hierarchicalSeries=${class:org.dcm4chee.xero.search.HierarchicalSearchFilter}
 seriesSource.seriesSearch.hierarchicalSeries.priority=5
 
-seriesSource.kin=${class:org.dcm4chee.xero.search.filter.KeyObjectSeries}
-seriesSource.kin.priority=25
 seriesSource.sortFilter=${class:org.dcm4chee.xero.search.filter.SortImageFilter}
 seriesSource.sortFilter.priority=375
 seriesSource.sortPatientStudy=${class:org.dcm4chee.xero.search.filter.SortPatientsByNameStudiesByDateFilter}

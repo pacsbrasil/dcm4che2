@@ -57,6 +57,7 @@ public class WindowLevelMacro implements Macro {
    private String explanation;
    
    public WindowLevelMacro(float center, float width, String reason) {
+	  if( reason==null ) reason = "";
 	  this.width = width;
 	  this.center = center;
 	  this.explanation = reason;

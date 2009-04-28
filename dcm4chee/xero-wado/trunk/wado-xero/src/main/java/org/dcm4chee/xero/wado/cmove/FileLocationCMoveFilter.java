@@ -47,6 +47,8 @@ import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.search.filter.FileLocationParameterChecker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * File location filter that will generate a URL with the 'cmove' protocol
@@ -62,6 +64,7 @@ import org.dcm4chee.xero.search.filter.FileLocationParameterChecker;
  */
 public class FileLocationCMoveFilter implements Filter<URL>
 {
+   private static final Logger log = LoggerFactory.getLogger(FileLocationCMoveFilter.class);
    private FileLocationParameterChecker checker;
    private DicomURLHandler dicomURLHandler;
    
@@ -83,8 +86,11 @@ public class FileLocationCMoveFilter implements Filter<URL>
     */
    public URL filter(FilterItem<URL> filterItem, Map<String, Object> params)
    {
-      if(!checker.isLocationTypeInParameters(params))
-         return filterItem.callNextFilter(params);
+      if(!checker.isLocationTypeInParameters(params)) {
+    	  log.info("Not performing c-move - not configured.");
+          return filterItem.callNextFilter(params);
+      }
+	  log.info("In file location c-move.");
       
       try
       {

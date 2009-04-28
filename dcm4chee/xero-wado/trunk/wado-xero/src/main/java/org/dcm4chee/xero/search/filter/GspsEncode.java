@@ -158,7 +158,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 	private static final int MIN_DISPLAY_FONT_SIZE = 32;
 
 	/** The string to use for the wado image references */
-	private String wadoUrl = "/wado2/wado";
+	private String wadoUrl = "/wado2/?requestType=XERO";
 	
    private Filter<DicomObject> dicomFullHeader;
 
@@ -1262,7 +1262,7 @@ public class GspsEncode implements Filter<ResultsBean> {
 	 *         not the objectUID.
 	 */
 	private void addOverlay(DicomObject dcmObj, int layer, String rgb, Map<String, ImageBean> images) {
-		StringBuffer href = new StringBuffer(wadoUrl).append("?studyUID=1&seriesUID=1&relative=image");
+		StringBuffer href = new StringBuffer(wadoUrl).append("&relative=image");
 		if (images.size() == 0) {
 			log.warn("Can't add overlays when no images specified.");
 			return;

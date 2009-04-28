@@ -62,6 +62,7 @@ public class KeyObjectMacro implements Macro {
    private String keyObject;
 
    public KeyObjectMacro(String keyObject) {
+	  if( keyObject==null ) throw new NullPointerException("KeyObject specified must not be null.");
 	  this.keyObject = keyObject;
    }
 

@@ -56,6 +56,7 @@ public class FileLocationMacro implements Macro {
    private String fileLocation;
    
    public FileLocationMacro(String fileLocation) {
+	  if(fileLocation==null ) throw new NullPointerException("Can't use a null file location");
 	  this.fileLocation = fileLocation;
    }
 

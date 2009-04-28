@@ -57,7 +57,7 @@ public class FileLocationUtils {
 
 	public FileLocationUtils(Map<String, Object> params) {
 	      Map<String,Object> aeMap = AEProperties.getAE(params);
-	      String type = (String) aeMap.get("type");
+	      Object type = aeMap.get("type");
 	      log.debug("Pacs type {}", type);
 	      
 	      if (params.get(WadoParams.AE) != null && AEProperties.getInstance().getAE((String)params.get(WadoParams.AE)) != null)   {

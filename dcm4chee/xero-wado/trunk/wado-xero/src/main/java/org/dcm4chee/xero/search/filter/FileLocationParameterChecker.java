@@ -41,7 +41,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.search.AEProperties;
 
 /**
@@ -55,7 +54,6 @@ public class FileLocationParameterChecker
    
    private final List<String> fileLocationTypes;
 
-   
    /**
     * @param fileLocationType Location type to watch for.  Null will match to AEs without types.
     */
@@ -70,7 +68,18 @@ public class FileLocationParameterChecker
    public boolean isLocationTypeInParameters(Map<String,Object> params)
    {
       Map<String,Object> aeMap = AEProperties.getAE(params);
-      String type = FilterUtil.getString(aeMap,TYPE_KEY);
-      return fileLocationTypes.contains(type);
+      Object otype = aeMap.get(TYPE_KEY);
+      if( otype instanceof String ) {
+    	  String type = (String) otype;
+    	  return fileLocationTypes.contains(type);
+      } if( otype==null ) {
+    	return fileLocationTypes.contains(null);
+      } else {
+    	  String[] typeArr = (String[]) otype;
+    	  for(String type : typeArr) {
+    		  if( fileLocationTypes.contains(type) ) return true;
+    	  }
+    	  return false;
+      }
    }
 }

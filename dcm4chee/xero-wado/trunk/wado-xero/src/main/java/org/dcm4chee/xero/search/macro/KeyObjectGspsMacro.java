@@ -57,6 +57,7 @@ public class KeyObjectGspsMacro implements Macro {
 	private String state;
 
 	public KeyObjectGspsMacro(String keyObject) {
+		if( keyObject==null ) throw new NullPointerException("KeyObject specified must not be null.");
 		this.state = keyObject;
 	}
 

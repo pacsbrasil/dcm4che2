@@ -73,7 +73,7 @@ public class KeyObjectBean extends KeyObjectType implements DicomObjectInterface
 
     @XmlTransient
     MacroItems macroItems;
-
+    
     /** Contains both the date and time for the content date/time */
     @XmlTransient
     Date contentDate;
@@ -119,6 +119,7 @@ public class KeyObjectBean extends KeyObjectType implements DicomObjectInterface
      * @param data
      */
     private void initKeyValues(DicomObject data) {
+    	if( p!=null ) return;
         DicomElement tContentSeq = data.get(Tag.ContentSequence);
         if (tContentSeq == null || !tContentSeq.hasItems()) {
             return;

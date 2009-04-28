@@ -40,6 +40,7 @@ package org.dcm4chee.xero.search.filter;
 import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -68,7 +69,16 @@ public class FileLocationMgtFilter implements Filter<URL> {
 
    private FileLocationParameterChecker checker = new FileLocationParameterChecker(null,"dcm4chee");
 
-   boolean tryNext = false;
+   /** Create a try next URL */
+   private static URL createTryNext() {
+	   try {
+		return new URL("http://trynext");
+	} catch (MalformedURLException e) {
+		e.printStackTrace();
+		throw new RuntimeException(e);
+	}
+   }
+   private static URL TRY_NEXT_URL = createTryNext();
    
    /**
     * Returns the DICOM file <tt>URL</tt> for the given arguments.
@@ -86,9 +96,10 @@ public class FileLocationMgtFilter implements Filter<URL> {
       URL url = null;
       try {
           FileDTO[] dtos = FileSystemMgtResolver.getDTOs(host, port, instanceUID);
-            tryNext = false;
-            if (dtos == null || dtos.length == 0)
+            if (dtos == null || dtos.length == 0) {
+            	log.info("Requested file not found {}",instanceUID);
                 return null; // not found!
+            }
 
             for (FileDTO dto : dtos) {
             	params.put(FileLocationURLFilter.FILE_DTO, dto);
@@ -103,14 +114,18 @@ public class FileLocationMgtFilter implements Filter<URL> {
                 break;
             }
 
-            log.info("URL: " + url);
+            if( url==null ) {
+            	log.info("SOP "+instanceUID+" not found for direct file access, trying fallbacks");
+            	return TRY_NEXT_URL;
+            }
+            log.info("URL " + url);
       }
       catch(ObjectNotFoundException e) {
          log.warn("Object not available",e);
       }
       catch (Exception e) {
          log.error("Failed to get DICOM file URL, unknown reason:", e);
-         tryNext = true;
+         url = TRY_NEXT_URL;
       }
       return url;
    }
@@ -132,9 +147,9 @@ public class FileLocationMgtFilter implements Filter<URL> {
 
          url = getDICOMFileURL(fileUtil.getHostName(), fileUtil.getPortStr(), objectUID, params);
  
-         if (url == null) {
-            if( ! tryNext ) return null; 
-            log.warn("File not found in local online cache.");
+         if (url == null) return null;
+         if( url==TRY_NEXT_URL ) {
+        	log.info("Calling next file locations.");
             return filterItem.callNextFilter(params);
          }
 

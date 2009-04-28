@@ -67,6 +67,9 @@ public class RegionMacro implements Macro {
    }
    
    public RegionMacro(PresentationSizeMode presentationSizeMode, String topLeft, String bottomRight, float magnify) {
+	  if( presentationSizeMode==null ) throw new NullPointerException("Presentation size mode must not be null.");
+	  if( topLeft==null ) throw new NullPointerException("TopLeft corner must not be null.");
+	  if( bottomRight==null ) throw new NullPointerException("Bottom right must not be null.");
 	  this.presentationSizeMode = presentationSizeMode;
 	  this.topLeft = topLeft;
 	  this.bottomRight = bottomRight;

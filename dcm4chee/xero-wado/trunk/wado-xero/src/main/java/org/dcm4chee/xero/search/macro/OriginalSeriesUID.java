@@ -52,6 +52,7 @@ public class OriginalSeriesUID  implements Macro{
    String seriesUID;
    
    public OriginalSeriesUID(String seriesUID) {
+	  if( seriesUID==null ) throw new NullPointerException("seriesUID must not be null.");
       this.seriesUID = seriesUID;
    }
    

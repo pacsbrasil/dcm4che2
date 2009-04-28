@@ -188,6 +188,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     {
     	DicomObject ret = new BasicDicomObject();
     	ret.putString(Tag.QueryRetrieveLevel, VR.CS, getQueryLevel());
+    	log.debug("Query level is {}",getQueryLevel());
     	Set<Integer> returnKeys = getReturnKeys();
     	Iterator<Integer> it = returnKeys.iterator();
     	while (it.hasNext())
@@ -284,7 +285,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 	    	   if (CommandUtils.isPending(cmd)) {	    		  
 	    		   DicomObject data = rsp.getDataset();
 	    		   if( data.contains(Tag.DirectoryRecordSequence) ) {
-	    			  log.info("Using blocked structure.");
+	    			  log.debug("Using blocked structure.");
 	    			  DicomElement dir = data.get(Tag.DirectoryRecordSequence);
 	    			  for(int i=0, n=dir.countItems(); i<n; i++) {
 	    				 data = dir.getDicomObject(i);

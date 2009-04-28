@@ -48,7 +48,6 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
-import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.dcm4chee.xero.search.DicomCFindFilter;
 import org.dcm4chee.xero.search.ResultFromDicom;
 import org.dcm4chee.xero.search.macro.KeyObjectMacro;
@@ -466,64 +465,77 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
    protected ResultsBean queryForMissingImages(FilterItem<ResultsBean> filterItem, Map<String, Object> params, ResultsBean ret,
          List<KeySelection> missing) {
       Map<String, Object> newParams = new HashMap<String, Object>();
-      Set<String> uids = new HashSet<String>();
-      StringBuffer queryStr = new StringBuffer("&koUID=").append(params.get(KEY_UID));
-      List<String> studyUids = new ArrayList<String>(1);
-      List<String> seriesUids = new ArrayList<String>(1);
+      
+      Map<String,Map<String,Set<String>>> queries = new HashMap<String,Map<String,Set<String>>>();
+
       for (KeySelection key : missing) {
+         String seriesUid = key.getSeriesUid();
+         String studyUid = key.getStudyUid();
+         if( studyUid==null ) {
+        	 studyUid="";
+        	 log.warn("Key object does not specify a study UID."+params.get("koUID"));
+         }
+         if( seriesUid==null ) {
+        	 seriesUid="";
+        	 log.warn("Key object does not specify a series UID."+params.get("koUID"));
+         }
+         
+         Map<String,Set<String>> series = queries.get(studyUid);
+         if( series==null ) {
+        	 series = new HashMap<String,Set<String>>();
+        	 queries.put(studyUid,series);
+         }
+         Set<String> uids = series.get(seriesUid);
+         if( uids==null ) {
+        	 uids = new HashSet<String>();
+        	 series.put(seriesUid,uids);
+         }
+         
          if (uids.contains(key.getObjectUid()))
             continue;
          uids.add(key.getObjectUid());
-         queryStr.append("&objectUID=").append(key.getObjectUid());
-
-         String seriesUid = key.getSeriesUid();
-         if(seriesUid!=null && !seriesUids.contains(seriesUid) ) {
-             seriesUids.add(seriesUid);
-             queryStr.append("&seriesUID=").append(seriesUid);
-         }
-         String studyUid = key.getStudyUid();
-         if( studyUid!=null && !studyUids.contains(studyUid) ) {
-             studyUids.add(studyUid);
-             queryStr.append("&studyUID=").append(studyUid);
-         }
       }
-      String[] uidArr = uids.toArray(EMPTY_STRING_ARR);
-      log.info("Querying for " + uidArr.length + " additional images: " + queryStr);
-      newParams.put("objectUID", uidArr);
-      if( !studyUids.isEmpty() ) {
-          newParams.put(WadoParams.STUDY_UID, studyUids.toArray(EMPTY_STRING_ARR));
-          log.info("Additionally querying on study UID {}", toString((String[]) newParams.get(WadoParams.STUDY_UID)));
-      }
-      if( !seriesUids.isEmpty()) {
-          newParams.put(WadoParams.SERIES_UID, seriesUids.toArray(EMPTY_STRING_ARR));
-          log.info("Additionally querying on {}", toString((String[]) newParams.get(WadoParams.SERIES_UID)));
-      }
+      
       String ae = (String) params.get(WadoParams.AE);
       if( ae!=null ) {
+    	  log.info("Querying ae "+ae);
           newParams.put(WadoParams.AE,ae);
-          queryStr.append("&ae=").append(ae);
       }
-      newParams.put(MemoryCacheFilter.KEY_NAME, queryStr.toString());
-      return (ResultsBean) imageSource.filter(null, newParams);
+      log.debug("Putting extend results key into new params:"+ret);
+      newParams.put(DicomCFindFilter.EXTEND_RESULTS_KEY,ret);
+      for(String studyUid : queries.keySet()) {
+    	  Map<String,Set<String>> series = queries.get(studyUid);
+          if( !studyUid.isEmpty() ) {
+              newParams.put(WadoParams.STUDY_UID, studyUid);
+          }
+    	  for(String seriesUid : series.keySet()) {
+    	      if( !seriesUid.isEmpty()) {
+    	          newParams.put(WadoParams.SERIES_UID, seriesUid);
+    	      }
+    		  Set<String> uids = series.get(seriesUid);
+    	      String[] uidArr = uids.toArray(EMPTY_STRING_ARR);
+    	      newParams.put(WadoParams.OBJECT_UID, uidArr);
+   	          int startSize = ret.getChildren().size();
+   	          imageSource.filter(null, newParams);
+   	          int endSize = ret.getChildren().size();
+   	          if( (endSize-startSize)<uidArr.length) {
+   	        	  log.warn("Added {} children - expected to add {} (or perhaps 1 more)", endSize-startSize, uidArr.length);
+   	   	          log.warn("Object UID queries &studyUID="+studyUid + "&seriesUID="+seriesUid+"&objectUID="+ toString(uidArr));
+   	          }
+    	  }
+      }
+      return ret;
    }
    
    public static String toString(String[] arr) {
-       StringBuffer ret = new StringBuffer("[");
+       StringBuffer ret = new StringBuffer();
        boolean first = true;
        for(String s : arr) {
-          if( !first ) ret.append(", ");
+          if( !first ) ret.append("\\");
           first = false;
-          ret.append('"');
           ret.append(s);
-          ret.append('"');
        }
-       ret.append(']');
        return ret.toString();
-   }
-
-   /** Handle any missing items - by default, does nothing */
-   protected void handleMissingItems(FilterItem<ResultsBean> filterItem, Map<String, Object> params, ResultsBean ret,
-         KeyObjectMacro kom, List<KeySelection> missing) {
    }
 
    /**
@@ -559,7 +571,7 @@ public class KeyObjectFilter implements Filter<ResultsBean> {
     * 
     * @param imageSource
     */
-   @MetaData(out = "${ref:imageSource}")
+   @MetaData(out = "${ref:imageSource.imageSearch}")
    public void setImageSource(Filter<ResultFromDicom> imageSource) {
       this.imageSource = imageSource;
    }

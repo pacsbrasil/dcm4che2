@@ -94,4 +94,19 @@ public class FileLocationParameterCheckerTest
       params.put("ae", ae);
       assertFalse(checker.isLocationTypeInParameters(params));
    }
+   
+   @Test
+   public void testIsLocationTypeInParameters_ShouldBeTrueWhenTypeIsAnyOfArray()
+   {
+      String expectedType = "cmove";
+      String ae = "multiType";
+      FileLocationParameterChecker checker = new FileLocationParameterChecker(expectedType);
+      Map<String,Object> params = new HashMap<String, Object>();
+      params.put("ae", ae);
+      assertTrue(checker.isLocationTypeInParameters(params));
+      checker = new FileLocationParameterChecker("cmove2");
+      assertTrue(checker.isLocationTypeInParameters(params));
+      checker = new FileLocationParameterChecker("cmove3");
+      assertFalse(checker.isLocationTypeInParameters(params));
+   }
 }
