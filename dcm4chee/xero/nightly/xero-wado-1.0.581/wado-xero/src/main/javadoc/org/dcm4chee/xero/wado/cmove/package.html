@@ -1,0 +1,54 @@
+<html>
+<body>
+<h1>
+org.dcm4chee.xero.wado.cmove
+</h1>
+<h2>XERO C-MOVE File Access Package</h2>
+<h3>Purpose</h3>
+The org.dcm4chee.xero.wado.cmove package contains the classes that integrate the 
+C-MOVE into the URL based file retrieval logic of XERO. 
+
+<h3>Design</h3>
+C-MOVE support is integrated into the XERO WADO services through the Filter<URL> interface.
+File requests are translated into DICOM formatted URLS (<code>dicom://ae@host:port/query</code>)
+and passed through the filter pipeline to endpoints that need files (images).
+
+<p>
+
+The DICOM URL syntax is currently hardcoded to use C-MOVE for file transfer, but could be 
+extended in future to handle other C-MOVE retrieval strategies or even C-GET syntax.  The 
+URL syntax is designed to be close to both the WADO URL syntax and the Agility DICOM URI format.
+
+
+<h3>Contents</h3>
+<dl>
+<dt>CMoveSettings</dt>
+<dd>
+Accessor class that provides easy access to C-MOVE specific properties in the AE configuration file
+</dd>
+
+<dt>CMoveURLConnection</dt>
+<dd>
+Implementation of the URLConnection class that coordinates the creation of a C-MOVE request,
+and the file system monitoring in the retrieval cache.
+</dd>
+
+<dt>DicomURLStreamHandler</dt>
+<dd>
+Integrates the C-MOVE logic with the Java URL connection framework.  The logic in this class
+is pretty basic at the moment, but the idea is that external configuration will be applied at this level
+in the future.
+</dd>
+
+<dt>FileLocationCMoveFilter</dt>
+<dd>
+Integrates the DICOM C-MOVE URL code with the file location filters in XERO.  The 
+servlet arguments are processed into a DICOM URL which is associated with the 
+DicomURLStreamHandler.  This allows filters downstream to access an input stream 
+that is fed by C-MOVE transparently.
+</dd>
+
+</dl>
+
+</body>
+</html>
