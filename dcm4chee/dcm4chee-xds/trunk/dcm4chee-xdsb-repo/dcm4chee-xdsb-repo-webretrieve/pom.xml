@@ -9,7 +9,7 @@
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-xdsb-repo-webretrieve</artifactId>
   <packaging>war</packaging>
-  <name>Webapp for XDSb WebRetrieve</name>
+  <name>RESTful Web interface for XDSb WebRetrieve</name>
   <version>0.0.3-SNAPSHOT</version>
   <description></description>
   <build>
