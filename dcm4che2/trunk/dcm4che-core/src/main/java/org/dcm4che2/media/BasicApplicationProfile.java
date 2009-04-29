@@ -597,6 +597,9 @@ public class BasicApplicationProfile implements ApplicationProfile {
 
     private void copyConceptNameModifiers(DicomObject dcmobj, DicomObject rec) {
         DicomElement objsq = dcmobj.get(Tag.ContentSequence);
+        if (objsq == null) {
+            return;
+        }
         DicomElement recsq = null;
         DicomObject item;
         for (int i = 0, n = objsq.countItems(); i < n; i++) {
