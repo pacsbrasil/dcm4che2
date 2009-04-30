@@ -103,6 +103,7 @@
     <attr tag="00280108"/> <!-- Smallest Pixel Value in Series -->
     <attr tag="00280109"/> <!-- Largest Pixel Value in Series -->
     <attr tag="00321032"/> <!-- Requesting Physician -->
+    <attr tag="00321033"/> <!-- Requesting Service -->
     <attr tag="00400244"/> <!-- Performed Procedure Step Start Date -->
     <attr tag="00400245"/> <!-- Performed Procedure Step Start Time -->
     <attr tag="00400253"/> <!-- Performed Procedure Step ID -->
