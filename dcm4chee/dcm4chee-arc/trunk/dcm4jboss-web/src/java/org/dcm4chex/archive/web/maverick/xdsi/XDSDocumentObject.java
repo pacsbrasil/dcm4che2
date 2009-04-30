@@ -52,6 +52,11 @@ public class XDSDocumentObject implements XDSRegistryObject {
     public String getId() {
         return eo.getId();
     }
+    
+    public String getDocUid() {
+        return InfoSetUtil.getExternalIdentifierValue(UUID.XDSDocumentEntry_uniqueId, eo);
+    }
+    
     /**
      * Get Document Title (name of ExtrinsicObject)
      * 
@@ -99,12 +104,24 @@ public class XDSDocumentObject implements XDSRegistryObject {
     }
 
     /**
+     * Get the Home Community ID of the object.
+     * @return Value of Slot HomeCommunityId.
+     * 
+     */
+    public String getHomeCommunityID() {
+        return eo.getHome();
+    }
+    
+    /**
      * Get status of document as String.
      * 
      * @return
      */
     public String getStatus() {
-        return eo.getStatus();
+        String s = eo.getStatus();
+        if ( s == null ) return null;
+        int pos = s.lastIndexOf(':');
+        return pos == -1 ? s : s.substring(++pos);
     }
 
     public String getAuthorInstitution() {

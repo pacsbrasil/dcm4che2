@@ -1772,7 +1772,7 @@
 			</colgroup>
 			<tr>
 				<td class="xds_docs_nav" title="&XDSDocuments;"
-					colspan="7">&XDSDocuments;:&#160;&#160;
+					colspan="8">&XDSDocuments;:&#160;&#160;
 					<a
 						href="xdsQuery.m?queryType=findDocuments&amp;patPk={pk}">
 						<img src="images/search.gif" alt="icon"
@@ -1797,7 +1797,8 @@
 				</td>
 				<td class="xds_doc_header">&DocumentID;
 				</td>
-				<td class="xds_doc_header">&#160;</td>
+                <td class="xds_doc_header">&#160;</td>
+                <td class="xds_doc_header">&#160;</td>
 			</tr>
 			<xsl:apply-templates select="XDSDocuments/item" mode="xds" />
 		</table>
@@ -1825,7 +1826,7 @@
 			&#160;
 		</td>
 		<td title="&DocumentStatus;">
-			<xsl:value-of select="statusAsString" />
+			<xsl:value-of select="status" />
 			&#160;
 		</td>
 		<td title="&MIMEType;">
@@ -1833,10 +1834,11 @@
 			&#160;
 		</td>
 		<td title="&DocumentID;">
-			<xsl:value-of select="id" />
+			<xsl:value-of select="docUid" />
 			&#160;
 		</td>
 		<td>
+          <xsl:if test="URI and not(URI='')">
 			<xsl:choose>
 				<xsl:when test="mimeType='application/dicom'">
 					<a
@@ -1876,6 +1878,16 @@
 					</a>
 				</xsl:otherwise>
 			</xsl:choose>
+	      </xsl:if>
+        </td>
+        <td>
+          <xsl:if test="repositoryUID and not(repositoryUID='')">
+            <a href="/dcm4chee-xdsb-webretrieve?docUID={docUid}&amp;repoUID={repositoryUID}&amp;homeID={homeCommunityID}"
+               target="xdsdoc">
+                <img src="images/xdsb_retr.gif" alt="icon"
+                    border="0" title="OpenDocViaXDS.b" />
+            </a>
+          </xsl:if>
 		</td>
 	</tr>
 </xsl:template>
