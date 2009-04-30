@@ -95,13 +95,15 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
 
     private String xslPath;
 
-    private String sendingApplication;
+    private String receivedSendingApplication;
+    private String receivedSendingFacility;
+    private String receivedReceivingApplication;
+    private String receivedReceivingFacility;
 
-    private String sendingFacility;
-
-    private String receivingApplication;
-
-    private String receivingFacility;
+    private String linkedSendingApplication;
+    private String linkedSendingFacility;
+    private String linkedReceivingApplication;
+    private String linkedReceivingFacility;
     
     private boolean mppsReceivedEnabled;
     private boolean mppsLinkedEnabled;
@@ -133,35 +135,35 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
     }
     
     public final String getSendingApplication() {
-        return sendingApplication;
+        return receivedSendingApplication;
     }
 
     public final void setSendingApplication(String sendingApplication) {
-        this.sendingApplication = sendingApplication;
+        this.receivedSendingApplication = sendingApplication;
     }
 
     public final String getSendingFacility() {
-        return sendingFacility;
+        return receivedSendingFacility;
     }
 
     public final void setSendingFacility(String sendingFacility) {
-        this.sendingFacility = sendingFacility;
+        this.receivedSendingFacility = sendingFacility;
     }
 
     public final String getReceivingApplication() {
-        return receivingApplication;
+        return receivedReceivingApplication;
     }
 
     public final void setReceivingApplication(String receivingApplication) {
-        this.receivingApplication = receivingApplication;
+        this.receivedReceivingApplication = receivingApplication;
     }
 
     public final String getReceivingFacility() {
-        return receivingFacility;
+        return receivedReceivingFacility;
     }
 
     public final void setReceivingFacility(String receivingFacility) {
-        this.receivingFacility = receivingFacility;
+        this.receivedReceivingFacility = receivingFacility;
     }
 
     public final boolean isMPPSReceivedEnabled() {
@@ -189,6 +191,38 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
     }
 
     
+    public String getLinkedSendingApplication() {
+        return linkedSendingApplication;
+    }
+
+    public void setLinkedSendingApplication(String linkedSendingApplication) {
+        this.linkedSendingApplication = linkedSendingApplication;
+    }
+
+    public String getLinkedSendingFacility() {
+        return linkedSendingFacility;
+    }
+
+    public void setLinkedSendingFacility(String linkedSendingFacility) {
+        this.linkedSendingFacility = linkedSendingFacility;
+    }
+
+    public String getLinkedReceivingApplication() {
+        return linkedReceivingApplication;
+    }
+
+    public void setLinkedReceivingApplication(String linkedReceivingApplication) {
+        this.linkedReceivingApplication = linkedReceivingApplication;
+    }
+
+    public String getLinkedReceivingFacility() {
+        return linkedReceivingFacility;
+    }
+
+    public void setLinkedReceivingFacility(String linkedReceivingFacility) {
+        this.linkedReceivingFacility = linkedReceivingFacility;
+    }
+
     public final boolean isIgnoreUnscheduled() {
         return ignoreUnscheduled;
     }
@@ -263,17 +297,24 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
     public void handleNotification(Notification notif, Object handback) {
         log.debug("handleNotification called! type:"+notif.getType());
         Dataset mpps = (Dataset) notif.getUserData();
-        if (ignoreInProgress
-                && "IN PROGRESS".equals(mpps.getString(Tags.PPSStatus)))
-            return;
+        boolean linked = MPPSScpService.EVENT_TYPE_MPPS_LINKED.equals(notif.getType());
+        if (!linked) {
+            if (ignoreInProgress
+                    && "IN PROGRESS".equals(mpps.getString(Tags.PPSStatus)))
+                return;
+    
+            final String iuid = mpps.getString(Tags.SOPInstanceUID);
+            mpps = getMPPS(iuid);
+        }
+        handle(mpps, linked);
+    }
 
-        final String iuid = mpps.getString(Tags.SOPInstanceUID);
-        mpps = getMPPS(iuid);
+    private void handle(Dataset mpps, boolean linked) {
         DcmElement sq = mpps.get(Tags.ScheduledStepAttributesSeq);
         if (sq == null || sq.isEmpty()) {
             log
                     .error("Missing Scheduled Step Attributes Seq in MPPS - "
-                            + iuid);
+                            + mpps.getString(Tags.SOPInstanceUID));
             return;
         }
         if (ignoreUnscheduled
@@ -284,10 +325,10 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
             for (int i = 0, n = sq.countItems(); i < n; i++) {
                 mpps.putSQ(Tags.ScheduledStepAttributesSeq).addItem(
                         sq.getItem(i));
-                scheduleORM(makeORM(mpps));
+                scheduleORM(makeORM(mpps, linked));
             }
         } else {
-            scheduleORM(makeORM(mpps));
+            scheduleORM(makeORM(mpps, linked));
         }
     }
 
@@ -302,19 +343,19 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
         }
     }
 
-    private byte[] makeORM(Dataset mpps) {
+    private byte[] makeORM(Dataset mpps, boolean linked) {
         if (mpps == null)
             return null;
         try {
             if (logXSLT)
                 try {
-                    logXSLT(mpps);
+                    logXSLT(mpps, linked);
                 } catch (Exception e) {
                     log.warn("Failed to log XSLT:", e);
                 }
             ByteArrayOutputStream out = new ByteArrayOutputStream(
                     INIT_BUFFER_SIZE);
-            TransformerHandler th = getTransformerHandler();
+            TransformerHandler th = getTransformerHandler(linked);
             XMLWriter xmlWriter = new HL7XMLWriter(
             		new OutputStreamWriter(out, ISO_8859_1));
             th.setResult(new SAXResult(xmlWriter.getContentHandler()));
@@ -328,14 +369,13 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
         }
     }
 
-    private void logXSLT(Dataset mpps) throws Exception {
+    private void logXSLT(Dataset mpps, boolean linked) throws Exception {
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory
                 .newInstance();
         String uid = mpps.getString(Tags.SOPInstanceUID);
-        logXSLT(mpps, tf.newTransformerHandler(), new File(logDir, "mpps-"
-                + uid + ".xml"));
-        logXSLT(mpps, getTransformerHandler(), new File(logDir, "mpps-" + uid
-                + ".orm.xml"));
+        String fn = (linked ? "mpps-linked-" : "mpps-received-")+uid;
+        logXSLT(mpps, tf.newTransformerHandler(), new File(logDir, fn + ".xml"));
+        logXSLT(mpps, getTransformerHandler(linked), new File(logDir, fn +".orm.xml"));
     }
 
     private void logXSLT(Dataset mpps, TransformerHandler th, File logFile)
@@ -351,17 +391,17 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
         }
     }
 
-    private TransformerHandler getTransformerHandler() throws Exception {
+    private TransformerHandler getTransformerHandler( boolean linked ) throws Exception {
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory
                 .newInstance();
         File xslFile = FileUtils.toExistingFile(xslPath);
         TransformerHandler th = tf.newTransformerHandler(
                 templates.getTemplates(xslFile));
         Transformer t = th.getTransformer();
-        t.setParameter("SendingApplication", sendingApplication);
-        t.setParameter("SendingFacility", sendingFacility);
-        t.setParameter("ReceivingApplication", receivingApplication);
-        t.setParameter("ReceivingFacility", receivingFacility);
+        t.setParameter("SendingApplication", linked ? linkedSendingApplication : receivedSendingApplication);
+        t.setParameter("SendingFacility", linked ? linkedSendingFacility : receivedSendingFacility);
+        t.setParameter("ReceivingApplication", linked ? linkedReceivingApplication : receivedReceivingApplication);
+        t.setParameter("ReceivingFacility", linked ? linkedReceivingFacility : receivedReceivingFacility);
         return th;
     }
 
