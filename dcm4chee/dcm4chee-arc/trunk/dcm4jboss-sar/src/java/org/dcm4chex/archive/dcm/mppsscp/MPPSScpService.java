@@ -39,6 +39,8 @@
 
 package org.dcm4chex.archive.dcm.mppsscp;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -78,6 +80,7 @@ import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.mbean.HttpUserInfo;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.dcm4chex.archive.util.XSLTUtils;
 
@@ -103,6 +106,8 @@ public class MPPSScpService extends AbstractScpService {
     //should be the same as in StoreSCP.
     private static final String MWL2STORE_XSL = "mwl-cfindrsp2cstorerq.xsl";
 
+    private String addMwlAttrsToMppsXsl;
+
     private MPPSScp mppsScp = new MPPSScp(this);
 
     protected void bindDcmServices(DcmServiceRegistry services) {
@@ -120,6 +125,14 @@ public class MPPSScpService extends AbstractScpService {
 
     protected void disablePresContexts(AcceptorPolicy policy) {
         policy.putPresContext(UIDs.ModalityPerformedProcedureStep, null);
+    }
+
+    public String getAddMwlAttrsToMppsXsl() {
+        return addMwlAttrsToMppsXsl == null ? NONE : addMwlAttrsToMppsXsl;
+    }
+
+    public void setAddMwlAttrsToMppsXsl(String addMwlAttrToMppsXsl) {
+        this.addMwlAttrsToMppsXsl = NONE.equals(addMwlAttrToMppsXsl) ? null : addMwlAttrToMppsXsl;
     }
 
     void sendMPPSNotification(Dataset ds, String eventType) {
@@ -240,7 +253,11 @@ public class MPPSScpService extends AbstractScpService {
                     log.error("Cant coerce MWL attributes to series)",x);
                 }
                 if ( i == 0 ) {
-                    sendMPPSNotification((Dataset) map.get("mppsAttrs"), MPPSScpService.EVENT_TYPE_MPPS_LINKED);
+                    Dataset mppsAttrs = (Dataset) map.get("mppsAttrs");
+                    if ( addMwlAttrsToMppsXsl != null ) {
+                        addMwlAttrs2Mpps(mppsAttrs, (Dataset) map.get("mwlAttrs"));
+                    }
+                    sendMPPSNotification(mppsAttrs, MPPSScpService.EVENT_TYPE_MPPS_LINKED);
                 }
             } //MPPS loop
         }//SPS loop
@@ -253,6 +270,23 @@ public class MPPSScpService extends AbstractScpService {
             map.put("priorPats", priorPats);
         }
         return map;
+    }
+
+    private void addMwlAttrs2Mpps(Dataset mppsAttrs, Dataset mwlAttrs) {
+        try {
+            File xslFile;
+            xslFile = FileUtils.toExistingFile(addMwlAttrsToMppsXsl);
+            Templates tmpl = templates.getTemplates(xslFile);
+            if (tmpl != null) {
+                Dataset coerce = DcmObjectFactory.getInstance().newDataset();
+                XSLTUtils.xslt(mwlAttrs, tmpl, coerce);
+                coerceAttributes(mppsAttrs, coerce);
+            } else {
+                log.warn("Coercion template "+addMwlAttrsToMppsXsl+" not found! Can not add MWL attributes to MPPS Linked notification!");
+            }
+        } catch (Exception e) {
+            log.error("Attribute coercion failed! Can not add MWL attributes to MPPS Linked notification!", e);
+        }
     }
 
     private ArrayList updateStudySeries(MPPSManager mgr, Map mapCoercedSeries) throws FinderException, CreateException, RemoteException {

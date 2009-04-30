@@ -151,6 +151,21 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getAddMwlAttrsToMppsXsl"
+      setMethod="setAddMwlAttrsToMppsXsl">
+      <description><![CDATA[ Stylesheet to add MWL Attributes to MPPS Dataset for 'MPPS Linked' notification.<br/>
+                This allow the use of additional MWL attributes to create ORM message in MPPS2ORM service. 
+                A relative path name is resolved relative to <i>archive-install-directory</i>/server/default/.<br/>
+                NONE..use MPPS Attributes.
+        ]]>
+      </description>
+      <name>AddMwlAttrsToMppsXsl</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isWriteCoercionXmlLog"
       setMethod="setWriteCoercionXmlLog">
       <description><![CDATA[Enable logging of coercions in separate log files.<br/>
