@@ -1,0 +1,67 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+  <title>Image Metadata Service</title>
+  </head>
+<body>
+
+<h2>Image Metadata Service</h2>
+
+<h3>Overview</h3>
+C-FIND metadata service that will return a patient root hierarchy of results in a
+specified text format.  Constraints to the C-FIND are applied by adding parameters
+that correspond to the DICOM tag names.  As with any C-FIND query, constraints on
+the containing types can be applied as well as the requested level.
+<p>
+Query constraints are required for the C-FIND to be performed,
+otherwise an empty set of results will be returned.
+
+<h3>Parameters</h3>
+
+<table border="1">
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+<th>Notes</th>
+</tr>
+<tr>
+<td>objectUID</td>
+<td>Constrain by the SOP Instance UID of the DICOM object</td>
+<td></td>
+</tr>
+<tr>
+<td>InstanceNumber</td>
+<td>Constrain by the instance number of the DICOM object</td>
+<td></td>
+</tr>
+<tr>
+<td>contentType</td>
+<td>
+Determines how the metadata will be formatted:
+<ul>
+<li>
+<b>text/xml</b>
+Formats the metadata as an XML document according to the <a href="study.xsd">study.xsd</a> schema</dt>
+</li>
+<li>
+<b>text/javascript</b>
+Formats the metadata as a JSON document which groups sub elements in a 'children' property
+</li>
+</ul>
+</td>
+<td>Defaults to text/xml</td>
+</tr>
+<tr>
+<td><a href="parameter-regroup.html">regroup</a></td>
+<td>Whether to regroup the images/series of the study.</td>
+<td>Defaults to true</td>
+</tr>
+<tr>
+<td>help</td>
+<td>Whether to show this help message.</td>
+<td>Defaults to false</td>
+</tr>
+</table>
+
+
+</body>
