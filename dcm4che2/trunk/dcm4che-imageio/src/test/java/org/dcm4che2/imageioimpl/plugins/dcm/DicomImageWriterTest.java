@@ -57,17 +57,20 @@ import javax.imageio.stream.ImageOutputStream;
 import junit.framework.TestCase;
 
 import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.ConfigurationError;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.image.ColorModelFactory;
+import org.dcm4che2.imageio.ImageWriterFactory;
 import org.dcm4che2.imageio.plugins.dcm.DicomStreamMetaData;
 
 /**
  * Tests the DICOM Image Writer
  * 
  * @author bwallace
+ * @author jhpoelen
  */
 public class DicomImageWriterTest extends TestCase {
 
@@ -76,6 +79,15 @@ public class DicomImageWriterTest extends TestCase {
     }
 
     static final boolean eraseDicom = false;
+
+    private boolean hasWriterForTransferSyntax(String uid) {
+        try {
+                ImageWriterFactory.getInstance().getWriterForTransferSyntax(uid);
+        } catch (ConfigurationError error) {
+                return false;
+        }
+        return true;
+}
 
     /**
      * Test to see that we can find an image writer, and that it is of the
@@ -95,6 +107,9 @@ public class DicomImageWriterTest extends TestCase {
      * Tests single frame lossless writing.
      */
     public void testSingleFrameLossless() throws IOException {
+        if (!hasWriterForTransferSyntax(UID.JPEGLSLossless)) {
+            return;
+        }
         String name = "ct-write";
         DicomImageReader reader = createImageReader("/misc/ct.dcm");
         BufferedImage bi = readRawBufferedImage(reader, 1);
@@ -111,6 +126,9 @@ public class DicomImageWriterTest extends TestCase {
     }
 
     public void testColorMultiFrameJPEG() throws IOException {
+        if (!hasWriterForTransferSyntax(UID.JPEGLossless)) {
+            return;
+        }
         testColorMultiFrame("multicolorJPEG", "/misc/multicolorjpeg.dcm", UID.JPEGLossless );
     }
     
