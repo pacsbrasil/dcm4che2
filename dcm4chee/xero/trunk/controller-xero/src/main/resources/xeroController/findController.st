@@ -33,7 +33,8 @@ function onLoadStudySearch() {
 
 	// Update the client based on the URL that has been passed.
 	var url = document.location.search.substring(1);
-	if(url == null) url = "";
+	if(!url) return;
+	
 	
 	controller.updateClient(url);
 
