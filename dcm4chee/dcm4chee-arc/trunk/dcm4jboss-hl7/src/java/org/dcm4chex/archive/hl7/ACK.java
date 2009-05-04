@@ -63,7 +63,7 @@ public class ACK {
         this.textMessage = fieldAt(fields, 2);
     }
 
-    private String fieldAt(List fields, int index) {
+    static String fieldAt(List fields, int index) {
         return index < fields.size() ? toString(fields.get(index)) : "";
     }
 
