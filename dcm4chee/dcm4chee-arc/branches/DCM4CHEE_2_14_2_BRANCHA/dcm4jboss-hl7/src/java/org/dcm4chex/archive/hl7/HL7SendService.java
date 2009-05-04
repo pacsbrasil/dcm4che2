@@ -511,6 +511,10 @@ public class HL7SendService extends ServiceMBeanSupport implements
                 throw new IOException(prompt);
             }
             RSP rsp = new RSP(msg);
+            if ("AE".equals(rsp.acknowledgmentCode)) {
+                ERR err = new ERR(msg);
+                if (err.isUnknownKeyIdentifier()) return null;
+            }
             if (!"AA".equals(rsp.acknowledgmentCode)) {
                 log.error("PIX Query fails with code " + rsp.acknowledgmentCode
                         + " - " + rsp.textMessage);
