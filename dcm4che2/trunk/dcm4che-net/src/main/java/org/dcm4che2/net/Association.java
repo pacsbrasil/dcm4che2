@@ -680,11 +680,11 @@ public class Association implements Runnable {
             throw new IllegalStateException(state.toString());
         PresentationContext pc = associateAC.getPresentationContext(pcid);
         if (pc == null)
-            throw new IllegalStateException("No Presentation State with id - "
+            throw new IllegalStateException("No Presentation Context with id - "
                     + pcid);
         if (!pc.isAccepted())
             throw new IllegalStateException(
-                    "Presentation State not accepted - " + pc);
+                    "Presentation Context not accepted - " + pc);
         rspHandler.setPcid(pcid);
         rspHandler.setMsgId(cmd.getInt(Tag.MessageID));
         rspHandler.setTimeout(System.currentTimeMillis() + rspTimeout);
@@ -707,11 +707,11 @@ public class Association implements Runnable {
             throw new IllegalArgumentException("cmd:\n" + cmd);
         PresentationContext pc = associateAC.getPresentationContext(pcid);
         if (pc == null)
-            throw new IllegalStateException("No Presentation State with id - "
+            throw new IllegalStateException("No Presentation Context with id - "
                     + pcid);
         if (!pc.isAccepted())
             throw new IllegalStateException(
-                    "Presentation State not accepted - " + pc);
+                    "Presentation Context not accepted - " + pc);
 
         DataWriter writer = null;
         int datasetType = CommandUtils.NO_DATASET;
