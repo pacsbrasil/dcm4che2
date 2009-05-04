@@ -63,6 +63,10 @@ public class DimseRSPHandler {
         this.msgId = msgId;
     }
 
+    public final int getMessageID() {
+        return msgId;
+    }
+
     public void cancel(Association as) throws IOException {
         as.cancel(pcid, msgId);
     }
