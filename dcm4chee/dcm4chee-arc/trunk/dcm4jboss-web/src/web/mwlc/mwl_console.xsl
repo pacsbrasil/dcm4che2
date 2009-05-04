@@ -1,5 +1,5 @@
 <xsl:stylesheet version="1.0" 
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:java="http://xml.apache.org/xalan/java" exclude-result-prefixes="java">
 <xsl:output method="html" indent="yes" encoding="UTF-8"/>
 <xsl:variable name="page_title">Modality Worklist Console</xsl:variable>
 <xsl:include href="../page.xsl"/>
@@ -303,21 +303,21 @@
 			<td title="Function" align="center" valign="bottom">
 				<xsl:if test="/model/linkMode > 0">
 					&#160;
-					<a href="mwl_console.m?action=doLink&amp;spsID={rqSpsID}">
+					<a href="mwl_console.m?action=doLink&amp;ID={internalId}">
 						<xsl:attribute name="onclick">return confirm('Link this worklist entry <xsl:value-of select="spsID"/> with MPPS <xsl:value-of select="/model/mppsInfo/PPSID"/> ?')</xsl:attribute>
 						<img src="images/link.gif" alt="link" border="0" title="Link this worklist entry with a MPPS !"/>		
 					</a>
 				</xsl:if>
 			</td>	
 			<td title="Function">
-				<a href="mwl_console.m?action=inspect&amp;spsID={rqSpsID}" target="_blank">
+				<a href="mwl_console.m?action=inspect&amp;ID={internalId}" target="_blank">
 					<img src="images/attrs.gif" alt="attrs" border="0" title="Show MWL item attributes"/>		
 				</a>
 			</td>
 			<td title="Function" align="center" valign="bottom">
 				&#160;
 				<xsl:if test="/model/linkMode > 0 or /model/local = 'true'">
-					<input type="checkbox" name="sticky" value="{rqSpsID}" />
+					<input type="checkbox" name="sticky" value="{internalId}" />
 				</xsl:if>
 			</td>	
 		</tr>
