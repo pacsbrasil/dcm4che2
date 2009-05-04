@@ -150,19 +150,19 @@ public class MWLModel extends BasicFormPagingModel {
         return mwlEntries.values();
     }
 
-    public MWLEntry getMWLEntry(String spsID) {
-        return (MWLEntry) mwlEntries.get(spsID);
+    public MWLEntry getMWLEntry(String internalID) {
+        return (MWLEntry) mwlEntries.get(internalID);
     }
     /**
      * Get a list of Attributes for selected (spsIDs) MWL entries.
      * 
-     * @param spsIDs List of SPS IDs.
+     * @param internalIDs List of internal IDs (model).
      * @return List of DICOM Attributes for given spsIDs (same order as in spsIDs)
      */
-    public Dataset[] getMWLAttributes( String[] spsIDs ) {
-        Dataset[] spsAttrs = new Dataset[ spsIDs.length ];
+    public Dataset[] getMWLAttributes( String[] internalIDs ) {
+        Dataset[] spsAttrs = new Dataset[ internalIDs.length ];
         for ( int i = 0 ; i < spsAttrs.length ; i++ ){
-            spsAttrs[i] = ((MWLEntry) mwlEntries.get(spsIDs[i])).toDataset();
+            spsAttrs[i] = ((MWLEntry) mwlEntries.get(internalIDs[i])).toDataset();
         }
         return spsAttrs;
     }
@@ -283,7 +283,7 @@ public class MWLModel extends BasicFormPagingModel {
             ds = (Dataset) l.get( i );
             if ( ds != null ) {
                 entry = new MWLEntry( ds );
-                mwlEntries.put( entry.getRqSpsID(), entry );
+                mwlEntries.put( String.valueOf(entry.getInternalId()), entry );
             } else {
                 countNull++;
             }

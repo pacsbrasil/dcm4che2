@@ -108,7 +108,7 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
             } else if ( request.getParameter("doLink.x") != null ) {
                 return performAction( "doLink", request );
             } else if ( request.getParameter("del.x") != null ) {//action from delete button.
-                String[] spsIDs = getSPSIds(request);
+                String[] spsIDs = getInternalIds(request);
                 if ( spsIDs == null || spsIDs.length < 1) {
                     model.setPopupMsg("mwl.err_delete", "");
                 } else {
@@ -165,7 +165,7 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
             model.setMppsIDs(null);
             return "cancelLink";
         } else if ("inspect".equals(action)) {
-            return inspect(request.getParameter("spsID"));
+            return inspect(request.getParameter("ID"));
         }
         return SUCCESS;
     }
@@ -217,16 +217,16 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
     private String doLink(HttpServletRequest request) {
         String[] mppsIUIDs = model.getMppsIDs();
         model.setMppsIDs(null);
-        String[] spsIDs = getSPSIds(request);
-        if ( spsIDs == null || spsIDs.length < 1) {
+        String[] internalIDs = getInternalIds(request);
+        if ( internalIDs == null || internalIDs.length < 1) {
             model.setPopupMsg("mwl.err_link_selection", "");
             return SUCCESS;
-        } else if ( spsIDs.length > 1 ) {
-            String patID = (String) model.getMWLEntry(spsIDs[0]).getPatientID();
-            for ( int i = 1 ; i < spsIDs.length ; i++ ) {
-                if ( ! patID.equals(model.getMWLEntry(spsIDs[i]).getPatientID())) {
+        } else if ( internalIDs.length > 1 ) {
+            String patID = (String) model.getMWLEntry(internalIDs[0]).getPatientID();
+            for ( int i = 1 ; i < internalIDs.length ; i++ ) {
+                if ( ! patID.equals(model.getMWLEntry(internalIDs[i]).getPatientID())) {
                     model.setPopupMsg("mwl.err_link_pat", 
-                            new String[]{patID,model.getMWLEntry(spsIDs[i]).getPatientID()});
+                            new String[]{patID,model.getMWLEntry(internalIDs[i]).getPatientID()});
                     return SUCCESS;
                 }
             }
@@ -234,9 +234,9 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
         if ( mppsIUIDs != null ) {
             Map map;
             if ( model.isLocal() ) {
-                map= delegate.linkMppsToMwl( spsIDs, mppsIUIDs );
+                map= delegate.linkMppsToMwl( getSPSIDs(internalIDs), mppsIUIDs );
             } else {
-                map= delegate.linkMppsToMwl( model.getMWLAttributes(spsIDs), mppsIUIDs );
+                map= delegate.linkMppsToMwl( model.getMWLAttributes(internalIDs), mppsIUIDs );
             }
             if ( map == null ) {
                 MPPSModel.getModel(request).setExternalPopupMsg("mwl.err_link_failed", null);
@@ -247,6 +247,19 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
         }
         return "linkDone";
     }
+
+    private String[] getSPSIDs(String[] internalIDs) {
+        String[] result = null;
+        if ( internalIDs != null ) {
+            result = new String[internalIDs.length];
+            for ( int i=0; i< result.length ; i++ ) {
+                result[i] = model.getMWLEntry(internalIDs[i]).getRqSpsID();
+            }
+        }
+        return result;
+    }
+
+
 
     private String inspect(String spsID) {
         if ( spsID != null ) {
@@ -265,10 +278,10 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
      * @param request
      * @return
      */
-    private String[] getSPSIds(HttpServletRequest request) {
+    private String[] getInternalIds(HttpServletRequest request) {
         String[] result;
-        if ( request.getParameter("spsID") != null ) {
-            result = new String[]{request.getParameter("spsID")};
+        if ( request.getParameter("ID") != null ) {
+            result = new String[]{request.getParameter("ID")};
         } else {
             result = request.getParameterValues("sticky");
         }
