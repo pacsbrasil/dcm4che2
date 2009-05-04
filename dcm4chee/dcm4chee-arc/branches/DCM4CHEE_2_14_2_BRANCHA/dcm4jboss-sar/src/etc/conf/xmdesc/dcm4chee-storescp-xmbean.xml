@@ -404,29 +404,30 @@ StoreSCP service.
    <attribute access="read-write"
       getMethod="getCheckPendingSeriesStoredInterval"
       setMethod="setCheckPendingSeriesStoredInterval">
-      <description><![CDATA[Interval in days (#d), hours (#h) or minutes (#m) of
-      check for pending Series Stored Notifications, which were not emitted
-      caused by a crash of the Storage Service during an open association.
-      NEVER = disable check. ]]>
+      <description><![CDATA[Interval in hours (#h), minutes (#m) or
+seconds (#s) in which the data base is polled for new received Series, for
+which Series Stored Notifications were not yet emitted.]]>
       </description>
-      <name>CheckPendingSeriesStoredInterval</name>
+      <name>CheckPendingSeriesStoredInterva</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="1h"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getPendingSeriesStoredTimeout"
-      setMethod="setPendingSeriesStoredTimeout">
-      <description><![CDATA[Timeout in hours (#h) or minutes (#m) for
-      emission of Series Stored Notifications after an object of this Series,
-      before the emission of the Notification is triggered by the check for
-      pending Series Stored Notifications. ]]>
+      getMethod="getSeriesStoredNotificationDelay"
+      setMethod="setSeriesStoredNotificationDelay">
+      <description><![CDATA[Minimal delay in hours (#h), minutes (#m) or
+seconds (#s) between the receive of the last object of a Series and the
+emission of a Series Stored Notification for that Series. Shall not be
+configured smaller than the maximal time between the receive of two objects
+belonging to the same Series to avoid emission of multiple Series Stored
+Notifications for one Series.]]>
       </description>
-      <name>PendingSeriesStoredTimeout</name>
+      <name>SeriesStoredNotificationDelay</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="10m"/>
+         <value value="1m"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

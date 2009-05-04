@@ -285,17 +285,20 @@ public abstract class StorageBean implements SessionBean {
             throws FinderException {
         Timestamp before = new Timestamp(System.currentTimeMillis() 
                 - maxPendingTime);
-        Collection c = seriesHome.findByStatusReceivedBefore(RECEIVED, before);
+        Collection c = seriesHome.findByStatusAndUpdatedBefore(RECEIVED, before);
         if (c.isEmpty()) {
             return new SeriesStored[0]; 
         }
-        log.info("Found " + c.size() + " Stored Series");
         ArrayList list = new ArrayList(c.size());
-        SeriesStored seriesStored;
         for (Iterator iter = c.iterator(); iter.hasNext();) {
-            seriesStored = makeSeriesStored((SeriesLocal) iter.next());
-            if (seriesStored != null) {
-                list.add(seriesStored);
+            SeriesLocal series = (SeriesLocal) iter.next();
+            Timestamp lastUpdated =
+                    series.getMaxUpdatedTimeOfSeriesRelatedInstances();
+            if (lastUpdated != null && lastUpdated.before(before)) {
+                SeriesStored seriesStored = makeSeriesStored(series);
+                if (seriesStored != null) {
+                    list.add(seriesStored);
+                }
             }
         }
         return (SeriesStored[]) list.toArray(new SeriesStored[list.size()]);

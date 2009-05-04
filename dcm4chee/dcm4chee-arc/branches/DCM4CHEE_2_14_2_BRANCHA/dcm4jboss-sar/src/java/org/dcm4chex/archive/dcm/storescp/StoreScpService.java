@@ -113,7 +113,7 @@ public class StoreScpService extends AbstractScpService {
 
     private Integer listenerID;
     private long checkPendingSeriesStoredInterval;
-    private long pendingSeriesStoredTimeout;
+    private long seriesStoredNotificationDelay;
     private String defFileSystemGroupID;
 
     /**
@@ -216,12 +216,12 @@ public class StoreScpService extends AbstractScpService {
         }
     }
 
-    public final String getPendingSeriesStoredTimeout() {
-        return RetryIntervalls.formatInterval(pendingSeriesStoredTimeout);
+    public final String getSeriesStoredNotificationDelay() {
+        return RetryIntervalls.formatInterval(seriesStoredNotificationDelay);
     }
 
-    public void setPendingSeriesStoredTimeout(String interval) {
-        pendingSeriesStoredTimeout = RetryIntervalls
+    public void setSeriesStoredNotificationDelay(String interval) {
+        seriesStoredNotificationDelay = RetryIntervalls
                 .parseIntervalOrNever(interval);
     }
 
@@ -784,7 +784,7 @@ public class StoreScpService extends AbstractScpService {
     private void checkPendingSeriesStored() throws Exception {
         Storage store = getStorage();
         SeriesStored[] seriesStored = store
-                .checkSeriesStored(pendingSeriesStoredTimeout);
+                .checkSeriesStored(seriesStoredNotificationDelay);
         for (int i = 0; i < seriesStored.length; i++) {
             log.info("Detect pending " + seriesStored[i]);
             scp.doAfterSeriesIsStored(store, null, seriesStored[i]);
