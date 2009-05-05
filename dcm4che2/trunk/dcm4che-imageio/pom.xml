@@ -7,29 +7,6 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>dcm4che-imageio</artifactId>
   <version>2.0.20-SNAPSHOT</version>
-  <profiles>
-   <profile>
-    <id>nojiio</id>
-    <activation>
-     <property>
-      <name>nojiio</name>
-     </property>
-    </activation>
-    <build>
-     <plugins>
-      <plugin>
-       <groupId>org.apache.maven.plugins</groupId>
-       <artifactId>maven-surefire-plugin</artifactId>
-       <configuration>
-        <excludes>
-         <exclude>**/DicomImageWriterTest.java</exclude>
-        </excludes>
-       </configuration>
-      </plugin>
-     </plugins>
-    </build>
-   </profile>
-  </profiles>
   <dependencies>
     <dependency>
       <groupId>org.dcm4che.test</groupId>
