@@ -123,19 +123,6 @@ public class RetrieveCmd extends BaseReadCmd {
             "Instance.series_fk", "Instance.pk", "File.instance_fk",
             "File.filesystem_fk", "FileSystem.pk" };
 
-    private static final Comparator DESC_FILE_PK = new Comparator() {
-
-        /**
-         * This will make sure the most available file will be listed first
-         */
-        public int compare(Object o1, Object o2) {
-            FileInfo fi1 = (FileInfo) o1;
-            FileInfo fi2 = (FileInfo) o2;
-            int diffAvail = fi1.availability - fi2.availability;
-            return diffAvail != 0 ? diffAvail : fi2.pk < fi1.pk ? -1 : 1;
-        }
-    };
-    
     private static String[] entity = ENTITY;
     private static String[] leftJoin = LEFT_JOIN;
     private static String[] relations = RELATIONS;
@@ -463,7 +450,7 @@ public class RetrieveCmd extends BaseReadCmd {
         for (int i = 0; i < array.length; i++) {
             list = (ArrayList) it.next();
             array[i] = (FileInfo[]) list.toArray(new FileInfo[list.size()]);
-            Arrays.sort(array[i], DESC_FILE_PK);
+            Arrays.sort(array[i]);
         }
         return array;
     }

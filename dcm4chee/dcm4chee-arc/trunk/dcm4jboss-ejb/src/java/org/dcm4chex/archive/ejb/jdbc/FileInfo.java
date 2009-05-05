@@ -40,33 +40,14 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.io.Serializable;
-import java.util.Comparator;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger </a>
  *  
  */
-public class FileInfo implements Serializable {
+public class FileInfo implements Serializable, Comparable {
 
-    private static final long serialVersionUID = 48244042710891993L;
-
-    public static final Comparator ASC_ORDER = new Comparator() {
-
-        public int compare(Object o1, Object o2) {
-           	long l1 = ((FileInfo) o1).pk;
-           	long l2 = ((FileInfo) o2).pk;
-           	return l1 == l2 ? 0 : l1 < l2 ? -1 : 1;
-        }
-    };
-
-    public static final Comparator DESC_ORDER = new Comparator() {
-
-        public int compare(Object o1, Object o2) {
-           	long l1 = ((FileInfo) o1).pk;
-           	long l2 = ((FileInfo) o2).pk;
-           	return l1 == l2 ? 0 : l2 < l1 ? -1 : 1;
-        }
-    };
+    private static final long serialVersionUID = 3058272542673017351L;
 
     public long pk = -1;
 
@@ -145,5 +126,15 @@ public class FileInfo implements Serializable {
                 + ", extRetrieveAET=" + extRetrieveAET
                 + ", fileRetrieveAET=" + fileRetrieveAET + ", basedir="
                 + basedir + ", fileid=" + fileID + ", tsuid=" + tsUID;
+    }
+
+    /**
+     * This will make sure the most available - and for files with equal
+     * availability, the most recent - file will be listed first
+     */
+    public int compareTo(Object o) {
+        FileInfo fi2 = (FileInfo) o;
+        int diffAvail = availability - fi2.availability;
+        return diffAvail != 0 ? diffAvail : fi2.pk < pk ? -1 : 1;
     }
 }

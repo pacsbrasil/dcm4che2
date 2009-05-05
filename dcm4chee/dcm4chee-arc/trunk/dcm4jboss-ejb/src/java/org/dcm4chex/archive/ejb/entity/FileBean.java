@@ -258,8 +258,10 @@ public abstract class FileBean implements EntityBean {
         retval.setFileStatus(getFileStatus());
         
         InstanceLocal inst = getInstance();
-        if (inst != null)
+        if (inst != null) {
+            retval.setSopInstanceUID(inst.getSopIuid());
             retval.setSopClassUID(inst.getSopCuid());
+        }
         return retval;
     }
 

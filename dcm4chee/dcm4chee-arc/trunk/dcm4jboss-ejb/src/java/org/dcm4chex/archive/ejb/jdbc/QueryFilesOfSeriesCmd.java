@@ -65,7 +65,7 @@ public final class QueryFilesOfSeriesCmd extends BaseReadCmd {
         execute();
     }
 
-    private ExtFileDTO getFileDTO() throws SQLException {
+    private FileDTO getFileDTO() throws SQLException {
         FileDTO dto = new FileDTO();
         dto.setPk(rs.getLong(1));
         dto.setFilePath(rs.getString(2));
@@ -77,8 +77,8 @@ public final class QueryFilesOfSeriesCmd extends BaseReadCmd {
         dto.setAvailability(rs.getInt(8));
         dto.setUserInfo(rs.getString(9));
         dto.setSopClassUID(rs.getString(10));
-        ExtFileDTO extDto= new ExtFileDTO(dto, rs.getString(11));
-        return extDto;
+        dto.setSopInstanceUID(rs.getString(11));
+        return dto;
     }
 
     public Map getBestFileDTOs() throws SQLException {
@@ -93,9 +93,8 @@ public final class QueryFilesOfSeriesCmd extends BaseReadCmd {
         Map bestFiles = new HashMap();
         Iterator i = allFiles.listIterator();
         while(i.hasNext()) {
-            ExtFileDTO extDto = (ExtFileDTO)i.next();
-            FileDTO dto = extDto.dto;
-            String sopInstance = extDto.sopInstance;
+            FileDTO dto = (FileDTO)i.next();
+            String sopInstance = dto.getSopInstanceUID();
             if ( dto.getFileStatus()< 0 )
                 continue;
             FileDTO compareDto = (FileDTO)bestFiles.get(sopInstance);
@@ -111,14 +110,5 @@ public final class QueryFilesOfSeriesCmd extends BaseReadCmd {
         log.debug("Checking to see if dto: " + dto + " is better than: " + compareDto);
 		return( dto.getAvailability() < compareDto.getAvailability() )? true : false; 
 	}
-    
-    class ExtFileDTO {
-        public String sopInstance;
-        public FileDTO dto;
-        public ExtFileDTO(FileDTO dto, String sopInstance) {
-            this.dto = dto;
-            this.sopInstance = sopInstance;
-        }
-    }
-    	
+
 }

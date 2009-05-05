@@ -57,25 +57,14 @@ import java.sql.PreparedStatement;
 public final class QueryFilesCmd extends BaseReadCmd {
 
     private static final String QueryFilesByUIDCmd = "SELECT f.pk, f.filepath, f.file_md5, f.file_status, "
-            + "fs.fs_group_id, fs.dirpath, fs.retrieve_aet, fs.availability, fs.user_info, i.sop_cuid "
+            + "fs.fs_group_id, fs.dirpath, fs.retrieve_aet, fs.availability, fs.user_info, i.sop_cuid, i.sop_iuid "
             + "FROM files f, filesystem fs, instance i "
             + "WHERE f.filesystem_fk = fs.pk AND f.instance_fk = i.pk AND i.sop_iuid=?";
 
     private static final String QueryLinkedFilesCmd = "SELECT f.pk, f.filepath, f.file_md5, f.file_status, "
-            + "fs.fs_group_id, fs.dirpath, fs.retrieve_aet, fs.availability, fs.user_info, i.sop_cuid "
+            + "fs.fs_group_id, fs.dirpath, fs.retrieve_aet, fs.availability, fs.user_info, i.sop_cuid, i.sop_iuid "
             + "FROM files f, filesystem fs, instance i, files f2 "
             + "WHERE f.filesystem_fk = fs.pk AND f.instance_fk = i.pk AND f.instance_fk = f2.instance_fk and f2.pk=?";
-
-    private static final Comparator DESC_FILE_PK = new Comparator() {
-
-        public int compare(Object o1, Object o2) {
-            FileDTO fi1 = (FileDTO) o1;
-            FileDTO fi2 = (FileDTO) o2;
-            int diffAvail = fi1.getAvailability() - fi2.getAvailability();
-            return diffAvail != 0 ? diffAvail
-                    : fi2.getPk() < fi1.getPk() ? -1 : 1;
-        }
-    };
 
     public static int transactionIsolationLevel = 0;
 
@@ -105,6 +94,7 @@ public final class QueryFilesCmd extends BaseReadCmd {
         dto.setAvailability(rs.getInt(8));
         dto.setUserInfo(rs.getString(9));
         dto.setSopClassUID(rs.getString(10));
+        dto.setSopInstanceUID(rs.getString(11));
         return dto;
     }
 
@@ -116,7 +106,7 @@ public final class QueryFilesCmd extends BaseReadCmd {
         } finally {
             close();
         }
-        Collections.sort(list, DESC_FILE_PK);
+        Collections.sort(list);
         return list;
     }
 }

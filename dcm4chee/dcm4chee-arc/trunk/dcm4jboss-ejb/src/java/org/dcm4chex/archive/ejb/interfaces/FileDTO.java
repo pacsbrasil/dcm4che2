@@ -47,9 +47,9 @@ import java.io.Serializable;
  *          2006) $
  * @since 20.02.2004
  */
-public final class FileDTO implements Serializable {
+public final class FileDTO implements Serializable, Comparable {
 
-    private static final long serialVersionUID = 3073146245744171178L;
+    private static final long serialVersionUID = -3713363057919313663L;
 
     private long pk;
 
@@ -66,6 +66,8 @@ public final class FileDTO implements Serializable {
     private String path;
 
     private String tsuid;
+
+    private String sopIuid;
 
     private String sopCuid;
 
@@ -224,18 +226,29 @@ public final class FileDTO implements Serializable {
         this.availability = availability;
     }
 
-    /**
-     * @return Returns the sopClassUID.
-     */
     public String getSopClassUID() {
         return sopCuid;
     }
 
-    /**
-     * @param sopClassUID
-     *            The sopClassUID to set.
-     */
     public void setSopClassUID(String sopClassUID) {
         this.sopCuid = sopClassUID;
+    }
+
+    public String getSopInstanceUID() {
+        return sopCuid;
+    }
+
+    public void setSopInstanceUID(String sopClassUID) {
+        this.sopCuid = sopClassUID;
+    }
+
+    /**
+     * This will make sure the most available - and for files with equal
+     * availability, the most recent - file will be listed first
+     */
+    public int compareTo(Object o) {
+        FileDTO fi2 = (FileDTO) o;
+        int diffAvail = getAvailability() - fi2.getAvailability();
+        return diffAvail != 0 ? diffAvail : fi2.getPk() < getPk() ? -1 : 1;
     }
 }
