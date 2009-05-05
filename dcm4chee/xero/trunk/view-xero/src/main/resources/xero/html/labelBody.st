@@ -1,9 +1,9 @@
-<a class="jslink" $if(layout.action)$onmouseup="return controller.itemAction('$layout.id$',event);" href="#" onmousedown="return cancelEvent(event);"
+<a id='$layout.id$Link' class="jslink" $if(layout.action)$onmouseup="return controller.itemAction('$layout.id$',event);" href="#" onmousedown="return cancelEvent(event);"
 $elseif(layout.href)$ href="$layout.href;format="xml"$?v=$version$" $if(layout.target)$target="$layout.target$"$endif$
 $elseif(layout.area)$onmousedown="return controller.mouseMenu('$layout.id$',event);"$else$ onclick="return cancelEvent(event);" href="#"$endif$>
 $if(layout.i18n)$
 $if(i18n.(layout.icon))$
-<img class="$if(layout.isActive)$active $endif$icon" src="$i18n.(layout.icon)$?v=$version$" alt="$i18n.(layout.i18n);format="xml"$" />
+<img id='$layout.id$Img' class="$if(layout.isActive)$active $endif$icon" src="$i18n.(layout.icon)$?v=$version$" alt="$i18n.(layout.i18n);format="xml"$" />
 $if(layout.showLabel)$ $i18n.(layout.i18n)$$endif$
 $elseif(i18n.(layout.i18n))$
 $i18n.(layout.i18n)$
@@ -11,7 +11,7 @@ $else$
 $layout.i18n$
 $endif$
 $elseif(layout.icon)$
-<img class="icon" src="$layout.icon$?v=$version$" alt="$layout.label;format="xml"$" />
+<img id='$layout.id$Img' class="icon" src="$layout.icon$?v=$version$" alt="$layout.label;format="xml"$" />
 $if(layout.showLabel)$ $layout.label;format="xml"$$endif$
 $elseif(layout.label)$
 $layout.label;format="xml"$
