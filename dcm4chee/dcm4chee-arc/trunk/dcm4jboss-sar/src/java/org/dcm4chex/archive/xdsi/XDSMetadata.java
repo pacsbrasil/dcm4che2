@@ -82,8 +82,8 @@ public class XDSMetadata {
     private static final String SUBMISSION_SET = "SubmissionSet";
     private static final String FOLDER_DOC_ASSOC = "FolderDocAssoc";
     private static final String TAG_ASSOCIATION = "Association";
-    private static final String DEFAULT_TIME_STRING = "000000";
-    private static final String DEFAULT_DATE_STRING = "11111111";
+    private static final String DEFAULT_TIME_STRING = "010101.000";
+    private static final String DEFAULT_DATE_STRING = "20090101";
     private static final String ATTR_CLASSIFICATION_NODE = "classificationNode";
     private static final String ATTR_NODE_REPRESENTATION = "nodeRepresentation";
     private static final String ATTR_CLASSIFICATION_SCHEME = "classificationScheme";
@@ -319,12 +319,20 @@ public class XDSMetadata {
             attr.addAttribute("", "id", "id", "", id);          
         attr.addAttribute("", "associationType", "associationType", "", type);          
         attr.addAttribute("", "sourceObject", "sourceObject", "", sourceObject);		
-        attr.addAttribute("", "targetObject", "targetObject", "", targetObject);		
+        attr.addAttribute("", "targetObject", "targetObject", "", targetObject);
+        status = checkStatus(status, type);
         th.startElement("", TAG_ASSOCIATION, TAG_ASSOCIATION, attr );
         if ( status != null ) addSlot("SubmissionSetStatus", status);
         th.endElement("", TAG_ASSOCIATION, TAG_ASSOCIATION );
-
     }
+
+    private String checkStatus(String status, String type) {
+        if ( status == null ) return null;
+        if ( type == null || !type.endsWith("HasMember") ) 
+            return null;
+        return status;
+    }
+    
     /**
      * @throws SAXException
      * 
