@@ -1,0 +1,24 @@
+<html>
+<head><title>Xero Study Search Package</title></head>
+<body>
+  <h1>Xero Search Study Objects</h1>
+  <p>This package defines the beans that contain study information at the patient through image(object) level, as 
+  well as the search condition definitions for each level defining what fields are requested from the C-Find and
+  what fields are searchable in the C-Find, including what their names are.</p>
+  
+  <h2>Study XML Definitions (JAXB)</h2>
+  <p>The base study XML definitions are defined in the study.xsd file, which is parsed by JAXB to produce the base
+  study data objects.  These are then extended with interfaces and Bean instances to add functionality to initialize
+  the objects from DicomObject data, and to organize and find the children objects by id.  </p>
+  
+  <h2>SearchConditionParsers</h2>
+  <p>The search condition parsers at the various levels use a declared tag on the study data interfaces to figure
+  out what is searchable at each level, and additionally declare the search type UIDs and other required information
+  to allow the search to be performed.</p>
+  
+  <h2>Search C-Find Filters</h2>
+  <p>The Search C-Find filters are a filter that performs the C-Find itself, after getting the query criteria
+  appropriate for the parameters.</p>
+  
+</body>
+</html>
