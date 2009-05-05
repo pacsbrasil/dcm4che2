@@ -72,8 +72,8 @@ public final class QueryFilesCmd extends BaseReadCmd {
             FileDTO fi1 = (FileDTO) o1;
             FileDTO fi2 = (FileDTO) o2;
             int diffAvail = fi1.getAvailability() - fi2.getAvailability();
-            return diffAvail != 0 ? diffAvail : (int) (fi2.getPk() - fi1
-                    .getPk());
+            return diffAvail != 0 ? diffAvail
+                    : fi2.getPk() < fi1.getPk() ? -1 : 1;
         }
     };
 
