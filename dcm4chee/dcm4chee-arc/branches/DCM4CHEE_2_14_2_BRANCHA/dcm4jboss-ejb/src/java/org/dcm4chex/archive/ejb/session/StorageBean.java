@@ -422,18 +422,26 @@ public abstract class StorageBean implements SessionBean {
         return study;
     }
 
-    private PatientLocal getPatient(Dataset ds, Dataset coercedElements)
-            throws Exception {
-        Collection c = patHome.selectByPatientDemographic(ds);
-        if (c.size() != 1) {
-            return patHome.create(ds);
-        }
-        PatientLocal pat = patHome.followMergedWith(
-                (PatientLocal) c.iterator().next());
-        coercePatientIdentity(pat, ds, coercedElements);
-        return pat;
+    private PatientLocal getPatient(Dataset ds, Dataset coercedElements) throws Exception {
+    	Collection c = patHome.selectByPatientDemographic(ds);
+    	if (c.size() != 1) {
+    		try {
+    			return patHome.create(ds);
+    		} catch (CreateException e1) {
+    			// check if Patient record was inserted by concurrent thread
+    			try {
+    				c = patHome.selectByPatientDemographic(ds);
+    			} catch (Exception e2) {
+    				throw e1;
+    			}
+    		}
+    	}
+    	PatientLocal pat = patHome.followMergedWith(
+    			(PatientLocal) c.iterator().next());
+    	coercePatientIdentity(pat, ds, coercedElements);
+    	return pat;
     }
-
+ 
     private void coercePatientIdentity(PatientLocal patient, Dataset ds,
             Dataset coercedElements) throws DcmServiceException, CreateException {
         patient.coerceAttributes(ds, coercedElements);
