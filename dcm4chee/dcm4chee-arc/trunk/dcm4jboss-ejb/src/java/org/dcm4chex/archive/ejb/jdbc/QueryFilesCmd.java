@@ -39,15 +39,14 @@
 
 package org.dcm4chex.archive.ejb.jdbc;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.MD5;
-import java.sql.PreparedStatement;
 
 /**
  * @author gunter.zeilinger@tiani.com
