@@ -132,6 +132,20 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getIgnoredIssuersOfPatientIDPattern"
+      setMethod="setIgnoredIssuersOfPatientIDPattern">
+      <description><![CDATA[A regular expression of Issuer patterns to ignore
+      in PIX Update Notifications, or "NONE".  Any Issuer of Patient ID that
+      matches the pattern will be removed from the list of patient identifiers
+      before the updates are applied to the database.]]>
+      </description>
+      <name>IgnoredIssuersOfPatientIDPattern</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>   
+   <attribute access="read-write"
       getMethod="getPidStylesheet"
       setMethod="setPidStylesheet">
       <description><![CDATA[Stylesheet for HL7 PID to DICOM Patient Module

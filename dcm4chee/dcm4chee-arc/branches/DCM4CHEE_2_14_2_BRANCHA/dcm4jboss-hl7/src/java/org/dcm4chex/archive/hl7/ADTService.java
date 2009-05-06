@@ -42,6 +42,8 @@ package org.dcm4chex.archive.hl7;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -85,6 +87,8 @@ public class ADTService extends AbstractHL7Service {
     private String pixUpdateNotificationMessageType;
 
     private List issuersOfOnlyOtherPatientIDs;
+    
+    private Pattern ignoredIssuersOfPatientIDPattern;
 
     private boolean ignoreDeleteErrors;
 
@@ -159,6 +163,18 @@ public class ADTService extends AbstractHL7Service {
         }
     }
 
+    public final String getIgnoredIssuersOfPatientIDPattern() {
+    	return ignoredIssuersOfPatientIDPattern == null ? "NONE" : ignoredIssuersOfPatientIDPattern.pattern();  
+    }
+    
+    public final void setIgnoredIssuersOfPatientIDPattern(String ignoredIssuersOfPatientIDPattern) {
+    	if (ignoredIssuersOfPatientIDPattern.compareToIgnoreCase("NONE") == 0) {
+    		this.ignoredIssuersOfPatientIDPattern = null;
+    	} else {
+    		this.ignoredIssuersOfPatientIDPattern = Pattern.compile(ignoredIssuersOfPatientIDPattern);
+    	}
+    }
+    
     public final String getMrgStylesheet() {
         return mrgXslPath;
     }
@@ -326,6 +342,7 @@ public class ADTService extends AbstractHL7Service {
 
     private boolean processUpdateNotificationMessage(Document msg)
             throws Exception {
+    	String fn = "processUpdateNotificationMessage: ";
         List pids;
         try {
             pids = new PID(msg).getPatientIDs();
@@ -333,6 +350,31 @@ public class ADTService extends AbstractHL7Service {
         catch (IllegalArgumentException e) {
             throw new HL7Exception("AR", e.getMessage());
         }
+
+        if (ignoredIssuersOfPatientIDPattern != null) {
+            ArrayList filteredPids = new ArrayList();
+            for (int i = 0, n = pids.size(); i < n; ++i) {
+            	String[] pid = (String[]) pids.get(i);
+            	StringBuilder issuer = new StringBuilder();
+            	for (int s = 1; s < pid.length; s++) {
+            		if (s != 1) {
+            			issuer.append('&');
+            		}
+            		issuer.append(pid[s]);
+            	}
+            	Matcher matcher = ignoredIssuersOfPatientIDPattern.matcher(issuer);
+            	if (matcher.matches()) {
+                	if (log.isDebugEnabled()) {
+                		log.debug(fn + "filtering out patient ID '" + pid[0] + "' with issuer '" + issuer + "' because the issuer matches the expression '" + ignoredIssuersOfPatientIDPattern.pattern() + "'");
+                	}
+            	} else {
+            		log.debug(fn + "keeping patient ID '" + pid[0] + "' with issuer '" + issuer + "'");
+            		filteredPids.add(pid);
+            	}
+            }
+            pids = filteredPids;
+        }
+        
         PatientUpdate patUpdate = getPatientUpdate();
         for (int i = 0, n = pids.size(); i < n; ++i) {
             String[] pid = (String[]) pids.get(i);
