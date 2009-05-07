@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+  <title>Query Parameter: regroup</title>
+  </head>
+<body>
+<h2>Query Parameter: regroup</h2>
+The 'regroup' flag is used to determine if the series will be grouped/sorted  by the server before the metadata is returned to the client.  
+By default the flag is turned on, and to turn it off the following expression should be added to the URL query string:  'regroup=false'.
+<p>
+To request a study without regrouping the series the following request should be used:
+<br>
+http://host/wado2/?requestType=IMAGE&ampAccessionNumber=1234&ampregroup=false
+<p>
+NOTE:  Activating regrouping of images can require the retrieval of the full DICOM header for
+objects being processed.  This can lead to performance degradation for studies will a large 
+number of images.
+
+<h3>Regrouping of MG Studies</h3>
+MG regrouping is done based on the laterality and orientation of each image found in the study.
+The laterality and orientation are determined from the Image Laterality and View Code Sequence 
+DICOM elements.
+<p>
+The following steps will be performance in the grouping of MG images:
+<ul>
+<li>Images that are not oriented left in the anterior view will be flipped to this orientation.  
+<li>Standardized series descriptions will be generated i.e. "L CC" or "R MLO"
+<li>Images will be grouped into the appropriate series
+<li>Series will sorted so that CC images are always after MLO.
+</ul>
+
+<h3>Regrouping of Multiframe Studies</h3>
+Multiframe studies are regrouped by the Instance Number element of the DICOM header.  This will 
+generally result in the separation of multiframes into separate series.
+
+<h3>Regrouping of MR Studies</h3>
+Not yet implemented due to a lack of suitable DICOM data.
+
+</body>
