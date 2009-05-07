@@ -53,6 +53,7 @@ import javax.management.Notification;
 import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
+import org.dcm4che2.audit.message.ActiveParticipant;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.SecurityAlertMessage;
@@ -84,6 +85,8 @@ public class AEService extends ServiceMBeanSupport {
     private ObjectName echoServiceName;
 
     private boolean dontSaveIP = true;
+
+    private boolean autoUpdateIP;
 
     private int[] portNumbers;
 
@@ -131,6 +134,14 @@ public class AEService extends ServiceMBeanSupport {
      */
     public void setDontSaveIP(boolean dontSaveIP) {
         this.dontSaveIP = dontSaveIP;
+    }
+
+    public boolean isAutoUpdateIP() {
+        return autoUpdateIP;
+    }
+
+    public void setAutoUpdateIP(boolean autoUpdateIP) {
+        this.autoUpdateIP = autoUpdateIP;
     }
 
     /**
@@ -315,10 +326,35 @@ public class AEService extends ServiceMBeanSupport {
     public AEDTO getAE(String aet, InetAddress addr) throws Exception {
         AEManager aetMgr = aeMgr();
         try {
-            return aetMgr.findByAET(aet);
+            return updateIP(aetMgr.findByAET(aet), addr, aetMgr);
         } catch (UnknownAETException e) {
             return autoConfigAE(aet, addr, aetMgr);
         }
+    }
+
+    private AEDTO updateIP(AEDTO ae, InetAddress addr, AEManager aetMgr)
+            throws Exception {
+        AEDTO ret = ae;
+        String oldIP, newIP;
+        if (autoUpdateIP && addr != null
+                && ActiveParticipant.isIP(oldIP = ae.getHostName())
+                && !oldIP.equals(newIP =  addr.getHostAddress())) {
+            ret = new AEDTO(
+                    ae.getPk(),
+                    ae.getTitle(),
+                    newIP,
+                    ae.getPort(),
+                    ae.getCipherSuitesAsString(),
+                    ae.getIssuerOfPatientID(),
+                    ae.getUserID(),
+                    ae.getPassword(),
+                    ae.getFileSystemGroupID(),
+                    ae.getDescription(),
+                    ae.getWadoUrl());
+            aetMgr.updateAE(ret);
+            log.info("Update IP of " + ret );
+        }
+        return ae;
     }
 
     private AEDTO autoConfigAE(String aet, InetAddress addr, AEManager aetMgr) 

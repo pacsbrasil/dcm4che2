@@ -53,6 +53,18 @@
          <value value="true"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="isAutoUpdateIP" setMethod="setAutoUpdateIP">
+      <description>Controls if configured IP addresses of AE Titles shall be
+      updated automatically on receive of C-MOVE requests with the requester's
+      AE Title as Move Destination. Useful for retrieve to clients with dynamic
+      IP.
+      </description>
+      <name>AutoUpdateIP</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="getMaxCacheSize" setMethod="setMaxCacheSize">
       <description>Maximal number of cached AE configurations.
       </description>
