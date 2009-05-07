@@ -114,6 +114,10 @@ public class SpecificCharacterSet {
         return decode(val, 0, val.length, charset);
     }
 
+    public String decode(byte[] val, int off, int len) {
+        return decode(val, off, len, charset);
+    }
+
     static String decode(byte[] b, int off, int len, String cs) {
         try {
             return new String(b, off, len, cs);
