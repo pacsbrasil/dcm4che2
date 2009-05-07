@@ -1146,6 +1146,29 @@ QueryRetrieveScp service.</description>
    </operation>
 
    <operation impact="INFO">
+      <description>Locate SOP Instances of one Series. Return a Map which
+      contains one entry for each SOP Instance of a Series, with the SOP
+      Instance UID as key, and a File object if the instance
+      is locally available, or a Retrieve AE Title if the instance is only
+      available from a remote Retrieve SCP, or null if the instance is
+      neither available locally nor from a remote Retrieve SCP, as value.
+      Update study access time if studyIUID != null and
+      RecordStudyAccessTime = true.</description>
+      <name>locateInstancesOfSeries</name>
+      <parameter>
+        <description>Series Instance UID</description>
+        <name>seriesIUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Study Instance UID</description>
+        <name>studyIUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.util.Map</return-type>
+   </operation>
+
+   <operation impact="INFO">
       <description>Locate SOP Instance. Return a Dataset object, if the instance
       is locally available. The attributes of the dataset are updated with the attributes from database.</description>
       <name>getDatasourceOfInstance</name>

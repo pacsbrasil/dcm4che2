@@ -101,6 +101,8 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
+import org.dcm4chex.archive.ejb.jdbc.QueryExternalRetrieveAETsOfSeriesCmd;
+import org.dcm4chex.archive.ejb.jdbc.QueryFilesOfSeriesCmd2;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.exceptions.NoPresContextException;
@@ -1444,6 +1446,54 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return locateInstance(sopIUID, null);
     }
 
+    public Map<String, Object> locateInstancesOfSeries(String seriesIUID,
+            String studyIUID) throws Exception {
+        HashSet<String> dirPaths = new HashSet<String>();
+        QueryFilesOfSeriesCmd2 query = new QueryFilesOfSeriesCmd2(seriesIUID);
+        Map<String, List<FileDTO>> fileDTOsByIUID = query.getFileDTOsByIUID();
+        Map<String, Object> fileOrAETByIUID = new HashMap<String, Object>();
+        for (Map.Entry<String, List<FileDTO>> entry :
+                fileDTOsByIUID.entrySet()) {
+            String iuid = entry.getKey();
+            List<FileDTO> value = entry.getValue();
+            FileDTO[] fileDTOs = value.toArray(new FileDTO[value.size()]);
+            Arrays.sort(fileDTOs);
+            FileDTO localFileDTO = getLocalFileDTO(fileDTOs);
+            if (localFileDTO != null) {
+                String dirPath = localFileDTO.getDirectoryPath();
+                if (studyIUID != null && studyIUID.length() != 0
+                        && dirPaths.add(dirPath)) {
+                    updateStudyAccessTime(studyIUID, dirPath);
+                }
+                fileOrAETByIUID.put(iuid, getFile(localFileDTO));
+            } else {
+                // no local accessible file -> return Retrieve AET
+                fileOrAETByIUID.put(iuid, fileDTOs[0].getRetrieveAET());
+            }
+        }
+        if (fileOrAETByIUID.size() < query.getNumberOfSeriesRelatedInstances()) {
+            Collection<String[]> iuidAndAETs = 
+                    new QueryExternalRetrieveAETsOfSeriesCmd(seriesIUID)
+                            .getRetrieveAETs();
+            for (String[] iuidAndAET : iuidAndAETs) {
+                if (!fileOrAETByIUID.containsKey(iuidAndAET[0])) {
+                    // no file for instance -> return External Retrieve AET or null
+                    fileOrAETByIUID.put(iuidAndAET[0], iuidAndAET[1]);
+                }
+            }
+        }
+        return fileOrAETByIUID;
+    }
+
+    private FileDTO getLocalFileDTO(FileDTO[] fileDTOs) {
+        for (FileDTO dto : fileDTOs) {
+            if (isLocalRetrieveAET(dto.getRetrieveAET())) {
+                return dto;
+            }
+        }
+        return null;
+    }
+
     public Object locateInstance(String sopIUID, String studyIUID)
             throws Exception {
         FileDTO[] fileDTOs = null;
@@ -1454,16 +1504,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
             if (fileDTOs.length == 0) {
                 aet = fsMgt.getExternalRetrieveAET(sopIUID);
             } else {
-                FileDTO dto;
-                for (int i = 0; i < fileDTOs.length; ++i) {
-                    dto = fileDTOs[i];
-                    if (isLocalRetrieveAET(dto.getRetrieveAET())) {
-                        if (studyIUID != null) {
-                            updateStudyAccessTime(studyIUID,
-                                    dto.getDirectoryPath());
-                        }
-                        return getFile(dto);
+                FileDTO localFileDTO = getLocalFileDTO(fileDTOs);
+                if (localFileDTO != null) {
+                    if (studyIUID != null && studyIUID.length() != 0) {
+                        updateStudyAccessTime(studyIUID,
+                                localFileDTO.getDirectoryPath());
                     }
+                    return getFile(localFileDTO);
                 }
                 aet = fileDTOs[0].getRetrieveAET();
             }
