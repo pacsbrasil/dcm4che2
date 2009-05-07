@@ -41,16 +41,17 @@ package org.dcm4cheri.data;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmHandler;
+import org.dcm4che.data.SpecificCharacterSet;
 import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
+import org.dcm4cheri.util.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -110,6 +111,8 @@ class DcmHandlerAdapter2 implements DcmHandler {
     private String tagStr;
 
     private boolean outsrc;
+
+    private SpecificCharacterSet cs;
 
     public DcmHandlerAdapter2(final ContentHandler handler,
             final TagDictionary dict, final int[] outsrcTags,
@@ -372,6 +375,25 @@ class DcmHandlerAdapter2 implements DcmHandler {
 
     private void out(byte[] data, int start, int length) throws SAXException {
         switch (vr) {
+        case VRs.AE:
+        case VRs.AS:
+        case VRs.CS:
+        case VRs.DA:
+        case VRs.DS:
+        case VRs.DT:
+        case VRs.IS:
+        case VRs.TM:
+            outText(data, start, length, null); break;
+        case VRs.LO:
+        case VRs.LT:
+        case VRs.PN:
+        case VRs.SH:
+        case VRs.ST:
+        case VRs.UT:
+            outText(data, start, length, cs); break;
+        case VRs.UI:
+            outText(data, start, data[length-1] == 0 ? length-1 : length, null);
+            break;
         case VRs.AT:
             outAT(data, start, length);
             return;
@@ -401,20 +423,15 @@ class DcmHandlerAdapter2 implements DcmHandler {
         case VRs.UL:
             outSL_UL(data, start, length, 0xffffffffL);
             return;
-        default:
-            outText(data, start, length);
         }
     }
 
-    private void outText(byte[] data, int start, int length)
-            throws SAXException {
-        String s;
-        try {
-            boolean padded = data[start + length - 1] == 0;
-            s = new String(data, start, padded ? length - 1 : length,
-                    "ISO-8859-1");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+    private void outText(byte[] data, int start, int length,
+            SpecificCharacterSet cs) throws SAXException {
+        String s = cs == null ? new String(data, start, length)
+                              : cs.decode(data, start, length);
+        if (tag == Tags.SpecificCharacterSet) {
+            this.cs = SpecificCharacterSet.valueOf(StringUtils.split(s, '\\'));
         }
         for (int pos = 0; pos < s.length();) {
             int end = Math.min(s.length(), pos + cbuf.length);
