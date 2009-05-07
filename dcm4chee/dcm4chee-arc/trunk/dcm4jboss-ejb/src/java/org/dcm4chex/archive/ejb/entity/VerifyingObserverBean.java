@@ -55,6 +55,7 @@ import org.dcm4che.dict.Tags;
  * @ejb.persistence table-name="verify_observer"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.method-attributes pattern="get*" read-only="true"
  */
 public abstract class VerifyingObserverBean implements EntityBean {
 

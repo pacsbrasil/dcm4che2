@@ -90,6 +90,7 @@ import org.dcm4chex.archive.util.Convert;
  * @jboss.entity-command name="hsqldb-fetch-key"
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
+ * @jboss.method-attributes pattern="get*" read-only="true"
  *
  * @ejb.finder transaction-type="Supports"
  *             signature="org.dcm4chex.archive.ejb.interfaces.StudyLocal findByStudyIuid(java.lang.String uid)"
@@ -577,6 +578,7 @@ public abstract class StudyBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public boolean isStudyExternalRetrievable() throws FinderException {
         return ejbSelectNumberOfExternalRetrieveableInstances(getPk()) 
@@ -842,6 +844,7 @@ public abstract class StudyBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public boolean isStudyAvailableOnMedia() throws FinderException {
         String fsuid = getFilesetIuid();
@@ -852,6 +855,7 @@ public abstract class StudyBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public boolean isStudyAvailableOnROFs(int validFileStatus) throws FinderException {
         return ( ejbSelectNumberOfStudyRelatedInstancesOnROFS(getPk(), validFileStatus) == getNumberOfStudyRelatedInstances() );
@@ -859,6 +863,7 @@ public abstract class StudyBean implements EntityBean {
     
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public boolean isStudyAvailable(int availability) throws FinderException {
         return ( ejbSelectNumberOfStudyRelatedInstancesForAvailability(getPk(), availability) == getNumberOfStudyRelatedInstances() );
@@ -992,6 +997,7 @@ public abstract class StudyBean implements EntityBean {
     /**
      * 
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public String asString() {
         return prompt();

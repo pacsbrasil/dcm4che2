@@ -61,6 +61,7 @@ import org.dcm4chex.archive.common.Availability;
  * 
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
+ * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.finder
  *  signature="java.util.Collection findByStatus(int status)"

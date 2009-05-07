@@ -84,6 +84,7 @@ import org.dcm4chex.archive.util.Convert;
  * @jboss.entity-command name="hsqldb-fetch-key"
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
+ * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.finder signature="Collection findAll()"
  *             query="SELECT OBJECT(p) FROM Patient AS p"

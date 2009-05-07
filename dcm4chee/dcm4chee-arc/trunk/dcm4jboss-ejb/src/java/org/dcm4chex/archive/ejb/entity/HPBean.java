@@ -73,6 +73,7 @@ import org.dcm4chex.archive.ejb.interfaces.HPDefinitionLocalHome;
  * @ejb.persistence table-name="hp"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  * @ejb.ejb-ref ejb-name="HPDefinition" view-type="local" ref-name="ejb/HPDefinition"

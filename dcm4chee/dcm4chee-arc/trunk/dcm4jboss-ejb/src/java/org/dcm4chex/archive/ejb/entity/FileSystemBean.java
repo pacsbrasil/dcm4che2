@@ -71,6 +71,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  * @ejb.persistence table-name="filesystem"
  * @jboss.entity-command name="hsqldb-fetch-key"
  * @jboss.read-ahead strategy="on-find" eager-load-group="*"
+ * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.finder signature="java.util.Collection findAll()"
  *             query="SELECT OBJECT(fs) FROM FileSystem AS fs"

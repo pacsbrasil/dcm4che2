@@ -65,6 +65,8 @@ import org.apache.log4j.Logger;
  * @jboss.entity-command
  * 	name="hsqldb-fetch-key"
  * 
+ * @jboss.method-attributes pattern="get*" read-only="true"
+ *
  * @ejb.finder
  * 	signature="Collection findAll()"
  * 	query="SELECT OBJECT(d) FROM Device AS d"

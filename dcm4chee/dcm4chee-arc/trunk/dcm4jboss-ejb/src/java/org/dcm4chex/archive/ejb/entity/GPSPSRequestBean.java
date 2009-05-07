@@ -58,6 +58,7 @@ import org.dcm4chex.archive.ejb.interfaces.GPSPSLocal;
  * @ejb.persistence table-name="gpsps_req"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.method-attributes pattern="get*" read-only="true"
  */
 
 public abstract class GPSPSRequestBean implements EntityBean {

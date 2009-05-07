@@ -68,6 +68,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * @jboss.entity-command name="hsqldb-fetch-key"
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
+ * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.env-entry name="SpsIdPrefix" type="java.lang.String" value="S" 
  * @ejb.env-entry name="RpIdPrefix" type="java.lang.String" value="P" 

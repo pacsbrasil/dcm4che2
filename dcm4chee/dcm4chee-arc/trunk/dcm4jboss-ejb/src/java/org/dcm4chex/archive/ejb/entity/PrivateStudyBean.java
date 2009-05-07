@@ -60,6 +60,7 @@ import org.dcm4chex.archive.ejb.interfaces.PrivatePatientLocal;
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="priv_study"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.finder signature="java.util.Collection findByPrivateType(int privateType)"
  *             query="SELECT OBJECT(a) FROM PrivateStudy AS a WHERE a.privateType = ?1"

@@ -58,6 +58,7 @@ import org.dcm4chex.archive.ejb.interfaces.PrivateInstanceLocal;
  * @ejb.persistence table-name="priv_file"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.method-attributes pattern="get*" read-only="true"
  *  
  * @ejb.finder signature="java.util.Collection findDereferencedInFileSystem(java.lang.String dirPath, int limit)"
  *             query="" transaction-type="Supports"
@@ -185,7 +186,6 @@ public abstract class PrivateFileBean implements EntityBean {
     
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public FileDTO getFileDTO() {
         FileSystemLocal fs = getFileSystem();

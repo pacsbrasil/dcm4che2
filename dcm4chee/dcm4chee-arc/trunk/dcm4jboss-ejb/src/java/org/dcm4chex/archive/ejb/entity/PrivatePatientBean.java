@@ -57,6 +57,7 @@ import org.dcm4chex.archive.common.DatasetUtils;
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="priv_patient"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.finder signature="java.util.Collection findByPrivateType(int privateType)"
  *             query="SELECT OBJECT(a) FROM PrivatePatient AS a WHERE a.privateType = ?1"

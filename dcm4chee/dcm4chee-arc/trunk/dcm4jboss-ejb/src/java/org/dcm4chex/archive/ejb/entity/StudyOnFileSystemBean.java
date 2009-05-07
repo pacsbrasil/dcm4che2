@@ -64,6 +64,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="study_on_fs"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal findByStudyAndFileSystem(java.lang.String suid, java.lang.String dirPath)"
  * 	           query="" transaction-type="Supports"
@@ -171,6 +172,7 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public String asString() {
         StudyLocal study = getStudy();
@@ -184,6 +186,7 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
 
     /**    
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public boolean matchDeleteConstrains(
             boolean externalRetrieveable,

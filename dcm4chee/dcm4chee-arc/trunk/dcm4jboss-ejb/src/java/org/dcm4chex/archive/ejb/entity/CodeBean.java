@@ -65,6 +65,8 @@ import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
  * 
  * @jboss.entity-command name="hsqldb-fetch-key"
  * 
+ * @jboss.method-attributes pattern="get*" read-only="true"
+ *
  * @ejb.finder
  * 	signature="Collection findAll()"
  * 	query="SELECT OBJECT(a) FROM Code AS a"

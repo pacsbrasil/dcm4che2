@@ -94,6 +94,7 @@ import org.dcm4chex.archive.util.Convert;
  * @jboss.entity-command name="hsqldb-fetch-key"
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
+ * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.InstanceLocal findBySopIuid(java.lang.String uid)"
  *             query="SELECT OBJECT(i) FROM Instance AS i WHERE i.sopIuid = ?1"

@@ -59,6 +59,7 @@ import org.dcm4chex.archive.ejb.interfaces.OtherPatientIDLocalHome;
  * @ejb.persistence table-name="other_pid"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.OtherPatientIDLocal findByPatientIdAndIssuer(java.lang.String pid, java.lang.String issuer)"
  *             query="SELECT OBJECT(o) FROM OtherPatientID AS o WHERE o.patientId = ?1 AND o.issuerOfPatientId = ?2"

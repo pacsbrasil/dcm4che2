@@ -61,6 +61,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * @jboss.entity-command name="hsqldb-fetch-key"
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
+ * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.finder signature="java.util.Collection findAll()"
  *             query="SELECT OBJECT(a) FROM GPPPS AS a" transaction-type="Supports"
@@ -201,6 +202,7 @@ public abstract class GPPPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public boolean isInProgress() {
         return getPpsStatusAsInt() == PPSStatus.IN_PROGRESS;
@@ -208,6 +210,7 @@ public abstract class GPPPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public boolean isCompleted() {
         return getPpsStatusAsInt() == PPSStatus.COMPLETED;
@@ -215,6 +218,7 @@ public abstract class GPPPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public boolean isDiscontinued() {
         return getPpsStatusAsInt() == PPSStatus.DISCONTINUED;

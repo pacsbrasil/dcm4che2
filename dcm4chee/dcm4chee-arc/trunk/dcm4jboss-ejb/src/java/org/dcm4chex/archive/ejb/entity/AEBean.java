@@ -59,6 +59,8 @@ import org.dcm4chex.archive.ejb.interfaces.AEDTO;
  * 
  * @jboss.entity-command name="hsqldb-fetch-key"
  * 
+ * @jboss.method-attributes pattern="get*" read-only="true"
+ *
  * @ejb.finder 
  *      signature="Collection findAll()"
  *      query="SELECT OBJECT(a) FROM AE AS a" transaction-type="Supports"

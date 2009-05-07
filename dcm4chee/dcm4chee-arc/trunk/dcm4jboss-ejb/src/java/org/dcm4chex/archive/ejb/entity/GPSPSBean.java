@@ -81,6 +81,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  * @ejb.ejb-ref ejb-name="GPSPSRequest" view-type="local" ref-name="ejb/Request"
  * @ejb.ejb-ref ejb-name="GPSPSPerformer" view-type="local" ref-name="ejb/Performer"
+ * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.GPSPSLocal findBySopIuid(java.lang.String uid)"
  *             query="SELECT OBJECT(gpsps) FROM GPSPS AS gpsps WHERE gpsps.sopIuid = ?1"
@@ -267,6 +268,7 @@ public abstract class GPSPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public boolean isScheduled() {
         return getGpspsStatusAsInt() == GPSPSStatus.SCHEDULED;
@@ -274,6 +276,7 @@ public abstract class GPSPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public boolean isInProgress() {
         return getGpspsStatusAsInt() == GPSPSStatus.IN_PROGRESS;
@@ -281,6 +284,7 @@ public abstract class GPSPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public boolean isSuspended() {
         return getGpspsStatusAsInt() == GPSPSStatus.SUSPENDED;
@@ -288,6 +292,7 @@ public abstract class GPSPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public boolean isCompleted() {
         return getGpspsStatusAsInt() == GPSPSStatus.COMPLETED;
@@ -295,6 +300,7 @@ public abstract class GPSPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public boolean isDiscontinued() {
         return getGpspsStatusAsInt() == GPSPSStatus.DISCONTINUED;
