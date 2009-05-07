@@ -35,8 +35,7 @@
 									<xsl:attribute name="checked" />
 								</xsl:if>
 							</input>
-							<xsl:text>&woStudies;
-							</xsl:text>
+							<xsl:text>&woStudies;</xsl:text>
 						</div>
 						<div
 							title="&ListStudiesOfOnePatientBeginningWithTheMostRecentStudy;">
@@ -47,8 +46,7 @@
 									<xsl:attribute name="checked" />
 								</xsl:if>
 							</input>
-							<xsl:text>&latestStudiesFirst;
-							</xsl:text>
+							<xsl:text>&latestStudiesFirst;</xsl:text>
 						</div>
 					</td>
 					<td class="folder_header" align="center">
@@ -642,8 +640,7 @@
 			<td class="patient_mark" align="right">
 				<xsl:if
 					test="$folder.xds_consumer='true' and /model/XDSConsumer='true'">
-					<xsl:text>&XDS;
-					</xsl:text>
+					<xsl:text>&XDS;</xsl:text>
 					<xsl:choose>
 						<xsl:when test="showXDS='false'">
 							<a title="&ShowXDSDocuments;"
@@ -813,14 +810,10 @@
 							<a
 								href="/dcm4chee-webview/webviewer.jsp?studyUID={studyIUID}">
 								<xsl:attribute name="onclick">
-									<xsl:text>
-										return openWin('
-									</xsl:text>
+									<xsl:text>return openWin('</xsl:text>
 									<xsl:value-of
 										select="/model/webViewerWindowName" />
-									<xsl:text>
-										','/dcm4chee-webview/webviewer.jsp?studyUID=
-									</xsl:text>
+									<xsl:text>','/dcm4chee-webview/webviewer.jsp?studyUID=</xsl:text>
 									<xsl:value-of select="studyIUID" />
 									<xsl:text>')</xsl:text>
 								</xsl:attribute>
@@ -978,16 +971,11 @@
 							<a
 								href="/dcm4chee-webview/webviewer.jsp?seriesUID={seriesIUID}">
 								<xsl:attribute name="onclick">
-									<xsl:text>
-										return openWin('
-									</xsl:text>
+									<xsl:text>return openWin('</xsl:text>
 									<xsl:value-of
 										select="/model/webViewerWindowName" />
-									<xsl:text>
-										','/dcm4chee-webview/webviewer.jsp?seriesUID=
-									</xsl:text>
-									<xsl:value-of select="seriesIUID" />
-									')
+									<xsl:text>','/dcm4chee-webview/webviewer.jsp?seriesUID=</xsl:text>
+									<xsl:value-of select="seriesIUID" />')
 								</xsl:attribute>
 								<img src="images/webview.gif" alt="icon"
 									border="0" title="&ViewSeriesInWebviewer;" />
@@ -997,14 +985,10 @@
 							<a
 								href="/dcm4chee-webview/webviewer.jsp?seriesUID={seriesIUID}">
 								<xsl:attribute name="onclick">
-									<xsl:text>
-										return openWin('
-									</xsl:text>
+									<xsl:text>return openWin('</xsl:text>
 									<xsl:value-of
 										select="/model/webViewerWindowName" />
-									<xsl:text>
-										','/dcm4chee-webview/webviewer.jsp?seriesUID=
-									</xsl:text>
+									<xsl:text>','/dcm4chee-webview/webviewer.jsp?seriesUID=</xsl:text>
 									<xsl:value-of select="seriesIUID" />
 									<xsl:text>')</xsl:text>
 								</xsl:attribute>
@@ -1243,14 +1227,10 @@
 							<a
 								href="/dcm4chee-webview/webviewer.jsp?prUID={sopIUID}">
 								<xsl:attribute name="onclick">
-									<xsl:text>
-										return openWin('
-									</xsl:text>
+									<xsl:text>return openWin('</xsl:text>
 									<xsl:value-of
 										select="/model/webViewerWindowName" />
-									<xsl:text>
-										','/dcm4chee-webview/webviewer.jsp?prUID=
-									</xsl:text>
+									<xsl:text>','/dcm4chee-webview/webviewer.jsp?prUID=</xsl:text>
 									<xsl:value-of select="sopIUID" />
 									<xsl:text>')</xsl:text>
 								</xsl:attribute>
@@ -1854,9 +1834,7 @@
 								<xsl:text>return openWin('</xsl:text>
 								<xsl:value-of
 									select="/model/webViewerWindowName" />
-								<xsl:text>
-									','/dcm4chee-webview/webviewer.jsp?manifestURL=
-								</xsl:text>
+								<xsl:text>','/dcm4chee-webview/webviewer.jsp?manifestURL=</xsl:text>
 								<xsl:value-of select="URL" />
 								<xsl:text>')</xsl:text>
 							</xsl:attribute>
