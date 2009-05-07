@@ -39,28 +39,28 @@
 package org.dcm4chee.docstore;
 
 public class Feature {
-	private String feature;
-	private String desc;
-	
-	public static final Feature CACHE = new Feature("cache","Caching Storage");
-	public static final Feature MULTI_MIME = new Feature("multi_mime","Multiple Mimetypes per document UID");
-	public static final Feature CREATE_EMPTY_DOCUMENT = new Feature("createEmptyDoc","Supports createDocument Method");
-	
-	public Feature(String feature, String description) {
-		this.feature = feature;
-		this.desc = description;
-	}
-	public String getFeature() {
-		return feature;
-	}
-	
-	public String getDescription() {
-		return desc;
-	}
-	public boolean equals(Object o) {
-		return feature.equals(((Feature)o).getFeature());
-	}
-	public int hashCode() {
-		return feature.hashCode();
-	}
+    private String feature;
+    private String desc;
+
+    public static final Feature CACHE = new Feature("cache","Caching Storage");
+    public static final Feature MULTI_MIME = new Feature("multi_mime","Multiple Mimetypes per document UID");
+    public static final Feature CREATE_EMPTY_DOCUMENT = new Feature("createEmptyDoc","Supports createDocument Method");
+
+    public Feature(String feature, String description) {
+        this.feature = feature;
+        this.desc = description;
+    }
+    public String getFeature() {
+        return feature;
+    }
+
+    public String getDescription() {
+        return desc;
+    }
+    public boolean equals(Object o) {
+        return feature.equals(((Feature)o).getFeature());
+    }
+    public int hashCode() {
+        return feature.hashCode();
+    }
 }
