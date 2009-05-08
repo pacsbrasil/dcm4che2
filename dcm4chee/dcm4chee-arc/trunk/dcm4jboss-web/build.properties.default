@@ -19,3 +19,6 @@ dcm4chee-hl7.home=../dcm4jboss-hl7
 
 #Override with your JBoss dist location
 jboss.home=${user.home}/jboss-4.2.3.GA
+
+#Override with the version of dcm4chee-infoset to use.
+infoset-version=0.0.3-SNAPSHOT
