@@ -15,6 +15,7 @@
   <property name="version.parent.base" value="1.0" />
 
   <property name="version.base" value="${version.parent.base}" />
+  <property name="version.parent.increment" value="INTERNAL" />
   <property name="version.increment" value="${version.parent.increment}" />
 
   <property name="integration.cdp" location="cdp-integration" />
@@ -258,11 +259,13 @@
 
   <target name="release" depends="prepareRelease,releaseDeploy" description="Release the overall project."/>
 
-  <target name="integration" description="Run the integration tests.">
+  <target name="superIntegration">
      <antcall target="recurseChildren">
         <param name="childCall" value="integration" />
      </antcall>
   </target>
+
+  <target name="integration" description="Run the integration tests." depends="superIntegration" />
 
   <target name="releaseIntegration" description="Run the integration tests on the latest release."
      depends="updatePomRelease,integration,revertPomDevelop" />
