@@ -895,7 +895,11 @@ public abstract class SeriesBean implements EntityBean {
         for (int i = 0; i < fieldTags.length; i++) {
             setField(filter.getField(fieldTags[i]), ds.getString(fieldTags[i]));
         }
-    }
+        if ( getSourceAET() == null ) {
+            ds.setPrivateCreatorID(PrivateTags.CreatorID);
+            setSourceAET(ds.getString(PrivateTags.CallingAET));
+        }
+}
 
     private void setField(String field, String value ) {
         try {

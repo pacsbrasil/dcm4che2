@@ -403,11 +403,19 @@ public abstract class ContentEditBean implements SessionBean {
         SeriesLocal series = seriesHome.findByPrimaryKey(new Long(
                 series_pk));
         Collection instances = series.getInstances();
+        boolean missingSrcAET = series.getSourceAET() == null;
         for (int i = 0; i < instance_pks.length; i++) {
             InstanceLocal instance = instHome.findByPrimaryKey(new Long(
                     instance_pks[i]));
             SeriesLocal oldSeries = instance.getSeries();
             if (oldSeries.isIdentical(series)) continue;
+            if ( missingSrcAET && oldSeries.getSourceAET() != null) {
+                Dataset ds = series.getAttributes(true);
+                ds.setPrivateCreatorID(PrivateTags.CreatorID);
+                ds.putAE(PrivateTags.CallingAET, oldSeries.getSourceAET());
+                series.setAttributes(ds);
+                missingSrcAET = false;
+            }
             instances.add(instance);                
             UpdateDerivedFieldsUtils.updateDerivedFieldsOf(oldSeries);
             UpdateDerivedFieldsUtils.updateDerivedFieldsOf(oldSeries.getStudy());
