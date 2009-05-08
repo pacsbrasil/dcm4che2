@@ -311,7 +311,7 @@ CREATE INDEX observer_p_name ON verify_observer(observer_p_name);
 
 CREATE TABLE filesystem (
 	pk          	NUMERIC(19,0) IDENTITY(1,1) NOT NULL CONSTRAINT filesystem_pk PRIMARY KEY,
-	next_fk         NUMERIC(19,0),
+	next_fk         NUMERIC(19,0) NULL,
 	dirpath			VARCHAR(255) NOT NULL,
 	fs_group_id		VARCHAR(255) NOT NULL,
 	retrieve_aet	VARCHAR(255) NOT NULL,
@@ -570,7 +570,7 @@ CREATE TABLE priv_patient (
 	priv_type		INTEGER NOT NULL,
 	pat_id         	VARCHAR(255) NULL,
 	pat_id_issuer  	VARCHAR(255) NULL,
-	pat_name 		VARCHAR(255),
+	pat_name 		VARCHAR(255) NULL,
 	pat_attrs		IMAGE NULL
 );
 CREATE INDEX priv_pat_id ON priv_patient(pat_id, pat_id_issuer);
