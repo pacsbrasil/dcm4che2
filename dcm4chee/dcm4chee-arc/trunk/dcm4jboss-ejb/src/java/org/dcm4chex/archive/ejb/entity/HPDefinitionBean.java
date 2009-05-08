@@ -68,7 +68,6 @@ import org.dcm4chex.archive.ejb.interfaces.HPLocal;
  * @ejb.persistence table-name="hpdef"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
- * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  */
@@ -148,7 +147,7 @@ public abstract class HPDefinitionBean implements EntityBean {
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
-     *  
+     * @jboss.method-attributes read-only="true"
      */
     public abstract Long getPk();
 
@@ -163,12 +162,14 @@ public abstract class HPDefinitionBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public abstract HPLocal getHP();
 	
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="modality"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getModality();
 
@@ -177,6 +178,7 @@ public abstract class HPDefinitionBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="laterality"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getLaterality();
 

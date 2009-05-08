@@ -60,7 +60,6 @@ import org.dcm4chex.archive.ejb.interfaces.PrivatePatientLocal;
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="priv_study"
  * @jboss.entity-command name="hsqldb-fetch-key"
- * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.finder signature="java.util.Collection findByPrivateType(int privateType)"
  *             query="SELECT OBJECT(a) FROM PrivateStudy AS a WHERE a.privateType = ?1"
@@ -93,6 +92,7 @@ public abstract class PrivateStudyBean implements EntityBean {
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract Long getPk();
     public abstract void setPk(Long pk);
@@ -100,12 +100,14 @@ public abstract class PrivateStudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="priv_type"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract int getPrivateType();
     public abstract void setPrivateType(int type);
 
- 	/**
+    /**
      * @ejb.persistence column-name="study_attrs"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract byte[] getEncodedAttributes();
     public abstract void setEncodedAttributes(byte[] bytes);
@@ -113,19 +115,22 @@ public abstract class PrivateStudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="study_iuid"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getStudyIuid();
     public abstract void setStudyIuid(String uid);
 
     /**
-	 * @ejb.interface-method
+     * @ejb.interface-method
      * @ejb.persistence column-name="accession_no"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getAccessionNumber();
     public abstract void setAccessionNumber(String acc_no);
     
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public Dataset getAttributes() {
         Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
@@ -147,6 +152,7 @@ public abstract class PrivateStudyBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.relation name="priv-patient-study" role-name="priv-study-of-patient" cascade-delete="yes"
      * @jboss.relation fk-column="patient_fk" related-pk-field="pk"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract PrivatePatientLocal getPatient();
     public abstract void setPatient(PrivatePatientLocal patient);

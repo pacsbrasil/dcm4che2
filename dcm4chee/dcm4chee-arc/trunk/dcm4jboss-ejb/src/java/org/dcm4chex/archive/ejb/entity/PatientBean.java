@@ -84,7 +84,6 @@ import org.dcm4chex.archive.util.Convert;
  * @jboss.entity-command name="hsqldb-fetch-key"
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
- * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.finder signature="Collection findAll()"
  *             query="SELECT OBJECT(p) FROM Patient AS p"
@@ -234,6 +233,7 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract Long getPk();
 
@@ -242,6 +242,7 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="created_time"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract java.sql.Timestamp getCreatedTime();
 
@@ -250,6 +251,7 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="updated_time"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract java.sql.Timestamp getUpdatedTime();
 
@@ -261,6 +263,7 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_id"
      * @jboss.load-group name="pid"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getPatientId();
 
@@ -272,6 +275,7 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_id_issuer"
      * @jboss.load-group name="pid"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getIssuerOfPatientId();
 
@@ -283,6 +287,7 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_name"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getPatientName();
     public abstract void setPatientName(String name);
@@ -290,6 +295,7 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_i_name"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getPatientIdeographicName();
     public abstract void setPatientIdeographicName(String name);
@@ -297,6 +303,7 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_p_name"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getPatientPhoneticName();
     public abstract void setPatientPhoneticName(String name);
@@ -306,6 +313,7 @@ public abstract class PatientBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_birthdate"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getPatientBirthDate();
 
@@ -319,6 +327,7 @@ public abstract class PatientBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_sex"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getPatientSex();
 
@@ -330,18 +339,21 @@ public abstract class PatientBean implements EntityBean {
 
     /**
      * @ejb.persistence column-name="pat_custom1"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getPatientCustomAttribute1();
     public abstract void setPatientCustomAttribute1(String value);
 
     /**
      * @ejb.persistence column-name="pat_custom2"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getPatientCustomAttribute2();
     public abstract void setPatientCustomAttribute2(String value);
 
     /**
      * @ejb.persistence column-name="pat_custom3"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getPatientCustomAttribute3();
     public abstract void setPatientCustomAttribute3(String value);
@@ -352,6 +364,7 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.persistence
      *  column-name="pat_attrs"
      * 
+     * @jboss.method-attributes read-only="true"
      */
     public abstract byte[] getEncodedAttributes();
 
@@ -373,6 +386,7 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.relation name="merged-patients"
      *    role-name="dereferenced-patient"
      *    cascade-delete="yes"
+     * @jboss.method-attributes read-only="true"
      *
      * @jboss.relation fk-column="merge_fk" related-pk-field="pk"
      */
@@ -429,6 +443,7 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @ejb.interface-method view-type="local"
      * @ejb.relation name="patient-mpps" role-name="patient-has-mpps"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract java.util.Collection getMpps();
 
@@ -440,12 +455,14 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @ejb.interface-method view-type="local"
      * @ejb.relation name="patient-gppps" role-name="patient-has-gppps"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract java.util.Collection getGppps();
 
     /**
      * @ejb.interface-method view-type="local"
      * @ejb.relation name="patient-gpsps" role-name="patient-has-gpsps"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract java.util.Collection getGsps();
 
@@ -610,6 +627,7 @@ public abstract class PatientBean implements EntityBean {
 
      /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public Dataset getAttributes(boolean supplement) {
         Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
@@ -836,6 +854,7 @@ public abstract class PatientBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public String asString() {
         return prompt();

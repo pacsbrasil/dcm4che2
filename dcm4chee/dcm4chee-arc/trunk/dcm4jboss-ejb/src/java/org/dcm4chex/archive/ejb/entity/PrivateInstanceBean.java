@@ -60,7 +60,6 @@ import org.dcm4chex.archive.ejb.interfaces.PrivateSeriesLocal;
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="priv_instance"
  * @jboss.entity-command name="hsqldb-fetch-key"
- * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.finder signature="java.util.Collection findByPrivateType(int privateType)"
  *             query="SELECT OBJECT(a) FROM PrivateInstance AS a WHERE a.privateType = ?1"
@@ -95,6 +94,7 @@ public abstract class PrivateInstanceBean implements EntityBean {
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract Long getPk();
     public abstract void setPk(Long pk);
@@ -102,6 +102,7 @@ public abstract class PrivateInstanceBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="priv_type"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract int getPrivateType();
     public abstract void setPrivateType(int type);
@@ -109,18 +110,21 @@ public abstract class PrivateInstanceBean implements EntityBean {
     /**
      * @ejb.persistence column-name="sop_iuid" 
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getSopIuid();
     public abstract void setSopIuid(String iuid);
     
  	/**
      * @ejb.persistence column-name="inst_attrs"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract byte[] getEncodedAttributes();
     public abstract void setEncodedAttributes(byte[] bytes);
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public Dataset getAttributes() {
         Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
@@ -145,6 +149,7 @@ public abstract class PrivateInstanceBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.relation name="priv-series-instance" role-name="priv-instance-of-series" cascade-delete="yes"
      * @jboss.relation fk-column="series_fk" related-pk-field="pk"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract PrivateSeriesLocal getSeries();
     public abstract void setSeries(PrivateSeriesLocal series);

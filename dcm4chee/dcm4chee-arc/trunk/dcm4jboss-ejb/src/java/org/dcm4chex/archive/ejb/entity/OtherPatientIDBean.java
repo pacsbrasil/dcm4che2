@@ -59,7 +59,6 @@ import org.dcm4chex.archive.ejb.interfaces.OtherPatientIDLocalHome;
  * @ejb.persistence table-name="other_pid"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
- * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.OtherPatientIDLocal findByPatientIdAndIssuer(java.lang.String pid, java.lang.String issuer)"
  *             query="SELECT OBJECT(o) FROM OtherPatientID AS o WHERE o.patientId = ?1 AND o.issuerOfPatientId = ?2"
@@ -118,6 +117,7 @@ public abstract class OtherPatientIDBean implements EntityBean {
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract Long getPk();
     public abstract void setPk(Long pk);
@@ -125,6 +125,7 @@ public abstract class OtherPatientIDBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_id"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getPatientId();
     public abstract void setPatientId(String pid);
@@ -132,6 +133,7 @@ public abstract class OtherPatientIDBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_id_issuer"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getIssuerOfPatientId();
     public abstract void setIssuerOfPatientId(String issuer);

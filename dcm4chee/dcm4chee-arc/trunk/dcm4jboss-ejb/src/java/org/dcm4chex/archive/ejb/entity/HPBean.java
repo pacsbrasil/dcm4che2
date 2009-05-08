@@ -73,7 +73,6 @@ import org.dcm4chex.archive.ejb.interfaces.HPDefinitionLocalHome;
  * @ejb.persistence table-name="hp"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
- * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  * @ejb.ejb-ref ejb-name="HPDefinition" view-type="local" ref-name="ejb/HPDefinition"
@@ -164,6 +163,7 @@ public abstract class HPBean implements EntityBean {
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract Long getPk();
 
@@ -172,6 +172,7 @@ public abstract class HPBean implements EntityBean {
     /**
      * @ejb.persistence column-name="hp_iuid"
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getSopIuid();
 
@@ -180,6 +181,7 @@ public abstract class HPBean implements EntityBean {
     /**
      * @ejb.persistence column-name="hp_cuid"
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getSopCuid();
 
@@ -188,6 +190,7 @@ public abstract class HPBean implements EntityBean {
     /**
      * @ejb.persistence column-name="hp_name"
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getHangingProtocolName();
 
@@ -196,12 +199,14 @@ public abstract class HPBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="hp_level"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract int getHangingProtocolLevelAsInt();
     public abstract void setHangingProtocolLevelAsInt(int level);
 
 	/**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public String getHangingProtocolLevel() {
 		return HPLevel.toString(getHangingProtocolLevelAsInt());
@@ -214,6 +219,7 @@ public abstract class HPBean implements EntityBean {
     /**
      * @ejb.persistence column-name="num_priors"
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public abstract int getNumberOfPriorsReferenced();
 
@@ -222,6 +228,7 @@ public abstract class HPBean implements EntityBean {
     /**
      * @ejb.persistence column-name="hp_group"
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getHangingProtocolUserGroupName();
 
@@ -230,6 +237,7 @@ public abstract class HPBean implements EntityBean {
     /**
      * @ejb.persistence column-name="num_screens"
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public abstract int getNumberOfScreens();
 
@@ -237,6 +245,7 @@ public abstract class HPBean implements EntityBean {
 
     /**
      * @ejb.persistence column-name="hp_attrs"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract byte[] getEncodedAttributes();
 
@@ -247,6 +256,7 @@ public abstract class HPBean implements EntityBean {
      *               target-ejb="Code" target-role-name="user-of-hp"
      *               target-multiple="yes"
      * @jboss.relation fk-column="user_fk" related-pk-field="pk"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract CodeLocal getHangingProtocolUserIdCode();
     public abstract void setHangingProtocolUserIdCode(CodeLocal code);
@@ -259,6 +269,7 @@ public abstract class HPBean implements EntityBean {
     
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public Dataset getAttributes() {
         return DatasetUtils.fromByteArray(getEncodedAttributes());

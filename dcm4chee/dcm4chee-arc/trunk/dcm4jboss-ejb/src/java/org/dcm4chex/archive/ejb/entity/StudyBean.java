@@ -90,7 +90,6 @@ import org.dcm4chex.archive.util.Convert;
  * @jboss.entity-command name="hsqldb-fetch-key"
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
- * @jboss.method-attributes pattern="get*" read-only="true"
  *
  * @ejb.finder transaction-type="Supports"
  *             signature="org.dcm4chex.archive.ejb.interfaces.StudyLocal findByStudyIuid(java.lang.String uid)"
@@ -185,6 +184,7 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
+     * @jboss.method-attributes read-only="true"
      *
      */
     public abstract Long getPk();
@@ -193,6 +193,7 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="created_time"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract java.sql.Timestamp getCreatedTime();
     public abstract void setCreatedTime(java.sql.Timestamp time);
@@ -200,6 +201,7 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="updated_time"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract java.sql.Timestamp getUpdatedTime();
     public abstract void setUpdatedTime(java.sql.Timestamp time);
@@ -207,6 +209,7 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="study_iuid"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getStudyIuid();
     public abstract void setStudyIuid(String uid);
@@ -214,6 +217,7 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="study_id"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getStudyId();
     public abstract void setStudyId(String uid);
@@ -221,6 +225,7 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="study_datetime"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract java.sql.Timestamp getStudyDateTime();
     public abstract void setStudyDateTime(java.sql.Timestamp dateTime);
@@ -236,6 +241,7 @@ public abstract class StudyBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.persistence column-name="accession_no"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getAccessionNumber();
     public abstract void setAccessionNumber(String no);
@@ -243,6 +249,7 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="ref_physician"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getReferringPhysicianName();
     public abstract void setReferringPhysicianName(String name);
@@ -250,6 +257,7 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="ref_phys_i_name"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getReferringPhysicianIdeographicName();
     public abstract void setReferringPhysicianIdeographicName(String name);
@@ -257,6 +265,7 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="ref_phys_p_name"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getReferringPhysicianPhoneticName();
     public abstract void setReferringPhysicianPhoneticName(String name);
@@ -266,6 +275,7 @@ public abstract class StudyBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.persistence column-name="study_desc"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getStudyDescription();
 
@@ -274,18 +284,21 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="study_custom1"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getStudyCustomAttribute1();
     public abstract void setStudyCustomAttribute1(String value);
 
     /**
      * @ejb.persistence column-name="study_custom2"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getStudyCustomAttribute2();
     public abstract void setStudyCustomAttribute2(String value);
 
     /**
      * @ejb.persistence column-name="study_custom3"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getStudyCustomAttribute3();
     public abstract void setStudyCustomAttribute3(String value);
@@ -295,6 +308,7 @@ public abstract class StudyBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.persistence column-name="study_status"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract int getStudyStatus();
 
@@ -308,6 +322,7 @@ public abstract class StudyBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.persistence column-name="study_status_id"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getStudyStatusId();
 
@@ -322,6 +337,7 @@ public abstract class StudyBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.persistence column-name="num_series"
+     * @jboss.method-attributes read-only="true"
      * 
      */
     public abstract int getNumberOfStudyRelatedSeries();
@@ -333,6 +349,7 @@ public abstract class StudyBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.persistence column-name="num_instances"
+     * @jboss.method-attributes read-only="true"
      * 
      */
     public abstract int getNumberOfStudyRelatedInstances();
@@ -343,6 +360,7 @@ public abstract class StudyBean implements EntityBean {
      * Study DICOM Attributes
      *
      * @ejb.persistence column-name="study_attrs"
+     * @jboss.method-attributes read-only="true"
      * 
      */
     public abstract byte[] getEncodedAttributes();
@@ -352,6 +370,7 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="fileset_iuid"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getFilesetIuid();
 
@@ -360,6 +379,7 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="fileset_id"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getFilesetId();
 
@@ -368,6 +388,7 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="ext_retr_aet"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getExternalRetrieveAET();
 
@@ -381,6 +402,7 @@ public abstract class StudyBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.persistence column-name="retrieve_aets"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getRetrieveAETs();
 
@@ -390,11 +412,13 @@ public abstract class StudyBean implements EntityBean {
      * Instance Availability
      *
      * @ejb.persistence column-name="availability"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract int getAvailability();
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public int getAvailabilitySafe() {
         try {
@@ -411,6 +435,7 @@ public abstract class StudyBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.persistence column-name="mods_in_study"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getModalitiesInStudy();
     
@@ -421,6 +446,7 @@ public abstract class StudyBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.persistence column-name="cuids_in_study"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getSopClassesInStudy();
     
@@ -429,6 +455,7 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="checked_time"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract java.sql.Timestamp getTimeOfLastConsistencyCheck();
 
@@ -453,6 +480,7 @@ public abstract class StudyBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      * 
      * @return patient of this study
      */
@@ -571,6 +599,7 @@ public abstract class StudyBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public int getNumberOfCommitedInstances() throws FinderException {
         return ejbSelectNumberOfCommitedInstances(getPk());
@@ -871,6 +900,7 @@ public abstract class StudyBean implements EntityBean {
     
     /**
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public Dataset getAttributes(boolean supplement) {
         Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
@@ -1045,6 +1075,7 @@ public abstract class StudyBean implements EntityBean {
     
     /**    
      * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
      */
     public Collection getInstancesNotOnMedia() throws FinderException {    	
         return ejbSelectInstancesNotOnMedia(getPk());

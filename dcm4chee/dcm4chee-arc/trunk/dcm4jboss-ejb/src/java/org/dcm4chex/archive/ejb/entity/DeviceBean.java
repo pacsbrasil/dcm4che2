@@ -65,7 +65,6 @@ import org.apache.log4j.Logger;
  * @jboss.entity-command
  * 	name="hsqldb-fetch-key"
  * 
- * @jboss.method-attributes pattern="get*" read-only="true"
  *
  * @ejb.finder
  * 	signature="Collection findAll()"
@@ -115,35 +114,39 @@ public abstract class DeviceBean implements EntityBean {
     }
     
     /**
-	 * Auto-generated Primary Key
-	 * 
-	 * @ejb.interface-method 
-	 * @ejb.pk-field
-	 * @ejb.persistence column-name="pk"
-	 * @jboss.persistence auto-increment="true"
-	 *  
-	 */
+     * Auto-generated Primary Key
+     * 
+     * @ejb.interface-method 
+     * @ejb.pk-field
+     * @ejb.persistence column-name="pk"
+     * @jboss.persistence auto-increment="true"
+     * @jboss.method-attributes read-only="true"
+     *  
+     */
     public abstract Long getPk();
 
     public abstract void setPk(Long pk);
 
     /**
-	 * @ejb.interface-method
-	 * @ejb.persistence column-name="station_name"
-	 */
+     * @ejb.interface-method
+     * @ejb.persistence column-name="station_name"
+     * @jboss.method-attributes read-only="true"
+     */
     public abstract String getStationName();
     public abstract void setStationName(String stationName);
 
     /**
-	 * @ejb.interface-method
-	 * @ejb.persistence column-name="station_aet"
-	 */
+     * @ejb.interface-method
+     * @ejb.persistence column-name="station_aet"
+     * @jboss.method-attributes read-only="true"
+     */
     public abstract String getStationAET();
     public abstract void setStationAET(String aet);
     
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="modality"
+     * @jboss.method-attributes read-only="true"
      */
     public abstract String getModality();
     public abstract void setModality(String md);
