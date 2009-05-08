@@ -67,7 +67,7 @@ public class ActiveParticipant implements Serializable {
 
     private static final Logger log = Logger.getLogger(ActiveParticipant.class);
     
-    private int pk;
+    private long pk;
 
     private AuditRecord auditRecord;
 
@@ -91,11 +91,11 @@ public class ActiveParticipant implements Serializable {
             @Parameter(name = "max_lo", value = "100"),
             @Parameter(name = "sequence", value = "active_part_pk_seq") })
     @Column(name = "pk")
-    public int getPk() {
+    public long getPk() {
         return pk;
     }
 
-    public void setPk(int pk) {
+    public void setPk(long pk) {
         this.pk = pk;
     }
 

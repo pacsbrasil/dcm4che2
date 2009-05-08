@@ -94,7 +94,7 @@ public class AuditRecordEntry {
         return XSLTUtils.render(XSLTUtils.OBJECT, auditRecord.getXmldata());
     }
 
-    public int getPk() {
+    public long getPk() {
         return auditRecord.getPk();
     }
 

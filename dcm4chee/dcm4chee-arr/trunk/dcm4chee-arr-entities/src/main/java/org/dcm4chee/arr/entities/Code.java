@@ -67,7 +67,7 @@ public class Code implements Serializable {
 
     private static final Logger log = Logger.getLogger(Code.class);
         
-    private int pk;
+    private long pk;
 
     private String value;
 
@@ -81,11 +81,11 @@ public class Code implements Serializable {
             @Parameter(name = "max_lo", value = "100"),
             @Parameter(name = "sequence", value = "code_pk_seq") })
     @Column(name = "pk")
-    public int getPk() {
+    public long getPk() {
         return pk;
     }
 
-    public void setPk(int pk) {
+    public void setPk(long pk) {
         this.pk = pk;
     }
 
