@@ -47,17 +47,17 @@ package org.dcm4chex.archive.web.maverick.ae;
  */
 public class AEDeleteCtrl extends AEFormCtrl
 {
-	protected String perform() throws Exception
-	{
-		AEModel model = AEModel.getModel(getCtx().getRequest());
+    protected String perform() throws Exception
+    {
+        AEModel model = AEModel.getModel(getCtx().getRequest());
         model.clearPopupMsg();
-		try
-		{
-			lookupAEDelegate().delAE(model.getAE().getTitle());
-		} catch (Throwable e)
-		{
-			model.setPopupMsg("ae.err_delete", model.getAE().getTitle());
-		}
-		return SUCCESS;				
-	}	
+        try
+        {
+            lookupAEDelegate().delAE(model.getAE().getTitle());
+        } catch (Throwable e)
+        {
+            model.setPopupMsg("ae.err_delete", model.getAE().getTitle());
+        }
+        return SUCCESS;				
+    }	
 }

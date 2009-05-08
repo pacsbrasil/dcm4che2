@@ -46,13 +46,13 @@ package org.dcm4chex.archive.web.maverick.admin;
  */
 public class UserAdminConsoleCtrl extends UserAdminCtrl
 {
-	
-	protected String perform() throws Exception
-	{
-		if( getModel().isAdmin() && getCtx().getRequest().getParameter("chgpwd") == null )
-			return "userlist";
-		else
-			return "chgpwd";
-	}		
-	
+
+    protected String perform() throws Exception
+    {
+        if( getModel().isAdmin() && getCtx().getRequest().getParameter("chgpwd") == null )
+            return "userlist";
+        else
+            return "chgpwd";
+    }		
+
 }

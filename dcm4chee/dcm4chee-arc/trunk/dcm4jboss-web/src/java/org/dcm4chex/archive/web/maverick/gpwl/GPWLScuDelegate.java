@@ -55,104 +55,104 @@ import org.jboss.mx.util.MBeanServerLocator;
  * @version $Revision$ $Date$
  */
 public class GPWLScuDelegate {
-	private static ObjectName gpwlScuServiceName = null;
+    private static ObjectName gpwlScuServiceName = null;
 
-	private static MBeanServer server;
+    private static MBeanServer server;
 
-	private static Logger log = Logger
-			.getLogger(GPWLScuDelegate.class.getName());
+    private static Logger log = Logger
+    .getLogger(GPWLScuDelegate.class.getName());
 
-	/**
-	 * Iinitialize the GPWLScu service delegator.
-	 * <p>
-	 * Set the name of the GPWLScuService MBean with the servlet config param
-	 * 'gpwlScuServiceName'.
-	 * 
-	 * @param config
-	 *            The ServletConfig object.
-	 */
-	public void init(ServletConfig config) {
-		if (server != null)
-			return;
-		server = MBeanServerLocator.locate();
-		String s = config.getInitParameter("gpwlScuServiceName");
-		try {
-			gpwlScuServiceName = new ObjectName(s);
-			s = config.getInitParameter("mppsScpServiceName");
-		} catch (Exception e) {
-			log.error("Exception in init! ", e);
-		}
+    /**
+     * Iinitialize the GPWLScu service delegator.
+     * <p>
+     * Set the name of the GPWLScuService MBean with the servlet config param
+     * 'gpwlScuServiceName'.
+     * 
+     * @param config
+     *            The ServletConfig object.
+     */
+    public void init(ServletConfig config) {
+        if (server != null)
+            return;
+        server = MBeanServerLocator.locate();
+        String s = config.getInitParameter("gpwlScuServiceName");
+        try {
+            gpwlScuServiceName = new ObjectName(s);
+            s = config.getInitParameter("mppsScpServiceName");
+        } catch (Exception e) {
+            log.error("Exception in init! ", e);
+        }
 
-	}
+    }
 
-	public Logger getLogger() {
-		return log;
-	}
+    public Logger getLogger() {
+        return log;
+    }
 
-	/**
-	 * Makes the MBean call to get the list of worklist entries for given filter
-	 * (ds).
-	 * 
-	 * @param ds
-	 * @return The list of worklist entries ( Each item in the list is a Dataset
-	 *         of one scheduled procedure step).
-	 */
-	public List findGPWLEntries(Dataset ds) {
-		List resp = null;
-		try {
-			Object o = server.invoke(gpwlScuServiceName, "findGPWLEntries",
-					new Object[] { ds },
-					new String[] { Dataset.class.getName() });
-			return (List) o;
-		} catch (Exception x) {
-			log.error("Exception occured in findGPWLEntries: " + x.getMessage(),
-					x);
-		}
-		return new ArrayList();
-	}
+    /**
+     * Makes the MBean call to get the list of worklist entries for given filter
+     * (ds).
+     * 
+     * @param ds
+     * @return The list of worklist entries ( Each item in the list is a Dataset
+     *         of one scheduled procedure step).
+     */
+    public List findGPWLEntries(Dataset ds) {
+        List resp = null;
+        try {
+            Object o = server.invoke(gpwlScuServiceName, "findGPWLEntries",
+                    new Object[] { ds },
+                    new String[] { Dataset.class.getName() });
+            return (List) o;
+        } catch (Exception x) {
+            log.error("Exception occured in findGPWLEntries: " + x.getMessage(),
+                    x);
+        }
+        return new ArrayList();
+    }
 
-	/**
-	 * Checks if the GPWLScpAET is local.
-	 * <p>
-	 * This means, that the GPWLSCP is in the same container.
-	 * <p>
-	 * If it runs in the same container, the query can be done directly without
-	 * a CFIND. Also we can allow deletion of GPWLEntries.
-	 * 
-	 * @return true if the GPWLSCP runs in the same container.
-	 */
-	public boolean isLocal() {
-		try {
-			Boolean b = (Boolean) server.getAttribute(gpwlScuServiceName,
-					"Local");
-			return b.booleanValue();
-		} catch (Exception x) {
-			log.error("Exception occured in isLocal: " + x.getMessage(), x);
-		}
-		return false;
-	}
+    /**
+     * Checks if the GPWLScpAET is local.
+     * <p>
+     * This means, that the GPWLSCP is in the same container.
+     * <p>
+     * If it runs in the same container, the query can be done directly without
+     * a CFIND. Also we can allow deletion of GPWLEntries.
+     * 
+     * @return true if the GPWLSCP runs in the same container.
+     */
+    public boolean isLocal() {
+        try {
+            Boolean b = (Boolean) server.getAttribute(gpwlScuServiceName,
+            "Local");
+            return b.booleanValue();
+        } catch (Exception x) {
+            log.error("Exception occured in isLocal: " + x.getMessage(), x);
+        }
+        return false;
+    }
 
-	/**
-	 * Deletes an GPWL entry with given id.
-	 * <p>
-	 * This method should only be called if isLocal() returns true!
-	 * 
-	 * @param gpspsID
-	 *            The ID of the GPWLEntry (General Purpose Scheduled Procedure Step Instance UID)
-	 * @return
-	 */
-	public boolean deleteGPWLEntry(String gpspsID) {
-		try {
-			Object o = server.invoke(gpwlScuServiceName, "deleteGPWLEntry",
-					new Object[] { gpspsID }, new String[] { String.class
-							.getName() });
-			return ((Boolean) o).booleanValue();
-		} catch (Exception x) {
-			log.error("Exception occured in deleteGPWLEntry: " + x.getMessage(),
-					x);
-		}
-		return false;
-	}
+    /**
+     * Deletes an GPWL entry with given id.
+     * <p>
+     * This method should only be called if isLocal() returns true!
+     * 
+     * @param gpspsID
+     *            The ID of the GPWLEntry (General Purpose Scheduled Procedure Step Instance UID)
+     * @return
+     */
+    public boolean deleteGPWLEntry(String gpspsID) {
+        try {
+            Object o = server.invoke(gpwlScuServiceName, "deleteGPWLEntry",
+                    new Object[] { gpspsID }, new String[] { String.class
+                    .getName() });
+            return ((Boolean) o).booleanValue();
+        } catch (Exception x) {
+            log.error("Exception occured in deleteGPWLEntry: " + x.getMessage(),
+                    x);
+        }
+        return false;
+    }
 
-	
+
 }

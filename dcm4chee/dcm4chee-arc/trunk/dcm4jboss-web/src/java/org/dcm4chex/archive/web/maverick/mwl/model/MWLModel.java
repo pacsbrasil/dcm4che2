@@ -288,7 +288,7 @@ public class MWLModel extends BasicFormPagingModel {
                 countNull++;
             }
         }
-        setTotal(total - countNull); // the real total (without null entries!)	
+        setTotal(total - countNull); // the real total (without null entries!)
     }
 
     /* (non-Javadoc)

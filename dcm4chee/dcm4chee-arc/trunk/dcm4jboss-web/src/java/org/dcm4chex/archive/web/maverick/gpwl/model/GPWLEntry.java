@@ -55,138 +55,138 @@ import org.dcm4che.dict.Tags;
  */
 public class GPWLEntry {
 
-	private Dataset ds;
-	private Dataset swcItem;
-	private Dataset refReqItem;
-	
-	/** The Date/Time formatter to format date/time values. */
-	private static final SimpleDateFormat dtformatter = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-	/** The Date/Time formatter to format date/time values. */
-	private static final SimpleDateFormat shortDTformatter = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-	/** The Date formatter to format date values. */
-	private static final SimpleDateFormat dformatter = new SimpleDateFormat("yyyy/MM/dd");
-	
-	
-	public GPWLEntry( Dataset ds ) {
-		this.ds = ds;
-		swcItem = ds.getItem( Tags.ScheduledWorkitemCodeSeq );//scheduled workitem code sequence item.
-		refReqItem = ds.getItem(Tags.RefRequestSeq);
-	}
-    
+    private Dataset ds;
+    private Dataset swcItem;
+    private Dataset refReqItem;
+
+    /** The Date/Time formatter to format date/time values. */
+    private static final SimpleDateFormat dtformatter = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+    /** The Date/Time formatter to format date/time values. */
+    private static final SimpleDateFormat shortDTformatter = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+    /** The Date formatter to format date values. */
+    private static final SimpleDateFormat dformatter = new SimpleDateFormat("yyyy/MM/dd");
+
+
+    public GPWLEntry( Dataset ds ) {
+        this.ds = ds;
+        swcItem = ds.getItem( Tags.ScheduledWorkitemCodeSeq );//scheduled workitem code sequence item.
+        refReqItem = ds.getItem(Tags.RefRequestSeq);
+    }
+
     public Dataset toDataset() {
         return ds;
     }
-	
-	public String getIUID() {
-		return ds.getString( Tags.SOPInstanceUID );
-	}
-	public String getGPSPSStatus() {
-		return ds.getString( Tags.GPSPSStatus );
-	}
-	public String getGPSPSPriority() {
-		return ds.getString( Tags.GPSPSPriority );
-	}
-	public String getInputAvailabilityFlag() {
-		return ds.getString( Tags.InputAvailabilityFlag );
-	}
 
-	/**
-	 * Returns the Scheduled Step Procedure ID.
-	 * <p>
-	 * (This is optional in GP; Instance UID as unique identifier) 
-	 * @return
-	 */
-	public String getSpsID() {
-		return ds.getString( Tags.SPSID );
-	}
+    public String getIUID() {
+        return ds.getString( Tags.SOPInstanceUID );
+    }
+    public String getGPSPSStatus() {
+        return ds.getString( Tags.GPSPSStatus );
+    }
+    public String getGPSPSPriority() {
+        return ds.getString( Tags.GPSPSPriority );
+    }
+    public String getInputAvailabilityFlag() {
+        return ds.getString( Tags.InputAvailabilityFlag );
+    }
 
-	/**
-	 * @return Returns the spsStartDateTime.
-	 */
-	public String getSpsStartDateTime() {
-		Date d = ds.getDate( Tags.SPSStartDateAndTime );
-		if ( d == null ) {
-			d = ds.getDateTime( Tags.SPSStartDate, Tags.SPSStartTime );
-		}
-		if ( d == null ) return "";
-		
-		return shortDTformatter.format( d );
-	}
+    /**
+     * Returns the Scheduled Step Procedure ID.
+     * <p>
+     * (This is optional in GP; Instance UID as unique identifier) 
+     * @return
+     */
+    public String getSpsID() {
+        return ds.getString( Tags.SPSID );
+    }
 
-	
-	public String getAccessionNumber() {
-		return refReqItem==null ? null : refReqItem.getString( Tags.AccessionNumber );
-	}
-	
-	public String getPatientName() {
-		return ds.getString( Tags.PatientName );
-	}
-	public String getPatientID() {
-		return ds.getString( Tags.PatientID );
-	}
-	
-	public String getWorkItemCode() {
-		return getCodeValues( ds.get( Tags.ScheduledWorkitemCodeSeq ) );
-	}
-	public String getStationName() {
-		return getCodeValues( ds.get( Tags.ScheduledStationNameCodeSeq ) );
-	}
-	public String getStationClass() {
-		return getCodeValues( ds.get( Tags.ScheduledStationClassCodeSeq ) );
-	}
-	public String getStationGeoLocation() {
-		return getCodeValues( ds.get( Tags.ScheduledStationGeographicLocationCodeSeq ) );
-	}
-	
-	public String getExpectedCompletionDate() {
-		Date d = ds.getDate(Tags.ExpectedCompletionDateAndTime);
-		return d == null ? "" : shortDTformatter.format( d );
-	}
-	
-	public String[] getHumanPerformers() {
-		DcmElement elem = ds.get(Tags.ScheduledHumanPerformersSeq);
-		if ( elem != null ) {
-			String[] performers = new String[elem.countItems()];
-			for ( int i = 0 ; i < elem.countItems() ; i++) {
-				performers[i] = elem.getItem(i).getItem(Tags.HumanPerformerCodeSeq).getString(Tags.CodeMeaning);
-			}
-			return performers;
-		}
-		return null;
-	}
-	
-	public String getBirthdate() {
-	    if ( !ds.containsValue(Tags.PatientBirthDate)) return "";
-		Date d = ds.getDate(Tags.PatientBirthDate);
-		return d == null ? "" : dformatter.format(d);
-	}
+    /**
+     * @return Returns the spsStartDateTime.
+     */
+    public String getSpsStartDateTime() {
+        Date d = ds.getDate( Tags.SPSStartDateAndTime );
+        if ( d == null ) {
+            d = ds.getDateTime( Tags.SPSStartDate, Tags.SPSStartTime );
+        }
+        if ( d == null ) return "";
 
-	public String getPatientSex() {
-		return ds.getString(Tags.PatientSex);
-	}
-	
-	private String getCodeValues( DcmElement elem ) {
-		int len = elem.countItems();
-		Dataset dsCode;
-		StringBuffer sb = new StringBuffer();
-		for ( int i = 0 ; i < len ; i++ ) {
-			dsCode = elem.getItem( i );
-			if ( i > 0 ) sb.append("/");
-			sb.append( dsCode.getString( Tags.CodeMeaning ) ).append("[");
-			sb.append( dsCode.getString( Tags.CodeValue ) ).append("]");
-		}
-		return sb.toString();
-		
-	}
-	
-	public String getReqProcedureDescription() {
-		String desc = null;
-		DcmElement rpcs = ds.get( Tags.RequestedProcedureCodeSeq );
-		if ( rpcs != null ) {
-			desc = getCodeValues( rpcs );
-		} else {
-			desc = ds.getString( Tags.RequestedProcedureDescription );
-		}
-		return desc;
-	}
+        return shortDTformatter.format( d );
+    }
+
+
+    public String getAccessionNumber() {
+        return refReqItem==null ? null : refReqItem.getString( Tags.AccessionNumber );
+    }
+
+    public String getPatientName() {
+        return ds.getString( Tags.PatientName );
+    }
+    public String getPatientID() {
+        return ds.getString( Tags.PatientID );
+    }
+
+    public String getWorkItemCode() {
+        return getCodeValues( ds.get( Tags.ScheduledWorkitemCodeSeq ) );
+    }
+    public String getStationName() {
+        return getCodeValues( ds.get( Tags.ScheduledStationNameCodeSeq ) );
+    }
+    public String getStationClass() {
+        return getCodeValues( ds.get( Tags.ScheduledStationClassCodeSeq ) );
+    }
+    public String getStationGeoLocation() {
+        return getCodeValues( ds.get( Tags.ScheduledStationGeographicLocationCodeSeq ) );
+    }
+
+    public String getExpectedCompletionDate() {
+        Date d = ds.getDate(Tags.ExpectedCompletionDateAndTime);
+        return d == null ? "" : shortDTformatter.format( d );
+    }
+
+    public String[] getHumanPerformers() {
+        DcmElement elem = ds.get(Tags.ScheduledHumanPerformersSeq);
+        if ( elem != null ) {
+            String[] performers = new String[elem.countItems()];
+            for ( int i = 0 ; i < elem.countItems() ; i++) {
+                performers[i] = elem.getItem(i).getItem(Tags.HumanPerformerCodeSeq).getString(Tags.CodeMeaning);
+            }
+            return performers;
+        }
+        return null;
+    }
+
+    public String getBirthdate() {
+        if ( !ds.containsValue(Tags.PatientBirthDate)) return "";
+        Date d = ds.getDate(Tags.PatientBirthDate);
+        return d == null ? "" : dformatter.format(d);
+    }
+
+    public String getPatientSex() {
+        return ds.getString(Tags.PatientSex);
+    }
+
+    private String getCodeValues( DcmElement elem ) {
+        int len = elem.countItems();
+        Dataset dsCode;
+        StringBuffer sb = new StringBuffer();
+        for ( int i = 0 ; i < len ; i++ ) {
+            dsCode = elem.getItem( i );
+            if ( i > 0 ) sb.append("/");
+            sb.append( dsCode.getString( Tags.CodeMeaning ) ).append("[");
+            sb.append( dsCode.getString( Tags.CodeValue ) ).append("]");
+        }
+        return sb.toString();
+
+    }
+
+    public String getReqProcedureDescription() {
+        String desc = null;
+        DcmElement rpcs = ds.get( Tags.RequestedProcedureCodeSeq );
+        if ( rpcs != null ) {
+            desc = getCodeValues( rpcs );
+        } else {
+            desc = ds.getString( Tags.RequestedProcedureDescription );
+        }
+        return desc;
+    }
 }

@@ -82,57 +82,57 @@ public class StudyPermissionModel extends BasicFormModel {
 
     private WebRolesConfig webRoles; 
     private Map permissions = new HashMap();
-	
+
     private String suid;
     private PatientModel patient;
     private int countStudies;
-    
+
     private boolean studyPermissionCheckDisabled;
     private boolean grantPrivileg;
     private boolean grantOwnPrivileg;
-    
+
     private Map grantedStudyActions;
     private Set grantedActions;
-    
+
     private StudyPermissionModel(ControllerContext ctx) throws Exception {
-    	super(ctx.getRequest());
-    	initWebRolesConfig();
+        super(ctx.getRequest());
+        initWebRolesConfig();
         initStudyPermissionDelegate(ctx);
     }
 
-	public void initWebRolesConfig() {
-		webRoles = new WebRolesConfig();
-	}
-	
-    public static final StudyPermissionModel getModel(ControllerContext ctx, Dcm4cheeFormController ctrl) throws Exception {
-        HttpServletRequest request = ctx.getRequest();
-		StudyPermissionModel model = (StudyPermissionModel) request.getSession().getAttribute(STUDY_PERMISSION_ATTR_NAME);
-		if (model == null) {
-		    model = new StudyPermissionModel(ctx);
-		    request.getSession().setAttribute(STUDY_PERMISSION_ATTR_NAME, model);
-		}
-		model.initActiveUserPermissions(ctx, ctrl);
-		return model;
+    public void initWebRolesConfig() {
+        webRoles = new WebRolesConfig();
     }
 
-	private void initActiveUserPermissions(ControllerContext ctx, Dcm4cheeFormController ctrl) {
-		HttpServletRequest request = ctx.getRequest();
-		this.studyPermissionCheckDisabled = ctrl.isStudyPermissionCheckDisabled();
-	    this.grantPrivileg = request.isUserInRole("GrantPrivileg");
-	    this.grantOwnPrivileg = request.isUserInRole("GrantOwnPrivileg");
-	    this.grantedStudyActions = FolderForm.getFolderForm(ctx).getGrantedStudyActions();
-	}
+    public static final StudyPermissionModel getModel(ControllerContext ctx, Dcm4cheeFormController ctrl) throws Exception {
+        HttpServletRequest request = ctx.getRequest();
+        StudyPermissionModel model = (StudyPermissionModel) request.getSession().getAttribute(STUDY_PERMISSION_ATTR_NAME);
+        if (model == null) {
+            model = new StudyPermissionModel(ctx);
+            request.getSession().setAttribute(STUDY_PERMISSION_ATTR_NAME, model);
+        }
+        model.initActiveUserPermissions(ctx, ctrl);
+        return model;
+    }
+
+    private void initActiveUserPermissions(ControllerContext ctx, Dcm4cheeFormController ctrl) {
+        HttpServletRequest request = ctx.getRequest();
+        this.studyPermissionCheckDisabled = ctrl.isStudyPermissionCheckDisabled();
+        this.grantPrivileg = request.isUserInRole("GrantPrivileg");
+        this.grantOwnPrivileg = request.isUserInRole("GrantOwnPrivileg");
+        this.grantedStudyActions = FolderForm.getFolderForm(ctx).getGrantedStudyActions();
+    }
 
     public String getModelName() { return STUDY_PERMISSION_ATTR_NAME; }
-	
+
     public WebRolesConfig getRolesConfig() {
-    	return webRoles;
+        return webRoles;
     }
 
     public String getStudyIUID() {
         return suid;
     }
-    
+
     public PatientModel getPatient() {
         return patient;
     }
@@ -145,25 +145,25 @@ public class StudyPermissionModel extends BasicFormModel {
     public Map getRolesWithActions() {
         return permissions;
     }
-    
-	
+
+
     public boolean isStudyPermissionCheckDisabled() {
-		return studyPermissionCheckDisabled;
-	}
+        return studyPermissionCheckDisabled;
+    }
 
-	public boolean isGrantPrivileg() {
-		return grantPrivileg;
-	}
+    public boolean isGrantPrivileg() {
+        return grantPrivileg;
+    }
 
-	public boolean isGrantOwnPrivileg() {
-		return grantOwnPrivileg;
-	}
+    public boolean isGrantOwnPrivileg() {
+        return grantOwnPrivileg;
+    }
 
     public Set getGrantedActions() {
         return this.grantedActions;
     }
-	
-	private StudyPermissionDelegate initStudyPermissionDelegate(ControllerContext ctx) throws MalformedObjectNameException, NullPointerException {
+
+    private StudyPermissionDelegate initStudyPermissionDelegate(ControllerContext ctx) throws MalformedObjectNameException, NullPointerException {
         if ( delegate == null ) {
             delegate = new StudyPermissionDelegate( MBeanServerLocator.locate() );
             String s = ctx.getServletConfig().getInitParameter("studyPermissionServiceName");
@@ -178,31 +178,31 @@ public class StudyPermissionModel extends BasicFormModel {
             log.info("Use model! suid:"+suid+" patient:"+patient.getPatientName());
             return false;
         }
-    	this.suid = suid;
-    	this.patient = patModel;
-	    if ( !studyPermissionCheckDisabled && !grantPrivileg && grantOwnPrivileg ) {
-	    	if ( suid != null ) {
-	    		this.grantedActions = (Set) this.grantedStudyActions.get(suid);
-	    	} else {
-	    		this.grantedActions = new HashSet();
-	    		Set actions;
-	    		StudyModel study;
-	    		for ( Iterator iter = patient.getStudies().iterator() ; iter.hasNext() ; ) {
-	    			 study = (StudyModel) iter.next();
-	    			 actions = (Set) this.grantedStudyActions.get( study.getStudyIUID() );
-	    			 if ( actions != null )
-	    				 this.grantedActions.addAll(actions);
-	    		}
-	    	}
-	    } else {
-	    	this.grantedActions = null;
-	    }
+        this.suid = suid;
+        this.patient = patModel;
+        if ( !studyPermissionCheckDisabled && !grantPrivileg && grantOwnPrivileg ) {
+            if ( suid != null ) {
+                this.grantedActions = (Set) this.grantedStudyActions.get(suid);
+            } else {
+                this.grantedActions = new HashSet();
+                Set actions;
+                StudyModel study;
+                for ( Iterator iter = patient.getStudies().iterator() ; iter.hasNext() ; ) {
+                    study = (StudyModel) iter.next();
+                    actions = (Set) this.grantedStudyActions.get( study.getStudyIUID() );
+                    if ( actions != null )
+                        this.grantedActions.addAll(actions);
+                }
+            }
+        } else {
+            this.grantedActions = null;
+        }
         return true;
     }
-    
+
     public boolean query() throws Exception {
-		permissions.clear();
-		Collection studyPermissions;
+        permissions.clear();
+        Collection studyPermissions;
         if ( suid != null ) {
             studyPermissions = delegate.findByStudyIuid(suid);
             countStudies = 1;
@@ -210,8 +210,8 @@ public class StudyPermissionModel extends BasicFormModel {
             studyPermissions = delegate.findByPatientPk(patient.getPk());
             countStudies = delegate.countStudiesOfPatient(new Long(patient.getPk()));
         } else {
-        	this.setPopupMsg("folder.study_permission_missingAttr", "studyIUID, patPk");
-        	return false; 
+            this.setPopupMsg("folder.study_permission_missingAttr", "studyIUID, patPk");
+            return false; 
         }
         StudyPermissionDTO dto;
         Map actions;
@@ -237,17 +237,17 @@ public class StudyPermissionModel extends BasicFormModel {
         return true;
     }
 
-	public void addAction(String action) {
-		if ( ! webRoles.getActions().containsKey(action) ) {
-			webRoles.getActions().put(action, "unconfigured action");
-		}
-	}
+    public void addAction(String action) {
+        if ( ! webRoles.getActions().containsKey(action) ) {
+            webRoles.getActions().put(action, "unconfigured action");
+        }
+    }
 
-	public void addRole(String role) {
-		if ( webRoles.getRole(role) == null) {
-			webRoles.addRole(role, "unconfigured role");
-		}
-	}
+    public void addRole(String role) {
+        if ( webRoles.getRole(role) == null) {
+            webRoles.addRole(role, "unconfigured role");
+        }
+    }
 
     /**
      * Return count of studies.
@@ -262,24 +262,24 @@ public class StudyPermissionModel extends BasicFormModel {
     public int getCountStudies() throws Exception {
         return countStudies;
     }
-    
+
     public void removePermission(String role, String action) throws Exception {
         if ( suid != null ) {
-                StudyPermissionDTO dto = new StudyPermissionDTO();
-                dto.setStudyIuid(suid);
-                dto.setRole(role);
-                dto.setAction(action);
-                delegate.revoke(dto);
+            StudyPermissionDTO dto = new StudyPermissionDTO();
+            dto.setStudyIuid(suid);
+            dto.setRole(role);
+            dto.setAction(action);
+            delegate.revoke(dto);
         } else {
-                delegate.revokeForPatient(patient.getPk(), action, role);
+            delegate.revokeForPatient(patient.getPk(), action, role);
         }
     }
 
     public void addPermission(String role, String action) throws Exception {
         if ( suid != null ) {
-                delegate.grant(suid, action, role);
+            delegate.grant(suid, action, role);
         } else {
-                delegate.grantForPatient(patient.getPk(), action, role);
+            delegate.grantForPatient(patient.getPk(), action, role);
         }
         addRole(role);
         addAction(action);

@@ -48,23 +48,23 @@ import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 public class AEEditCtrl extends AEFormCtrl
 {
 
-	protected String perform() throws Exception 
-	{
-		AEModel model = AEModel.getModel(getCtx().getRequest());
-		try
-		{
-			AEDTO ae = model.getAE();
-			if (ae.getPort() < 0) { //AE not loaded!
-				model.setAE( lookupAEDelegate().getAE(ae.getTitle()) );
-			}
-			return SUCCESS;
-		}
-		catch (Exception e)
-		{
-			model.setPopupMsg("ae.err",e.getMessage());
-			return FAILED;
-		}	
-	}
+    protected String perform() throws Exception 
+    {
+        AEModel model = AEModel.getModel(getCtx().getRequest());
+        try
+        {
+            AEDTO ae = model.getAE();
+            if (ae.getPort() < 0) { //AE not loaded!
+                model.setAE( lookupAEDelegate().getAE(ae.getTitle()) );
+            }
+            return SUCCESS;
+        }
+        catch (Exception e)
+        {
+            model.setPopupMsg("ae.err",e.getMessage());
+            return FAILED;
+        }	
+    }
 
 
 }

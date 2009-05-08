@@ -55,14 +55,14 @@ import org.dcm4chex.archive.web.maverick.model.ModalityBaseFilterModel;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class MWLFilter extends ModalityBaseFilterModel {
-    
-	private Dataset dsSPS;
+
+    private Dataset dsSPS;
     public MWLFilter() {
         super();
-	}
-    
+    }
+
     public void init() {
-    //Sched. procedure step seq
+        //Sched. procedure step seq
         dsSPS = ds.putSQ(Tags.SPSSeq).addNewItem();
         dsSPS.putAE( Tags.ScheduledStationAET );
         dsSPS.putDA(Tags.SPSStartDate);
@@ -72,7 +72,7 @@ public class MWLFilter extends ModalityBaseFilterModel {
         dsSPS.putLO( Tags.SPSDescription );
         dsSPS.putSH( Tags.ScheduledStationName );
         dsSPS.putSH( Tags.SPSLocation );
-    	dsSPS.putSQ( Tags.ScheduledProtocolCodeSeq);
+        dsSPS.putSQ( Tags.ScheduledProtocolCodeSeq);
         dsSPS.putLO( Tags.PreMedication );
         dsSPS.putSH( Tags.SPSID );
         dsSPS.putLO( Tags.RequestedContrastAgent );
@@ -84,7 +84,7 @@ public class MWLFilter extends ModalityBaseFilterModel {
             setStartDate( d );
         } catch (ParseException ignore) {}
 
-//Requested Procedure        
+//      Requested Procedure        
         ds.putSH( Tags.RequestedProcedureID );
         ds.putLO( Tags.RequestedProcedureDescription );
         {
@@ -112,8 +112,8 @@ public class MWLFilter extends ModalityBaseFilterModel {
         ds.putSH(Tags.ReportingPriority);
         ds.putPN(Tags.NamesOfIntendedRecipientsOfResults);
         ds.putSQ(Tags.IntendedRecipientsOfResultsIdentificationSeq);
-        
-//imaging service request
+
+//      imaging service request
         ds.putLT( Tags.ImagingServiceRequestComments );
         ds.putPN( Tags.RequestingPhysician );
         ds.putSQ(Tags.RequestingPhysicianIdentificationSeq);
@@ -128,86 +128,86 @@ public class MWLFilter extends ModalityBaseFilterModel {
         ds.putPN(Tags.OrderEnteredBy);
         ds.putSH(Tags.OrderEntererLocation);
         ds.putSH(Tags.OrderCallbackPhoneNumber);
-        
-//Patient/Visit Identification
+
+//      Patient/Visit Identification
         ds.putPN( Tags.PatientName );
         ds.putLO( Tags.PatientID);
         ds.putLO( Tags.IssuerOfPatientID);
         ds.putLO( Tags.AdmissionID );
-//Visit Status
+//      Visit Status
         ds.putLO(Tags.CurrentPatientLocation);
-        
-//Visit Relationship
+
+//      Visit Relationship
         {
             Dataset dsRefPat = ds.putSQ( Tags.RefPatientSeq ).addNewItem();
             dsRefPat.putUI( Tags.RefSOPClassUID );
             dsRefPat.putUI( Tags.RefSOPInstanceUID );
         }
-//Patient demographic
+//      Patient demographic
         ds.putDA( Tags.PatientBirthDate );
         ds.putCS( Tags.PatientSex );
         ds.putDS( Tags.PatientWeight );
         ds.putLO( Tags.ConfidentialityPatientData );
-//Patient medical
+//      Patient medical
         ds.putLO( Tags.PatientState );
         ds.putUS( Tags.PregnancyStatus );
         ds.putLO( Tags.MedicalAlerts );
         ds.putLO( Tags.ContrastAllergies );
         ds.putLO( Tags.SpecialNeeds );
     }
-    	
-	/**
-	 * Set the start date.
-	 * <p>
-	 * Set both <code>startDate and startDateAsLong</code>.<br>
-	 * If the parameter is null or empty, both values are set to <code>null</code>
-	 * 
-	 * @param startDate The start Date to set.
-	 * @throws ParseException
-	 */
-	public void setStartDate(String startDate) throws ParseException {
+
+    /**
+     * Set the start date.
+     * <p>
+     * Set both <code>startDate and startDateAsLong</code>.<br>
+     * If the parameter is null or empty, both values are set to <code>null</code>
+     * 
+     * @param startDate The start Date to set.
+     * @throws ParseException
+     */
+    public void setStartDate(String startDate) throws ParseException {
         this.startDate = startDate;
         setDateRange(dsSPS, Tags.SPSStartDate, startDate );
-	}
-	
+    }
+
     public void setStationAET(String aet) {
         super.setStationAET(dsSPS, Tags.ScheduledStationAET, aet);
     }
-	
-	/**
-	 * returns the modality filter value.
-	 * 
-	 * @return Filter value of modality field or null.
-	 */
-	public String getModality() {
-		return dsSPS.getString( Tags.Modality );
-	}
-	
-	/**
-	 * set the filter modality.
-	 * @param name
-	 */
-	public void setModality( String mod ){
-		if ( mod == null || mod.trim().length() < 1 )
+
+    /**
+     * returns the modality filter value.
+     * 
+     * @return Filter value of modality field or null.
+     */
+    public String getModality() {
+        return dsSPS.getString( Tags.Modality );
+    }
+
+    /**
+     * set the filter modality.
+     * @param name
+     */
+    public void setModality( String mod ){
+        if ( mod == null || mod.trim().length() < 1 )
             dsSPS.putCS( Tags.Modality );
-		else 
+        else 
             dsSPS.putCS( Tags.Modality, mod);
-	}
-	
-	/**
-	 * @return Returns the accessionNumber.
-	 */
-	public String getAccessionNumber() {
-		return ds.getString( Tags.AccessionNumber );
-	}
-	/**
-	 * @param accessionNumber The accessionNumber to set.
-	 */
-	public void setAccessionNumber(String accessionNumber) {
-		if ( accessionNumber == null || accessionNumber.trim().length() < 1 )
+    }
+
+    /**
+     * @return Returns the accessionNumber.
+     */
+    public String getAccessionNumber() {
+        return ds.getString( Tags.AccessionNumber );
+    }
+    /**
+     * @param accessionNumber The accessionNumber to set.
+     */
+    public void setAccessionNumber(String accessionNumber) {
+        if ( accessionNumber == null || accessionNumber.trim().length() < 1 )
             ds.putSH( Tags.AccessionNumber );
-		else
+        else
             ds.putSH( Tags.AccessionNumber, accessionNumber);
-	}
-	
+    }
+
 }

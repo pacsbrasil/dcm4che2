@@ -298,7 +298,7 @@ public class MPPSEntry {
                     return item.getString( Tags.RefSOPClassUID)+"["+item.getString( Tags.RefSOPInstanceUID)+"]";
                 }
             }
-            return null;		
+            return null;
         }
 
         public String getAccessionNumber() {

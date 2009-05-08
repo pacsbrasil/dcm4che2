@@ -62,27 +62,27 @@ public class ExpandTrashSeriesCtrl extends ExpandTrashStudyCtrl {
         this.seriesPk = seriesPk;
     }
 
-    
+
     protected String perform() throws Exception {
         TrashFolderForm folderForm = TrashFolderForm.getTrashFolderForm(getCtx());
         if ( expand ) {
-	        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-	                .getFactory().lookup(ContentManagerHome.class,
-	                        ContentManagerHome.JNDI_NAME);
-	        ContentManager cm = home.create();
-	        try {
-	            List instances = cm.listInstancesOfPrivateSeries(seriesPk);
-	            for (int i = 0, n = instances.size(); i < n; i++)
-	                instances.set(i, InstanceModel.valueOf((Dataset) instances
-	                        .get(i)));
-	            folderForm.getSeriesByPk(patPk, studyPk, seriesPk)
-	                    .setInstances(instances);
-	        } finally {
-	            try {
-	                cm.remove();
-	            } catch (Exception e) {
-	            }
-	        }
+            ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
+            .getFactory().lookup(ContentManagerHome.class,
+                    ContentManagerHome.JNDI_NAME);
+            ContentManager cm = home.create();
+            try {
+                List instances = cm.listInstancesOfPrivateSeries(seriesPk);
+                for (int i = 0, n = instances.size(); i < n; i++)
+                    instances.set(i, InstanceModel.valueOf((Dataset) instances
+                            .get(i)));
+                folderForm.getSeriesByPk(patPk, studyPk, seriesPk)
+                .setInstances(instances);
+            } finally {
+                try {
+                    cm.remove();
+                } catch (Exception e) {
+                }
+            }
         } else {
             folderForm.getSeriesByPk(patPk, studyPk, seriesPk).getInstances().clear();
         }

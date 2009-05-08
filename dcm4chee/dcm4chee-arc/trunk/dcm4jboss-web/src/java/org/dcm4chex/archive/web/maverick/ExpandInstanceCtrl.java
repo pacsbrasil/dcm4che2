@@ -53,23 +53,23 @@ import org.dcm4chex.archive.web.maverick.model.InstanceModel;
 public class ExpandInstanceCtrl extends ExpandSeriesCtrl {
 
     private long instancePk;
-    
+
     public final void setInstancePk(long pk) {
         this.instancePk = pk;
     }
-    
+
     protected String perform() throws Exception {
         try {
             FolderForm folderForm = FolderForm.getFolderForm(getCtx());
             InstanceModel m = folderForm.getInstanceByPk(patPk,studyPk,seriesPk,instancePk);
-        	if ( expand ) {
-	            ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-	            	.getFactory().lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
-	            ContentManager cm = home.create();
-	            if ( m != null ) m.setFiles(cm.listFilesOfInstance( instancePk ));
-        	} else {
-        		m.setFiles(null);
-        	}
+            if ( expand ) {
+                ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
+                .getFactory().lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
+                ContentManager cm = home.create();
+                if ( m != null ) m.setFiles(cm.listFilesOfInstance( instancePk ));
+            } else {
+                m.setFiles(null);
+            }
         } catch (Exception e) {
         }
         return SUCCESS;

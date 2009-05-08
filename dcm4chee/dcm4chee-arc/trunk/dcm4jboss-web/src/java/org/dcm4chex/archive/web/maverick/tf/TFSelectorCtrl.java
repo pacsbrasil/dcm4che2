@@ -51,53 +51,53 @@ import org.dcm4chex.archive.web.maverick.FolderForm;
 public class TFSelectorCtrl extends Dcm4cheeFormController {
 
     private TeachingFileDelegate delegate = null;
-	private static final String CANCEL = "cancel";
-	private static final String TFSELECT = "tfselect";
+    private static final String CANCEL = "cancel";
+    private static final String TFSELECT = "tfselect";
 
     protected Object makeFormBean() {
-    	TFModel model = TFModel.getModel(getCtx().getRequest());
-    	if ( delegate == null) { 
-    		delegate = new TeachingFileDelegate();
-    		try {
-	    		delegate.init(getCtx());
-	    		model.setDispositions(delegate.getConfiguredDispositions());
-	    		model.getManifestModel().setDefaultAuthor( delegate.getObserverPerson(model.getUser()));
-	    		model.clear();
-    		} catch ( Exception x) {
-    			throw new NullPointerException("Cant create TFModel or TF delegate!");
-    		}
-    	}
-    	return model;
+        TFModel model = TFModel.getModel(getCtx().getRequest());
+        if ( delegate == null) { 
+            delegate = new TeachingFileDelegate();
+            try {
+                delegate.init(getCtx());
+                model.setDispositions(delegate.getConfiguredDispositions());
+                model.getManifestModel().setDefaultAuthor( delegate.getObserverPerson(model.getUser()));
+                model.clear();
+            } catch ( Exception x) {
+                throw new NullPointerException("Cant create TFModel or TF delegate!");
+            }
+        }
+        return model;
     }
     protected String perform() {
-    	TFModel model = (TFModel) getForm();
+        TFModel model = (TFModel) getForm();
         try {
-        	if ( model.getNumberOfInstances() < 1) {
-        		FolderForm.setExternalPopupMsg(getCtx(),"tf.err_selection", null);
-        		return CANCEL;
-        	}
-        	model.clearPopupMsg();
-        	HttpServletRequest rq = getCtx().getRequest();
-        	model.getManifestModel().fillParams(rq);
-        	if ( rq.getParameter("cancel") != null || rq.getParameter("cancel.x") != null ) {
-        		return CANCEL;
-        	}
-        	if ( rq.getParameter("clear") != null || rq.getParameter("clear.x") != null ) {
-        		model.clear();
-        		return TFSELECT;
-        	}
+            if ( model.getNumberOfInstances() < 1) {
+                FolderForm.setExternalPopupMsg(getCtx(),"tf.err_selection", null);
+                return CANCEL;
+            }
+            model.clearPopupMsg();
+            HttpServletRequest rq = getCtx().getRequest();
+            model.getManifestModel().fillParams(rq);
+            if ( rq.getParameter("cancel") != null || rq.getParameter("cancel.x") != null ) {
+                return CANCEL;
+            }
+            if ( rq.getParameter("clear") != null || rq.getParameter("clear.x") != null ) {
+                model.clear();
+                return TFSELECT;
+            }
 
             if ( rq.getParameter("export") != null || rq.getParameter("export.x") != null ) {
-	        	delegate.exportTF(model);
-	        	model.clear();
-	        	return SUCCESS;//export done
-        	}
+                delegate.exportTF(model);
+                model.clear();
+                return SUCCESS;//export done
+            }
             return TFSELECT;//Show selection page for docTitle, delay reason,..
         } catch (Exception x) {
-        	model.setPopupMsg("tf.err",x.getMessage());
-        	return ERROR;
+            model.setPopupMsg("tf.err",x.getMessage());
+            return ERROR;
         }
     }
-    
+
 
 }

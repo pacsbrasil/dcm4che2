@@ -55,15 +55,15 @@ import org.dcm4chex.archive.web.maverick.model.PatientModel;
 public class StudyPermissionCtrl extends Dcm4cheeFormController {
 
     public static final String CANCEL = "cancel";
-    
+
     private StudyPermissionModel model;
-    
+
     private static Logger log = Logger.getLogger(StudyPermissionCtrl.class);
-    
+
     protected StudyPermissionModel getModel() {
         return model;
     }
-    
+
     protected Object makeFormBean() {
         try {
             model = StudyPermissionModel.getModel(getCtx(), this);
@@ -73,27 +73,27 @@ public class StudyPermissionCtrl extends Dcm4cheeFormController {
         return model;
     }
 
-    
+
     protected String perform() {
-    	try {
-    		getModel().clearPopupMsg();
-	        HttpServletRequest req = getCtx().getRequest();
-	        if ( req.getParameter("init") != null)
-	        	getModel().initWebRolesConfig();
-	        String suid = req.getParameter("studyIUID");
-	        String patPk = req.getParameter("patPk");
-	        getModel().setFilter(suid, getPatientModel(patPk));
-	        return getModel().query() ? SUCCESS : CANCEL;
-    	} catch (Exception x) {
-    		log.warn("Open StudyPermission failed!",x);
-    		return CANCEL;
-    	}
+        try {
+            getModel().clearPopupMsg();
+            HttpServletRequest req = getCtx().getRequest();
+            if ( req.getParameter("init") != null)
+                getModel().initWebRolesConfig();
+            String suid = req.getParameter("studyIUID");
+            String patPk = req.getParameter("patPk");
+            getModel().setFilter(suid, getPatientModel(patPk));
+            return getModel().query() ? SUCCESS : CANCEL;
+        } catch (Exception x) {
+            log.warn("Open StudyPermission failed!",x);
+            return CANCEL;
+        }
     }
 
     private PatientModel getPatientModel(String patPk) {
         return patPk == null ? null :
             FolderForm.getFolderForm(getCtx()).getPatientByPk(
-                Long.parseLong(patPk));
+                    Long.parseLong(patPk));
     }
 
 }

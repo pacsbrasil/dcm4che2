@@ -52,34 +52,34 @@ import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class MediaList extends ArrayList {
-	/**
-	 * Comment for <code>serialVersionUID</code>
-	 */
-	private static final long serialVersionUID = 4048791281930941750L;
+    /**
+     * Comment for <code>serialVersionUID</code>
+     */
+    private static final long serialVersionUID = 4048791281930941750L;
 
-	/**
-	 * @param list
-	 * @param limit
-	 * @param offset
-	 */
-	public MediaList(Collection list) {
-		
-		this();
-		Iterator iter = list.iterator();
-		while ( iter.hasNext() ) {
-			this.add( new MediaData( (MediaDTO) iter.next() ) );
-		}
-	}
+    /**
+     * @param list
+     * @param limit
+     * @param offset
+     */
+    public MediaList(Collection list) {
 
-	/**
-	 * 
-	 */
-	public MediaList() {
-		
-		super();
-	}
+        this();
+        Iterator iter = list.iterator();
+        while ( iter.hasNext() ) {
+            this.add( new MediaData( (MediaDTO) iter.next() ) );
+        }
+    }
 
-	public boolean add( MediaData media ) {
-		return super.add( media );
-	}
+    /**
+     * 
+     */
+    public MediaList() {
+
+        super();
+    }
+
+    public boolean add( MediaData media ) {
+        return super.add( media );
+    }
 }

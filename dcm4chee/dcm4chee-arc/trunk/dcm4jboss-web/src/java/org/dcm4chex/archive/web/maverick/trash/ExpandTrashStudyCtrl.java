@@ -64,27 +64,27 @@ public class ExpandTrashStudyCtrl extends ExpandTrashPatientCtrl {
 
 
     protected String perform() throws Exception {
-    	TrashFolderForm folderForm = TrashFolderForm.getTrashFolderForm(getCtx());
-    	if ( expand ) {
-	        ContentManagerHome home =
-	            (ContentManagerHome) EJBHomeFactory.getFactory().lookup(
-	                ContentManagerHome.class,
-	                ContentManagerHome.JNDI_NAME);
-	        ContentManager cm = home.create();
-	        try {
-	            List series = cm.listSeriesOfPrivateStudy(studyPk);
-	            for (int i = 0, n = series.size(); i < n; i++)
-	                series.set(i, new SeriesModel((Dataset) series.get(i)));
-	            folderForm.getStudyByPk(patPk, studyPk).setSeries(series);
-	        } finally {
-	            try {
-	                cm.remove();
-	            } catch (Exception e) {
-	            }
-	        }
-    	} else {
+        TrashFolderForm folderForm = TrashFolderForm.getTrashFolderForm(getCtx());
+        if ( expand ) {
+            ContentManagerHome home =
+                (ContentManagerHome) EJBHomeFactory.getFactory().lookup(
+                        ContentManagerHome.class,
+                        ContentManagerHome.JNDI_NAME);
+            ContentManager cm = home.create();
+            try {
+                List series = cm.listSeriesOfPrivateStudy(studyPk);
+                for (int i = 0, n = series.size(); i < n; i++)
+                    series.set(i, new SeriesModel((Dataset) series.get(i)));
+                folderForm.getStudyByPk(patPk, studyPk).setSeries(series);
+            } finally {
+                try {
+                    cm.remove();
+                } catch (Exception e) {
+                }
+            }
+        } else {
             folderForm.getStudyByPk(patPk, studyPk).getSeries().clear();
-    	}
+        }
         return SUCCESS;
     }
 

@@ -59,30 +59,30 @@ import org.dcm4chex.archive.util.Convert;
  */
 public class InstanceModel extends AbstractModel {
 
-	private List files = null;
-	
+    private List files = null;
+
     public static Object valueOf(Dataset ds) {
         String cuid = ds.getString(Tags.SOPClassUID);
         if (UIDs.GrayscaleSoftcopyPresentationStateStorage.equals(cuid))
-                return new PresentationStateModel(ds);
+            return new PresentationStateModel(ds);
         if (UIDs.BasicTextSR.equals(cuid) || UIDs.EnhancedSR.equals(cuid)
                 || UIDs.ComprehensiveSR.equals(cuid)
                 || UIDs.KeyObjectSelectionDocument.equals(cuid)
                 || UIDs.MammographyCADSR.equals(cuid)
                 || UIDs.ProcedureLogStorage.equals(cuid)
                 || UIDs.XRayRadiationDoseSR.equals(cuid))
-                return new StructuredReportModel(ds);
+            return new StructuredReportModel(ds);
         if ( UIDs.TwelveLeadECGWaveformStorage.equals(cuid)
-        	|| UIDs.GeneralECGWaveformStorage.equals(cuid)
-        	|| UIDs.AmbulatoryECGWaveformStorage.equals(cuid)
-        	|| UIDs.HemodynamicWaveformStorage.equals(cuid)
-        	|| UIDs.CardiacElectrophysiologyWaveformStorage.equals(cuid)
-        	|| UIDs.BasicVoiceAudioWaveformStorage.equals(cuid))
-        	return new WaveformModel(ds);
+                || UIDs.GeneralECGWaveformStorage.equals(cuid)
+                || UIDs.AmbulatoryECGWaveformStorage.equals(cuid)
+                || UIDs.HemodynamicWaveformStorage.equals(cuid)
+                || UIDs.CardiacElectrophysiologyWaveformStorage.equals(cuid)
+                || UIDs.BasicVoiceAudioWaveformStorage.equals(cuid))
+            return new WaveformModel(ds);
         if ( UIDs.EncapsulatedPDFStorage.equals(cuid)) 
-        	return new StructuredReportModel(ds);
+            return new StructuredReportModel(ds);
         if ( ds.getString(Tags.MIMETypeOfEncapsulatedDocument) != null) {
-        	return new EncapsulatedModel(ds);
+            return new EncapsulatedModel(ds);
         }
         return new ImageModel(ds);
     }
@@ -101,7 +101,7 @@ public class InstanceModel extends AbstractModel {
     }
 
     public int hashCode() {
-    	return (int)( pk ^ pk >>> 32);//like Long.hashCode()
+        return (int)( pk ^ pk >>> 32);//like Long.hashCode()
     }
 
     public boolean equals(Object o) {
@@ -134,18 +134,18 @@ public class InstanceModel extends AbstractModel {
     public final String getRetrieveAETs() {
         return StringUtils.toString(ds.getStrings(Tags.RetrieveAET), '\\');
     }
-    
+
     public List getFiles() {
-    	return files;
+        return files;
     }
-    
+
     public void setFiles( List files ) {
-    	if ( files == null || files.isEmpty() ) {
-    		this.files = null;
-    	} else {
-    		this.files = files;
-    	}
+        if ( files == null || files.isEmpty() ) {
+            this.files = null;
+        } else {
+            this.files = files;
+        }
     }
-    
-    
- }
+
+
+}

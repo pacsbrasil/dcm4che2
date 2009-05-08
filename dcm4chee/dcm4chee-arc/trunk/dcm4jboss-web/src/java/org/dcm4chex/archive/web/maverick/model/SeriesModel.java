@@ -63,8 +63,8 @@ public class SeriesModel extends AbstractModel {
     private String drCodeMeaning = null;
     private String drCodeDesignator = null;
 
-    
-    
+
+
     public SeriesModel() {
     }
 
@@ -73,11 +73,11 @@ public class SeriesModel extends AbstractModel {
         ds.setPrivateCreatorID(PrivateTags.CreatorID);
         Dataset item = ds.getItem(Tags.PPSDiscontinuationReasonCodeSeq);
         if ( item != null ) {
-	        drCode = item.getString(Tags.CodeValue);
-	        drCodeMeaning = item.getString(Tags.CodeMeaning);
-	        drCodeDesignator = item.getString(Tags.CodingSchemeDesignator);
-	        incorrectWLEntry = "110514".equals(drCode) && "DCM".equals(drCodeDesignator);
-    	}
+            drCode = item.getString(Tags.CodeValue);
+            drCodeMeaning = item.getString(Tags.CodeMeaning);
+            drCodeDesignator = item.getString(Tags.CodingSchemeDesignator);
+            incorrectWLEntry = "110514".equals(drCode) && "DCM".equals(drCodeDesignator);
+        }
         ByteBuffer bb = ds.getByteBuffer(PrivateTags.SeriesPk);
         this.pk = bb == null ? -1 : Convert.toLong(bb.array());
     }
@@ -93,7 +93,7 @@ public class SeriesModel extends AbstractModel {
     }
 
     public int hashCode() {
-    	return (int)( pk ^ pk >>> 32);//like Long.hashCode()
+        return (int)( pk ^ pk >>> 32);//like Long.hashCode()
     }
 
     public boolean equals(Object o) {
@@ -103,13 +103,13 @@ public class SeriesModel extends AbstractModel {
         return pk == other.pk;
     }
 
-    
-	/**
-	 * @return Returns the incorrectWLEntry.
-	 */
-	public boolean isIncorrectWLEntry() {
-		return incorrectWLEntry;
-	}
+
+    /**
+     * @return Returns the incorrectWLEntry.
+     */
+    public boolean isIncorrectWLEntry() {
+        return incorrectWLEntry;
+    }
     public final String getBodyPartExamined() {
         return ds.getString(Tags.BodyPartExamined);
     }
@@ -199,7 +199,7 @@ public class SeriesModel extends AbstractModel {
         if ( s == null || s.trim().length() < 1 ) s = "_NA_";
         return s;
     }
-    
+
     /**
      * Returns the list of Instances.
      * <p>
@@ -221,29 +221,29 @@ public class SeriesModel extends AbstractModel {
     public final void setInstances(List instances) {
         setChilds(instances);
     }
-    
+
     public String getPPSID() {
-    	return ds.getString(Tags.PPSID);
+        return ds.getString(Tags.PPSID);
     }
 
     public String getPPSDesc() {
-    	return ds.getString(Tags.PPSDescription);
+        return ds.getString(Tags.PPSDescription);
     }
-    
+
     public String getPPSStatus() {
-    	return ds.getString(Tags.PPSStatus);
+        return ds.getString(Tags.PPSStatus);
     }
 
     public String getDRCode() { return drCode; }
     public String getDRCodeDesignator() { return drCodeDesignator; }
     public String getDRCodeMeaning() { return drCodeMeaning; }
-    
+
     public String getPPSStartDate() {
-    	return getDateTime(Tags.PPSStartDate, Tags.PPSStartTime);
+        return getDateTime(Tags.PPSStartDate, Tags.PPSStartTime);
     }
-    
+
     public String getPPSEndDate() {
-    	return getDateTime(Tags.PPSEndDate, Tags.PPSEndTime);
+        return getDateTime(Tags.PPSEndDate, Tags.PPSEndTime);
     }
-    
+
 }

@@ -59,7 +59,7 @@ import org.dcm4chex.archive.util.Convert;
 public class StudyModel extends AbstractModel {
 
     private long pk;
-    
+
     private static String httpRoot = "";
 
     public StudyModel() {
@@ -71,12 +71,12 @@ public class StudyModel extends AbstractModel {
         ByteBuffer bb = ds.getByteBuffer(PrivateTags.StudyPk);
         this.pk = bb == null ? -1 : Convert.toLong(bb.array());
     }
-    
+
     public static void setHttpRoot(String root) {
-    	if ( root == null ) return;
-    	httpRoot = root;
+        if ( root == null ) return;
+        httpRoot = root;
     }
-    
+
     public final long getPk() {
         return pk;
     }
@@ -88,7 +88,7 @@ public class StudyModel extends AbstractModel {
     }
 
     public int hashCode() {
-    	return (int)( pk ^ pk >>> 32);//like Long.hashCode()
+        return (int)( pk ^ pk >>> 32);//like Long.hashCode()
     }
 
     public boolean equals(Object o) {
@@ -164,7 +164,7 @@ public class StudyModel extends AbstractModel {
 
     public final String getModalitiesInStudy() {
         return StringUtils
-                .toString(ds.getStrings(Tags.ModalitiesInStudy), '\\');
+        .toString(ds.getStrings(Tags.ModalitiesInStudy), '\\');
     }
 
     public final int getNumberOfInstances() {
@@ -188,21 +188,21 @@ public class StudyModel extends AbstractModel {
         if ( s == null || s.trim().length() < 1 ) s = "_NA_";
         return s;
     }
-    
+
     /**
      * @return Study Status ID
      */
     public final String getStudyStatusId() {
-    	return ds.getString(Tags.StudyStatusID);
+        return ds.getString(Tags.StudyStatusID);
     }
-    
+
     public final String getStudyStatusImage() {
-    	String s = getStudyStatusId();
-    	if ( s == null ) return null;
-    	s = "images/s_"+s.toLowerCase()+".jpg";
-    	return new File(httpRoot, s).exists() ? s : null;
+        String s = getStudyStatusId();
+        if ( s == null ) return null;
+        s = "images/s_"+s.toLowerCase()+".jpg";
+        return new File(httpRoot, s).exists() ? s : null;
     }
-    
+
     /**
      * Returns the list of Series.
      * <p>

@@ -62,7 +62,7 @@ public class SeriesUpdateCtrl extends Dcm4cheeFormController {
     private int patPk;
 
     private int studyPk;
-    
+
     private int seriesPk;
 
     private String bodyPartExamined;
@@ -96,7 +96,7 @@ public class SeriesUpdateCtrl extends Dcm4cheeFormController {
     public final void setSeriesPk(int seriesPk) {
         this.seriesPk = seriesPk;
     }
-    
+
     public final void setBodyPartExamined(String s) {
         this.bodyPartExamined = s;
     }
@@ -128,41 +128,41 @@ public class SeriesUpdateCtrl extends Dcm4cheeFormController {
     public final void setSeriesNumber(String s) {
         this.seriesNumber = s;
     }
-    
+
     protected String perform() throws Exception {
         if (submit != null)
-        	if ( seriesPk != -1 )
-        		executeUpdate();
-        	else 
-        		executeCreate();
+            if ( seriesPk != -1 )
+                executeUpdate();
+            else 
+                executeCreate();
         return SUCCESS;
     }
 
     private ContentManager lookupContentManager() throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory.getFactory()
-                .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
+        .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
         return home.create();
     }
 
     private void executeCreate() {
         try {
-        	SeriesModel series = new SeriesModel();
-        	series.setSpecificCharacterSet("ISO_IR 100");
-        	series.setPk( -1 );
-        	series.setSeriesIUID( UIDGenerator.getInstance().createUID() );
-        	
-        	series.setBodyPartExamined(bodyPartExamined);
-        	series.setLaterality(laterality);
-        	series.setModality(modality);
-        	series.setSeriesDateTime(seriesDateTime);
-        	series.setSeriesDescription(seriesDescription);
-        	series.setSeriesNumber(seriesNumber);
-        	
+            SeriesModel series = new SeriesModel();
+            series.setSpecificCharacterSet("ISO_IR 100");
+            series.setPk( -1 );
+            series.setSeriesIUID( UIDGenerator.getInstance().createUID() );
+
+            series.setBodyPartExamined(bodyPartExamined);
+            series.setLaterality(laterality);
+            series.setModality(modality);
+            series.setSeriesDateTime(seriesDateTime);
+            series.setSeriesDescription(seriesDescription);
+            series.setSeriesNumber(seriesNumber);
+
             FolderSubmitCtrl.getDelegate().createSeries( series.toDataset(), studyPk );
             FolderForm form = FolderForm.getFolderForm(getCtx());
             PatientModel pat = form.getPatientByPk(patPk);
             StudyModel study = form.getStudyByPk(patPk, studyPk);
-            
+
             ContentManager cm = lookupContentManager();
             List allSeries = cm.listSeriesOfStudy(studyPk);
             for (int i = 0, n = allSeries.size(); i < n; i++)
@@ -184,18 +184,18 @@ public class SeriesUpdateCtrl extends Dcm4cheeFormController {
             e.printStackTrace();
         }
     }
-    
+
     private void executeUpdate() {
         try {
-        	FolderForm form = FolderForm.getFolderForm(getCtx());
-        	StudyModel study = form.getStudyByPk(patPk, studyPk);
+            FolderForm form = FolderForm.getFolderForm(getCtx());
+            StudyModel study = form.getStudyByPk(patPk, studyPk);
             if ( !this.isStudyPermissionCheckDisabled() && 
-            		!form.hasPermission(study.getStudyIUID(), StudyPermissionDTO.UPDATE_ACTION) ) {
-            	form.setExternalPopupMsg("folder.update_denied", new String[]{study.getStudyIUID()} );
-            	return;
+                    !form.hasPermission(study.getStudyIUID(), StudyPermissionDTO.UPDATE_ACTION) ) {
+                form.setExternalPopupMsg("folder.update_denied", new String[]{study.getStudyIUID()} );
+                return;
             }
             SeriesModel series = form.getSeriesByPk(patPk, studyPk, seriesPk);
-            
+
             //updating data model
             StringBuffer sb = new StringBuffer("Series[");
             sb.append(series.getSeriesIUID()).append(" ] modified: ");
@@ -231,17 +231,17 @@ public class SeriesUpdateCtrl extends Dcm4cheeFormController {
                 modified = true;
             }
             if (modified) {
-	            FolderSubmitCtrl.getDelegate().updateSeries(series.toDataset());
-	            PatientModel pat = form.getPatientByPk(patPk);
-	            AuditLoggerDelegate.logProcedureRecord(getCtx(),
-	                    AuditLoggerDelegate.MODIFY,
-	                    pat.getPatientID(),
-	                    pat.getPatientName(),
-	                    study.getPlacerOrderNumber(),
-	                    study.getFillerOrderNumber(),
-	                    study.getStudyIUID(),
-	                    study.getAccessionNumber(),
-	                    AuditLoggerDelegate.trim(sb));
+                FolderSubmitCtrl.getDelegate().updateSeries(series.toDataset());
+                PatientModel pat = form.getPatientByPk(patPk);
+                AuditLoggerDelegate.logProcedureRecord(getCtx(),
+                        AuditLoggerDelegate.MODIFY,
+                        pat.getPatientID(),
+                        pat.getPatientName(),
+                        study.getPlacerOrderNumber(),
+                        study.getFillerOrderNumber(),
+                        study.getStudyIUID(),
+                        study.getAccessionNumber(),
+                        AuditLoggerDelegate.trim(sb));
             }
         } catch (Exception e) {
             // TODO Auto-generated catch block

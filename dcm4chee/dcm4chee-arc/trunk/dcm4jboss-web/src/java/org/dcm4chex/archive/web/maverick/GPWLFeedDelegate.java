@@ -74,26 +74,26 @@ public class GPWLFeedDelegate {
     }
 
     public List getHumanPerformerList() {
-    	Object o = null;
-    	List l = new ArrayList();
+        Object o = null;
+        List l = new ArrayList();
         try {
             o = server.getAttribute(gpwlFeedServiceName,
-                    "HumanPerformerList");
+            "HumanPerformerList");
         } catch (Exception e) {
             log.warn("Failed to get list of human performer!", e);
         }
         if ( o != null ) {
-        	String[] sa = StringUtils.split( (String) o, ',');
-        	for ( int i = 0 ; i < sa.length ; i++ ) {
-        		if ( sa[i].length() > 3)
-        			l.add( CodeItem.valueofCDM( sa[i] ) );//codeString format: <codeValue>[^<designator>]^<meaning>
-        	}
+            String[] sa = StringUtils.split( (String) o, ',');
+            for ( int i = 0 ; i < sa.length ; i++ ) {
+                if ( sa[i].length() > 3)
+                    l.add( CodeItem.valueofCDM( sa[i] ) );//codeString format: <codeValue>[^<designator>]^<meaning>
+            }
         }
         return l;
     }
 
     public List getTemplateList() {
-    	Object o = null;
+        Object o = null;
         try {
             return (List) server.invoke(gpwlFeedServiceName,
                     "listTemplates",
@@ -104,24 +104,24 @@ public class GPWLFeedDelegate {
         }
         return new ArrayList();
     }
-    
+
     public boolean addWorklistItem( long studyPk, String templateFile, String humanPerformer, long scheduleDate ) {
-    	log.info("addWorklistItem: studyPk:"+studyPk+" templateFile:"+templateFile+" humanPerformer:"+humanPerformer+" scheduleDate:"+scheduleDate);
+        log.info("addWorklistItem: studyPk:"+studyPk+" templateFile:"+templateFile+" humanPerformer:"+humanPerformer+" scheduleDate:"+scheduleDate);
         try {
-            	server.invoke(gpwlFeedServiceName,
+            server.invoke(gpwlFeedServiceName,
                     "addWorklistItem",
                     new Object[] { new Long( studyPk ),
-            					   templateFile,
-								   humanPerformer,
-								   new Long(scheduleDate)
-            						},
-                    new String[] { Long.class.getName(), String.class.getName(), String.class.getName(), Long.class.getName() });
-            	
-            	return true;
+                    templateFile,
+                    humanPerformer,
+                    new Long(scheduleDate)
+            },
+            new String[] { Long.class.getName(), String.class.getName(), String.class.getName(), Long.class.getName() });
+
+            return true;
         } catch (Exception e) {
             log.warn("Failed to add new work list item!", e);
             return false;
         }
     }
-    
+
 }

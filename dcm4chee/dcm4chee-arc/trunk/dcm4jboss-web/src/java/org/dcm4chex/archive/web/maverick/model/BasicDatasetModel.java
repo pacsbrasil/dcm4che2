@@ -67,7 +67,7 @@ public class BasicDatasetModel {
     private static DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     protected Dataset ds;
-    
+
     protected BasicDatasetModel() {
         this.ds = dof.newDataset();
     }
@@ -76,7 +76,7 @@ public class BasicDatasetModel {
         if (ds == null) throw new NullPointerException();
         this.ds = ds;
     }
-    
+
 
     public String getSpecificCharacterSet() {
         return ds.getString(Tags.SpecificCharacterSet);
@@ -92,8 +92,8 @@ public class BasicDatasetModel {
 
     protected String getDate(int dateTag) {
         try {
-	        final Date d = ds.getDate(dateTag);
-	        return d == null ? null : new SimpleDateFormat(DATE_FORMAT).format(d);
+            final Date d = ds.getDate(dateTag);
+            return d == null ? null : new SimpleDateFormat(DATE_FORMAT).format(d);
         } catch (IllegalArgumentException e) {
             return null;
         }
@@ -114,13 +114,13 @@ public class BasicDatasetModel {
 
     protected String getDateTime(int dateTag, int timeTag) {
         try {
-	        final Date d = ds.getDateTime(dateTag, timeTag);
-	        if (d == null) return null;
-	        String s = new SimpleDateFormat(DATETIME_FORMAT).format(d);
-	        return s;
-	    } catch (IllegalArgumentException e) {
-	        return null;
-	    }
+            final Date d = ds.getDateTime(dateTag, timeTag);
+            if (d == null) return null;
+            String s = new SimpleDateFormat(DATETIME_FORMAT).format(d);
+            return s;
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     protected void setDateTime(int dateTag, int timeTag, String s) {
@@ -147,17 +147,17 @@ public class BasicDatasetModel {
     protected String getDateRange(Dataset dsItem, int dateTag) {
         if ( dsItem == null ) dsItem = this.ds;
         try {
-	        Date[] range = dsItem.getDateRange(dateTag);
-	        if (range == null || range.length == 0)
-	            return null;
-	        SimpleDateFormat f = new SimpleDateFormat(DATE_FORMAT);
-	        StringBuffer sb = new StringBuffer();
-	        if (range[0] != null)
-	            sb.append(f.format(range[0]));
-	        sb.append('-');
-	        if (range[1] != null)
-	            sb.append(f.format(range[1]));
-	        return sb.toString();
+            Date[] range = dsItem.getDateRange(dateTag);
+            if (range == null || range.length == 0)
+                return null;
+            SimpleDateFormat f = new SimpleDateFormat(DATE_FORMAT);
+            StringBuffer sb = new StringBuffer();
+            if (range[0] != null)
+                sb.append(f.format(range[0]));
+            sb.append('-');
+            if (range[1] != null)
+                sb.append(f.format(range[1]));
+            return sb.toString();
         } catch (IllegalArgumentException e) {
             return null;
         }
@@ -172,9 +172,9 @@ public class BasicDatasetModel {
             DAFormat f = new DAFormat();
             String range = toDA(s2[0], false, f) + '-' + toDA(s2[s2.length-1], true, f);
             dsItem.putDA(dateTag, range);
-	    }
-	
-	}
+        }
+
+    }
 
     private String toDA(String s, boolean end, DAFormat f) {
         if (s.length() == 0)
@@ -183,21 +183,21 @@ public class BasicDatasetModel {
         cal.clear();
         String[] s3 = StringUtils.split(s, '/');
         if ( ( s3.length > 0 ) && ( s3[0].length() > 4) ) {
-        	throw new NumberFormatException(s);
+            throw new NumberFormatException(s);
         }
         cal.set(Calendar.YEAR, Integer.parseInt(s3[0]));
         if (s3.length > 1 && s3[1].length() > 0) {
-        	if ( s3[1].length() > 2 )
-        	{
-        		throw new NumberFormatException(s);
-        	}
+            if ( s3[1].length() > 2 )
+            {
+                throw new NumberFormatException(s);
+            }
             cal.set(Calendar.MONTH, Integer.parseInt(s3[1])-1);
             if (s3.length > 2 && s3[2].length() > 0) {
-            	if ( s3[2].length() > 2 )
-            	{
-            		throw new NumberFormatException(s);
-            	}
-               cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(s3[2]));
+                if ( s3[2].length() > 2 )
+                {
+                    throw new NumberFormatException(s);
+                }
+                cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(s3[2]));
             } else {
                 if (end) {
                     cal.add(Calendar.MONTH, 1);
@@ -212,7 +212,7 @@ public class BasicDatasetModel {
         }
         return f.format(cal.getTime());
     }
-    
+
     public static String getDateString(Date d) {
         return new SimpleDateFormat(DATE_FORMAT).format(d);
     }

@@ -55,53 +55,53 @@ import org.dcm4chex.archive.web.maverick.mpps.model.MPPSModel;
 public class MPPSConsoleCtrl extends Dcm4cheeFormController {
 
 
-	/** the view model. */
-	private MPPSModel model;
-	
-	private static MPPSDelegate delegate = null;
+    /** the view model. */
+    private MPPSModel model;
 
-	/**
-	 * Get the model for the view.
-	 */
+    private static MPPSDelegate delegate = null;
+
+    /**
+     * Get the model for the view.
+     */
     protected Object makeFormBean() {
         if ( delegate == null ) {
-        	delegate = new MPPSDelegate();
-        	delegate.init( getCtx().getServletConfig() );
+            delegate = new MPPSDelegate();
+            delegate.init( getCtx().getServletConfig() );
         }
         model =  MPPSModel.getModel(getCtx());
         model.getFilter().setStationAetGroups(getStationAEFilterGroups(), getStationAEFilter()!=null);
         return model;
     }
-	
 
-	
+
+
     protected String perform() throws Exception {
         try {
             HttpServletRequest request = getCtx().getRequest();
-    		model = MPPSModel.getModel(getCtx());
-    		model.clearPopupMsg();
-    		model.setMppsIUIDs( request.getParameterValues("mppsIUID"), false );
+            model = MPPSModel.getModel(getCtx());
+            model.clearPopupMsg();
+            model.setMppsIUIDs( request.getParameterValues("mppsIUID"), false );
             if ( request.getParameter("filter.x") != null ) {//action from filter button
-            	try {
-	        		checkFilter( request );
-	            	model.filterWorkList( true );
-            	} catch ( Exception x ) {
-            		model.setPopupMsg( "folder.err_datetime", "yyyy/MM/dd" );
-            	}
+                try {
+                    checkFilter( request );
+                    model.filterWorkList( true );
+                } catch ( Exception x ) {
+                    model.setPopupMsg( "folder.err_datetime", "yyyy/MM/dd" );
+                }
             } else if ( request.getParameter("prev.x") != null ) { 
-        		model.performPrevious();
+                model.performPrevious();
             } else if ( request.getParameter("next.x") != null ) { 
-        		model.performNext();
+                model.performNext();
             } else if ( request.getParameter("link.x") != null ) {//action from link button. (sticky support;redirect to mwl ctrl.)
-            	model.setMppsIUIDs( request.getParameterValues( "mppsIUID" ), true );
-            	return "link";
+                model.setMppsIUIDs( request.getParameterValues( "mppsIUID" ), true );
+                return "link";
             } else if ( request.getParameter("unlink.x") != null ) {//action from unlink button. (sticky support;redirect to mwl ctrl.)
-            	return unlink(request.getParameterValues( "mppsIUID" ));
+                return unlink(request.getParameterValues( "mppsIUID" ));
             } else {
-            	String action = request.getParameter("action");
-            	if ( action != null ) {
-            		return performAction( action, request );
-            	}
+                String action = request.getParameter("action");
+                if ( action != null ) {
+                    return performAction( action, request );
+                }
             }
             return SUCCESS;
         } catch (Exception e) {
@@ -111,35 +111,35 @@ public class MPPSConsoleCtrl extends Dcm4cheeFormController {
     }
 
     /**
-	 * @param action
-	 * @param request
-	 */
-	private String performAction(String action, HttpServletRequest request) {
-		if ( "linkDone".equals(action) ) {
-        	model.filterWorkList( false );
-		} else if ( "unlink".equals(action) ) {
-			return unlink(request.getParameterValues( "mppsIUID" ));
-		} else if ( "inspect".equals(action) ) {
-		    return inspect (request.getParameter( "mppsIUID" ));
+     * @param action
+     * @param request
+     */
+    private String performAction(String action, HttpServletRequest request) {
+        if ( "linkDone".equals(action) ) {
+            model.filterWorkList( false );
+        } else if ( "unlink".equals(action) ) {
+            return unlink(request.getParameterValues( "mppsIUID" ));
+        } else if ( "inspect".equals(action) ) {
+            return inspect (request.getParameter( "mppsIUID" ));
         }
         return SUCCESS;
-	}
+    }
 
-	/**
-	 * @param parameterValues
-	 * @return
-	 */
-	private String unlink(String[] mppsIUIDs) {
-		if ( mppsIUIDs != null ) {
-			if ( delegate.unlinkMPPS(mppsIUIDs) ) {
-				model.setMppsIUIDs(null, false);
-				model.filterWorkList( false );
-			} else {
-				model.setPopupMsg("mpps.err_unlink", "");
-			}
-		}
-		return SUCCESS;
-	}
+    /**
+     * @param parameterValues
+     * @return
+     */
+    private String unlink(String[] mppsIUIDs) {
+        if ( mppsIUIDs != null ) {
+            if ( delegate.unlinkMPPS(mppsIUIDs) ) {
+                model.setMppsIUIDs(null, false);
+                model.filterWorkList( false );
+            } else {
+                model.setPopupMsg("mpps.err_unlink", "");
+            }
+        }
+        return SUCCESS;
+    }
 
 
     private String inspect(String mppsIUID) {
@@ -156,38 +156,38 @@ public class MPPSConsoleCtrl extends Dcm4cheeFormController {
     }
 
 
-	/**
-	 * Checks the http parameters for filter params and update the filter.
-	 * 
-	 * @param rq The http request.
-	 * 
-	 * @throws ParseException
-	 * 
-	 */
-	private void checkFilter(HttpServletRequest rq) throws ParseException {
-		MPPSFilter filter = model.getFilter();
-		if ( rq.getParameter("patientName") != null ) filter.setPatientName(rq.getParameter("patientName") );
-		if ( rq.getParameter("startDate") != null ) filter.setStartDate(rq.getParameter("startDate") );
-		if ( rq.getParameter("modality") != null ) filter.setModality(rq.getParameter("modality") );
-		filter.setStationAET(rq.getParameter("stationAET") );//we need always set StationAET to update also with StationAET groups
-		if ( rq.getParameter("accessionNumber") != null ) filter.setAccessionNumber(rq.getParameter("accessionNumber") );
-		if ( "POST".equals(rq.getMethod())) {
-		    filter.setEmptyAccNo(rq.getParameter("emptyAccNo") );
-		}
-		if ( rq.getParameter("status") != null ) filter.setStatus(rq.getParameter("status") );
-	}
+    /**
+     * Checks the http parameters for filter params and update the filter.
+     * 
+     * @param rq The http request.
+     * 
+     * @throws ParseException
+     * 
+     */
+    private void checkFilter(HttpServletRequest rq) throws ParseException {
+        MPPSFilter filter = model.getFilter();
+        if ( rq.getParameter("patientName") != null ) filter.setPatientName(rq.getParameter("patientName") );
+        if ( rq.getParameter("startDate") != null ) filter.setStartDate(rq.getParameter("startDate") );
+        if ( rq.getParameter("modality") != null ) filter.setModality(rq.getParameter("modality") );
+        filter.setStationAET(rq.getParameter("stationAET") );//we need always set StationAET to update also with StationAET groups
+        if ( rq.getParameter("accessionNumber") != null ) filter.setAccessionNumber(rq.getParameter("accessionNumber") );
+        if ( "POST".equals(rq.getMethod())) {
+            filter.setEmptyAccNo(rq.getParameter("emptyAccNo") );
+        }
+        if ( rq.getParameter("status") != null ) filter.setStatus(rq.getParameter("status") );
+    }
 
-	/**
-	 * Returns the delegater that is used to query the MWLSCP or delete an MWL Entry (only if MWLSCP AET is local)
-	 * 
-	 * @return The delegator.
-	 */
-	public static MPPSDelegate getMppsDelegate() {
-		return delegate;
-	}
-	
-	protected String getCtrlName() {
-		return "mpps_console";
-	}
-	
+    /**
+     * Returns the delegater that is used to query the MWLSCP or delete an MWL Entry (only if MWLSCP AET is local)
+     * 
+     * @return The delegator.
+     */
+    public static MPPSDelegate getMppsDelegate() {
+        return delegate;
+    }
+
+    protected String getCtrlName() {
+        return "mpps_console";
+    }
+
 }

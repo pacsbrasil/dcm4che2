@@ -59,17 +59,17 @@ public class GPWLFilter extends BasicFilterModel {
     Dataset stationGeoCodeDS;
     Dataset humanCodeDS;
     Dataset refReqSqItem;
-    
-	/** holds the SPS Start time range. */
-	private String spsStartDate = null;
-	/** holds the Expected Completion time range. */
-	private String completionStartDate = null;
 
-	
-	public GPWLFilter() {
+    /** holds the SPS Start time range. */
+    private String spsStartDate = null;
+    /** holds the Expected Completion time range. */
+    private String completionStartDate = null;
+
+
+    public GPWLFilter() {
         super();
-	}
-    
+    }
+
     public void init() {
         ds.putUI(Tags.SOPInstanceUID);
         //
@@ -108,7 +108,7 @@ public class GPWLFilter extends BasicFilterModel {
         humanCodeDS.putSH(Tags.CodeValue);
         humanCodeDS.putSH(Tags.CodingSchemeDesignator);
         humanCodeDS.putSH(Tags.CodeMeaning);
-        
+
         refReqSqItem = ds.putSQ(Tags.RefRequestSeq).addNewItem();
         refReqSqItem.putUI(Tags.StudyInstanceUID );
         refReqSqItem.putSH( Tags.AccessionNumber );
@@ -118,63 +118,63 @@ public class GPWLFilter extends BasicFilterModel {
         //Patient demographic
         ds.putDA( Tags.PatientBirthDate );
         ds.putCS( Tags.PatientSex );
-        
+
         ds.putDT(Tags.SPSStartDateAndTime);
         ds.putDT(Tags.ExpectedCompletionDateAndTime);
     }
-	/**
-	 * @return Returns the iuid.
-	 */
-	public String getIUID() {
-		return ds.getString(Tags.SOPInstanceUID);
-	}
-	/**
-	 * @param iuid The iuid to set.
-	 */
-	public void setIUID(String iuid) {
+    /**
+     * @return Returns the iuid.
+     */
+    public String getIUID() {
+        return ds.getString(Tags.SOPInstanceUID);
+    }
+    /**
+     * @param iuid The iuid to set.
+     */
+    public void setIUID(String iuid) {
         ds.putUI(Tags.SOPInstanceUID, iuid);
-	}
-	/**
-	 * @return Returns the humanPerformerCode.
-	 */
-	public String getHumanPerformerCode() {
-		return humanCodeDS.getString(Tags.CodeValue);
-	}
-	/**
-	 * @param humanPerformerCode The humanPerformerCode to set.
-	 */
-	public void setHumanPerformerCode(String humanPerformerCode) {
+    }
+    /**
+     * @return Returns the humanPerformerCode.
+     */
+    public String getHumanPerformerCode() {
+        return humanCodeDS.getString(Tags.CodeValue);
+    }
+    /**
+     * @param humanPerformerCode The humanPerformerCode to set.
+     */
+    public void setHumanPerformerCode(String humanPerformerCode) {
         humanCodeDS.putSH(Tags.CodeValue, humanPerformerCode);
-	}
-	/**
-	 * @return Returns the inputAvailability.
-	 */
-	public String getInputAvailability() {
-		return ds.getString(Tags.InputAvailabilityFlag);
-	}
-	/**
-	 * @param inputAvailability The inputAvailability to set.
-	 */
-	public void setInputAvailability(String inputAvailability) {
+    }
+    /**
+     * @return Returns the inputAvailability.
+     */
+    public String getInputAvailability() {
+        return ds.getString(Tags.InputAvailabilityFlag);
+    }
+    /**
+     * @param inputAvailability The inputAvailability to set.
+     */
+    public void setInputAvailability(String inputAvailability) {
         ds.putCS(Tags.InputAvailabilityFlag, inputAvailability);
-	}
-	/**
-	 * @return Returns the priority.
-	 */
-	public String getPriority() {
-		return ds.getString(Tags.GPSPSPriority);
-	}
-	/**
-	 * @param priority The priority to set.
-	 */
-	public void setPriority(String priority) {
+    }
+    /**
+     * @return Returns the priority.
+     */
+    public String getPriority() {
+        return ds.getString(Tags.GPSPSPriority);
+    }
+    /**
+     * @param priority The priority to set.
+     */
+    public void setPriority(String priority) {
         ds.putCS(Tags.GPSPSPriority, priority);
-	}
+    }
     /**
      * @return Returns the spsID.
      */
     public String getSpsID() {
-    	return ds.getString(Tags.SPSID);
+        return ds.getString(Tags.SPSID);
     }
     /**
      * @param spsID The spsID to set.
@@ -182,135 +182,135 @@ public class GPWLFilter extends BasicFilterModel {
     public void setSpsID(String spsID) {
         ds.putCS(Tags.SPSID, spsID);
     }
-	/**
-	 * @return Returns the stationClassCode.
-	 */
-	public String getStationClassCode() {
-		return stationClassCodeDS.getString(Tags.CodeValue);
-	}
-	/**
-	 * @param stationClassCode The stationClassCode to set.
-	 */
-	public void setStationClassCode(String stationClassCode) {
+    /**
+     * @return Returns the stationClassCode.
+     */
+    public String getStationClassCode() {
+        return stationClassCodeDS.getString(Tags.CodeValue);
+    }
+    /**
+     * @param stationClassCode The stationClassCode to set.
+     */
+    public void setStationClassCode(String stationClassCode) {
         stationClassCodeDS.putSH(Tags.CodeValue, stationClassCode);
-	}
-	/**
-	 * @return Returns the stationGeoCode.
-	 */
-	public String getStationGeoCode() {
-		return stationGeoCodeDS.getString(Tags.CodeValue);
-	}
-	/**
-	 * @param stationGeoCode The stationGeoCode to set.
-	 */
-	public void setStationGeoCode(String stationGeoCode) {
+    }
+    /**
+     * @return Returns the stationGeoCode.
+     */
+    public String getStationGeoCode() {
+        return stationGeoCodeDS.getString(Tags.CodeValue);
+    }
+    /**
+     * @param stationGeoCode The stationGeoCode to set.
+     */
+    public void setStationGeoCode(String stationGeoCode) {
         stationGeoCodeDS.putSH(Tags.CodeValue, stationGeoCode);
-	}
-	/**
-	 * @return Returns the stationNameCode.
-	 */
-	public String getStationNameCode() {
-		return stationNameCodeDS.getString(Tags.CodeValue);
-	}
-	/**
-	 * @param stationNameCode The stationNameCode to set.
-	 */
-	public void setStationNameCode(String stationNameCode) {
+    }
+    /**
+     * @return Returns the stationNameCode.
+     */
+    public String getStationNameCode() {
+        return stationNameCodeDS.getString(Tags.CodeValue);
+    }
+    /**
+     * @param stationNameCode The stationNameCode to set.
+     */
+    public void setStationNameCode(String stationNameCode) {
         stationNameCodeDS.putSH(Tags.CodeValue, stationNameCode);
-	}
-	/**
-	 * @return Returns the status.
-	 */
-	public String getStatus() {
-		return ds.getString(Tags.GPSPSStatus);
-	}
-	/**
-	 * @param status The status to set.
-	 */
-	public void setStatus(String status) {
+    }
+    /**
+     * @return Returns the status.
+     */
+    public String getStatus() {
+        return ds.getString(Tags.GPSPSStatus);
+    }
+    /**
+     * @param status The status to set.
+     */
+    public void setStatus(String status) {
         ds.putCS(Tags.GPSPSStatus, status);
-	}
-	/**
-	 * @return Returns the workitemCode.
-	 */
-	public String getWorkitemCode() {
-		return workitemDS.getString(Tags.CodeValue);
-	}
-	/**
-	 * @param workitemCode The workitemCode to set.
-	 */
-	public void setWorkitemCode(String workitemCode) {
+    }
+    /**
+     * @return Returns the workitemCode.
+     */
+    public String getWorkitemCode() {
+        return workitemDS.getString(Tags.CodeValue);
+    }
+    /**
+     * @param workitemCode The workitemCode to set.
+     */
+    public void setWorkitemCode(String workitemCode) {
         workitemDS.putSH(Tags.CodeValue, workitemCode);
-	}
-	
-	/**
-	 * Set the Scheduled Procedure Step query start date.
-	 * <p>
-	 * 
-	 * 
-	 * @param startDate The start Date to set.
-	 * @throws ParseException
-	 */
-	public void setSPSStartDate(String startDate) throws ParseException {
-		spsStartDate = startDate;
+    }
+
+    /**
+     * Set the Scheduled Procedure Step query start date.
+     * <p>
+     * 
+     * 
+     * @param startDate The start Date to set.
+     * @throws ParseException
+     */
+    public void setSPSStartDate(String startDate) throws ParseException {
+        spsStartDate = startDate;
         setDateRange(ds, Tags.SPSStartDateAndTime, startDate );
-	}
-	
-	public String getSPSStartDate() {
-		return spsStartDate;
-	}
-	
+    }
 
-	/**
-	 * Set the Scheduled Procedure Step query start date.
-	 * <p>
-	 * 
-	 * 
-	 * @param startDate The start Date to set.
-	 * @throws ParseException
-	 */
-	public void setCompletionStartDate(String startDate) throws ParseException {
-		completionStartDate = startDate;
+    public String getSPSStartDate() {
+        return spsStartDate;
+    }
+
+
+    /**
+     * Set the Scheduled Procedure Step query start date.
+     * <p>
+     * 
+     * 
+     * @param startDate The start Date to set.
+     * @throws ParseException
+     */
+    public void setCompletionStartDate(String startDate) throws ParseException {
+        completionStartDate = startDate;
         setDateRange(ds, Tags.ExpectedCompletionDateAndTime, startDate );
-	}
-	
-	public String getCompletionStartDate() {
-		return completionStartDate;
-	}
-	
-	/**
-	 * @return
-	 * @throws ParseException
-	 */
+    }
 
-	/**
-	 * @return Returns the studyIUID.
-	 */
-	public String getStudyIUID() {
-		return refReqSqItem.getString(Tags.StudyInstanceUID);
-	}
-	/**
-	 * @param studyIUID The studyIUID to set.
-	 */
-	public void setStudyIUID(String studyIUID) {
+    public String getCompletionStartDate() {
+        return completionStartDate;
+    }
+
+    /**
+     * @return
+     * @throws ParseException
+     */
+
+    /**
+     * @return Returns the studyIUID.
+     */
+    public String getStudyIUID() {
+        return refReqSqItem.getString(Tags.StudyInstanceUID);
+    }
+    /**
+     * @param studyIUID The studyIUID to set.
+     */
+    public void setStudyIUID(String studyIUID) {
         refReqSqItem.putUI(Tags.StudyInstanceUID, studyIUID);
-	}
-	/**
-	 * @return Returns the accessionNumber.
-	 */
-	public String getAccessionNumber() {
-		return refReqSqItem.getString( Tags.AccessionNumber );
-	}
-	/**
-	 * @param accessionNumber The accessionNumber to set.
-	 */
-	public void setAccessionNumber(String accessionNumber) {
+    }
+    /**
+     * @return Returns the accessionNumber.
+     */
+    public String getAccessionNumber() {
+        return refReqSqItem.getString( Tags.AccessionNumber );
+    }
+    /**
+     * @param accessionNumber The accessionNumber to set.
+     */
+    public void setAccessionNumber(String accessionNumber) {
         refReqSqItem.putSH( Tags.AccessionNumber, accessionNumber );
     }
-	/**
-	 * 
-	 */
-	public void clear() {
+    /**
+     * 
+     */
+    public void clear() {
         setStatus(null);
         setInputAvailability(null);
         setPriority(null);
@@ -329,6 +329,6 @@ public class GPWLFilter extends BasicFilterModel {
         this.setStudyIUID(null);
         this.setAccessionNumber(null);
         this.setSpsID(null);
-	}
-	
+    }
+
 }

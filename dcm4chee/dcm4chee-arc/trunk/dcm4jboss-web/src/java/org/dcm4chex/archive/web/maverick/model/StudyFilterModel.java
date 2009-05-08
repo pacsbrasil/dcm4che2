@@ -53,7 +53,7 @@ import org.dcm4chex.archive.common.PrivateTags;
  */
 public class StudyFilterModel extends AbstractModel {
 
-	private String name; //hold orig input! in dataset append an asterix!
+    private String name; //hold orig input! in dataset append an asterix!
     public StudyFilterModel() {
     }
 
@@ -93,11 +93,11 @@ public class StudyFilterModel extends AbstractModel {
      * @param patientName
      */
     public final void setPatientName(String patientName) {
-    	name = patientName;
-    	if ( patientName != null && 
-    		 patientName.length() > 0 && 
-			 patientName.indexOf('*') == -1 &&
-			 patientName.indexOf('?') == -1) patientName+="*";
+        name = patientName;
+        if ( patientName != null && 
+                patientName.length() > 0 && 
+                patientName.indexOf('*') == -1 &&
+                patientName.indexOf('?') == -1) patientName+="*";
         ds.putPN(Tags.PatientName, patientName);
     }
 
@@ -132,7 +132,7 @@ public class StudyFilterModel extends AbstractModel {
     public final void setStudyID(String s) {
         ds.putSH(Tags.StudyID, s);
     }
-    
+
     public final void setStudyUID(String s, boolean alternativeQuery) {
         ds.putUI(Tags.StudyInstanceUID, s);
         if ( s != null && alternativeQuery ) {
@@ -153,21 +153,21 @@ public class StudyFilterModel extends AbstractModel {
     public final void setModality(String s) {
         ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(s, '\\'));
     }
-    
+
     public final void setCallingAET(String aet ) {
-    	ds.setPrivateCreatorID(PrivateTags.CreatorID);
-    	ds.putAE(PrivateTags.CallingAET, aet);
+        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        ds.putAE(PrivateTags.CallingAET, aet);
     }
     public final void setCallingAETs(String[] aets ) {
-    	ds.setPrivateCreatorID(PrivateTags.CreatorID);
-    	ds.putAE(PrivateTags.CallingAET, aets);
+        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        ds.putAE(PrivateTags.CallingAET, aets);
     }
-    
+
     /**
      * Returns -1 because pk isnt use here.
      */
     public long getPk() {
-    	return -1;
+        return -1;
     }
 
 }

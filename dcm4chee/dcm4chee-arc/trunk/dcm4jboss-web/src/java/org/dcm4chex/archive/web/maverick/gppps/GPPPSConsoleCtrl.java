@@ -55,59 +55,59 @@ import org.dcm4chex.archive.web.maverick.gppps.model.GPPPSModel;
 public class GPPPSConsoleCtrl extends Dcm4cheeFormController {
 
 
-	/** the view model. */
-	private GPPPSModel model;
-	
-	private static GPPPSDelegate delegate = null;
+    /** the view model. */
+    private GPPPSModel model;
 
-	/**
-	 * Get the model for the view.
-	 */
+    private static GPPPSDelegate delegate = null;
+
+    /**
+     * Get the model for the view.
+     */
     protected Object makeFormBean() {
         if ( delegate == null ) {
-        	delegate = new GPPPSDelegate();
-        	delegate.init( getCtx().getServletConfig() );
+            delegate = new GPPPSDelegate();
+            delegate.init( getCtx().getServletConfig() );
         }
         model =  GPPPSModel.getModel(getCtx().getRequest());
         return model;
     }
-	
 
-	
+
+
     protected String perform() throws Exception {
         try {
             HttpServletRequest request = getCtx().getRequest();
-    		model = GPPPSModel.getModel(request);
-    		model.clearPopupMsg();
-    		model.setGpppsIUIDs( request.getParameterValues("gpppsIUID"), false );
+            model = GPPPSModel.getModel(request);
+            model.clearPopupMsg();
+            model.setGpppsIUIDs( request.getParameterValues("gpppsIUID"), false );
             if ( request.getParameter("filter.x") != null ) {//action from filter button
-            	try {
-	        		checkFilter( request );
-	            	model.filterWorkList( true );
-            	} catch ( Exception x ) {
-            		model.setPopupMsg("folder.err_datetime", "yyyy/MM/dd" );
-            	}
+                try {
+                    checkFilter( request );
+                    model.filterWorkList( true );
+                } catch ( Exception x ) {
+                    model.setPopupMsg("folder.err_datetime", "yyyy/MM/dd" );
+                }
             } else if ( request.getParameter("prev.x") != null ) { 
-        		model.performPrevious();
+                model.performPrevious();
             } else if ( request.getParameter("next.x") != null ) { 
-        		model.performNext();
+                model.performNext();
             } else if ( request.getParameter("link.x") != null ) {//action from link button. (sticky support;redirect to gpwl ctrl.)
-            	model.setGpppsIUIDs( request.getParameterValues( "gpppsIUID" ), true );
-            	model.getFilter().setPatientName( request.getParameter("patientName"));
-            	return "link";
+                model.setGpppsIUIDs( request.getParameterValues( "gpppsIUID" ), true );
+                model.getFilter().setPatientName( request.getParameter("patientName"));
+                return "link";
             } else if ( request.getParameter("del.x") != null ) {//action from delete button.
-            	if ( model.getGpppsIUIDs() != null ) {
-	            	delegate.deleteGPPPSEntries(model.getGpppsIUIDs());
-	            	model.setGpppsIUIDs(null, false);
-	            	model.filterWorkList( true );
-            	} else {
-            		model.setPopupMsg("gppps.err_delete_selection","");
-            	}
+                if ( model.getGpppsIUIDs() != null ) {
+                    delegate.deleteGPPPSEntries(model.getGpppsIUIDs());
+                    model.setGpppsIUIDs(null, false);
+                    model.filterWorkList( true );
+                } else {
+                    model.setPopupMsg("gppps.err_delete_selection","");
+                }
             } else {
-            	String action = request.getParameter("action");
-            	if ( action != null ) {
-            		return performAction( action, request );
-            	}
+                String action = request.getParameter("action");
+                if ( action != null ) {
+                    return performAction( action, request );
+                }
             }
             return SUCCESS;
         } catch (Exception e) {
@@ -116,18 +116,18 @@ public class GPPPSConsoleCtrl extends Dcm4cheeFormController {
         }
     }
 
-	/**
-	 * @param action
-	 * @param request
-	 */
-	private String performAction(String action, HttpServletRequest request) {
-		if ( "linkDone".equals(action) ) {
-        	model.filterWorkList( true );
-		} else if ( "inspect".equals(action) ) {
+    /**
+     * @param action
+     * @param request
+     */
+    private String performAction(String action, HttpServletRequest request) {
+        if ( "linkDone".equals(action) ) {
+            model.filterWorkList( true );
+        } else if ( "inspect".equals(action) ) {
             return inspect(request.getParameter("gpppsIUID"));
         }
         return SUCCESS;
-	}
+    }
 
 
     private String inspect(String iuid) {
@@ -143,32 +143,32 @@ public class GPPPSConsoleCtrl extends Dcm4cheeFormController {
         return SUCCESS;   
     }
 
-	/**
-	 * Checks the http parameters for filter params and update the filter.
-	 * 
-	 * @param rq The http request.
-	 * 
-	 * @throws ParseException
-	 * 
-	 */
-	private void checkFilter(HttpServletRequest rq) throws ParseException {
-		PPSFilter filter = model.getFilter();
-		if ( rq.getParameter("patientName") != null ) filter.setPatientName(rq.getParameter("patientName") );
-		if ( rq.getParameter("startDate") != null ) filter.setStartDate(rq.getParameter("startDate") );
-		if ( rq.getParameter("status") != null ) filter.setStatus(rq.getParameter("status") );
-	}
+    /**
+     * Checks the http parameters for filter params and update the filter.
+     * 
+     * @param rq The http request.
+     * 
+     * @throws ParseException
+     * 
+     */
+    private void checkFilter(HttpServletRequest rq) throws ParseException {
+        PPSFilter filter = model.getFilter();
+        if ( rq.getParameter("patientName") != null ) filter.setPatientName(rq.getParameter("patientName") );
+        if ( rq.getParameter("startDate") != null ) filter.setStartDate(rq.getParameter("startDate") );
+        if ( rq.getParameter("status") != null ) filter.setStatus(rq.getParameter("status") );
+    }
 
-	/**
-	 * Returns the delegater that is used to query the MWLSCP or delete an MWL Entry (only if MWLSCP AET is local)
-	 * 
-	 * @return The delegator.
-	 */
-	public static GPPPSDelegate getGPPPSDelegate() {
-		return delegate;
-	}
-	
-	protected String getCtrlName() {
-		return "gppps_console";
-	}
-	
+    /**
+     * Returns the delegater that is used to query the MWLSCP or delete an MWL Entry (only if MWLSCP AET is local)
+     * 
+     * @return The delegator.
+     */
+    public static GPPPSDelegate getGPPPSDelegate() {
+        return delegate;
+    }
+
+    protected String getCtrlName() {
+        return "gppps_console";
+    }
+
 }

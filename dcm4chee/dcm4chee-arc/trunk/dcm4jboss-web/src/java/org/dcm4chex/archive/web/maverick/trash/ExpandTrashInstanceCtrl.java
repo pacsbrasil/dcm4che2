@@ -53,26 +53,26 @@ import org.dcm4chex.archive.web.maverick.model.InstanceModel;
 public class ExpandTrashInstanceCtrl extends ExpandTrashSeriesCtrl {
 
     private long instancePk;
-    
+
     public final void setInstancePk(long pk) {
         this.instancePk = pk;
     }
-    
+
     protected String perform() throws Exception {
         TrashFolderForm folderForm = TrashFolderForm.getTrashFolderForm(getCtx());
         InstanceModel m = folderForm.getInstanceByPk(patPk,studyPk,seriesPk,instancePk);
-    	if ( expand ) {
-	        try {
-		            ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-		            	.getFactory().lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
-		            ContentManager cm = home.create();
-		            if ( m != null ) m.setFiles(cm.listFilesOfPrivateInstance( instancePk ));
-	        } catch (Exception e) {
-	        	
-	        }
-    	} else {
-    		if ( m != null ) m.setFiles(null);
-    	}
+        if ( expand ) {
+            try {
+                ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
+                .getFactory().lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
+                ContentManager cm = home.create();
+                if ( m != null ) m.setFiles(cm.listFilesOfPrivateInstance( instancePk ));
+            } catch (Exception e) {
+
+            }
+        } else {
+            if ( m != null ) m.setFiles(null);
+        }
         return SUCCESS;
     }
 

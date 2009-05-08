@@ -66,30 +66,30 @@ public class ExpandStudyCtrl extends ExpandPatientCtrl {
     protected String perform() throws Exception {
         FolderForm folderForm = FolderForm.getFolderForm(getCtx());
         if ( expand ) {
-	        ContentManagerHome home =
-	            (ContentManagerHome) EJBHomeFactory.getFactory().lookup(
-	                ContentManagerHome.class,
-	                ContentManagerHome.JNDI_NAME);
-	        ContentManager cm = home.create();
-	        try {
-	            List series = cm.listSeriesOfStudy(studyPk);
-	            for (int i = 0, n = series.size(); i < n; i++)
-	                series.set(i, new SeriesModel((Dataset) series.get(i)));
-	            folderForm.getStudyByPk(patPk, studyPk).setSeries(series);
-	        } catch (Exception x) {
-	        	folderForm.gotoCurrentPage();
-	        } finally {
-	            try {
-	                cm.remove();
-	            } catch (Exception e) {
-	            }
-	        }
+            ContentManagerHome home =
+                (ContentManagerHome) EJBHomeFactory.getFactory().lookup(
+                        ContentManagerHome.class,
+                        ContentManagerHome.JNDI_NAME);
+            ContentManager cm = home.create();
+            try {
+                List series = cm.listSeriesOfStudy(studyPk);
+                for (int i = 0, n = series.size(); i < n; i++)
+                    series.set(i, new SeriesModel((Dataset) series.get(i)));
+                folderForm.getStudyByPk(patPk, studyPk).setSeries(series);
+            } catch (Exception x) {
+                folderForm.gotoCurrentPage();
+            } finally {
+                try {
+                    cm.remove();
+                } catch (Exception e) {
+                }
+            }
         } else {
-        	try {
-        		folderForm.getStudyByPk(patPk, studyPk).getSeries().clear();
-	        } catch (Exception x) {
-	        	folderForm.gotoCurrentPage();
-	        }
+            try {
+                folderForm.getStudyByPk(patPk, studyPk).getSeries().clear();
+            } catch (Exception x) {
+                folderForm.gotoCurrentPage();
+            }
         }
         return SUCCESS;
     }

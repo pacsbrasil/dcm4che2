@@ -49,29 +49,29 @@ import org.dcm4chex.archive.web.maverick.admin.DCMUser;
  */
 public class AEListCtrl extends AEFormCtrl
 {
-	public List getAEs() {
-		return this.lookupAEDelegate().getAEs();
-	}
-	
-    protected Object makeFormBean() {
-    	return this;
+    public List getAEs() {
+        return this.lookupAEDelegate().getAEs();
     }
 
-	protected String perform() throws Exception 
-	{
-		AEModel.getModel(getCtx().getRequest()).clearPopupMsg();
-		return SUCCESS;
-	}    
-	
-	public String getModelName() { return "AEMgr"; }
-	
-	/**
-	 * @return Returns the admin.
-	 */
-	public boolean isAdmin() {
-		return this.getCtx().getRequest().isUserInRole(DCMUser.WEBADMIN);
-	}
-	
+    protected Object makeFormBean() {
+        return this;
+    }
+
+    protected String perform() throws Exception 
+    {
+        AEModel.getModel(getCtx().getRequest()).clearPopupMsg();
+        return SUCCESS;
+    }    
+
+    public String getModelName() { return "AEMgr"; }
+
+    /**
+     * @return Returns the admin.
+     */
+    public boolean isAdmin() {
+        return this.getCtx().getRequest().isUserInRole(DCMUser.WEBADMIN);
+    }
+
     public void setLanguage(String arg) {
         AEModel.getModel(getCtx().getRequest()).setLanguage(arg);
     }

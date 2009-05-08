@@ -61,37 +61,37 @@ public class ExpandPatientCtrl extends Dcm4cheeFormController {
     public final void setPatPk(long patPk) {
         this.patPk = patPk;
     }
-    
+
     public final void setExpand( boolean expand ) {
-    	this.expand = expand;
+        this.expand = expand;
     }
 
     protected String perform() throws Exception {
         FolderForm folderForm = FolderForm.getFolderForm(getCtx());
         if ( expand ) {
-	        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-	                .getFactory().lookup(ContentManagerHome.class,
-	                        ContentManagerHome.JNDI_NAME);
-	        ContentManager cm = home.create();
-	        try {
-	            List studies = cm.listStudiesOfPatient(patPk);
-	            for (int i = 0, n = studies.size(); i < n; i++)
-	                studies.set(i, new StudyModel((Dataset) studies.get(i)));
-	            folderForm.getPatientByPk(patPk).setStudies(studies);
-	        } catch (Exception x) {
-	        	folderForm.gotoCurrentPage();
-	        } finally {
-	            try {
-	                cm.remove();
-	            } catch (Exception e) {
-	            }
-	        }
+            ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
+            .getFactory().lookup(ContentManagerHome.class,
+                    ContentManagerHome.JNDI_NAME);
+            ContentManager cm = home.create();
+            try {
+                List studies = cm.listStudiesOfPatient(patPk);
+                for (int i = 0, n = studies.size(); i < n; i++)
+                    studies.set(i, new StudyModel((Dataset) studies.get(i)));
+                folderForm.getPatientByPk(patPk).setStudies(studies);
+            } catch (Exception x) {
+                folderForm.gotoCurrentPage();
+            } finally {
+                try {
+                    cm.remove();
+                } catch (Exception e) {
+                }
+            }
         } else {
-        	try {
-        		folderForm.getPatientByPk(patPk).getStudies().clear();
-	        } catch (Exception x) {
-	        	folderForm.gotoCurrentPage();
-	        }        		
+            try {
+                folderForm.getPatientByPk(patPk).getStudies().clear();
+            } catch (Exception x) {
+                folderForm.gotoCurrentPage();
+            }        		
         }
         return SUCCESS;
     }

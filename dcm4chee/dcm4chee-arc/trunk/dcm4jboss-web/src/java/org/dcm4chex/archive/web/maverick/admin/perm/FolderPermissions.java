@@ -51,70 +51,70 @@ import java.util.Set;
  * @since 13.04.2006
  */
 public class FolderPermissions {
-    
+
     public static final String AEFILTER = "aefilter";
     public static final String STATION_AET_GROUP_LIST = "stationAetGroupList";
     public static final String STATION_AET_GROUP = "stationAetGroup";
     public static final String STATION_AET_FILTER = "stationAetFilter";
 
     private Map allPermissions = new HashMap();
-	
-	/**
-	 * Returns the list of permissions for given application
-	 * <p>
-	 *  This list
-	 * @param app
-	 * @return
-	 */
-	public Set getPermissionsForApp(String app) {
-		return (Set) allPermissions.get(app);
-	}
-	
-	/**
-	 * Returns the list of allowed methods for given application.
-	 * 
-	 * @param app
-	 * @return
-	 */
-	public Set getMethodsForApp( String app){
-		Set set = getPermissionsForApp(app);
-		if ( set == null ) return null;
-		Set methods = new HashSet();
-		app = app+".";
-		int cutLen = app.length();
-		int i = 0 ;
-		String perm;
-		for ( Iterator iter = set.iterator() ; iter.hasNext() ; i++ ) {
-			perm = (String) iter.next();
-			if ( perm.startsWith(app)) {
-				methods.add(perm.substring(cutLen)); //cut off app name (xxx.)
-			}
-		}
-		return methods;
-		
-	}
-	/**
-	 * @param string
-	 * @param string2
-	 */
-	public void addPermissions(String app, String[] methods) {
-		Set allowed = (Set) allPermissions.get(app);
-		if ( allowed == null ) {
-			allowed = new HashSet();
-			allPermissions.put(app,allowed);
-		}
-		if ( methods != null ) {
-			for ( int j=0 ; j < methods.length ; j++ ) {
-				allowed.add(app+"."+methods[j]);
-			}
-		}
-	}
-	
-	public int getNumberOfPrivilegedApps() {
-		return allPermissions.size();
-	}
-	
-	public String toString() {
-		return "FolderPermissions:"+allPermissions;
-	}
+
+    /**
+     * Returns the list of permissions for given application
+     * <p>
+     *  This list
+     * @param app
+     * @return
+     */
+    public Set getPermissionsForApp(String app) {
+        return (Set) allPermissions.get(app);
+    }
+
+    /**
+     * Returns the list of allowed methods for given application.
+     * 
+     * @param app
+     * @return
+     */
+    public Set getMethodsForApp( String app){
+        Set set = getPermissionsForApp(app);
+        if ( set == null ) return null;
+        Set methods = new HashSet();
+        app = app+".";
+        int cutLen = app.length();
+        int i = 0 ;
+        String perm;
+        for ( Iterator iter = set.iterator() ; iter.hasNext() ; i++ ) {
+            perm = (String) iter.next();
+            if ( perm.startsWith(app)) {
+                methods.add(perm.substring(cutLen)); //cut off app name (xxx.)
+            }
+        }
+        return methods;
+
+    }
+    /**
+     * @param string
+     * @param string2
+     */
+    public void addPermissions(String app, String[] methods) {
+        Set allowed = (Set) allPermissions.get(app);
+        if ( allowed == null ) {
+            allowed = new HashSet();
+            allPermissions.put(app,allowed);
+        }
+        if ( methods != null ) {
+            for ( int j=0 ; j < methods.length ; j++ ) {
+                allowed.add(app+"."+methods[j]);
+            }
+        }
+    }
+
+    public int getNumberOfPrivilegedApps() {
+        return allPermissions.size();
+    }
+
+    public String toString() {
+        return "FolderPermissions:"+allPermissions;
+    }
 }

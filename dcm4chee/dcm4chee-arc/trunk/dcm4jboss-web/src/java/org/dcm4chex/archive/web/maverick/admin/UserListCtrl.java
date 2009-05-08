@@ -45,10 +45,10 @@ package org.dcm4chex.archive.web.maverick.admin;
  * @author franz.willer@gwi-ag.com
  */
 public class UserListCtrl extends UserAdminCtrl {
-	
-	protected String perform() throws Exception {
-		getModel().queryUsers();
-		return SUCCESS;
-	}		
-	
+
+    protected String perform() throws Exception {
+        getModel().queryUsers();
+        return SUCCESS;
+    }		
+
 }

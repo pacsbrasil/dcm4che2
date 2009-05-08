@@ -52,95 +52,95 @@ import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 public class UserEditSubmitCtrl extends Dcm4cheeFormController
 {
 
-	private String userHash = null;
-	private String passwd = null;
-	private String passwd1 = null;
-	private DCMUser user = new DCMUser("",null);
-	private String cancelPar = null;
-	private String cmd;
-	
-	private static Logger log = Logger.getLogger(UserEditSubmitCtrl.class.getName());
-	
-	/**
-	 * @param oldUserID The oldUserID to set.
-	 */
-	public void setUserHash(String hash) {
-		this.userHash = hash;
-	}
-	/**
-	 * @param cancelPar The cancelPar to set.
-	 */
-	public void setCancel(String cancelPar) {
-		this.cancelPar = cancelPar;
-	}
-	/**
-	 * @param newPar The newPar to set.
-	 */
-	public void setCmd(String cmd) {
-		this.cmd = cmd;
-	}
-	/**
-	 * @param passwd The passwd to set.
-	 */
-	public void setPasswd(String passwd) {
-		this.passwd = passwd;
-	}
-	/**
-	 * @param passwd The passwd to set.
-	 */
-	public void setPasswd1(String passwd1) {
-		this.passwd1 = passwd1;
-	}
-	/**
-	 * @param userID The userID to set.
-	 */
-	public void setUserID(String userID) {
-		log.info("setUserID:"+userID);
-		user.setUserID( userID );
-	}
-	
-	protected String perform() throws Exception
-	{
-		HttpServletRequest req = getCtx().getRequest();
-		UserAdminModel model = UserAdminModel.getModel(req);
-		model.clearPopupMsg();
-		if ( !model.isAdmin()) {
-			log.warn("Illegal access to UserEditSubmitCtrl! User "+req.getUserPrincipal()+" is not in role WebAdmin!");
-			return "error";
-		}
-		if ( cancelPar == null ) {
-			String userID = req.getParameter("userID");
-			String[] roles = req.getParameterValues("role");
-			log.info("cmd:"+cmd);
-			if ( "addRole".equals(cmd)) {
-				model.addRoles(userID, roles);
-			} else if ( "removeRole".equals(cmd)) {
-				model.removeRoles(userID, roles);
-			} else if ( "deleteUser".equals(cmd)) {
-				model.deleteUser(userID);
-			} else if ( "Create".equals(cmd)) {
-				return createUser(model, userID, roles);
-			}
-		}
-		return SUCCESS;
-	}
-	private String createUser(UserAdminModel model, String userID, String[] roles) {
-		if ( passwd.equals(passwd1)) {
-			if ( passwd.trim().length() > 2 ) {
-				if ( model.createUser(userID, passwd, roles ) == null ) {
-					return "passwd_mismatch";
-				} else {
-					return SUCCESS;
-				}
-			} else {
-				model.setPopupMsg("admin.err_chgpwd_short",userID);
-				return "passwd_mismatch";
-				
-			}
-		} else {
-			model.setPopupMsg("admin.err_chgpwd_newpwd",userID);
-			return "passwd_mismatch";
-		}
-	}
+    private String userHash = null;
+    private String passwd = null;
+    private String passwd1 = null;
+    private DCMUser user = new DCMUser("",null);
+    private String cancelPar = null;
+    private String cmd;
+
+    private static Logger log = Logger.getLogger(UserEditSubmitCtrl.class.getName());
+
+    /**
+     * @param oldUserID The oldUserID to set.
+     */
+    public void setUserHash(String hash) {
+        this.userHash = hash;
+    }
+    /**
+     * @param cancelPar The cancelPar to set.
+     */
+    public void setCancel(String cancelPar) {
+        this.cancelPar = cancelPar;
+    }
+    /**
+     * @param newPar The newPar to set.
+     */
+    public void setCmd(String cmd) {
+        this.cmd = cmd;
+    }
+    /**
+     * @param passwd The passwd to set.
+     */
+    public void setPasswd(String passwd) {
+        this.passwd = passwd;
+    }
+    /**
+     * @param passwd The passwd to set.
+     */
+    public void setPasswd1(String passwd1) {
+        this.passwd1 = passwd1;
+    }
+    /**
+     * @param userID The userID to set.
+     */
+    public void setUserID(String userID) {
+        log.info("setUserID:"+userID);
+        user.setUserID( userID );
+    }
+
+    protected String perform() throws Exception
+    {
+        HttpServletRequest req = getCtx().getRequest();
+        UserAdminModel model = UserAdminModel.getModel(req);
+        model.clearPopupMsg();
+        if ( !model.isAdmin()) {
+            log.warn("Illegal access to UserEditSubmitCtrl! User "+req.getUserPrincipal()+" is not in role WebAdmin!");
+            return "error";
+        }
+        if ( cancelPar == null ) {
+            String userID = req.getParameter("userID");
+            String[] roles = req.getParameterValues("role");
+            log.info("cmd:"+cmd);
+            if ( "addRole".equals(cmd)) {
+                model.addRoles(userID, roles);
+            } else if ( "removeRole".equals(cmd)) {
+                model.removeRoles(userID, roles);
+            } else if ( "deleteUser".equals(cmd)) {
+                model.deleteUser(userID);
+            } else if ( "Create".equals(cmd)) {
+                return createUser(model, userID, roles);
+            }
+        }
+        return SUCCESS;
+    }
+    private String createUser(UserAdminModel model, String userID, String[] roles) {
+        if ( passwd.equals(passwd1)) {
+            if ( passwd.trim().length() > 2 ) {
+                if ( model.createUser(userID, passwd, roles ) == null ) {
+                    return "passwd_mismatch";
+                } else {
+                    return SUCCESS;
+                }
+            } else {
+                model.setPopupMsg("admin.err_chgpwd_short",userID);
+                return "passwd_mismatch";
+
+            }
+        } else {
+            model.setPopupMsg("admin.err_chgpwd_newpwd",userID);
+            return "passwd_mismatch";
+        }
+    }
 
 }

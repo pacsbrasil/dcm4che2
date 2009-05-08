@@ -49,19 +49,19 @@ import org.dcm4che.dict.Tags;
  */
 public abstract class BasicFilterModel extends BasicDatasetModel {
     private String name;
-    
-	public BasicFilterModel() {
+
+    public BasicFilterModel() {
         super();
         init();
-	}
-    
+    }
+
     public abstract void init();
-    
-	/**
-	 * returns the patient name filter value.
-	 * 
-	 * @return Filter value of patient name field or null.
-	 */
+
+    /**
+     * returns the patient name filter value.
+     * 
+     * @return Filter value of patient name field or null.
+     */
     public final String getPatientName() {
         return name;
     }
@@ -79,10 +79,10 @@ public abstract class BasicFilterModel extends BasicDatasetModel {
     public final void setPatientName(String patientName) {
         name = patientName;
         if ( patientName != null && 
-             patientName.length() > 0 && 
-             patientName.indexOf('*') == -1 &&
-             patientName.indexOf('?') == -1) patientName+="*";
+                patientName.length() > 0 && 
+                patientName.indexOf('*') == -1 &&
+                patientName.indexOf('?') == -1) patientName+="*";
         ds.putPN(Tags.PatientName, patientName);
     }
-	
+
 }

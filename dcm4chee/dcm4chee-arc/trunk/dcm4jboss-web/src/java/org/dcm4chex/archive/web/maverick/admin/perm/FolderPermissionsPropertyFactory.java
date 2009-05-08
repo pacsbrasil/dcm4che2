@@ -71,63 +71,63 @@ import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 public class FolderPermissionsPropertyFactory extends FolderPermissionsFactory {
     private static final String RAW_PROPERTIES = "RAW_PROPERTIES";
     private static final String SUBJECT_CONTEXT_KEY = "javax.security.auth.Subject.container";
-	
+
     private Map mapPermissions = new HashMap();
-	
+
     private static Logger log = Logger.getLogger(FolderPermissionsPropertyFactory.class.getName());
-	
+
     public void init() {
-	try {
-	    if ( getInitParameter() == null) {
-		log.warn("No initString set. Use default");
-		setInitParameter( "conf/dcm4chee-web/folder.permissions" );
-	    }
-	    Properties props = new Properties();
-	    File f = FileUtils.resolve(new File(getInitParameter()));
-	    log.info("read permission properties from file: "+f);
-	    props.load(new FileInputStream(f));
-	    initMap(props);
-	} catch ( Exception x ) {
-	    log.error("Cant initialize FolderPermissionsPropertyFactory!",x);
-	}
+        try {
+            if ( getInitParameter() == null) {
+                log.warn("No initString set. Use default");
+                setInitParameter( "conf/dcm4chee-web/folder.permissions" );
+            }
+            Properties props = new Properties();
+            File f = FileUtils.resolve(new File(getInitParameter()));
+            log.info("read permission properties from file: "+f);
+            props.load(new FileInputStream(f));
+            initMap(props);
+        } catch ( Exception x ) {
+            log.error("Cant initialize FolderPermissionsPropertyFactory!",x);
+        }
     }
-	
+
     /**
      * @param props
      * @throws IOException
      */
     private void initMap(Properties props) throws IOException {
         mapPermissions.clear();
-	mapPermissions.put(RAW_PROPERTIES,props);
-	String[] apps = Dcm4cheeFormController.FOLDER_APPLICATIONS;
-	String perm, value, role, methods;
-	int pos;
-	Map map;
-	Set set;
-	for ( int i = 0, len = apps.length ; i < len ; i++ ) {
-	    perm = props.getProperty(apps[i]);
-	    if ( perm != null ) {
-		StringTokenizer st = new StringTokenizer(perm, ";");
-		while ( st.hasMoreTokens() ) {
-		    value = st.nextToken();
-		    pos = value.indexOf('(');
-		    role = value.substring(0,pos);
-		    map = (Map)mapPermissions.get(role);
-		    if ( map == null ) {
-		        map = new HashMap();
-		        mapPermissions.put(role,map);
-		    }
-		    set = (Set) map.get(apps[i]);
-		    if (set == null) {
-		        set = new HashSet();
-		        map.put(apps[i],set);
-		    }
+        mapPermissions.put(RAW_PROPERTIES,props);
+        String[] apps = Dcm4cheeFormController.FOLDER_APPLICATIONS;
+        String perm, value, role, methods;
+        int pos;
+        Map map;
+        Set set;
+        for ( int i = 0, len = apps.length ; i < len ; i++ ) {
+            perm = props.getProperty(apps[i]);
+            if ( perm != null ) {
+                StringTokenizer st = new StringTokenizer(perm, ";");
+                while ( st.hasMoreTokens() ) {
+                    value = st.nextToken();
+                    pos = value.indexOf('(');
+                    role = value.substring(0,pos);
+                    map = (Map)mapPermissions.get(role);
+                    if ( map == null ) {
+                        map = new HashMap();
+                        mapPermissions.put(role,map);
+                    }
+                    set = (Set) map.get(apps[i]);
+                    if (set == null) {
+                        set = new HashSet();
+                        map.put(apps[i],set);
+                    }
 
-		    methods = value.substring(++pos,value.length()-1);
-		    addMethods(set, apps[i], methods, props);
-		}
-	    }
-	}
+                    methods = value.substring(++pos,value.length()-1);
+                    addMethods(set, apps[i], methods, props);
+                }
+            }
+        }
     }
 
     private void addMethods(Set set, String app, String methods, Properties props ) {

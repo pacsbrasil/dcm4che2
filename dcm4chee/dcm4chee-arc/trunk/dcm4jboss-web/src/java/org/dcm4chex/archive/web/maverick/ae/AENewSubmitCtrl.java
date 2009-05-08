@@ -51,26 +51,26 @@ import org.dcm4chex.archive.ejb.interfaces.AEDTO;
  */
 public class AENewSubmitCtrl extends AEFormCtrl
 {
-	protected String perform() throws Exception
-	{
-		HttpServletRequest request = getCtx().getRequest();
-		AEModel model = AEModel.getModel(request);
+    protected String perform() throws Exception
+    {
+        HttpServletRequest request = getCtx().getRequest();
+        AEModel model = AEModel.getModel(request);
         model.clearPopupMsg();
-		AEDTO ae = model.getAE();
-		if (request.getParameter("new") != null )
-		{
-			try
-			{
-				
-				lookupAEDelegate().updateAE( ae, model.isCheckHost() );
-				return SUCCESS;
-			} catch (Throwable e)
-			{
-				model.setPopupMsg("ae.err_create", new String[]{ae.toString(),e.getMessage()});
-				return FAILED;				
-			}
-		}
-		else
-			return SUCCESS;			
-	}
+        AEDTO ae = model.getAE();
+        if (request.getParameter("new") != null )
+        {
+            try
+            {
+
+                lookupAEDelegate().updateAE( ae, model.isCheckHost() );
+                return SUCCESS;
+            } catch (Throwable e)
+            {
+                model.setPopupMsg("ae.err_create", new String[]{ae.toString(),e.getMessage()});
+                return FAILED;				
+            }
+        }
+        else
+            return SUCCESS;			
+    }
 }

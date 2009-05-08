@@ -62,36 +62,36 @@ import org.xml.sax.helpers.DefaultHandler;
 public class WebRolesConfig extends DefaultHandler {
     private static final String CONFIG_URL = "resource:dcm4chee-web/dcm4chee-webroles-cfg.xml";
 
-	public static final String DEFAULT_ROLE_TYPE = "WebUser";
+    public static final String DEFAULT_ROLE_TYPE = "WebUser";
 
     private final Map roles = new LinkedHashMap();
     private final Set types = new HashSet();
     private final Map actions = new LinkedHashMap();
-   
+
     public WebRolesConfig() {
-    	loadFrom(CONFIG_URL);
+        loadFrom(CONFIG_URL);
     }
 
     public Collection getTypes() {
-    	return types;
+        return types;
     }
 
     public Collection getRoles() {
-    	return roles.values();
+        return roles.values();
     }
     public Map getActions() {
         return actions;
     }
-    
+
     public WebRole getRole(String name ) {
-    	return (WebRole) roles.get(name);
+        return (WebRole) roles.get(name);
     }
     public void addRole(String name, String descr) {
-    	roles.put(name, new WebRole(name, descr));
+        roles.put(name, new WebRole(name, descr));
     }
     public String getDependencyForRole( String name ) {
-    	WebRole role = getRole(name);
-    	return role == null ? null : role.getDependency();
+        WebRole role = getRole(name);
+        return role == null ? null : role.getDependency();
     }
 
     public void loadFrom(String url) throws ConfigurationException {
@@ -111,59 +111,59 @@ public class WebRolesConfig extends DefaultHandler {
             actions.put( attrs.getValue("name"), attrs.getValue("descr") );
         }
     }
-    
+
     public void endElement(String uri, String localName, String qName) throws SAXException {
     }
 
     public void endDocument() throws SAXException {
-    	if (roles.isEmpty()) {
+        if (roles.isEmpty()) {
             throw new SAXException("missing role element ");    		
-    	}
+        }
         if (actions.isEmpty()) {
             throw new SAXException("missing action element");                   
         }
     }
-    
+
     public class WebRole {
-    	String name;
-    	String displayName;
-    	String type;
-    	String descr;
-    	String dependency;
-    	
-		public WebRole(Attributes attrs) {
-        	name = attrs.getValue("name");
-        	displayName = attrs.getValue("display");
-        	type = attrs.getValue("type");
-        	if ( type == null )
-        		type = DEFAULT_ROLE_TYPE;
-        	types.add(type);
-        	descr = attrs.getValue("descr");
-        	dependency = attrs.getValue("dependency");
-    	}
-		public WebRole(String name, String descr ) {
-			this.name = name;
-			this.descr = descr;
-		}
+        String name;
+        String displayName;
+        String type;
+        String descr;
+        String dependency;
 
-		public String getName() {
-			return name;
-		}
-		public String getDisplayName() {
-			return displayName == null ? name : displayName;
-		}
+        public WebRole(Attributes attrs) {
+            name = attrs.getValue("name");
+            displayName = attrs.getValue("display");
+            type = attrs.getValue("type");
+            if ( type == null )
+                type = DEFAULT_ROLE_TYPE;
+            types.add(type);
+            descr = attrs.getValue("descr");
+            dependency = attrs.getValue("dependency");
+        }
+        public WebRole(String name, String descr ) {
+            this.name = name;
+            this.descr = descr;
+        }
 
-		public String getType() {
-			return type;
-		}
+        public String getName() {
+            return name;
+        }
+        public String getDisplayName() {
+            return displayName == null ? name : displayName;
+        }
 
-		public String getDescr() {
-			return descr;
-		}
+        public String getType() {
+            return type;
+        }
 
-		public String getDependency() {
-			return dependency;
-		}
+        public String getDescr() {
+            return descr;
+        }
+
+        public String getDependency() {
+            return dependency;
+        }
     }
 
 }

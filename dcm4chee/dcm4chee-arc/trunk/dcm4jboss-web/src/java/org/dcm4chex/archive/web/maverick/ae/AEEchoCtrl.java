@@ -49,36 +49,36 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class AEEchoCtrl extends AEFormCtrl
 {
-	private AEEchoModel model;
-	private static AEDelegate delegate = null;
+    private AEEchoModel model;
+    private static AEDelegate delegate = null;
 
     protected Object makeFormBean() {
-    	HttpServletRequest request = getCtx().getRequest();
-    	model = new AEEchoModel(request.getUserPrincipal().getName(), request );
-    	return model;
+        HttpServletRequest request = getCtx().getRequest();
+        model = new AEEchoModel(request.getUserPrincipal().getName(), request );
+        return model;
     }
-	
+
     private AEDelegate getDelegate() {
         if ( delegate == null ) {
-        	delegate = new AEDelegate();
-        	delegate.init( getCtx().getServletConfig() );
+            delegate = new AEDelegate();
+            delegate.init( getCtx().getServletConfig() );
         }
         return delegate;
     }
-	
-	
 
-	protected String perform() throws Exception
-	{
-		String msg;
-		if ( model.getAet() == null ) {
-			msg = getDelegate().echo( model.getAE(), 1);
-		} else {
-			msg = getDelegate().echo( model.getAet(), 1);
-		}
-		model.setEchoSucceed( msg.indexOf( "successfully") != -1 );
-		model.setEchoResultMsg(msg);
-		return "echoresult";
-	}
+
+
+    protected String perform() throws Exception
+    {
+        String msg;
+        if ( model.getAet() == null ) {
+            msg = getDelegate().echo( model.getAE(), 1);
+        } else {
+            msg = getDelegate().echo( model.getAet(), 1);
+        }
+        model.setEchoSucceed( msg.indexOf( "successfully") != -1 );
+        model.setEchoResultMsg(msg);
+        return "echoresult";
+    }
 
 }

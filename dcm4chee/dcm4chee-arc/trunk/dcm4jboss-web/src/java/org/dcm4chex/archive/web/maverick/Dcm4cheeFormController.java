@@ -69,131 +69,131 @@ public class Dcm4cheeFormController extends Throwaway2
 {
     private static final String WEB_USER_STUDY_ROLES_ATTR_NAME = "webUserStudyRoles";
 
-	public static final String[] FOLDER_APPLICATIONS = new String[]{"folder","trash","ae_mgr",
-				"offline_storage","mwl_console","mpps_console",
-				"gpwl_console","gppps_console","user_admin","audit_repository"};	
-	
+    public static final String[] FOLDER_APPLICATIONS = new String[]{"folder","trash","ae_mgr",
+        "offline_storage","mwl_console","mpps_console",
+        "gpwl_console","gppps_console","user_admin","audit_repository"};	
+
     public static final String INSPECT = "inspect";
-    
-	private static Logger log = Logger.getLogger(Dcm4cheeFormController.class.getName());
-	/**
-	 * The form bean gets set here
-	 */
-	private Object formBean;
 
-	/**
-	 */
-	protected Object getForm()
-	{
-		return this.formBean;
-	}
-    
-	/**
-	 * Executes this controller.  Override one of the other perform()
-	 * methods to provide application logic.
-	 */
-	public final String go() throws Exception
-	{
-		this.formBean = this.makeFormBean();
-		Map modified_parameters = new HashMap();
-		Map parameters = this.getCtx().getRequest().getParameterMap();
-		modified_parameters.putAll(parameters);
-		for (Iterator i = parameters.keySet().iterator(); i.hasNext();)
-		{
-			String parameterName = (String)i.next();
-			if (parameterName.endsWith(".x"))
-			{
-				String newName =
-					parameterName.substring(0, parameterName.indexOf(".x"));
-				modified_parameters.put(newName, newName);
-			}
-		}
+    private static Logger log = Logger.getLogger(Dcm4cheeFormController.class.getName());
+    /**
+     * The form bean gets set here
+     */
+    private Object formBean;
 
-		BeanUtils.populate(this.formBean, modified_parameters);
-		BeanUtils.populate(this.formBean, this.getCtx().getControllerParams());
+    /**
+     */
+    protected Object getForm()
+    {
+        return this.formBean;
+    }
 
-		getCtx().setModel(this.formBean);
+    /**
+     * Executes this controller.  Override one of the other perform()
+     * methods to provide application logic.
+     */
+    public final String go() throws Exception
+    {
+        this.formBean = this.makeFormBean();
+        Map modified_parameters = new HashMap();
+        Map parameters = this.getCtx().getRequest().getParameterMap();
+        modified_parameters.putAll(parameters);
+        for (Iterator i = parameters.keySet().iterator(); i.hasNext();)
+        {
+            String parameterName = (String)i.next();
+            if (parameterName.endsWith(".x"))
+            {
+                String newName =
+                    parameterName.substring(0, parameterName.indexOf(".x"));
+                modified_parameters.put(newName, newName);
+            }
+        }
+
+        BeanUtils.populate(this.formBean, modified_parameters);
+        BeanUtils.populate(this.formBean, this.getCtx().getControllerParams());
+
+        getCtx().setModel(this.formBean);
         String version = Dcm4cheeFormController.class.getPackage().getImplementationVersion();
         getCtx().setTransformParam("dcm4chee_version", version != null ? version : "");
         getCtx().setTransformParam("request_uri", getCtx().getRequest().getRequestURI());
 
-		applyPermissions(getCtrlName());
-		return this.perform();
-	}
+        applyPermissions(getCtrlName());
+        return this.perform();
+    }
 
-	/**
-	 * This method can be overriden to perform application logic.
-	 *
-	 * Override this method if you want the model to be something
-	 * other than the formBean itself.
-	 *
-	 * @param formBean will be a bean created by makeFormBean(),
-	 * which has been populated with the http request parameters.
-	 */
-	protected String perform() throws Exception
-	{
-		return SUCCESS;
-	}
+    /**
+     * This method can be overriden to perform application logic.
+     *
+     * Override this method if you want the model to be something
+     * other than the formBean itself.
+     *
+     * @param formBean will be a bean created by makeFormBean(),
+     * which has been populated with the http request parameters.
+     */
+    protected String perform() throws Exception
+    {
+        return SUCCESS;
+    }
 
-	/**
-	 * This method will be called to produce a simple bean whose properties
-	 * will be populated with the http request parameters.  The parameters
-	 * are useful for doing things like persisting beans across requests.
-	 *
-	 * Default is to return this.
-	 */
-	protected Object makeFormBean()
-	{
-		return this;
-	}
-	
-	protected void applyPermissions(String app) {
-		FolderPermissions perms = getPermissions();
-		Set allowed = perms.getPermissionsForApp(app);
-		ControllerContext ctx = getCtx();
-		String param;
-		if ( allowed != null ) {
-			for ( Iterator iter = allowed.iterator() ; iter.hasNext() ; ) {
-				param = (String)iter.next();
-				log.debug("setTranformParam method:"+param);
-				ctx.setTransformParam( param,"true");
-			}
-		}
-		for ( int i = 0, len = FOLDER_APPLICATIONS.length ; i < len ; i++ ) {
-			param = FOLDER_APPLICATIONS[i];
-			log.debug("setTransformPath for application:"+param+"="+(perms.getPermissionsForApp(param)!=null));
-			ctx.setTransformParam( param, 
-					String.valueOf(perms.getPermissionsForApp(param)!=null));
-		}
-	}
-	
-	protected FolderPermissions getPermissions() {
-		HttpServletRequest req = getCtx().getRequest();
-		FolderPermissions perm = null;
-		FolderPermissionsFactory f = FolderPermissionsFactory.getInstance(getCtx().getServletConfig());
-		if ( req.getParameter("reset")!=null ) {
-			f.init();
-		} else {
-			perm = (FolderPermissions) req.getSession().getAttribute("folderPermissions");
-		}
-		if ( perm == null ) {
-			perm = f.getFolderPermissions(getCtx().getRequest().getUserPrincipal().getName());
-			req.getSession().setAttribute("folderPermissions",perm);
-		}
-		return perm;
-	}
-	
-	protected String getCtrlName() {
-		return "folder";
-	}
+    /**
+     * This method will be called to produce a simple bean whose properties
+     * will be populated with the http request parameters.  The parameters
+     * are useful for doing things like persisting beans across requests.
+     *
+     * Default is to return this.
+     */
+    protected Object makeFormBean()
+    {
+        return this;
+    }
 
-	/**
-	 * get list of AETs
-	 */
-	protected String[] getAEFilterPermissions() {
-		Set set = getPermissions().getMethodsForApp(FolderPermissions.AEFILTER);
-		return set == null ? null : (String[])set.toArray(new String[set.size()]);
-	}
+    protected void applyPermissions(String app) {
+        FolderPermissions perms = getPermissions();
+        Set allowed = perms.getPermissionsForApp(app);
+        ControllerContext ctx = getCtx();
+        String param;
+        if ( allowed != null ) {
+            for ( Iterator iter = allowed.iterator() ; iter.hasNext() ; ) {
+                param = (String)iter.next();
+                log.debug("setTranformParam method:"+param);
+                ctx.setTransformParam( param,"true");
+            }
+        }
+        for ( int i = 0, len = FOLDER_APPLICATIONS.length ; i < len ; i++ ) {
+            param = FOLDER_APPLICATIONS[i];
+            log.debug("setTransformPath for application:"+param+"="+(perms.getPermissionsForApp(param)!=null));
+            ctx.setTransformParam( param, 
+                    String.valueOf(perms.getPermissionsForApp(param)!=null));
+        }
+    }
+
+    protected FolderPermissions getPermissions() {
+        HttpServletRequest req = getCtx().getRequest();
+        FolderPermissions perm = null;
+        FolderPermissionsFactory f = FolderPermissionsFactory.getInstance(getCtx().getServletConfig());
+        if ( req.getParameter("reset")!=null ) {
+            f.init();
+        } else {
+            perm = (FolderPermissions) req.getSession().getAttribute("folderPermissions");
+        }
+        if ( perm == null ) {
+            perm = f.getFolderPermissions(getCtx().getRequest().getUserPrincipal().getName());
+            req.getSession().setAttribute("folderPermissions",perm);
+        }
+        return perm;
+    }
+
+    protected String getCtrlName() {
+        return "folder";
+    }
+
+    /**
+     * get list of AETs
+     */
+    protected String[] getAEFilterPermissions() {
+        Set set = getPermissions().getMethodsForApp(FolderPermissions.AEFILTER);
+        return set == null ? null : (String[])set.toArray(new String[set.size()]);
+    }
 
     /**
      * get list of statioAET Filter groupss
@@ -220,33 +220,33 @@ public class Dcm4cheeFormController extends Throwaway2
         }
         return map;
     }
-  
+
     protected Set getStationAEFilter() {
         return getPermissions().getMethodsForApp(FolderPermissions.STATION_AET_FILTER);
     }
-    
+
     protected Set getStationAETsOfGroup(String group) {
         return getPermissions().getMethodsForApp(FolderPermissions.STATION_AET_GROUP+"."+group);
     }
-    
+
 
     public boolean isStudyPermissionCheckDisabled() {
-	ControllerContext ctx = getCtx();
-	if ( "false".equals(ctx.getServletConfig().getInitParameter("enableStudyPermissionCheck") ) ) {
-		log.debug("StudyPermission check is disabled!");
-		return true;
-	}
-	String disableUser = ctx.getServletConfig().getInitParameter("disableStudyPermissionCheckForUser");
-	if (disableUser == null || disableUser.trim().length() < 1 || "NONE".equalsIgnoreCase( disableUser ))
-		return false;
-	String user = ctx.getRequest().getUserPrincipal().getName();
-	StringTokenizer st = new StringTokenizer(disableUser, ",");
-	while ( st.hasMoreElements() ) {
-		if ( user.equals(st.nextToken()) ) {
-			log.debug("StudyPermission check is disabled for user "+user+"!");
-			return true;
-		}
-	}
-	return false;
+        ControllerContext ctx = getCtx();
+        if ( "false".equals(ctx.getServletConfig().getInitParameter("enableStudyPermissionCheck") ) ) {
+            log.debug("StudyPermission check is disabled!");
+            return true;
+        }
+        String disableUser = ctx.getServletConfig().getInitParameter("disableStudyPermissionCheckForUser");
+        if (disableUser == null || disableUser.trim().length() < 1 || "NONE".equalsIgnoreCase( disableUser ))
+            return false;
+        String user = ctx.getRequest().getUserPrincipal().getName();
+        StringTokenizer st = new StringTokenizer(disableUser, ",");
+        while ( st.hasMoreElements() ) {
+            if ( user.equals(st.nextToken()) ) {
+                log.debug("StudyPermission check is disabled for user "+user+"!");
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -63,14 +63,14 @@ public class PatientUpdateCtrl extends Dcm4cheeFormController {
     private String cancel = null;
 
     protected String perform() throws Exception {
-    	getCtx().getRequest().getSession().setAttribute("errorMsg", null);
+        getCtx().getRequest().getSession().setAttribute("errorMsg", null);
         if (submit != null) {
             if (pk == -1)
                 return executeCreate();
             else
                 return executeUpdate();
         } else {
-        	FolderForm.getFolderForm( getCtx() ).setEditPatient(null);
+            FolderForm.getFolderForm( getCtx() ).setEditPatient(null);
         }
         return SUCCESS;
     }
@@ -78,32 +78,32 @@ public class PatientUpdateCtrl extends Dcm4cheeFormController {
     private String executeCreate() {
         FolderForm form = FolderForm.getFolderForm( getCtx() );
         try {
-	        PatientModel pat = new PatientModel();
-	        pat.setPk(-1);
-	        pat.setSpecificCharacterSet("ISO_IR 100");        
-	        pat.setPatientID(patientID);
-	        pat.setIssuerOfPatientID(issuerOfPatientID);
-	        pat.setPatientSex(patientSex);
-	        pat.setPatientName(patientName);
-	        pat.setPatientBirthDate(patientBirthDate);
-	        form.setEditPatient(pat);
-	        Dataset ds = FolderSubmitCtrl.getDelegate().createPatient(pat.toDataset());
-	        
-	        //add new patient to model (as first element) and set sticky flag!
-	        pat = new PatientModel( ds );
-	        form.getStickyPatients().add( String.valueOf( pat.getPk() ) );
-	        form.getPatients().add(0, pat);
-	        form.setEditPatient(null);
+            PatientModel pat = new PatientModel();
+            pat.setPk(-1);
+            pat.setSpecificCharacterSet("ISO_IR 100");        
+            pat.setPatientID(patientID);
+            pat.setIssuerOfPatientID(issuerOfPatientID);
+            pat.setPatientSex(patientSex);
+            pat.setPatientName(patientName);
+            pat.setPatientBirthDate(patientBirthDate);
+            form.setEditPatient(pat);
+            Dataset ds = FolderSubmitCtrl.getDelegate().createPatient(pat.toDataset());
+
+            //add new patient to model (as first element) and set sticky flag!
+            pat = new PatientModel( ds );
+            form.getStickyPatients().add( String.valueOf( pat.getPk() ) );
+            form.getPatients().add(0, pat);
+            form.setEditPatient(null);
             AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.CREATE, pat
                     .getPatientID(), pat.getPatientName(), null);
             return SUCCESS;
         } catch (Exception e) {
-        	form.setExternalPopupMsg("folder.err_createPatient",new String[]{e.getMessage()});
+            form.setExternalPopupMsg("folder.err_createPatient",new String[]{e.getMessage()});
             return ERROR;
         }
     }
 
-    
+
     private String executeUpdate() {
         try {
             PatientModel pat = FolderForm.getFolderForm(
@@ -126,11 +126,11 @@ public class PatientUpdateCtrl extends Dcm4cheeFormController {
                 modified = true;
             }
             if (modified) {
-	            //updating data model
-	            FolderSubmitCtrl.getDelegate().updatePatient(pat.toDataset());
-	            AuditLoggerDelegate.logPatientRecord(getCtx(), 
-	                    AuditLoggerDelegate.MODIFY, pat.getPatientID(),
-	                    pat.getPatientName(), AuditLoggerDelegate.trim(sb));
+                //updating data model
+                FolderSubmitCtrl.getDelegate().updatePatient(pat.toDataset());
+                AuditLoggerDelegate.logPatientRecord(getCtx(), 
+                        AuditLoggerDelegate.MODIFY, pat.getPatientID(),
+                        pat.getPatientName(), AuditLoggerDelegate.trim(sb));
             }
             return SUCCESS;
         } catch (Exception e) {

@@ -49,57 +49,57 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class AEEchoModel extends AEModel
 {
-	String aet;
+    String aet;
 
-	private boolean echoSucceed = false;
-	private String echoResultMsg = null;
-	
-	
-	/**
-	 * @param echoResultMsg The echoResultMsg to set.
-	 */
-	public void setEchoResultMsg(String echoResultMsg) {
-		this.echoResultMsg = echoResultMsg;
-	}
-	/**
-	 * @param echoSucceed The echoSucceed to set.
-	 */
-	public void setEchoSucceed(boolean echoSucceed) {
-		this.echoSucceed = echoSucceed;
-	}
-	/**
-	 * Creates the model.
-	 * <p>
-	 */
-	protected AEEchoModel(String user, HttpServletRequest request) {
-		super(user, request);
-	}
-	
-	/**
-	 * @return Returns the popupMsg.
-	 */
-	public String getEchoResultMsg() {
-		return echoResultMsg;
-	}
-	
+    private boolean echoSucceed = false;
+    private String echoResultMsg = null;
 
-	/**
-	 * @return Returns the aet.
-	 */
-	public String getAet() {
-		return aet;
-	}
-	/**
-	 * @param aet The aet to set.
-	 */
-	public void setAet(String aet) {
-		this.aet = aet;
-	}
 
-	/**
-	 * @return Returns the echoSucceed.
-	 */
-	public boolean isEchoSucceed() {
-		return echoSucceed;
-	}
+    /**
+     * @param echoResultMsg The echoResultMsg to set.
+     */
+    public void setEchoResultMsg(String echoResultMsg) {
+        this.echoResultMsg = echoResultMsg;
+    }
+    /**
+     * @param echoSucceed The echoSucceed to set.
+     */
+    public void setEchoSucceed(boolean echoSucceed) {
+        this.echoSucceed = echoSucceed;
+    }
+    /**
+     * Creates the model.
+     * <p>
+     */
+    protected AEEchoModel(String user, HttpServletRequest request) {
+        super(user, request);
+    }
+
+    /**
+     * @return Returns the popupMsg.
+     */
+    public String getEchoResultMsg() {
+        return echoResultMsg;
+    }
+
+
+    /**
+     * @return Returns the aet.
+     */
+    public String getAet() {
+        return aet;
+    }
+    /**
+     * @param aet The aet to set.
+     */
+    public void setAet(String aet) {
+        this.aet = aet;
+    }
+
+    /**
+     * @return Returns the echoSucceed.
+     */
+    public boolean isEchoSucceed() {
+        return echoSucceed;
+    }
 }

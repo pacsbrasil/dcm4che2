@@ -50,12 +50,12 @@ import org.apache.log4j.Logger;
 public class FolderCtrl extends Dcm4cheeFormController {
 
 
-	protected static Logger log = Logger.getLogger(FolderCtrl.class);
-    
+    protected static Logger log = Logger.getLogger(FolderCtrl.class);
+
     public static final String FOLDER = "folder";
     public static final String MERGE = "merge";
-    
-    
+
+
     protected Object makeFormBean() {
         return FolderForm.getFolderForm(getCtx());
     }

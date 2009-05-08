@@ -46,17 +46,17 @@ import org.apache.log4j.Logger;
  */
 public class UserNewCtrl extends UserAdminCtrl
 {
-	private static Logger log = Logger.getLogger(UserNewCtrl.class.getName());
-	
-	protected String perform() throws Exception 
-	{
-		UserAdminModel model = getModel();
-		if ( !model.isAdmin()) {
-			log.warn("Illegal access to UserNewCtrl! User "+this.getCtx().getRequest().getUserPrincipal()+" is not in role WebAdmin!");
-			return "error";
-		}
-		return SUCCESS;
-	}
+    private static Logger log = Logger.getLogger(UserNewCtrl.class.getName());
+
+    protected String perform() throws Exception 
+    {
+        UserAdminModel model = getModel();
+        if ( !model.isAdmin()) {
+            log.warn("Illegal access to UserNewCtrl! User "+this.getCtx().getRequest().getUserPrincipal()+" is not in role WebAdmin!");
+            return "error";
+        }
+        return SUCCESS;
+    }
 
 }
 

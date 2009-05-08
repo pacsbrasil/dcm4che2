@@ -51,21 +51,21 @@ import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
 public class UserAdminCtrl extends Dcm4cheeFormController {
 
 
-	protected static Logger log = Logger.getLogger(UserAdminCtrl.class);
-    
-	UserAdminModel model;
-    
+    protected static Logger log = Logger.getLogger(UserAdminCtrl.class);
+
+    UserAdminModel model;
+
     protected UserAdminModel getModel() {
-    	return model;
+        return model;
     }
-    
+
     protected Object makeFormBean() {
         model = UserAdminModel.getModel(getCtx().getRequest());
         return model;
     }
 
-	protected String getCtrlName() {
-		return "user_admin";
-	}
+    protected String getCtrlName() {
+        return "user_admin";
+    }
 
 }

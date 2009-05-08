@@ -58,7 +58,7 @@ public class ExpandTrashPatientCtrl extends Dcm4cheeFormController {
 
     protected int patPk;
     protected boolean expand;
-    
+
     public final void setPatPk(int patPk) {
         this.patPk = patPk;
     }
@@ -70,29 +70,29 @@ public class ExpandTrashPatientCtrl extends Dcm4cheeFormController {
     protected String perform() throws Exception {
         TrashFolderForm folderForm = TrashFolderForm.getTrashFolderForm(getCtx());
         if ( expand ) { 
-		    ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-		            .getFactory().lookup(ContentManagerHome.class,
-		                    ContentManagerHome.JNDI_NAME);
-		    ContentManager cm = home.create();
-		    try {
-		        List studies = cm.listStudiesOfPrivatePatient(patPk);
-		        for (int i = 0, n = studies.size(); i < n; i++)
-		            studies.set(i, new StudyModel((Dataset) studies.get(i)));
-		        folderForm.getPatientByPk(patPk).setStudies(studies);
-		    } finally {
-		        try {
-		            cm.remove();
-		        } catch (Exception e) {
-		        }
-		    }
+            ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
+            .getFactory().lookup(ContentManagerHome.class,
+                    ContentManagerHome.JNDI_NAME);
+            ContentManager cm = home.create();
+            try {
+                List studies = cm.listStudiesOfPrivatePatient(patPk);
+                for (int i = 0, n = studies.size(); i < n; i++)
+                    studies.set(i, new StudyModel((Dataset) studies.get(i)));
+                folderForm.getPatientByPk(patPk).setStudies(studies);
+            } finally {
+                try {
+                    cm.remove();
+                } catch (Exception e) {
+                }
+            }
         } else {
-        	folderForm.getPatientByPk(patPk).getStudies().clear();
+            folderForm.getPatientByPk(patPk).getStudies().clear();
         }
         return SUCCESS;
     }
 
-	protected String getCtrlName() {
-		return "trash";
-	}
-    
+    protected String getCtrlName() {
+        return "trash";
+    }
+
 }

@@ -65,134 +65,134 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
  */
 public class FolderUtil {
 
-	
+
     private static Logger log = Logger.getLogger( FolderUtil.class.getName() );
 
     public static Dataset getInstanceInfo(String iuid) throws RemoteException, FinderException, Exception {
         return lookupContentManager().getInstanceInfo(iuid, true);
     }
-    
+
     /**
-	 * @param stickyPatients
-	 * @param stickyStudies
-	 * @param stickySeries
-	 * @param stickyInstances
-	 * @return 
-	 */
-	public static Set getSelectedInstances(Set stickyPatients, Set stickyStudies, Set stickySeries, Set stickyInstances) {
-		if ( stickyPatients.size() > 1 ) {
-			throw new IllegalArgumentException("Instances from different patients are selected! Please check your selection.");
-		}
-		Set instanceUIDs = new HashSet();
-		if ( stickyPatients.size() == 1 ) {
-			addPatientInstances(instanceUIDs, Integer.valueOf(stickyPatients.iterator().next().toString()));
-		}
-		if ( stickyStudies.size() > 0 ) {
-			for ( Iterator iter = stickyStudies.iterator() ; iter.hasNext() ; ) {
-				addStudyInstances( instanceUIDs, Long.parseLong(iter.next().toString()) );
-			}
-		}
-		if ( stickySeries.size() > 0 ) {
-			for ( Iterator iter = stickySeries.iterator() ; iter.hasNext() ; ) {
-				addSeriesInstances( instanceUIDs, Integer.valueOf(iter.next().toString()) );
-			}
-		}
-		if ( stickyInstances.size() > 0 ) {
-			Set set = new HashSet();
-			for ( Iterator iter = stickyInstances.iterator() ; iter.hasNext() ; ) {
-				set.add( Long.valueOf(iter.next().toString()));
-			}
-			try {
-				Collection col = lookupContentManager().getSOPInstanceRefMacros(set);
-				for ( Iterator iter = col.iterator() ; iter.hasNext() ; ) {
-					addSOPInstanceRefs( instanceUIDs, (Dataset) iter.next() );
-				}
-			} catch (Exception x) {
-				log.error("Cant add selected instances ! :"+set,x);
-				throw new IllegalArgumentException("Cant add selected instances!");
-			}
-		}
+     * @param stickyPatients
+     * @param stickyStudies
+     * @param stickySeries
+     * @param stickyInstances
+     * @return 
+     */
+    public static Set getSelectedInstances(Set stickyPatients, Set stickyStudies, Set stickySeries, Set stickyInstances) {
+        if ( stickyPatients.size() > 1 ) {
+            throw new IllegalArgumentException("Instances from different patients are selected! Please check your selection.");
+        }
+        Set instanceUIDs = new HashSet();
+        if ( stickyPatients.size() == 1 ) {
+            addPatientInstances(instanceUIDs, Integer.valueOf(stickyPatients.iterator().next().toString()));
+        }
+        if ( stickyStudies.size() > 0 ) {
+            for ( Iterator iter = stickyStudies.iterator() ; iter.hasNext() ; ) {
+                addStudyInstances( instanceUIDs, Long.parseLong(iter.next().toString()) );
+            }
+        }
+        if ( stickySeries.size() > 0 ) {
+            for ( Iterator iter = stickySeries.iterator() ; iter.hasNext() ; ) {
+                addSeriesInstances( instanceUIDs, Integer.valueOf(iter.next().toString()) );
+            }
+        }
+        if ( stickyInstances.size() > 0 ) {
+            Set set = new HashSet();
+            for ( Iterator iter = stickyInstances.iterator() ; iter.hasNext() ; ) {
+                set.add( Long.valueOf(iter.next().toString()));
+            }
+            try {
+                Collection col = lookupContentManager().getSOPInstanceRefMacros(set);
+                for ( Iterator iter = col.iterator() ; iter.hasNext() ; ) {
+                    addSOPInstanceRefs( instanceUIDs, (Dataset) iter.next() );
+                }
+            } catch (Exception x) {
+                log.error("Cant add selected instances ! :"+set,x);
+                throw new IllegalArgumentException("Cant add selected instances!");
+            }
+        }
 
-		return instanceUIDs;
-	}
-	/**
-	 * @param instanceUIDs
-	 * @param integer
-	 */
-	private static void addSeriesInstances(Set instanceUIDs, Integer seriesPk) {
-		List l;
-		try {
-			l = lookupContentManager().listInstancesOfSeries(seriesPk.intValue());
-			for ( Iterator iter = l.iterator() ; iter.hasNext() ; ) {
-				instanceUIDs.add( ((Dataset) iter.next()).getString(Tags.SOPInstanceUID));
-			}
-		} catch (Exception x) {
-			log.error("Cant add instances of series (pk="+seriesPk+")!",x);
-			throw new IllegalArgumentException("Cant add instances of series!");
-		}
-	}
-	
-	/**
-	 * @param instanceInfos
-	 * @param ds
-	 */
-	private static void addInstanceInfos(Map instanceInfos, Dataset ds) {
-		Map.Entry entry;
-		Integer key;
-		Set set;
-		for ( Iterator iter = instanceInfos.entrySet().iterator() ; iter.hasNext() ; ) {
-			entry = (Map.Entry) iter.next();
-			set = (Set) entry.getValue();
-			set.add(ds.getString( ((Integer)entry.getKey()).intValue() ) ); 
-		}
-	}
-	/**
-	 * @param integer
-	 */
-	private static void addStudyInstances(Set instanceUIDs, long studyPk) {
-		try {
-			Dataset ds = lookupContentManager().getSOPInstanceRefMacro(studyPk, false);
-			addSOPInstanceRefs( instanceUIDs, ds );
-		} catch (Exception x) {
-			log.error("Cant add instances of study (pk="+studyPk+")!",x);
-			throw new IllegalArgumentException("Cant add instances of study!");
-		}
-		
-	}
-	/**
-	 * @param integer
-	 */
-	private static void addPatientInstances(Set instanceUIDs, Integer patPk) {
-		try {
-			List l = lookupContentManager().listStudiesOfPatient(patPk.intValue());
-			for ( Iterator iter = l.iterator() ; iter.hasNext() ; ) {
-			addStudyInstances( instanceUIDs, 
-					Convert.toLong( ((Dataset) iter.next()).getByteBuffer(PrivateTags.StudyPk).array()));
-			}
-		} catch (Exception x) {
-			log.error("Cant add instances of patient (pk="+patPk+")!",x);
-			throw new IllegalArgumentException("Cant add instances of patient!");
-		}
-	}
+        return instanceUIDs;
+    }
+    /**
+     * @param instanceUIDs
+     * @param integer
+     */
+    private static void addSeriesInstances(Set instanceUIDs, Integer seriesPk) {
+        List l;
+        try {
+            l = lookupContentManager().listInstancesOfSeries(seriesPk.intValue());
+            for ( Iterator iter = l.iterator() ; iter.hasNext() ; ) {
+                instanceUIDs.add( ((Dataset) iter.next()).getString(Tags.SOPInstanceUID));
+            }
+        } catch (Exception x) {
+            log.error("Cant add instances of series (pk="+seriesPk+")!",x);
+            throw new IllegalArgumentException("Cant add instances of series!");
+        }
+    }
 
-	private static void addSOPInstanceRefs( Set instanceUIDs, Dataset ds) {
-		DcmElement refSerSq = ds.get(Tags.RefSeriesSeq);
-		DcmElement refSopSq;
-		Dataset seriesItem;
-		for ( int i = 0 ; i < refSerSq.countItems() ; i++) {
-			seriesItem = refSerSq.getItem(i);
-			refSopSq = seriesItem.get(Tags.RefSOPSeq);
-			for ( int j = 0 ; j < refSopSq.countItems() ; j++ ) {
-				instanceUIDs.add(refSopSq.getItem(j).getString(Tags.RefSOPInstanceUID));
-			}
-		}
-	}
-    
-	private static ContentManager lookupContentManager() throws Exception {
+    /**
+     * @param instanceInfos
+     * @param ds
+     */
+    private static void addInstanceInfos(Map instanceInfos, Dataset ds) {
+        Map.Entry entry;
+        Integer key;
+        Set set;
+        for ( Iterator iter = instanceInfos.entrySet().iterator() ; iter.hasNext() ; ) {
+            entry = (Map.Entry) iter.next();
+            set = (Set) entry.getValue();
+            set.add(ds.getString( ((Integer)entry.getKey()).intValue() ) ); 
+        }
+    }
+    /**
+     * @param integer
+     */
+    private static void addStudyInstances(Set instanceUIDs, long studyPk) {
+        try {
+            Dataset ds = lookupContentManager().getSOPInstanceRefMacro(studyPk, false);
+            addSOPInstanceRefs( instanceUIDs, ds );
+        } catch (Exception x) {
+            log.error("Cant add instances of study (pk="+studyPk+")!",x);
+            throw new IllegalArgumentException("Cant add instances of study!");
+        }
+
+    }
+    /**
+     * @param integer
+     */
+    private static void addPatientInstances(Set instanceUIDs, Integer patPk) {
+        try {
+            List l = lookupContentManager().listStudiesOfPatient(patPk.intValue());
+            for ( Iterator iter = l.iterator() ; iter.hasNext() ; ) {
+                addStudyInstances( instanceUIDs, 
+                        Convert.toLong( ((Dataset) iter.next()).getByteBuffer(PrivateTags.StudyPk).array()));
+            }
+        } catch (Exception x) {
+            log.error("Cant add instances of patient (pk="+patPk+")!",x);
+            throw new IllegalArgumentException("Cant add instances of patient!");
+        }
+    }
+
+    private static void addSOPInstanceRefs( Set instanceUIDs, Dataset ds) {
+        DcmElement refSerSq = ds.get(Tags.RefSeriesSeq);
+        DcmElement refSopSq;
+        Dataset seriesItem;
+        for ( int i = 0 ; i < refSerSq.countItems() ; i++) {
+            seriesItem = refSerSq.getItem(i);
+            refSopSq = seriesItem.get(Tags.RefSOPSeq);
+            for ( int j = 0 ; j < refSopSq.countItems() ; j++ ) {
+                instanceUIDs.add(refSopSq.getItem(j).getString(Tags.RefSOPInstanceUID));
+            }
+        }
+    }
+
+    private static ContentManager lookupContentManager() throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-                .getFactory().lookup(ContentManagerHome.class,
-                        ContentManagerHome.JNDI_NAME);
+        .getFactory().lookup(ContentManagerHome.class,
+                ContentManagerHome.JNDI_NAME);
         return home.create();
     }
-	
+
 }

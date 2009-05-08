@@ -63,96 +63,96 @@ import org.jboss.mx.util.MBeanServerLocator;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class GPPPSDelegate {
-		
-
-	private static MBeanServer server;
-
-	private static Logger log = Logger.getLogger( GPPPSDelegate.class.getName() );
-
-	private ObjectName gpppsScpServiceName;
 
 
-	public Logger getLogger() {
-		return log;
-	}
-	
-	/**
-	 * Iinitialize the GPPPS service delegator.
-	 * <p>
-	 * Set the name of the GPPPsService MBean with the servlet config param
-	 * 'gpppsScpServiceName'.
-	 * 
-	 * @param config
-	 *            The ServletConfig object.
-	 */
-	public void init(ServletConfig config) {
-		if (server != null)
-			return;
-		server = MBeanServerLocator.locate();
-		String s = config.getInitParameter("gpppsScpServiceName");
-		try {
-			gpppsScpServiceName = new ObjectName(s);
-		} catch (Exception e) {
-			log.error("Exception in init! ", e);
-		}
+    private static MBeanServer server;
 
-	}
-	
-		
-		/**
-		 * Makes the MBean call to get the list of worklist entries for given filter (ds).
-		 * 
-		 * @param filter	The WADO request.
-		 * 
-		 * @return The list of worklist entries ( Each item in the list is a Dataset of one scheduled procedure step).
-		 */
-		public List findGPPPSEntries( PPSFilter filter ) {
-			List resp = null;
-			GPPPSQueryCmd cmd = null;
-			try {
-				resp = new ArrayList();
-				cmd = new GPPPSQueryCmd( filter.toDataset() );
-				cmd.execute();
-				while ( cmd.next() ) {
-					resp.add( cmd.getDataset() );
-				}
-			} catch ( Exception x ) {
-				log.error( "Exception occured in getMWLEntries: "+x.getMessage(), x );
-			}
-			if ( cmd != null ) cmd.close();
-	        return resp;
-		}
-		
-		
-		/**
-		 * Deletes GPPPS entries specified by an array of GPPPS IUIDs.
-		 * <p>
-		 * 
-		 * @param iuids  The List of Instance UIDs of the GPPPS Entries to delete.
-		 * @return
-		 */
-		public boolean deleteGPPPSEntries(String[] iuids) {
-			GPPPSManager m;
-			try {
-				m = getGPPPSManager();
-			} catch (Exception x) {
-				log.error("Can't get GPPPSManager!", x );
-				return false;
-			}
-			for ( int i = 0 ; i < iuids.length ; i++ ) {
-				try {
-					m.removeGPPPS(iuids[i]);
-				} catch (Exception x) {
-					log.error("Can't delete GPPPSEntry with iuid:"+iuids[i], x );
-					return false;
-				}
-			}
-			return true;
-		}
-	    private GPPPSManager getGPPPSManager() 
-        	throws HomeFactoryException, RemoteException, CreateException {
-	    	return ((GPPPSManagerHome) EJBHomeFactory.getFactory().lookup(
-	    			GPPPSManagerHome.class, GPPPSManagerHome.JNDI_NAME)).create();
-	    }
+    private static Logger log = Logger.getLogger( GPPPSDelegate.class.getName() );
+
+    private ObjectName gpppsScpServiceName;
+
+
+    public Logger getLogger() {
+        return log;
+    }
+
+    /**
+     * Iinitialize the GPPPS service delegator.
+     * <p>
+     * Set the name of the GPPPsService MBean with the servlet config param
+     * 'gpppsScpServiceName'.
+     * 
+     * @param config
+     *            The ServletConfig object.
+     */
+    public void init(ServletConfig config) {
+        if (server != null)
+            return;
+        server = MBeanServerLocator.locate();
+        String s = config.getInitParameter("gpppsScpServiceName");
+        try {
+            gpppsScpServiceName = new ObjectName(s);
+        } catch (Exception e) {
+            log.error("Exception in init! ", e);
+        }
+
+    }
+
+
+    /**
+     * Makes the MBean call to get the list of worklist entries for given filter (ds).
+     * 
+     * @param filter	The WADO request.
+     * 
+     * @return The list of worklist entries ( Each item in the list is a Dataset of one scheduled procedure step).
+     */
+    public List findGPPPSEntries( PPSFilter filter ) {
+        List resp = null;
+        GPPPSQueryCmd cmd = null;
+        try {
+            resp = new ArrayList();
+            cmd = new GPPPSQueryCmd( filter.toDataset() );
+            cmd.execute();
+            while ( cmd.next() ) {
+                resp.add( cmd.getDataset() );
+            }
+        } catch ( Exception x ) {
+            log.error( "Exception occured in getMWLEntries: "+x.getMessage(), x );
+        }
+        if ( cmd != null ) cmd.close();
+        return resp;
+    }
+
+
+    /**
+     * Deletes GPPPS entries specified by an array of GPPPS IUIDs.
+     * <p>
+     * 
+     * @param iuids  The List of Instance UIDs of the GPPPS Entries to delete.
+     * @return
+     */
+    public boolean deleteGPPPSEntries(String[] iuids) {
+        GPPPSManager m;
+        try {
+            m = getGPPPSManager();
+        } catch (Exception x) {
+            log.error("Can't get GPPPSManager!", x );
+            return false;
+        }
+        for ( int i = 0 ; i < iuids.length ; i++ ) {
+            try {
+                m.removeGPPPS(iuids[i]);
+            } catch (Exception x) {
+                log.error("Can't delete GPPPSEntry with iuid:"+iuids[i], x );
+                return false;
+            }
+        }
+        return true;
+    }
+    private GPPPSManager getGPPPSManager() 
+    throws HomeFactoryException, RemoteException, CreateException {
+        return ((GPPPSManagerHome) EJBHomeFactory.getFactory().lookup(
+                GPPPSManagerHome.class, GPPPSManagerHome.JNDI_NAME)).create();
+    }
 
 }

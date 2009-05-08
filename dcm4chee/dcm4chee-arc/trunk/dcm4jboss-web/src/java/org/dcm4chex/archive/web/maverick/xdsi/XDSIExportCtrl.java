@@ -263,7 +263,7 @@ public class XDSIExportCtrl extends Dcm4cheeFormController {
             model.setClassCodes(delegate.getConfiguredClassCodes());
             model.setContentTypeCodes( delegate.getConfiguredContentTypeCodes());
             model.setHealthCareFacilityTypeCodes( delegate.getConfiguredHealthCareFacilityTypeCodes());
-        }    	
+        }
     }
 
 

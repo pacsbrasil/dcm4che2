@@ -49,65 +49,65 @@ import org.apache.log4j.Logger;
  * @since 13.04.2006
  */
 public abstract class FolderPermissionsFactory {
-	
-	private static Logger log = Logger.getLogger(FolderPermissionsFactory.class.getName());
-	
-	private static FolderPermissionsFactory instance = null;
-	
-	private String initParameter;
-	public static FolderPermissionsFactory getInstance(ServletConfig cfg) {
-		if ( instance != null ) return instance;
-		String factoryClassName = cfg.getInitParameter("folderPermissionsFactory");
-		if ( factoryClassName == null ) factoryClassName = "org.dcm4chex.archive.web.maverick.admin.perm.FolderPermissionsPropertyFactory";
-		try {
-			ClassLoader l = Thread.currentThread().getContextClassLoader();
-			instance = (FolderPermissionsFactory) l.loadClass( factoryClassName ).newInstance();
-			instance.setInitParameter( cfg.getInitParameter("folderPermissionsFactory_cfg") );
-			instance.init();
-			return instance;
-		} catch (InstantiationException x) {
-			log.error("Could not instantiate: "+factoryClassName, x);
-			return new DummyPermissionFactory();
-		} catch (IllegalAccessException x) {
-			log.error("No access to instantiate factory: "+factoryClassName, x);
-			return new DummyPermissionFactory();
-		} catch (ClassNotFoundException x) {
-			log.error("Class not found: "+factoryClassName, x);
-			return new DummyPermissionFactory();
-		}
-	}
-	
-	public abstract void init();
-	
-	public abstract FolderPermissions getFolderPermissions(String userID);
-	
-	/**
-	 * @return Returns the initParameter.
-	 */
-	public String getInitParameter() {
-		return initParameter;
-	}
-	/**
-	 * @param initParameter The initParameter to set.
-	 */
-	public void setInitParameter(String initParameter) {
-		this.initParameter = initParameter;
-	}
-	/**
-	 * Dummy implementation of FolderPermissionsFactory.
-	 * <p>
-	 * Returns always an empty FolderPermissions object!
-	 * 
-	 * @author franz.willer
-	 *
-	 */
-	static class DummyPermissionFactory extends FolderPermissionsFactory {
 
-		public void init() {}
+    private static Logger log = Logger.getLogger(FolderPermissionsFactory.class.getName());
 
-		public FolderPermissions getFolderPermissions(String userID) {
-			return new FolderPermissions();
-		}
-		
-	}
+    private static FolderPermissionsFactory instance = null;
+
+    private String initParameter;
+    public static FolderPermissionsFactory getInstance(ServletConfig cfg) {
+        if ( instance != null ) return instance;
+        String factoryClassName = cfg.getInitParameter("folderPermissionsFactory");
+        if ( factoryClassName == null ) factoryClassName = "org.dcm4chex.archive.web.maverick.admin.perm.FolderPermissionsPropertyFactory";
+        try {
+            ClassLoader l = Thread.currentThread().getContextClassLoader();
+            instance = (FolderPermissionsFactory) l.loadClass( factoryClassName ).newInstance();
+            instance.setInitParameter( cfg.getInitParameter("folderPermissionsFactory_cfg") );
+            instance.init();
+            return instance;
+        } catch (InstantiationException x) {
+            log.error("Could not instantiate: "+factoryClassName, x);
+            return new DummyPermissionFactory();
+        } catch (IllegalAccessException x) {
+            log.error("No access to instantiate factory: "+factoryClassName, x);
+            return new DummyPermissionFactory();
+        } catch (ClassNotFoundException x) {
+            log.error("Class not found: "+factoryClassName, x);
+            return new DummyPermissionFactory();
+        }
+    }
+
+    public abstract void init();
+
+    public abstract FolderPermissions getFolderPermissions(String userID);
+
+    /**
+     * @return Returns the initParameter.
+     */
+    public String getInitParameter() {
+        return initParameter;
+    }
+    /**
+     * @param initParameter The initParameter to set.
+     */
+    public void setInitParameter(String initParameter) {
+        this.initParameter = initParameter;
+    }
+    /**
+     * Dummy implementation of FolderPermissionsFactory.
+     * <p>
+     * Returns always an empty FolderPermissions object!
+     * 
+     * @author franz.willer
+     *
+     */
+    static class DummyPermissionFactory extends FolderPermissionsFactory {
+
+        public void init() {}
+
+        public FolderPermissions getFolderPermissions(String userID) {
+            return new FolderPermissions();
+        }
+
+    }
 }

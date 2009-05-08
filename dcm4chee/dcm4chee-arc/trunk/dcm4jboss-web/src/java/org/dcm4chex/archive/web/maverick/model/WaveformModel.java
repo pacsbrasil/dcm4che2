@@ -51,22 +51,22 @@ import org.dcm4che.dict.UIDs;
  *
  */
 public class WaveformModel extends InstanceModel {
-	Dataset dsSeq;
+    Dataset dsSeq;
     public WaveformModel(Dataset ds) {
         super(ds);
     }
 
 
     public String getWaveformType() {
-    	String cuid = ds.getString(Tags.SOPClassUID);
-    	if ( UIDs.TwelveLeadECGWaveformStorage.equals(cuid) ) return "12-lead ECG";
-    	if (  UIDs.GeneralECGWaveformStorage.equals(cuid) ) return "General ECG";
-    	if (  UIDs.AmbulatoryECGWaveformStorage.equals(cuid) ) return "Ambulatory ECG";
-    	if (  UIDs.HemodynamicWaveformStorage.equals(cuid) ) return "Hemodynamic";
-    	if (  UIDs.CardiacElectrophysiologyWaveformStorage.equals(cuid) ) return "Cardiac Electrophysiology";
-    	if (  UIDs.BasicVoiceAudioWaveformStorage.equals(cuid) ) return "Basic voice audio";
-    	return "unkown";
+        String cuid = ds.getString(Tags.SOPClassUID);
+        if ( UIDs.TwelveLeadECGWaveformStorage.equals(cuid) ) return "12-lead ECG";
+        if (  UIDs.GeneralECGWaveformStorage.equals(cuid) ) return "General ECG";
+        if (  UIDs.AmbulatoryECGWaveformStorage.equals(cuid) ) return "Ambulatory ECG";
+        if (  UIDs.HemodynamicWaveformStorage.equals(cuid) ) return "Hemodynamic";
+        if (  UIDs.CardiacElectrophysiologyWaveformStorage.equals(cuid) ) return "Cardiac Electrophysiology";
+        if (  UIDs.BasicVoiceAudioWaveformStorage.equals(cuid) ) return "Basic voice audio";
+        return "unkown";
     }
-    
-    
+
+
 }

@@ -117,7 +117,7 @@ public class StudyUpdateCtrl extends Dcm4cheeFormController {
     public final void setStudyID(String s) {
         this.studyID = s.trim();
     }
-    
+
     public final void setStudyIUID(String s) {
         this.studyIUID = s.trim();
     }
@@ -133,17 +133,17 @@ public class StudyUpdateCtrl extends Dcm4cheeFormController {
 
     private ContentManager lookupContentManager() throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory.getFactory()
-                .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
+        .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
         return home.create();
     }
 
     private void executeCreate() {
         try {
-	        StudyModel study = new StudyModel();
-	        study.setPk( -1 );
-	        if ( studyIUID == null ) studyIUID = UIDGenerator.getInstance().createUID();
+            StudyModel study = new StudyModel();
+            study.setPk( -1 );
+            if ( studyIUID == null ) studyIUID = UIDGenerator.getInstance().createUID();
             study.setStudyIUID( studyIUID );
-	        study.setSpecificCharacterSet( "ISO_IR 100" );        
+            study.setSpecificCharacterSet( "ISO_IR 100" );        
             study.setPlacerOrderNumber(placerOrderNumber);
             study.setFillerOrderNumber(fillerOrderNumber);
             study.setAccessionNumber(accessionNumber);
@@ -160,7 +160,7 @@ public class StudyUpdateCtrl extends Dcm4cheeFormController {
             for (int i = 0, n = studies.size(); i < n; i++)
                 studies.set(i, new StudyModel((Dataset) studies.get(i)));
             pat.setStudies(studies);
-            
+
             AuditLoggerDelegate.logProcedureRecord(getCtx(),
                     AuditLoggerDelegate.CREATE,
                     pat.getPatientID(),
@@ -175,15 +175,15 @@ public class StudyUpdateCtrl extends Dcm4cheeFormController {
             e.printStackTrace();
         }
     }
- 
+
     private void executeUpdate() {
         try {
-        	FolderForm form = FolderForm.getFolderForm(getCtx());
-        	StudyModel study = form.getStudyByPk(patPk, studyPk);
+            FolderForm form = FolderForm.getFolderForm(getCtx());
+            StudyModel study = form.getStudyByPk(patPk, studyPk);
             if ( !this.isStudyPermissionCheckDisabled() && 
-            		!form.hasPermission(study.getStudyIUID(), StudyPermissionDTO.UPDATE_ACTION) ) {
-            	form.setExternalPopupMsg("folder.update_denied", new String[]{study.getStudyIUID()} );
-            	return;
+                    !form.hasPermission(study.getStudyIUID(), StudyPermissionDTO.UPDATE_ACTION) ) {
+                form.setExternalPopupMsg("folder.update_denied", new String[]{study.getStudyIUID()} );
+                return;
             }
             //updating data model
             StringBuffer sb = new StringBuffer();
@@ -224,17 +224,17 @@ public class StudyUpdateCtrl extends Dcm4cheeFormController {
                 modified = true;
             }
             if (modified) {
-	            FolderSubmitCtrl.getDelegate().updateStudy(study.toDataset());
-	            PatientModel pat = form.getPatientByPk(patPk);
-	            AuditLoggerDelegate.logProcedureRecord(getCtx(),
-	                    AuditLoggerDelegate.MODIFY,
-	                    pat.getPatientID(),
-	                    pat.getPatientName(),
-	                    study.getPlacerOrderNumber(),
-	                    study.getFillerOrderNumber(),
-	                    study.getStudyIUID(),
-	                    study.getAccessionNumber(),
-	                    AuditLoggerDelegate.trim(sb));
+                FolderSubmitCtrl.getDelegate().updateStudy(study.toDataset());
+                PatientModel pat = form.getPatientByPk(patPk);
+                AuditLoggerDelegate.logProcedureRecord(getCtx(),
+                        AuditLoggerDelegate.MODIFY,
+                        pat.getPatientID(),
+                        pat.getPatientName(),
+                        study.getPlacerOrderNumber(),
+                        study.getFillerOrderNumber(),
+                        study.getStudyIUID(),
+                        study.getAccessionNumber(),
+                        AuditLoggerDelegate.trim(sb));
             }
         } catch (Exception e) {
             // TODO Auto-generated catch block

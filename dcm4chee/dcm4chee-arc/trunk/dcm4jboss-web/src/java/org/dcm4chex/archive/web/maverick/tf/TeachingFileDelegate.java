@@ -70,21 +70,21 @@ import org.jboss.mx.util.MBeanServerLocator;
  */
 public class TeachingFileDelegate {
 
-	public static final String TF_ATTRNAME = "teachingFile";
-	
+    public static final String TF_ATTRNAME = "teachingFile";
+
     private static MBeanServer server;
-	private static ObjectName keyObjectServiceName;
-	private static ObjectName exportManagerServiceName;
+    private static ObjectName keyObjectServiceName;
+    private static ObjectName exportManagerServiceName;
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     private static Logger log = Logger.getLogger( TeachingFileDelegate.class.getName() );
 
-    
-	
-	public TeachingFileDelegate() {
-	}
-	
+
+
+    public TeachingFileDelegate() {
+    }
+
     public void init(ControllerContext ctx) throws Exception {
         if (keyObjectServiceName != null) return;
         server = MBeanServerLocator.locate();
@@ -93,62 +93,62 @@ public class TeachingFileDelegate {
         s = ctx.getServletConfig().getInitParameter("exportManagerServiceName");
         exportManagerServiceName = new ObjectName(s);
     }
-	
-     public boolean exportTF(TFModel tfModel) throws Exception{
-    	if ( tfModel.getNumberOfInstances() < 1 ) {
-    		throw new IllegalArgumentException("No Instances selected!");
-    	}
-    	Collection items = getObserverContextItems(getObserverPerson(tfModel.getUser()));
-    	if (tfModel.getManifestModel().isUseManifest()){
-    		Dataset basicDS = lookupContentManager().getInstanceInfo( 
-    				tfModel.getInstances().iterator().next().toString(), false);
-    		Dataset manifestSR = tfModel.getManifestModel().getSR(basicDS, items);
-    		storeExportSelection( manifestSR );
-    		tfModel.getInstances().add( manifestSR.getString(Tags.SOPInstanceUID));
-    	}
-    	Dataset rootInfo = getRootInfo(tfModel);
-    	List contentItems = getContentItems( tfModel );
-    	contentItems.addAll(items);
-    	Dataset keyObjectDS = getKeyObject( tfModel.getInstances(), rootInfo, contentItems);
-    	storeExportSelection( keyObjectDS );
-    	return true;
-    }
-    
-	private Collection getObserverContextItems(String personName) {
-		Dataset ds = dof.newDataset();
-		ds.putCS(Tags.RelationshipType, "HAS OBS CONTEXT");
-		ds.putCS(Tags.ValueType,"CODE");
-		DcmElement cnSq = ds.putSQ(Tags.ConceptNameCodeSeq);
-		Dataset cnDS = cnSq.addNewItem();
-		cnDS.putSH(Tags.CodeValue, "121005");
-		cnDS.putSH(Tags.CodingSchemeDesignator, "DCM");
-		cnDS.putLO(Tags.CodeMeaning, "ObserverType");
-		DcmElement ccSq = ds.putSQ(Tags.ConceptCodeSeq);
-		Dataset ccDS = ccSq.addNewItem();
-		ccDS.putSH(Tags.CodeValue, "121006");
-		ccDS.putSH(Tags.CodingSchemeDesignator, "DCM");
-		ccDS.putLO(Tags.CodeMeaning, "Person");
 
-		Dataset ds1 = dof.newDataset();
-		ds1.putCS(Tags.RelationshipType, "HAS OBS CONTEXT");
-		ds1.putCS(Tags.ValueType,"PNAME");
-		DcmElement cnSq1 = ds1.putSQ(Tags.ConceptNameCodeSeq);
-		Dataset cnDS1 = cnSq1.addNewItem();
-		cnDS1.putSH(Tags.CodeValue, "121008");
-		cnDS1.putSH(Tags.CodingSchemeDesignator, "DCM");
-		cnDS1.putLO(Tags.CodeMeaning, "Person Observer Name");
-		ds1.putPN(Tags.PersonName, personName);
-		ArrayList col = new ArrayList();
-		col.add(ds);
-		col.add(ds1);
-		return col;
-	}
-    
+    public boolean exportTF(TFModel tfModel) throws Exception{
+        if ( tfModel.getNumberOfInstances() < 1 ) {
+            throw new IllegalArgumentException("No Instances selected!");
+        }
+        Collection items = getObserverContextItems(getObserverPerson(tfModel.getUser()));
+        if (tfModel.getManifestModel().isUseManifest()){
+            Dataset basicDS = lookupContentManager().getInstanceInfo( 
+                    tfModel.getInstances().iterator().next().toString(), false);
+            Dataset manifestSR = tfModel.getManifestModel().getSR(basicDS, items);
+            storeExportSelection( manifestSR );
+            tfModel.getInstances().add( manifestSR.getString(Tags.SOPInstanceUID));
+        }
+        Dataset rootInfo = getRootInfo(tfModel);
+        List contentItems = getContentItems( tfModel );
+        contentItems.addAll(items);
+        Dataset keyObjectDS = getKeyObject( tfModel.getInstances(), rootInfo, contentItems);
+        storeExportSelection( keyObjectDS );
+        return true;
+    }
+
+    private Collection getObserverContextItems(String personName) {
+        Dataset ds = dof.newDataset();
+        ds.putCS(Tags.RelationshipType, "HAS OBS CONTEXT");
+        ds.putCS(Tags.ValueType,"CODE");
+        DcmElement cnSq = ds.putSQ(Tags.ConceptNameCodeSeq);
+        Dataset cnDS = cnSq.addNewItem();
+        cnDS.putSH(Tags.CodeValue, "121005");
+        cnDS.putSH(Tags.CodingSchemeDesignator, "DCM");
+        cnDS.putLO(Tags.CodeMeaning, "ObserverType");
+        DcmElement ccSq = ds.putSQ(Tags.ConceptCodeSeq);
+        Dataset ccDS = ccSq.addNewItem();
+        ccDS.putSH(Tags.CodeValue, "121006");
+        ccDS.putSH(Tags.CodingSchemeDesignator, "DCM");
+        ccDS.putLO(Tags.CodeMeaning, "Person");
+
+        Dataset ds1 = dof.newDataset();
+        ds1.putCS(Tags.RelationshipType, "HAS OBS CONTEXT");
+        ds1.putCS(Tags.ValueType,"PNAME");
+        DcmElement cnSq1 = ds1.putSQ(Tags.ConceptNameCodeSeq);
+        Dataset cnDS1 = cnSq1.addNewItem();
+        cnDS1.putSH(Tags.CodeValue, "121008");
+        cnDS1.putSH(Tags.CodingSchemeDesignator, "DCM");
+        cnDS1.putLO(Tags.CodeMeaning, "Person Observer Name");
+        ds1.putPN(Tags.PersonName, personName);
+        ArrayList col = new ArrayList();
+        col.add(ds);
+        col.add(ds1);
+        return col;
+    }
+
     /**
-	 * @param user
-	 * @return
-	 */
-	public String getObserverPerson(String user) {
+     * @param user
+     * @return
+     */
+    public String getObserverPerson(String user) {
         try {
             return (String) server.invoke(exportManagerServiceName,
                     "getObserverPerson",
@@ -158,74 +158,74 @@ public class TeachingFileDelegate {
             log.warn("Failed to get Observer person for user "+user+" ! Reason:"+ e.getCause());
             return null;
         }
-	}
-
-	private Dataset getBasicDS(Collection instances ) throws Exception {
-    	String iuid = instances.iterator().next().toString();
-    	return lookupContentManager().getInstanceInfo( iuid, false);
     }
-	/**
-	 * @param tfModel
-	 * @return
-	 */
-	private List getContentItems(TFModel tfModel) {
-		List items = new ArrayList();
-		if( tfModel.selectedDelayReason() != null ) {
-			Dataset delayReasonDS = DcmObjectFactory.getInstance().newDataset();
-			delayReasonDS.putCS(Tags.RelationshipType,"HAS CONCEPT MOD");
-			delayReasonDS.putCS( Tags.ValueType, "CODE");
-			DcmElement cnSq = delayReasonDS.putSQ(Tags.ConceptNameCodeSeq);
-			Dataset cnDS = cnSq.addNewItem();
-			cnDS.putSH(Tags.CodeValue, "113011");
-			cnDS.putSH(Tags.CodingSchemeDesignator, "DCM");
-			cnDS.putLO(Tags.CodeMeaning, "Document Title Modifier");
-			DcmElement codeSq = delayReasonDS.putSQ(Tags.ConceptCodeSeq);
-			Dataset codeDS = codeSq.addNewItem();
-			codeDS.putSH(Tags.CodeValue, tfModel.selectedDelayReasonCode());
-			codeDS.putSH(Tags.CodingSchemeDesignator, tfModel.selectedDelayReasonDesignator());
-			codeDS.putLO(Tags.CodeMeaning, tfModel.selectedDelayReason());
-			items.add(delayReasonDS);
-		}
-		String disp = tfModel.getDisposition();
-		if ( disp != null && disp.length() > 0) {
-			Dataset dispositionDS = DcmObjectFactory.getInstance().newDataset();
-			dispositionDS.putCS(Tags.RelationshipType,"CONTAINS");
-			dispositionDS.putCS(Tags.ValueType,"TEXT");
-			DcmElement cnSq1 = dispositionDS.putSQ(Tags.ConceptNameCodeSeq);
-			Dataset cnDS1 = cnSq1.addNewItem();
-			cnDS1.putSH(Tags.CodeValue, "113012");
-			cnDS1.putSH(Tags.CodingSchemeDesignator, "DCM");
-			cnDS1.putLO(Tags.CodeMeaning, "Key Object Description");
-			dispositionDS.putLO(Tags.TextValue, disp );
-			items.add(dispositionDS);
-		}
-		return items;
-	}
 
-	/**
-	 * @param tfModel
-	 * @return
-	 */
-	private Dataset getRootInfo(TFModel tfModel) {
-		Dataset rootInfo = DcmObjectFactory.getInstance().newDataset();
-    	DcmElement sq = rootInfo.putSQ(Tags.ConceptNameCodeSeq);
-    	Dataset item = sq.addNewItem();
-    	item.putSH(Tags.CodeValue,tfModel.selectedDocTitleCode());
-    	item.putSH(Tags.CodingSchemeDesignator,tfModel.selectedDocTitleDesignator());
-		item.putLO(Tags.CodeMeaning, tfModel.selectedDocTitle());
-		return rootInfo;
-	}
-	
+    private Dataset getBasicDS(Collection instances ) throws Exception {
+        String iuid = instances.iterator().next().toString();
+        return lookupContentManager().getInstanceInfo( iuid, false);
+    }
+    /**
+     * @param tfModel
+     * @return
+     */
+    private List getContentItems(TFModel tfModel) {
+        List items = new ArrayList();
+        if( tfModel.selectedDelayReason() != null ) {
+            Dataset delayReasonDS = DcmObjectFactory.getInstance().newDataset();
+            delayReasonDS.putCS(Tags.RelationshipType,"HAS CONCEPT MOD");
+            delayReasonDS.putCS( Tags.ValueType, "CODE");
+            DcmElement cnSq = delayReasonDS.putSQ(Tags.ConceptNameCodeSeq);
+            Dataset cnDS = cnSq.addNewItem();
+            cnDS.putSH(Tags.CodeValue, "113011");
+            cnDS.putSH(Tags.CodingSchemeDesignator, "DCM");
+            cnDS.putLO(Tags.CodeMeaning, "Document Title Modifier");
+            DcmElement codeSq = delayReasonDS.putSQ(Tags.ConceptCodeSeq);
+            Dataset codeDS = codeSq.addNewItem();
+            codeDS.putSH(Tags.CodeValue, tfModel.selectedDelayReasonCode());
+            codeDS.putSH(Tags.CodingSchemeDesignator, tfModel.selectedDelayReasonDesignator());
+            codeDS.putLO(Tags.CodeMeaning, tfModel.selectedDelayReason());
+            items.add(delayReasonDS);
+        }
+        String disp = tfModel.getDisposition();
+        if ( disp != null && disp.length() > 0) {
+            Dataset dispositionDS = DcmObjectFactory.getInstance().newDataset();
+            dispositionDS.putCS(Tags.RelationshipType,"CONTAINS");
+            dispositionDS.putCS(Tags.ValueType,"TEXT");
+            DcmElement cnSq1 = dispositionDS.putSQ(Tags.ConceptNameCodeSeq);
+            Dataset cnDS1 = cnSq1.addNewItem();
+            cnDS1.putSH(Tags.CodeValue, "113012");
+            cnDS1.putSH(Tags.CodingSchemeDesignator, "DCM");
+            cnDS1.putLO(Tags.CodeMeaning, "Key Object Description");
+            dispositionDS.putLO(Tags.TextValue, disp );
+            items.add(dispositionDS);
+        }
+        return items;
+    }
+
+    /**
+     * @param tfModel
+     * @return
+     */
+    private Dataset getRootInfo(TFModel tfModel) {
+        Dataset rootInfo = DcmObjectFactory.getInstance().newDataset();
+        DcmElement sq = rootInfo.putSQ(Tags.ConceptNameCodeSeq);
+        Dataset item = sq.addNewItem();
+        item.putSH(Tags.CodeValue,tfModel.selectedDocTitleCode());
+        item.putSH(Tags.CodingSchemeDesignator,tfModel.selectedDocTitleDesignator());
+        item.putLO(Tags.CodeMeaning, tfModel.selectedDocTitle());
+        return rootInfo;
+    }
+
     public Dataset getKeyObject(Collection iuids, Dataset rootInfo, List contentItems) {
-    	Object o = null;
+        Object o = null;
         try {
             o = server.invoke(keyObjectServiceName,
                     "getKeyObject",
                     new Object[] { iuids, rootInfo, contentItems },
                     new String[] { Collection.class.getName(), Dataset.class.getName(), Collection.class.getName() });
         } catch (RuntimeMBeanException x) {
-        	 log.warn("RuntimeException thrown in KeyObject Service:"+x.getCause());
-        	throw new IllegalArgumentException(x.getCause().getMessage());
+            log.warn("RuntimeException thrown in KeyObject Service:"+x.getCause());
+            throw new IllegalArgumentException(x.getCause().getMessage());
         } catch (Exception e) {
             log.warn("Failed to create Key Object:", e);
             throw new IllegalArgumentException("Error: KeyObject Service cant create manifest Key Object! Reason:"+e.getClass().getName());
@@ -233,11 +233,11 @@ public class TeachingFileDelegate {
         return (Dataset) o;
     }
 
-	/**
-	 * @param keyObjectDS
-	 * @param string
-	 */
-	private void storeExportSelection(Dataset keyObjectDS) throws Exception {
+    /**
+     * @param keyObjectDS
+     * @param string
+     */
+    private void storeExportSelection(Dataset keyObjectDS) throws Exception {
         try {
             server.invoke(exportManagerServiceName,
                     "storeExportSelection",
@@ -247,9 +247,9 @@ public class TeachingFileDelegate {
             log.warn("Failed to store Export Selection:", e);
             throw e;
         }
- 	}
-	
-	protected Collection getConfiguredDispositions() throws Exception {
+    }
+
+    protected Collection getConfiguredDispositions() throws Exception {
         try {
             return (Collection) server.invoke(exportManagerServiceName,
                     "listConfiguredDispositions",
@@ -259,13 +259,13 @@ public class TeachingFileDelegate {
             log.warn("Failed to store Export Selection:", e);
             throw e;
         }
-	}
+    }
 
-	private ContentManager lookupContentManager() throws Exception {
+    private ContentManager lookupContentManager() throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-                .getFactory().lookup(ContentManagerHome.class,
-                        ContentManagerHome.JNDI_NAME);
+        .getFactory().lookup(ContentManagerHome.class,
+                ContentManagerHome.JNDI_NAME);
         return home.create();
     }
-	
+
 }

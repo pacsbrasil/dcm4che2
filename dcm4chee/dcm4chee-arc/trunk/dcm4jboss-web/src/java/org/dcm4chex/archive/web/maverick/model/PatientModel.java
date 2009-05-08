@@ -58,7 +58,7 @@ public class PatientModel extends AbstractModel {
 
     private long pk = -1l;
     private boolean showXDS = false;
-    
+
     private static XDSConsumerModel consumerModel;
 
     public PatientModel() {
@@ -82,7 +82,7 @@ public class PatientModel extends AbstractModel {
     }
 
     public int hashCode() {
-    	return (int)( pk ^ pk >>> 32);//like Long.hashCode()
+        return (int)( pk ^ pk >>> 32);//like Long.hashCode()
     }
 
     public boolean equals(Object o) {
@@ -131,7 +131,7 @@ public class PatientModel extends AbstractModel {
     public final void setPatientSex(String patientSex) {
         ds.putCS(Tags.PatientSex, patientSex);
     }
-    
+
     /**
      * Returns the list of studies.
      * <p>
@@ -153,11 +153,11 @@ public class PatientModel extends AbstractModel {
     public final void setStudies(List studies) {
         setChilds( studies );
     }
-    
+
     public boolean isShowStudies() {
         return listOfChilds().size() > 0;
     }
-    
+
     public static void setConsumerModel(XDSConsumerModel m) {
         consumerModel = m;
     }
@@ -179,9 +179,9 @@ public class PatientModel extends AbstractModel {
     public void setShowXDS(boolean showXDS) {
         this.showXDS = showXDS;
     }
-    
+
     public List getXDSDocuments() {
         return showXDS ? consumerModel.getDocuments(getPatientID()) : null;
     }
-    
+
 }

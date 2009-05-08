@@ -47,85 +47,85 @@ import javax.servlet.http.HttpServletRequest;
  * @since 13.02.2006
  */
 public abstract class BasicFormPagingModel extends BasicFormModel{
-	/** Holds the current offset for paging */
-	private int offset = 0;
-	/** Holds the limit for paging */
-	private int limit = 20;
-	/** Holds the total number of results of last search. */
-	private int total = 0;
+    /** Holds the current offset for paging */
+    private int offset = 0;
+    /** Holds the limit for paging */
+    private int limit = 20;
+    /** Holds the total number of results of last search. */
+    private int total = 0;
 
-	protected BasicFormPagingModel( HttpServletRequest request ) {
-		super(request);
+    protected BasicFormPagingModel( HttpServletRequest request ) {
+        super(request);
     }
 
-	/**
-	 * Returns current page limit.
-	 * 
-	 * @return Returns the limit.
-	 */
-	public int getLimit() {
-		return limit;
-	}
-	/**
-	 * Set current page limit.
-	 * 
-	 * @param limit The limit to set.
-	 */
-	public void setLimit(int limit) {
-		this.limit = limit;
-	}
-	/**
-	 * Return current offset (page number; starts with 0).
-	 * 
-	 * @return Returns the offset.
-	 */
-	public int getOffset() {
-		return offset;
-	}
-	/**
-	 * Set current page offset
-	 * @param offset The offset to set.
-	 */
-	public void setOffset(int offset) {
-		this.offset = offset;
-	}
-	/**
-	 * Return the total number of results of the last search.
-	 * 
-	 * @return Returns the total.
-	 */
-	public int getTotal() {
-		return total;
-	}
-	
-	protected void setTotal(int total) {
-		this.total = total;
-	}
+    /**
+     * Returns current page limit.
+     * 
+     * @return Returns the limit.
+     */
+    public int getLimit() {
+        return limit;
+    }
+    /**
+     * Set current page limit.
+     * 
+     * @param limit The limit to set.
+     */
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
+    /**
+     * Return current offset (page number; starts with 0).
+     * 
+     * @return Returns the offset.
+     */
+    public int getOffset() {
+        return offset;
+    }
+    /**
+     * Set current page offset
+     * @param offset The offset to set.
+     */
+    public void setOffset(int offset) {
+        this.offset = offset;
+    }
+    /**
+     * Return the total number of results of the last search.
+     * 
+     * @return Returns the total.
+     */
+    public int getTotal() {
+        return total;
+    }
 
-	/**
-	 * Goto previous page.
-	 */
-	public void performPrevious() {
-		if ( offset - limit >= 0 ) {
-			offset -= limit;
-			gotoCurrentPage();
-		}
-	}
+    protected void setTotal(int total) {
+        this.total = total;
+    }
 
-	/**
-	 * Goto next page.
-	 *
-	 */
-	public void performNext() {
-		if ( offset + limit < total ) {
-			offset += limit;
-			gotoCurrentPage();
-		}
-	}
+    /**
+     * Goto previous page.
+     */
+    public void performPrevious() {
+        if ( offset - limit >= 0 ) {
+            offset -= limit;
+            gotoCurrentPage();
+        }
+    }
 
-	/**
-	 * 
-	 */
-	public abstract void gotoCurrentPage();
-	
+    /**
+     * Goto next page.
+     *
+     */
+    public void performNext() {
+        if ( offset + limit < total ) {
+            offset += limit;
+            gotoCurrentPage();
+        }
+    }
+
+    /**
+     * 
+     */
+    public abstract void gotoCurrentPage();
+
 }

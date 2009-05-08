@@ -49,26 +49,26 @@ import org.dcm4chex.archive.web.maverick.model.PatientModel;
  */
 public class PatientEditCtrl extends Dcm4cheeFormController
 {
-	private long pk = -1;
-	
-	public final void setPk(long pk)
-	{
-		this.pk = pk;
-	}
-	
-	public PatientModel getPatient() {
-		PatientModel pat = FolderForm.getFolderForm(getCtx()).getPatientByPk(pk);
-		return pat != null ? pat : newPatient();
-	}
+    private long pk = -1;
+
+    public final void setPk(long pk)
+    {
+        this.pk = pk;
+    }
+
+    public PatientModel getPatient() {
+        PatientModel pat = FolderForm.getFolderForm(getCtx()).getPatientByPk(pk);
+        return pat != null ? pat : newPatient();
+    }
 
     private PatientModel newPatient() {
         PatientModel pat = new PatientModel();
         pat.setSpecificCharacterSet("ISO_IR 100");
         return pat;
     }
-    
+
     public String getPopupMsg() {
-    	return FolderForm.getFolderForm(getCtx()).getPopupMsg();
+        return FolderForm.getFolderForm(getCtx()).getPopupMsg();
     }
 
 }

@@ -56,41 +56,41 @@ public class XDSQueryCtrl extends Dcm4cheeFormController {
     private String type;
 
     private static Logger log = Logger.getLogger( XDSQueryCtrl.class.getName() );
-    
+
     public final void setPatPk(String patPk) {
         this.patPk = patPk;
     }
-    
+
     public final void setQueryType( String type ) {
-    	this.type = type;
+        this.type = type;
     }
 
     protected String perform() throws Exception {
-    	FolderForm folderForm = FolderForm.getFolderForm(getCtx());
-    	PatientModel pat = folderForm.getPatientByPk(Integer.parseInt(patPk));
-    	String patId = pat.getPatientID();
-    	String issuer = pat.getIssuerOfPatientID();
-    	if (type == null) {
+        FolderForm folderForm = FolderForm.getFolderForm(getCtx());
+        PatientModel pat = folderForm.getPatientByPk(Integer.parseInt(patPk));
+        String patId = pat.getPatientID();
+        String issuer = pat.getIssuerOfPatientID();
+        if (type == null) {
             log.warn("No Query type specified! e.g. queryType=findDocuments");
             return SUCCESS;
         }
         log.info("issuer:"+issuer);
         XDSQueryDelegate delegate = XDSQueryDelegate.getInstance(getCtx());
         if ( getCtx().getRequest().getParameter("useRefs") != null ) 
-        	delegate.setUseLeafFind(false);
+            delegate.setUseLeafFind(false);
         XDSConsumerModel model = PatientModel.getConsumerModel();
         try {
-	        if ( "findDocuments".equals(type)) {
-	            delegate.findDocuments(patId, issuer, model);
-	            log.info("ConsumerModel after findDocuments:"+model);
-	        } else if ("clearDocumentList".equals(type)) {
-	        	delegate.clearDocumentList(patId, issuer, model);
-	        } else {
-	            log.warn("Query type "+type+" not supported!");
-	        }
+            if ( "findDocuments".equals(type)) {
+                delegate.findDocuments(patId, issuer, model);
+                log.info("ConsumerModel after findDocuments:"+model);
+            } else if ("clearDocumentList".equals(type)) {
+                delegate.clearDocumentList(patId, issuer, model);
+            } else {
+                log.warn("Query type "+type+" not supported!");
+            }
         } catch ( Exception x ) {
-        	log.error("XDS Query failed!",x);
-        	model.setPopupMsg("xdsi.err",x.getMessage());
+            log.error("XDS Query failed!",x);
+            model.setPopupMsg("xdsi.err",x.getMessage());
         }
         return SUCCESS;
     }

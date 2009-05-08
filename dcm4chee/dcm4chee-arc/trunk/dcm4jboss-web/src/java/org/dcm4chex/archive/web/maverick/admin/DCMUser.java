@@ -51,114 +51,114 @@ import java.util.Collection;
  */
 public class DCMUser {
 
-	public static final String JBOSSADMIN = "JBossAdmin";
-	public static final String WEBADMIN = "WebAdmin";
-	public static final String WEBUSER = "WebUser";
-	public static final String ARRUSER = "AuditLogUser";
-	public static final String MCMUSER = "McmUser";
-	public static final String DATACARE_USER = "DatacareUser";
-	
-	private String userID;
-	private Collection roles = new ArrayList();
-	private int hash;
-	
-	public DCMUser( String userID, Collection roles ) {
-		if ( userID == null ) {
-			throw new IllegalArgumentException("Cant create DCMUser! UserID must not be null!");
-		}
-		this.userID = userID;
-		hash = userID.hashCode();
-		if ( roles != null )
-			this.roles = roles;
-	}
-	
-	/**
-	 * @param hashCode
-	 */
-	private DCMUser(int hashCode) {
-		hash = hashCode;
-		// TODO Auto-generated constructor stub
-	}
+    public static final String JBOSSADMIN = "JBossAdmin";
+    public static final String WEBADMIN = "WebAdmin";
+    public static final String WEBUSER = "WebUser";
+    public static final String ARRUSER = "AuditLogUser";
+    public static final String MCMUSER = "McmUser";
+    public static final String DATACARE_USER = "DatacareUser";
 
-	public static final DCMUser getQueryUser( int hashCode ) {
-		return new DCMUser(hashCode);
-	}
-	
-	public void setUserID( String id ) {
-		userID = id;
-	}
-	
-	public void setRole(String role, boolean enable) {
-		if ( enable )
-			addRole(role);
-		else
-			removeRole(role);
-	}
-	public void addRole( String role ) {
-		if ( ! roles.contains(role ) ) {
-			roles.add(role);
-		}
-	}
+    private String userID;
+    private Collection roles = new ArrayList();
+    private int hash;
 
-	public void removeRole( String role ) {
-		roles.remove(role);
-	}
-	
-	public boolean isInRole( String role ) {
-		return roles.contains( role );
-	}
-	
-	/**
-	 * 
-	 * @return Get list of all roles assigned to this user.
-	 */
-	public Collection getRoles() { 
-		return roles;
-	}
-	
-	/**
-	 * @return Returns the userID.
-	 */
-	public String getUserID() {
-		return userID;
-	}
-	
-	public int getUserHash() {
-		return hash;
-	}
+    public DCMUser( String userID, Collection roles ) {
+        if ( userID == null ) {
+            throw new IllegalArgumentException("Cant create DCMUser! UserID must not be null!");
+        }
+        this.userID = userID;
+        hash = userID.hashCode();
+        if ( roles != null )
+            this.roles = roles;
+    }
 
-	
-	/**
-	 * Returns simple description of this object.
-	 */
-	public String toString() {
-		return "UserID:"+userID+" roles:"+roles;	
-	}
-	
-	/**
-	 * Returns true if parameter is a DCMUser object with same userID as this object.
-	 * <p>
-	 * This method returns true even roles are equal or not!
-	 * <p>
-	 * Use hashcode to check equality!
-	 * 
-	 * @param user The object to check equality.
-	 * 
-	 * @return true if userID is equal.
-	 */
-	public boolean equals( Object user ) {
-		if ( user != null || (user instanceof DCMUser) ) {
-			return hash == ((DCMUser)user).hashCode();
-		} 
-		return false;
-	}
-	
-	/**
-	 * Returns hashCode of userID String object.
-	 * 
-	 * @return Hashcode of this object.
-	 */
-	public int hashCode() {
-		return hash;
-	}
+    /**
+     * @param hashCode
+     */
+    private DCMUser(int hashCode) {
+        hash = hashCode;
+        // TODO Auto-generated constructor stub
+    }
+
+    public static final DCMUser getQueryUser( int hashCode ) {
+        return new DCMUser(hashCode);
+    }
+
+    public void setUserID( String id ) {
+        userID = id;
+    }
+
+    public void setRole(String role, boolean enable) {
+        if ( enable )
+            addRole(role);
+        else
+            removeRole(role);
+    }
+    public void addRole( String role ) {
+        if ( ! roles.contains(role ) ) {
+            roles.add(role);
+        }
+    }
+
+    public void removeRole( String role ) {
+        roles.remove(role);
+    }
+
+    public boolean isInRole( String role ) {
+        return roles.contains( role );
+    }
+
+    /**
+     * 
+     * @return Get list of all roles assigned to this user.
+     */
+    public Collection getRoles() { 
+        return roles;
+    }
+
+    /**
+     * @return Returns the userID.
+     */
+    public String getUserID() {
+        return userID;
+    }
+
+    public int getUserHash() {
+        return hash;
+    }
+
+
+    /**
+     * Returns simple description of this object.
+     */
+    public String toString() {
+        return "UserID:"+userID+" roles:"+roles;	
+    }
+
+    /**
+     * Returns true if parameter is a DCMUser object with same userID as this object.
+     * <p>
+     * This method returns true even roles are equal or not!
+     * <p>
+     * Use hashcode to check equality!
+     * 
+     * @param user The object to check equality.
+     * 
+     * @return true if userID is equal.
+     */
+    public boolean equals( Object user ) {
+        if ( user != null || (user instanceof DCMUser) ) {
+            return hash == ((DCMUser)user).hashCode();
+        } 
+        return false;
+    }
+
+    /**
+     * Returns hashCode of userID String object.
+     * 
+     * @return Hashcode of this object.
+     */
+    public int hashCode() {
+        return hash;
+    }
 }

@@ -72,7 +72,7 @@ public class ContentEditDelegate {
     }
 
     public Dataset createPatient(Dataset ds) {
-    	Object o = null;
+        Object o = null;
         try {
             o = server.invoke(contentEditName,
                     "createPatient",
@@ -80,7 +80,7 @@ public class ContentEditDelegate {
                     new String[] { Dataset.class.getName() });
         } catch (Throwable t) {
             while ( t.getCause() != null) {
-            	t = t.getCause();
+                t = t.getCause();
             }
             // char ' in message cause trouble with javascript (popupMsg)!
             String msg = t.getMessage()!=null ? t.getMessage().replace('\'','\"') : t.getClass().getName();
@@ -90,7 +90,7 @@ public class ContentEditDelegate {
     }
 
     public Dataset createStudy(Dataset ds, long patPk) {
-    	Object o = null;
+        Object o = null;
         try {
             o = server.invoke(contentEditName,
                     "createStudy",
@@ -103,7 +103,7 @@ public class ContentEditDelegate {
     }
 
     public Dataset createSeries(Dataset ds, long studyPk) {
-    	Object o = null;
+        Object o = null;
         try {
             o = server.invoke(contentEditName,
                     "createSeries",
@@ -126,7 +126,7 @@ public class ContentEditDelegate {
             return null;
         }
     }
-    
+
     public void updatePatient(Dataset ds) {
         try {
             server.invoke(contentEditName,
@@ -137,7 +137,7 @@ public class ContentEditDelegate {
             log.warn("Failed to update Patient:", e);
         }
     }
-    
+
     public void updateStudy(Dataset ds) {
         try {
             server.invoke(contentEditName,
@@ -148,7 +148,7 @@ public class ContentEditDelegate {
             log.warn("Failed to update Study:", e);
         }
     }
-   
+
     public void updateSeries(Dataset ds) {
         try {
             server.invoke(contentEditName,
@@ -159,46 +159,46 @@ public class ContentEditDelegate {
             log.warn("Failed to update Series:", e);
         }
     }
- 
+
     public void movePatientToTrash(long pk) {
-    	invokeCmd("movePatientToTrash", pk);
+        invokeCmd("movePatientToTrash", pk);
     }
     public void moveStudyToTrash(long pk) {
-    	invokeCmd("moveStudyToTrash", pk);
+        invokeCmd("moveStudyToTrash", pk);
     }
     public void moveSeriesToTrash(long pk) {
-    	invokeCmd("moveSeriesToTrash", pk);
+        invokeCmd("moveSeriesToTrash", pk);
     }
     public void moveInstanceToTrash(long pk) {
-    	invokeCmd("moveInstanceToTrash", pk);
+        invokeCmd("moveInstanceToTrash", pk);
     }
 
     public void undeletePatient( long pk ) {
-    	invokeCmd("undeletePatient", pk);
+        invokeCmd("undeletePatient", pk);
     }
     public void undeleteStudy( long pk ) {
-    	invokeCmd("undeleteStudy", pk);
+        invokeCmd("undeleteStudy", pk);
     }
     public void undeleteSeries( long pk ) {
-    	invokeCmd("undeleteSeries", pk);
+        invokeCmd("undeleteSeries", pk);
     }
     public void undeleteInstance( long pk ) {
-    	invokeCmd("undeleteInstance", pk);
+        invokeCmd("undeleteInstance", pk);
     }
-    
+
     public void deletePatient( long pk ) {
-    	invokeCmd("deletePatient", pk);
+        invokeCmd("deletePatient", pk);
     }
     public void deleteStudy( long pk ) {
-    	invokeCmd("deleteStudy", pk);
+        invokeCmd("deleteStudy", pk);
     }
     public void deleteSeries( long pk ) {
-    	invokeCmd("deleteSeries", pk);
+        invokeCmd("deleteSeries", pk);
     }
     public void deleteInstance( long pk ) {
-    	invokeCmd("deleteInstance", pk);
+        invokeCmd("deleteInstance", pk);
     }
-    
+
     public void emptyTrash() {
         try {
             server.invoke(contentEditName,
@@ -218,8 +218,8 @@ public class ContentEditDelegate {
             log.warn("Failed to invoke command '"+cmd+"' with (pk="+pk+") !", e);
         }
     }
-    
-    
+
+
     public void moveStudies(long[] study_pks, long patient_pk) {
         try {
             server.invoke(contentEditName,
@@ -229,9 +229,9 @@ public class ContentEditDelegate {
         } catch (Exception e) {
             log.warn("Failed to move Studies:", e);
         }
-     	
+
     }
- 
+
     public void moveSeries(long[] series_pks, long study_pk) {
         try {
             server.invoke(contentEditName,
@@ -241,7 +241,7 @@ public class ContentEditDelegate {
         } catch (Exception e) {
             log.warn("Failed to move Series:", e);
         }
-     	
+
     }
 
     public void moveInstances(long[] instance_pks, long series_pk) {
@@ -253,7 +253,7 @@ public class ContentEditDelegate {
         } catch (Exception e) {
             log.warn("Failed to move Instances:", e);
         }
-     	
+
     }
 
 }

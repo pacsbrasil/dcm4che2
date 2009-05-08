@@ -46,69 +46,69 @@ package org.dcm4chex.archive.web.maverick.admin;
  */
 public class UserChgPwdSubmitCtrl extends UserAdminCtrl
 {
-	private String cancelPar = null;
-	private String userID;
-	private String oldPasswd;
-	private String passwd;
-	private String passwd1;
+    private String cancelPar = null;
+    private String userID;
+    private String oldPasswd;
+    private String passwd;
+    private String passwd1;
 
-	
+
     protected Object makeFormBean() {
         return this;
     }
-	
-	/**
-	 * @param userID The userID to set.
-	 */
-	public void setUserID(String userID) {
-		this.userID = userID;
-	}
-	/**
-	 * @param oldPasswd The oldPasswd to set.
-	 */
-	public void setOldPasswd(String oldPasswd) {
-		this.oldPasswd = oldPasswd;
-	}
-	/**
-	 * @param passwd The passwd to set.
-	 */
-	public void setPasswd(String passwd) {
-		this.passwd = passwd;
-	}
-	/**
-	 * @param passwd1 The passwd1 to set.
-	 */
-	public void setPasswd1(String passwd1) {
-		this.passwd1 = passwd1;
-	}
-	/**
-	 * @param cancelPar The cancelPar to set.
-	 */
-	public void setCancel(String cancelPar) {
-		this.cancelPar = cancelPar;
-	}
-	
-	protected String perform() throws Exception
-	{
-		UserAdminModel model = UserAdminModel.getModel( getCtx().getRequest() );
-		model.clearPopupMsg();
-		if ( cancelPar == null ) {
-			if ( passwd.equals(passwd1)) {
-				if ( passwd.trim().length() > 2 ) {
-					if ( ! model.changePassword( userID, oldPasswd, passwd ) ) {
-						model.setPopupMsg("admin.err_chgpwd_oldpwd", userID);
-						return "chgpwd_error";
-					}
-				} else {
-					model.setPopupMsg("admin.err_chgpwd_short", userID);
-					return "chgpwd_error";
-				}
-			} else {
-				model.setPopupMsg("admin.err_chgpwd_newpwd", userID);
-				return "chgpwd_error";
-			}
-		}
-		
-		return SUCCESS;
-	}		
+
+    /**
+     * @param userID The userID to set.
+     */
+    public void setUserID(String userID) {
+        this.userID = userID;
+    }
+    /**
+     * @param oldPasswd The oldPasswd to set.
+     */
+    public void setOldPasswd(String oldPasswd) {
+        this.oldPasswd = oldPasswd;
+    }
+    /**
+     * @param passwd The passwd to set.
+     */
+    public void setPasswd(String passwd) {
+        this.passwd = passwd;
+    }
+    /**
+     * @param passwd1 The passwd1 to set.
+     */
+    public void setPasswd1(String passwd1) {
+        this.passwd1 = passwd1;
+    }
+    /**
+     * @param cancelPar The cancelPar to set.
+     */
+    public void setCancel(String cancelPar) {
+        this.cancelPar = cancelPar;
+    }
+
+    protected String perform() throws Exception
+    {
+        UserAdminModel model = UserAdminModel.getModel( getCtx().getRequest() );
+        model.clearPopupMsg();
+        if ( cancelPar == null ) {
+            if ( passwd.equals(passwd1)) {
+                if ( passwd.trim().length() > 2 ) {
+                    if ( ! model.changePassword( userID, oldPasswd, passwd ) ) {
+                        model.setPopupMsg("admin.err_chgpwd_oldpwd", userID);
+                        return "chgpwd_error";
+                    }
+                } else {
+                    model.setPopupMsg("admin.err_chgpwd_short", userID);
+                    return "chgpwd_error";
+                }
+            } else {
+                model.setPopupMsg("admin.err_chgpwd_newpwd", userID);
+                return "chgpwd_error";
+            }
+        }
+
+        return SUCCESS;
+    }		
 }

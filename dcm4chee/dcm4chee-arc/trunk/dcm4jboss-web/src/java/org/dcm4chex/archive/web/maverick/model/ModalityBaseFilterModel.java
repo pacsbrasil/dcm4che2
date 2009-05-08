@@ -62,11 +62,11 @@ public abstract class ModalityBaseFilterModel extends BasicFilterModel {
     private Map selectedStationAetMap = new HashMap();
     private String stationAet;
     private boolean onlyGroups;
-    
-	public ModalityBaseFilterModel() {
+
+    public ModalityBaseFilterModel() {
         super();
-	}
-    
+    }
+
     /**
      * @return Returns the startDate.
      */
@@ -74,7 +74,7 @@ public abstract class ModalityBaseFilterModel extends BasicFilterModel {
         return startDate;
     }
     public abstract void setStartDate(String startDate) throws ParseException;
-    
+
     /**
      * Return Map with StationAET and/or group names with selection state.
      * <p/>
@@ -128,7 +128,7 @@ public abstract class ModalityBaseFilterModel extends BasicFilterModel {
             selectedStationAetMap.put(iter.next(), b);
         }
     }
-    
+
     /**
      * change selection state of all given (known) names as selected.
      * <p/>
@@ -144,7 +144,7 @@ public abstract class ModalityBaseFilterModel extends BasicFilterModel {
         }
         //updateStationAetFilter()
     }
-    
+
     /**
      * @return Returns the stationAET.
      */
@@ -158,14 +158,14 @@ public abstract class ModalityBaseFilterModel extends BasicFilterModel {
         stationAet = ( aet == null || aet.trim().length() < 1 ) ? null : aet;
         updateStationAetFilter(ds, tag, true);
     }
-    
+
     private void updateStationAetFilter(Dataset ds, int tag, boolean addSelected) {
         Set newStationAets = getGroupResolvedList( stationAet, ',');
         if ( addSelected ) {
             Map.Entry entry;
             for ( Iterator iter = selectedStationAetMap.entrySet().iterator() ; iter.hasNext() ; ) {
                 entry = (Map.Entry) iter.next();
-                
+
                 if ( Boolean.TRUE.equals(entry.getValue()) ) {
                     addItemOrGroupItems(newStationAets, (String) entry.getKey() );
                 }
@@ -183,15 +183,15 @@ public abstract class ModalityBaseFilterModel extends BasicFilterModel {
         }
     }
 
-    
+
     private Set getGroupResolvedList(String aet, char delim) {
         Set newStationAets = new HashSet();
         if ( aet != null ) {
             int start = 0, end = aet.indexOf(delim);
             while ( end != -1) {
-               addItemOrGroupItems(newStationAets, aet.substring(start,end));
-               start = ++end;
-               end = start == aet.length() ? -1 : aet.indexOf(delim, start);
+                addItemOrGroupItems(newStationAets, aet.substring(start,end));
+                start = ++end;
+                end = start == aet.length() ? -1 : aet.indexOf(delim, start);
             }
             if ( start != aet.length() ) {
                 addItemOrGroupItems(newStationAets, aet.substring(start));
@@ -201,17 +201,17 @@ public abstract class ModalityBaseFilterModel extends BasicFilterModel {
     }
 
     private void addItemOrGroupItems(Set newStationAets, String item) {
-       Collection groupedItems = (Collection) stationAetGroups.get(item);
-       if ( groupedItems == null ) {
-           if ( onlyGroups ) {
-               throw new IllegalArgumentException("Only named groups are allowed for current user!");
-           }
-           newStationAets.add(item);
-       } else {
-           for ( Iterator iter = groupedItems.iterator() ; iter.hasNext() ; ) {
-               newStationAets.add(iter.next());
-           }
-       }
+        Collection groupedItems = (Collection) stationAetGroups.get(item);
+        if ( groupedItems == null ) {
+            if ( onlyGroups ) {
+                throw new IllegalArgumentException("Only named groups are allowed for current user!");
+            }
+            newStationAets.add(item);
+        } else {
+            for ( Iterator iter = groupedItems.iterator() ; iter.hasNext() ; ) {
+                newStationAets.add(iter.next());
+            }
+        }
     }
-    
+
 }

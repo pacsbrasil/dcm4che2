@@ -51,30 +51,30 @@ import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 public class AEEditSubmitCtrl extends AEFormCtrl
 {
 
-	protected String perform() throws Exception
-	{
-		HttpServletRequest request = getCtx().getRequest();
-		AEModel model = AEModel.getModel(request);
+    protected String perform() throws Exception
+    {
+        HttpServletRequest request = getCtx().getRequest();
+        AEModel model = AEModel.getModel(request);
         model.clearPopupMsg();
-		AEDelegate delegate = lookupAEDelegate();
-		if (request.getParameter("update") != null)
-		{
-			AEDTO newAE = model.getAE();
-			try
-			{
-				lookupAEDelegate().updateAE( newAE, model.isCheckHost());
-				return SUCCESS;
-			} catch (Throwable e) {
-				Throwable t = e.getCause();
-				if ( t == null ) t = e;
-				model.setPopupMsg("ae.err_chg",t.getMessage());
-				return "failed";
-			}
-		} else 	if (request.getParameter("echo") != null ) {
-			model.setPopupMsg( "ae.echo", delegate.echo( model.getAE(), 5));
-			return SUCCESS;
-		} else
-			return SUCCESS;
-	}
+        AEDelegate delegate = lookupAEDelegate();
+        if (request.getParameter("update") != null)
+        {
+            AEDTO newAE = model.getAE();
+            try
+            {
+                lookupAEDelegate().updateAE( newAE, model.isCheckHost());
+                return SUCCESS;
+            } catch (Throwable e) {
+                Throwable t = e.getCause();
+                if ( t == null ) t = e;
+                model.setPopupMsg("ae.err_chg",t.getMessage());
+                return "failed";
+            }
+        } else 	if (request.getParameter("echo") != null ) {
+            model.setPopupMsg( "ae.echo", delegate.echo( model.getAE(), 5));
+            return SUCCESS;
+        } else
+            return SUCCESS;
+    }
 
 }

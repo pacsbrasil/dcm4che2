@@ -56,59 +56,59 @@ import org.dcm4chex.archive.web.maverick.model.BasicFilterModel;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class PPSFilter extends BasicFilterModel {
-    
+
     private String startDate;
-    
-	public PPSFilter() {
+
+    public PPSFilter() {
         super();
-	}
-    
-	/**
-	 * @return Returns the startDate.
-	 */
-	public String getStartDate() {
-		return startDate;
-	}
-	public void setStartDate(String startDate) throws ParseException {
+    }
+
+    /**
+     * @return Returns the startDate.
+     */
+    public String getStartDate() {
+        return startDate;
+    }
+    public void setStartDate(String startDate) throws ParseException {
         this.startDate = startDate;
         this.setDateRange(ds, Tags.PPSStartDate, startDate);
-	}
-	
-	/**
-	 * @return Returns the status.
-	 */
-	public String getStatus() {
-		return ds.getString(Tags.PPSStatus);
-	}
-	/**
-	 * @param status The status to set.
-	 */
-	public void setStatus(String status) {
-		ds.putCS(Tags.PPSStatus, status);
-	}
-	/**
-	 * @return
-	 */
-	public String getSopIuid() {
-		return ds.getString(Tags.SOPInstanceUID);
-	}
-	
-	public void setSopIuid( String uid ) {
-		ds.putUI(Tags.SOPInstanceUID, uid);
-	}
-	/**
-	 * @return
-	 */
-	public String getPatientID() {
-		return ds.getString(Tags.PatientID);
-	}
-	
-	public void setPatientID( String id ) {
-		ds.putLO(Tags.PatientID, id);
-	}
+    }
 
-	
-	
+    /**
+     * @return Returns the status.
+     */
+    public String getStatus() {
+        return ds.getString(Tags.PPSStatus);
+    }
+    /**
+     * @param status The status to set.
+     */
+    public void setStatus(String status) {
+        ds.putCS(Tags.PPSStatus, status);
+    }
+    /**
+     * @return
+     */
+    public String getSopIuid() {
+        return ds.getString(Tags.SOPInstanceUID);
+    }
+
+    public void setSopIuid( String uid ) {
+        ds.putUI(Tags.SOPInstanceUID, uid);
+    }
+    /**
+     * @return
+     */
+    public String getPatientID() {
+        return ds.getString(Tags.PatientID);
+    }
+
+    public void setPatientID( String id ) {
+        ds.putLO(Tags.PatientID, id);
+    }
+
+
+
     public void init() {
         String d = new SimpleDateFormat(DATE_FORMAT).format(new Date());
         try {

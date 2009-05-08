@@ -74,18 +74,18 @@ public abstract class AbstractModel extends BasicDatasetModel {
     protected AbstractModel(Dataset ds) {
         super(ds);
     }
-    
+
     public boolean update( Dataset dsNew ) {
         ByteBuffer bb = ds.getByteBuffer(PrivateTags.SeriesPk);
         long pk = bb == null ? -1 : Convert.toLong(bb.array());
         bb = ds.getByteBuffer(PrivateTags.SeriesPk);
         long pkNew = bb == null ? -1 : Convert.toLong(bb.array());
-    	if ( pk != pkNew ) {
-    		return false;
-    	}
-    	this.ds = dsNew;
-    	ds.setPrivateCreatorID(PrivateTags.CreatorID);
-    	return true;
+        if ( pk != pkNew ) {
+            return false;
+        }
+        this.ds = dsNew;
+        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        return true;
     }
 
     /**
@@ -94,9 +94,9 @@ public abstract class AbstractModel extends BasicDatasetModel {
      * @return List of childs.
      */
     public List listOfChilds() {
-    	return childs;
+        return childs;
     }
-    
+
     /**
      * Set the childs for this model.
      * <p>
@@ -109,12 +109,12 @@ public abstract class AbstractModel extends BasicDatasetModel {
      * @param list New list of childs.
      */
     public void setChilds( List list ) {
-    	if ( list != null ) {
-    		childs = list;
-    		childsPK = null;
-    	}
+        if ( list != null ) {
+            childs = list;
+            childsPK = null;
+        }
     }
-    
+
     /**
      * Checks if this model contains given child.
      * 
@@ -122,9 +122,9 @@ public abstract class AbstractModel extends BasicDatasetModel {
      * @return true if this model contains given child.
      */
     public boolean contains( AbstractModel model ) {
-    	return childs.contains( model );
+        return childs.contains( model );
     }
-    
+
     /**
      * Checks if this model contains a child with given pk.
      * <p>
@@ -134,9 +134,9 @@ public abstract class AbstractModel extends BasicDatasetModel {
      * @return 
      */
     public boolean containsPK( Long pk ) {
-    	return childPKs().contains( pk );
+        return childPKs().contains( pk );
     }
-    
+
     /**
      * Gets the list of all clients pk's.
      * <p>
@@ -145,20 +145,20 @@ public abstract class AbstractModel extends BasicDatasetModel {
      * @return List of childs pk's.
      */
     public List childPKs(){
-    	if ( childsPK != null ) return childsPK;
-    	childsPK = new ArrayList();
-    	Iterator iter = listOfChilds().iterator();
-    	while ( iter.hasNext() ) {
-    		childsPK.add( new Long( ((AbstractModel) iter.next() ).getPk() ) );
-    	}
-    	return childsPK;
+        if ( childsPK != null ) return childsPK;
+        childsPK = new ArrayList();
+        Iterator iter = listOfChilds().iterator();
+        while ( iter.hasNext() ) {
+            childsPK.add( new Long( ((AbstractModel) iter.next() ).getPk() ) );
+        }
+        return childsPK;
     }
-    
+
     /**
      * Get the pk of this model instance.
      * 
      * @return pk
      */
     public abstract long getPk();
-    
+
 }

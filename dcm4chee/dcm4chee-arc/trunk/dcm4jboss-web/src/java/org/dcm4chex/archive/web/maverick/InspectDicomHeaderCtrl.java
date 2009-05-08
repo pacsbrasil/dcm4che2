@@ -56,7 +56,7 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
  */
 public class InspectDicomHeaderCtrl extends Dcm4cheeFormController {
 
-	private long patPk = -1;
+    private long patPk = -1;
     private long studyPk = -1;
     private long seriesPk = -1;
     private long instancePk = -1;
@@ -74,38 +74,38 @@ public class InspectDicomHeaderCtrl extends Dcm4cheeFormController {
         this.instancePk = pk;
     }
 
-	protected String perform() throws Exception {
-	    FolderForm  form = FolderForm.getFolderForm(getCtx());
-	    StringBuffer sb = new StringBuffer();
-		try {
-		    Dataset ds = lookupContentManager().getHeaderInfo(patPk, studyPk, seriesPk, instancePk);
+    protected String perform() throws Exception {
+        FolderForm  form = FolderForm.getFolderForm(getCtx());
+        StringBuffer sb = new StringBuffer();
+        try {
+            Dataset ds = lookupContentManager().getHeaderInfo(patPk, studyPk, seriesPk, instancePk);
             getCtx().getRequest().getSession().setAttribute("dataset2view", ds);
-			if ( instancePk != -1 )
-				sb.append("INSTANCE,");
-			if ( seriesPk != -1 )
-				sb.append("SERIES,");
-			if ( studyPk != -1 ) 
-				sb.append("STUDY,");
-			if ( patPk != -1 ) {
-				sb.append("PATIENT,");
-			}
+            if ( instancePk != -1 )
+                sb.append("INSTANCE,");
+            if ( seriesPk != -1 )
+                sb.append("SERIES,");
+            if ( studyPk != -1 ) 
+                sb.append("STUDY,");
+            if ( patPk != -1 ) {
+                sb.append("PATIENT,");
+            }
             sb.setLength(sb.length()-1);
             getCtx().getRequest().getSession().setAttribute("titleOfdataset2view", 
-            		form.formatMessage("folder.dicom_header", new String[]{sb.toString()}));
-			return INSPECT;
-		} catch ( Exception x ) {
-			x.printStackTrace();
-			form.setExternalPopupMsg("folder.err_inspect", new String[]{"pks:pat:"+patPk+", study:"+studyPk+
-					", series:"+seriesPk+", instance:"+instancePk});
-			return ERROR;
-		}
-	}
-	
-	private ContentManager lookupContentManager() throws Exception {
-	    ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-	         .getFactory().lookup(ContentManagerHome.class,
-	               ContentManagerHome.JNDI_NAME);
-	    return home.create();
-	}
-	
+                    form.formatMessage("folder.dicom_header", new String[]{sb.toString()}));
+            return INSPECT;
+        } catch ( Exception x ) {
+            x.printStackTrace();
+            form.setExternalPopupMsg("folder.err_inspect", new String[]{"pks:pat:"+patPk+", study:"+studyPk+
+                    ", series:"+seriesPk+", instance:"+instancePk});
+            return ERROR;
+        }
+    }
+
+    private ContentManager lookupContentManager() throws Exception {
+        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
+        .getFactory().lookup(ContentManagerHome.class,
+                ContentManagerHome.JNDI_NAME);
+        return home.create();
+    }
+
 }

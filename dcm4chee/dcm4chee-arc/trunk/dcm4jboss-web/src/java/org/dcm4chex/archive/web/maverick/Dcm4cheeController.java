@@ -56,34 +56,34 @@ import org.infohazard.maverick.ctl.Throwaway2;
  */
 public class Dcm4cheeController extends Throwaway2
 {
-	protected String perform() throws Exception
-	{
-		return SUCCESS;
-	}
+    protected String perform() throws Exception
+    {
+        return SUCCESS;
+    }
 
-	/**
-	 */
-	protected final String go() throws Exception
-	{
-		Map modified_parameters = new HashMap();
-		Map parameters = this.getCtx().getRequest().getParameterMap();
-		modified_parameters.putAll(parameters);
-		for (Iterator i = parameters.keySet().iterator(); i.hasNext();)
-		{
-			String parameterName = (String)i.next();
-			if (parameterName.endsWith(".x"))
-			{
-				String newName =
-					parameterName.substring(0, parameterName.indexOf(".x"));
-				modified_parameters.put(newName, newName);
-			}
-		}
+    /**
+     */
+    protected final String go() throws Exception
+    {
+        Map modified_parameters = new HashMap();
+        Map parameters = this.getCtx().getRequest().getParameterMap();
+        modified_parameters.putAll(parameters);
+        for (Iterator i = parameters.keySet().iterator(); i.hasNext();)
+        {
+            String parameterName = (String)i.next();
+            if (parameterName.endsWith(".x"))
+            {
+                String newName =
+                    parameterName.substring(0, parameterName.indexOf(".x"));
+                modified_parameters.put(newName, newName);
+            }
+        }
 
-		BeanUtils.populate(this, modified_parameters);
-		BeanUtils.populate(this, this.getCtx().getControllerParams());
-		
-		this.getCtx().setModel(this);
-		
-		return this.perform();
-	}	
+        BeanUtils.populate(this, modified_parameters);
+        BeanUtils.populate(this, this.getCtx().getControllerParams());
+
+        this.getCtx().setModel(this);
+
+        return this.perform();
+    }	
 }

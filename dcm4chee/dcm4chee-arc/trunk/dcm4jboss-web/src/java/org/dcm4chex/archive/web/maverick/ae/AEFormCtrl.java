@@ -50,24 +50,24 @@ import org.dcm4chex.archive.web.maverick.Dcm4cheeFormController;
  */
 public abstract class AEFormCtrl extends Dcm4cheeFormController
 {
-	private static AEDelegate aeDelegate = null;
-	
-	public static final String FAILED = "failed";
+    private static AEDelegate aeDelegate = null;
+
+    public static final String FAILED = "failed";
 
     protected Object makeFormBean() {
-    	return AEModel.getModel(this.getCtx().getRequest());
+        return AEModel.getModel(this.getCtx().getRequest());
     }
-	
+
     public AEDelegate lookupAEDelegate() {
         if ( aeDelegate == null ) {
-        	aeDelegate = new AEDelegate();
-        	aeDelegate.init( getCtx().getServletConfig() );
+            aeDelegate = new AEDelegate();
+            aeDelegate.init( getCtx().getServletConfig() );
         }
         return aeDelegate;
     }
-    
-	protected String getCtrlName() {
-		return "ae_mgr";
-	}
-	
+
+    protected String getCtrlName() {
+        return "ae_mgr";
+    }
+
 }

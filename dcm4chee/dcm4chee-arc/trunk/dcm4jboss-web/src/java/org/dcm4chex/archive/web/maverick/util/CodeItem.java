@@ -47,108 +47,108 @@ import org.dcm4cheri.util.StringUtils;
  * @since Feb 15, 2006
  */
 public class CodeItem {
-	private String codeValue;
-	private String codeDesignator = null;
-	private String codeMeaning;
-	
-	public CodeItem( String codeValue, String codeMeaning ) {
-		this.codeValue = codeValue;
-		this.codeMeaning = codeMeaning;
-	}
-	public CodeItem( String codeValue, String codeMeaning, String codeDesignator ) {
-		this( codeValue, codeMeaning );
-		this.codeDesignator = codeDesignator;
-	}
-	
-	/**
-	 * Create a CodeItem object from a String representation.
-	 * <p>
-	 * Format of codeString: (CDM) &lt;code&gt;[^&lt;designator&gt;]^&lt;meaning&gt; 
-	 *  
-	 * @param codeString
-	 * @return
-	 */
-	public static CodeItem valueofCDM( String codeString ) {
-		if ( codeString == null )
-			throw new IllegalArgumentException("codeString must not be null!");
-		String[] sa = StringUtils.split( codeString, '^' );
-		if ( sa.length > 2 ) {
-			return new CodeItem( sa[0], sa[2], sa[1] );
-		} else if ( sa.length > 1 ) {
-			return new CodeItem( sa[0], sa[1] );
-		} else {
-			throw new IllegalArgumentException("codeString must contain at least CodeValue and CodeMeaning!");
-		}
-	}
+    private String codeValue;
+    private String codeDesignator = null;
+    private String codeMeaning;
 
-	/**
-	 * Create a CodeItem object from a String representation.
-	 * <p>
-	 * Format of codeString: (DCM) [&lt;designator&gt;^]&lt;code&gt;^&lt;meaning&gt; 
-	 *  
-	 * @param codeString
-	 * @return
-	 */
-	public static CodeItem valueofDCM( String codeString ) {
-		if ( codeString == null )
-			throw new IllegalArgumentException("codeString must not be null!");
-		String[] sa = StringUtils.split( codeString, '^' );
-		if ( sa.length > 2 ) {
-			return new CodeItem( sa[1], sa[2], sa[0] );
-		} else if ( sa.length > 1 ) {
-			return new CodeItem( sa[0], sa[1] );
-		} else {
-			throw new IllegalArgumentException("codeString must contain at least CodeValue and CodeMeaning!");
-		}
-	}
-	
-	/**
-	 * @return Returns the codeDesignator.
-	 */
-	public String getCodeDesignator() {
-		return codeDesignator;
-	}
-	/**
-	 * @param codeDesignator The codeDesignator to set.
-	 */
-	public void setCodeDesignator(String codeDesignator) {
-		this.codeDesignator = codeDesignator;
-	}
-	/**
-	 * @return Returns the codeMeaning.
-	 */
-	public String getCodeMeaning() {
-		return codeMeaning;
-	}
-	/**
-	 * @param codeMeaning The codeMeaning to set.
-	 */
-	public void setCodeMeaning(String codeMeaning) {
-		this.codeMeaning = codeMeaning;
-	}
-	/**
-	 * @return Returns the codeValue.
-	 */
-	public String getCodeValue() {
-		return codeValue;
-	}
-	/**
-	 * @param codeValue The codeValue to set.
-	 */
-	public void setCodeValue(String codeValue) {
-		this.codeValue = codeValue;
-	}
-	
-	/**
-	 * Return this CodeItem as String
-	 * <p>
-	 * Format:&lt;codeValue&gt;^&lt;codeMeaning&gt;[&lt;designator&gt;]
-	 */
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		sb.append(codeValue).append('^').append(codeMeaning);
-		if ( codeDesignator != null )
-			sb.append('^').append(codeDesignator);
-		return sb.toString();
-	}
+    public CodeItem( String codeValue, String codeMeaning ) {
+        this.codeValue = codeValue;
+        this.codeMeaning = codeMeaning;
+    }
+    public CodeItem( String codeValue, String codeMeaning, String codeDesignator ) {
+        this( codeValue, codeMeaning );
+        this.codeDesignator = codeDesignator;
+    }
+
+    /**
+     * Create a CodeItem object from a String representation.
+     * <p>
+     * Format of codeString: (CDM) &lt;code&gt;[^&lt;designator&gt;]^&lt;meaning&gt; 
+     *  
+     * @param codeString
+     * @return
+     */
+    public static CodeItem valueofCDM( String codeString ) {
+        if ( codeString == null )
+            throw new IllegalArgumentException("codeString must not be null!");
+        String[] sa = StringUtils.split( codeString, '^' );
+        if ( sa.length > 2 ) {
+            return new CodeItem( sa[0], sa[2], sa[1] );
+        } else if ( sa.length > 1 ) {
+            return new CodeItem( sa[0], sa[1] );
+        } else {
+            throw new IllegalArgumentException("codeString must contain at least CodeValue and CodeMeaning!");
+        }
+    }
+
+    /**
+     * Create a CodeItem object from a String representation.
+     * <p>
+     * Format of codeString: (DCM) [&lt;designator&gt;^]&lt;code&gt;^&lt;meaning&gt; 
+     *  
+     * @param codeString
+     * @return
+     */
+    public static CodeItem valueofDCM( String codeString ) {
+        if ( codeString == null )
+            throw new IllegalArgumentException("codeString must not be null!");
+        String[] sa = StringUtils.split( codeString, '^' );
+        if ( sa.length > 2 ) {
+            return new CodeItem( sa[1], sa[2], sa[0] );
+        } else if ( sa.length > 1 ) {
+            return new CodeItem( sa[0], sa[1] );
+        } else {
+            throw new IllegalArgumentException("codeString must contain at least CodeValue and CodeMeaning!");
+        }
+    }
+
+    /**
+     * @return Returns the codeDesignator.
+     */
+    public String getCodeDesignator() {
+        return codeDesignator;
+    }
+    /**
+     * @param codeDesignator The codeDesignator to set.
+     */
+    public void setCodeDesignator(String codeDesignator) {
+        this.codeDesignator = codeDesignator;
+    }
+    /**
+     * @return Returns the codeMeaning.
+     */
+    public String getCodeMeaning() {
+        return codeMeaning;
+    }
+    /**
+     * @param codeMeaning The codeMeaning to set.
+     */
+    public void setCodeMeaning(String codeMeaning) {
+        this.codeMeaning = codeMeaning;
+    }
+    /**
+     * @return Returns the codeValue.
+     */
+    public String getCodeValue() {
+        return codeValue;
+    }
+    /**
+     * @param codeValue The codeValue to set.
+     */
+    public void setCodeValue(String codeValue) {
+        this.codeValue = codeValue;
+    }
+
+    /**
+     * Return this CodeItem as String
+     * <p>
+     * Format:&lt;codeValue&gt;^&lt;codeMeaning&gt;[&lt;designator&gt;]
+     */
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        sb.append(codeValue).append('^').append(codeMeaning);
+        if ( codeDesignator != null )
+            sb.append('^').append(codeDesignator);
+        return sb.toString();
+    }
 }

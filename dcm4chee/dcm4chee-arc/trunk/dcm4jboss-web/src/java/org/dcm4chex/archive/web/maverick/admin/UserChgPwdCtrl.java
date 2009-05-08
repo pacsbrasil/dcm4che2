@@ -46,27 +46,27 @@ package org.dcm4chex.archive.web.maverick.admin;
  */
 public class UserChgPwdCtrl extends UserAdminCtrl
 {
-	private String userID;
-	private String popupMsg;
+    private String userID;
+    private String popupMsg;
 
     protected Object makeFormBean() {
         return this;
     }
-	/**
-	 * @return Returns the userID.
-	 */
-	public String getUserID() {
-		return userID;
-	}
-	public String getPopupMsg() {
-		return popupMsg;
-	}
-	
-	protected String perform() throws Exception
-	{
-		UserAdminModel model = UserAdminModel.getModel(this.getCtx().getRequest());
-		userID = getCtx().getRequest().getUserPrincipal().getName();
-		popupMsg = model.getPopupMsg();
-		return SUCCESS;
-	}		
+    /**
+     * @return Returns the userID.
+     */
+    public String getUserID() {
+        return userID;
+    }
+    public String getPopupMsg() {
+        return popupMsg;
+    }
+
+    protected String perform() throws Exception
+    {
+        UserAdminModel model = UserAdminModel.getModel(this.getCtx().getRequest());
+        userID = getCtx().getRequest().getUserPrincipal().getName();
+        popupMsg = model.getPopupMsg();
+        return SUCCESS;
+    }		
 }

@@ -46,14 +46,14 @@ import org.dcm4chex.archive.ejb.interfaces.AEDTO;
  */
 public class AENewCtrl extends AEFormCtrl
 {
-	
 
-	protected String perform() throws Exception 
-	{
-		AEModel model = AEModel.getModel(getCtx().getRequest());
-		model.setAE( new AEDTO(-1,null,null,-1,null,null,null,null,null,null,null));
-		return SUCCESS;
-	}
+
+    protected String perform() throws Exception 
+    {
+        AEModel model = AEModel.getModel(getCtx().getRequest());
+        model.setAE( new AEDTO(-1,null,null,-1,null,null,null,null,null,null,null));
+        return SUCCESS;
+    }
 
 }
 

@@ -641,10 +641,10 @@ public class FolderSubmitCtrl extends FolderCtrl {
      */
     public void clearSticky() {
         FolderForm folderForm = (FolderForm) getForm();
-        folderForm.getStickyPatients().clear();		
-        folderForm.getStickyStudies().clear();		
-        folderForm.getStickySeries().clear();		
-        folderForm.getStickyInstances().clear();		
+        folderForm.getStickyPatients().clear();
+        folderForm.getStickyStudies().clear();
+        folderForm.getStickySeries().clear();
+        folderForm.getStickyInstances().clear();
     }
 
 

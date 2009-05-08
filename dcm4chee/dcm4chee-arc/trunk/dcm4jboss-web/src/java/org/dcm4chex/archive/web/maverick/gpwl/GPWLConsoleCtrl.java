@@ -57,59 +57,59 @@ import org.dcm4chex.archive.web.maverick.gpwl.GPWLScuDelegate;
 public class GPWLConsoleCtrl extends Dcm4cheeFormController {
 
 
-	/** the view model. */
-	private GPWLModel model;
-	
-	private static GPWLScuDelegate delegate = null;
+    /** the view model. */
+    private GPWLModel model;
 
-	/**
-	 * Get the model for the view.
-	 */
+    private static GPWLScuDelegate delegate = null;
+
+    /**
+     * Get the model for the view.
+     */
     protected Object makeFormBean() {
         if ( delegate == null ) {
-        	delegate = new GPWLScuDelegate();
-        	delegate.init( getCtx().getServletConfig() );
+            delegate = new GPWLScuDelegate();
+            delegate.init( getCtx().getServletConfig() );
         }
         model =  GPWLModel.getModel(getCtx().getRequest());
         return model;
     }
-	
 
-	
+
+
     protected String perform() throws Exception {
         try {
             HttpServletRequest request = getCtx().getRequest();
-    		model = GPWLModel.getModel(request);
-    		model.clearPopupMsg();
+            model = GPWLModel.getModel(request);
+            model.clearPopupMsg();
             if ( request.getParameter("filter.x") != null ) {//action from filter button
-            	try {
-	        		checkFilter( request );
-	            	model.filterWorkList( true );
-            	} catch ( Exception x ) {
-            		model.setPopupMsg( "folder.err_datetime", "yyyy/MM/dd" );
-            	}
+                try {
+                    checkFilter( request );
+                    model.filterWorkList( true );
+                } catch ( Exception x ) {
+                    model.setPopupMsg( "folder.err_datetime", "yyyy/MM/dd" );
+                }
             } else if ( request.getParameter("nav") != null ) {//action from a nav button. (next or previous)
-            	String nav = request.getParameter("nav");
-            	if ( nav.equals("prev") ) {
-            		model.performPrevious();
-            	} else if ( nav.equals("next") ) {
-            		model.performNext();
-            	}
+                String nav = request.getParameter("nav");
+                if ( nav.equals("prev") ) {
+                    model.performPrevious();
+                } else if ( nav.equals("next") ) {
+                    model.performNext();
+                }
             } else if ( request.getParameter("del.x") != null ) {//action from delete button.
-        		String[] gpspsIDs = getSPSIds(request);
-        		if ( gpspsIDs == null || gpspsIDs.length < 1) {
-        			model.setPopupMsg("gpwl.err_delete_selection", "");
-        		} else {
-        			for ( int i = 0 ; i < gpspsIDs.length ; i++ ) {
-        				delegate.deleteGPWLEntry( gpspsIDs[i] );
-        			}
-        			model.filterWorkList( false );
-        		}
+                String[] gpspsIDs = getSPSIds(request);
+                if ( gpspsIDs == null || gpspsIDs.length < 1) {
+                    model.setPopupMsg("gpwl.err_delete_selection", "");
+                } else {
+                    for ( int i = 0 ; i < gpspsIDs.length ; i++ ) {
+                        delegate.deleteGPWLEntry( gpspsIDs[i] );
+                    }
+                    model.filterWorkList( false );
+                }
             } else {
-            	String action = request.getParameter("action");
-            	if ( action != null ) {
-            		return performAction( action, request );
-            	}
+                String action = request.getParameter("action");
+                if ( action != null ) {
+                    return performAction( action, request );
+                }
             }
             return SUCCESS;
         } catch (Exception e) {
@@ -118,19 +118,19 @@ public class GPWLConsoleCtrl extends Dcm4cheeFormController {
         }
     }
 
-	/**
-	 * @param action
-	 * @param request
-	 * @throws ParseException
-	 */
-	private String performAction(String action, HttpServletRequest request) throws ParseException {
-		if ( "delete".equalsIgnoreCase( action ) ) {
-			getGPWLScuDelegate().deleteGPWLEntry(request.getParameter(""));
-		} else if ( "inspect".equals(action)) {
-		    return inspect(request.getParameter("gpwlIUID"));
+    /**
+     * @param action
+     * @param request
+     * @throws ParseException
+     */
+    private String performAction(String action, HttpServletRequest request) throws ParseException {
+        if ( "delete".equalsIgnoreCase( action ) ) {
+            getGPWLScuDelegate().deleteGPWLEntry(request.getParameter(""));
+        } else if ( "inspect".equals(action)) {
+            return inspect(request.getParameter("gpwlIUID"));
         }
-		return SUCCESS;
-	}
+        return SUCCESS;
+    }
 
     private String inspect(String iuid) {
         if ( iuid != null ) {
@@ -144,57 +144,57 @@ public class GPWLConsoleCtrl extends Dcm4cheeFormController {
         }
         return SUCCESS;   
     }
-    
-	/**
-	 * @param request
-	 * @return
-	 */
-	private String[] getSPSIds(HttpServletRequest request) {
-		String[] result;
-		if ( request.getParameter("gpspsID") != null ) {
-			result = new String[]{request.getParameter("gpspsID")};
-		} else {
-			result = request.getParameterValues("sticky");
-		}
-		return result;
-	}
+
+    /**
+     * @param request
+     * @return
+     */
+    private String[] getSPSIds(HttpServletRequest request) {
+        String[] result;
+        if ( request.getParameter("gpspsID") != null ) {
+            result = new String[]{request.getParameter("gpspsID")};
+        } else {
+            result = request.getParameterValues("sticky");
+        }
+        return result;
+    }
 
 
 
-	/**
-	 * Checks the http parameters for filter params and update the filter.
-	 * 
-	 * @param rq The http request.
-	 * 
-	 * @throws ParseException
-	 * 
-	 */
-	private void checkFilter(HttpServletRequest rq) throws ParseException {
-		GPWLFilter filter = model.getFilter();
-		if ( rq.getParameter("iuid") != null ) {
-			filter.clear();
-		}
-		filter.setIUID(rq.getParameter("iuid") );
-		if ( rq.getParameter("patientName") != null ) filter.setPatientName(rq.getParameter("patientName") );
-		if ( rq.getParameter("SPSStartDate") != null ) filter.setSPSStartDate(rq.getParameter("SPSStartDate") );
-		if ( rq.getParameter("workitemCode") != null ) filter.setWorkitemCode(rq.getParameter("workitemCode") );
-		if ( rq.getParameter("inputAvail") != null ) filter.setInputAvailability(rq.getParameter("inputAvail") );
-		if ( rq.getParameter("status") != null ) filter.setStatus(rq.getParameter("status") );
-		if ( rq.getParameter("priority") != null ) filter.setPriority(rq.getParameter("priority") );
-		if ( rq.getParameter("accessionNumber") != null ) filter.setAccessionNumber(rq.getParameter("accessionNumber") );
-	}
+    /**
+     * Checks the http parameters for filter params and update the filter.
+     * 
+     * @param rq The http request.
+     * 
+     * @throws ParseException
+     * 
+     */
+    private void checkFilter(HttpServletRequest rq) throws ParseException {
+        GPWLFilter filter = model.getFilter();
+        if ( rq.getParameter("iuid") != null ) {
+            filter.clear();
+        }
+        filter.setIUID(rq.getParameter("iuid") );
+        if ( rq.getParameter("patientName") != null ) filter.setPatientName(rq.getParameter("patientName") );
+        if ( rq.getParameter("SPSStartDate") != null ) filter.setSPSStartDate(rq.getParameter("SPSStartDate") );
+        if ( rq.getParameter("workitemCode") != null ) filter.setWorkitemCode(rq.getParameter("workitemCode") );
+        if ( rq.getParameter("inputAvail") != null ) filter.setInputAvailability(rq.getParameter("inputAvail") );
+        if ( rq.getParameter("status") != null ) filter.setStatus(rq.getParameter("status") );
+        if ( rq.getParameter("priority") != null ) filter.setPriority(rq.getParameter("priority") );
+        if ( rq.getParameter("accessionNumber") != null ) filter.setAccessionNumber(rq.getParameter("accessionNumber") );
+    }
 
-	/**
-	 * Returns the delegater that is used to query the GPWLSCP or delete an GPWL Entry (only if GPWLSCP AET is local)
-	 * 
-	 * @return The delegator.
-	 */
-	public static GPWLScuDelegate getGPWLScuDelegate() {
-		return delegate;
-	}
+    /**
+     * Returns the delegater that is used to query the GPWLSCP or delete an GPWL Entry (only if GPWLSCP AET is local)
+     * 
+     * @return The delegator.
+     */
+    public static GPWLScuDelegate getGPWLScuDelegate() {
+        return delegate;
+    }
 
-	protected String getCtrlName() {
-		return "gpwl_console";
-	}
-	
+    protected String getCtrlName() {
+        return "gpwl_console";
+    }
+
 }

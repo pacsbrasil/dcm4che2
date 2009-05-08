@@ -58,29 +58,29 @@ public class TrashFolderForm extends BasicFolderForm {
 
     static final String FOLDER_ATTRNAME = "trashFolderFrom";
 
-	protected static Logger log = Logger.getLogger(TrashFolderForm.class);
-	
-	private Dataset ds = DcmObjectFactory.getInstance().newDataset();
-	
+    protected static Logger log = Logger.getLogger(TrashFolderForm.class);
+
+    private Dataset ds = DcmObjectFactory.getInstance().newDataset();
+
     static TrashFolderForm getTrashFolderForm(ControllerContext ctx) {
-    	HttpServletRequest request = ctx.getRequest();
+        HttpServletRequest request = ctx.getRequest();
         TrashFolderForm form = (TrashFolderForm) request.getSession()
-                .getAttribute(FOLDER_ATTRNAME);
+        .getAttribute(FOLDER_ATTRNAME);
         if (form == null) {
             form = new TrashFolderForm(request);
             request.getSession().setAttribute(FOLDER_ATTRNAME, form);
             initLimit(ctx.getServletConfig().getInitParameter("limitNrOfStudies"), form);
         }
         initLimit(request.getParameter("limitNrOfStudies"), form);
-		form.clearPopupMsg();
-        
+        form.clearPopupMsg();
+
         return form;
     }
-    
-	private TrashFolderForm( HttpServletRequest request ) {
-    	super(request);
+
+    private TrashFolderForm( HttpServletRequest request ) {
+        super(request);
     }
-	
+
     public final String getPatientID() {
         return ds.getString(Tags.PatientID);
     }
@@ -97,18 +97,18 @@ public class TrashFolderForm extends BasicFolderForm {
         ds.putPN(Tags.PatientName, patientName);
     }
 
-	/**
-	 * @return Returns the studyUID.
-	 */
-	public String getStudyUID() {
+    /**
+     * @return Returns the studyUID.
+     */
+    public String getStudyUID() {
         return ds.getString(Tags.StudyInstanceUID);
-	}
-	/**
-	 * @param studyUID The studyUID to set.
-	 */
-	public void setStudyUID(String studyUID) {
+    }
+    /**
+     * @param studyUID The studyUID to set.
+     */
+    public void setStudyUID(String studyUID) {
         ds.putUI(Tags.StudyInstanceUID, studyUID);
-	}
+    }
     public final String getAccessionNumber() {
         return ds.getString(Tags.AccessionNumber);
     }
@@ -118,21 +118,21 @@ public class TrashFolderForm extends BasicFolderForm {
     }
 
     public final void setCallingAETs(String[] aets ) {
-    	ds.setPrivateCreatorID(PrivateTags.CreatorID);
-    	ds.putAE(PrivateTags.CallingAET, aets);
+        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        ds.putAE(PrivateTags.CallingAET, aets);
     }
-    
-    public Dataset filterDS() {
-    	return ds;
-    }
-    
-	public String getModelName() { return "TRASH"; }
 
-	/* (non-Javadoc)
-	 * @see org.dcm4chex.archive.web.maverick.BasicFormPagingModel#gotoCurrentPage()
-	 */
-	public void gotoCurrentPage() {
-		//We doesnt need this method here. TrashFolderCtrl does not use performPrevious/performNext!
-	}
-	
+    public Dataset filterDS() {
+        return ds;
+    }
+
+    public String getModelName() { return "TRASH"; }
+
+    /* (non-Javadoc)
+     * @see org.dcm4chex.archive.web.maverick.BasicFormPagingModel#gotoCurrentPage()
+     */
+    public void gotoCurrentPage() {
+        //We doesnt need this method here. TrashFolderCtrl does not use performPrevious/performNext!
+    }
+
 }

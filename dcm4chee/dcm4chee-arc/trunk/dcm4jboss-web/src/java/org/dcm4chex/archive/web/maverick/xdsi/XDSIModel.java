@@ -339,7 +339,7 @@ public class XDSIModel extends BasicFormModel {
 
     /*************************************************************************
      * 
-     */	
+     */
     public void setAuthorPerson( String s ) {
         props.setProperty(XDSIService.AUTHOR_PERSON, s);
     }

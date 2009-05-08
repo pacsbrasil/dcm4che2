@@ -64,32 +64,32 @@ public class ExpandSeriesCtrl extends ExpandStudyCtrl {
     protected String perform() throws Exception {
         FolderForm folderForm = FolderForm.getFolderForm(getCtx());
         if ( expand ) {
-	        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-	                .getFactory().lookup(ContentManagerHome.class,
-	                        ContentManagerHome.JNDI_NAME);
-	        ContentManager cm = home.create();
-	        try {
-	            List instances = cm.listInstancesOfSeries(seriesPk);
-	            for (int i = 0, n = instances.size(); i < n; i++)
-	                instances.set(i, InstanceModel.valueOf((Dataset) instances
-	                        .get(i)));
-	            folderForm.getSeriesByPk(patPk, studyPk, seriesPk)
-	                    .setInstances(instances);
-	        } catch (Exception x) {
-	        	folderForm.gotoCurrentPage();
-	        } finally {
-	            try {
-	                cm.remove();
-	            } catch (Exception e) {
-	            }
-	        }
+            ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
+            .getFactory().lookup(ContentManagerHome.class,
+                    ContentManagerHome.JNDI_NAME);
+            ContentManager cm = home.create();
+            try {
+                List instances = cm.listInstancesOfSeries(seriesPk);
+                for (int i = 0, n = instances.size(); i < n; i++)
+                    instances.set(i, InstanceModel.valueOf((Dataset) instances
+                            .get(i)));
+                folderForm.getSeriesByPk(patPk, studyPk, seriesPk)
+                .setInstances(instances);
+            } catch (Exception x) {
+                folderForm.gotoCurrentPage();
+            } finally {
+                try {
+                    cm.remove();
+                } catch (Exception e) {
+                }
+            }
         } else {
-        	try {
-            folderForm.getSeriesByPk(patPk, studyPk, seriesPk).getInstances().clear();
-        	} catch (Exception x) {
-        		folderForm.gotoCurrentPage();
-        	}
-       }
+            try {
+                folderForm.getSeriesByPk(patPk, studyPk, seriesPk).getInstances().clear();
+            } catch (Exception x) {
+                folderForm.gotoCurrentPage();
+            }
+        }
         return SUCCESS;
     }
 

@@ -45,16 +45,16 @@ import org.dcm4chex.archive.web.maverick.admin.DCMUser;
 
 public class ArrCtrl extends Dcm4cheeFormController
 {
-	public String getModelName() { return "ARR"; }
+    public String getModelName() { return "ARR"; }
 
-	protected Object makeFormBean() {
-    	return this;
+    protected Object makeFormBean() {
+        return this;
     }
-	
-	/**
-	 * @return Returns the admin.
-	 */
-	public boolean isAdmin() {
-		return this.getCtx().getRequest().isUserInRole(DCMUser.ARRUSER);
-	}
+
+    /**
+     * @return Returns the admin.
+     */
+    public boolean isAdmin() {
+        return this.getCtx().getRequest().isUserInRole(DCMUser.ARRUSER);
+    }
 }
