@@ -194,6 +194,10 @@ public class SeriesModel extends AbstractModel {
         return StringUtils.toString(ds.getStrings(Tags.RetrieveAET), '\\');
     }
 
+    public final String getSourceAET() {
+        return ds.getString(PrivateTags.CallingAET);
+    }
+    
     public final String getFilesetId() {
         String s = ds.getString(Tags.StorageMediaFileSetID);
         if ( s == null || s.trim().length() < 1 ) s = "_NA_";

@@ -127,6 +127,12 @@
         <xsl:value-of select="retrieveAETs"/>
       </td>
     </tr>
+    <tr>
+      <td class="label" bgcolor="#eeeeee">Source AET:</td>
+      <td>
+        <xsl:value-of select="sourceAET"/>
+      </td>
+    </tr>
   </xsl:template>
   <xsl:template match="series" mode="mpps_info">
   	<xsl:if test="DRCode!=''">
