@@ -13,25 +13,34 @@
     <xsl:template match="field">
         <xsl:param name="seg"/>
         <xsl:if test="node()">
-        <xsl:text>
+            <xsl:text>
    </xsl:text>
-        <xsl:value-of select="$seg"/>
-        <xsl:text>-</xsl:text>
-        <xsl:choose>
-            <xsl:when test="$seg = 'MSH'">
-                <xsl:value-of select="position()+2"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:value-of select="position()"/>
-            </xsl:otherwise>
-        </xsl:choose>
-        <xsl:text>:</xsl:text>
+            <xsl:value-of select="$seg"/>
+            <xsl:text>-</xsl:text>
+            <xsl:choose>
+                <xsl:when test="$seg = 'MSH'">
+                    <xsl:value-of select="position()+2"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="position()"/>
+                </xsl:otherwise>
+            </xsl:choose>
+            <xsl:text>:</xsl:text>
+            <xsl:call-template name="prompt">
+                <xsl:with-param name="value" select="text()"/>
+            </xsl:call-template>
+            <xsl:apply-templates select="subcomponent"/>
+            <xsl:apply-templates select="component"/>
+            <xsl:apply-templates select="repeat"/>
+        </xsl:if>
+    </xsl:template>
+    <xsl:template match="repeat">
+        <xsl:text>~</xsl:text>
         <xsl:call-template name="prompt">
           <xsl:with-param name="value" select="text()"/>
         </xsl:call-template>
         <xsl:apply-templates select="subcomponent"/>
         <xsl:apply-templates select="component"/>
-            </xsl:if>
     </xsl:template>
     <xsl:template match="component">
         <xsl:text>^</xsl:text>
