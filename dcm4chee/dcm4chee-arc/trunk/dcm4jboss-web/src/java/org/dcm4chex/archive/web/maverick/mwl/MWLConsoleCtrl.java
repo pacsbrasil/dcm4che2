@@ -144,7 +144,7 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
             }
         } else if ("link".equals(action)) {
             MWLFilter filter = model.getFilter();
-            MPPSModel mppsModel = MPPSModel.getModel(request);
+            MPPSModel mppsModel = MPPSModel.getModel(getCtx());
             String mppsIUID = request.getParameter("mppsIUID");
             if ( mppsIUID != null ) {
                 model.setMppsIDs( request.getParameterValues("mppsIUID")); // direct url call
@@ -239,7 +239,7 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
                 map= delegate.linkMppsToMwl( model.getMWLAttributes(internalIDs), mppsIUIDs );
             }
             if ( map == null ) {
-                MPPSModel.getModel(request).setExternalPopupMsg("mwl.err_link_failed", null);
+                MPPSModel.getModel(getCtx()).setExternalPopupMsg("mwl.err_link_failed", null);
             } else if ( map.get("dominant") != null ) {
                 model.setPatMergeAttributes(map);
                 return "mergePatient";

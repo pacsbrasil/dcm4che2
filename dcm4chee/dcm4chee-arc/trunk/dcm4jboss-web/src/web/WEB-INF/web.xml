@@ -113,15 +113,23 @@
 			<param-value>dcm4chee.archive:service=MWLScu</param-value>
 		</init-param>
 
-		<!-- 
-			Used by dcm4chee-web application to find MppsScpService MBean.
-			Value must match mbean name in configured in
-			deploy/dcm4chee-mppsscp-service.xml.
-		-->
-		<init-param>
-			<param-name>mppsScpServiceName</param-name>
-			<param-value>dcm4chee.archive:service=MPPSScp</param-value>
-		</init-param>
+        <!-- 
+            Used by dcm4chee-web application to find MppsScpService MBean.
+            Value must match mbean name in configured in
+            deploy/dcm4chee-mppsscp-service.xml.
+        -->
+        <init-param>
+            <param-name>mppsScpServiceName</param-name>
+            <param-value>dcm4chee.archive:service=MPPSScp</param-value>
+        </init-param>
+        <init-param>
+            <param-name>MPPS_startWithoutQuery</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <param-name>MPPS_unscheduled</param-name>
+            <param-value>false</param-value>
+        </init-param>
 
 		<!-- 
 			Used by dcm4chee-web application to find ContentEdit MBean.

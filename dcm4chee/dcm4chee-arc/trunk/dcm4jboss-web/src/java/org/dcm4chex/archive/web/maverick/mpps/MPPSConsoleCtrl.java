@@ -68,7 +68,7 @@ public class MPPSConsoleCtrl extends Dcm4cheeFormController {
         	delegate = new MPPSDelegate();
         	delegate.init( getCtx().getServletConfig() );
         }
-        model =  MPPSModel.getModel(getCtx().getRequest());
+        model =  MPPSModel.getModel(getCtx());
         model.getFilter().setStationAetGroups(getStationAEFilterGroups(), getStationAEFilter()!=null);
         return model;
     }
@@ -78,7 +78,7 @@ public class MPPSConsoleCtrl extends Dcm4cheeFormController {
     protected String perform() throws Exception {
         try {
             HttpServletRequest request = getCtx().getRequest();
-    		model = MPPSModel.getModel(request);
+    		model = MPPSModel.getModel(getCtx());
     		model.clearPopupMsg();
     		model.setMppsIUIDs( request.getParameterValues("mppsIUID"), false );
             if ( request.getParameter("filter.x") != null ) {//action from filter button
@@ -171,7 +171,9 @@ public class MPPSConsoleCtrl extends Dcm4cheeFormController {
 		if ( rq.getParameter("modality") != null ) filter.setModality(rq.getParameter("modality") );
 		filter.setStationAET(rq.getParameter("stationAET") );//we need always set StationAET to update also with StationAET groups
 		if ( rq.getParameter("accessionNumber") != null ) filter.setAccessionNumber(rq.getParameter("accessionNumber") );
-		filter.setEmptyAccNo(rq.getParameter("emptyAccNo") );
+		if ( "POST".equals(rq.getMethod())) {
+		    filter.setEmptyAccNo(rq.getParameter("emptyAccNo") );
+		}
 		if ( rq.getParameter("status") != null ) filter.setStatus(rq.getParameter("status") );
 	}
 

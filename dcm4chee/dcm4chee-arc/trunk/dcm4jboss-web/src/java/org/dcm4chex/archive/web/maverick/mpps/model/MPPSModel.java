@@ -58,6 +58,8 @@ import org.dcm4chex.archive.web.maverick.BasicFormPagingModel;
 import org.dcm4chex.archive.web.maverick.mpps.MPPSConsoleCtrl;
 import org.dcm4chex.archive.web.maverick.mpps.MPPSFilter;
 
+import org.infohazard.maverick.flow.ControllerContext;
+
 /**
  * @author franz.willer
  *
@@ -103,12 +105,16 @@ public class MPPSModel extends BasicFormPagingModel {
      * 
      * @return The model for given request.
      */
-    public static final MPPSModel getModel( HttpServletRequest request ) {
+    public static final MPPSModel getModel( ControllerContext ctx ) {
+        HttpServletRequest request = ctx.getRequest();
         MPPSModel model = (MPPSModel) request.getSession().getAttribute(MPPS_MODEL_ATTR_NAME);
         if (model == null) {
             model = new MPPSModel(request);
+            model.getFilter().setEmptyAccNo(ctx.getServletConfig().getInitParameter("MPPS_unscheduled"));
             request.getSession().setAttribute(MPPS_MODEL_ATTR_NAME, model);
-            model.filterWorkList( true );
+            if ( !"true".equals(ctx.getServletConfig().getInitParameter("MPPS_startWithoutQuery"))) {
+                model.filterWorkList( true );
+            }
         }
         return model;
     }
