@@ -1,3 +1,4 @@
+-- DCMEE-1118: Set read_committed_snapshot transaction isolation to avoid DB blocking under load
 alter database [pacsdb] set read_committed_snapshot on with rollback after 5 seconds;
 GO
 
