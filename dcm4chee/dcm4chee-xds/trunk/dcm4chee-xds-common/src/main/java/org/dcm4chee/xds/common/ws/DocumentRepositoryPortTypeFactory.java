@@ -12,14 +12,18 @@ import org.jboss.ws.core.ConfigProvider;
 
 public class DocumentRepositoryPortTypeFactory {
 
+	// Creating an instance of DocumentRepositoryService is expensive, so do it once and
+	// reuse the same instance.  It is thread safe.
+	protected static DocumentRepositoryService service = new DocumentRepositoryService();
+	
 	public static DocumentRepositoryPortType getDocumentRepositoryPortSoap11(String endpointAddress, String action, String messageId) {
-		DocumentRepositoryPortType port = new DocumentRepositoryService().getDocumentRepositoryPortSoap11();
+		DocumentRepositoryPortType port = service.getDocumentRepositoryPortSoap11();
 		configurePort(port, endpointAddress, action, messageId);
 		return port;
 	}
 
 	public static DocumentRepositoryPortType getDocumentRepositoryPortSoap12(String endpointAddress, String action, String messageId) {
-		DocumentRepositoryPortType port = new DocumentRepositoryService().getDocumentRepositoryPortSoap12();
+		DocumentRepositoryPortType port = service.getDocumentRepositoryPortSoap12();
 		configurePort(port, endpointAddress, action, messageId);
 		return port;
 	}
