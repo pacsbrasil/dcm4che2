@@ -245,14 +245,14 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
                 }
                 reqDocList.add(docReq);
             }
-            if (!remoteDocRequests.isEmpty()) {
-                try {
-                    addRemoteRetrieveRequests(rsp, remoteDocRequests, perfLogger);
-                } catch (Exception e) {
-                    log.error("Remote Document Retrieve failed!",e);
-                }
-            }
         }
+        if (!remoteDocRequests.isEmpty()) {
+            try {
+                addRemoteRetrieveRequests(rsp, remoteDocRequests, perfLogger);
+            } catch (Exception e) {
+                log.error("Remote Document Retrieve failed!",e);
+            }
+        }        
         perfLogger.startSubEvent("AuditAndCreateResponse");
         logRetrieve(localDocUids,true);
         RegistryResponseType regRsp = objFac.createRegistryResponseType();
