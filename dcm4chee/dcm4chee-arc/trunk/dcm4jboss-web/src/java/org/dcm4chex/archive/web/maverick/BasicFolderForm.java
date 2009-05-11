@@ -75,7 +75,7 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
 
     private int offset;
 
-    private int total;
+    private int total = -1;
 
     private boolean showWithoutStudies;
 

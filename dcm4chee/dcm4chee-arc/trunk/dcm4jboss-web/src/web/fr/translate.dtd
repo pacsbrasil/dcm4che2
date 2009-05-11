@@ -21,6 +21,7 @@
 <!ENTITY ListStudiesOfOnePatientBeginningWithTheMostRecentStudy "Lister les études d'un patient du plus récent au plus ancien">
 <!ENTITY latestStudiesFirst "Derniers études en premier">
 <!ENTITY NoMatchingStudiesFound "Aucun étude trouvé!">
+<!ENTITY NoQueryPerformed "Aucune Recherche n'a joué!">
 <!ENTITY DisplayingStudies "Affichage des études">
 <!ENTITY to "de">
 <!ENTITY of "à">
@@ -50,7 +51,9 @@
 <!ENTITY SeriesIUID "Séries IUID">
 <!ENTITY StudyID "ID étude">
 <!ENTITY StudyDate "Date d'étude">
-<!ENTITY formatStudyDate "format: yyyy/mm/dd ou yyyy/mm/dd-yyyy/mm/dd">
+<!ENTITY formatStudyDate "Date d'étude format: yyyy/mm/dd ou yyyy/mm/dd-yyyy/mm/dd">
+<!ENTITY formatBirthDate "Date de naissance format: yyyy/mm/dd ou yyyy/mm/dd-yyyy/mm/dd">
+<!ENTITY BirthDateShort "Naissance">
 <!ENTITY AccessionNo "Matricule">
 <!ENTITY Modality "Modalité">
 <!ENTITY Patient "Patient">

@@ -21,6 +21,7 @@
 <!ENTITY ListStudiesOfOnePatientBeginningWithTheMostRecentStudy "Listet Studien eines Patienten beginnend mit der jüngsten Studie">
 <!ENTITY latestStudiesFirst "letzte Studie zuerst">
 <!ENTITY NoMatchingStudiesFound "Keine passenden Studien gefunden!">
+<!ENTITY NoQueryPerformed "Es wurde noch keine Suche durchgeführt!">
 <!ENTITY DisplayingStudies "Angezeigt werden">
 <!ENTITY to "bis">
 <!ENTITY of "von">
@@ -50,12 +51,14 @@
 <!ENTITY SeriesIUID "Serien Instance UID">
 <!ENTITY StudyID "Studien ID">
 <!ENTITY StudyDate "Studien Datum">
-<!ENTITY formatStudyDate "Format: yyyy/mm/dd oder yyyy/mm/dd-yyyy/mm/dd">
+<!ENTITY formatStudyDate "Studiendatum Format: yyyy/mm/dd oder yyyy/mm/dd-yyyy/mm/dd">
+<!ENTITY formatBirthDate "Geburtsdatum Format: yyyy/mm/dd oder yyyy/mm/dd-yyyy/mm/dd">
 <!ENTITY AccessionNo "Auftragsnummer">
 <!ENTITY Modality "Modalität">
 <!ENTITY Patient "Patient">
 <!ENTITY Name "Name">
 <!ENTITY BirthDate "Geb.Datum">
+<!ENTITY BirthDateShort "Geb.">
 <!ENTITY Sex "Geschlecht">
 <!ENTITY Study "Studie">
 <!ENTITY StudyIDMedia "Studien ID (@Medium)">

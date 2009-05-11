@@ -100,6 +100,14 @@ public class StudyFilterModel extends AbstractModel {
                 patientName.indexOf('?') == -1) patientName+="*";
         ds.putPN(Tags.PatientName, patientName);
     }
+    
+    public final String getPatientBirthDate() {
+        return getDateRange(ds, Tags.PatientBirthDate);
+    }
+
+    public final void setPatientBirthDate(String s) {
+        setDateRange(ds, Tags.PatientBirthDate, s);
+    }
 
     public final String getAccessionNumber() {
         return ds.getString(Tags.AccessionNumber);

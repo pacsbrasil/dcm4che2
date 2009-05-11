@@ -51,8 +51,8 @@
 					</td>
 					<td class="folder_header" align="center">
 						<xsl:choose>
-							<xsl:when test="total &lt; 1">&NoMatchingStudiesFound;
-							</xsl:when>
+                            <xsl:when test="total &lt; 0">&NoQueryPerformed;</xsl:when>
+                            <xsl:when test="total &lt; 1">&NoMatchingStudiesFound;</xsl:when>
 							<xsl:otherwise>&DisplayingStudies;
 								<b>
 									<xsl:value-of select="offset + 1" />
@@ -320,15 +320,44 @@
 									<input size="10" name="studyID"
 										type="text" value="{studyID}" />
 								</td>
-								<td class="label">&StudyDate;
-								</td>
-								<td>
-									<input size="10"
-										name="studyDateRange" type="text" value="{studyDateRange}"
-										title="&formatStudyDate;" />
-									<input name="studyUID" type="hidden"
-										value="" />
-								</td>
+								
+		                        <xsl:choose>
+		                            <xsl:when test="filterBirthdate='false'">
+		                                <td class="label">
+		                                    <b>&Study;</b><xsl:text>/</xsl:text>
+	                                        <a title="&BirthDate;"
+	                                           href="foldersubmit.m?filterBirthdate=true&amp;clear=true" >
+	                                           &BirthDateShort;</a>
+	                                        <xsl:text> &Date;</xsl:text>
+		                                   
+		                                </td>
+		                                <td>
+		                                    <input size="10"
+		                                        name="studyDateRange" type="text" value="{studyDateRange}"
+		                                        title="&formatStudyDate;" />
+		                                    <input name="studyUID" type="hidden"
+		                                        value="" />
+		                                </td>
+		                            </xsl:when>
+		                            <xsl:otherwise>
+                                        <td class="label">
+			                                <a title="&StudyDate;"
+			                                    href="foldersubmit.m?filterBirthdate=false&amp;clear=true" >
+			                                    &Study;
+			                                </a>
+			                                <xsl:text>/</xsl:text>
+			                                <b>&BirthDateShort;</b><xsl:text> &Date;</xsl:text>
+                                        </td>
+                                        <td>
+                                            <input size="10"
+                                                name="birthdate" type="text" value="{birthdate}"
+                                                title="&formatBirthDate;" />
+                                            <input name="studyUID" type="hidden"
+                                                value="" />
+                                        </td>
+		                            </xsl:otherwise>
+		                        </xsl:choose>
+								
 							</xsl:otherwise>
 						</xsl:choose>
 

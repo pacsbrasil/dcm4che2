@@ -159,6 +159,11 @@ public class FolderSubmitCtrl extends FolderCtrl {
             } else if ( folderForm.getAets() == null ) { 
                 queryAETList(folderForm);
             }
+            if (rq.getParameter("clear") != null ) {
+                folderForm.setStudies(new ArrayList());
+                folderForm.setOffset(0);
+                folderForm.setTotal(-1);
+            }
             if (rq.getParameter("prev") != null
                     || rq.getParameter("prev.x") != null
                     || rq.getParameter("next") != null
@@ -186,7 +191,6 @@ public class FolderSubmitCtrl extends FolderCtrl {
                         || rq.getParameter("exportXDSI.x") != null) { return exportXDSI(); }
             }
             if (rq.getParameter("showStudyIUID") != null ) folderForm.setShowStudyIUID( "true".equals( rq.getParameter("showStudyIUID") ) );
-            log.info("###### rq.getParameter(alternativeStudyUID):"+rq.getParameter("alternativeStudyUID"));
             folderForm.setAlternativeStudyUID( "true".equals( rq.getParameter("alternativeStudyUID") ) );
             if (rq.getParameter("showSeriesIUID") != null ) folderForm.setShowSeriesIUID( "true".equals( rq.getParameter("showSeriesIUID") ) );
 

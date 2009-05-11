@@ -66,6 +66,7 @@ public class FolderForm extends BasicFolderForm {
     private String patientID;
 
     private String patientName;
+    private String birthdate;
 
     private String accessionNumber;
 
@@ -103,6 +104,8 @@ public class FolderForm extends BasicFolderForm {
     private boolean showIssuerOfPID;
 
     private boolean alternativeStudyUID;
+    
+    private boolean filterBirthdate;
 
     protected static Logger log = Logger.getLogger(FolderForm.class);
 
@@ -241,6 +244,14 @@ public class FolderForm extends BasicFolderForm {
         this.studyDateRange = studyDateRange;
     }
 
+    public String getBirthdate() {
+        return birthdate;
+    }
+
+    public void setBirthdate(String birthdate) {
+        this.birthdate = birthdate;
+    }
+
     public final String getStudyID() {
         return studyID;
     }
@@ -267,6 +278,7 @@ public class FolderForm extends BasicFolderForm {
             studyID = "";
             seriesUID = "";
             studyDateRange = "";
+            birthdate = "";
             modality = "";
             filterAET = false;
             this.showStudyIUID = true;
@@ -288,6 +300,7 @@ public class FolderForm extends BasicFolderForm {
             studyID = "";
             studyUID = "";
             studyDateRange = "";
+            birthdate = "";
             modality = "";
             filterAET = false;
             this.showSeriesIUID = true;
@@ -331,7 +344,8 @@ public class FolderForm extends BasicFolderForm {
             studyFilter.setStudyID(studyID);
             studyFilter.setStudyUID( studyUID, alternativeStudyUID );
             studyFilter.setSeriesUID( seriesUID );
-            studyFilter.setStudyDateRange(studyDateRange);
+            studyFilter.setStudyDateRange(filterBirthdate ? null : studyDateRange);
+            studyFilter.setPatientBirthDate(filterBirthdate ? birthdate : null);
             studyFilter.setModality(modality);
             studyFilter.setCallingAET(this.filterAET ? destination:null);
         }
@@ -404,8 +418,15 @@ public class FolderForm extends BasicFolderForm {
     }
 
     public void setAlternativeStudyUID(boolean alternateStudyUID) {
-        log.info("#### setAlternativeStudyUID:"+alternateStudyUID);
         this.alternativeStudyUID = alternateStudyUID;
+    }
+
+    public boolean isFilterBirthdate() {
+        return filterBirthdate;
+    }
+
+    public void setFilterBirthdate(boolean filterBirthdate) {
+        this.filterBirthdate = filterBirthdate;
     }
 
     /* (non-Javadoc)
