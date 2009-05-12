@@ -909,11 +909,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 if (serializeDBUpdate) {
                     synchronized (storage) {
                         return storage.store(ds, fspk, filePath, fileLength,
-                                md5, updateStudyAccessTime);
+                                md5, updateStudyAccessTime, service.patientMatching());
                     }
                 } else {
                     return storage.store(ds, fspk, filePath, fileLength,
-                            md5, updateStudyAccessTime);
+                            md5, updateStudyAccessTime, service.patientMatching());
                 }
             } catch (Exception e) {
                 ++retry;

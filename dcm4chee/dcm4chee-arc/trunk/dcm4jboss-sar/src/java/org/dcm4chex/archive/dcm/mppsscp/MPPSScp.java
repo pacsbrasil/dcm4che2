@@ -140,7 +140,7 @@ public class MPPSScp extends DcmServiceBase {
     private void createMPPS(Dataset mpps)
             throws DcmServiceException {
         try {
-            getMPPSManager().createMPPS(mpps);
+            getMPPSManager().createMPPS(mpps, service.patientMatching());
         } catch (DcmServiceException e) {
             throw e;
         } catch (Exception e) {

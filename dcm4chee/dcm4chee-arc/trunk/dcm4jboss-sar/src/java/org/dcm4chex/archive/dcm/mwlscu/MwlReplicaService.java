@@ -65,6 +65,7 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
+import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScuService;
@@ -118,7 +119,6 @@ public class MwlReplicaService extends AbstractScuService {
     private int priority = 0;
 
     protected TemplatesDelegate templates = new TemplatesDelegate(this);
-
 
     private final NotificationListener mwlReplicationListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
@@ -221,7 +221,6 @@ public class MwlReplicaService extends AbstractScuService {
     public void setForceIssuerCoercion(boolean forceIssuerCoercion) {
         this.forceIssuerCoercion = forceIssuerCoercion;
     }
-
 
     public boolean isDebugMode() {
         return debugMode;
@@ -372,7 +371,7 @@ public class MwlReplicaService extends AbstractScuService {
                                 }
                                 rsp = coerceAttributes(rsp, aet, MWL_REPLICA_RSP_XSL);
                                 if ( !manager.updateWorklistItem(rsp) ) {
-                                    manager.addWorklistItem(rsp);
+                                    manager.addWorklistItem(rsp, PatientMatching.BY_ID);
                                 }
                                 result.add(rsp);
                             } catch (Exception e) {

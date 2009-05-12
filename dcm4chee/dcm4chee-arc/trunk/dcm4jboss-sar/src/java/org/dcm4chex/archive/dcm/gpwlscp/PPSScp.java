@@ -247,7 +247,7 @@ class PPSScp extends DcmServiceBase {
     
     private void createGPPPS(Dataset gppps) throws DcmServiceException {
         try {
-            getGPPPSManager().createGPPPS(gppps);
+            getGPPPSManager().createGPPPS(gppps, service.patientMatching());
         } catch (DcmServiceException e) {
             throw e;
         } catch (Exception e) {

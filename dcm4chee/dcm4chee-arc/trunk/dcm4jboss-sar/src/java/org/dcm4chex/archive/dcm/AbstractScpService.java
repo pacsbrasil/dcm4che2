@@ -84,6 +84,7 @@ import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.QueryMessage;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
@@ -141,6 +142,8 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected String[] generatePatientIDForUnscheduledFromAETs;
 
     protected boolean invertGeneratePatientIDForUnscheduledFromAETs;
+
+    protected PatientMatching patientMatching;
 
     /**
      * Map containing accepted Transfer Syntax UIDs. key is name (as in config
@@ -375,6 +378,18 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             }
         }
         return invertGeneratePatientIDForUnscheduledFromAETs;
+    }
+
+    public String getPatientMatching() {
+        return patientMatching.toString();
+    }
+
+    public void setPatientMatching(String s) {
+        this.patientMatching = new PatientMatching(s.trim());
+    }
+
+    public final PatientMatching patientMatching() {
+        return patientMatching;
     }
 
     public final int getMaxPDULength() {
