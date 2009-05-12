@@ -385,7 +385,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 : StringUtils.split(trim, ',');
     }
 
-    boolean isPixQueryIssuer(String issuer) {
+    public boolean isPixQueryIssuer(String issuer) {
         return pixQueryIssuers == null
             || Arrays.asList(pixQueryIssuers).contains(issuer);
     }
