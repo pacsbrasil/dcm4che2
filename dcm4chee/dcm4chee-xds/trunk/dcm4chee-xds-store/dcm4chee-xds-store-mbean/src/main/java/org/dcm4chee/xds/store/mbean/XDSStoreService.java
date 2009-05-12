@@ -168,8 +168,12 @@ public class XDSStoreService extends ServiceMBeanSupport {
     /**
      * Store given document with optional metadata.
      * <p>
-     * Return null if a Document with same UID already exists!
-     * (Even when the document is unavailable.)
+     * <dl><dt>Return XDSDocument with status:</dt>
+     * <dd> CREATED: If document is stored. </dd>
+     * <dd> STORED: If document already exists (doc with same UID and identical hash exists)</dd>
+     * </dl>
+     * When Document with same UID already exists but hash doesn't match an Exception
+     * will be thrown for 'XDSNonIdenticalHash'!
      * 
      * @param xdsDoc
      * @param metadata
@@ -204,7 +208,7 @@ public class XDSStoreService extends ServiceMBeanSupport {
                     docAdded = true;
                 }
             }
-            return storedDoc;
+            return storedDoc.setStatus(XDSDocument.CREATED);
         } catch ( Throwable x ) {
             log.error("Storage of document failed:"+documentUID, x);
             error = true;
@@ -240,7 +244,7 @@ public class XDSStoreService extends ServiceMBeanSupport {
                         "Document "+documentUID+" already exists with non identical hash value!", null);
             }
             return new XDSDocument( doc.getDocumentUID(), doc.getMimeType(), 
-                    getXdsDocWriter(doc), doc.getHash(), null);
+                    getXdsDocWriter(doc), doc.getHash(), null).setStatus(XDSDocument.STORED); //set status to stored to avoid deletion of this document when PnR fails. (-> rollback)
         } catch (XDSException e) {
             throw e;
         } catch (Exception e) {
@@ -351,7 +355,7 @@ public class XDSStoreService extends ServiceMBeanSupport {
         log.info("#### Retrieve Document from storage:"+docUid);
         BaseDocument doc = docStore.getDocument(docUid, mime);
         return doc != null && doc.getAvailability().compareTo(Availability.UNAVAILABLE) < 0 ? 
-            new XDSDocument(docUid, doc.getMimeType(), getXdsDocWriter(doc)) : null;
+            new XDSDocument(docUid, doc.getMimeType(), getXdsDocWriter(doc)).setStatus(XDSDocument.STORED) : null;
     }
 
     /**
@@ -374,7 +378,10 @@ public class XDSStoreService extends ServiceMBeanSupport {
         boolean success = true;
         for ( XDSDocument doc : documents ) {
             log.debug("commit XDSDocument:"+doc);
-            success = success & docStore.commitDocument(storeBeforeRegisterPool, doc.getDocumentUID());
+            if ( doc.getStatus()== XDSDocument.CREATED) {
+                success = success & docStore.commitDocument(storeBeforeRegisterPool, doc.getDocumentUID());
+                doc.setStatus(XDSDocument.STORED);
+            }
         }
         return success;
     }
@@ -384,8 +391,12 @@ public class XDSStoreService extends ServiceMBeanSupport {
             return true;
         boolean success = true;
         for ( XDSDocument doc : documents ) {
-            log.debug("Delete XDSDocument:"+doc);
-            success = success & docStore.deleteDocument(storeBeforeRegisterPool, doc.getDocumentUID());
+            if ( doc.getStatus()!= XDSDocument.STORED) {
+                log.info("Delete XDSDocument:"+doc);
+                success = success & docStore.deleteDocument(storeBeforeRegisterPool, doc.getDocumentUID());
+            } else {
+                log.info("Ignore Deletion of already existing XDSDocument:"+doc);
+            }
         }
         return success;
     }
