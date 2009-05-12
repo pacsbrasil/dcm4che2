@@ -54,8 +54,6 @@ import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.common.SecurityUtils;
-import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
-import org.dcm4chex.archive.ejb.jdbc.Match.Node;
 import org.dcm4chex.archive.util.Convert;
 
 /**
@@ -139,9 +137,12 @@ public class QueryStudiesCmd extends BaseReadCmd {
         sqlBuilder.addPNMatch(new String[] {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
-        "Patient.patientPhoneticName"},
-        type2,
-        filter.getString(Tags.PatientName));
+                "Patient.patientPhoneticName"},
+                type2,
+                filter.getString(Tags.PatientName));
+        sqlBuilder.addRangeMatch(null, "Patient.patientBirthDate", type2,
+                filter.getString(Tags.PatientBirthDate));
+        
         sqlBuilder.addWildCardMatch(null, "Study.studyId", type2,
                 filter.getStrings(Tags.StudyID));
         if (filter.containsValue(Tags.RequestAttributesSeq) && 
