@@ -252,6 +252,11 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
         rqData.putLO(Tags.PatientID, pid[PID]);
         rqData.putLO(Tags.IssuerOfPatientID, pid[ISSUER]);
     }
+    
+    protected boolean skipPixQuery(String pid,String issuer) throws DcmServiceException {
+        return (!service.isPixQueryIssuer(issuer) || isWildCardMatching(pid)
+                && !service.isPixQueryLocal());
+    }
 
     protected boolean pixQuery(Dataset rqData, ArrayList result)
             throws DcmServiceException {
@@ -260,8 +265,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             return false;
         }
         String issuer = rqData.getString(Tags.IssuerOfPatientID);
-        if (!service.isPixQueryIssuer(issuer) || isWildCardMatching(pid)
-                && !service.isPixQueryLocal()) {
+        if ( skipPixQuery(pid, issuer) ) {
             addNewPidAndIssuerTo(new String[] { pid, issuer }, result);
             return false;
         }

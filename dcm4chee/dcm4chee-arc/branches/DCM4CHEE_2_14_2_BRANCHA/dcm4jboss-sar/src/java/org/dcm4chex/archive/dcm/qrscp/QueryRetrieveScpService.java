@@ -383,7 +383,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 : StringUtils.split(trim, ',');
     }
 
-    boolean isPixQueryIssuer(String issuer) {
+    public boolean isPixQueryIssuer(String issuer) {
         return pixQueryIssuers == null
             || Arrays.asList(pixQueryIssuers).contains(issuer);
     }
@@ -1103,7 +1103,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     }
     
-    boolean isPixQueryLocal() throws DcmServiceException {
+    public boolean isPixQueryLocal() throws DcmServiceException {
         try {
             return ((Boolean) server.getAttribute(this.pixQueryServiceName,
                     "PIXManagerLocal")).booleanValue();
