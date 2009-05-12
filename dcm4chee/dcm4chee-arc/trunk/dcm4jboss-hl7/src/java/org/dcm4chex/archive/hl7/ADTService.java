@@ -50,6 +50,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdate;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdateHome;
 import org.dcm4chex.archive.exceptions.PatientAlreadyExistsException;
@@ -88,6 +89,8 @@ public class ADTService extends AbstractHL7Service {
 
     private String[] issuersOfOnlyOtherPatientIDs;
     private Pattern ignoredIssuersOfPatientIDPattern;
+
+    private PatientMatching patientMatching;
 
     private boolean ignoreDeleteErrors;
 
@@ -155,15 +158,25 @@ public class ADTService extends AbstractHL7Service {
     }
 
     public final String getIgnoredIssuersOfPatientIDPattern() {
-    	return ignoredIssuersOfPatientIDPattern == null ? "NONE" : ignoredIssuersOfPatientIDPattern.pattern();  
+        return ignoredIssuersOfPatientIDPattern == null ? "NONE" 
+                : ignoredIssuersOfPatientIDPattern.pattern();  
     }
-    
+
     public final void setIgnoredIssuersOfPatientIDPattern(String ignoredIssuersOfPatientIDPattern) {
-    	if (ignoredIssuersOfPatientIDPattern.compareToIgnoreCase("NONE") == 0) {
-    		this.ignoredIssuersOfPatientIDPattern = null;
-    	} else {
-    		this.ignoredIssuersOfPatientIDPattern = Pattern.compile(ignoredIssuersOfPatientIDPattern);
-    	}
+        if (ignoredIssuersOfPatientIDPattern.compareToIgnoreCase("NONE") == 0) {
+                this.ignoredIssuersOfPatientIDPattern = null;
+        } else {
+                this.ignoredIssuersOfPatientIDPattern = 
+                    Pattern.compile(ignoredIssuersOfPatientIDPattern);
+        }
+    }
+
+    public String getPatientMatching() {
+        return patientMatching.toString();
+    }
+
+    public void setPatientMatching(String s) {
+        this.patientMatching = new PatientMatching(s.trim());
     }
 
     public final String getMrgStylesheet() {
@@ -220,11 +233,11 @@ public class ADTService extends AbstractHL7Service {
                 Dataset mrg = xslt(msg, mrgXslPath);
                 try {
                     checkMRG(mrg);
-                    update.mergePatient(pat, mrg);
+                    update.mergePatient(pat, mrg, patientMatching);
                 }
                 catch (HL7Exception e) {
                     if (handleEmptyMrgAsUpdate) {
-                        update.updatePatient(pat);
+                        update.updatePatient(pat, patientMatching);
                     }
                     else {
                         throw e;
@@ -234,11 +247,11 @@ public class ADTService extends AbstractHL7Service {
             else if (changePatientIdentifierListMessageType.equals(msgtype)) {
                 Dataset mrg = xslt(msg, mrgXslPath);
                 checkMRG(mrg);
-                update.changePatientIdentifierList(pat, mrg);
+                update.changePatientIdentifierList(pat, mrg, patientMatching);
             }
             else if (deletePatientMessageType.equals(msgtype)) {
                 try {
-                    update.deletePatient(pat);
+                    update.deletePatient(pat, patientMatching);
                 }
                 catch (Exception x) {
                     if (!ignoreDeleteErrors) {
@@ -247,10 +260,10 @@ public class ADTService extends AbstractHL7Service {
                 }
             }
             else if (patientArrivingMessageType.equals(msgtype)) {
-                update.patientArrived(pat);
+                update.patientArrived(pat, patientMatching);
             }
             else {
-                update.updatePatient(pat);
+                update.updatePatient(pat, patientMatching);
             }
         }
         catch (HL7Exception e) {
@@ -281,7 +294,7 @@ public class ADTService extends AbstractHL7Service {
         try {
             Dataset pid = xslt(msg, pidXslPath);
             checkPID(pid);
-            getPatientUpdate().updatePatient(pid);
+            getPatientUpdate().updatePatient(pid, patientMatching);
         }
         catch (HL7Exception e) {
             throw e;
@@ -300,7 +313,7 @@ public class ADTService extends AbstractHL7Service {
             Dataset mrg = xslt(msg, mrgXslPath);
             checkPID(pid);
             checkMRG(mrg);
-            getPatientUpdate().mergePatient(pid, mrg);
+            getPatientUpdate().mergePatient(pid, mrg, patientMatching);
         }
         catch (HL7Exception e) {
             throw e;
@@ -387,7 +400,7 @@ public class ADTService extends AbstractHL7Service {
                         opids.addItem(toDataset(opid));
                     }
                 }
-                patUpdate.updateOtherPatientIDsOrCreate(ds);
+                patUpdate.updateOtherPatientIDsOrCreate(ds, patientMatching);
             }
         }
         return true;

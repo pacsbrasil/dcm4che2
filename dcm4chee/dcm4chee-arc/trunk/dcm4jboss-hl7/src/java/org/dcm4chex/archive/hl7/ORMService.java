@@ -56,6 +56,7 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.PPSStatus;
+import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.common.SPSStatus;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
@@ -112,6 +113,16 @@ public class ORMService extends AbstractHL7Service {
     private String defaultStationName = "UNKOWN";
 
     private String defaultModality = "OT";
+
+    public PatientMatching patientMatching;
+
+    public String getPatientMatching() {
+        return patientMatching.toString();
+    }
+
+    public void setPatientMatching(String s) {
+        this.patientMatching = new PatientMatching(s.trim());
+    }
 
     public final String getStylesheet() {
         return xslPath;
@@ -233,7 +244,7 @@ public class ORMService extends AbstractHL7Service {
                     addMissingAttributes(ds);
                     log("Schedule", ds);
                     logDataset("Insert MWL Item:", ds);
-                    mwlManager.addWorklistItem(ds);
+                    mwlManager.addWorklistItem(ds, patientMatching);
                     updateRequestAttributes(ds, mwlManager);
                     break;
                 case XO:
@@ -244,7 +255,7 @@ public class ORMService extends AbstractHL7Service {
                         addMissingAttributes(ds);
                         log("->Schedule New ", ds);
                         logDataset("Insert MWL Item:", ds);
-                        mwlManager.addWorklistItem(ds);
+                        mwlManager.addWorklistItem(ds, patientMatching);
                     }
                     updateRequestAttributes(ds, mwlManager);
                     break;
@@ -282,7 +293,7 @@ public class ORMService extends AbstractHL7Service {
         MPPSManager mppsManager = getMPPSManager();
         List<Dataset> mppsList = 
             mppsManager.updateScheduledStepAttributes(mwlitem,
-                    updateDifferentPatientOfExistingStudy);
+                    patientMatching, updateDifferentPatientOfExistingStudy);
         if (!mppsList.isEmpty()) {
             updateSPSStatus(mwlitem, mppsList.get(0), mwlManager);
             updateRequestAttributesInSeries(mwlitem, mppsList, mppsManager);
