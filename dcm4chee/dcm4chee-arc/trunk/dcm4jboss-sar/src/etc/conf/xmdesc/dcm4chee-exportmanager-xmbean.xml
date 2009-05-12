@@ -232,6 +232,14 @@
       <name>AuditLoggerName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getQueryRetrieveScpServiceName"
+      setMethod="setQueryRetrieveScpServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>QueryRetrieveScpServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
    <attribute access="read-write" 
      getMethod="getIANScuServiceName"
      setMethod="setIANScuServiceName">

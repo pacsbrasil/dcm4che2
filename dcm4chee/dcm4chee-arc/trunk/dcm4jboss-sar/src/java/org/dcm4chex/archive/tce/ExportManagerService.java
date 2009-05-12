@@ -47,6 +47,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -67,6 +68,7 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.management.Attribute;
+import javax.management.JMException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
@@ -155,6 +157,8 @@ public class ExportManagerService extends AbstractScuService
     private static final String NONE = "NONE";
 
     private ObjectName storeScpServiceName;
+
+    private ObjectName queryRetrieveScpServiceName;
 
     private ObjectName ianScuServiceName;
     
@@ -374,7 +378,15 @@ public class ExportManagerService extends AbstractScuService
     public final void setStoreScpServiceName(ObjectName storeScpServiceName) {
         this.storeScpServiceName = storeScpServiceName;
     }
-    
+
+    public final ObjectName getQueryRetrieveScpServiceName() {
+        return queryRetrieveScpServiceName;
+    }
+
+    public final void setQueryRetrieveScpServiceName(ObjectName name) {
+        this.queryRetrieveScpServiceName = name;
+    }
+
     public final ObjectName getIANScuServiceName() {
         return ianScuServiceName;
     }
@@ -843,15 +855,26 @@ public class ExportManagerService extends AbstractScuService
 
     private void sendInstance(ActiveAssociation a, int pcid, Dataset attrs,
             FileInfo fileInfo, Properties config, HashMap iuidMap,
-            byte[] buffer, int prior) throws InterruptedException, IOException {
+            byte[] buffer, int prior) throws Exception {
         coerceAttributes(attrs, config, iuidMap);
-        File f = FileUtils.toFile(fileInfo.basedir, fileInfo.fileID);
         Command cmd = DcmObjectFactory.getInstance().newCommand();
         cmd.initCStoreRQ(a.getAssociation().nextMsgID(), fileInfo.sopCUID,
                 attrs.getString(Tags.SOPInstanceUID), prior);
-        FileDataSource src = new FileDataSource(f, attrs, buffer);
+        FileDataSource src = new FileDataSource(getFile(fileInfo), attrs, buffer);
         Dimse dimse = AssociationFactory.getInstance().newDimse(pcid, cmd, src);
         a.invoke(dimse, this);
+    }
+
+    private boolean isLocalRetrieveAET(String aet) throws Exception {
+            return (Boolean) server.invoke(queryRetrieveScpServiceName,
+                    "isLocalRetrieveAET", new Object[]{ aet },
+                    new String[]{ String.class.getName() });
+    }
+
+    private File getFile(FileInfo fileInfo) throws Exception {
+        return (File) server.invoke(queryRetrieveScpServiceName, "getFile",
+                new Object[] { fileInfo.basedir, fileInfo.fileID },
+                new String[] { String.class.getName(), String.class.getName()});
     }
 
     private void coerceAttributes(Dataset attrs, Properties config,
@@ -1102,7 +1125,7 @@ public class ExportManagerService extends AbstractScuService
         FileInfo[][] a = cmd.getFileInfos();
         FileInfo[] b = new FileInfo[a.length];
         for (int i = 0; i < a.length; i++) {
-            FileInfo info = b[i] = a[i][0];
+            FileInfo info = b[i] = selectBestFile(a[i]);
             if (!equals(patID, info.patID))
                 throw new Exception(
                         "Export Selector references studies for different patients");
@@ -1113,6 +1136,18 @@ public class ExportManagerService extends AbstractScuService
             attrs.put(info.sopIUID, mergeAttrs);
         }
         return b;
+    }
+
+    private FileInfo selectBestFile(FileInfo[] fileInfos) throws Exception {
+        Arrays.sort(fileInfos);
+        for (FileInfo fileInfo : fileInfos) {
+            if (fileInfo.fileRetrieveAET != null
+                    && isLocalRetrieveAET(fileInfo.fileRetrieveAET)) {
+                return fileInfo;
+            }
+        }
+        throw new IOException("Instance[iuid=" + fileInfos[0].sopIUID
+                + "] not locally available!");
     }
 
     private void copyIUIDs(DcmElement sq1, List list) {

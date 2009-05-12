@@ -1433,7 +1433,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return getFile(dto.getDirectoryPath(), dto.getFilePath());
     }
 
-    protected File getFile(String fsID, String fileID) throws Exception {
+    public File getFile(String fsID, String fileID) throws Exception {
         File file = fsID.startsWith("tar:") ? retrieveFileFromTAR(fsID, fileID)
                         : FileUtils.toFile(fsID, fileID);
         if (!file.canRead()) {

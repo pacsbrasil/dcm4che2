@@ -1168,6 +1168,25 @@ QueryRetrieveScp service.</description>
       <return-type>java.util.Map</return-type>
    </operation>
 
+   <operation impact="ACTION">
+      <description>Return file specified by directory path/URL and file ID.
+      If the directory URL specifies a TAR directory, also takes care for
+      fetching the TAR from the HSM and extracting the file from the TAR,
+      making use of the TAR Retriever Service.</description>
+      <name>getFile</name>
+      <parameter>
+        <description>Directory/Mount Point file system</description>
+        <name>dirPath</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>File ID</description>
+        <name>fileID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.io.File</return-type>
+   </operation>
+
    <operation impact="INFO">
       <description>Locate SOP Instance. Return a Dataset object, if the instance
       is locally available. The attributes of the dataset are updated with the attributes from database.</description>
