@@ -63,8 +63,10 @@ public class XDSStoreServiceIdenticalHashTest extends TestCase {
     public void testStoreDocumentIdenticalHash() throws IOException, XDSException {
         XDSDocumentWriter docWriter = fac.getDocumentWriter("testDocumentContent", MIME_TEXT_XML);
         XDSDocument xdsDoc = new XDSDocument("docUID2", MIME_TEXT_XML, docWriter);
-        xdsStore.storeDocument(xdsDoc);
-        xdsStore.storeDocument(xdsDoc);
+        XDSDocument doc = xdsStore.storeDocument(xdsDoc);
+        assertEquals( "XDSDocument Status (after initial store)!", XDSDocument.CREATED, doc.getStatus());
+        doc = xdsStore.storeDocument(xdsDoc);
+        assertEquals( "XDSDocument Status (2nd store with identical hash)!", XDSDocument.STORED, doc.getStatus());
     }
 
 }
