@@ -224,9 +224,7 @@ abstract class StringElement extends ValueElement {
         }
 
         protected boolean check(char c) {
-            return Character.isISOControl(c)
-                ? (text && isDICOMControl(c))
-                : (text || c != '\\');
+            return !Character.isISOControl(c) || text && isDICOMControl(c);
         }
     }
 
