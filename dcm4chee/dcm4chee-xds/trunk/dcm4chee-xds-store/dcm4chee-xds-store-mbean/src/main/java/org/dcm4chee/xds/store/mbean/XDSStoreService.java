@@ -325,7 +325,8 @@ public class XDSStoreService extends ServiceMBeanSupport {
             } finally {
                 if ( dos != null ) {
                     try {
-                        dos.close();
+                        dos.flush();
+                        out.close();
                     } catch (IOException ignore) {
                         log.error("Ignored error during close!",ignore);
                     }
@@ -343,11 +344,15 @@ public class XDSStoreService extends ServiceMBeanSupport {
     }
 
     private XDSDocumentWriter getXdsDocWriter(BaseDocument doc) throws IOException {
-        if ( doc.getDataHandler() == null) {
+        DataHandler dh = doc.getDataHandler();
+        if ( dh == null) {
             return XDSDocumentWriterFactory.getInstance().getDocumentWriter(doc.getSize(), doc.getMimeType());
         } else {
-            InputStream is = doc.getInputStream();
-            return XDSDocumentWriterFactory.getInstance().getDocumentWriter(is, is.available(), doc.getMimeType());
+            //get size of document with assumption that available() return total size!
+            InputStream is = dh.getInputStream();
+            int size = is.available();
+            is.close();
+            return XDSDocumentWriterFactory.getInstance().getDocumentWriter(dh, size);
         }
     }
 
