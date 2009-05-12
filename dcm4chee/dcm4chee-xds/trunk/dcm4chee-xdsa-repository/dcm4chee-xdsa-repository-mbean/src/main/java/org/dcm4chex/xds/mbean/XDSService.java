@@ -381,7 +381,6 @@ public class XDSService extends ServiceMBeanSupport {
             try {
                 response = sendSOAP(msg, getXDSRegistryURI());
             } catch ( Exception x) {
-                log.info("@@@@@\n@@@@@\n@@@@@\n@@@@@\n");
                 return new XDSRegistryResponse( false, XDSConstants.XDS_ERR_REG_NOT_AVAIL, "Document Registry not available: "+xdsRegistryURI,x);
             }
             boolean success = checkResponse( response, "RegistryResponse" );
@@ -392,6 +391,7 @@ public class XDSService extends ServiceMBeanSupport {
                 return new SOAPMessageResponse(response);
             }
             log.info("Register document finished.");
+            commitDocuments(storedDocuments);
             return new SOAPMessageResponse(response);
         } catch ( Throwable x ) {
             log.error("Export document(s) failed! SubmissionSet uid:"+submissionUID,x);
@@ -405,6 +405,9 @@ public class XDSService extends ServiceMBeanSupport {
     }
     private void deleteDocuments(List storedDocuments) {
         docStoreDelegate.rollbackDocuments(storedDocuments);
+    }
+    private void commitDocuments(List storedDocuments) {
+        docStoreDelegate.commitDocuments(storedDocuments);
     }
 
     private String getSystemProperty(String name) {
