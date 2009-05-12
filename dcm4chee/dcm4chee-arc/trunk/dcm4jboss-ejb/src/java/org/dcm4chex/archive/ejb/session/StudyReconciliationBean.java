@@ -60,6 +60,7 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Status;
 import org.dcm4che.net.DcmServiceException;
+import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdateLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdateLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
@@ -173,7 +174,7 @@ public abstract class StudyReconciliationBean implements SessionBean {
      */
     public void updatePatient(Dataset attrs)
             throws FinderException, CreateException {
-    	patientUpdate.updatePatient(attrs);
+    	patientUpdate.updatePatient(attrs, PatientMatching.BY_ID);
     }
     
     /**
@@ -181,7 +182,7 @@ public abstract class StudyReconciliationBean implements SessionBean {
      */
     public void mergePatient(Dataset dominant, Dataset prior)
             throws FinderException, CreateException {
-    	patientUpdate.mergePatient(dominant, prior);
+    	patientUpdate.mergePatient(dominant, prior, PatientMatching.BY_ID);
     }
 
 	/**

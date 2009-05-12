@@ -57,6 +57,7 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.common.SPSStatus;
 import org.dcm4chex.archive.ejb.interfaces.MWLItemLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
@@ -120,14 +121,14 @@ public abstract class PatientUpdateBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void changePatientIdentifierList(Dataset correct, Dataset prior)
-            throws CreateException, FinderException,
+    public void changePatientIdentifierList(Dataset correct, Dataset prior,
+            PatientMatching matching) throws CreateException, FinderException,
                     PatientAlreadyExistsException {
         LOG.info("Change PID for " + correct.getString(Tags.PatientName)
                 + " from " + prior.getString(Tags.PatientID)
                 + " to " + correct.getString(Tags.PatientID));
         try {
-            patHome.selectPatientByID(correct);
+            patHome.selectPatient(correct, matching, false);
             String prompt = "Patient with PID "
                 + correct.getString(Tags.PatientID) + "^^^"
                 + correct.getString(Tags.IssuerOfPatientID, "")
@@ -136,21 +137,21 @@ public abstract class PatientUpdateBean implements SessionBean {
             throw new PatientAlreadyExistsException(prompt);
         } catch (ObjectNotFoundException e) {}
         PatientLocal correctPat = patHome.create(correct);
-        PatientLocal priorPat= updateOrCreate(prior);
+        PatientLocal priorPat= updateOrCreate(prior, matching);
         merge(correctPat, priorPat);
     }
 
     /**
      * @ejb.interface-method
      */
-    public void mergePatient(Dataset dominant, Dataset prior)
-            throws CreateException, FinderException {
+    public void mergePatient(Dataset dominant, Dataset prior,
+            PatientMatching matching) throws CreateException, FinderException {
         LOG.info("Merge " + prior.getString(Tags.PatientName)
                 + " with PID " + prior.getString(Tags.PatientID)
                 + " to " + dominant.getString(Tags.PatientName)
                 + " with PID " + dominant.getString(Tags.PatientID));
-        PatientLocal dominantPat = updateOrCreate(dominant);
-        PatientLocal priorPat= updateOrCreate(prior);
+        PatientLocal dominantPat = updateOrCreate(dominant, matching);
+        PatientLocal priorPat= updateOrCreate(prior, matching);
         merge(dominantPat, priorPat);
     }
 
@@ -171,8 +172,8 @@ public abstract class PatientUpdateBean implements SessionBean {
      * 
      * @ejb.interface-method
      */
-    public void updatePatient(StudyLocal study, Dataset attrs)
-            throws FinderException, CreateException {
+    public void updatePatient(StudyLocal study, Dataset attrs,
+            PatientMatching matching) throws FinderException, CreateException {
 		String pid = attrs.getString(Tags.PatientID);
 
 		// If the patient id is not included, then we don't have to do any
@@ -181,7 +182,7 @@ public abstract class PatientUpdateBean implements SessionBean {
 		if (pid == null || pid.length() == 0)
 			return;
 		
-		PatientLocal newPatient = updateOrCreate(attrs);
+		PatientLocal newPatient = updateOrCreate(attrs, matching);
 		
 		// Case 1: it's matching the same patient. Do nothing
 		if(study.getPatient().getPatientId().equals(pid))
@@ -195,17 +196,17 @@ public abstract class PatientUpdateBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void updatePatient(Dataset attrs)
+    public void updatePatient(Dataset attrs, PatientMatching matching)
             throws CreateException, FinderException {
         LOG.info("Update " + attrs.getString(Tags.PatientName)
                 + " with PID " + attrs.getString(Tags.PatientID));
-        updateOrCreate(attrs);
+        updateOrCreate(attrs, matching);
     }
 
-    private PatientLocal updateOrCreate(Dataset ds)
+    private PatientLocal updateOrCreate(Dataset ds, PatientMatching matching)
             throws CreateException, FinderException {
        try {
-            return findAndUpdatePatient(ds);
+            return findAndUpdatePatient(ds, matching);
        } catch (ObjectNotFoundException e) {
             PatientLocal pat;
             try {
@@ -214,7 +215,7 @@ public abstract class PatientUpdateBean implements SessionBean {
                 // Check if patient record was inserted by concurrent thread
                 // with unique index on (pat_id, pat_id_issuer)
                 try {
-                    return findAndUpdatePatient(ds);
+                    return findAndUpdatePatient(ds, matching);
                 } catch (FinderException fe) {
                     throw ce;
                 }
@@ -222,7 +223,7 @@ public abstract class PatientUpdateBean implements SessionBean {
             // Check if patient record was also inserted by concurrent thread
             // with non-unique index on (pat_id, pat_id_issuer)
             try {
-                patHome.selectPatientByID(ds);
+                patHome.selectPatient(ds, matching, false);
                 return pat;
             } catch (NonUniquePatientException nupe) {
                 try {
@@ -230,13 +231,14 @@ public abstract class PatientUpdateBean implements SessionBean {
                 } catch (RemoveException e1) {
                     throw new EJBException(e);
                 }
-                return findAndUpdatePatient(ds);
+                return findAndUpdatePatient(ds, matching);
             }
         }
     }
 
-    private PatientLocal findAndUpdatePatient(Dataset ds) throws FinderException {
-        PatientLocal pat = patHome.selectPatientByID(ds);
+    private PatientLocal findAndUpdatePatient(Dataset ds,
+            PatientMatching matching) throws FinderException {
+        PatientLocal pat = patHome.selectPatient(ds, matching, false);
         pat.updateAttributes(ds);
         return pat;
     }
@@ -244,12 +246,12 @@ public abstract class PatientUpdateBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public boolean deletePatient(Dataset ds)
+    public boolean deletePatient(Dataset ds, PatientMatching matching)
             throws RemoveException, FinderException {
         LOG.info("Delete " + ds.getString(Tags.PatientName)
                 + " with PID " + ds.getString(Tags.PatientID));
         try {
-            patHome.selectPatientByID(ds).remove();
+            patHome.selectPatient(ds, matching, false).remove();
             return true;
         } catch (ObjectNotFoundException e) {
             return false;
@@ -259,11 +261,12 @@ public abstract class PatientUpdateBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void patientArrived(Dataset ds) throws FinderException {
+    public void patientArrived(Dataset ds, PatientMatching matching)
+            throws FinderException {
         LOG.info("Change status of SPS for " + ds.getString(Tags.PatientName)
                 + " with PID " + ds.getString(Tags.PatientID) + " to ARRIVED");
         try {
-            PatientLocal pat = patHome.selectPatientByID(ds);
+            PatientLocal pat = patHome.selectPatient(ds, matching, false);
             Collection c = pat.getMwlItems();
             for (Iterator iter = c.iterator(); iter.hasNext();) {
                 MWLItemLocal mwlitem = (MWLItemLocal) iter.next();
@@ -275,12 +278,14 @@ public abstract class PatientUpdateBean implements SessionBean {
     }
     
     /**
+     * @param matching 
      * @ejb.interface-method
      */
-    public void updateOtherPatientIDsOrCreate(Dataset ds)
-    throws FinderException, CreateException {
+    public void updateOtherPatientIDsOrCreate(Dataset ds,
+            PatientMatching matching) throws FinderException, CreateException {
         try {
-            patHome.selectPatientByID(ds).updateOtherPatientIDs(ds);
+            patHome.selectPatient(ds, matching, false)
+                    .updateOtherPatientIDs(ds);
         } catch (ObjectNotFoundException e) {
             patHome.create(ds);
         }

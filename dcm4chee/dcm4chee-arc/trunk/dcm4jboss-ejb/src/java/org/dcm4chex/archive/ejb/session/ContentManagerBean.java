@@ -40,7 +40,6 @@
 package org.dcm4chex.archive.ejb.session;
 
 import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -57,7 +56,6 @@ import javax.ejb.SessionContext;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.security.auth.Subject;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -323,18 +321,11 @@ public abstract class ContentManagerBean implements SessionBean {
     }
     
     private PatientLocal getPatientLocal(String pid, String issuer) throws FinderException {
-        if ( issuer != null ) {
-            try {
-                return patHome.findByPatientIdWithIssuer(pid, issuer);
-            } catch (ObjectNotFoundException onfe) {}
-        }
-        Collection col = patHome.findByPatientId(pid);
-        if ( col.isEmpty() )
+        try {
+            return patHome.selectPatient(pid, issuer);
+        } catch (ObjectNotFoundException onfe) {
             return null;
-        if ( col.size() > 1 ) {
-            throw new FinderException("Patient for pid "+pid+" and issuer "+issuer+" is ambiguous!");
         }
-        return (PatientLocal) col.iterator().next();
     }
 
     /**

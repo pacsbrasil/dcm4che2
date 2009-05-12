@@ -58,12 +58,14 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
+import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.ejb.interfaces.GPPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.GPPPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.GPSPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.GPSPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
+import org.dcm4chex.archive.exceptions.NonUniquePatientException;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -129,10 +131,10 @@ public abstract class GPPPSManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void createGPPPS(Dataset ds)
+    public void createGPPPS(Dataset ds, PatientMatching matching)
     throws DcmServiceException {
         checkDuplicate(ds.getString(Tags.SOPInstanceUID));
-        PatientLocal pat = findOrCreatePatient(ds);          
+        PatientLocal pat = findOrCreatePatient(ds, matching);
         Collection gpsps = findRefGpsps(ds.get(Tags.RefGPSPSSeq), pat);
         GPPPSLocal pps = doCreate(ds, pat);
         if (gpsps != null) {
@@ -140,15 +142,16 @@ public abstract class GPPPSManagerBean implements SessionBean {
         }
     }
 
-    private PatientLocal findOrCreatePatient(Dataset ds)
-            throws DcmServiceException {
+    private PatientLocal findOrCreatePatient(Dataset ds,
+            PatientMatching matching) throws DcmServiceException {
         try {
-            Collection c = patHome.selectPatientsByDemographics(ds);
-            if (c.size() == 1) {
-                return patHome.followMergedWith(
-                        (PatientLocal) c.iterator().next());
+            try {
+                return patHome.selectPatient(ds, matching, true);
+            } catch (ObjectNotFoundException enfe) {
+                return patHome.create(ds.subSet(PATIENT_ATTRS_INC));
+            } catch (NonUniquePatientException onfe) {
+                return patHome.create(ds.subSet(PATIENT_ATTRS_INC));
             }
-            return patHome.create(ds.subSet(PATIENT_ATTRS_INC));
         } catch (Exception e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }           

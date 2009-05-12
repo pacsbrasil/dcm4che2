@@ -50,6 +50,7 @@ import junit.framework.TestCase;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
 import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
 import org.xml.sax.SAXException;
@@ -104,14 +105,15 @@ public class MWLManagerBeanTest extends TestCase
         Dataset spsItem = ds.getItem(Tags.SPSSeq);
         String spsId1ds = spsItem.getString(Tags.SPSID);
         // insert first entry with sps-id
-        Dataset mwlItem1 = mwlManager.addWorklistItem(ds);
+        Dataset mwlItem1 = mwlManager.addWorklistItem(ds,
+                PatientMatching.BY_ID);
         String rpId1ret = mwlItem1.getString(Tags.RequestedProcedureID);
         String spsId1ret = mwlItem1.getItem(Tags.SPSSeq).getString(Tags.SPSID);
         assertEquals(spsId1ds, spsId1ret);        
 
         // insert second entry without sps-id -> returns mwl item with new generated sps-id
         spsItem.remove(Tags.SPSID);
-        Dataset mwlItem2 = mwlManager.addWorklistItem(ds);
+        Dataset mwlItem2 = mwlManager.addWorklistItem(ds, PatientMatching.BY_ID);
         String rpId2ret = mwlItem2.getString(Tags.RequestedProcedureID);
         String spsId2ret = mwlItem2.getItem(Tags.SPSSeq).getString(Tags.SPSID);
         

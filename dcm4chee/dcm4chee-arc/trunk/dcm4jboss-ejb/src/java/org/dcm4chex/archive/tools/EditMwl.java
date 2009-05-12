@@ -54,6 +54,7 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
 import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
 import org.xml.sax.SAXException;
@@ -142,7 +143,7 @@ public final class EditMwl {
      * @return
      */
     private Dataset add(Dataset ds) throws Exception {
-        return getMWLManager().addWorklistItem(ds);
+        return getMWLManager().addWorklistItem(ds, PatientMatching.BY_ID);
     }
 
     /**

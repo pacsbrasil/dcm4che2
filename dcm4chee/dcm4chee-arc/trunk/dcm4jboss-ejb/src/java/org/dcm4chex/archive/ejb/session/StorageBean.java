@@ -70,6 +70,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
@@ -84,6 +85,7 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
+import org.dcm4chex.archive.exceptions.NonUniquePatientException;
 
 /**
  * Storage Bean
@@ -182,7 +184,7 @@ public abstract class StorageBean implements SessionBean {
      */
     public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds,
             long fspk, java.lang.String fileid, long size, byte[] md5,
-            boolean updateStudyAccessTime)
+            boolean updateStudyAccessTime, PatientMatching matching)
     throws DcmServiceException {
         FileMetaInfo fmi = ds.getFileMetaInfo();
         final String iuid = fmi.getMediaStorageSOPInstanceUID();
@@ -196,7 +198,8 @@ public abstract class StorageBean implements SessionBean {
                 instance = instHome.findBySopIuid(iuid);
                 coerceInstanceIdentity(instance, ds, coercedElements);
             } catch (ObjectNotFoundException onfe) {
-                instance = instHome.create(ds, getSeries(ds, coercedElements));
+                instance = instHome.create(ds,
+                        getSeries(matching, ds, coercedElements));
             }
             if (fspk != -1) {
                 FileSystemLocal fs = fileSystemHome.findByPrimaryKey(new Long(fspk));
@@ -387,15 +390,16 @@ public abstract class StorageBean implements SessionBean {
         fileHome.create(fileid, tsuid, size, md5, status, instance, fs);    	
     }
 
-    private SeriesLocal getSeries(Dataset ds, Dataset coercedElements)
-            throws Exception {
+    private SeriesLocal getSeries(PatientMatching matching, Dataset ds,
+            Dataset coercedElements) throws Exception {
         final String uid = ds.getString(Tags.SeriesInstanceUID);
         SeriesLocal series;
         try {
             series = findBySeriesIuid(uid);
         } catch (ObjectNotFoundException onfe) {
             try {
-                return seriesHome.create(ds, getStudy(ds, coercedElements));
+                return seriesHome.create(ds,
+                        getStudy(matching, ds, coercedElements));
             } catch (CreateException e1) {
                 // check if Series record was inserted by concurrent thread
                 try {
@@ -409,14 +413,16 @@ public abstract class StorageBean implements SessionBean {
         return series;
     }
 
-    private StudyLocal getStudy(Dataset ds, Dataset coercedElements) throws Exception {
+    private StudyLocal getStudy(PatientMatching matching, Dataset ds,
+            Dataset coercedElements) throws Exception {
         final String uid = ds.getString(Tags.StudyInstanceUID);
         StudyLocal study;
         try {
             study = studyHome.findByStudyIuid(uid);
         } catch (ObjectNotFoundException onfe) {
             try {
-                return studyHome.create(ds, getPatient(ds, coercedElements));
+                return studyHome.create(ds,
+                        getPatient(matching, ds, coercedElements));
             } catch (CreateException e1) {
                 // check if Study record was inserted by concurrent thread
                 try {
@@ -430,37 +436,30 @@ public abstract class StorageBean implements SessionBean {
         return study;
     }
 
-    private PatientLocal getPatient(Dataset ds, Dataset coercedElements)
-            throws Exception {
-        Collection c = patHome.selectPatientsByDemographics(ds);
-        if (c.isEmpty()) {
+    private PatientLocal getPatient(PatientMatching matching, Dataset ds,
+            Dataset coercedElements) throws Exception {
+        PatientLocal pat;
+        try {
+            pat = patHome.selectPatient(ds, matching, true);
+        } catch (ObjectNotFoundException onfe) {
             try {
-                PatientLocal pat = patHome.create(ds);
+                pat = patHome.create(ds);
                 // Check if patient record was also inserted by concurrent thread
-                c = patHome.selectPatientsByDemographics(ds);
-                if (c.size() == 1) {
-                    return pat;
+                try {
+                    return patHome.selectPatient(ds, matching, true);
+                } catch (NonUniquePatientException nupe) {
+                    pat.remove();
+                    pat = patHome.selectPatient(ds, matching, true);
                 }
-                for (Iterator it = c.iterator(); it.hasNext();) {
-                    pat.isIdentical((PatientLocal) it.next());
-                    it.remove();
-                    break;
-                }
-                pat.remove();
-            } catch (CreateException ce) {
+             } catch (CreateException ce) {
                 // Check if patient record was inserted by concurrent thread
                 // with unique index on (pat_id, pat_id_issuer)
-                if ((c = patHome.selectPatientsByDemographics(ds)).isEmpty()) {
-                    throw ce;
-                }
+                 pat = patHome.selectPatient(ds, matching, true);
             }
             
-        }
-        if (c.size() != 1) {
+        } catch (NonUniquePatientException nupe) {
             return patHome.create(ds);
         }
-        PatientLocal pat = patHome.followMergedWith(
-                (PatientLocal) c.iterator().next());
         coercePatientIdentity(pat, ds, coercedElements);
         return pat;
     }
@@ -484,7 +483,7 @@ public abstract class StorageBean implements SessionBean {
         if (priorPat.getIssuerOfPatientId() == null && issuer != null) {
             try {
                 PatientLocal dominantPat =
-                        patHome.findByPatientIdWithIssuer(pid, issuer);
+                        patHome.selectPatient(pid, issuer);
                 log.info("Detect duplicate Patient Record: "
                         + dominantPat.asString());
                 dominantPat.getStudies().addAll(priorPat.getStudies());

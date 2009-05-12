@@ -54,6 +54,7 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObject;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.ejb.interfaces.MWLItemLocal;
 import org.dcm4chex.archive.ejb.interfaces.MWLItemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
@@ -168,7 +169,8 @@ public abstract class MWLManagerBean implements SessionBean {
                     sps.getString(Tags.SPSID));
         PatientLocal pat = mwlItem.getPatient();
         try {
-            if (patHome.selectPatientByID(ds).isIdentical(pat)) {
+            if (patHome.selectPatient(ds.getString(Tags.PatientID),
+                    ds.getString(Tags.IssuerOfPatientID)).isIdentical(pat)) {
                 if (updatePatient) {
                     pat.updateAttributes(ds.subSet(PATIENT_ATTRS_WITH_CHARSET));
                 }
@@ -221,10 +223,10 @@ public abstract class MWLManagerBean implements SessionBean {
     }
 
 
-    private PatientLocal updateOrCreatePatient(Dataset ds)
-            throws FinderException, CreateException  {
+    private PatientLocal updateOrCreatePatient(Dataset ds,
+            PatientMatching matching) throws FinderException, CreateException  {
         try {
-            return patHome.selectPatientByID(ds);
+            return patHome.selectPatient(ds, matching, false);
         } catch (ObjectNotFoundException onfe) {
             return patHome.create(ds.subSet(PATIENT_ATTRS_WITH_CHARSET));
         }           
@@ -233,11 +235,11 @@ public abstract class MWLManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset addWorklistItem(Dataset ds)
+    public Dataset addWorklistItem(Dataset ds, PatientMatching matching)
             throws CreateException, FinderException {
         checkDuplicate(ds);
         MWLItemLocal mwlItem = mwlItemHome.create(ds.subSet(PATIENT_ATTRS,
-                true, true), updateOrCreatePatient(ds));
+                true, true), updateOrCreatePatient(ds, matching));
         return toAttributes(mwlItem);
     }
 

@@ -64,6 +64,7 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.common.GPSPSStatus;
+import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.ejb.interfaces.GPPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.GPSPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.GPSPSLocalHome;
@@ -188,11 +189,11 @@ public abstract class GPWLManagerBean implements SessionBean {
 
     private PatientLocal findOrCreatePatient(Dataset ds)
             throws FinderException, CreateException {
-        Collection c = patHome.selectPatientsByDemographics(ds);
-        if (c.size() == 1) {
-            return patHome.followMergedWith((PatientLocal) c.iterator().next());
+        try {
+            return patHome.selectPatient(ds, PatientMatching.BY_ID, true);
+        } catch (ObjectNotFoundException onfe) {
+            return patHome.create(ds.subSet(PATIENT_ATTRS));
         }
-        return patHome.create(ds.subSet(PATIENT_ATTRS));
     }
 
     /**

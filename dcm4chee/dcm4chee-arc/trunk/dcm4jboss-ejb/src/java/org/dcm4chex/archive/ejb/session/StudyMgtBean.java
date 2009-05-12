@@ -40,7 +40,6 @@
 package org.dcm4chex.archive.ejb.session;
 
 import java.rmi.RemoteException;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -62,6 +61,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
+import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
@@ -143,21 +143,22 @@ public abstract class StudyMgtBean implements SessionBean {
     }
 
     /**
+     * @param matching 
      * @ejb.interface-method
      */
-    public void createStudy(Dataset ds) throws DcmServiceException,
-            CreateException, FinderException {
+    public void createStudy(Dataset ds, PatientMatching matching)
+            throws DcmServiceException, CreateException, FinderException {
         checkDuplicateStudy(ds.getString(Tags.StudyInstanceUID));
-        studyHome.create(ds, findOrCreatePatient(ds));
+        studyHome.create(ds, findOrCreatePatient(ds, matching));
     }
 
-    private PatientLocal findOrCreatePatient(Dataset ds)
-            throws FinderException, CreateException {
-        Collection c = patHome.selectPatientsByDemographics(ds);
-        if (c.size() != 1) {
+    private PatientLocal findOrCreatePatient(Dataset ds,
+            PatientMatching matching) throws FinderException, CreateException {
+        try {
+            return patHome.selectPatient(ds, matching, true);
+        } catch (ObjectNotFoundException onfe) {
             return patHome.create(ds);
         }
-        return patHome.followMergedWith((PatientLocal) c.iterator().next());
     }
 
     private void checkDuplicateStudy(String suid) throws FinderException,
@@ -183,11 +184,12 @@ public abstract class StudyMgtBean implements SessionBean {
      * patient and study attributes will be replaced with the new data, which is
      * different from data coercion during the storage, where only empty
      * attibutes are updated.
+     * @param matching 
      * 
      * @ejb.interface-method
      */
-    public void updateStudyAndPatientOnly(String iuid, Dataset ds)
-            throws DcmServiceException {
+    public void updateStudyAndPatientOnly(String iuid, Dataset ds,
+            PatientMatching matching) throws DcmServiceException {
         try {
             StudyLocal study = getStudy(iuid);
             AttributeFilter patientFilter = AttributeFilter
@@ -199,7 +201,7 @@ public abstract class StudyMgtBean implements SessionBean {
 
             PatientUpdateLocal patientUpdate = patientUpdateHome.create();
             try {
-                patientUpdate.updatePatient(study, patientAttr);
+                patientUpdate.updatePatient(study, patientAttr, matching);
             } finally {
                 patientUpdate.remove();
             }

@@ -66,9 +66,8 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
-import org.dcm4chex.archive.ejb.interfaces.GPSPSLocal;
-import org.dcm4chex.archive.ejb.interfaces.GPSPSRequestLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
@@ -80,6 +79,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
+import org.dcm4chex.archive.exceptions.NonUniquePatientException;
 import org.dcm4chex.archive.exceptions.PatientMismatchException;
 
 /**
@@ -153,13 +153,15 @@ public abstract class MPPSManagerBean implements SessionBean {
     }
 
     /**
+     * @param matching 
      * @ejb.interface-method
      */
-    public void createMPPS(Dataset ds) throws DcmServiceException {
+    public void createMPPS(Dataset ds, PatientMatching matching)
+            throws DcmServiceException {
         checkDuplicate(ds.getString(Tags.SOPInstanceUID));
         try {
             mppsHome.create(ds.subSet(PATIENT_ATTRS_EXC, true, true),
-                    findOrCreatePatient(ds));
+                    findOrCreatePatient(ds, matching));
         } catch (CreateException e) {
             log.error("Creation of MPPS(iuid="
                     + ds.getString(Tags.SOPInstanceUID) + ") failed: ", e);
@@ -178,15 +180,16 @@ public abstract class MPPSManagerBean implements SessionBean {
         }
     }
 
-    private PatientLocal findOrCreatePatient(Dataset ds)
-            throws DcmServiceException {
+    private PatientLocal findOrCreatePatient(Dataset ds,
+            PatientMatching matching) throws DcmServiceException {
         try {
-            Collection c = patHome.selectPatientsByDemographics(ds);
-            if (c.size() == 1) {
-                return patHome.followMergedWith(
-                        (PatientLocal) c.iterator().next());
+            try {
+                return patHome.selectPatient(ds, matching, true);
+            } catch (ObjectNotFoundException enfe) {
+                return patHome.create(ds.subSet(PATIENT_ATTRS_INC));
+            } catch (NonUniquePatientException onfe) {
+                return patHome.create(ds.subSet(PATIENT_ATTRS_INC));
             }
-            return patHome.create(ds.subSet(PATIENT_ATTRS_INC));
         } catch (Exception e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
@@ -478,7 +481,7 @@ public abstract class MPPSManagerBean implements SessionBean {
         if (!isSamePatient(mwlPatDs, mppsPat)) {
             PatientLocal mwlPat;
             try {
-                mwlPat = patHome.findByPatientIdWithIssuer(
+                mwlPat = patHome.selectPatient(
                         mwlPatDs.getString(Tags.PatientID),
                         mwlPatDs.getString(Tags.IssuerOfPatientID));
             } catch (ObjectNotFoundException onfe) {
@@ -643,12 +646,14 @@ public abstract class MPPSManagerBean implements SessionBean {
     /**
      * Update Scheduled Step Attributes on receive of ORM^O01 message AFTER
      * acquisition and storage of objects
+     * @param matching 
      * 
      * @throws PatientMismatchException
      * @ejb.interface-method
      */
     public List updateScheduledStepAttributes(Dataset mwlitem,
-            boolean updateDifferentPatientOfExistingStudy)
+                PatientMatching matching,
+                boolean updateDifferentPatientOfExistingStudy)
             throws PatientMismatchException {
         // query for already received MPPS for scheduled/updated procedure
         String suid = mwlitem.getString(Tags.StudyInstanceUID);
@@ -669,7 +674,7 @@ public abstract class MPPSManagerBean implements SessionBean {
         }
         PatientLocal pat;
         try {
-            pat = patHome.selectPatientByID(mwlitem);
+            pat = patHome.selectPatient(mwlitem, matching, false);
         } catch (FinderException e) {
             throw new EJBException(e);
         }
