@@ -41,69 +41,104 @@ package org.dcm4chee.xds.common.store;
 
 public class XDSDocument {
 
-	private String docUid;
-	private String mimeType;
-	private XDSDocumentWriter xdsDocWriter;
-	private long size;
-	private String hashString;
-	private String desc;
-	
-	private XDSDocument() {
-	    
-	}
-	
-	public XDSDocument(XDSDocumentWriter xdsDocWriter) {
-		this.xdsDocWriter = xdsDocWriter;
-		size = xdsDocWriter.size();
-	}
-	public XDSDocument(String docUid, String mime, XDSDocumentWriter xdsDocWriter) {
-		this(xdsDocWriter);
-		this.docUid = docUid;
-		this.mimeType = mime;
-	}
-	
-	
-	public XDSDocument(String documentUID, String mimeType,
-			XDSDocumentWriter xdsDocWriter, String hashString, String desc) {
-		this(documentUID, mimeType, xdsDocWriter);
-		this.hashString = hashString;
-		this.desc = desc;
-	}
+    public static final int NOT_STORED = 0; 
+    public static final int CREATED = 1; 
+    public static final int STORED = 2; 
+    public static final int DELETED = -1; 
 
-        public XDSDocument(String documentUID, String mimeType,
-                long size, String hashString, String desc) {
-            this.docUid = documentUID;
-            this.mimeType = mimeType;
-            this.size = size;
-            this.hashString = hashString;
-            this.desc = desc;
-        }
-	
-	public XDSDocumentWriter getXdsDocWriter() {
-		return xdsDocWriter;
-	}
-	
-	public String getDocumentUID() {
-		return docUid;
-	}
-	public String getMimeType() {
-		return mimeType;
-	}
-	public void setMimeType(String mimeType) {
-		this.mimeType = mimeType;
-	}
-	
-	/** Size of the Document */
-	public long getSize(){
-		return size;
-	}
-	/** Hash of this Document (SHA1 MessageDigest) */
-	public String getHash() {
-		return hashString;
-	}
-	
-	public String getDescription() {
-		return desc;
-	}
+    private String docUid;
+    private String mimeType;
+    private XDSDocumentWriter xdsDocWriter;
+    private long size;
+    private String hashString;
+    private String desc;
+    private int status = NOT_STORED;
+
+    private XDSDocument() {
+
+    }
+
+    public XDSDocument(XDSDocumentWriter xdsDocWriter) {
+        this.xdsDocWriter = xdsDocWriter;
+        size = xdsDocWriter.size();
+    }
+    public XDSDocument(String docUid, String mime, XDSDocumentWriter xdsDocWriter) {
+        this(xdsDocWriter);
+        this.docUid = docUid;
+        this.mimeType = mime;
+    }
+
+
+    public XDSDocument(String documentUID, String mimeType,
+            XDSDocumentWriter xdsDocWriter, String hashString, String desc) {
+        this(documentUID, mimeType, xdsDocWriter);
+        this.hashString = hashString;
+        this.desc = desc;
+    }
+
+    public XDSDocument(String documentUID, String mimeType,
+            long size, String hashString, String desc) {
+        this.docUid = documentUID;
+        this.mimeType = mimeType;
+        this.size = size;
+        this.hashString = hashString;
+        this.desc = desc;
+    }
+
+    public XDSDocumentWriter getXdsDocWriter() {
+        return xdsDocWriter;
+    }
+
+    public String getDocumentUID() {
+        return docUid;
+    }
+    public String getMimeType() {
+        return mimeType;
+    }
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
+    }
+
+    /** Size of the Document */
+    public long getSize(){
+        return size;
+    }
+    /** Hash of this Document (SHA1 MessageDigest) */
+    public String getHash() {
+        return hashString;
+    }
+
+    public String getDescription() {
+        return desc;
+    }
+
+    /**
+     * Return status of this document.<br>
+     * <dl><dt>One of following status:</dt>
+     * <dd>(0) NOT_STORED : Document in initial state (not processed)</dd>
+     * <dd>(1) CREATED    : Document created (stored) but transaction is not finished.</dd>
+     * <dd>(2) STORED     : Document is stored and registered successfully and should not be deleted. </dd>
+     * <dd>(-1)DELETED    : Document is deleted.</dd>
+     * </dl>
+     * @return current status of this document
+     */
+    public int getStatus() {
+        return status;
+    }
+
+    /**
+     * Set status of this document.
+     * @param status
+     * @return this XDSDocument instance.
+     */
+    public XDSDocument setStatus(int status) {
+        this.status = status;
+        return this;
+    }
+    
+    //@overwrite
+    public String toString() {
+        return "XDSDocument uid:"+docUid+" mime:"+mimeType+" status:"+status;
+    }
 
 }
