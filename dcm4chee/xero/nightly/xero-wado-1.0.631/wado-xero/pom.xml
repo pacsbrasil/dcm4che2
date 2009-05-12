@@ -1,0 +1,222 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <artifactId>xero-wado</artifactId>
+    <groupId>org.dcm4chee.xero</groupId>
+    <version>1.0.631</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>wado-xero</artifactId>
+  <name>wado-xero</name>
+
+  <profiles>
+     <profile>
+        <id>devDeploy</id>
+        <activation>
+           <property><name>env.developmentServer</name></property>
+        </activation>
+        <build>
+           <finalName>wado2</finalName>
+           <plugins>
+              <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration> <argLine>-Xmx256m</argLine> </configuration>
+              </plugin> 
+	      
+              <plugin>
+                 <artifactId>maven-antrun-plugin</artifactId>
+                 <executions>
+
+                    <execution>
+                       <id>ViewCopy</id>
+                       <phase>process-resources</phase>
+                       <configuration>
+                          <tasks>
+                             <echo>Copying templates to ${developmentServer} wado2</echo>
+                             <copy todir="${developmentServer}/server/default/deploy/wado2.war/WEB-INF/classes" preserveLastModified="true">
+                                <fileset dir="src/main/resources" includes="**/*" />
+                             </copy>
+                          </tasks>
+                       </configuration>
+                       <goals><goal>run</goal></goals>
+                    </execution>
+                 </executions>
+              </plugin>
+           </plugins>
+        </build>
+     </profile>
+  </profiles>
+
+  <build>
+    <plugins>
+       <plugin>
+    <groupId>org.jvnet.jaxb2.maven2</groupId>
+    <artifactId>maven-jaxb2-plugin</artifactId>
+        <version>0.2</version>
+    <executions>
+        <execution>
+            <goals>
+                <goal>generate</goal>
+            </goals>
+        </execution>
+    </executions>
+        <configuration>
+           <schemaIncludes>
+              <value>org/**/*.xsd</value>
+           </schemaIncludes>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </build>
+  <dependencies>
+    <dependency>
+      <groupId>dcm4che</groupId>
+      <artifactId>dcm4che-net</artifactId>
+      <version>2.0.19</version>
+    </dependency>
+
+    <dependency>
+      <groupId>dcm4che</groupId>
+      <artifactId>dcm4che-audit</artifactId>
+      <version>2.0.19</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>dcm4che</groupId>
+      <artifactId>dcm4che-image</artifactId>
+      <version>2.0.19</version>
+    </dependency> 
+
+    <dependency>
+      <groupId>dcm4che</groupId>
+      <artifactId>dcm4che-imageio</artifactId>
+      <version>2.0.19</version>
+    </dependency> 
+
+    <dependency>
+      <groupId>dcm4che</groupId>
+      <artifactId>dcm4che-core</artifactId>
+      <version>2.0.19</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>dcm4che</groupId>
+      <artifactId>dcm4che-iod</artifactId>
+      <version>2.0.19</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4chee.xero</groupId>
+      <artifactId>metadata</artifactId>
+      <version>1.0.640</version>
+    </dependency>
+    <dependency>
+      <groupId>dcm4che</groupId>
+      <artifactId>dcm4che-test-image</artifactId>
+      <version>2.2-INTERMEDIATE4</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4chee.xero</groupId>
+      <artifactId>util-jar</artifactId>
+      <version>1.0.640</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.4</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>batik</groupId>
+      <artifactId>batik-transcoder</artifactId>
+      <version>1.6-1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.media</groupId>
+      <artifactId>jai_imageio</artifactId>
+      <version>1.1</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+       <groupId>com.sun.xml.bind</groupId>
+       <artifactId>jaxb-impl</artifactId>
+       <version>2.0</version>
+       <exclusions>
+          <exclusion>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jsr173_api</artifactId>
+          </exclusion>
+       </exclusions>
+    </dependency>
+    <dependency>
+       <groupId>javax.xml.bind</groupId>
+       <artifactId>jaxb-api</artifactId>
+       <version>2.0</version>
+       <exclusions>
+          <exclusion>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jsr173_api</artifactId>
+          </exclusion>
+       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.embedded</groupId>
+      <artifactId>jboss-embedded-all</artifactId>
+      <version>beta3</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.embedded</groupId>
+      <artifactId>jboss-embedded</artifactId>
+      <version>beta3</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>dcm4chee</groupId>
+        <artifactId>ejb-client</artifactId>
+        <version>2.13.6</version>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>dcm4chee</groupId>
+        <artifactId>ejb-client2</artifactId>
+        <version>2.14.3-alpha</version>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.easymock</groupId>
+        <artifactId>easymock</artifactId>
+        <version>2.4</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+       <groupId>junit</groupId>
+       <artifactId>junit</artifactId>
+       <version>4.4</version>
+       <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.easymock</groupId>
+        <artifactId>easymockclassextension</artifactId>
+        <version>2.4</version>
+        <scope>test</scope>
+    </dependency>
+  </dependencies>
+<pluginRepositories>
+    <pluginRepository>
+        <id>maven2-repository.dev.java.net</id>
+        <name>Java.net Maven 2 Repository</name>
+        <url>http://download.java.net/maven/2</url>
+    </pluginRepository>
+    <pluginRepository>
+        <id>maven-repository.dev.java.net</id>
+        <name>Java.net Maven 1 Repository (legacy)</name>
+        <url>http://download.java.net/maven/1</url>
+        <layout>legacy</layout>
+    </pluginRepository>
+</pluginRepositories>
+
+</project>
