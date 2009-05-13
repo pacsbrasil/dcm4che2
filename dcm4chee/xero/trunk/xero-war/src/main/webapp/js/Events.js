@@ -37,19 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 /** Miscellaneous event handling helper code bits */
 
-/** Parses a point into some number of numbers as an array.  
- * @param {String} point
- */
-function parsePoint(point) {
-	if( !point.substring ) return point;
-	var spoint = ""+point;
-	var xy = spoint.match(/[\-0-9.]+/g);
-	for(var i=0; i<xy.length; i++) {
-		xy[i] = parseInt(xy[i]);
-	};	
-	return xy;
-};
-
 /** Returns the local name of the node */
 function localName(node) {
 	if( node.localName!==undefined && node.localName!==null ) return node.localName;
