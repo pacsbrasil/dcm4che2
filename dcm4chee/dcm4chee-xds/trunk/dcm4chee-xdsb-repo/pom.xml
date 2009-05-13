@@ -4,18 +4,17 @@
   <parent>
     <groupId>dcm4che</groupId>
     <artifactId>dcm4chee-xds</artifactId>
-    <version>0.0.3-SNAPSHOT</version>
+    <version>0.0.3</version>
   </parent>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-xdsb-repo</artifactId>
-  <version>0.0.3-SNAPSHOT</version>
+  <version>0.0.3</version>
   <packaging>pom</packaging>
   <name>Implementation of XDS.b Repository</name>
   <modules>
     <module>dcm4chee-xdsb-repo-ws</module>
     <module>dcm4chee-xdsb-repo-mbean</module>
     <module>dcm4chee-xdsb-repo-retrieve</module>
-    <module>dcm4chee-xdsb-repo-webretrieve</module>
   </modules>
   <dependencies>
     <dependency>
