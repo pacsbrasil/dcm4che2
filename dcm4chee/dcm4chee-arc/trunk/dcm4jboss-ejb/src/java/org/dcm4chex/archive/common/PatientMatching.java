@@ -263,13 +263,9 @@ public class PatientMatching implements Serializable{
         if (!mustMatch || value == null) {
             regex.append("[!\\^]*");
         } else {
-            if (unknownAlwaysMatch) {
-                regex.append("(");
-            }
-            regex.append(value.toUpperCase());
-            if (unknownAlwaysMatch) {
-                regex.append(")?");
-            }
+            regex.append(unknownAlwaysMatch ? "(\\Q" : "\\Q")
+                 .append(value.toUpperCase())
+                 .append(unknownAlwaysMatch ? "\\E)?" : "\\E");
         }
         regex.append("\\^");
     }
