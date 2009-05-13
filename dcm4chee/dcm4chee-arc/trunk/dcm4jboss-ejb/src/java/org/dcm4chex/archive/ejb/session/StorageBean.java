@@ -454,7 +454,11 @@ public abstract class StorageBean implements SessionBean {
              } catch (CreateException ce) {
                 // Check if patient record was inserted by concurrent thread
                 // with unique index on (pat_id, pat_id_issuer)
-                 pat = patHome.selectPatient(ds, matching, true);
+                 try {
+                     pat = patHome.selectPatient(ds, matching, true);
+                 } catch (ObjectNotFoundException onfe2) {
+                     throw ce;
+                 }
             }
             
         } catch (NonUniquePatientException nupe) {
