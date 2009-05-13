@@ -176,7 +176,7 @@
         <include>dcm4che:dcm4chee-xds-infoset-v30</include>
         <include>dcm4che:dcm4che-core</include>
         <include>dcm4che:dcm4che-audit</include>
-        <include>dcm4che:dcm4chee-audit-tomcat</include>
+        <include>dcm4che.dcm4chee:dcm4chee-audit-tomcat</include>
         <!-- <include>dcm4che:dcm4che-net</include> --><!-- Store2Dcm -->
         <include>org.slf4j:slf4j-api</include>
         <include>org.slf4j:slf4j-log4j12</include>
