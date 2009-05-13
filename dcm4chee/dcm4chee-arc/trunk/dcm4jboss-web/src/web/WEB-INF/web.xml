@@ -307,7 +307,19 @@
 			<param-name>disableStudyPermissionCheckForUser</param-name>
 			<param-value>admin</param-value>
 		</init-param>
-
+		
+        <!-- 
+            Used by dcm4chee-web application to build the WADO URL.
+            The default behaviour is that the WADO URL is derived from the http request of dcm4chee-web.
+            (WADO is in the same WEB container)
+            Uncomment this if WADO is in a different container. 
+        
+        <init-param>
+            <param-name>wadoBaseURL</param-name>
+            <param-value>http://wadoserver:8080/</param-value>
+        </init-param>
+        -->
+        
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 	
