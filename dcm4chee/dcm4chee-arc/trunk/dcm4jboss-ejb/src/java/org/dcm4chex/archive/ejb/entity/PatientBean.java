@@ -543,12 +543,18 @@ public abstract class PatientBean implements EntityBean {
         Collection c;
         if (pid != null) {
             c = patHome.findByPatientId(pid);
+            if (c.isEmpty()) {
+                throw new ObjectNotFoundException();
+            }
             if (!matchIssuer(matching, issuer, c)) {
                 matchDemographics(matching, familyName, givenName, middleName,
                     birthdate, c);
             }
         } else {
             c = patHome.findByPatientName(familyName.toUpperCase() + "^%");
+            if (c.isEmpty()) {
+                throw new ObjectNotFoundException();
+            }
             matchDemographics(matching, familyName, givenName, middleName,
                     birthdate, c);
         }
@@ -620,9 +626,10 @@ public abstract class PatientBean implements EntityBean {
     }
 
     private void matchDemographics(PatientMatching matching, String familyName,
-            String givenName, String middleName, String birthdate, Collection c) {
+            String givenName, String middleName, String birthdate, Collection c)
+            throws ObjectNotFoundException {
         if (matching.noMatchesFor(familyName, givenName, middleName, birthdate)) {
-            c.clear();
+            throw new ObjectNotFoundException();
         }
         Pattern pnPattern = matching.compilePNPattern(
                 familyName, givenName, middleName);
@@ -631,10 +638,10 @@ public abstract class PatientBean implements EntityBean {
             String pn2 = pat.getPatientName();
             String birthdate2 = pat.getPatientBirthDate();
             if (pn2 == null ? !matching.isUnknownPersonNameAlwaysMatch()
-                    : pnPattern != null && !pnPattern.matcher(pn2).matches()
-                    || birthdate2 == null 
+                    : !pnPattern.matcher(pn2).matches()
+                        || (birthdate2 == null 
                             ? !matching.unknownBirthDateAlwaysMatch
-                            : !birthdate.equals(birthdate2)) {
+                            : !birthdate.equals(birthdate2))) {
                 iter.remove();
             }
         }

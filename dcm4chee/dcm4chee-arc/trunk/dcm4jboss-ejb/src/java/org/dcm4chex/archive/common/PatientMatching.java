@@ -261,7 +261,7 @@ public class PatientMatching implements Serializable{
     private static void appendRegex(StringBuilder regex, String value,
             boolean mustMatch, boolean unknownAlwaysMatch) {
         if (!mustMatch || value == null) {
-            regex.append("[!^]*");
+            regex.append("[!\\^]*");
         } else {
             if (unknownAlwaysMatch) {
                 regex.append("(");
@@ -271,7 +271,7 @@ public class PatientMatching implements Serializable{
                 regex.append(")?");
             }
         }
-        regex.append("^");
+        regex.append("\\^");
     }
 
     public boolean noMatchesFor(String pid, String issuer, String familyName,
