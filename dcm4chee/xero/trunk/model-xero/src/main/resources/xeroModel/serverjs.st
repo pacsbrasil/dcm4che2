@@ -13,6 +13,8 @@ getViewportSize = function() {
 // HACK!  We don't actually preload images in the server!
 function Image(){};
 
+$sharedStatic()$
+
 $model()$
 
 // Server-side data request method:  uses URIResolver to bind the required data.

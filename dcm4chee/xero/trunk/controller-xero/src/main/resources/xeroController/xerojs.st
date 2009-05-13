@@ -1,3 +1,5 @@
+$sharedStatic()$
+/** Utilities contains methods that are used client side only */
 $utilities()$
 $model()$
 $xeroView()$
