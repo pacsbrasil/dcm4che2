@@ -45,6 +45,11 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
+
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
@@ -96,6 +101,8 @@ public class ADTService extends AbstractHL7Service {
 
     private boolean handleEmptyMrgAsUpdate;
 
+    private ObjectName contentEditServiceName;
+
     public final String getPatientArrivingMessageType() {
         return patientArrivingMessageType;
     }
@@ -111,6 +118,14 @@ public class ADTService extends AbstractHL7Service {
 
     public final void setPatientMergeMessageTypes(String messageTypes) {
         this.patientMergeMessageTypes = split(messageTypes);
+    }
+
+    public ObjectName getContentEditServiceName() {
+        return contentEditServiceName;
+    }
+
+    public void setContentEditServiceName(ObjectName serviceName) {
+        this.contentEditServiceName = serviceName;
     }
 
     private static String[] split(String s) {
@@ -251,7 +266,7 @@ public class ADTService extends AbstractHL7Service {
             }
             else if (deletePatientMessageType.equals(msgtype)) {
                 try {
-                    update.deletePatient(pat, patientMatching);
+                    movePatientToTrash(pat, patientMatching);
                 }
                 catch (Exception x) {
                     if (!ignoreDeleteErrors) {
@@ -279,6 +294,22 @@ public class ADTService extends AbstractHL7Service {
             throw new HL7Exception("AE", e.getMessage(), e);
         }
         return true;
+    }
+
+    private void movePatientToTrash(Dataset pat, PatientMatching matching)
+            throws Exception {
+        try {
+            server.invoke(contentEditServiceName, "movePatientToTrash",
+                    new Object[] { pat, matching },
+                    new String[] { Dataset.class.getName(),
+                                   PatientMatching.class.getName() });
+        } catch (MBeanException e) {
+            throw e.getTargetException();
+        } catch (InstanceNotFoundException e) {
+            throw e;
+        } catch (ReflectionException e) {
+            throw e;
+        }
     }
 
     private static boolean contains(String[] ss, String v) {

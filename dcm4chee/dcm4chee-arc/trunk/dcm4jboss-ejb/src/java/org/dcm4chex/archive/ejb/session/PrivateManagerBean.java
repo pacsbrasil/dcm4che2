@@ -64,8 +64,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
-import org.dcm4chex.archive.common.Availability;
-import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
@@ -86,7 +85,6 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
-import org.dcm4chex.archive.util.Convert;
 
 /**
  * 
@@ -536,29 +534,40 @@ public abstract class PrivateManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Collection movePatientToTrash(long pat_pk) throws RemoteException {
+    public Collection movePatientToTrash(long pat_pk)
+            throws FinderException {
+        return movePatientToTrash(patHome.findByPrimaryKey(new Long(pat_pk)));
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Collection movePatientToTrash(Dataset patAttrs, 
+            PatientMatching matching) throws FinderException {
+        return movePatientToTrash(
+                patHome.selectPatient(patAttrs, matching, false));
+    }
+
+    private Collection movePatientToTrash(PatientLocal patient) {
+        Collection col = patient.getStudies();
+        Collection result = new ArrayList();
+        for (Iterator iter = col.iterator(); iter.hasNext();) {
+            result.add(makeIAN((StudyLocal) iter.next(), null));
+        }
+        Dataset ds = patient.getAttributes(true);
         try {
-            PatientLocal patient = patHome.findByPrimaryKey(new Long(pat_pk));
-            Collection col = patient.getStudies();
-            Collection result = new ArrayList();
-            for (Iterator iter = col.iterator(); iter.hasNext();) {
-                result.add(makeIAN((StudyLocal) iter.next(), null));
-            }
-            Dataset ds = patient.getAttributes(true);
             getPrivatePatient(patient, DELETED, true);
             patient.remove();
-            if (result.isEmpty())
-                result.add(ds);
-            return result;
-        } catch (CreateException e) {
-            throw new RemoteException(e.getMessage());
-        } catch (EJBException e) {
-            throw new RemoteException(e.getMessage());
         } catch (FinderException e) {
-            throw new RemoteException(e.getMessage());
+            throw new EJBException(e);
+        } catch (CreateException e) {
+            throw new EJBException(e);
         } catch (RemoveException e) {
-            throw new RemoteException(e.getMessage());
+            throw new EJBException(e);
         }
+        if (result.isEmpty())
+            result.add(ds);
+        return result;
     }
 
     private PrivateInstanceLocal getPrivateInstance(InstanceLocal instance,

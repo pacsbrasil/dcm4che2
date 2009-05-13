@@ -341,6 +341,22 @@ about instances moved to trash. Must be activated for compliance with
       <return-type>void</return-type>
    </operation>
    <operation impact="ACTION">
+      <description>Move patient to trash.
+      </description>
+      <name>movePatientToTrash</name>
+      <parameter>
+        <description>Patient attributes.</description>
+        <name>patAttrs</name>
+        <type>org.dcm4che.data.Dataset</type>
+      </parameter>
+      <parameter>
+        <description>Patient Matching</description>
+        <name>patMatching</name>
+        <type>org.dcm4chex.archive.common.PatientMatching</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+   <operation impact="ACTION">
       <description>Move study to trash.
       </description>
       <name>moveStudyToTrash</name>

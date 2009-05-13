@@ -67,6 +67,7 @@ import org.dcm4che2.audit.message.PatientRecordMessage;
 import org.dcm4che2.audit.message.StudyDeletedMessage;
 import org.dcm4che2.audit.message.AuditEvent.ActionCode;
 import org.dcm4che2.audit.util.InstanceSorter;
+import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
@@ -516,11 +517,19 @@ public class ContentEditService extends ServiceMBeanSupport {
         sendSeriesUpdatedNotifications(dsN, "Series update");
     }
 
-    public void movePatientToTrash(long pk) throws RemoteException,
-    HomeFactoryException, CreateException {
-        Collection col = lookupPrivateManager().movePatientToTrash(pk);
+    public void movePatientToTrash(long pk) throws Exception {
+        logMovePatientToTrash(lookupPrivateManager().movePatientToTrash(pk));
+    }
+
+    public void movePatientToTrash(Dataset patAttrs, PatientMatching matching)
+            throws Exception {
+        logMovePatientToTrash(
+                lookupPrivateManager().movePatientToTrash(patAttrs, matching));
+    }
+
+    private void logMovePatientToTrash(Collection<Dataset> ians) {
         Dataset ds = null;
-        for (Iterator iter = col.iterator(); iter.hasNext();) {
+        for (Iterator iter = ians.iterator(); iter.hasNext();) {
             ds = (Dataset) iter.next();
             if (ds.containsValue(Tags.StudyInstanceUID)) { // patient without  study?
                 if (createIANonMoveToTrash) {
