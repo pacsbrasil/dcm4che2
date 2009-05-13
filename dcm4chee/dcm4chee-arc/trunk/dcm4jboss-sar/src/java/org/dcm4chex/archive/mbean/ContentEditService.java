@@ -517,17 +517,23 @@ public class ContentEditService extends ServiceMBeanSupport {
         sendSeriesUpdatedNotifications(dsN, "Series update");
     }
 
+    /* Used by dcm4chee-web. Triggers HL7 ADT^A23.*/
     public void movePatientToTrash(long pk) throws Exception {
-        logMovePatientToTrash(lookupPrivateManager().movePatientToTrash(pk));
+        logMovePatientToTrash(lookupPrivateManager().movePatientToTrash(pk),
+                true);
     }
 
+    /* Used by HL7 ADT Service. Does not trigger HL7 ADT^A23.
+     * Configure forwarding of the received HL7 ADT^A23 instead. */
     public void movePatientToTrash(Dataset patAttrs, PatientMatching matching)
             throws Exception {
         logMovePatientToTrash(
-                lookupPrivateManager().movePatientToTrash(patAttrs, matching));
+                lookupPrivateManager().movePatientToTrash(patAttrs, matching),
+                false);
     }
 
-    private void logMovePatientToTrash(Collection<Dataset> ians) {
+    private void logMovePatientToTrash(Collection<Dataset> ians,
+            boolean sendHL7_ADT_A23) {
         Dataset ds = null;
         for (Iterator iter = ians.iterator(); iter.hasNext();) {
             ds = (Dataset) iter.next();
@@ -538,7 +544,9 @@ public class ContentEditService extends ServiceMBeanSupport {
                 logStudyDeleted(ds);
             }
         }
-        sendHL7PatientXXX(ds, "ADT^A23");// Send Patient delete message
+        if (sendHL7_ADT_A23) {
+            sendHL7PatientXXX(ds, "ADT^A23");// Send Patient delete message
+        }
         logPatientRecord(ds, PatientRecordMessage.DELETE);
         if (log.isDebugEnabled()) {
             log.debug("Patient moved to trash. ds:");
