@@ -5,34 +5,32 @@
   <parent>
     <artifactId>dcm4chee-xdsi-b</artifactId>
     <groupId>dcm4che</groupId>
-    <version>0.0.3-SNAPSHOT</version>
+    <version>0.0.3</version>/version>
   </parent>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-xdsi-b-retrieve-ear</artifactId>
   <packaging>ear</packaging>
   <name>EAR for XDS-I.b Retrieve</name>
-  <version>0.0.3-SNAPSHOT</version>
-  <description />
+  <version>0.0.3</ve0.0.3ription />
   <dependencies>
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-xdsi-b-retrieve-ejb</artifactId>
       <type>ejb</type>
-      <version>0.0.3-SNAPSHOT</version>
-    </dependency>
+      <version>0.0.3</ve0.0.3</version>
+  0.0.3</version>
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-xdsi-b-retrieve-ws</artifactId>
       <type>war</type>
-      <version>0.0.3-SNAPSHOT</version>
-    </dependency>
-    <dependency>
+      <version>0.0.3</version>
+    </depe0.0.3dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-xdsi-b-retrieve-mbean</artifactId>
       <type>sar</type>
-      <version>0.0.3-SNAPSHOT</version>
+      <version>0.0.3</version>
     </dependency>
-  </dependencies>
+0.0.3es>
   <build>
     <plugins>
       <plugin>
