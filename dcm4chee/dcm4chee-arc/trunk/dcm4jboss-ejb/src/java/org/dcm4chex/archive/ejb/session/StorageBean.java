@@ -450,6 +450,10 @@ public abstract class StorageBean implements SessionBean {
                 } catch (NonUniquePatientException nupe) {
                     pat.remove();
                     pat = patHome.selectPatient(ds, matching, true);
+                } catch (ObjectNotFoundException onfe2) {
+                    // Just inserted Patient not found because of missing value
+                    // of attribute configured as required for Patient Matching
+                    return pat;
                 }
              } catch (CreateException ce) {
                 // Check if patient record was inserted by concurrent thread
