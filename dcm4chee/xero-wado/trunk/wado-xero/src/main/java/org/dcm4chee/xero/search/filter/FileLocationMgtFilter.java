@@ -37,23 +37,21 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.search.filter;
 
-import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.nanoTimeToString;
+import static org.dcm4chee.xero.metadata.servlet.MetaDataServlet.*;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
 
-import javax.ejb.ObjectNotFoundException;
-
-import org.dcm4chee.xero.metadata.MetaData;
+import org.dcm4chee.xero.location.InstanceFileLocatorFactory;
+import org.dcm4chee.xero.location.MBeanInstanceFileLocator;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
-import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.wado.WadoParams;
-import org.dcm4chex.archive.ejb.interfaces.FileDTO;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,8 +65,9 @@ import org.slf4j.LoggerFactory;
 public class FileLocationMgtFilter implements Filter<URL> {
    private static final Logger log = LoggerFactory.getLogger(FileLocationMgtFilter.class);
 
-   private FileLocationParameterChecker checker = new FileLocationParameterChecker(null,"dcm4chee");
-
+   private FileLocationParameterChecker checker = new FileLocationParameterChecker(null,"dcm4chee","idc2");
+   private InstanceFileLocatorFactory locatorFactory = new InstanceFileLocatorFactory();
+   
    /** Create a try next URL */
    private static URL createTryNext() {
 	   try {
@@ -83,7 +82,7 @@ public class FileLocationMgtFilter implements Filter<URL> {
    /**
     * Returns the DICOM file <tt>URL</tt> for the given arguments.
     * <p>
-    * Use the FileSystemMgt SessionBean to localize the DICOM file.
+    * The underlying MBean 
     * 
     * @param instanceUID
     *           Unique identifier of the instance.
@@ -92,48 +91,28 @@ public class FileLocationMgtFilter implements Filter<URL> {
     * 
     * @throws IOException
     */
-   protected URL getDICOMFileURL(String host, String port, String instanceUID, Map<String, Object> params) throws IOException {
-      URL url = null;
-      try {
-          FileDTO[] dtos = FileSystemMgtResolver.getDTOs(host, port, instanceUID);
-            if (dtos == null || dtos.length == 0) {
-            	log.info("Requested file not found {}",instanceUID);
-                return null; // not found!
-            }
+   protected URL getDICOMFileURL(String aeTitle, String objectUID) throws IOException {
+      try 
+      {
+         MBeanInstanceFileLocator locator = locatorFactory.getInstanceFileLocator(aeTitle);
+         Object location = locator.locateInstance(objectUID);
 
-            for (FileDTO dto : dtos) {
-            	params.put(FileLocationURLFilter.FILE_DTO, dto);
-            	try {
-            		url = fileLocationURL.filter(null, params);
-            	} catch (IllegalArgumentException e) {
-            		log.warn("Failed to get URL for file, continuing.", e);
-            		continue;
-            	} finally {
-    				params.remove(FileLocationURLFilter.FILE_DTO);
-            	}
-                break;
-            }
-
-            if( url==null ) {
-            	log.info("SOP "+instanceUID+" not found for direct file access, trying fallbacks");
-            	return TRY_NEXT_URL;
-            }
-            log.info("URL " + url);
+         // If the location is a string, then it represents a host name rather than a file location.
+         if(location == null)
+            return TRY_NEXT_URL;
+         else if(location instanceof String)
+            return getDICOMFileURL((String)location, objectUID);  // recursive!
+         else
+            return new URL("file:///"+location);
       }
-      catch(ObjectNotFoundException e) {
-         log.warn("Object not available",e);
+      catch(Exception e)
+      {
+         throw new RuntimeException("Unable to determine location of instance file",e);
       }
-      catch (Exception e) {
-         log.error("Failed to get DICOM file URL, unknown reason:", e);
-         url = TRY_NEXT_URL;
-      }
-      return url;
    }
 
    /** Get the URL of the local file - may not be updated for DB changes etc */
    public URL filter(FilterItem<URL> filterItem, Map<String, Object> params) {
-      
-      FileLocationUtils fileUtil = new FileLocationUtils(params); 
       if( ! checker.isLocationTypeInParameters(params) ) {
          URL ret = filterItem.callNextFilter(params);
          log.debug("Calling next filter, returned {}", ret);
@@ -143,9 +122,8 @@ public class FileLocationMgtFilter implements Filter<URL> {
 
       String objectUID = (String) params.get("objectUID");
       try {
-         URL url = null;
-
-         url = getDICOMFileURL(fileUtil.getHostName(), fileUtil.getPortStr(), objectUID, params);
+         String aeTitle = FilterUtil.getString(params, WadoParams.AE,"local");
+         URL url = getDICOMFileURL(aeTitle, objectUID);
  
          if (url == null) return null;
          if( url==TRY_NEXT_URL ) {
@@ -165,83 +143,5 @@ public class FileLocationMgtFilter implements Filter<URL> {
          log.warn("Caught exception getting dicom file location:" + e, e);
          return filterItem.callNextFilter(params);
       }
-   }
-
-   /** Returns the URL of the local file for the given image bean */
-   public static URL findImageBeanUrl(DicomObjectType dot, Filter<URL> filter,
-         Map<String, Object> params) {
-      Map<String, Object> newParams = new HashMap<String, Object>();
-      newParams.put("objectUID", dot.getObjectUID());
-      String queryStr = "objectUID='"+dot.getObjectUID()+"'";
-      
-      String ae = (String) params.get(WadoParams.AE);
-      if(ae!=null ) {
-    	  newParams.put(WadoParams.AE,ae);
-    	  queryStr += ";"+WadoParams.AE+"="+ae;
-      }
-      
-      newParams.put("queryStr",queryStr);
-      
-      String studyUid = (String) params.get("studyUID");
-      if( studyUid != null ) newParams.put("studyUID", studyUid);
-      
-      String seriesUid = (String) params.get("seriesUID");
-      if( seriesUid != null ) newParams.put("seriesUID", seriesUid);
-      
-      if ("true".equalsIgnoreCase((String) params
-            .get(MemoryCacheFilter.NO_CACHE))) {
-         newParams.put("no-cache", "true");
-      }
-      URL location = filter.filter(null, newParams);
-      return location;
-   }
-
-   /**
-    * Finds the location of the given object by calling the fileLocation filter.
-    */
-   public static URL filterURL(Filter<URL> filter, Map<String, Object> params,
-         String uid) {
-      Map<String, Object> newParams = new HashMap<String, Object>();
-
-      // This request is used for filters where the request is for some other
-      // objects, and the
-      // UID is required.
-      if ("true".equalsIgnoreCase((String) params
-            .get(MemoryCacheFilter.NO_CACHE))) {
-         newParams.put("no-cache", "true");
-      }
-      newParams.put("objectUID", uid);
-      URL ret = filter.filter(null, newParams);
-      return ret;
-   }
-
-   private Filter<URL> fileLocation;
-
-   public Filter<URL> getFileLocation() {	   
-	   return fileLocation;
-   }
-   /**
-    * Sets the file location filter, that knows how to find files.
-    * @param fileLocation
-    */
-   @MetaData(out="${ref:fileLocation}")
-   public void setFileLocation(Filter<URL> fileLocation) {
-	   this.fileLocation = fileLocation;
-   }
-
-   private Filter<URL> fileLocationURL;
-
-   public Filter<URL> getFileLocationURL() {
-	   return fileLocationURL;
-   }
-   /**
-    * Sets the file location URL filter, that knows how to construct various file URLs 
-    * from file locations.
-    * 
-    * @param fileLocationURL
-    */
-   @MetaData(out = "${ref:fileLocationURL}")
-   public void setFileLocationURL(Filter<URL> fileLocationURL) {
-	   this.fileLocationURL = fileLocationURL;
    }
 }

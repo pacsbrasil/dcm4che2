@@ -34,14 +34,15 @@ fileLocation.cmove.priority=800
 fileLocation.fileLocationMgt=${class:org.dcm4chee.xero.search.filter.FileLocationMgtFilter}
 fileLocation.fileLocationMgt.priority=1000
 
+fileLocation.pathReplacement=${class:org.dcm4chee.xero.location.LocationPathReplacementFilter}
+fileLocation.pathReplacement.priority=8000
+
 fileLocation.locationCache=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
 fileLocation.locationCache.priority=10000
 fileLocation.locationCache.cacheSize=2000000
 fileLocation.locationCache.queryStr=objectUID
 
-fileLocationURL=${class:org.dcm4chee.xero.metadata.filter.FilterList}
-fileLocationURL.fileLocationUrl=${class:org.dcm4chee.xero.search.filter.FileLocationURLFilter}
-fileLocationURL.fileLocationUrl.priority=1
+
 
 # Defines the list of items to read DicomImageReader objects for a given SOP Instance
 dicomImageReader=${class:org.dcm4chee.xero.metadata.filter.FilterList}
