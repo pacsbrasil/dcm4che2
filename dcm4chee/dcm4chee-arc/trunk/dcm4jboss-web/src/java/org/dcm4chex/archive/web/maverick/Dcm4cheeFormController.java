@@ -43,14 +43,21 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.security.auth.Subject;
+import javax.security.jacc.PolicyContext;
+import javax.security.jacc.PolicyContextException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.ejb.jdbc.QueryStudyPermissionCmd;
 import org.dcm4chex.archive.web.conf.WebRolesConfig;
 import org.dcm4chex.archive.web.maverick.admin.perm.FolderPermissions;
 import org.dcm4chex.archive.web.maverick.admin.perm.FolderPermissionsFactory;
@@ -67,7 +74,7 @@ import org.infohazard.maverick.flow.ControllerContext;
  */
 public class Dcm4cheeFormController extends Throwaway2
 {
-    private static final String WEB_USER_STUDY_ROLES_ATTR_NAME = "webUserStudyRoles";
+    private static final String SUBJECT_CONTEXT_KEY = "javax.security.auth.Subject.container";
 
     public static final String[] FOLDER_APPLICATIONS = new String[]{"folder","trash","ae_mgr",
         "offline_storage","mwl_console","mpps_console",
@@ -76,6 +83,23 @@ public class Dcm4cheeFormController extends Throwaway2
     public static final String INSPECT = "inspect";
 
     private static Logger log = Logger.getLogger(Dcm4cheeFormController.class.getName());
+
+    public static Subject getSubject() throws PolicyContextException {
+        return (Subject) PolicyContext.getContext(SUBJECT_CONTEXT_KEY);
+    }
+
+    public static Map queryGrantedStudyActions(List studyList, Subject subject)
+            throws Exception {
+        String[] studyIUIDs = new String[studyList.size()];
+        int i = 0;
+        for ( Iterator iter = studyList.iterator() ; iter.hasNext() ; i++) {
+            studyIUIDs[i] = ((Dataset) iter.next())
+                    .getString(Tags.StudyInstanceUID);
+        }
+        return new QueryStudyPermissionCmd()
+                .getGrantedActionsForStudies(studyIUIDs, subject);
+    }
+
     /**
      * The form bean gets set here
      */

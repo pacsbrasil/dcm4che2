@@ -39,13 +39,24 @@
 
 package org.dcm4chex.archive.web.maverick;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.security.auth.Subject;
+import javax.security.jacc.PolicyContext;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
+import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
+
+import sun.nio.cs.ext.ISCII91;
 
 /**
  * 
@@ -75,9 +86,26 @@ public class ExpandPatientCtrl extends Dcm4cheeFormController {
             ContentManager cm = home.create();
             try {
                 List studies = cm.listStudiesOfPatient(patPk);
-                for (int i = 0, n = studies.size(); i < n; i++)
-                    studies.set(i, new StudyModel((Dataset) studies.get(i)));
-                folderForm.getPatientByPk(patPk).setStudies(studies);
+                Map grantedStudyActionsTotal = folderForm.getGrantedStudyActions();
+                boolean checkPermission = grantedStudyActionsTotal != null;
+                Map grantedStudyActions = !checkPermission ? null
+                            : queryGrantedStudyActions(studies, getSubject());
+                List studyModels = new ArrayList(studies.size());
+                for (int i = 0, n = studies.size(); i < n; i++) {
+                    Dataset study = (Dataset) studies.get(i);
+                    if (checkPermission) {
+                        String suid = study.getString(Tags.StudyInstanceUID);
+                        if (!grantedStudyActionsTotal.containsKey(suid)) {
+                            Set grantedActions = (Set) grantedStudyActions.get(suid);
+                            if (!grantedActions.contains(StudyPermissionDTO.QUERY_ACTION)) {
+                                continue;
+                            }
+                            grantedStudyActionsTotal.put(suid, grantedActions);
+                        }
+                    }
+                    studyModels.add(new StudyModel(study));
+                }
+                folderForm.getPatientByPk(patPk).setStudies(studyModels);
             } catch (Exception x) {
                 folderForm.gotoCurrentPage();
             } finally {

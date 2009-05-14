@@ -43,13 +43,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 import javax.security.auth.Subject;
-import javax.security.jacc.PolicyContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4che.data.Dataset;
@@ -58,7 +54,6 @@ import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
 import org.dcm4chex.archive.ejb.jdbc.QueryStudiesCmd;
-import org.dcm4chex.archive.ejb.jdbc.QueryStudyPermissionCmd;
 import org.dcm4chex.archive.hl7.StudyPermissionDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.ae.AEDelegate;
@@ -73,7 +68,6 @@ import org.dcm4chex.archive.web.maverick.xdsi.XDSConsumerModel;
 import org.dcm4chex.archive.web.maverick.xdsi.XDSIExportDelegate;
 import org.dcm4chex.archive.web.maverick.xdsi.XDSIModel;
 import org.infohazard.maverick.flow.ControllerContext;
-import org.jboss.mx.util.MBeanServerLocator;
 
 /**
  * 
@@ -88,7 +82,6 @@ public class FolderSubmitCtrl extends FolderCtrl {
     private static final String XDSI_EXPORT = "xdsi_export";
 
     private static final int MOVE_PRIOR = 0;
-    private static final String SUBJECT_CONTEXT_KEY = "javax.security.auth.Subject.container";
 
     private static ContentEditDelegate delegate = null;
     private static AEDelegate aeDelegate = null;
@@ -216,8 +209,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
             folderForm.setPopupMsg("folder.err_date", new String[]{folderForm.getStudyDateRange(),"yyyy/mm/dd"} );
             return FOLDER;
         }
-        Subject subject = isStudyPermissionCheckDisabled() ? null : 
-            (Subject) PolicyContext.getContext(SUBJECT_CONTEXT_KEY);
+        Subject subject = isStudyPermissionCheckDisabled() ? null : getSubject();
         if (newQuery) {
             folderForm.setTotal( new QueryStudiesCmd(filter.toDataset(), 
                     !folderForm.isShowWithoutStudies(), folderForm.isNoMatchForNoValue(), folderForm.getQueryHasIssuerOfPID(), subject).count() );
@@ -234,14 +226,6 @@ public class FolderSubmitCtrl extends FolderCtrl {
         return FOLDER;
     }
 
-    private Map queryGrantedStudyActions(List studyList, Subject subject) throws Exception {
-        String[] studyIUIDs = new String[studyList.size()];
-        int i = 0;
-        for ( Iterator iter = studyList.iterator() ; iter.hasNext() ; i++) {
-            studyIUIDs[i] = ((Dataset) iter.next() ).getString(Tags.StudyInstanceUID);
-        }
-        return new QueryStudyPermissionCmd().getGrantedActionsForStudies(studyIUIDs, subject);
-    }
     /**
      * @param folderForm
      * @param allowedAets
