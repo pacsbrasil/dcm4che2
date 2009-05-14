@@ -43,6 +43,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ejb.ObjectNotFoundException;
+
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -101,25 +103,14 @@ class StudyMgtScp extends DcmServiceBase {
         }
         checkStudyIuid(iuid, ds);
         try {
-            StudyMgt stymgt = getStudyMgtHome().create();
-            try {
-                switch (actionTypeID) {
-                case 1:
-                    stymgt.deleteSeries(toSeriesIuids(ds));
-                    break;
-                case 2:
-                    stymgt.deleteInstances(toSopIuids(ds));
-                    break;
-                }
-            } finally {
-                try {
-                    stymgt.remove();
-                } catch (Exception e) {
-                    log.warn("Failed to remove StudyMgt Session Bean", e);
-                }
+            switch (actionTypeID) {
+            case 1:
+                service.moveSeriesToTrash(toSeriesIuids(ds));
+                break;
+            case 2:
+                service.moveInstancesToTrash(toSopIuids(ds));
+                break;
             }
-        } catch (DcmServiceException e) {
-            throw e;
         } catch (Exception e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
@@ -215,22 +206,11 @@ class StudyMgtScp extends DcmServiceBase {
         String iuid = cmd.getRequestedSOPInstanceUID();
         Dataset ds = rq.getDataset(); // should be null
         try {
-            StudyMgt stymgt = getStudyMgtHome().create();
-            try {
-                stymgt.deleteStudy(iuid);
-            } catch (DcmServiceException e) {
-                if (!(ignoreDeleteFailed && e.getStatus() == Status.NoSuchSOPClass)) {
-                    throw e;
-                }
-            } finally {
-                try {
-                    stymgt.remove();
-                } catch (Exception e) {
-                    log.warn("Failed to remove StudyMgt Session Bean", e);
-                }
+            service.moveStudyToTrash(iuid);
+        } catch (ObjectNotFoundException e) {
+            if (!ignoreDeleteFailed) {
+                throw new DcmServiceException(Status.NoSuchObjectInstance);
             }
-        } catch (DcmServiceException e) {
-            throw e;
         } catch (Exception e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }

@@ -48,7 +48,6 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
-import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
@@ -321,63 +320,6 @@ public abstract class StudyMgtBean implements SessionBean {
             instHome.create(ds, series);
             dirtySeries.add(series.getSeriesIuid());
             dirtyStudies.add(series.getStudy().getStudyIuid());
-        }
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public void deleteStudy(String iuid) throws DcmServiceException {
-        try {
-            getStudy(iuid).remove();
-        } catch (FinderException e) {
-            throw new EJBException(e);
-        } catch (RemoveException e) {
-            throw new EJBException(e);
-        }
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public void deleteSeries(String[] iuids) {
-        try {
-            Set dirtyStudies = new HashSet();
-            for (int i = 0; i < iuids.length; i++) {
-                SeriesLocal series = seriesHome.findBySeriesIuid(iuids[i]);
-                dirtyStudies.add(series.getStudy().getStudyIuid());
-                series.remove();
-            }
-            updateDerivedStudyFields(dirtyStudies);
-        } catch (ObjectNotFoundException ignore) {
-        } catch (FinderException e) {
-            throw new EJBException(e);
-        } catch (RemoveException e) {
-            throw new EJBException(e);
-        }
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public void deleteInstances(String[] iuids) throws DcmServiceException {
-        try {
-            Set dirtySeries = new HashSet();
-            Set dirtyStudies = new HashSet();
-            for (int i = 0; i < iuids.length; i++) {
-                InstanceLocal inst = instHome.findBySopIuid(iuids[i]);
-                SeriesLocal series = inst.getSeries();
-                dirtySeries.add(series.getSeriesIuid());
-                dirtyStudies.add(series.getStudy().getStudyIuid());
-                inst.remove();
-            }
-            updateDerivedSeriesFields(dirtySeries);
-            updateDerivedStudyFields(dirtyStudies);
-        } catch (ObjectNotFoundException ignore) {
-        } catch (FinderException e) {
-            throw new EJBException(e);
-        } catch (RemoveException e) {
-            throw new EJBException(e);
         }
     }
 

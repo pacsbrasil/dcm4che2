@@ -554,27 +554,38 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
     }
 
-    public void moveStudyToTrash(long pk) throws RemoteException,
-    HomeFactoryException, CreateException {
+    /* Used by dcm4chee-web. Triggers sendStudyMgt N-DELETE Study.*/
+    public void moveStudyToTrash(long pk) throws Exception {
         if (log.isDebugEnabled())
             log.debug("Move Study (pk=" + pk + ") to trash.");
-        Dataset ds = lookupPrivateManager().moveStudyToTrash(pk);
+        Dataset ian = lookupPrivateManager().moveStudyToTrash(pk);
         if (log.isDebugEnabled())
             log.debug("sendStudyMgt N-DELETE Study (pk=" + pk + ").");
-        sendStudyMgt(ds.getString(Tags.StudyInstanceUID), Command.N_DELETE_RQ,
-                0, ds);
+        sendStudyMgt(ian.getString(Tags.StudyInstanceUID), Command.N_DELETE_RQ,
+                0, ian);
+        logMoveStudyToTrash(ian);
+    }
+
+    /* Used by StyMgt SCP. Does not trigger sendStudyMgt N-DELETE Study.*/
+    public void moveStudyToTrash(String siuid) throws Exception {
+        if (log.isDebugEnabled())
+            log.debug("Move Study (suid=" + siuid + ") to trash.");
+        logMoveStudyToTrash(lookupPrivateManager().moveStudyToTrash(siuid));
+    }
+
+    private void logMoveStudyToTrash(Dataset ian) {
         if (createIANonMoveToTrash) {
-            sendJMXNotification(new StudyDeleted(ds));
+            sendJMXNotification(new StudyDeleted(ian));
         }
-        logStudyDeleted(ds);
+        logStudyDeleted(ian);
         if (log.isDebugEnabled()) {
             log.debug("Study moved to trash. ds:");
-            log.debug(ds);
+            log.debug(ian);
         }
     }
 
-    public void moveSeriesToTrash(long pk) throws RemoteException,
-    HomeFactoryException, CreateException {
+    /* Used by dcm4chee-web. Triggers sendStudyMgt N-ACTION Series.*/
+    public void moveSeriesToTrash(long pk) throws Exception {
         if (log.isDebugEnabled())
             log.debug("Move Series (pk=" + pk + ") to trash.");
         Dataset ds = lookupPrivateManager().moveSeriesToTrash(pk);
@@ -611,7 +622,21 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    public Dataset moveSeriesToTrash(String[] iuids) throws Exception {
+        if (log.isDebugEnabled())
+            log.debug("Move "+iuids != null ? iuids.length : null +" Series to trash: " + iuids);
+        Collection<Dataset> dss = (Collection<Dataset>)lookupPrivateManager().moveSeriesToTrash(iuids);
+        if (dss.size() != 1)
+            throw new Exception("moveSeriesToTrash failed");
+        for ( Dataset ds : dss ) {
+            if (createIANonMoveToTrash) {
+                sendJMXNotification(new StudyDeleted(ds));
+            }
+            logInstancesAccessed(ds, InstancesAccessedMessage.DELETE, true, "Deleted Series:");
+        }
+        return dss.iterator().next();
+    }
+
     public Dataset moveInstancesToTrash(String[] iuids) throws Exception {
         if (log.isDebugEnabled())
             log.debug("Move "+iuids != null ? iuids.length : null +" Instances to trash: " + iuids);
@@ -620,15 +645,11 @@ public class ContentEditService extends ServiceMBeanSupport {
         if (dss.size() != 1)
             throw new Exception("moveInstancesToTrash failed");
         for ( Dataset ds : dss ) {
-            if (log.isDebugEnabled())
-                log.debug("sendStudyMgt N-ACTION for study "+ds.getString(Tags.StudyInstanceUID)+" :");
-                log.debug(ds);
-            sendStudyMgt(ds.getString(Tags.StudyInstanceUID), Command.N_ACTION_RQ,
-                    2, ds);
             if (createIANonMoveToTrash) {
                 sendJMXNotification(new StudyDeleted(ds));
             }
-            logInstancesAccessed(ds, InstancesAccessedMessage.DELETE, true, "Referenced Series of deleted Instances:");        }
+            logInstancesAccessed(ds, InstancesAccessedMessage.DELETE, true, "Referenced Series of deleted Instances:");
+        }
         return dss.iterator().next();
     }
 

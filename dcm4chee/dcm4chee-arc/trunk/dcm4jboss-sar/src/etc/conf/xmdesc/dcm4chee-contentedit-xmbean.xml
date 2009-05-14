@@ -368,6 +368,17 @@ about instances moved to trash. Must be activated for compliance with
       <return-type>void</return-type>
    </operation>
    <operation impact="ACTION">
+      <description>Move study to trash.
+      </description>
+      <name>moveStudyToTrash</name>
+      <parameter>
+        <description>Study Instance UID.</description>
+        <name>iuid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+   <operation impact="ACTION">
       <description>Move series to trash.
       </description>
       <name>moveSeriesToTrash</name>
@@ -377,6 +388,17 @@ about instances moved to trash. Must be activated for compliance with
         <type>long</type>
       </parameter>
       <return-type>void</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Move series to trash.
+      </description>
+      <name>moveSeriesToTrash</name>
+      <parameter>
+        <description>Series Instance UIDs</description>
+        <name>iuids</name>
+        <type>[Ljava.lang.String;</type>
+      </parameter>
+      <return-type>org.dcm4che.data.Dataset</return-type>
    </operation>
    <operation impact="ACTION">
       <description>Move instance to trash.
@@ -394,7 +416,7 @@ about instances moved to trash. Must be activated for compliance with
       </description>
       <name>moveInstancesToTrash</name>
       <parameter>
-        <description>Instance UIDs</description>
+        <description>SOP Instance UIDs</description>
         <name>iuids</name>
         <type>[Ljava.lang.String;</type>
       </parameter>

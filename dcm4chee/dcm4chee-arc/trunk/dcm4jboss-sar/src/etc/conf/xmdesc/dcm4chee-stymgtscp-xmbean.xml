@@ -182,6 +182,14 @@ received N-CREATE request *and* in the matching Patient Record.
       <name>AEServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getContentEditServiceName"
+      setMethod="setContentEditServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>ContentEditServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->

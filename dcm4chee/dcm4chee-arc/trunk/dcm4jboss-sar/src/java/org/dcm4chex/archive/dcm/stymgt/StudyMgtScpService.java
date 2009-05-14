@@ -39,8 +39,12 @@
 
 package org.dcm4chex.archive.dcm.stymgt;
 
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.UIDs;
@@ -62,6 +66,16 @@ public class StudyMgtScpService extends AbstractScpService {
             return EVENT_TYPE.equals(notif.getType());
         }
     };
+
+    private ObjectName contentEditServiceName;
+
+    public ObjectName getContentEditServiceName() {
+        return contentEditServiceName;
+    }
+
+    public void setContentEditServiceName(ObjectName serviceName) {
+        this.contentEditServiceName = serviceName;
+    }
 
     private StudyMgtScp stymgtScp = new StudyMgtScp(this);
 
@@ -105,6 +119,48 @@ public class StudyMgtScpService extends AbstractScpService {
         notif.setUserData(new StudyMgtOrder(a.getCallingAET(),
                 a.getCalledAET(), cmdField, actionTypeID, iuid, ds));
         super.sendNotification(notif);
+    }
+
+    void moveStudyToTrash(String iuid) throws Exception {
+        try {
+            server.invoke(contentEditServiceName, "moveStudyToTrash",
+                    new Object[] { iuid },
+                    new String[] { String.class.getName() });
+        } catch (MBeanException e) {
+            throw e.getTargetException();
+        } catch (InstanceNotFoundException e) {
+            throw e;
+        } catch (ReflectionException e) {
+            throw e;
+        }
+    }
+
+    void moveSeriesToTrash(String[] iuids) throws Exception {
+        try {
+            server.invoke(contentEditServiceName, "moveSeriesToTrash",
+                    new Object[] { iuids },
+                    new String[] { String[].class.getName() });
+        } catch (MBeanException e) {
+            throw e.getTargetException();
+        } catch (InstanceNotFoundException e) {
+            throw e;
+        } catch (ReflectionException e) {
+            throw e;
+        }
+    }
+
+    void moveInstancesToTrash(String[] iuids) throws Exception {
+        try {
+            server.invoke(contentEditServiceName, "moveInstancesToTrash",
+                    new Object[] { iuids },
+                    new String[] { String[].class.getName() });
+        } catch (MBeanException e) {
+            throw e.getTargetException();
+        } catch (InstanceNotFoundException e) {
+            throw e;
+        } catch (ReflectionException e) {
+            throw e;
+        }
     }
 
 }

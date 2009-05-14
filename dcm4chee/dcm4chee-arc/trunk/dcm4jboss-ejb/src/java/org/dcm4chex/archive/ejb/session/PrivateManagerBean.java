@@ -47,10 +47,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
@@ -467,6 +469,46 @@ public abstract class PrivateManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
+    public Collection moveSeriesToTrash(String[] uids) {
+        Collection result = new ArrayList();
+        Map mapStudies = new HashMap();
+        try {
+            for (int i = 0; i < uids.length; i++) {
+                SeriesLocal series = seriesHome.findBySeriesIuid(uids[i]);
+                StudyLocal study = series.getStudy();
+                Map mapSeries = (Map) mapStudies.get(study);
+                if (mapSeries == null) {
+                    mapStudies.put(study, mapSeries = new HashMap());
+                }
+                mapSeries.put(series, series.getInstances());
+            }
+            for (Iterator studyIter = mapStudies.entrySet().iterator();
+                    studyIter.hasNext();) {
+                Map.Entry studyEntry = (Entry) studyIter.next();
+                StudyLocal study = (StudyLocal) studyEntry.getKey();
+                Map mapSeries = (Map) studyEntry.getValue();
+                result.add(makeIAN(study, mapSeries));
+                for (Iterator seriesIter = mapSeries.keySet().iterator();
+                        seriesIter.hasNext();) {
+                    SeriesLocal series = (SeriesLocal) seriesIter.next();
+                    getPrivateSeries(series, DELETED, null, true);
+                    series.remove();
+                }
+                UpdateDerivedFieldsUtils.updateDerivedFieldsOf(study);
+            }
+            return result;
+        } catch (CreateException e) {
+            throw new EJBException(e);
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        } catch (RemoveException e) {
+            throw new EJBException(e);
+       }
+    }
+
+    /**
+     * @ejb.interface-method
+     */
     public Collection moveSeriesOfPPSToTrash(String ppsIUID,
             boolean removeEmptyParents) throws RemoteException {
         Collection result = new ArrayList(); // FIXME: NOT IN USE
@@ -496,38 +538,44 @@ public abstract class PrivateManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset moveStudyToTrash(String iuid) throws RemoteException {
+    public Dataset moveStudyToTrash(String iuid)
+            throws ObjectNotFoundException {
         try {
-            StudyLocal study = studyHome.findByStudyIuid(iuid);
-            if (study != null)
-                return moveStudyToTrash(study.getPk().longValue());
-            else
-                return null;
-        } catch (EJBException e) {
-            throw new RemoteException(e.getMessage());
+            return moveStudyToTrash(studyHome.findByStudyIuid(iuid));
+        } catch (ObjectNotFoundException onfe) {
+            throw onfe;
         } catch (FinderException e) {
-            throw new RemoteException(e.getMessage());
+            throw new EJBException(e);
         }
     }
 
     /**
      * @ejb.interface-method
      */
-    public Dataset moveStudyToTrash(long study_pk) throws RemoteException {
+    public Dataset moveStudyToTrash(long study_pk)
+            throws ObjectNotFoundException {
         try {
-            StudyLocal study = studyHome.findByPrimaryKey(new Long(study_pk));
+            return moveStudyToTrash(
+                    studyHome.findByPrimaryKey(new Long(study_pk)));
+        } catch (ObjectNotFoundException onfe) {
+            throw onfe;
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+     }
+
+    private Dataset moveStudyToTrash(StudyLocal study)  {
+        try {
             Dataset ds = makeIAN(study, null);
             getPrivateStudy(study, DELETED, null, true);
             study.remove();
             return ds;
-        } catch (CreateException e) {
-            throw new RemoteException(e.getMessage());
-        } catch (EJBException e) {
-            throw new RemoteException(e.getMessage());
         } catch (FinderException e) {
-            throw new RemoteException(e.getMessage());
+            throw new EJBException(e);
+        } catch (CreateException e) {
+            throw new EJBException(e);
         } catch (RemoveException e) {
-            throw new RemoteException(e.getMessage());
+            throw new EJBException(e);
         }
     }
 
@@ -535,17 +583,29 @@ public abstract class PrivateManagerBean implements SessionBean {
      * @ejb.interface-method
      */
     public Collection movePatientToTrash(long pat_pk)
-            throws FinderException {
-        return movePatientToTrash(patHome.findByPrimaryKey(new Long(pat_pk)));
+            throws ObjectNotFoundException {
+        try {
+            return movePatientToTrash(patHome.findByPrimaryKey(new Long(pat_pk)));
+        } catch (ObjectNotFoundException onfe) {
+            throw onfe;
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
     }
 
     /**
      * @ejb.interface-method
      */
     public Collection movePatientToTrash(Dataset patAttrs, 
-            PatientMatching matching) throws FinderException {
-        return movePatientToTrash(
-                patHome.selectPatient(patAttrs, matching, false));
+            PatientMatching matching) throws ObjectNotFoundException {
+        try {
+            return movePatientToTrash(
+                    patHome.selectPatient(patAttrs, matching, false));
+        } catch (ObjectNotFoundException onfe) {
+            throw onfe;
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
     }
 
     private Collection movePatientToTrash(PatientLocal patient) {
