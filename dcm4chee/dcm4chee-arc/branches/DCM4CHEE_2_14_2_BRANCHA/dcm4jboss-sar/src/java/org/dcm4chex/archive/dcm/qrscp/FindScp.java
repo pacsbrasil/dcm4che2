@@ -205,21 +205,33 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             }
         }
         if (updateRQ) {
-            Pattern pid0 = toPattern(rqData.getString(Tags.PatientID));
-            Pattern issuer0 = toPattern(rqData.getString(Tags.IssuerOfPatientID));
             opidsq = rqData.putSQ(Tags.OtherPatientIDSeq);
-            Iterator iter = result.iterator();
-            boolean checkIfPID0 = true;
-            while (iter.hasNext()) {
-                 String[] pid = (String[]) iter.next();
-                 if (checkIfPID0 
-                         && (pid0 == null || pid0.matcher(pid[PID]).matches())
-                         && (issuer0 == null 
-                                 || issuer0.matcher(pid[ISSUER]).matches())) {
-                    setPID(rqData, pid);
-                    checkIfPID0 = false;
-                 } else {
-                    setPID(opidsq.addNewItem(), pid);
+            int n = result.size();
+            if (n > 0) {
+                Pattern pid0 = toPattern(rqData.getString(Tags.PatientID));
+                Pattern issuer0 = toPattern(rqData.getString(Tags.IssuerOfPatientID));
+                int matchInx = -1;
+                int pidMatchOnlyInx = -1;
+                for (int i = 0; i < n; i++) {
+                    String[] pid = (String[]) result.get(i);
+                    if (pid0 == null || pid0.matcher(pid[PID]).matches()) {
+                        if (issuer0 == null
+                                || issuer0.matcher(pid[ISSUER]).matches()) {
+                            matchInx = i;
+                            break;
+                        } else if (pidMatchOnlyInx == -1) {
+                            pidMatchOnlyInx = i;
+                        }
+                    }
+                }
+                if (matchInx == -1) {
+                    matchInx = (pidMatchOnlyInx >= 0) ? pidMatchOnlyInx : 0;
+                }
+                setPID(rqData, (String[]) result.get(matchInx));
+                for (int i = 0; i < n; i++) {
+                    if (i != matchInx) {
+                        setPID(opidsq.addNewItem(), (String[]) result.get(i));
+                    }
                 }
             }
         }
