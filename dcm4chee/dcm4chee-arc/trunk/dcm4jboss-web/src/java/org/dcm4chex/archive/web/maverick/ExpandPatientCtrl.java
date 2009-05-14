@@ -97,7 +97,9 @@ public class ExpandPatientCtrl extends Dcm4cheeFormController {
                         String suid = study.getString(Tags.StudyInstanceUID);
                         if (!grantedStudyActionsTotal.containsKey(suid)) {
                             Set grantedActions = (Set) grantedStudyActions.get(suid);
-                            if (!grantedActions.contains(StudyPermissionDTO.QUERY_ACTION)) {
+                            if (grantedActions == null
+                                    || !grantedActions.contains(
+                                            StudyPermissionDTO.QUERY_ACTION)) {
                                 continue;
                             }
                             grantedStudyActionsTotal.put(suid, grantedActions);
