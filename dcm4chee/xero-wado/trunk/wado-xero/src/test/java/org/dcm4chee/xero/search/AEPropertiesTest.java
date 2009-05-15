@@ -89,4 +89,18 @@ public class AEPropertiesTest
       assertEquals(settings.get("title"),"XERO-REQUEST");
       
    }
+   
+   @Test
+   public void getDefaultAE_TypeShouldBeIDC2()
+   {
+      Map<String,Object> settings = ae.getDefaultAE();
+      assertEquals(settings.get("type"),"idc2");
+   }
+   
+   @Test
+   public void getAE_TypeShouldDefaultToIDC2()
+   {
+      Map<String,Object> settings = ae.getAE("noType");
+      assertEquals(settings.get("type"),"idc2");
+   }
 }

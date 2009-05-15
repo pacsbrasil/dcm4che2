@@ -65,15 +65,18 @@ public class AEProperties {
    
    public static final String DEFAULT_LOCAL_TITLE =  "XERO";
    public static final String DEFAULT_AE_TITLE = "DCM4CHEE";
+   public static final String DEFAULT_TYPE = "idc2";
    public static final int DEFAULT_AE_PORT = 11112;
    public static final int DEFAULT_EJB_PORT = 1099;
+   
       
    public static final String AE_TITLE_KEY = "title";
    public static final String AE_PORT_KEY = "aeport";
    public static final String AE_HOST_KEY = "host";
+   public static final String TYPE = "type";
    public static final String EJB_PORT = "ejbport";
    public static final String LOCAL_TITLE = "localTitle";
-   
+
    private static final String FILE_NAME_PREPEND = "ae-";
    private static final String FILE_NAME_EXT = ".properties";
 
@@ -130,6 +133,7 @@ public class AEProperties {
       temp.put(LOCAL_TITLE, DEFAULT_LOCAL_TITLE);
       temp.put(AE_PROPERTY_NAME, "local");
       temp.put(EJB_PORT,1099);
+      temp.put(TYPE, DEFAULT_TYPE);
       defaultProperties = Collections.unmodifiableMap(temp);
    }
 
@@ -156,6 +160,8 @@ public class AEProperties {
             if( title==null ) props.put(AE_TITLE_KEY,DEFAULT_AE_TITLE);
             String localTitle = props.getProperty(LOCAL_TITLE);
             if( localTitle==null ) props.put(LOCAL_TITLE,DEFAULT_LOCAL_TITLE);
+            String type = props.getProperty(TYPE);
+            if(type == null) props.put(TYPE, DEFAULT_TYPE);
              
             if (hostname != null ) {
                Map mprops = props;
