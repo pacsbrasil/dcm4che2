@@ -297,7 +297,8 @@ public class DocumentFileStorage extends BaseDocumetStorage {
             log.error("storeDocuments failed! RollBack "+(--i)+" Documents!",x);
             for ( int j = 0 ; j < i ; j++ ) {
                 log.debug("   Rollback storeDocuments! ("+j+") Delete Document:"+docs[j]);
-                this.deleteDocument(docs[j].getDocumentUID());
+                if ( docs[j] != null )
+                    this.deleteDocument(docs[j].getDocumentUID());
             }
             IOException iox = new IOException("storeDocuments failed!");
             iox.initCause(x);
