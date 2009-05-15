@@ -50,19 +50,6 @@ import org.testng.annotations.Test;
  */
 public class FileLocationParameterCheckerTest
 {
-
-   /**
-    * Test method for {@link org.dcm4chee.xero.search.filter.FileLocationParameterChecker#isLocationTypeInParameters(java.util.Map)}.
-    */
-   @Test
-   public void testIsLocationInParameters_NullLocation_IsAValidLocationType()
-   {
-      String ae = "noType";
-      FileLocationParameterChecker checker = new FileLocationParameterChecker(null,"FOO");
-      Map<String,Object> params = new HashMap<String, Object>();
-      params.put("ae", ae);
-      assertTrue(checker.isLocationTypeInParameters(params));
-   }
    
    @Test
    public void testIsLocationInParameters_ShouldBeFalseWhenTypeIsNotDefined()
