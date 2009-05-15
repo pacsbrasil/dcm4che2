@@ -74,6 +74,7 @@ import org.dcm4chee.docstore.Feature;
 import org.dcm4chee.docstore.spi.DocumentStorage;
 import org.dcm4chee.xds.common.XDSConstants;
 import org.dcm4chee.xds.common.exception.XDSException;
+import org.dcm4chee.xds.common.store.CountingOutputStream;
 import org.dcm4chee.xds.common.store.InputStreamDataSource;
 import org.dcm4chee.xds.common.store.XDSDocument;
 import org.dcm4chee.xds.common.store.XDSDocumentWriter;
@@ -107,6 +108,8 @@ public class XDSStoreService extends ServiceMBeanSupport {
     private boolean ignoreMetadataPersistenceErrors;
     private boolean forceMetadataPersistence;
     private String metadataStoragePool;
+    
+    XDSDocumentWriterFactory dwFac = XDSDocumentWriterFactory.getInstance();
 
     public XDSStoreService () {
     }
@@ -185,7 +188,7 @@ public class XDSStoreService extends ServiceMBeanSupport {
         Availability avail = docStore.getAvailability(documentUID);
         if ( avail.compareTo(Availability.NONEEXISTENT) < 0 ) {
             if ( log.isDebugEnabled() )
-                log.debug("Document "+documentUID+" already exists with availability "+avail);
+                log.info("Document "+documentUID+" already exists with availability "+avail);
             return checkIdenticalHash(xdsDoc, documentUID);
         }
         log.info("#### Store Document:"+documentUID+" to pool "+storeBeforeRegisterPool+"\nmetadata:"+metadata);
@@ -315,18 +318,18 @@ public class XDSStoreService extends ServiceMBeanSupport {
         MessageDigest md = null;
         DigestOutputStream dos = null;
         OutputStream out = doc.getOutputStream();
+        CountingOutputStream counting = new CountingOutputStream(out);
         if ( out != null ) {
             log.info("#### Write Document:"+doc.getDocumentUID());
             try {
                 md = MessageDigest.getInstance("SHA1");
-                dos = new DigestOutputStream(out, md);
+                dos = new DigestOutputStream(counting, md);
                 xdsDocWriter.writeTo(dos);
                 log.info("#### File written:"+doc.getDocumentUID() );
             } finally {
                 if ( dos != null ) {
                     try {
-                        dos.flush();
-                        out.close();
+                        dos.close();
                     } catch (IOException ignore) {
                         log.error("Ignored error during close!",ignore);
                     }
@@ -337,7 +340,8 @@ public class XDSStoreService extends ServiceMBeanSupport {
             String hash = DocumentStore.toHexString(md.digest());
             doc.getStorage().setHash(doc, hash);
             return new XDSDocument( doc.getDocumentUID(), doc.getMimeType(), 
-                    getXdsDocWriter(doc), hash, null);
+                    dwFac.getDocumentWriter(doc.getDataHandler(), counting.getCount()),
+                    hash, null);
         } else {
             return null;
         }
@@ -346,13 +350,9 @@ public class XDSStoreService extends ServiceMBeanSupport {
     private XDSDocumentWriter getXdsDocWriter(BaseDocument doc) throws IOException {
         DataHandler dh = doc.getDataHandler();
         if ( dh == null) {
-            return XDSDocumentWriterFactory.getInstance().getDocumentWriter(doc.getSize(), doc.getMimeType());
+            return dwFac.getDocumentWriter(doc.getSize(), doc.getMimeType());
         } else {
-            //get size of document with assumption that available() return total size!
-            InputStream is = dh.getInputStream();
-            int size = is.available();
-            is.close();
-            return XDSDocumentWriterFactory.getInstance().getDocumentWriter(dh, size);
+            return dwFac.getDocumentWriter(dh, doc.getSize());
         }
     }
 
