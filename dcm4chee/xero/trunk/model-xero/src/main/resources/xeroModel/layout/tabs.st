@@ -1,8 +1,8 @@
 /**
  * Define the model information for a Layout that implements a tab.
  */
-function TabsLayout(id) {
-	this.baseConstructor(id,this.template);
+function TabsLayout(id, i18n) {
+	this.baseConstructor(id,i18n.TabStyle);
 };
 TabsLayout.prototype = new Layout("TabLayoutPrototype","html/tabs");
 TabsLayout.prototype.baseConstructor = Layout;
@@ -51,21 +51,14 @@ TabsLayout.prototype.findTab = function TV_findTab(name) {
 	}
 };
 
-/** Sets the tab to be headerless */
-TabsLayout.setNoHeader = function TL_setNoHeader(val) {
-	if( val ) {
-		this.template = "html/tabs";
-		this.noHeader = true;
-	}
-	else {
-		this.template= "html/noHeaderTabs";
-		this.noHeader = false;
-	}
+/** Determines if we are using the headerless tab style */
+TabsLayout.prototype.hasNoHeader = function() {
+	return this.template == "html/noHeaderTabs";
 };
 
 /** Handle the resize operation for tabs */
 TabsLayout.resize = function TL_resize(width, height, style) {
-	if( this.noHeader ) {
+	if( this.hasNoHeader() ) {
 		this.activeTab.resize(width,height,style);
 	} else {
 		var ht = height-this.headerHeight;

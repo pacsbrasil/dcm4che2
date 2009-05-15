@@ -115,8 +115,8 @@ XeroController.prototype.updateClient = function(url) {
 	queryLayout.query.updateQueryStr(url);
 	queryLayout.query.updateFormFromURL(url);
 	this.performSearch();
-	
-	if(url && url.indexOf("tab=Display") >= 0)
+
+	if(this.model.i18n.InitialTab == "Display")
 	{
 		// Show the 'Display' tab first.
 		var patients = this.findLayout("SearchLayout").search.patient;

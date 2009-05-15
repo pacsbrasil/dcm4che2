@@ -2,7 +2,7 @@ XeroModel.prototype.init = function()
 {
 	var findLayout = new FindLayout("",this.ae);
 
-	this.layout = new TabsLayout("XeroRootTab");
+	this.layout = new TabsLayout("XeroRootTab",this.i18n);
 	this.layout.add(new XeroRootMenu(),"tabMenu");
 	
 	this.layout.addTab("Find", findLayout);

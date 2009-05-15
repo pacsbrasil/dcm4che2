@@ -7,8 +7,6 @@ $endif$
 
 <!-- Combine these into one file, except for the last little script -->
 $model/scripts(version=version)$
-<script type="text/javascript" src="modelI18n.jst?language=$locale;format="xml"$&amp;theme=$i18n.theme$&amp;v=$version$"> </script>
-
 
 <script>
 /** Define per-user information as required TODO - move this to a child script */
