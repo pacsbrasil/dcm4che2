@@ -106,8 +106,8 @@ public class DcmDir {
     private int maxWidth = DEF_MAX_WIDTH;
     private boolean checkDuplicate = false;
 
-    public DcmDir(File file) {
-        this.file = file;
+    public DcmDir(File file) throws IOException {
+        this.file = file.getCanonicalFile();
     }
 
     private DicomDirWriter writer() {
@@ -214,6 +214,9 @@ public class DcmDir {
     }
 
     public int addFile(File f) throws IOException {
+        f = f.getCanonicalFile();
+        // skip adding DICOMDIR
+        if (f.equals(file)) return 0;
         int n = 0;
         if (f.isDirectory()) {
             File[] fs = f.listFiles();
