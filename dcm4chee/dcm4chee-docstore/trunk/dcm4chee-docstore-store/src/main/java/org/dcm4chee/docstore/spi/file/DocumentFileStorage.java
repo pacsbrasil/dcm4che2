@@ -235,7 +235,7 @@ public class DocumentFileStorage extends BaseDocumetStorage {
             log.debug("docFile:"+f+" exists:"+f.exists());
             if ( f.exists() ){
                 doc = new BaseDocument(docUid, m[0], new DataHandler(new FileDataSource(f)), 
-                        Availability.ONLINE, docPath.length(), this);
+                        Availability.ONLINE, f.length(), this);
                 byte[] ba = readFile(getHashFile(f));
                 if ( ba != null ) {
                     doc.setHash(new String(ba));
