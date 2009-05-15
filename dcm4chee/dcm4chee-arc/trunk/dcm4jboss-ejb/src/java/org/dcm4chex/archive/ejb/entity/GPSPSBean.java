@@ -384,7 +384,6 @@ public abstract class GPSPSBean implements EntityBean {
      * @ejb.relation name="gpsps-gppps" role-name="gpsps-resulting-in-gppps"
      * @jboss.relation-table table-name="rel_gpsps_gppps"
      * @jboss.relation fk-column="gppps_fk" related-pk-field="pk"     
-     * @jboss.method-attributes read-only="true"
      */
     public abstract java.util.Collection getGppps();
     

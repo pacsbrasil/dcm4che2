@@ -423,7 +423,6 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @ejb.interface-method view-type="local"
      * @ejb.relation name="patient-mpps" role-name="patient-has-mpps"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract java.util.Collection getMpps();
 
@@ -435,14 +434,12 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @ejb.interface-method view-type="local"
      * @ejb.relation name="patient-gppps" role-name="patient-has-gppps"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract java.util.Collection getGppps();
 
     /**
      * @ejb.interface-method view-type="local"
      * @ejb.relation name="patient-gpsps" role-name="patient-has-gpsps"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract java.util.Collection getGsps();
 
