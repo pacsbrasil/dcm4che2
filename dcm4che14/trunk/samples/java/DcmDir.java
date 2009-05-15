@@ -272,8 +272,8 @@ public class DcmDir {
     }
 
     // Constructors --------------------------------------------------
-    DcmDir(File dirfile, Properties cfg) {
-        this.dirFile = dirfile;
+    DcmDir(File dirfile, Properties cfg) throws IOException {
+        this.dirFile = dirfile.getCanonicalFile();
         this.cfg = cfg;
         String rm = replace(cfg.getProperty("readme"), "<none>", null);
         if (rm != null) {
@@ -521,6 +521,9 @@ public class DcmDir {
      */
     public void append(DirBuilder builder, File file, int[] counter)
             throws IOException {
+        file = file.getCanonicalFile();
+        if (file.equals(dirFile))
+            return;
         if (file.isDirectory()) {
             File[] files = file.listFiles();
             for (int i = 0; i < files.length; ++i) {
