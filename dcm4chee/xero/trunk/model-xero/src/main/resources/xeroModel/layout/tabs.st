@@ -2,7 +2,8 @@
  * Define the model information for a Layout that implements a tab.
  */
 function TabsLayout(id, i18n) {
-	this.baseConstructor(id,i18n.TabStyle);
+	var style = i18n ? i18n.TabStyle : "html/tabs";
+	this.baseConstructor(id,style);
 };
 TabsLayout.prototype = new Layout("TabLayoutPrototype","html/tabs");
 TabsLayout.prototype.baseConstructor = Layout;
