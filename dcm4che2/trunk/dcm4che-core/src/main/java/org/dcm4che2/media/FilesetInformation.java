@@ -55,7 +55,7 @@ import org.dcm4che2.util.UIDUtils;
 public class FilesetInformation extends FileMetaInformation {
 
     public static final int NO_KNOWN_INCONSISTENCIES = 0;
-    public static final int KNOWN_INCONSISTENCIES = 0xffff;    
+    public static final int KNOWN_INCONSISTENCIES = 0xffff;
     
     public FilesetInformation(DicomObject dcmobj) {
         super(dcmobj);
@@ -156,25 +156,38 @@ public class FilesetInformation extends FileMetaInformation {
         if (fileID == null || fileID.length == 0) {
             return null;
         }        
-        StringBuffer sb = new StringBuffer(basedir.getPath());
-        for (int i = 0; i < fileID.length; i++) {
+        StringBuilder sb = new StringBuilder(fileID[0]);
+        for (int i = 1; i < fileID.length; i++) {
             sb.append(File.separatorChar).append(fileID[i]);
         }
-        return new File(sb.toString());
+        return new File(basedir, sb.toString());
     }
 
     public static String[] toFileID(File file, File basedir) {
-        String dirpath = basedir.getAbsolutePath();
-        String filepath = file.getAbsolutePath();
-        int start = dirpath.length();
-        if (!filepath.startsWith(dirpath) || start == filepath.length()) {
-            throw new IllegalArgumentException("file " + file 
-                    + " not included in file-set " + basedir);
+        String filepath = file.getPath();
+        if (basedir != null) {
+            String dirpath = trimDirPath(basedir.getPath())
+                    + File.separatorChar;
+            if (!filepath.startsWith(dirpath)) {
+                throw new IllegalArgumentException("file " + file 
+                        + " not included in file-set " + basedir);
+            }
+            filepath = filepath.substring(dirpath.length());
         }
-        if (filepath.charAt(start) == File.separatorChar) {
-            ++start;
-        }
-        return StringUtils.split(filepath.substring(start), File.separatorChar);
+        return StringUtils.split(trimFilePath(filepath), File.separatorChar);
+    }
+
+    private static String trimFilePath(String path) {
+        return (path.length() > 1 && path.charAt(0) == '.' 
+                && path.charAt(1) == File.separatorChar)
+                    ? path.substring(2) : path;
+    }
+
+    private static String trimDirPath(String path) {
+        int len;
+        return ((len = path.length()) > 1 && path.charAt(len-1) == '.' 
+            && path.charAt(len-2) == File.separatorChar)
+            ? path.substring(0, len-2) : path;
     }
 
 
