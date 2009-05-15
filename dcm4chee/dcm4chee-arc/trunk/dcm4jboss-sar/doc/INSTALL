@@ -264,15 +264,15 @@ system, with the path of the dcm4chee-cdw-2.14.2 installation directory as
 parameter.
 
 
-DEPLOY DCM4CHEE XDS REPOSITORY 0.0.2 with DCM4CHEE ARCHIVE:
+DEPLOY DCM4CHEE XDS REPOSITORY 0.0.3 with DCM4CHEE ARCHIVE:
 ==========================================================
 There is a separate binary distribution packages for dcm4chee XDS Repository
-0.0.2 (dcm4chee-xds-0.0.2) available at
+0.0.3 (dcm4chee-xds-0.0.3) available at
 http://sourceforge.net/projects/dcm4che .
-You may deploy dcm4chee-xds-0.0.2 in the same JBoss instance as dcm4che
+You may deploy dcm4chee-xds-0.0.3 in the same JBoss instance as dcm4che
 archive:
 
-1. Download and extract the binary distribution package of dcm4chee-xds-0.0.2.
+1. Download and extract the binary distribution package of dcm4chee-xds-0.0.3.
 
 2. Download the binary distribution package of JBoss Web Service
 jbossws-3.0.1-native-2.0.4.GA from http://www.jboss.org/jbossws/downloads
@@ -280,21 +280,20 @@ and extract it into a different directory.
 
 3. Move to the dcm4chee-xxx-2.14.2/bin directory and execute the
 install_xds.bat or install_xds.sh script, as appropriate for your operating
-system, with the path of the dcm4chee-xds-0.0.2 installation directory as
+system, with the path of the dcm4chee-xds-0.0.3 installation directory as
 parameter.
 
-4. Execute the upgrade_jbossws.bat or upgrade_jbossws.sh script, as appropriate
-for your operating system, with the path of the jbossws-3.0.1-native-2.0.4.GA
-installation directory as parameter.
-
-5. Execute the patch_jbossws.bat or patch_jbossws.sh script, as appropriate
-for your operating system, with the path of the dcm4chee-xds-0.0.2 installation
+4. Execute the patch_jbossws.bat or patch_jbossws.sh script, as appropriate
+for your operating system, with the path of the dcm4chee-xds-0.0.3 installation
 installation directory as parameter. Necessary to accept faulty
 (AttachmentPart Id mismatch) SwA (SOAP with Attachment) requests from Axis2
 based Web Service clients and to disable schema validation during deployment,
 which requires internet access. If you need a http proxy for internet access
 you can configure http.proxyHost! (see run.conf or run.bat)
 
+5. Only applicable for JDK5 version of jboss-4.2.3.GA in a JDK6 environment:
+   Execute the patch_jdk6_jbossws.bat or patch_jdk6_jbossws.sh script, as appropriate for your operating system.
+   This copies several jar files to JBOSS endorsed directory to avoid conflicts between JDK Webservice Stack and JBOSS WS.
 
 DEPLOY DCM4CHEE AUDIT RECORD REPOSITORY 3.0.7 with DCM4CHEE ARCHIVE:
 ===================================================================
