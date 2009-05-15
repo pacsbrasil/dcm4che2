@@ -297,6 +297,10 @@ public class XDSDocumentWriterFactory {
             dh.writeTo(os);
         }
         public void close() throws IOException {
+            InputStream is = dh.getInputStream();
+            if ( is != null ) {
+                is.close();
+            }
         }
         public long size() {
             return size;
