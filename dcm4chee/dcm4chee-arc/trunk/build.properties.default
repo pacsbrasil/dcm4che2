@@ -24,7 +24,7 @@ jboss.home=${user.home}/jboss-4.2.3.GA
 fop.home=${user.home}/fop-0.20.5
 
 #Override with the version of dcm4chee-docstore to use.
-docstore-version=0.0.3-SNAPSHOT
+docstore-version=0.0.3
 
 #Override with the version of dcm4chee-infoset to use.
-infoset-version=0.0.3-SNAPSHOT
+infoset-version=0.0.3
