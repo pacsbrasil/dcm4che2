@@ -56,7 +56,7 @@ public class AuditRecordAccessBean implements AuditRecordAccessLocal {
     @PersistenceContext(unitName="dcm4chee-arr")
     private EntityManager enitityManager;
         
-    public AuditRecord findAuditRecord(int pk) {
+    public AuditRecord findAuditRecord(long pk) {
         return enitityManager.find(AuditRecord.class, pk);
     }
 }

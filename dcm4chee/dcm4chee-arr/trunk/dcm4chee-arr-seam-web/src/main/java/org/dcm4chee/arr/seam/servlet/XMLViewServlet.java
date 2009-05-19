@@ -67,7 +67,7 @@ public class XMLViewServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest rq, HttpServletResponse rsp)
             throws ServletException, IOException {
-        writeTo(findAuditRecord(Integer.parseInt(rq.getParameter("pk"))), rsp);
+        writeTo(findAuditRecord(Long.parseLong(rq.getParameter("pk"))), rsp);
     }
 
     protected void writeTo(AuditRecord rec, HttpServletResponse rsp)
@@ -81,7 +81,7 @@ public class XMLViewServlet extends HttpServlet {
         }
     }
 
-    private AuditRecord findAuditRecord(int pk) throws ServletException {
+    private AuditRecord findAuditRecord(long pk) throws ServletException {
         InitialContext jndiCtx = null;
         try {
             jndiCtx = new InitialContext();

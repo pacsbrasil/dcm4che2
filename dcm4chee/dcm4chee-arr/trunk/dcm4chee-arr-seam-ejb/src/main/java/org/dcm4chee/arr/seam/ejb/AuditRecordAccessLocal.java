@@ -51,6 +51,6 @@ import org.dcm4chee.arr.entities.AuditRecord;
 @Local
 public interface AuditRecordAccessLocal {
     
-    public AuditRecord findAuditRecord(int pk);
+    public AuditRecord findAuditRecord(long pk);
 
 }
