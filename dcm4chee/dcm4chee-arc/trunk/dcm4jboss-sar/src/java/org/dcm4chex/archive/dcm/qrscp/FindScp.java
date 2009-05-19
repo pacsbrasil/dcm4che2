@@ -270,6 +270,10 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             return false;
         }
         List l = service.queryCorrespondingPIDs(pid, issuer);
+        if (l == null) {
+            // pid was not known by pix manager.
+            return false;
+        }
         if (l.isEmpty() && !service.isPixQueryLocal()) {
             addNewPidAndIssuerTo(new String[] { pid, issuer }, result);
             return false;
