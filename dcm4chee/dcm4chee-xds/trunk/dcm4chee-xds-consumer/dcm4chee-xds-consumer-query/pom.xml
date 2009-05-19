@@ -3,11 +3,11 @@
 	<parent>
 		<groupId>dcm4che</groupId>
 		<artifactId>dcm4chee-xds-consumer</artifactId>
-		<version>0.0.3</version>
+		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 	<groupId>dcm4che</groupId>
 	<artifactId>dcm4chee-xds-consumer-query</artifactId>
-	<version>0.0.3</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<packaging>jboss-sar</packaging>
 	<name>MBean Query Service for XDS Consumer. (Stored Query)</name>
 	<build>
@@ -24,13 +24,13 @@
 		<dependency>
 			<groupId>dcm4che</groupId>
 			<artifactId>dcm4chee-xds-common</artifactId>
-			<version>0.0.3</version>
+			<version>1.0.0-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>dcm4che</groupId>
 			<artifactId>dcm4chee-xds-infoset-v30</artifactId>
-			<version>0.0.3</version>
+			<version>1.0.0-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
