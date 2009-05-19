@@ -26,7 +26,7 @@
     <dependency>
       <groupId>dcm4che</groupId>
   	<artifactId>dcm4chee-xds-common</artifactId>
-  	<version>0.0.3</version>
+  	<version>1.0.0-SNAPSHOT</version>
  0.0.3ovided</scope>
     </dependency>  
     <dependency>

@@ -4,7 +4,7 @@
   <parent>
     <groupId>dcm4che</groupId>
     <artifactId>dcm4chee-xdsi-b</artifactId>
-    <version>0.0.3</version>/version>
+    <version>1.0.0-SNAPSHOT</version>/version>
   </parent>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-xdsi-b-retrieve-mbean</artifactId>
@@ -24,7 +24,7 @@
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-xds-common</artifactId>
-      <version>0.0.3</version>
+      <version>1.0.0-SNAPSHOT</version>
  0.0.3ovided</scope>
     </dependency>
     <dependency>
@@ -42,7 +42,7 @@
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-xdsi-b-retrieve-ejb</artifactId>
-      <version>0.0.3</version>
+      <version>1.0.0-SNAPSHOT</version>
       <sco0.0.3cope>
     </dependency>
     <dependency>
