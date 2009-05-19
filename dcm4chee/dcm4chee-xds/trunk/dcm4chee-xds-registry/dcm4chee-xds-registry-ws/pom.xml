@@ -4,12 +4,12 @@
   <parent>
     <groupId>dcm4che</groupId>
     <artifactId>dcm4chee-xds-registry</artifactId>
-    <version>0.0.3</version>
+    <version>1.0.0-SNAPSHOT</version>
   </parent>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-xds-registry-ws</artifactId>
   <packaging>war</packaging>
-  <version>0.0.3</version>
+  <version>1.0.0-SNAPSHOT</version>
   <description>Webservice endpoints for XDS.a and XDS.b Registry Service (Mock Service only)</description>
   <build>
     <plugins>
@@ -26,19 +26,19 @@
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-xds-common</artifactId>
-      <version>0.0.3</version>
+      <version>1.0.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>  
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-xds-infoset-v30</artifactId>
-      <version>0.0.3</version>
+      <version>1.0.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>  
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-xds-infoset-v21</artifactId>
-      <version>0.0.3</version>
+      <version>1.0.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>  
     <dependency>
