@@ -3,7 +3,7 @@
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-docstore
 </artifactId>
-  <version>0.0.3</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Generic Document Storage</name>
   <modules>
