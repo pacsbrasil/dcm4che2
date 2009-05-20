@@ -46,13 +46,16 @@ import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.servlet.ErrorResponseItem;
 import org.dcm4chee.xero.metadata.servlet.Lifecycle;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CacheCleanup implements Filter<ServletResponseItem>, Lifecycle {
-
+    public static Logger log = LoggerFactory.getLogger(CacheCleanup.class);
     List<MemoryCacheFilter<?> > caches;
     
     /** Cleans up the plugged in filters. */
     public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
+        log.debug("Clearing " + caches.size() + " caches");
         clearCaches();
         ServletResponseItem ret = filterItem.callNextFilter(params);
         if(ret==null ) {
