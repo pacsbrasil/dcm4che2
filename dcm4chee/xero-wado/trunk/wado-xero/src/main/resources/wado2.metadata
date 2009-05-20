@@ -265,6 +265,7 @@ wado.CLEARCACHE.caches.locationCache=${ref:fileLocation.locationCache}
 wado.CLEARCACHE.caches.dicomImageReaderCache=${ref:dicomImageReader.memcache}
 wado.CLEARCACHE.caches.imageSourceCache=${ref:imageSource.cacheFilter}
 wado.CLEARCACHE.caches.seriesSourceCache=${ref:seriesSource.cacheFilter}
+wado.CLEARCACHE.caches.imageCacheCache=${ref:imageCache}
 
 WADO=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 WADO.choose=${class:org.dcm4chee.xero.wado.ChooseContentTypeFilter}
