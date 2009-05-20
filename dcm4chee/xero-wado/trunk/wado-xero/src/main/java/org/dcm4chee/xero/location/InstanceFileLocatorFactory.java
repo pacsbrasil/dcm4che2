@@ -36,14 +36,23 @@ package org.dcm4chee.xero.location;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.management.JMException;
+import javax.management.MBeanInfo;
+import javax.management.MBeanOperationInfo;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectInstance;
+import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.search.AEProperties;
 import org.dcm4chee.xero.search.filter.EJBServiceLocator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -55,8 +64,12 @@ public class InstanceFileLocatorFactory
 {
    public static final String IDC2_NAME = "dcm4chee.archive:service=QueryRetrieveScp";
    public static final String IDC1_NAME = "dcm4chee.archive:service=FileSystemMgt";
-
-   private Map<String,MBeanInstanceFileLocator> titleToLocator = new HashMap<String, MBeanInstanceFileLocator>();
+   
+   /** Names of the DCM4CHEE services to connect to in order */
+   private static final String[] OBJECT_NAMES = new String[] {IDC2_NAME,IDC1_NAME};
+   
+   /** It's not expensive to make multiple locators, so we just make sure that we only cache one */
+   private ConcurrentMap<String,MBeanInstanceFileLocator> titleToLocator = new ConcurrentHashMap<String, MBeanInstanceFileLocator>();
    
    
    /**
@@ -67,12 +80,14 @@ public class InstanceFileLocatorFactory
    public MBeanInstanceFileLocator getInstanceFileLocator(String aeName) 
       throws NamingException, JMException, IOException
    {
-      if(!titleToLocator.containsKey(aeName))
+      MBeanInstanceFileLocator locator = titleToLocator.get(aeName);
+      if(locator == null)
       {
-         titleToLocator.put(aeName, createInstanceFileLocator(aeName));
+         locator = createInstanceFileLocator(aeName);
+         titleToLocator.putIfAbsent(aeName, locator );
       }
       
-      return titleToLocator.get(aeName);
+      return locator;
    }
 
    /**
@@ -82,24 +97,59 @@ public class InstanceFileLocatorFactory
       throws NamingException, JMException, IOException
    {
       Map<String,Object> config = AEProperties.getInstance().getAE(aeTitle);
-      String objectName = getObjectName(config);
       Context context = createInitialContext(config);
+      String objectName = getObjectName(context);
       return new MBeanInstanceFileLocator(context,objectName);
    }
-
+   
    /**
-    * Read the object name from the AE configuration
+    * Determine the name of the object to invoke.
+    * @throws NamingException 
     */
-   protected String getObjectName(Map<String,Object> config)
+   protected String getObjectName(Context context) throws NamingException
    {
-      String objectName = IDC1_NAME;
-      String type = FilterUtil.getString(config, "type");
-      if("idc2".equals(type))
-         objectName = IDC2_NAME;
-      
-      return objectName;
+      MBeanServerConnection connection = (MBeanServerConnection) context.lookup("jmx/invoker/RMIAdaptor");
+      return getObjectName(connection);
    }
    
+   /**
+    * Determine the name of the object to invoke.
+    * @throws NamingException 
+    */
+   protected String getObjectName(MBeanServerConnection connection) throws NamingException
+   {
+      for(String name : OBJECT_NAMES)
+      {
+         try
+         {
+            ObjectName objectName = new ObjectName(name);
+            MBeanInfo info = connection.getMBeanInfo(objectName);
+            if(containsLocateInstance(info))
+               return name;
+         }
+         catch (Exception e)
+         {
+            // Unable to bind the appropriate 
+         }
+      }
+      
+      throw new IllegalArgumentException("Unable to bind the locateInstance call on server MBean");
+   }
+   
+   /**
+    * Determine if the locateInstance call is contained in this MBean.
+    */
+   private boolean containsLocateInstance(MBeanInfo mbeanInfo)
+   {
+      MBeanOperationInfo[] operations = mbeanInfo.getOperations();
+      for(MBeanOperationInfo opInfo : operations)
+      {
+         if("locateInstance".equals(opInfo.getName()))
+            return true;
+      }
+      return false;
+   }
+
    /**
     * Create an initial context to the server defined in the passed configuration Map
     */

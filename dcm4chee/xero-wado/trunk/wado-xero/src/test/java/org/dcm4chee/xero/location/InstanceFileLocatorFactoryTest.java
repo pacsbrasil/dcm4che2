@@ -33,39 +33,47 @@
 // ***** END LICENSE BLOCK *****
 package org.dcm4chee.xero.location;
 
+import static org.easymock.EasyMock.*;
 import static org.testng.Assert.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import javax.management.MBeanInfo;
+import javax.management.MBeanOperationInfo;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
 
 import org.testng.annotations.Test;
-import org.testng.annotations.BeforeMethod;
 
 public class InstanceFileLocatorFactoryTest
 {
-   private Map<String,Object> config;
    
-   
-   @BeforeMethod
-   public void setup()
-   {
-      this.config = new HashMap<String, Object>();
-   }
-   /**
-    * Test method for {@link org.dcm4chee.xero.location.InstanceFileLocatorFactory#getInstanceFileLocator(java.lang.String)}.
-    */
    @Test
-   public void getObjectName_DefaultValueIsIDC1()
+   public void getObjectName_IdentifiesMBeanWithLocateInstance() throws Exception
    {
       InstanceFileLocatorFactory factory = new InstanceFileLocatorFactory();
-      assertEquals(factory.getObjectName(config),InstanceFileLocatorFactory.IDC1_NAME);
-   }
+      MBeanServerConnection connection = createMock(MBeanServerConnection.class);
+      String expectedName = InstanceFileLocatorFactory.IDC2_NAME;
+      MBeanOperationInfo[] operations = new MBeanOperationInfo[] { new MBeanOperationInfo("locateInstance",null,null,null,1)};
+      MBeanInfo info = new MBeanInfo(expectedName,null,null,null,operations,null);
+      expect(connection.getMBeanInfo(isA(ObjectName.class))).andStubReturn(info);
+      replay(connection);
 
-   @Test
-   public void getObjectName_IDC2_CreatesTheQueryRetrieveSCPName()
+      String name = factory.getObjectName(connection);
+      assertEquals(name,expectedName);
+   }
+   
+   @Test(expectedExceptions=IllegalArgumentException.class)
+   public void getObjectName_RejectsMBeansWithoutLocateInstance() throws Exception
    {
       InstanceFileLocatorFactory factory = new InstanceFileLocatorFactory();
-      config.put("type", "idc2");
-      assertEquals(factory.getObjectName(config),InstanceFileLocatorFactory.IDC2_NAME);
+      MBeanServerConnection connection = createMock(MBeanServerConnection.class);
+      String expectedName = InstanceFileLocatorFactory.IDC2_NAME;
+      MBeanOperationInfo[] operations = new MBeanOperationInfo[] { new MBeanOperationInfo("NotTheRightMethod",null,null,null,1)};
+      MBeanInfo info = new MBeanInfo(expectedName,null,null,null,operations,null);
+      expect(connection.getMBeanInfo(isA(ObjectName.class))).andStubReturn(info);
+      replay(connection);
+
+      String name = factory.getObjectName(connection);
+      assertEquals(name,expectedName);
    }
+   
 }
