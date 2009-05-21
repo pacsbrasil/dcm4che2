@@ -66,7 +66,8 @@ public class FileLocationMgtFilter implements Filter<URL> {
    private static final Logger log = LoggerFactory.getLogger(FileLocationMgtFilter.class);
 
    private FileLocationParameterChecker checker = new FileLocationParameterChecker(null,"dcm4chee","idc2");
-   private InstanceFileLocatorFactory locatorFactory = new InstanceFileLocatorFactory();
+   /** NOTE:  This factory is static for the purposes of avoiding a security issue in the XMT test environment. */
+   private static InstanceFileLocatorFactory locatorFactory = new InstanceFileLocatorFactory();
    
    /** Create a try next URL */
    private static URL createTryNext() {
