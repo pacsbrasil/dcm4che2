@@ -99,6 +99,8 @@ public class InstanceFileLocatorFactory
       Map<String,Object> config = AEProperties.getInstance().getAE(aeTitle);
       Context context = createInitialContext(config);
       String objectName = getObjectName(context);
+      
+      log.info("Created a file instance locator for {} at {}",aeTitle,objectName);
       return new MBeanInstanceFileLocator(context,objectName);
    }
    
