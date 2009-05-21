@@ -34,7 +34,6 @@
 package org.dcm4chee.xero.location;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -43,7 +42,6 @@ import javax.management.JMException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.MBeanServerConnection;
-import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -62,6 +60,8 @@ import org.slf4j.LoggerFactory;
  */
 public class InstanceFileLocatorFactory
 {
+   public static final Logger log = LoggerFactory.getLogger(InstanceFileLocatorFactory.class);
+   
    public static final String IDC2_NAME = "dcm4chee.archive:service=QueryRetrieveScp";
    public static final String IDC1_NAME = "dcm4chee.archive:service=FileSystemMgt";
    
@@ -129,7 +129,7 @@ public class InstanceFileLocatorFactory
          }
          catch (Exception e)
          {
-            // Unable to bind the appropriate 
+            log.warn("Unable to access the MBean Operation Information",e);
          }
       }
       
