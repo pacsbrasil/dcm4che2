@@ -9,7 +9,7 @@
 	<property name="javac.source" value="1.5"/>
 	<property name="javac.target" value="1.5"/>
 
-	<property name="version" value="2.14.4"/>
+	<property name="version" value="2.15.0"/>
 	<property name="vendor" value="Agfa Healthcare"/>
 
 	<!-- Override with your JBoss dist location -->
@@ -47,7 +47,7 @@
 	<property name="dcm4chee-hl7.jar" value="${dcm4chee-hl7.home}/target/lib/dcm4chee-hl7.jar" />
 	
     <!-- Override with your local Maven2 repository location -->
-    <property name="infoset-version" value="0.0.3"/>
+    <property name="infoset-version" value="1.0.0-SNAPSHOT"/>
     <property name="m2.repos" value="${user.home}/.m2/repository"/>
     <property name="dcm4chee-xds-infoset-v30.lib" 
         value="${m2.repos}/dcm4che/dcm4chee-xds-infoset-v30/${infoset-version}"/>
