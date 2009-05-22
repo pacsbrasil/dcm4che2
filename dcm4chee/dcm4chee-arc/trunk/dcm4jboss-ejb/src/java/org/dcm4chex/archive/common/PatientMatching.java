@@ -238,6 +238,9 @@ public class PatientMatching implements Serializable{
 
     public Pattern compilePNPattern(String familyName, String givenName,
             String middleName) {
+        if (allMatchesFor(familyName, givenName, middleName)) {
+            return null;
+        }
         StringBuilder regex = new StringBuilder();
         if (familyNameMustMatch && familyName != null
                 || givenNameMustMatch && givenName != null
@@ -278,9 +281,26 @@ public class PatientMatching implements Serializable{
 
     public boolean noMatchesFor(String familyName, String givenName,
             String middleName, String birthdate) {
-        return familyName == null && !unknownFamilyNameAlwaysMatch
-                || givenName == null && !unknownGivenNameAlwaysMatch
-                || middleName == null && !unknownMiddleNameAlwaysMatch
-                || birthdate  == null && !unknownBirthDateAlwaysMatch;
+        return !unknownFamilyNameAlwaysMatch && familyName == null
+                || !unknownGivenNameAlwaysMatch && givenName == null
+                || !unknownMiddleNameAlwaysMatch && middleName == null
+                || !unknownBirthDateAlwaysMatch && birthdate == null;
+    }
+
+    public boolean allMatchesFor(String familyName, String givenName,
+            String middleName) {
+        return (!familyNameMustMatch 
+                        || unknownFamilyNameAlwaysMatch && familyName == null)
+            && (!givenNameMustMatch
+                        || unknownGivenNameAlwaysMatch && givenName == null)
+            && (!middleNameMustMatch
+                        || unknownMiddleNameAlwaysMatch && middleName == null);
+    }
+
+    public boolean allMatchesFor(String familyName, String givenName,
+            String middleName, String birthdate) {
+        return allMatchesFor(familyName, givenName, middleName)
+            && (!birthDateMustMatch
+                        || unknownBirthDateAlwaysMatch && birthdate == null);
     }
 }

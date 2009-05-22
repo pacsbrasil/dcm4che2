@@ -625,6 +625,9 @@ public abstract class PatientBean implements EntityBean {
     private void matchDemographics(PatientMatching matching, String familyName,
             String givenName, String middleName, String birthdate, Collection c)
             throws ObjectNotFoundException {
+        if (matching.allMatchesFor(familyName, givenName, middleName, birthdate)) {
+            return;
+        }
         if (matching.noMatchesFor(familyName, givenName, middleName, birthdate)) {
             throw new ObjectNotFoundException();
         }
@@ -634,9 +637,12 @@ public abstract class PatientBean implements EntityBean {
             PatientLocal pat = (PatientLocal) iter.next();
             String pn2 = pat.getPatientName();
             String birthdate2 = pat.getPatientBirthDate();
-            if (pn2 == null ? !matching.isUnknownPersonNameAlwaysMatch()
-                    : !pnPattern.matcher(pn2).matches()
-                        || (birthdate2 == null 
+            if (pnPattern != null 
+                    && (pn2 == null 
+                            ? !matching.isUnknownPersonNameAlwaysMatch()
+                            : !pnPattern.matcher(pn2).matches())
+                    || matching.birthDateMustMatch 
+                    && ((birthdate2 == null || birthdate == null)
                             ? !matching.unknownBirthDateAlwaysMatch
                             : !birthdate.equals(birthdate2))) {
                 iter.remove();
