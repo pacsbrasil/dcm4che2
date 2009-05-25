@@ -1096,9 +1096,8 @@ public class XDSIService extends ServiceMBeanSupport {
                 for ( Iterator iter = pids.iterator() ; iter.hasNext() ; ) {
                     pid = toPIDString((String[]) iter.next());
                     log.debug("Check if from domain! PatientID:"+pid);
-                    if ( (affPid = isFromDomain(pid)) != null ) {
-                        log.debug("found domain patientID:"+affPid);
-                        return affPid;
+                    if ( isFromDomain(pid) ) {
+                        return pid;
                     }
                 }
                 log.error("Patient ID is not known in Affinity domain:"+affinityDomain);
@@ -1109,26 +1108,35 @@ public class XDSIService extends ServiceMBeanSupport {
             }
         }
     }
-    /**
-     * @param pid
-     * @return
-     */
-    private String isFromDomain(String pid) {
+    
+    protected boolean isFromDomain(String pid) {
+        String assAuth = getAssigningAuthority(pid);
+        if (assAuth == null || assAuth.indexOf('&') == -1)
+            return false;
+        if (assAuth.charAt(0) != '&') { //is namespace id subcomponent not empty?
+            //we only compare <universal ID> and <universal ID type
+            //leave subcomponent delimiter! (affinityDomain will almost always have no namespace id)
+            assAuth = assAuth.substring(assAuth.indexOf('&'));
+        }
+        if (affinityDomain.charAt(0) == '&') {
+            return assAuth.equals(affinityDomain);
+        } else { //affinityDomain has namespace id but we ignore that!
+            return assAuth.equals(affinityDomain.substring(affinityDomain.indexOf('&')));
+        }
+    }
+
+    private String getAssigningAuthority(String pid) {
         int pos = 0;
         for ( int i = 0 ; i < 3 ; i++) {
             pos = pid.indexOf('^', pos);
             if ( pos == -1 ) {
-                log.warn("patient id does not contain domain (issuer)! :"+pid);
+                log.warn("patient id does not contain AssigningAuthority component! :"+pid);
                 return null;
             }
             pos++;
         }
-        String s = pid.substring(pos);
-        if ( !s.endsWith(this.affinityDomain) )
-            return null;
-        if (s.length() == affinityDomain.length()) 
-            return pid;
-        return pid.substring(0,pos)+affinityDomain;
+        int end = pid.indexOf('^', pos);
+        return end == -1 ? pid.substring(pos) : pid.substring(pos, end);
     }
 
     private String toPIDString(String[] pid) {
