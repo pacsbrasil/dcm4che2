@@ -36,16 +36,20 @@ package org.dcm4chee.xero.location;
 import static org.easymock.EasyMock.*;
 import static org.testng.Assert.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 
+import org.dcm4chee.xero.search.AEProperties;
 import org.testng.annotations.Test;
 
 public class InstanceFileLocatorFactoryTest
 {
-   
+      
    @Test
    public void getObjectName_IdentifiesMBeanWithLocateInstance() throws Exception
    {
@@ -74,6 +78,24 @@ public class InstanceFileLocatorFactoryTest
 
       String name = factory.getObjectName(connection);
       assertEquals(name,expectedName);
+   }
+   
+   @Test
+   public void isLocalServer_ReturnsTrueFor_LOCALHOST() throws Exception
+   {
+      Map<String,Object> config = new HashMap<String,Object>();
+      config.put("host", "localhost"); // default host value...
+      InstanceFileLocatorFactory factory = new InstanceFileLocatorFactory();
+      assertTrue(factory.isLocalServer(config));
+   }
+   
+   @Test
+   public void isLocalServer_ReturnsFalseFor_MARLIN() throws Exception
+   {
+      Map<String,Object> config = new HashMap<String,Object>();
+      config.put("host", "marlin"); // default host value...
+      InstanceFileLocatorFactory factory = new InstanceFileLocatorFactory();
+      assertFalse(factory.isLocalServer(config));
    }
    
 }

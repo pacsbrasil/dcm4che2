@@ -87,13 +87,13 @@ public class MBeanInstanceFileLocator
     * @param context JNDI context for the JBoss server to connect to.
     * @param objectName Name of the MBean that contains the locateInstance call.  
     */
-   public MBeanInstanceFileLocator(Context context, String objectName)
+   public MBeanInstanceFileLocator(MBeanServerConnection connection, String objectName)
       throws NamingException,JMException,IOException
    {
-      if(context == null) 
+      if(connection == null) 
          throw new IllegalArgumentException("Context is required to bind MBean References.");
       
-      this.connection = (MBeanServerConnection) context.lookup("jmx/invoker/RMIAdaptor");
+      this.connection = connection;
       this.name = new ObjectName(objectName);
    }
 

@@ -61,17 +61,6 @@ import org.testng.annotations.Test;
  */
 public class MBeanInstanceFileLocatorTest
 {
-   private Context context;
-   private MBeanServerConnection connection;
-   
-   @BeforeMethod
-   public void setupContext() throws NamingException
-   {
-      this.connection = createMock(MBeanServerConnection.class);
-      this.context = createMock(Context.class);
-      expect(context.lookup("jmx/invoker/RMIAdaptor")).andStubReturn(connection);
-      replay(context);
-   }
    
    @Test(expectedExceptions=IllegalArgumentException.class)
    public void constructor_MustRejectNullInputs() throws Exception
@@ -89,14 +78,16 @@ public class MBeanInstanceFileLocatorTest
       String[] expectedSig = new String[]{"java.lang.String"};
       File expectedFile = new File("C:\\cache\\file.dcm");
 
+      MBeanServerConnection connection = createMock(MBeanServerConnection.class);
       expect(connection.invoke(eq(name), eq("locateInstance"),aryEq(expectedArgs) , aryEq(expectedSig) ))
          .andStubReturn(expectedFile);
       replay(connection);
       
-      MBeanInstanceFileLocator locator = new MBeanInstanceFileLocator(context,InstanceFileLocatorFactory.IDC1_NAME);
+      MBeanInstanceFileLocator locator = new MBeanInstanceFileLocator(connection,InstanceFileLocatorFactory.IDC1_NAME);
       Object location = locator.locateInstance(expectedUID);
       assertEquals(location,expectedFile);
       verify(connection);
    }
 
+   
 }

@@ -49,6 +49,7 @@ import javax.naming.NamingException;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.search.AEProperties;
 import org.dcm4chee.xero.search.filter.EJBServiceLocator;
+import org.jboss.mx.util.MBeanServerLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,22 +98,13 @@ public class InstanceFileLocatorFactory
       throws NamingException, JMException, IOException
    {
       Map<String,Object> config = AEProperties.getInstance().getAE(aeTitle);
-      Context context = createInitialContext(config);
-      String objectName = getObjectName(context);
+      MBeanServerConnection server = createMBeanServerConnection(config);
+      String objectName = getObjectName(server);
       
       log.info("Created a file instance locator for {} at {}",aeTitle,objectName);
-      return new MBeanInstanceFileLocator(context,objectName);
+      return new MBeanInstanceFileLocator(server,objectName);
    }
    
-   /**
-    * Determine the name of the object to invoke.
-    * @throws NamingException 
-    */
-   protected String getObjectName(Context context) throws NamingException
-   {
-      MBeanServerConnection connection = (MBeanServerConnection) context.lookup("jmx/invoker/RMIAdaptor");
-      return getObjectName(connection);
-   }
    
    /**
     * Determine the name of the object to invoke.
@@ -153,13 +145,41 @@ public class InstanceFileLocatorFactory
    }
 
    /**
+    * Create an MBeanServerConnection based on the indicated configuration.
+    * @throws NamingException 
+    */
+   protected MBeanServerConnection createMBeanServerConnection(Map<String, Object> config) 
+      throws NamingException
+   {
+      MBeanServerConnection connection;
+      
+      if(isLocalServer(config))
+         connection = MBeanServerLocator.locate();
+      else
+         connection = createRemoteConnection(config);
+      
+      return connection;
+   }
+   
+   /**
     * Create an initial context to the server defined in the passed configuration Map
     */
-   protected Context createInitialContext(Map<String, Object> config) throws NamingException
+   protected MBeanServerConnection createRemoteConnection(Map<String, Object> config) throws NamingException
    {
       String host = FilterUtil.getString(config, AEProperties.AE_HOST_KEY);
       int port = FilterUtil.getInt(config, AEProperties.EJB_PORT);
       
-      return EJBServiceLocator.getInitialContext(host, Integer.toString(port));
+      Context context = EJBServiceLocator.getInitialContext(host, Integer.toString(port));
+      MBeanServerConnection connection = (MBeanServerConnection) context.lookup("jmx/invoker/RMIAdaptor");
+      return connection;
+   }
+
+   /**
+    * Determine if the host defined in the AE configuration is a local.
+    */
+   protected boolean isLocalServer(Map<String, Object> config)
+   {
+      String host = FilterUtil.getString(config, AEProperties.AE_HOST_KEY);
+      return host == null || "localhost".equalsIgnoreCase(host);
    }
 }
