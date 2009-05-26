@@ -274,7 +274,7 @@
   <target name="integration" description="Run the integration tests." depends="superIntegration" />
 
   <target name="releaseIntegration" description="Run the integration tests on the latest release."
-     depends="updatePomRelease,integration,revertPomDevelop" />
+     depends="updatePomRelease,integration,releaseCleanup" />
 
   <target name="jmeter">
      <copy file="${integration.cdp}/jmeter/extras/ant-jmeter-1.0.9.jar" todir="${ant.home}/lib" preserveLastModified="true"/>
