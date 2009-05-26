@@ -83,6 +83,7 @@ public class ScaleFilter implements Filter<WadoImage> {
 		 log.debug("Just calling next filter directly as no size, rotation or flip parameters.");
 		 return (WadoImage) filterItem.callNextFilter(params);
 	  }
+	  params.remove(WadoImage.IMG_AS_BYTES_ONLY_FOR_TRANSFER_SYNTAXES);
 	  DicomImageReader dir = dicomImageReaderFilter.filter(null, params);
 	  if( dir==null ) return null;
 	  // Size can't change per-image, so just get the overall sizes.
