@@ -285,6 +285,7 @@
    <fileset dir="${basedir}" id="integration.scripts">
       <include name="**/*.jmx" />
       <exclude name="**/include/**/*" />
+      <exclude name="**/template.jmx" />
    </fileset>
 
   <target name="runJMeter" depends="jmeter">
