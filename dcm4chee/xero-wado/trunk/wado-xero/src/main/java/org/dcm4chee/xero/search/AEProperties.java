@@ -67,8 +67,6 @@ public class AEProperties {
    public static final String DEFAULT_AE_TITLE = "DCM4CHEE";
    public static final String DEFAULT_TYPE = "idc2";
    public static final int DEFAULT_AE_PORT = 11112;
-   public static final int DEFAULT_EJB_PORT = 1099;
-   
       
    public static final String AE_TITLE_KEY = "title";
    public static final String AE_PORT_KEY = "aeport";
@@ -132,7 +130,6 @@ public class AEProperties {
       temp.put(AE_TITLE_KEY, DEFAULT_AE_TITLE);
       temp.put(LOCAL_TITLE, DEFAULT_LOCAL_TITLE);
       temp.put(AE_PROPERTY_NAME, "local");
-      temp.put(EJB_PORT,1099);
       temp.put(TYPE, DEFAULT_TYPE);
       defaultProperties = Collections.unmodifiableMap(temp);
    }
@@ -152,10 +149,10 @@ public class AEProperties {
             props.load(is);
 
             String hostname = props.getProperty(AE_HOST_KEY);
+            String ejbport = props.getProperty("ejbport");
+            
             String aeport = props.getProperty(AE_PORT_KEY);
             if( aeport==null ) aeport = Integer.toString(DEFAULT_AE_PORT);
-            String ejbport = props.getProperty("ejbport");
-            if( ejbport==null ) ejbport = Integer.toString(DEFAULT_EJB_PORT);
             String title = props.getProperty(AE_TITLE_KEY);
             if( title==null ) props.put(AE_TITLE_KEY,DEFAULT_AE_TITLE);
             String localTitle = props.getProperty(LOCAL_TITLE);
@@ -167,7 +164,7 @@ public class AEProperties {
                Map mprops = props;
                Map<String, Object> map = (Map<String,Object>) mprops;
                map.put(AE_PORT_KEY, Integer.parseInt(aeport));
-               map.put("ejbport", Integer.parseInt(ejbport));
+               if(ejbport!=null) map.put("ejbport", Integer.parseInt(ejbport));
                map.put(AE_PROPERTY_NAME, aePath);
                for(Map.Entry<String,Object> me : map.entrySet()) {
             	   Object v = me.getValue();

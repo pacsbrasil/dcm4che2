@@ -81,21 +81,38 @@ public class InstanceFileLocatorFactoryTest
    }
    
    @Test
-   public void isLocalServer_ReturnsTrueFor_LOCALHOST() throws Exception
+   public void isDirectlyAccessible_ReturnsTrue_WhenLocalHostHasNoDefinedEJBPort() throws Exception
    {
       Map<String,Object> config = new HashMap<String,Object>();
-      config.put("host", "localhost"); // default host value...
+      config.put(AEProperties.AE_HOST_KEY, "localhost");
       InstanceFileLocatorFactory factory = new InstanceFileLocatorFactory();
-      assertTrue(factory.isLocalServer(config));
+      assertTrue(factory.isDirectlyAccessible(config));
    }
    
    @Test
-   public void isLocalServer_ReturnsFalseFor_MARLIN() throws Exception
+   public void isDirectlyAccessible_ReturnsFalse_WhenLocalHostHasEJBPortDefined() throws Exception
+   {
+      Map<String,Object> config = new HashMap<String,Object>();
+      config.put(AEProperties.AE_HOST_KEY, "localhost");
+      config.put(AEProperties.EJB_PORT, 1099);
+      InstanceFileLocatorFactory factory = new InstanceFileLocatorFactory();
+      assertFalse(factory.isDirectlyAccessible(config));
+   }
+   
+   @Test
+   public void isDirectlyAccessible_ReturnsFalseFor_MARLIN() throws Exception
    {
       Map<String,Object> config = new HashMap<String,Object>();
       config.put("host", "marlin"); // default host value...
       InstanceFileLocatorFactory factory = new InstanceFileLocatorFactory();
-      assertFalse(factory.isLocalServer(config));
+      assertFalse(factory.isDirectlyAccessible(config));
    }
    
+   @Test
+   public void isDirectlyAccessible_DefaultAE_MustBeDirectlyAccessible() throws Exception
+   {
+      Map<String,Object> config = AEProperties.getInstance().getDefaultAE();
+      InstanceFileLocatorFactory factory = new InstanceFileLocatorFactory();
+      assertTrue(factory.isDirectlyAccessible(config));
+   }
 }

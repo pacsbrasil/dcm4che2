@@ -153,7 +153,7 @@ public class InstanceFileLocatorFactory
    {
       MBeanServerConnection connection;
       
-      if(isLocalServer(config))
+      if(isDirectlyAccessible(config))
          connection = MBeanServerLocator.locate();
       else
          connection = createRemoteConnection(config);
@@ -167,7 +167,7 @@ public class InstanceFileLocatorFactory
    protected MBeanServerConnection createRemoteConnection(Map<String, Object> config) throws NamingException
    {
       String host = FilterUtil.getString(config, AEProperties.AE_HOST_KEY);
-      int port = FilterUtil.getInt(config, AEProperties.EJB_PORT);
+      int port = FilterUtil.getInt(config, AEProperties.EJB_PORT,1099);
       
       Context context = EJBServiceLocator.getInitialContext(host, Integer.toString(port));
       MBeanServerConnection connection = (MBeanServerConnection) context.lookup("jmx/invoker/RMIAdaptor");
@@ -175,11 +175,14 @@ public class InstanceFileLocatorFactory
    }
 
    /**
-    * Determine if the host defined in the AE configuration is a local.
+    * Determine if the AE configuration allows us to connect directly to the 
+    * MBean registry.  To connect directly the DCM4CHEE must be running on 
+    * the same machine with no EBJ port defined.
     */
-   protected boolean isLocalServer(Map<String, Object> config)
+   protected boolean isDirectlyAccessible(Map<String, Object> config)
    {
-      String host = FilterUtil.getString(config, AEProperties.AE_HOST_KEY);
-      return host == null || "localhost".equalsIgnoreCase(host);
+      String host = (String)config.get(AEProperties.AE_HOST_KEY);
+      Object port = config.get(AEProperties.EJB_PORT);
+      return port == null && "localhost".equalsIgnoreCase(host);
    }
 }

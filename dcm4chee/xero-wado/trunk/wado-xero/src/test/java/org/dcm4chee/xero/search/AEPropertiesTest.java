@@ -103,4 +103,27 @@ public class AEPropertiesTest
       Map<String,Object> settings = ae.getAE("noType");
       assertEquals(settings.get("type"),"idc2");
    }
+   
+   @Test
+   public void getAE_NullAEMapShouldBeReturned_WhenHostnameIsNotSpecified()
+   {
+      Map<String,Object> settings = ae.getAE("NoHost");
+      assertNull(settings);
+   }
+   
+   @Test
+   public void getAE_EJBPort_HasNoDefaultValueDefined()
+   {
+      Map<String,Object> settings = ae.getAE("noType");
+      assertNotNull(settings);
+      assertNull(settings.get(AEProperties.EJB_PORT));
+   }
+   
+   @Test
+   public void getLocalAE_EJBPort_HasNoDefaultValueDefined()
+   {
+      Map<String,Object> settings = ae.getDefaultAE();
+      assertNotNull(settings);
+      assertNull(settings.get(AEProperties.EJB_PORT));
+   }
 }
