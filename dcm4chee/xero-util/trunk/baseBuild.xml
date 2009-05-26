@@ -247,6 +247,12 @@
      </antcall>
   </target>
 
+  <target name="releaseCleanup" depends="revertPomDevelop">
+     <exec executable="${svn}" failonerror="true">
+	<arg line="revert release.properties" />
+     </exec>
+  </target>
+
   <target name="updateVersion" description="Recursively updates/commits the new version number (if changed)" depends="nextVersion,commitVersion">
     <antcall target="recurseChildren">
        <param name="childCall" value="updateVersion" />
