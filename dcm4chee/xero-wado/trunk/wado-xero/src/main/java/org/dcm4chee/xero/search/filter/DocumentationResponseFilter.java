@@ -34,7 +34,6 @@
 package org.dcm4chee.xero.search.filter;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
@@ -43,7 +42,6 @@ import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
-import org.dcm4chee.xero.wado.UrlServletResponseItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

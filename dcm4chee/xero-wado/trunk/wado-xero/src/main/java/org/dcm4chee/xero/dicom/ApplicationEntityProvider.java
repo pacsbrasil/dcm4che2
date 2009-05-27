@@ -41,7 +41,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
-import java.util.Collection;
 import java.util.Map;
 
 import org.dcm4che2.data.UID;

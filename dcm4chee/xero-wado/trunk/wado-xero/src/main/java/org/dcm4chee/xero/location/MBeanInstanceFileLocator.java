@@ -35,32 +35,21 @@ package org.dcm4chee.xero.location;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 
 import javax.management.InstanceNotFoundException;
-import javax.management.IntrospectionException;
 import javax.management.JMException;
 import javax.management.MBeanException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.MBeanServerConnection;
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import javax.management.OperationsException;
 import javax.management.ReflectionException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NameClassPair;
 import javax.naming.NamingException;
 
-import org.dcm4chee.xero.search.filter.EJBServiceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sun.org.apache.xalan.internal.xsltc.runtime.Hashtable;
 
 /**
  * Class that is able to connect to a remote server and retrieve the file

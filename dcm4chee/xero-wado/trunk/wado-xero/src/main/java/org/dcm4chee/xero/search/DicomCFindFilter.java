@@ -223,7 +223,7 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
     			if( keyTag.startsWith("PPS") ) keyTag = "PerformedProcedureStep"+keyTag.substring(3);
     		} 
     		else {
-    			if( key.endsWith("UID") || key.equals("ModalitiesInStudy") ) {
+    			if( key.endsWith("UID") || key.equals("ModalitiesInStudy") || key.equals("PatientID") ) {
     				String first = (String) content.get(0);
     				StringBuffer sb = new StringBuffer(first);
     				for(int i=1; i<content.size(); i++) {

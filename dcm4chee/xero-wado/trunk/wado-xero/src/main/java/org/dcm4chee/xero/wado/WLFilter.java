@@ -45,7 +45,6 @@ import static org.dcm4chee.xero.wado.WadoParams.FRAME_NUMBER;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
-import java.util.Arrays;
 import java.util.Map;
 
 import org.dcm4che2.data.BasicDicomObject;

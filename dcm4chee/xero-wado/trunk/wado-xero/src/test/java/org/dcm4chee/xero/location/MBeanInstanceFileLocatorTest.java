@@ -33,23 +33,19 @@
 // ***** END LICENSE BLOCK *****
 package org.dcm4chee.xero.location;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Hashtable;
+import static org.easymock.EasyMock.aryEq;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.eq;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
+import static org.testng.Assert.assertEquals;
 
-import javax.management.JMException;
+import java.io.File;
+
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
-import org.dcm4chee.xero.search.filter.MBeanConnectionManager;
-
-import static org.easymock.EasyMock.*;
-import static org.testng.Assert.*;
-
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 
