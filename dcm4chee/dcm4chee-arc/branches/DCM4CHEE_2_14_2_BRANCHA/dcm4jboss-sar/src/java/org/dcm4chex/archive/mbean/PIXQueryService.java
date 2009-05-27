@@ -210,7 +210,7 @@ public class PIXQueryService extends ServiceMBeanSupport {
                 String[].class.getName()
         });
         if( res==null ) {
-            res = java.util.Collections.EMPTY_LIST;
+            return res;
         }
         boolean addOriginal = true;
         for(String[] pid:res) {
