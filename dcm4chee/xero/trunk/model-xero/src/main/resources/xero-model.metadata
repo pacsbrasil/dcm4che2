@@ -137,6 +137,9 @@ model.js.imported.IS_FIREFOX=IS_FIREFOX
 model.js.imported.HAS_VML=HAS_VML
 model.js.imported.HAS_SVG=HAS_SVG
 
+model.WADO_QUERY=${class:org.dcm4chee.xero.rhino.PathInstance}
+model.WADO_QUERY.var=js.model.WADO_QUERY
+
 model.layout=${class:org.dcm4chee.xero.rhino.PathInstance}
 model.layout.var=js.model.layout
 
