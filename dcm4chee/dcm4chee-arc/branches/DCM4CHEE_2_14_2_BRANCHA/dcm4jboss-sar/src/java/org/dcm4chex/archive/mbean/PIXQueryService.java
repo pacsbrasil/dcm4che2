@@ -195,20 +195,46 @@ public class PIXQueryService extends ServiceMBeanSupport {
                         patientID, issuer, domains);
             }           
         }
-        return (List) server.invoke(hl7SendServiceName, "sendQBP_Q23",
-                new Object[] {
-                    pixManager,
-                    pixQueryName,
-                    patientID,
-                    issuer,
-                    domains  },
-                new String[] {
-                    String.class.getName(),
-                    String.class.getName(),
-                    String.class.getName(),
-                    String.class.getName(),
-                    String[].class.getName(),
+        List<String[]> res = (List<String[]>)server.invoke(hl7SendServiceName, "sendQBP_Q23",
+            new Object[] {
+                pixManager,
+                pixQueryName,
+                patientID,
+                issuer,
+                domains  },
+            new String[] {
+                String.class.getName(),
+                String.class.getName(),
+                String.class.getName(),
+                String.class.getName(),
+                String[].class.getName()
         });
+        if( res==null ) {
+            res = java.util.Collections.EMPTY_LIST;
+        }
+        boolean addOriginal = true;
+        for(String[] pid:res) {
+            if(pid[0].equals(patientID)&&pid[1].equals(issuer)) {
+                addOriginal = false;
+                break;
+            }
+        }
+        if(addOriginal && domains != null ) {
+            addOriginal = false;
+            for(String domain:domains) {
+               if(domain.equals(issuer)) {
+                   addOriginal = true;
+                   break;
+               }
+           }
+        }
+        if(addOriginal) {    
+            List<String[]> prv = res;
+            res=new ArrayList<String[]>();
+            res.add(new String[]{patientID, issuer});
+            res.addAll(prv);
+        }
+        return res; 
     }
 
     protected PIXQuery pixQuery() throws Exception {
