@@ -53,11 +53,10 @@
 						<xsl:choose>
                             <xsl:when test="total &lt; 0">&NoQueryPerformed;</xsl:when>
                             <xsl:when test="total &lt; 1">&NoMatchingStudiesFound;</xsl:when>
-							<xsl:otherwise>&DisplayingStudies;
-								<b>
-									<xsl:value-of select="offset + 1" />
-								</b>
-								&to;
+							<xsl:otherwise>
+							    <xsl:text>&DisplayingStudies; </xsl:text>
+								<b> <xsl:value-of select="offset + 1" /> </b>
+								<xsl:text> &to; </xsl:text>
 								<b>
 									<xsl:choose>
 										<xsl:when
@@ -71,11 +70,11 @@
 										</xsl:otherwise>
 									</xsl:choose>
 								</b>
-								&of;
+								<xsl:text> &of; </xsl:text>
 								<b>
 									<xsl:value-of select="total" />
 								</b>
-								&matchingStudies;.
+								<xsl:text> &matchingStudies;.</xsl:text>
 							</xsl:otherwise>
 						</xsl:choose>
 					</td>
@@ -90,9 +89,7 @@
 							src="images/prev.gif" alt="prev" border="0"
 							title="&PreviousSearchResults;">
 							<xsl:if test="offset = 0">
-								<xsl:attribute name="disabled">
-									disabled
-								</xsl:attribute>
+								<xsl:attribute name="disabled">disabled</xsl:attribute>
 							</xsl:if>
 						</input>
 					</td>
@@ -101,9 +98,7 @@
 							src="images/next.gif" alt="next" border="0"
 							title="&NextSearchResults;">
 							<xsl:if test="offset + limit &gt;= total">
-								<xsl:attribute name="disabled">
-									disabled
-								</xsl:attribute>
+								<xsl:attribute name="disabled">disabled</xsl:attribute>
 							</xsl:if>
 						</input>
 					</td>
@@ -122,9 +117,7 @@
 								title="&MergeSelectedPatients;"
 								onclick="return validateChecks(this.form.stickyPat, 'Patient', 2)">
 								<xsl:if test="total &lt;= 0">
-									<xsl:attribute name="disabled">
-										disabled
-									</xsl:attribute>
+									<xsl:attribute name="disabled">disabled</xsl:attribute>
 								</xsl:if>
 							</input>
 						</td>
@@ -136,9 +129,7 @@
 								onclick="return confirm('&MoveSelectedEntities;?')"
 								title="&MoveSelectedEntities;">
 								<xsl:if test="total &lt;= 0">
-									<xsl:attribute name="disabled">
-										disabled
-									</xsl:attribute>
+									<xsl:attribute name="disabled">disabled</xsl:attribute>
 								</xsl:if>
 							</input>
 						</td>
@@ -150,9 +141,7 @@
 								border="0"
 								title="&ExportSelectedEntitiesToTeachingFileSystem;">
 								<xsl:if test="total &lt;= 0">
-									<xsl:attribute name="disabled">
-										disabled
-									</xsl:attribute>
+									<xsl:attribute name="disabled">disabled</xsl:attribute>
 								</xsl:if>
 							</input>
 						</td>
@@ -163,9 +152,7 @@
 								name="exportXDSI" src="images/export_xdsi.gif" alt="XDSI Export"
 								border="0" title="&ExportSelectedEntitiesToXDSRepository;">
 								<xsl:if test="total &lt;= 0">
-									<xsl:attribute name="disabled">
-										disabled
-									</xsl:attribute>
+									<xsl:attribute name="disabled">disabled</xsl:attribute>
 								</xsl:if>
 							</input>
 						</td>
@@ -177,9 +164,7 @@
 								title="&DeleteSelectedEntities;"
 								onclick="return confirm('&DeleteSelectedEntities;?')">
 								<xsl:if test="total &lt;= 0">
-									<xsl:attribute name="disabled">
-										disabled
-									</xsl:attribute>
+									<xsl:attribute name="disabled">disabled</xsl:attribute>
 								</xsl:if>
 							</input>
 						</td>
@@ -193,9 +178,7 @@
          + document.myForm.destination.options[document.myForm.destination.selectedIndex ].text
          + '&confirmSendSelectedEntitiesTo2;')">
 								<xsl:if test="total &lt;= 0">
-									<xsl:attribute name="disabled">
-										disabled
-									</xsl:attribute>
+									<xsl:attribute name="disabled">disabled</xsl:attribute>
 								</xsl:if>
 							</input>
 						</td>
@@ -213,9 +196,7 @@
 									<xsl:if
 										test="/model/destination = title">
 										<xsl:attribute
-											name="selected">
-											true
-										</xsl:attribute>
+											name="selected">true</xsl:attribute>
 									</xsl:if>
 									<xsl:value-of select="title" />
 									<xsl:if
@@ -239,7 +220,7 @@
 					</td>
 					<td class="folder_header" width="5"
 						title="&ShowOnlyStudiesFromSelectedSourceAET;">
-						&AETFilter;
+						<xsl:text>&AETFilter;</xsl:text>
 					</td>
 				   </tr>
 				   <tr>
@@ -273,14 +254,12 @@
 				<table class="folder_search" border="0" width="100%"
 					cellpadding="0" cellspacing="0">
 					<tr>
-						<td class="label">&PatientName;:
-						</td>
+						<td class="label">&PatientName;:</td>
 						<td>
 							<input size="10" name="patientName"
 								type="text" value="{patientName}" />
 						</td>
-						<td class="label">&PatientID;:
-						</td>
+						<td class="label">&PatientID;:</td>
 						<td>
 							<input size="10" name="patientID"
 								type="text" title="&formatPatientID;" value="{patientID}" />
@@ -306,16 +285,14 @@
 								</td>
 							</xsl:when>
 							<xsl:when test="showSeriesIUID='true'">
-								<td class="label">&SeriesIUID;:
-								</td>
+								<td class="label">&SeriesIUID;:</td>
 								<td>
 									<input size="45" name="seriesUID"
 										type="text" value="{seriesUID}" />
 								</td>
 							</xsl:when>
 							<xsl:otherwise>
-								<td class="label">&StudyID;:
-								</td>
+								<td class="label">&StudyID;:</td>
 								<td>
 									<input size="10" name="studyID"
 										type="text" value="{studyID}" />
@@ -361,23 +338,17 @@
 							</xsl:otherwise>
 						</xsl:choose>
 
-						<td class="label">&AccessionNo;:
-						</td>
+						<td class="label">&AccessionNo;:</td>
 						<td>
 							<input size="10" name="accessionNumber"
 								type="text" value="{accessionNumber}" />
 						</td>
-						<td class="label">&Modality;:
-						</td>
+						<td class="label">&Modality;:</td>
 						<td>
 							<xsl:call-template name="modalityList">
-								<xsl:with-param name="name">
-									modality
-								</xsl:with-param>
-								<xsl:with-param name="title">&Modality;
-								</xsl:with-param>
-								<xsl:with-param name="selected"
-									select="modality" />
+								<xsl:with-param name="name">modality</xsl:with-param>
+								<xsl:with-param name="title">&Modality;</xsl:with-param>
+								<xsl:with-param name="selected"	select="modality" />
 							</xsl:call-template>
 						</td>
 					</tr>
@@ -418,24 +389,19 @@
 			</colgroup>
 			<tr>
 				<td class="patient_mark">
-					<font size="1">&Patient;
-					</font>
+					<font size="1">&Patient;</font>
 				</td>
 				<td>
-					<font size="1">&Name;:
-					</font>
+					<font size="1">&Name;:</font>
 				</td>
 				<td>
-					<font size="1">&PatientID;:
-					</font>
+					<font size="1">&PatientID;:</font>
 				</td>
 				<td>
-					<font size="1">&BirthDate;:
-					</font>
+					<font size="1">&BirthDate;:</font>
 				</td>
 				<td>
-					<font size="1">&Sex;:
-					</font>
+					<font size="1">&Sex;:</font>
 				</td>
 				<td></td>
 			</tr>
@@ -458,28 +424,23 @@
 			</colgroup>
 			<tr>
 				<td class="study_mark">
-					<font size="1">&Study;
-					</font>
+					<font size="1">&Study;</font>
 				</td>
 				<td>
-					<font size="1">&Date;/&Time;:
-					</font>
+					<font size="1">&Date;/&Time;:</font>
 				</td>
 				<td>
-					<font size="1">&StudyIDMedia;:
-					</font>
+					<font size="1">&StudyIDMedia;:</font>
 				</td>
 				<td>
-					<font size="1">&Modality;:
-					</font>
+					<font size="1">&Modality;:</font>
 				</td>
 				<td>
 					<font size="1">
 						<xsl:choose>
 							<xsl:when test="showStudyIUID='false'">
-								<b>&StudyDescription;
-								</b>
-								/
+								<b><xsl:text>&StudyDescription;</xsl:text></b>
+								<xsl:text>/</xsl:text>
 								<a title="&ShowStudyIUID;"
 									href="foldersubmit.m?showStudyIUID=true&amp;studyID=">
 									&StudyIUID;
@@ -490,33 +451,27 @@
 									href="foldersubmit.m?showStudyIUID=false&amp;studyUID=">
 									&StudyDescription;
 								</a>
-								/
-								<b>&StudyIUID;
-								</b>
+								<xsl:text>/</xsl:text>
+								<b>&StudyIUID;</b>
 							</xsl:otherwise>
 						</xsl:choose>
 						:
 					</font>
 				</td>
 				<td>
-					<font size="1">&AccNo;:
-					</font>
+					<font size="1">&AccNo;:</font>
 				</td>
 				<td>
-					<font size="1">&RefPhysician;:
-					</font>
+					<font size="1">&RefPhysician;:</font>
 				</td>
 				<td>
-					<font size="1">&Status;:
-					</font>
+					<font size="1">&Status;:</font>
 				</td>
 				<td align="right">
-					<font size="1">&NoS;:
-					</font>
+					<font size="1">&NoS;:</font>
 				</td>
 				<td align="right">
-					<font size="1">&NoI;:
-					</font>
+					<font size="1">&NoI;:</font>
 				</td>
 				<td>&#160;</td>
 			</tr>
@@ -537,28 +492,23 @@
 			</colgroup>
 			<tr>
 				<td class="series_mark">
-					<font size="1">&Series;
-					</font>
+					<font size="1">&Series;</font>
 				</td>
 				<td>
-					<font size="1">&Date;/&Time;:
-					</font>
+					<font size="1">&Date;/&Time;:</font>
 				</td>
 				<td>
-					<font size="1">&SeriesNoMedia;:
-					</font>
+					<font size="1">&SeriesNoMedia;:</font>
 				</td>
 				<td>
-					<font size="1">&Modality;:
-					</font>
+					<font size="1">&Modality;:</font>
 				</td>
 				<td>
 					<font size="1">
 						<xsl:choose>
 							<xsl:when test="showSeriesIUID='false'">
-								<b>&SeriesDescription;/&BodyPart;
-								</b>
-								/
+								<b>&SeriesDescription;/&BodyPart;</b>
+								<xsl:text>/</xsl:text>
 								<a title="&ShowSeriesIUID;"
 									href="foldersubmit.m?showSeriesIUID=true">
 									&SeriesIUID;
@@ -569,25 +519,21 @@
 									href="foldersubmit.m?showSeriesIUID=false">
 									&SeriesDescription;/&BodyPart;
 								</a>
-								/
-								<b>&SeriesIUID;
-								</b>
+								<xsl:text>/</xsl:text>
+								<b>&SeriesIUID;</b>
 							</xsl:otherwise>
 						</xsl:choose>
-						:
+						<xsl:text>:</xsl:text>
 					</font>
 				</td>
 				<td>
-					<font size="1">&Vendor;/&Model;:
-					</font>
+					<font size="1">&Vendor;/&Model;:</font>
 				</td>
 				<td>
-					<font size="1">&PPSStatus;:
-					</font>
+					<font size="1">&PPSStatus;:</font>
 				</td>
 				<td align="right">
-					<font size="1">&NoI;:
-					</font>
+					<font size="1">&NoI;:</font>
 				</td>
 				<td align="right">
 					<img src="images/plus.gif" alt="+"
@@ -776,7 +722,7 @@
 			<td title="&StudyIDMedia;">
 				<xsl:value-of select="studyID" />
 				<xsl:if test="filesetId != '_NA_'">
-					@
+					<xsl:text>@</xsl:text>
 					<xsl:value-of select="filesetId" />
 				</xsl:if>
 				&#160;
@@ -954,7 +900,7 @@
 				<xsl:when test="/model/showSeriesIUID='false'">
 					<td title="&SeriesDescription;/&BodyPart;">
 						<xsl:value-of select="seriesDescription" />
-						/
+						<xsl:text>/</xsl:text>
 						<xsl:value-of select="bodyPartExamined" />
 						&#160;
 					</td>
@@ -968,21 +914,17 @@
 			</xsl:choose>
 			<td title="&Vendor; / &Model;">
 				<xsl:value-of select="manufacturer" />
-				/
+				<xsl:text>/</xsl:text>
 				<xsl:value-of select="manufacturerModelName" />
 				&#160;
 			</td>
 			<td title="&PPSStatus;">
 				<xsl:choose>
 					<xsl:when test="PPSStatus='DISCONTINUED'">
-						<xsl:attribute name="style">
-							color: red
-						</xsl:attribute>
+						<xsl:attribute name="style">color: red</xsl:attribute>
 					</xsl:when>
 					<xsl:when test="PPSStatus!=''">
-						<xsl:attribute name="style">
-							color: black
-						</xsl:attribute>
+						<xsl:attribute name="style">color: black</xsl:attribute>
 					</xsl:when>
 				</xsl:choose>
 				<xsl:value-of select="PPSStatus" />
