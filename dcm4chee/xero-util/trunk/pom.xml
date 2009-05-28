@@ -95,7 +95,7 @@
         <repository>
           <id>HAP</id>
           <name>Agfa HAP</name>
-	  <url>scp://hap.mitra.com/maven-repository</url>
+	  <url>scp://maven-repository.agfahealthcare.com/maven-repository</url>
         </repository>
       </distributionManagement>
    </profile>

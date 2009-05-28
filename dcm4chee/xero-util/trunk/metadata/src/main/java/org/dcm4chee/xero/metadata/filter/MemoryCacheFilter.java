@@ -144,7 +144,7 @@ public class MemoryCacheFilter<T> implements Filter<T>, MetaDataUser {
    }
 
    public void clear() {
-       log.debug("Clearing cache "+cacheName);
+       log.info("Clearing cache "+cacheName);
        cache.clear();
    }
    
