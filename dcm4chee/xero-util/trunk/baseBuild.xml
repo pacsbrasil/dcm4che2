@@ -297,6 +297,7 @@
         <jmeterarg value="-q${jmeter.user.properties}"/>
 	<testplans refid="integration.scripts"/>
 	<property name="user.classpath" value="${jmeter.user.classpath}"/>
+	<property name="includecontroller.prefix" value="${jmeter.user.classpath}/"/>
 	<property name="beanshell.init.file" value="${jmeter.beanshell.init.file}"/>
 	<property name="beanshell.sampler.init" value="${jmeter.beanshell.sampler.init}"/>
 	<property name="beanshell.assertion.init" value="${jmeter.beanshell.assertion.init}"/>
