@@ -66,6 +66,9 @@ public class ColorModelFactory {
     private static final String PALETTE_COLOR = "PALETTE COLOR";
     private static final String RGB = "RGB";
     private static final String YBR_FULL = "YBR_FULL";
+    private static final String YBR_FULL_422 = "YBR_FULL_422";
+    private static final String YBR_PARTIAL_422 = "YBR_PARTIAL_422";
+    private static final String YBR_PARTIAL_420 = "YBR_PARTIAL_420";
 
     public static ColorModel createColorModel(DicomObject ds) {
         int samples = ds.getInt(Tag.SamplesPerPixel, 1);
@@ -93,10 +96,20 @@ public class ColorModelFactory {
             if (pmi.equals(RGB)) {
             	log.debug("Color space is RGB.");
                 cs = createRGBColorSpace(ds);
-            } else if (pmi.equals(YBR_FULL)) {
+            } else if (pmi.equals(YBR_FULL) || pmi.equals(YBR_FULL_422) ) {
             	log.debug("Color space is YBR full");
                 cs = SimpleYBRColorSpace.createYBRFullColorSpace(
                         createRGBColorSpace(ds));
+            } else if (pmi.equals(YBR_PARTIAL_422) || pmi.equals(YBR_PARTIAL_420) ) {
+            	log.debug("Color space is YBR partial");
+                cs = SimpleYBRColorSpace.createYBRPartialColorSpace(
+                        createRGBColorSpace(ds));
+            }
+            if( pmi.endsWith("422") ) {
+            	return new PartialComponentColorModel(cs,2,1);
+            }
+            if( pmi.endsWith("420") ) {
+            	return new PartialComponentColorModel(cs,2,2);
             }
         } else {
             throw new IllegalArgumentException(

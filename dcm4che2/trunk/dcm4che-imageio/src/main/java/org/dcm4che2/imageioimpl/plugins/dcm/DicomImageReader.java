@@ -39,10 +39,12 @@
 package org.dcm4che2.imageioimpl.plugins.dcm;
 
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.PixelInterleavedSampleModel;
@@ -69,6 +71,7 @@ import org.dcm4che2.image.ByteLookupTable;
 import org.dcm4che2.image.ColorModelFactory;
 import org.dcm4che2.image.LookupTable;
 import org.dcm4che2.image.OverlayUtils;
+import org.dcm4che2.image.PartialComponentSampleModel;
 import org.dcm4che2.image.VOIUtils;
 import org.dcm4che2.imageio.ImageReaderFactory;
 import org.dcm4che2.imageio.ItemParser;
@@ -135,6 +138,8 @@ public class DicomImageReader extends ImageReader {
     private ItemParser itemParser;
 
     private SegmentedImageInputStream siis;
+    
+    private String pmi;
 
     /**
      * Store the transfer syntax locally in case it gets modified to re-write
@@ -189,6 +194,7 @@ public class DicomImageReader extends ImageReader {
         pixelDataPos = 0L;
         pixelDataLen = 0;
         tsuid = null;
+        pmi = null;
         compressed = false;
         if (reader != null) {
             reader.dispose();
@@ -265,6 +271,7 @@ public class DicomImageReader extends ImageReader {
                 : DataBuffer.TYPE_USHORT;
         samples = ds.getInt(Tag.SamplesPerPixel, 1);
         monochrome = ColorModelFactory.isMonochrome(ds);
+        pmi = ds.getString(Tag.PhotometricInterpretation);
 
         if (dis.tag() == Tag.PixelData) {
             if (frames == 0)
@@ -347,6 +354,15 @@ public class DicomImageReader extends ImageReader {
             return new BandedSampleModel(dataType, width, height, width,
                     OFFSETS_0_1_2, OFFSETS_0_0_0);
         }
+        
+        if( (!compressed) && pmi.endsWith("422" ) ) {
+        	return new PartialComponentSampleModel(width, height, 2, 1);
+        }
+        
+        if( (!compressed) && pmi.endsWith("420") ) {
+        	return new PartialComponentSampleModel(width,height,2,2);
+        }
+        
         return new PixelInterleavedSampleModel(dataType, width, height, 3,
                 width * 3, OFFSETS_0_1_2);
     }
@@ -384,7 +400,7 @@ public class DicomImageReader extends ImageReader {
     /**
      * Read the raw raster data from the image, without any LUTs being applied.
      * Cannot read overlay data, as it isn't clear what the raster format should
-     * be for those.
+     * be for those.  
      */
     @Override
     public Raster readRaster(int imageIndex, ImageReadParam param)
@@ -397,6 +413,22 @@ public class DicomImageReader extends ImageReader {
             ImageReadParam param1 = reader.getDefaultReadParam();
             copyReadParam(param, param1);
             return decompressRaster(imageIndex, param1);
+        }
+        if( pmi.endsWith("422") || pmi.endsWith("420") ) {
+        	log.debug("Using a 422/420 partial component image reader.");
+        	if( param.getSourceXSubsampling()!=1 || param.getSourceYSubsampling()!=1 || param.getSourceRegion()!=null )
+        	{
+        		log.warn("YBR_*_422 and 420 reader does not support source sub-sampling or source region.");
+        		throw new UnsupportedOperationException("Implement sub-sampling/soure region.");
+        	}
+        	SampleModel sm = createSampleModel();
+        	WritableRaster wr = Raster.createWritableRaster(sm, new Point());
+        	DataBufferByte dbb = (DataBufferByte) wr.getDataBuffer();
+        	byte[] data = dbb.getData();
+        	log.debug("Seeking to "+(pixelDataPos + imageIndex * data.length)+" and reading "+data.length+" bytes.");
+        	iis.seek(pixelDataPos + imageIndex * data.length);
+        	iis.read(data);
+        	return wr;
         }
         return reader.readRaster(imageIndex, param);
     }
@@ -429,6 +461,9 @@ public class DicomImageReader extends ImageReader {
             copyReadParam(param, param1);
             bi = reader.read(0, param1);
             postDecompress();
+        } else if( pmi.endsWith("422") || pmi.endsWith("420") ) {
+        	WritableRaster wr = (WritableRaster) readRaster(imageIndex, param);
+        	bi = new BufferedImage(ColorModelFactory.createColorModel(ds),wr,false,null);
         } else {
             bi = reader.read(imageIndex, param);
         }
@@ -453,7 +488,7 @@ public class DicomImageReader extends ImageReader {
                     return new BufferedImage(cm, Raster.createWritableRaster(
                             raster.getSampleModel(), new DataBufferUShort(ss,
                                     ss.length), null), cm
-                            .isAlphaPremultiplied(), new Hashtable());
+                            .isAlphaPremultiplied(), new Hashtable<Object,Object>());
                 }
             }
         }
