@@ -48,6 +48,13 @@ public class YBRFilter  implements Filter<WadoImage> {
         log.info("Converting image "+src.getColorModel().getColorSpace()+" to "+dest.getColorModel().getColorSpace());
         for(int iy=0; iy<h; iy++) {
             int[] destRgb = src.getRGB(0, iy, w, 1, srcRgb, 0, w);
+            //StringBuffer sb = new StringBuffer("Row ");
+            //sb.append(iy).append(" is ");
+            //for(int d : destRgb) sb.append(Integer.toHexString(d)).append(",");
+            //log.info(sb.toString());
+            //for(int p = 0; p<destRgb.length; p++) {
+            //    if( destRgb[p]!=0xff000000 ) destRgb[p] = destRgb[p] & 0xFFFFFF;
+           // }
             dest.setRGB(0,iy,w,1,destRgb,0,w);
         }
     }
