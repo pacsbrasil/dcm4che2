@@ -61,6 +61,24 @@
      <servlet-name>CFind</servlet-name>
      <url-pattern>/cfind</url-pattern>
    </servlet-mapping>
+
+   <servlet>
+      <servlet-name>Patient Xml Servlet</servlet-name>
+      <servlet-class>org.dcm4chee.xero.metadata.servlet.MetaDataServlet</servlet-class>
+      <init-param>
+	      <param-name>metaData</param-name>
+    	  <param-value>wado2.metadata</param-value>
+      </init-param>
+      <init-param>
+	      <param-name>filter</param-name>
+    	  <param-value>patientFilter</param-value>
+      </init-param>
+      <load-on-startup>1</load-on-startup>      
+   </servlet>
+   <servlet-mapping>
+      <servlet-name>Patient Xml Servlet</servlet-name>
+      <url-pattern>/patient.xml</url-pattern>
+   </servlet-mapping>
    
    <servlet>
       <servlet-name>Study Xml Servlet</servlet-name>

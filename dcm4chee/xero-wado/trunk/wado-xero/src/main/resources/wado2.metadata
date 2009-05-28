@@ -73,6 +73,15 @@ dicomFullHeader=${ref:dicomImageHeader}
 dicomUpdatedHeader=${class:org.dcm4chee.xero.wado.DicomImageReaderToDicomObject}
 dicomUpdatedHeader.imageReaderFilter=${ref:dicomUpdated}
 
+#Create a filter that provides patient searches
+patientFilter.inherit=servletFilter
+patientFilter.jaxbFilter.sourceFilter=${ref:patientSource}
+
+patientSource.inherit=source
+patientSource.patientSearch=${class:org.dcm4chee.xero.search.study.PatientSearch}
+patientSource.sortPatient=${class:org.dcm4chee.xero.search.filter.SortPatientsByNameStudiesByDateFilter}
+patientSource.sortPatient.priority=350
+
 #Now, add a study filter that provides study searches.
 studyFilter.inherit=servletFilter
 
@@ -253,6 +262,8 @@ wado.XERO.wadoImageFilter=${ref:xeroImg}
 // Xero will NOT be called by default.
 wado.XERO.priority=-1
 
+wado.PATIENT=${ref:patientFilter}
+wado.PATIENT.priority=-1
 wado.STUDY=${ref:studyFilter}
 wado.STUDY.priority=-1
 wado.SERIES=${ref:seriesFilter}

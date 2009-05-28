@@ -95,7 +95,6 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
    private TransferCapabilitySelector tcs = new TransferCapabilitySelector();
    private ApplicationEntityProvider aeProvider = new ApplicationEntityProvider();
 
-   
    public DicomCFindFilter() {
 	}
     

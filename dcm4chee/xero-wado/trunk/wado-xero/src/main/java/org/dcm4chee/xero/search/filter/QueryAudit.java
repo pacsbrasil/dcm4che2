@@ -104,6 +104,9 @@ public class QueryAudit<T> extends AuditFilter<T> {
 		String studyUid = st.getStudyUID();
 		String user = getUser(params);
 
+		if( studyUid==null ) {
+		    return false;
+		}
 		StudyInfo si = studyInfoCache.get(studyUid);
 		synchronized (si) {
 			if (si.isAudited(user, QUERY_AUDIT)) {

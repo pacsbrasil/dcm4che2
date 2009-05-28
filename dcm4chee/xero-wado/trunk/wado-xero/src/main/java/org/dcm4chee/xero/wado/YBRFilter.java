@@ -35,7 +35,6 @@ public class YBRFilter implements Filter<WadoImage> {
         ColorSpace cs = cm.getColorSpace();
         if (!(cs instanceof SimpleYBRColorSpace))
             return wi;
-        log.info("Converting YBR type image to RGB type image.");
         WadoImage ret = wi.clone();
         BufferedImage biRet = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
         convertColorSpaceToRGB(bi, biRet);

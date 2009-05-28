@@ -45,42 +45,32 @@ import org.dcm4che2.data.Tag;
 import org.dcm4chee.xero.dicom.SOPClassUIDs;
 import org.dcm4chee.xero.metadata.MetaData;
 import org.dcm4chee.xero.metadata.filter.Filter;
+import org.dcm4chee.xero.search.DicomCFindFilter;
 import org.dcm4chee.xero.search.SearchCriteria;
 
 /**
- * A C-Find filter that knows how to perform C-Find queries to get study level data.  Prefers to use the return all
- * private SOP class if available, otherwiseuses the regular study root retrieve. 
+ * A C-Find filter that knows how to perform C-Find queries to get patient level data.  This one waits for a while as
+ * opposed to the impatient search which never returns anything.  
  * @author bwallace
  *
  */
-public class StudySearch extends PatientSearch {
-    private static final String STUDY_QUERY_LEVEL = "STUDY";
+public class PatientSearch extends DicomCFindFilter {
+    private static final String PATIENT_QUERY_LEVEL = "PATIENT";
  
  
     // TODO - generate this list dynamically from the contents of the class...
-    public static final Integer[] STUDY_RETURN_KEYS = {
-		Tag.ConfidentialityCode,
-        Tag.StudyDate,
-        Tag.StudyTime,
-        Tag.AccessionNumber,
-        Tag.StudyID,
-        Tag.StudyDescription,
-        Tag.StudyInstanceUID,
-        Tag.StudyStatusIDRET,
-        Tag.NumberOfStudyRelatedInstances,
-        Tag.NumberOfStudyRelatedSeries,
-        Tag.ModalitiesInStudy,
-        Tag.ReferringPhysicianName,
-        Tag.NameOfPhysiciansReadingStudy,
-        Tag.AdmittingDiagnosesDescription,
-        Tag.StudyCommentsRET,
+    public static final Integer[] PATIENT_RETURN_KEYS = {
+        Tag.PatientID,
+        Tag.PatientName,
+		Tag.PatientBirthDate, 
+		Tag.PatientSex,
+		Tag.OtherPatientIDs,
+		Tag.PatientAge,
+		Tag.AdditionalPatientHistory,
+		Tag.CurrentPatientLocation,
      };
     
-    protected static Set<Integer> returnKeys = new HashSet<Integer>(Arrays.asList(STUDY_RETURN_KEYS));
-    static {
-        returnKeys.addAll(PatientSearch.returnKeys);
-    }
-
+    protected static Set<Integer> returnKeys = new HashSet<Integer>(Arrays.asList(PATIENT_RETURN_KEYS));
 
 	@Override
 	protected String[] getCuids() {
@@ -89,12 +79,12 @@ public class StudySearch extends PatientSearch {
 
 	@Override
 	protected String getQueryLevel() {
-		return STUDY_QUERY_LEVEL;
+		return PATIENT_QUERY_LEVEL;
 	}
 
 	@Override
 	protected Set<Integer> getReturnKeys() {
-		return StudySearch.returnKeys;
+		return PatientSearch.returnKeys;
 	}
 
 	/**
@@ -105,8 +95,8 @@ public class StudySearch extends PatientSearch {
 	 * 
 	 * @param searchCondition
 	 */
-	@MetaData(out="${class:org.dcm4chee.xero.search.study.StudySearchConditionParser}")
-   @Override
+	@MetaData(out="${class:org.dcm4chee.xero.search.study.PatientSearchConditionParser}")
+    @Override
 	public void setSearchParser(Filter<SearchCriteria> searchParser) {
    	super.setSearchParser(searchParser);
    }

@@ -191,7 +191,9 @@ public class PatientBean extends PatientType implements Patient,
 	 * .data.DicomObject)
 	 */
 	public void addResult(DicomObject data) {
-		String key = StudyBean.key(data.getString(Tag.StudyInstanceUID));
+	    String uid = data.getString(Tag.StudyInstanceUID);
+	    if( uid==null || uid.isEmpty() ) return;
+		String key = StudyBean.key(uid);
 		if (children.containsKey(key)) {
 			((ResultFromDicom) children.get(key)).addResult(data);
 		} else {
