@@ -543,6 +543,7 @@
 
   <container-configurations>
 
+<!-- Use container-configuration: "Instance Per Transaction CMP 2.x EntityBean" by default
     <container-configuration>
       <container-name>Standard CMP 2.x EntityBean</container-name>
       <call-logging>false</call-logging>
@@ -586,7 +587,7 @@
       </container-pool-conf>
       <commit-option>B</commit-option>
     </container-configuration>
-
+-->
     <container-configuration>
       <!--
          | This is like standard IPT but with global (cross-transactional) row cache behind,
@@ -684,7 +685,6 @@
 
     <container-configuration>
       <container-name>Standard CMP 2.x EntityBean with cache invalidation</container-name>
-<!-- Use container-configuration: "Instance Per Transaction CMP 2.x EntityBean" by default
       <call-logging>false</call-logging>
       <invoker-proxy-binding-name>entity-unified-invoker</invoker-proxy-binding-name>
       <container-interceptors>
@@ -726,8 +726,10 @@
     </container-configuration>
 
     <container-configuration>
+      <!-- Use this container-configuration by default
       <container-name>Instance Per Transaction CMP 2.x EntityBean</container-name>
--->
+      -->
+      <container-name>Standard CMP 2.x EntityBean</container-name>
       <call-logging>false</call-logging>
       <invoker-proxy-binding-name>entity-unified-invoker</invoker-proxy-binding-name>
       <sync-on-commit-only>false</sync-on-commit-only>
