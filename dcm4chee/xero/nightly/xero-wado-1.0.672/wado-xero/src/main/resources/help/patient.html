@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>Patient XML Service</title>
+</head>
+
+<body>
+<h2>Patient XML Service</h2>
+
+<h3>Overview</h3>
+C-FIND metadata service that will return a patient root hierarchy of results in
+a specified text format. Constraints to the C-FIND are applied by adding
+parameters that correspond to the DICOM tag names. As with any C-FIND query,
+constraints on the containing types can be applied as well as the requested
+level. 
+
+<p>An empty result set will be returned if query constraints are not provided.
+</p>
+
+<h3>Parameters</h3>
+
+<table border="1">
+  <tbody>
+    <tr>
+      <th>Parameter</th>
+      <th>Description</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td>PatientName</td>
+      <td>Constrain by patient name. By default, this is case-insensitive, and
+        has some rules for searching multiple names: 
+
+        <p>Single name given: searches only for an exact match on the last
+        name</p>
+
+        <p>Name in LastName, FirstName format: searches for the last name and
+        wild cards the first name.</p>
+
+        <p>Name in FirstName LastName format (note the missing comma to
+        differentiate the types): searches for lastname, firstName with a
+        wild-card.</p>
+
+        <p>Name in DICOM format: searches only for the exact string given</p>
+
+        <p>Name in quotes: removes the quotes and searches for the given
+        string.</p>
+      </td>
+      <td>DICOM formatted</td>
+    </tr>
+    <tr>
+      <td>PatientID</td>
+      <td>Constrain by the patient ID. May automatically add a prefix, suffix
+        if configured, as well as automatically upper or lower caseing the
+        text. 
+
+        <p>Adds a wild-card if the patient id contains at least 4
+        characters.</p>
+
+        <p>Multiple entries can be searched for at once by separating them with
+        a back-slash character (\). This requires exact-matches on the ID
+        without any wild-cards. Do NOT include any wild cards in any of the
+        multi-entry items as this will cause all patients to be returned.</p>
+      </td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PatientBirthDate</td>
+      <td>Search on the patient's birth date.</td>
+      <td>See <a href="COMMON.html">Common</a> for format.</td>
+    </tr>
+    <tr>
+      <td>Sex</td>
+      <td>Search on the patient gender </td>
+      <td>M, F or O are the allowed values.</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>
