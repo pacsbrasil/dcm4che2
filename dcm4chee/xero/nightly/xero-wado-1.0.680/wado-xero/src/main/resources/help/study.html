@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>Study XML Service</title>
+</head>
+
+<body>
+<h2>Study XML Service</h2>
+
+<h3>Overview</h3>
+C-FIND metadata service that will return a patient root hierarchy of results in
+a specified text format. Constraints to the C-FIND are applied by adding
+parameters that correspond to the DICOM tag names. As with any C-FIND query,
+constraints on the containing types can be applied as well as the requested
+level. 
+
+<p>An empty result set will be returned if query constraints are not provided.
+</p>
+
+<p>See <a href="patient.html">Patient</a> level information for included query
+constraints/results at the patient level.</p>
+
+<h3>Parameters</h3>
+
+<table border="1">
+  <tbody>
+    <tr>
+      <th>Parameter</th>
+      <th>Description</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td>AccessionNumber</td>
+      <td>Constrain by the accession number of the study. Multiple values
+        separated by \ are permitted.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>studyUID</td>
+      <td>Constrain by the UID of the study. Multiple entries can be searched
+        for by separating them with the backslash \ character.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>ModalitiesInStudy</td>
+      <td>Constrain by the modalities in the study. Multiple entries can be
+        searched for by separating them with the backslash \ character.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>StudyDescription</td>
+      <td>Constrain by the study description</td>
+      <td>Allows wildcards</td>
+    </tr>
+    <tr>
+      <td>StudyDateTime</td>
+      <td>Search by the study date-time.</td>
+      <td>See <a href="COMMON.html">Common</a> for format.</td>
+    </tr>
+    <tr>
+      <td>StudyID</td>
+      <td>Search by the Study ID. This is another, typically internal ID for
+        studies.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>ReferringPhysicianName</td>
+      <td>Search by referring physician.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>StudyStatusID</td>
+      <td>For some PACS systems, studies are searchable by the study status.
+        Impax Data Center is not one of the systems searchable in this
+      fashion.</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Return Attributes</h3>
+
+<table border="1">
+  <tbody>
+    <tr>
+      <th>XML Attribute</th>
+      <th>Description</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td>InstanceAvailability</td>
+      <td>Determines how fast it is to access the given study. ONLINE means the
+        study is easily accessed, NEARLINE means a slight delay and OFFLINE
+        means someone needs to manually mount a tape which could take hours to
+        days.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>NumberOfStudyRelatedSeries</td>
+      <td>Contains the number of sets of images (series) that this study
+        contains. A series is typically a set of related images all taken at
+        once such as a pass through a CT scanner.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>NumberOfStudyRelatedInstances</td>
+      <td>Contains the number of DICOM objects this study contains. This will
+        typically be an indicator of study size, but for multi-frames it may
+        not be that good an indicator.</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>
