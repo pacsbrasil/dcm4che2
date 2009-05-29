@@ -1264,13 +1264,28 @@
   <element tag="(0040,0330)" name="Referenced Procedure Step Sequence" vr="SQ" vm="1" key="RefProcedureStepSeq" />
   <element tag="(0040,0340)" name="Performed Series Sequence" vr="SQ" vm="1" key="PerformedSeriesSeq" />
   <element tag="(0040,0400)" name="Comments on the Scheduled Procedure Step" vr="LT" vm="1" key="SPSComments" />
-  <element tag="(0040,050A)" name="Specimen Accession Number" vr="LO" vm="1" key="SpecimenAccessionNumber" />
-  <element tag="(0040,0550)" name="Specimen Sequence" vr="SQ" vm="1" key="SpecimenSeq" />
+  <element tag="(0040,0500)" name="Scheduled Specimen Sequence" vr="SQ" vm="1" key="ScheduledSpecimenSeq" />
+  <element tag="(0040,050A)" name="Specimen Accession Number (Retired)" vr="LO" vm="1" key="SpecimenAccessionNumber" retired="true" />
+  <element tag="(0040,0512)" name="Container Identifier" vr="LO" vm="1" key="ContainerIdentifier" />
+  <element tag="(0040,0513)" name="Issuer of the Container Identifier Sequence" vr="SQ" vm="1" key="IssuerOfTheContainerIdentifierSeq" />
+  <element tag="(0040,0515)" name="Alternate Container Identifier Sequence" vr="SQ" vm="1" key="AlternateContainerIdentifierSeq" />
+  <element tag="(0040,0518)" name="Container Type Code Sequence" vr="SQ" vm="1" key="ContainerTypeCodeSeq" />
+  <element tag="(0040,051A)" name="Container Description" vr="LO" vm="1" key="ContainerDescription" />
+  <element tag="(0040,0520)" name="Container Component Sequence" vr="SQ" vm="1" key="ContainerComponentSeq" />
+  <element tag="(0040,0550)" name="Specimen Sequence (Retired)" vr="SQ" vm="1" key="SpecimenSeq" retired="true" />
   <element tag="(0040,0551)" name="Specimen Identifier" vr="LO" vm="1" key="SpecimenIdentifier" />
-  <element tag="(0040,059A)" name="Specimen Type Code Sequence" vr="SQ" vm="1" key="SpecimenTypeCodeSeq" />
+  <element tag="(0040,0554)" name="Specimen UID" vr="UI" vm="1" key="SpecimenUID" />
   <element tag="(0040,0555)" name="Acquisition Context Sequence" vr="SQ" vm="1" key="AcquisitionContextSeq" />
   <element tag="(0040,0556)" name="Acquisition Context Description" vr="ST" vm="1" key="AcquisitionContextDescription" />
-  <element tag="(0040,06FA)" name="Slide Identifier" vr="LO" vm="1" key="SlideIdentifier" />
+  <element tag="(0040,059A)" name="Specimen Type Code Sequence" vr="SQ" vm="1" key="SpecimenTypeCodeSeq" />
+  <element tag="(0040,0560)" name="Specimen Description Sequence" vr="SQ" vm="1" key="SpecimenDescriptionSeq" />
+  <element tag="(0040,0562)" name="Issuer of the Specimen Identifier Sequence" vr="SQ" vm="1" key="IssuerOfTheSpecimenIdentifierSeq" />
+  <element tag="(0040,0600)" name="Specimen Short Description" vr="LO" vm="1" key="SpecimenShortDescription" />
+  <element tag="(0040,0602)" name="Specimen Detailed Description" vr="UT" vm="1" key="SpecimenDetailedDescription" />
+  <element tag="(0040,0610)" name="Specimen Preparation Sequence" vr="SQ" vm="1" key="SpecimenPreparationSeq" />
+  <element tag="(0040,0612)" name="Specimen Preparation Step Content Item Sequence" vr="SQ" vm="1" key="SpecimenPreparationStepContentItemSeq" />
+  <element tag="(0040,0620)" name="Specimen Localization Content Item Sequence" vr="SQ" vm="1" key="SpecimenLocalizationContentItemSeq" />
+  <element tag="(0040,06FA)" name="Slide Identifier (Retired)" vr="LO" vm="1" key="SlideIdentifier" retired="true" />
   <element tag="(0040,071A)" name="Image Center Point Coordinates Sequence" vr="SQ" vm="1" key="ImageCenterPointCoordinatesSeq" />
   <element tag="(0040,072A)" name="X offset in Slide Coordinate System" vr="DS" vm="1" key="XOffsetInSlideCoordinateSystem" />
   <element tag="(0040,073A)" name="Y offset in Slide Coordinate System" vr="DS" vm="1" key="YOffsetInSlideCoordinateSystem" />
@@ -1415,11 +1430,19 @@
   
   <element tag="(0050,0004)" name="Calibration Image" vr="CS" vm="1" key="CalibrationImage" />
   <element tag="(0050,0010)" name="Device Sequence" vr="SQ" vm="1" key="DeviceSeq" />
+  <element tag="(0050,0012)" name="Container Component Type Code Sequence" vr="SQ" vm="1" key="ContainerComponentTypeCodeSeq" />
+  <element tag="(0050,0013)" name="Container Component Thickness" vr="FD" vm="1" key="ContainerComponentThickness" />
   <element tag="(0050,0014)" name="Device Length" vr="DS" vm="1" key="DeviceLength" />
+  <element tag="(0050,0015)" name="Container Component Width" vr="FD" vm="1" key="ContainerComponentWidth" />
   <element tag="(0050,0016)" name="Device Diameter" vr="DS" vm="1" key="DeviceDiameter" />
   <element tag="(0050,0017)" name="Device Diameter Units" vr="CS" vm="1" key="DeviceDiameterUnits" />
   <element tag="(0050,0018)" name="Device Volume" vr="DS" vm="1" key="DeviceVolume" />
   <element tag="(0050,0019)" name="Inter-marker Distance" vr="DS" vm="1" key="InterMarkerDistance" />
+  <element tag="(0050,001A)" name="Container Component Material" vr="CS" vm="1" key="ContainerComponentMaterial" />
+  <element tag="(0050,001B)" name="Container Component ID" vr="LO" vm="1" key="ContainerComponentID" />
+  <element tag="(0050,001C)" name="Container Component Length" vr="FD" vm="1" key="ContainerComponentLength" />
+  <element tag="(0050,001D)" name="Container Component Diameter" vr="FD" vm="1" key="ContainerComponentDiameter" />
+  <element tag="(0050,001E)" name="Container Component Description" vr="LO" vm="1" key="ContainerComponentDescription" />
   <element tag="(0050,0020)" name="Device Description" vr="LO" vm="1" key="DeviceDescription" />
 
   <element tag="(0054,0010)" name="Energy Window Vector" vr="US" vm="1-n" key="EnergyWindowVector" />
