@@ -30,6 +30,9 @@ templateGroup.groupNames.xeroController=xeroController
 controller=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 controller.maxAge=360
 
+controller.p3p=${class:org.dcm4chee.xero.metadata.servlet.P3PHeaderFilter}
+controller.p3p.priority=11000
+
 controller.stringTemplate=${class:org.dcm4chee.xero.template.StringTemplateFilter}
 controller.stringTemplate.defaultGroup=${ref:templateGroup}
 controller.stringTemplate.model.inherit=model
