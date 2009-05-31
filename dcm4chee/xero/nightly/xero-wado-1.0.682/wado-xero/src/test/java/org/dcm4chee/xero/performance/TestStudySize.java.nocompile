@@ -1,0 +1,105 @@
+package org.dcm4chee.xero.performance;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.io.DicomInputStream;
+import org.dcm4chee.xero.image.MinMaxPixelMacro;
+import org.dcm4chee.xero.search.study.DicomObjectType;
+import org.dcm4chee.xero.search.study.ImageBean;
+import org.dcm4chee.xero.search.study.ImageBeanMultiFrame;
+import org.dcm4chee.xero.search.study.PatientBean;
+import org.dcm4chee.xero.search.study.SeriesType;
+import org.dcm4chee.xero.search.study.StudyType;
+import org.dcm4chee.xero.search.study.TestJaxbEncode;
+import org.dcm4chee.xero.search.study.TestMultiFrameImage;
+
+import com.vladium.utils.IObjectProfileNode;
+import com.vladium.utils.ObjectProfiler;
+
+public class TestStudySize {
+   static String bigImgCountDir = "q:/4578-1839870";
+
+   public static void main(String[] args) throws Exception {
+	  Map<Object, Object> children = new HashMap<Object, Object>();
+	  DicomObject dcmObj = TestJaxbEncode.loadDicomObject(TestJaxbEncode.singleUrl);
+	  PatientBean patient = new PatientBean(children, dcmObj);
+
+	  IObjectProfileNode profile = ObjectProfiler.profile(patient);
+	  System.out.println("Single patient obj size, no extra data = " + profile.size() + " bytes");
+
+	  for (StudyType st : patient.getStudy()) {
+		 for (SeriesType set : st.getSeries()) {
+			for (DicomObjectType dot : set.getDicomObject()) {
+			   if (!(dot instanceof ImageBean))
+				  continue;
+			   ImageBean ib = (ImageBean) dot;
+			   ib.getMacroItems().addMacro(new MinMaxPixelMacro(0, 0));
+			}
+		 }
+	  }
+	  IObjectProfileNode profileWithWL = ObjectProfiler.profile(patient);
+	  System.out.println("Single patient obj size, with WL = " + profileWithWL.size() + " bytes");
+	  
+	  children = new HashMap<Object, Object>();
+	  dcmObj = TestJaxbEncode.loadDicomObject(TestMultiFrameImage.multiUrl);
+	  patient = new PatientBean(children, dcmObj);
+	  int frameCount = 0;
+	  for (StudyType st : patient.getStudy()) {
+		 for (SeriesType set : st.getSeries()) {
+			for (DicomObjectType dot : set.getDicomObject()) {
+			   if (!(dot instanceof ImageBean))
+				  continue;
+			   ImageBeanMultiFrame ib = (ImageBeanMultiFrame) dot;
+			   frameCount = ib.getNumberOfFrames();
+			   for(int f=1; f<=frameCount; f++) {
+				  ib.getFrameMacroItems(f).addMacro(new MinMaxPixelMacro(0, 0));
+			   }
+			}
+		 }
+	  }
+	  IObjectProfileNode profileMulti = ObjectProfiler.profile(patient);
+	  System.out.println("Multi-frame obj size, WL data per frame = " + profileMulti.size() + " bytes, per-frame "+(profileMulti.size()/frameCount) + " for "+frameCount+" frames");
+
+	  children = new HashMap<Object, Object>();
+	  PatientBean patient2 = null;
+	  File bigDir = new File(bigImgCountDir);
+	  File[] files = bigDir.listFiles();
+	  int i = 0;
+	  for (File f : files) {
+		 if( (i++) % 128==0 ) {
+			System.out.print(i);
+			System.out.print(",");
+		 }
+		 DicomInputStream dis = new DicomInputStream(new FileInputStream(f));
+		 dis.setHandler(TestJaxbEncode.stopHandler);
+		 DicomObject multiObj = dis.readDicomObject();
+		 if (patient2 != null) {
+			patient2.addResult(multiObj);
+		 } else {
+			patient2 = new PatientBean(children, multiObj);
+		 }
+	  }
+	  System.out.println("");
+	  for (StudyType st : patient2.getStudy()) {
+		 for (SeriesType set : st.getSeries()) {
+			for (DicomObjectType dot : set.getDicomObject()) {
+			   if (!(dot instanceof ImageBean))
+				  continue;
+			   ImageBean ib = (ImageBean) dot;
+			   ib.getMacroItems().addMacro(new MinMaxPixelMacro(0, 0));
+			}
+		 }
+	  }
+	  IObjectProfileNode profileBig = ObjectProfiler.profile(patient2);
+
+	  System.out.println("Large study obj size, with WL = " + profileBig.size() + " bytes, image bytes="+(profileBig.size()/files.length)+" for "+files.length+" images.");
+	  System.out.println("Dump of single patient object with WL:");
+	  System.out.println(profileWithWL.dump());
+
+   }
+
+} // End of class
