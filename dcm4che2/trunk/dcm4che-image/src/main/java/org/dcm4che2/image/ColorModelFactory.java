@@ -202,7 +202,16 @@ public class ColorModelFactory {
         } else {
             if (bits == 8) {
                 if (data.length != len) {
-                    throwLutLengthMismatch(data.length, len);
+                	if( data.length == 2*len ) {
+                		short[] data16 = ds.getShorts(dataTag);
+                		if( data16!=null ) {
+                			data = new byte[len];
+                			for(int i=0; i<len; i++) data[i] = (byte) data16[i];
+                		}
+                	}
+                	if( data.length!=len ) {
+                		throwLutLengthMismatch(data.length, len);
+                	}
                 }
                 System.arraycopy(data, 0, out, off, len);
             } else { // bits == 16
