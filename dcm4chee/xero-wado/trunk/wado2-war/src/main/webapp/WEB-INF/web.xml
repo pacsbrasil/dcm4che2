@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
-<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
-         version="2.4">
+<!DOCTYPE web-app PUBLIC 
+ "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+ "http://java.sun.com/dtd/web-app_2_3.dtd">
+ 
+<web-app>
 
-
+   <filter>
+      <filter-name>TimeFilter</filter-name>
+      <filter-class>org.dcm4chee.xero.servlet.TimeFilter</filter-class>
+   </filter>
+   <filter-mapping>
+      <filter-name>TimeFilter</filter-name>
+      <url-pattern>/*</url-pattern>
+   </filter-mapping>
+   
    <!-- WADO servlet to use for testing window levelling performance. -->
    <servlet>
      <servlet-name>WADO</servlet-name>
@@ -18,14 +27,7 @@
     	  <param-value>wado</param-value>
       </init-param>
    </servlet>
-   <servlet-mapping>
-     <servlet-name>WADO</servlet-name>
-     <url-pattern>/wado</url-pattern>
-   </servlet-mapping>
-   <servlet-mapping>
-     <servlet-name>WADO</servlet-name>
-     <url-pattern>/index.html</url-pattern>
-   </servlet-mapping>
+
 
    <!-- TODO change the filter/permission checking to be based on IP addresses, not login - for remote access. -->
    <servlet>
@@ -40,10 +42,7 @@
     	  <param-value>wado</param-value>
       </init-param>
    </servlet>
-   <servlet-mapping>
-     <servlet-name>IPWADO</servlet-name>
-     <url-pattern>/ipwado</url-pattern>
-   </servlet-mapping>
+
 
    <servlet>
      <servlet-name>CFind</servlet-name>
@@ -57,10 +56,7 @@
     	  <param-value>cfind</param-value>
       </init-param>
    </servlet>
-   <servlet-mapping>
-     <servlet-name>CFind</servlet-name>
-     <url-pattern>/cfind</url-pattern>
-   </servlet-mapping>
+
 
    <servlet>
       <servlet-name>Patient Xml Servlet</servlet-name>
@@ -93,10 +89,7 @@
       </init-param>
       <load-on-startup>1</load-on-startup>      
    </servlet>
-   <servlet-mapping>
-      <servlet-name>Study Xml Servlet</servlet-name>
-      <url-pattern>/study.xml</url-pattern>
-   </servlet-mapping>
+
 
    <servlet>
       <servlet-name>Image Xml Servlet</servlet-name>
@@ -111,10 +104,7 @@
       </init-param>
       <load-on-startup>1</load-on-startup>      
    </servlet>
-   <servlet-mapping>
-      <servlet-name>Image Xml Servlet</servlet-name>
-      <url-pattern>/image.xml</url-pattern>
-   </servlet-mapping>
+
 
    <servlet>
       <servlet-name>Series Xml Servlet</servlet-name>
@@ -129,19 +119,38 @@
       </init-param>
       <load-on-startup>1</load-on-startup>      
    </servlet>
+   
+   <servlet-mapping>
+     <servlet-name>WADO</servlet-name>
+     <url-pattern>/wado</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+     <servlet-name>WADO</servlet-name>
+     <url-pattern>/index.html</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+     <servlet-name>IPWADO</servlet-name>
+     <url-pattern>/ipwado</url-pattern>
+   </servlet-mapping>   
+   <servlet-mapping>
+     <servlet-name>CFind</servlet-name>
+     <url-pattern>/cfind</url-pattern>
+   </servlet-mapping>   
+   <servlet-mapping>
+      <servlet-name>Study Xml Servlet</servlet-name>
+      <url-pattern>/study.xml</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>Image Xml Servlet</servlet-name>
+      <url-pattern>/image.xml</url-pattern>
+   </servlet-mapping>   
+      
    <servlet-mapping>
       <servlet-name>Series Xml Servlet</servlet-name>
       <url-pattern>/series.xml</url-pattern>
    </servlet-mapping>
    
-   <filter>
-      <filter-name>TimeFilter</filter-name>
-      <filter-class>org.dcm4chee.xero.servlet.TimeFilter</filter-class>
-   </filter>
-   <filter-mapping>
-      <filter-name>TimeFilter</filter-name>
-      <url-pattern>/*</url-pattern>
-   </filter-mapping>
+
    
    <security-constraint id="securityConstraint">
      <display-name>Xero Security Constraint</display-name>
