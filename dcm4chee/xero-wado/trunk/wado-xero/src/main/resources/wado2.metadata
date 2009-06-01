@@ -233,7 +233,7 @@ xmlReport.stringTemplateFilter=${class:org.dcm4chee.xero.template.StringTemplate
 xmlReport.stringTemplateFilter.defaultView=xml
 xmlReport.stringTemplateFilter.defaultGroup=${class:org.dcm4chee.xero.template.AutoStringTemplateGroup}
 xmlReport.stringTemplateFilter.defaultGroup.refreshInterval=10
-xmlReport.stringTemplateFilter.defaultGroup.groupNames=reports/base
+xmlReport.stringTemplateFilter.defaultGroup.groupNames=reports/base,reports/base/customBaseGroup.stg
 xmlReport.stringTemplateFilter.priority=1000
 
 xmlReport.aemodel=${class:org.dcm4chee.xero.wado.AEModel}
@@ -250,6 +250,10 @@ wado=${class:org.dcm4chee.xero.metadata.filter.FilterList}
 wado.lifecycle=${class:org.dcm4chee.xero.search.WadoLifecycle}
 
 wado.WADO.inherit=WADO
+
+# Make images and so on accessible from a remote iframe within IE, Firefox and other P3P using browsers
+wado.p3p=${class:org.dcm4chee.xero.metadata.servlet.P3PHeaderFilter}
+wado.p3p.priority=1000
 
 # Add the shared WADO filters that are inserted infront of the requestType specific code.
 wado.requestTypeFilter=${class:org.dcm4chee.xero.metadata.filter.InvokeByRequestTypeFilter}

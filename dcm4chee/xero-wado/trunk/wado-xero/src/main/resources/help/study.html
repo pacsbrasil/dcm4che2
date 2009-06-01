@@ -33,50 +33,71 @@ constraints/results at the patient level.</p>
       <th>Notes</th>
     </tr>
     <tr>
+      <td>ko</td>
+      <td>Set to * to include in the study information the preferred key images
+        instance to apply. It is fairly slow in general to look this up, so
+        only use for a particular patient's studies or for some other fairly
+        constrained study list.</td>
+      <td>Causes koUID to be returned if available.</td>
+    </tr>
+    <tr>
+      <td>gsps</td>
+      <td>Set to * to include the preferred GSPS (markup/annotations) to be
+        determined per-study. Fairly slow, so only use it for a small number of
+        studies being returned (eg all studies for a single patient).</td>
+      <td>Causes gspsLabel to be returned if available.</td>
+    </tr>
+    <tr>
       <td>AccessionNumber</td>
       <td>Constrain by the accession number of the study. Multiple values
         separated by \ are permitted.</td>
-      <td></td>
+      <td>Returned in XML</td>
     </tr>
     <tr>
       <td>studyUID</td>
       <td>Constrain by the UID of the study. Multiple entries can be searched
         for by separating them with the backslash \ character.</td>
-      <td></td>
+      <td>Returned in XML</td>
     </tr>
     <tr>
       <td>ModalitiesInStudy</td>
       <td>Constrain by the modalities in the study. Multiple entries can be
         searched for by separating them with the backslash \ character.</td>
-      <td></td>
+      <td>Returned in XML as a comma-separated list</td>
     </tr>
     <tr>
       <td>StudyDescription</td>
       <td>Constrain by the study description</td>
-      <td>Allows wildcards</td>
+      <td>Allows wildcards
+
+        <p>Returned in XML</p>
+      </td>
     </tr>
     <tr>
       <td>StudyDateTime</td>
       <td>Search by the study date-time.</td>
-      <td>See <a href="COMMON.html">Common</a> for format.</td>
+      <td>See <a href="COMMON.html">Common</a> for format.
+
+        <p>Returned in XML</p>
+      </td>
     </tr>
     <tr>
       <td>StudyID</td>
       <td>Search by the Study ID. This is another, typically internal ID for
         studies.</td>
-      <td></td>
+      <td>Returned in XML</td>
     </tr>
     <tr>
       <td>ReferringPhysicianName</td>
       <td>Search by referring physician.</td>
-      <td></td>
+      <td>Returned in XML</td>
     </tr>
     <tr>
       <td>StudyStatusID</td>
       <td>For some PACS systems, studies are searchable by the study status.
         Impax Data Center is not one of the systems searchable in this
       fashion.</td>
-      <td></td>
+      <td>Returned in XML</td>
     </tr>
   </tbody>
 </table>
@@ -89,6 +110,22 @@ constraints/results at the patient level.</p>
       <th>XML Attribute</th>
       <th>Description</th>
       <th>Notes</th>
+    </tr>
+    <tr>
+      <td>studyDateTimeF</td>
+      <td>Human-readable study date-time format.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>koUID</td>
+      <td>The default set of key images to apply if the user wishes to see only
+        key images.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>gspsLabel</td>
+      <td>The name of the GSPS object to apply to this study.</td>
+      <td></td>
     </tr>
     <tr>
       <td>InstanceAvailability</td>

@@ -49,7 +49,7 @@ level.
         <p>Name in quotes: removes the quotes and searches for the given
         string.</p>
       </td>
-      <td>DICOM formatted</td>
+      <td>Returned in attributes</td>
     </tr>
     <tr>
       <td>PatientID</td>
@@ -65,17 +65,89 @@ level.
         without any wild-cards. Do NOT include any wild cards in any of the
         multi-entry items as this will cause all patients to be returned.</p>
       </td>
-      <td></td>
+      <td>Returned in attributes</td>
     </tr>
     <tr>
       <td>PatientBirthDate</td>
       <td>Search on the patient's birth date.</td>
-      <td>See <a href="COMMON.html">Common</a> for format.</td>
+      <td>See <a href="COMMON.html">Common</a> for format.
+
+        <p>Returned in attributes</p>
+      </td>
     </tr>
     <tr>
-      <td>Sex</td>
+      <td>PatientSex</td>
       <td>Search on the patient gender </td>
-      <td>M, F or O are the allowed values.</td>
+      <td>M, F or O are the allowed values.
+
+        <p>Returned in attributes</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Return Attributes</h3>
+
+<table border="1">
+  <tbody>
+    <tr>
+      <th>XML Attribute</th>
+      <th>Description</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td>PatientIdentifier</td>
+      <td>Contains the identifier name that is used to group patients. This
+        will typically be the preferred patient ID issuer, ':' and the patient
+        identifier. This may or may not be the same as the regular patient
+        identifier.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>CurrentPatientLocation</td>
+      <td>At some sites that maintain this information, this will contain the
+        patient location. Many sites do not maintain this.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>AdditionalPatientHistory</td>
+      <td>Contains other information about the patient.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PatientAge</td>
+      <td>Contains the age of the patient at the time the exam was taken</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>OtherPatientIDs</td>
+      <td>Contains a backslash list of other patient IDs.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>patientNameF</td>
+      <td>A human-readable format for the patient name. Decodes the DICOM ^ and
+        = encoding into a simple name.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>birthDateF</td>
+      <td>A human-readable format for the patient birth date.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>NumberOfStudyRelatedSeries</td>
+      <td>Contains the number of sets of images (series) that this study
+        contains. A series is typically a set of related images all taken at
+        once such as a pass through a CT scanner.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>NumberOfStudyRelatedInstances</td>
+      <td>Contains the number of DICOM objects this study contains. This will
+        typically be an indicator of study size, but for multi-frames it may
+        not be that good an indicator.</td>
+      <td></td>
     </tr>
   </tbody>
 </table>

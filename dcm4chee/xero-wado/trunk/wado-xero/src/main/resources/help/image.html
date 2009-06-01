@@ -1,67 +1,239 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
   <title>Image Metadata Service</title>
-  </head>
-<body>
+</head>
 
+<body>
 <h2>Image Metadata Service</h2>
 
 <h3>Overview</h3>
-C-FIND metadata service that will return a patient root hierarchy of results in a
-specified text format.  Constraints to the C-FIND are applied by adding parameters
-that correspond to the DICOM tag names.  As with any C-FIND query, constraints on
-the containing types can be applied as well as the requested level.
-<p>
-Query constraints are required for the C-FIND to be performed,
-otherwise an empty set of results will be returned.
+C-FIND metadata service that will return a patient root hierarchy of results in
+a specified text format. Constraints to the C-FIND are applied by adding
+parameters that correspond to the DICOM tag names. As with any C-FIND query,
+constraints on the containing types can be applied as well as the requested
+level. 
+
+<p>Query constraints are required for the C-FIND to be performed, otherwise an
+empty set of results will be returned. </p>
+
+<p>Note: In the future, some or most attributes in the series maybe sent at the
+series level which indicates that all instances in the series have the same
+value. This significantly reduces the amount of data being sent per image, and
+should be considered when reading the values to allow getting the value from
+both the series and image level.</p>
+
+<h2>Return Types</h2>
+
+<p>At the "Image" level, various types can be returned - image, report, gsps,
+keyObject, other, video, audio etc. In general, all types will include an
+objectUID and InstanceNumber, but other attributes can change between types.</p>
 
 <h3>Parameters</h3>
 
 <table border="1">
-<tr>
-<th>Parameter</th>
-<th>Description</th>
-<th>Notes</th>
-</tr>
-<tr>
-<td>objectUID</td>
-<td>Constrain by the SOP Instance UID of the DICOM object</td>
-<td></td>
-</tr>
-<tr>
-<td>InstanceNumber</td>
-<td>Constrain by the instance number of the DICOM object</td>
-<td></td>
-</tr>
-<tr>
-<td>contentType</td>
-<td>
-Determines how the metadata will be formatted:
-<ul>
-<li>
-<b>text/xml</b>
-Formats the metadata as an XML document according to the <a href="study.xsd">study.xsd</a> schema</dt>
-</li>
-<li>
-<b>text/javascript</b>
-Formats the metadata as a JSON document which groups sub elements in a 'children' property
-</li>
-</ul>
-</td>
-<td>Defaults to text/xml</td>
-</tr>
-<tr>
-<td><a href="parameter-regroup.html">regroup</a></td>
-<td>Whether to regroup the images/series of the study.</td>
-<td>Defaults to true</td>
-</tr>
-<tr>
-<td>help</td>
-<td>Whether to show this help message.</td>
-<td>Defaults to false</td>
-</tr>
+  <tbody>
+    <tr>
+      <th>Parameter</th>
+      <th>Description</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td>objectUID</td>
+      <td>Constrain by the SOP Instance UID of the DICOM object</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Position</td>
+      <td>Only returns objects starting at the given position in the series.
+        This will cause multi-frame images to be broken into per-frame
+        instances ordered by the internal multi-frame ordering constraints
+        (typically increasing frame number, but other orderings are possible).
+        Other objects that are referenced by or reference to this object may
+        also be included in order to have a complete description of the
+      image.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Count</td>
+      <td>The number of returned images in a series. Required if Position is
+        included.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>pixelInfo</td>
+      <td>Set to true to get the min/max pixel value and initial window
+        level/width. Defaults to false. Can be VERY slow for large images (1+
+        second per image) as it requires a pixel scan unless the values are
+        already set in the DICOM header. Note that these are NOT the DICOM
+        smallest/largest pixel value, but are post-modality LUT min/max values.
+        That is, they are the allowed range for the center in window
+      levelling.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>gsps</td>
+      <td>The content name of the GSPS to include in the returned images. This
+        will include an SVG representation of the image, and which gsps is to
+        be applied to the image. For example: <a
+        href="https://xero.agfa.com/wado2/?requestType=IMAGE&amp;studyUID=1.3.51.0.7.1622737864.7824.44866.49044.12965.26887.52477&amp;gsps=GSPS">https://xero.agfa.com/wado2/?requestType=IMAGE&amp;studyUID=1.3.51.0.7.1622737864.7824.44866.49044.12965.26887.52477&amp;gsps=GSPS</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>koUID</td>
+      <td>Set to * to indicate inclusion of ALL key object information and to a
+        specific UID for details on the given UID, for example <a
+        href="https://xero.agfa.com/wado2/?requestType=IMAGE&amp;studyUID=1.3.12.2.1107.5.0.0.1003.2.0.248527026081204&amp;koUID=1.2.826.0.1.3680043.2.1227.1225407213114.12090331103935.1">https://xero.agfa.com/wado2/?requestType=IMAGE&amp;studyUID=1.3.12.2.1107.5.0.0.1003.2.0.248527026081204&amp;koUID=1.2.826.0.1.3680043.2.1227.1225407213114.12090331103935.1</a></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>fileLocation</td>
+      <td>Set to true to find the location used to fetch this file from.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>InstanceNumber</td>
+      <td>Constrain by the instance number of the DICOM object</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><a href="parameter-regroup.html">regroup</a></td>
+      <td>Whether to regroup the images/series of the study.</td>
+      <td>Defaults to true</td>
+    </tr>
+  </tbody>
 </table>
 
+<h3>Return Attributes</h3>
 
+<table border="1">
+  <tbody>
+    <tr>
+      <th>XML Attribute</th>
+      <th>Description</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td>Rows</td>
+      <td>The number of rows in the image. </td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Columns</td>
+      <td>The number of columns in the image</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>koUID</td>
+      <td>A comma separated list of key objects that refer to this image.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>windowWidth
+
+        <p>windoCenter</p>
+
+        <p>windowExplanation</p>
+      </td>
+      <td>The window level values. Not always included unless pixelInfo or gsps
+        are specified.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>minPixel 
+
+        <p>maxPixel</p>
+      </td>
+      <td>The minimum and maximum pixel value actually found in the image</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>spacingX
+
+        <p>spacingY</p>
+      </td>
+      <td>The spacing in mm between pixels in the x and Y dimensions</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>size</td>
+      <td>The size type - SCALE_TO_FIT, MAGNIFY, TRUE_SIZE that was specified
+        in the GSPS object</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>bottomRight
+
+        <p>topLeft</p>
+      </td>
+      <td>The x,y coordinates for the bottom right hand corner to display and
+        the top right hand corner.</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Return Child Elements</h3>
+
+<table border="1">
+  <tbody>
+    <tr>
+      <th>XML Attribute</th>
+      <th>Description</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td>keyObject -&gt; p </td>
+      <td>A child of a keyObject instance, contains the key object text
+        comment(s). See the example above under parameters. </td>
+      <td>XHTML transitional</td>
+    </tr>
+    <tr>
+      <td>image -&gt; use</td>
+      <td>Contains a reference to another element in the object, identified by
+        id. Also, may have a class attribute that identifies the object as
+        being display relative or image relative. Image relative use are in
+        image coordinates. Display relative are in the coordinate space
+        0...1000, NOT 0...1 as GSPS specifies because some browsers apply an
+        integer normalization to the locations.</td>
+      <td>SVG 1.0</td>
+    </tr>
+    <tr>
+      <td>gsps -&gt; svg</td>
+      <td>Contains one or more group elements, containing either path, text or
+        image elements that specify the image to include.</td>
+      <td>SVG 1.0</td>
+    </tr>
+    <tr>
+      <td>svg -&gt; g</td>
+      <td>Contains the group of child elements associated with the GSPS
+      object</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>g -&gt; path</td>
+      <td>Contains a markup object</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>g -&gt; image</td>
+      <td>Contains an overlay or bitmap shutter</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>g -&gt; text</td>
+      <td>Contains text annotation.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
 </body>
+</html>
