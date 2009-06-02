@@ -108,10 +108,11 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
             } else if ( request.getParameter("doLink.x") != null ) {
                 return performAction( "doLink", request );
             } else if ( request.getParameter("del.x") != null ) {//action from delete button.
-                String[] spsIDs = getInternalIds(request);
-                if ( spsIDs == null || spsIDs.length < 1) {
+                String[] internalIDs = getInternalIds(request);
+                if ( internalIDs == null || internalIDs.length < 1) {
                     model.setPopupMsg("mwl.err_delete", "");
                 } else {
+                    String[] spsIDs = this.getSPSIDs(internalIDs);
                     for ( int i = 0 ; i < spsIDs.length ; i++ ) {
                         delegate.deleteMWLEntry( spsIDs[i] );
                     }
