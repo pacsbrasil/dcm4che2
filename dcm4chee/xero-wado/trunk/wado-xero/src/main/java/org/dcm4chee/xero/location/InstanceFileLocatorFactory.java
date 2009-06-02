@@ -166,10 +166,7 @@ public class InstanceFileLocatorFactory
     */
    protected MBeanServerConnection createRemoteConnection(Map<String, Object> config) throws NamingException
    {
-      String host = FilterUtil.getString(config, AEProperties.AE_HOST_KEY);
-      int port = FilterUtil.getInt(config, AEProperties.EJB_PORT,1099);
-      
-      Context context = EJBServiceLocator.getInitialContext(host, Integer.toString(port));
+      Context context = EJBServiceLocator.getInitialContext(config);
       MBeanServerConnection connection = (MBeanServerConnection) context.lookup("jmx/invoker/RMIAdaptor");
       return connection;
    }

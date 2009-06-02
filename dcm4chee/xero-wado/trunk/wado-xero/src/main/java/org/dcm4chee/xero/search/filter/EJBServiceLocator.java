@@ -49,6 +49,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.rmi.PortableRemoteObject;
 
+import org.dcm4chee.xero.metadata.filter.FilterUtil;
+import org.dcm4chee.xero.search.AEProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +81,47 @@ public class EJBServiceLocator {
          cache = Collections.synchronizedMap(new HashMap<String, EJBHome>());
    }
 
+   
    /**
+    * Create an initial context that is configured by the indicated ae c
+    * onfiguration map.  
+    * 
+    * @param config Is the AE configuration map to read.  The supported fields are:
+    * <dl>
+    * <dt>host<dd>Host name of the server
+    * <dt>ejbport<dd>Port of the JDNI server is running on
+    * </dl>
+    * 
+    * @throws NamingException When the naming service cannot be bound.
+    */
+   public static InitialContext getInitialContext(Map<String,Object> config) throws NamingException {
+      
+      String host = FilterUtil.getString(config, AEProperties.AE_HOST_KEY);
+      int port = FilterUtil.getInt(config, AEProperties.EJB_PORT,1099);
+      if(host == null) {
+         throw new NamingException("Host not defined in AE configuration");
+      }
+      
+      Properties prop = new Properties();
+      prop.put(Context.INITIAL_CONTEXT_FACTORY,
+              "org.jnp.interfaces.NamingContextFactory");
+      prop.put(Context.PROVIDER_URL, "jnp://" + host + ":" + port);
+      prop.put(Context.URL_PKG_PREFIXES, "jboss.naming:org.jnp.interfaces");
+      
+      String userID = (String)config.get(AEProperties.USER);
+      String password = (String) config.get(AEProperties.PASSWORD);
+      if(userID != null)
+      {
+         log.debug("Credentials for {} are being applied to the InitialContext.",userID);
+         prop.put(Context.SECURITY_PRINCIPAL, userID);
+         prop.put(Context.SECURITY_CREDENTIALS, password);
+      }
+      return new InitialContext(prop);
+   }
+   
+   
+   /**
+    * Create a basic InitialContext based on the indicated host and port.
     * @return InitialContext
     * @throws NamingException
     */

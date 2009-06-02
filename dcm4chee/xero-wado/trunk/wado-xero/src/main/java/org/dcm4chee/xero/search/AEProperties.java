@@ -74,7 +74,12 @@ public class AEProperties {
    public static final String TYPE = "type";
    public static final String EJB_PORT = "ejbport";
    public static final String LOCAL_TITLE = "localTitle";
-
+   
+   /** User ID to use if the AE requires authentication */
+   public static final String USER = "user";
+   /** Password to use if the AE requires authentication */
+   public static final String PASSWORD = "password";
+   
    private static final String FILE_NAME_PREPEND = "ae-";
    private static final String FILE_NAME_EXT = ".properties";
 
