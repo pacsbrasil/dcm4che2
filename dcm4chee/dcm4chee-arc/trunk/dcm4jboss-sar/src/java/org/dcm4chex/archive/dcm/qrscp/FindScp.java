@@ -194,7 +194,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
     }
 
     protected void pixQuery(Dataset rqData) throws DcmServiceException {
-        ArrayList result = new ArrayList();
+        ArrayList<String[]> result = new ArrayList<String[]>();
         boolean updateRQ = pixQuery(rqData, result);
         DcmElement opidsq = rqData.get(Tags.OtherPatientIDSeq);
         if (opidsq != null) {
@@ -204,35 +204,29 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
                 }
             }
         }
-        if (updateRQ) {
-            opidsq = rqData.putSQ(Tags.OtherPatientIDSeq);
+        if (updateRQ && !result.isEmpty()) {
+            Pattern pid0 = toPattern(rqData.getString(Tags.PatientID));
+            Pattern issuer0 = toPattern(rqData.getString(Tags.IssuerOfPatientID));
             int n = result.size();
-            if (n > 0) {
-                Pattern pid0 = toPattern(rqData.getString(Tags.PatientID));
-                Pattern issuer0 = toPattern(rqData.getString(Tags.IssuerOfPatientID));
-                int matchInx = -1;
-                int pidMatchOnlyInx = -1;
-                for (int i = 0; i < n; i++) {
-                    String[] pid = (String[]) result.get(i);
-                    if (pid0 == null || pid0.matcher(pid[PID]).matches()) {
-                        if (issuer0 == null
-                                || issuer0.matcher(pid[ISSUER]).matches()) {
-                            matchInx = i;
-                            break;
-                        } else if (pidMatchOnlyInx == -1) {
-                            pidMatchOnlyInx = i;
-                        }
+            int matchInx = -1;
+            int pidMatchOnlyInx = -1;
+            for (int i = 0; i < n; i++) {
+                String[] pid = (String[]) result.get(i);
+                if (pid0 == null || pid0.matcher(pid[PID]).matches()) {
+                    if (issuer0 == null
+                            || issuer0.matcher(pid[ISSUER]).matches()) {
+                        matchInx = i;
+                        break;
+                    } else if (pidMatchOnlyInx == -1) {
+                        pidMatchOnlyInx = i;
                     }
                 }
-                if (matchInx == -1) {
-                    matchInx = (pidMatchOnlyInx >= 0) ? pidMatchOnlyInx : 0;
-                }
-                setPID(rqData, (String[]) result.get(matchInx));
-                for (int i = 0; i < n; i++) {
-                    if (i != matchInx) {
-                        setPID(opidsq.addNewItem(), (String[]) result.get(i));
-                    }
-                }
+            }
+            setPID(rqData, result.remove(matchInx >= 0 ? matchInx
+                    : pidMatchOnlyInx >= 0 ? pidMatchOnlyInx : 0));
+            opidsq = rqData.putSQ(Tags.OtherPatientIDSeq);
+            for (int i = 0; i < n; i++) {
+                setPID(opidsq.addNewItem(), (String[]) result.get(i));
             }
         }
     }
