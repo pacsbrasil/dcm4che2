@@ -99,6 +99,7 @@ public class MDMService extends ORU_MDMService {
     
     private byte[] getPDF(Document msg) {
         List obxs = msg.getRootElement().elements("OBX");
+        String base64 = "";
         for (Iterator iter = obxs.iterator(); iter.hasNext();) {
             Element obx = (Element) iter.next();
             List fds = obx.elements();
@@ -110,14 +111,11 @@ public class MDMService extends ORU_MDMService {
                         log.warn("Detect encapsulated report in OBX with OBX-2: '"
                                 + obx2 + "' instead 'ED'");
                     }
-                    String s = toString(cmps.remove(3));
-                    return Base64.base64ToByteArray(s);
+                    base64 += toString(cmps.get(3));
                 }
            }
         }
-        // hl7/OBX[field[2]='ED']/field[5]/component[4]
-        // TODO Auto-generated method stub
-        return null;
+        return base64.length() > 0 ? Base64.base64ToByteArray(base64) : null;
     }
 
 }
