@@ -89,7 +89,7 @@ public class DcmMWL {
             "If also no <host> is specified localhost is assumed.\n" +
             "Options:";
     private static final String EXAMPLE = 
-            "\nExample: dcmmwl MWLSCP@localhost:11112 -mod=CT -date=20060502\n" +
+            "\nExample: dcmmwl MWLSCP@localhost:11112 -mod CT -date 20060502\n" +
             "=> Query Application Entity MWLSCP listening on local port 11112 for " +
             "CT procedure steps scheduled for May 2, 2006.";
 
