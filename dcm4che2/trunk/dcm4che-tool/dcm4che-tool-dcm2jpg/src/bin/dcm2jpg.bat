@@ -5,10 +5,16 @@ rem -------------------------------------------------------------------------
 
 rem $Id: dcm2jpg.bat 826 2007-04-27 13:35:50Z gunterze $
 
-rem Need jai-imageio-1.1 installed!! 
+rem Need jai-imageio-1.1 or jai-imageio-1.2 installed!! 
 rem (download from https://jai-imageio.dev.java.net/binary-builds.html)
-rem For CLASSPATH Installation,
-rem set JIO_LIB="C:\Program Files\Sun Microsystems\JAI Image IO Tools 1.1\lib"
+
+rem For jai-imageio-1.1 CLASSPATH Installation, set
+rem set JIIO_LIB=C:\Program Files\Sun Microsystems\JAI Image IO Tools 1.1\lib
+rem set PATH=%JIIO_LIB%;%PATH%
+
+rem For jai-imageio-1.2 CLASSPATH Installation, set
+rem set JIIO_LIB=%INSTALLDIR%\lib\ext
+rem set PATH=%INSTALLDIR%\bin;$PATH
 
 if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
@@ -58,12 +64,11 @@ set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.5.0.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.13.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-1.1.jar
 
-if "%JIO_LIB%" == "" goto :SKIP_SET_JIO_CLASSPATH
+if "%JIIO_LIB%" == "" goto :SKIP_SET_JIIO_CLASSPATH
 
-set CP=%JIO_LIB%\jai_imageio.jar;%JIO_LIB%\clibwrapper_jiio.jar;%CP%
-set PATH=%JIO_LIB%;%PATH%
+set CP=%JIIO_LIB%\jai_imageio.jar;%JIIO_LIB%\clibwrapper_jiio.jar;%CP%
 
-:SKIP_SET_JIO_CLASSPATH
+:SKIP_SET_JIIO_CLASSPATH
 
 "%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%
 
