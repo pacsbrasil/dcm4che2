@@ -171,6 +171,14 @@ public class SRDocumentContentModule extends Module {
         updateSequence(Tag.ContentSequence, codes);
     } 
     
+    public String getContinuityOfContent() {
+        return dcmobj.getString(Tag.ContinuityOfContent);
+    }
+
+    public void setContinuityOfContent(String s) {
+        dcmobj.putString(Tag.ContinuityOfContent, VR.CS, s);
+    }
+
     public Date getObservationDateTime() {
         return dcmobj.getDate(Tag.ObservationDateTime);
     }
