@@ -146,7 +146,7 @@ public class AutoStringTemplateGroup extends StringTemplateGroup implements Meta
 			}
 			stgParents[i] = ret;
 			log.info("root resource for {} is {}", parents[i], rootDir);
-			if (rootDir == null || rootDir.indexOf('!') > 0) {
+			if (rootDir == null || isArchivePath(rootDir)) {
 				log.info("Using root resource {}", parents[i]);
 				// Just use the name directly as the root resource.
 				ret.setRootResource(parents[i]);
@@ -158,6 +158,17 @@ public class AutoStringTemplateGroup extends StringTemplateGroup implements Meta
 		}
 		log.info("Name is " + this.getName() + " parents[0]=" + parents[0]);
 	}
+
+   /**
+    * Determine if the path represents a resource or directory.
+    * <p>
+    * NOTE:  JBoss 4 returns resources that contain ZIP syntax URLs (.jar!) and
+    * JBoss 5 returns a VFS path that makes it look like a normal directory.
+    */
+   protected boolean isArchivePath(String path)
+   {
+      return path != null && ( path.indexOf('!') > 0 || path.indexOf(".jar/")>=0 );
+   }
 
 	@MetaData(required = false)
 	public void setName(String name) {

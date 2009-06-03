@@ -43,6 +43,8 @@ import org.dcm4chee.xero.metadata.MetaDataBean;
 import org.dcm4chee.xero.metadata.StaticMetaData;
 import org.testng.annotations.Test;
 
+import static org.testng.Assert.*;
+
 /** Tests the auto string template group by ensuring that the various attributes get correctly set. */
 public class AutoStringTemplateGroupTest {
 
@@ -84,4 +86,25 @@ public class AutoStringTemplateGroupTest {
 		  assert s.indexOf("one=1")!=-1;
 		  assert s.indexOf("other default=def")!=-1;
 	}
+	
+	@Test
+	public void isResource_NullPathIsFalse()
+	{
+	   AutoStringTemplateGroup stg = new AutoStringTemplateGroup();
+	   assertFalse(stg.isArchivePath(null));
+	}
+	
+  @Test
+   public void isResource_PathWithBangIsTrue()
+   {
+      AutoStringTemplateGroup stg = new AutoStringTemplateGroup();
+      assertTrue(stg.isArchivePath("d:/myarchive.zip!/myfile"));
+   }
+  
+  @Test
+  public void isResource_PathWithJARIsTrue()
+  {
+     AutoStringTemplateGroup stg = new AutoStringTemplateGroup();
+     assertTrue(stg.isArchivePath("d:/myarchive.jar/myfile"));
+  }
 }
