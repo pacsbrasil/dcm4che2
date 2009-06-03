@@ -81,6 +81,8 @@ patientSource.inherit=source
 patientSource.patientSearch=${class:org.dcm4chee.xero.search.study.PatientSearch}
 patientSource.sortPatient=${class:org.dcm4chee.xero.search.filter.SortPatientsByNameStudiesByDateFilter}
 patientSource.sortPatient.priority=350
+patientSource.urlFilter=${class:org.dcm4chee.xero.search.filter.AddUrlFilter}
+patientSource.urlFilter.priority=400
 
 #Now, add a study filter that provides study searches.
 studyFilter.inherit=servletFilter
@@ -95,6 +97,8 @@ studySource.multipleAE=${class:org.dcm4chee.xero.search.filter.MultipleAEFilter}
 studySource.multipleAE.priority=325
 studySource.sortPatientStudy=${class:org.dcm4chee.xero.search.filter.SortPatientsByNameStudiesByDateFilter}
 studySource.sortPatientStudy.priority=350
+studySource.urlFilter=${class:org.dcm4chee.xero.search.filter.AddUrlFilter}
+studySource.urlFilter.priority=400
 
 # And also have a filter for series and/or images or the complete study.
 imageFilter.inherit=servletFilter
@@ -135,9 +139,11 @@ imageSource.pagedFilter.priority=500
 imageSource.partialImageInfoFix=${class:org.dcm4chee.xero.search.filter.PartialImageInfoFix}
 imageSource.partialImageInfoFix.priority=525
 imageSource.addFileLocation=${class:org.dcm4chee.xero.search.filter.AddFileLocationFilter}
-imageSource.addFileLocation.priority=550
+imageSource.addFileLocation.priority=575
 imageSource.gsps=${class:org.dcm4chee.xero.search.filter.GspsEncode}
 imageSource.gsps.priority=600
+imageSource.urlFilter=${class:org.dcm4chee.xero.search.filter.AddUrlFilter}
+imageSource.urlFilter.priority=625
 imageSource.minMaxPixelInfo=${class:org.dcm4chee.xero.search.filter.MinMaxPixelInfo}
 imageSource.minMaxPixelInfo.priority=650
 
@@ -160,6 +166,9 @@ seriesSource.sortPatientStudy.priority=380
 seriesSource.cacheFilter=${class:org.dcm4chee.xero.metadata.filter.MemoryCacheFilter}
 seriesSource.cacheFilter.cacheSize=3000000
 seriesSource.cacheFilter.priority=400
+seriesSource.urlFilter=${class:org.dcm4chee.xero.search.filter.AddUrlFilter}
+seriesSource.urlFilter.priority=450
+
 
 #Filters for image,series and study meta-data.
 # The single image per series query is no longer used, as the image level

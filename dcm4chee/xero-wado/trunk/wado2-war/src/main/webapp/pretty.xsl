@@ -124,16 +124,25 @@ instruction below. This is recommended if you are a beginner.
     <xsl:text>"</xsl:text>
   </xsl:template>
 
-  <xsl:template match="@objectUID" mode="render">
-  	 <a><xsl:attribute name="href">?requestType=WADO<xsl:value-of select="concat('&amp;studyUID=',../../../@studyUID, '&amp;seriesUID=',../../@seriesUID,'&amp;objectUID=',.)" /><xsl:if test="count(/*/@ae)=1">&amp;ae=<xsl:value-of select="/*/@ae" /></xsl:if></xsl:attribute><xsl:call-template name="attrRender" /></a>
+  <xsl:template match="@url" mode="render">
+    <xsl:text> </xsl:text>
+  	<a><xsl:attribute name="href"><xsl:value-of select="." /></xsl:attribute>__URL__</a>
+  </xsl:template>
+
+  <xsl:template match="@PatientID" mode="render">
+     <xsl:text> </xsl:text>
+     <a><xsl:attribute name="href">?requestType=STUDY&amp;url=true&amp;PatientID=<xsl:value-of select="." /><xsl:if test="count(/*/@ae)=1">&amp;ae=<xsl:value-of select="/*/@ae" /></xsl:if></xsl:attribute>PatientID</a>="      <xsl:call-template name="escape-ws">
+        <xsl:with-param name="text" select="translate(.,' ',' ')"/>
+      </xsl:call-template>
+"
   </xsl:template>
 
   <xsl:template match="@studyUID" mode="render">
-     <a><xsl:attribute name="href">?requestType=SERIES&amp;studyUID=<xsl:value-of select="." /><xsl:if test="count(/*/@ae)=1">&amp;ae=<xsl:value-of select="/*/@ae" /></xsl:if></xsl:attribute><xsl:call-template name="attrRender" /></a>
-  </xsl:template>
-
-  <xsl:template match="@seriesUID" mode="render">
-     <a><xsl:attribute name="href">?requestType=IMAGE&amp;studyUID=<xsl:value-of select="ancestor-or-self::*[@studyUID]/@studyUID[last()]" />&amp;seriesUID=<xsl:value-of select="." /><xsl:if test="count(/*/@ae)=1">&amp;ae=<xsl:value-of select="/*/@ae" /></xsl:if></xsl:attribute><xsl:call-template name="attrRender" /></a>
+     <xsl:text> </xsl:text>
+     <a><xsl:attribute name="href">?requestType=IMAGE&amp;Position=0&amp;Count=4&amp;regroup=true&amp;url=true&amp;studyUID=<xsl:value-of select="." /><xsl:if test="count(/*/@ae)=1">&amp;ae=<xsl:value-of select="/*/@ae" /></xsl:if></xsl:attribute>studyUID</a>="      <xsl:call-template name="escape-ws">
+        <xsl:with-param name="text" select="translate(.,' ',' ')"/>
+      </xsl:call-template>
+"
   </xsl:template>
 
   <xsl:template match="text()" mode="render">

@@ -104,9 +104,8 @@ public class DicomImageFilter implements Filter<WadoImage> {
 	  }
 	  // In case a size has been added, remove it as the size is changing.
 	  params.remove(MemoryCacheFilter.CACHE_SIZE);
-	  ImageReadParam param = reader.getDefaultReadParam();
-	  DicomImageReadParam dParam = (DicomImageReadParam) param;
-	  dParam.setOverlayRGB((String) params.get("rgb"));
+	  DicomImageReadParam readParam = (DicomImageReadParam) reader.getDefaultReadParam();
+	  readParam.setOverlayRGB((String) params.get("rgb"));
 
 	  int frame = FilterUtil.getInt(params,FRAME_NUMBER,1)-1;
 	  // Overlays are specified as the actual overlay number, not as an
@@ -120,18 +119,18 @@ public class DicomImageFilter implements Filter<WadoImage> {
 			 int width = reader.getWidth(0);
 			 int height = reader.getHeight(0);
 
-			 String filenameExtra = updateParamFromRegion(param, params, width, height);
+			 String filenameExtra = updateParamFromRegion(readParam, params, width, height);
 			 
 			 BufferedImage bi;
 			 DicomStreamMetaData streamData = (DicomStreamMetaData) reader.getStreamMetadata();
 			 DicomObject ds = streamData.getDicomObject();
 			 
-			 boolean readRawBytes = getReadAsRawBytes(params, reader, param, frame, ds);			 
+			 boolean readRawBytes = getReadAsRawBytes(params, reader, readParam, frame, ds);			 
 			 
 			 ret = new WadoImage(streamData.getDicomObject(), ds.getInt(Tag.BitsStored), null);
 			 ret.setFilename((String) params.get(OBJECT_UID)+"-f"+(frame+1)+filenameExtra);
 			 if (readRawBytes) {
-				 byte[] img = reader.readBytes(frame, param);
+				 byte[] img = reader.readBytes(frame, readParam);
 				 ret.setParameter(WadoImage.IMG_AS_BYTES, img);
 				 setAsBytesTransferSyntaxAndSubsampleFactor(ret, ds, reader, frame);
 				 bi = null;
@@ -139,13 +138,13 @@ public class DicomImageFilter implements Filter<WadoImage> {
 			 } else if (OverlayUtils.isOverlay(frame) || !ColorModelFactory.isMonochrome(ds)) {
 				 // This object can't be window leveled, so just get it as
 				 // a buffered image directly.
-				 bi = reader.read(frame, param);
+				 bi = reader.read(frame, readParam);
 				 log.debug("ColorSpace of returned buffered image is " + bi.getColorModel().getColorSpace());
 				 op="read overlay/colour";
 			 }  else {
-				 log.debug("Requested source {}", param.getSourceRegion());
-				 log.debug("Requested subsampling {},{}", param.getSourceXSubsampling(), param.getSourceYSubsampling());
-				 WritableRaster r = (WritableRaster) reader.readRaster(frame, param);
+				 log.debug("Requested source {}", readParam.getSourceRegion());
+				 log.debug("Requested subsampling {},{}", readParam.getSourceXSubsampling(), readParam.getSourceYSubsampling());
+				 WritableRaster r = (WritableRaster) reader.readRaster(frame, readParam);
 				 log.debug("Size of returned raster {}", r.getBounds());
 				 ColorModel cm = ColorModelFactory.createColorModel(ds);
 				 log.debug("Color model for image is " + cm);
@@ -428,12 +427,12 @@ public class DicomImageFilter implements Filter<WadoImage> {
      * Also returns a human readable version of the same information, typically to be used as part of a filename.
      * -wX-hY-rTL,BR, but null if full defaults;
      * 
-     * @param read
+     * @param readParam
      * @param params
      * @param width source image width (not subsampled)
      * @param height source image height (not subsampled)
      */
-   public static String updateParamFromRegion(ImageReadParam read, Map<String, Object> params, int width, int height) {
+   public static String updateParamFromRegion(ImageReadParam readParam, Map<String, Object> params, int width, int height) {
 	   String ret = "";
 	   float[] region = getFloats(params, "region", null);
 	   int rows = getInt(params, "rows");
@@ -446,7 +445,7 @@ public class DicomImageFilter implements Filter<WadoImage> {
 		   // Figure out the sub-region to use
 		   subRegion = calculateSubregionFromRegionFloatArray(region,width,height);
 		   if( ! subRegion.equals( fullRegion ) ) {
-			   read.setSourceRegion(subRegion);
+			   readParam.setSourceRegion(subRegion);
 			   ret="-r"+subRegion.x+","+subRegion.y+","+subRegion.width+","+subRegion.height;
 			   log.debug("Source region {} region {}",subRegion,region);
 		   }
@@ -475,7 +474,7 @@ public class DicomImageFilter implements Filter<WadoImage> {
 	   if (subsampleX == 1 && subsampleY == 1)
 		   return ret;
 	   log.debug("Sub-sampling " + subsampleX + "," + subsampleY + " sWidth,Height=" + subRegion.width + "," + subRegion.height );
-	   read.setSourceSubsampling(subsampleX, subsampleY, 0, 0);
+	   readParam.setSourceSubsampling(subsampleX, subsampleY, 0, 0);
 	   ret = "-s"+subsampleX+","+subsampleY+ret;	  
 	   params.put(RET, ret);
 	   return ret;

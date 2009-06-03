@@ -40,6 +40,16 @@ model.wado2Version=${project.version}
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <!-- In version 2.1-alpha-1, this was incorrectly named warSourceExcludes -->
+          <warSourceExcludes>**/xalan*.jar,**/xercesImpl*.jar,**/xml-apis*.jar</warSourceExcludes>
+          <packagingExcludes>**/xalan*.jar,**/xercesImpl*.jar,**/xml-apis*.jar</packagingExcludes>
+        </configuration>
+      </plugin>
+
     </plugins>
   </build>
 
