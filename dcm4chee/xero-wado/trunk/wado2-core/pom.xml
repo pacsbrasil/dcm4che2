@@ -5,8 +5,8 @@
     <version>0.8-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>wado-xero</artifactId>
-  <name>wado-xero</name>
+  <artifactId>wado2-core</artifactId>
+  <name>WADO2 Core</name>
 
   <profiles>
      <profile>
@@ -15,7 +15,7 @@
            <property><name>env.developmentServer</name></property>
         </activation>
         <build>
-           <finalName>wado2</finalName>
+           <finalName>wado2-core</finalName>
            <plugins>
               <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

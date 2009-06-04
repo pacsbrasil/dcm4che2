@@ -115,7 +115,7 @@ model.wado2Version=${project.version}
     </dependency>
     <dependency>
       <groupId>org.dcm4chee.xero</groupId>
-      <artifactId>wado-xero</artifactId>
+      <artifactId>wado2-core</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>

@@ -10,7 +10,7 @@
 
   <!-- Recursively calls "childCall" on all child elements -->
   <target name="recurseChildrenAll">
-     <ant dir="wado-xero" target="${childCall}" inheritAll="false">
+     <ant dir="wado2-core" target="${childCall}" inheritAll="false">
       <propertyset refid="childProperties" />
      </ant>
      <ant dir="wado2-war" target="${childCall}" inheritAll="false">
