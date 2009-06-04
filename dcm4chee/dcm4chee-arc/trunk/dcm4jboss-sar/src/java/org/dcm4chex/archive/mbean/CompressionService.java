@@ -298,10 +298,7 @@ public class CompressionService extends ServiceMBeanSupport {
             }
         });
         for (int i = 0; i < files.length; i++) {
-            if (log.isDebugEnabled())
-                log.debug("M-DELETE " + files[i]);
-            if (!files[i].delete())
-                log.warn("Failed to M-DELETE " + files[i]);
+            FileUtils.delete(files[i], false);
         }
     }
 
@@ -413,15 +410,15 @@ public class CompressionService extends ServiceMBeanSupport {
                         String errmsg = "Pixel matrix after decompression differs from original file "
                                 + srcFile + "! Keep original uncompressed file.";
                         log.warn(errmsg);
-                        destFile.delete();
+                        FileUtils.delete(destFile, false);
                         fsMgt.setFileStatus(fileDTO.getPk(),
                                 FileStatus.VERIFY_COMPRESS_FAILED);
                         if (keepTempFileIfVerificationFails <= 0L)
-                            decFile.delete();
+                            FileUtils.delete(decFile, false);
                         throw new CompressionFailedException(errmsg);
                     }
                 }
-                decFile.delete();
+                FileUtils.delete(decFile, false);
             }
             final int baseDirPathLength = baseDir.getPath().length();
             final String destFilePath = destFile.getPath().substring(
@@ -436,7 +433,7 @@ public class CompressionService extends ServiceMBeanSupport {
             fileDTO.setFileSize((int) destFile.length());
             fileDTO.setFileMd5(md5);
             fileDTO.setFileTsuid(info.getTransferSyntax());
-            srcFile.delete();
+            FileUtils.delete(srcFile, false);
             return true;
         } catch (CompressionFailedException e) {
             throw e;
@@ -444,7 +441,7 @@ public class CompressionService extends ServiceMBeanSupport {
             String errmsg = "Can't compress file:" + srcFile;
             log.error(errmsg, e);
             if (destFile != null && destFile.exists())
-                destFile.delete();
+                FileUtils.delete(destFile, false);
             try {
                 fsMgt.setFileStatus(fileDTO.getPk(),
                                 FileStatus.COMPRESS_FAILED);
