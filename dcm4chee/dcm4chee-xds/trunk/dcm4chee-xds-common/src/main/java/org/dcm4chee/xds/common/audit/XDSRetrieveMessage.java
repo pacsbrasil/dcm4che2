@@ -41,9 +41,7 @@ package org.dcm4chee.xds.common.audit;
 import java.util.List;
 
 import org.dcm4che2.audit.message.AuditEvent;
-import org.dcm4che2.audit.message.ParticipantObject;
 import org.dcm4che2.audit.message.AuditEvent.TypeCode;
-import org.dcm4che2.audit.message.ParticipantObject.IDTypeCode;
 
 /**
  * This message describes the event of retrieving document from a XDS.b.
@@ -55,9 +53,6 @@ import org.dcm4che2.audit.message.ParticipantObject.IDTypeCode;
  */
 public class XDSRetrieveMessage extends BasicXDSAuditMessage {
 
-    private static final IDTypeCode IDTYPE_CODE_ITI43 = new ParticipantObject.IDTypeCode(TYPE_CODE_ITI43.getCode(),
-	        				TYPE_CODE_ITI43.getCodeSystemName(),
-	        				TYPE_CODE_ITI43.getDisplayName());
 	public XDSRetrieveMessage(TypeCode typeCode) {
         super(AUDIT_EVENT_ID_REPORT, AuditEvent.ActionCode.READ, typeCode);
     }
@@ -69,15 +64,8 @@ public class XDSRetrieveMessage extends BasicXDSAuditMessage {
     private static XDSRetrieveMessage createMessage(List<String> docUids, TypeCode typeCode) {
     	XDSRetrieveMessage msg = new XDSRetrieveMessage(typeCode);
     	for( String uid : docUids ) {
-    		msg.addDocumentUID(uid);
+    		msg.addDocumentUID(uid, IDTYPE_CODE_ITI43);
     	}
     	return msg;
     }
-    public ParticipantObject addDocumentUID(String uid) {
-        ParticipantObject doc = new ParticipantObject(uid, IDTYPE_CODE_ITI43);
-        doc.setParticipantObjectTypeCode(ParticipantObject.TypeCode.SYSTEM);
-        doc.setParticipantObjectTypeCodeRole(ParticipantObject.TypeCodeRole.REPORT);
-        return addParticipantObject(doc);
-    }
-
 }

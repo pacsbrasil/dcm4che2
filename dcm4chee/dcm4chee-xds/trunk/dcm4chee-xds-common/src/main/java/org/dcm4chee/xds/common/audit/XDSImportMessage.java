@@ -38,8 +38,11 @@
 
 package org.dcm4chee.xds.common.audit;
 
+import java.util.List;
+
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditEvent.TypeCode;
+import org.dcm4che2.audit.message.ParticipantObject.IDTypeCode;
 
 /**
  * This message describes the event audited by Repository when importing data from a XDS Document Consumer.
@@ -52,7 +55,7 @@ import org.dcm4che2.audit.message.AuditEvent.TypeCode;
  * IT Infrastructure Technical Framework: Vol. 2 (ITI TF-2), Transactions: 3.15.4.2.4 Document Repository: Security considerations</a>
  */
 public class XDSImportMessage extends BasicXDSAuditMessage {
-
+	
     public XDSImportMessage(TypeCode typeCode) {
         super(AuditEvent.ID.IMPORT, AuditEvent.ActionCode.CREATE, typeCode);
     }
@@ -67,6 +70,14 @@ public class XDSImportMessage extends BasicXDSAuditMessage {
         XDSImportMessage msg = createMessage(submissionUID, TYPE_CODE_ITI15);
         msg.setPatient(patID, null);
         return msg;
+    }
+    
+    public static XDSImportMessage createDocumentConsumerImportMessage(List<String> docUids) {
+        XDSImportMessage msg = new XDSImportMessage(TYPE_CODE_ITI43);
+        for( String uid : docUids ) {
+			msg.addDocumentUID(uid, IDTypeCode.REPORT_NUMBER);
+    	}
+    	return msg;
     }
     
     private static XDSImportMessage createMessage(String submissionUID, TypeCode typeCode) {

@@ -70,6 +70,16 @@ import org.dcm4che2.audit.message.ParticipantObject.TypeCodeRole;
  */
 public abstract class BasicXDSAuditMessage extends AuditMessage {
 
+	static
+	{
+		// IHE Specification for XDS.b (http://www.ihe.net/Technical_Framework/upload/IHE_ITI_TF_Supplement_Cross_Enterprise_Document_Sharing_XDS-b_TI_2008-10-10.pdf)
+		// allows for multiple requestors. This is in conflict with RFC-3881, which doesn't allow
+		// multiple requestors. Well, we need it for XDS so we turn it on. This static block may be
+		// removed at some point in the future when the AllowMulitpleRequestors attribute becomes
+		// available in the AuditLogger JMX MBean.
+		AuditMessage.setAllowMultipleRequestors(true);
+	}
+	
     public static final TypeCode TYPE_CODE_ITI14 = new AuditEvent.TypeCode("ITI-14", "IHE Transactions", "Register Document Set");
     public static final TypeCode TYPE_CODE_ITI15 = new AuditEvent.TypeCode("ITI-15", "IHE Transactions", "Provide and Register Document Set");
     public static final TypeCode TYPE_CODE_ITI16 = new AuditEvent.TypeCode("ITI-16", "IHE Transactions", "Registry SQL Query");
@@ -81,6 +91,10 @@ public abstract class BasicXDSAuditMessage extends AuditMessage {
 
     private static final ActiveParticipant.RoleIDCode ROLE_ID_HUMAN_REQUESTOR = new ActiveParticipant.RoleIDCode("HumanRequestor");
 
+    public static final IDTypeCode IDTYPE_CODE_ITI43 = new ParticipantObject.IDTypeCode(TYPE_CODE_ITI43.getCode(),
+			TYPE_CODE_ITI43.getCodeSystemName(),
+			TYPE_CODE_ITI43.getDisplayName());
+    
     public BasicXDSAuditMessage(AuditEvent.ID eventID, AuditEvent.ActionCode actionCode, TypeCode typeCode) {
         super(new AuditEvent(eventID,
                 actionCode).addEventTypeCode(typeCode));
@@ -135,6 +149,13 @@ public abstract class BasicXDSAuditMessage extends AuditMessage {
         if ( docUid != null )
             po.addParticipantObjectDetail("Document Unique Id", docUid);
         return addParticipantObject(po);
+    }
+    
+    public ParticipantObject addDocumentUID(String uid, IDTypeCode idTypeCode) {
+        ParticipantObject doc = new ParticipantObject(uid, idTypeCode);
+        doc.setParticipantObjectTypeCode(ParticipantObject.TypeCode.SYSTEM);
+        doc.setParticipantObjectTypeCodeRole(ParticipantObject.TypeCodeRole.REPORT);
+        return addParticipantObject(doc);
     }
 
     public void validate() {
