@@ -880,6 +880,12 @@ public class DcmQR {
         OptionBuilder.withLongOpt("image");
         opts.addOption(OptionBuilder.create("I"));
 
+        OptionBuilder.withArgName("cuid");
+        OptionBuilder.hasArgs();
+        OptionBuilder.withDescription("negotiate addition private C-FIND SOP "
+                + "class with specified UID");
+        opts.addOption(OptionBuilder.create("cfind"));
+
         opts.addOptionGroup(qrlevel);
 
         OptionBuilder.withArgName("[seq/]attr=value");
@@ -1125,6 +1131,11 @@ public class DcmQR {
                 dcmqr.addPrivate(
                         UID.PrivateVirtualMultiframeStudyRootQueryRetrieveInformationModelFIND);
         }
+        if (cl.hasOption("cfind")) {
+            String[] cuids = cl.getOptionValues("cfind");
+            for (int i = 0; i < cuids.length; i++)
+                dcmqr.addPrivate(cuids[i]);
+        }    
         if (cl.hasOption("q")) {
             String[] matchingKeys = cl.getOptionValues("q");
             for (int i = 1; i < matchingKeys.length; i++, i++)
