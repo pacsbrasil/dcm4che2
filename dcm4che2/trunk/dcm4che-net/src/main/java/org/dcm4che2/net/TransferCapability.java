@@ -104,7 +104,7 @@ public class TransferCapability {
 
     /**
      * Set the name of the Transfer Capability object. Can be a meaningful name
-     * or any unqiue sequence of characters.
+     * or any unique sequence of characters.
      * 
      * @return A String containing the common name.
      */
@@ -114,7 +114,7 @@ public class TransferCapability {
 
     /**
      * Get the name of the Transfer Capability object. Can be a meaningful name
-     * or any unqiue sequence of characters.
+     * or any unique sequence of characters.
      * 
      * @param commonName
      *                A String containing the common name.

@@ -475,7 +475,7 @@ public class NetworkConnection {
      * Determine if this network connection is using Nagle's algorithm as part
      * of its network communication.
      * 
-     * @return boolean True if TCP no delay (Nagle's algorithm) is being used.
+     * @return boolean True if TCP no delay (disable Nagle's algorithm) is used.
      */
     public boolean isTcpNoDelay() {
         return tcpNoDelay;
@@ -486,7 +486,7 @@ public class NetworkConnection {
      * as part of its network communication.
      * 
      * @param tcpNoDelay
-     *                boolean True if TCP no delay (Nagle's algorithm) should be
+     *                boolean True if TCP no delay (disable Nagle's algorithm) should be
      *                used.
      */
     public void setTcpNoDelay(boolean tcpNoDelay) {
