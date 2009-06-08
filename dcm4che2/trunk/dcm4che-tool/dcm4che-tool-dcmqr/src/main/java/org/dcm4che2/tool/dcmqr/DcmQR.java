@@ -135,7 +135,7 @@ public class DcmQR {
 
     private static char[] SECRET = { 's', 'e', 'c', 'r', 'e', 't' };
 
-    private static enum QueryRetrieveLevel {
+    public static enum QueryRetrieveLevel {
         PATIENT("PATIENT", PATIENT_RETURN_KEYS, PATIENT_LEVEL_FIND_CUID,
                 PATIENT_LEVEL_GET_CUID, PATIENT_LEVEL_MOVE_CUID),
         STUDY("STUDY", STUDY_RETURN_KEYS, STUDY_LEVEL_FIND_CUID,
