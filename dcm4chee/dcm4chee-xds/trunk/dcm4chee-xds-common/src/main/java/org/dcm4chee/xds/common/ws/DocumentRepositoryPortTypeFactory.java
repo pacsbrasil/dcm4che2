@@ -12,9 +12,16 @@ import org.jboss.ws.core.ConfigProvider;
 
 public class DocumentRepositoryPortTypeFactory {
 
-	// Creating an instance of DocumentRepositoryService is expensive, so do it once and
-	// reuse the same instance.  It is thread safe.
-	protected static DocumentRepositoryService service = new DocumentRepositoryService();
+	protected static DocumentRepositoryService service = null;
+	
+	static {
+		// Creating an instance of DocumentRepositoryService is expensive, so do it once and
+		// reuse the same instance.  Due to a JBossWS problem (JBWS-????), create one instance of every
+		// endpoint.  The end result is that all metadata will be generated once, serially.
+		service = new DocumentRepositoryService();
+		service.getDocumentRepositoryPortSoap11();
+		service.getDocumentRepositoryPortSoap12();
+	}
 	
 	public static DocumentRepositoryPortType getDocumentRepositoryPortSoap11(String endpointAddress, String action, String messageId) {
 		DocumentRepositoryPortType port = service.getDocumentRepositoryPortSoap11();
