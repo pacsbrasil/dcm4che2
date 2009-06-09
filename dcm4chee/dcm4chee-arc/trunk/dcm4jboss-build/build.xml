@@ -113,7 +113,7 @@
         <include name="lib/dcm4che.jar"/>
       </zipfileset>
       <zipfileset dir="${dcm4che14.home}" prefix="${dist.db.config}">
-        <include name="lib/dcm4che-imageio-rle-2.0.17.jar"/>
+        <include name="lib/dcm4che-imageio-rle-2.0.19.jar"/>
         <include name="lib/slf4j-api-1.4.3.jar"/>
         <include name="lib/slf4j-log4j12-1.4.3.jar"/>
         <include name="lib/jai_imageio.jar"/>
