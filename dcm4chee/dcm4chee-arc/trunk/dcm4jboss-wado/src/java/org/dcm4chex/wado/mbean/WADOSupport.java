@@ -43,12 +43,14 @@ import java.awt.Rectangle;
 import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
+import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.IndexColorModel;
+import java.awt.image.SampleModel;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -1242,13 +1244,27 @@ public class WADOSupport {
             w = (int) (h * aspectRatio + .5f);
         }
         if (w != bi.getWidth() || h != bi.getHeight()) {
-            ColorSpace cs = bi.getColorModel().getColorSpace();
-            if (cs instanceof SimpleYBRColorSpace) {
+            if (bi.getColorModel().getColorSpace()
+                    instanceof SimpleYBRColorSpace) {
                 // convert YBR to RGB, otherwise scaleOp.filter(bi, null) will
                 // throw ImagingOpException("Unable to transform src image")
                 ColorConvertOp colorConvetOp = new ColorConvertOp(
                         ColorSpace.getInstance(ColorSpace.CS_sRGB), null);
                 bi = colorConvetOp.filter(bi, null);
+            }
+            if (bi.getSampleModel() instanceof BandedSampleModel) {
+                // convert RGB color-by-plane to TYPE_INT_RGB, otherwise
+                // scaleOp.filter(bi, null) will throw
+                // ImagingOpException("Unable to transform src image")
+                BufferedImage tmp = new BufferedImage(bi.getWidth(),
+                        bi.getHeight(), BufferedImage.TYPE_INT_RGB);
+                Graphics2D g = tmp.createGraphics();
+                try {
+                    g.drawImage(bi, 0, 0, null);
+                } finally {
+                    g.dispose();
+                }
+                bi = tmp;
             }
             AffineTransform scale = AffineTransform.getScaleInstance(
                     (double) w / bi.getWidth(), (double) h / bi.getHeight());
