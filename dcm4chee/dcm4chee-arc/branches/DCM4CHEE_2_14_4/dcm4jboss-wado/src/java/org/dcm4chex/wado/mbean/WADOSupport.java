@@ -1202,6 +1202,14 @@ public class WADOSupport {
                 mergeOverlays(bi, reader, frame);
             }
 
+            if (bi.getColorModel().getColorSpace()
+                    instanceof SimpleYBRColorSpace) {
+                // convert YBR to RGB to workaround jai-imageio-core issue #173:
+                // CLibJPEGImageWriter ignores CororSpace != sRGB
+                ColorConvertOp colorConvetOp = new ColorConvertOp(
+                        ColorSpace.getInstance(ColorSpace.CS_sRGB), null);
+                bi = colorConvetOp.filter(bi, null);
+            }
             return resize(bi, rows, columns, reader.getAspectRatio(frame));
         } finally {
             // !!!! without this, we get "too many open files" when generating
@@ -1244,14 +1252,6 @@ public class WADOSupport {
             w = (int) (h * aspectRatio + .5f);
         }
         if (w != bi.getWidth() || h != bi.getHeight()) {
-            if (bi.getColorModel().getColorSpace()
-                    instanceof SimpleYBRColorSpace) {
-                // convert YBR to RGB, otherwise scaleOp.filter(bi, null) will
-                // throw ImagingOpException("Unable to transform src image")
-                ColorConvertOp colorConvetOp = new ColorConvertOp(
-                        ColorSpace.getInstance(ColorSpace.CS_sRGB), null);
-                bi = colorConvetOp.filter(bi, null);
-            }
             if (bi.getSampleModel() instanceof BandedSampleModel) {
                 // convert RGB color-by-plane to TYPE_INT_RGB, otherwise
                 // scaleOp.filter(bi, null) will throw
