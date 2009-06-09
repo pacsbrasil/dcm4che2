@@ -1200,11 +1200,7 @@ public class WADOSupport {
                 mergeOverlays(bi, reader, frame);
             }
 
-            float aspectRatio = reader.getAspectRatio(frame);
-            if (rows != null || columns != null || aspectRatio != 1.0f) {
-                bi = resize(bi, rows, columns, aspectRatio);
-            }
-            return bi;
+            return resize(bi, rows, columns, reader.getAspectRatio(frame));
         } finally {
             // !!!! without this, we get "too many open files" when generating
             // icons in a tight loop
@@ -1225,28 +1221,27 @@ public class WADOSupport {
      * 
      * @return
      */
-    private BufferedImage resize(BufferedImage bi, String rows, String columns, float aspectRatio) {
-        int h0 = bi.getHeight();
-        int w0 = bi.getWidth();
-        double ratio = (double) aspectRatio;
-        int newH = -1, newW = -1;
-        if (rows != null) {
-            newH = Integer.parseInt(rows);
+    private BufferedImage resize(BufferedImage bi, String rows, String columns,
+            float aspectRatio) {
+        int h = 0;
+        int w = 0;
+        if (rows == null && columns == null) {
+            h = bi.getHeight();
+            w = bi.getWidth();
+        } else {
+            if (rows != null) {
+                h = Integer.parseInt(rows);
+            }
+            if (columns != null) {
+                w = Integer.parseInt(columns);
+            }
         }
-        if (columns != null) {
-            newW = Integer.parseInt(columns);
+        if (h == 0 || h * aspectRatio > w) {
+            h = (int) (w / aspectRatio + .5f);
+        } else {
+            w = (int) (h * aspectRatio + .5f);
         }
-        if (newW == -1) {
-            if ( newH == -1)
-                newH = h0;
-            newW = (int) (newH * ratio);
-        } else if (newH == -1)
-            newH = (int) (newW / ratio);
-        int w = newW;
-        int h = newH;
-        w = (int) Math.min(w, h * ratio);
-        h = (int) Math.min(h, w / ratio);
-        if (w != w0 || h != h0) {
+        if (w != bi.getWidth() || h != bi.getHeight()) {
             ColorSpace cs = bi.getColorModel().getColorSpace();
             if (cs instanceof SimpleYBRColorSpace) {
                 // convert YBR to RGB, otherwise scaleOp.filter(bi, null) will
@@ -1255,8 +1250,8 @@ public class WADOSupport {
                         ColorSpace.getInstance(ColorSpace.CS_sRGB), null);
                 bi = colorConvetOp.filter(bi, null);
             }
-            AffineTransform scale = AffineTransform.getScaleInstance((double) w
-                    / w0, (double) h / h0);
+            AffineTransform scale = AffineTransform.getScaleInstance(
+                    (double) w / bi.getWidth(), (double) h / bi.getHeight());
             AffineTransformOp scaleOp = new AffineTransformOp(scale,
                     AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
             BufferedImage biDest = scaleOp.filter(bi, null);
