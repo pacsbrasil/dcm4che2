@@ -56,7 +56,6 @@
     <attr tag="00324000"/> <!-- Study Comments -->
     <attr tag="00380300"/> <!-- Current Patient Location -->
     <attr tag="00401008"/> <!-- Confidentiality Code -->
-    <attr tag="00080060"/> <!-- Modality -->
     <attr tag="00080080"/> <!-- Institution Name, added to support cluster link query -->
     <attr tag="00081040"/> <!-- Institutional Department Name, added to support cluster link query -->
     <attr tag="00081050"/> <!-- Performing Physicians' Name, for linked query too -->
