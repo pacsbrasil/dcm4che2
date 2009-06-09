@@ -1236,7 +1236,7 @@ public class WADOSupport {
                 w = Integer.parseInt(columns);
             }
         }
-        if (h == 0 || h * aspectRatio > w) {
+        if (h == 0 || w != 0 && h * aspectRatio > w) {
             h = (int) (w / aspectRatio + .5f);
         } else {
             w = (int) (h * aspectRatio + .5f);
