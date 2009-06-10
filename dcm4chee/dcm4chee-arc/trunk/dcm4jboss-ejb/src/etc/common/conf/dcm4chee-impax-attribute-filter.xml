@@ -56,6 +56,13 @@
     <attr tag="00324000"/> <!-- Study Comments -->
     <attr tag="00380300"/> <!-- Current Patient Location -->
     <attr tag="00401008"/> <!-- Confidentiality Code -->
+    <attr tag="00080080"/> <!-- Institution Name, added to support cluster link query -->
+    <attr tag="00081040"/> <!-- Institutional Department Name, added to support cluster link query -->
+    <attr tag="00081050"/> <!-- Performing Physicians' Name, for linked query too -->
+    <attr tag="00081070"/> <!-- Operators' Name, for linked query -->
+    <attr tag="00180015"/> <!-- Body Part Examined, for linked query -->
+    <attr tag="00321032"/> <!-- Requesting Physician, for linked query -->
+    <attr tag="00321033"/> <!-- Requesting Service, for linked query -->
   </study>
   <series>
     <attr tag="00080005"/> <!-- Specific Character Set -->
