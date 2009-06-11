@@ -191,7 +191,7 @@ public class MoveScuService extends AbstractScuService implements
                 studyIUIDs, seriesIUIDs, sopIUIDs), scheduledTime);
     }
 
-    private void scheduleMoveOrder(MoveOrder order, long scheduledTime) {
+    public void scheduleMoveOrder(MoveOrder order, long scheduledTime) {
         try {
             log.info("Schedule order: " + order);            
             jmsDelegate.queue(queueName, order, JMSDelegate.toJMSPriority(order

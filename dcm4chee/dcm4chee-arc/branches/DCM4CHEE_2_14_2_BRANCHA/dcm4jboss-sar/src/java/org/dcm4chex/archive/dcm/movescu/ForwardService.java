@@ -286,19 +286,20 @@ public class ForwardService extends ServiceMBeanSupport {
         server.removeNotificationListener(editContentServiceName,
                 patientUpdatedListener, patientUpdatedFilter, null);
     }
-
-    private void scheduleMove(String retrieveAET, String destAET, int priority,
+    
+    protected void scheduleMove(String retrieveAET, String destAET, int priority,
             String pid, String studyIUID, String seriesIUID, String[] sopIUIDs,
             long scheduledTime) {
+        scheduleMove(new MoveOrder(retrieveAET, destAET, priority,
+                pid, studyIUID, seriesIUID, sopIUIDs),scheduledTime);
+    }
+    
+    protected void scheduleMove(MoveOrder order,
+            long scheduledTime) {
         try {
-            server.invoke(moveScuServiceName, "scheduleMove", new Object[] {
-                    retrieveAET, destAET, new Integer(priority), pid,
-                    studyIUID, seriesIUID, sopIUIDs, new Long(scheduledTime) },
-                    new String[] { String.class.getName(),
-                            String.class.getName(), int.class.getName(),
-                            String.class.getName(), String.class.getName(),
-                            String.class.getName(), String[].class.getName(),
-                            long.class.getName() });
+           server.invoke(moveScuServiceName, "scheduleMove", new Object[] {
+                    order, new Long(scheduledTime) },
+                    new String[] { MoveOrder.class.getName(), long.class.getName() });
         } catch (Exception e) {
             log.error("Schedule Move failed:", e);
         }

@@ -227,4 +227,20 @@
       <return-type>void</return-type>
    </operation>   
    
+   <operation impact="ACTION">
+      <description>Schedule Retrieve</description>
+      <name>scheduleMove</name>
+      <parameter>
+        <description>SCU Move Order</description>
+        <name>order</name>
+        <type>org.dcm4chex.archive.dcm.movescu.MoveOrder</type>
+      </parameter>
+      <parameter>
+        <description>Scheduled Time in ms from 1970-01-01 00:00</description>
+        <name>scheduledTime</name>
+        <type>long</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>   
+   
 </mbean>
