@@ -297,7 +297,7 @@ public class ForwardService extends ServiceMBeanSupport {
     protected void scheduleMove(MoveOrder order,
             long scheduledTime) {
         try {
-           server.invoke(moveScuServiceName, "scheduleMove", new Object[] {
+           server.invoke(moveScuServiceName, "scheduleMoveOrder", new Object[] {
                     order, new Long(scheduledTime) },
                     new String[] { MoveOrder.class.getName(), long.class.getName() });
         } catch (Exception e) {

@@ -229,7 +229,7 @@
    
    <operation impact="ACTION">
       <description>Schedule Retrieve</description>
-      <name>scheduleMove</name>
+      <name>scheduleMoveOrder</name>
       <parameter>
         <description>SCU Move Order</description>
         <name>order</name>
