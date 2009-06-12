@@ -533,8 +533,8 @@ public class XDSQueryService extends ServiceMBeanSupport {
         StringBuffer sb = new StringBuffer(pid[0]);
         log.debug("pid[0]:"+pid[0]);
         if ( pid.length > 1 ) {
-            sb.append("^^^").append(pid[1]);
-            log.debug("pid[1]:"+pid[1]);
+            sb.append("^^^");
+            log.debug("pid[1]:"+pid[1]+" (excluded in returned string)");
         }
         for (int i = 2 ; i < pid.length; i++) {
             sb.append('&').append(pid[i]);
