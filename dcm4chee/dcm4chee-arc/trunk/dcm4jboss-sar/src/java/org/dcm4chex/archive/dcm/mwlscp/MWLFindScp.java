@@ -79,13 +79,15 @@ public class MWLFindScp extends DcmServiceBase {
     protected MultiDimseRsp doCFind(ActiveAssociation assoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
         Association a = assoc.getAssociation();
+        final String callingAET = a.getCallingAET();
         Dataset rqData = rq.getDataset();
         log.debug("Identifier:\n");
         log.debug(rqData);
         service.logDIMSE(a, QUERY_XML, rqData);
         service.logDicomQuery(a, rq.getCommand().getAffectedSOPClassUID(),
                 rqData);
-        Dataset coerce = service.getCoercionAttributesFor(a, QUERY_XSL, rqData);
+        Dataset coerce = service.getCoercionAttributesFor(callingAET,
+                QUERY_XSL, rqData, a);
         if (coerce != null) {
             service.coerceAttributes(rqData, coerce);
         }
@@ -135,16 +137,18 @@ public class MWLFindScp extends DcmServiceBase {
                     return null;
                 }
                 Association a = assoc.getAssociation();
+                String callingAET = a.getCallingAET();
                 rspCmd.putUS(Tags.Status, pendingStatus);
                 Dataset rspData = (Dataset) iterResults.next();
                 log.debug("Identifier:\n");
                 log.debug(rspData);
                 service.logDIMSE(a, RESULT_XML, rspData);
                 if (count++ == 0) {
-                    coerceTpl = service.getCoercionTemplates(a, RESULT_XSL);
+                    coerceTpl = service.getCoercionTemplates(callingAET,
+                            RESULT_XSL);
                 }
-                Dataset coerce = service.getCoercionAttributesFor(a,
-                        RESULT_XSL, rspData, coerceTpl);
+                Dataset coerce = service.getCoercionAttributesFor(callingAET,
+                        RESULT_XSL, rspData, a, coerceTpl);
                 if (coerce != null) {
                     service.coerceAttributes(rspData, coerce);
                 }
