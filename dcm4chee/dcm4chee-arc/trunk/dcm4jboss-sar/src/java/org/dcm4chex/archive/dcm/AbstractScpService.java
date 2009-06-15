@@ -746,16 +746,16 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     public Dataset getCoercionAttributesFor(String aet, String xsl,
             Dataset in, Association a) {
-        return getCoercionAttributesFor(aet, xsl, in, a,
-                getCoercionTemplates(aet, xsl));
+        return getCoercionAttributesFor(a, xsl,
+                in, getCoercionTemplates(aet, xsl));
     }
 
     public Templates getCoercionTemplates(String aet, String xsl) {
         return templates.getTemplatesForAET(aet, xsl);
     }
 
-    public Dataset getCoercionAttributesFor(String aet, String xsl,
-            Dataset in, Association a, Templates stylesheet) {
+    public Dataset getCoercionAttributesFor(Association a,
+            String xsl, Dataset in, Templates stylesheet) {
         if (stylesheet == null) {
             return null;
         }

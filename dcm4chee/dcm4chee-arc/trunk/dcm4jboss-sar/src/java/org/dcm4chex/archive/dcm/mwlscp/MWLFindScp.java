@@ -147,8 +147,8 @@ public class MWLFindScp extends DcmServiceBase {
                     coerceTpl = service.getCoercionTemplates(callingAET,
                             RESULT_XSL);
                 }
-                Dataset coerce = service.getCoercionAttributesFor(callingAET,
-                        RESULT_XSL, rspData, a, coerceTpl);
+                Dataset coerce = service.getCoercionAttributesFor(
+                        a, RESULT_XSL, rspData, coerceTpl);
                 if (coerce != null) {
                     service.coerceAttributes(rspData, coerce);
                 }
