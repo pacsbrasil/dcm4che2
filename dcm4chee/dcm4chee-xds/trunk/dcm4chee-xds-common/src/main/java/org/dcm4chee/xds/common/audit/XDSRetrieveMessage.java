@@ -54,7 +54,7 @@ import org.dcm4che2.audit.message.AuditEvent.TypeCode;
 public class XDSRetrieveMessage extends BasicXDSAuditMessage {
 
 	public XDSRetrieveMessage(TypeCode typeCode) {
-        super(AUDIT_EVENT_ID_REPORT, AuditEvent.ActionCode.READ, typeCode);
+        super(AuditEvent.ID.EXPORT, AuditEvent.ActionCode.READ, typeCode);
     }
     
     public static XDSRetrieveMessage createDocumentRepositoryRetrieveMessage(List<String> docUids) {
