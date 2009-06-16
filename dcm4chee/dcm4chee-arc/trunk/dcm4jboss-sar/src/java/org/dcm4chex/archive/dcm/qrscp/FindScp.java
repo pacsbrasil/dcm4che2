@@ -281,7 +281,6 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             return false;
         }
         if (l.isEmpty() && !service.isPixQueryLocal()) {
-            addNewPidAndIssuerTo(new String[] { pid, issuer }, result);
             return false;
         }
         for (Iterator iter = l.iterator(); iter.hasNext();) {
