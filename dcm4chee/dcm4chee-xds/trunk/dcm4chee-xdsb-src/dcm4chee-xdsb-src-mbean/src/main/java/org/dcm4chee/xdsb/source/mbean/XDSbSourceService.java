@@ -472,7 +472,7 @@ public class XDSbSourceService extends ServiceMBeanSupport {
             msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
                 AuditEvent.OutcomeIndicator.MINOR_FAILURE);
             msg.setSource(AuditMessage.getProcessID(), 
-                    AuditMessage.getLocalAETitles(),
+                    AuditMessage.aetsToAltUserID(AuditMessage.getLocalAETitles()),
                     AuditMessage.getProcessName(),
                     AuditMessage.getLocalHostName(),
                     forceSourceAsRequestor || user == null);
