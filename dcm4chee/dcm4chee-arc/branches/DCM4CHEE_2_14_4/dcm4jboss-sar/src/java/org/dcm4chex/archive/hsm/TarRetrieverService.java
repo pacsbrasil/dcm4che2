@@ -47,10 +47,8 @@ import java.io.InputStreamReader;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -61,12 +59,13 @@ import org.apache.commons.compress.tar.TarInputStream;
 import org.dcm4che.util.Executer;
 import org.dcm4che.util.MD5Utils;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.util.CacheJournal;
 import org.dcm4chex.archive.util.FileSystemUtils;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
- * @author gunter.zeilinger@tiani.com
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Mar 13, 2006
  */
@@ -76,21 +75,15 @@ public class TarRetrieverService extends ServiceMBeanSupport {
     private static final String DST_PARAM = "%p";
     private static final String FS_PARAM = "%d";
     private static final String FILE_PARAM = "%f";
-    private static final int MIN_LRUCACHE_SIZE = 10;
-
-    private static final Comparator DIR_INFO_CMP = new Comparator() {
-        public int compare(Object o1, Object o2) {
-            long l = ((File) o1).lastModified() - ((File) o2).lastModified();
-            return l < 0 ? -1 : l > 0 ? 1 : 0;
-        }
-    };
 
     private static final Set<String> extracting =
             Collections.synchronizedSet(new HashSet<String>());
- 
-    private File cacheRoot;
 
-    private File absCacheRoot;
+    private String dataRootDir;
+
+    private String journalRootDir;
+
+    private CacheJournal journal = new CacheJournal();
 
     private long minFreeDiskSpace;
 
@@ -104,11 +97,42 @@ public class TarRetrieverService extends ServiceMBeanSupport {
     
     private int bufferSize = 8192;
 
-    private int lruCacheSize = 20;
-
-    private ArrayList lruDirs = new ArrayList(lruCacheSize);
-
     private boolean checkMD5 = true;
+
+    public String getCacheRoot() {
+        return dataRootDir;
+    }
+
+    public void setCacheRoot(String dataRootDir) {
+        journal.setDataRootDir(FileUtils.resolve(new File(dataRootDir)));
+        this.dataRootDir = dataRootDir;
+    }
+
+    public String getCacheJournalRootDir() {
+        return journalRootDir;
+    }
+
+    public void setCacheJournalRootDir(String journalRootDir) {
+        journal.setJournalRootDir(FileUtils.resolve(new File(journalRootDir)));
+        this.journalRootDir = journalRootDir;
+    }
+
+    public String getCacheJournalFilePathFormat() {
+        return journal.getJournalFilePathFormat();
+    }
+
+    public void setCacheJournalFilePathFormat(String journalFilePathFormat) {
+        if (getState() == STARTED) {
+            if (journalFilePathFormat.equals(
+                    getCacheJournalFilePathFormat())) {
+                return;
+            }
+            if (!journal.isEmpty()) {
+                throw new IllegalStateException("cache not empty!");
+            }
+        }
+        journal.setJournalFilePathFormat(journalFilePathFormat);
+    }
 
     public boolean isCheckMD5() {
         return checkMD5;
@@ -118,34 +142,12 @@ public class TarRetrieverService extends ServiceMBeanSupport {
         this.checkMD5 = checkMD5;
     }
 
-    public final int getLRUCacheSize() {
-        return lruCacheSize;
-    }
-
-    public final void setLRUCacheSize(int cacheSize) {
-        if (cacheSize < MIN_LRUCACHE_SIZE)
-            throw new IllegalArgumentException("chacheSize: " + cacheSize);
-        this.lruCacheSize = cacheSize;
-        int size = lruDirs.size();
-        while (size > cacheSize)
-            lruDirs.remove(--size);
-    }
-
     public final int getBufferSize() {
         return bufferSize;
     }
 
     public final void setBufferSize(int bufferSize) {
         this.bufferSize = bufferSize;
-    }
-
-    public final String getCacheRoot() {
-        return cacheRoot.getPath();
-    }
-
-    public final void setCacheRoot(String cacheRoot) {
-        this.cacheRoot = new File(cacheRoot);
-        this.absCacheRoot = FileUtils.resolve(this.cacheRoot);
     }
 
     public final String getMinFreeDiskSpace() {
@@ -162,6 +164,13 @@ public class TarRetrieverService extends ServiceMBeanSupport {
 
     public final void setPreferredFreeDiskSpace(String s) {
         this.prefFreeDiskSpace = FileUtils.parseSize(s, 0);
+    }
+
+    public String getFreeDiskSpace() throws IOException {
+        File dir = journal.getDataRootDir();
+        return dir == null || !dir.exists() ? "N/A"
+                : FileUtils.formatSize(
+                        FileSystemUtils.freeSpace(dir.getPath()));
     }
 
     public final String getTarFetchCommand() {
@@ -226,15 +235,14 @@ public class TarRetrieverService extends ServiceMBeanSupport {
         if (tarEnd == -1) {
             throw new IllegalArgumentException("Missing ! in " + fileID);
         }
-        int dirEnd = fileID.lastIndexOf('/', tarEnd);
-        File cacheDir = (dirEnd == -1) ? absCacheRoot : new File(absCacheRoot,
-                fileID.substring(0, dirEnd).replace('/', File.separatorChar));
-        String fpath = fileID.substring(tarEnd + 1).replace('/',
-                File.separatorChar);        
+        String tarPath = fileID.substring(0, tarEnd);
+        File cacheDir = new File(journal.getDataRootDir(),
+                tarPath.replace('/', File.separatorChar));
+        String tarName = cacheDir.getName();
+        String fpath = fileID.substring(tarEnd + 1)
+                            .replace('/', File.separatorChar);
         File f = new File(cacheDir, fpath);
         while (!f.exists()) {
-            String tarPath = fileID.substring(0, tarEnd);
-            String tarName = fileID.substring(dirEnd+1, tarEnd);
             if (extracting.add(tarName)) {
                 try {
                     fetchAndExtractTar(fsID, tarPath, tarName, cacheDir);
@@ -259,11 +267,7 @@ public class TarRetrieverService extends ServiceMBeanSupport {
                 }
             }
         }
-        File p = f.getParentFile();
-        if (lruDirs.remove(p))
-            if (log.isDebugEnabled())
-                log.debug("Remove from list of LRU directories: " + p);
-        p.setLastModified(System.currentTimeMillis());
+        journal.record(cacheDir);
         return f;
     }
 
@@ -302,13 +306,10 @@ public class TarRetrieverService extends ServiceMBeanSupport {
 
     private void extractTar(File tarFile, File cacheDir)
             throws IOException, VerifyTarException {
-        if (absCacheRoot.mkdirs()) {
-            log.warn("M-WRITE " + absCacheRoot);
-        }
-
         int count = 0;
         long totalSize = 0;
-        long free = FileSystemUtils.freeSpace(absCacheRoot.getPath());
+        long free = FileSystemUtils.freeSpace(
+                journal.getDataRootDir().getPath());
         long fsize = tarFile.length();
         long toDelete = fsize + minFreeDiskSpace - free;
         if (toDelete > 0)
@@ -422,86 +423,23 @@ public class TarRetrieverService extends ServiceMBeanSupport {
         new Thread(new Runnable() {
 
             public void run() {
-                free(toDelete);
+                try {
+                    free(toDelete);
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
             }
         }).start();
     }
 
-    public long free(long size) {
+    public long free(long size) throws IOException {
         log.info("Start deleting LRU directories of at least " + size
                 + " bytes from TAR cache");
-        long deleted = 0;
-        while (deleted < size) {
-            if (lruDirs.isEmpty()) {
-                log.debug("Start scanning cache for building list of LRU directories");
-                scanDirs(absCacheRoot);
-                log.debug("Finished scanning cache for building list of LRU directories");
-            }
-            File d = (File) lruDirs.remove(0);
-            if (log.isDebugEnabled()) {
-                log.debug("Remove from list of LRU directories: " + d);
-            }
-            deleted += deleteDir(d);
-        }
+        long deleted = journal.free(size);
         log.info("Finished deleting LRU directories with " + deleted
                 + " bytes from TAR cache");
         return deleted;
     }
 
-    private long deleteDir(File d) {
-        long deleted = 0;
-        String[] ss = d.list();
-        for (int i = 0; i < ss.length; i++) {
-            File f = new File(d, ss[i]);
-            deleted += f.length();
-            f.delete();
-            log.info("M-DELETE " + f);
-        }
-        File p = d.getParentFile();
-        while (d.delete()) {
-            log.info("M-DELETE " + d);
-            d = p;
-            p = d.getParentFile();
-        }
-        return deleted;
-    }
-
-    private void scanDirs(File d) {
-        String[] ss = d.list();
-        if (ss != null) {
-            for (int i = 0; i < ss.length; i++) {
-                File f = new File(d, ss[i]);
-                if (f.isDirectory()) {
-                    scanDirs(f);
-                } else {
-                    addLRUDir(d);
-                    return;
-                }
-            }
-        }
-    }
-
-    private void addLRUDir(File d) {
-        int size = lruDirs.size();
-        int index = 0;
-        if (size > 0) {
-            if (size >= lruCacheSize) {
-                File last = (File) lruDirs.get(size - 1);
-                if (last.lastModified() < d.lastModified())
-                    return;
-                lruDirs.remove(size - 1);
-                if (log.isDebugEnabled())
-                    log.debug("Remove from list of LRU directories: " + last);
-            }
-            index = Collections.binarySearch(lruDirs, d, DIR_INFO_CMP);
-            if (index < 0) {
-                index = -(index + 1);
-            }
-        }
-        if (log.isDebugEnabled())
-            log.debug("Insert to list of LRU directories at position [" + index
-                    + "]: " + d);
-        lruDirs.add(index, d);
-    }
 
 }
