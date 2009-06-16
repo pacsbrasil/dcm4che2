@@ -9,7 +9,7 @@
             </FeatureList>
         </Store>
         <Store name="XDSStore_2" type="SimpleFileStorage" desc="File Storage for XDS Domain" pool="committed">
-            <init>${project.build.directory}/docstore/test/xds/committed</init>
+            <init>BASE_DIR=${project.build.directory}/docstore/test/xds/committed</init>
             <FeatureList>
                 <Feature name="RID_RETRIEVE"/>
             </FeatureList>
