@@ -254,7 +254,9 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
             }
         }        
         perfLogger.startSubEvent("AuditAndCreateResponse");
-        logRetrieve(localDocUids,true);
+        if ( repositoryUniqueId != null ) {//create audit log only when repository UID is specified (retrieve from local repository)
+            logRetrieve(localDocUids,true,repositoryUniqueId);
+        }
         RegistryResponseType regRsp = objFac.createRegistryResponseType();
         regRsp.setStatus(XDSConstants.XDS_B_STATUS_SUCCESS);
         rsp.setRegistryResponse(regRsp);
@@ -362,7 +364,7 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
     }
 
 
-    private void logRetrieve(List<String> docUids, boolean success) {
+    private void logRetrieve(List<String> docUids, boolean success, String repositoryUniqueId) {
         if ( auditLogIti17 ) {
             try {
                 HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
@@ -381,8 +383,8 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
                 XDSRetrieveMessage msg = XDSRetrieveMessage.createDocumentRepositoryRetrieveMessage(docUids);
                 msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
                     AuditEvent.OutcomeIndicator.MINOR_FAILURE);
-                msg.setSource(AuditMessage.getProcessID(), 
-                        AuditMessage.getLocalAETitles(),
+                msg.setSource(repositoryUniqueId, 
+                        AuditMessage.getProcessID(),
                         AuditMessage.getProcessName(),
                         AuditMessage.getLocalHostName(),
                         true);
@@ -396,6 +398,14 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
         }
     }
 
+    /**
+     * Create an ITI-17 (XDS.a) audit message.
+     * <p>
+     * @param docUri
+     * @param docUid
+     * @param userInfo
+     * @param success
+     */
     private void logExport(String docUri, String docUid, HttpUserInfo userInfo, boolean success) {
         try {
             String user = userInfo.getUserId();
@@ -403,7 +413,7 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
             msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
                 AuditEvent.OutcomeIndicator.MAJOR_FAILURE);
             msg.setSource(AuditMessage.getProcessID(), 
-                    AuditMessage.getLocalAETitles(),
+                    AuditMessage.aetsToAltUserID(AuditMessage.getLocalAETitles()),
                     AuditMessage.getProcessName(),
                     AuditMessage.getLocalHostName(),
                     false);
@@ -418,7 +428,7 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
             msg.validate();
             Logger.getLogger("auditlog").info(msg);
         } catch ( Throwable t ) {
-            log.warn("Audit Log (Import) failed! Ignored!",t);
+            log.warn("Audit Log (Export) failed! Ignored!",t);
         }
         
     }
