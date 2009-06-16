@@ -66,6 +66,7 @@ import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.Templates;
 
 import org.dcm4che.auditlog.InstancesAction;
 import org.dcm4che.auditlog.RemoteNode;
@@ -234,6 +235,12 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private Dataset virtualEnhancedMRConfig;
 
+    private static final String CSTORE_OUT_XSL = "out-cstorerq.xsl";
+    
+    private static final String COERCE_TPL = "COERCE_TPL";
+    
+    private Templates coerceTpl;
+
     /**
      * Map containing accepted SOP Class UIDs. key is name (as in config
      * string), value is real uid)
@@ -369,7 +376,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 : StringUtils.split(trim, '\\');
     }
     
-    boolean isPixQueryCallingAET(String aet) {
+    public boolean isPixQueryCallingAET(String aet) {
         return pixQueryCallingAETs == null
             || Arrays.asList(pixQueryCallingAETs).contains(aet);
     }
@@ -1105,7 +1112,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     }
     
-    boolean isPixQueryLocal() throws DcmServiceException {
+    public boolean isPixQueryLocal() throws DcmServiceException {
         try {
             return ((Boolean) server.getAttribute(this.pixQueryServiceName,
                     "PIXManagerLocal")).booleanValue();
@@ -1386,7 +1393,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 DatasetUtils.fromByteArray(info.studyAttrs, DatasetUtils
                         .fromByteArray(info.seriesAttrs, DatasetUtils
                                 .fromByteArray(info.instAttrs))));
-        coerceOutboundCStoreRQ(mergeAttrs, aeData);
+        coerceOutboundCStoreRQ(mergeAttrs, aeData, assoc);
         byte[] buf = (byte[]) assoc.getProperty(SEND_BUFFER);
         if (buf == null) {
             buf = new byte[bufferSize];
@@ -1410,8 +1417,28 @@ public class QueryRetrieveScpService extends AbstractScpService {
      *              {@link AEDTO} object representing the destination AET.
      *              This may be null (e.g. C-GET code doesn't currently pass 
      *              any value, so check first before using it.
+     * @param assoc
+     * 				the active association
      */
-    protected void coerceOutboundCStoreRQ(Dataset ds, AEDTO aeData){}
+    protected void coerceOutboundCStoreRQ(Dataset ds, AEDTO aeData, Association assoc){
+	    /*
+	     * Apply outbound CStore sytlesheet
+     */
+    	Templates coerceTpl = (Templates)assoc.getProperty(COERCE_TPL);
+    	if (coerceTpl == null) {
+    		coerceTpl = getCoercionTemplates(assoc.getCalledAET(), CSTORE_OUT_XSL);
+    		assoc.putProperty(COERCE_TPL, (Templates)coerceTpl);
+    	}
+	    Dataset coerce = getCoercionAttributesFor(assoc, CSTORE_OUT_XSL, ds, coerceTpl);
+	    if (coerce != null) {
+	    	/*
+	    	 * Calling the base class method instead of the overriden method here
+	    	 * because we only need to update the dataset here. No need to split the issuer
+	    	 * for data sharing. 
+	    	 */
+	    	coerceAttributes(ds, coerce);
+	    }
+    }
     
     private PresContext selectAcceptedPresContext(Association a, FileInfo info) {
         String[] tsuids = { UIDs.NoPixelDataDeflate, UIDs.NoPixelData,
