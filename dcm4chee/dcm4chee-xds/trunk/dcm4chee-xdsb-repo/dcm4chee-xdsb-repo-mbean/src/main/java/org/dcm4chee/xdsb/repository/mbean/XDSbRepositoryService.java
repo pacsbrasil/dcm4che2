@@ -303,7 +303,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
             RegistryResponseType rsp = dispatchSubmitObjectsRequest(submitRequest, perfLogger);
             success = checkResponse( rsp );
             perfLogger.startSubEvent("AuditAndBuildResponse");
-            logExport(submissionUID, patId, success);
+            logExport14(submissionUID, patId, success);
             log.info("ProvideAndRegisterDocumentSetRequest success:"+success);
             if ( logResponseMessage ) {
                 log.info("Received RegistryResponse:"+InfoSetUtil.marshallObject(objFac.createRegistryResponse(rsp), indentXmlLog));
@@ -563,7 +563,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         return new File(serverHomeDir, f.getPath()).getAbsolutePath();
     }
 
-    private void logExport(String submissionUID, String patId, boolean success) {
+    private void logExport14(String submissionUID, String patId, boolean success) {
         try {
             HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
             String user = userInfo.getUserId();
@@ -571,7 +571,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
             msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
                 AuditEvent.OutcomeIndicator.MINOR_FAILURE);
             msg.setSource(AuditMessage.getProcessID(), 
-                    AuditMessage.getLocalAETitles(),
+                    AuditMessage.aetsToAltUserID(AuditMessage.getLocalAETitles()),
                     AuditMessage.getProcessName(),
                     AuditMessage.getLocalHostName(),
                     forceSourceAsRequestor || user == null);
@@ -598,8 +598,8 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
             XDSImportMessage msg = XDSImportMessage.createDocumentRepositoryImportMessage(submissionUID, patId);
             msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
                 AuditEvent.OutcomeIndicator.MAJOR_FAILURE);
-            msg.setSource(AuditMessage.getProcessID(), 
-                    AuditMessage.getLocalAETitles(),
+            msg.setSource(repositoryUniqueId, 
+                    AuditMessage.getProcessID(),
                     AuditMessage.getProcessName(),
                     AuditMessage.getLocalHostName(),
                     forceSourceAsRequestor || user == null);

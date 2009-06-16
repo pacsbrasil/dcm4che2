@@ -38,22 +38,24 @@
    </attribute>
 
    <attribute access="read-write"
-      getMethod="isAuditLogIti17"
-      setMethod="setAuditLogIti17">
-      <description>Enable/Disable Audit logging of ITI-17 (Export, Retrieve Document) log messages.
+      getMethod="isAuditLogIti43"
+      setMethod="setAuditLogIti43">
+      <description>Enable/Disable Audit logging of ITI-43 (Report, Retrieve Document Set) log messages. (XDS.b)
       </description>
-      <name>AuditLogIti17</name>
+      <name>AuditLogIti43</name>
       <type>boolean</type>
       <descriptors>
          <value value="true" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isAuditLogIti43"
-      setMethod="setAuditLogIti43">
-      <description>Enable/Disable Audit logging of ITI-43 (Report, Retrieve Document Set) log messages. (retired)
-      </description>
-      <name>AuditLogIti43</name>
+      getMethod="isAuditLogIti17"
+      setMethod="setAuditLogIti17">
+      <description><![CDATA[Enable/Disable Audit logging of ITI-17 (Export, Retrieve Document) log messages.<br/>
+                            Select this option when you're using XDS.b Repository in a XDS-I environment where 
+                            ITI-17 audit logmessages are required.
+      ]]></description>
+      <name>AuditLogIti17</name>
       <type>boolean</type>
       <descriptors>
          <value value="false" />
