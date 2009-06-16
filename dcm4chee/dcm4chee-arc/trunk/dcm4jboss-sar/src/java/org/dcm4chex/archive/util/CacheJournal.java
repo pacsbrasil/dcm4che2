@@ -35,7 +35,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chex.wado.mbean.cache;
+package org.dcm4chex.archive.util;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -105,8 +105,16 @@ public class CacheJournal {
                     dataRootDir.getPath().length() + 1);
         long time = System.currentTimeMillis();
         File journalFile = getJournalFile(time);
-        mkdirs(journalFile.getParentFile());
-        log.debug(journalFile.exists() ? "M-UPDATE {}" : "M-WRITE {}", journalFile);
+        if (journalFile.exists()) {
+            if (journalFile.equals(getJournalFile(f.lastModified()))) {
+                log.debug("{} already contains entry for {}", journalFile, f);
+                return;
+            }
+            log.debug("M-UPDATE {}", journalFile);
+        } else {
+            mkdirs(journalFile.getParentFile());
+            log.debug("M-WRITE {}", journalFile);
+        }
         FileWriter journal = new FileWriter(journalFile, true);
         try {
             journal.write(path + '\n');
@@ -126,7 +134,7 @@ public class CacheJournal {
         }
     }
 
-    private File getJournalFile(long time) {
+    private synchronized File getJournalFile(long time) {
         return new File(journalRootDir,
                 journalFilePathFormat.format(new Date(time)));
     }
@@ -160,15 +168,16 @@ public class CacheJournal {
         }
     }
 
-    public static void deleteFileOrDirectory(File f) {
+    public static boolean deleteFileOrDirectory(File f) {
         if (f.isDirectory()) {
             deleteFilesOrDirectories(f.listFiles());
         }
         if (!f.delete()) {
             log.warn("Failed to delete {}", f);
-        } else {
-            log.info("M-DELETE {}", f);
+            return false;
         }
+        log.info("M-DELETE {}", f);
+        return true;
     }
 
     private long free(long size, File dir) throws IOException {
@@ -210,11 +219,9 @@ public class CacheJournal {
     }
 
     public static boolean deleteFileAndParents(File f, File baseDir) {
-        if (!f.delete()) {
-            log.warn("Failed to delete {}", f);
+        if (!deleteFileOrDirectory(f)) {
             return false;
         }
-        log.info("M-DELETE {}", f);
         File dir = f.getParentFile();
         while (!dir.equals(baseDir)) {
             if (!dir.delete()) {

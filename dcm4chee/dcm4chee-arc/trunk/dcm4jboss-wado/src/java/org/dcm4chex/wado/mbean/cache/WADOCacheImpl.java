@@ -58,6 +58,7 @@ import javax.imageio.stream.ImageOutputStream;
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.config.DeleterThresholds;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
+import org.dcm4chex.archive.util.CacheJournal;
 import org.dcm4chex.archive.util.FileSystemUtils;
 import org.dcm4chex.archive.util.FileUtils;
 

@@ -23,13 +23,44 @@
       <description><![CDATA[Root directory in which retrieved tars are extracted.
       A relative path name is resolved relative to 
       <i>archive-install-directory</i>/server/default/.
-      Attention: For reliable function of the deletion of least recent accessed
-      objects, a separate file system should be used for the cache.]]>   
+      <b>Attention</b>: For reliable function of the deletion of least recent
+      accessed objects, a separate file system should be used for the cache.
+      You also have to take care for moving existing files in the cache to the
+      new location yourself!]]>
       </description>
       <name>CacheRoot</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="tar-extracted"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCacheJournalRootDir"
+      setMethod="setCacheJournalRootDir">
+      <description><![CDATA[Root directory for cache journal files. A relative
+      path name is resolved relative to
+      <i>&lt;archive-install-directory&gt;</i>/server/default/.
+      <b>Attention:</b> You have to take care for moving existing journal files
+      to the new location yourself!]]>
+      </description>
+      <name>CachJournalRootDirectory</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="tar-extracted-journal" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCacheJournalFilePathFormat"
+      setMethod="setCacheJournalFilePathFormat">
+      <description><![CDATA[Defines journal file path, with 'yyyy' will be
+      replaced by the current year, 'MM' by the current month, 'dd' by the
+      current date, 'HH' by the current hour and 'mm' by the current minute.
+      <b>Attention:</b> Can only be modified if the cache is empty!]]>
+      </description>
+      <name>CacheJournalFilePathFormat</name>
+      <type>java.lang.String</type>
+      <descriptors>
+        <value value="yyyy/MM/dd/HH/mm" />
       </descriptors>
    </attribute>
    <attribute access="read-write" 
@@ -52,13 +83,21 @@
       <description><![CDATA[Preferred free disk space on Cache Directory. If the
       free available disk space on the cache directory falls below this value,
       least recent accessed sub-directories are deleted, WITHOUT blocking
-      retrieve and extraction of further TARs. 1MB = 1000000 bytes, 1GB = 1000MB.]]>   
+      retrieve and extraction of further TARs. 1MB = 1000000 bytes, 1GB = 1000MB.]]>
       </description>
       <name>PreferredFreeDiskSpace</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="100MB"/>
       </descriptors>
+   </attribute>
+   <attribute access="read-only" 
+      getMethod="getFreeDiskSpace">
+      <description><![CDATA[Current free disk space on Cache Directory.
+      1MB = 1000000 bytes, 1GB = 1000MB.]]>
+      </description>
+      <name>FreeDiskSpace</name>
+      <type>java.lang.String</type>
    </attribute>
    <attribute access="read-write" getMethod="isCheckMD5"
     setMethod="setCheckMD5">
@@ -115,17 +154,6 @@
       <type>int</type>
       <descriptors>
          <value value="8192"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getLRUCacheSize"
-      setMethod="setLRUCacheSize">
-      <description>Number of cached references to least recent accessed directories.
-      </description>
-      <name>LRUCacheSize</name>
-      <type>int</type>
-      <descriptors>
-         <value value="20"/>
       </descriptors>
    </attribute>
    &defaultAttributes;
