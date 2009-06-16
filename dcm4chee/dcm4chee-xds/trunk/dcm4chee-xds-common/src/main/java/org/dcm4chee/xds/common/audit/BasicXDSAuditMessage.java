@@ -100,10 +100,10 @@ public abstract class BasicXDSAuditMessage extends AuditMessage {
                 actionCode).addEventTypeCode(typeCode));
     }
 
-    public ActiveParticipant setSource(String processID, String[] alternateIDs, 
+    public ActiveParticipant setSource(String processID, String alternateID, 
             String processName, String hostname, boolean requestor) {
         return addActiveParticipant(
-                XDSActiveParticipant.createActiveProcess(processID, alternateIDs, 
+                XDSActiveParticipant.createActiveProcess(processID, alternateID, 
                         processName, hostname, requestor)
                         .addRoleIDCode(ActiveParticipant.RoleIDCode.SOURCE));
     }
@@ -206,8 +206,8 @@ public abstract class BasicXDSAuditMessage extends AuditMessage {
         }
 
         public static ActiveParticipant createActiveProcess(String processID,
-                String[] aets, String processName, String nodeID, boolean requestor) {
-            return createActivePerson(processID, AuditMessage.aetsToAltUserID(aets), 
+                String altProcessID, String processName, String nodeID, boolean requestor) {
+            return createActivePerson(processID, altProcessID, 
                     processName, nodeID, requestor) ;
         }
 

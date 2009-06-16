@@ -64,7 +64,7 @@ public class XDSQueryMessage extends BasicXDSAuditMessage {
         msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
             AuditEvent.OutcomeIndicator.MINOR_FAILURE);
         msg.setSource(srcUserId, 
-                new String[]{AuditMessage.getProcessID()},
+                AuditMessage.getProcessID(),
                 AuditMessage.getProcessName(),
                 AuditMessage.getLocalHostName(),
                 sourceIsRequestor);
