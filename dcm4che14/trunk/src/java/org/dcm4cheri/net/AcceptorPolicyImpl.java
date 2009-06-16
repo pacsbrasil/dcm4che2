@@ -193,7 +193,8 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
     // Constructors --------------------------------------------------
     public AcceptorPolicyImpl() {
         putPresContext(UIDs.Verification,
-            new String[] { UIDs.ImplicitVRLittleEndian });
+            new String[] { UIDs.ImplicitVRLittleEndian,
+                UIDs.ExplicitVRLittleEndian });
     }
     
     // Public --------------------------------------------------------
