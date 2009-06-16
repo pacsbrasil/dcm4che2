@@ -38,10 +38,18 @@
 package org.dcm4chee.archive.entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * @author Damien Evans <damien.daddy@gmail.com>
@@ -56,6 +64,8 @@ import javax.persistence.Table;
 public class AE implements Serializable {
 
     private static final long serialVersionUID = -3132017392325052134L;
+    
+    private static final Logger log = LoggerFactory.getLogger(AE.class);
 
     // JPA definition in orm.xml
     private long pk;
@@ -107,7 +117,8 @@ public class AE implements Serializable {
     }
 
     public void setHostName(String hostName) {
-        this.hostName = hostName;
+       log.info("@@@@@@ setHostName:"+hostName);
+       this.hostName = hostName;
     }
 
     public int getPort() {
@@ -118,12 +129,37 @@ public class AE implements Serializable {
         this.port = port;
     }
 
-    public String getCipherSuites() {
-        return cipherSuites;
+    public List<String> getCipherSuites() {
+        List<String> l = new ArrayList<String>();
+        if ( cipherSuites != null ) {
+            int pos0=0, pos1;
+            for ( int i = 0 ; i < 3 ; i++ ) {
+                pos1 = cipherSuites.indexOf(',', pos0);
+                if ( pos1 == -1) {
+                    l.add(cipherSuites.substring(pos0));
+                    break;
+                } else {
+                    l.add(cipherSuites.substring(pos0, pos1));
+                    pos0 = ++pos1;
+                }
+            }
+        }
+        return l;
     }
 
-    public void setCipherSuites(String cipherSuites) {
-        this.cipherSuites = cipherSuites;
+    public void setCipherSuites(List<String> suites) {
+        StringBuilder sb = new StringBuilder();
+        for (String s : suites) {
+            if (s != null) {
+                sb.append(s).append(',');
+            }
+        }
+        if (sb.length()>0) {
+            sb.setLength(sb.length()-1);
+            cipherSuites = sb.toString();
+        } else {
+            cipherSuites = null;
+        }
     }
 
     public String getIssuerOfPatientID() {
@@ -163,6 +199,7 @@ public class AE implements Serializable {
     }
 
     public void setDescription(String description) {
+        log.info("@@@ setDescription:"+description);
         this.description = description;
     }
 
