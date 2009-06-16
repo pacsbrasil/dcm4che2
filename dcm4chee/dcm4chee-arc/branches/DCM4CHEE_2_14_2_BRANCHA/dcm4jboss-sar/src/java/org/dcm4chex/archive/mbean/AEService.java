@@ -279,7 +279,7 @@ public class AEService extends ServiceMBeanSupport {
             AEDTO ae = aeManager.findByAET(prevAET);
             ae.setTitle(newAET);
             aeManager.updateAE(ae);
-            notifyAETchange(prevAET, newAET);
+            notifyAETchange(prevAET, newAET, "");
         } catch (UnknownAETException e) {}
     }
 
@@ -339,7 +339,7 @@ public class AEService extends ServiceMBeanSupport {
                 }
                 logActorConfig("Add new auto-configured AE " + ae, 
                         SecurityAlertMessage.NETWORK_CONFIGURATION);
-                notifyAETchange(null,aet);
+                notifyAETchange(null,aet,"");
                 return ae;
             }
         }
@@ -384,7 +384,7 @@ public class AEService extends ServiceMBeanSupport {
             aeManager.newAE(newAE);
             logActorConfig("Add AE " + newAE + " cipher:"
                     + newAE.getCipherSuitesAsString(), SecurityAlertMessage.NETWORK_CONFIGURATION);
-            notifyAETchange(null, title);
+            notifyAETchange(null, title,"");
 
         } else {
             AEDTO oldAE = aeManager.findByPrimaryKey(pk);
@@ -403,7 +403,7 @@ public class AEService extends ServiceMBeanSupport {
             logActorConfig("Modify AE " + oldAE + " -> " + newAE,
                     SecurityAlertMessage.NETWORK_CONFIGURATION);
             if ( oldAET != null )
-                notifyAETchange(oldAET, title);
+                notifyAETchange(oldAET, title,"");
         }
     }
 
@@ -423,7 +423,7 @@ public class AEService extends ServiceMBeanSupport {
             aeManager.removeAE(ae.getPk());
             logActorConfig("Remove AE " + ae,
                     SecurityAlertMessage.NETWORK_CONFIGURATION);
-            notifyAETchange(ae.getTitle(),null);
+            notifyAETchange(ae.getTitle(),null,"");
         }
     }
 
@@ -452,14 +452,13 @@ public class AEService extends ServiceMBeanSupport {
         }
     }
 
-    private void notifyAETchange(String oldTitle, String newTitle) {
+    public void notifyAETchange(String oldTitle, String newTitle, String message) {
         long eventID = this.getNextNotificationSequenceNumber();
-        Notification notif = new Notification(AetChanged.class.getName(), this, eventID );
+        Notification notif = new Notification(AetChanged.class.getName(), this, eventID, message );
         notif.setUserData(new AetChanged(oldTitle, newTitle) );
         log.debug("send AE Title changed notif:"+notif);
         this.sendNotification( notif );
     }
-
 
     private boolean echo(AEDTO ae) {
         try {
