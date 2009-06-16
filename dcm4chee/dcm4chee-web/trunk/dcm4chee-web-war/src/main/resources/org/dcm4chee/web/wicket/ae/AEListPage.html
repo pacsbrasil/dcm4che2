@@ -22,17 +22,26 @@
     <th>File System Group ID</th>
     <th>WADO URL</th>
     <th>User ID</th>
+    <th><a wicket:id="newAET" href="#">new</a></th>
   </tr>
   <tr wicket:id="list">
-    <td wicket:id="title">[Title]</td>
-    <td wicket:id="hostName">[Host]</td>
+    <td title="Application Entity Title" wicket:id="title">[Title]</td>
+    <td title="Hostname or IP address" wicket:id="hostName">[Host]</td>
     <td wicket:id="port">[Port]</td>
-    <td wicket:id="cipherSuites">[Cipher Suites]</td>
+    <td>
+      <div wicket:id="cipherSuites">
+    	<span wicket:id="ciphersuite">[CIPHERSUITE]</span><br/>
+      </div>
+    </td>
     <td wicket:id="description">[Description]</td>
     <td wicket:id="issuerOfPatientID">[Issuer Of Patient ID]</td>
     <td wicket:id="fileSystemGroupID">[File System Group ID]</td>
     <td wicket:id="wadoURL">[WADO URL]</td>
     <td wicket:id="userID">[User ID]</td>
+    <td>
+        <a wicket:id="editAET" href="#">edit</a>
+        <a wicket:id="removeAET" href="#">del</a>
+    </td>
   </tr>
 </table>
 </body>

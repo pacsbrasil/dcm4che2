@@ -38,12 +38,16 @@
 
 package org.dcm4chee.web.wicket.ae;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.DropDownChoice;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
+import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.list.PropertyListView;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.dao.AEHomeLocal;
@@ -56,26 +60,61 @@ import org.dcm4chee.web.wicket.util.JNDIUtils;
  */
 public class AEListPage extends WebPage {
 
-    private List<AE> list;
+    private List<AE> list = new ArrayList<AE>();
+    private AEHomeLocal aeHome = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
     
     public AEListPage(final PageParameters parameters) {
-        AEHomeLocal aeHome = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
-        list = aeHome.findAll();
+        update();
         add(new PropertyListView("list", list) {
 
             @Override
-            protected void populateItem(ListItem item) {
+            protected void populateItem(final ListItem item) {
                 item.add(new Label("title"));
                 item.add(new Label("hostName"));
                 item.add(new Label("port"));
-                item.add(new Label("cipherSuites"));
+                item.add(new ListView("cipherSuites", ((AE) item.getModelObject()).getCipherSuites()) {
+                    @Override
+                    protected void populateItem(final ListItem item1) {
+                        item1.add(new Label("ciphersuite", item1.getModel()));
+                    }
+                });
                 item.add(new Label("description"));
                 item.add(new Label("issuerOfPatientID"));
                 item.add(new Label("fileSystemGroupID"));
                 item.add(new Label("wadoURL"));
                 item.add(new Label("userID"));
+                item.add(new Link("editAET") {
+                    
+                    @Override
+                    public void onClick() {
+                        setResponsePage( new EditAETPage(AEListPage.this, list.get(item.getIndex())));
+                    }
+                });
+                item.add(new Link("removeAET") {
+                    
+                    @Override
+                    public void onClick() {
+                        removeAET(list.get(item.getIndex()));
+                    }
+                });
             }
             
         });
+        add(new Link("newAET") {
+            
+            @Override
+            public void onClick() {
+                setResponsePage( new EditAETPage(AEListPage.this, new AE()));
+            }
+        });
+
+    }
+    public void update() {
+        list.clear();
+        list.addAll(aeHome.findAll());
+    }
+    private void removeAET(AE ae) {
+        aeHome.removeAET(ae.getPk());
+        update();
     }
 }

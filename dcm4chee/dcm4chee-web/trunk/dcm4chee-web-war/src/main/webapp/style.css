@@ -48,3 +48,68 @@ input#studyDateMax { width:100px}
 .file {
     background : #ffffff;
 } 
+
+div.logo {
+  width: 100px; height: 22px; text-align: center;
+  list-style-type: none; margin: 6 0 0 0; padding: 0; }
+}
+div.logo img {
+	width: auto; margin: 0 0 0 0; padding: 0 0 0 0; border: none; }
+
+
+
+div.lang {
+  width: 100px; height: 21px; text-align: center;
+  list-style-type: none; margin: 0 -20 0 0; padding: -20; }
+}
+div.lang a {
+	width: 20px; margin:  0 0 0 0; padding: 0 0 0 0;
+}
+div.lang img {
+	width: 20px; margin: -7 -20 0 0; padding: 0 0 0 0; border: none; }
+
+div.ae-table-panel {
+  background: none #99bbaa; border: none #333333 1px; color: #000000;
+  margin: 0.5em 12px 0.5em 12px; padding: 0; text-align: center; width: auto; height: auto;
+}
+
+
+div.ae-table-row {
+  margin 0; float: left;
+  padding: 1 0 0 0; width: 97%; height: 30;
+}
+div.ae-cipher-row {
+  float: left;
+  padding: 1 0 0 0; width: 97%; height: 30;
+}
+
+.ae-desc {
+  border: none; float: left; text-align: right; margin: 0; padding: 0;  
+  width: 30%; height: 20;
+}
+
+.ae-value {
+  border: none; float: left; text-align: left; margin: 0 6 ; padding: 0;  
+  width: auto; height: 20;
+}
+
+div.ae-buttons {
+  border: none #333333 1px; margin 0; background: none #aaaaaa;
+  padding: 0 2 0 0; width: 726px; height: 30;
+}
+div.ae-submit {
+  border: none; float: left; margin: 0; padding: 0;  
+  width: 49%; text-align: right;
+}
+div.ae-cancel {
+  border: none; float: right; margin: 0; padding: 0;  
+  width: 49%; text-align: left; 
+}
+
+
+div#ae-content {
+    width: 728px ; height: 400; margin 0 0 0 0;
+    border-width: 1px ; border-color: green ;
+    border-style: none ;background: none #99bbaa;
+   }
+
