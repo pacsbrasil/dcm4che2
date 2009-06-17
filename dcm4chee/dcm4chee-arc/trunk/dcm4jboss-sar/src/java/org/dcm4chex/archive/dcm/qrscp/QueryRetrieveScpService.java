@@ -238,8 +238,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private static final String CSTORE_OUT_XSL = "out-cstorerq.xsl";
     
     private static final String COERCE_TPL = "COERCE_TPL";
-    
-    private Templates coerceTpl;
 
     /**
      * Map containing accepted SOP Class UIDs. key is name (as in config
