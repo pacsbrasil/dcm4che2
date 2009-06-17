@@ -117,7 +117,6 @@ public class AE implements Serializable {
     }
 
     public void setHostName(String hostName) {
-       log.info("@@@@@@ setHostName:"+hostName);
        this.hostName = hostName;
     }
 
@@ -199,7 +198,6 @@ public class AE implements Serializable {
     }
 
     public void setDescription(String description) {
-        log.info("@@@ setDescription:"+description);
         this.description = description;
     }
 
