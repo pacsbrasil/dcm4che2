@@ -225,9 +225,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             setPID(rqData, result.remove(matchInx >= 0 ? matchInx
                     : pidMatchOnlyInx >= 0 ? pidMatchOnlyInx : 0));
             opidsq = rqData.putSQ(Tags.OtherPatientIDSeq);
-            for (int i = 0; i < n; i++) {
-                setPID(opidsq.addNewItem(), (String[]) result.get(i));
-            }
+            for (String[] pids:result) setPID(opidsq.addNewItem(), pids);
         }
     }
 
