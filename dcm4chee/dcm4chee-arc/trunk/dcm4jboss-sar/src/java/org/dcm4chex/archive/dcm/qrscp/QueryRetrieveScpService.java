@@ -1409,35 +1409,38 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return rq;
     }
     /**
-     * Stub for manipulation of the dataset prior to issuing 
-     * C-STORE rq
+     * Stub for manipulation of the dataset prior to issuing C-STORE rq
+     * 
      * @param ds
-     *              the current dataset
+     *            the current dataset
      * @param aeData
-     *              {@link AEDTO} object representing the destination AET.
-     *              This may be null (e.g. C-GET code doesn't currently pass 
-     *              any value, so check first before using it.
+     *            {@link AEDTO} object representing the destination AET. This
+     *            may be null (e.g. C-GET code doesn't currently pass any value,
+     *            so check first before using it.
      * @param assoc
-     * 				the active association
+     *            the active association
      */
-    protected void coerceOutboundCStoreRQ(Dataset ds, AEDTO aeData, Association assoc){
-	    /*
-	     * Apply outbound CStore sytlesheet
-     */
-    	Templates coerceTpl = (Templates)assoc.getProperty(COERCE_TPL);
-    	if (coerceTpl == null) {
-    		coerceTpl = getCoercionTemplates(assoc.getCalledAET(), CSTORE_OUT_XSL);
-    		assoc.putProperty(COERCE_TPL, (Templates)coerceTpl);
-    	}
-	    Dataset coerce = getCoercionAttributesFor(assoc, CSTORE_OUT_XSL, ds, coerceTpl);
-	    if (coerce != null) {
-	    	/*
-	    	 * Calling the base class method instead of the overriden method here
-	    	 * because we only need to update the dataset here. No need to split the issuer
-	    	 * for data sharing. 
-	    	 */
-	    	coerceAttributes(ds, coerce);
-	    }
+    protected void coerceOutboundCStoreRQ(Dataset ds, AEDTO aeData,
+            Association assoc) {
+        /*
+         * Apply outbound CStore sytlesheet
+         */
+        Templates coerceTpl = (Templates) assoc.getProperty(COERCE_TPL);
+        if (coerceTpl == null) {
+            coerceTpl = getCoercionTemplates(assoc.getCalledAET(),
+                    CSTORE_OUT_XSL);
+            assoc.putProperty(COERCE_TPL, (Templates) coerceTpl);
+        }
+        Dataset coerce = getCoercionAttributesFor(assoc, CSTORE_OUT_XSL, ds,
+                coerceTpl);
+        if (coerce != null) {
+            /*
+             * Calling the base class method instead of the overriden method
+             * here because we only need to update the dataset here. No need to
+             * split the issuer for data sharing.
+             */
+            coerceAttributes(ds, coerce);
+        }
     }
     
     private PresContext selectAcceptedPresContext(Association a, FileInfo info) {
