@@ -71,6 +71,11 @@ public class XDSImportMessage extends BasicXDSAuditMessage {
         msg.setPatient(patID, null);
         return msg;
     }
+    public static XDSImportMessage createDocumentRepositoryBImportMessage(String submissionUID, String patID) {
+        XDSImportMessage msg = createMessage(submissionUID, TYPE_CODE_ITI41);
+        msg.setPatient(patID, null);
+        return msg;
+    }
     
     public static XDSImportMessage createDocumentConsumerImportMessage(List<String> docUids) {
         XDSImportMessage msg = new XDSImportMessage(TYPE_CODE_ITI43);

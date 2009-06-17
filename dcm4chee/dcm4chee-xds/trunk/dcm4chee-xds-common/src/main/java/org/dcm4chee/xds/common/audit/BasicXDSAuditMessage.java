@@ -85,6 +85,8 @@ public abstract class BasicXDSAuditMessage extends AuditMessage {
     public static final TypeCode TYPE_CODE_ITI16 = new AuditEvent.TypeCode("ITI-16", "IHE Transactions", "Registry SQL Query");
     public static final TypeCode TYPE_CODE_ITI17 = new AuditEvent.TypeCode("ITI-17", "IHE Transactions", "Retrieve Document");
     public static final TypeCode TYPE_CODE_ITI18 = new AuditEvent.TypeCode("ITI-18", "IHE Transactions", "Registry Stored Query");
+    public static final TypeCode TYPE_CODE_ITI41 = new AuditEvent.TypeCode("ITI-41", "IHE Transactions", "Provide and Register Document Set-b");
+    public static final TypeCode TYPE_CODE_ITI42 = new AuditEvent.TypeCode("ITI-42", "IHE Transactions", "Register Document Set-b");
     public static final TypeCode TYPE_CODE_ITI43 = new AuditEvent.TypeCode("ITI-43", "IHE Transactions", "Retrieve Document Set");
 
     public static final AuditEvent.ID AUDIT_EVENT_ID_REPORT = new ID("3","IHE","Report");

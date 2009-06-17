@@ -70,8 +70,13 @@ public class XDSExportMessage extends BasicXDSAuditMessage {
     
     public static XDSExportMessage createDocumentRepositoryExportMessage(String submissionUID, String patID) {
         XDSExportMessage msg = createMessage(submissionUID, TYPE_CODE_ITI14);
-    	msg.setPatient(patID, null);
-    	return msg;
+        msg.setPatient(patID, null);
+        return msg;
+    }
+    public static XDSExportMessage createDocumentRepositoryBExportMessage(String submissionUID, String patID) {
+        XDSExportMessage msg = createMessage(submissionUID, TYPE_CODE_ITI42);
+        msg.setPatient(patID, null);
+        return msg;
     }
 
     public static XDSExportMessage createDocumentRepositoryRetrieveMessage(String docUri, String docUid) {
