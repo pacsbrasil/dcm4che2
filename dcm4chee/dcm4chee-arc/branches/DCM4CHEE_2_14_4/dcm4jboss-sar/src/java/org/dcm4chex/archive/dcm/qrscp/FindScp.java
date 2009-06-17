@@ -143,8 +143,8 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             service.logDIMSE(a, QUERY_XML, rqData);
             service.logDicomQuery(a, rq.getCommand().getAffectedSOPClassUID(),
                     rqData);
-            Dataset coerce = service.getCoercionAttributesFor(a, QUERY_XSL,
-                    rqData);
+            Dataset coerce = service.getCoercionAttributesFor(callingAET,
+                    QUERY_XSL, rqData, a);
             if (coerce != null) {
                 service.coerceAttributes(rqData, coerce);
             }
@@ -225,9 +225,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             setPID(rqData, result.remove(matchInx >= 0 ? matchInx
                     : pidMatchOnlyInx >= 0 ? pidMatchOnlyInx : 0));
             opidsq = rqData.putSQ(Tags.OtherPatientIDSeq);
-            for (int i = 0; i < n; i++) {
-                setPID(opidsq.addNewItem(), (String[]) result.get(i));
-            }
+            for (String[] pids:result) setPID(opidsq.addNewItem(), pids);
         }
     }
 
@@ -281,7 +279,6 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             return false;
         }
         if (l.isEmpty() && !service.isPixQueryLocal()) {
-            addNewPidAndIssuerTo(new String[] { pid, issuer }, result);
             return false;
         }
         for (Iterator iter = l.iterator(); iter.hasNext();) {
@@ -384,8 +381,9 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             }
             try {
                 Association a = assoc.getAssociation();
+                String callingAET = a.getCallingAET();
                 queryCmd.setCoercePatientIds(service
-                        .isCoerceRequestPatientIdsAET(a.getCallingAET()));
+                        .isCoerceRequestPatientIdsAET(callingAET));
                 if (!queryCmd.next()) {
                     rspCmd.putUS(Tags.Status, Status.Success);
                     return null;
@@ -396,10 +394,11 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
                 log.debug(data);
                 service.logDIMSE(a, RESULT_XML, data);
                 if (count++ == 0) {
-                    coerceTpl = service.getCoercionTemplates(a, RESULT_XSL);
+                    coerceTpl = service.getCoercionTemplates(callingAET, 
+                            RESULT_XSL);
                 }
-                Dataset coerce = service.getCoercionAttributesFor(a,
-                        RESULT_XSL, data, coerceTpl);
+                Dataset coerce = service.getCoercionAttributesFor(
+                        a, RESULT_XSL, data, coerceTpl);
                 if (coerce != null) {
                     service.coerceAttributes(data, coerce);
                 }
