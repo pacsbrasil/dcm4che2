@@ -402,6 +402,28 @@
       <return-type>void</return-type>
    </operation>
 
+   <operation impact="ACTION">
+      <description><![CDATA[Sends an AetChanged notification]]>
+      </description>
+      <name>notifyAETchange</name>
+      <parameter>
+        <description>The old AE Title.</description>
+        <name>oldTitle</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>The new AE Title.</description>
+        <name>newTitle</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>An optional message.</description>
+        <name>message</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+
   <operation impact="ACTION">
      <description>Clear AE Cache</description>
      <name>clearCache</name>
