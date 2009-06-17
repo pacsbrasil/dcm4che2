@@ -110,10 +110,10 @@ public abstract class BasicXDSAuditMessage extends AuditMessage {
                         .addRoleIDCode(ActiveParticipant.RoleIDCode.SOURCE));
     }
 
-    public ActiveParticipant setDestination(String uri, String[] alternateIDs, 
+    public ActiveParticipant setDestination(String uri, String alternateID, 
             String userName, String hostname, boolean requestor) {
         return addActiveParticipant(
-                XDSActiveParticipant.createActiveProcess(uri, alternateIDs, 
+                XDSActiveParticipant.createActiveProcess(uri, alternateID, 
                         userName, hostname, requestor)
                         .addRoleIDCode(ActiveParticipant.RoleIDCode.DESTINATION));
     }

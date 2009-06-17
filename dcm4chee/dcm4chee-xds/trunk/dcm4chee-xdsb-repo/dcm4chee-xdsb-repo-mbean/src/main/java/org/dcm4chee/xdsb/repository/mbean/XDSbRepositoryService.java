@@ -616,7 +616,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
                 host = new URL(requestURI).getHost();
             } catch (MalformedURLException ignore) {
             }
-            msg.setDestination(requestURI, new String[]{AuditMessage.getProcessID()}, null, host, false );
+            msg.setDestination(requestURI, AuditMessage.getProcessID(), null, host, false );
             msg.validate();
             Logger.getLogger("auditlog").info(msg);
         } catch ( Throwable t ) {
