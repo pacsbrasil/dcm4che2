@@ -74,6 +74,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.ws.BindingProvider;
+import javax.xml.ws.addressing.AddressingBuilder;
 import javax.xml.ws.handler.Handler;
 import javax.xml.ws.soap.SOAPBinding;
 
@@ -408,7 +409,7 @@ public class XDSbSourceService extends ServiceMBeanSupport {
                         objFac.createRegistryResponse(rsp), indentXmlLog) );
             }
             boolean success = checkResponse( rsp );
-            logExport(submissionUID, patId, success);
+            logXdsBExport(submissionUID, patId, success);
             log.info("ProvideAndRegisterDocumentSetRequest success:"+success);
             return rsp;
             /*_*/
@@ -464,6 +465,17 @@ public class XDSbSourceService extends ServiceMBeanSupport {
         return new File(serverHomeDir, f.getPath()).getAbsolutePath();
     }
 
+    /**
+     * Create an XDS.a style audit message for XDS-I PnR export.
+     * <p>
+     * This is used from XDSIService (part of archive) via jmx call for audit log!
+     * </p><p>
+     * Therefore the alternate user id is the list of locale AET's.
+     * 
+     * @param submissionUID
+     * @param patId
+     * @param success
+     */
     public void logExport(String submissionUID, String patId, boolean success) {
         try {
             HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
@@ -492,6 +504,36 @@ public class XDSbSourceService extends ServiceMBeanSupport {
         }
     }
 
+    public void logXdsBExport(String submissionUID, String patId, boolean success) {
+        try {
+            HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+            String user = userInfo.getUserId();
+            XDSExportMessage msg = XDSExportMessage.createDocumentSourceBExportMessage(submissionUID, patId);
+            msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
+                AuditEvent.OutcomeIndicator.MINOR_FAILURE);
+            //TODO: get replyTo from real WS Addressing Header
+            String replyTo = AddressingBuilder.getAddressingBuilder().newAddressingConstants().getAnonymousURI();
+            msg.setSource(replyTo, 
+                    AuditMessage.getProcessID(),
+                    AuditMessage.getProcessName(),
+                    AuditMessage.getLocalHostName(),
+                    forceSourceAsRequestor || user == null);
+            if (user != null) {
+                msg.setHumanRequestor(user, null, null, true);
+            }
+            String host = "unknown";
+            try {
+                host = new URL(xdsRepositoryURI).getHost();
+            } catch (MalformedURLException ignore) {
+            }
+            msg.setDestination(xdsRepositoryURI, null, null, host, false );
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
+        } catch ( Throwable t ) {
+            log.warn("Audit Log (Export) failed! Ignored!",t);
+        }
+    }
+    
     public void logNode(String msg, Node node) {
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
