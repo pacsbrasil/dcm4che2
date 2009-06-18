@@ -389,7 +389,6 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
                         AuditMessage.getProcessName(),
                         AuditMessage.getLocalHostName(),
                         false);
-                msg.setHumanRequestor(user != null ? user : "unknown", null, null, true);
                 //TODO: get replyTo from real WS Addressing Header
                 String replyTo = AddressingBuilder.getAddressingBuilder().newAddressingConstants().getAnonymousURI();
                 msg.setDestination(replyTo, null, userInfo.getHostName(), userInfo.getIP(), true );
