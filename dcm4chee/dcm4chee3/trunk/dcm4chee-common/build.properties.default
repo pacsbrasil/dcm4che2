@@ -1,8 +1,0 @@
-#Override with your dcm4che dist location
-dcm4che.home=../../../dcm4jboss-all/dcm4che14/build
-
-#Override with your JBoss dist location
-jboss.home=${user.home}/jboss-4.2.1.GA
-
-#Choose postgresql or mysql database
-database=postgresql
