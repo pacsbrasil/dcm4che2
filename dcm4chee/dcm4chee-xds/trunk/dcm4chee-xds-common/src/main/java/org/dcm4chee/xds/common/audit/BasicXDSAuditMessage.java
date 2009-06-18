@@ -133,7 +133,7 @@ public abstract class BasicXDSAuditMessage extends AuditMessage {
 
     public ParticipantObject setSubmissionSet(String uid) {
         ParticipantObject subm = new ParticipantObject(uid, 
-                new ParticipantObject.IDTypeCode("urn:uuid:a54d6aa5-d40d-43f9-88c5-b4633d873bdd","IHE XDS Metadata","Submission Set ClassificationNode UID"));
+                new ParticipantObject.IDTypeCode("urn:uuid:a54d6aa5-d40d-43f9-88c5-b4633d873bdd","IHE XDS Metadata","Submission Set ClassificationNode"));
         subm.setParticipantObjectTypeCode(ParticipantObject.TypeCode.SYSTEM);
         subm.setParticipantObjectTypeCodeRole(ParticipantObject.TypeCodeRole.JOB);
         return addParticipantObject(subm);
