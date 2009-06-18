@@ -101,7 +101,7 @@
           </modules>
           <jboss>
             <version>4</version>
-            <loader-repository>org.dcm4chee.arr:loader=dcm4chee-arr-psql-${version}.ear</loader-repository>
+            <loader-repository>org.dcm4chee.arr:loader=dcm4chee-arr-${db}-${version}.ear</loader-repository>
           </jboss>
         </configuration>
       </plugin>
