@@ -58,6 +58,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
 import javax.xml.bind.JAXBException;
+import javax.xml.ws.addressing.AddressingBuilder;
 
 import org.apache.log4j.Logger;
 import org.dcm4che2.audit.message.AuditEvent;
@@ -387,9 +388,11 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
                         AuditMessage.getProcessID(),
                         AuditMessage.getProcessName(),
                         AuditMessage.getLocalHostName(),
-                        true);
+                        false);
                 msg.setHumanRequestor(user != null ? user : "unknown", null, null, true);
-                msg.setDestination(userInfo.getRequestURL(), null, userInfo.getHostName(), userInfo.getIP(), false );
+                //TODO: get replyTo from real WS Addressing Header
+                String replyTo = AddressingBuilder.getAddressingBuilder().newAddressingConstants().getAnonymousURI();
+                msg.setDestination(replyTo, null, userInfo.getHostName(), userInfo.getIP(), true );
                 msg.validate();
                 Logger.getLogger("auditlog").info(msg);
             } catch ( Throwable t) {

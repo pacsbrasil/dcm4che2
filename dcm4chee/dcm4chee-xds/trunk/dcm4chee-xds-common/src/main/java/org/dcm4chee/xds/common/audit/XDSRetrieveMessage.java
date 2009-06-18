@@ -42,6 +42,7 @@ import java.util.List;
 
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditEvent.TypeCode;
+import org.dcm4che2.audit.message.ParticipantObject.IDTypeCode;
 
 /**
  * This message describes the event of retrieving document from a XDS.b.
@@ -64,7 +65,8 @@ public class XDSRetrieveMessage extends BasicXDSAuditMessage {
     private static XDSRetrieveMessage createMessage(List<String> docUids, TypeCode typeCode) {
     	XDSRetrieveMessage msg = new XDSRetrieveMessage(typeCode);
     	for( String uid : docUids ) {
-    		msg.addDocumentUID(uid, IDTYPE_CODE_ITI43);
+    		msg.addDocumentUID(uid, new IDTypeCode(IDTypeCode.REPORT_NUMBER.getCode(),
+    		                                       "RFC-3881","Report Number"));
     	}
     	return msg;
     }

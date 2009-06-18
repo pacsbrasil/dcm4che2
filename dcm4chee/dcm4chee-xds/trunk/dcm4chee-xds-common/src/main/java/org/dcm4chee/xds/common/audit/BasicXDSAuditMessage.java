@@ -93,10 +93,6 @@ public abstract class BasicXDSAuditMessage extends AuditMessage {
 
     private static final ActiveParticipant.RoleIDCode ROLE_ID_HUMAN_REQUESTOR = new ActiveParticipant.RoleIDCode("HumanRequestor");
 
-    public static final IDTypeCode IDTYPE_CODE_ITI43 = new ParticipantObject.IDTypeCode(TYPE_CODE_ITI43.getCode(),
-			TYPE_CODE_ITI43.getCodeSystemName(),
-			TYPE_CODE_ITI43.getDisplayName());
-    
     public BasicXDSAuditMessage(AuditEvent.ID eventID, AuditEvent.ActionCode actionCode, TypeCode typeCode) {
         super(new AuditEvent(eventID,
                 actionCode).addEventTypeCode(typeCode));
