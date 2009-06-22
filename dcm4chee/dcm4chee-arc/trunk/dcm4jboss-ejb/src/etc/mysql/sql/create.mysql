@@ -5,11 +5,15 @@ CREATE TABLE ae (
 	port			INTEGER NOT NULL,
 	cipher_suites  	VARCHAR(250) BINARY,
 	pat_id_issuer	VARCHAR(250) BINARY,
-	user_id		VARCHAR(250) BINARY,
-	passwd		VARCHAR(250) BINARY,
+	user_id		    VARCHAR(250) BINARY,
+	passwd		    VARCHAR(250) BINARY,
 	fs_group_id		VARCHAR(250) BINARY,
-	ae_desc		VARCHAR(250) BINARY,
-	wado_url		VARCHAR(250) BINARY
+	ae_desc		    VARCHAR(250) BINARY,
+	wado_url		VARCHAR(250) BINARY,
+	station_name	VARCHAR(250) BINARY,
+	institution		VARCHAR(250) BINARY,
+	department		VARCHAR(250) BINARY,
+	installed		BIT NOT NULL
 ) ENGINE=INNODB;
 CREATE UNIQUE INDEX aet ON ae(aet(64));
 
@@ -675,7 +679,7 @@ INSERT INTO roles VALUES('user','WebUser');
 INSERT INTO roles VALUES('user','McmUser');
 INSERT INTO roles VALUES('user','Doctor');
 
-INSERT INTO ae (aet,hostname,port,pat_id_issuer,ae_desc)
-	VALUES('DCM4CHEE','localhost',11112,'DCM4CHEE','This dcm4chee archive instance');
-INSERT INTO ae (aet,hostname,port,ae_desc)
-	VALUES('CDRECORD','localhost',10104,'Media Creation Server (part of dcm4chee)');
+INSERT INTO ae (aet,hostname,port,pat_id_issuer,ae_desc,installed)
+	VALUES('DCM4CHEE','localhost',11112,'DCM4CHEE','This dcm4chee archive instance',1);
+INSERT INTO ae (aet,hostname,port,ae_desc,installed)
+	VALUES('CDRECORD','localhost',10104,'Media Creation Server (part of dcm4chee)',1);

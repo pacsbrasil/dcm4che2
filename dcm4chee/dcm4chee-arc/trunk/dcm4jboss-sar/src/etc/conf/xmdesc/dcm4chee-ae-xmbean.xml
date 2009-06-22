@@ -301,6 +301,26 @@
        <type>java.lang.String</type>
      </parameter>
      <parameter>
+       <description>Station Name of this AE</description>
+       <name>stationName</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Name of the institution that this AE is associated with</description>
+       <name>institution</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Name of the department that this AE is associated with</description>
+       <name>department</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Signifies that this device is active on the network.</description>
+       <name>installed</name>
+       <type>boolean</type>
+     </parameter>
+     <parameter>
        <description>Enable/disable check if host can be resolved to an IP address</description>
        <name>checkHost</name>
        <type>boolean</type>
@@ -360,6 +380,26 @@
        <description>WADO URL for this AE</description>
        <name>wadoUrl</name>
        <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Station Name of this AE</description>
+       <name>stationName</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Name of the institution that this AE is associated with</description>
+       <name>institution</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Name of the department that this AE is associated with</description>
+       <name>department</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Signifies that this device is active on the network.</description>
+       <name>installed</name>
+       <type>boolean</type>
      </parameter>
      <parameter>
        <description>Enable/disable check if host can be resolved to an IP address</description>

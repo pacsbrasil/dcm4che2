@@ -350,7 +350,11 @@ public class AEService extends ServiceMBeanSupport {
                     ae.getPassword(),
                     ae.getFileSystemGroupID(),
                     ae.getDescription(),
-                    ae.getWadoUrl());
+                    ae.getWadoUrl(),
+                    ae.getStationName(),
+                    ae.getInstitution(),
+                    ae.getDepartment(),
+                    ae.getInstalled());
             aetMgr.updateAE(ret);
             log.info("Update IP of " + ret );
         }
@@ -365,7 +369,7 @@ public class AEService extends ServiceMBeanSupport {
         String aeHost = addr.getHostName();
         for (int i = 0; i < portNumbers.length; i++) {
             AEDTO ae = new AEDTO(-1, aet, aeHost, portNumbers[i], null, null,
-                    null, null, null, null, null);
+                    null, null, null, null, null, null, null, null, true);
             if (echo(ae)) {
                 if (dontSaveIP) {
                     if (!aeHost.equals(addr.getHostAddress()))
@@ -402,7 +406,9 @@ public class AEService extends ServiceMBeanSupport {
      */
     public void updateAE(long pk, String title, String host, int port,
             String cipher, String issuer, String user, String passwd,
-            String fsGroupID, String desc, String wadoUrl, boolean checkHost)
+            String fsGroupID, String desc, String wadoUrl, String stationName,
+            String institution, String department, boolean installed,
+            boolean checkHost)
     throws Exception {
         if (checkHost) {
             try {
@@ -415,8 +421,9 @@ public class AEService extends ServiceMBeanSupport {
 
         AEManager aeManager = aeMgr();
         if (pk == -1) {
-            AEDTO newAE = new AEDTO(-1, title, host, port, cipher,
-                    issuer, user, passwd, fsGroupID, desc, wadoUrl);
+            AEDTO newAE = new AEDTO(-1, title, host, port, cipher, issuer,
+                    user, passwd, fsGroupID, desc, wadoUrl, stationName,
+                    institution, department, installed);
             aeManager.newAE(newAE);
             logActorConfig("Add AE " + newAE + " cipher:"
                     + newAE.getCipherSuitesAsString(), SecurityAlertMessage.NETWORK_CONFIGURATION);
@@ -433,8 +440,9 @@ public class AEService extends ServiceMBeanSupport {
                 } catch (UnknownAETException e) {}
                 oldAET = oldAE.getTitle();
             }
-            AEDTO newAE = new AEDTO(pk, title, host, port, cipher,
-                    issuer, user, passwd, fsGroupID, desc, wadoUrl);
+            AEDTO newAE = new AEDTO(pk, title, host, port, cipher, issuer,
+                    user, passwd, fsGroupID, desc, wadoUrl, stationName,
+                    institution, department, installed);
             aeManager.updateAE(newAE);
             logActorConfig("Modify AE " + oldAE + " -> " + newAE,
                     SecurityAlertMessage.NETWORK_CONFIGURATION);
@@ -445,9 +453,12 @@ public class AEService extends ServiceMBeanSupport {
 
     public void addAE(String title, String host, int port, String cipher,
             String issuer, String user, String passwd, String fsGroupID,
-            String desc, String wadoUrl, boolean checkHost) throws Exception {
-        updateAE(-1, title, host, port, cipher, issuer, user, passwd, fsGroupID,
-                desc, wadoUrl, checkHost);
+            String desc, String wadoUrl, String stationName,
+            String institution, String department, boolean installed,
+            boolean checkHost) throws Exception {
+        updateAE(-1, title, host, port, cipher, issuer, user, passwd,
+                fsGroupID, desc, wadoUrl, stationName, institution, department,
+                installed, checkHost);
     }
 
     public void removeAE(String titles) throws Exception {

@@ -67,6 +67,10 @@ public class AEModel extends BasicFormModel {
     private String fileSystemGroupID;
     private String description;
     private String wadoUrl;
+    private String stationName;
+    private String institution;
+    private String department;
+    private boolean installed = true;
     private int port = -1;
     private long pk = -1;
     private boolean checkHost = false;
@@ -160,6 +164,26 @@ public class AEModel extends BasicFormModel {
     public void setWadoUrl(String wadoUrl) {
         this.wadoUrl = wadoUrl;
     }
+    
+    public void setStationName(String stationName) {
+        this.stationName = stationName;
+    }
+    
+    public void setInstitution(String institution) {
+        this.institution = institution;
+    }
+    
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+    
+    public boolean getInstalled() {
+        return installed;
+    }
+    
+    public void setInstalled(boolean installed) {
+        this.installed = installed;
+    }
 
     public AEDTO getAE() {
         if (cipherSuites == null || cipherSuites.length() < 1) {
@@ -174,7 +198,9 @@ public class AEModel extends BasicFormModel {
         }
         return new AEDTO(pk, this.title, this.hostName, this.port,
                 this.cipherSuites, this.issuerOfPatientID, this.userID,
-                this.passwd, this.fileSystemGroupID, this.description, this.wadoUrl);
+                this.passwd, this.fileSystemGroupID, this.description,
+                this.wadoUrl, this.stationName, this.institution,
+                this.department, this.installed);
     }
 
     public void setAE(AEDTO ae) {
@@ -189,6 +215,10 @@ public class AEModel extends BasicFormModel {
         fileSystemGroupID = ae.getFileSystemGroupID();
         description = ae.getDescription();
         wadoUrl = ae.getWadoUrl();
+        stationName = ae.getStationName();
+        institution = ae.getInstitution();
+        department = ae.getDepartment();
+        installed = ae.getInstalled();
     }
 
     public void setAet(String aet) {
@@ -203,6 +233,10 @@ public class AEModel extends BasicFormModel {
         fileSystemGroupID = null;
         description = null;
         wadoUrl = null;
+        stationName = null;
+        institution = null;
+        department = null;
+        installed = true;
     }
 
     /**

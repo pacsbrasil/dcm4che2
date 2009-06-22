@@ -9,7 +9,11 @@ CREATE TABLE ae (
 	passwd			TEXT,
 	fs_group_id		TEXT,
     ae_desc         TEXT,
-    wado_url        TEXT
+    wado_url        TEXT,
+    station_name    TEXT,
+    institution     TEXT,
+    department      TEXT,
+    installed       BOOLEAN NOT NULL
 );
 CREATE UNIQUE INDEX aet ON ae(aet);
 
@@ -676,8 +680,8 @@ INSERT INTO roles VALUES('user','WebUser');
 INSERT INTO roles VALUES('user','McmUser');
 INSERT INTO roles VALUES('user','Doctor');
 
-INSERT INTO ae (aet,hostname,port,pat_id_issuer,ae_desc)
-	VALUES('DCM4CHEE','localhost',11112,'DCM4CHEE','This dcm4chee archive instance');
-INSERT INTO ae (aet,hostname,port,ae_desc)
-	VALUES('CDRECORD','localhost',10104,'Media Creation Server (part of dcm4chee)');
+INSERT INTO ae (aet,hostname,port,pat_id_issuer,ae_desc,installed)
+	VALUES('DCM4CHEE','localhost',11112,'DCM4CHEE','This dcm4chee archive instance',true);
+INSERT INTO ae (aet,hostname,port,ae_desc,installed)
+	VALUES('CDRECORD','localhost',10104,'Media Creation Server (part of dcm4chee)',true);
 

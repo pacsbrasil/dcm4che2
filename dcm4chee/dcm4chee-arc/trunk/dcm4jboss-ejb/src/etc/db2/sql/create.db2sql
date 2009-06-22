@@ -14,7 +14,11 @@ CREATE TABLE ae (
 	passwd			VARCHAR(254),
 	fs_group_id		VARCHAR(254),
     ae_desc         VARCHAR(254),
-    wado_url        VARCHAR(254)
+    wado_url        VARCHAR(254),
+    station_name    VARCHAR(254),
+    institution     VARCHAR(254),
+    department      VARCHAR(254),
+    installed       SMALLINT NOT NULL
 );
 CREATE UNIQUE INDEX aet ON ae(aet);
 
@@ -682,10 +686,10 @@ INSERT INTO roles VALUES('user','WebUser');
 INSERT INTO roles VALUES('user','McmUser');
 INSERT INTO roles VALUES('user','Doctor');
 
-INSERT INTO ae (aet,hostname,port,pat_id_issuer,ae_desc)
-	VALUES('DCM4CHEE','localhost',11112,'DCM4CHEE','This dcm4chee archive instance');
-INSERT INTO ae (aet,hostname,port,ae_desc)
-	VALUES('CDRECORD','localhost',10104,'Media Creation Server (part of dcm4chee)');
+INSERT INTO ae (aet,hostname,port,pat_id_issuer,ae_desc,installed)
+	VALUES('DCM4CHEE','localhost',11112,'DCM4CHEE','This dcm4chee archive instance'1);
+INSERT INTO ae (aet,hostname,port,ae_desc,installed)
+	VALUES('CDRECORD','localhost',10104,'Media Creation Server (part of dcm4chee)',1);
 
 GRANT ALL PRIVILEGES ON TABLE ae TO USER pacs;
 GRANT ALL PRIVILEGES ON TABLE code TO USER pacs;

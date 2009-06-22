@@ -6,11 +6,15 @@ CREATE TABLE ae (
 	port			NUMBER(38,0) NOT NULL,
 	cipher_suites  	VARCHAR2(255),
 	pat_id_issuer	VARCHAR2(255),
-	user_id		VARCHAR2(255),
-	passwd		VARCHAR2(255),
+	user_id		    VARCHAR2(255),
+	passwd		    VARCHAR2(255),
 	fs_group_id		VARCHAR2(255),
-	ae_desc		VARCHAR2(255),
-	wado_url		VARCHAR2(255)
+	ae_desc		    VARCHAR2(255),
+	wado_url		VARCHAR2(255),
+	station_name	VARCHAR2(255),
+	institution		VARCHAR2(255),
+	department		VARCHAR2(255),
+	installed		NUMBER(1) NOT NULL
 );
 CREATE UNIQUE INDEX aet ON ae(aet);
 
@@ -280,7 +284,7 @@ CREATE TABLE instance (
 	retrieve_aets	VARCHAR2(255),
 	availability	NUMBER(38,0) NOT NULL,
 	inst_status		NUMBER(38,0) NOT NULL,
-	all_attrs			NUMBER(1) NOT NULL,
+	all_attrs		NUMBER(1) NOT NULL,
 	commitment		NUMBER(1) NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
@@ -704,9 +708,9 @@ INSERT INTO roles VALUES('user','WebUser');
 INSERT INTO roles VALUES('user','McmUser');
 INSERT INTO roles VALUES('user','Doctor');
 
-INSERT INTO ae (pk,aet,hostname,port,pat_id_issuer,ae_desc)
-	VALUES(ae_pk_seq.nextval,'DCM4CHEE','localhost',11112,'DCM4CHEE','This dcm4chee archive instance');
-INSERT INTO ae (pk,aet,hostname,port,ae_desc)
-	VALUES(ae_pk_seq.nextval,'CDRECORD','localhost',10104,'Media Creation Server (part of dcm4chee)');
+INSERT INTO ae (pk,aet,hostname,port,pat_id_issuer,ae_desc,installed)
+	VALUES(ae_pk_seq.nextval,'DCM4CHEE','localhost',11112,'DCM4CHEE','This dcm4chee archive instance',1);
+INSERT INTO ae (pk,aet,hostname,port,ae_desc,installed)
+	VALUES(ae_pk_seq.nextval,'CDRECORD','localhost',10104,'Media Creation Server (part of dcm4chee)',1);
     
 COMMIT;

@@ -147,6 +147,10 @@ public class AEDelegate {
                     ae.getFileSystemGroupID(),
                     ae.getDescription(),
                     ae.getWadoUrl(),
+                    ae.getStationName(),
+                    ae.getInstitution(),
+                    ae.getDepartment(),
+                    ae.getInstalled(),
                     new Boolean(checkHost) },
                 new String[] {
                     long.class.getName(),
@@ -160,6 +164,10 @@ public class AEDelegate {
                     String.class.getName(),
                     String.class.getName(),
                     String.class.getName(),
+                    String.class.getName(),
+                    String.class.getName(),
+                    String.class.getName(),
+                    boolean.class.getName(),
                     boolean.class.getName() });
     }
 

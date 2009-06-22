@@ -156,6 +156,50 @@ public abstract class AEBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @ejb.persistence column-name="station_name"
+     */
+    public abstract String getStationName();
+    
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setStationName(String stationName);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="institution"
+     */
+    public abstract String getInstitution();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setInstitution(String institution);
+    
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="department"
+     */
+    public abstract String getDepartment();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setDepartment(String department);
+    
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="installed"
+     */
+    public abstract boolean getInstalled();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setInstalled(boolean installed);
+
+    /**
+     * @ejb.interface-method
      * @ejb.persistence column-name="user_id"
      */
     public abstract String getUserID();
@@ -214,7 +258,8 @@ public abstract class AEBean implements EntityBean {
      */
     public Long ejbCreate(String title, String hostname, int port,
             String cipherSuites, String issuer, String user, String passwd,
-            String fsGroupID, String desc, String wadoUrl)
+            String fsGroupID, String desc, String wadoUrl, String stationName,
+            String institution, String department, boolean installed)
             throws CreateException {
         if (log.isDebugEnabled()) {
             log.debug("create AEBean(" + title + ")");
@@ -228,13 +273,18 @@ public abstract class AEBean implements EntityBean {
         setPassword(passwd);
         setFileSystemGroupID(fsGroupID);
         setDescription(desc);
+        setStationName(stationName);
+        setInstitution(institution);
+        setDepartment(department);
+        setInstalled(installed);
         this.setWadoUrl(wadoUrl);
         return null;
     }
 
     public void ejbPostCreate(String title, String host, int port,
             String cipherSuites, String issuer, String user, String passwd,
-            String fsGroupID, String desc, String wadoUrl)
+            String fsGroupID, String desc, String wadoUrl, String stationName,
+            String institution, String department, boolean installed)
             throws CreateException {
     }
 
@@ -254,7 +304,11 @@ public abstract class AEBean implements EntityBean {
                 getPassword(),
                 getFileSystemGroupID(),
                 getDescription(),
-                getWadoUrl());
+                getWadoUrl(),
+                getStationName(),
+                getInstitution(),
+                getDepartment(),
+                getInstalled());
     }
     
     /**

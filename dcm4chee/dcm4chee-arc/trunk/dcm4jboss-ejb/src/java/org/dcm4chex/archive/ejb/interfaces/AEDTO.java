@@ -77,7 +77,11 @@ public class AEDTO implements Serializable {
     private final String fsGroupID;
     private final String desc;
     private final String wadoUrl;
-
+    private String stationName;
+    private String institution;
+    private String department;
+    private boolean installed;
+    
     // Constructors --------------------------------------------------
     public AEDTO(
         long pk,
@@ -90,7 +94,11 @@ public class AEDTO implements Serializable {
         String passwd,
         String fsGroupID,
         String desc, 
-        String wadoUrl) {
+        String wadoUrl,
+        String stationName,
+        String institution,
+        String department,
+        boolean installed) {
         this.pk = pk;
         this.title = title;
         this.hostname = hostname;
@@ -102,6 +110,10 @@ public class AEDTO implements Serializable {
         this.fsGroupID = fsGroupID;
         this.desc = desc;
         this.wadoUrl = wadoUrl;
+        this.stationName = stationName;
+        this.institution = institution;
+        this.department = department;
+        this.installed = installed;
     }
 
     /**
@@ -180,6 +192,22 @@ public class AEDTO implements Serializable {
     
     public String getDescription() {
         return desc;        
+    }
+    
+    public String getStationName() {
+        return stationName;
+    }
+    
+    public String getInstitution() {
+        return institution;
+    }
+    
+    public String getDepartment() {
+        return department;
+    }
+    
+    public boolean getInstalled() {
+        return installed;
     }
     
     public String getWadoUrl() {

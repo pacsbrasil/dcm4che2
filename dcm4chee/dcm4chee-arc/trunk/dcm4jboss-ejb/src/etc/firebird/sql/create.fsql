@@ -10,7 +10,11 @@ CREATE TABLE ae (
 	passwd			VARCHAR(255),
 	fs_group_id		VARCHAR(255),
     ae_desc         VARCHAR(255),
-    wado_url        VARCHAR(255)
+    wado_url        VARCHAR(255),
+    station_name    VARCHAR(255),
+    institution     VARCHAR(255),
+    department      VARCHAR(255),
+    installed       NUMERIC(1) NOT NULL
 );
 CREATE UNIQUE INDEX aet ON ae(aet);
 
@@ -280,7 +284,7 @@ CREATE TABLE instance (
 	retrieve_aets	VARCHAR(255),
 	availability	INTEGER NOT NULL,
 	inst_status		INTEGER NOT NULL,
-	all_attrs			NUMERIC(1) NOT NULL,
+	all_attrs		NUMERIC(1) NOT NULL,
 	commitment		NUMERIC(1) NOT NULL,
 	created_time	TIMESTAMP,
 	updated_time	TIMESTAMP,
@@ -704,7 +708,7 @@ INSERT INTO roles VALUES('user','WebUser');
 INSERT INTO roles VALUES('user','McmUser');
 INSERT INTO roles VALUES('user','Doctor');
 
-INSERT INTO ae (pk,aet,hostname,port,pat_id_issuer,ae_desc)
-	VALUES(NEXT VALUE FOR ae_pk_seq,'DCM4CHEE','localhost',11112,'DCM4CHEE','This dcm4chee archive instance');
-INSERT INTO ae (pk,aet,hostname,port,ae_desc)
-	VALUES(NEXT VALUE FOR ae_pk_seq,'CDRECORD','localhost',10104,'Media Creation Server (part of dcm4chee)');
+INSERT INTO ae (pk,aet,hostname,port,pat_id_issuer,ae_desc,installed)
+	VALUES(NEXT VALUE FOR ae_pk_seq,'DCM4CHEE','localhost',11112,'DCM4CHEE','This dcm4chee archive instance',1);
+INSERT INTO ae (pk,aet,hostname,port,ae_desc,installed)
+	VALUES(NEXT VALUE FOR ae_pk_seq,'CDRECORD','localhost',10104,'Media Creation Server (part of dcm4chee)',1);

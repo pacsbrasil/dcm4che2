@@ -98,11 +98,40 @@
                         </td>
                     </tr>
                     <tr>                        
+                        <td width="50">Station Name</td>                                                     
+                        <td title="Station Name">
+                            <input size="25" name="stationName" type="text" value="{stationName}"/>
+                        </td>
+                    </tr>
+                    <tr>                        
+                        <td width="50">Institution Name</td>                                                     
+                        <td title="Institution Name">
+                            <input size="25" name="institution" type="text" value="{institution}"/>
+                        </td>
+                    </tr>
+                    <tr>                        
+                        <td width="50">Department Name</td>                                                     
+                        <td title="Institutional Department Name">
+                            <input size="25" name="department" type="text" value="{department}"/>
+                        </td>
+                    </tr>
+                    <tr>                        
                         <td width="50">WADO URL</td>                                                     
                         <td title="WadoUrl">
                             <input size="25" name="wadoUrl" type="text" value="{wadoUrl}"/>
                         </td>
                     </tr>
+                    <tr>
+						<td width="50">Installed</td>
+				    	<td title="Installed" >
+							<input name="installed" type="checkbox" value="true">
+								<xsl:if test="/model/installed = 'true'">
+									<xsl:attribute name="checked"/>
+								</xsl:if>
+							</input>
+							<input name="installed" type="hidden" value="false" /> <!-- submit false for unselect state -->
+				    	</td>
+					</tr>
 					<tr>
 						<td colspan="2">
 							<center>
