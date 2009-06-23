@@ -51,28 +51,25 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.util.JAXBResult;
-import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.dcm4chee.xds.common.infoset.ClassificationType;
-import org.dcm4chee.xds.common.infoset.ExternalIdentifierType;
-import org.dcm4chee.xds.common.infoset.ExtrinsicObjectType;
-import org.dcm4chee.xds.common.infoset.ObjectFactory;
-import org.dcm4chee.xds.common.infoset.ProvideAndRegisterDocumentSetRequestType;
-import org.dcm4chee.xds.common.infoset.RegistryError;
-import org.dcm4chee.xds.common.infoset.RegistryErrorList;
-import org.dcm4chee.xds.common.infoset.RegistryObjectListType;
-import org.dcm4chee.xds.common.infoset.RegistryObjectType;
-import org.dcm4chee.xds.common.infoset.RegistryPackageType;
-import org.dcm4chee.xds.common.infoset.RegistryResponseType;
-import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType;
-import org.dcm4chee.xds.common.infoset.SlotType1;
-import org.dcm4chee.xds.common.infoset.SubmitObjectsRequest;
-import org.dcm4chee.xds.common.infoset.ProvideAndRegisterDocumentSetRequestType.Document;
-import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType.DocumentResponse;
+import org.dcm4chee.xds.infoset.v30.ClassificationType;
+import org.dcm4chee.xds.infoset.v30.ExternalIdentifierType;
+import org.dcm4chee.xds.infoset.v30.ExtrinsicObjectType;
+import org.dcm4chee.xds.infoset.v30.ObjectFactory;
+import org.dcm4chee.xds.infoset.v30.ProvideAndRegisterDocumentSetRequestType;
+import org.dcm4chee.xds.infoset.v30.RegistryError;
+import org.dcm4chee.xds.infoset.v30.RegistryErrorList;
+import org.dcm4chee.xds.infoset.v30.RegistryObjectType;
+import org.dcm4chee.xds.infoset.v30.RegistryPackageType;
+import org.dcm4chee.xds.infoset.v30.RegistryResponseType;
+import org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetResponseType;
+import org.dcm4chee.xds.infoset.v30.SlotType1;
+import org.dcm4chee.xds.infoset.v30.SubmitObjectsRequest;
+import org.dcm4chee.xds.infoset.v30.ProvideAndRegisterDocumentSetRequestType.Document;
+import org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetResponseType.DocumentResponse;
 import org.w3c.dom.Node;
 
 public class InfoSetUtil {
@@ -210,7 +207,7 @@ public class InfoSetUtil {
 
     public static JAXBContext getJAXBContext() throws JAXBException {
         if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance("org.dcm4chee.xds.common.infoset");
+            jaxbContext = JAXBContext.newInstance("org.dcm4chee.xds.infoset.v30");
         }
         return jaxbContext;
     }

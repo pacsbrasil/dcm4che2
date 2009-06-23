@@ -19,6 +19,12 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>dcm4che</groupId>
+      <artifactId>dcm4chee-xds-infoset-v30</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>    
+    <dependency>
       <groupId>javax.xml.soap</groupId>
       <artifactId>saaj-api</artifactId>
       <version>1.3</version>

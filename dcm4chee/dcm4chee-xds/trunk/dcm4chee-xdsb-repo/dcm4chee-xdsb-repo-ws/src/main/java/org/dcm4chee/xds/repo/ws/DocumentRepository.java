@@ -12,11 +12,11 @@ import javax.xml.ws.WebServiceContext;
 
 import org.dcm4chee.xds.common.delegate.XDSbServiceDelegate;
 import org.dcm4chee.xds.common.exception.XDSException;
-import org.dcm4chee.xds.common.infoset.ProvideAndRegisterDocumentSetRequestType;
-import org.dcm4chee.xds.common.infoset.RegistryResponseType;
-import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetRequestType;
-import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType;
-import org.dcm4chee.xds.common.ws.DocumentRepositoryPortType;
+import org.dcm4chee.xds.infoset.v30.ProvideAndRegisterDocumentSetRequestType;
+import org.dcm4chee.xds.infoset.v30.RegistryResponseType;
+import org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetRequestType;
+import org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetResponseType;
+import org.dcm4chee.xds.infoset.v30.ws.DocumentRepositoryPortType;
 import org.jboss.ws.annotation.EndpointConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
         portName="DocumentRepository_Port_Soap12",
         targetNamespace="urn:ihe:iti:xds-b:2007",
         wsdlLocation="/WEB-INF/wsdl/XDS.b_DocumentRepository.wsdl",
-        endpointInterface="org.dcm4chee.xds.common.ws.DocumentRepositoryPortType"
+        endpointInterface="org.dcm4chee.xds.infoset.v30.ws.DocumentRepositoryPortType"
 )
 @SOAPBinding(style = SOAPBinding.Style.DOCUMENT)
 @BindingType(value = SOAP12HTTP_MTOM_BINDING)

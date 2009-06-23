@@ -41,6 +41,12 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>dcm4che</groupId>
+      <artifactId>dcm4chee-xds-infoset-v30</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>     
+    <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-jmx</artifactId>
       <version>4.2.3.GA</version>

@@ -47,10 +47,10 @@ import java.util.Map;
 import javax.xml.bind.JAXBException;
 
 import org.dcm4chee.xds.common.UUID;
-import org.dcm4chee.xds.common.infoset.ExternalIdentifierType;
-import org.dcm4chee.xds.common.infoset.ExtrinsicObjectType;
-import org.dcm4chee.xds.common.infoset.SlotType1;
-import org.dcm4chee.xds.common.infoset.ValueListType;
+import org.dcm4chee.xds.infoset.v30.ExternalIdentifierType;
+import org.dcm4chee.xds.infoset.v30.ExtrinsicObjectType;
+import org.dcm4chee.xds.infoset.v30.SlotType1;
+import org.dcm4chee.xds.infoset.v30.ValueListType;
 import org.dcm4chee.xds.common.utils.InfoSetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -142,9 +142,9 @@
       <parameter>
         <description>The ProvideAndRegisterDocumentSetRequest Object</description>
         <name>ProvideAndRegisterDocumentSetRequest</name>
-        <type>org.dcm4chee.xds.common.infoset.ProvideAndRegisterDocumentSetRequestType</type>
+        <type>org.dcm4chee.xds.infoset.v30.ProvideAndRegisterDocumentSetRequestType</type>
       </parameter>
-      <return-type>org.dcm4chee.xds.common.infoset.RegistryResponseType</return-type>
+      <return-type>org.dcm4chee.xds.infoset.v30.RegistryResponseType</return-type>
    </operation>
    <operation impact="ACTION">
       <description><![CDATA[ Export Documents with a (RIM V2.1) SubmissionRequest.<br/>

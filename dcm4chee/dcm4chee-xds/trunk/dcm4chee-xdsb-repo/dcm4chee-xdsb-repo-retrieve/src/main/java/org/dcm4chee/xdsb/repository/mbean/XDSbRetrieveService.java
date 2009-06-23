@@ -38,25 +38,19 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xdsb.repository.mbean;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.activation.DataHandler;
 import javax.management.ObjectName;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSession;
 import javax.xml.bind.JAXBException;
 import javax.xml.ws.addressing.AddressingBuilder;
 
@@ -70,21 +64,18 @@ import org.dcm4chee.xds.common.audit.XDSExportMessage;
 import org.dcm4chee.xds.common.audit.XDSRetrieveMessage;
 import org.dcm4chee.xds.common.delegate.XdsHttpCfgDelegate;
 import org.dcm4chee.xds.common.exception.XDSException;
-import org.dcm4chee.xds.common.infoset.ObjectFactory;
-import org.dcm4chee.xds.common.infoset.RegistryError;
-import org.dcm4chee.xds.common.infoset.RegistryErrorList;
-import org.dcm4chee.xds.common.infoset.RegistryResponseType;
-import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetRequestType;
-import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType;
-import org.dcm4chee.xds.common.infoset.ProvideAndRegisterDocumentSetRequestType.Document;
-import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetRequestType.DocumentRequest;
-import org.dcm4chee.xds.common.infoset.RetrieveDocumentSetResponseType.DocumentResponse;
 import org.dcm4chee.xds.common.store.DocumentStoreDelegate;
 import org.dcm4chee.xds.common.store.XDSDocument;
 import org.dcm4chee.xds.common.store.XDSDocumentWriter;
 import org.dcm4chee.xds.common.utils.InfoSetUtil;
-import org.dcm4chee.xds.common.ws.DocumentRepositoryPortType;
-import org.dcm4chee.xds.common.ws.DocumentRepositoryPortTypeFactory;
+import org.dcm4chee.xds.infoset.v30.ObjectFactory;
+import org.dcm4chee.xds.infoset.v30.RegistryResponseType;
+import org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetRequestType;
+import org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetResponseType;
+import org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetRequestType.DocumentRequest;
+import org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetResponseType.DocumentResponse;
+import org.dcm4chee.xds.infoset.v30.ws.DocumentRepositoryPortType;
+import org.dcm4chee.xds.infoset.v30.ws.DocumentRepositoryPortTypeFactory;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
 

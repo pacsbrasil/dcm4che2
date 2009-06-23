@@ -42,9 +42,6 @@ package org.dcm4chee.xds.common.delegate;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import org.dcm4chee.xds.common.XDSConstants;
-import org.dcm4chee.xds.common.exception.XDSException;
-import org.dcm4chee.xds.common.infoset.ObjectFactory;
 import org.jboss.mx.util.MBeanServerLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +60,6 @@ public  class XdsHttpCfgDelegate {
     private static final String DEFAULT_XDS_HTTP_CFG_SERVICE_NAME = "dcm4chee.xds:service=XdsHttpCfgService";
     private static ObjectName xdsHttpCfgServiceName = null;
     private static MBeanServer server;
-    private ObjectFactory objFac = new ObjectFactory();
 
     private Logger log = LoggerFactory.getLogger(XdsHttpCfgDelegate.class);
     private boolean tlsIsConfigured = false;

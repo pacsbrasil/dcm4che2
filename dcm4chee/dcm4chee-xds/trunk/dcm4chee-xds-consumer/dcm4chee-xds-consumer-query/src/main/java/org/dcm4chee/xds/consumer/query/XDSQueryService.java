@@ -67,10 +67,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.addressing.AddressingBuilder;
-import javax.xml.ws.addressing.AddressingConstants;
 import javax.xml.ws.addressing.AddressingProperties;
 import javax.xml.ws.addressing.JAXWSAConstants;
-import javax.xml.ws.addressing.soap.SOAPAddressingProperties;
 import javax.xml.ws.handler.Handler;
 import javax.xml.ws.soap.SOAPBinding;
 
@@ -80,22 +78,15 @@ import org.dcm4chee.xds.common.XDSConstants;
 import org.dcm4chee.xds.common.audit.HttpUserInfo;
 import org.dcm4chee.xds.common.audit.XDSQueryMessage;
 import org.dcm4chee.xds.common.delegate.XdsHttpCfgDelegate;
-import org.dcm4chee.xds.common.infoset.RegistryResponseType;
-import org.dcm4chee.xds.common.ws.WSAddressingHandler;
 import org.dcm4chee.xds.infoset.v30.AdhocQueryRequest;
 import org.dcm4chee.xds.infoset.v30.AdhocQueryResponse;
-import org.dcm4chee.xds.infoset.v30.DocumentRegistryPortTypeAlt;
-import org.dcm4chee.xds.infoset.v30.DocumentRegistryServiceAlt;
-import org.dcm4chee.xds.infoset.v30.DocumentRegistryPortType12;
-import org.dcm4chee.xds.infoset.v30.DocumentRegistryService;
 import org.dcm4chee.xds.infoset.v30.util.InfoSetUtil;
 import org.dcm4chee.xds.infoset.v30.util.StoredQueryFactory;
+import org.dcm4chee.xds.infoset.v30.ws.DocumentRegistryPortType;
+import org.dcm4chee.xds.infoset.v30.ws.DocumentRegistryPortTypeFactory;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
-import org.jboss.ws.core.CommonMessageContext;
 import org.jboss.ws.core.ConfigProvider;
-import org.jboss.ws.core.StubExt;
-import org.jboss.ws.core.soap.MessageContextAssociation;
 import org.jboss.ws.core.utils.UUIDGenerator;
 import org.jboss.ws.extensions.addressing.jaxws.WSAddressingClientHandler;
 import org.w3c.dom.Node;
@@ -354,28 +345,13 @@ public class XDSQueryService extends ServiceMBeanSupport {
     }
 
     public AdhocQueryResponse performQueryViaWS(AdhocQueryRequest rq) {
-        DocumentRegistryServiceAlt s = new DocumentRegistryServiceAlt();
-        DocumentRegistryPortTypeAlt port = s.getDocumentRegistryPortSoap12();
-		BindingProvider bindingProvider = (BindingProvider)port;
-		// NOTE: The correct way to support WSAddressing on the client is to do this:
-		//    ConfigProvider configProvider = (ConfigProvider)port;
-		//    configProvider.setConfigName("Standard WSAddressing Client");
-		// However, due to a JBoss bug (http://jira.jboss.com/jira/browse/JBWS-1880)
-		// we must add a custom handler to force the injection of WSAddressing attributes
-		List<Handler> customHandlerChain = new ArrayList<Handler>();
-		customHandlerChain.add(new WSAddressingHandler(
-				xdsQueryURI, XDSConstants.URN_IHE_ITI_2007_REGISTRY_STORED_QUERY, UUID.randomUUID().toString()));
-		SOAPBinding soapBinding = (SOAPBinding)bindingProvider.getBinding();
-		soapBinding.setHandlerChain(customHandlerChain);        
-
-        Map<String, Object> reqCtx = bindingProvider.getRequestContext();
-        reqCtx.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, xdsQueryURI);
+        DocumentRegistryPortType port = DocumentRegistryPortTypeFactory.getDocumentRegistryPortSoap12(xdsQueryURI,
+        		XDSConstants.URN_IHE_ITI_2007_REGISTRY_STORED_QUERY, UUID.randomUUID().toString());
         return port.documentRegistryRegistryStoredQuery(rq);
     }
     
     public AdhocQueryResponse performQueryViaWSInfoset(AdhocQueryRequest rq) {
-        DocumentRegistryService s = new DocumentRegistryService();
-        DocumentRegistryPortType12 port =s.getDocumentRegistryPortSoap12();
+        DocumentRegistryPortType port = DocumentRegistryPortTypeFactory.getDocumentRegistryPortSoap12();
         BindingProvider bindingProvider = (BindingProvider)port;
         Map<String, Object> reqCtx = bindingProvider.getRequestContext();
         AddressingBuilder builder = AddressingBuilder.getAddressingBuilder();
