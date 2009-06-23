@@ -45,7 +45,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * @version $Revision$ $Date$
  * @since Nov 12, 2008
  */
-class UpdateDerivedFieldsUtils {
+public class UpdateDerivedFieldsUtils {
 
     public static void updateDerivedFieldsOf(StudyLocal study) {
         study.updateNumberOfStudyRelatedSeries();
