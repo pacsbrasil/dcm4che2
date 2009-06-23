@@ -583,7 +583,7 @@ public class DcmMWL {
         OptionBuilder.withArgName("aet[@host]");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription("set AET and local address of local " +
-                "Application Entity, use device name and pick up any valid\n" +
+                "Application Entity, use device name and pick up any valid " +
                 "local address to bind the socket by default");
         opts.addOption(OptionBuilder.create("L"));
         
@@ -719,11 +719,11 @@ public class DcmMWL {
         OptionBuilder.hasArgs();
         OptionBuilder.withValueSeparator('=');
         OptionBuilder.withDescription("specify matching key. attr can be " +
-                "specified by name or tag value (in hex), e.g. PatientName\n" +
-                "or 00100010. Attributes in nested Datasets can\n" +
-                "be specified by preceding the name/tag value of\n" +
-                "the sequence attribute, e.g. 00400100/00400009\n" +
-                "for Scheduled Procedure Step ID in the Scheduled\n" +
+                "specified by name or tag value (in hex), e.g. PatientName " +
+                "or 00100010. Attributes in nested Datasets can " +
+                "be specified by preceding the name/tag value of " +
+                "the sequence attribute, e.g. 00400100/00400009 " +
+                "for Scheduled Procedure Step ID in the Scheduled " +
                 "Procedure Step Sequence.");
         opts.addOption(OptionBuilder.create("q"));
 

@@ -434,20 +434,18 @@ public class DcmSnd extends StorageCommitmentService {
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
                 "set AET, local address and listening port of local "
-                + "Application Entity, use device name and pick\n"
-                + "                            up any valid local address to "
-                + "bind the socket by\n"
-                + "                            default");
+                + "Application Entity, use device name and pick up any valid "
+                + "local address to bind the socket by default");
         opts.addOption(OptionBuilder.create("L"));
 
         opts.addOption("ts1", false, "offer Default Transfer Syntax in " +
-                "separate Presentation Context. By default offered with\n" +
+                "separate Presentation Context. By default offered with " +
                 "Explicit VR Little Endian TS in one PC.");
 
         opts.addOption("fileref", false,
                 "send objects without pixel data, but with a reference to " +
-                "the DICOM file using DCM4CHE URI\nReferenced Transfer Syntax " +
-                "to import DICOM objects\n                            on a given file system to a DCM4CHEE " +
+                "the DICOM file using DCM4CHE URI Referenced Transfer Syntax " +
+                "to import DICOM objects on a given file system to a DCM4CHEE " +
                 "archive.");
 
         OptionBuilder.withArgName("username");
@@ -524,7 +522,7 @@ public class DcmSnd extends StorageCommitmentService {
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
                 "request storage commitment of (successfully) sent objects " +
-                "afterwards in new association\nto specified remote " +
+                "afterwards in new association to specified remote " +
                 "Application Entity");
         opts.addOption(OptionBuilder.create("stgcmtae"));
 
@@ -541,7 +539,7 @@ public class DcmSnd extends StorageCommitmentService {
 
         opts.addOption("pdv1", false,
                 "send only one PDV in one P-Data-TF PDU, " + 
-                "pack command and data PDV in one P-DATA-TF PDU by\ndefault.");
+                "pack command and data PDV in one P-DATA-TF PDU by default.");
         opts.addOption("tcpdelay", false,
                 "set TCP_NODELAY socket option to false, true by default");
 

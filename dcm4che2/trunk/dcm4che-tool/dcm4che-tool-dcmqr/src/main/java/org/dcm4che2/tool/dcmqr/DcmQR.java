@@ -624,10 +624,8 @@ public class DcmQR {
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
                 "set AET, local address and listening port of local"
-                + "Application Entity, use device name and pick\n"
-                + "                            up any valid local address to "
-                + "bind the socket by\n"
-                + "                            default");
+                + "Application Entity, use device name and pick up any valid "
+                + "local address to bind the socket by default");
         opts.addOption(OptionBuilder.create("L"));
 
         OptionBuilder.withArgName("username");
@@ -712,8 +710,8 @@ public class DcmQR {
         OptionBuilder.hasArgs();
         OptionBuilder.withDescription(
                 "negotiate support of specified Storage SOP Class and Transfer "
-                + "Syntaxes. The Storage SOP\nClass may be specified by its UID "
-                + "or by one\nof following key words:\n"
+                + "Syntaxes. The Storage SOP Class may be specified by its UID "
+                + "or by one of following key words:\n"
                 + "CR  - Computed Radiography Image Storage\n"
                 + "CT  - CT Image Storage\n"
                 + "MR  - MRImageStorage\n"
@@ -724,37 +722,36 @@ public class DcmQR {
                 + "XA  - XRay Angiographic Image Storage\n"
                 + "XRF - XRay Radiofluoroscopic Image Storage\n"
                 + "DX  - Digital X-Ray Image Storage for Presentation\n"
-                + "                            MG  - Digital Mammography X-Ray Image Storage\n"
-                + "for Presentation\n"
+                + "MG  - Digital Mammography X-Ray Image Storage for Presentation\n"
                 + "PR  - Grayscale Softcopy Presentation State Storage\n"
-                + "                            KO  - Key Object Selection Document Storage\n"
+                + "KO  - Key Object Selection Document Storage\n"
                 + "SR  - Basic Text Structured Report Document Storage\n"
-                + "                            The Transfer Syntaxes may be specified by a comma\n"
-                + "                            separated list of UIDs or by one of following key\n"
-                + "                            words:\n"
-                + "                            IVRLE - offer only Implicit VR Little Endian\n"
-                + "                            Transfer Syntax\n"
-                + "                            LE - offer Explicit and Implicit VR Little Endian\n"
-                + "                            Transfer Syntax\n"
-                + "                            BE - offer Explicit VR Big Endian Transfer Syntax\n"
-                + "                            DEFL - offer Deflated Explicit VR Little\n"
-                + "                            Endian Transfer Syntax\n"
-                + "                            JPLL - offer JEPG Loss Less Transfer Syntaxes\n"
-                + "                            JPLY - offer JEPG Lossy Transfer Syntaxes\n"
-                + "                            MPEG2 - offer MPEG2 Transfer Syntax\n"
-                + "                            NOPX - offer No Pixel Data Transfer Syntax\n"
-                + "                            NOPXD - offer No Pixel Data Deflate Transfer Syntax\n"
-                + "                            If only the Storage SOP Class is specified, all\n"
-                + "                            Transfer Syntaxes listed above except No Pixel Data\n"
-                + "                            and No Pixel Data Delflate Transfer Syntax are\n"
-                + "                            offered.");
+                + "The Transfer Syntaxes may be specified by a comma "
+                + "separated list of UIDs or by one of following key "
+                + "words:\n"
+                + "IVRLE - offer only Implicit VR Little Endian "
+                + "Transfer Syntax\n"
+                + "LE - offer Explicit and Implicit VR Little Endian "
+                + "Transfer Syntax\n"
+                + "BE - offer Explicit VR Big Endian Transfer Syntax\n"
+                + "DEFL - offer Deflated Explicit VR Little "
+                + "Endian Transfer Syntax\n"
+                + "JPLL - offer JEPG Loss Less Transfer Syntaxes\n"
+                + "JPLY - offer JEPG Lossy Transfer Syntaxes\n"
+                + "MPEG2 - offer MPEG2 Transfer Syntax\n"
+                + "NOPX - offer No Pixel Data Transfer Syntax\n"
+                + "NOPXD - offer No Pixel Data Deflate Transfer Syntax\n"
+                + "If only the Storage SOP Class is specified, all "
+                + "Transfer Syntaxes listed above except No Pixel Data "
+                + "and No Pixel Data Delflate Transfer Syntax are "
+                + "offered.");
         opts.addOption(OptionBuilder.create("cstore"));
 
         OptionBuilder.withArgName("dir");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
                 "store received objects into files in specified directory <dir>."
-                        + " Do not store received objects\nby default.");
+                        + " Do not store received objects by default.");
         opts.addOption(OptionBuilder.create("cstoredest"));
 
         opts.addOption("ivrle", false, "offer only Implicit VR Little Endian Transfer Syntax.");
@@ -769,7 +766,7 @@ public class DcmQR {
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
                 "maximum number of outstanding storage operations performed "
-                        + "asynchronously, unlimited by\n                            default.");
+                        + "asynchronously, unlimited by default.");
         opts.addOption(OptionBuilder.create("storeasync"));
 
         opts.addOption("noextneg", false, "disable extended negotiation.");
@@ -783,15 +780,14 @@ public class DcmQR {
         opts.addOption("retall", false, "negotiate private FIND SOP Classes " +
                 "to fetch all available attributes of matching entities.");
         opts.addOption("blocked", false, "negotiate private FIND SOP Classes " +
-                "to return attributes of several matching entities per FIND\n" +
-                "                            response.");
+                "to return attributes of several matching entities per FIND " +
+                "response.");
         opts.addOption("vmf", false, "negotiate private FIND SOP Classes to " +
-                "return attributes of legacy CT/MR images of one series as\n" +
-                "                           virtual multiframe object.");
+                "return attributes of legacy CT/MR images of one series as " +
+                "virtual multiframe object.");
         opts.addOption("pdv1", false,
                 "send only one PDV in one P-Data-TF PDU, pack command and data "
-                + "PDV in one P-DATA-TF PDU\n"
-                + "                           by default.");
+                + "PDV in one P-DATA-TF PDU by default.");
         opts.addOption("tcpdelay", false,
                 "set TCP_NODELAY socket option to false, true by default");
 
@@ -876,20 +872,20 @@ public class DcmQR {
         OptionGroup qrlevel = new OptionGroup();
 
         OptionBuilder.withDescription("perform patient level query, multiple "
-                + "exclusive with -S and -I, perform study level query\n"
-                + "                            by default.");
+                + "exclusive with -S and -I, perform study level query "
+                + "by default.");
         OptionBuilder.withLongOpt("patient");
         opts.addOption(OptionBuilder.create("P"));
 
         OptionBuilder.withDescription("perform series level query, multiple "
-                + "exclusive with -P and -I, perform study level query\n"
-                + "                            by default.");
+                + "exclusive with -P and -I, perform study level query "
+                + "by default.");
         OptionBuilder.withLongOpt("series");
         opts.addOption(OptionBuilder.create("S"));
 
         OptionBuilder.withDescription("perform instance level query, multiple "
-                + "exclusive with -P and -S, perform study level query\n"
-                + "                            by default.");
+                + "exclusive with -P and -S, perform study level query "
+                + "by default.");
         OptionBuilder.withLongOpt("image");
         opts.addOption(OptionBuilder.create("I"));
 
@@ -905,11 +901,11 @@ public class DcmQR {
         OptionBuilder.hasArgs();
         OptionBuilder.withValueSeparator('=');
         OptionBuilder.withDescription("specify matching key. attr can be " +
-                "specified by name or tag value (in hex), e.g. PatientName\n" +
-                "or 00100010. Attributes in nested Datasets can\n" +
-                "be specified by including the name/tag value of\n" +
-                "                            the sequence attribute, e.g. 00400275/00400009\n" +
-                "for Scheduled Procedure Step ID in the Request\n" +
+                "specified by name or tag value (in hex), e.g. PatientName " +
+                "or 00100010. Attributes in nested Datasets can " +
+                "be specified by including the name/tag value of " +
+                "the sequence attribute, e.g. 00400275/00400009 " +
+                "for Scheduled Procedure Step ID in the Request " +
                 "Attributes Sequence");
         opts.addOption(OptionBuilder.create("q"));
 

@@ -121,7 +121,7 @@ public class Jpg2Dcm {
     
     private static final String OPT_NO_APPN_DESC =
         "Exclude application segments APPn from JPEG stream; " +
-        "encapsulate JPEG stream verbatim by\ndefault.";
+        "encapsulate JPEG stream verbatim by default.";
     
     private static final String OPT_HELP_DESC =
         "Print this message";

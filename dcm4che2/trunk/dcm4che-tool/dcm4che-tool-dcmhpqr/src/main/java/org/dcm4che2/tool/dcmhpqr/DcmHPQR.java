@@ -708,7 +708,7 @@ public class DcmHPQR {
         OptionBuilder.withArgName("aet[@host]");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription("set AET and local address of local "
-                + "Application Entity, use device name and pick up any valid\n"
+                + "Application Entity, use device name and pick up any valid "
                 + "local address to bind the socket by default");
         opts.addOption(OptionBuilder.create("L"));
         
@@ -854,11 +854,11 @@ public class DcmHPQR {
         OptionBuilder.hasArgs();
         OptionBuilder.withValueSeparator('=');
         OptionBuilder.withDescription("specify matching key. attr can be "
-                + "specified by name or tag value (in hex), e.g. PatientName\n"
-                + "or 00100010. Attributes in nested Datasets can\n"
-                + "be specified by preceding the name/tag value of\n"
-                + "the sequence attribute, e.g. 0072000C/00080060\n"
-                + "for Modality in the Hanging Protocol Definition\n"
+                + "specified by name or tag value (in hex), e.g. PatientName "
+                + "or 00100010. Attributes in nested Datasets can "
+                + "be specified by preceding the name/tag value of "
+                + "the sequence attribute, e.g. 0072000C/00080060 "
+                + "for Modality in the Hanging Protocol Definition "
                 + "Sequence.");
         opts.addOption(OptionBuilder.create("q"));
 
@@ -877,28 +877,28 @@ public class DcmHPQR {
         OptionBuilder.withArgName("AnatomicRegion");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "specify matching Anatomic Region Sequence Code Value and Coding Scheme Designator.\n"
+                "specify matching Anatomic Region Sequence Code Value and Coding Scheme Designator. "
                 + "Code Value and Coding Scheme Designer are separated by ':'. For example, T1234:DCM4CHE.");
         opts.addOption(OptionBuilder.create("ar"));
 
         OptionBuilder.withArgName("ProcedureCode");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "specify matching Procedure Code Sequence Code Value and Coding Scheme Designator.\n"
+                "specify matching Procedure Code Sequence Code Value and Coding Scheme Designator. "
                  + "Code Value and Coding Scheme Designer are separated by ':'. For example, T1234:DCM4CHE.");
         opts.addOption(OptionBuilder.create("pc"));
 
         OptionBuilder.withArgName("ReasonCode");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "specify matching Reason for Requested Procedure Sequence Code Value and Coding Scheme Designator.\n"
+                "specify matching Reason for Requested Procedure Sequence Code Value and Coding Scheme Designator. "
                 + "Code Value and Coding Scheme Designer are separated by ':'. For example, T1234:DCM4CHE.");
         opts.addOption(OptionBuilder.create("rfrp"));
 
         OptionBuilder.withArgName("HPUserIDCode");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "specify matching HP User ID Code Sequence Code Value and Coding Scheme Designator.\n"
+                "specify matching HP User ID Code Sequence Code Value and Coding Scheme Designator. "
                 + "Code Value and Coding Scheme Designer are separated by ':'. For example, T1234:DCM4CHE.");
         opts.addOption(OptionBuilder.create("user"));
 

@@ -129,8 +129,7 @@ public class Xml2Dcm {
                 "sequences are encoded with undefined length.");
         opts.addOption("e", "explitemlen", false, 
                 "Encode sequence items with explicit length. At default, " +
-                "non-empty sequence items are encoded with\n" +
-                "undefined length.");
+                "non-empty sequence items are encoded with undefined length.");
         opts.addOption("U", "undefseqlen", false, 
                 "Encode all sequences with undefined length. Mutual exclusive " +
                 "with option -E.");

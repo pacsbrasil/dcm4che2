@@ -7,11 +7,11 @@
 
 ### $Id: dcm2jpg 826 2007-04-27 13:35:50Z gunterze $ ###
 
-# Need jai-imageio-1.1 or jai-imageio-1.2 installed!! 
+# Need jai-imageio-1.2 or jai-imageio-1.2 installed!! 
 # (download from https://jai-imageio.dev.java.net/binary-builds.html)
 #
-# For jai-imageio-1.1 CLASSPATH Installation, set
-# JIIO_LIB=$INSTALLDIR/jai_imageio-1_1/lib
+# For jai-imageio-1.2 CLASSPATH Installation, set
+# JIIO_LIB=$INSTALLDIR/jai_imageio-1.2/lib
 # export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$JIIO_LIB"
 #
 # For jai-imageio-1.2 CLASSPATH Installation, set
@@ -61,7 +61,7 @@ CP="$CP:$DCM4CHE_HOME/lib/dcm4che-imageio-rle-2.0.20-SNAPSHOT.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-log4j12-1.5.0.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.5.0.jar"
 CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.13.jar"
-CP="$CP:$DCM4CHE_HOME/lib/commons-cli-1.1.jar"
+CP="$CP:$DCM4CHE_HOME/lib/commons-cli-1.2.jar"
 
 # Setup jai_imageio 
 if [ "x$JIIO_LIB" != "x" ]; then

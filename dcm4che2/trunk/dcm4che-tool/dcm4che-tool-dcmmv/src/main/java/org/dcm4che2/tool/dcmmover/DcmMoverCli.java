@@ -126,7 +126,7 @@ public class DcmMoverCli {
         OptionBuilder.withArgName("[ip][:port]");
         OptionBuilder.hasOptionalArg();
         OptionBuilder.withDescription(
-        		"Request storage commitment of (successfully) moved objects and optionally\n" +
+        		"Request storage commitment of (successfully) moved objects and optionally " +
         		"specify the address and port of a separate association to receive commitment on.");
         opts.addOption(OptionBuilder.create("stgcmt"));
 
@@ -162,7 +162,7 @@ public class DcmMoverCli {
         OptionBuilder.withValueSeparator('=');
         OptionBuilder.withDescription(
         		"Specify patient and study attributes whose values should be added or" +
-        		"replaced during the study move. Can be specified by name or tag value\n" +
+        		"replaced during the study move. Can be specified by name or tag value " +
         		"(in hex), e.g. PatientName or 00100010.");
         opts.addOption(OptionBuilder.create("x"));
 

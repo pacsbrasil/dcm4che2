@@ -5,11 +5,11 @@ rem -------------------------------------------------------------------------
 
 rem $Id: dcm2jpg.bat 826 2007-04-27 13:35:50Z gunterze $
 
-rem Need jai-imageio-1.1 or jai-imageio-1.2 installed!! 
+rem Need jai-imageio-1.2 or jai-imageio-1.2 installed!! 
 rem (download from https://jai-imageio.dev.java.net/binary-builds.html)
 
-rem For jai-imageio-1.1 CLASSPATH Installation, set
-rem set JIIO_LIB=C:\Program Files\Sun Microsystems\JAI Image IO Tools 1.1\lib
+rem For jai-imageio-1.2 CLASSPATH Installation, set
+rem set JIIO_LIB=C:\Program Files\Sun Microsystems\JAI Image IO Tools 1.2\lib
 rem set PATH=%JIIO_LIB%;%PATH%
 
 rem For jai-imageio-1.2 CLASSPATH Installation, set
@@ -62,7 +62,7 @@ set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-rle-2.0.20-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.5.0.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.5.0.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.13.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-1.1.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-1.2.jar
 
 if "%JIIO_LIB%" == "" goto :SKIP_SET_JIIO_CLASSPATH
 

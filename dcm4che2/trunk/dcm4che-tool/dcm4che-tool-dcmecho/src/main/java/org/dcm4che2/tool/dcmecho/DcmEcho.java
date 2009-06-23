@@ -250,7 +250,7 @@ public class DcmEcho {
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
                 "set AET and local address of local Application Entity, use "
-                        + "device name and pick up any valid\nlocal address to "
+                        + "device name and pick up any valid local address to "
                         + "bind the socket by default");
         opts.addOption(OptionBuilder.create("L"));
 
