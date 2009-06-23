@@ -130,17 +130,17 @@ public class DcmHPQR {
     private static final String[] LE_TS = { UID.ExplicitVRLittleEndian,
             UID.ImplicitVRLittleEndian };
 
-    private Executor executor = new NewThreadExecutor("DCMHPQR");
+    private final Executor executor;
 
-    private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
+    private final NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
 
-    private NetworkConnection remoteConn = new NetworkConnection();
+    private final NetworkConnection remoteConn = new NetworkConnection();
 
-    private Device device = new Device("DCMHPQR");
+    private final Device device;
 
-    private NetworkApplicationEntity ae = new NetworkApplicationEntity();
+    private final NetworkApplicationEntity ae = new NetworkApplicationEntity();
 
-    private NetworkConnection conn = new NetworkConnection();
+    private final NetworkConnection conn = new NetworkConnection();
 
     private Association assoc;
 
@@ -178,7 +178,9 @@ public class DcmHPQR {
     
     private char[] trustStorePassword = SECRET; 
     
-    public DcmHPQR() {
+    public DcmHPQR(String name) {
+        device = new Device(name);
+        executor = new NewThreadExecutor(name);
         remoteAE.setInstalled(true);
         remoteAE.setAssociationAcceptor(true);
         remoteAE.setNetworkConnection(new NetworkConnection[] { remoteConn });
@@ -187,7 +189,7 @@ public class DcmHPQR {
         device.setNetworkConnection(conn);
         ae.setNetworkConnection(conn);
         ae.setAssociationInitiator(true);
-        ae.setAETitle("DCMHPQR");
+        ae.setAETitle(name);
         for (int i = 0; i < RETURN_KEYS.length; i++) {
             keys.putNull(RETURN_KEYS[i], null);
         }
@@ -398,7 +400,7 @@ public class DcmHPQR {
         assoc.release(true);
     }
 
-    public List query() throws IOException, InterruptedException {
+    public List<DicomObject> query() throws IOException, InterruptedException {
         TransferCapability tc = assoc
                 .getTransferCapabilityAsSCU(UID.HangingProtocolInformationModelFIND);
         if (tc == null) {
@@ -424,7 +426,8 @@ public class DcmHPQR {
         return result;
     }
 
-    public void move(List findResults) throws IOException, InterruptedException {
+    public void move(List<DicomObject> findResults)
+            throws IOException, InterruptedException {
         if (moveDest == null)
             throw new IllegalStateException("moveDest == null");
         TransferCapability tc = assoc
@@ -461,11 +464,13 @@ public class DcmHPQR {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         CommandLine cl = parse(args);
-        DcmHPQR dcmhpqr = new DcmHPQR();
-        final List argList = cl.getArgList();
-        String remoteAE = (String) argList.get(0);
+        DcmHPQR dcmhpqr = new DcmHPQR(cl.hasOption("device") 
+                ? cl.getOptionValue("device") : "DCMHPQR");
+        final List<String> argList = cl.getArgList();
+        String remoteAE = argList.get(0);
         String[] calledAETAddress = split(remoteAE, '@');
         dcmhpqr.setCalledAET(calledAETAddress[0]);
         if (calledAETAddress[1] == null) {
@@ -663,7 +668,7 @@ public class DcmHPQR {
                 + ((t2 - t1) / 1000F) + "s");
 
         try {
-            List result = dcmhpqr.query();
+            List<DicomObject> result = dcmhpqr.query();
             long t3 = System.currentTimeMillis();
             System.out.println("Received " + result.size()
                     + " matching entries in " + ((t3 - t2) / 1000F) + "s");
@@ -693,10 +698,17 @@ public class DcmHPQR {
 
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
+
+        OptionBuilder.withArgName("name");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "set device name, use DCMHPQR by default");
+        opts.addOption(OptionBuilder.create("device"));
+
         OptionBuilder.withArgName("aet[@host]");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription("set AET and local address of local "
-                + "Application Entity, use ANONYMOUS and pick up any valid\n"
+                + "Application Entity, use device name and pick up any valid\n"
                 + "local address to bind the socket by default");
         opts.addOption(OptionBuilder.create("L"));
         

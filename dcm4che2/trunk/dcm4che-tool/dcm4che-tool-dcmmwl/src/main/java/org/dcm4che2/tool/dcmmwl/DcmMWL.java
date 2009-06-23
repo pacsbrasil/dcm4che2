@@ -154,12 +154,12 @@ public class DcmMWL {
         UID.ExplicitVRLittleEndian, 
         UID.ImplicitVRLittleEndian };
     
-    private Executor executor = new NewThreadExecutor("DCMMWL");
-    private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
-    private NetworkConnection remoteConn = new NetworkConnection();
-    private Device device = new Device("DCMMWL");
-    private NetworkApplicationEntity ae = new NetworkApplicationEntity();
-    private NetworkConnection conn = new NetworkConnection();
+    private final Executor executor;
+    private final NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
+    private final NetworkConnection remoteConn = new NetworkConnection();
+    private final Device device;
+    private final NetworkApplicationEntity ae = new NetworkApplicationEntity();
+    private final NetworkConnection conn = new NetworkConnection();
     private Association assoc;
     private int priority = 0;
     private int cancelAfter = Integer.MAX_VALUE;
@@ -176,7 +176,9 @@ public class DcmMWL {
     
     private char[] trustStorePassword = SECRET; 
     
-    public DcmMWL() {
+    public DcmMWL(String name) {
+        device = new Device(name);
+        executor = new NewThreadExecutor(name);
         remoteAE.setInstalled(true);
         remoteAE.setAssociationAcceptor(true);
         remoteAE.setNetworkConnection(new NetworkConnection[] { remoteConn });
@@ -185,7 +187,7 @@ public class DcmMWL {
         device.setNetworkConnection(conn);
         ae.setNetworkConnection(conn);
         ae.setAssociationInitiator(true);
-        ae.setAETitle("DCMMWL");
+        ae.setAETitle(name);
         for (int i = 0; i < RETURN_KEYS.length; i++) {
             keys.putNull(RETURN_KEYS[i], null);
         }        
@@ -350,7 +352,7 @@ public class DcmMWL {
         assoc.release(true);
     }
 
-    public List query() throws IOException, InterruptedException {
+    public List<DicomObject> query() throws IOException, InterruptedException {
         TransferCapability tc = assoc.getTransferCapabilityAsSCU(
                 UID.ModalityWorklistInformationModelFIND);
         if (tc == null) {
@@ -376,11 +378,13 @@ public class DcmMWL {
         return result;
     }
     
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         CommandLine cl = parse(args);
-        DcmMWL dcmmwl = new DcmMWL();
-        final List argList = cl.getArgList();
-        String remoteAE = (String) argList.get(0);
+        DcmMWL dcmmwl = new DcmMWL(cl.hasOption("device") 
+                ? cl.getOptionValue("device") : "DCMMWL");
+        final List<String> argList = cl.getArgList();
+        String remoteAE = argList.get(0);
         String[] calledAETAddress = split(remoteAE, '@');
         dcmmwl.setCalledAET(calledAETAddress[0]);
         if (calledAETAddress[1] == null) {
@@ -547,7 +551,7 @@ public class DcmMWL {
                 + ((t2 - t1) / 1000F) + "s");
 
         try {
-            List result = dcmmwl.query();
+            List<DicomObject> result = dcmmwl.query();
             long t3 = System.currentTimeMillis();
             System.out.println("Received " + result.size()
                     + " matching entries in " + ((t3 - t2) / 1000F) + "s");
@@ -569,10 +573,17 @@ public class DcmMWL {
 
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
+
+        OptionBuilder.withArgName("name");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "set device name, use DCMMWL by default");
+        opts.addOption(OptionBuilder.create("device"));
+
         OptionBuilder.withArgName("aet[@host]");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription("set AET and local address of local " +
-                "Application Entity, use ANONYMOUS and pick up any valid\n" +
+                "Application Entity, use device name and pick up any valid\n" +
                 "local address to bind the socket by default");
         opts.addOption(OptionBuilder.create("L"));
         

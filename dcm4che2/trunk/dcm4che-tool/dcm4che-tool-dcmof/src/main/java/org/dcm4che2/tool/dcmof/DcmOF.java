@@ -91,29 +91,12 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class DcmOF {
+    private static final Logger LOG = LoggerFactory.getLogger(DcmOF.class);
+
     private static final int KB = 1024;
-    private static final String DEF_TS = "defts";
-    private static final String BIG_ENDIAN = "bigendian";
-    private static final String SCN = "scn";
-    private static final String SCNXML = "scnxml";
-    private static final String IAN = "ian";
-    private static final String IANXML = "ianxml";
-    private static final String MPPS = "mpps";
-    private static final String MPPSXML = "mppsxml";
-    private static final String MWL = "mwl";
-    private static final String PDV1 = "pdv1";
-    private static final String ASYNC = "async";
-    private static final String REQUEST_TO = "requestTO";
-    private static final String RELEASE_TO = "releaseTO";
-    private static final String SO_CLOSEDELAY = "soclosedelay";
-    private static final String TCP_DELAY = "tcpdelay";
-    private static final String SO_RCVBUF = "sorcvbuf";
-    private static final String SO_SNDBUF = "sosndbuf";
-    private static final String SND_PDULEN = "sndpdulen";
-    private static final String RCV_PDULEN = "rcvpdulen";
-    private static final String IDLE_TO = "idleTO";
-    private static final String REAPER = "reaper";
+
     private static final String USAGE = "dcmof [Options] [<aet>[@<ip>]:]<port>";
+
     private static final String DESCRIPTION = "DICOM Server providing DICOM service of IHE actor Order Filler:\n"
             + "- Modality Worklist (MWL SCP),\n"
             + "- Modality Performed Procedure Step (MPPS SCP)\n"
@@ -154,14 +137,13 @@ public class DcmOF {
     private static final String[] NATIVE_LE_TS = { UID.ExplicitVRLittleEndian,
             UID.ImplicitVRLittleEndian };
 
-    private static Logger log = LoggerFactory.getLogger(DcmOF.class);
-    private static Executor executor = new NewThreadExecutor("DCMOF");
+    private final Executor executor;
 
-    private Device device = new Device("DCMOF");
+    private final Device device;
 
-    private NetworkApplicationEntity ae = new NetworkApplicationEntity();
+    private final NetworkApplicationEntity ae = new NetworkApplicationEntity();
 
-    private NetworkConnection nc = new NetworkConnection();
+    private final NetworkConnection nc = new NetworkConnection();
 
     private String[] tsuids = NATIVE_LE_TS;
 
@@ -178,7 +160,9 @@ public class DcmOF {
     
     private char[] trustStorePassword = SECRET; 
     
-    public DcmOF() {
+    public DcmOF(String name) {
+        device = new Device(name);
+        executor = new NewThreadExecutor(name);
         device.setNetworkApplicationEntity(ae);
         device.setNetworkConnection(nc);
         ae.setNetworkConnection(nc);
@@ -289,6 +273,12 @@ public class DcmOF {
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
         
+        OptionBuilder.withArgName("name");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "set device name, use DCMOF by default");
+        opts.addOption(OptionBuilder.create("device"));
+
         OptionBuilder.withArgName("NULL|3DES|AES");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
@@ -345,19 +335,19 @@ public class DcmOF {
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("Activate MWL SCP, providing MWL Items stored in specified directory.");
-        opts.addOption(OptionBuilder.create(MWL));
+        opts.addOption(OptionBuilder.create("mwl"));
 
         OptionGroup mpps = new OptionGroup();
         OptionBuilder.withArgName("dir");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("Activate MPPS SCP, storing received MPPS in specified directory.");
-        mpps.addOption(OptionBuilder.create(MPPS));
+        mpps.addOption(OptionBuilder.create("mpps"));
         OptionBuilder.withArgName("dir");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("Activate MPPS SCP, storing XML received MPPS in specified directory in XML format.");
-        mpps.addOption(OptionBuilder.create(MPPSXML));
+        mpps.addOption(OptionBuilder.create("mppsxml"));
         opts.addOptionGroup(mpps);
 
         OptionGroup ian = new OptionGroup();
@@ -365,12 +355,12 @@ public class DcmOF {
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("Activate IAN SCP, storing received IAN in specified directory.");
-        ian.addOption(OptionBuilder.create(IAN));
+        ian.addOption(OptionBuilder.create("ian"));
         OptionBuilder.withArgName("dir");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("Activate IAN SCP, storing received IAN in specified directory in XML format.");
-        ian.addOption(OptionBuilder.create(IANXML));
+        ian.addOption(OptionBuilder.create("ianxml"));
         opts.addOptionGroup(ian);
 
         OptionGroup scn = new OptionGroup();
@@ -378,12 +368,12 @@ public class DcmOF {
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("Activate SCN SCP, storing received SCN in specified directory.");
-        scn.addOption(OptionBuilder.create(SCN));
+        scn.addOption(OptionBuilder.create("scn"));
         OptionBuilder.withArgName("dir");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("Activate SCN SCP, storing received SCN in specified directory in XML format.");
-        scn.addOption(OptionBuilder.create(SCNXML));
+        scn.addOption(OptionBuilder.create("scnxml"));
         opts.addOptionGroup(scn);
 
         opts.addOption("c", "compact", false,
@@ -393,10 +383,10 @@ public class DcmOF {
 
         OptionGroup ts = new OptionGroup();
         OptionBuilder.withDescription("accept only default Transfer Syntax.");
-        ts.addOption(OptionBuilder.create(DEF_TS));
+        ts.addOption(OptionBuilder.create("defts"));
         OptionBuilder
                 .withDescription("accept Explict VR Big Endian Transfer Syntax.");
-        ts.addOption(OptionBuilder.create(BIG_ENDIAN));
+        ts.addOption(OptionBuilder.create("bigendian"));
         opts.addOptionGroup(ts);
 
         OptionBuilder.withArgName("maxops");
@@ -404,67 +394,67 @@ public class DcmOF {
         OptionBuilder
                 .withDescription("maximum number of outstanding operations performed "
                         + "asynchronously, unlimited by default.");
-        opts.addOption(OptionBuilder.create(ASYNC));
+        opts.addOption(OptionBuilder.create("async"));
 
-        opts.addOption(PDV1, false,
+        opts.addOption("pdv1", false,
                 "send only one PDV in one P-Data-TF PDU, " +
                 "pack command and data PDV in one P-DATA-TF PDU by default.");
-        opts.addOption(TCP_DELAY, false,
+        opts.addOption("tcpdelay", false,
                 "set TCP_NODELAY socket option to false, true by default");
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("delay in ms for Socket close after sending A-ABORT, 50ms by default");
-        opts.addOption(OptionBuilder.create(SO_CLOSEDELAY));
+        opts.addOption(OptionBuilder.create("soclosedelay"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("timeout in ms for receiving -ASSOCIATE-RQ, 5s by default");
-        opts.addOption(OptionBuilder.create(REQUEST_TO));
+        opts.addOption(OptionBuilder.create("requestTO"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("timeout in ms for receiving A-RELEASE-RP, 5s by default");
-        opts.addOption(OptionBuilder.create(RELEASE_TO));
+        opts.addOption(OptionBuilder.create("releaseTO"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("period in ms to check for outstanding DIMSE-RSP, 10s by default");
-        opts.addOption(OptionBuilder.create(REAPER));
+        opts.addOption(OptionBuilder.create("reaper"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("timeout in ms for receiving DIMSE-RQ, 60s by default");
-        opts.addOption(OptionBuilder.create(IDLE_TO));
+        opts.addOption(OptionBuilder.create("idleTO"));
 
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("maximal length in KB of received P-DATA-TF PDUs, 16KB by default");
-        opts.addOption(OptionBuilder.create(RCV_PDULEN));
+        opts.addOption(OptionBuilder.create("rcvpdulen"));
 
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("maximal length in KB of sent P-DATA-TF PDUs, 16KB by default");
-        opts.addOption(OptionBuilder.create(SND_PDULEN));
+        opts.addOption(OptionBuilder.create("sndpdulen"));
 
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("set SO_RCVBUF socket option to specified value in KB");
-        opts.addOption(OptionBuilder.create(SO_RCVBUF));
+        opts.addOption(OptionBuilder.create("sorcvbuf"));
 
         OptionBuilder.withArgName("KB");
         OptionBuilder.hasArg();
         OptionBuilder
                 .withDescription("set SO_SNDBUF socket option to specified value in KB");
-        opts.addOption(OptionBuilder.create(SO_SNDBUF));
+        opts.addOption(OptionBuilder.create("sosndbuf"));
 
         opts.addOption("h", "help", false, "print this message");
         opts.addOption("V", "version", false,
@@ -490,11 +480,13 @@ public class DcmOF {
         return cl;
     }
 
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         CommandLine cl = parse(args);
-        DcmOF dcmof = new DcmOF();
-        final List argList = cl.getArgList();
-        String port = (String) argList.get(0);
+        DcmOF dcmof = new DcmOF(cl.hasOption("device") 
+                ? cl.getOptionValue("device") : "DCMOF");
+        final List<String> argList = cl.getArgList();
+        String port = argList.get(0);
         String[] aetPort = split(port, ':', 1);
         dcmof.setPort(parseInt(aetPort[1], "illegal port number", 1, 0xffff));
         if (aetPort[0] != null) {
@@ -505,74 +497,74 @@ public class DcmOF {
             }
         }
 
-        if (cl.hasOption(DEF_TS))
+        if (cl.hasOption("defts"))
             dcmof.setTransferSyntax(ONLY_DEF_TS);
-        else if (cl.hasOption(BIG_ENDIAN))
+        else if (cl.hasOption("bigendian"))
             dcmof.setTransferSyntax(NATIVE_TS);
-        if (cl.hasOption(REAPER))
+        if (cl.hasOption("reaper"))
             dcmof
                     .setAssociationReaperPeriod(parseInt(cl
-                            .getOptionValue(REAPER),
+                            .getOptionValue("reaper"),
                             "illegal argument of option -reaper", 1,
                             Integer.MAX_VALUE));
-        if (cl.hasOption(IDLE_TO))
+        if (cl.hasOption("idleTO"))
             dcmof
-                    .setIdleTimeout(parseInt(cl.getOptionValue(IDLE_TO),
+                    .setIdleTimeout(parseInt(cl.getOptionValue("idleTO"),
                             "illegal argument of option -idleTO", 1,
                             Integer.MAX_VALUE));
-        if (cl.hasOption(REQUEST_TO))
-            dcmof.setRequestTimeout(parseInt(cl.getOptionValue(REQUEST_TO),
+        if (cl.hasOption("requestTO"))
+            dcmof.setRequestTimeout(parseInt(cl.getOptionValue("requestTO"),
                     "illegal argument of option -requestTO", 1,
                     Integer.MAX_VALUE));
-        if (cl.hasOption(RELEASE_TO))
-            dcmof.setReleaseTimeout(parseInt(cl.getOptionValue(RELEASE_TO),
+        if (cl.hasOption("releaseTO"))
+            dcmof.setReleaseTimeout(parseInt(cl.getOptionValue("releaseTO"),
                     "illegal argument of option -releaseTO", 1,
                     Integer.MAX_VALUE));
-        if (cl.hasOption(SO_CLOSEDELAY))
+        if (cl.hasOption("soclosedelay"))
             dcmof.setSocketCloseDelay(parseInt(
-                    cl.getOptionValue(SO_CLOSEDELAY),
+                    cl.getOptionValue("soclosedelay"),
                     "illegal argument of option -soclosedelay", 1, 10000));
-        if (cl.hasOption(RCV_PDULEN))
+        if (cl.hasOption("rcvpdulen"))
             dcmof.setMaxPDULengthReceive(parseInt(
-                    cl.getOptionValue(RCV_PDULEN),
+                    cl.getOptionValue("rcvpdulen"),
                     "illegal argument of option -rcvpdulen", 1, 10000)
                     * KB);
-        if (cl.hasOption(SND_PDULEN))
-            dcmof.setMaxPDULengthSend(parseInt(cl.getOptionValue(SND_PDULEN),
+        if (cl.hasOption("sndpdulen"))
+            dcmof.setMaxPDULengthSend(parseInt(cl.getOptionValue("sndpdulen"),
                     "illegal argument of option -sndpdulen", 1, 10000)
                     * KB);
-        if (cl.hasOption(SO_SNDBUF))
-            dcmof.setSendBufferSize(parseInt(cl.getOptionValue(SO_SNDBUF),
+        if (cl.hasOption("sosndbuf"))
+            dcmof.setSendBufferSize(parseInt(cl.getOptionValue("sosndbuf"),
                     "illegal argument of option -sosndbuf", 1, 10000)
                     * KB);
-        if (cl.hasOption(SO_RCVBUF))
-            dcmof.setReceiveBufferSize(parseInt(cl.getOptionValue(SO_RCVBUF),
+        if (cl.hasOption("sorcvbuf"))
+            dcmof.setReceiveBufferSize(parseInt(cl.getOptionValue("sorcvbuf"),
                     "illegal argument of option -sorcvbuf", 1, 10000)
                     * KB);
 
-        dcmof.setPackPDV(!cl.hasOption(PDV1));
-        dcmof.setTcpNoDelay(!cl.hasOption(TCP_DELAY));
-        if (cl.hasOption(ASYNC))
-            dcmof.setMaxOpsPerformed(parseInt(cl.getOptionValue(ASYNC),
+        dcmof.setPackPDV(!cl.hasOption("pdv1"));
+        dcmof.setTcpNoDelay(!cl.hasOption("tcpdelay"));
+        if (cl.hasOption("async"))
+            dcmof.setMaxOpsPerformed(parseInt(cl.getOptionValue("async"),
                     "illegal argument of option -async", 0, 0xffff));
 
         ArrayList<TransferCapability> tc = new ArrayList<TransferCapability>();
         tc.add(new TransferCapability(UID.VerificationSOPClass, ONLY_DEF_TS,
                 TransferCapability.SCP));
-        if (cl.hasOption(MWL))
-            dcmof.registerMWLSCP(new File(cl.getOptionValue(MWL)), tc);
-        if (cl.hasOption(MPPS))
-            dcmof.registerMPPSSCP(new File(cl.getOptionValue(MPPS)), tc);
-        if (cl.hasOption(MPPSXML))
-            dcmof.registerMPPSXMLSCP(new File(cl.getOptionValue(MPPSXML)), tc);
-        if (cl.hasOption(IAN))
-            dcmof.registerIANSCP(new File(cl.getOptionValue(IAN)), tc);
-        if (cl.hasOption(IANXML))
-            dcmof.registerIANXMLSCP(new File(cl.getOptionValue(IANXML)), tc);
-        if (cl.hasOption(SCN))
-            dcmof.registerSCNSCP(new File(cl.getOptionValue(SCN)), tc);
-        if (cl.hasOption(SCNXML))
-            dcmof.registerSCNXMLSCP(new File(cl.getOptionValue(SCNXML)), tc);
+        if (cl.hasOption("mwl"))
+            dcmof.registerMWLSCP(new File(cl.getOptionValue("mwl")), tc);
+        if (cl.hasOption("mpps"))
+            dcmof.registerMPPSSCP(new File(cl.getOptionValue("mpps")), tc);
+        if (cl.hasOption("mppsxml"))
+            dcmof.registerMPPSXMLSCP(new File(cl.getOptionValue("mppsxml")), tc);
+        if (cl.hasOption("ian"))
+            dcmof.registerIANSCP(new File(cl.getOptionValue("ian")), tc);
+        if (cl.hasOption("ianxml"))
+            dcmof.registerIANXMLSCP(new File(cl.getOptionValue("ianxml")), tc);
+        if (cl.hasOption("scn"))
+            dcmof.registerSCNSCP(new File(cl.getOptionValue("scn")), tc);
+        if (cl.hasOption("scnxml"))
+            dcmof.registerSCNXMLSCP(new File(cl.getOptionValue("scnxml")), tc);
         dcmof.setComments(cl.hasOption("C"));
         dcmof.setIndent(!cl.hasOption("c"));
 
@@ -747,7 +739,7 @@ public class DcmOF {
     }
 
     void storeAsXML(File f, DicomObject data) throws Exception {
-        log.info("M-WRITE " + f);
+        LOG.info("M-WRITE " + f);
         SAXTransformerFactory tf = 
                 (SAXTransformerFactory) TransformerFactory.newInstance();
         TransformerHandler th = tf.newTransformerHandler();
@@ -773,7 +765,7 @@ public class DcmOF {
     }
 
     void storeAsDICOM(File f, DicomObject data) throws Exception {
-        log.info("M-WRITE " + f);
+        LOG.info("M-WRITE " + f);
         DicomOutputStream out = new DicomOutputStream(new FileOutputStream(f));
         try {
             out.writeDicomFile(data);
@@ -783,7 +775,7 @@ public class DcmOF {
     }
 
     DicomObject load(File f) throws Exception {
-        log.info("M-READ " + f);
+        LOG.info("M-READ " + f);
         return f.getName().endsWith(".xml") ? loadXML(f) : loadDICOM(f);
     }
 

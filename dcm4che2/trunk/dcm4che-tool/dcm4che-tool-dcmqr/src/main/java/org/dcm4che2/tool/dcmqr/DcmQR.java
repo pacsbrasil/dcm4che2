@@ -96,7 +96,7 @@ import org.slf4j.LoggerFactory;
  * @since Jan, 2006
  */
 public class DcmQR {
-    private static Logger LOG = LoggerFactory.getLogger(DcmQR.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DcmQR.class);
 
     private static final int KB = 1024;
 
@@ -392,17 +392,17 @@ public class DcmQR {
 
     private static final String[] EMPTY_STRING = {};
 
-    private Executor executor = new NewThreadExecutor("DCMQR");
+    private final Executor executor;
 
-    private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
+    private final NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
 
-    private NetworkConnection remoteConn = new NetworkConnection();
+    private final NetworkConnection remoteConn = new NetworkConnection();
 
-    private Device device = new Device("DCMQR");
+    private final Device device;
 
-    private NetworkApplicationEntity ae = new NetworkApplicationEntity();
+    private final NetworkApplicationEntity ae = new NetworkApplicationEntity();
 
-    private NetworkConnection conn = new NetworkConnection();
+    private final NetworkConnection conn = new NetworkConnection();
 
     private Association assoc;
 
@@ -455,7 +455,9 @@ public class DcmQR {
     
     private char[] trustStorePassword = SECRET;
     
-    public DcmQR() {
+    public DcmQR(String name) {
+        device = new Device(name);
+        executor = new NewThreadExecutor(name);
         remoteAE.setInstalled(true);
         remoteAE.setAssociationAcceptor(true);
         remoteAE.setNetworkConnection(new NetworkConnection[] { remoteConn });
@@ -465,7 +467,7 @@ public class DcmQR {
         ae.setNetworkConnection(conn);
         ae.setAssociationInitiator(true);
         ae.setAssociationAcceptor(true);
-        ae.setAETitle("DCMQR");
+        ae.setAETitle(name);
     }
 
     public final void setLocalHost(String hostname) {
@@ -611,10 +613,21 @@ public class DcmQR {
 
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
+
+        OptionBuilder.withArgName("name");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "set device name, use DCMQR by default");
+        opts.addOption(OptionBuilder.create("device"));
+
         OptionBuilder.withArgName("aet[@host][:port]");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "set AET, local address and listening port of local Application Entity");
+                "set AET, local address and listening port of local"
+                + "Application Entity, use device name and pick\n"
+                + "                            up any valid local address to "
+                + "bind the socket by\n"
+                + "                            default");
         opts.addOption(OptionBuilder.create("L"));
 
         OptionBuilder.withArgName("username");
@@ -968,7 +981,8 @@ public class DcmQR {
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         CommandLine cl = parse(args);
-        DcmQR dcmqr = new DcmQR();
+        DcmQR dcmqr = new DcmQR(cl.hasOption("device") 
+                ? cl.getOptionValue("device") : "DCMQR");
         final List<String> argList = cl.getArgList();
         String remoteAE = argList.get(0);
         String[] calledAETAddress = split(remoteAE, '@');

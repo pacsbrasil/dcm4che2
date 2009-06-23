@@ -168,25 +168,25 @@ public class DcmSnd extends StorageCommitmentService {
     private static final String DCM4CHEE_URI_REFERENCED_TS_UID =
             "1.2.40.0.13.1.1.2.4.94";
 
-    private Executor executor = new NewThreadExecutor("DCMSND");
+    private final Executor executor;
 
-    private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
+    private final NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
 
     private NetworkApplicationEntity remoteStgcmtAE;
 
-    private NetworkConnection remoteConn = new NetworkConnection();
+    private final NetworkConnection remoteConn = new NetworkConnection();
 
-    private NetworkConnection remoteStgcmtConn = new NetworkConnection();
+    private final NetworkConnection remoteStgcmtConn = new NetworkConnection();
 
-    private Device device = new Device("DCMSND");
+    private final Device device;
 
-    private NetworkApplicationEntity ae = new NetworkApplicationEntity();
+    private final NetworkApplicationEntity ae = new NetworkApplicationEntity();
 
-    private NetworkConnection conn = new NetworkConnection();
+    private final NetworkConnection conn = new NetworkConnection();
 
-    private Map<String, Set<String>> as2ts = new HashMap<String, Set<String>>();
+    private final Map<String, Set<String>> as2ts = new HashMap<String, Set<String>>();
 
-    private ArrayList<FileInfo> files = new ArrayList<FileInfo>();
+    private final ArrayList<FileInfo> files = new ArrayList<FileInfo>();
 
     private Association assoc;
 
@@ -216,7 +216,9 @@ public class DcmSnd extends StorageCommitmentService {
     
     private char[] trustStorePassword = SECRET;
 
-    public DcmSnd() {
+    public DcmSnd(String name) {
+        device = new Device(name);
+        executor = new NewThreadExecutor(name);
         remoteAE.setInstalled(true);
         remoteAE.setAssociationAcceptor(true);
         remoteAE.setNetworkConnection(new NetworkConnection[] { remoteConn });
@@ -227,7 +229,7 @@ public class DcmSnd extends StorageCommitmentService {
         ae.setAssociationInitiator(true);
         ae.setAssociationAcceptor(true);
         ae.register(this);
-        ae.setAETitle("DCMSND");
+        ae.setAETitle(name);
     }
 
     public final void setLocalHost(String hostname) {
@@ -421,10 +423,21 @@ public class DcmSnd extends StorageCommitmentService {
 
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
+
+        OptionBuilder.withArgName("name");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "set device name, use DCMSND by default");
+        opts.addOption(OptionBuilder.create("device"));
+
         OptionBuilder.withArgName("aet[@host][:port]");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "set AET, local address and listening port of local Application Entity");
+                "set AET, local address and listening port of local "
+                + "Application Entity, use device name and pick\n"
+                + "                            up any valid local address to "
+                + "bind the socket by\n"
+                + "                            default");
         opts.addOption(OptionBuilder.create("L"));
 
         opts.addOption("ts1", false, "offer Default Transfer Syntax in " +
@@ -528,7 +541,7 @@ public class DcmSnd extends StorageCommitmentService {
 
         opts.addOption("pdv1", false,
                 "send only one PDV in one P-Data-TF PDU, " + 
-                "pack command and data PDV in one P-DATA-TF PDU by default.");
+                "pack command and data PDV in one P-DATA-TF PDU by\ndefault.");
         opts.addOption("tcpdelay", false,
                 "set TCP_NODELAY socket option to false, true by default");
 
@@ -637,7 +650,8 @@ public class DcmSnd extends StorageCommitmentService {
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         CommandLine cl = parse(args);
-        DcmSnd dcmsnd = new DcmSnd();
+        DcmSnd dcmsnd = new DcmSnd(cl.hasOption("device") 
+                ? cl.getOptionValue("device") : "DCMSND");
         final List<String> argList = cl.getArgList();
         String remoteAE = argList.get(0);
         String[] calledAETAddress = split(remoteAE, '@');

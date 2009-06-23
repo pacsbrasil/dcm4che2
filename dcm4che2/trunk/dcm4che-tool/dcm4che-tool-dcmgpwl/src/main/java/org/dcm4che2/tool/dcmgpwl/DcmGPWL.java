@@ -216,12 +216,12 @@ public class DcmGPWL {
         UID.ExplicitVRLittleEndian, 
         UID.ImplicitVRLittleEndian };
     
-    private Executor executor = new NewThreadExecutor("DCMGPWL");
-    private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
-    private NetworkConnection remoteConn = new NetworkConnection();
-    private Device device = new Device("DCMGPWL");
-    private NetworkApplicationEntity ae = new NetworkApplicationEntity();
-    private NetworkConnection conn = new NetworkConnection();
+    private final Executor executor;;
+    private final NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
+    private final NetworkConnection remoteConn = new NetworkConnection();
+    private final Device device;
+    private final NetworkApplicationEntity ae = new NetworkApplicationEntity();
+    private final NetworkConnection conn = new NetworkConnection();
     private File outDir;
     private String retrieveAET;
     private Association assoc;
@@ -239,7 +239,9 @@ public class DcmGPWL {
     
     private char[] trustStorePassword = SECRET; 
     
-    public DcmGPWL() {
+    public DcmGPWL(String name) {
+        device = new Device(name);
+        executor = new NewThreadExecutor(name);
         remoteAE.setInstalled(true);
         remoteAE.setAssociationAcceptor(true);
         remoteAE.setNetworkConnection(new NetworkConnection[] { remoteConn });
@@ -248,7 +250,7 @@ public class DcmGPWL {
         device.setNetworkConnection(conn);
         ae.setNetworkConnection(conn);
         ae.setAssociationInitiator(true);
-        ae.setAETitle("DCMGPWL");
+        ae.setAETitle(name);
     }
 
     public void initQuery() {
@@ -678,11 +680,13 @@ public class DcmGPWL {
         System.out.println(cmd.toString());
     }
 
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         CommandLine cl = parse(args);
-        DcmGPWL dcmgpwl = new DcmGPWL();
-        final List argList = cl.getArgList();
-        String remoteAE = (String) argList.get(0);
+        DcmGPWL dcmgpwl = new DcmGPWL(cl.hasOption("device") 
+                ? cl.getOptionValue("device") : "DCMGPWL");
+        final List<String> argList = cl.getArgList();
+        String remoteAE = argList.get(0);
         String[] calledAETAddress = split(remoteAE, '@');
         dcmgpwl.setCalledAET(calledAETAddress[0]);
         if (calledAETAddress[1] == null) {
@@ -1006,11 +1010,18 @@ public class DcmGPWL {
    
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
+
+        OptionBuilder.withArgName("name");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "set device name, use DCMGPWL by default");
+        opts.addOption(OptionBuilder.create("device"));
+
         OptionBuilder.withArgName("aet[@host]");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
                 "set AET and local address of local Application Entity, use " +
-                "ANONYMOUS and pick up any valid local address to bind the " +
+                "device name and pick up any valid local address to bind the " +
                 "socket by default");
         opts.addOption(OptionBuilder.create("L"));
         

@@ -101,17 +101,17 @@ public class DcmEcho {
     private static final TransferCapability VERIFICATION_SCU = new TransferCapability(
             UID.VerificationSOPClass, DEF_TS, TransferCapability.SCU);
     
-    private Executor executor = new NewThreadExecutor("DCMECHO");
+    private final Executor executor;
 
-    private NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
+    private final NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
 
-    private NetworkConnection remoteConn = new NetworkConnection();
+    private final NetworkConnection remoteConn = new NetworkConnection();
 
-    private Device device = new Device("DCMECHO");
+    private final Device device;
 
-    private NetworkApplicationEntity ae = new NetworkApplicationEntity();
+    private final NetworkApplicationEntity ae = new NetworkApplicationEntity();
 
-    private NetworkConnection conn = new NetworkConnection();
+    private final NetworkConnection conn = new NetworkConnection();
 
     private Association assoc;
     
@@ -125,7 +125,9 @@ public class DcmEcho {
     
     private char[] trustStorePassword = SECRET; 
 
-    public DcmEcho() {
+    public DcmEcho(String name) {
+        device = new Device(name);
+        executor = new NewThreadExecutor(name);
         remoteAE.setInstalled(true);
         remoteAE.setAssociationAcceptor(true);
         remoteAE.setNetworkConnection(new NetworkConnection[] { remoteConn });
@@ -134,7 +136,7 @@ public class DcmEcho {
         device.setNetworkConnection(conn);
         ae.setNetworkConnection(conn);
         ae.setAssociationInitiator(true);
-        ae.setAETitle("DCMECHO");
+        ae.setAETitle(name);
         ae.setTransferCapability(new TransferCapability[] { VERIFICATION_SCU });
     }
 
@@ -237,12 +239,19 @@ public class DcmEcho {
 
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
+
+        OptionBuilder.withArgName("name");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "set device name, use DCMECHO by default");
+        opts.addOption(OptionBuilder.create("device"));
+
         OptionBuilder.withArgName("aet[@host]");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
                 "set AET and local address of local Application Entity, use "
-                        + "ANONYMOUS and pick up any valid local address to bind the "
-                        + "socket by default");
+                        + "device name and pick up any valid\nlocal address to "
+                        + "bind the socket by default");
         opts.addOption(OptionBuilder.create("L"));
 
         OptionBuilder.withArgName("username");
@@ -395,11 +404,13 @@ public class DcmEcho {
         return cl;
     }
 
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         CommandLine cl = parse(args);
-        DcmEcho dcmecho = new DcmEcho();
-        final List argList = cl.getArgList();
-        String remoteAE = (String) argList.get(0);
+        DcmEcho dcmecho = new DcmEcho(cl.hasOption("device") 
+                    ? cl.getOptionValue("device") : "DCMECHO");
+        final List<String> argList = cl.getArgList();
+        String remoteAE = argList.get(0);
         String[] calledAETAddress = split(remoteAE, '@');
         dcmecho.setCalledAET(calledAETAddress[0], cl.hasOption("reuseassoc"));
         if (calledAETAddress[1] == null) {

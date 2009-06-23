@@ -197,13 +197,13 @@ public class DcmRcv extends StorageService {
             UID.BasicVoiceAudioWaveformStorage, UID.HangingProtocolStorage,
             UID.SiemensCSANonImageStorage };
 
-    private Executor executor = new NewThreadExecutor("DCMRCV");
+    private final Executor executor;
 
-    private Device device = new Device("DCMRCV");
+    private final Device device;
 
-    private NetworkApplicationEntity ae = new NetworkApplicationEntity();
+    private final NetworkApplicationEntity ae = new NetworkApplicationEntity();
 
-    private NetworkConnection nc = new NetworkConnection();
+    private final NetworkConnection nc = new NetworkConnection();
 
     private String[] tsuids = NON_RETIRED_LE_TS;
 
@@ -225,8 +225,10 @@ public class DcmRcv extends StorageService {
 
     private char[] trustStorePassword = SECRET;
 
-    public DcmRcv() {
+    public DcmRcv(String name) {
         super(CUIDS);
+        device = new Device(name);
+        executor = new NewThreadExecutor(name);
         device.setNetworkApplicationEntity(ae);
         device.setNetworkConnection(nc);
         ae.setNetworkConnection(nc);
@@ -341,6 +343,12 @@ public class DcmRcv extends StorageService {
 
     private static CommandLine parse(String[] args) {
         Options opts = new Options();
+
+        OptionBuilder.withArgName("name");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "set device name, use DCMRCV by default");
+        opts.addOption(OptionBuilder.create("device"));
 
         OptionBuilder.withArgName("NULL|3DES|AES");
         OptionBuilder.hasArg();
@@ -508,11 +516,13 @@ public class DcmRcv extends StorageService {
         return cl;
     }
 
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         CommandLine cl = parse(args);
-        DcmRcv dcmrcv = new DcmRcv();
-        final List argList = cl.getArgList();
-        String port = (String) argList.get(0);
+        DcmRcv dcmrcv = new DcmRcv(cl.hasOption("device") 
+                ? cl.getOptionValue("device") : "DCMRCV");
+        final List<String> argList = cl.getArgList();
+        String port = argList.get(0);
         String[] aetPort = split(port, ':', 1);
         dcmrcv.setPort(parseInt(aetPort[1], "illegal port number", 1, 0xffff));
         if (aetPort[0] != null) {
