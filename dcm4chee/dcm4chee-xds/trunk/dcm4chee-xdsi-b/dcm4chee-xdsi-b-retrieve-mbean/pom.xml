@@ -4,11 +4,12 @@
   <parent>
     <groupId>dcm4che</groupId>
     <artifactId>dcm4chee-xdsi-b</artifactId>
-    <version>1.0.0-SNAPSHOT</version>/version>
+    <version>1.0.0-SNAPSHOT</version>
   </parent>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-xdsi-b-retrieve-mbean</artifactId>
-  <version>0.0.3</ve0.0.3kaging>jboss-sar</packaging>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>jboss-sar</packaging>
   <name>JMX service and Webservice Client for XDS-I.b Retrieve</name>
   <build>
     <plugins>
@@ -25,7 +26,7 @@
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-xds-common</artifactId>
       <version>1.0.0-SNAPSHOT</version>
- 0.0.3ovided</scope>
+ 	  <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>dcm4che</groupId>
@@ -43,7 +44,13 @@
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-xdsi-b-retrieve-ejb</artifactId>
       <version>1.0.0-SNAPSHOT</version>
-      <sco0.0.3cope>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>dcm4che</groupId>
+      <artifactId>dcm4chee-xds-infoset-v30</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>jboss</groupId>
