@@ -61,6 +61,7 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.ws.addressing.AddressingBuilder;
 
 import org.apache.log4j.Logger;
 import org.dcm4che2.audit.message.AuditEvent;
@@ -68,21 +69,21 @@ import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.SAXWriter;
-import org.dcm4chee.xds.infoset.v30.XDSConstants;
-import org.dcm4chee.xds.infoset.v30.XDSPerformanceLogger;
-import org.dcm4chee.xds.infoset.v30.audit.HttpUserInfo;
-import org.dcm4chee.xds.infoset.v30.audit.XDSExportMessage;
-import org.dcm4chee.xds.infoset.v30.audit.XDSRetrieveMessage;
-import org.dcm4chee.xds.infoset.v30.delegate.XdsHttpCfgDelegate;
-import org.dcm4chee.xds.infoset.v30.exception.XDSException;
-import org.dcm4chee.xds.infoset.v30.infoset.ObjectFactory;
-import org.dcm4chee.xds.infoset.v30.infoset.RegistryResponseType;
-import org.dcm4chee.xds.infoset.v30.infoset.RetrieveDocumentSetRequestType;
-import org.dcm4chee.xds.infoset.v30.infoset.RetrieveDocumentSetResponseType;
-import org.dcm4chee.xds.infoset.v30.infoset.RetrieveDocumentSetRequestType.DocumentRequest;
-import org.dcm4chee.xds.infoset.v30.infoset.RetrieveDocumentSetResponseType.DocumentResponse;
-import org.dcm4chee.xds.infoset.v30.store.XDSDocumentWriter;
-import org.dcm4chee.xds.infoset.v30.utils.InfoSetUtil;
+import org.dcm4chee.xds.common.XDSConstants;
+import org.dcm4chee.xds.common.XDSPerformanceLogger;
+import org.dcm4chee.xds.common.audit.HttpUserInfo;
+import org.dcm4chee.xds.common.audit.XDSExportMessage;
+import org.dcm4chee.xds.common.audit.XDSRetrieveMessage;
+import org.dcm4chee.xds.common.delegate.XdsHttpCfgDelegate;
+import org.dcm4chee.xds.common.exception.XDSException;
+import org.dcm4chee.xds.infoset.v30.ObjectFactory;
+import org.dcm4chee.xds.infoset.v30.RegistryResponseType;
+import org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetRequestType;
+import org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetResponseType;
+import org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetRequestType.DocumentRequest;
+import org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetResponseType.DocumentResponse;
+import org.dcm4chee.xds.common.store.XDSDocumentWriter;
+import org.dcm4chee.xds.common.utils.InfoSetUtil;
 import org.dcm4chee.xds.infoset.v30.ws.DocumentRepositoryPortType;
 import org.dcm4chee.xds.infoset.v30.ws.DocumentRepositoryPortTypeFactory;
 import org.dcm4chee.xdsib.retrieve.dao.RetrieveLocal;
@@ -426,13 +427,14 @@ public class XDSIbRetrieveService extends ServiceMBeanSupport {
                 XDSRetrieveMessage msg = XDSRetrieveMessage.createDocumentRepositoryRetrieveMessage(docUids);
                 msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
                     AuditEvent.OutcomeIndicator.MINOR_FAILURE);
-                msg.setSource(AuditMessage.getProcessID(), 
-                        AuditMessage.getLocalAETitles(),
+                msg.setSource(repositoryUniqueId, 
+                        AuditMessage.getProcessID(),
                         AuditMessage.getProcessName(),
                         AuditMessage.getLocalHostName(),
-                        true);
-                msg.setHumanRequestor(user != null ? user : "unknown", null, null, true);
-                msg.setDestination(userInfo.getRequestURL(), null, userInfo.getHostName(), userInfo.getIP(), false );
+                        false);
+                //TODO: get replyTo from real WS Addressing Header
+                String replyTo = AddressingBuilder.getAddressingBuilder().newAddressingConstants().getAnonymousURI();
+                msg.setDestination(replyTo, null, userInfo.getHostName(), userInfo.getIP(), true );
                 msg.validate();
                 Logger.getLogger("auditlog").info(msg);
             } catch ( Throwable t) {
@@ -448,7 +450,7 @@ public class XDSIbRetrieveService extends ServiceMBeanSupport {
             msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
                 AuditEvent.OutcomeIndicator.MAJOR_FAILURE);
             msg.setSource(AuditMessage.getProcessID(), 
-                    AuditMessage.getLocalAETitles(),
+                    AuditMessage.aetsToAltUserID(AuditMessage.getLocalAETitles()),
                     AuditMessage.getProcessName(),
                     AuditMessage.getLocalHostName(),
                     false);
@@ -463,9 +465,8 @@ public class XDSIbRetrieveService extends ServiceMBeanSupport {
             msg.validate();
             Logger.getLogger("auditlog").info(msg);
         } catch ( Throwable t ) {
-            log.warn("Audit Log (Import) failed! Ignored!",t);
+            log.warn("Audit Log (Export) failed! Ignored!",t);
         }
-        
     }
       
     public class XdsDataHandler extends DataHandler {

@@ -10,12 +10,12 @@ import javax.xml.bind.JAXBException;
 import javax.xml.ws.BindingType;
 import javax.xml.ws.WebServiceContext;
 
-import org.dcm4chee.xds.infoset.v30.exception.XDSException;
-import org.dcm4chee.xds.infoset.v30.infoset.ProvideAndRegisterDocumentSetRequestType;
-import org.dcm4chee.xds.infoset.v30.infoset.RegistryResponseType;
-import org.dcm4chee.xds.infoset.v30.infoset.RetrieveDocumentSetRequestType;
-import org.dcm4chee.xds.infoset.v30.infoset.RetrieveDocumentSetResponseType;
-import org.dcm4chee.xds.infoset.v30.ws.DocumentRepositoryPortType;
+import org.dcm4chee.xds.common.exception.XDSException;
+import org.dcm4chee.xds.infoset.v30.ProvideAndRegisterDocumentSetRequestType;
+import org.dcm4chee.xds.infoset.v30.RegistryResponseType;
+import org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetRequestType;
+import org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetResponseType;
+import org.dcm4chee.xds.infoset.v30.DocumentRepositoryPortType;
 import org.jboss.ws.annotation.EndpointConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
