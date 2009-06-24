@@ -34,27 +34,22 @@
                 <xsl:attribute name="tag">
                     <xsl:value-of select="$hex"/>
                 </xsl:attribute>
-                <xsl:variable name="alias">
-                    <xsl:call-template name="skipSpaces">
-                      <xsl:with-param name="val">
-                        <xsl:call-template name="skipAposS">
-                          <xsl:with-param name="val" 
-                            select="normalize-space(translate($name,$nojavaid,''))"/>
-                        </xsl:call-template>
-                      </xsl:with-param>
-                    </xsl:call-template>
-                    <xsl:value-of select="@ret"/>
-                    <!-- if different attributes with equal names, add ggggeeee suffix -->
-                    <xsl:if test="../*[text()=$text][@ret=$ret][@tag!=$tag]">
-                        <xsl:value-of select="$hex"/>
-                    </xsl:if>
-                </xsl:variable>
                 <xsl:attribute name="alias">
                   <xsl:choose>
-                    <xsl:when test="$alias = 'OperatorsName'">OperatorName</xsl:when>
-                    <xsl:when test="$alias = '3DRenderingType'">_3DRenderingType</xsl:when>
+                    <xsl:when test="$hex = '00000001'">CommandLengthToEnd</xsl:when>
+                    <xsl:when test="$hex = '00000010'">CommandRecognitionCode</xsl:when>
+                    <xsl:when test="$hex = '00000800'">CommandDataSetType</xsl:when>
+                    <xsl:when test="$hex = '00005180'">CommandMagnificationType</xsl:when>
+                    <xsl:when test="$hex = '00720520'">_3DRenderingType</xsl:when>
                     <xsl:otherwise>
-                      <xsl:value-of select="$alias"/>
+                      <xsl:call-template name="skipSpaces">
+                        <xsl:with-param name="val">
+                          <xsl:call-template name="skipAposS">
+                            <xsl:with-param name="val" 
+                              select="normalize-space(translate($name,$nojavaid,''))"/>
+                          </xsl:call-template>
+                        </xsl:with-param>
+                      </xsl:call-template>
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:attribute>
@@ -96,11 +91,18 @@
         <xsl:when test="$before or starts-with($val, ' ')">
           <xsl:variable name="after" select="substring-after($val, ' ')"/>
           <xsl:value-of select="$before"/>
-          <!-- capitalize first character -->
-          <xsl:value-of select="translate(substring($after,1,1), $lower, $upper)"/>
-          <xsl:call-template name="skipSpaces">
-              <xsl:with-param name="val" select="substring($after, 2)"/>
-          </xsl:call-template>
+          <xsl:choose>
+            <xsl:when test="$after='ms' or $after='us' or $after='mA' or $after='uA' or $after='mAs' or $after='uAs' or $after='ppm'">
+              <xsl:value-of select="$after"/>
+            </xsl:when>
+            <xsl:otherwise>
+              <!-- capitalize first character -->
+              <xsl:value-of select="translate(substring($after,1,1), $lower, $upper)"/>
+              <xsl:call-template name="skipSpaces">
+                  <xsl:with-param name="val" select="substring($after, 2)"/>
+              </xsl:call-template>
+            </xsl:otherwise>
+          </xsl:choose>
         </xsl:when>
         <xsl:otherwise>
           <xsl:value-of select="$val"/>

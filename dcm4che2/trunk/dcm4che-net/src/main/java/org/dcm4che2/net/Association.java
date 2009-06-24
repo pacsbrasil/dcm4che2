@@ -719,7 +719,7 @@ public class Association implements Runnable {
             writer = new DataWriterAdapter(data);
             datasetType = CommandUtils.getWithDatasetType();
         }
-        cmd.putInt(Tag.DataSetType, VR.US, datasetType);
+        cmd.putInt(Tag.CommandDataSetType, VR.US, datasetType);
         encoder.writeDIMSE(pcid, cmd, writer, pc.getTransferSyntax());
         if (!CommandUtils.isPending(cmd)) {
             updateIdleTimeout();

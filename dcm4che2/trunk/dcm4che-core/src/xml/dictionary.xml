@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <dictionary tagclass="org.dcm4che2.data.Tag">
 <element tag="00000000" alias="CommandGroupLength" vr="UL" vm="1" ret="">Command Group Length</element>
-<element tag="00000001" alias="LengthToEndRET00000001" vr="UL" vm="1" ret="RET">Length to End</element>
+<element tag="00000001" alias="CommandLengthToEnd" vr="UL" vm="1" ret="RET">Length to End</element>
 <element tag="00000002" alias="AffectedSOPClassUID" vr="UI" vm="1" ret="">Affected SOP Class UID</element>
 <element tag="00000003" alias="RequestedSOPClassUID" vr="UI" vm="1" ret="">Requested SOP Class UID</element>
-<element tag="00000010" alias="RecognitionCodeRET00000010" vr="CS" vm="1" ret="RET">Recognition Code</element>
+<element tag="00000010" alias="CommandRecognitionCode" vr="CS" vm="1" ret="RET">Recognition Code</element>
 <element tag="00000100" alias="CommandField" vr="US" vm="1" ret="">Command Field</element>
 <element tag="00000110" alias="MessageID" vr="US" vm="1" ret="">Message ID</element>
 <element tag="00000120" alias="MessageIDBeingRespondedTo" vr="US" vm="1" ret="">Message ID Being Responded To</element>
-<element tag="00000200" alias="InitiatorRET" vr="AE" vm="1" ret="RET">Initiator</element>
-<element tag="00000300" alias="ReceiverRET" vr="AE" vm="1" ret="RET">Receiver</element>
-<element tag="00000400" alias="FindLocationRET" vr="AE" vm="1" ret="RET">Find Location</element>
+<element tag="00000200" alias="Initiator" vr="AE" vm="1" ret="RET">Initiator</element>
+<element tag="00000300" alias="Receiver" vr="AE" vm="1" ret="RET">Receiver</element>
+<element tag="00000400" alias="FindLocation" vr="AE" vm="1" ret="RET">Find Location</element>
 <element tag="00000600" alias="MoveDestination" vr="AE" vm="1" ret="">Move Destination</element>
 <element tag="00000700" alias="Priority" vr="US" vm="1" ret="">Priority</element>
-<element tag="00000800" alias="DataSetType" vr="US" vm="1" ret="">Data Set Type</element>
-<element tag="00000850" alias="NumberOfMatchesRET" vr="US" vm="1" ret="RET">Number of Matches</element>
-<element tag="00000860" alias="ResponseSequenceNumberRET" vr="US" vm="1" ret="RET">Response Sequence Number</element>
+<element tag="00000800" alias="CommandDataSetType" vr="US" vm="1" ret="">Data Set Type</element>
+<element tag="00000850" alias="NumberOfMatches" vr="US" vm="1" ret="RET">Number of Matches</element>
+<element tag="00000860" alias="ResponseSequenceNumber" vr="US" vm="1" ret="RET">Response Sequence Number</element>
 <element tag="00000900" alias="Status" vr="US" vm="1" ret="">Status</element>
 <element tag="00000901" alias="OffendingElement" vr="AT" vm="1-n" ret="">Offending Element</element>
 <element tag="00000902" alias="ErrorComment" vr="LO" vm="1" ret="">Error Comment</element>
@@ -31,21 +31,21 @@
 <element tag="00001023" alias="NumberOfWarningSuboperations" vr="US" vm="1" ret="">Number of Warning Sub-operations</element>
 <element tag="00001030" alias="MoveOriginatorApplicationEntityTitle" vr="AE" vm="1" ret="">Move Originator Application Entity Title</element>
 <element tag="00001031" alias="MoveOriginatorMessageID" vr="US" vm="1" ret="">Move Originator Message ID</element>
-<element tag="00004000" alias="DIALOGReceiverRET" vr="AT" vm="1" ret="RET">DIALOG Receiver</element>
-<element tag="00004010" alias="TerminalTypeRET" vr="AT" vm="1" ret="RET">Terminal Type</element>
-<element tag="00005010" alias="MessageSetIDRET" vr="SH" vm="1" ret="RET">Message Set ID</element>
-<element tag="00005020" alias="EndMessageIDRET" vr="SH" vm="1" ret="RET">End Message ID</element>
-<element tag="00005110" alias="DisplayFormatRET" vr="AT" vm="1" ret="RET">Display Format</element>
-<element tag="00005120" alias="PagePositionIDRET" vr="AT" vm="1" ret="RET">Page Position ID</element>
-<element tag="00005130" alias="TextFormatIDRET" vr="CS" vm="1" ret="RET">Text Format ID</element>
-<element tag="00005140" alias="NorRevRET" vr="CS" vm="1" ret="RET">Nor/Rev</element>
-<element tag="00005150" alias="AddGrayScaleRET" vr="CS" vm="1" ret="RET">Add Gray Scale</element>
-<element tag="00005160" alias="BordersRET" vr="CS" vm="1" ret="RET">Borders</element>
-<element tag="00005170" alias="CopiesRET" vr="IS" vm="1" ret="RET">Copies</element>
-<element tag="00005180" alias="MagnificationTypeRET" vr="CS" vm="1" ret="RET">Magnification Type</element>
-<element tag="00005190" alias="EraseRET" vr="CS" vm="1" ret="RET">Erase</element>
-<element tag="000051A0" alias="PrintRET" vr="CS" vm="1" ret="RET">Print</element>
-<element tag="000051B0" alias="OverlaysRET" vr="US" vm="1-n" ret="RET">Overlays</element>
+<element tag="00004000" alias="DIALOGReceiver" vr="AT" vm="1" ret="RET">DIALOG Receiver</element>
+<element tag="00004010" alias="TerminalType" vr="AT" vm="1" ret="RET">Terminal Type</element>
+<element tag="00005010" alias="MessageSetID" vr="SH" vm="1" ret="RET">Message Set ID</element>
+<element tag="00005020" alias="EndMessageID" vr="SH" vm="1" ret="RET">End Message ID</element>
+<element tag="00005110" alias="DisplayFormat" vr="AT" vm="1" ret="RET">Display Format</element>
+<element tag="00005120" alias="PagePositionID" vr="AT" vm="1" ret="RET">Page Position ID</element>
+<element tag="00005130" alias="TextFormatID" vr="CS" vm="1" ret="RET">Text Format ID</element>
+<element tag="00005140" alias="NorRev" vr="CS" vm="1" ret="RET">Nor/Rev</element>
+<element tag="00005150" alias="AddGrayScale" vr="CS" vm="1" ret="RET">Add Gray Scale</element>
+<element tag="00005160" alias="Borders" vr="CS" vm="1" ret="RET">Borders</element>
+<element tag="00005170" alias="Copies" vr="IS" vm="1" ret="RET">Copies</element>
+<element tag="00005180" alias="CommandMagnificationType" vr="CS" vm="1" ret="RET">Magnification Type</element>
+<element tag="00005190" alias="Erase" vr="CS" vm="1" ret="RET">Erase</element>
+<element tag="000051A0" alias="Print" vr="CS" vm="1" ret="RET">Print</element>
+<element tag="000051B0" alias="Overlays" vr="US" vm="1-n" ret="RET">Overlays</element>
 <element tag="00020000" alias="FileMetaInformationGroupLength" vr="UL" vm="1" ret="">File Meta Information Group Length</element>
 <element tag="00020001" alias="FileMetaInformationVersion" vr="OB" vm="1" ret="">File Meta Information Version</element>
 <element tag="00020002" alias="MediaStorageSOPClassUID" vr="UI" vm="1" ret="">Media Storage SOP Class UID</element>
@@ -69,16 +69,16 @@
 <element tag="00041430" alias="DirectoryRecordType" vr="CS" vm="1" ret="">Directory Record Type</element>
 <element tag="00041432" alias="PrivateRecordUID" vr="UI" vm="1" ret="">Private Record UID</element>
 <element tag="00041500" alias="ReferencedFileID" vr="CS" vm="1-8" ret="">Referenced File ID</element>
-<element tag="00041504" alias="MRDRDirectoryRecordOffsetRET" vr="UL" vm="1" ret="RET">MRDR Directory Record Offset</element>
+<element tag="00041504" alias="MRDRDirectoryRecordOffset" vr="UL" vm="1" ret="RET">MRDR Directory Record Offset</element>
 <element tag="00041510" alias="ReferencedSOPClassUIDInFile" vr="UI" vm="1" ret="">Referenced SOP Class UID in File</element>
 <element tag="00041511" alias="ReferencedSOPInstanceUIDInFile" vr="UI" vm="1" ret="">Referenced SOP Instance UID in File</element>
 <element tag="00041512" alias="ReferencedTransferSyntaxUIDInFile" vr="UI" vm="1" ret="">Referenced Transfer Syntax UID in File</element>
 <element tag="0004151A" alias="ReferencedRelatedGeneralSOPClassUIDInFile" vr="UI" vm="1-n" ret="">Referenced Related General SOP Class UID in File</element>
-<element tag="00041600" alias="NumberOfReferencesRET" vr="UL" vm="1" ret="RET">Number of References</element>
-<element tag="00080001" alias="LengthToEndRET00080001" vr="UL" vm="1" ret="RET">Length to End</element>
+<element tag="00041600" alias="NumberOfReferences" vr="UL" vm="1" ret="RET">Number of References</element>
+<element tag="00080001" alias="LengthToEnd" vr="UL" vm="1" ret="RET">Length to End</element>
 <element tag="00080005" alias="SpecificCharacterSet" vr="CS" vm="1-n" ret="">Specific Character Set</element>
 <element tag="00080008" alias="ImageType" vr="CS" vm="2-n" ret="">Image Type</element>
-<element tag="00080010" alias="RecognitionCodeRET00080010" vr="CS" vm="1" ret="RET">Recognition Code</element>
+<element tag="00080010" alias="RecognitionCode" vr="CS" vm="1" ret="RET">Recognition Code</element>
 <element tag="00080012" alias="InstanceCreationDate" vr="DA" vm="1" ret="">Instance Creation Date</element>
 <element tag="00080013" alias="InstanceCreationTime" vr="TM" vm="1" ret="">Instance Creation Time</element>
 <element tag="00080014" alias="InstanceCreatorUID" vr="UI" vm="1" ret="">Instance Creator UID</element>
@@ -90,18 +90,18 @@
 <element tag="00080021" alias="SeriesDate" vr="DA" vm="1" ret="">Series Date</element>
 <element tag="00080022" alias="AcquisitionDate" vr="DA" vm="1" ret="">Acquisition Date</element>
 <element tag="00080023" alias="ContentDate" vr="DA" vm="1" ret="">Content Date</element>
-<element tag="00080024" alias="OverlayDateRET" vr="DA" vm="1" ret="RET">Overlay Date</element>
-<element tag="00080025" alias="CurveDateRET" vr="DA" vm="1" ret="RET">Curve Date</element>
+<element tag="00080024" alias="OverlayDate" vr="DA" vm="1" ret="RET">Overlay Date</element>
+<element tag="00080025" alias="CurveDate" vr="DA" vm="1" ret="RET">Curve Date</element>
 <element tag="0008002A" alias="AcquisitionDateTime" vr="DT" vm="1" ret="">Acquisition DateTime</element>
 <element tag="00080030" alias="StudyTime" vr="TM" vm="1" ret="">Study Time</element>
 <element tag="00080031" alias="SeriesTime" vr="TM" vm="1" ret="">Series Time</element>
 <element tag="00080032" alias="AcquisitionTime" vr="TM" vm="1" ret="">Acquisition Time</element>
 <element tag="00080033" alias="ContentTime" vr="TM" vm="1" ret="">Content Time</element>
-<element tag="00080034" alias="OverlayTimeRET" vr="TM" vm="1" ret="RET">Overlay Time</element>
-<element tag="00080035" alias="CurveTimeRET" vr="TM" vm="1" ret="RET">Curve Time</element>
-<element tag="00080040" alias="DataSetTypeRET" vr="US" vm="1" ret="RET">Data Set Type</element>
-<element tag="00080041" alias="DataSetSubtypeRET" vr="LO" vm="1" ret="RET">Data Set Subtype</element>
-<element tag="00080042" alias="NuclearMedicineSeriesTypeRET" vr="CS" vm="1" ret="RET">Nuclear Medicine Series Type</element>
+<element tag="00080034" alias="OverlayTime" vr="TM" vm="1" ret="RET">Overlay Time</element>
+<element tag="00080035" alias="CurveTime" vr="TM" vm="1" ret="RET">Curve Time</element>
+<element tag="00080040" alias="DataSetType" vr="US" vm="1" ret="RET">Data Set Type</element>
+<element tag="00080041" alias="DataSetSubtype" vr="LO" vm="1" ret="RET">Data Set Subtype</element>
+<element tag="00080042" alias="NuclearMedicineSeriesType" vr="CS" vm="1" ret="RET">Nuclear Medicine Series Type</element>
 <element tag="00080050" alias="AccessionNumber" vr="SH" vm="1" ret="">Accession Number</element>
 <element tag="00080051" alias="IssuerOfAccessionNumberSequence" vr="SQ" vm="1" ret="">Issuer of Accession Number Sequence</element>
 <element tag="00080052" alias="QueryRetrieveLevel" vr="CS" vm="1" ret="">Query/Retrieve Level</element>
@@ -138,7 +138,7 @@
 <element tag="00080115" alias="CodingSchemeName" vr="ST" vm="1" ret="">Coding Scheme Name</element>
 <element tag="00080116" alias="CodingSchemeResponsibleOrganization" vr="ST" vm="1" ret="">Coding Scheme Responsible Organization</element>
 <element tag="00080201" alias="TimezoneOffsetFromUTC" vr="SH" vm="1" ret="">Timezone Offset From UTC</element>
-<element tag="00081000" alias="NetworkIDRET" vr="AE" vm="1" ret="RET">Network ID</element>
+<element tag="00081000" alias="NetworkID" vr="AE" vm="1" ret="RET">Network ID</element>
 <element tag="00081010" alias="StationName" vr="SH" vm="1" ret="">Station Name</element>
 <element tag="00081030" alias="StudyDescription" vr="LO" vm="1" ret="">Study Description</element>
 <element tag="00081032" alias="ProcedureCodeSequence" vr="SQ" vm="1" ret="">Procedure Code Sequence</element>
@@ -150,21 +150,21 @@
 <element tag="00081052" alias="PerformingPhysicianIdentificationSequence" vr="SQ" vm="1" ret="">Performing Physician Identification Sequence</element>
 <element tag="00081060" alias="NameOfPhysiciansReadingStudy" vr="PN" vm="1-n" ret="">Name of Physician(s) Reading Study</element>
 <element tag="00081062" alias="PhysiciansReadingStudyIdentificationSequence" vr="SQ" vm="1" ret="">Physician(s) Reading Study Identification Sequence</element>
-<element tag="00081070" alias="OperatorName" vr="PN" vm="1-n" ret="">Operators' Name</element>
+<element tag="00081070" alias="OperatorsName" vr="PN" vm="1-n" ret="">Operators' Name</element>
 <element tag="00081072" alias="OperatorIdentificationSequence" vr="SQ" vm="1" ret="">Operator Identification Sequence</element>
 <element tag="00081080" alias="AdmittingDiagnosesDescription" vr="LO" vm="1-n" ret="">Admitting Diagnoses Description</element>
 <element tag="00081084" alias="AdmittingDiagnosesCodeSequence" vr="SQ" vm="1" ret="">Admitting Diagnoses Code Sequence</element>
 <element tag="00081090" alias="ManufacturerModelName" vr="LO" vm="1" ret="">Manufacturer's Model Name</element>
-<element tag="00081100" alias="ReferencedResultsSequenceRET" vr="SQ" vm="1" ret="RET">Referenced Results Sequence</element>
+<element tag="00081100" alias="ReferencedResultsSequence" vr="SQ" vm="1" ret="RET">Referenced Results Sequence</element>
 <element tag="00081110" alias="ReferencedStudySequence" vr="SQ" vm="1" ret="">Referenced Study Sequence</element>
 <element tag="00081111" alias="ReferencedPerformedProcedureStepSequence" vr="SQ" vm="1" ret="">Referenced Performed Procedure Step Sequence</element>
 <element tag="00081115" alias="ReferencedSeriesSequence" vr="SQ" vm="1" ret="">Referenced Series Sequence</element>
 <element tag="00081120" alias="ReferencedPatientSequence" vr="SQ" vm="1" ret="">Referenced Patient Sequence</element>
 <element tag="00081125" alias="ReferencedVisitSequence" vr="SQ" vm="1" ret="">Referenced Visit Sequence</element>
-<element tag="00081130" alias="ReferencedOverlaySequenceRET" vr="SQ" vm="1" ret="RET">Referenced Overlay Sequence</element>
+<element tag="00081130" alias="ReferencedOverlaySequence" vr="SQ" vm="1" ret="RET">Referenced Overlay Sequence</element>
 <element tag="0008113A" alias="ReferencedWaveformSequence" vr="SQ" vm="1" ret="">Referenced Waveform Sequence</element>
 <element tag="00081140" alias="ReferencedImageSequence" vr="SQ" vm="1" ret="">Referenced Image Sequence</element>
-<element tag="00081145" alias="ReferencedCurveSequenceRET" vr="SQ" vm="1" ret="RET">Referenced Curve Sequence</element>
+<element tag="00081145" alias="ReferencedCurveSequence" vr="SQ" vm="1" ret="RET">Referenced Curve Sequence</element>
 <element tag="0008114A" alias="ReferencedInstanceSequence" vr="SQ" vm="1" ret="">Referenced Instance Sequence</element>
 <element tag="0008114B" alias="ReferencedRealWorldValueMappingInstanceSequence" vr="SQ" vm="1" ret="">Referenced Real World Value Mapping Instance Sequence</element>
 <element tag="00081150" alias="ReferencedSOPClassUID" vr="UI" vm="1" ret="">Referenced SOP Class UID</element>
@@ -177,7 +177,7 @@
 <element tag="00081199" alias="ReferencedSOPSequence" vr="SQ" vm="1" ret="">Referenced SOP Sequence</element>
 <element tag="00081200" alias="StudiesContainingOtherReferencedInstancesSequence" vr="SQ" vm="1" ret="">Studies Containing Other Referenced Instances Sequence</element>
 <element tag="00081250" alias="RelatedSeriesSequence" vr="SQ" vm="1" ret="">Related Series Sequence</element>
-<element tag="00082110" alias="LossyImageCompressionRetiredRET" vr="CS" vm="1" ret="RET">Lossy Image Compression (Retired)</element>
+<element tag="00082110" alias="LossyImageCompressionRetired" vr="CS" vm="1" ret="RET">Lossy Image Compression (Retired)</element>
 <element tag="00082111" alias="DerivationDescription" vr="ST" vm="1" ret="">Derivation Description</element>
 <element tag="00082112" alias="SourceImageSequence" vr="SQ" vm="1" ret="">Source Image Sequence</element>
 <element tag="00082120" alias="StageName" vr="SH" vm="1" ret="">Stage Name</element>
@@ -192,30 +192,30 @@
 <element tag="00082142" alias="StartTrim" vr="IS" vm="1" ret="">Start Trim</element>
 <element tag="00082143" alias="StopTrim" vr="IS" vm="1" ret="">Stop Trim</element>
 <element tag="00082144" alias="RecommendedDisplayFrameRate" vr="IS" vm="1" ret="">Recommended Display Frame Rate</element>
-<element tag="00082200" alias="TransducerPositionRET" vr="CS" vm="1" ret="RET">Transducer Position</element>
-<element tag="00082204" alias="TransducerOrientationRET" vr="CS" vm="1" ret="RET">Transducer Orientation</element>
-<element tag="00082208" alias="AnatomicStructureRET" vr="CS" vm="1" ret="RET">Anatomic Structure</element>
+<element tag="00082200" alias="TransducerPosition" vr="CS" vm="1" ret="RET">Transducer Position</element>
+<element tag="00082204" alias="TransducerOrientation" vr="CS" vm="1" ret="RET">Transducer Orientation</element>
+<element tag="00082208" alias="AnatomicStructure" vr="CS" vm="1" ret="RET">Anatomic Structure</element>
 <element tag="00082218" alias="AnatomicRegionSequence" vr="SQ" vm="1" ret="">Anatomic Region Sequence</element>
 <element tag="00082220" alias="AnatomicRegionModifierSequence" vr="SQ" vm="1" ret="">Anatomic Region Modifier Sequence</element>
 <element tag="00082228" alias="PrimaryAnatomicStructureSequence" vr="SQ" vm="1" ret="">Primary Anatomic Structure Sequence</element>
 <element tag="00082229" alias="AnatomicStructureSpaceOrRegionSequence" vr="SQ" vm="1" ret="">Anatomic Structure, Space or Region Sequence</element>
 <element tag="00082230" alias="PrimaryAnatomicStructureModifierSequence" vr="SQ" vm="1" ret="">Primary Anatomic Structure Modifier Sequence</element>
-<element tag="00082240" alias="TransducerPositionSequenceRET" vr="SQ" vm="1" ret="RET">Transducer Position Sequence</element>
-<element tag="00082242" alias="TransducerPositionModifierSequenceRET" vr="SQ" vm="1" ret="RET">Transducer Position Modifier Sequence</element>
-<element tag="00082244" alias="TransducerOrientationSequenceRET" vr="SQ" vm="1" ret="RET">Transducer Orientation Sequence</element>
-<element tag="00082246" alias="TransducerOrientationModifierSequenceRET" vr="SQ" vm="1" ret="RET">Transducer Orientation Modifier Sequence</element>
-<element tag="00082251" alias="AnatomicStructureSpaceOrRegionCodeSequenceTrialRET" vr="SQ" vm="1" ret="RET">Anatomic Structure Space Or Region Code Sequence (Trial)</element>
-<element tag="00082253" alias="AnatomicPortalOfEntranceCodeSequenceTrialRET" vr="SQ" vm="1" ret="RET">Anatomic Portal Of Entrance Code Sequence (Trial)</element>
-<element tag="00082255" alias="AnatomicApproachDirectionCodeSequenceTrialRET" vr="SQ" vm="1" ret="RET">Anatomic Approach Direction Code Sequence (Trial)</element>
-<element tag="00082256" alias="AnatomicPerspectiveDescriptionTrialRET" vr="ST" vm="1" ret="RET">Anatomic Perspective Description (Trial)</element>
-<element tag="00082257" alias="AnatomicPerspectiveCodeSequenceTrialRET" vr="SQ" vm="1" ret="RET">Anatomic Perspective Code Sequence (Trial)</element>
-<element tag="00082258" alias="AnatomicLocationOfExaminingInstrumentDescriptionTrialRET" vr="ST" vm="1" ret="RET">Anatomic Location Of Examining Instrument Description (Trial)</element>
-<element tag="00082259" alias="AnatomicLocationOfExaminingInstrumentCodeSequenceTrialRET" vr="SQ" vm="1" ret="RET">Anatomic Location Of Examining Instrument Code Sequence (Trial)</element>
-<element tag="0008225A" alias="AnatomicStructureSpaceOrRegionModifierCodeSequenceTrialRET" vr="SQ" vm="1" ret="RET">Anatomic Structure Space Or Region Modifier Code Sequence (Trial)</element>
-<element tag="0008225C" alias="OnAxisBackgroundAnatomicStructureCodeSequenceTrialRET" vr="SQ" vm="1" ret="RET">OnAxis Background Anatomic Structure Code Sequence (Trial)</element>
+<element tag="00082240" alias="TransducerPositionSequence" vr="SQ" vm="1" ret="RET">Transducer Position Sequence</element>
+<element tag="00082242" alias="TransducerPositionModifierSequence" vr="SQ" vm="1" ret="RET">Transducer Position Modifier Sequence</element>
+<element tag="00082244" alias="TransducerOrientationSequence" vr="SQ" vm="1" ret="RET">Transducer Orientation Sequence</element>
+<element tag="00082246" alias="TransducerOrientationModifierSequence" vr="SQ" vm="1" ret="RET">Transducer Orientation Modifier Sequence</element>
+<element tag="00082251" alias="AnatomicStructureSpaceOrRegionCodeSequenceTrial" vr="SQ" vm="1" ret="RET">Anatomic Structure Space Or Region Code Sequence (Trial)</element>
+<element tag="00082253" alias="AnatomicPortalOfEntranceCodeSequenceTrial" vr="SQ" vm="1" ret="RET">Anatomic Portal Of Entrance Code Sequence (Trial)</element>
+<element tag="00082255" alias="AnatomicApproachDirectionCodeSequenceTrial" vr="SQ" vm="1" ret="RET">Anatomic Approach Direction Code Sequence (Trial)</element>
+<element tag="00082256" alias="AnatomicPerspectiveDescriptionTrial" vr="ST" vm="1" ret="RET">Anatomic Perspective Description (Trial)</element>
+<element tag="00082257" alias="AnatomicPerspectiveCodeSequenceTrial" vr="SQ" vm="1" ret="RET">Anatomic Perspective Code Sequence (Trial)</element>
+<element tag="00082258" alias="AnatomicLocationOfExaminingInstrumentDescriptionTrial" vr="ST" vm="1" ret="RET">Anatomic Location Of Examining Instrument Description (Trial)</element>
+<element tag="00082259" alias="AnatomicLocationOfExaminingInstrumentCodeSequenceTrial" vr="SQ" vm="1" ret="RET">Anatomic Location Of Examining Instrument Code Sequence (Trial)</element>
+<element tag="0008225A" alias="AnatomicStructureSpaceOrRegionModifierCodeSequenceTrial" vr="SQ" vm="1" ret="RET">Anatomic Structure Space Or Region Modifier Code Sequence (Trial)</element>
+<element tag="0008225C" alias="OnAxisBackgroundAnatomicStructureCodeSequenceTrial" vr="SQ" vm="1" ret="RET">OnAxis Background Anatomic Structure Code Sequence (Trial)</element>
 <element tag="00083001" alias="AlternateRepresentationSequence" vr="SQ" vm="1" ret="">Alternate Representation Sequence</element>
 <element tag="00083010" alias="IrradiationEventUID" vr="UI" vm="1" ret="">Irradiation Event UID</element>
-<element tag="00084000" alias="IdentifyingCommentsRET" vr="LT" vm="1" ret="RET">Identifying Comments</element>
+<element tag="00084000" alias="IdentifyingComments" vr="LT" vm="1" ret="RET">Identifying Comments</element>
 <element tag="00089007" alias="FrameType" vr="CS" vm="4" ret="">Frame Type</element>
 <element tag="00089092" alias="ReferencedImageEvidenceSequence" vr="SQ" vm="1" ret="">Referenced Image Evidence Sequence</element>
 <element tag="00089121" alias="ReferencedRawDataSequence" vr="SQ" vm="1" ret="">Referenced Raw Data Sequence</element>
@@ -252,7 +252,7 @@
 <element tag="00101020" alias="PatientSize" vr="DS" vm="1" ret="">Patient's Size</element>
 <element tag="00101030" alias="PatientWeight" vr="DS" vm="1" ret="">Patient's Weight</element>
 <element tag="00101040" alias="PatientAddress" vr="LO" vm="1" ret="">Patient's Address</element>
-<element tag="00101050" alias="InsurancePlanIdentificationRET" vr="LO" vm="1-n" ret="RET">Insurance Plan Identification</element>
+<element tag="00101050" alias="InsurancePlanIdentification" vr="LO" vm="1-n" ret="RET">Insurance Plan Identification</element>
 <element tag="00101060" alias="PatientMotherBirthName" vr="PN" vm="1" ret="">Patient's Mother's Birth Name</element>
 <element tag="00101080" alias="MilitaryRank" vr="LO" vm="1" ret="">Military Rank</element>
 <element tag="00101081" alias="BranchOfService" vr="LO" vm="1" ret="">Branch of Service</element>
@@ -312,16 +312,16 @@
 <element tag="00180028" alias="InterventionDrugDose" vr="DS" vm="1" ret="">Intervention Drug Dose</element>
 <element tag="00180029" alias="InterventionDrugSequence" vr="SQ" vm="1" ret="">Intervention Drug Sequence</element>
 <element tag="0018002A" alias="AdditionalDrugSequence" vr="SQ" vm="1" ret="">Additional Drug Sequence</element>
-<element tag="00180030" alias="RadionuclideRET" vr="LO" vm="1-n" ret="RET">Radionuclide</element>
+<element tag="00180030" alias="Radionuclide" vr="LO" vm="1-n" ret="RET">Radionuclide</element>
 <element tag="00180031" alias="Radiopharmaceutical" vr="LO" vm="1" ret="">Radiopharmaceutical</element>
-<element tag="00180032" alias="EnergyWindowCenterlineRET" vr="DS" vm="1" ret="RET">Energy Window Centerline</element>
-<element tag="00180033" alias="EnergyWindowTotalWidthRET" vr="DS" vm="1-n" ret="RET">Energy Window Total Width</element>
+<element tag="00180032" alias="EnergyWindowCenterline" vr="DS" vm="1" ret="RET">Energy Window Centerline</element>
+<element tag="00180033" alias="EnergyWindowTotalWidth" vr="DS" vm="1-n" ret="RET">Energy Window Total Width</element>
 <element tag="00180034" alias="InterventionDrugName" vr="LO" vm="1" ret="">Intervention Drug Name</element>
 <element tag="00180035" alias="InterventionDrugStartTime" vr="TM" vm="1" ret="">Intervention Drug Start Time</element>
 <element tag="00180036" alias="InterventionSequence" vr="SQ" vm="1" ret="">Intervention Sequence</element>
-<element tag="00180037" alias="TherapyTypeRET" vr="CS" vm="1" ret="RET">Therapy Type</element>
+<element tag="00180037" alias="TherapyType" vr="CS" vm="1" ret="RET">Therapy Type</element>
 <element tag="00180038" alias="InterventionStatus" vr="CS" vm="1" ret="">Intervention Status</element>
-<element tag="00180039" alias="TherapyDescriptionRET" vr="CS" vm="1" ret="RET">Therapy Description</element>
+<element tag="00180039" alias="TherapyDescription" vr="CS" vm="1" ret="RET">Therapy Description</element>
 <element tag="0018003A" alias="InterventionDescription" vr="ST" vm="1" ret="">Intervention Description</element>
 <element tag="00180040" alias="CineRate" vr="IS" vm="1" ret="">Cine Rate</element>
 <element tag="00180050" alias="SliceThickness" vr="DS" vm="1" ret="">Slice Thickness</element>
@@ -356,15 +356,15 @@
 <element tag="00181007" alias="CassetteID" vr="LO" vm="1" ret="">Cassette ID</element>
 <element tag="00181008" alias="GantryID" vr="LO" vm="1" ret="">Gantry ID</element>
 <element tag="00181010" alias="SecondaryCaptureDeviceID" vr="LO" vm="1" ret="">Secondary Capture Device ID</element>
-<element tag="00181011" alias="HardcopyCreationDeviceIDRET" vr="LO" vm="1" ret="RET">Hardcopy Creation Device ID</element>
+<element tag="00181011" alias="HardcopyCreationDeviceID" vr="LO" vm="1" ret="RET">Hardcopy Creation Device ID</element>
 <element tag="00181012" alias="DateOfSecondaryCapture" vr="DA" vm="1" ret="">Date of Secondary Capture</element>
 <element tag="00181014" alias="TimeOfSecondaryCapture" vr="TM" vm="1" ret="">Time of Secondary Capture</element>
 <element tag="00181016" alias="SecondaryCaptureDeviceManufacturers" vr="LO" vm="1" ret="">Secondary Capture Device Manufacturers</element>
-<element tag="00181017" alias="HardcopyDeviceManufacturerRET" vr="LO" vm="1" ret="RET">Hardcopy Device Manufacturer</element>
+<element tag="00181017" alias="HardcopyDeviceManufacturer" vr="LO" vm="1" ret="RET">Hardcopy Device Manufacturer</element>
 <element tag="00181018" alias="SecondaryCaptureDeviceManufacturerModelName" vr="LO" vm="1" ret="">Secondary Capture Device Manufacturer's Model Name</element>
 <element tag="00181019" alias="SecondaryCaptureDeviceSoftwareVersions" vr="LO" vm="1-n" ret="">Secondary Capture Device Software Version(s)</element>
-<element tag="0018101A" alias="HardcopyDeviceSoftwareVersionRET" vr="LO" vm="1-n" ret="RET">Hardcopy Device Software Version</element>
-<element tag="0018101B" alias="HardcopyDeviceManufacturerModelNameRET" vr="LO" vm="1" ret="RET">Hardcopy Device Manufacturer's Model Name</element>
+<element tag="0018101A" alias="HardcopyDeviceSoftwareVersion" vr="LO" vm="1-n" ret="RET">Hardcopy Device Software Version</element>
+<element tag="0018101B" alias="HardcopyDeviceManufacturerModelName" vr="LO" vm="1" ret="RET">Hardcopy Device Manufacturer's Model Name</element>
 <element tag="00181020" alias="SoftwareVersions" vr="LO" vm="1-n" ret="">Software Version(s)</element>
 <element tag="00181022" alias="VideoImageFormatAcquired" vr="SH" vm="1" ret="">Video Image Format Acquired</element>
 <element tag="00181023" alias="DigitalImageFormatAcquired" vr="LO" vm="1" ret="">Digital Image Format Acquired</element>
@@ -428,18 +428,18 @@
 <element tag="00181138" alias="TableAngle" vr="DS" vm="1" ret="">Table Angle</element>
 <element tag="0018113A" alias="TableType" vr="CS" vm="1" ret="">Table Type</element>
 <element tag="00181140" alias="RotationDirection" vr="CS" vm="1" ret="">Rotation Direction</element>
-<element tag="00181141" alias="AngularPositionRET" vr="DS" vm="1" ret="RET">Angular Position</element>
+<element tag="00181141" alias="AngularPosition" vr="DS" vm="1" ret="RET">Angular Position</element>
 <element tag="00181142" alias="RadialPosition" vr="DS" vm="1-n" ret="">Radial Position</element>
 <element tag="00181143" alias="ScanArc" vr="DS" vm="1" ret="">Scan Arc</element>
 <element tag="00181144" alias="AngularStep" vr="DS" vm="1" ret="">Angular Step</element>
 <element tag="00181145" alias="CenterOfRotationOffset" vr="DS" vm="1" ret="">Center of Rotation Offset</element>
-<element tag="00181146" alias="RotationOffsetRET" vr="DS" vm="1-n" ret="RET">Rotation Offset</element>
+<element tag="00181146" alias="RotationOffset" vr="DS" vm="1-n" ret="RET">Rotation Offset</element>
 <element tag="00181147" alias="FieldOfViewShape" vr="CS" vm="1" ret="">Field of View Shape</element>
 <element tag="00181149" alias="FieldOfViewDimensions" vr="IS" vm="1-2" ret="">Field of View Dimension(s)</element>
 <element tag="00181150" alias="ExposureTime" vr="IS" vm="1" ret="">Exposure Time</element>
 <element tag="00181151" alias="XRayTubeCurrent" vr="IS" vm="1" ret="">X-Ray Tube Current</element>
 <element tag="00181152" alias="Exposure" vr="IS" vm="1" ret="">Exposure</element>
-<element tag="00181153" alias="ExposureInUAs" vr="IS" vm="1" ret="">Exposure in uAs</element>
+<element tag="00181153" alias="ExposureInuAs" vr="IS" vm="1" ret="">Exposure in uAs</element>
 <element tag="00181154" alias="AveragePulseWidth" vr="DS" vm="1" ret="">Average Pulse Width</element>
 <element tag="00181155" alias="RadiationSetting" vr="CS" vm="1" ret="">Radiation Setting</element>
 <element tag="00181156" alias="RectificationType" vr="CS" vm="1" ret="">Rectification Type</element>
@@ -463,7 +463,7 @@
 <element tag="00181200" alias="DateOfLastCalibration" vr="DA" vm="1-n" ret="">Date of Last Calibration</element>
 <element tag="00181201" alias="TimeOfLastCalibration" vr="TM" vm="1-n" ret="">Time of Last Calibration</element>
 <element tag="00181210" alias="ConvolutionKernel" vr="SH" vm="1-n" ret="">Convolution Kernel</element>
-<element tag="00181240" alias="UpperLowerPixelValuesRET" vr="IS" vm="1-n" ret="RET">Upper/Lower Pixel Values</element>
+<element tag="00181240" alias="UpperLowerPixelValues" vr="IS" vm="1-n" ret="RET">Upper/Lower Pixel Values</element>
 <element tag="00181242" alias="ActualFrameDuration" vr="IS" vm="1" ret="">Actual Frame Duration</element>
 <element tag="00181243" alias="CountRate" vr="IS" vm="1" ret="">Count Rate</element>
 <element tag="00181244" alias="PreferredPlaybackSequencing" vr="US" vm="1" ret="">Preferred Playback Sequencing</element>
@@ -539,26 +539,26 @@
 <element tag="00183103" alias="IVUSPullbackStartFrameNumber" vr="IS" vm="1" ret="">IVUS Pullback Start Frame Number</element>
 <element tag="00183104" alias="IVUSPullbackStopFrameNumber" vr="IS" vm="1" ret="">IVUS Pullback Stop Frame Number</element>
 <element tag="00183105" alias="LesionNumber" vr="IS" vm="1-n" ret="">Lesion Number</element>
-<element tag="00184000" alias="AcquisitionCommentsRET" vr="LT" vm="1" ret="RET">Acquisition Comments</element>
+<element tag="00184000" alias="AcquisitionComments" vr="LT" vm="1" ret="RET">Acquisition Comments</element>
 <element tag="00185000" alias="OutputPower" vr="SH" vm="1-n" ret="">Output Power</element>
 <element tag="00185010" alias="TransducerData" vr="LO" vm="3" ret="">Transducer Data</element>
 <element tag="00185012" alias="FocusDepth" vr="DS" vm="1" ret="">Focus Depth</element>
 <element tag="00185020" alias="ProcessingFunction" vr="LO" vm="1" ret="">Processing Function</element>
-<element tag="00185021" alias="PostprocessingFunctionRET" vr="LO" vm="1" ret="RET">Postprocessing Function</element>
+<element tag="00185021" alias="PostprocessingFunction" vr="LO" vm="1" ret="RET">Postprocessing Function</element>
 <element tag="00185022" alias="MechanicalIndex" vr="DS" vm="1" ret="">Mechanical Index</element>
 <element tag="00185024" alias="BoneThermalIndex" vr="DS" vm="1" ret="">Bone Thermal Index</element>
 <element tag="00185026" alias="CranialThermalIndex" vr="DS" vm="1" ret="">Cranial Thermal Index</element>
 <element tag="00185027" alias="SoftTissueThermalIndex" vr="DS" vm="1" ret="">Soft Tissue Thermal Index</element>
 <element tag="00185028" alias="SoftTissuefocusThermalIndex" vr="DS" vm="1" ret="">Soft Tissue-focus Thermal Index</element>
 <element tag="00185029" alias="SoftTissuesurfaceThermalIndex" vr="DS" vm="1" ret="">Soft Tissue-surface Thermal Index</element>
-<element tag="00185030" alias="DynamicRangeRET" vr="DS" vm="1" ret="RET">Dynamic Range</element>
-<element tag="00185040" alias="TotalGainRET" vr="DS" vm="1" ret="RET">Total Gain</element>
+<element tag="00185030" alias="DynamicRange" vr="DS" vm="1" ret="RET">Dynamic Range</element>
+<element tag="00185040" alias="TotalGain" vr="DS" vm="1" ret="RET">Total Gain</element>
 <element tag="00185050" alias="DepthOfScanField" vr="IS" vm="1" ret="">Depth of Scan Field</element>
 <element tag="00185100" alias="PatientPosition" vr="CS" vm="1" ret="">Patient Position</element>
 <element tag="00185101" alias="ViewPosition" vr="CS" vm="1" ret="">View Position</element>
 <element tag="00185104" alias="ProjectionEponymousNameCodeSequence" vr="SQ" vm="1" ret="">Projection Eponymous Name Code Sequence</element>
-<element tag="00185210" alias="ImageTransformationMatrixRET" vr="DS" vm="6" ret="RET">Image Transformation Matrix</element>
-<element tag="00185212" alias="ImageTranslationVectorRET" vr="DS" vm="3" ret="RET">Image Translation Vector</element>
+<element tag="00185210" alias="ImageTransformationMatrix" vr="DS" vm="6" ret="RET">Image Transformation Matrix</element>
+<element tag="00185212" alias="ImageTranslationVector" vr="DS" vm="3" ret="RET">Image Translation Vector</element>
 <element tag="00186000" alias="Sensitivity" vr="DS" vm="1" ret="">Sensitivity</element>
 <element tag="00186011" alias="SequenceOfUltrasoundRegions" vr="SQ" vm="1" ret="">Sequence of Ultrasound Regions</element>
 <element tag="00186012" alias="RegionSpatialFormat" vr="US" vm="1" ret="">Region Spatial Format</element>
@@ -581,17 +581,17 @@
 <element tag="00186032" alias="PulseRepetitionFrequency" vr="UL" vm="1" ret="">Pulse Repetition Frequency</element>
 <element tag="00186034" alias="DopplerCorrectionAngle" vr="FD" vm="1" ret="">Doppler Correction Angle</element>
 <element tag="00186036" alias="SteeringAngle" vr="FD" vm="1" ret="">Steering Angle</element>
-<element tag="00186038" alias="DopplerSampleVolumeXPositionRetiredRET" vr="UL" vm="1" ret="RET">Doppler Sample Volume X Position (Retired)</element>
+<element tag="00186038" alias="DopplerSampleVolumeXPositionRetired" vr="UL" vm="1" ret="RET">Doppler Sample Volume X Position (Retired)</element>
 <element tag="00186039" alias="DopplerSampleVolumeXPosition" vr="SL" vm="1" ret="">Doppler Sample Volume X Position</element>
-<element tag="0018603A" alias="DopplerSampleVolumeYPositionRetiredRET" vr="UL" vm="1" ret="RET">Doppler Sample Volume Y Position (Retired)</element>
+<element tag="0018603A" alias="DopplerSampleVolumeYPositionRetired" vr="UL" vm="1" ret="RET">Doppler Sample Volume Y Position (Retired)</element>
 <element tag="0018603B" alias="DopplerSampleVolumeYPosition" vr="SL" vm="1" ret="">Doppler Sample Volume Y Position</element>
-<element tag="0018603C" alias="TMLinePositionX0RetiredRET" vr="UL" vm="1" ret="RET">TM-Line Position X0 (Retired)</element>
+<element tag="0018603C" alias="TMLinePositionX0Retired" vr="UL" vm="1" ret="RET">TM-Line Position X0 (Retired)</element>
 <element tag="0018603D" alias="TMLinePositionX0" vr="SL" vm="1" ret="">TM-Line Position X0</element>
-<element tag="0018603E" alias="TMLinePositionY0RetiredRET" vr="UL" vm="1" ret="RET">TM-Line Position Y0 (Retired)</element>
+<element tag="0018603E" alias="TMLinePositionY0Retired" vr="UL" vm="1" ret="RET">TM-Line Position Y0 (Retired)</element>
 <element tag="0018603F" alias="TMLinePositionY0" vr="SL" vm="1" ret="">TM-Line Position Y0</element>
-<element tag="00186040" alias="TMLinePositionX1RetiredRET" vr="UL" vm="1" ret="RET">TM-Line Position X1 (Retired)</element>
+<element tag="00186040" alias="TMLinePositionX1Retired" vr="UL" vm="1" ret="RET">TM-Line Position X1 (Retired)</element>
 <element tag="00186041" alias="TMLinePositionX1" vr="SL" vm="1" ret="">TM-Line Position X1</element>
-<element tag="00186042" alias="TMLinePositionY1RetiredRET" vr="UL" vm="1" ret="RET">TM-Line Position Y1 (Retired)</element>
+<element tag="00186042" alias="TMLinePositionY1Retired" vr="UL" vm="1" ret="RET">TM-Line Position Y1 (Retired)</element>
 <element tag="00186043" alias="TMLinePositionY1" vr="SL" vm="1" ret="">TM-Line Position Y1</element>
 <element tag="00186044" alias="PixelComponentOrganization" vr="US" vm="1" ret="">Pixel Component Organization</element>
 <element tag="00186046" alias="PixelComponentMask" vr="UL" vm="1" ret="">Pixel Component Mask</element>
@@ -646,7 +646,7 @@
 <element tag="00187064" alias="ExposureStatus" vr="CS" vm="1" ret="">Exposure Status</element>
 <element tag="00187065" alias="PhototimerSetting" vr="DS" vm="1" ret="">Phototimer Setting</element>
 <element tag="00188150" alias="ExposureTimeInUS" vr="DS" vm="1" ret="">Exposure Time in uS</element>
-<element tag="00188151" alias="XRayTubeCurrentInUA" vr="DS" vm="1" ret="">X-Ray Tube Current in uA</element>
+<element tag="00188151" alias="XRayTubeCurrentInuA" vr="DS" vm="1" ret="">X-Ray Tube Current in uA</element>
 <element tag="00189004" alias="ContentQualification" vr="CS" vm="1" ret="">Content Qualification</element>
 <element tag="00189005" alias="PulseSequenceName" vr="SH" vm="1" ret="">Pulse Sequence Name</element>
 <element tag="00189006" alias="MRImagingModifierSequence" vr="SQ" vm="1" ret="">MR Imaging Modifier Sequence</element>
@@ -723,7 +723,7 @@
 <element tag="00189093" alias="NumberOfKSpaceTrajectories" vr="US" vm="1" ret="">Number of k-Space Trajectories</element>
 <element tag="00189094" alias="CoverageOfKSpace" vr="CS" vm="1" ret="">Coverage of k-Space</element>
 <element tag="00189095" alias="SpectroscopyAcquisitionPhaseRows" vr="UL" vm="1" ret="">Spectroscopy Acquisition Phase Rows</element>
-<element tag="00189096" alias="ParallelReductionFactorInplaneRetiredRET" vr="FD" vm="1" ret="RET">Parallel Reduction Factor In-plane (Retired)</element>
+<element tag="00189096" alias="ParallelReductionFactorInplaneRetired" vr="FD" vm="1" ret="RET">Parallel Reduction Factor In-plane (Retired)</element>
 <element tag="00189098" alias="TransmitterFrequency" vr="FD" vm="1-2" ret="">Transmitter Frequency</element>
 <element tag="00189100" alias="ResonantNucleus" vr="CS" vm="1-2" ret="">Resonant Nucleus</element>
 <element tag="00189101" alias="FrequencyCorrection" vr="CS" vm="1" ret="">Frequency Correction</element>
@@ -746,7 +746,7 @@
 <element tag="00189152" alias="MRMetaboliteMapSequence" vr="SQ" vm="1" ret="">MR Metabolite Map Sequence</element>
 <element tag="00189155" alias="ParallelReductionFactorOutofplane" vr="FD" vm="1" ret="">Parallel Reduction Factor out-of-plane</element>
 <element tag="00189159" alias="SpectroscopyAcquisitionOutofplanePhaseSteps" vr="UL" vm="1" ret="">Spectroscopy Acquisition Out-of-plane Phase Steps</element>
-<element tag="00189166" alias="BulkMotionStatusRET" vr="CS" vm="1" ret="RET">Bulk Motion Status</element>
+<element tag="00189166" alias="BulkMotionStatus" vr="CS" vm="1" ret="RET">Bulk Motion Status</element>
 <element tag="00189168" alias="ParallelReductionFactorSecondInplane" vr="FD" vm="1" ret="">Parallel Reduction Factor Second In-plane</element>
 <element tag="00189169" alias="CardiacBeatRejectionTechnique" vr="CS" vm="1" ret="">Cardiac Beat Rejection Technique</element>
 <element tag="00189170" alias="RespiratoryMotionCompensationTechnique" vr="CS" vm="1" ret="">Respiratory Motion Compensation Technique</element>
@@ -766,8 +766,8 @@
 <element tag="00189184" alias="TaggingDelay" vr="FD" vm="1" ret="">Tagging Delay</element>
 <element tag="00189185" alias="RespiratoryMotionCompensationTechniqueDescription" vr="ST" vm="1" ret="">Respiratory Motion Compensation Technique Description</element>
 <element tag="00189186" alias="RespiratorySignalSourceID" vr="SH" vm="1" ret="">Respiratory Signal Source ID</element>
-<element tag="00189195" alias="ChemicalShiftsMinimumIntegrationLimitInHzRET" vr="FD" vm="1" ret="RET">Chemical Shifts Minimum Integration Limit in Hz</element>
-<element tag="00189196" alias="ChemicalShiftsMaximumIntegrationLimitInHzRET" vr="FD" vm="1" ret="RET">Chemical Shifts Maximum Integration Limit in Hz</element>
+<element tag="00189195" alias="ChemicalShiftsMinimumIntegrationLimitInHz" vr="FD" vm="1" ret="RET">Chemical Shifts Minimum Integration Limit in Hz</element>
+<element tag="00189196" alias="ChemicalShiftsMaximumIntegrationLimitInHz" vr="FD" vm="1" ret="RET">Chemical Shifts Maximum Integration Limit in Hz</element>
 <element tag="00189197" alias="MRVelocityEncodingSequence" vr="SQ" vm="1" ret="">MR Velocity Encoding Sequence</element>
 <element tag="00189198" alias="FirstOrderPhaseCorrection" vr="CS" vm="1" ret="">First Order Phase Correction</element>
 <element tag="00189199" alias="WaterReferencedPhaseCorrection" vr="CS" vm="1" ret="">Water Referenced Phase Correction</element>
@@ -786,8 +786,8 @@
 <element tag="00189239" alias="SpecificAbsorptionRateSequence" vr="SQ" vm="1" ret="">Specific Absorption Rate Sequence</element>
 <element tag="00189240" alias="RFEchoTrainLength" vr="US" vm="1" ret="">RF Echo Train Length</element>
 <element tag="00189241" alias="GradientEchoTrainLength" vr="US" vm="1" ret="">Gradient Echo Train Length</element>
-<element tag="00189295" alias="ChemicalShiftsMinimumIntegrationLimitInPpm" vr="FD" vm="1" ret="">Chemical Shifts Minimum Integration Limit in ppm</element>
-<element tag="00189296" alias="ChemicalShiftsMaximumIntegrationLimitInPpm" vr="FD" vm="1" ret="">Chemical Shifts Maximum Integration Limit in ppm</element>
+<element tag="00189295" alias="ChemicalShiftsMinimumIntegrationLimitInppm" vr="FD" vm="1" ret="">Chemical Shifts Minimum Integration Limit in ppm</element>
+<element tag="00189296" alias="ChemicalShiftsMaximumIntegrationLimitInppm" vr="FD" vm="1" ret="">Chemical Shifts Maximum Integration Limit in ppm</element>
 <element tag="00189301" alias="CTAcquisitionTypeSequence" vr="SQ" vm="1" ret="">CT Acquisition Type Sequence</element>
 <element tag="00189302" alias="AcquisitionType" vr="CS" vm="1" ret="">Acquisition Type</element>
 <element tag="00189303" alias="TubeAngle" vr="FD" vm="1" ret="">Tube Angle</element>
@@ -815,10 +815,10 @@
 <element tag="00189325" alias="CTXRayDetailsSequence" vr="SQ" vm="1" ret="">CT X-Ray Details Sequence</element>
 <element tag="00189326" alias="CTPositionSequence" vr="SQ" vm="1" ret="">CT Position Sequence</element>
 <element tag="00189327" alias="TablePosition" vr="FD" vm="1" ret="">Table Position</element>
-<element tag="00189328" alias="ExposureTimeInMs" vr="FD" vm="1" ret="">Exposure Time in ms</element>
+<element tag="00189328" alias="ExposureTimeInms" vr="FD" vm="1" ret="">Exposure Time in ms</element>
 <element tag="00189329" alias="CTImageFrameTypeSequence" vr="SQ" vm="1" ret="">CT Image Frame Type Sequence</element>
-<element tag="00189330" alias="XRayTubeCurrentInMA" vr="FD" vm="1" ret="">X-Ray Tube Current in mA</element>
-<element tag="00189332" alias="ExposureInMAs" vr="FD" vm="1" ret="">Exposure in mAs</element>
+<element tag="00189330" alias="XRayTubeCurrentInmA" vr="FD" vm="1" ret="">X-Ray Tube Current in mA</element>
+<element tag="00189332" alias="ExposureInmAs" vr="FD" vm="1" ret="">Exposure in mAs</element>
 <element tag="00189333" alias="ConstantVolumeFlag" vr="CS" vm="1" ret="">Constant Volume Flag</element>
 <element tag="00189334" alias="FluoroscopyFlag" vr="CS" vm="1" ret="">Fluoroscopy Flag</element>
 <element tag="00189335" alias="DistanceSourceToDataCollectionCenter" vr="FD" vm="1" ret="">Distance Source to Data Collection Center</element>
@@ -954,56 +954,56 @@
 <element tag="00200011" alias="SeriesNumber" vr="IS" vm="1" ret="">Series Number</element>
 <element tag="00200012" alias="AcquisitionNumber" vr="IS" vm="1" ret="">Acquisition Number</element>
 <element tag="00200013" alias="InstanceNumber" vr="IS" vm="1" ret="">Instance Number</element>
-<element tag="00200014" alias="IsotopeNumberRET" vr="IS" vm="1" ret="RET">Isotope Number</element>
-<element tag="00200015" alias="PhaseNumberRET" vr="IS" vm="1" ret="RET">Phase Number</element>
-<element tag="00200016" alias="IntervalNumberRET" vr="IS" vm="1" ret="RET">Interval Number</element>
-<element tag="00200017" alias="TimeSlotNumberRET" vr="IS" vm="1" ret="RET">Time Slot Number</element>
-<element tag="00200018" alias="AngleNumberRET" vr="IS" vm="1" ret="RET">Angle Number</element>
+<element tag="00200014" alias="IsotopeNumber" vr="IS" vm="1" ret="RET">Isotope Number</element>
+<element tag="00200015" alias="PhaseNumber" vr="IS" vm="1" ret="RET">Phase Number</element>
+<element tag="00200016" alias="IntervalNumber" vr="IS" vm="1" ret="RET">Interval Number</element>
+<element tag="00200017" alias="TimeSlotNumber" vr="IS" vm="1" ret="RET">Time Slot Number</element>
+<element tag="00200018" alias="AngleNumber" vr="IS" vm="1" ret="RET">Angle Number</element>
 <element tag="00200019" alias="ItemNumber" vr="IS" vm="1" ret="">Item Number</element>
 <element tag="00200020" alias="PatientOrientation" vr="CS" vm="2" ret="">Patient Orientation</element>
-<element tag="00200022" alias="OverlayNumberRET" vr="IS" vm="1" ret="RET">Overlay Number</element>
-<element tag="00200024" alias="CurveNumberRET" vr="IS" vm="1" ret="RET">Curve Number</element>
-<element tag="00200026" alias="LookupTableNumberRET" vr="IS" vm="1" ret="RET">Lookup Table Number</element>
-<element tag="00200030" alias="ImagePositionRET" vr="DS" vm="3" ret="RET">Image Position</element>
+<element tag="00200022" alias="OverlayNumber" vr="IS" vm="1" ret="RET">Overlay Number</element>
+<element tag="00200024" alias="CurveNumber" vr="IS" vm="1" ret="RET">Curve Number</element>
+<element tag="00200026" alias="LookupTableNumber" vr="IS" vm="1" ret="RET">Lookup Table Number</element>
+<element tag="00200030" alias="ImagePosition" vr="DS" vm="3" ret="RET">Image Position</element>
 <element tag="00200032" alias="ImagePositionPatient" vr="DS" vm="3" ret="">Image Position (Patient)</element>
-<element tag="00200035" alias="ImageOrientationRET" vr="DS" vm="6" ret="RET">Image Orientation</element>
+<element tag="00200035" alias="ImageOrientation" vr="DS" vm="6" ret="RET">Image Orientation</element>
 <element tag="00200037" alias="ImageOrientationPatient" vr="DS" vm="6" ret="">Image Orientation (Patient)</element>
-<element tag="00200050" alias="LocationRET" vr="DS" vm="1" ret="RET">Location</element>
+<element tag="00200050" alias="Location" vr="DS" vm="1" ret="RET">Location</element>
 <element tag="00200052" alias="FrameOfReferenceUID" vr="UI" vm="1" ret="">Frame of Reference UID</element>
 <element tag="00200060" alias="Laterality" vr="CS" vm="1" ret="">Laterality</element>
 <element tag="00200062" alias="ImageLaterality" vr="CS" vm="1" ret="">Image Laterality</element>
-<element tag="00200070" alias="ImageGeometryTypeRET" vr="LO" vm="1" ret="RET">Image Geometry Type</element>
-<element tag="00200080" alias="MaskingImageRET" vr="CS" vm="1-n" ret="RET">Masking Image</element>
+<element tag="00200070" alias="ImageGeometryType" vr="LO" vm="1" ret="RET">Image Geometry Type</element>
+<element tag="00200080" alias="MaskingImage" vr="CS" vm="1-n" ret="RET">Masking Image</element>
 <element tag="00200100" alias="TemporalPositionIdentifier" vr="IS" vm="1" ret="">Temporal Position Identifier</element>
 <element tag="00200105" alias="NumberOfTemporalPositions" vr="IS" vm="1" ret="">Number of Temporal Positions</element>
 <element tag="00200110" alias="TemporalResolution" vr="DS" vm="1" ret="">Temporal Resolution</element>
 <element tag="00200200" alias="SynchronizationFrameOfReferenceUID" vr="UI" vm="1" ret="">Synchronization Frame of Reference UID</element>
-<element tag="00201000" alias="SeriesInStudyRET" vr="IS" vm="1" ret="RET">Series in Study</element>
-<element tag="00201001" alias="AcquisitionsInSeriesRET" vr="IS" vm="1" ret="RET">Acquisitions in Series</element>
+<element tag="00201000" alias="SeriesInStudy" vr="IS" vm="1" ret="RET">Series in Study</element>
+<element tag="00201001" alias="AcquisitionsInSeries" vr="IS" vm="1" ret="RET">Acquisitions in Series</element>
 <element tag="00201002" alias="ImagesInAcquisition" vr="IS" vm="1" ret="">Images in Acquisition</element>
-<element tag="00201003" alias="ImagesInSeriesRET" vr="IS" vm="1" ret="RET">Images in Series</element>
-<element tag="00201004" alias="AcquisitionsInStudyRET" vr="IS" vm="1" ret="RET">Acquisitions in Study</element>
-<element tag="00201005" alias="ImagesInStudyRET" vr="IS" vm="1" ret="RET">Images in Study</element>
-<element tag="00201020" alias="ReferenceRET" vr="CS" vm="1-n" ret="RET">Reference</element>
+<element tag="00201003" alias="ImagesInSeries" vr="IS" vm="1" ret="RET">Images in Series</element>
+<element tag="00201004" alias="AcquisitionsInStudy" vr="IS" vm="1" ret="RET">Acquisitions in Study</element>
+<element tag="00201005" alias="ImagesInStudy" vr="IS" vm="1" ret="RET">Images in Study</element>
+<element tag="00201020" alias="Reference" vr="CS" vm="1-n" ret="RET">Reference</element>
 <element tag="00201040" alias="PositionReferenceIndicator" vr="LO" vm="1" ret="">Position Reference Indicator</element>
 <element tag="00201041" alias="SliceLocation" vr="DS" vm="1" ret="">Slice Location</element>
-<element tag="00201070" alias="OtherStudyNumbersRET" vr="IS" vm="1-n" ret="RET">Other Study Numbers</element>
+<element tag="00201070" alias="OtherStudyNumbers" vr="IS" vm="1-n" ret="RET">Other Study Numbers</element>
 <element tag="00201200" alias="NumberOfPatientRelatedStudies" vr="IS" vm="1" ret="">Number of Patient Related Studies</element>
 <element tag="00201202" alias="NumberOfPatientRelatedSeries" vr="IS" vm="1" ret="">Number of Patient Related Series</element>
 <element tag="00201204" alias="NumberOfPatientRelatedInstances" vr="IS" vm="1" ret="">Number of Patient Related Instances</element>
 <element tag="00201206" alias="NumberOfStudyRelatedSeries" vr="IS" vm="1" ret="">Number of Study Related Series</element>
 <element tag="00201208" alias="NumberOfStudyRelatedInstances" vr="IS" vm="1" ret="">Number of Study Related Instances</element>
 <element tag="00201209" alias="NumberOfSeriesRelatedInstances" vr="IS" vm="1" ret="">Number of Series Related Instances</element>
-<element tag="002031xx" alias="SourceImageIDsRET" vr="CS" vm="1-n" ret="RET">Source Image IDs</element>
-<element tag="00203401" alias="ModifyingDeviceIDRET" vr="CS" vm="1" ret="RET">Modifying Device ID</element>
-<element tag="00203402" alias="ModifiedImageIDRET" vr="CS" vm="1" ret="RET">Modified Image ID</element>
-<element tag="00203403" alias="ModifiedImageDateRET" vr="DA" vm="1" ret="RET">Modified Image Date</element>
-<element tag="00203404" alias="ModifyingDeviceManufacturerRET" vr="LO" vm="1" ret="RET">Modifying Device Manufacturer</element>
-<element tag="00203405" alias="ModifiedImageTimeRET" vr="TM" vm="1" ret="RET">Modified Image Time</element>
-<element tag="00203406" alias="ModifiedImageDescriptionRET" vr="LO" vm="1" ret="RET">Modified Image Description</element>
+<element tag="002031xx" alias="SourceImageIDs" vr="CS" vm="1-n" ret="RET">Source Image IDs</element>
+<element tag="00203401" alias="ModifyingDeviceID" vr="CS" vm="1" ret="RET">Modifying Device ID</element>
+<element tag="00203402" alias="ModifiedImageID" vr="CS" vm="1" ret="RET">Modified Image ID</element>
+<element tag="00203403" alias="ModifiedImageDate" vr="DA" vm="1" ret="RET">Modified Image Date</element>
+<element tag="00203404" alias="ModifyingDeviceManufacturer" vr="LO" vm="1" ret="RET">Modifying Device Manufacturer</element>
+<element tag="00203405" alias="ModifiedImageTime" vr="TM" vm="1" ret="RET">Modified Image Time</element>
+<element tag="00203406" alias="ModifiedImageDescription" vr="LO" vm="1" ret="RET">Modified Image Description</element>
 <element tag="00204000" alias="ImageComments" vr="LT" vm="1" ret="">Image Comments</element>
-<element tag="00205000" alias="OriginalImageIdentificationRET" vr="AT" vm="1-n" ret="RET">Original Image Identification</element>
-<element tag="00205002" alias="OriginalImageIdentificationNomenclatureRET" vr="CS" vm="1-n" ret="RET">Original Image Identification Nomenclature</element>
+<element tag="00205000" alias="OriginalImageIdentification" vr="AT" vm="1-n" ret="RET">Original Image Identification</element>
+<element tag="00205002" alias="OriginalImageIdentificationNomenclature" vr="CS" vm="1-n" ret="RET">Original Image Identification Nomenclature</element>
 <element tag="00209056" alias="StackID" vr="SH" vm="1" ret="">Stack ID</element>
 <element tag="00209057" alias="InStackPositionNumber" vr="UL" vm="1" ret="">In-Stack Position Number</element>
 <element tag="00209071" alias="FrameAnatomySequence" vr="SQ" vm="1" ret="">Frame Anatomy Sequence</element>
@@ -1098,81 +1098,81 @@
 <element tag="00280002" alias="SamplesPerPixel" vr="US" vm="1" ret="">Samples per Pixel</element>
 <element tag="00280003" alias="SamplesPerPixelUsed" vr="US" vm="1" ret="">Samples per Pixel Used</element>
 <element tag="00280004" alias="PhotometricInterpretation" vr="CS" vm="1" ret="">Photometric Interpretation</element>
-<element tag="00280005" alias="ImageDimensionsRET" vr="US" vm="1" ret="RET">Image Dimensions</element>
+<element tag="00280005" alias="ImageDimensions" vr="US" vm="1" ret="RET">Image Dimensions</element>
 <element tag="00280006" alias="PlanarConfiguration" vr="US" vm="1" ret="">Planar Configuration</element>
 <element tag="00280008" alias="NumberOfFrames" vr="IS" vm="1" ret="">Number of Frames</element>
 <element tag="00280009" alias="FrameIncrementPointer" vr="AT" vm="1-n" ret="">Frame Increment Pointer</element>
 <element tag="0028000A" alias="FrameDimensionPointer" vr="AT" vm="1-n" ret="">Frame Dimension Pointer</element>
 <element tag="00280010" alias="Rows" vr="US" vm="1" ret="">Rows</element>
 <element tag="00280011" alias="Columns" vr="US" vm="1" ret="">Columns</element>
-<element tag="00280012" alias="PlanesRET" vr="US" vm="1" ret="RET">Planes</element>
+<element tag="00280012" alias="Planes" vr="US" vm="1" ret="RET">Planes</element>
 <element tag="00280014" alias="UltrasoundColorDataPresent" vr="US" vm="1" ret="">Ultrasound Color Data Present</element>
 <element tag="00280030" alias="PixelSpacing" vr="DS" vm="2" ret="">Pixel Spacing</element>
 <element tag="00280031" alias="ZoomFactor" vr="DS" vm="2" ret="">Zoom Factor</element>
 <element tag="00280032" alias="ZoomCenter" vr="DS" vm="2" ret="">Zoom Center</element>
 <element tag="00280034" alias="PixelAspectRatio" vr="IS" vm="2" ret="">Pixel Aspect Ratio</element>
-<element tag="00280040" alias="ImageFormatRET" vr="CS" vm="1" ret="RET">Image Format</element>
-<element tag="00280050" alias="ManipulatedImageRET" vr="LO" vm="1-n" ret="RET">Manipulated Image</element>
+<element tag="00280040" alias="ImageFormat" vr="CS" vm="1" ret="RET">Image Format</element>
+<element tag="00280050" alias="ManipulatedImage" vr="LO" vm="1-n" ret="RET">Manipulated Image</element>
 <element tag="00280051" alias="CorrectedImage" vr="CS" vm="1-n" ret="">Corrected Image</element>
-<element tag="0028005F" alias="CompressionRecognitionCodeRET" vr="LO" vm="1" ret="RET">Compression Recognition Code</element>
-<element tag="00280060" alias="CompressionCodeRET" vr="CS" vm="1" ret="RET">Compression Code</element>
-<element tag="00280061" alias="CompressionOriginatorRET" vr="SH" vm="1" ret="RET">Compression Originator</element>
-<element tag="00280062" alias="CompressionLabelRET" vr="LO" vm="1" ret="RET">Compression Label</element>
-<element tag="00280063" alias="CompressionDescriptionRET" vr="SH" vm="1" ret="RET">Compression Description</element>
-<element tag="00280065" alias="CompressionSequenceRET" vr="CS" vm="1-n" ret="RET">Compression Sequence</element>
-<element tag="00280066" alias="CompressionStepPointersRET" vr="AT" vm="1-n" ret="RET">Compression Step Pointers</element>
-<element tag="00280068" alias="RepeatIntervalRET" vr="US" vm="1" ret="RET">Repeat Interval</element>
-<element tag="00280069" alias="BitsGroupedRET" vr="US" vm="1" ret="RET">Bits Grouped</element>
-<element tag="00280070" alias="PerimeterTableRET" vr="US" vm="1-n" ret="RET">Perimeter Table</element>
-<element tag="00280071" alias="PerimeterValueRET" vr="US|SS" vm="1" ret="RET">Perimeter Value</element>
-<element tag="00280080" alias="PredictorRowsRET" vr="US" vm="1" ret="RET">Predictor Rows</element>
-<element tag="00280081" alias="PredictorColumnsRET" vr="US" vm="1" ret="RET">Predictor Columns</element>
-<element tag="00280082" alias="PredictorConstantsRET" vr="US" vm="1-n" ret="RET">Predictor Constants</element>
-<element tag="00280090" alias="BlockedPixelsRET" vr="CS" vm="1" ret="RET">Blocked Pixels</element>
-<element tag="00280091" alias="BlockRowsRET" vr="US" vm="1" ret="RET">Block Rows</element>
-<element tag="00280092" alias="BlockColumnsRET" vr="US" vm="1" ret="RET">Block Columns</element>
-<element tag="00280093" alias="RowOverlapRET" vr="US" vm="1" ret="RET">Row Overlap</element>
-<element tag="00280094" alias="ColumnOverlapRET" vr="US" vm="1" ret="RET">Column Overlap</element>
+<element tag="0028005F" alias="CompressionRecognitionCode" vr="LO" vm="1" ret="RET">Compression Recognition Code</element>
+<element tag="00280060" alias="CompressionCode" vr="CS" vm="1" ret="RET">Compression Code</element>
+<element tag="00280061" alias="CompressionOriginator" vr="SH" vm="1" ret="RET">Compression Originator</element>
+<element tag="00280062" alias="CompressionLabel" vr="LO" vm="1" ret="RET">Compression Label</element>
+<element tag="00280063" alias="CompressionDescription" vr="SH" vm="1" ret="RET">Compression Description</element>
+<element tag="00280065" alias="CompressionSequence" vr="CS" vm="1-n" ret="RET">Compression Sequence</element>
+<element tag="00280066" alias="CompressionStepPointers" vr="AT" vm="1-n" ret="RET">Compression Step Pointers</element>
+<element tag="00280068" alias="RepeatInterval" vr="US" vm="1" ret="RET">Repeat Interval</element>
+<element tag="00280069" alias="BitsGrouped" vr="US" vm="1" ret="RET">Bits Grouped</element>
+<element tag="00280070" alias="PerimeterTable" vr="US" vm="1-n" ret="RET">Perimeter Table</element>
+<element tag="00280071" alias="PerimeterValue" vr="US|SS" vm="1" ret="RET">Perimeter Value</element>
+<element tag="00280080" alias="PredictorRows" vr="US" vm="1" ret="RET">Predictor Rows</element>
+<element tag="00280081" alias="PredictorColumns" vr="US" vm="1" ret="RET">Predictor Columns</element>
+<element tag="00280082" alias="PredictorConstants" vr="US" vm="1-n" ret="RET">Predictor Constants</element>
+<element tag="00280090" alias="BlockedPixels" vr="CS" vm="1" ret="RET">Blocked Pixels</element>
+<element tag="00280091" alias="BlockRows" vr="US" vm="1" ret="RET">Block Rows</element>
+<element tag="00280092" alias="BlockColumns" vr="US" vm="1" ret="RET">Block Columns</element>
+<element tag="00280093" alias="RowOverlap" vr="US" vm="1" ret="RET">Row Overlap</element>
+<element tag="00280094" alias="ColumnOverlap" vr="US" vm="1" ret="RET">Column Overlap</element>
 <element tag="00280100" alias="BitsAllocated" vr="US" vm="1" ret="">Bits Allocated</element>
 <element tag="00280101" alias="BitsStored" vr="US" vm="1" ret="">Bits Stored</element>
 <element tag="00280102" alias="HighBit" vr="US" vm="1" ret="">High Bit</element>
 <element tag="00280103" alias="PixelRepresentation" vr="US" vm="1" ret="">Pixel Representation</element>
-<element tag="00280104" alias="SmallestValidPixelValueRET" vr="US|SS" vm="1" ret="RET">Smallest Valid Pixel Value</element>
-<element tag="00280105" alias="LargestValidPixelValueRET" vr="US|SS" vm="1" ret="RET">Largest Valid Pixel Value</element>
+<element tag="00280104" alias="SmallestValidPixelValue" vr="US|SS" vm="1" ret="RET">Smallest Valid Pixel Value</element>
+<element tag="00280105" alias="LargestValidPixelValue" vr="US|SS" vm="1" ret="RET">Largest Valid Pixel Value</element>
 <element tag="00280106" alias="SmallestImagePixelValue" vr="US|SS" vm="1" ret="">Smallest Image Pixel Value</element>
 <element tag="00280107" alias="LargestImagePixelValue" vr="US|SS" vm="1" ret="">Largest Image Pixel Value</element>
 <element tag="00280108" alias="SmallestPixelValueInSeries" vr="US|SS" vm="1" ret="">Smallest Pixel Value in Series</element>
 <element tag="00280109" alias="LargestPixelValueInSeries" vr="US|SS" vm="1" ret="">Largest Pixel Value in Series</element>
-<element tag="00280110" alias="SmallestImagePixelValueInPlaneRET" vr="US|SS" vm="1" ret="RET">Smallest Image Pixel Value in Plane</element>
-<element tag="00280111" alias="LargestImagePixelValueInPlaneRET" vr="US|SS" vm="1" ret="RET">Largest Image Pixel Value in Plane</element>
+<element tag="00280110" alias="SmallestImagePixelValueInPlane" vr="US|SS" vm="1" ret="RET">Smallest Image Pixel Value in Plane</element>
+<element tag="00280111" alias="LargestImagePixelValueInPlane" vr="US|SS" vm="1" ret="RET">Largest Image Pixel Value in Plane</element>
 <element tag="00280120" alias="PixelPaddingValue" vr="US|SS" vm="1" ret="">Pixel Padding Value</element>
 <element tag="00280121" alias="PixelPaddingRangeLimit" vr="US|SS" vm="1" ret="">Pixel Padding Range Limit</element>
-<element tag="00280200" alias="ImageLocationRET" vr="US" vm="1" ret="RET">Image Location</element>
+<element tag="00280200" alias="ImageLocation" vr="US" vm="1" ret="RET">Image Location</element>
 <element tag="00280300" alias="QualityControlImage" vr="CS" vm="1" ret="">Quality Control Image</element>
 <element tag="00280301" alias="BurnedInAnnotation" vr="CS" vm="1" ret="">Burned In Annotation</element>
-<element tag="00280400" alias="TransformLabelRET" vr="LO" vm="1" ret="RET">Transform Label</element>
-<element tag="00280401" alias="TransformVersionNumberRET" vr="LO" vm="1" ret="RET">Transform Version Number</element>
-<element tag="00280402" alias="NumberOfTransformStepsRET" vr="US" vm="1" ret="RET">Number of Transform Steps</element>
-<element tag="00280403" alias="SequenceOfCompressedDataRET" vr="LO" vm="1-n" ret="RET">Sequence of Compressed Data</element>
-<element tag="00280404" alias="DetailsOfCoefficientsRET" vr="AT" vm="1-n" ret="RET">Details of Coefficients</element>
-<element tag="002804x0" alias="RowsForNthOrderCoefficientsRET" vr="US" vm="1" ret="RET">Rows For Nth Order Coefficients</element>
-<element tag="002804x1" alias="ColumnsForNthOrderCoefficientsRET" vr="US" vm="1" ret="RET">Columns For Nth Order Coefficients</element>
-<element tag="002804x2" alias="CoefficientCodingRET" vr="LO" vm="1-n" ret="RET">Coefficient Coding</element>
-<element tag="002804x3" alias="CoefficientCodingPointersRET" vr="AT" vm="1-n" ret="RET">Coefficient Coding Pointers</element>
-<element tag="00280700" alias="DCTLabelRET" vr="LO" vm="1" ret="RET">DCT Label</element>
-<element tag="00280701" alias="DataBlockDescriptionRET" vr="CS" vm="1-n" ret="RET">Data Block Description</element>
-<element tag="00280702" alias="DataBlockRET" vr="AT" vm="1-n" ret="RET">Data Block</element>
-<element tag="00280710" alias="NormalizationFactorFormatRET" vr="US" vm="1" ret="RET">Normalization Factor Format</element>
-<element tag="00280720" alias="ZonalMapNumberFormatRET" vr="US" vm="1" ret="RET">Zonal Map Number Format</element>
-<element tag="00280721" alias="ZonalMapLocationRET" vr="AT" vm="1-n" ret="RET">Zonal Map Location</element>
-<element tag="00280722" alias="ZonalMapFormatRET" vr="US" vm="1" ret="RET">Zonal Map Format</element>
-<element tag="00280730" alias="AdaptiveMapFormatRET" vr="US" vm="1" ret="RET">Adaptive Map Format</element>
-<element tag="00280740" alias="CodeNumberFormatRET" vr="US" vm="1" ret="RET">Code Number Format</element>
-<element tag="002808x0" alias="CodeLabelRET" vr="CS" vm="1-n" ret="RET">Code Label</element>
-<element tag="002808x2" alias="NumberOfTableRET" vr="US" vm="1" ret="RET">Number of Table</element>
-<element tag="002808x3" alias="CodeTableLocationRET" vr="AT" vm="1-n" ret="RET">Code Table Location</element>
-<element tag="002808x4" alias="BitsForCodeWordRET" vr="US" vm="1" ret="RET">Bits For Code Word</element>
-<element tag="002808x8" alias="ImageDataLocationRET" vr="AT" vm="1-n" ret="RET">Image Data Location</element>
+<element tag="00280400" alias="TransformLabel" vr="LO" vm="1" ret="RET">Transform Label</element>
+<element tag="00280401" alias="TransformVersionNumber" vr="LO" vm="1" ret="RET">Transform Version Number</element>
+<element tag="00280402" alias="NumberOfTransformSteps" vr="US" vm="1" ret="RET">Number of Transform Steps</element>
+<element tag="00280403" alias="SequenceOfCompressedData" vr="LO" vm="1-n" ret="RET">Sequence of Compressed Data</element>
+<element tag="00280404" alias="DetailsOfCoefficients" vr="AT" vm="1-n" ret="RET">Details of Coefficients</element>
+<element tag="002804x0" alias="RowsForNthOrderCoefficients" vr="US" vm="1" ret="RET">Rows For Nth Order Coefficients</element>
+<element tag="002804x1" alias="ColumnsForNthOrderCoefficients" vr="US" vm="1" ret="RET">Columns For Nth Order Coefficients</element>
+<element tag="002804x2" alias="CoefficientCoding" vr="LO" vm="1-n" ret="RET">Coefficient Coding</element>
+<element tag="002804x3" alias="CoefficientCodingPointers" vr="AT" vm="1-n" ret="RET">Coefficient Coding Pointers</element>
+<element tag="00280700" alias="DCTLabel" vr="LO" vm="1" ret="RET">DCT Label</element>
+<element tag="00280701" alias="DataBlockDescription" vr="CS" vm="1-n" ret="RET">Data Block Description</element>
+<element tag="00280702" alias="DataBlock" vr="AT" vm="1-n" ret="RET">Data Block</element>
+<element tag="00280710" alias="NormalizationFactorFormat" vr="US" vm="1" ret="RET">Normalization Factor Format</element>
+<element tag="00280720" alias="ZonalMapNumberFormat" vr="US" vm="1" ret="RET">Zonal Map Number Format</element>
+<element tag="00280721" alias="ZonalMapLocation" vr="AT" vm="1-n" ret="RET">Zonal Map Location</element>
+<element tag="00280722" alias="ZonalMapFormat" vr="US" vm="1" ret="RET">Zonal Map Format</element>
+<element tag="00280730" alias="AdaptiveMapFormat" vr="US" vm="1" ret="RET">Adaptive Map Format</element>
+<element tag="00280740" alias="CodeNumberFormat" vr="US" vm="1" ret="RET">Code Number Format</element>
+<element tag="002808x0" alias="CodeLabel" vr="CS" vm="1-n" ret="RET">Code Label</element>
+<element tag="002808x2" alias="NumberOfTable" vr="US" vm="1" ret="RET">Number of Table</element>
+<element tag="002808x3" alias="CodeTableLocation" vr="AT" vm="1-n" ret="RET">Code Table Location</element>
+<element tag="002808x4" alias="BitsForCodeWord" vr="US" vm="1" ret="RET">Bits For Code Word</element>
+<element tag="002808x8" alias="ImageDataLocation" vr="AT" vm="1-n" ret="RET">Image Data Location</element>
 <element tag="00280A02" alias="PixelSpacingCalibrationType" vr="CS" vm="1" ret="">Pixel Spacing Calibration Type</element>
 <element tag="00280A04" alias="PixelSpacingCalibrationDescription" vr="LO" vm="1" ret="">Pixel Spacing Calibration Description</element>
 <element tag="00281040" alias="PixelIntensityRelationship" vr="CS" vm="1" ret="">Pixel Intensity Relationship</element>
@@ -1184,24 +1184,24 @@
 <element tag="00281054" alias="RescaleType" vr="LO" vm="1" ret="">Rescale Type</element>
 <element tag="00281055" alias="WindowCenterWidthExplanation" vr="LO" vm="1-n" ret="">Window Center &amp; Width Explanation</element>
 <element tag="00281056" alias="VOILUTFunction" vr="CS" vm="1" ret="">VOI LUT Function</element>
-<element tag="00281080" alias="GrayScaleRET" vr="CS" vm="1" ret="RET">Gray Scale</element>
+<element tag="00281080" alias="GrayScale" vr="CS" vm="1" ret="RET">Gray Scale</element>
 <element tag="00281090" alias="RecommendedViewingMode" vr="CS" vm="1" ret="">Recommended Viewing Mode</element>
-<element tag="00281100" alias="GrayLookupTableDescriptorRET" vr="US|SS" vm="3" ret="RET">Gray Lookup Table Descriptor</element>
+<element tag="00281100" alias="GrayLookupTableDescriptor" vr="US|SS" vm="3" ret="RET">Gray Lookup Table Descriptor</element>
 <element tag="00281101" alias="RedPaletteColorLookupTableDescriptor" vr="US|SS" vm="3" ret="">Red Palette Color Lookup Table Descriptor</element>
 <element tag="00281102" alias="GreenPaletteColorLookupTableDescriptor" vr="US|SS" vm="3" ret="">Green Palette Color Lookup Table Descriptor</element>
 <element tag="00281103" alias="BluePaletteColorLookupTableDescriptor" vr="US|SS" vm="3" ret="">Blue Palette Color Lookup Table Descriptor</element>
-<element tag="00281111" alias="LargeRedPaletteColorLookupTableDescriptorRET" vr="US|SS" vm="4" ret="RET">Large Red Palette Color Lookup Table Descriptor</element>
-<element tag="00281112" alias="LargeGreenPaletteColorLookupTableDescriptorRET" vr="US|SS" vm="4" ret="RET">Large Green Palette Color Lookup Table Descriptor</element>
-<element tag="00281113" alias="LargeBluePaletteColorLookupTableDescriptorRET" vr="US|SS" vm="4" ret="RET">Large Blue Palette Color Lookup Table Descriptor</element>
+<element tag="00281111" alias="LargeRedPaletteColorLookupTableDescriptor" vr="US|SS" vm="4" ret="RET">Large Red Palette Color Lookup Table Descriptor</element>
+<element tag="00281112" alias="LargeGreenPaletteColorLookupTableDescriptor" vr="US|SS" vm="4" ret="RET">Large Green Palette Color Lookup Table Descriptor</element>
+<element tag="00281113" alias="LargeBluePaletteColorLookupTableDescriptor" vr="US|SS" vm="4" ret="RET">Large Blue Palette Color Lookup Table Descriptor</element>
 <element tag="00281199" alias="PaletteColorLookupTableUID" vr="UI" vm="1" ret="">Palette Color Lookup Table UID</element>
-<element tag="00281200" alias="GrayLookupTableDataRET" vr="US|SS|OW" vm="1-n1" ret="RET">Gray Lookup Table Data</element>
+<element tag="00281200" alias="GrayLookupTableData" vr="US|SS|OW" vm="1-n1" ret="RET">Gray Lookup Table Data</element>
 <element tag="00281201" alias="RedPaletteColorLookupTableData" vr="OW" vm="1" ret="">Red Palette Color Lookup Table Data</element>
 <element tag="00281202" alias="GreenPaletteColorLookupTableData" vr="OW" vm="1" ret="">Green Palette Color Lookup Table Data</element>
 <element tag="00281203" alias="BluePaletteColorLookupTableData" vr="OW" vm="1" ret="">Blue Palette Color Lookup Table Data</element>
-<element tag="00281211" alias="LargeRedPaletteColorLookupTableDataRET" vr="OW" vm="1" ret="RET">Large Red Palette Color Lookup Table Data</element>
-<element tag="00281212" alias="LargeGreenPaletteColorLookupTableDataRET" vr="OW" vm="1" ret="RET">Large Green Palette Color Lookup Table Data</element>
-<element tag="00281213" alias="LargeBluePaletteColorLookupTableDataRET" vr="OW" vm="1" ret="RET">Large Blue Palette Color Lookup Table Data</element>
-<element tag="00281214" alias="LargePaletteColorLookupTableUIDRET" vr="UI" vm="1" ret="RET">Large Palette Color Lookup Table UID</element>
+<element tag="00281211" alias="LargeRedPaletteColorLookupTableData" vr="OW" vm="1" ret="RET">Large Red Palette Color Lookup Table Data</element>
+<element tag="00281212" alias="LargeGreenPaletteColorLookupTableData" vr="OW" vm="1" ret="RET">Large Green Palette Color Lookup Table Data</element>
+<element tag="00281213" alias="LargeBluePaletteColorLookupTableData" vr="OW" vm="1" ret="RET">Large Blue Palette Color Lookup Table Data</element>
+<element tag="00281214" alias="LargePaletteColorLookupTableUID" vr="UI" vm="1" ret="RET">Large Palette Color Lookup Table UID</element>
 <element tag="00281221" alias="SegmentedRedPaletteColorLookupTableData" vr="OW" vm="1" ret="">Segmented Red Palette Color Lookup Table Data</element>
 <element tag="00281222" alias="SegmentedGreenPaletteColorLookupTableData" vr="OW" vm="1" ret="">Segmented Green Palette Color Lookup Table Data</element>
 <element tag="00281223" alias="SegmentedBluePaletteColorLookupTableData" vr="OW" vm="1" ret="">Segmented Blue Palette Color Lookup Table Data</element>
@@ -1221,13 +1221,13 @@
 <element tag="00283006" alias="LUTData" vr="US|SS|OW" vm="1-n1" ret="">LUT Data</element>
 <element tag="00283010" alias="VOILUTSequence" vr="SQ" vm="1" ret="">VOI LUT Sequence</element>
 <element tag="00283110" alias="SoftcopyVOILUTSequence" vr="SQ" vm="1" ret="">Softcopy VOI LUT Sequence</element>
-<element tag="00284000" alias="ImagePresentationCommentsRET" vr="LT" vm="1" ret="RET">Image Presentation Comments</element>
-<element tag="00285000" alias="BiPlaneAcquisitionSequenceRET" vr="SQ" vm="1" ret="RET">Bi-Plane Acquisition Sequence</element>
+<element tag="00284000" alias="ImagePresentationComments" vr="LT" vm="1" ret="RET">Image Presentation Comments</element>
+<element tag="00285000" alias="BiPlaneAcquisitionSequence" vr="SQ" vm="1" ret="RET">Bi-Plane Acquisition Sequence</element>
 <element tag="00286010" alias="RepresentativeFrameNumber" vr="US" vm="1" ret="">Representative Frame Number</element>
 <element tag="00286020" alias="FrameNumbersOfInterestFOI" vr="US" vm="1-n" ret="">Frame Numbers of Interest (FOI)</element>
 <element tag="00286022" alias="FramesOfInterestDescription" vr="LO" vm="1-n" ret="">Frame(s) of Interest Description</element>
 <element tag="00286023" alias="FrameOfInterestType" vr="CS" vm="1-n" ret="">Frame of Interest Type</element>
-<element tag="00286030" alias="MaskPointersRET" vr="US" vm="1-n" ret="RET">Mask Pointer(s)</element>
+<element tag="00286030" alias="MaskPointers" vr="US" vm="1-n" ret="RET">Mask Pointer(s)</element>
 <element tag="00286040" alias="RWavePointer" vr="US" vm="1-n" ret="">R Wave Pointer</element>
 <element tag="00286100" alias="MaskSubtractionSequence" vr="SQ" vm="1" ret="">Mask Subtraction Sequence</element>
 <element tag="00286101" alias="MaskOperation" vr="CS" vm="1" ret="">Mask Operation</element>
@@ -1241,7 +1241,7 @@
 <element tag="00289001" alias="DataPointRows" vr="UL" vm="1" ret="">Data Point Rows</element>
 <element tag="00289002" alias="DataPointColumns" vr="UL" vm="1" ret="">Data Point Columns</element>
 <element tag="00289003" alias="SignalDomainColumns" vr="CS" vm="1" ret="">Signal Domain Columns</element>
-<element tag="00289099" alias="LargestMonochromePixelValueRET" vr="US" vm="1" ret="RET">Largest Monochrome Pixel Value</element>
+<element tag="00289099" alias="LargestMonochromePixelValue" vr="US" vm="1" ret="RET">Largest Monochrome Pixel Value</element>
 <element tag="00289108" alias="DataRepresentation" vr="CS" vm="1" ret="">Data Representation</element>
 <element tag="00289110" alias="PixelMeasuresSequence" vr="SQ" vm="1" ret="">Pixel Measures Sequence</element>
 <element tag="00289132" alias="FrameVOILUTSequence" vr="SQ" vm="1" ret="">Frame VOI LUT Sequence</element>
@@ -1270,52 +1270,52 @@
 <element tag="00289766" alias="NonuniformRadialSamplingCorrected" vr="CS" vm="1" ret="">Non-uniform Radial Sampling Corrected</element>
 <element tag="00289767" alias="SensitivityCalibrated" vr="CS" vm="1" ret="">Sensitivity Calibrated</element>
 <element tag="00289768" alias="DetectorNormalizationCorrection" vr="CS" vm="1" ret="">Detector Normalization Correction</element>
-<element tag="0032000A" alias="StudyStatusIDRET" vr="CS" vm="1" ret="RET">Study Status ID</element>
-<element tag="0032000C" alias="StudyPriorityIDRET" vr="CS" vm="1" ret="RET">Study Priority ID</element>
-<element tag="00320012" alias="StudyIDIssuerRET" vr="LO" vm="1" ret="RET">Study ID Issuer</element>
-<element tag="00320032" alias="StudyVerifiedDateRET" vr="DA" vm="1" ret="RET">Study Verified Date</element>
-<element tag="00320033" alias="StudyVerifiedTimeRET" vr="TM" vm="1" ret="RET">Study Verified Time</element>
-<element tag="00320034" alias="StudyReadDateRET" vr="DA" vm="1" ret="RET">Study Read Date</element>
-<element tag="00320035" alias="StudyReadTimeRET" vr="TM" vm="1" ret="RET">Study Read Time</element>
-<element tag="00321000" alias="ScheduledStudyStartDateRET" vr="DA" vm="1" ret="RET">Scheduled Study Start Date</element>
-<element tag="00321001" alias="ScheduledStudyStartTimeRET" vr="TM" vm="1" ret="RET">Scheduled Study Start Time</element>
-<element tag="00321010" alias="ScheduledStudyStopDateRET" vr="DA" vm="1" ret="RET">Scheduled Study Stop Date</element>
-<element tag="00321011" alias="ScheduledStudyStopTimeRET" vr="TM" vm="1" ret="RET">Scheduled Study Stop Time</element>
-<element tag="00321020" alias="ScheduledStudyLocationRET" vr="LO" vm="1" ret="RET">Scheduled Study Location</element>
-<element tag="00321021" alias="ScheduledStudyLocationAETitleRET" vr="AE" vm="1-n" ret="RET">Scheduled Study Location AE Title</element>
-<element tag="00321030" alias="ReasonForStudyRET" vr="LO" vm="1" ret="RET">Reason for Study</element>
+<element tag="0032000A" alias="StudyStatusID" vr="CS" vm="1" ret="RET">Study Status ID</element>
+<element tag="0032000C" alias="StudyPriorityID" vr="CS" vm="1" ret="RET">Study Priority ID</element>
+<element tag="00320012" alias="StudyIDIssuer" vr="LO" vm="1" ret="RET">Study ID Issuer</element>
+<element tag="00320032" alias="StudyVerifiedDate" vr="DA" vm="1" ret="RET">Study Verified Date</element>
+<element tag="00320033" alias="StudyVerifiedTime" vr="TM" vm="1" ret="RET">Study Verified Time</element>
+<element tag="00320034" alias="StudyReadDate" vr="DA" vm="1" ret="RET">Study Read Date</element>
+<element tag="00320035" alias="StudyReadTime" vr="TM" vm="1" ret="RET">Study Read Time</element>
+<element tag="00321000" alias="ScheduledStudyStartDate" vr="DA" vm="1" ret="RET">Scheduled Study Start Date</element>
+<element tag="00321001" alias="ScheduledStudyStartTime" vr="TM" vm="1" ret="RET">Scheduled Study Start Time</element>
+<element tag="00321010" alias="ScheduledStudyStopDate" vr="DA" vm="1" ret="RET">Scheduled Study Stop Date</element>
+<element tag="00321011" alias="ScheduledStudyStopTime" vr="TM" vm="1" ret="RET">Scheduled Study Stop Time</element>
+<element tag="00321020" alias="ScheduledStudyLocation" vr="LO" vm="1" ret="RET">Scheduled Study Location</element>
+<element tag="00321021" alias="ScheduledStudyLocationAETitle" vr="AE" vm="1-n" ret="RET">Scheduled Study Location AE Title</element>
+<element tag="00321030" alias="ReasonForStudy" vr="LO" vm="1" ret="RET">Reason for Study</element>
 <element tag="00321031" alias="RequestingPhysicianIdentificationSequence" vr="SQ" vm="1" ret="">Requesting Physician Identification Sequence</element>
 <element tag="00321032" alias="RequestingPhysician" vr="PN" vm="1" ret="">Requesting Physician</element>
 <element tag="00321033" alias="RequestingService" vr="LO" vm="1" ret="">Requesting Service</element>
-<element tag="00321040" alias="StudyArrivalDateRET" vr="DA" vm="1" ret="RET">Study Arrival Date</element>
-<element tag="00321041" alias="StudyArrivalTimeRET" vr="TM" vm="1" ret="RET">Study Arrival Time</element>
-<element tag="00321050" alias="StudyCompletionDateRET" vr="DA" vm="1" ret="RET">Study Completion Date</element>
-<element tag="00321051" alias="StudyCompletionTimeRET" vr="TM" vm="1" ret="RET">Study Completion Time</element>
-<element tag="00321055" alias="StudyComponentStatusIDRET" vr="CS" vm="1" ret="RET">Study Component Status ID</element>
+<element tag="00321040" alias="StudyArrivalDate" vr="DA" vm="1" ret="RET">Study Arrival Date</element>
+<element tag="00321041" alias="StudyArrivalTime" vr="TM" vm="1" ret="RET">Study Arrival Time</element>
+<element tag="00321050" alias="StudyCompletionDate" vr="DA" vm="1" ret="RET">Study Completion Date</element>
+<element tag="00321051" alias="StudyCompletionTime" vr="TM" vm="1" ret="RET">Study Completion Time</element>
+<element tag="00321055" alias="StudyComponentStatusID" vr="CS" vm="1" ret="RET">Study Component Status ID</element>
 <element tag="00321060" alias="RequestedProcedureDescription" vr="LO" vm="1" ret="">Requested Procedure Description</element>
 <element tag="00321064" alias="RequestedProcedureCodeSequence" vr="SQ" vm="1" ret="">Requested Procedure Code Sequence</element>
 <element tag="00321070" alias="RequestedContrastAgent" vr="LO" vm="1" ret="">Requested Contrast Agent</element>
-<element tag="00324000" alias="StudyCommentsRET" vr="LT" vm="1" ret="RET">Study Comments</element>
+<element tag="00324000" alias="StudyComments" vr="LT" vm="1" ret="RET">Study Comments</element>
 <element tag="00380004" alias="ReferencedPatientAliasSequence" vr="SQ" vm="1" ret="">Referenced Patient Alias Sequence</element>
 <element tag="00380008" alias="VisitStatusID" vr="CS" vm="1" ret="">Visit Status ID</element>
 <element tag="00380010" alias="AdmissionID" vr="LO" vm="1" ret="">Admission ID</element>
-<element tag="00380011" alias="IssuerOfAdmissionIDRET" vr="LO" vm="1" ret="RET">Issuer of Admission ID</element>
+<element tag="00380011" alias="IssuerOfAdmissionID" vr="LO" vm="1" ret="RET">Issuer of Admission ID</element>
 <element tag="00380014" alias="IssuerOfAdmissionIDSequence" vr="SQ" vm="1" ret="">Issuer of Admission ID Sequence</element>
 <element tag="00380016" alias="RouteOfAdmissions" vr="LO" vm="1" ret="">Route of Admissions</element>
-<element tag="0038001A" alias="ScheduledAdmissionDateRET" vr="DA" vm="1" ret="RET">Scheduled Admission Date</element>
-<element tag="0038001B" alias="ScheduledAdmissionTimeRET" vr="TM" vm="1" ret="RET">Scheduled Admission Time</element>
-<element tag="0038001C" alias="ScheduledDischargeDateRET" vr="DA" vm="1" ret="RET">Scheduled Discharge Date</element>
-<element tag="0038001D" alias="ScheduledDischargeTimeRET" vr="TM" vm="1" ret="RET">Scheduled Discharge Time</element>
-<element tag="0038001E" alias="ScheduledPatientInstitutionResidenceRET" vr="LO" vm="1" ret="RET">Scheduled Patient Institution Residence</element>
+<element tag="0038001A" alias="ScheduledAdmissionDate" vr="DA" vm="1" ret="RET">Scheduled Admission Date</element>
+<element tag="0038001B" alias="ScheduledAdmissionTime" vr="TM" vm="1" ret="RET">Scheduled Admission Time</element>
+<element tag="0038001C" alias="ScheduledDischargeDate" vr="DA" vm="1" ret="RET">Scheduled Discharge Date</element>
+<element tag="0038001D" alias="ScheduledDischargeTime" vr="TM" vm="1" ret="RET">Scheduled Discharge Time</element>
+<element tag="0038001E" alias="ScheduledPatientInstitutionResidence" vr="LO" vm="1" ret="RET">Scheduled Patient Institution Residence</element>
 <element tag="00380020" alias="AdmittingDate" vr="DA" vm="1" ret="">Admitting Date</element>
 <element tag="00380021" alias="AdmittingTime" vr="TM" vm="1" ret="">Admitting Time</element>
-<element tag="00380030" alias="DischargeDateRET" vr="DA" vm="1" ret="RET">Discharge Date</element>
-<element tag="00380032" alias="DischargeTimeRET" vr="TM" vm="1" ret="RET">Discharge Time</element>
-<element tag="00380040" alias="DischargeDiagnosisDescriptionRET" vr="LO" vm="1" ret="RET">Discharge Diagnosis Description</element>
-<element tag="00380044" alias="DischargeDiagnosisCodeSequenceRET" vr="SQ" vm="1" ret="RET">Discharge Diagnosis Code Sequence</element>
+<element tag="00380030" alias="DischargeDate" vr="DA" vm="1" ret="RET">Discharge Date</element>
+<element tag="00380032" alias="DischargeTime" vr="TM" vm="1" ret="RET">Discharge Time</element>
+<element tag="00380040" alias="DischargeDiagnosisDescription" vr="LO" vm="1" ret="RET">Discharge Diagnosis Description</element>
+<element tag="00380044" alias="DischargeDiagnosisCodeSequence" vr="SQ" vm="1" ret="RET">Discharge Diagnosis Code Sequence</element>
 <element tag="00380050" alias="SpecialNeeds" vr="LO" vm="1" ret="">Special Needs</element>
 <element tag="00380060" alias="ServiceEpisodeID" vr="LO" vm="1" ret="">Service Episode ID</element>
-<element tag="00380061" alias="IssuerOfServiceEpisodeIDRET" vr="LO" vm="1" ret="RET">Issuer of Service Episode ID</element>
+<element tag="00380061" alias="IssuerOfServiceEpisodeID" vr="LO" vm="1" ret="RET">Issuer of Service Episode ID</element>
 <element tag="00380062" alias="ServiceEpisodeDescription" vr="LO" vm="1" ret="">Service Episode Description</element>
 <element tag="00380064" alias="IssuerOfServiceEpisodeIDSequence" vr="SQ" vm="1" ret="">Issuer of Service Episode ID Sequence</element>
 <element tag="00380100" alias="PertinentDocumentsSequence" vr="SQ" vm="1" ret="">Pertinent Documents Sequence</element>
@@ -1413,7 +1413,7 @@
 <element tag="00400302" alias="EntranceDose" vr="US" vm="1" ret="">Entrance Dose</element>
 <element tag="00400303" alias="ExposedArea" vr="US" vm="1-2" ret="">Exposed Area</element>
 <element tag="00400306" alias="DistanceSourceToEntrance" vr="DS" vm="1" ret="">Distance Source to Entrance</element>
-<element tag="00400307" alias="DistanceSourceToSupportRET" vr="DS" vm="1" ret="RET">Distance Source to Support</element>
+<element tag="00400307" alias="DistanceSourceToSupport" vr="DS" vm="1" ret="RET">Distance Source to Support</element>
 <element tag="0040030E" alias="ExposureDoseSequence" vr="SQ" vm="1" ret="">Exposure Dose Sequence</element>
 <element tag="00400310" alias="CommentsOnRadiationDose" vr="ST" vm="1" ret="">Comments on Radiation Dose</element>
 <element tag="00400312" alias="XRayOutput" vr="DS" vm="1" ret="">X-Ray Output</element>
@@ -1423,7 +1423,7 @@
 <element tag="00400320" alias="BillingProcedureStepSequence" vr="SQ" vm="1" ret="">Billing Procedure Step Sequence</element>
 <element tag="00400321" alias="FilmConsumptionSequence" vr="SQ" vm="1" ret="">Film Consumption Sequence</element>
 <element tag="00400324" alias="BillingSuppliesAndDevicesSequence" vr="SQ" vm="1" ret="">Billing Supplies and Devices Sequence</element>
-<element tag="00400330" alias="ReferencedProcedureStepSequenceRET" vr="SQ" vm="1" ret="RET">Referenced Procedure Step Sequence</element>
+<element tag="00400330" alias="ReferencedProcedureStepSequence" vr="SQ" vm="1" ret="RET">Referenced Procedure Step Sequence</element>
 <element tag="00400340" alias="PerformedSeriesSequence" vr="SQ" vm="1" ret="">Performed Series Sequence</element>
 <element tag="00400400" alias="CommentsOnTheScheduledProcedureStep" vr="LT" vm="1" ret="">Comments on the Scheduled Procedure Step</element>
 <element tag="00400440" alias="ProtocolContextSequence" vr="SQ" vm="1" ret="">Protocol Context Sequence</element>
@@ -1431,8 +1431,8 @@
 <element tag="0040050A" alias="SpecimenAccessionNumber" vr="LO" vm="1" ret="">Specimen Accession Number</element>
 <element tag="00400550" alias="SpecimenSequence" vr="SQ" vm="1" ret="">Specimen Sequence</element>
 <element tag="00400551" alias="SpecimenIdentifier" vr="LO" vm="1" ret="">Specimen Identifier</element>
-<element tag="00400552" alias="SpecimenDescriptionSequenceTrialRET" vr="SQ" vm="1" ret="RET">Specimen Description Sequence - Trial</element>
-<element tag="00400553" alias="SpecimenDescriptionTrialRET" vr="ST" vm="1" ret="RET">Specimen Description - Trial</element>
+<element tag="00400552" alias="SpecimenDescriptionSequenceTrial" vr="SQ" vm="1" ret="RET">Specimen Description Sequence - Trial</element>
+<element tag="00400553" alias="SpecimenDescriptionTrial" vr="ST" vm="1" ret="RET">Specimen Description - Trial</element>
 <element tag="00400555" alias="AcquisitionContextSequence" vr="SQ" vm="1" ret="">Acquisition Context Sequence</element>
 <element tag="00400556" alias="AcquisitionContextDescription" vr="ST" vm="1" ret="">Acquisition Context Description</element>
 <element tag="0040059A" alias="SpecimenTypeCodeSequence" vr="SQ" vm="1" ret="">Specimen Type Code Sequence</element>
@@ -1444,14 +1444,14 @@
 <element tag="004008D8" alias="PixelSpacingSequence" vr="SQ" vm="1" ret="">Pixel Spacing Sequence</element>
 <element tag="004008DA" alias="CoordinateSystemAxisCodeSequence" vr="SQ" vm="1" ret="">Coordinate System Axis Code Sequence</element>
 <element tag="004008EA" alias="MeasurementUnitsCodeSequence" vr="SQ" vm="1" ret="">Measurement Units Code Sequence</element>
-<element tag="004009F8" alias="VitalStainCodeSequenceTrialRET" vr="SQ" vm="1" ret="RET">Vital Stain Code Sequence - Trial</element>
+<element tag="004009F8" alias="VitalStainCodeSequenceTrial" vr="SQ" vm="1" ret="RET">Vital Stain Code Sequence - Trial</element>
 <element tag="00401001" alias="RequestedProcedureID" vr="SH" vm="1" ret="">Requested Procedure ID</element>
 <element tag="00401002" alias="ReasonForTheRequestedProcedure" vr="LO" vm="1" ret="">Reason for the Requested Procedure</element>
 <element tag="00401003" alias="RequestedProcedurePriority" vr="SH" vm="1" ret="">Requested Procedure Priority</element>
 <element tag="00401004" alias="PatientTransportArrangements" vr="LO" vm="1" ret="">Patient Transport Arrangements</element>
 <element tag="00401005" alias="RequestedProcedureLocation" vr="LO" vm="1" ret="">Requested Procedure Location</element>
-<element tag="00401006" alias="PlacerOrderNumberProcedureRET" vr="SH" vm="1" ret="RET">Placer Order Number / Procedure</element>
-<element tag="00401007" alias="FillerOrderNumberProcedureRET" vr="SH" vm="1" ret="RET">Filler Order Number / Procedure</element>
+<element tag="00401006" alias="PlacerOrderNumberProcedure" vr="SH" vm="1" ret="RET">Placer Order Number / Procedure</element>
+<element tag="00401007" alias="FillerOrderNumberProcedure" vr="SH" vm="1" ret="RET">Filler Order Number / Procedure</element>
 <element tag="00401008" alias="ConfidentialityCode" vr="LO" vm="1" ret="">Confidentiality Code</element>
 <element tag="00401009" alias="ReportingPriority" vr="SH" vm="1" ret="">Reporting Priority</element>
 <element tag="0040100A" alias="ReasonForRequestedProcedureCodeSequence" vr="SQ" vm="1" ret="">Reason for Requested Procedure Code Sequence</element>
@@ -1461,11 +1461,11 @@
 <element tag="00401102" alias="PersonAddress" vr="ST" vm="1" ret="">Person's Address</element>
 <element tag="00401103" alias="PersonTelephoneNumbers" vr="LO" vm="1-n" ret="">Person's Telephone Numbers</element>
 <element tag="00401400" alias="RequestedProcedureComments" vr="LT" vm="1" ret="">Requested Procedure Comments</element>
-<element tag="00402001" alias="ReasonForTheImagingServiceRequestRET" vr="LO" vm="1" ret="RET">Reason for the Imaging Service Request</element>
+<element tag="00402001" alias="ReasonForTheImagingServiceRequest" vr="LO" vm="1" ret="RET">Reason for the Imaging Service Request</element>
 <element tag="00402004" alias="IssueDateOfImagingServiceRequest" vr="DA" vm="1" ret="">Issue Date of Imaging Service Request</element>
 <element tag="00402005" alias="IssueTimeOfImagingServiceRequest" vr="TM" vm="1" ret="">Issue Time of Imaging Service Request</element>
-<element tag="00402006" alias="PlacerOrderNumberImagingServiceRequestRetiredRET" vr="SH" vm="1" ret="RET">Placer Order Number / Imaging Service Request (Retired)</element>
-<element tag="00402007" alias="FillerOrderNumberImagingServiceRequestRetiredRET" vr="SH" vm="1" ret="RET">Filler Order Number / Imaging Service Request (Retired)</element>
+<element tag="00402006" alias="PlacerOrderNumberImagingServiceRequestRetired" vr="SH" vm="1" ret="RET">Placer Order Number / Imaging Service Request (Retired)</element>
+<element tag="00402007" alias="FillerOrderNumberImagingServiceRequestRetired" vr="SH" vm="1" ret="RET">Filler Order Number / Imaging Service Request (Retired)</element>
 <element tag="00402008" alias="OrderEnteredBy" vr="PN" vm="1" ret="">Order Entered By</element>
 <element tag="00402009" alias="OrderEntererLocation" vr="SH" vm="1" ret="">Order Enterer's Location</element>
 <element tag="00402010" alias="OrderCallbackPhoneNumber" vr="SH" vm="1" ret="">Order Callback Phone Number</element>
@@ -1530,7 +1530,7 @@
 <element tag="0040A082" alias="ParticipationDateTime" vr="DT" vm="1" ret="">Participation DateTime</element>
 <element tag="0040A084" alias="ObserverType" vr="CS" vm="1" ret="">Observer Type</element>
 <element tag="0040A088" alias="VerifyingObserverIdentificationCodeSequence" vr="SQ" vm="1" ret="">Verifying Observer Identification Code Sequence</element>
-<element tag="0040A090" alias="EquivalentCDADocumentSequenceRET" vr="SQ" vm="1" ret="RET">Equivalent CDA Document Sequence</element>
+<element tag="0040A090" alias="EquivalentCDADocumentSequence" vr="SQ" vm="1" ret="RET">Equivalent CDA Document Sequence</element>
 <element tag="0040A0B0" alias="ReferencedWaveformChannels" vr="US" vm="2-2n" ret="">Referenced Waveform Channels</element>
 <element tag="0040A120" alias="DateTime" vr="DT" vm="1" ret="">DateTime</element>
 <element tag="0040A121" alias="Date" vr="DA" vm="1" ret="">Date</element>
@@ -1550,8 +1550,8 @@
 <element tag="0040A300" alias="MeasuredValueSequence" vr="SQ" vm="1" ret="">Measured Value Sequence</element>
 <element tag="0040A301" alias="NumericValueQualifierCodeSequence" vr="SQ" vm="1" ret="">Numeric Value Qualifier Code Sequence</element>
 <element tag="0040A30A" alias="NumericValue" vr="DS" vm="1-n" ret="">Numeric Value</element>
-<element tag="0040A353" alias="AddressTrialRET" vr="ST" vm="1" ret="RET">Address - Trial</element>
-<element tag="0040A354" alias="TelephoneNumberTrialRET" vr="LO" vm="1" ret="RET">Telephone Number - Trial</element>
+<element tag="0040A353" alias="AddressTrial" vr="ST" vm="1" ret="RET">Address - Trial</element>
+<element tag="0040A354" alias="TelephoneNumberTrial" vr="LO" vm="1" ret="RET">Telephone Number - Trial</element>
 <element tag="0040A360" alias="PredecessorDocumentsSequence" vr="SQ" vm="1" ret="">Predecessor Documents Sequence</element>
 <element tag="0040A370" alias="ReferencedRequestSequence" vr="SQ" vm="1" ret="">Referenced Request Sequence</element>
 <element tag="0040A372" alias="PerformedProcedureCodeSequence" vr="SQ" vm="1" ret="">Performed Procedure Code Sequence</element>
@@ -1567,11 +1567,11 @@
 <element tag="0040A730" alias="ContentSequence" vr="SQ" vm="1" ret="">Content Sequence</element>
 <element tag="0040B020" alias="AnnotationSequence" vr="SQ" vm="1" ret="">Annotation Sequence</element>
 <element tag="0040DB00" alias="TemplateIdentifier" vr="CS" vm="1" ret="">Template Identifier</element>
-<element tag="0040DB06" alias="TemplateVersionRET" vr="DT" vm="1" ret="RET">Template Version</element>
-<element tag="0040DB07" alias="TemplateLocalVersionRET" vr="DT" vm="1" ret="RET">Template Local Version</element>
-<element tag="0040DB0B" alias="TemplateExtensionFlagRET" vr="CS" vm="1" ret="RET">Template Extension Flag</element>
-<element tag="0040DB0C" alias="TemplateExtensionOrganizationUIDRET" vr="UI" vm="1" ret="RET">Template Extension Organization UID</element>
-<element tag="0040DB0D" alias="TemplateExtensionCreatorUIDRET" vr="UI" vm="1" ret="RET">Template Extension Creator UID</element>
+<element tag="0040DB06" alias="TemplateVersion" vr="DT" vm="1" ret="RET">Template Version</element>
+<element tag="0040DB07" alias="TemplateLocalVersion" vr="DT" vm="1" ret="RET">Template Local Version</element>
+<element tag="0040DB0B" alias="TemplateExtensionFlag" vr="CS" vm="1" ret="RET">Template Extension Flag</element>
+<element tag="0040DB0C" alias="TemplateExtensionOrganizationUID" vr="UI" vm="1" ret="RET">Template Extension Organization UID</element>
+<element tag="0040DB0D" alias="TemplateExtensionCreatorUID" vr="UI" vm="1" ret="RET">Template Extension Creator UID</element>
 <element tag="0040DB73" alias="ReferencedContentItemIdentifier" vr="UL" vm="1-n" ret="">Referenced Content Item Identifier</element>
 <element tag="0040E001" alias="HL7InstanceIdentifier" vr="ST" vm="1" ret="">HL7 Instance Identifier</element>
 <element tag="0040E004" alias="HL7DocumentEffectiveTime" vr="DT" vm="1" ret="">HL7 Document Effective Time</element>
@@ -1730,8 +1730,8 @@
 <element tag="00541323" alias="ScatterFractionFactor" vr="DS" vm="1" ret="">Scatter Fraction Factor</element>
 <element tag="00541324" alias="DeadTimeFactor" vr="DS" vm="1" ret="">Dead Time Factor</element>
 <element tag="00541330" alias="ImageIndex" vr="US" vm="1" ret="">Image Index</element>
-<element tag="00541400" alias="CountsIncludedRET" vr="CS" vm="1-n" ret="RET">Counts Included</element>
-<element tag="00541401" alias="DeadTimeCorrectionFlagRET" vr="CS" vm="1" ret="RET">Dead Time Correction Flag</element>
+<element tag="00541400" alias="CountsIncluded" vr="CS" vm="1-n" ret="RET">Counts Included</element>
+<element tag="00541401" alias="DeadTimeCorrectionFlag" vr="CS" vm="1" ret="RET">Dead Time Correction Flag</element>
 <element tag="00603000" alias="HistogramSequence" vr="SQ" vm="1" ret="">Histogram Sequence</element>
 <element tag="00603002" alias="HistogramNumberOfBins" vr="US" vm="1" ret="">Histogram Number of Bins</element>
 <element tag="00603004" alias="HistogramFirstBinValue" vr="US|SS" vm="1" ret="">Histogram First Bin Value</element>
@@ -1780,18 +1780,18 @@
 <element tag="00700022" alias="GraphicData" vr="FL" vm="2-n" ret="">Graphic Data</element>
 <element tag="00700023" alias="GraphicType" vr="CS" vm="1" ret="">Graphic Type</element>
 <element tag="00700024" alias="GraphicFilled" vr="CS" vm="1" ret="">Graphic Filled</element>
-<element tag="00700040" alias="ImageRotationRetiredRET" vr="IS" vm="1" ret="RET">Image Rotation (Retired)</element>
+<element tag="00700040" alias="ImageRotationRetired" vr="IS" vm="1" ret="RET">Image Rotation (Retired)</element>
 <element tag="00700041" alias="ImageHorizontalFlip" vr="CS" vm="1" ret="">Image Horizontal Flip</element>
 <element tag="00700042" alias="ImageRotation" vr="US" vm="1" ret="">Image Rotation</element>
-<element tag="00700050" alias="DisplayedAreaTopLeftHandCornerTrialRET" vr="US" vm="2" ret="RET">Displayed Area Top Left Hand Corner (Trial)</element>
-<element tag="00700051" alias="DisplayedAreaBottomRightHandCornerTrialRET" vr="US" vm="2" ret="RET">Displayed Area Bottom Right Hand Corner (Trial)</element>
+<element tag="00700050" alias="DisplayedAreaTopLeftHandCornerTrial" vr="US" vm="2" ret="RET">Displayed Area Top Left Hand Corner (Trial)</element>
+<element tag="00700051" alias="DisplayedAreaBottomRightHandCornerTrial" vr="US" vm="2" ret="RET">Displayed Area Bottom Right Hand Corner (Trial)</element>
 <element tag="00700052" alias="DisplayedAreaTopLeftHandCorner" vr="SL" vm="2" ret="">Displayed Area Top Left Hand Corner</element>
 <element tag="00700053" alias="DisplayedAreaBottomRightHandCorner" vr="SL" vm="2" ret="">Displayed Area Bottom Right Hand Corner</element>
 <element tag="0070005A" alias="DisplayedAreaSelectionSequence" vr="SQ" vm="1" ret="">Displayed Area Selection Sequence</element>
 <element tag="00700060" alias="GraphicLayerSequence" vr="SQ" vm="1" ret="">Graphic Layer Sequence</element>
 <element tag="00700062" alias="GraphicLayerOrder" vr="IS" vm="1" ret="">Graphic Layer Order</element>
 <element tag="00700066" alias="GraphicLayerRecommendedDisplayGrayscaleValue" vr="US" vm="1" ret="">Graphic Layer Recommended Display Grayscale Value</element>
-<element tag="00700067" alias="GraphicLayerRecommendedDisplayRGBValueRET" vr="US" vm="3" ret="RET">Graphic Layer Recommended Display RGB Value</element>
+<element tag="00700067" alias="GraphicLayerRecommendedDisplayRGBValue" vr="US" vm="3" ret="RET">Graphic Layer Recommended Display RGB Value</element>
 <element tag="00700068" alias="GraphicLayerDescription" vr="LO" vm="1" ret="">Graphic Layer Description</element>
 <element tag="00700080" alias="ContentLabel" vr="CS" vm="1" ret="">Content Label</element>
 <element tag="00700081" alias="ContentDescription" vr="LO" vm="1" ret="">Content Description</element>
@@ -1968,10 +1968,10 @@
 <element tag="00880130" alias="StorageMediaFilesetID" vr="SH" vm="1" ret="">Storage Media File-set ID</element>
 <element tag="00880140" alias="StorageMediaFilesetUID" vr="UI" vm="1" ret="">Storage Media File-set UID</element>
 <element tag="00880200" alias="IconImageSequence" vr="SQ" vm="1" ret="">Icon Image Sequence</element>
-<element tag="00880904" alias="TopicTitleRET" vr="LO" vm="1" ret="RET">Topic Title</element>
-<element tag="00880906" alias="TopicSubjectRET" vr="ST" vm="1" ret="RET">Topic Subject</element>
-<element tag="00880910" alias="TopicAuthorRET" vr="LO" vm="1" ret="RET">Topic Author</element>
-<element tag="00880912" alias="TopicKeywordsRET" vr="LO" vm="1-32" ret="RET">Topic Keywords</element>
+<element tag="00880904" alias="TopicTitle" vr="LO" vm="1" ret="RET">Topic Title</element>
+<element tag="00880906" alias="TopicSubject" vr="ST" vm="1" ret="RET">Topic Subject</element>
+<element tag="00880910" alias="TopicAuthor" vr="LO" vm="1" ret="RET">Topic Author</element>
+<element tag="00880912" alias="TopicKeywords" vr="LO" vm="1-32" ret="RET">Topic Keywords</element>
 <element tag="01000410" alias="SOPInstanceStatus" vr="CS" vm="1" ret="">SOP Instance Status</element>
 <element tag="01000420" alias="SOPAuthorizationDateAndTime" vr="DT" vm="1" ret="">SOP Authorization Date and Time</element>
 <element tag="01000424" alias="SOPAuthorizationComment" vr="LT" vm="1" ret="">SOP Authorization Comment</element>
@@ -2000,13 +2000,13 @@
 <element tag="04000563" alias="ModifyingSystem" vr="LO" vm="1" ret="">Modifying System</element>
 <element tag="04000564" alias="SourceOfPreviousValues" vr="LO" vm="1" ret="">Source of Previous Values</element>
 <element tag="04000565" alias="ReasonForTheAttributeModification" vr="CS" vm="1" ret="">Reason for the Attribute Modification</element>
-<element tag="1000xxx0" alias="EscapeTripletRET" vr="US" vm="3" ret="RET">Escape Triplet</element>
-<element tag="1000xxx1" alias="RunLengthTripletRET" vr="US" vm="3" ret="RET">Run Length Triplet</element>
-<element tag="1000xxx2" alias="HuffmanTableSizeRET" vr="US" vm="1" ret="RET">Huffman Table Size</element>
-<element tag="1000xxx3" alias="HuffmanTableTripletRET" vr="US" vm="3" ret="RET">Huffman Table Triplet</element>
-<element tag="1000xxx4" alias="ShiftTableSizeRET" vr="US" vm="1" ret="RET">Shift Table Size</element>
-<element tag="1000xxx5" alias="ShiftTableTripletRET" vr="US" vm="3" ret="RET">Shift Table Triplet</element>
-<element tag="1010xxxx" alias="ZonalMapRET" vr="US" vm="1-n" ret="RET">Zonal Map</element>
+<element tag="1000xxx0" alias="EscapeTriplet" vr="US" vm="3" ret="RET">Escape Triplet</element>
+<element tag="1000xxx1" alias="RunLengthTriplet" vr="US" vm="3" ret="RET">Run Length Triplet</element>
+<element tag="1000xxx2" alias="HuffmanTableSize" vr="US" vm="1" ret="RET">Huffman Table Size</element>
+<element tag="1000xxx3" alias="HuffmanTableTriplet" vr="US" vm="3" ret="RET">Huffman Table Triplet</element>
+<element tag="1000xxx4" alias="ShiftTableSize" vr="US" vm="1" ret="RET">Shift Table Size</element>
+<element tag="1000xxx5" alias="ShiftTableTriplet" vr="US" vm="3" ret="RET">Shift Table Triplet</element>
+<element tag="1010xxxx" alias="ZonalMap" vr="US" vm="1-n" ret="RET">Zonal Map</element>
 <element tag="20000010" alias="NumberOfCopies" vr="IS" vm="1" ret="">Number of Copies</element>
 <element tag="2000001E" alias="PrinterConfigurationSequence" vr="SQ" vm="1" ret="">Printer Configuration Sequence</element>
 <element tag="20000020" alias="PrintPriority" vr="CS" vm="1" ret="">Print Priority</element>
@@ -2015,19 +2015,19 @@
 <element tag="20000050" alias="FilmSessionLabel" vr="LO" vm="1" ret="">Film Session Label</element>
 <element tag="20000060" alias="MemoryAllocation" vr="IS" vm="1" ret="">Memory Allocation</element>
 <element tag="20000061" alias="MaximumMemoryAllocation" vr="IS" vm="1" ret="">Maximum Memory Allocation</element>
-<element tag="20000062" alias="ColorImagePrintingFlagRET" vr="CS" vm="1" ret="RET">Color Image Printing Flag</element>
-<element tag="20000063" alias="CollationFlagRET" vr="CS" vm="1" ret="RET">Collation Flag</element>
-<element tag="20000065" alias="AnnotationFlagRET" vr="CS" vm="1" ret="RET">Annotation Flag</element>
-<element tag="20000067" alias="ImageOverlayFlagRET" vr="CS" vm="1" ret="RET">Image Overlay Flag</element>
-<element tag="20000069" alias="PresentationLUTFlagRET" vr="CS" vm="1" ret="RET">Presentation LUT Flag</element>
-<element tag="2000006A" alias="ImageBoxPresentationLUTFlagRET" vr="CS" vm="1" ret="RET">Image Box Presentation LUT Flag</element>
+<element tag="20000062" alias="ColorImagePrintingFlag" vr="CS" vm="1" ret="RET">Color Image Printing Flag</element>
+<element tag="20000063" alias="CollationFlag" vr="CS" vm="1" ret="RET">Collation Flag</element>
+<element tag="20000065" alias="AnnotationFlag" vr="CS" vm="1" ret="RET">Annotation Flag</element>
+<element tag="20000067" alias="ImageOverlayFlag" vr="CS" vm="1" ret="RET">Image Overlay Flag</element>
+<element tag="20000069" alias="PresentationLUTFlag" vr="CS" vm="1" ret="RET">Presentation LUT Flag</element>
+<element tag="2000006A" alias="ImageBoxPresentationLUTFlag" vr="CS" vm="1" ret="RET">Image Box Presentation LUT Flag</element>
 <element tag="200000A0" alias="MemoryBitDepth" vr="US" vm="1" ret="">Memory Bit Depth</element>
 <element tag="200000A1" alias="PrintingBitDepth" vr="US" vm="1" ret="">Printing Bit Depth</element>
 <element tag="200000A2" alias="MediaInstalledSequence" vr="SQ" vm="1" ret="">Media Installed Sequence</element>
 <element tag="200000A4" alias="OtherMediaAvailableSequence" vr="SQ" vm="1" ret="">Other Media Available Sequence</element>
 <element tag="200000A8" alias="SupportedImageDisplayFormatsSequence" vr="SQ" vm="1" ret="">Supported Image Display Formats Sequence</element>
 <element tag="20000500" alias="ReferencedFilmBoxSequence" vr="SQ" vm="1" ret="">Referenced Film Box Sequence</element>
-<element tag="20000510" alias="ReferencedStoredPrintSequenceRET" vr="SQ" vm="1" ret="RET">Referenced Stored Print Sequence</element>
+<element tag="20000510" alias="ReferencedStoredPrintSequence" vr="SQ" vm="1" ret="RET">Referenced Stored Print Sequence</element>
 <element tag="20100010" alias="ImageDisplayFormat" vr="ST" vm="1" ret="">Image Display Format</element>
 <element tag="20100030" alias="AnnotationDisplayFormatID" vr="CS" vm="1" ret="">Annotation Display Format ID</element>
 <element tag="20100040" alias="FilmOrientation" vr="CS" vm="1" ret="">Film Orientation</element>
@@ -2063,51 +2063,51 @@
 <element tag="202000A2" alias="DecimateCropResult" vr="CS" vm="1" ret="">Decimate/Crop Result</element>
 <element tag="20200110" alias="BasicGrayscaleImageSequence" vr="SQ" vm="1" ret="">Basic Grayscale Image Sequence</element>
 <element tag="20200111" alias="BasicColorImageSequence" vr="SQ" vm="1" ret="">Basic Color Image Sequence</element>
-<element tag="20200130" alias="ReferencedImageOverlayBoxSequenceRET" vr="SQ" vm="1" ret="RET">Referenced Image Overlay Box Sequence</element>
-<element tag="20200140" alias="ReferencedVOILUTBoxSequenceRET" vr="SQ" vm="1" ret="RET">Referenced VOI LUT Box Sequence</element>
+<element tag="20200130" alias="ReferencedImageOverlayBoxSequence" vr="SQ" vm="1" ret="RET">Referenced Image Overlay Box Sequence</element>
+<element tag="20200140" alias="ReferencedVOILUTBoxSequence" vr="SQ" vm="1" ret="RET">Referenced VOI LUT Box Sequence</element>
 <element tag="20300010" alias="AnnotationPosition" vr="US" vm="1" ret="">Annotation Position</element>
 <element tag="20300020" alias="TextString" vr="LO" vm="1" ret="">Text String</element>
-<element tag="20400010" alias="ReferencedOverlayPlaneSequenceRET" vr="SQ" vm="1" ret="RET">Referenced Overlay Plane Sequence</element>
-<element tag="20400011" alias="ReferencedOverlayPlaneGroupsRET" vr="US" vm="1-99" ret="RET">Referenced Overlay Plane Groups</element>
-<element tag="20400020" alias="OverlayPixelDataSequenceRET" vr="SQ" vm="1" ret="RET">Overlay Pixel Data Sequence</element>
-<element tag="20400060" alias="OverlayMagnificationTypeRET" vr="CS" vm="1" ret="RET">Overlay Magnification Type</element>
-<element tag="20400070" alias="OverlaySmoothingTypeRET" vr="CS" vm="1" ret="RET">Overlay Smoothing Type</element>
-<element tag="20400072" alias="OverlayOrImageMagnificationRET" vr="CS" vm="1" ret="RET">Overlay or Image Magnification</element>
-<element tag="20400074" alias="MagnifyToNumberOfColumnsRET" vr="US" vm="1" ret="RET">Magnify to Number of Columns</element>
-<element tag="20400080" alias="OverlayForegroundDensityRET" vr="CS" vm="1" ret="RET">Overlay Foreground Density</element>
-<element tag="20400082" alias="OverlayBackgroundDensityRET" vr="CS" vm="1" ret="RET">Overlay Background Density</element>
-<element tag="20400090" alias="OverlayModeRET" vr="CS" vm="1" ret="RET">Overlay Mode</element>
-<element tag="20400100" alias="ThresholdDensityRET" vr="CS" vm="1" ret="RET">Threshold Density</element>
-<element tag="20400500" alias="ReferencedImageBoxSequenceRetiredRET" vr="SQ" vm="1" ret="RET">Referenced Image Box Sequence (Retired)</element>
+<element tag="20400010" alias="ReferencedOverlayPlaneSequence" vr="SQ" vm="1" ret="RET">Referenced Overlay Plane Sequence</element>
+<element tag="20400011" alias="ReferencedOverlayPlaneGroups" vr="US" vm="1-99" ret="RET">Referenced Overlay Plane Groups</element>
+<element tag="20400020" alias="OverlayPixelDataSequence" vr="SQ" vm="1" ret="RET">Overlay Pixel Data Sequence</element>
+<element tag="20400060" alias="OverlayMagnificationType" vr="CS" vm="1" ret="RET">Overlay Magnification Type</element>
+<element tag="20400070" alias="OverlaySmoothingType" vr="CS" vm="1" ret="RET">Overlay Smoothing Type</element>
+<element tag="20400072" alias="OverlayOrImageMagnification" vr="CS" vm="1" ret="RET">Overlay or Image Magnification</element>
+<element tag="20400074" alias="MagnifyToNumberOfColumns" vr="US" vm="1" ret="RET">Magnify to Number of Columns</element>
+<element tag="20400080" alias="OverlayForegroundDensity" vr="CS" vm="1" ret="RET">Overlay Foreground Density</element>
+<element tag="20400082" alias="OverlayBackgroundDensity" vr="CS" vm="1" ret="RET">Overlay Background Density</element>
+<element tag="20400090" alias="OverlayMode" vr="CS" vm="1" ret="RET">Overlay Mode</element>
+<element tag="20400100" alias="ThresholdDensity" vr="CS" vm="1" ret="RET">Threshold Density</element>
+<element tag="20400500" alias="ReferencedImageBoxSequenceRetired" vr="SQ" vm="1" ret="RET">Referenced Image Box Sequence (Retired)</element>
 <element tag="20500010" alias="PresentationLUTSequence" vr="SQ" vm="1" ret="">Presentation LUT Sequence</element>
 <element tag="20500020" alias="PresentationLUTShape" vr="CS" vm="1" ret="">Presentation LUT Shape</element>
 <element tag="20500500" alias="ReferencedPresentationLUTSequence" vr="SQ" vm="1" ret="">Referenced Presentation LUT Sequence</element>
-<element tag="21000010" alias="PrintJobIDRET" vr="SH" vm="1" ret="RET">Print Job ID</element>
+<element tag="21000010" alias="PrintJobID" vr="SH" vm="1" ret="RET">Print Job ID</element>
 <element tag="21000020" alias="ExecutionStatus" vr="CS" vm="1" ret="">Execution Status</element>
 <element tag="21000030" alias="ExecutionStatusInfo" vr="CS" vm="1" ret="">Execution Status Info</element>
 <element tag="21000040" alias="CreationDate" vr="DA" vm="1" ret="">Creation Date</element>
 <element tag="21000050" alias="CreationTime" vr="TM" vm="1" ret="">Creation Time</element>
 <element tag="21000070" alias="Originator" vr="AE" vm="1" ret="">Originator</element>
-<element tag="21000140" alias="DestinationAERET" vr="AE" vm="1" ret="RET">Destination AE</element>
+<element tag="21000140" alias="DestinationAE" vr="AE" vm="1" ret="RET">Destination AE</element>
 <element tag="21000160" alias="OwnerID" vr="SH" vm="1" ret="">Owner ID</element>
 <element tag="21000170" alias="NumberOfFilms" vr="IS" vm="1" ret="">Number of Films</element>
-<element tag="21000500" alias="ReferencedPrintJobSequencePullStoredPrintRET" vr="SQ" vm="1" ret="RET">Referenced Print Job Sequence (Pull Stored Print)</element>
+<element tag="21000500" alias="ReferencedPrintJobSequencePullStoredPrint" vr="SQ" vm="1" ret="RET">Referenced Print Job Sequence (Pull Stored Print)</element>
 <element tag="21100010" alias="PrinterStatus" vr="CS" vm="1" ret="">Printer Status</element>
 <element tag="21100020" alias="PrinterStatusInfo" vr="CS" vm="1" ret="">Printer Status Info</element>
 <element tag="21100030" alias="PrinterName" vr="LO" vm="1" ret="">Printer Name</element>
-<element tag="21100099" alias="PrintQueueIDRET" vr="SH" vm="1" ret="RET">Print Queue ID</element>
-<element tag="21200010" alias="QueueStatusRET" vr="CS" vm="1" ret="RET">Queue Status</element>
-<element tag="21200050" alias="PrintJobDescriptionSequenceRET" vr="SQ" vm="1" ret="RET">Print Job Description Sequence</element>
-<element tag="21200070" alias="ReferencedPrintJobSequenceRET" vr="SQ" vm="1" ret="RET">Referenced Print Job Sequence</element>
-<element tag="21300010" alias="PrintManagementCapabilitiesSequenceRET" vr="SQ" vm="1" ret="RET">Print Management Capabilities Sequence</element>
-<element tag="21300015" alias="PrinterCharacteristicsSequenceRET" vr="SQ" vm="1" ret="RET">Printer Characteristics Sequence</element>
-<element tag="21300030" alias="FilmBoxContentSequenceRET" vr="SQ" vm="1" ret="RET">Film Box Content Sequence</element>
-<element tag="21300040" alias="ImageBoxContentSequenceRET" vr="SQ" vm="1" ret="RET">Image Box Content Sequence</element>
-<element tag="21300050" alias="AnnotationContentSequenceRET" vr="SQ" vm="1" ret="RET">Annotation Content Sequence</element>
-<element tag="21300060" alias="ImageOverlayBoxContentSequenceRET" vr="SQ" vm="1" ret="RET">Image Overlay Box Content Sequence</element>
-<element tag="21300080" alias="PresentationLUTContentSequenceRET" vr="SQ" vm="1" ret="RET">Presentation LUT Content Sequence</element>
-<element tag="213000A0" alias="ProposedStudySequenceRET" vr="SQ" vm="1" ret="RET">Proposed Study Sequence</element>
-<element tag="213000C0" alias="OriginalImageSequenceRET" vr="SQ" vm="1" ret="RET">Original Image Sequence</element>
+<element tag="21100099" alias="PrintQueueID" vr="SH" vm="1" ret="RET">Print Queue ID</element>
+<element tag="21200010" alias="QueueStatus" vr="CS" vm="1" ret="RET">Queue Status</element>
+<element tag="21200050" alias="PrintJobDescriptionSequence" vr="SQ" vm="1" ret="RET">Print Job Description Sequence</element>
+<element tag="21200070" alias="ReferencedPrintJobSequence" vr="SQ" vm="1" ret="RET">Referenced Print Job Sequence</element>
+<element tag="21300010" alias="PrintManagementCapabilitiesSequence" vr="SQ" vm="1" ret="RET">Print Management Capabilities Sequence</element>
+<element tag="21300015" alias="PrinterCharacteristicsSequence" vr="SQ" vm="1" ret="RET">Printer Characteristics Sequence</element>
+<element tag="21300030" alias="FilmBoxContentSequence" vr="SQ" vm="1" ret="RET">Film Box Content Sequence</element>
+<element tag="21300040" alias="ImageBoxContentSequence" vr="SQ" vm="1" ret="RET">Image Box Content Sequence</element>
+<element tag="21300050" alias="AnnotationContentSequence" vr="SQ" vm="1" ret="RET">Annotation Content Sequence</element>
+<element tag="21300060" alias="ImageOverlayBoxContentSequence" vr="SQ" vm="1" ret="RET">Image Overlay Box Content Sequence</element>
+<element tag="21300080" alias="PresentationLUTContentSequence" vr="SQ" vm="1" ret="RET">Presentation LUT Content Sequence</element>
+<element tag="213000A0" alias="ProposedStudySequence" vr="SQ" vm="1" ret="RET">Proposed Study Sequence</element>
+<element tag="213000C0" alias="OriginalImageSequence" vr="SQ" vm="1" ret="RET">Original Image Sequence</element>
 <element tag="22000001" alias="LabelUsingInformationExtractedFromInstances" vr="CS" vm="1" ret="">Label Using Information Extracted From Instances</element>
 <element tag="22000002" alias="LabelText" vr="UT" vm="1" ret="">Label Text</element>
 <element tag="22000003" alias="LabelStyleSelection" vr="CS" vm="1" ret="">Label Style Selection</element>
@@ -2682,62 +2682,62 @@
 <element tag="300E0004" alias="ReviewDate" vr="DA" vm="1" ret="">Review Date</element>
 <element tag="300E0005" alias="ReviewTime" vr="TM" vm="1" ret="">Review Time</element>
 <element tag="300E0008" alias="ReviewerName" vr="PN" vm="1" ret="">Reviewer Name</element>
-<element tag="40000010" alias="ArbitraryRET" vr="LT" vm="1" ret="RET">Arbitrary</element>
-<element tag="40004000" alias="TextCommentsRET" vr="LT" vm="1" ret="RET">Text Comments</element>
-<element tag="40080040" alias="ResultsIDRET" vr="SH" vm="1" ret="RET">Results ID</element>
-<element tag="40080042" alias="ResultsIDIssuerRET" vr="LO" vm="1" ret="RET">Results ID Issuer</element>
-<element tag="40080050" alias="ReferencedInterpretationSequenceRET" vr="SQ" vm="1" ret="RET">Referenced Interpretation Sequence</element>
-<element tag="40080100" alias="InterpretationRecordedDateRET" vr="DA" vm="1" ret="RET">Interpretation Recorded Date</element>
-<element tag="40080101" alias="InterpretationRecordedTimeRET" vr="TM" vm="1" ret="RET">Interpretation Recorded Time</element>
-<element tag="40080102" alias="InterpretationRecorderRET" vr="PN" vm="1" ret="RET">Interpretation Recorder</element>
-<element tag="40080103" alias="ReferenceToRecordedSoundRET" vr="LO" vm="1" ret="RET">Reference to Recorded Sound</element>
-<element tag="40080108" alias="InterpretationTranscriptionDateRET" vr="DA" vm="1" ret="RET">Interpretation Transcription Date</element>
-<element tag="40080109" alias="InterpretationTranscriptionTimeRET" vr="TM" vm="1" ret="RET">Interpretation Transcription Time</element>
-<element tag="4008010A" alias="InterpretationTranscriberRET" vr="PN" vm="1" ret="RET">Interpretation Transcriber</element>
-<element tag="4008010B" alias="InterpretationTextRET" vr="ST" vm="1" ret="RET">Interpretation Text</element>
-<element tag="4008010C" alias="InterpretationAuthorRET" vr="PN" vm="1" ret="RET">Interpretation Author</element>
-<element tag="40080111" alias="InterpretationApproverSequenceRET" vr="SQ" vm="1" ret="RET">Interpretation Approver Sequence</element>
-<element tag="40080112" alias="InterpretationApprovalDateRET" vr="DA" vm="1" ret="RET">Interpretation Approval Date</element>
-<element tag="40080113" alias="InterpretationApprovalTimeRET" vr="TM" vm="1" ret="RET">Interpretation Approval Time</element>
-<element tag="40080114" alias="PhysicianApprovingInterpretationRET" vr="PN" vm="1" ret="RET">Physician Approving Interpretation</element>
-<element tag="40080115" alias="InterpretationDiagnosisDescriptionRET" vr="LT" vm="1" ret="RET">Interpretation Diagnosis Description</element>
-<element tag="40080117" alias="InterpretationDiagnosisCodeSequenceRET" vr="SQ" vm="1" ret="RET">Interpretation Diagnosis Code Sequence</element>
-<element tag="40080118" alias="ResultsDistributionListSequenceRET" vr="SQ" vm="1" ret="RET">Results Distribution List Sequence</element>
-<element tag="40080119" alias="DistributionNameRET" vr="PN" vm="1" ret="RET">Distribution Name</element>
-<element tag="4008011A" alias="DistributionAddressRET" vr="LO" vm="1" ret="RET">Distribution Address</element>
-<element tag="40080200" alias="InterpretationIDRET" vr="SH" vm="1" ret="RET">Interpretation ID</element>
-<element tag="40080202" alias="InterpretationIDIssuerRET" vr="LO" vm="1" ret="RET">Interpretation ID Issuer</element>
-<element tag="40080210" alias="InterpretationTypeIDRET" vr="CS" vm="1" ret="RET">Interpretation Type ID</element>
-<element tag="40080212" alias="InterpretationStatusIDRET" vr="CS" vm="1" ret="RET">Interpretation Status ID</element>
-<element tag="40080300" alias="ImpressionsRET" vr="ST" vm="1" ret="RET">Impressions</element>
-<element tag="40084000" alias="ResultsCommentsRET" vr="ST" vm="1" ret="RET">Results Comments</element>
+<element tag="40000010" alias="Arbitrary" vr="LT" vm="1" ret="RET">Arbitrary</element>
+<element tag="40004000" alias="TextComments" vr="LT" vm="1" ret="RET">Text Comments</element>
+<element tag="40080040" alias="ResultsID" vr="SH" vm="1" ret="RET">Results ID</element>
+<element tag="40080042" alias="ResultsIDIssuer" vr="LO" vm="1" ret="RET">Results ID Issuer</element>
+<element tag="40080050" alias="ReferencedInterpretationSequence" vr="SQ" vm="1" ret="RET">Referenced Interpretation Sequence</element>
+<element tag="40080100" alias="InterpretationRecordedDate" vr="DA" vm="1" ret="RET">Interpretation Recorded Date</element>
+<element tag="40080101" alias="InterpretationRecordedTime" vr="TM" vm="1" ret="RET">Interpretation Recorded Time</element>
+<element tag="40080102" alias="InterpretationRecorder" vr="PN" vm="1" ret="RET">Interpretation Recorder</element>
+<element tag="40080103" alias="ReferenceToRecordedSound" vr="LO" vm="1" ret="RET">Reference to Recorded Sound</element>
+<element tag="40080108" alias="InterpretationTranscriptionDate" vr="DA" vm="1" ret="RET">Interpretation Transcription Date</element>
+<element tag="40080109" alias="InterpretationTranscriptionTime" vr="TM" vm="1" ret="RET">Interpretation Transcription Time</element>
+<element tag="4008010A" alias="InterpretationTranscriber" vr="PN" vm="1" ret="RET">Interpretation Transcriber</element>
+<element tag="4008010B" alias="InterpretationText" vr="ST" vm="1" ret="RET">Interpretation Text</element>
+<element tag="4008010C" alias="InterpretationAuthor" vr="PN" vm="1" ret="RET">Interpretation Author</element>
+<element tag="40080111" alias="InterpretationApproverSequence" vr="SQ" vm="1" ret="RET">Interpretation Approver Sequence</element>
+<element tag="40080112" alias="InterpretationApprovalDate" vr="DA" vm="1" ret="RET">Interpretation Approval Date</element>
+<element tag="40080113" alias="InterpretationApprovalTime" vr="TM" vm="1" ret="RET">Interpretation Approval Time</element>
+<element tag="40080114" alias="PhysicianApprovingInterpretation" vr="PN" vm="1" ret="RET">Physician Approving Interpretation</element>
+<element tag="40080115" alias="InterpretationDiagnosisDescription" vr="LT" vm="1" ret="RET">Interpretation Diagnosis Description</element>
+<element tag="40080117" alias="InterpretationDiagnosisCodeSequence" vr="SQ" vm="1" ret="RET">Interpretation Diagnosis Code Sequence</element>
+<element tag="40080118" alias="ResultsDistributionListSequence" vr="SQ" vm="1" ret="RET">Results Distribution List Sequence</element>
+<element tag="40080119" alias="DistributionName" vr="PN" vm="1" ret="RET">Distribution Name</element>
+<element tag="4008011A" alias="DistributionAddress" vr="LO" vm="1" ret="RET">Distribution Address</element>
+<element tag="40080200" alias="InterpretationID" vr="SH" vm="1" ret="RET">Interpretation ID</element>
+<element tag="40080202" alias="InterpretationIDIssuer" vr="LO" vm="1" ret="RET">Interpretation ID Issuer</element>
+<element tag="40080210" alias="InterpretationTypeID" vr="CS" vm="1" ret="RET">Interpretation Type ID</element>
+<element tag="40080212" alias="InterpretationStatusID" vr="CS" vm="1" ret="RET">Interpretation Status ID</element>
+<element tag="40080300" alias="Impressions" vr="ST" vm="1" ret="RET">Impressions</element>
+<element tag="40084000" alias="ResultsComments" vr="ST" vm="1" ret="RET">Results Comments</element>
 <element tag="4FFE0001" alias="MACParametersSequence" vr="SQ" vm="1" ret="">MAC Parameters Sequence</element>
-<element tag="50xx0005" alias="CurveDimensionsRET" vr="US" vm="1" ret="RET">Curve Dimensions</element>
-<element tag="50xx0010" alias="NumberOfPointsRET" vr="US" vm="1" ret="RET">Number of Points</element>
-<element tag="50xx0020" alias="TypeOfDataRET" vr="CS" vm="1" ret="RET">Type of Data</element>
-<element tag="50xx0022" alias="CurveDescriptionRET" vr="LO" vm="1" ret="RET">Curve Description</element>
-<element tag="50xx0030" alias="AxisUnitsRET" vr="SH" vm="1-n" ret="RET">Axis Units</element>
-<element tag="50xx0040" alias="AxisLabelsRET" vr="SH" vm="1-n" ret="RET">Axis Labels</element>
-<element tag="50xx0103" alias="DataValueRepresentationRET" vr="US" vm="1" ret="RET">Data Value Representation</element>
-<element tag="50xx0104" alias="MinimumCoordinateValueRET" vr="US" vm="1-n" ret="RET">Minimum Coordinate Value</element>
-<element tag="50xx0105" alias="MaximumCoordinateValueRET" vr="US" vm="1-n" ret="RET">Maximum Coordinate Value</element>
-<element tag="50xx0106" alias="CurveRangeRET" vr="SH" vm="1-n" ret="RET">Curve Range</element>
-<element tag="50xx0110" alias="CurveDataDescriptorRET" vr="US" vm="1-n" ret="RET">Curve Data Descriptor</element>
-<element tag="50xx0112" alias="CoordinateStartValueRET" vr="US" vm="1-n" ret="RET">Coordinate Start Value</element>
-<element tag="50xx0114" alias="CoordinateStepValueRET" vr="US" vm="1-n" ret="RET">Coordinate Step Value</element>
-<element tag="50xx1001" alias="CurveActivationLayerRET" vr="CS" vm="1" ret="RET">Curve Activation Layer</element>
-<element tag="50xx2000" alias="AudioTypeRET" vr="US" vm="1" ret="RET">Audio Type</element>
-<element tag="50xx2002" alias="AudioSampleFormatRET" vr="US" vm="1" ret="RET">Audio Sample Format</element>
-<element tag="50xx2004" alias="NumberOfChannelsRET" vr="US" vm="1" ret="RET">Number of Channels</element>
-<element tag="50xx2006" alias="NumberOfSamplesRET" vr="UL" vm="1" ret="RET">Number of Samples</element>
-<element tag="50xx2008" alias="SampleRateRET" vr="UL" vm="1" ret="RET">Sample Rate</element>
-<element tag="50xx200A" alias="TotalTimeRET" vr="UL" vm="1" ret="RET">Total Time</element>
-<element tag="50xx200C" alias="AudioSampleDataRET" vr="OW|OB" vm="1" ret="RET">Audio Sample Data</element>
-<element tag="50xx200E" alias="AudioCommentsRET" vr="LT" vm="1" ret="RET">Audio Comments</element>
-<element tag="50xx2500" alias="CurveLabelRET" vr="LO" vm="1" ret="RET">Curve Label</element>
-<element tag="50xx2600" alias="CurveReferencedOverlaySequenceRET" vr="SQ" vm="1" ret="RET">Curve Referenced Overlay Sequence</element>
-<element tag="50xx2610" alias="CurveReferencedOverlayGroupRET" vr="US" vm="1" ret="RET">Curve Referenced Overlay Group</element>
-<element tag="50xx3000" alias="CurveDataRET" vr="OW|OB" vm="1" ret="RET">Curve Data</element>
+<element tag="50xx0005" alias="CurveDimensions" vr="US" vm="1" ret="RET">Curve Dimensions</element>
+<element tag="50xx0010" alias="NumberOfPoints" vr="US" vm="1" ret="RET">Number of Points</element>
+<element tag="50xx0020" alias="TypeOfData" vr="CS" vm="1" ret="RET">Type of Data</element>
+<element tag="50xx0022" alias="CurveDescription" vr="LO" vm="1" ret="RET">Curve Description</element>
+<element tag="50xx0030" alias="AxisUnits" vr="SH" vm="1-n" ret="RET">Axis Units</element>
+<element tag="50xx0040" alias="AxisLabels" vr="SH" vm="1-n" ret="RET">Axis Labels</element>
+<element tag="50xx0103" alias="DataValueRepresentation" vr="US" vm="1" ret="RET">Data Value Representation</element>
+<element tag="50xx0104" alias="MinimumCoordinateValue" vr="US" vm="1-n" ret="RET">Minimum Coordinate Value</element>
+<element tag="50xx0105" alias="MaximumCoordinateValue" vr="US" vm="1-n" ret="RET">Maximum Coordinate Value</element>
+<element tag="50xx0106" alias="CurveRange" vr="SH" vm="1-n" ret="RET">Curve Range</element>
+<element tag="50xx0110" alias="CurveDataDescriptor" vr="US" vm="1-n" ret="RET">Curve Data Descriptor</element>
+<element tag="50xx0112" alias="CoordinateStartValue" vr="US" vm="1-n" ret="RET">Coordinate Start Value</element>
+<element tag="50xx0114" alias="CoordinateStepValue" vr="US" vm="1-n" ret="RET">Coordinate Step Value</element>
+<element tag="50xx1001" alias="CurveActivationLayer" vr="CS" vm="1" ret="RET">Curve Activation Layer</element>
+<element tag="50xx2000" alias="AudioType" vr="US" vm="1" ret="RET">Audio Type</element>
+<element tag="50xx2002" alias="AudioSampleFormat" vr="US" vm="1" ret="RET">Audio Sample Format</element>
+<element tag="50xx2004" alias="NumberOfChannels" vr="US" vm="1" ret="RET">Number of Channels</element>
+<element tag="50xx2006" alias="NumberOfSamples" vr="UL" vm="1" ret="RET">Number of Samples</element>
+<element tag="50xx2008" alias="SampleRate" vr="UL" vm="1" ret="RET">Sample Rate</element>
+<element tag="50xx200A" alias="TotalTime" vr="UL" vm="1" ret="RET">Total Time</element>
+<element tag="50xx200C" alias="AudioSampleData" vr="OW|OB" vm="1" ret="RET">Audio Sample Data</element>
+<element tag="50xx200E" alias="AudioComments" vr="LT" vm="1" ret="RET">Audio Comments</element>
+<element tag="50xx2500" alias="CurveLabel" vr="LO" vm="1" ret="RET">Curve Label</element>
+<element tag="50xx2600" alias="CurveReferencedOverlaySequence" vr="SQ" vm="1" ret="RET">Curve Referenced Overlay Sequence</element>
+<element tag="50xx2610" alias="CurveReferencedOverlayGroup" vr="US" vm="1" ret="RET">Curve Referenced Overlay Group</element>
+<element tag="50xx3000" alias="CurveData" vr="OW|OB" vm="1" ret="RET">Curve Data</element>
 <element tag="52009229" alias="SharedFunctionalGroupsSequence" vr="SQ" vm="1" ret="">Shared Functional Groups Sequence</element>
 <element tag="52009230" alias="PerframeFunctionalGroupsSequence" vr="SQ" vm="1" ret="">Per-frame Functional Groups Sequence</element>
 <element tag="54000100" alias="WaveformSequence" vr="SQ" vm="1" ret="">Waveform Sequence</element>
@@ -2751,53 +2751,53 @@
 <element tag="56000020" alias="SpectroscopyData" vr="OF" vm="1" ret="">Spectroscopy Data</element>
 <element tag="60xx0010" alias="OverlayRows" vr="US" vm="1" ret="">Overlay Rows</element>
 <element tag="60xx0011" alias="OverlayColumns" vr="US" vm="1" ret="">Overlay Columns</element>
-<element tag="60xx0012" alias="OverlayPlanesRET" vr="US" vm="1" ret="RET">Overlay Planes</element>
+<element tag="60xx0012" alias="OverlayPlanes" vr="US" vm="1" ret="RET">Overlay Planes</element>
 <element tag="60xx0015" alias="NumberOfFramesInOverlay" vr="IS" vm="1" ret="">Number of Frames in Overlay</element>
 <element tag="60xx0022" alias="OverlayDescription" vr="LO" vm="1" ret="">Overlay Description</element>
 <element tag="60xx0040" alias="OverlayType" vr="CS" vm="1" ret="">Overlay Type</element>
 <element tag="60xx0045" alias="OverlaySubtype" vr="LO" vm="1" ret="">Overlay Subtype</element>
 <element tag="60xx0050" alias="OverlayOrigin" vr="SS" vm="2" ret="">Overlay Origin</element>
 <element tag="60xx0051" alias="ImageFrameOrigin" vr="US" vm="1" ret="">Image Frame Origin</element>
-<element tag="60xx0052" alias="OverlayPlaneOriginRET" vr="US" vm="1" ret="RET">Overlay Plane Origin</element>
-<element tag="60xx0060" alias="OverlayCompressionCodeRET" vr="CS" vm="1" ret="RET">Overlay Compression Code</element>
-<element tag="60xx0061" alias="OverlayCompressionOriginatorRET" vr="SH" vm="1" ret="RET">Overlay Compression Originator</element>
-<element tag="60xx0062" alias="OverlayCompressionLabelRET" vr="SH" vm="1" ret="RET">Overlay Compression Label</element>
-<element tag="60xx0063" alias="OverlayCompressionDescriptionRET" vr="CS" vm="1" ret="RET">Overlay Compression Description</element>
-<element tag="60xx0066" alias="OverlayCompressionStepPointersRET" vr="AT" vm="1-n" ret="RET">Overlay Compression Step Pointers</element>
-<element tag="60xx0068" alias="OverlayRepeatIntervalRET" vr="US" vm="1" ret="RET">Overlay Repeat Interval</element>
-<element tag="60xx0069" alias="OverlayBitsGroupedRET" vr="US" vm="1" ret="RET">Overlay Bits Grouped</element>
+<element tag="60xx0052" alias="OverlayPlaneOrigin" vr="US" vm="1" ret="RET">Overlay Plane Origin</element>
+<element tag="60xx0060" alias="OverlayCompressionCode" vr="CS" vm="1" ret="RET">Overlay Compression Code</element>
+<element tag="60xx0061" alias="OverlayCompressionOriginator" vr="SH" vm="1" ret="RET">Overlay Compression Originator</element>
+<element tag="60xx0062" alias="OverlayCompressionLabel" vr="SH" vm="1" ret="RET">Overlay Compression Label</element>
+<element tag="60xx0063" alias="OverlayCompressionDescription" vr="CS" vm="1" ret="RET">Overlay Compression Description</element>
+<element tag="60xx0066" alias="OverlayCompressionStepPointers" vr="AT" vm="1-n" ret="RET">Overlay Compression Step Pointers</element>
+<element tag="60xx0068" alias="OverlayRepeatInterval" vr="US" vm="1" ret="RET">Overlay Repeat Interval</element>
+<element tag="60xx0069" alias="OverlayBitsGrouped" vr="US" vm="1" ret="RET">Overlay Bits Grouped</element>
 <element tag="60xx0100" alias="OverlayBitsAllocated" vr="US" vm="1" ret="">Overlay Bits Allocated</element>
 <element tag="60xx0102" alias="OverlayBitPosition" vr="US" vm="1" ret="">Overlay Bit Position</element>
-<element tag="60xx0110" alias="OverlayFormatRET" vr="CS" vm="1" ret="RET">Overlay Format</element>
-<element tag="60xx0200" alias="OverlayLocationRET" vr="US" vm="1" ret="RET">Overlay Location</element>
-<element tag="60xx0800" alias="OverlayCodeLabelRET" vr="CS" vm="1-n" ret="RET">Overlay Code Label</element>
-<element tag="60xx0802" alias="OverlayNumberOfTablesRET" vr="US" vm="1" ret="RET">Overlay Number of Tables</element>
-<element tag="60xx0803" alias="OverlayCodeTableLocationRET" vr="AT" vm="1-n" ret="RET">Overlay Code Table Location</element>
-<element tag="60xx0804" alias="OverlayBitsForCodeWordRET" vr="US" vm="1" ret="RET">Overlay Bits For Code Word</element>
+<element tag="60xx0110" alias="OverlayFormat" vr="CS" vm="1" ret="RET">Overlay Format</element>
+<element tag="60xx0200" alias="OverlayLocation" vr="US" vm="1" ret="RET">Overlay Location</element>
+<element tag="60xx0800" alias="OverlayCodeLabel" vr="CS" vm="1-n" ret="RET">Overlay Code Label</element>
+<element tag="60xx0802" alias="OverlayNumberOfTables" vr="US" vm="1" ret="RET">Overlay Number of Tables</element>
+<element tag="60xx0803" alias="OverlayCodeTableLocation" vr="AT" vm="1-n" ret="RET">Overlay Code Table Location</element>
+<element tag="60xx0804" alias="OverlayBitsForCodeWord" vr="US" vm="1" ret="RET">Overlay Bits For Code Word</element>
 <element tag="60xx1001" alias="OverlayActivationLayer" vr="CS" vm="1" ret="">Overlay Activation Layer</element>
-<element tag="60xx1100" alias="OverlayDescriptorGrayRET" vr="US" vm="1" ret="RET">Overlay Descriptor - Gray</element>
-<element tag="60xx1101" alias="OverlayDescriptorRedRET" vr="US" vm="1" ret="RET">Overlay Descriptor - Red</element>
-<element tag="60xx1102" alias="OverlayDescriptorGreenRET" vr="US" vm="1" ret="RET">Overlay Descriptor - Green</element>
-<element tag="60xx1103" alias="OverlayDescriptorBlueRET" vr="US" vm="1" ret="RET">Overlay Descriptor - Blue</element>
-<element tag="60xx1200" alias="OverlaysGrayRET" vr="US" vm="1-n" ret="RET">Overlays- Gray</element>
-<element tag="60xx1201" alias="OverlaysRedRET" vr="US" vm="1-n" ret="RET">Overlays - Red</element>
-<element tag="60xx1202" alias="OverlaysGreenRET" vr="US" vm="1-n" ret="RET">Overlays - Green</element>
-<element tag="60xx1203" alias="OverlaysBlueRET" vr="US" vm="1-n" ret="RET">Overlays- Blue</element>
+<element tag="60xx1100" alias="OverlayDescriptorGray" vr="US" vm="1" ret="RET">Overlay Descriptor - Gray</element>
+<element tag="60xx1101" alias="OverlayDescriptorRed" vr="US" vm="1" ret="RET">Overlay Descriptor - Red</element>
+<element tag="60xx1102" alias="OverlayDescriptorGreen" vr="US" vm="1" ret="RET">Overlay Descriptor - Green</element>
+<element tag="60xx1103" alias="OverlayDescriptorBlue" vr="US" vm="1" ret="RET">Overlay Descriptor - Blue</element>
+<element tag="60xx1200" alias="OverlaysGray" vr="US" vm="1-n" ret="RET">Overlays- Gray</element>
+<element tag="60xx1201" alias="OverlaysRed" vr="US" vm="1-n" ret="RET">Overlays - Red</element>
+<element tag="60xx1202" alias="OverlaysGreen" vr="US" vm="1-n" ret="RET">Overlays - Green</element>
+<element tag="60xx1203" alias="OverlaysBlue" vr="US" vm="1-n" ret="RET">Overlays- Blue</element>
 <element tag="60xx1301" alias="ROIArea" vr="IS" vm="1" ret="">ROI Area</element>
 <element tag="60xx1302" alias="ROIMean" vr="DS" vm="1" ret="">ROI Mean</element>
 <element tag="60xx1303" alias="ROIStandardDeviation" vr="DS" vm="1" ret="">ROI Standard Deviation</element>
 <element tag="60xx1500" alias="OverlayLabel" vr="LO" vm="1" ret="">Overlay Label</element>
 <element tag="60xx3000" alias="OverlayData" vr="OB|OW" vm="1" ret="">Overlay Data</element>
-<element tag="60xx4000" alias="OverlayCommentsRET" vr="LT" vm="1" ret="RET">Overlay Comments</element>
+<element tag="60xx4000" alias="OverlayComments" vr="LT" vm="1" ret="RET">Overlay Comments</element>
 <element tag="7FE00010" alias="PixelData" vr="OW|OB" vm="1" ret="">Pixel Data</element>
-<element tag="7FE00020" alias="CoefficientsSDVNRET" vr="OW" vm="1" ret="RET">Coefficients SDVN</element>
-<element tag="7FE00030" alias="CoefficientsSDHNRET" vr="OW" vm="1" ret="RET">Coefficients SDHN</element>
-<element tag="7FE00040" alias="CoefficientsSDDNRET" vr="OW" vm="1" ret="RET">Coefficients SDDN</element>
-<element tag="7Fxx0010" alias="VariablePixelDataRET" vr="OW|OB" vm="1" ret="RET">Variable Pixel Data</element>
-<element tag="7Fxx0011" alias="VariableNextDataGroupRET" vr="US" vm="1" ret="RET">Variable Next Data Group</element>
-<element tag="7Fxx0020" alias="VariableCoefficientsSDVNRET" vr="OW" vm="1" ret="RET">Variable Coefficients SDVN</element>
-<element tag="7Fxx0030" alias="VariableCoefficientsSDHNRET" vr="OW" vm="1" ret="RET">Variable Coefficients SDHN</element>
-<element tag="7Fxx0040" alias="VariableCoefficientsSDDNRET" vr="OW" vm="1" ret="RET">Variable Coefficients SDDN</element>
+<element tag="7FE00020" alias="CoefficientsSDVN" vr="OW" vm="1" ret="RET">Coefficients SDVN</element>
+<element tag="7FE00030" alias="CoefficientsSDHN" vr="OW" vm="1" ret="RET">Coefficients SDHN</element>
+<element tag="7FE00040" alias="CoefficientsSDDN" vr="OW" vm="1" ret="RET">Coefficients SDDN</element>
+<element tag="7Fxx0010" alias="VariablePixelData" vr="OW|OB" vm="1" ret="RET">Variable Pixel Data</element>
+<element tag="7Fxx0011" alias="VariableNextDataGroup" vr="US" vm="1" ret="RET">Variable Next Data Group</element>
+<element tag="7Fxx0020" alias="VariableCoefficientsSDVN" vr="OW" vm="1" ret="RET">Variable Coefficients SDVN</element>
+<element tag="7Fxx0030" alias="VariableCoefficientsSDHN" vr="OW" vm="1" ret="RET">Variable Coefficients SDHN</element>
+<element tag="7Fxx0040" alias="VariableCoefficientsSDDN" vr="OW" vm="1" ret="RET">Variable Coefficients SDDN</element>
 <element tag="FFFAFFFA" alias="DigitalSignaturesSequence" vr="SQ" vm="1" ret="">Digital Signatures Sequence</element>
 <element tag="FFFCFFFC" alias="DataSetTrailingPadding" vr="OB" vm="1" ret="">Data Set Trailing Padding</element>
 <element tag="FFFEE000" alias="Item" vr="" vm="1" ret="">Item</element>

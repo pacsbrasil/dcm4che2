@@ -151,7 +151,7 @@ public class CommandUtils
     {
         DicomObject rq = new BasicDicomObject();
         rq.putInt(Tag.CommandField, VR.US, C_CANCEL_RQ);
-        rq.putInt(Tag.DataSetType, VR.US, NO_DATASET);
+        rq.putInt(Tag.CommandDataSetType, VR.US, NO_DATASET);
         rq.putInt(Tag.MessageIDBeingRespondedTo, VR.US, msgId);
         return rq;
     }
@@ -227,7 +227,7 @@ public class CommandUtils
         DicomObject rsp = new BasicDicomObject();
         rsp.putInt(Tag.MessageID, VR.US, msgId);
         rsp.putInt(Tag.CommandField, VR.US, cmdfield);
-        rsp.putInt(Tag.DataSetType, VR.US, datasetType);
+        rsp.putInt(Tag.CommandDataSetType, VR.US, datasetType);
         return rsp;
     }
 
@@ -277,7 +277,7 @@ public class CommandUtils
 
     public static boolean hasDataset(DicomObject dcmobj)
     {
-        return dcmobj.getInt(Tag.DataSetType) != NO_DATASET;
+        return dcmobj.getInt(Tag.CommandDataSetType) != NO_DATASET;
     }
 
     public static boolean isPending(DicomObject cmd)

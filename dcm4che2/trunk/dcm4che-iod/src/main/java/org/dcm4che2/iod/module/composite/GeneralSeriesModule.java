@@ -170,11 +170,11 @@ public class GeneralSeriesModule extends Module {
     }
 
     public String[] getOperatorName() {
-        return dcmobj.getStrings(Tag.OperatorName);
+        return dcmobj.getStrings(Tag.OperatorsName);
     }
 
     public void setOperatorName(String[] ss) {
-        dcmobj.putStrings(Tag.OperatorName, VR.PN, ss);
+        dcmobj.putStrings(Tag.OperatorsName, VR.PN, ss);
     }
 
     public PersonIdentification[] getOperatorIdentification() {

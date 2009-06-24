@@ -50,6 +50,7 @@ public class <xsl:value-of select="$class"/> {
 
     /** Private constructor */
     private <xsl:value-of select="$class"/>() {
+        // Suppresses default constructor, ensuring non-instantiability.
     }
     
     public static final int forName(String name) {
