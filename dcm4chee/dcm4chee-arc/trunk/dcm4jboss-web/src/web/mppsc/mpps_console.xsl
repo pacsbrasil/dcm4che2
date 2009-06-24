@@ -133,6 +133,7 @@
 									<xsl:attribute name="checked"/>
 								</xsl:if>
 							</input>
+							<input name="emptyAccNo" type="hidden" value="false" /> <!-- submit false for unselect state -->
 						</td>
 						<td bgcolor="eeeeee" nowrap="nowrap" >unscheduled) </td>
 						<td bgcolor="eeeeee">
