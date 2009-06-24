@@ -233,7 +233,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
     }
 
 
-    public List list(int offset, int limit) throws SQLException {
+    public List list(int offset, int limit, boolean latestStudiesFirst) throws SQLException {
         defineColumnTypes(new int[] { 
                 blobAccessType, // Patient.encodedAttributes
                 blobAccessType, // Study.encodedAttributes
@@ -250,7 +250,8 @@ public class QueryStudiesCmd extends BaseReadCmd {
         sqlBuilder.setSelect(SELECT_ATTRIBUTE);
         sqlBuilder.addOrderBy("Patient.patientName", SqlBuilder.ASC);
         sqlBuilder.addOrderBy("Patient.pk", SqlBuilder.ASC);
-        sqlBuilder.addOrderBy("Study.studyDateTime", SqlBuilder.ASC);
+        sqlBuilder.addOrderBy("Study.studyDateTime", 
+                latestStudiesFirst ? SqlBuilder.DESC : SqlBuilder.ASC);
         sqlBuilder.setOffset(offset);
         sqlBuilder.setLimit(limit);
         try {
