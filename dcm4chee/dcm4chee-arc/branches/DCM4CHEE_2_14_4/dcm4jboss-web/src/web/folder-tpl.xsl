@@ -54,7 +54,8 @@
                             <xsl:when test="total &lt; 0">&NoQueryPerformed;</xsl:when>
                             <xsl:when test="total &lt; 1">&NoMatchingStudiesFound;</xsl:when>
                             <xsl:otherwise>
-                                <xsl:text>&DisplayingStudies; </xsl:text>
+							    <xsl:if test="showWithoutStudies='false'"><xsl:text>&DisplayingStudies; </xsl:text></xsl:if>
+							    <xsl:if test="showWithoutStudies='true'"><xsl:text>&DisplayingStudiesAndEmptyPatients; </xsl:text></xsl:if>
                                 <b> <xsl:value-of select="offset + 1" /> </b>
                                 <xsl:text> &to; </xsl:text>
                                 <b>
@@ -74,7 +75,8 @@
                                 <b>
                                     <xsl:value-of select="total" />
                                 </b>
-                                <xsl:text> &matchingStudies;.</xsl:text>
+							    <xsl:if test="showWithoutStudies='false'"><xsl:text> &matchingStudies; </xsl:text></xsl:if>
+							    <xsl:if test="showWithoutStudies='true'"><xsl:text> &matchingStudiesAndEmptyPatients; </xsl:text></xsl:if>
                             </xsl:otherwise>
                         </xsl:choose>
                     </td>
