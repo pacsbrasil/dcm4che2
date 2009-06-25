@@ -218,7 +218,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
         List studyList = new QueryStudiesCmd(filter.toDataset(), 
                 !folderForm.isShowWithoutStudies(), 
                 folderForm.isNoMatchForNoValue(), folderForm.getQueryHasIssuerOfPID(),
-                subject).list(folderForm.getOffset(), folderForm.getLimit());
+                subject).list(folderForm.getOffset(), folderForm.getLimit(), folderForm.isLatestStudiesFirst() );
         if (subject != null) {
             folderForm.setGrantedStudyActions(queryGrantedStudyActions(studyList,subject));
         }
