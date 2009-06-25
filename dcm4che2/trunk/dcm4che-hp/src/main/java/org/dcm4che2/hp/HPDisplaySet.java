@@ -291,11 +291,11 @@ public class HPDisplaySet {
     }
 
     public String[] get3DRenderingType() {
-        return dcmobj.getStrings(Tag._3DRenderingType);
+        return dcmobj.getStrings(Tag.ThreeDRenderingType);
     }
 
     public void set3DRenderingType(String[] type) {
-        dcmobj.putStrings(Tag._3DRenderingType, VR.CS, type);
+        dcmobj.putStrings(Tag.ThreeDRenderingType, VR.CS, type);
     }
 
     public PatientOrientation getDisplaySetPatientOrientation() {
