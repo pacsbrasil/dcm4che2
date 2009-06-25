@@ -5819,7 +5819,7 @@ public class Tag {
     public static final int ReformattingOperationInitialViewDirection = 0x00720516;
         
     /** (0072,0520) VR=CS, VM=1-n 3D Rendering Type  */
-    public static final int _3DRenderingType = 0x00720520;
+    public static final int Three3DRenderingType = 0x00720520;
         
     /** (0072,0600) VR=SQ, VM=1 Sorting Operations Sequence  */
     public static final int SortingOperationsSequence = 0x00720600;

@@ -40,7 +40,7 @@
                     <xsl:when test="$hex = '00000010'">CommandRecognitionCode</xsl:when>
                     <xsl:when test="$hex = '00000800'">CommandDataSetType</xsl:when>
                     <xsl:when test="$hex = '00005180'">CommandMagnificationType</xsl:when>
-                    <xsl:when test="$hex = '00720520'">_3DRenderingType</xsl:when>
+                    <xsl:when test="$hex = '00720520'">Three3DRenderingType</xsl:when>
                     <xsl:otherwise>
                       <xsl:call-template name="skipSpaces">
                         <xsl:with-param name="val">
