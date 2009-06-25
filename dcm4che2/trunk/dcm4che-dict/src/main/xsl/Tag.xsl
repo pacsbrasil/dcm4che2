@@ -52,7 +52,7 @@ public class <xsl:value-of select="$class"/> {
     private <xsl:value-of select="$class"/>() {
         // Suppresses default constructor, ensuring non-instantiability.
     }
-    
+
     public static final int forName(String name) {
        try {
           return <xsl:value-of select="$class"/>.class.getField(name).getInt(null);
@@ -70,7 +70,7 @@ public class <xsl:value-of select="$class"/> {
             return Tag.forName(s);
         }
     }
-    
+
     public static int[] toTagPath(String expr) {
         StringTokenizer stk = new StringTokenizer(expr, "/[]", true);
         int[] tagPath = new int[stk.countTokens()];
@@ -103,9 +103,9 @@ public class <xsl:value-of select="$class"/> {
         return tagPath;
     }<xsl:apply-templates select="dictionary/element"/>
 }</xsl:template>    
-    
+
     <xsl:template match="element">
-        
+
     /** (<xsl:value-of select="substring(@tag,1,4)"/>
         <xsl:text>,</xsl:text>
         <xsl:value-of select="substring(@tag,5,4)"/>
