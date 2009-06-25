@@ -23,9 +23,11 @@
 <!ENTITY NoMatchingStudiesFound "Keine passenden Studien gefunden!">
 <!ENTITY NoQueryPerformed "Es wurde noch keine Suche durchgeführt!">
 <!ENTITY DisplayingStudies "Angezeigt werden">
+<!ENTITY DisplayingStudiesAndEmptyPatients "Angezeigt werden">
 <!ENTITY to "bis">
 <!ENTITY of "von">
 <!ENTITY matchingStudies "passenden Studien">
+<!ENTITY matchingStudiesAndEmptyPatients "passenden Einträgen">
 <!ENTITY NewSearch "Neue Suche">
 <!ENTITY PreviousSearchResults "Vorherg. Suchergebnisse">
 <!ENTITY NextSearchResults "Nächste Suchergebnisse">
