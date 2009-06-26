@@ -52,7 +52,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "study_permission")
-public class StudyPermission implements Serializable {
+public class StudyPermission extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -4389532918446366208L;
 
@@ -90,9 +90,6 @@ public class StudyPermission implements Serializable {
      */
     public static final String DELETE_ACTION = "D";
 
-    // JPA definition in orm.xml
-    private long pk;
-
     @Column(name = "study_iuid", nullable = false)
     private String studyInstanceUID;
 
@@ -101,10 +98,6 @@ public class StudyPermission implements Serializable {
 
     @Column(name = "roles", nullable = false)
     private String role;
-
-    public long getPk() {
-        return pk;
-    }
 
     public String getAction() {
         return action;

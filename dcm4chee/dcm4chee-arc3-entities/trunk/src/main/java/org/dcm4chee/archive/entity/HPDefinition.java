@@ -61,12 +61,9 @@ import org.dcm4che2.data.Tag;
  */
 @Entity
 @Table(name = "hpdef")
-public class HPDefinition implements Serializable {
+public class HPDefinition extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 608638906765588946L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "modality")
     private String modality;
@@ -107,10 +104,6 @@ public class HPDefinition implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hp_fk")
     private HangingProtocol hangingProtocol;
-
-    public long getPk() {
-        return pk;
-    }
 
     public String getModality() {
         return modality;

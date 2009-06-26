@@ -58,12 +58,9 @@ import org.dcm4chee.archive.common.FileSystemStatus;
  */
 @Entity
 @Table(name = "filesystem")
-public class FileSystem implements Serializable {
+public class FileSystem extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 8949412622901631772L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "dirpath", unique=true, nullable = false)
     private String directoryPath;
@@ -86,10 +83,6 @@ public class FileSystem implements Serializable {
     @OneToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "next_fk")
     private FileSystem nextFileSystem;
-
-    public long getPk() {
-        return pk;
-    }
 
     public String getDirectoryPath() {
         return directoryPath;

@@ -56,12 +56,9 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "media")
-public class Media implements Serializable {
+public class Media extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -4054710856453638118L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "created_time")
     private Date createdTime;
@@ -89,10 +86,6 @@ public class Media implements Serializable {
 
     @OneToMany(mappedBy = "media", fetch = FetchType.LAZY)
     private Set<Instance> instances;
-
-    public final long getPk() {
-        return pk;
-    }
 
     public Date getCreatedTime() {
         return createdTime;

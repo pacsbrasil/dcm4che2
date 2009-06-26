@@ -57,12 +57,9 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "device")
-public class Device implements Serializable {
+public class Device extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -4843360661541297998L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "station_name", nullable = false)
     private String stationName;
@@ -82,10 +79,6 @@ public class Device implements Serializable {
                 @JoinColumn(name="device_fk", referencedColumnName="pk")
         )
     private Set<Code> protocolCodes;
-
-    public long getPk() {
-        return pk;
-    }
 
     public String getStationName() {
         return stationName;

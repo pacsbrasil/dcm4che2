@@ -56,12 +56,9 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "study_on_fs")
-public class StudyOnFileSystem implements Serializable {
+public class StudyOnFileSystem extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -4529151202029255741L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "access_time", nullable = false)
     private Date accessTime;
@@ -73,10 +70,6 @@ public class StudyOnFileSystem implements Serializable {
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "filesystem_fk")
     private FileSystem fileSystem;
-
-    public long getPk() {
-        return pk;
-    }
 
     public Date getAccessTime() {
         return accessTime;

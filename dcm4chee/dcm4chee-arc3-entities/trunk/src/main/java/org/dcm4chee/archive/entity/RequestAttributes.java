@@ -59,12 +59,9 @@ import org.dcm4che2.data.Tag;
  */
 @Entity
 @Table(name = "series_req")
-public class RequestAttributes implements Serializable {
+public class RequestAttributes extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -5693026277386978780L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "study_iuid")
     private String studyInstanceUID;
@@ -90,10 +87,6 @@ public class RequestAttributes implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "series_fk")
     private Series series;
-
-    public long getPk() {
-        return pk;
-    }
 
     public String getStudyInstanceUID() {
         return studyInstanceUID;

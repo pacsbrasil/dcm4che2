@@ -55,12 +55,9 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "priv_file")
-public class PrivateFile implements Serializable {
+public class PrivateFile extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 88587213724521925L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "filepath", nullable = false)
     private String filePath;
@@ -84,10 +81,6 @@ public class PrivateFile implements Serializable {
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "filesystem_fk")
     private FileSystem fileSystem;
-
-    public long getPk() {
-        return pk;
-    }
 
     public String getFilePath() {
         return filePath;

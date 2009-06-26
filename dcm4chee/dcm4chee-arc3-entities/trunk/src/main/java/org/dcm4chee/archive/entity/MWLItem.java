@@ -64,12 +64,9 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  */
 @Entity
 @Table(name = "mwl_item")
-public class MWLItem implements Serializable {
+public class MWLItem extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 5655030469102270878L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "created_time")
     private Date createdTime;
@@ -119,10 +116,6 @@ public class MWLItem implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_fk")
     private Patient patient;
-
-    public long getPk() {
-        return pk;
-    }
 
     public Date getCreatedTime() {
         return createdTime;

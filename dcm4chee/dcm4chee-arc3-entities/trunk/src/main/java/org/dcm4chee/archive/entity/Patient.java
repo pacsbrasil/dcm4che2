@@ -69,12 +69,9 @@ import org.hibernate.annotations.Cascade;
  */
 @Entity
 @Table(name = "patient")
-public class Patient implements Serializable {
+public class Patient extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -1348274766865261645L;
-    
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "created_time")
     private Date createdTime;
@@ -144,10 +141,6 @@ public class Patient implements Serializable {
 
     @OneToMany(mappedBy = "patient", fetch=FetchType.LAZY)
     private Set<GPPPS> generalPurposePerformedProcedureSteps;
-
-    public long getPk() {
-        return pk;
-    }
 
     public Date getCreatedTime() {
         return createdTime;

@@ -64,12 +64,9 @@ import org.dcm4che2.data.Tag;
 @NamedQuery(name="OtherPatientID.findByPatientIdAndIssuer",
   query="select opid from OtherPatientID opid where patientID = :pid and issuerOfPatientID = :issuer"
 )
-public class OtherPatientID implements Serializable {
+public class OtherPatientID extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -7983218873187437331L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "pat_id", nullable = false)
     private String patientID;
@@ -85,10 +82,6 @@ public class OtherPatientID implements Serializable {
             inverseJoinColumns = 
                 @JoinColumn(name = "patient_fk", referencedColumnName = "pk"))
     private Set<Patient> patients;
-
-    public long getPk() {
-        return pk;
-    }
 
     public String getPatientID() {
         return patientID;

@@ -62,12 +62,9 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  */
 @Entity
 @Table(name = "priv_instance")
-public class PrivateInstance implements Serializable {
+public class PrivateInstance extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -7577387511052455446L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "priv_type", nullable = false)
     private int privateType;
@@ -84,10 +81,6 @@ public class PrivateInstance implements Serializable {
     
     @OneToMany(mappedBy = "instance", fetch=FetchType.LAZY)
     private Set<PrivateFile> files;
-
-    public long getPk() {
-        return pk;
-    }
 
     public int getPrivateType() {
         return privateType;

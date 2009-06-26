@@ -60,12 +60,9 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  */
 @Entity
 @Table(name = "priv_patient")
-public class PrivatePatient implements Serializable {
+public class PrivatePatient extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 943058791913251357L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "priv_type", nullable = false)
     private int privateType;
@@ -84,10 +81,6 @@ public class PrivatePatient implements Serializable {
 
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
     private Set<PrivateStudy> studies;
-
-    public long getPk() {
-        return pk;
-    }
 
     public int getPrivateType() {
         return privateType;

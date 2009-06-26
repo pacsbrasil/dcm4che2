@@ -63,12 +63,9 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  */
 @Entity
 @Table(name = "hp")
-public class HangingProtocol implements Serializable {
+public class HangingProtocol extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -450985503561915871L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "hp_iuid", nullable = false)
     private String sopInstanceUID;
@@ -100,10 +97,6 @@ public class HangingProtocol implements Serializable {
 
     @OneToMany(mappedBy = "hangingProtocol", fetch=FetchType.LAZY)
     private Set<HPDefinition> definitions;
-
-    public long getPk() {
-        return pk;
-    }
 
     public String getSOPInstanceUID() {
         return sopInstanceUID;

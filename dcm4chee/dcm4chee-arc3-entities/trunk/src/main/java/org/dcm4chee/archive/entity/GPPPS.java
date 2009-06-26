@@ -66,12 +66,9 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  */
 @Entity
 @Table(name = "gppps")
-public class GPPPS implements Serializable {
+public class GPPPS extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 5358842743055077420L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "created_time")
     private Date createdTime;
@@ -101,10 +98,6 @@ public class GPPPS implements Serializable {
             joinColumns = @JoinColumn(name = "gppps_fk", referencedColumnName = "pk"), 
             inverseJoinColumns = @JoinColumn(name = "gpsps_fk", referencedColumnName = "pk"))
     private Set<GPSPS> scheduledProcedureSteps;
-
-    public long getPk() {
-        return pk;
-    }
 
     public Date getCreatedTime() {
         return createdTime;

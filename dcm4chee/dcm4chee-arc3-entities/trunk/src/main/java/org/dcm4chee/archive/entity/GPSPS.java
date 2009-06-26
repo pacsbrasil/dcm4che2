@@ -69,12 +69,9 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  */
 @Entity
 @Table(name = "gpsps")
-public class GPSPS implements Serializable {
+public class GPSPS extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 4800913651614346013L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "gpsps_iuid", nullable = false)
     private String sopInstanceUID;
@@ -156,10 +153,6 @@ public class GPSPS implements Serializable {
 
     @ManyToMany(mappedBy = "scheduledProcedureSteps", fetch=FetchType.LAZY)
     private Set<GPPPS> performedProcedureSteps;
-
-    public long getPk() {
-        return pk;
-    }
 
     public String getSOPInstanceUID() {
         return sopInstanceUID;

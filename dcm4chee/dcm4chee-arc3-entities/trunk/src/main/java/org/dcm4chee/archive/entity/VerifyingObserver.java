@@ -60,12 +60,9 @@ import org.dcm4che2.data.Tag;
  */
 @Entity
 @Table(name = "verify_observer")
-public class VerifyingObserver implements Serializable {
+public class VerifyingObserver extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 8647650970218017903L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "verify_datetime")
     private Date verificationDateTime;
@@ -82,10 +79,6 @@ public class VerifyingObserver implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "instance_fk")
     private Instance instance;
-
-    public final long getPk() {
-        return pk;
-    }
 
     public Date getVerificationDateTime() {
         return verificationDateTime;

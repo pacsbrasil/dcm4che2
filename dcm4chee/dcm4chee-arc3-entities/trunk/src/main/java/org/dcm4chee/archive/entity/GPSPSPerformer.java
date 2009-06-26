@@ -58,12 +58,9 @@ import org.dcm4che2.data.Tag;
  */
 @Entity
 @Table(name = "gpsps_perf")
-public class GPSPSPerformer implements Serializable {
+public class GPSPSPerformer extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -7557539606659982634L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     // JPA definition in orm.xml
     private String humanPerformerName;
@@ -81,10 +78,6 @@ public class GPSPSPerformer implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "code_fk")
     private Code code;
-
-    public long getPk() {
-        return pk;
-    }
 
     public String getHumanPerformerName() {
         return humanPerformerName;

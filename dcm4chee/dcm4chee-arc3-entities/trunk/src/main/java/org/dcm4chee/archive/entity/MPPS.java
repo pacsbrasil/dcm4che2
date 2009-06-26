@@ -65,12 +65,9 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  */
 @Entity
 @Table(name = "mpps")
-public class MPPS implements Serializable {
+public class MPPS extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -599495313070741738L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "created_time")
     private Date createdTime;
@@ -109,10 +106,6 @@ public class MPPS implements Serializable {
 
     @OneToMany(mappedBy = "modalityPerformedProcedureStep", fetch = FetchType.LAZY)
     private Set<Series> series;
-
-    public long getPk() {
-        return pk;
-    }
 
     public Date getCreatedTime() {
         return createdTime;

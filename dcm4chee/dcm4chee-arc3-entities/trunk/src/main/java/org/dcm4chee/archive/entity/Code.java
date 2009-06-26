@@ -55,12 +55,9 @@ import org.dcm4che2.data.Tag;
  */
 @Entity
 @Table(name = "code")
-public class Code implements Serializable {
+public class Code extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 3626021926959276349L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "code_value", nullable = false)
     private String codeValue;
@@ -73,10 +70,6 @@ public class Code implements Serializable {
 
     // JPA definition in orm.xml
     private String codeMeaning;
-
-    public long getPk() {
-        return pk;
-    }
 
     public String getCodeValue() {
         return codeValue;

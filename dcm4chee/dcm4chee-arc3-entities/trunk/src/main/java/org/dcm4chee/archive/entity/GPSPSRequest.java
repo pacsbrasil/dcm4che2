@@ -58,12 +58,9 @@ import org.dcm4che2.data.Tag;
  */
 @Entity
 @Table(name = "gpsps_req")
-public class GPSPSRequest implements Serializable {
+public class GPSPSRequest extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 6305364131324475996L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "req_proc_id")
     private String requestedProcedureID;
@@ -74,10 +71,6 @@ public class GPSPSRequest implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gpsps_fk")
     private GPSPS gpsps;
-
-    public long getPk() {
-        return pk;
-    }
 
     public String getRequestedProcedureID() {
         return requestedProcedureID;

@@ -69,12 +69,9 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  */
 @Entity
 @Table(name = "series")
-public class Series implements Serializable {
+public class Series extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -5882522097745649285L;
-
-    // JPA definition in orm.xml
-    private long pk;
 
     @Column(name = "created_time")
     private Date createdTime;
@@ -173,10 +170,6 @@ public class Series implements Serializable {
 
     @OneToMany(mappedBy = "series", fetch = FetchType.LAZY)
     private Set<Instance> instances;
-
-    public final long getPk() {
-        return pk;
-    }
 
     public Date getCreatedTime() {
         return createdTime;
