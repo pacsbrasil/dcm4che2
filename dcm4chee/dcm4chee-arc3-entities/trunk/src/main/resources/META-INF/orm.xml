@@ -21,25 +21,24 @@
   
   <package>org.dcm4chee.archive.entity</package>
   
-  <entity class="AE" access="FIELD" metadata-complete="false">
-    <table name="ae" />
+  <mapped-superclass class="BaseEntity" metadata-complete="false">
     <attributes>
       <id name="pk">
         <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="ae_pk_seq" />
+        <generated-value strategy="@generation-type@" generator="seq" />
       </id>
     </attributes>
+  </mapped-superclass>
+  
+  <entity class="AE" access="FIELD" metadata-complete="false">
+    <table name="ae" />
+    <sequence-generator name="seq" sequence-name="ae_pk_seq" />
   </entity>
   
   <entity class="Code" access="FIELD" metadata-complete="false">
     <table name="code" />
+    <sequence-generator name="seq" sequence-name="code_pk_seq" />
     <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="code_pk_seq" />
-      </id>
       <basic name="codeMeaning">
         <column name="code_meaning" column-definition="@nvarchar2@"/>
       </basic>
@@ -48,48 +47,26 @@
   
   <entity class="Device" access="FIELD" metadata-complete="false">
     <table name="device" />
-    <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="device_pk_seq" />
-      </id>
-    </attributes>
+    <sequence-generator name="seq" sequence-name="device_pk_seq" />
   </entity>
   
   <entity class="File" access="FIELD" metadata-complete="false">
     <table name="files" />
+    <sequence-generator name="seq" sequence-name="files_pk_seq" />
     <pre-persist method-name="onPrePersist" />
-    <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="files_pk_seq" />
-      </id>
-    </attributes>
   </entity>
   
   <entity class="FileSystem" access="FIELD" metadata-complete="false">
     <table name="filesystem" />
-    <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="filesystem_pk_seq" />
-      </id>
-    </attributes>
+    <sequence-generator name="seq" sequence-name="filesystem_pk_seq" />
   </entity>
   
   <entity class="GPPPS" access="FIELD" metadata-complete="false">
     <table name="gppps" />
+    <sequence-generator name="seq" sequence-name="gppps_pk_seq" />
     <pre-persist method-name="onPrePersist" />
     <pre-update method-name="onPreUpdate" />
     <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="gppps_pk_seq" />
-      </id>
       <basic name="encodedAttributes">
         <column name="pps_attrs" column-definition="@blob@" />
       </basic>
@@ -98,12 +75,8 @@
   
   <entity class="GPSPS" access="FIELD" metadata-complete="false">
     <table name="gpsps" />
+    <sequence-generator name="seq" sequence-name="gpsps_pk_seq" />
     <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="gpsps_pk_seq" />
-      </id>
       <basic name="encodedAttributes">
         <column name="item_attrs" column-definition="@blob@" />
       </basic>
@@ -112,12 +85,8 @@
   
   <entity class="GPSPSPerformer" access="FIELD" metadata-complete="false">
     <table name="gpsps_perf" />
+    <sequence-generator name="seq" sequence-name="gpsps_perf_pk_seq" />
     <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="gpsps_perf_pk_seq" />
-      </id>
       <basic name="humanPerformerName">
         <column name="human_perf_name" column-definition="@nvarchar2@" />
       </basic>
@@ -132,23 +101,13 @@
   
   <entity class="GPSPSRequest" access="FIELD" metadata-complete="false">
     <table name="gpsps_req" />
-    <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="gpsps_req_pk_seq" />
-      </id>
-    </attributes>
+    <sequence-generator name="seq" sequence-name="gpsps_req_pk_seq" />
   </entity>
   
   <entity class="HangingProtocol" access="FIELD" metadata-complete="false">
     <table name="hp" />
+    <sequence-generator name="seq" sequence-name="hp_pk_seq" />
     <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="hp_pk_seq" />
-      </id>
       <basic name="name">
         <column name="hp_name" column-definition="@nvarchar2@" />
       </basic>
@@ -163,25 +122,15 @@
   
   <entity class="HPDefinition" access="FIELD" metadata-complete="false">
     <table name="hpdef" />
-    <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="hpdef_pk_seq" />
-      </id>
-    </attributes>
+    <sequence-generator name="seq" sequence-name="hpdef_pk_seq" />
   </entity>
   
   <entity class="Instance" access="FIELD" metadata-complete="false">
     <table name="instance" />
+    <sequence-generator name="seq" sequence-name="instance_pk_seq" />
     <pre-persist method-name="onPrePersist" />
     <pre-update method-name="onPreUpdate" />
     <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="instance_pk_seq" />
-      </id>
       <basic name="encodedAttributes">
         <column name="inst_attrs" column-definition="@blob@" />
       </basic>
@@ -190,27 +139,17 @@
   
   <entity class="Media" access="FIELD" metadata-complete="false">
     <table name="media" />
+    <sequence-generator name="seq" sequence-name="media_pk_seq" />
     <pre-persist method-name="onPrePersist" />
     <pre-update method-name="onPreUpdate" />
-    <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="media_pk_seq" />
-      </id>
-    </attributes>
   </entity>
   
   <entity class="MPPS" access="FIELD" metadata-complete="false">
     <table name="mpps" />
+    <sequence-generator name="seq" sequence-name="mpps_pk_seq" />
     <pre-persist method-name="onPrePersist" />
     <pre-update method-name="onPreUpdate" />
     <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="mpps_pk_seq" />
-      </id>
       <basic name="encodedAttributes">
         <column name="mpps_attrs" column-definition="@blob@" />
       </basic>
@@ -219,14 +158,10 @@
   
   <entity class="MWLItem" access="FIELD" metadata-complete="false">
     <table name="mwl_item" />
+    <sequence-generator name="seq" sequence-name="mwl_item_pk_seq" />
     <pre-persist method-name="onPrePersist" />
     <pre-update method-name="onPreUpdate" />
     <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="mwl_item_pk_seq" />
-      </id>
       <basic name="scheduledPerformingPhysicianName">
         <column name="perf_physician" column-definition="@nvarchar2@" />
       </basic>
@@ -244,25 +179,15 @@
   
   <entity class="OtherPatientID" access="FIELD" metadata-complete="false">
     <table name="other_pid" />
-    <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="other_pid_pk_seq" />
-      </id>
-    </attributes>
+    <sequence-generator name="seq" sequence-name="other_pid_pk_seq" />
   </entity>
   
   <entity class="Patient" access="FIELD" metadata-complete="false">
     <table name="patient" />
+    <sequence-generator name="seq" sequence-name="patient_pk_seq" />
     <pre-persist method-name="onPrePersist" />
     <pre-update method-name="onPreUpdate" />
     <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="patient_pk_seq" />
-      </id>
       <basic name="patientName">
         <column name="pat_name" column-definition="@nvarchar2@" />
       </basic>
@@ -280,23 +205,13 @@
   
   <entity class="PrivateFile" access="FIELD" metadata-complete="false">
     <table name="priv_file" />
-    <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="priv_file_pk_seq" />
-      </id>
-    </attributes>
+    <sequence-generator name="seq" sequence-name="priv_file_pk_seq" />
   </entity>
   
   <entity class="PrivateInstance" access="FIELD" metadata-complete="false">
     <table name="priv_instance" />
+    <sequence-generator name="seq" sequence-name="priv_instance_pk_seq" />
     <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="priv_instance_pk_seq" />
-      </id>
       <basic name="encodedAttributes">
         <column name="inst_attrs" column-definition="@blob@" />
       </basic>
@@ -305,12 +220,8 @@
   
   <entity class="PrivatePatient" access="FIELD" metadata-complete="false">
     <table name="priv_patient" />
+    <sequence-generator name="seq" sequence-name="priv_patient_pk_seq" />
     <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="priv_patient_pk_seq" />
-     </id>
       <basic name="encodedAttributes">
         <column name="pat_attrs" column-definition="@blob@" />
       </basic>
@@ -319,12 +230,8 @@
   
   <entity class="PrivateSeries" access="FIELD" metadata-complete="false">
     <table name="priv_series" />
+    <sequence-generator name="seq" sequence-name="priv_series_pk_seq" />
     <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="priv_series_pk_seq" />
-      </id>
       <basic name="encodedAttributes">
         <column name="series_attrs" column-definition="@blob@" />
       </basic>
@@ -333,12 +240,8 @@
   
   <entity class="PrivateStudy" access="FIELD" metadata-complete="false">
     <table name="priv_study" />
+    <sequence-generator name="seq" sequence-name="priv_study_pk_seq" />
     <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="priv_study_pk_seq" />
-      </id>
       <basic name="encodedAttributes">
         <column name="study_attrs" column-definition="@blob@"/>
       </basic>
@@ -347,12 +250,8 @@
   
   <entity class="RequestAttributes" access="FIELD" metadata-complete="false">
     <table name="series_req" />
+    <sequence-generator name="seq" sequence-name="series_req_pk_seq" />
     <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="series_req_pk_seq" />
-      </id>
       <basic name="requestingService">
         <column name="req_service" column-definition="@nvarchar2@" />
       </basic>
@@ -370,14 +269,10 @@
   
   <entity class="Series" access="FIELD" metadata-complete="false">
     <table name="series" />
+    <sequence-generator name="seq" sequence-name="series_pk_seq" />
     <pre-persist method-name="onPrePersist" />
     <pre-update method-name="onPreUpdate" />
     <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="series_pk_seq" />
-      </id>
       <basic name="institutionalDepartmentName">
         <column name="department" column-definition="@nvarchar2@" />
       </basic>
@@ -401,14 +296,10 @@
   
   <entity class="Study" access="FIELD" metadata-complete="false">
     <table name="study" />
+    <sequence-generator name="seq" sequence-name="study_pk_seq" />
     <pre-persist method-name="onPrePersist" />
     <pre-update method-name="onPreUpdate" />
     <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="study_pk_seq" />
-      </id>
       <basic name="referringPhysicianName">
         <column name="ref_physician" column-definition="@nvarchar2@" />
       </basic>
@@ -429,34 +320,18 @@
   
   <entity class="StudyOnFileSystem" access="FIELD" metadata-complete="false">
     <table name="study_on_fs" />
-    <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="study_on_fs_pk_seq" />
-      </id>
-    </attributes>
+    <sequence-generator name="seq" sequence-name="study_on_fs_pk_seq" />
   </entity>
   
   <entity class="StudyPermission" access="FIELD" metadata-complete="false">
     <table name="study_permission" />
-    <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="study_permission_pk_seq" />
-      </id>
-    </attributes>
+    <sequence-generator name="seq" sequence-name="study_permission_pk_seq" />
   </entity>
   
   <entity class="VerifyingObserver" access="FIELD" metadata-complete="false">
     <table name="verify_observer" />
+    <sequence-generator name="seq" sequence-name="verify_observer_pk_seq" />
     <attributes>
-      <id name="pk">
-        <column name="pk" />
-        <generated-value strategy="@generation-type@" generator="seq"/>
-        <sequence-generator name="seq" sequence-name="verify_observer_pk_seq" />
-      </id>
       <basic name="verifyingObserverName">
         <column name="observer_name" column-definition="@nvarchar2@" />
       </basic>
