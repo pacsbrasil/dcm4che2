@@ -86,6 +86,18 @@ public class AE extends BaseEntity implements Serializable {
 
     @Column(name = "ae_desc")
     private String description;
+    
+    @Column(name = "station_name")
+    private String stationName;
+    
+    @Column(name = "institution")
+    private String institution;
+    
+    @Column(name = "department")
+    private String department;
+    
+    @Column(name = "installed")
+    private boolean installed;
 
     @Column(name = "wado_url")
     private String wadoURL;
@@ -195,7 +207,39 @@ public class AE extends BaseEntity implements Serializable {
         return wadoURL;
     }
 
-    @Override
+    public String getStationName() {
+		return stationName;
+	}
+
+	public void setStationName(String stationName) {
+		this.stationName = stationName;
+	}
+
+	public String getInstitution() {
+		return institution;
+	}
+
+	public void setInstitution(String institution) {
+		this.institution = institution;
+	}
+
+	public String getDepartment() {
+		return department;
+	}
+
+	public void setDepartment(String department) {
+		this.department = department;
+	}
+
+	public boolean isInstalled() {
+		return installed;
+	}
+
+	public void setInstalled(boolean installed) {
+		this.installed = installed;
+	}
+
+	@Override
     public String toString() {
         return getProtocol() + "://" + title + '@' + hostName + ':' + port;
     }
