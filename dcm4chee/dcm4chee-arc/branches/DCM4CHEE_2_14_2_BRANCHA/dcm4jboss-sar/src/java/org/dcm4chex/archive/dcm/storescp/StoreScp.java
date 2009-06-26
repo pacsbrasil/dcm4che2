@@ -140,7 +140,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
 //    private static final String SOP_IUIDS = "SOP_IUIDS";
 
-    final StoreScpService service;
+    protected final StoreScpService service;
 
     private final Logger log;
 
@@ -491,9 +491,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             FileSystemDTO fsDTO;
             String filePath;
             byte[] md5sum = null;
-            Dataset coerced = service.getCoercionAttributesFor(assoc,
-                    STORE_XSL, ds);
+            Dataset coerced = service.getCoercionAttributesFor(callingAET,
+                    STORE_XSL, ds, assoc);
             if ( coerceBeforeWrite ) {
+                ds.setPrivateCreatorID(PrivateTags.CreatorID);
+                ds.putAE(PrivateTags.CallingAET, callingAET);
+                ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
                 if (coerced != null) {
                     service.coerceAttributes(ds, coerced);
                 }
@@ -594,10 +597,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 return;
             }
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
-            ds.putAE(PrivateTags.CallingAET, callingAET);
-            ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
             ds.putAE(Tags.RetrieveAET, fsDTO.getRetrieveAET());
             if ( ! coerceBeforeWrite ) {
+                ds.putAE(PrivateTags.CallingAET, callingAET);
+                ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
                 if (coerced != null) {
                     service.coerceAttributes(ds, coerced);
                 }
@@ -618,8 +621,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 seriesStored = initSeriesStored(ds, callingAET,
                         fsDTO.getRetrieveAET());
                 assoc.putProperty(SERIES_STORED, seriesStored);
-                Dataset mwlFilter = service.getCoercionAttributesFor(assoc,
-                        STORE2MWL_XSL, ds);
+                Dataset mwlFilter = service.getCoercionAttributesFor(callingAET,
+                        STORE2MWL_XSL, ds, assoc);
                 if (mwlFilter != null) {
                     coerced = merge(coerced, mergeMatchingMWLItem(assoc, ds,
                             seriuid, mwlFilter));
@@ -765,14 +768,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         if (size == 0) {
             return null;
         }
-        Dataset coerce = service.getCoercionAttributesFor(assoc, MWL2STORE_XSL,
-                (Dataset) mwlItems.get(0));
+        String callingAET = assoc.getCallingAET();
+        Dataset coerce = service.getCoercionAttributesFor(callingAET, 
+                MWL2STORE_XSL, (Dataset) mwlItems.get(0), assoc);
         if (coerce == null) {
             log
                     .error("Failed to find or load stylesheet "
                             + MWL2STORE_XSL
                             + " for "
-                            + assoc.getCallingAET()
+                            + callingAET
                             + ". Cannot coerce object attributes with request information.");
             return null;
         }
@@ -781,8 +785,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             Dataset coerce0 = coerce
                     .exclude(new int[] { Tags.RequestAttributesSeq });
             for (int i = 1; i < size; i++) {
-                Dataset coerce1 = service.getCoercionAttributesFor(assoc,
-                        MWL2STORE_XSL, (Dataset) mwlItems.get(i));
+                Dataset coerce1 = service.getCoercionAttributesFor(callingAET,
+                        MWL2STORE_XSL, (Dataset) mwlItems.get(i), assoc);
                 if (!coerce1.match(coerce0, true, true)) {
                     log
                             .warn("Several ("

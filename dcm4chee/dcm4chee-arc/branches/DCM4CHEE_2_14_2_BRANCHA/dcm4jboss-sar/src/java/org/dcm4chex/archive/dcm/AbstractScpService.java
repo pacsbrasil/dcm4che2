@@ -729,24 +729,18 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         }
     }
 
-    public Dataset getCoercionAttributesFor(Association a, String xsl,
-            Dataset in) {
-        return getCoercionAttributesFor(a, xsl, in,
-                getCoercionTemplates(a, xsl));
+    public Dataset getCoercionAttributesFor(String aet, String xsl,
+            Dataset in, Association a) {
+        return getCoercionAttributesFor(a, xsl,
+                in, getCoercionTemplates(aet, xsl));
     }
 
-    public Templates getCoercionTemplates(Association a, String xsl) {
-        return templates.getTemplatesForAET(a.getCallingAET(), xsl);
+    public Templates getCoercionTemplates(String aet, String xsl) {
+        return templates.getTemplatesForAET(aet, xsl);
     }
 
-    public TransformerHandler getCoercionTransformerHandler(Association a,
-            String xsl) throws TransformerConfigurationException {
-        Templates tpl = getCoercionTemplates(a, xsl);
-        return tpl != null ? XSLTUtils.getTransformerHandler(tpl, a) : null;
-    }
-
-    public Dataset getCoercionAttributesFor(Association a, String xsl,
-            Dataset in, Templates stylesheet) {
+    public Dataset getCoercionAttributesFor(Association a,
+            String xsl, Dataset in, Templates stylesheet) {
         if (stylesheet == null) {
             return null;
         }

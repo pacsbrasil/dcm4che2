@@ -108,7 +108,8 @@ public class MPPSScp extends DcmServiceBase {
         }
 		log.debug("Creating MPPS:\n");
 		log.debug(mpps);
-        Dataset coerce = service.getCoercionAttributesFor(as, CREATE_XSL, mpps);
+        Dataset coerce = service.getCoercionAttributesFor(callingAET,
+                CREATE_XSL, mpps, as);
         if (coerce != null) {
             service.coerceAttributes(mpps, coerce);
         }
@@ -148,12 +149,14 @@ public class MPPSScp extends DcmServiceBase {
     protected Dataset doNSet(ActiveAssociation assoc, Dimse rq, Command rspCmd)
             throws IOException, DcmServiceException {
         Association as = assoc.getAssociation();
+        final String callingAET = as.getCallingAET();
         final Command cmd = rq.getCommand();
         final Dataset mpps = rq.getDataset();
         final String iuid = cmd.getRequestedSOPInstanceUID();
 		log.debug("Set MPPS:\n");
 		log.debug(mpps);
-        Dataset coerce = service.getCoercionAttributesFor(as, SET_XSL, mpps);
+        Dataset coerce = service.getCoercionAttributesFor(callingAET, SET_XSL,
+                mpps, as);
         if (coerce != null) {
             service.coerceAttributes(mpps, coerce);
         }
@@ -161,7 +164,7 @@ public class MPPSScp extends DcmServiceBase {
         mpps.putUI(Tags.SOPInstanceUID, iuid);
         updateMPPS(mpps);
         mpps.setPrivateCreatorID(PrivateTags.CreatorID);
-        mpps.putAE(PrivateTags.CallingAET, as.getCallingAET());
+        mpps.putAE(PrivateTags.CallingAET, callingAET);
         service.sendMPPSNotification(mpps, MPPSScpService.EVENT_TYPE_MPPS_RECEIVED);
         return null;
     }
