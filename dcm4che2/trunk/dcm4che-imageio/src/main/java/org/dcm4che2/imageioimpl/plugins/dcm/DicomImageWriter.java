@@ -246,7 +246,7 @@ public class DicomImageWriter extends ImageWriter {
             int frames = dobj.getInt(Tag.NumberOfFrames, 1);
             int width = dobj.getInt(Tag.Columns);
             int height = dobj.getInt(Tag.Rows);
-            int bytes = dobj.getInt(Tag.BitsStored, 8) / 8;
+            int bytes = (dobj.getInt(Tag.BitsAllocated, 8)+7) / 8;
             int samples = dobj.getInt(Tag.SamplesPerPixel);
             int size = frames * width * height * bytes * samples;
             dos.writeHeader(Tag.PixelData, VR.OB, size);
