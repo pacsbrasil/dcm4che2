@@ -129,7 +129,7 @@ abstract class Match {
         }
 
         public boolean isUniveralMatch() {
-            return value == null || value.length() == 0;
+            return value == null || value.length() == 0  || value.equals("*");
         }
 
         protected void appendBodyTo(StringBuffer sb) {
@@ -241,7 +241,7 @@ abstract class Match {
         }
 
         public boolean isUniveralMatch() {
-            return strings.length == 0;
+            return strings.length == 0 || strings[0].equals("*");
         }
 
         protected void appendBodyTo(StringBuffer sb) {
