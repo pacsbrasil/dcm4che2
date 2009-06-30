@@ -30,7 +30,7 @@
             <fo:page-sequence master-reference="page">
             	<fo:static-content flow-name="xsl-region-before">
           <fo:block text-align="center">
-            <fo:external-graphic src="http://localhost:8080/rid/images/logo.gif"/>
+            <fo:external-graphic src="resource://logo.gif" />
          </fo:block>
             		<fo:block font-size="20pt"  text-align="center" font-weight="bold" >
             			<xsl:value-of select="attr[@tag='0040A043']/item/attr[@tag='00080104']"/>
