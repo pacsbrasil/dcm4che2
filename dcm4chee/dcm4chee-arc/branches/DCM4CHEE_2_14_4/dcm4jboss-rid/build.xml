@@ -140,6 +140,9 @@
 	     	<fileset dir="${etc.dir}">
 	     		<include name="META-INF/**" />
 	        </fileset>
+			<fileset dir="${web.dir}/images">
+				<include name="*.gif" />
+			</fileset>
 	     </jar>
 	</target>
 
