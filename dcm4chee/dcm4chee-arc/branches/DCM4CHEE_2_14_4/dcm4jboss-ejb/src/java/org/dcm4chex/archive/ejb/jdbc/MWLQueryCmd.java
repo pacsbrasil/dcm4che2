@@ -104,20 +104,20 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
             sqlBuilder.addListOfIntMatch(null, "MWLItem.spsStatusAsInt",
                         SqlBuilder.TYPE1, 
                         SPSStatus.toInts(spsItem.getStrings(Tags.SPSStatus)));
-            sqlBuilder.addListOfStringMatch(null, "MWLItem.spsId",
+            sqlBuilder.addWildCardMatch(null, "MWLItem.spsId",
                     SqlBuilder.TYPE1,
                     spsItem.getStrings(Tags.SPSID));
             sqlBuilder.addRangeMatch(null, "MWLItem.spsStartDateTime",
                     SqlBuilder.TYPE1,
                     spsItem.getDateTimeRange(Tags.SPSStartDate,
                             Tags.SPSStartTime));
-            sqlBuilder.addListOfStringMatch(null, "MWLItem.modality",
+            sqlBuilder.addWildCardMatch(null, "MWLItem.modality",
                     SqlBuilder.TYPE1,
                     spsItem.getStrings(Tags.Modality));
-            sqlBuilder.addListOfStringMatch(null, "MWLItem.scheduledStationAET",
+            sqlBuilder.addWildCardMatch(null, "MWLItem.scheduledStationAET",
                     SqlBuilder.TYPE1,
                     spsItem.getStrings(Tags.ScheduledStationAET));
-            sqlBuilder.addListOfStringMatch(null, "MWLItem.scheduledStationName",
+            sqlBuilder.addWildCardMatch(null, "MWLItem.scheduledStationName",
                     SqlBuilder.TYPE2,
                     spsItem.getStrings(Tags.ScheduledStationName));
             sqlBuilder.addPNMatch(new String[] {
@@ -127,16 +127,16 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
                     SqlBuilder.TYPE2,
                     spsItem.getString(Tags.PerformingPhysicianName));
         }
-        sqlBuilder.addListOfStringMatch(null, "MWLItem.requestedProcedureId",
+        sqlBuilder.addWildCardMatch(null, "MWLItem.requestedProcedureId",
                 SqlBuilder.TYPE1,
                 keys.getStrings(Tags.RequestedProcedureID));
-        sqlBuilder.addListOfStringMatch(null, "MWLItem.accessionNumber",
+        sqlBuilder.addWildCardMatch(null, "MWLItem.accessionNumber",
                 SqlBuilder.TYPE2,
                 keys.getStrings(Tags.AccessionNumber));
         sqlBuilder.addListOfStringMatch(null, "MWLItem.studyIuid",
                 SqlBuilder.TYPE1,
                 keys.getStrings(Tags.StudyInstanceUID));
-        sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
+        sqlBuilder.addWildCardMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE1,
                 keys.getStrings(Tags.PatientID));
         sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
