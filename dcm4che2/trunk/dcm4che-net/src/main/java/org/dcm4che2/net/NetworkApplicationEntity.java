@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.UID;
@@ -142,6 +143,8 @@ public class NetworkApplicationEntity {
     private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
 
     private final List<Association> pool = new ArrayList<Association>();
+
+    private AtomicInteger messageID = new AtomicInteger();
 
     /**
      * Get the device that is identified by this application entity.
@@ -1336,5 +1339,9 @@ public class NetworkApplicationEntity {
                 l.associationClosed(new AssociationCloseEvent(this, a));
             }
         }
+    }
+
+    int nextMessageID() {
+        return messageID.incrementAndGet() & 0xFFFF;
     }
 }

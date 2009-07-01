@@ -112,8 +112,6 @@ public class Association implements Runnable {
 
     private int maxPDULength;
 
-    private int msgID;
-
     private int performing;
 
     private boolean closed;
@@ -378,8 +376,8 @@ public class Association implements Runnable {
             DataWriter data, String tsuid, DimseRSPHandler rspHandler)
             throws IOException, InterruptedException {
         PresentationContext pc = pcFor(asuid, tsuid);
-        DicomObject cstorerq = CommandUtils.mkCStoreRQ(++msgID, cuid, iuid,
-                priority);
+        DicomObject cstorerq = CommandUtils.mkCStoreRQ(ae.nextMessageID(),
+                cuid, iuid, priority);
         invoke(pc.getPCID(), cstorerq, data, rspHandler,
                 ae.getDimseRspTimeout());
     }
@@ -408,7 +406,8 @@ public class Association implements Runnable {
             DicomObject data, String tsuid, DimseRSPHandler rspHandler)
             throws IOException, InterruptedException {
         PresentationContext pc = pcFor(asuid, tsuid);
-        DicomObject cfindrq = CommandUtils.mkCFindRQ(++msgID, cuid, priority);
+        DicomObject cfindrq = CommandUtils.mkCFindRQ(ae.nextMessageID(), cuid,
+                priority);
         invoke(pc.getPCID(), cfindrq, new DataWriterAdapter(data), rspHandler,
                 ae.getDimseRspTimeout());
     }
@@ -438,7 +437,8 @@ public class Association implements Runnable {
             String tsuid, DimseRSPHandler rspHandler) throws IOException,
             InterruptedException {
         PresentationContext pc = pcFor(asuid, tsuid);
-        DicomObject cfindrq = CommandUtils.mkCGetRQ(++msgID, cuid, priority);
+        DicomObject cfindrq = CommandUtils.mkCGetRQ(ae.nextMessageID(), cuid,
+                priority);
         invoke(pc.getPCID(), cfindrq, new DataWriterAdapter(data), rspHandler,
                 ae.getRetrieveRspTimeout());
     }
@@ -467,8 +467,8 @@ public class Association implements Runnable {
             DimseRSPHandler rspHandler) throws IOException,
             InterruptedException {
         PresentationContext pc = pcFor(asuid, tsuid);
-        DicomObject cfindrq = CommandUtils.mkCMoveRQ(++msgID, cuid, priority,
-                destination);
+        DicomObject cfindrq = CommandUtils.mkCMoveRQ(ae.nextMessageID(), cuid,
+                priority, destination);
         invoke(pc.getPCID(), cfindrq, new DataWriterAdapter(data), rspHandler,
                 ae.getRetrieveRspTimeout());
     }
@@ -494,7 +494,7 @@ public class Association implements Runnable {
     public DimseRSP cecho(String cuid) throws IOException, InterruptedException {
         FutureDimseRSP rsp = new FutureDimseRSP();
         PresentationContext pc = pcFor(cuid, null);
-        DicomObject cechorq = CommandUtils.mkCEchoRQ(++msgID, cuid);
+        DicomObject cechorq = CommandUtils.mkCEchoRQ(ae.nextMessageID(), cuid);
         invoke(pc.getPCID(), cechorq, null, rsp, ae.getDimseRspTimeout());
         return rsp;
     }
@@ -509,8 +509,8 @@ public class Association implements Runnable {
             DicomObject attrs, String tsuid, DimseRSPHandler rspHandler)
             throws IOException, InterruptedException {
         PresentationContext pc = pcFor(asuid, tsuid);
-        DicomObject neventrq = CommandUtils.mkNEventReportRQ(++msgID, cuid,
-                iuid, eventTypeId, attrs);
+        DicomObject neventrq = CommandUtils.mkNEventReportRQ(
+                ae.nextMessageID(), cuid, iuid, eventTypeId, attrs);
         invoke(pc.getPCID(), neventrq,
                 attrs != null ? new DataWriterAdapter(attrs) : null,
                 rspHandler, ae.getDimseRspTimeout());
@@ -540,7 +540,8 @@ public class Association implements Runnable {
             DimseRSPHandler rspHandler)
             throws IOException, InterruptedException {
         PresentationContext pc = pcFor(asuid, null);
-        DicomObject ngetrq = CommandUtils.mkNGetRQ(++msgID, cuid, iuid, tags);
+        DicomObject ngetrq = CommandUtils.mkNGetRQ(ae.nextMessageID(), cuid,
+                iuid, tags);
         invoke(pc.getPCID(), ngetrq, null, rspHandler, ae.getDimseRspTimeout());
     }
 
@@ -566,7 +567,8 @@ public class Association implements Runnable {
             String tsuid, DimseRSPHandler rspHandler) throws IOException,
             InterruptedException {
         PresentationContext pc = pcFor(asuid, tsuid);
-        DicomObject nsetrq = CommandUtils.mkNSetRQ(++msgID, cuid, iuid);
+        DicomObject nsetrq = CommandUtils.mkNSetRQ(ae.nextMessageID(), cuid,
+                iuid);
         invoke(pc.getPCID(), nsetrq, new DataWriterAdapter(attrs), rspHandler,
                 ae.getDimseRspTimeout());
     }
@@ -595,8 +597,8 @@ public class Association implements Runnable {
             DimseRSPHandler rspHandler) throws IOException,
             InterruptedException {
         PresentationContext pc = pcFor(asuid, tsuid);
-        DicomObject nactionrq = CommandUtils.mkNActionRQ(++msgID, cuid, iuid,
-                actionTypeId, attrs);
+        DicomObject nactionrq = CommandUtils.mkNActionRQ(ae.nextMessageID(),
+                cuid, iuid, actionTypeId, attrs);
         invoke(pc.getPCID(), nactionrq,
                 attrs != null ? new DataWriterAdapter(attrs) : null,
                 rspHandler, ae.getDimseRspTimeout());
@@ -626,7 +628,8 @@ public class Association implements Runnable {
             DicomObject attrs, String tsuid, DimseRSPHandler rspHandler)
             throws IOException, InterruptedException {
         PresentationContext pc = pcFor(asuid, tsuid);
-        DicomObject ncreaterq = CommandUtils.mkNCreateRQ(++msgID, cuid, iuid);
+        DicomObject ncreaterq = CommandUtils.mkNCreateRQ(ae.nextMessageID(),
+                cuid, iuid);
         invoke(pc.getPCID(), ncreaterq,
                 attrs != null ? new DataWriterAdapter(attrs) : null,
                 rspHandler, ae.getDimseRspTimeout());
@@ -654,7 +657,8 @@ public class Association implements Runnable {
             DimseRSPHandler rspHandler) throws IOException,
             InterruptedException {
         PresentationContext pc = pcFor(asuid, null);
-        DicomObject nsetrq = CommandUtils.mkNDeleteRQ(++msgID, cuid, iuid);
+        DicomObject nsetrq = CommandUtils.mkNDeleteRQ(ae.nextMessageID(), cuid,
+                iuid);
         invoke(pc.getPCID(), nsetrq, null, rspHandler, ae.getDimseRspTimeout());
     }
 
