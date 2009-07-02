@@ -109,8 +109,8 @@ import org.dcm4chex.archive.exceptions.NonUniquePatientException;
  */
 public abstract class StorageBean implements SessionBean {
 
-    private static final int STORED = 0;
-	private static final int RECEIVED = 1;
+    public static final int STORED = 0;
+	public static final int RECEIVED = 1;
 
     private static Logger log = Logger.getLogger(StorageBean.class);
 
