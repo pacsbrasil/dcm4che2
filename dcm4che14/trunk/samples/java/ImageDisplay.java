@@ -118,7 +118,7 @@ public class ImageDisplay extends JPanel {
 	    frame.setTitle("Image Display - Control Panel");
 	    frame.getContentPane().add(this, BorderLayout.CENTER);
 	    frame.pack();
-	    frame.show();
+	    frame.setVisible(true);
 	} 
     }
     
