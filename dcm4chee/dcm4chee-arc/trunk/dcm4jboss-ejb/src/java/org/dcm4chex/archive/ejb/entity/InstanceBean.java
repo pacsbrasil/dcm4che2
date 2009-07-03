@@ -483,23 +483,49 @@ public abstract class InstanceBean implements EntityBean {
 
     public void ejbPostCreate(Dataset ds, SeriesLocal series)
             throws CreateException {
-        try {
-            setSrCode(CodeBean.valueOf(codeHome, ds
-                    .getItem(Tags.ConceptNameCodeSeq)));
-            DcmElement sq = ds.get(Tags.VerifyingObserverSeq);
-            if (sq != null) {
-                Collection c = getVerifyingObservers();
-                for (int i = 0, n = sq.countItems(); i < n; i++) {
-                    c.add(observerHome.create(sq.getItem(i)));
-                }
-            }
-        } catch (Exception e) {
-            // ensure to rollback transaction
-            throw new EJBException(e);
-        }
+        updateSrCode(null, ds.getItem(Tags.ConceptNameCodeSeq));
+        updateVerifyingObservers(null, ds.get(Tags.VerifyingObserverSeq));
         setSeries(series);
         log.info("Created " + prompt());
     }
+
+    private boolean updateSrCode(Dataset oldSrCode, Dataset newSrCode) {
+        if (oldSrCode == null ? newSrCode == null 
+                : oldSrCode.equals(newSrCode)) {
+            return false;
+        }
+        try {
+            setSrCode(newSrCode == null ? null
+                    : CodeBean.valueOf(codeHome, newSrCode));
+        } catch (CreateException e) {
+            throw new EJBException(e);
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+        return true;
+    }
+
+    private boolean updateVerifyingObservers(DcmElement oldObservers,
+            DcmElement newObservers) {
+        if (oldObservers == null || oldObservers.isEmpty()
+                ? newObservers == null || newObservers.isEmpty()
+                : oldObservers.equals(newObservers)) {
+            return false;
+        }
+        try {
+            Collection c = getVerifyingObservers();
+            c.clear();
+            if (newObservers != null) {
+                for (int i = 0, n = newObservers.countItems(); i < n; i++) {
+                    c.add(observerHome.create(newObservers.getItem(i)));
+                }
+            }
+        } catch (CreateException e) {
+            throw new EJBException(e);
+        }
+        return true;
+    }
+
 
     public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
@@ -690,23 +716,26 @@ public abstract class InstanceBean implements EntityBean {
         String cuid = ds.getString(Tags.SOPClassUID);
         AttributeFilter filter = AttributeFilter
                 .getInstanceAttributeFilter(cuid);
+        Dataset attrs = getAttributes(false);
+        Dataset oldSrCode = attrs.getItem(Tags.ConceptNameCodeSeq);
+        DcmElement oldObservers = attrs.get(Tags.VerifyingObserverSeq);
         if (filter.isOverwrite()) {
-            Dataset attrs;
             if (filter.isMerge()) {
-                attrs = getAttributes(false);
                 AttrUtils.updateAttributes(attrs, filter.filter(ds), log);
             } else {
                 attrs = filter.filter(ds);
             }
-            setAttributesInternal(attrs, filter.getTransferSyntaxUID());
         } else {
-            Dataset attrs = getAttributes(false);
             AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
-            if (filter.isMerge()
-                    && AttrUtils.mergeAttributes(attrs, filter.filter(ds), log)) {
-                setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+            if (!filter.isMerge()
+                    || !AttrUtils.mergeAttributes(attrs, filter.filter(ds), log)) {
+                return;
             }
         }
+        setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+        updateSrCode(oldSrCode, attrs.getItem(Tags.ConceptNameCodeSeq));
+        updateVerifyingObservers(oldObservers,
+                attrs.get(Tags.VerifyingObserverSeq));
     }
 
     /**
