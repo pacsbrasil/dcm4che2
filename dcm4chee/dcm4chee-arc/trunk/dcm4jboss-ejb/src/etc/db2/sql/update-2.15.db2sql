@@ -3,7 +3,11 @@
 CONNECT TO pacsdb;
 SET CURRENT SCHEMA pacsdb;
 
-ALTER TABLE ae ADD station_name VARCHAR(254),
-               ADD institution VARCHAR(254),
-               ADD department VARCHAR(254),
-               ADD installed SMALLINT NOT NULL DEFAULT 1;
+ALTER TABLE ae
+   ADD station_name VARCHAR(254)
+   ADD institution VARCHAR(254)
+   ADD department VARCHAR(254)
+   ADD installed SMALLINT NOT NULL DEFAULT 1;
+
+ALTER TABLE ae
+   ALTER COLUMN installed DROP DEFAULT;

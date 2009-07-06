@@ -1,15 +1,10 @@
 -- Update DB from dcm4chee-2.14.x to dcm4chee-2.15.x
 
-ALTER TABLE ae ADD station_name VARCHAR(255),
-                   institution VARCHAR(255),
-                   department VARCHAR(255),
-                   installed_temp NUMERIC(1);
-COMMIT;
-UPDATE ae SET installed_temp=1;
-COMMIT;
-ALTER TABLE ae ADD installed NUMERIC(1) NOT NULL;
-COMMIT;
-ALTER TABLE ae SET installed=installed_temp;
-COMMIT;
-ALTER TABLE ae drop installed_temp;
-COMMIT;
+ALTER TABLE ae
+   ADD station_name VARCHAR(255),
+   ADD institution VARCHAR(255),
+   ADD department VARCHAR(255),
+   ADD installed NUMERIC(1) NOT NULL;
+
+UPDATE ae
+   SET installed=1;
