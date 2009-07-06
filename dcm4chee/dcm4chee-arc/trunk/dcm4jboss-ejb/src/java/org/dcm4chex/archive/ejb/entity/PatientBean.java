@@ -763,11 +763,7 @@ public abstract class PatientBean implements EntityBean {
      */
     public void setAttributes(Dataset ds) {
         AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
-        setAttributesInternal(filter.filter(ds), filter.getTransferSyntaxUID());
-        int[] fieldTags = filter.getFieldTags();
-        for (int i = 0; i < fieldTags.length; i++) {
-            setField(filter.getField(fieldTags[i]), ds.getString(fieldTags[i]));
-        }
+        setAttributesInternal(filter.filter(ds), filter);
     }
 
     private void setField(String field, String value ) {
@@ -781,7 +777,7 @@ public abstract class PatientBean implements EntityBean {
         }       
     }
 
-    private void setAttributesInternal(Dataset ds, String tsuid) {
+    private void setAttributesInternal(Dataset ds, AttributeFilter filter) {
         setPatientId(ds.getString(Tags.PatientID));
         setIssuerOfPatientId(ds.getString(Tags.IssuerOfPatientID));
         PersonName pn = ds.getPersonName(Tags.PatientName);
@@ -798,11 +794,15 @@ public abstract class PatientBean implements EntityBean {
         }
         setPatientBirthDate(normalizeDA(ds.getString(Tags.PatientBirthDate)));
         setPatientSex(ds.getString(Tags.PatientSex));
-        byte[] b = DatasetUtils.toByteArray(ds, tsuid);
+        byte[] b = DatasetUtils.toByteArray(ds, filter.getTransferSyntaxUID());
         if (log.isDebugEnabled()) {
             log.debug("setEncodedAttributes(byte[" + b.length + "])");
         }
         setEncodedAttributes(b);
+        int[] fieldTags = filter.getFieldTags();
+        for (int i = 0; i < fieldTags.length; i++) {
+            setField(filter.getField(fieldTags[i]), ds.getString(fieldTags[i]));
+        }
     }
     
     /**
@@ -824,7 +824,7 @@ public abstract class PatientBean implements EntityBean {
                 log.debug("-merge update-strategy not specified.  Not synchronizing other patient ids!");
                 attrs = filter.filter(ds);
             }
-            setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+            setAttributesInternal(attrs, filter);
         } else {
             Dataset attrs = getAttributes(false);
             boolean b = false;
@@ -836,7 +836,7 @@ public abstract class PatientBean implements EntityBean {
             AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
             if (filter.isMerge()
                     && (AttrUtils.mergeAttributes(attrs, filter.filter(ds), log) || b)) {
-                setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+                setAttributesInternal(attrs, filter);
             }
         }
     }

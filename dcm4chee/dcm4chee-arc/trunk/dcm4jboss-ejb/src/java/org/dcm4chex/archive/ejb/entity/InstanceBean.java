@@ -670,11 +670,7 @@ public abstract class InstanceBean implements EntityBean {
         AttributeFilter filter = AttributeFilter
                 .getInstanceAttributeFilter(cuid);
         setAllAttributes(filter.isNoFilter());
-        setAttributesInternal(filter.filter(ds), filter.getTransferSyntaxUID());
-        int[] fieldTags = filter.getFieldTags();
-        for (int i = 0; i < fieldTags.length; i++) {
-            setField(filter.getField(fieldTags[i]), ds.getString(fieldTags[i]));
-        }
+        setAttributesInternal(filter.filter(ds), filter);
     }
 
     private void setField(String field, String value) {
@@ -688,7 +684,7 @@ public abstract class InstanceBean implements EntityBean {
         }
     }
 
-    private void setAttributesInternal(Dataset ds, String tsuid) {
+    private void setAttributesInternal(Dataset ds, AttributeFilter filter) {
         setSopIuid(ds.getString(Tags.SOPInstanceUID));
         setSopCuid(ds.getString(Tags.SOPClassUID));
         setInstanceNumber(ds.getString(Tags.InstanceNumber));
@@ -700,11 +696,15 @@ public abstract class InstanceBean implements EntityBean {
         }
         setSrCompletionFlag(ds.getString(Tags.CompletionFlag));
         setSrVerificationFlag(ds.getString(Tags.VerificationFlag));
-        byte[] b = DatasetUtils.toByteArray(ds, tsuid);
+        byte[] b = DatasetUtils.toByteArray(ds, filter.getTransferSyntaxUID());
         if (log.isDebugEnabled()) {
             log.debug("setEncodedAttributes(byte[" + b.length + "])");
         }
         setEncodedAttributes(b);
+        int[] fieldTags = filter.getFieldTags();
+        for (int i = 0; i < fieldTags.length; i++) {
+            setField(filter.getField(fieldTags[i]), ds.getString(fieldTags[i]));
+        }
     }
 
     /**
@@ -732,7 +732,7 @@ public abstract class InstanceBean implements EntityBean {
                 return;
             }
         }
-        setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+        setAttributesInternal(attrs, filter);
         updateSrCode(oldSrCode, attrs.getItem(Tags.ConceptNameCodeSeq));
         updateVerifyingObservers(oldObservers,
                 attrs.get(Tags.VerifyingObserverSeq));

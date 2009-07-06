@@ -890,11 +890,7 @@ public abstract class SeriesBean implements EntityBean {
      */
     public void setAttributes(Dataset ds) {
         AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
-        setAttributesInternal(filter.filter(ds), filter.getTransferSyntaxUID());
-        int[] fieldTags = filter.getFieldTags();
-        for (int i = 0; i < fieldTags.length; i++) {
-            setField(filter.getField(fieldTags[i]), ds.getString(fieldTags[i]));
-        }
+        setAttributesInternal(filter.filter(ds), filter);
         if ( getSourceAET() == null ) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             setSourceAET(ds.getString(PrivateTags.CallingAET));
@@ -912,7 +908,7 @@ public abstract class SeriesBean implements EntityBean {
         }       
     }
 
-    private void setAttributesInternal(Dataset ds, String tsuid) {
+    private void setAttributesInternal(Dataset ds, AttributeFilter filter) {
         setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
         setSeriesNumber(ds.getString(Tags.SeriesNumber));
         setModality(ds.getString(Tags.Modality));
@@ -945,11 +941,15 @@ public abstract class SeriesBean implements EntityBean {
         if (refPPS != null) {
             setPpsIuid(refPPS.getString(Tags.RefSOPInstanceUID));
         }
-        byte[] b = DatasetUtils.toByteArray(ds, tsuid);
+        byte[] b = DatasetUtils.toByteArray(ds, filter.getTransferSyntaxUID());
         if (log.isDebugEnabled()) {
             log.debug("setEncodedAttributes(byte[" + b.length + "])");
         }
         setEncodedAttributes(b);
+        int[] fieldTags = filter.getFieldTags();
+        for (int i = 0; i < fieldTags.length; i++) {
+            setField(filter.getField(fieldTags[i]), ds.getString(fieldTags[i]));
+        }
     }
 
     /**
@@ -967,13 +967,13 @@ public abstract class SeriesBean implements EntityBean {
             } else {
                 attrs = filter.filter(ds);
             }
-            setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+            setAttributesInternal(attrs, filter);
         } else {
             Dataset attrs = getAttributes(false);
             AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
             if (filter.isMerge()
                     && AttrUtils.mergeAttributes(attrs, filter.filter(ds), log)) {
-                setAttributesInternal(attrs, filter.getTransferSyntaxUID());
+                setAttributesInternal(attrs, filter);
             }
         }
     }
