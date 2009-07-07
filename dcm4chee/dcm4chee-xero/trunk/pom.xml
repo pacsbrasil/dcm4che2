@@ -10,7 +10,7 @@
 
    <modules>
       <module>xero-util</module>
-      <module>xero-wado</module>
+      <module>wado2</module>
       <module>xero</module>
       <module>installer</module>
   </modules>

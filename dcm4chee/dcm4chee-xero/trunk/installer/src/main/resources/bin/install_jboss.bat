@@ -25,7 +25,7 @@ set JBOSS_HOME=%1
 set JBOSS_SERV=%JBOSS_HOME%\server\web
 
 if exist "%JBOSS_SERV%" goto found_jboss
-echo Could not locate jboss-4.2.2.GA in %JBOSS_HOME%.
+echo Could not locate jboss-5.1.0.GA in %JBOSS_HOME%.
 goto end
 
 :found_jboss
@@ -33,7 +33,8 @@ set JBOSS_BIN=%JBOSS_HOME%\bin
 set DCM4CHEE_BIN=%DCM4CHEE_HOME%\bin
 
 rem Copies the startup/setup scripts excluding those which are explicitly over-ridden
-xcopy /-Y "%JBOSS_BIN%\*" "%DCM4CHEE_BIN%"
+dir /b "%DCM4CHEE_BIN%" > "%DCM4CHEE_BIN%\excludes.txt"
+xcopy /s "%JBOSS_BIN%\*" "%DCM4CHEE_BIN%" /EXCLUDE:%DCM4CHEE_BIN%\excludes.txt
 
 md "%DCM4CHEE_HOME%\client"
 
@@ -69,7 +70,8 @@ set DCM4CHEE_DEPLOY=%DCM4CHEE_SERV%\deploy
 
 xcopy /S "%JBOSS_DEPLOY%\http-invoker.sar" "%DCM4CHEE_DEPLOY%\http-invoker.sar\"
 rem Don't over-write the server.xml file
-xcopy /S /-Y "%JBOSS_DEPLOY%\jbossweb.deployer" "%DCM4CHEE_DEPLOY%\jbossweb.deployer\" 
+dir /b "%DCM4CHEE_DEPLOY%\jbossweb.sar" > "%DCM4CHEE_DEPLOY%\jbossweb.sar\excludes.txt"
+xcopy /S "%JBOSS_DEPLOY%\jbossweb.sar" "%DCM4CHEE_DEPLOY%\jbossweb.sar\" /EXCLUDE:%DCM4CHEE_DEPLOY%\jbossweb.sar\excludes.txt
 xcopy /S "%JBOSS_DEPLOY%\jmx-console.war" "%DCM4CHEE_DEPLOY%\jmx-console.war\"
 xcopy /S "%JBOSS_DEPLOY%\security" "%DCM4CHEE_DEPLOY%\security\"
 

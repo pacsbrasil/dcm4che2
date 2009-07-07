@@ -45,7 +45,6 @@
       <outputDirectory/>
       <includes>
          <include>licenses/**</include>
-         <include>license.txt</include>
       </includes>
     </fileSet>
     <fileSet>
