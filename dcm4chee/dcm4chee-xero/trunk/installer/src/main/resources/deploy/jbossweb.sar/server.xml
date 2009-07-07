@@ -1,51 +1,33 @@
 <Server>
 
-  <!--APR library loader. Documentation at /docs/apr.html -->
+   <!-- Optional listener which ensures correct init and shutdown of APR,
+        and provides information if it is not installed -->
   <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
   <!--Initialize Jasper prior to webapps are loaded. Documentation at /docs/jasper-howto.html -->
   <Listener className="org.apache.catalina.core.JasperListener" />
 
-   <!-- Use a custom version of StandardService that allows the
-   connectors to be started independent of the normal lifecycle
-   start to allow web apps to be deployed before starting the
-   connectors.
-   -->
    <Service name="jboss.web">
 
-    <!-- A "Connector" represents an endpoint by which requests are received
-         and responses are returned. Documentation at :
-         Java HTTP Connector: /docs/config/http.html (blocking & non-blocking)
-         Java AJP  Connector: /docs/config/ajp.html
-         APR (HTTP/AJP) Connector: /docs/apr.html
-         Define a non-SSL HTTP/1.1 Connector on port 8080
-    -->
-    <Connector port="80" address="${jboss.bind.address}"    
-         maxThreads="250" maxHttpHeaderSize="8192"
-         emptySessionPath="true" protocol="HTTP/1.1"
-         enableLookups="false" redirectPort="443" acceptCount="100"
-         connectionTimeout="20000" disableUploadTimeout="true" />
+      <!-- A HTTP/1.1 Connector on port 8080 -->
+      <Connector protocol="HTTP/1.1" port="80" address="${jboss.bind.address}" 
+               connectionTimeout="20000" redirectPort="443" />
 
-    <!-- Define a SSL HTTP/1.1 Connector on port 443
-         This connector uses the JSSE configuration, when using APR, the 
-         connector should be using the OpenSSL style configuration
-         described in the APR documentation -->
-    <!--
-    <Connector port="443" protocol="HTTP/1.1" SSLEnabled="true"
-         maxThreads="150" scheme="https" secure="true"
-         clientAuth="true" sslProtocol="TLS"
-         ciphers="SSL_RSA_WITH_NULL_SHA,TLS_RSA_WITH_AES_128_CBC_SHA"
-         keystoreFile="${jboss.server.home.dir}/conf/identity.p12"
-         keystorePass="secret" keystoreType="PKCS12"
-         truststoreFile="${jboss.server.home.dir}/conf/cacerts.jks"
-         truststorePass="secret" truststoreType="JKS"
-         SSLImplementation="org.dcm4chee.audit.tomcat.ATNAImplementation"
-   />
+      <!-- Add this option to the connector to avoid problems with 
+          .NET clients that don't implement HTTP/1.1 correctly 
+         restrictedUserAgents="^.*MS Web Services Client Protocol 1.1.4322.*$"
    -->
 
+      <!-- A AJP 1.3 Connector on port 8009 -->
+      <Connector protocol="AJP/1.3" port="8009" address="${jboss.bind.address}"
+         redirectPort="8443" />
 
-    <!-- Define an AJP 1.3 Connector on port 8009 -->
-    <Connector port="8010" address="${jboss.bind.address}" protocol="AJP/1.3"
-         emptySessionPath="true" enableLookups="false" redirectPort="443" />
+      <!-- SSL/TLS Connector configuration using the admin devl guide keystore
+      <Connector protocol="HTTP/1.1" SSLEnabled="true" 
+           port="8443" address="${jboss.bind.address}"
+           scheme="https" secure="true" clientAuth="false" 
+           keystoreFile="${jboss.server.home.dir}/conf/chap8.keystore"
+           keystorePass="rmi+ssl" sslProtocol = "TLS" />
+      -->
 
       <Engine name="jboss.web" defaultHost="localhost">
 
@@ -62,7 +44,7 @@
            + strictAuthOnly = Allow any authenticated user only if there are no
            web-app/security-roles
          -->
-         <Realm className="org.jboss.web.tomcat.security.JBossSecurityMgrRealm"
+         <Realm className="org.jboss.web.tomcat.security.JBossWebRealm"
             certificatePrincipal="org.jboss.security.auth.certs.SubjectDNMapping"
             allRolesMode="authOnly"
             />
@@ -83,10 +65,7 @@
             />
          -->
 
-        <Host name="localhost"
-           autoDeploy="false" deployOnStartup="false" deployXML="false"
-           configClass="org.jboss.web.tomcat.security.config.JBossContextConfig"
-           >
+         <Host name="localhost"> 
 
             <!-- Uncomment to enable request dumper. This Valve "logs interesting 
                  contents from the specified Request (before processing) and the 
@@ -101,7 +80,7 @@
             <!--
             <Valve className="org.apache.catalina.valves.AccessLogValve"
                 prefix="localhost_access_log." suffix=".log"
-                pattern="common" directory="${jboss.server.home.dir}/log" 
+                pattern="common" directory="${jboss.server.log.dir}" 
                 resolveHosts="false" />
             -->
 
@@ -132,23 +111,37 @@
             
                Valve uses a JBossCache instance to support SSO credential 
                caching and replication across the cluster.  The JBossCache 
-               instance must be configured separately.  By default, the valve 
-               shares a JBossCache with the service that supports HttpSession 
-               replication.  See the "jboss-web-cluster-service.xml" file in the 
+               instance must be configured separately.  See the 
+               "jboss-web-clusteredsso-beans.xml" file in the 
                server/all/deploy directory for cache configuration details.
             
                Besides the attributes supported by the standard Tomcat
                SingleSignOn valve (see the Tomcat docs), this version also 
                supports the following attributes:
             
-               cookieDomain   see above
+               cookieDomain   see non-clustered valve above
+               
+               cacheConfig    Name of the CacheManager service configuration
+                              to use for the clustered SSO cache. See
+                              deploy/cluster/jboss-cache-manager.sar/META-INF/jboss-cache-manager-jboss-beans.xml
+                              Default is "clustered-sso".
             
-               treeCacheName  JMX ObjectName of the JBossCache MBean used to 
+               treeCacheName  Deprecated. Use "cacheConfig". 
+                              JMX ObjectName of the JBoss Cache MBean used to 
                               support credential caching and replication across
-                              the cluster. If not set, the default value is 
-                              "jboss.cache:service=TomcatClusteringCache", the 
-                              standard ObjectName of the JBossCache MBean used 
-                              to support session replication.
+                              the cluster. Only used if no cache can be located
+                              from the CacheManager service using the "cacheConfig"
+                              attribute (or its default value). If not set, the 
+                              default is "jboss.cache:service=TomcatClusteringCache"
+                              
+               maxEmptyLife   The maximum number of seconds an SSO with no 
+                              active sessions will be usable by a request
+                              
+               processExpiresInterval The minimum number of seconds between 
+                              efforts by the valve to find and invalidate 
+                              SSO's that have exceeded their 'maxEmptyLife'. 
+                              Does not imply effort will be spent on such
+                      			cleanup every 'processExpiresInterval'.
             -->
             <!--
             <Valve className="org.jboss.web.tomcat.service.sso.ClusteredSingleSignOn" />
@@ -160,12 +153,12 @@
                  Important: The dependency on the CachedConnectionManager
                  in META-INF/jboss-service.xml must be uncommented, too
             -->
+
             <Valve className="org.jboss.web.tomcat.service.jca.CachedConnectionValve"
                 cachedConnectionManagerObjectName="jboss.jca:service=CachedConnectionManager"
                 transactionManagerObjectName="jboss:service=TransactionManager" />
 
          </Host>
-
       </Engine>
 
    </Service>
