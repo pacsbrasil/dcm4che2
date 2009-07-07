@@ -118,7 +118,7 @@ public class MPPSScp extends DcmServiceBase {
         if (!callingAET.equals(calledAET)) {
             service.ignorePatientIDForUnscheduled(mpps,
                     Tags.ScheduledStepAttributesSeq, callingAET);
-            service.supplementIssuerOfPatientID(mpps, callingAET);
+            service.supplementInstitutionalData(mpps, callingAET);
             service.generatePatientID(mpps,
                     mpps.getItem(Tags.ScheduledStepAttributesSeq));
         }

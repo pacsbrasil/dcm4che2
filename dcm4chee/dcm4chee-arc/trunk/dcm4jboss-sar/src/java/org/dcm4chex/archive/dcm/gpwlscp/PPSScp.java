@@ -117,7 +117,7 @@ class PPSScp extends DcmServiceBase {
 		log.debug("GP-PPS Attributes:");
 		log.debug(gppps);
         checkCreateAttributs(gppps);
-        service.supplementIssuerOfPatientID(gppps, callingAET);
+        service.supplementInstitutionalData(gppps, callingAET);
         service.generatePatientID(gppps, gppps.getItem(Tags.RefRequestSeq));
         gppps.putUI(Tags.SOPClassUID, cuid);
         gppps.putUI(Tags.SOPInstanceUID, iuid);

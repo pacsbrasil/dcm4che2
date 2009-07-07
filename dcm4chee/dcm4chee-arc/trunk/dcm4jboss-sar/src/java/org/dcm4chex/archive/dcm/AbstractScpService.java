@@ -138,6 +138,10 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected String issuerOfGeneratedPatientID;
 
     protected boolean supplementIssuerOfPatientID;
+    
+    protected boolean supplementInstitutionName;
+    
+    protected boolean supplementInstitutionalDepartmentName;
 
     protected String[] generatePatientIDForUnscheduledFromAETs;
 
@@ -352,6 +356,24 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     public final void setSupplementIssuerOfPatientID(
             boolean supplementIssuerOfPatientID) {
         this.supplementIssuerOfPatientID = supplementIssuerOfPatientID;
+    }
+    
+    public final boolean isSupplementInstitutionName() {
+        return supplementInstitutionName;
+    }
+
+    public final void setSupplementInstitutionName(
+            boolean supplementInstitutionName) {
+        this.supplementInstitutionName = supplementInstitutionName;
+    }
+    
+    public final boolean isSupplementInstitutionalDepartmentName() {
+        return supplementInstitutionalDepartmentName;
+    }
+
+    public final void setSupplementInstitutionalDepartmentName(
+            boolean supplementInstitutionalDepartmentName) {
+        this.supplementInstitutionalDepartmentName = supplementInstitutionalDepartmentName;
     }
 
     public final String getGeneratePatientIDForUnscheduledFromAETs() {
@@ -919,13 +941,15 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         return DcmObjectFactory.getInstance().newPersonName(pname).format();
     }
 
-    public void supplementIssuerOfPatientID(Dataset ds, String callingAET) {
+    public void supplementInstitutionalData(Dataset ds, String callingAET) {
+        AEDTO ae = null;
+        
         if (supplementIssuerOfPatientID
                 && !ds.containsValue(Tags.IssuerOfPatientID)) {
             String pid = ds.getString(Tags.PatientID);
             if (pid != null) {
                 try {
-                    AEDTO ae = aeMgr().findByAET(callingAET);
+                    if (ae == null) ae = aeMgr().findByAET(callingAET);
                     String issuer = ae.getIssuerOfPatientID();
                     ds.putLO(Tags.IssuerOfPatientID, issuer);
                     if (log.isInfoEnabled()) {
@@ -940,6 +964,46 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 } catch (Exception e) {
                     log.warn("Failed to supplement Issuer Of Patient ID: ", e);
                 }
+            }
+        }
+        
+        if (supplementInstitutionName
+                && !ds.containsValue(Tags.InstitutionName)) {
+            try {
+                if (ae == null)
+                    ae = aeMgr().findByAET(callingAET);
+                String institution = ae.getInstitution();
+                ds.putLO(Tags.InstitutionName, institution);
+                if (log.isInfoEnabled()) {
+                    log.info("Add missing Institution Name " + institution);
+                }
+            } catch (UnknownAETException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Missing AE configuration for " + callingAET
+                            + " - no supplement of Institution Name");
+                }
+            } catch (Exception e) {
+                log.warn("Failed to supplement Institution Name: ", e);
+            }
+        }
+        
+        if (supplementInstitutionalDepartmentName
+                && !ds.containsValue(Tags.InstitutionalDepartmentName)) {
+            try {
+                if (ae == null)
+                    ae = aeMgr().findByAET(callingAET);
+                String department = ae.getDepartment();
+                ds.putLO(Tags.InstitutionalDepartmentName, department);
+                if (log.isInfoEnabled()) {
+                    log.info("Add missing Institutional Department Name " + department);
+                }
+            } catch (UnknownAETException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Missing AE configuration for " + callingAET
+                            + " - no supplement of Institutional Department Name");
+                }
+            } catch (Exception e) {
+                log.warn("Failed to supplement Institutional Department Name: ", e);
             }
         }
     }

@@ -148,7 +148,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             if (coerce != null) {
                 service.coerceAttributes(rqData, coerce);
             }
-            service.supplementIssuerOfPatientID(rqData, callingAET);
+            service.supplementInstitutionalData(rqData, callingAET);
             if (!isUniversalMatching(rqData.getString(Tags.PatientID))
                     && service.isPixQueryCallingAET(callingAET)) {
                 pixQuery(rqData);
