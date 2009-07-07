@@ -366,4 +366,45 @@ public class FilterUtil {
       params.put(MemoryCacheFilter.KEY_NAME, sb.toString());
    }
 
+   /**
+    * Append the indicated value into the param Map.  If that key already exists, then 
+    * append the value to a new array.
+    * @param params Map of parsed values.  Multiple values are stored as arrays.
+    * @param key Key to add the value to.
+    * @param value String to add to the params Map
+    */
+   public static void append(Map<String, Object> params, String key, String value)
+   {      
+      if(params == null)
+         return;
+      
+      Object objectOrArray = params.get(key);
+      if(objectOrArray == null)
+      {
+         params.put(key, value);
+      }
+      else
+      {
+         String[] values;
+         
+         if(objectOrArray instanceof String[])
+         {
+            String[] s1 = (String[])objectOrArray;
+            values = new String[s1.length + 1];
+            System.arraycopy(s1, 0, values, 0, s1.length);
+         }
+         else if(objectOrArray instanceof String)
+         {
+            values = new String[2];
+            values[0] = (String)objectOrArray;
+         }
+         else
+         {
+            throw new IllegalArgumentException("Invalid type in params for key="+key);
+         }
+         
+         values[values.length -1] = value;
+         params.put(key, values);
+      }
+   }
 }

@@ -33,6 +33,9 @@
   <property name="jmeter.beanshell.init.file" value="" />
   <property name="jmeter.beanshell.sampler.init" value="" />
   <property name="jmeter.beanshell.assertion.init" value="" />
+  <property name="jmeter.beanshell.function.init" value="" />
+  <property name="jmeter.beanshell.preprocessor.init" value="" />
+  <property name="jmeter.server" value="" />
 
   <property name="testPackage" value="cdp-integration" />
 
@@ -52,7 +55,7 @@
 
   <target name="install" description="Perform a Maven Install">
      <exec executable="${mvn}" failonerror="true">
-	<env key="MAVEN_OPTS" value="-Xmx512m" />
+	<env key="MAVEN_OPTS" value="-Xmx1024m" />
         <arg line="${release.profiles} install" />
      </exec>
   </target>
@@ -301,6 +304,9 @@
 	<property name="beanshell.init.file" value="${jmeter.beanshell.init.file}"/>
 	<property name="beanshell.sampler.init" value="${jmeter.beanshell.sampler.init}"/>
 	<property name="beanshell.assertion.init" value="${jmeter.beanshell.assertion.init}"/>
+	<property name="beanshell.function.init" value="${jmeter.beanshell.function.init}"/>
+	<property name="beanshell.preprocessor.init" value="${jmeter.beanshell.preprocessor.init}"/>
+	<property name="SERVER" value="${jmeter.server}"/>
 	<jvmarg value="-Xms256m"/>
 	<jvmarg value="-Xmx256m"/>
      </jmeter>

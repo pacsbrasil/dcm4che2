@@ -108,6 +108,9 @@ public class MetaDataServlet extends HttpServlet {
 
    /** The meta data needs to be read from the appropriate location. */
    MetaDataBean metaData;
+   
+   // Factory that normalizes the error responses from the server.
+   private ErrorResponseItemFactory factory = new ErrorResponseItemFactory();
 
    /** The lifecycle listener */
    Lifecycle lifecycle;
@@ -154,25 +157,21 @@ public class MetaDataServlet extends HttpServlet {
     *            Sets SC_NO_CONTENT on a null return element.
     */
    protected void doFilter(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+      ServletResponseItem sri;
       try {
          Map<String, Object> params = computeParameterMap(request, response, getServletContext());
          log.debug("Invoking the filter chain with params: {}",params);
          
-         ServletResponseItem sri = filter.filter(filterItem,params);
+         sri = filter.filter(filterItem,params);
          response.setCharacterEncoding("UTF-8");
-         if (sri == null) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "No content found for this request.");
-            return;
-         }
-         sri.writeResponse(request, response);
+         if (sri == null)
+            sri = factory.createNotFoundError(request.getRequestURI());
       } catch (Exception e) {
          log.error("Caught error " + e + " for URI " + request.getRequestURI() + " with parameters " + request.getQueryString(), e);
-         try {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error:" + e);
-         } catch (Exception e2) {
-            // No-op
-         }
+         sri = factory.getResponseItem(e);
       }
+      
+      sri.writeResponse(request, response);
    }
 
    /**

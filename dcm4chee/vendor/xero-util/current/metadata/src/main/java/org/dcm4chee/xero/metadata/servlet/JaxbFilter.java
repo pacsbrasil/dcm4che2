@@ -139,6 +139,7 @@ public class JaxbFilter implements Filter<ServletResponseItem>
                writer = new JSONPrettyPrinter(writer);
             
             GroupedElementJSONEventWriter jsonWriter = new GroupedElementJSONEventWriter(writer);
+            if( data==null ) throw new NullPointerException("Data must not be null.");
             m.marshal(data, jsonWriter);
          } catch (JAXBException e) {
             throw new RuntimeException(e);

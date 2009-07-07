@@ -47,7 +47,7 @@ import org.dcm4chee.xero.metadata.MetaDataUser;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
-import org.dcm4chee.xero.metadata.servlet.ErrorResponseItem;
+import org.dcm4chee.xero.metadata.servlet.ErrorResponseItemFactory;
 import org.dcm4chee.xero.metadata.servlet.MetaDataServlet;
 import org.dcm4chee.xero.metadata.servlet.ServletResponseItem;
 import org.slf4j.Logger;
@@ -103,6 +103,8 @@ public class StringTemplateFilter implements Filter<ServletResponseItem>, MetaDa
 
 	MetaDataBean mdbModel;
 
+	private ErrorResponseItemFactory responseFactory = new ErrorResponseItemFactory();
+	
 	/**
 	 * This method will return an object that renders the specified view. The
 	 * provided model is used for the source data. It is recommended that all
@@ -134,23 +136,26 @@ public class StringTemplateFilter implements Filter<ServletResponseItem>, MetaDa
                 log.debug("Model template {} default was {}", template, defaultView);
 				if (template == null) {
 					log.warn("View {} not found - returning 404", template);
-					return new ErrorResponseItem(404, "View name not defined.");
+					return responseFactory.createNotFoundError( "View name not defined.");
 				}
 				model.put("template", template);
 			}
 			if (stg == null) {
 				log.warn("String template group {} not found - returning 404", TEMPLATE_GROUP);
-				return new ErrorResponseItem(404, "String template group not defined.");
+				return responseFactory.createNotFoundError("String template group not defined.");
 			}
 			log.info("Templating view {} from {}", template, stg.getName());
 			StringTemplate st = stg.getInstanceOf(template, model);
 			StringTemplateResponseItem stri = new StringTemplateResponseItem(st, stg, errorView);
-			if (contentType != null)
+			if (contentType != null) {
+			    log.debug("Setting content type to {}", contentType);
 				stri.setContentType(contentType);
+			}
 			return stri;
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			log.error("Caught exception " + e, e);
-			return new ErrorResponseItem(404, "Internal server error:" + e);
+			return responseFactory.getResponseItem(e);
 		}
 	}
 

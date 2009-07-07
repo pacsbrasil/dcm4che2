@@ -67,7 +67,9 @@ public class AutoStringTemplateGroup extends StringTemplateGroup implements Meta
 	private String template;
 	
 	MetaDataBean modelMdb;
-
+	
+	private StringTemplateLoggerBridge loggerBridge = new StringTemplateLoggerBridge();
+	
 	/** Create a StringTempalteGroup */
 	public AutoStringTemplateGroup() {
 		super("unknown");
@@ -126,7 +128,7 @@ public class AutoStringTemplateGroup extends StringTemplateGroup implements Meta
 					try {
 						log.info("Loading string template group file {}", url);
 						InputStreamReader r = new InputStreamReader(url.openStream());
-						ret = new StringTemplateGroup(r);
+						ret = new StringTemplateGroup(r,loggerBridge);
 				        ret.setAttributeRenderers(StringSafeRenderer.RENDERERS);
 					} catch (IOException e) {
 						throw new RuntimeException("Unable to read " + url);

@@ -15,8 +15,9 @@ public class ResourceBundleMap extends LazyMap {
 		this.resourceBundle = resourceBundle;
 	}
 
-	/** Create a resource bundle map with a set of defaults - typically the defaults will contain the theme information that isn't
-	 * over-ridden in the bundle.
+	/** Create a resource bundle map with a set of defaults - typically the defaults will contain the theme information
+	 * but they can also contain localized over-rides for the internationalized string values.
+	 * If so, then NONE of the languages values will be used for that key.
 	 * @param resourceBundle
 	 * @param baseMap - any type of map will do as long as it has some string keys.
 	 */
@@ -29,11 +30,13 @@ public class ResourceBundleMap extends LazyMap {
 	/** Gets a value from the bundle */
 	@Override
 	protected Object getLazy(Object key) {
-		String skey = key.toString();		
+		String skey = key.toString();
+		Object ret = super.getLazy(key);
+		if( ret!=null ) return ret;
 		try{
 			resourceBundle.getObject(skey);
 		}catch(MissingResourceException mre){
-			return super.getLazy(key);
+			return null;
 		}
 		return resourceBundle.getString((String) key);
 	}

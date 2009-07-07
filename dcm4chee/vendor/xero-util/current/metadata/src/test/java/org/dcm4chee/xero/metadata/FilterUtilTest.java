@@ -33,7 +33,9 @@
  ***** END LICENSE BLOCK *****/
 package org.dcm4chee.xero.metadata;
  
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
@@ -41,12 +43,15 @@ import org.dcm4chee.xero.metadata.filter.MemoryCacheFilter;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import static org.testng.Assert.*;
+
 public class FilterUtilTest {
 
-   Map<String,Object> params = new HashMap<String,Object>();
+   Map<String,Object> params;
    
    @BeforeMethod
    public void init() {
+      params = new HashMap<String,Object>();
       params.put("ae", "scooby");
       params.put("seriesUID", "1.2");
       params.put("i", 1);
@@ -73,5 +78,39 @@ public class FilterUtilTest {
       assert cacheKey.indexOf("i=1")>=0;
       assert cacheKey.indexOf("I=1")>=0;
       assert cacheKey.indexOf("ae")==-1;
+   }
+   
+   @Test
+   public void append_HandlesNullInputs()
+   {
+      FilterUtil.append(null,"Foo","Bar");
+      FilterUtil.append(params, null, "Bar");
+      FilterUtil.append(params, "Foo", null);
+   }
+   
+   @Test
+   public void append_HandlesFirstValue()
+   {
+      FilterUtil.append(params,"Foo","Bar");
+      assertEquals(FilterUtil.getString(params, "Foo"),"Bar");
+   }
+   
+   @Test
+   public void append_HandlesMultipleValues()
+   {
+      FilterUtil.append(params,"Foo","Bar");
+      FilterUtil.append(params,"Foo","And");      
+      FilterUtil.append(params,"Foo","Grill");      
+      List<String> values = Arrays.asList((String[])params.get("Foo"));
+      assert values.contains("Bar");
+      assert values.contains("Grill");
+      assert values.contains("And");
+   }
+   
+   @Test(expectedExceptions=IllegalArgumentException.class)
+   public void append_HandlesInvalidTypes()
+   {
+      params.put("Foo", 1);
+      FilterUtil.append(params,"Foo","Bar");
    }
 }

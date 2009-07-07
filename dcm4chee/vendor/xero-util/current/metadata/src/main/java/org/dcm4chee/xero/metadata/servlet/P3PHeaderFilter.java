@@ -37,41 +37,62 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.xero.metadata.servlet;
 
+import java.io.IOException;
 import java.util.Map;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
-import org.dcm4chee.xero.metadata.MetaData;
-import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Adds a P3P header to the response.
+ * Adds a P3P header to the response.  Parameter p3p can be used to configure the p3p to use.
  * @author bwallace
  */
-public class P3PHeaderFilter implements Filter<ServletResponseItem> {
+@SuppressWarnings("unchecked")
+public class P3PHeaderFilter  implements Filter, org.dcm4chee.xero.metadata.filter.Filter {
     private static final Logger log = LoggerFactory.getLogger(P3PHeaderFilter.class);
     
     private String p3p = "ALL ADM DEV HIS PSA UNI STA COM INT IND";
     private String p3pCP = "CP=\""+p3p+"\"";
     
-    public ServletResponseItem filter(FilterItem<ServletResponseItem> filterItem, Map<String, Object> params) {
+    public void doFilter(ServletRequest request, ServletResponse resp, FilterChain filterChain) throws IOException, ServletException {
         log.info("Adding privacy statement "+p3p);
-        HttpServletResponse response = (HttpServletResponse) params.get(MetaDataServlet.RESPONSE);
-        response.addHeader("P3P",p3pCP);
-        return filterItem.callNextFilter(params);
+        HttpServletResponse response = (HttpServletResponse) resp;
+        response.setHeader("P3P",p3pCP);
+        filterChain.doFilter(request,resp);
     }
 
     public String getP3p() {
         return p3p;
     }
 
-    @MetaData(required=false)
     public void setP3p(String p3p) {
         this.p3p = p3p;
         this.p3pCP = "CP=\""+p3p+"\"";
+    }
+
+    public void destroy() {
+    }
+
+    public void init(FilterConfig conf) throws ServletException {
+        String p3pTest = conf.getInitParameter("p3p");
+        if( p3pTest!=null ) setP3p(p3pTest);
+    }
+
+    public Object filter(FilterItem filterItem, Map params) {
+        log.info("Adding privacy statement in metadata filter "+p3p);
+        HttpServletResponse response = (HttpServletResponse) params.get(MetaDataServlet.RESPONSE);
+        response.addHeader("P3P",p3pCP);
+        return filterItem.callNextFilter(params);
+
     }
 
 }
