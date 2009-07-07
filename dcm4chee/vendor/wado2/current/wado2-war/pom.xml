@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
-     <artifactId>xero-wado</artifactId>
+     <artifactId>wado2</artifactId>
     <groupId>org.dcm4chee.xero</groupId>
     <version>0.8-SNAPSHOT</version>
   </parent>
@@ -70,6 +70,7 @@ model.wado2Version=${project.version}
                        <phase>package</phase>
                        <configuration>
                           <tasks>
+
                              <echo>Copying view to ${developmentServer} wado2</echo>
                              <copy todir="${developmentServer}/server/default/deploy/wado2.war" preserveLastModified="true">
                                 <fileset dir="src/main/webapp" includes="**/*" />
@@ -86,8 +87,9 @@ model.wado2Version=${project.version}
                        <configuration>
                           <tasks>
                              <echo>Deploying to ${developmentServer} wado2</echo>
+                             <!-- Do not copy over the xml-apis that are pulled in transitively by the BATIK libraries -->                             
                              <copy todir="${developmentServer}/server/default/deploy/wado2.war" preserveLastModified="true">
-                                <fileset dir="target/wado2" includes="**/*" />
+                                <fileset dir="target/wado2" excludes="WEB-INF/lib/xml-apis-1.3.04.jar" />
                              </copy>
                           </tasks>
                        </configuration>

@@ -69,7 +69,7 @@ public class EncodeVideo implements Filter<ServletResponseItem> {
         synchronized (dir) {
             try {
                 byte[] data = dir.readBytes(0, null);
-                return new ByteServletResponseItem(data, "video/mpeg2",dobj.getString(Tag.SOPInstanceUID)+".m2v");
+                return new ByteServletResponseItem(data, "video/mpeg2",dobj.getString(Tag.SOPInstanceUID)+".mpg");
             } catch (IOException e) {
                 log.warn("Unable to read MPEG2 stream:"+e);
                 e.printStackTrace();

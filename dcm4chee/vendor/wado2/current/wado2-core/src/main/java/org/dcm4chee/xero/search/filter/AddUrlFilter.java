@@ -47,10 +47,9 @@ import org.dcm4chee.xero.search.study.DicomObjectInterface;
 import org.dcm4chee.xero.search.study.DicomObjectType;
 import org.dcm4chee.xero.search.study.GspsBean;
 import org.dcm4chee.xero.search.study.ImageBean;
-import org.dcm4chee.xero.search.study.ImageBeanFrame;
+import org.dcm4chee.xero.search.study.ImageType;
 import org.dcm4chee.xero.search.study.KeyObjectBean;
 import org.dcm4chee.xero.search.study.MacroItems;
-import org.dcm4chee.xero.search.study.PatientBean;
 import org.dcm4chee.xero.search.study.PatientType;
 import org.dcm4chee.xero.search.study.ResultsBean;
 import org.dcm4chee.xero.search.study.SeriesBean;
@@ -64,7 +63,14 @@ public class AddUrlFilter  implements Filter<ResultsBean>{
     /** Adds URL's to the various levels */
     public ResultsBean filter(FilterItem<ResultsBean> filterItem, Map<String, Object> params) {
         ResultsBean ret = filterItem.callNextFilter(params);
-        if( ret==null || ! FilterUtil.getBoolean(params,"url") ) return ret;
+        if( ret==null  ) return ret;
+        String wadoBase = FilterUtil.getString(params,"url");
+        if ("false".equalsIgnoreCase(wadoBase))
+            return ret;
+        if ("xero".equalsIgnoreCase(wadoBase))
+            wadoBase = "XERO";
+        else
+            wadoBase = "WADO";
         for(PatientType patient : ret.getPatient()) {
             for(StudyType study : patient.getStudy()) {
                 String studyUID = study.getStudyUID();
@@ -73,7 +79,7 @@ public class AddUrlFilter  implements Filter<ResultsBean>{
                     addUrl(studyUID, series);
                     String seriesUID = series.getSeriesUID();
                     for(DicomObjectType dot : series.getDicomObject()) {
-                        addUrl(studyUID, seriesUID, dot);
+                        addUrl(studyUID, seriesUID, dot, wadoBase);
                     }
                 }
             }
@@ -87,11 +93,12 @@ public class AddUrlFilter  implements Filter<ResultsBean>{
         return s.substring(s.lastIndexOf(':')+1);
     }
 
-    private void addUrl(String studyUID, String seriesUID, DicomObjectType dot) {
+    private void addUrl(String studyUID, String seriesUID, DicomObjectType dot, String wadoBase) {
         DicomObjectInterface  doi = (DicomObjectInterface) dot;
         MacroItems m = doi.getMacroItems();
         if( m.findMacro(UrlMacro.class)!=null ) return;
-        String url = "?requestType=WADO&studyUID="+after(studyUID)+"&seriesUID="+after(seriesUID) + "&objectUID="+after(dot.getObjectUID());
+        if( !(doi instanceof ImageType) ) wadoBase = "WADO";
+        String url = "?requestType="+wadoBase+"&studyUID="+after(studyUID)+"&seriesUID="+after(seriesUID) + "&objectUID="+after(dot.getObjectUID());
         if( doi instanceof ImageBean ) {
             ImageBean ib = (ImageBean) doi; 
             if( ib.getFrame()!=null ) {

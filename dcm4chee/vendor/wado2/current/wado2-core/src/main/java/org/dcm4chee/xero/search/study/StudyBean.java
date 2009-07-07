@@ -237,7 +237,7 @@ public class StudyBean extends StudyType implements Study, CacheItem, LocalModel
    
    @XmlAttribute(name = "StudyDateF")
    public String getStudyDateFormatted() {
-	   return dateTime.formatDicomDateTime(getStudyDateTime());
+	   return dateTime.formatDicomDateTime(getStudyDateTime(),false);
    }
 
 

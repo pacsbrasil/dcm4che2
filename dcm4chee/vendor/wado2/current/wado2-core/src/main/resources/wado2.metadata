@@ -283,8 +283,6 @@ wado.SERIES=${ref:seriesFilter}
 wado.SERIES.priority=-1
 wado.IMAGE=${ref:imageFilter}
 wado.IMAGE.priority=-1
-wado.CFIND=${ref:cfind}
-wado.CFIND.priority=-1
 wado.CLEARCACHE=${class:org.dcm4chee.xero.metadata.filter.CacheCleanup}
 wado.CLEARCACHE.priority=-1
 wado.CLEARCACHE.caches.locationCache=${ref:fileLocation.locationCache}
@@ -379,13 +377,3 @@ multipart.overlay.childFilter=${ref:wado.XERO}
 multipart.overlay.default=true
 multipart.overlay.priority=4000
 
-# This section contains the series level C-FIND setup
-cfind=${class:org.dcm4chee.xero.metadata.filter.FilterList}
-cfind.priority=10000
-cfind.rename=${class:org.dcm4chee.xero.search.study.RenameAttributeFilter}
-cfind.audit=${class:org.dcm4chee.xero.search.filter.QueryAudit}
-cfind.audit.priority=9000
-cfind.blocked=${class:org.dcm4chee.xero.search.dicom.BlockedSearchFilter}
-cfind.blocked.study=${ref:studySource.studySearch}
-cfind.blocked.series=${ref:seriesSource.seriesSearch}
-cfind.blocked.image=${ref:imageSource.imageSearch}

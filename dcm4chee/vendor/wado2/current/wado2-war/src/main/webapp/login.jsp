@@ -12,34 +12,21 @@
 	Therefore this user should only have WebUser role.
 --%>
 <%@ page import='java.net.InetAddress' %>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" id="LoginPage">
 <head>
   <title>Login</title>
-  <link href="style.css" rel="stylesheet" type="text/css"> </link>
+  <link href="/wado2/style.css" rel="stylesheet" type="text/css"> </link>
 </head>
 
 <%
 	String nodeInfo = System.getProperty("dcm4che.archive.nodename", InetAddress.getLocalHost().getHostName() );
 %>
 <body onload="self.focus();document.login.j_username.focus()">
-<table border="0" cellspacing="0" cellpadding="0" width="100%">
- <tr>
-  <td><img src="/dcm4chee-web/white48.jpg" width="100%" height="5px" /></td>
- </tr>
- <tr>
-  <td background="/dcm4chee-web/white48.jpg">
-    <img src="/dcm4chee-web/white48.jpg" width="10px" height="24px" /><img src="/dcm4chee-web/logo.gif" alt="DCM4CHEE" /> Xero
-  </td>
- </tr>
- <tr>
-  <td><img src="/dcm4chee-web/line.jpg" width="100%" height="20px" alt="line" /></td>
- </tr>
-</table>
 <center>
 <h1>User Login at <%= nodeInfo %></h1>
 <br>
 
-<form name="login" method="POST" action="j_security_check">
+<form name="login" method="POST" action="/wado2/j_security_check">
 <table>
 	<tr valign="middle">
 	  <td><div class="text">Name:</div></td>

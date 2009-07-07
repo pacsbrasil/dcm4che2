@@ -66,18 +66,22 @@ public class DicomDateTimeHandler
    {
       this(DateFormat.getDateTimeInstance(),DateFormat.getDateInstance());
    }
-   
+
+   public String formatDicomDateTime(String dateTimeString) {
+       return formatDicomDateTime(dateTimeString,true);
+   }
+
    /** Formats a dateTimeString which is a concatenation of a DICOM date and time.
     * Returns null if unable to properly parse dateTimeString.
     */
-   public String formatDicomDateTime(String dateTimeString) {
+   public String formatDicomDateTime(String dateTimeString, boolean includeTime) {
       if(dateTimeString == null)
          return null;
       
       String formattedDateTime;
       try {
          Date dateTime = DateUtils.parseDT(dateTimeString, false);
-         formattedDateTime = formatDateOrDateTime(dateTime, dateTimeString.length() > 8);
+         formattedDateTime = formatDateOrDateTime(dateTime, includeTime && (dateTimeString.length() > 8));
       } catch (Exception nfe) {
          log.warn("Illegal study date or time:" + nfe);
          formattedDateTime = null;

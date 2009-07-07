@@ -62,9 +62,13 @@ import org.slf4j.LoggerFactory;
 public class InstanceFileLocatorFactory
 {
    public static final Logger log = LoggerFactory.getLogger(InstanceFileLocatorFactory.class);
-   
-   public static final String IDC2_NAME = "dcm4chee.archive:service=QueryRetrieveScp";
-   public static final String IDC1_NAME = "dcm4chee.archive:service=FileSystemMgt";
+    
+   public static final String EJBNAME = "ejbname";
+
+   public static final String EJB_NAME_DEFAULT = "dcm4chee.archive";
+
+   public static final String IDC2_NAME = ":service=QueryRetrieveScp";
+   public static final String IDC1_NAME = ":service=FileSystemMgt";
    
    /** Names of the DCM4CHEE services to connect to in order */
    private static final String[] OBJECT_NAMES = new String[] {IDC2_NAME,IDC1_NAME};
@@ -99,7 +103,8 @@ public class InstanceFileLocatorFactory
    {
       Map<String,Object> config = AEProperties.getInstance().getAE(aeTitle);
       MBeanServerConnection server = createMBeanServerConnection(config);
-      String objectName = getObjectName(server);
+      String ejbname = FilterUtil.getString(config,EJBNAME, EJB_NAME_DEFAULT);
+      String objectName = getObjectName(server,ejbname);
       
       log.info("Created a file instance locator for {} at {}",aeTitle,objectName);
       return new MBeanInstanceFileLocator(server,objectName);
@@ -110,16 +115,17 @@ public class InstanceFileLocatorFactory
     * Determine the name of the object to invoke.
     * @throws NamingException 
     */
-   protected String getObjectName(MBeanServerConnection connection) throws NamingException
+   protected String getObjectName(MBeanServerConnection connection, String ejbname) throws NamingException
    {
       for(String name : OBJECT_NAMES)
       {
          try
          {
-            ObjectName objectName = new ObjectName(name);
+            String fullName = ejbname+name;
+            ObjectName objectName = new ObjectName(fullName);
             MBeanInfo info = connection.getMBeanInfo(objectName);
             if(containsLocateInstance(info))
-               return name;
+               return fullName;
          }
          catch (Exception e)
          {

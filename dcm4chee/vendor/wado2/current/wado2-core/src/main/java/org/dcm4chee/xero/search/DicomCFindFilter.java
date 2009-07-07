@@ -38,6 +38,8 @@
 package org.dcm4chee.xero.search;
 
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -64,6 +66,7 @@ import org.dcm4chee.xero.dicom.TransferCapabilitySelector;
 import org.dcm4chee.xero.metadata.filter.Filter;
 import org.dcm4chee.xero.metadata.filter.FilterItem;
 import org.dcm4chee.xero.metadata.filter.FilterUtil;
+import org.dcm4chee.xero.metadata.servlet.ResponseException;
 import org.dcm4chee.xero.search.study.ResultsBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -310,6 +313,10 @@ public abstract class DicomCFindFilter implements Filter<ResultFromDicom>
 	       log.debug("Found "+cntResults+" in "+(System.nanoTime()-start)/1e6+" ms");
 		} catch (RuntimeException e) {
 			throw e;
+		} catch(SocketTimeoutException e) {
+		    throw new ResponseException(502,"Unable to contact SCU/SCP");
+        } catch(ConnectException e) {
+            throw new ResponseException(502,"Unable to contact SCU/SCP");
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);

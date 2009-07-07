@@ -79,7 +79,7 @@ public class MBeanInstanceFileLocatorTest
          .andStubReturn(expectedFile);
       replay(connection);
       
-      MBeanInstanceFileLocator locator = new MBeanInstanceFileLocator(connection,InstanceFileLocatorFactory.IDC1_NAME);
+      MBeanInstanceFileLocator locator = new MBeanInstanceFileLocator(connection,InstanceFileLocatorFactory.EJB_NAME_DEFAULT+InstanceFileLocatorFactory.IDC1_NAME);
       Object location = locator.locateInstance(expectedUID);
       assertEquals(location,expectedFile);
       verify(connection);

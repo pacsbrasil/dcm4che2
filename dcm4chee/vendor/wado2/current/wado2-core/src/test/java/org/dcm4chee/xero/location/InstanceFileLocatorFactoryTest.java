@@ -55,13 +55,13 @@ public class InstanceFileLocatorFactoryTest
    {
       InstanceFileLocatorFactory factory = new InstanceFileLocatorFactory();
       MBeanServerConnection connection = createMock(MBeanServerConnection.class);
-      String expectedName = InstanceFileLocatorFactory.IDC2_NAME;
+      String expectedName = InstanceFileLocatorFactory.EJB_NAME_DEFAULT+InstanceFileLocatorFactory.IDC2_NAME;
       MBeanOperationInfo[] operations = new MBeanOperationInfo[] { new MBeanOperationInfo("locateInstance",null,null,null,1)};
       MBeanInfo info = new MBeanInfo(expectedName,null,null,null,operations,null);
       expect(connection.getMBeanInfo(isA(ObjectName.class))).andStubReturn(info);
       replay(connection);
 
-      String name = factory.getObjectName(connection);
+      String name = factory.getObjectName(connection,InstanceFileLocatorFactory.EJB_NAME_DEFAULT);
       assertEquals(name,expectedName);
    }
    
@@ -76,7 +76,7 @@ public class InstanceFileLocatorFactoryTest
       expect(connection.getMBeanInfo(isA(ObjectName.class))).andStubReturn(info);
       replay(connection);
 
-      String name = factory.getObjectName(connection);
+      String name = factory.getObjectName(connection,InstanceFileLocatorFactory.EJB_NAME_DEFAULT);
       assertEquals(name,expectedName);
    }
    
