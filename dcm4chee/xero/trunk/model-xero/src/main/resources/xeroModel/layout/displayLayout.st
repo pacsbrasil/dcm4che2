@@ -10,7 +10,7 @@ function PatientLayout() {
 	this.baseConstructor("PatientLayout");
 };
 
-PatientLayout.prototype = new Layout("patientLayout");
+PatientLayout.prototype = new Layout("patientLayout", "html/errorLayout");
 PatientLayout.prototype.gridX = 2;
 PatientLayout.prototype.gridY = 1;
 // Add some initial size to handle the border.
@@ -27,11 +27,16 @@ PatientLayout.prototype.init = function PatientLayout_init() {
 	
 	for(var j=0; j<this.gridY; j++) {
 		for(var i=0; i<this.gridX; i++) {
+			if( i>0 ) {
+				var spacer = new SpacerLayout(2,1);
+				this.add(spacer);
+			}
 			var nth = j*this.gridX+i;
 			var studyArea = new StudyAreaLayout(nth);
 			this.add(studyArea);
 		}
 	}
+	this.gridX = this.gridX*2-1;
 	
 	this.navigate.hook(this);
 
@@ -40,10 +45,10 @@ PatientLayout.prototype.init = function PatientLayout_init() {
 
 /** Handles the compare study layout/event notifications */
 function CompareStudyLay(suffix) {
-	this.baseConstructor(this.i18n+suffix);
+	this.baseConstructor("CompareStudy"+suffix);
 };
 
-CompareStudyLay.prototype = new Layout("CompareStudyPrototype", "image/compareStudyLay");
+CompareStudyLay.prototype = new Layout("CompareStudy", "image/compareStudyLay");
 CompareStudyLay.prototype.events=["/patient:0/conversation:nav0Show", "/patient:0/conversation:nav1Show"];
 CompareStudyLay.prototype.icon="CloseIcon";
 CompareStudyLay.prototype.tooltip="CompareSingleStudyTip";
@@ -196,6 +201,12 @@ ReportArea.prototype.namedListener=function(nav,vname,val) {
 
 	var studyLayout = nav.conversation.studyLayout;
 	this.closeReportAreaUsed = (studyLayout==="ShowReportAndImages");
+	// Check actual number of children - even if it is "and images" there may not
+	// BE any images.
+	if( this.closeReportAreaUsed ) {
+		var extChildren = nav.getExtChildren();
+		if( !(extChildren && extChildren.length>0) ) this.closeReportAreaUsed=false;
+	}
 	var displayReport = nav.conversation.displayReport;
 	this.debug("Report area layout",studyLayout,"report",displayReport);
 	
@@ -235,13 +246,13 @@ function StudyMenu(suffix,nth) {
 };
 StudyMenu.prototype = new Layout("StudyMenu","html/toolItem");
 StudyMenu.prototype.events="merged:external";
-StudyMenu.prototype.displayClass="wide";
 StudyMenu.prototype.area="Menu";
 
 /** Setup the child menu */
 StudyMenu.prototype.namedListener = function(nav) {
 	if( !(nav && nav.external) ) return;
 	this.label = nav.external.StudyDescription;
+	this.title = this.label;
 	var pat = nav.parent.external;
 	this.navigate = nav.parent;
 	var navStudy = this.navigate.getExtChildren();
@@ -276,15 +287,32 @@ function XofNSeries(suffix) {
 };
 
 XofNSeries.prototype = new Layout("XofN","image/seriesNumber");
+XofNSeries.prototype.events=["series:0","conversation:seriesLayout"];
+XofNSeries.prototype.numSeries = 4;
+XofNSeries.prototype.x=0;
+XofNSeries.prototype.n=0;
 
-XofNSeries.prototype.events="series:0";
+/** Updates the first/last indicators when the number of images changes */
+XofNSeries.prototype.namedListener = function(nav,vname,val) {
+	if( val==null ) {
+		this.numSeries = 4;
+		return;
+	} 
+	else if( val==="Layout1x1" ) this.numSeries = 1;
+	else if( val==="Layout2x1" || val==="Layout1x2" ) this.numSeries = 2;
+	else if( val==="Layout2x2" ) this.numSeries = 4;
+	else if( val==="Layout4x2" ) this.numSeries = 8;
+	this.isLast = (this.x+this.numSeries>this.n);
+};
 
+/** Set the current position and first/last indicators */
 XofNSeries.prototype.navigateListener = function(nav) {
 	this.used = false;
 	if( !(nav && nav.external) ) return;
 	this.series = nav.parent.getExtChildren();
 	if( ! this.series ) return;
 	this.n = this.series.length;
+	if( this.numSeries > this.n ) this.numSeries = this.n;
 	if( this.n<2 ) return;
 	this.used = true;
 	this.debug("Series UID navigated to", nav.external.seriesUID);
@@ -294,8 +322,16 @@ XofNSeries.prototype.navigateListener = function(nav) {
 	}
 	this.debug("xofn series x=",this.x);
 	this.isFirst = (this.x===1);
-	this.isLast = (this.x===this.n);
+	this.isLast = (this.x+this.numSeries>this.n);
 };
+
+/** Defines right-hand image menu */
+function RightImageMenu(suffix) {
+	this.baseConstructor("RightImageMenu"+suffix);
+};
+
+RightImageMenu.prototype = new Layout("RightImageMenu","image/rightImageMenu");
+
 
 /** Defines the X of N series layout information */
 function XofNImage(suffix) {
@@ -308,12 +344,17 @@ XofNImage.prototype.isFirst = false;
 XofNImage.prototype.isLast = false;
 XofNImage.prototype.x = 0;
 XofNImage.prototype.n = 300;
+XofNImage.prototype.SIZE = 10;
 
 XofNImage.prototype.navigateListener = function(nav) {
 	this.used = false;
 	if(!(nav && nav.external)) return;
 	this.x = 1+parseInt(nav.external.Position);
 	this.n = parseInt(nav.parent.external.Viewable);
+	var n = this.n-1;
+	if( n===0 ) n = 1;
+	this.beforeLine = ((this.x-1)*this.SIZE/n);
+	this.afterLine = this.SIZE-this.beforeLine;
 	this.isFirst = (this.x==1);
 	this.isLast = (this.x>=this.n);
 	this.used = (this.n>1);
@@ -418,7 +459,8 @@ function ImageAreasLayout(suffix, nth) {
 			layout.y = j;
 			this.add(layout);
 			layout.add(new ImageMenu(suffix),"imageMenu");
-			layout.add(new XofNImage(suffix),"xofnImage");
+			layout.add(new XofNImage(suffix),"bottomImageMenu");
+			layout.add(new RightImageMenu(suffix),"rightImageMenu");
 		};
 	};
 };

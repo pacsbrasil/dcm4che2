@@ -54,6 +54,7 @@ ImageLayout.prototype.namedListener = function(nav,vname,val,prevVal) {
 /** Adds an image URL to the set of URLs to display */
 ImageLayout.prototype.addImageUrl = function AddImageUrl(clear) {
 	if( clear ) {
+	   this.imageError = null;
 	   this.imageUrls = new Array();
 	}
 	if( (!this.image) || !(this.width) || !(this.height) ) return;

@@ -82,6 +82,11 @@
   <dependencies>
     <dependency>
       <groupId>org.dcm4chee.xero</groupId>
+      <artifactId>util-jar</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4chee.xero</groupId>
       <artifactId>controller-xero</artifactId>
       <version>${project.version}</version>
     </dependency>

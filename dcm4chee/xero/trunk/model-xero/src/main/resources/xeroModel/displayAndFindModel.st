@@ -1,5 +1,6 @@
 XeroModel.prototype.init = function()
 {
+    console.info("Called XeroModel.init function");
 	var findLayout = new FindLayout("",this.ae);
 
 	this.layout = new TabsLayout("XeroRootTab",this.i18n);
@@ -12,6 +13,8 @@ XeroModel.prototype.init = function()
 	// Make the idMap global - in case there end up being multiple display areas...
 	this.idMap = new LayoutIdMap();
 	this.layout.computeId(this.idMap);
+	this.idMap.i18n = this.i18n;
+	this.idMap.IS_IE = this.IS_IE;
 
 	if( ! this.idMap.QueryLayout ) throw "Query Layout is null";
 	 	    

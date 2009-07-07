@@ -24,5 +24,38 @@ ServiceRequest.prototype.requestDocumentByURL = function SR_requestDocumentByURL
 	var request = new XMLHttpRequest();
 	request.open("GET",url,false);
 	request.send(null);
+	if( request.readyState!=4 ) {
+		console.warn("Request was not responded to correctly:"+request.readyState);
+		throw request;
+	}
+	if( request.status!=200 ) {
+		console.warn("Server had error on request:"+request.status);
+		throw request;
+	}
+	if( request.responseText.indexOf('id="LoginPage"')>0 ) {
+		throw request;
+	}
 	return request.responseText;
 }
+
+
+// Return the document that is indicated by the url asynchronously.
+ServiceRequest.prototype.requestAsync = function (url, callback) {
+	console.info("Requesting JSON data "+url);
+		
+	var request = new XMLHttpRequest();
+	request.onreadystatechange = function() {
+		if( request.readyState!=4 ) return;
+		if( request.status!=200 ) {
+			return callback(null,request);
+		}
+		if( request.responseText.indexOf('id="LoginPage"')>0 ) {
+			return callback(null,request);
+		}
+		return callback(request.responseText);
+	};
+	
+	request.open("GET",url,true);
+	request.send(null);
+};
+

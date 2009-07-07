@@ -157,7 +157,11 @@ Layout.prototype.resize = function Layout_resize(width,height,style) {
 				}
 			}
 			// Always do width relative - it messes up the display otherwise.
-			style = "width:"+Math.floor((subWidth)*998/this.width)/10+"%;";
+			if( this.idMap.IS_IE ) {
+				style = "width:"+Math.floor(subWidth*997/this.width)/10+"%;";
+			} else {
+				style = "width:"+Math.floor(subWidth*1000/this.width)/10+"%;";
+			}
 			
 			subHeight = layout.absHeight;
 			if( subHeight==null ) {
@@ -165,7 +169,11 @@ Layout.prototype.resize = function Layout_resize(width,height,style) {
 				subHeight = layout.relHeight;
 				if( !subHeight ) subHeight = 100;
 				subHeight = subHeight * height/sumRelHeight;
-				style = style+"height:"+Math.floor(subHeight*998/this.height)/10+"%;";
+				if( this.idMap.IS_IE ) {
+					style = style+"height:"+Math.floor(subHeight*998/this.height)/10+"%;";
+				} else {
+					style = style+"height:"+Math.floor(subHeight*1000/this.height)/10+"%;";
+				}
 			} else {
 				style = style+"height:"+subHeight+"px;";
 			}
@@ -306,7 +314,6 @@ function LabelLayout(id, i18n) {
 };
 
 LabelLayout.prototype = new Layout("Label", "html/toolItem");
-LabelLayout.prototype.baseConstructor = Layout;
 LabelLayout.prototype.i18n = null;
 
 /** Finds the given item, offset by dir, in the lst, or in the children elements. */
@@ -331,3 +338,12 @@ Layout.prototype.copyFrom = function(lay) {
 	this.label = lay.label;
 	this.icon = lay.icon;
 };
+
+/** A spacer layout */
+function SpacerLayout(width,height) {
+	this.baseConstructor("spacer");
+	this.absWidth = width;
+	this.absHeight = height;
+};
+
+SpacerLayout.prototype = new Layout("SpacerLayout");

@@ -6,22 +6,26 @@
  */
  
 XeroController.prototype.zoomReset = function (lay,e, preventUpdate) {
+	if( !preventUpdate ) this.userEvent("zoomReset");
 	this.zoomMode(lay,e,null,preventUpdate);
 };
 XeroController.prototype.shift_clickImage = XeroController.prototype.zoomReset;
 
 /** Sets the scale to fit mode */
 XeroController.prototype.scaleToFit = function (lay,e) {
+	this.userEvent("scaleToFit");
 	this.zoomMode(lay,e,"SCALE_TO_FIT");
 };
 
 /** Sets magnify mode */
 XeroController.prototype.magnify = function(lay,e) {
+	this.userEvent("magnify");
 	this.zoomMode(lay,e,"MAGNIFY");
 };
 
 /** Sets true size mode */
 XeroController.prototype.trueSize = function(lay,e) {
+	this.userEvent("trueSize");
 	this.zoomMode(lay,e,"TRUE_SIZE");
 };
 
@@ -359,17 +363,21 @@ XeroController.prototype.Zoom_wheelSeries = function(id,e) {
 	var wheelData = e.detail ? (-e.detail) : e.wheelDelta/40;
 	if(! e.shiftKey ) wheelData = wheelData/3;
 	else wheelData = wheelData*3;
-	console.info("Wheeling zoom",wheelData);
+	this.userEvent("zoomWheel",wheelData);
 	
 	this.zoomChange(lay,e,wheelData,true);
 };
 XeroController.prototype.Zoom_shift_wheelSeries = XeroController.prototype.Zoom_wheelSeries;
 
 XeroController.prototype.zoomIn = function(id,e) {
+	this.userEvent("zoomIn");
+	this.userEvent("logZoomIn");
 	var lay = this.findLayout(id,Navigation.IMAGE);
 	this.zoomChange(lay,e,1,false);
 };
 XeroController.prototype.zoomOut = function(id,e) {
+	this.userEvent("zoomOut");
+	this.userEvent("logZoomOut");
 	var lay = this.findLayout(id,Navigation.IMAGE);
 	this.zoomChange(lay,e,-1,false);
 };
@@ -389,6 +397,7 @@ XeroController.prototype.WindowLevel_dblDragImage = XeroController.prototype.Zoo
 PanController.prototype.prepare= function(e) {
 	this.prepareBase(e);
 	
+	this.controller.userEvent("panStart");
 	this.gtr = document.getElementById("tr"+this.lay.id);
 	if(this.gtr) return this.prepareSvg();
 	this.vml = document.getElementById("vml"+this.lay.id);
@@ -485,7 +494,7 @@ PanController.prototype.sumPoint = function(p1,dx,dy) {
  * dx,dy coordinates as set in the mousemove functions, and then rerender.  THis should
  * result in the image  */
 PanController.prototype.end = function(e) {
-	console.info("Final dx,dy=",this.dx,",",this.dy);
+	this.controller.userEvent("panEnd", "dx="+this.dx+" dy="+this.dy);
 	var tl = this.lay.navigate.merged.get("topLeft");
 	var br =this.lay.navigate.merged.get("bottomRight");
 	if( !tl ) tl = "0,0";

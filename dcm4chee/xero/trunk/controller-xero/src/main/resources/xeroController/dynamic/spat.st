@@ -2,11 +2,15 @@
 
 /** Handle right rotating the image */
 XeroController.prototype.rotateRight = function(lay) {
+	this.userEvent("rotateRight");
+	this.userEvent("logRotateRight");
 	lay = this.findLayout(lay);
 	this.rotateSeries(lay,90);
 };
 /** Handle left rotating the image */
 XeroController.prototype.rotateLeft = function(lay) {
+	this.userEvent("rotateLeft");
+	this.userEvent("logRotateLeft");
 	lay = this.findLayout(lay);
 	this.rotateSeries(lay,270);
 };
@@ -28,7 +32,8 @@ XeroController.prototype.rotateSeries = function(lay,angle) {
 /** Handle horizontal flipping the image */
 XeroController.prototype.flipHorizontal = function(lay) {
 	lay = this.findLayout(lay);
-	console.info("Trying to flip the image, layout",lay.id);
+	this.userEvent("flipHorizontal");
+	this.userEvent("logFlipHorizontal");
 	var nav = this.getNavigate(lay);
 	var flip = nav.merged.get("horizontalFlip");
 	nav=nav.parent;
@@ -40,7 +45,7 @@ XeroController.prototype.flipHorizontal = function(lay) {
 /** Handle the spatial transform reset operation */
 XeroController.prototype.spatReset = function(lay,e,preventUpdate) {
 	lay = this.findLayout(lay);
-	console.info("Image clicked - trying to spat reset the image, layout",lay.id);
+	if( !preventUpdate ) this.userEvent("spatReset");
 	var nav = this.getNavigate(lay);
 	nav=nav.parent;
 	nav.setMerged("horizontalFlip");

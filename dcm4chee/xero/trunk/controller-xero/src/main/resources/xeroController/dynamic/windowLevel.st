@@ -13,7 +13,7 @@ XeroController.prototype.ctrl_dragImage = XeroController.prototype.WindowLevel_d
 /** Handle the window level reset operation */
 XeroController.prototype.wlReset = function(lay,event, preventUpdate) {
 	lay = this.findLayout(lay);
-	console.info("Image clicked - trying to reset the image, layout",lay.id);
+	if( !preventUpdate ) this.userEvent("wlReset");
 	var nav = this.getNavigate(lay);
 	nav=nav.parent;
 	if( nav.merged.invert ) {
@@ -32,7 +32,8 @@ XeroController.prototype.ctrl_clickImage = XeroController.prototype.wlReset;
 /** Handle inverting the image */
 XeroController.prototype.wlInvert = function(lay) {
 	lay = this.findLayout(lay);
-	console.info("Image clicked - trying to invert the image, layout",lay.id);
+	this.userEvent("wlInvert");
+	this.userEvent("logWLInvert");
 	var nav = this.getNavigate(lay);
 	var inv = nav.merged.get("invert"); 
 	nav=nav.parent;
@@ -44,13 +45,25 @@ XeroController.prototype.wlInvert = function(lay) {
 WLController.prototype.prepare = function(e) {
 	if( !this.prepareBase(e) ) return false;
 	this.baseUrl = this.getImageUrl(["rows", "columns", "windowWidth", "windowCenter","imageQuality"]);
-	console.info("Window levelling layout %s url %s",this.layout.id, this.baseUrl);
+	this.controller.userEvent("windowLevel");
+	this.controller.userEvent("logWindowLevel");
 	this.cnt = 0;
 	this.totalCnt = 0;
 	this.timeSum = 0;
 
+	// Find the window level indicator
+	var n = this.imageId.length;
+	var wlIndicator = "wlIndicatorRightImageMenu"+this.imageId.substring(n-7,n-2);
+	this.wlIndicator = document.getElementById(wlIndicator);
+	console.warn("wlIndicator is",this.wlIndicator);
+	this.wlIndicator.style.display="block";
+	this.wlIndicator.innerHTML = "Loading Image Info";
+	
 	this.minPixel = this.layout.merged.get("minPixel");
 	if( this.minPixel==undefined ) {
+		this.waitCursor = true;
+		waitCursor();
+		
 		var pos = this.layout.navigate.external.Position;
 		var query = this.layout.navigate.parent.generateQuery(parseInt(pos));
 		var squery;
@@ -143,9 +156,14 @@ WLController.prototype.updateImage = function WLC_updateImage() {
 	}
 
 	if( this.loadImage.complete || this.tries > 10 ) {
+		if( this.waitCursor ) {
+			defaultCursor();
+			this.waitCursor = false;
+		}
 		this.loadWidth = this.loadStartWidth;
 		this.loadCenter = this.loadStartCenter;
 		this.setImageUrl(this.loadImage.src);
+		this.wlIndicator.innerHTML = "W/C:"+this.loadWidth+"/"+this.loadCenter;
 		this.loadImage = null;
 		this.cnt++;
 		this.totalCnt++;
@@ -180,6 +198,7 @@ WLController.prototype.updateImage = function WLC_updateImage() {
 
 /** Update the window level in the merged context and re-display the screen once the new image is fetched */
 WLController.prototype.end = function WLC_end(event) {
+	this.controller.userEvent("wlEnd", this.totalCnt);
 	if( this.loadWidth && (this.loadWidth!=this.origWidth || this.loadCenter!=this.origCenter) ) {
 		console.debug("Setting WL c/w=%d,%d", this.loadCenter, this.loadWidth);
 		this.layout.navigate.parent.setMerged("windowCenter", this.loadCenter);
@@ -187,6 +206,9 @@ WLController.prototype.end = function WLC_end(event) {
 	}
 
 	// Clear the values.
+	this.wlIndicator.style.display="none";
+	this.wlIndicator=null;
+	defaultCursor();
 	this.loadImage = null;
 	this.image = undefined;
 	this.layout = undefined;

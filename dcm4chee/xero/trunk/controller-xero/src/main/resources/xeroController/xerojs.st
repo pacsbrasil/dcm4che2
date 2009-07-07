@@ -1,3 +1,4 @@
+var isServer = false;
 $sharedStatic()$
 /** Utilities contains methods that are used client side only */
 $utilities()$

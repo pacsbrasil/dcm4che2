@@ -7,15 +7,7 @@
  */
 
 function StudyData(uids,ae) {
-	if( uids ) {
-		var i,n=uids.length;
-		var uidsBack = uids[0];
-		for(i=1; i<n; i++) {
-			uidsBack = uidsBack + "\\\\"+uids[i];
-		}
-		this.url = STUDY_QUERY+"&gsps=*&ko=*&studyUID="+uidsBack;
-		if( ae ) this.url = this.url + "&ae="+ae;
-	}
+	if( uids ) this.queryForStudies(uids,null,ae);
 };
 
 StudyData.prototype = new JSONModel();
@@ -23,19 +15,18 @@ StudyData.prototype.level = 0;
 StudyData.prototype.idVars = {"patient":"PatientIdentifier", "study":"studyUID", "series":"seriesUID", "image":"Position", "gsps":"objectUID", "report":"objectUID", "keyObject":"objectUID", "objectRef":"objectUID"};
 
 /** For for additional studies - whichever ones are missing */
-StudyData.prototype.queryForStudies = function(service, uids, studies, ae) {
+StudyData.prototype.queryForStudies = function(uids, studies, ae) {
 	var i,n=uids.length;
 	var uidsBack;
-	for(i=1; i<n; i++) {
-		if( studies[uids[i]] ) continue;
+	for(i=0; i<n; i++) {
+		if( studies && studies[uids[i]] ) continue;
 		if( uidsBack ) uidsBack = uidsBack+"\\\\";
 		else uidsBack = "";
 		uidsBack = uidsBack + uids[i];
 	}
 	if(!uidsBack ) return;
 	this.url = STUDY_QUERY+"&gsps=*&ko=*&studyUID="+uidsBack;
-	if( ae ) this.url = this.url + ae;
-	this.request(service);
+	if( ae ) this.url = this.url + "&ae="+ae;
 };
 
 /** Finds a given object instance child by UID */
@@ -91,7 +82,7 @@ StudyData.prototype.getChild = function StudyData_getChild(name,el,modifiers,i) 
 };
 
 /**
- * Makes the requested queries for additional information to merge.
+ * Makes the requested queries for additional information to merge.  
  */
 StudyData.prototype.addQueries = function StudyData_addQueries(service, queries, lazy) {
 	var key;
@@ -219,6 +210,20 @@ StudyData.prototype.customize_image = function() {
 		}
 		last = cur;
 	} while(koUID);
+};
+
+/** Add text for no study description and flags for nearline/offline */
+StudyData.prototype.customize_study = function() {
+	if( !this.StudyDescription ) this.StudyDescription="No Study Description";
+	if( this.InstanceAvailability==="NEARLINE") this.isNearline = true;
+	else if( this.InstanceAvailability==="OFFLINE") this.isNearline = true;
+	else this.isOnline = true;
+};
+
+/** Computes the length of the series description  */
+StudyData.prototype.customize_series = function() {
+	if(! this.SeriesDescription ) this.SeriesDescription="";
+	this.SeriesDescLength = Math.min(5+this.SeriesDescription.length,35);
 };
 
 StudyData.prototype.customize_patient = function() {

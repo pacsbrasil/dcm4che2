@@ -74,6 +74,7 @@ XeroController.prototype.getShiftInfo = function(e) {
  */
 XeroController.prototype.keyPress = function(area, e) {
 	if(!e) e = window.event;
+	this.userEvent("keyPress",e.keyCode);
 	var shift = this.getShiftInfo(e);	
 	var handler= shift+"key"+e.keyCode;
 	if( area ) handler = area+"_"+handler;
@@ -87,6 +88,20 @@ XeroController.prototype.keyPress = function(area, e) {
 XeroController.prototype.dblClickTime=350;
 XeroController.prototype.dblMoveDistance=2;
 
+/**
+ * Handles the double-click event for IE
+ * This does an extra mouse down/mouse up to simulate the second
+ * click.
+ */
+XeroController.prototype.doubleClick = function(id,e) {
+	console.debug("doubleClick - IE specific behaviour.",id);
+	this.mouseClickDrag(id);
+	if( this.mousing ) {
+		return this.mouseUp(e);
+	} else {
+		console.info("Not mousing - no dbl click handler found.");
+	}
+};
 
 /**
  * Handles the mouse-down for an image area.
@@ -395,10 +410,10 @@ ImageMouseHandler.prototype.getImage = function() {
 	var imageLayPos = id.indexOf("ImageLay");
 	if( imageLayPos==-1 ) return;
 	var layId = this.downTarget.id.substring(imageLayPos);
-	var imageId = "im"+layId;
-	var ret = document.getElementById(imageId);
+	this.imageId = "im"+layId;
+	var ret = document.getElementById(this.imageId);
 	if(!ret) { 
-		console.warn("Looked for image id",imageId,"but not found, based on",this.downTarget.id);
+		console.warn("Looked for image id",this.imageId,"but not found, based on",this.downTarget.id);
 		return;
 	}
 	this.layout = this.controller.findLayout(layId);
@@ -443,9 +458,11 @@ ImageMouseHandler.prototype.getTarget = function(e)
 
 /** Calls the 3 base resets */
 XeroController.prototype.allReset = function(lay,e) {
+	this.userEvent("allReset");
 	this.wlReset(lay,e,true);
 	this.zoomReset(lay,e,true);
-	this.spatReset(lay,e);
+	this.spatReset(lay,e,true);
+	this.waitUpdate("mouseUp",2);
 };
 
 /** Defines the individual dynamic controllers */

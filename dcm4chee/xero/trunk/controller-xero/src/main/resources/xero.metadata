@@ -73,6 +73,8 @@ controller.renderController.priority=5000
 
 # Define the JSController - the controller that handles the JavaScript generation/creation.
 jscontroller=${class:org.dcm4chee.xero.metadata.filter.FilterList}
+jscontroller.p3p=${class:org.dcm4chee.xero.metadata.servlet.P3PHeaderFilter}
+jscontroller.p3p.priority=11000
 jscontroller.stringTemplate=${class:org.dcm4chee.xero.template.StringTemplateFilter}
 jscontroller.stringTemplate.defaultContentType=text/javascript
 jscontroller.stringTemplate.defaultGroup=${ref:templateGroup}
