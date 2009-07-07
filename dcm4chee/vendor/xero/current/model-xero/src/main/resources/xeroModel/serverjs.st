@@ -4,6 +4,7 @@ $rhino()$
 // Setup a SLF4J Logger bridge for logging
 $logger()$
 var console = new Logger("js.console");
+var isServer = true;
 
 // HACK!  Read in from the commandline options
 getViewportSize = function() {
@@ -32,6 +33,22 @@ ServiceRequest.prototype.requestDocumentByURL = function SR_requestDocumentByURL
 	}
 	return document.toString();
 };
+
+/** The non-asynchronous request.  Server side, ALL requests are
+ * made synchronously as there isn't any timing/notification services
+ * on the server side, and the page likely hasn't been displayed yet to be able
+ * to show anything.  Otherwise, this duplicates the behaviour of the client side
+ * in terms of calling the callback mechanism.
+ */
+ServiceRequest.prototype.requestAsync = function (url, callback) {
+    try {
+		var doc = this.requestDocumentByURL(url);
+		callback(url);
+	} catch(e) {
+		callback(null,e);
+	}
+};
+
 
 $if(HAS_CONTROLLER)$
 /**************************************************************************************************************

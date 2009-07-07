@@ -39,13 +39,18 @@ package org.dcm4chee.xero.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.AccessControlException;
+import java.security.Principal;
+import java.security.acl.Group;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4chee.xero.metadata.access.ResourceBundleMap;
@@ -55,6 +60,8 @@ import org.dcm4chee.xero.metadata.filter.FilterUtil;
 import org.dcm4chee.xero.metadata.servlet.MetaDataServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import sun.security.acl.PrincipalImpl;
 
 /**
  * The Language/Theme Controller adds an i18n and theme object to the model
@@ -82,6 +89,8 @@ public class LanguageThemeController<T> implements Filter<T> {
 	ConcurrentMap<String, Properties> themes = new ConcurrentHashMap<String, Properties>();
 	ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
+	private static Principal EPR_USER_ROLE = new PrincipalImpl("EprUser");
+	
 	/** Adds browser identification information */
 	public T filter(FilterItem<T> filterItem, Map<String, Object> params) {
 		Map<String, Object> model = FilterUtil.getModel(params);
@@ -110,7 +119,10 @@ public class LanguageThemeController<T> implements Filter<T> {
 		}
 		
 		if( theme==null ) theme = getTheme("theme");
-		log.info("Using theme {}", theme.get("theme"));
+		
+		String themeName = (String) theme.get("theme");
+		checkPermission(themeName, (HttpServletRequest) params.get(MetaDataServlet.REQUEST));
+		log.info("Using theme {}", themeName);
 
 		Locale locale = FilterUtil.getLocale(params);
 		ResourceBundle rb = getI18N(theme, locale);
@@ -121,7 +133,7 @@ public class LanguageThemeController<T> implements Filter<T> {
 		return filterItem.callNextFilter(params);
 	}
 
-	/** Returns the theme associated with the given string.
+   /** Returns the theme associated with the given string.
 	 * If the theme contains theme.inherit then that theme will
 	 * be used as the parent theme that provides default values.
 	 */
@@ -165,4 +177,33 @@ public class LanguageThemeController<T> implements Filter<T> {
 		ResourceBundle ret = ResourceBundle.getBundle(i18nName,loc);
 		return ret;
 	}
+	
+   public void checkPermission(String theme,HttpServletRequest req )
+      throws AccessControlException 
+   {
+      if(req!=null && req.isUserInRole("EprUser") && !"epr".equalsIgnoreCase(theme))
+         throw new AccessControlException("The EprUser role can only view the epr theme");
+   }
+
+   /**
+    * Check to see if we have permission to see this particular theme.
+    * Specifically the EprUser is constrained to only be able to view
+    * the 'epr' theme.  All other themes result in a SecurityException.
+    */
+   public void checkPermission( String theme, Subject s)
+      throws AccessControlException  {
+      if(s != null)
+      {
+         Set<Principal> principals = s.getPrincipals();
+         for(Principal p : principals)
+         {
+            if(p.getName().equalsIgnoreCase("Roles"))
+            {
+               Group g = (Group)p;
+               if(g.isMember(EPR_USER_ROLE) && !theme.equalsIgnoreCase("epr"))
+                  throw new AccessControlException("The EprUser role can only view the epr theme");
+            }
+         }
+      }
+   }
 }

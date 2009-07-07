@@ -1,6 +1,9 @@
 <div class="image" $html/style()$ xmlns="http://www.w3.org/1999/xhtml">
- $if(HAS_VML)$
-   <v:group id="vml$layout.id$" class="imageDisplay" onmousedown="return controller.mouseClickDrag('$layout.id$',event);"   	 
+ $if(layout.errorMessage)$
+ <span class="errorMessage">$layout.errorMessage;format="xml"$</span>
+ $elseif(HAS_VML)$
+   <v:group id="vml$layout.id$" class="imageDisplay" onmousedown="return controller.mouseClickDrag('$layout.id$',event);"
+    ondblclick="return controller.doubleClick('$layout.id$');"   	 
 $if(layout.sameSize)$
 	style="overflow: visible; left: $layout.negHalfRealWidth$; margin-left: 50%; margin-top: 50%; top: $layout.negHalfRealHeight$; width: $layout.realWidth$; height: $layout.realHeight$;"
 $else$
@@ -52,7 +55,7 @@ $endif$
 >
 <g id="tr$layout.id$" transform="$if(layout.flip)$scale(-1,1)$endif$ $if(layout.rotation)$rotate($layout.rotation$,0,0)$endif$ $if(layout.aspect)$ scale(1,$layout.aspect$)$endif$">
 $layout.imageUrls:{
-<image id="$it.imageId$" preserveAspectRatio="none" xlink:href="$it.imageUrl;format="xml"$" width="$it.cols$" height="$it.rows$" transform="translate($it.left$,$it.top$)"/>
+<image id="$it.imageId$" preserveAspectRatio="none" xlink:href="$it.imageUrl;format="xml"$" width="$it.cols$" height="$it.rows$" transform="translate($it.left$,$it.top$)" onerror="controller.imageError('$layout.id$')"/>
 }$
 
 
@@ -69,10 +72,10 @@ $else$
 $endif$
 $endif$
 
-$(layout.imageMenu.template)(layout=layout.imageMenu)$
+$html/callNamed(name="imageMenu")$
 
-$(layout.xofnImage.template)(layout=layout.xofnImage)$
+$html/callNamed(name="rightImageMenu")$
 
-$image/keyImageNote()$
+$html/callNamed(name="bottomImageMenu")$
 
 </div>

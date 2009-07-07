@@ -24,7 +24,9 @@
 function XeroController(model, ua, view) {
 	this.model = model;
 	this.view = view;
-	
+
+    this.renderListeners = new Array();
+    	
 	// TODO:  Move into a method on the model?
 	if(_SARISSA_IS_IE) {
 		this.model.IS_IE6 = (ua.indexOf("MSIE 6")>=0);
@@ -38,6 +40,18 @@ function XeroController(model, ua, view) {
 	this.model.IS_MOBILE = (ua.indexOf("Mobile")>=0 || ua.indexOf("BlackBerry")>=0);
 	
 	if( this.isDebug ) this.debug = console.debug;
+};
+
+// The set of event listeners - define early so as to be available to push items into.
+XeroController.prototype.userEventListeners = new Array();
+
+/** Indicates that some user event has occurred */
+XeroController.prototype.userEvent = function(eventName, eventDescription) {
+	if( eventDescription==null ) eventDescription="";
+	var i,n=this.userEventListeners.length;
+	for(i=0; i<n; i++) {
+		this.userEventListeners[i](this,eventName,eventDescription);
+	}
 };
 
 /**
@@ -243,6 +257,7 @@ XeroController.prototype.fixScrollPosition = function(id) {
 XeroController.prototype.storeScrollPosition = function(id) {
    var lay = this.findLayout(id);
    var node = this.getScrollNode(lay.id);
+   if( !node ) return;
    lay.scrollTop = node.scrollTop;
 };
 
@@ -293,6 +308,7 @@ XeroController.prototype.fireViewRendered = function(lay) {
  */
 XeroController.prototype.updateView = function XC_action(actionName) {
     if( !this.view ) return;
+    this.fireRenderEvent("renderStarted");
 	console.time(actionName);
 	var render = this.view.toString("xeroBody",this.model);
 	if( render==null || render==="" ) {
@@ -305,22 +321,28 @@ XeroController.prototype.updateView = function XC_action(actionName) {
 	this.replaceHtml(this.model.layout.id, render);
 	this.model.layout.clearRelayout();
 	console.timeEnd(actionName);
+    this.fireRenderEvent("renderCompleted");
 };
 
 /** Performs a delayed update */
-XeroController.prototype.waitUpdate = function XC_waitUpdate(actionName, cnt) {
+XeroController.prototype.waitUpdate = function XC_waitUpdate(actionName, cnt, notFirst) {
+    if( !notFirst ) this.fireRenderEvent("renderStarted");
 	if( cnt===undefined ) cnt = 7;
 	var missing = this.renderComplete([this.model.layout]);
-	if( missing===0 ) return 0;
+	if( missing===0 ) {
+        this.fireRenderEvent("renderCompleted");
+	    return 0;
+	}
 	if(cnt===0 || missing<0) {
 		this.debug("Rendering with cnt=%d with %d missing", cnt, missing);
 		this.updateLayouts(actionName);
+        this.fireRenderEvent("renderCompleted");
 		return;
 	}
 	this.debug("Waiting till everything is complete - cnt=%d", cnt);
 	var usethis = this;
 	window.setTimeout( function() {
-		usethis.waitUpdate(actionName,cnt-1);
+		usethis.waitUpdate(actionName,cnt-1,true);
 	}, 200);
 };
 
@@ -400,9 +422,14 @@ XeroController.prototype.switchTab = function XC_switchTab(src,tabName) {
 			console.info("The search isn't up to date - requerying.");
 			this.performSearch();
 		}
+		if( searchLayout.search.displayedPatient ) {
+			this.updateView("switchTab");
+			return;
+		}
 		var pid = this.selectPatientToDisplay(searchLayout.search);
 		if( pid==null ) {
 			this.model.layout.selectTab("Find");
+			this.updateView("switchTab");
 			return;
 		}
 		this.displayPatient(src,pid);				
@@ -472,3 +499,73 @@ XeroController.prototype.rotateButton = function XC_rotateButton(layId,arg) {
 	this.waitUpdate("rotateButton");
 };
 
+/**
+ * Adds the given renderListener to the list of listeners.  A renderListener
+ * is an object with two zero-argument methods:  renderStarted; renderCompleted.
+ * @param renderListener the render listener
+ */
+XeroController.prototype.addRenderListener = function(renderListener)
+{
+  this.renderListeners.push(renderListener);
+};
+
+/**
+ * Removes the given renderListener to the list of listeners.
+ * @param renderListener the render listener
+ */
+XeroController.prototype.removeRenderListener = function(renderListener)
+{
+  for(i = this.renderListeners.length - 1; i >= 0; i -= 1)
+  {
+      if(this.renderListeners[i] === renderListener)
+      {
+          this.renderListeners.splice(i,1);
+      }
+  }
+};
+
+/**
+ * Fires the render event with the given name.  The name is the method
+ * of the render listener object to be invoked.
+ * @param eventName the render listener event name; either "renderStarted" or
+ *                  "renderCompleted"
+ */
+XeroController.prototype.fireRenderEvent = function(eventName)
+{
+  for(i = 0; i < this.renderListeners.length; i += 1)
+  {
+      this.renderListeners[i][eventName]();
+  }    
+}
+
+/** Sets the cursor to the busy cursor */
+function waitCursor() {
+	var tab = document.getElementById("XeroRootTab");
+	if( !tab ) return; 
+	tab.className="wait";
+	if( document.body ) document.body.style.cursor = 'wait';
+}
+
+/** Sets the cursor to the default cursor */
+function defaultCursor() {
+	var tab = document.getElementById("XeroRootTab");
+	if( !tab ) return; 
+	tab.className="";
+	if( document.body ) document.body.style.cursor = 'default';
+}
+
+/** Gets the error condition associated with the given request */
+XeroController.prototype.getError = function(e) {
+	this.lastError = e;
+$if(IS_SERVER)$
+	return "PACS Server Unavailable";
+$else$
+	if( e.status===undefined ) return "Xero Server Unavailable";
+	if( typeof(e)==="string" ) return e; 
+	if( e.status===502 ) return "PACS Server Unavailable.";
+	if( e.status===500 ) return "Internal Xero Error - please report this error to your support desk.";
+	if( e.status===200 ) return "You have been logged out - please select the logout button and login again.";
+	if( e.name==="SyntaxError" ) return "Problem parsing Xero server response.";
+	return "Unknown server error:"+e.status;
+$endif$
+}

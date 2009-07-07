@@ -35,7 +35,7 @@ NavConversation.prototype.getChild = function NC_getChild(id) {
 };
 
 /** Gets the key that identifies the external match data. This key identifies the merge object to use.  More than one merge object
- * can point at the same external object, this this is not necessarily the external id to use. 
+ * can point at the same external object, thus this.id is not necessarily the external id to use. 
  */
 NavConversation.prototype.getMergedId = function NC_getMergedId() {
 	this.getExternalId();

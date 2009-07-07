@@ -1,2 +1,2 @@
-<div class="imageMenuSeriesDesc">$layout.parent.image.SeriesDescription;format="xml"$</div>
+<div class="imageMenuSeriesDesc" style="width: $layout.parent.image.SeriesDescLength$ex;">$layout.parent.image.SeriesNumber;format="xml"$: $layout.parent.image.SeriesDescription;format="xml"$</div>
 $html/menuUL()$

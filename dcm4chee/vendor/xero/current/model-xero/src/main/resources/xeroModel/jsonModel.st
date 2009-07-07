@@ -12,6 +12,11 @@
 function JSONModel(urlSource) {
 	this.urlSource = urlSource;
 	if( this.isDebug ) this.debug = console.info;
+	var useThis = this;
+	
+	this.callback = function() {
+		useThis.parseData();	
+	}
 };
 
 JSONModel.prototype.debug = function() {};
@@ -24,24 +29,26 @@ JSONModel.prototype.debug = function() {};
  * The continuations idea is a good one, as it would allow parts of the view to be created and perhaps even 
  * displayed, but implementing it could be really hard.
  */
-JSONModel.prototype.request = function JM_request(service) {
+JSONModel.prototype.request = function JM_request(service, lazy) {
 	if(!service)
 		throw "Service not specified for data request";
 
 	if( !this.url ) {
+		if( !this.urlSource ) return;
 		this.url = this.urlSource.url;
 		if( !this.url ) {
 			console.warn("No URL specified.");
 			return;
 		}
 	}
-	this.requestUrl(service,this.url);
+	this.requestUrl(service,this.url,null,lazy);
 };
 
 /**
- * Makes the given request, along with any modifiers such as GSPS application.  
+ * Makes the given request, along with any modifiers such as GSPS application.
+ * If lazy is true, executes asynchronously  
  */
-JSONModel.prototype.requestUrl = function JM_requestUrl(service, url, modifiers) {
+JSONModel.prototype.requestUrl = function JM_requestUrl(service, url, modifiers, lazy) {
 	var request;
 	if( modifiers ) {
 		for(var key in modifiers) {
@@ -49,10 +56,26 @@ JSONModel.prototype.requestUrl = function JM_requestUrl(service, url, modifiers)
 		}
 	}
 	
+	if( lazy ) {
+		var useThis = this;
+		var handleResponse = function(str,e) {
+			if( str ) {
+				var data = useThis.parseJSON(str);
+				useThis.parse(data,modifiers);
+			}
+			useThis.url = null;
+			if( typeof(lazy)==="function" ) {
+				lazy(useThis,url, str, e);
+			}
+		};
+		service.requestAsync(url,handleResponse);
+		return;
+	}
+	
 	var jsonStr = service.request(url);
 	var data = this.parseJSON(jsonStr);
 	this.parse(data,modifiers);
-	this.url = "Done Request.";
+	this.url = null;
 };
 
 
