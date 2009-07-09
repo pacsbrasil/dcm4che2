@@ -12,5 +12,6 @@
       >CheckFilesToCompress</attribute>
     <depends optional-attribute-name="SchedulerServiceName"
       >dcm4chee.archive:service=Scheduler</depends>
+    <depends>jboss.j2ee:jndiName=ejb/FileSystemMgt2,service=EJB</depends>
   </mbean>
 </server>
