@@ -584,7 +584,7 @@ class PDUDecoder extends PDVInputStream
             nextPDU();
             if (pdutype != PDUType.P_DATA_TF)
             {
-                log.warn(as.toString() + ": Expected P-DATA-TF put received PDU[type="
+                log.warn(as.toString() + ": Expected P-DATA-TF but received PDU[type="
                         + pdutype + ", len=" + pdulen + "]");
                 throw new AAbort();
             }
