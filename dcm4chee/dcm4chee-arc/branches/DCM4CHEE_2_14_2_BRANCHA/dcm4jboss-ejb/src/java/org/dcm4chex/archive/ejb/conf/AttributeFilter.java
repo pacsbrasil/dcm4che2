@@ -149,6 +149,10 @@ public final class AttributeFilter {
         return this.fields;
     }
     
+    public boolean hasTag(int tag) {
+        int index = Arrays.binarySearch(tags,tag);
+        return index>=0;
+    }
 
     final void setFieldTags(int[] fieldTags) {
         this.fieldTags = fieldTags;        
