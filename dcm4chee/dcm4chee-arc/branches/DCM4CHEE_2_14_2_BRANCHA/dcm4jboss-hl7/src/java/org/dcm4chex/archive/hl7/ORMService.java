@@ -298,11 +298,15 @@ public class ORMService extends AbstractHL7Service {
                 for (int i = 0, n = perfSeriesSq.countItems(); i < n; i++) {
                     String uid = perfSeriesSq.getItem(i)
                             .getString(Tags.SeriesInstanceUID);
-                    mppsManager.updateSeriesAttributes(uid , rqAttrs, i == 0);
+                    updateSeriesAttributes(mppsManager, uid , rqAttrs, i == 0);
                 }
             }
         }
-
+    }
+    
+    protected void updateSeriesAttributes(MPPSManager mppsManager, String uid, Dataset newAttrs,
+        boolean updateStudyAttributes) throws Exception {
+        mppsManager.updateSeriesAttributes(uid, newAttrs, updateStudyAttributes);	
     }
     
     private void updateSPSStatus(Dataset mwlitem, Dataset mpps,
