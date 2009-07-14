@@ -254,38 +254,49 @@ public abstract class AEBean implements EntityBean {
     public abstract void setWadoURL(String desc);
 
     /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="vendor_data"
+     */
+    public abstract byte[] getVendorData();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setVendorData(byte[] vendorData);
+
+    /**
      * @ejb.create-method
      */
-    public Long ejbCreate(String title, String hostname, int port,
-            String cipherSuites, String issuer, String user, String passwd,
-            String fsGroupID, String desc, String wadoUrl, String stationName,
-            String institution, String department, boolean installed)
-            throws CreateException {
+    public Long ejbCreate(AEDTO dto) throws CreateException {
         if (log.isDebugEnabled()) {
-            log.debug("create AEBean(" + title + ")");
+            log.debug("create AEBean(" + dto.getTitle() + ")");
         }
-        setTitle(title);
-        setHostName(hostname);
-        setPort(port);
-        setCipherSuites(cipherSuites);
-        setIssuerOfPatientID(issuer);
-        setUserID(user);
-        setPassword(passwd);
-        setFileSystemGroupID(fsGroupID);
-        setDescription(desc);
-        setStationName(stationName);
-        setInstitution(institution);
-        setDepartment(department);
-        setInstalled(installed);
-        this.setWadoURL(wadoUrl);
+        update(dto);
         return null;
     }
 
-    public void ejbPostCreate(String title, String host, int port,
-            String cipherSuites, String issuer, String user, String passwd,
-            String fsGroupID, String desc, String wadoUrl, String stationName,
-            String institution, String department, boolean installed)
-            throws CreateException {
+    public void ejbPostCreate(AEDTO dto) throws CreateException {
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void update(AEDTO dto) {
+        setTitle(dto.getTitle());
+        setHostName(dto.getHostName());
+        setPort(dto.getPort());
+        setCipherSuites(dto.getCipherSuitesAsString());
+        setIssuerOfPatientID(dto.getIssuerOfPatientID());
+        setUserID(dto.getUserID());
+        setPassword(dto.getPassword());
+        setFileSystemGroupID(dto.getFileSystemGroupID());
+        setDescription(dto.getDescription());
+        setWadoURL(dto.getWadoURL());
+        setStationName(dto.getStationName());
+        setInstitution(dto.getInstitution());
+        setDepartment(dto.getDepartment());
+        setVendorData(dto.getVendorData());
+        setInstalled(dto.isInstalled());
     }
 
     /**
@@ -308,6 +319,7 @@ public abstract class AEBean implements EntityBean {
         dto.setStationName(getStationName());
         dto.setInstitution(getInstitution());
         dto.setDepartment(getDepartment());
+        dto.setVendorData(getVendorData());
         dto.setInstalled(getInstalled());
         return dto;
     }

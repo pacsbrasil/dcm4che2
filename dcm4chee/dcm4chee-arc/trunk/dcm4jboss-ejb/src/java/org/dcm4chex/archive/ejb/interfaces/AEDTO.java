@@ -39,7 +39,12 @@
 
 package org.dcm4chex.archive.ejb.interfaces;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.Properties;
 
 import org.dcm4cheri.util.StringUtils;
 
@@ -78,6 +83,7 @@ public class AEDTO implements Serializable {
     private String stationName;
     private String institution;
     private String department;
+    private byte[] vendorData;
     private boolean installed = true;
     
 
@@ -191,6 +197,37 @@ public class AEDTO implements Serializable {
     
     public final void setDepartment(String department) {
         this.department = department;
+    }
+
+    public final byte[] getVendorData() {
+        return vendorData;
+    }
+
+    public final void setVendorData(byte[] vendorData) {
+        this.vendorData = vendorData;
+    }
+
+    public Properties getVendorProperties(Properties defaults)
+            throws IOException {
+        Properties properties = new Properties(defaults);
+        if (vendorData != null) {
+            properties.load(new ByteArrayInputStream(vendorData));
+        }
+        return properties;
+    }
+
+    public void setVendorProperties(Properties properties) {
+        if (properties == null) {
+            vendorData = null;
+        } else {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            try {
+                properties.store(out , null);
+            } catch (IOException e) {
+                throw new AssertionError(e);
+            }
+            vendorData = out.size() == 0 ? null : out.toByteArray();
+        }
     }
 
     public final boolean isInstalled() {

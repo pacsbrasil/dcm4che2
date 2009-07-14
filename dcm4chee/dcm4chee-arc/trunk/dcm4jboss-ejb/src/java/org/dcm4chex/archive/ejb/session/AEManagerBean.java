@@ -205,20 +205,7 @@ public abstract class AEManagerBean implements SessionBean {
         try {
             AELocal ae = aeHome.findByPrimaryKey(new Long(modAE.getPk()));
             AEManagerBean.aeCache.remove(ae.getTitle());
-            ae.setTitle(modAE.getTitle());
-            ae.setHostName(modAE.getHostName());
-            ae.setPort(modAE.getPort());
-            ae.setCipherSuites(modAE.getCipherSuitesAsString());
-            ae.setIssuerOfPatientID(modAE.getIssuerOfPatientID());
-            ae.setUserID(modAE.getUserID());
-            ae.setPassword(modAE.getPassword());
-            ae.setFileSystemGroupID(modAE.getFileSystemGroupID());
-            ae.setDescription(modAE.getDescription());
-            ae.setWadoURL(modAE.getWadoURL());
-            ae.setStationName(modAE.getStationName());
-            ae.setInstitution(modAE.getInstitution());
-            ae.setDepartment(modAE.getDepartment());
-            ae.setInstalled(modAE.isInstalled());
+            ae.update(modAE);
        } catch (FinderException e) {
             ctx.setRollbackOnly();
             throw e;
@@ -229,21 +216,7 @@ public abstract class AEManagerBean implements SessionBean {
      * @ejb.interface-method
      */
     public void newAE(AEDTO newAE) throws CreateException {
-        aeHome.create(
-                newAE.getTitle(), 
-                newAE.getHostName(),
-                newAE.getPort(),
-                newAE.getCipherSuitesAsString(),
-                newAE.getIssuerOfPatientID(),
-                newAE.getUserID(),
-                newAE.getPassword(),
-                newAE.getFileSystemGroupID(),
-                newAE.getDescription(),
-                newAE.getWadoURL(),
-                newAE.getStationName(),
-                newAE.getInstitution(),
-                newAE.getDepartment(),
-                newAE.isInstalled());
+        aeHome.create(newAE);
     }
 
     /**
