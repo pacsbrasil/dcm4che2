@@ -334,29 +334,13 @@ public class AEService extends ServiceMBeanSupport {
 
     private AEDTO updateIP(AEDTO ae, InetAddress addr, AEManager aetMgr)
             throws Exception {
-        AEDTO ret = ae;
         String oldIP, newIP;
         if (autoUpdateIP && addr != null
                 && ActiveParticipant.isIP(oldIP = ae.getHostName())
                 && !oldIP.equals(newIP =  addr.getHostAddress())) {
-            ret = new AEDTO();
-            ret.setPk(ae.getPk());
-            ret.setTitle(ae.getTitle());
-            ret.setHostName(newIP);
-            ret.setPort(ae.getPort());
-            ret.setCipherSuitesAsString(ae.getCipherSuitesAsString());
-            ret.setIssuerOfPatientID(ae.getIssuerOfPatientID());
-            ret.setUserID(ae.getUserID());
-            ret.setPassword(ae.getPassword());
-            ret.setFileSystemGroupID(ae.getFileSystemGroupID());
-            ret.setDescription(ae.getDescription());
-            ret.setWadoURL(ae.getWadoURL());
-            ret.setStationName(ae.getStationName());
-            ret.setInstitution(ae.getInstitution());
-            ret.setDepartment(ae.getDepartment());
-            ret.setInstalled(ae.isInstalled());
-            aetMgr.updateAE(ret);
-            log.info("Update IP of " + ret );
+            ae.setHostName(newIP);
+            aetMgr.updateAE(ae);
+            log.info("Update IP of " + ae );
         }
         return ae;
     }
