@@ -14,6 +14,7 @@
     <module>dcm4che-audit</module>
     <module>dcm4che-core</module>
     <module>dcm4che-core-test-dictionary</module>
+    <module>dcm4che-filecache</module>
     <module>dcm4che-iod</module>
     <module>dcm4che-image</module>
     <module>dcm4che-imageio</module>
