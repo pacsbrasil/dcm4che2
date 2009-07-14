@@ -4,7 +4,8 @@ ALTER TABLE ae
    ADD station_name VARCHAR(255),
    ADD institution VARCHAR(255),
    ADD department VARCHAR(255),
-   ADD installed NUMERIC(1) NOT NULL;
+   ADD installed NUMERIC(1) NOT NULL,
+   ADD vendor_data BLOB;
 
 UPDATE ae
    SET installed=1;

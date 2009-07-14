@@ -339,22 +339,22 @@ public class AEService extends ServiceMBeanSupport {
         if (autoUpdateIP && addr != null
                 && ActiveParticipant.isIP(oldIP = ae.getHostName())
                 && !oldIP.equals(newIP =  addr.getHostAddress())) {
-            ret = new AEDTO(
-                    ae.getPk(),
-                    ae.getTitle(),
-                    newIP,
-                    ae.getPort(),
-                    ae.getCipherSuitesAsString(),
-                    ae.getIssuerOfPatientID(),
-                    ae.getUserID(),
-                    ae.getPassword(),
-                    ae.getFileSystemGroupID(),
-                    ae.getDescription(),
-                    ae.getWadoUrl(),
-                    ae.getStationName(),
-                    ae.getInstitution(),
-                    ae.getDepartment(),
-                    ae.getInstalled());
+            ret = new AEDTO();
+            ret.setPk(ae.getPk());
+            ret.setTitle(ae.getTitle());
+            ret.setHostName(newIP);
+            ret.setPort(ae.getPort());
+            ret.setCipherSuitesAsString(ae.getCipherSuitesAsString());
+            ret.setIssuerOfPatientID(ae.getIssuerOfPatientID());
+            ret.setUserID(ae.getUserID());
+            ret.setPassword(ae.getPassword());
+            ret.setFileSystemGroupID(ae.getFileSystemGroupID());
+            ret.setDescription(ae.getDescription());
+            ret.setWadoURL(ae.getWadoURL());
+            ret.setStationName(ae.getStationName());
+            ret.setInstitution(ae.getInstitution());
+            ret.setDepartment(ae.getDepartment());
+            ret.setInstalled(ae.isInstalled());
             aetMgr.updateAE(ret);
             log.info("Update IP of " + ret );
         }
@@ -368,8 +368,10 @@ public class AEService extends ServiceMBeanSupport {
         }
         String aeHost = addr.getHostName();
         for (int i = 0; i < portNumbers.length; i++) {
-            AEDTO ae = new AEDTO(-1, aet, aeHost, portNumbers[i], null, null,
-                    null, null, null, null, null, null, null, null, true);
+            AEDTO ae = new AEDTO();
+            ae.setTitle(aet);
+            ae.setHostName(aeHost);
+            ae.setPort(portNumbers[i]);
             if (echo(ae)) {
                 if (dontSaveIP) {
                     if (!aeHost.equals(addr.getHostAddress()))
@@ -419,14 +421,28 @@ public class AEService extends ServiceMBeanSupport {
             }
         }
 
+        AEDTO newAE = new AEDTO();
+        newAE.setPk(pk);
+        newAE.setTitle(title);
+        newAE.setHostName(host);
+        newAE.setPort(port);
+        newAE.setCipherSuitesAsString(cipher);
+        newAE.setIssuerOfPatientID(issuer);
+        newAE.setUserID(user);
+        newAE.setPassword(passwd);
+        newAE.setFileSystemGroupID(fsGroupID);
+        newAE.setDescription(desc);
+        newAE.setWadoURL(wadoUrl);
+        newAE.setStationName(stationName);
+        newAE.setInstitution(institution);
+        newAE.setDepartment(department);
+        newAE.setInstalled(installed);
         AEManager aeManager = aeMgr();
         if (pk == -1) {
-            AEDTO newAE = new AEDTO(-1, title, host, port, cipher, issuer,
-                    user, passwd, fsGroupID, desc, wadoUrl, stationName,
-                    institution, department, installed);
             aeManager.newAE(newAE);
             logActorConfig("Add AE " + newAE + " cipher:"
-                    + newAE.getCipherSuitesAsString(), SecurityAlertMessage.NETWORK_CONFIGURATION);
+                    + newAE.getCipherSuitesAsString(),
+                    SecurityAlertMessage.NETWORK_CONFIGURATION);
             notifyAETchange(null, title,"");
 
         } else {
@@ -440,9 +456,6 @@ public class AEService extends ServiceMBeanSupport {
                 } catch (UnknownAETException e) {}
                 oldAET = oldAE.getTitle();
             }
-            AEDTO newAE = new AEDTO(pk, title, host, port, cipher, issuer,
-                    user, passwd, fsGroupID, desc, wadoUrl, stationName,
-                    institution, department, installed);
             aeManager.updateAE(newAE);
             logActorConfig("Modify AE " + oldAE + " -> " + newAE,
                     SecurityAlertMessage.NETWORK_CONFIGURATION);

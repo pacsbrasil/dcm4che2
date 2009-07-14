@@ -14,7 +14,8 @@ CREATE TABLE ae (
     station_name    VARCHAR(255),
     institution     VARCHAR(255),
     department      VARCHAR(255),
-    installed       NUMERIC(1) NOT NULL
+    installed       NUMERIC(1) NOT NULL,
+    vendor_data     BLOB
 );
 CREATE UNIQUE INDEX aet ON ae(aet);
 

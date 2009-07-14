@@ -196,11 +196,23 @@ public class AEModel extends BasicFormModel {
                 sb.append(",").append(cipher3);
             cipherSuites = sb.toString();
         }
-        return new AEDTO(pk, this.title, this.hostName, this.port,
-                this.cipherSuites, this.issuerOfPatientID, this.userID,
-                this.passwd, this.fileSystemGroupID, this.description,
-                this.wadoUrl, this.stationName, this.institution,
-                this.department, this.installed);
+        AEDTO dto = new AEDTO();
+        dto.setPk(pk);
+        dto.setTitle(title);
+        dto.setHostName(hostName);
+        dto.setPort(port);
+        dto.setCipherSuitesAsString(cipherSuites);
+        dto.setIssuerOfPatientID(issuerOfPatientID);
+        dto.setUserID(userID);
+        dto.setPassword(passwd);
+        dto.setFileSystemGroupID(fileSystemGroupID);
+        dto.setDescription(description);
+        dto.setWadoURL(wadoUrl);
+        dto.setStationName(stationName);
+        dto.setInstitution(institution);
+        dto.setDepartment(department);
+        dto.setInstalled(installed);
+        return dto;
     }
 
     public void setAE(AEDTO ae) {
@@ -214,11 +226,11 @@ public class AEModel extends BasicFormModel {
         passwd = ae.getPassword();
         fileSystemGroupID = ae.getFileSystemGroupID();
         description = ae.getDescription();
-        wadoUrl = ae.getWadoUrl();
+        wadoUrl = ae.getWadoURL();
         stationName = ae.getStationName();
         institution = ae.getInstitution();
         department = ae.getDepartment();
-        installed = ae.getInstalled();
+        installed = ae.isInstalled();
     }
 
     public void setAet(String aet) {

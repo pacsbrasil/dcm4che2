@@ -146,11 +146,11 @@ public class AEDelegate {
                     ae.getPassword(),
                     ae.getFileSystemGroupID(),
                     ae.getDescription(),
-                    ae.getWadoUrl(),
+                    ae.getWadoURL(),
                     ae.getStationName(),
                     ae.getInstitution(),
                     ae.getDepartment(),
-                    ae.getInstalled(),
+                    ae.isInstalled(),
                     new Boolean(checkHost) },
                 new String[] {
                     long.class.getName(),

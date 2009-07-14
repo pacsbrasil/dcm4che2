@@ -3,7 +3,8 @@
 ALTER TABLE ae ADD (station_name  VARCHAR2(255),
                     institution  VARCHAR2(255),
                     department  VARCHAR2(255),
-                    installed NUMBER(1));
+                    installed NUMBER(1),
+                    vendor_data BLOB);
 
 UPDATE ae SET installed=1;
 ALTER TABLE ae MODIFY installed NOT NULL; 

@@ -349,8 +349,10 @@ public class HL7SendService extends ServiceMBeanSupport implements
     }
 
     public Document invoke(byte[] message, String receiver) throws Exception {
-        AEDTO localAE = new AEDTO(-1, receiver, "127.0.0.1", getLocalHL7Port(),
-                null, null, null, null, null, null, null, null, null, null, true);
+        AEDTO localAE = new AEDTO();
+        localAE.setTitle(receiver);
+        localAE.setHostName("127.0.0.1");
+        localAE.setPort(getLocalHL7Port());
         AEDTO remoteAE = LOCAL_HL7_AET.equals(receiver) 
                 ? localAE : aeMgt().findByAET(receiver);
         Socket s = tlsConfig.createSocket(localAE, remoteAE);
@@ -721,8 +723,10 @@ public class HL7SendService extends ServiceMBeanSupport implements
     public boolean sendHl7FromDataset( Dataset ds, Templates tpl, String sender, String receiver) {
         Socket s = null;
         try {
-            AEDTO localAE = new AEDTO(-1, receiver, "127.0.0.1", getLocalHL7Port(),
-                    null, null, null, null, null, null, null, null, null, null, true);
+            AEDTO localAE = new AEDTO();
+            localAE.setTitle(receiver);
+            localAE.setHostName("127.0.0.1");
+            localAE.setPort(getLocalHL7Port());
             AEDTO remoteAE = LOCAL_HL7_AET.equals(receiver) 
                     ? localAE : aeMgt().findByAET(receiver);
             s = tlsConfig.createSocket(localAE, remoteAE);

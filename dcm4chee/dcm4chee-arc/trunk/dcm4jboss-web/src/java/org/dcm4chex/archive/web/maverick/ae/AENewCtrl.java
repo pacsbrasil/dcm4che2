@@ -51,7 +51,7 @@ public class AENewCtrl extends AEFormCtrl
     protected String perform() throws Exception 
     {
         AEModel model = AEModel.getModel(getCtx().getRequest());
-        model.setAE( new AEDTO(-1,null,null,-1,null,null,null,null,null,null,null,null,null,null,true));
+        model.setAE(new AEDTO());
         return SUCCESS;
     }
 

@@ -1031,8 +1031,8 @@ public class WADOSupport {
         URL url = null;
         try {
             URL reqURL =  new URL( req.getRequestURL());
-            if ( aedto.getWadoUrl() != null ) {
-                URL baseURL = new URL(aedto.getWadoUrl());
+            if ( aedto.getWadoURL() != null ) {
+                URL baseURL = new URL(aedto.getWadoURL());
                 StringBuffer sbQuery = new StringBuffer();
                 sbQuery.append('?').append(REDIRECT_PARAM).append("=true");
                 sbQuery.append('&').append(reqURL.getQuery());
@@ -1048,7 +1048,7 @@ public class WADOSupport {
             }
         } catch (MalformedURLException e) {
             log.error("Malformed redirect URL to remote AET:" + aedto + " wadoURL:"
-                    + aedto.getWadoUrl(), e);
+                    + aedto.getWadoURL(), e);
         }
         if (log.isDebugEnabled())
             log.debug("redirect url:" + url);
@@ -1068,7 +1068,7 @@ public class WADOSupport {
     private WADOResponseObject getRemoteWADOObject(AEDTO aedto,
             WADORequestObject req) {
         if (log.isInfoEnabled())
-            log.info("WADO request redirected to aedto:" + aedto.getHostName()+" WADO URL:"+aedto.getWadoUrl());
+            log.info("WADO request redirected to aedto:" + aedto.getHostName()+" WADO URL:"+aedto.getWadoURL());
         URL url = null;
         try {
             url = getRedirectURL(aedto, req);
@@ -1817,7 +1817,7 @@ public class WADOSupport {
         }
 
         public String getWadoUrl() {
-            return aedto == null ? null : aedto.getWadoUrl();
+            return aedto == null ? null : aedto.getWadoURL();
         }
     }
 

@@ -13,7 +13,8 @@ CREATE TABLE ae (
     station_name      VARCHAR(250) BINARY,
     institution       VARCHAR(250) BINARY,
     department        VARCHAR(250) BINARY,
-    installed         BIT NOT NULL
+    installed         BIT NOT NULL,
+    vendor_data       LONGBLOB
 ) ENGINE=INNODB;
 CREATE UNIQUE INDEX aet ON ae(aet(64));
 

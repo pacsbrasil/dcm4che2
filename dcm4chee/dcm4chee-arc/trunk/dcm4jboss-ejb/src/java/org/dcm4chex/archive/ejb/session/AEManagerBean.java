@@ -214,11 +214,11 @@ public abstract class AEManagerBean implements SessionBean {
             ae.setPassword(modAE.getPassword());
             ae.setFileSystemGroupID(modAE.getFileSystemGroupID());
             ae.setDescription(modAE.getDescription());
-            ae.setWadoUrl(modAE.getWadoUrl());
+            ae.setWadoURL(modAE.getWadoURL());
             ae.setStationName(modAE.getStationName());
             ae.setInstitution(modAE.getInstitution());
             ae.setDepartment(modAE.getDepartment());
-            ae.setInstalled(modAE.getInstalled());
+            ae.setInstalled(modAE.isInstalled());
        } catch (FinderException e) {
             ctx.setRollbackOnly();
             throw e;
@@ -239,11 +239,11 @@ public abstract class AEManagerBean implements SessionBean {
                 newAE.getPassword(),
                 newAE.getFileSystemGroupID(),
                 newAE.getDescription(),
-                newAE.getWadoUrl(),
+                newAE.getWadoURL(),
                 newAE.getStationName(),
                 newAE.getInstitution(),
                 newAE.getDepartment(),
-                newAE.getInstalled());
+                newAE.isInstalled());
     }
 
     /**

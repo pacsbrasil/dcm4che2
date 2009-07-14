@@ -246,12 +246,12 @@ public abstract class AEBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.persistence column-name="wado_url"
      */
-    public abstract String getWadoUrl();
+    public abstract String getWadoURL();
 
     /**
      * @ejb.interface-method
      */
-    public abstract void setWadoUrl(String desc);
+    public abstract void setWadoURL(String desc);
 
     /**
      * @ejb.create-method
@@ -277,7 +277,7 @@ public abstract class AEBean implements EntityBean {
         setInstitution(institution);
         setDepartment(department);
         setInstalled(installed);
-        this.setWadoUrl(wadoUrl);
+        this.setWadoURL(wadoUrl);
         return null;
     }
 
@@ -293,22 +293,23 @@ public abstract class AEBean implements EntityBean {
      * @ejb.transaction type="Supports"
      */
     public AEDTO toDTO() {
-        return new AEDTO(
-                getPk().longValue(),
-                getTitle(),
-                getHostName(),
-                getPort(),
-                getCipherSuites(),
-                getIssuerOfPatientID(),
-                getUserID(),
-                getPassword(),
-                getFileSystemGroupID(),
-                getDescription(),
-                getWadoUrl(),
-                getStationName(),
-                getInstitution(),
-                getDepartment(),
-                getInstalled());
+        AEDTO dto = new AEDTO();
+        dto.setPk(getPk().longValue());
+        dto.setTitle(getTitle());
+        dto.setHostName(getHostName());
+        dto.setPort(getPort());
+        dto.setCipherSuitesAsString(getCipherSuites());
+        dto.setIssuerOfPatientID(getIssuerOfPatientID());
+        dto.setUserID(getUserID());
+        dto.setPassword(getPassword());
+        dto.setFileSystemGroupID(getFileSystemGroupID());
+        dto.setDescription(getDescription());
+        dto.setWadoURL(getWadoURL());
+        dto.setStationName(getStationName());
+        dto.setInstitution(getInstitution());
+        dto.setDepartment(getDepartment());
+        dto.setInstalled(getInstalled());
+        return dto;
     }
     
     /**

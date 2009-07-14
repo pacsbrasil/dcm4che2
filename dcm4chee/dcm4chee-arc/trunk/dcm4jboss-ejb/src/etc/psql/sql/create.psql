@@ -13,7 +13,8 @@ CREATE TABLE ae (
     station_name      TEXT,
     institution       TEXT,
     department        TEXT,
-    installed         BOOLEAN NOT NULL
+    installed         BOOLEAN NOT NULL,
+    vendor_data       BYTEA
 );
 CREATE UNIQUE INDEX aet ON ae(aet);
 

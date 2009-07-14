@@ -7,7 +7,8 @@ ALTER TABLE ae
    ADD station_name VARCHAR(254)
    ADD institution VARCHAR(254)
    ADD department VARCHAR(254)
-   ADD installed SMALLINT NOT NULL DEFAULT 1;
+   ADD installed SMALLINT NOT NULL DEFAULT 1
+   ADD vendor_data BLOB(16384);
 
 ALTER TABLE ae
    ALTER COLUMN installed DROP DEFAULT;
