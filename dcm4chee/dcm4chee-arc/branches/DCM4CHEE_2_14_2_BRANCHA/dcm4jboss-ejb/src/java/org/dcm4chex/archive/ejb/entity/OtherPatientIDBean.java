@@ -85,10 +85,21 @@ public abstract class OtherPatientIDBean implements EntityBean {
         try {
             try {
                 return opidhome.findByPatientIdAndIssuer(pid, issuer);
-            } catch (ObjectNotFoundException e) {
-                return opidhome.create(pid, issuer);
+            }  
+            catch (ObjectNotFoundException findEx) {
+                try {
+                    return opidhome.create(pid, issuer);
+                }
+                catch (CreateException createEx) {
+                    log.debug("Can neither find nor create. Retry to find.");
+                    OtherPatientIDLocal opidLocal = opidhome.findByPatientIdAndIssuer(pid, issuer);
+                    log.debug("Found now the other patient ID in the retry.");
+                    return opidLocal;
+                }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
+            log.error("Fail to find or to create other-patient-id: "+pid+"^^^"+issuer);
             throw new EJBException(e);
         }
     }
