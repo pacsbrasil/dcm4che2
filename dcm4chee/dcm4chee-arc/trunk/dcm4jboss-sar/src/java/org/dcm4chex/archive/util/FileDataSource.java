@@ -245,26 +245,6 @@ public class FileDataSource implements DataSource {
             }
             int pixelDataLen = parser.getReadLength();
             boolean encapsulated = pixelDataLen == -1;
-            if (withoutPixeldata1) {
-                // skip Pixel Data
-                if (!encapsulated) {
-                    dis.skipBytes(pixelDataLen);
-                } else {
-                    do {
-                        parser.parseHeader();
-                        dis.skipBytes(parser.getReadLength());
-                    } while (parser.getReadTag() == Tags.Item);
-                }
-                // parse attributes after Pixel Data
-                parser.parseDataset(parser.getDcmDecodeParam(), -1);
-                log.debug("Dataset:\n");
-                log.debug(ds);
-                write(ds, out, enc);
-                return;
-            }
-            log.debug("Dataset:\n");
-            log.debug(ds);
-            write(ds, out, enc);
             int framesInFile = ds.getInt(Tags.NumberOfFrames, 1);
             if (simpleFrameList != null) {
                 if (simpleFrameList[simpleFrameList.length - 1] > framesInFile) {
@@ -285,6 +265,26 @@ public class FileDataSource implements DataSource {
                 adjustNumberOfFrames(ds);
                 replaceIUIDs(ds);
             }
+            if (withoutPixeldata1) {
+                // skip Pixel Data
+                if (!encapsulated) {
+                    dis.skipBytes(pixelDataLen);
+                } else {
+                    do {
+                        parser.parseHeader();
+                        dis.skipBytes(parser.getReadLength());
+                    } while (parser.getReadTag() == Tags.Item);
+                }
+                // parse attributes after Pixel Data
+                parser.parseDataset(parser.getDcmDecodeParam(), -1);
+                log.debug("Dataset:\n");
+                log.debug(ds);
+                write(ds, out, enc);
+                return;
+            }
+            log.debug("Dataset:\n");
+            log.debug(ds);
+            write(ds, out, enc);
             if (!encapsulated) {
                 // copy native Pixel Data
                 if (simpleFrameList == null) {
@@ -338,7 +338,7 @@ public class FileDataSource implements DataSource {
                             parser.parseHeader();
                             itemlen = parser.getReadLength();
                         }
-                        ds.writeHeader(out, enc, Tags.Item, VRs.NONE, 0);
+                        ds.writeHeader(out, enc, Tags.Item, VRs.NONE, itemlen);
                         copyBytes(dis, out, itemlen, buffer);
                     }
                     ds.writeHeader(out, enc, Tags.SeqDelimitationItem,
