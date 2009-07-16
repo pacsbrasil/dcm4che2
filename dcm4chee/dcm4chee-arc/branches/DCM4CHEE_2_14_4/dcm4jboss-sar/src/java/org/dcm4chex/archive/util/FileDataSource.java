@@ -263,7 +263,8 @@ public class FileDataSource implements DataSource {
                 addSourceImageSeq(ds);
                 addContributingEquipmentSeq(ds);
                 adjustNumberOfFrames(ds);
-                replaceIUIDs(ds);
+                ds.putUI(Tags.SOPInstanceUID,
+                        UIDGenerator.getInstance().createUID());
             }
             if (withoutPixeldata1) {
                 // skip Pixel Data
@@ -419,12 +420,6 @@ public class FileDataSource implements DataSource {
         return seq != null ? seq : ds.putSQ(Tags.SourceImageSeq);
     }
 
-    private void replaceIUIDs(Dataset ds) {
-        UIDGenerator uidgen = UIDGenerator.getInstance();
-        ds.putUI(Tags.SOPInstanceUID, uidgen.createUID());
-        ds.putUI(Tags.SeriesInstanceUID, uidgen.createUID());
-    }
-    
     private int[] calculateFrameList(int frames) {
         int[] src = new int[frames];
         int length = 0;
