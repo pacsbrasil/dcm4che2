@@ -42,90 +42,97 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.SampleModel;
 
 public class PartialComponentSampleModel extends SampleModel {
-	
-	protected final int subsampleX, subsampleY;
-	int rowLen, rowsWithBR, rowsWithoutBR, size;
-	static final int[] sampleSize = new int[]{8,8,8};
-	
-	/** Sub-sample x,y are the rate of sub-sampling.  YBR_X_422 corresponds to 2, 1, while YBR_X_420 corresponds to 2,2 */
-	public PartialComponentSampleModel(int w, int h, int subsampleX, int subsampleY) {
-		super(DataBuffer.TYPE_BYTE, w, h, 3);
-		this.subsampleX = subsampleX;
-		this.subsampleY = subsampleY;
-		rowLen = (w * (subsampleX+2))/ subsampleX;
-		rowsWithBR = h/subsampleY;
-		rowsWithoutBR = h-rowsWithBR;
-		size = w*rowsWithoutBR + rowLen*rowsWithBR;
-	}
 
-	@Override
-	public SampleModel createCompatibleSampleModel(int w, int h) {
-		return new PartialComponentSampleModel(w,h, this.subsampleX, this.subsampleY);
-	}
+    protected final int subsampleX, subsampleY;
+    int rowLen, rowsWithBR, rowsWithoutBR, size;
+    static final int[] sampleSize = new int[] { 8, 8, 8 };
 
-	@Override
-	public DataBuffer createDataBuffer() {
-		return new DataBufferByte(size);
-	}
+    /**
+     * Sub-sample x,y are the rate of sub-sampling. YBR_X_422 corresponds to 2,
+     * 1, while YBR_X_420 corresponds to 2,2
+     */
+    public PartialComponentSampleModel(int w, int h, int subsampleX,
+            int subsampleY) {
+        super(DataBuffer.TYPE_BYTE, w, h, 3);
+        this.subsampleX = subsampleX;
+        this.subsampleY = subsampleY;
+        rowLen = (w * (subsampleX + 2)) / subsampleX;
+        rowsWithBR = h / subsampleY;
+        rowsWithoutBR = h - rowsWithBR;
+        size = w * rowsWithoutBR + rowLen * rowsWithBR;
+    }
 
-	@Override
-	public SampleModel createSubsetSampleModel(int[] bands) {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public SampleModel createCompatibleSampleModel(int w, int h) {
+        return new PartialComponentSampleModel(w, h, this.subsampleX,
+                this.subsampleY);
+    }
 
-	@Override
-	public Object getDataElements(int x, int y, Object obj, DataBuffer data) {
-		byte[] ret;
-		DataBufferByte dbb = (DataBufferByte) data;
-		if( (obj instanceof byte[]) && ((byte[]) obj).length==3 ) ret = (byte[]) obj;
-		else ret = new byte[3];
-		int yWithBR = y/subsampleY;
-		int yWithoutBR = y - yWithBR;
-		int yStart = yWithoutBR * getWidth() + rowLen * yWithBR;
-		byte[] ba = dbb.getData();
-		if( subsampleY==1 || (y % subsampleY == 0) ) {
-			int xOffset = x % subsampleX;
-			int xWithBR = x/subsampleX;
-			int xStart = yStart + xWithBR*(2+subsampleX);
-			ret[0] = ba[xStart+xOffset];
-			ret[1] = ba[xStart+subsampleX];
-			ret[2] = ba[xStart+subsampleX+1];
-		} else {
-			int yHavingBR = (y - y % subsampleY);
-			ret = (byte[]) getDataElements(x,yHavingBR, ret, data);
-			ret[0] = dbb.getData()[yStart+x];
-		}
-		return ret;
-	}
+    @Override
+    public DataBuffer createDataBuffer() {
+        return new DataBufferByte(size);
+    }
 
-	@Override
-	public int getNumDataElements() {
-		return 3;
-	}
+    @Override
+    public SampleModel createSubsetSampleModel(int[] bands) {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public int getSample(int x, int y, int b, DataBuffer data) {
-		return ((byte[]) getDataElements(x,y,null,data))[b];
-	}
+    @Override
+    public Object getDataElements(int x, int y, Object obj, DataBuffer data) {
+        byte[] ret;
+        DataBufferByte dbb = (DataBufferByte) data;
+        if ((obj instanceof byte[]) && ((byte[]) obj).length == 3)
+            ret = (byte[]) obj;
+        else
+            ret = new byte[3];
+        int yWithBR = y / subsampleY;
+        int yWithoutBR = y - yWithBR;
+        int yStart = yWithoutBR * getWidth() + rowLen * yWithBR;
+        byte[] ba = dbb.getData();
+        if (subsampleY == 1 || (y % subsampleY == 0)) {
+            int xOffset = x % subsampleX;
+            int xWithBR = x / subsampleX;
+            int xStart = yStart + xWithBR * (2 + subsampleX);
+            ret[0] = ba[xStart + xOffset];
+            ret[1] = ba[xStart + subsampleX];
+            ret[2] = ba[xStart + subsampleX + 1];
+        } else {
+            int yHavingBR = (y - y % subsampleY);
+            ret = (byte[]) getDataElements(x, yHavingBR, ret, data);
+            ret[0] = dbb.getData()[yStart + x];
+        }
+        return ret;
+    }
 
-	@Override
-	public int[] getSampleSize() {
-		return sampleSize;
-	}
+    @Override
+    public int getNumDataElements() {
+        return 3;
+    }
 
-	@Override
-	public int getSampleSize(int band) {
-		return sampleSize[band];
-	}
+    @Override
+    public int getSample(int x, int y, int b, DataBuffer data) {
+        return ((byte[]) getDataElements(x, y, null, data))[b];
+    }
 
-	@Override
-	public void setDataElements(int x, int y, Object obj, DataBuffer data) {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public int[] getSampleSize() {
+        return sampleSize;
+    }
 
-	@Override
-	public void setSample(int x, int y, int b, int s, DataBuffer data) {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public int getSampleSize(int band) {
+        return sampleSize[band];
+    }
+
+    @Override
+    public void setDataElements(int x, int y, Object obj, DataBuffer data) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setSample(int x, int y, int b, int s, DataBuffer data) {
+        throw new UnsupportedOperationException();
+    }
 
 }
