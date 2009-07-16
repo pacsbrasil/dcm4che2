@@ -67,6 +67,7 @@ import javax.imageio.stream.ImageInputStream;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.image.ByteLookupTable;
 import org.dcm4che2.image.ColorModelFactory;
 import org.dcm4che2.image.LookupTable;
@@ -79,6 +80,7 @@ import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
 import org.dcm4che2.imageio.plugins.dcm.DicomStreamMetaData;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.StopTagInputHandler;
+import org.dcm4che2.util.ByteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,6 +126,10 @@ public class DicomImageReader extends ImageReader {
     private boolean monochrome;
 
     private boolean banded;
+
+    private boolean bigEndian;
+
+    private boolean swapByteOrder;
 
     private long pixelDataPos;
 
@@ -191,6 +197,8 @@ public class DicomImageReader extends ImageReader {
         dataType = 0;
         samples = 0;
         banded = false;
+        bigEndian = false;
+        swapByteOrder = false;
         pixelDataPos = 0L;
         pixelDataLen = 0;
         tsuid = null;
@@ -261,6 +269,7 @@ public class DicomImageReader extends ImageReader {
         ds = dis.readDicomObject();
         streamMetaData = new DicomStreamMetaData();
         streamMetaData.setDicomObject(ds);
+        bigEndian = dis.getTransferSyntax().bigEndian();
         tsuid = ds.getString(Tag.TransferSyntaxUID);
         width = ds.getInt(Tag.Columns);
         height = ds.getInt(Tag.Rows);
@@ -276,6 +285,12 @@ public class DicomImageReader extends ImageReader {
         if (dis.tag() == Tag.PixelData) {
             if (frames == 0)
                 frames = 1;
+            swapByteOrder = bigEndian && dis.vr() == VR.OW
+                    && dataType == DataBuffer.TYPE_BYTE;
+            if (swapByteOrder && banded) {
+                throw new UnsupportedOperationException(
+                        "Big Endian color-by-plane with Pixel Data VR=OW not implemented");
+            }
             pixelDataPos = dis.getStreamPosition();
             pixelDataLen = dis.valueLength();
             compressed = pixelDataLen == -1;
@@ -330,8 +345,8 @@ public class DicomImageReader extends ImageReader {
         Arrays.fill(imageDimensions, new Dimension(width, height));
         RawImageInputStream riis = new RawImageInputStream(iis,
                 createImageTypeSpecifier(), frameOffsets, imageDimensions);
-        riis.setByteOrder(ds.bigEndian() ? ByteOrder.BIG_ENDIAN
-                : ByteOrder.LITTLE_ENDIAN);
+        riis.setByteOrder(bigEndian ? ByteOrder.BIG_ENDIAN
+                                    : ByteOrder.LITTLE_ENDIAN);
         reader = ImageIO.getImageReadersByFormatName("RAW").next();
         reader.setInput(riis);
     }
@@ -430,9 +445,17 @@ public class DicomImageReader extends ImageReader {
             log.debug("Seeking to "+(pixelDataPos + imageIndex * data.length)+" and reading "+data.length+" bytes.");
             iis.seek(pixelDataPos + imageIndex * data.length);
             iis.read(data);
+            if (swapByteOrder) {
+                ByteUtils.toggleShortEndian(data);
+            }
             return wr;
         }
-        return reader.readRaster(imageIndex, param);
+        Raster raster = reader.readRaster(imageIndex, param);
+        if (swapByteOrder) {
+            ByteUtils.toggleShortEndian(
+                    ((DataBufferByte)raster.getDataBuffer()).getData());
+        }
+        return raster;
     }
 
     /**
@@ -469,6 +492,10 @@ public class DicomImageReader extends ImageReader {
                     wr, false, null);
         } else {
             bi = reader.read(imageIndex, param);
+            if (swapByteOrder) {
+                ByteUtils.toggleShortEndian(
+                        ((DataBufferByte)bi.getRaster().getDataBuffer()).getData());
+            }
         }
         if (monochrome) {
             WritableRaster raster = bi.getRaster();
