@@ -84,9 +84,9 @@ public class ImageWriterFactory extends ImageReaderWriterFactory {
         }
         final String formatName = s.substring(0, delim);
         final String className = s.substring(delim+1);
-        for (Iterator it = ImageIO.getImageWritersByFormatName(formatName);
+        for (Iterator<ImageWriter> it = ImageIO.getImageWritersByFormatName(formatName);
                 it.hasNext();) {
-            ImageWriter r = (ImageWriter) it.next();
+            ImageWriter r = it.next();
             if (className.equals(r.getClass().getName())) {
                 return r;
             }

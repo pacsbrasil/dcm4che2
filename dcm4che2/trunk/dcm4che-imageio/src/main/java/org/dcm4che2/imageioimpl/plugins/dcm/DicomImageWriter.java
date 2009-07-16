@@ -252,7 +252,9 @@ public class DicomImageWriter extends ImageWriter {
             bytes = (dobj.getInt(Tag.BitsAllocated, 8)+7) / 8;
             int samples = dobj.getInt(Tag.SamplesPerPixel);
             int size = frames * width * height * bytes * samples;
-            dos.writeHeader(Tag.PixelData, VR.OB, size);
+            VR vr = VR.OB;
+            if( bytes>1 ) vr = VR.OW;
+            dos.writeHeader(Tag.PixelData, vr, size);
         }
         dos.flush();
         ((ImageOutputStream) output).flush();
@@ -299,7 +301,7 @@ public class DicomImageWriter extends ImageWriter {
         baos.close();
         byte[] data = baos.toByteArray();
         // Write little endian raw data
-        if( (!encapsulated) && bytes==2 ) {
+        if( (!encapsulated) && bytes==2 && ! dos.getTransferSyntax().bigEndian() ) {
         	for(int i=0; i<data.length; i+=2) {
         		byte swap = data[i];
         		data[i] = data[i+1];
