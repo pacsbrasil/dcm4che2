@@ -77,21 +77,26 @@ public class ShortLookupTable extends LookupTable {
 
     @Override
     public final byte[] lookup(byte[] src, int srcPos, byte[] dst, int dstPos,
-            int length) {
-        if( srcPos + length >  src.length) {
+            int length, int channels, int skip) {
+    	int byteLength = length*(channels+skip);
+        if( srcPos + byteLength >  src.length) {
             throw new IndexOutOfBoundsException(
                     "srcPos:" + srcPos + " + length:" + length
                     + " > src.length:" + src.length);
         }
         if (dst == null) {
-            dst = new byte[dstPos + length];
-        } else if (dstPos + length  >  dst.length) {
+            dst = new byte[dstPos + byteLength];
+        } else if (dstPos + byteLength  >  dst.length) {
             throw new IndexOutOfBoundsException(
                     "dstPos:" + dstPos + " + length:" + length
                     + " > dst.length:" + dst.length);
         }
         for (int x = srcPos, y = dstPos, i = length; i-- > 0;) {
-            dst[y++] = lookupByte(src[x++]);
+        	for(int ch=0; ch<channels; ch++) {
+        		dst[y++] = lookupByte(src[x++]);
+        	}
+        	y += skip;
+        	x += skip;
         }
         return dst;
     }
