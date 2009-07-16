@@ -252,9 +252,7 @@ public class DicomImageWriter extends ImageWriter {
             bytes = (dobj.getInt(Tag.BitsAllocated, 8)+7) / 8;
             int samples = dobj.getInt(Tag.SamplesPerPixel);
             int size = frames * width * height * bytes * samples;
-            VR vr = VR.OB;
-            if( bytes>1 ) vr = VR.OW;
-            dos.writeHeader(Tag.PixelData, vr, size);
+            dos.writeHeader(Tag.PixelData, VR.OB, size);
         }
         dos.flush();
         ((ImageOutputStream) output).flush();
