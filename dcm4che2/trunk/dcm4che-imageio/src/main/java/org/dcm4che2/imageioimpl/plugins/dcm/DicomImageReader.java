@@ -354,13 +354,13 @@ public class DicomImageReader extends ImageReader {
             return new BandedSampleModel(dataType, width, height, width,
                     OFFSETS_0_1_2, OFFSETS_0_0_0);
         }
-        
+
         if( (!compressed) && pmi.endsWith("422" ) ) {
-        	return new PartialComponentSampleModel(width, height, 2, 1);
+            return new PartialComponentSampleModel(width, height, 2, 1);
         }
-        
+
         if( (!compressed) && pmi.endsWith("420") ) {
-        	return new PartialComponentSampleModel(width,height,2,2);
+            return new PartialComponentSampleModel(width,height,2,2);
         }
         
         return new PixelInterleavedSampleModel(dataType, width, height, 3,
@@ -415,20 +415,22 @@ public class DicomImageReader extends ImageReader {
             return decompressRaster(imageIndex, param1);
         }
         if( pmi.endsWith("422") || pmi.endsWith("420") ) {
-        	log.debug("Using a 422/420 partial component image reader.");
-        	if( param.getSourceXSubsampling()!=1 || param.getSourceYSubsampling()!=1 || param.getSourceRegion()!=null )
-        	{
-        		log.warn("YBR_*_422 and 420 reader does not support source sub-sampling or source region.");
-        		throw new UnsupportedOperationException("Implement sub-sampling/soure region.");
-        	}
-        	SampleModel sm = createSampleModel();
-        	WritableRaster wr = Raster.createWritableRaster(sm, new Point());
-        	DataBufferByte dbb = (DataBufferByte) wr.getDataBuffer();
-        	byte[] data = dbb.getData();
-        	log.debug("Seeking to "+(pixelDataPos + imageIndex * data.length)+" and reading "+data.length+" bytes.");
-        	iis.seek(pixelDataPos + imageIndex * data.length);
-        	iis.read(data);
-        	return wr;
+            log.debug("Using a 422/420 partial component image reader.");
+            if( param.getSourceXSubsampling()!=1 
+                    || param.getSourceYSubsampling()!=1 
+                    || param.getSourceRegion()!=null )
+            {
+                log.warn("YBR_*_422 and 420 reader does not support source sub-sampling or source region.");
+                throw new UnsupportedOperationException("Implement sub-sampling/soure region.");
+            }
+            SampleModel sm = createSampleModel();
+            WritableRaster wr = Raster.createWritableRaster(sm, new Point());
+            DataBufferByte dbb = (DataBufferByte) wr.getDataBuffer();
+            byte[] data = dbb.getData();
+            log.debug("Seeking to "+(pixelDataPos + imageIndex * data.length)+" and reading "+data.length+" bytes.");
+            iis.seek(pixelDataPos + imageIndex * data.length);
+            iis.read(data);
+            return wr;
         }
         return reader.readRaster(imageIndex, param);
     }
@@ -462,8 +464,9 @@ public class DicomImageReader extends ImageReader {
             bi = reader.read(0, param1);
             postDecompress();
         } else if( pmi.endsWith("422") || pmi.endsWith("420") ) {
-        	WritableRaster wr = (WritableRaster) readRaster(imageIndex, param);
-        	bi = new BufferedImage(ColorModelFactory.createColorModel(ds),wr,false,null);
+            WritableRaster wr = (WritableRaster) readRaster(imageIndex, param);
+            bi = new BufferedImage(ColorModelFactory.createColorModel(ds),
+                    wr, false, null);
         } else {
             bi = reader.read(imageIndex, param);
         }
@@ -487,8 +490,9 @@ public class DicomImageReader extends ImageReader {
                     short[] ss = ((DataBufferShort) destData).getData();
                     return new BufferedImage(cm, Raster.createWritableRaster(
                             raster.getSampleModel(), new DataBufferUShort(ss,
-                                    ss.length), null), cm
-                            .isAlphaPremultiplied(), new Hashtable<Object,Object>());
+                                    ss.length), null),
+                            cm.isAlphaPremultiplied(),
+                            new Hashtable<Object,Object>());
                 }
             }
         }
