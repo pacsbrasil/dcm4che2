@@ -59,7 +59,7 @@ import javax.persistence.Table;
 public class AE extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -3132017392325052134L;
-    
+
     @Column(name = "aet", nullable = false)
     private String title;
 
@@ -68,7 +68,7 @@ public class AE extends BaseEntity implements Serializable {
 
     @Column(name = "port", nullable = false)
     private int port;
-    
+
     @Column(name = "cipher_suites")
     private String cipherSuites;
 
@@ -86,16 +86,16 @@ public class AE extends BaseEntity implements Serializable {
 
     @Column(name = "ae_desc")
     private String description;
-    
+
     @Column(name = "station_name")
     private String stationName;
-    
+
     @Column(name = "institution")
     private String institution;
-    
+
     @Column(name = "department")
     private String department;
-    
+
     @Column(name = "installed")
     private boolean installed;
 
@@ -115,7 +115,7 @@ public class AE extends BaseEntity implements Serializable {
     }
 
     public void setHostName(String hostName) {
-       this.hostName = hostName;
+        this.hostName = hostName;
     }
 
     public int getPort() {
@@ -208,38 +208,38 @@ public class AE extends BaseEntity implements Serializable {
     }
 
     public String getStationName() {
-		return stationName;
-	}
+        return stationName;
+    }
 
-	public void setStationName(String stationName) {
-		this.stationName = stationName;
-	}
+    public void setStationName(String stationName) {
+        this.stationName = stationName;
+    }
 
-	public String getInstitution() {
-		return institution;
-	}
+    public String getInstitution() {
+        return institution;
+    }
 
-	public void setInstitution(String institution) {
-		this.institution = institution;
-	}
+    public void setInstitution(String institution) {
+        this.institution = institution;
+    }
 
-	public String getDepartment() {
-		return department;
-	}
+    public String getDepartment() {
+        return department;
+    }
 
-	public void setDepartment(String department) {
-		this.department = department;
-	}
+    public void setDepartment(String department) {
+        this.department = department;
+    }
 
-	public boolean isInstalled() {
-		return installed;
-	}
+    public boolean isInstalled() {
+        return installed;
+    }
 
-	public void setInstalled(boolean installed) {
-		this.installed = installed;
-	}
+    public void setInstalled(boolean installed) {
+        this.installed = installed;
+    }
 
-	@Override
+    @Override
     public String toString() {
         return getProtocol() + "://" + title + '@' + hostName + ':' + port;
     }
