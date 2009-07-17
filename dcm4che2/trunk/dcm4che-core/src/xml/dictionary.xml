@@ -171,6 +171,11 @@
 <element tag="00081155" alias="ReferencedSOPInstanceUID" vr="UI" vm="1" ret="">Referenced SOP Instance UID</element>
 <element tag="0008115A" alias="SOPClassesSupported" vr="UI" vm="1-n" ret="">SOP Classes Supported</element>
 <element tag="00081160" alias="ReferencedFrameNumber" vr="IS" vm="1-n" ret="">Referenced Frame Number</element>
+<element tag="00081161" alias="SimpleFrameList" vr="UL" vm="1-n" ret="">Simple Frame List</element>
+<element tag="00081162" alias="CalculatedFrameList" vr="UL" vm="3-3n" ret="">Calculated Frame List</element>
+<element tag="00081163" alias="TimeRange" vr="FD" vm="2" ret="">Time Range</element>
+<element tag="00081164" alias="FrameExtractionSequence" vr="SQ" vm="1" ret="">Frame Extraction Sequence</element>
+<element tag="00081167" alias="MultiFrameSourceSOPInstanceUID" vr="UI" vm="1" ret="">Multi-Frame Source SOP Instance UID</element>
 <element tag="00081195" alias="TransactionUID" vr="UI" vm="1" ret="">Transaction UID</element>
 <element tag="00081197" alias="FailureReason" vr="US" vm="1" ret="">Failure Reason</element>
 <element tag="00081198" alias="FailedSOPSequence" vr="SQ" vm="1" ret="">Failed SOP Sequence</element>
@@ -1907,7 +1912,7 @@
 <element tag="00720512" alias="ReformattingThickness" vr="FD" vm="1" ret="">Reformatting Thickness</element>
 <element tag="00720514" alias="ReformattingInterval" vr="FD" vm="1" ret="">Reformatting Interval</element>
 <element tag="00720516" alias="ReformattingOperationInitialViewDirection" vr="CS" vm="1" ret="">Reformatting Operation Initial View Direction</element>
-<element tag="00720520" alias="_3DRenderingType" vr="CS" vm="1-n" ret="">3D Rendering Type</element>
+<element tag="00720520" alias="ThreeDRenderingType" vr="CS" vm="1-n" ret="">3D Rendering Type</element>
 <element tag="00720600" alias="SortingOperationsSequence" vr="SQ" vm="1" ret="">Sorting Operations Sequence</element>
 <element tag="00720602" alias="SortbyCategory" vr="CS" vm="1" ret="">Sort-by Category</element>
 <element tag="00720604" alias="SortingDirection" vr="CS" vm="1" ret="">Sorting Direction</element>

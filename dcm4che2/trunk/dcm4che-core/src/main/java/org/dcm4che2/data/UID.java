@@ -42,7 +42,6 @@ public class UID {
 
     /** Private constructor */
     private UID() {
-        // Suppresses default constructor, ensuring non-instantiability.
     }
     
     public static final String forName(String name) {
@@ -825,6 +824,15 @@ public class UID {
 
     /** Patient/Study Only Query/Retrieve Information Model - GET (Retired) - SOP Class */
     public static final String PatientStudyOnlyQueryRetrieveInformationModelGETRetired = "1.2.840.10008.5.1.4.1.2.3.3";
+
+    /** Composite Instance Root Retrieve - MOVE - SOP Class */
+    public static final String CompositeInstanceRootRetrieveMOVE = "1.2.840.10008.5.1.4.1.2.4.2";
+
+    /** Composite Instance Root Retrieve - GET - SOP Class */
+    public static final String CompositeInstanceRootRetrieveGET = "1.2.840.10008.5.1.4.1.2.4.3";
+
+    /** Composite Instance Retrieve Without Bulk Data - GET - SOP Class */
+    public static final String CompositeInstanceRetrieveWithoutBulkDataGET = "1.2.840.10008.5.1.4.1.2.5.3";
 
     /** Modality Worklist Information Model - FIND - SOP Class */
     public static final String ModalityWorklistInformationModelFIND = "1.2.840.10008.5.1.4.31";

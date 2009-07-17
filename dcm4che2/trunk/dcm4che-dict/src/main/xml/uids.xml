@@ -2,12 +2,14 @@
 <!DOCTYPE uids [
 <!ENTITY p06 SYSTEM "../../../target/xml/p6_uid/08_06pu.xml">
 <!ENTITY sup117 SYSTEM "../../../target/xml/p6_uid/sup117_ft.xml">
+<!ENTITY sup119 SYSTEM "../../../target/xml/p6_uid/sup119_ft3.xml">
 <!ENTITY sup130 SYSTEM "../../../target/xml/p6_uid/sup130_ft.xml">
 <!ENTITY private SYSTEM "private-uids.xml">
 ]>
 <uids>
 &p06;
 &sup117;
+&sup119;
 &sup130;
 &private;
 </uids>

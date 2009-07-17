@@ -610,6 +610,21 @@ public class Tag {
     /** (0008,1160) VR=IS, VM=1-n Referenced Frame Number  */
     public static final int ReferencedFrameNumber = 0x00081160;
 
+    /** (0008,1161) VR=UL, VM=1-n Simple Frame List  */
+    public static final int SimpleFrameList = 0x00081161;
+
+    /** (0008,1162) VR=UL, VM=3-3n Calculated Frame List  */
+    public static final int CalculatedFrameList = 0x00081162;
+
+    /** (0008,1163) VR=FD, VM=2 Time Range  */
+    public static final int TimeRange = 0x00081163;
+
+    /** (0008,1164) VR=SQ, VM=1 Frame Extraction Sequence  */
+    public static final int FrameExtractionSequence = 0x00081164;
+
+    /** (0008,1167) VR=UI, VM=1 Multi-Frame Source SOP Instance UID  */
+    public static final int MultiFrameSourceSOPInstanceUID = 0x00081167;
+
     /** (0008,1195) VR=UI, VM=1 Transaction UID  */
     public static final int TransactionUID = 0x00081195;
 

@@ -257,6 +257,9 @@
 <uid value="1.2.840.10008.5.1.4.1.2.3.1" alias="PatientStudyOnlyQueryRetrieveInformationModelFINDRetired" type="SOP Class">Patient/Study Only Query/Retrieve Information Model - FIND (Retired)</uid>
 <uid value="1.2.840.10008.5.1.4.1.2.3.2" alias="PatientStudyOnlyQueryRetrieveInformationModelMOVERetired" type="SOP Class">Patient/Study Only Query/Retrieve Information Model - MOVE (Retired)</uid>
 <uid value="1.2.840.10008.5.1.4.1.2.3.3" alias="PatientStudyOnlyQueryRetrieveInformationModelGETRetired" type="SOP Class">Patient/Study Only Query/Retrieve Information Model - GET (Retired)</uid>
+<uid value="1.2.840.10008.5.1.4.1.2.4.2" alias="CompositeInstanceRootRetrieveMOVE" type="SOP Class">Composite Instance Root Retrieve - MOVE</uid>
+<uid value="1.2.840.10008.5.1.4.1.2.4.3" alias="CompositeInstanceRootRetrieveGET" type="SOP Class">Composite Instance Root Retrieve - GET</uid>
+<uid value="1.2.840.10008.5.1.4.1.2.5.3" alias="CompositeInstanceRetrieveWithoutBulkDataGET" type="SOP Class">Composite Instance Retrieve Without Bulk Data - GET</uid>
 <uid value="1.2.840.10008.5.1.4.31" alias="ModalityWorklistInformationModelFIND" type="SOP Class">Modality Worklist Information Model - FIND</uid>
 <uid value="1.2.840.10008.5.1.4.32" alias="GeneralPurposeWorklistManagementMetaSOPClass" type="Meta SOP Class">General Purpose Worklist Management Meta SOP Class</uid>
 <uid value="1.2.840.10008.5.1.4.32.1" alias="GeneralPurposeWorklistInformationModelFIND" type="SOP Class">General Purpose Worklist Information Model - FIND</uid>
