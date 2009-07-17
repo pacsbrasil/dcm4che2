@@ -72,7 +72,9 @@ public class FileCache {
     }
 
     public void setJournalRootDir(File journalRootDir) {
-        assertWritableDiretory(journalRootDir);
+        if (journalRootDir != null) {
+            assertWritableDiretory(journalRootDir);
+        }
         this.journalRootDir = journalRootDir;
     }
 
@@ -81,7 +83,9 @@ public class FileCache {
     }
 
     public void setCacheRootDir(File cacheRootDir) {
-        assertWritableDiretory(cacheRootDir);
+        if (cacheRootDir != null) {
+            assertWritableDiretory(cacheRootDir);
+        }
         this.cacheRootDir = cacheRootDir;
     }
 
@@ -107,10 +111,6 @@ public class FileCache {
         long time = System.currentTimeMillis();
         File journalFile = getJournalFile(time);
         if (journalFile.exists()) {
-            if (journalFile.equals(getJournalFile(f.lastModified()))) {
-                log.debug("{} already contains entry for {}", journalFile, f);
-                return;
-            }
             log.debug("M-UPDATE {}", journalFile);
         } else {
             mkdirs(journalFile.getParentFile());
