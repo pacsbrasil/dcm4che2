@@ -66,7 +66,24 @@ public class AEHomeBean implements AEHomeLocal {
 
     @SuppressWarnings("unchecked")
     public List<AE> findAll() {
-        return em.createQuery("FROM AE ae ORDER BY ae.title")
+        List<AE> l = em.createQuery("FROM AE ae ORDER BY ae.title")
                 .getResultList();
+        em.clear();
+        return l;
+    }
+    
+    public AE createAET(AE ae){
+        em.persist(ae);
+        return ae;
+    }
+    
+    public AE updateAET(AE ae) {
+        em.merge(ae);
+        return ae;
+    }
+
+    public void removeAET(long pk) {
+        AE ae = em.find(AE.class, pk);
+        em.remove(ae);
     }
 }

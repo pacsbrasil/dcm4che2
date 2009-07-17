@@ -56,5 +56,11 @@ public interface AEHomeLocal {
     List<String> listAETitles();
 
     List<AE> findAll();
+    
+    AE createAET(AE ae);
+
+    AE updateAET(AE ae);
+    
+    void removeAET(long pk);
 
 }
