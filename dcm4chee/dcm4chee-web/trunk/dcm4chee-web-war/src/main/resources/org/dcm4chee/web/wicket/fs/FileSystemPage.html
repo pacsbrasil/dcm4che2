@@ -8,36 +8,31 @@
 <link href="style.css" rel="stylesheet" />
 </head>
 <body>
-<wicket:link>
-<ul class="menu">
-  <li><a href="../folder/StudyListPage.html">Studies</a></li>
-  <li><a href="../ae/AEListPage.html">Application Entities</a></li>
-  <li><a href="../fs/FileSystemPage.html">File Systems</a></li>
-</ul>
-</wicket:link>
-<table style="clear: both">
-  <thead>
-    <tr>
-      <th>PK</th>
-      <th>Path/URL</th>
-      <th>Group ID</th>
-      <th>Retrieve AET</th>
-      <th>Availability</th>
-      <th>Status</th>
-      <th>Next FS</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr wicket:id="list">
-      <td wicket:id="pk">[PK]</td>
-      <td wicket:id="directoryPath">[Path/URL]</td>
-      <td wicket:id="groupID">[Group ID]</td>
-      <td wicket:id="retrieveAET">[Retrieve AET]</td>
-      <td wicket:id="availability">[Availability]</td>
-      <td wicket:id="status">[Status]</td>
-      <td wicket:id="nextFileSystem.directoryPath">[Next FS]</td>
-    </tr>
-  </tbody>
-</table>
+<wicket:panel>
+	<table style="clear: both">
+	  <thead>
+	    <tr>
+	      <th>PK</th>
+	      <th>Path/URL</th>
+	      <th>Group ID</th>
+	      <th>Retrieve AET</th>
+	      <th>Availability</th>
+	      <th>Status</th>
+	      <th>Next FS</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    <tr wicket:id="list">
+	      <td wicket:id="pk">[PK]</td>
+	      <td wicket:id="directoryPath">[Path/URL]</td>
+	      <td wicket:id="groupID">[Group ID]</td>
+	      <td wicket:id="retrieveAET">[Retrieve AET]</td>
+	      <td wicket:id="availability">[Availability]</td>
+	      <td wicket:id="status">[Status]</td>
+	      <td wicket:id="nextFileSystem.directoryPath">[Next FS]</td>
+	    </tr>
+	  </tbody>
+	</table>
+</wicket:panel>
 </body>
 </html>

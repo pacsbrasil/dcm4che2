@@ -1,3 +1,7 @@
+#
+# Main CSS
+#
+
 body,h1,h2,h3,h4,p,ul,ol,li,dl,dt,dd,div,td,th { font-family:Arial,sans-serif; }
 h1 { font-size:26px; margin-bottom:18px; }
 h1.ph1 { font-size:21px; margin-bottom:18px; }
@@ -6,110 +10,29 @@ h3 { font-size:16px; }
 h4 { font-size:13.4px; }
 p,ul,ol,li,dl,dt,dd,div,td,th { font-size:13.4px; }
 
-ul.menu { width: 100%; height: 43px; background: #FFF url("images/menu-bg.gif") top left repeat-x; font-weight: bold; list-style-type: none; margin: 0; padding: 0; }
-ul.menu li { display: block; float: left; line-height: 200%; margin: 0 0 0 5px; }
-ul.menu li a { height: 43px; color: #777; text-decoration: none; float: left; padding: 8px 15px 0; }
-ul.menu li a:hover { color: #333; }
-ul.menu li span { float: left; height: 43px; color: #FFF; background: #FFF url("images/current-bg.gif") top left repeat-x; padding: 5px 15px 0; }
-ul.menu li span em { font-style: normal; }
-
-table { border-collapse: collapse; empty-cells: show; width: 100%;}
+table { border-collapse: collapse; empty-cells: show; width: 100%;  background: #fff;}
 th, td { border-width: 1px; border-style: solid; }
 
-col.attrname { width: 200px; }
-col.tag { width: 100px; }
-td.tag input { width: 90px; }
-col.vr { width: 30px; }
-col.len { width: 60px; }
-td.val input { width: 100%; }
-col.action { width: 30px; }
-td.item, td.newitem, td.newattr { font-style: italic; }
+div.module-selector { width: 100%; height: 43px; background: #FFF url("images/menu-bg.gif") top left repeat-x; font-weight: bold; list-style-type: none; margin: 0; padding: 0; z-index: 1;}
 
-input#patientID { width:100px }
-input#issuerOfPatientID { width:100px }
-input#studyDateMin { width:100px }
-input#studyDateMax { width:100px}
-
-.patient {
-    background : #99bbaa;
-} 
-.study {
-    background : #aaccbb;
-} 
-.pps {
-    background : #ccddcc;
-} 
-.series {
-    background : #cecece;
-} 
-.instance {
-    background : #dddddd;
-} 
-.file {
-    background : #ffffff;
-} 
-
-div.logo {
-  width: 100px; height: 22px; text-align: center;
-  list-style-type: none; margin: 6 0 0 0; padding: 0; }
+div.module-selector div.tab-logo { margin: 13 0 0 0; padding: 0 10 0 10; height: 43px; float: right; }
+div.module-selector div.tab-lang { margin: 13 0 0 0; height: 43px; float: right; }
+div.module-selector div.tab-lang img { border: none; }
+div.module-panel { width: 100%; background: none #FFF; }
+div.tabpanel div.tab-row li { margin: 0 0 0 0; display: block; float: left; list-style-type: none; }
+div.tabpanel div.tab-row a:link, div.tabpanel div.tab-row a:visited {
+    float: left; padding: 5px 15px 0; 
+    background: #FFF url("images/menu-bg.gif") top left repeat-x;
+    font-size: 12px;
+    line-height: 38px;
+    font-weight: bold;
+    color: #666;
 }
-div.logo img {
-	width: auto; margin: 0 0 0 0; padding: 0 0 0 0; border: none; }
-
-
-
-div.lang {
-  width: 100px; height: 21px; text-align: center;
-  list-style-type: none; margin: 0 -20 0 0; padding: -20; }
+div.tabpanel div.tab-row li.selected a:link, div.tabpanel div.tab-row a:visited.active {
+    float: left; height: 38px; color: #FFF; background: #FFF url("images/current-bg.gif") top left repeat-x; padding: 5px 15px 0; 
 }
-div.lang a {
-	width: 20px; margin:  0 0 0 0; padding: 0 0 0 0;
-}
-div.lang img {
-	width: 20px; margin: -7 -20 0 0; padding: 0 0 0 0; border: none; }
+div.tabpanel div.tab-row a:hover { background: #aaa; }
 
-div.ae-table-panel {
-  background: none #99bbaa; border: none #333333 1px; color: #000000;
-  margin: 0.5em 12px 0.5em 12px; padding: 0; text-align: center; width: auto; height: auto;
-}
+div.feedback { float: left; width: 100%; background: #eebbaa; }
 
-
-div.ae-table-row {
-  margin 0; float: left;
-  padding: 1 0 0 0; width: 97%; height: 30;
-}
-div.ae-cipher-row {
-  float: left;
-  padding: 1 0 0 0; width: 97%; height: 30;
-}
-
-.ae-desc {
-  border: none; float: left; text-align: right; margin: 0; padding: 0;  
-  width: 30%; height: 20;
-}
-
-.ae-value {
-  border: none; float: left; text-align: left; margin: 0 6 ; padding: 0;  
-  width: auto; height: 20;
-}
-
-div.ae-buttons {
-  border: none #333333 1px; margin 0; background: none #aaaaaa;
-  padding: 0 2 0 0; width: 726px; height: 30;
-}
-div.ae-submit {
-  border: none; float: left; margin: 0; padding: 0;  
-  width: 49%; text-align: right;
-}
-div.ae-cancel {
-  border: none; float: right; margin: 0; padding: 0;  
-  width: 49%; text-align: left; 
-}
-
-
-div#ae-content {
-    width: 728px ; height: 400; margin 0 0 0 0;
-    border-width: 1px ; border-color: green ;
-    border-style: none ;background: none #99bbaa;
-   }
-
+p.seperator { width: 100%; height: 1px;}

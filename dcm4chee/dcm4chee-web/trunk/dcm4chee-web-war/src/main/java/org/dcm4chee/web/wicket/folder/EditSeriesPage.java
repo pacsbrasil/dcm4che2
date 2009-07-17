@@ -38,6 +38,7 @@
 
 package org.dcm4chee.web.wicket.folder;
 
+import org.apache.wicket.Page;
 import org.apache.wicket.markup.html.WebPage;
 
 /**
@@ -47,7 +48,7 @@ import org.apache.wicket.markup.html.WebPage;
  */
 public class EditSeriesPage extends WebPage {
 
-    public EditSeriesPage(final StudyListPage studyListPage,
+    public EditSeriesPage(final Page studyListPage,
             final SeriesModel model) {
         add(new EditDicomObjectPanel("dicomobject", model.getDataset()) {
 

@@ -36,32 +36,72 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket.folder;
+package org.dcm4chee.web.wicket.ae;
 
-import org.apache.wicket.Page;
-import org.apache.wicket.markup.html.WebPage;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
+import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.resource.loader.ClassStringResourceLoader;
+import org.dcm4chee.archive.entity.AE;
+import org.dcm4chee.web.dao.AEHomeLocal;
+import org.dcm4chee.web.wicket.util.JNDIUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Jan 5, 2009
  */
-public class EditStudyPage extends WebPage {
+public class AEMgtPage extends Panel {
 
-    public EditStudyPage(final Page page,
-            final StudyModel model) {
-        add(new EditDicomObjectPanel("dicomobject", model.getDataset()) {
+    private static final long serialVersionUID = 1L;
+    private List<AE> list = new ArrayList<AE>();
+    private AEHomeLocal aeHome = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
+    private boolean editMode = false;
+    private EditAETPanel editPanel;
+    private AEListPanel listPanel;
+      
+    private static Logger log = LoggerFactory.getLogger(AEMgtPage.class);
+    
+    public AEMgtPage(final String id) {
+        super(id);
+        update();
+        if ( listPanel == null ) {
+            listPanel = new AEListPanel("ae_panel", this);
+        }
+        this.addOrReplace( editMode ? editPanel : listPanel);
+    }
+    
+    public void setEditPage(AE ae) {
+        editMode = true;
+        editPanel = new EditAETPanel("ae_panel", this, ae);
+        this.addOrReplace(editPanel);
+    }
+    
+    public void setListPage() {
+        editMode = false;
+        addOrReplace(listPanel);
+}
+    
+    public List<AE> getAEList() {
+        return list;
+    }
+    
+    public void update() {
+        list.clear();
+        list.addAll(aeHome.findAll());
+    }
+    public void removeAET(AE ae) {
+        aeHome.removeAET(ae.getPk());
+        update();
+    }
 
-            @Override
-            protected void onCancel() {
-                setResponsePage(page);
-            }
-
-            @Override
-            protected void onSubmit() {
-                model.update(getDicomObject());
-                setResponsePage(page);
-            }
-        });
+    public static String getModuleName() {
+        return "aet";
     }
 }

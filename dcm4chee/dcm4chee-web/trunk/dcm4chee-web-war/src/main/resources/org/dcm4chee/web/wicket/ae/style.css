@@ -1,0 +1,15 @@
+#
+# AEMgt CSS
+#
+
+div.ae-table-panel { padding: 10 0 0 0; width: 100% ; height: 524; background: none #99bbaa;}
+
+div.ae-table-panel div.ae-table-row { float: left; padding: 1 0 0 0; width: 100%; height: 30; background: #99bbaa;}
+div.ae-table-panel div.ae-cipher-row { float: left; padding: 1 0 0 0; width: 100%; height: 30; background: #99bbaa;}
+
+div.ae-table-panel .ae-desc { border: none; float: left; text-align: right; width: 50%; height: 20; }
+div.ae-table-panel .ae-value { border: 1px solid; float: left; text-align: left; margin: 0 6; width: auto; height: 20; }
+
+div.ae-buttons { background: none #aaaaaa; padding: 5 0 0 0; width: 100%; height: 30; }
+div.ae-buttons div.ae-submit { background: none #aaaaaa; border: none; float: left; width: 50%; text-align: right }
+div.ae-buttons div.ae-cancel { background: none #aaaaaa; border: none; float: right; width: 50%; text-indent: 5px; }

@@ -39,11 +39,13 @@
 package org.dcm4chee.web.wicket.ae;
 
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
-import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.DropDownChoice;
@@ -52,19 +54,20 @@ import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
-import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.list.PropertyListView;
-import org.apache.wicket.markup.html.panel.FeedbackPanel;
+import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.validation.IValidator;
 import org.apache.wicket.validation.validator.NumberValidator;
+import org.apache.wicket.validation.validator.StringValidator;
 import org.apache.wicket.validation.validator.UrlValidator;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.dao.AEHomeLocal;
-import org.dcm4chee.web.wicket.common.LocaleSelectorLink;
+import org.dcm4chee.web.dao.FileSystemHomeLocal;
+import org.dcm4chee.web.wicket.common.ComponentUtil;
 import org.dcm4chee.web.wicket.util.JNDIUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,10 +78,12 @@ import org.slf4j.LoggerFactory;
  * @since June 4, 2009
  */
 
-public class EditAETPage extends WebPage {
-    
-    private static Logger log = LoggerFactory.getLogger(EditAETPage.class);
+public class EditAETPanel extends Panel {
+    URL url;
+    private static Logger log = LoggerFactory.getLogger(EditAETPanel.class);
     private AEHomeLocal aeHome = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
+    private FileSystemHomeLocal fsHome = (FileSystemHomeLocal) JNDIUtils.lookup(FileSystemHomeLocal.JNDI_NAME);
+    private List<String> fsGroups = new ArrayList<String>();
     private static List<String> availableCiphersuites = new ArrayList<String>();
     static {
         availableCiphersuites.clear();
@@ -88,57 +93,73 @@ public class EditAETPage extends WebPage {
         availableCiphersuites.add("SSL_RSA_WITH_3DES_EDE_CBC_SHA");
     }
     
-    public EditAETPage( final AEListPage page, final AE ae) {
-        add(new LocaleSelectorLink("lang_en","en"));
-        add(new LocaleSelectorLink("lang_de","de"));
-        add(new LocaleSelectorLink("lang_fr","fr"));
-        add(new FeedbackPanel("feedback"));
+    public EditAETPanel( String id, final AEMgtPage page, final AE ae) {
+        super(id);
+        initFSGroups();
         Form form = new Form("form");
         add(form);
         CompoundPropertyModel model = new CompoundPropertyModel(ae);
         setModel(model);
-        form.add(new Label("titleDesc", new ResourceModel("aet.title") ) );
-        form.add(new Label("hostDesc", new ResourceModel("aet.host") ) );
-        form.add(new Label("portDesc", new ResourceModel("aet.port") ) );
-        form.add(new Label("descDesc", new ResourceModel("aet.description") ) );
-        form.add(new Label("issuerDesc", new ResourceModel("aet.issuer") ) );
-        form.add(new Label("fsGroupDesc", new ResourceModel("aet.fsGroup") ) );
-        form.add(new Label("wadourlDesc", new ResourceModel("aet.wadourl") ) );
-        form.add(new Label("userIdDesc", new ResourceModel("aet.userid") ) );
-        form.add(new Label("passwdDesc", new ResourceModel("aet.passwd") ) );
+        ComponentUtil util = new ComponentUtil(AEMgtPage.getModuleName());
         
-        form.add(new TextField("title").setRequired(true)); 
-        form.add(new TextField("hostName").setRequired(true)); 
-        form.add(new TextField("port").add(NumberValidator.range(0,32000)));
-        final CiphersuitesModel cipherModel = new CiphersuitesModel(ae,3,6);
+        util.addLabeledTextField(form, "title").add(new AETitleValidator()).setRequired(true); 
+        util.addLabeledTextField(form, "hostName","host")
+            .add(StringValidator.minimumLength(1)).setRequired(true); 
+        util.addLabeledTextField(form, "port").add(NumberValidator.range(1,65535));
+        final CiphersuitesModel cipherModel = new CiphersuitesModel(ae);
         form.add(new PropertyListView("cipherSuites", cipherModel.getCiphers()) {
             @Override
             protected void populateItem(final ListItem item) {
-                item.add(new Label("ciphersDesc", new StringResourceModel("aet.ciphers", EditAETPage.this, null, new Object[]{item.getIndex()+1} ) ) );
+                item.add(new Label("ciphersLabel", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{item.getIndex()+1} ) ) );
                 item.add(new DropDownChoice("ciphersuite", cipherModel.getModel(item.getIndex()), availableCiphersuites));
             }
         }); 
-        form.add(new TextField("description")); 
-        form.add(new TextField("issuerOfPatientID")); 
-        form.add(new TextField("fileSystemGroupID"));
-        form.add(new TextField("wadoURL").add(new UrlValidator())); 
-        form.add(new TextField("userID")); 
+        util.addLabeledTextField(form, "description"); 
+        util.addLabeledTextField(form, "issuerOfPatientID", "issuer"); 
+        util.addLabeledDropDownChoice(form, "fileSystemGroupID", null, fsGroups).setNullValid(true);
+        util.addLabeledTextField(form, "wadoURL").add(new UrlValidator()); //URLValidator doesn't accept http://hostname:8080/web!
+        util.addLabeledTextField(form, "userID"); 
+        form.add(new Label("passwdLabel", new ResourceModel("aet.passwd") ) );
         form.add(new PasswordTextField("password").setRequired(false)); 
+        util.addLabeledTextField(form, "stationName"); 
+        util.addLabeledTextField(form, "institution"); 
+        util.addLabeledTextField(form, "department"); 
+        form.add(new Label("installedLabel", new ResourceModel("aet.installed") ) );
+        form.add(new AjaxCheckBox("installed"){
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+            }
+            
+        }); 
         form.add(new Button("submit") {
 
             @Override
             public void onSubmit() {
                 submit();
                 page.update();
-                setResponsePage(page);
+                page.setListPage();
             }
         });
         form.add(new Link("cancel") {
 
             @Override
             public void onClick() {
-                setResponsePage(page);
+                page.setListPage();
             }});
+    }
+    
+    private void initFSGroups() {
+        fsGroups.clear();
+        fsGroups.addAll(fsHome.listGroupIDs());
+    }
+
+    private TextField newTextField(String id, IValidator v) {
+        TextField tf = new TextField(id);
+        tf.add( new AttributeModifier("title", true, 
+                new ResourceModel("ae."+id+".descr")));
+        if ( v != null ) tf.add(v);
+        return tf;
     }
     
     private void submit() {
@@ -215,7 +236,7 @@ public class EditAETPage extends WebPage {
             if ( l != null && l.size() > idx ) {
                 l.set(idx, s);
             } else if ( s != null && l.size() == idx ) {
-                log.info("create new CipherSuite item!:"+s);
+                log.debug("create new CipherSuite item!:"+s);
                 l.add(s);
             } else {
                 log.warn("CipherModel has illegal index ("+idx+", l:"+l.size()+")! set will be ignored!");

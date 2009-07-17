@@ -1,0 +1,42 @@
+#
+# Folder CSS
+#
+
+form.folder {}
+div.queryoptions { background: #FFF;}
+div.querybuttons { background: #DDD; padding: 5 0 0 5;}
+div.viewport { background: #DDD; padding: 5;}
+
+
+col.attrname { width: 200px; }
+col.tag { width: 100px; }
+td.tag input { width: 90px; }
+col.vr { width: 30px; }
+col.len { width: 60px; }
+td.val input { width: 100%; }
+col.action { width: 30px; }
+td.item, td.newitem, td.newattr { font-style: italic; }
+
+input#patientID { width:100px }
+input#issuerOfPatientID { width:100px }
+input#studyDateMin { width:100px }
+input#studyDateMax { width:100px}
+
+.patient {
+    background : #99bbaa;
+} 
+.study {
+    background : #aaccbb;
+} 
+.pps {
+    background : #ccddcc;
+} 
+.series {
+    background : #cecece;
+} 
+.instance {
+    background : #dddddd;
+} 
+.file {
+    background : #ffffff;
+} 

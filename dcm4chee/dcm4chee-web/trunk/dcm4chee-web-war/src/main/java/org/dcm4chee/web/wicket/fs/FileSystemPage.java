@@ -3,23 +3,23 @@ package org.dcm4chee.web.wicket.fs;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.wicket.PageParameters;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
+import org.apache.wicket.markup.html.panel.Panel;
 import org.dcm4chee.archive.entity.FileSystem;
 import org.dcm4chee.web.dao.FileSystemHomeLocal;
 import org.dcm4chee.web.wicket.util.JNDIUtils;
 
-public class FileSystemPage extends WebPage {
+public class FileSystemPage extends Panel {
 
     private static final long serialVersionUID = 1L;
 
     private List<FileSystem> list;
 
     @SuppressWarnings("serial")
-    public FileSystemPage(final PageParameters parameters) {
+    public FileSystemPage(final String id) {
+        super(id);
         try {
             FileSystemHomeLocal dao = (FileSystemHomeLocal)
                     JNDIUtils.lookup(FileSystemHomeLocal.JNDI_NAME);

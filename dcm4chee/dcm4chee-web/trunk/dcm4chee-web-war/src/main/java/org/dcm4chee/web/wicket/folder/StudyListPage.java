@@ -5,57 +5,66 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.CheckBox;
-import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
-import org.apache.wicket.markup.html.panel.FeedbackPanel;
+import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.web.dao.StudyListLocal;
 import org.dcm4chee.web.wicket.WicketSession;
+import org.dcm4chee.web.wicket.common.ComponentUtil;
 import org.dcm4chee.web.wicket.common.DateTimeLabel;
 import org.dcm4chee.web.wicket.util.JNDIUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class StudyListPage extends WebPage {
+public class StudyListPage extends Panel {
 
+    private static final String MODULE_NAME = "folder";
+    private static final long serialVersionUID = 1L;
     private static int PAGESIZE = 10;
-
+    private static ComponentUtil util = new ComponentUtil(StudyListPage.getModuleName());
     private ViewPort viewport = ((WicketSession) getSession()).getViewPort();
     private List<String> sourceAETs = new ArrayList<String>();
     private List<String> modalities = new ArrayList<String>();
+    private boolean notSearched = true;
+    
+    private static Logger log = LoggerFactory.getLogger(StudyListPage.class);
 
-    public StudyListPage(final PageParameters parameters) {
+    public StudyListPage(final String id) {
+        super(id);
         Form form = new Form("form", new CompoundPropertyModel(viewport.getFilter()));
         add(form);
-        form.add(new FeedbackPanel("feedback"));
-        form.add(new TextField("patientName"));
-        form.add(new TextField("patientID"));
-        form.add(new TextField("issuerOfPatientID"));
+        util.addLabeledTextField(form, "patientName");
+        util.addLabel(form, "patientIDDescr");
+        util.addLabeledTextField(form, "patientID");
+        util.addLabeledTextField(form, "issuerOfPatientID");
         PatternValidator datePatternValidator = new PatternValidator(
                 "\\*|(((19)|(20))\\d{2}-((0[1-9])|(1[0-2]))-((0[1-9])|([12]\\d)|(3[01])))");
-        form.add(new TextField("studyDateMin").add(datePatternValidator));
-        form.add(new TextField("studyDateMax").add(datePatternValidator));
-        form.add(new TextField("accessionNumber"));
-        form.add(new TextField("studyInstanceUID"));
-        form.add(new DropDownChoice("modality", modalities));
-        form.add(new DropDownChoice("sourceAET", sourceAETs));
-        form.add(new CheckBox("patientsWithoutStudies"));
-        form.add(new CheckBox("latestStudiesFirst"));
+        util.addLabel(form, "studyDate");
+        util.addLabeledTextField(form, "studyDateMin").add(datePatternValidator);
+        util.addLabeledTextField(form, "studyDateMax").add(datePatternValidator);
+        util.addLabeledTextField(form, "accessionNumber");
+        util.addLabeledTextField(form, "studyInstanceUID");
+        util.addLabeledDropDownChoice(form, "modality", null, modalities);
+        util.addLabeledDropDownChoice(form, "sourceAET", null, sourceAETs);
+        util.addLabeledCheckBox(form, "patientsWithoutStudies", null);
+        util.addLabeledCheckBox(form, "latestStudiesFirst", null);
+        
         form.add(new Button("search") {
 
             @Override
@@ -93,17 +102,25 @@ public class StudyListPage extends WebPage {
                 viewport.setOffset(viewport.getOffset() + PAGESIZE);
                 queryStudies();
             }});
-        form.add(new Label("viewport", new Model(){
-
+        //viewport label: use StringResourceModel with key substitution to select 
+        //property key according notSearched and getTotal.
+        Model keySelectModel = new Model() {
             @Override
             public Object getObject() {
-                return viewport.getTotal() == 0 ? "No matching studies found!"
-                        : MessageFormat.format(
-                                "Displaying studies {0} to {1} of {2} matching studies",
-                                viewport.getOffset()+1,
-                                Math.min(viewport.getOffset()+PAGESIZE, viewport.getTotal()),
-                                viewport.getTotal());
-            }}));
+                return notSearched ? "folder.notSearched" :
+                        viewport.getTotal() == 0 ? "folder.noMatchingStudiesFound" : 
+                            "folder.studiesFound";
+            }
+        };
+        form.add(new Label("viewport", new StringResourceModel("${}", StudyListPage.this, keySelectModel,new Object[]{"dummy"}){
+            @Override
+            protected Object[] getParameters() {
+                return new Object[]{viewport.getOffset()+1,
+                        Math.min(viewport.getOffset()+PAGESIZE, viewport.getTotal()),
+                        viewport.getTotal()};
+            }
+        }));
+
         form.add(new StudyListHeader("thead"));
         form.add(new PatientListView("patients", viewport.getPatients()));
         initModalitiesAndSourceAETs();
@@ -125,6 +142,7 @@ public class StudyListPage extends WebPage {
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         viewport.setTotal(dao.countStudies(viewport.getFilter()));
         updatePatients(dao.findStudies(viewport.getFilter(), PAGESIZE, viewport.getOffset()));
+        notSearched = false;
     }
 
     private void updatePatients(List<Object[]> patientAndStudies) {
@@ -168,6 +186,10 @@ public class StudyListPage extends WebPage {
         PatientModel patientModel = new PatientModel(patient);
         viewport.getPatients().add(patientModel);
         return patientModel;
+    }
+    
+    public static String getModuleName() {
+        return MODULE_NAME;
     }
 
     private final class PatientListView extends PropertyListView {
@@ -218,14 +240,14 @@ public class StudyListPage extends WebPage {
                 }
             });
             item.add(cell);
-            item.add(new Label("name"));
-            item.add(new Label("id"));
-            item.add(new Label("issuer"));
-            item.add(new Label("birthdate"));
-            item.add(new Label("sex"));
-            item.add(new Label("comments"));
-            item.add(new Label("pk"));
-            item.add(new AjaxFallbackLink("toggledetails") {
+            item.add(util.addDescription(new Label("name")));
+            item.add(util.addDescription(new Label("id")));
+            item.add(util.addDescription(new Label("issuer")));
+            item.add(util.addDescription(new Label("birthdate")));
+            item.add(util.addDescription(new Label("sex")));
+            item.add(util.addDescription(new Label("comments")));
+            item.add(util.addDescription(new Label("pk"), "patpk"));
+            item.add(util.addDescription(new AjaxFallbackLink("toggledetails") {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
@@ -235,16 +257,16 @@ public class StudyListPage extends WebPage {
                     }
                 }
 
-            });
-            item.add(new Link("edit") {
+            }, "patDetail") );
+            item.add(util.addDescription( new Link("edit") {
                 
                 @Override
                 public void onClick() {
                     setResponsePage(
-                            new EditPatientPage(StudyListPage.this, patModel));
+                            new EditPatientPage(StudyListPage.this.getPage(), patModel));
                 }
-            });
-            item.add(new CheckBox("selected"));
+            }, "patEdit") );
+            item.add(util.addDescription( new CheckBox("selected"), "patSelect"));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 @Override
@@ -310,16 +332,16 @@ public class StudyListPage extends WebPage {
                 }
             });
             item.add(cell);
-            item.add(new Label("datetime"));
-            item.add(new Label("id"));
-            item.add(new Label("accessionNumber"));
-            item.add(new Label("modalities"));
-            item.add(new Label("description"));
-            item.add(new Label("numberOfSeries"));
-            item.add(new Label("numberOfInstances"));
-            item.add(new Label("availability"));
-            item.add(new Label("pk"));
-            item.add(new AjaxFallbackLink("toggledetails") {
+            item.add(util.addDescription(new Label("datetime"), "studydatetime"));
+            item.add(util.addDescription(new Label("id"), "studyId"));
+            item.add(util.addDescription(new Label("accessionNumber")));
+            item.add(util.addDescription(new Label("modalities")));
+            item.add(util.addDescription(new Label("description"), "studyDescription"));
+            item.add(util.addDescription(new Label("numberOfSeries"), "studyNoS"));
+            item.add(util.addDescription(new Label("numberOfInstances"), "studyNoI"));
+            item.add(util.addDescription(new Label("availability"), "studyAvailability"));
+            item.add(util.addDescription(new Label("pk"), "studyPk"));
+            item.add(util.addDescription(new AjaxFallbackLink("toggledetails") {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
@@ -329,16 +351,16 @@ public class StudyListPage extends WebPage {
                     }
                 }
 
-            });
-            item.add(new Link("edit") {
+            }, "studyDetail"));
+            item.add( util.addDescription( new Link("edit") {
                 
                 @Override
                 public void onClick() {
                     setResponsePage(
-                            new EditStudyPage(StudyListPage.this, studyModel));
+                            new EditStudyPage(StudyListPage.this.getPage(), studyModel));
                 }
-            });
-            item.add(new CheckBox("selected"));
+            }, "studyEdit"));
+            item.add( util.addDescription( new CheckBox("selected"), "studySelect"));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 @Override
@@ -405,16 +427,16 @@ public class StudyListPage extends WebPage {
                 }
             });
             item.add(cell);
-            item.add(new Label("datetime"));
-            item.add(new Label("id"));
-            item.add(new Label("spsid"));
-            item.add(new Label("modality"));
-            item.add(new Label("description"));
-            item.add(new Label("numberOfSeries"));
-            item.add(new Label("numberOfInstances"));
-            item.add(new Label("status"));
-            item.add(new Label("pk"));
-            item.add(new AjaxFallbackLink("toggledetails") {
+            item.add(util.addDescription(new Label("datetime"),"ppsDateTime"));
+            item.add(util.addDescription(new Label("id"),"ppsId"));
+            item.add(util.addDescription(new Label("spsid")));
+            item.add(util.addDescription(new Label("modality"), "spsModality"));
+            item.add(util.addDescription(new Label("description"),"ppsDescription"));
+            item.add(util.addDescription(new Label("numberOfSeries"),"ppsNoS"));
+            item.add(util.addDescription(new Label("numberOfInstances"),"ppsNoI"));
+            item.add(util.addDescription(new Label("status"),"ppsStatus"));
+            item.add(util.addDescription(new Label("pk"),"ppsPk"));
+            item.add(util.addDescription(new AjaxFallbackLink("toggledetails") {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
@@ -428,20 +450,20 @@ public class StudyListPage extends WebPage {
                 public boolean isVisible() {
                     return ppsModel.getDataset() != null;
                 }
-            });
-            item.add(new Link("edit") {
+            },"ppsDetail"));
+            item.add(util.addDescription(new Link("edit") {
 
                 @Override
                 public void onClick() {
-                    setResponsePage(new EditPPSPage(StudyListPage.this, ppsModel));
+                    setResponsePage(new EditPPSPage(StudyListPage.this.getPage(), ppsModel));
                 }
 
                 @Override
                 public boolean isVisible() {
                     return ppsModel.getDataset() != null;
                 }
-            });
-            item.add(new CheckBox("selected"));
+            },"ppsEdit"));
+            item.add(util.addDescription(new CheckBox("selected"),"ppsSelect"));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 @Override
@@ -508,15 +530,15 @@ public class StudyListPage extends WebPage {
                 }
             });
             item.add(cell);
-            item.add(new Label("datetime"));
-            item.add(new Label("seriesNumber"));
-            item.add(new Label("sourceAET"));
-            item.add(new Label("modality"));
-            item.add(new Label("description"));
-            item.add(new Label("numberOfInstances"));
-            item.add(new Label("availability"));
-            item.add(new Label("pk"));
-            item.add(new AjaxFallbackLink("toggledetails") {
+            item.add(util.addDescription(new Label("datetime"), "seriesDatetime"));
+            item.add(util.addDescription(new Label("seriesNumber")));
+            item.add(util.addDescription(new Label("sourceAET")));
+            item.add(util.addDescription(new Label("modality"), "seriesModality"));
+            item.add(util.addDescription(new Label("description"), "seriesDescription"));
+            item.add(util.addDescription(new Label("numberOfInstances"), "seriesNoI"));
+            item.add(util.addDescription(new Label("availability"), "seriesAvailability"));
+            item.add(util.addDescription(new Label("pk"), "seriesPk"));
+            item.add(util.addDescription(new AjaxFallbackLink("toggledetails") {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
@@ -526,15 +548,15 @@ public class StudyListPage extends WebPage {
                     }
                 }
 
-            });
-            item.add(new Link("edit") {
+            }, "seriesDetail"));
+            item.add(util.addDescription(new Link("edit") {
                 
                 @Override
                 public void onClick() {
-                    setResponsePage(new EditSeriesPage(StudyListPage.this, seriesModel));
+                    setResponsePage(new EditSeriesPage(StudyListPage.this.getPage(), seriesModel));
                 }
-            });
-            item.add(new CheckBox("selected"));
+            }, "seriesEdit"));
+            item.add(util.addDescription(new CheckBox("selected"), "seriesSelect"));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 @Override
@@ -601,13 +623,13 @@ public class StudyListPage extends WebPage {
                 }
             });
             item.add(cell);
-            item.add(new Label("datetime"));
-            item.add(new Label("instanceNumber"));
-            item.add(new Label("sopClassUID"));
-            item.add(new Label("description"));
-            item.add(new Label("availability"));
-            item.add(new Label("pk"));
-            item.add(new AjaxFallbackLink("toggledetails") {
+            item.add(util.addDescription(new Label("datetime"), "instanceDatetime"));
+            item.add(util.addDescription(new Label("instanceNumber")));
+            item.add(util.addDescription(new Label("sopClassUID")));
+            item.add(util.addDescription(new Label("description"), "instanceDescription"));
+            item.add(util.addDescription(new Label("availability"), "instanceAvailability"));
+            item.add(util.addDescription(new Label("pk"), "instancePk"));
+            item.add(util.addDescription(new AjaxFallbackLink("toggledetails") {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
@@ -617,15 +639,15 @@ public class StudyListPage extends WebPage {
                     }
                 }
 
-            });
-            item.add(new Link("edit") {
+            }, "instanceDetail"));
+            item.add(util.addDescription(new Link("edit") {
                 
                 @Override
                 public void onClick() {
-                    setResponsePage(new EditInstancePage(StudyListPage.this, instModel));
+                    setResponsePage(new EditInstancePage(StudyListPage.this.getPage(), instModel));
                 }
-            });
-            item.add(new CheckBox("selected"));
+            }, "instanceEdit"));
+            item.add(util.addDescription(new CheckBox("selected"), "instanceSelect"));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 @Override
@@ -653,14 +675,14 @@ public class StudyListPage extends WebPage {
         @Override
         protected void populateItem(final ListItem item) {
             final FileModel fileModel = (FileModel) item.getModelObject();
-            item.add(new DateTimeLabel("file.createdTime"));
-            item.add(new Label("file.fileSize"));
-            item.add(new Label("file.transferSyntaxUID"));
-            item.add(new Label("file.fileSystem.directoryPath"));
-            item.add(new Label("file.filePath"));
-            item.add(new Label("file.fileSystem.availability"));
-            item.add(new Label("file.pk"));
-            item.add(new AjaxFallbackLink("toggledetails") {
+            item.add(util.addDescription(new DateTimeLabel("file.createdTime")));
+            item.add(util.addDescription(new Label("file.fileSize")));
+            item.add(util.addDescription(new Label("file.transferSyntaxUID")));
+            item.add(util.addDescription(new Label("file.fileSystem.directoryPath")));
+            item.add(util.addDescription(new Label("file.filePath")));
+            item.add(util.addDescription(new Label("file.fileSystem.availability")));
+            item.add(util.addDescription(new Label("file.pk")));
+            item.add(util.addDescription(new AjaxFallbackLink("toggledetails") {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
@@ -670,8 +692,8 @@ public class StudyListPage extends WebPage {
                     }
                 }
 
-            });
-            item.add(new CheckBox("selected"));
+            }, "fileDetail"));
+            item.add(util.addDescription(new CheckBox("selected"), "fileSelect"));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 @Override

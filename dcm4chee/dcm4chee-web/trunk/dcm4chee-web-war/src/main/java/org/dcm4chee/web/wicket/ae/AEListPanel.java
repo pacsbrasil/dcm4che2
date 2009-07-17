@@ -38,34 +38,42 @@
 
 package org.dcm4chee.web.wicket.ae;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.wicket.PageParameters;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.list.PropertyListView;
+import org.apache.wicket.markup.html.panel.Panel;
 import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.web.dao.AEHomeLocal;
-import org.dcm4chee.web.wicket.util.JNDIUtils;
+import org.dcm4chee.web.wicket.common.ComponentUtil;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Jan 5, 2009
  */
-public class AEListPage extends WebPage {
+public class AEListPanel extends Panel {
 
-    private List<AE> list = new ArrayList<AE>();
-    private AEHomeLocal aeHome = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
+    private AEMgtPage page;
     
-    public AEListPage(final PageParameters parameters) {
-        update();
-        add(new PropertyListView("list", list) {
+    public AEListPanel(String id, AEMgtPage p) {
+        super(id);
+        ComponentUtil util = new ComponentUtil(AEMgtPage.getModuleName());
+        util.addLabel(this, "titleHdr");
+        util.addLabel(this, "hostHdr");
+        util.addLabel(this, "portHdr");
+        util.addLabel(this, "cipherHdr");
+        util.addLabel(this, "descriptionHdr");
+        util.addLabel(this, "issuerHdr");
+        util.addLabel(this, "fsgrpHdr");
+        util.addLabel(this, "wadoHdr");
+        util.addLabel(this, "userHdr");
+        util.addLabel(this, "stationHdr");
+        util.addLabel(this, "institutionHdr");
+        util.addLabel(this, "departmentHdr");
+        util.addLabel(this, "installedHdr");
+        page = p;
+        add(new PropertyListView("list", p.getAEList() ) {
 
             @Override
             protected void populateItem(final ListItem item) {
@@ -83,18 +91,22 @@ public class AEListPage extends WebPage {
                 item.add(new Label("fileSystemGroupID"));
                 item.add(new Label("wadoURL"));
                 item.add(new Label("userID"));
+                item.add(new Label("stationName"));
+                item.add(new Label("institution"));
+                item.add(new Label("department"));
+                item.add(new Label("installed"));
                 item.add(new Link("editAET") {
                     
                     @Override
                     public void onClick() {
-                        setResponsePage( new EditAETPage(AEListPage.this, list.get(item.getIndex())));
+                        page.setEditPage( (AE)item.getModelObject());
                     }
                 });
                 item.add(new Link("removeAET") {
                     
                     @Override
                     public void onClick() {
-                        removeAET(list.get(item.getIndex()));
+                        page.removeAET((AE)item.getModelObject());
                     }
                 });
             }
@@ -104,17 +116,9 @@ public class AEListPage extends WebPage {
             
             @Override
             public void onClick() {
-                setResponsePage( new EditAETPage(AEListPage.this, new AE()));
+                page.setEditPage(new AE());
             }
         });
 
-    }
-    public void update() {
-        list.clear();
-        list.addAll(aeHome.findAll());
-    }
-    private void removeAET(AE ae) {
-        aeHome.removeAET(ae.getPk());
-        update();
     }
 }

@@ -38,6 +38,7 @@
 
 package org.dcm4chee.web.wicket.folder;
 
+import org.apache.wicket.Page;
 import org.apache.wicket.markup.html.WebPage;
 
 /**
@@ -47,19 +48,19 @@ import org.apache.wicket.markup.html.WebPage;
  */
 public class EditPatientPage extends WebPage {
 
-    public EditPatientPage(final StudyListPage studyListPage,
+    public EditPatientPage(final Page page,
             final PatientModel model) {
         add(new EditDicomObjectPanel("dicomobject", model.getDataset()) {
 
             @Override
             protected void onCancel() {
-                setResponsePage(studyListPage);
+                setResponsePage(page);
             }
 
             @Override
             protected void onSubmit() {
                 model.update(getDicomObject());
-                setResponsePage(studyListPage);
+                setResponsePage(page);
             }
         });
     }

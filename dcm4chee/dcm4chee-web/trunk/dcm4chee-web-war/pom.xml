@@ -49,11 +49,17 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!--
-      OPTIONAL <dependency> <groupId>org.apache.wicket</groupId>
+    <dependency> <groupId>org.apache.wicket</groupId>
       <artifactId>wicket-extensions</artifactId>
-      <version>${wicket.version}</version> </dependency>
-    -->
+      <version>${wicket.version}</version> 
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    
   </dependencies>
   <build>
     <plugins>
