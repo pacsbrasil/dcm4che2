@@ -49,45 +49,45 @@ import javax.persistence.MappedSuperclass;
  */
 @MappedSuperclass
 public class BaseEntity implements Serializable {
-	private static final long serialVersionUID = 6040006245816162642L;
+    private static final long serialVersionUID = 6040006245816162642L;
 
-	@Id
-	// JPA definition (to handle differences between RDBMS) in orm.xml
+    @Id
+    // JPA definition (to handle differences between RDBMS) in orm.xml
     protected long pk;
-    
+
     public long getPk() {
         return pk;
     }
 
-	/**
-	 * Returns <code>true</code> if this <code>BaseEntity</code> is the same as
-	 * the o argument.
-	 * 
-	 * @return <code>true</code> if this <code>BaseEntity</code> is the same as
-	 *         the o argument.
-	 */
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (o == null) {
-			return false;
-		}
-		if (o.getClass() != getClass()) {
-			return false;
-		}
-		BaseEntity castedObj = (BaseEntity) o;
-		return ((this.pk == castedObj.pk));
-	}
+    /**
+     * Returns <code>true</code> if this <code>BaseEntity</code> is the same as
+     * the o argument.
+     * 
+     * @return <code>true</code> if this <code>BaseEntity</code> is the same as
+     *         the o argument.
+     */
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null) {
+            return false;
+        }
+        if (o.getClass() != getClass()) {
+            return false;
+        }
+        BaseEntity castedObj = (BaseEntity) o;
+        return ((this.pk == castedObj.pk));
+    }
 
-	/**
-	 * Override hashCode.
-	 * 
-	 * @return the Object's hashcode.
-	 */
-	public int hashCode() {
-		int hashCode = 1;
-		hashCode = 31 * hashCode + (int) (+pk ^ (pk >>> 32));
-		return hashCode;
-	}
+    /**
+     * Override hashCode.
+     * 
+     * @return the Object's hashcode.
+     */
+    public int hashCode() {
+        int hashCode = 1;
+        hashCode = 31 * hashCode + (int) (+pk ^ (pk >>> 32));
+        return hashCode;
+    }
 }
