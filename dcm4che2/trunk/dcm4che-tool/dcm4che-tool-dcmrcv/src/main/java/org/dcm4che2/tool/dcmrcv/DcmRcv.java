@@ -63,6 +63,7 @@ import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
+import org.dcm4che2.filecache.FileCache;
 import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
@@ -77,6 +78,8 @@ import org.dcm4che2.net.TransferCapability;
 import org.dcm4che2.net.service.StorageService;
 import org.dcm4che2.net.service.VerificationService;
 import org.dcm4che2.util.CloseUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -84,6 +87,8 @@ import org.dcm4che2.util.CloseUtils;
  * @since Oct 13, 2005
  */
 public class DcmRcv extends StorageService {
+
+    private static Logger LOG = LoggerFactory.getLogger(DcmRcv.class);
 
     private static final int KB = 1024;
 
@@ -207,11 +212,11 @@ public class DcmRcv extends StorageService {
 
     private String[] tsuids = NON_RETIRED_LE_TS;
 
-    private File destination;
+    private FileCache cache = new FileCache();
 
-    private boolean devnull;
+    private File devnull;
 
-    private int fileBufferSize = 256;
+    private int fileBufferSize = 1024;
 
     private int rspdelay = 0;
 
@@ -409,6 +414,22 @@ public class DcmRcv extends StorageService {
                         + " Do not store received objects by default.");
         opts.addOption(OptionBuilder.create("dest"));
 
+        OptionBuilder.withArgName("dir");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "register stored objects in cache journal files in specified directory <dir>."
+                        + " Do not register stored objects by default.");
+        opts.addOption(OptionBuilder.create("journal"));
+
+        OptionBuilder.withArgName("pattern");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription("cache journal file path, with "
+                + "'yyyy' will be replaced by the current year, "
+                + "'MM' by the current month, 'dd' by the current date, "
+                + "'HH' by the current hour and 'mm' by the current minute. "
+                + "'yyyy/MM/dd/HH/mm' by default.");
+        opts.addOption(OptionBuilder.create("journalfilepath"));
+
         opts.addOption("defts", false, "accept only default transfer syntax.");
         opts.addOption("bigendian", false,
                 "accept also Explict VR Big Endian transfer syntax.");
@@ -535,6 +556,12 @@ public class DcmRcv extends StorageService {
 
         if (cl.hasOption("dest"))
             dcmrcv.setDestination(cl.getOptionValue("dest"));
+        if (cl.hasOption("journal"))
+            dcmrcv.setJournal(cl.getOptionValue("journal"));
+        if (cl.hasOption("journalfilepath"))
+            dcmrcv.setJournalFilePathFormat(
+                    cl.getOptionValue("journalfilepath"));
+        
         if (cl.hasOption("defts"))
             dcmrcv.setTransferSyntax(ONLY_DEF_TS);
         else if (cl.hasOption("native"))
@@ -674,10 +701,22 @@ public class DcmRcv extends StorageService {
     }
 
     public void setDestination(String filePath) {
-        this.destination = new File(filePath);
-        this.devnull = "/dev/null".equals(filePath);
-        if (!devnull)
-            destination.mkdir();
+        File f = new File(filePath);
+        if ("/dev/null".equals(filePath)) {
+            devnull = f;
+            cache.setCacheRootDir(null);
+        } else {
+            devnull = null;
+            cache.setCacheRootDir(f);
+        }
+    }
+
+    public void setJournal(String journalRootDir) {
+        cache.setJournalRootDir(new File(journalRootDir));
+    }
+
+    public void setJournalFilePathFormat(String format) {
+        cache.setJournalFilePathFormat(format);
     }
 
     public void initTLS() throws GeneralSecurityException, IOException {
@@ -792,37 +831,47 @@ public class DcmRcv extends StorageService {
     protected void onCStoreRQ(Association as, int pcid, DicomObject rq,
             PDVInputStream dataStream, String tsuid, DicomObject rsp)
             throws IOException, DicomServiceException {
-        if (destination == null) {
+        if (devnull == null && cache.getCacheRootDir() == null) {
             super.onCStoreRQ(as, pcid, rq, dataStream, tsuid, rsp);
         }
         else {
-            BufferedOutputStream bos = null;
-            DicomOutputStream dos = null;
-            String iuid = null;
-            File file = null;
+            String cuid = rq.getString(Tag.AffectedSOPClassUID);
+            String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+            File file = devnull == null
+                    ? new File(cache.getCacheRootDir(), iuid + ".part")
+                    : devnull;
+            LOG.info("M-WRITE {}", file);
             try {
-                String cuid = rq.getString(Tag.AffectedSOPClassUID);
-                iuid = rq.getString(Tag.AffectedSOPInstanceUID);
-                BasicDicomObject fmi = new BasicDicomObject();
-                fmi.initFileMetaInformation(cuid, iuid, tsuid);
-                file = devnull ? destination : new File(destination, iuid + ".part");
-                bos = new BufferedOutputStream(new FileOutputStream(file), fileBufferSize);
-                dos = new DicomOutputStream(bos);
-                dos.writeFileMetaInformation(fmi);
-                dataStream.copyTo(dos);
-            }
-            catch (IOException e) {
-                throw new DicomServiceException(rq, Status.ProcessingFailure, e
-                        .getMessage());
-            }
-            finally {
-                CloseUtils.safeClose(dos);
+                DicomOutputStream dos = new DicomOutputStream(
+                        new BufferedOutputStream(
+                                new FileOutputStream(file),
+                                fileBufferSize));
+                try {
+                    BasicDicomObject fmi = new BasicDicomObject();
+                    fmi.initFileMetaInformation(cuid, iuid, tsuid);
+                    dos.writeFileMetaInformation(fmi);
+                    dataStream.copyTo(dos);
+                } finally {
+                    CloseUtils.safeClose(dos);
+                }
+            } catch (IOException e) {
+                if (devnull == null && file != null) {
+                    if (file.delete()) {
+                        LOG.info("M-DELETE {}", file);
+                    }
+                }
+                throw new DicomServiceException(rq, Status.ProcessingFailure,
+                        e.getMessage());
             }
             
             // Rename the file after it has been written. See DCM-279
-            if (!devnull && file != null && file.exists()) {
-                File rename = new File(destination, iuid);
+            if (devnull == null && file != null) {
+                File rename = new File(file.getParent(), iuid);
+                LOG.info("M-RENAME {} to {}", file, rename);
                 file.renameTo(rename);
+                if (cache.getJournalRootDir() != null) {
+                    cache.record(rename);
+                }
             }
         }
     }
