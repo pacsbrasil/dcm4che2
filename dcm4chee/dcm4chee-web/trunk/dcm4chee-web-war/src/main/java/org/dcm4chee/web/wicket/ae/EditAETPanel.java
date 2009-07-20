@@ -63,11 +63,11 @@ import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.validation.IValidator;
 import org.apache.wicket.validation.validator.NumberValidator;
 import org.apache.wicket.validation.validator.StringValidator;
-import org.apache.wicket.validation.validator.UrlValidator;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.dao.AEHomeLocal;
 import org.dcm4chee.web.dao.FileSystemHomeLocal;
 import org.dcm4chee.web.wicket.common.ComponentUtil;
+import org.dcm4chee.web.wicket.common.UrlValidator1;
 import org.dcm4chee.web.wicket.util.JNDIUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,7 +117,7 @@ public class EditAETPanel extends Panel {
         util.addLabeledTextField(form, "description"); 
         util.addLabeledTextField(form, "issuerOfPatientID", "issuer"); 
         util.addLabeledDropDownChoice(form, "fileSystemGroupID", null, fsGroups).setNullValid(true);
-        util.addLabeledTextField(form, "wadoURL").add(new UrlValidator()); //URLValidator doesn't accept http://hostname:8080/web!
+        util.addLabeledTextField(form, "wadoURL").add(new UrlValidator1()); //Wicket UrlValidator doesn't accept http://hostname:8080/web!
         util.addLabeledTextField(form, "userID"); 
         form.add(new Label("passwdLabel", new ResourceModel("aet.passwd") ) );
         form.add(new PasswordTextField("password").setRequired(false)); 
