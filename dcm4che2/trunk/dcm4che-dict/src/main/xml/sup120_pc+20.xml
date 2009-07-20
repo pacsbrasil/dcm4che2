@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<element tag="(0070,0207)" vr="LO" vm="1" ret="">Graphic Group Label</element>
+<element tag="(0070,0208)" vr="ST" vm="1" ret="">Graphic Group Description</element>
+<element tag="(0070,0209)" vr="SQ" vm="1" ret="">Compound Graphic Sequence</element>
+<element tag="(0070,0226)" vr="UL" vm="1" ret="">Compound Graphic Instance ID</element>
+<element tag="(0070,0228)" vr="CS" vm="1" ret="">CSS Font Name</element>
+<element tag="(0070,0229)" vr="LO" vm="1" ret="">Postscript Font Name</element>
+<element tag="(0070,0230)" vr="FD" vm="1" ret="">Rotation Angle</element>
+<element tag="(0070,0231)" vr="SQ" vm="1" ret="">Text Style Sequence</element>
+<element tag="(0070,0232)" vr="SQ" vm="1" ret="">Line Style Sequence</element>
+<element tag="(0070,0233)" vr="SQ" vm="1" ret="">Fill Style Sequence</element>
+<element tag="(0070,0234)" vr="SQ" vm="1" ret="">Graphic Group Sequence</element>
+<element tag="(0070,0241)" vr="US" vm="3" ret="">Text Color</element>
+<element tag="(0070,0242)" vr="CS" vm="1" ret="">Horizontal Alignment</element>
+<element tag="(0070,0243)" vr="CS" vm="1" ret="">Vertical Alignment</element>
+<element tag="(0070,0244)" vr="CS" vm="1" ret="">Shadow Style</element>
+<element tag="(0070,0245)" vr="US" vm="1" ret="">Shadow Offset X</element>
+<element tag="(0070,0246)" vr="US" vm="1" ret="">Shadow Offset Y</element>
+<element tag="(0070,0247)" vr="US" vm="3" ret="">Shadow Color</element>
+<element tag="(0070,0248)" vr="CS" vm="1" ret="">Underlined</element>
+<element tag="(0070,0249)" vr="CS" vm="1" ret="">Bold</element>
+<element tag="(0070,0250)" vr="CS" vm="1" ret="">Italic</element>
+<element tag="(0070,0251)" vr="US" vm="3" ret="">Foreground Color</element>
+<element tag="(0070,0252)" vr="US" vm="3" ret="">Background Color</element>
+<element tag="(0070,0253)" vr="FD" vm="1" ret="">Thickness</element>
+<element tag="(0070,0254)" vr="CS" vm="1" ret="">Line Dashing Style</element>
+<element tag="(0070,0255)" vr="UL" vm="1" ret="">Line Pattern</element>
+<element tag="(0070,0256)" vr="OB" vm="1" ret="">Fill Pattern</element>
+<element tag="(0070,0257)" vr="CS" vm="1" ret="">Fill Mode</element>
+<element tag="(0070,0261)" vr="FL" vm="1" ret="">Gap Length</element>
+<element tag="(0070,0273)" vr="FL" vm="1" ret="">Rotation Point</element>
+<element tag="(0070,0274)" vr="CS" vm="1" ret="">Tick Alignment</element>
+<element tag="(0070,0277)" vr="CS" vm="1" ret="">Show Text at Rotation Point</element>
+<element tag="(0070,0278)" vr="CS" vm="1" ret="">Show Tick Text</element>
+<element tag="(0070,0279)" vr="CS" vm="1" ret="">Tick Text Alignment</element>
+<element tag="(0070,0282)" vr="CS" vm="1" ret="">Compound Graphics Dimension Type</element>
+<element tag="(0070,0283)" vr="CS" vm="1" ret="">Line XOR Style</element>
+<element tag="(0070,0284)" vr="FL" vm="1" ret="">Foreground Transparency</element>
+<element tag="(0070,0285)" vr="FL" vm="1" ret="">Background Transparency</element>
+<element tag="(0070,0287)" vr="US" vm="1" ret="">Number of Main Ticks</element>
+<element tag="(0070,0288)" vr="FL" vm="2-n" ret="">Table of Main Tick Positions</element>
+<element tag="(0070,0289)" vr="FL" vm="2-n" ret="">Table of Main Tick Values</element>
+<element tag="(0070,0292)" vr="ST" vm="1" ret="">Private Graphic Type UID</element>
+<element tag="(0070,0293)" vr="ST" vm="1" ret="">Private Graphic Type Name</element>
+<element tag="(0070,0294)" vr="ST" vm="1" ret="">Compound Graphic Type</element>
+<element tag="(0070,0295)" vr="UL" vm="1" ret="">Annotation Group ID</element>

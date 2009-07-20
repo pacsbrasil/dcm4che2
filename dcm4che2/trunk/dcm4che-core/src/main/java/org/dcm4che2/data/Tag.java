@@ -5029,8 +5029,8 @@ public class Tag {
     /** (0046,0080) VR=SQ, VM=1 Flat Keratometric Axis Sequence  */
     public static final int FlatKeratometricAxisSequence = 0x00460080;
 
-    /** (0046,0092) VR=CS, VM=1 Background Color  */
-    public static final int BackgroundColor = 0x00460092;
+    /** (0046,0092) VR=CS, VM=1 Optotype Background Color  */
+    public static final int OptotypeBackgroundColor = 0x00460092;
 
     /** (0046,0094) VR=CS, VM=1 Optotype  */
     public static final int Optotype = 0x00460094;
@@ -5589,6 +5589,141 @@ public class Tag {
 
     /** (0070,0103) VR=FL, VM=1 Presentation Pixel Magnification Ratio  */
     public static final int PresentationPixelMagnificationRatio = 0x00700103;
+
+    /** (0070,0207) VR=LO, VM=1 Graphic Group Label  */
+    public static final int GraphicGroupLabel = 0x00700207;
+
+    /** (0070,0208) VR=ST, VM=1 Graphic Group Description  */
+    public static final int GraphicGroupDescription = 0x00700208;
+
+    /** (0070,0209) VR=SQ, VM=1 Compound Graphic Sequence  */
+    public static final int CompoundGraphicSequence = 0x00700209;
+
+    /** (0070,0226) VR=UL, VM=1 Compound Graphic Instance ID  */
+    public static final int CompoundGraphicInstanceID = 0x00700226;
+
+    /** (0070,0228) VR=CS, VM=1 CSS Font Name  */
+    public static final int CSSFontName = 0x00700228;
+
+    /** (0070,0229) VR=LO, VM=1 Postscript Font Name  */
+    public static final int PostscriptFontName = 0x00700229;
+
+    /** (0070,0230) VR=FD, VM=1 Rotation Angle  */
+    public static final int RotationAngle = 0x00700230;
+
+    /** (0070,0231) VR=SQ, VM=1 Text Style Sequence  */
+    public static final int TextStyleSequence = 0x00700231;
+
+    /** (0070,0232) VR=SQ, VM=1 Line Style Sequence  */
+    public static final int LineStyleSequence = 0x00700232;
+
+    /** (0070,0233) VR=SQ, VM=1 Fill Style Sequence  */
+    public static final int FillStyleSequence = 0x00700233;
+
+    /** (0070,0234) VR=SQ, VM=1 Graphic Group Sequence  */
+    public static final int GraphicGroupSequence = 0x00700234;
+
+    /** (0070,0241) VR=US, VM=3 Text Color  */
+    public static final int TextColor = 0x00700241;
+
+    /** (0070,0242) VR=CS, VM=1 Horizontal Alignment  */
+    public static final int HorizontalAlignment = 0x00700242;
+
+    /** (0070,0243) VR=CS, VM=1 Vertical Alignment  */
+    public static final int VerticalAlignment = 0x00700243;
+
+    /** (0070,0244) VR=CS, VM=1 Shadow Style  */
+    public static final int ShadowStyle = 0x00700244;
+
+    /** (0070,0245) VR=US, VM=1 Shadow Offset X  */
+    public static final int ShadowOffsetX = 0x00700245;
+
+    /** (0070,0246) VR=US, VM=1 Shadow Offset Y  */
+    public static final int ShadowOffsetY = 0x00700246;
+
+    /** (0070,0247) VR=US, VM=3 Shadow Color  */
+    public static final int ShadowColor = 0x00700247;
+
+    /** (0070,0248) VR=CS, VM=1 Underlined  */
+    public static final int Underlined = 0x00700248;
+
+    /** (0070,0249) VR=CS, VM=1 Bold  */
+    public static final int Bold = 0x00700249;
+
+    /** (0070,0250) VR=CS, VM=1 Italic  */
+    public static final int Italic = 0x00700250;
+
+    /** (0070,0251) VR=US, VM=3 Foreground Color  */
+    public static final int ForegroundColor = 0x00700251;
+
+    /** (0070,0252) VR=US, VM=3 Background Color  */
+    public static final int BackgroundColor = 0x00700252;
+
+    /** (0070,0253) VR=FD, VM=1 Thickness  */
+    public static final int Thickness = 0x00700253;
+
+    /** (0070,0254) VR=CS, VM=1 Line Dashing Style  */
+    public static final int LineDashingStyle = 0x00700254;
+
+    /** (0070,0255) VR=UL, VM=1 Line Pattern  */
+    public static final int LinePattern = 0x00700255;
+
+    /** (0070,0256) VR=OB, VM=1 Fill Pattern  */
+    public static final int FillPattern = 0x00700256;
+
+    /** (0070,0257) VR=CS, VM=1 Fill Mode  */
+    public static final int FillMode = 0x00700257;
+
+    /** (0070,0261) VR=FL, VM=1 Gap Length  */
+    public static final int GapLength = 0x00700261;
+
+    /** (0070,0273) VR=FL, VM=1 Rotation Point  */
+    public static final int RotationPoint = 0x00700273;
+
+    /** (0070,0274) VR=CS, VM=1 Tick Alignment  */
+    public static final int TickAlignment = 0x00700274;
+
+    /** (0070,0277) VR=CS, VM=1 Show Text at Rotation Point  */
+    public static final int ShowTextAtRotationPoint = 0x00700277;
+
+    /** (0070,0278) VR=CS, VM=1 Show Tick Text  */
+    public static final int ShowTickText = 0x00700278;
+
+    /** (0070,0279) VR=CS, VM=1 Tick Text Alignment  */
+    public static final int TickTextAlignment = 0x00700279;
+
+    /** (0070,0282) VR=CS, VM=1 Compound Graphics Dimension Type  */
+    public static final int CompoundGraphicsDimensionType = 0x00700282;
+
+    /** (0070,0283) VR=CS, VM=1 Line XOR Style  */
+    public static final int LineXORStyle = 0x00700283;
+
+    /** (0070,0284) VR=FL, VM=1 Foreground Transparency  */
+    public static final int ForegroundTransparency = 0x00700284;
+
+    /** (0070,0285) VR=FL, VM=1 Background Transparency  */
+    public static final int BackgroundTransparency = 0x00700285;
+
+    /** (0070,0287) VR=US, VM=1 Number of Main Ticks  */
+    public static final int NumberOfMainTicks = 0x00700287;
+
+    /** (0070,0288) VR=FL, VM=2-n Table of Main Tick Positions  */
+    public static final int TableOfMainTickPositions = 0x00700288;
+
+    /** (0070,0289) VR=FL, VM=2-n Table of Main Tick Values  */
+    public static final int TableOfMainTickValues = 0x00700289;
+
+    /** (0070,0292) VR=ST, VM=1 Private Graphic Type UID  */
+    public static final int PrivateGraphicTypeUID = 0x00700292;
+
+    /** (0070,0293) VR=ST, VM=1 Private Graphic Type Name  */
+    public static final int PrivateGraphicTypeName = 0x00700293;
+
+    /** (0070,0294) VR=ST, VM=1 Compound Graphic Type  */
+    public static final int CompoundGraphicType = 0x00700294;
+
+    /** (0070,0295) VR=UL, VM=1 Annotation Group ID  */
+    public static final int AnnotationGroupID = 0x00700295;
 
     /** (0070,0306) VR=CS, VM=1 Shape Type  */
     public static final int ShapeType = 0x00700306;

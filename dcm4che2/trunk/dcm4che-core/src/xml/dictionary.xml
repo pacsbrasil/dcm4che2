@@ -1644,7 +1644,7 @@
 <element tag="00460076" alias="KeratometricPower" vr="FD" vm="1" ret="">Keratometric Power</element>
 <element tag="00460077" alias="KeratometricAxis" vr="FD" vm="1" ret="">Keratometric Axis</element>
 <element tag="00460080" alias="FlatKeratometricAxisSequence" vr="SQ" vm="1" ret="">Flat Keratometric Axis Sequence</element>
-<element tag="00460092" alias="BackgroundColor" vr="CS" vm="1" ret="">Background Color</element>
+<element tag="00460092" alias="OptotypeBackgroundColor" vr="CS" vm="1" ret="">Optotype Background Color</element>
 <element tag="00460094" alias="Optotype" vr="CS" vm="1" ret="">Optotype</element>
 <element tag="00460095" alias="OptotypePresentation" vr="CS" vm="1" ret="">Optotype Presentation</element>
 <element tag="00460097" alias="SubjectiveRefractionRightEyeSequence" vr="SQ" vm="1" ret="">Subjective Refraction Right Eye Sequence</element>
@@ -1831,6 +1831,51 @@
 <element tag="00700101" alias="PresentationPixelSpacing" vr="DS" vm="2" ret="">Presentation Pixel Spacing</element>
 <element tag="00700102" alias="PresentationPixelAspectRatio" vr="IS" vm="2" ret="">Presentation Pixel Aspect Ratio</element>
 <element tag="00700103" alias="PresentationPixelMagnificationRatio" vr="FL" vm="1" ret="">Presentation Pixel Magnification Ratio</element>
+<element tag="00700207" alias="GraphicGroupLabel" vr="LO" vm="1" ret="">Graphic Group Label</element>
+<element tag="00700208" alias="GraphicGroupDescription" vr="ST" vm="1" ret="">Graphic Group Description</element>
+<element tag="00700209" alias="CompoundGraphicSequence" vr="SQ" vm="1" ret="">Compound Graphic Sequence</element>
+<element tag="00700226" alias="CompoundGraphicInstanceID" vr="UL" vm="1" ret="">Compound Graphic Instance ID</element>
+<element tag="00700228" alias="CSSFontName" vr="CS" vm="1" ret="">CSS Font Name</element>
+<element tag="00700229" alias="PostscriptFontName" vr="LO" vm="1" ret="">Postscript Font Name</element>
+<element tag="00700230" alias="RotationAngle" vr="FD" vm="1" ret="">Rotation Angle</element>
+<element tag="00700231" alias="TextStyleSequence" vr="SQ" vm="1" ret="">Text Style Sequence</element>
+<element tag="00700232" alias="LineStyleSequence" vr="SQ" vm="1" ret="">Line Style Sequence</element>
+<element tag="00700233" alias="FillStyleSequence" vr="SQ" vm="1" ret="">Fill Style Sequence</element>
+<element tag="00700234" alias="GraphicGroupSequence" vr="SQ" vm="1" ret="">Graphic Group Sequence</element>
+<element tag="00700241" alias="TextColor" vr="US" vm="3" ret="">Text Color</element>
+<element tag="00700242" alias="HorizontalAlignment" vr="CS" vm="1" ret="">Horizontal Alignment</element>
+<element tag="00700243" alias="VerticalAlignment" vr="CS" vm="1" ret="">Vertical Alignment</element>
+<element tag="00700244" alias="ShadowStyle" vr="CS" vm="1" ret="">Shadow Style</element>
+<element tag="00700245" alias="ShadowOffsetX" vr="US" vm="1" ret="">Shadow Offset X</element>
+<element tag="00700246" alias="ShadowOffsetY" vr="US" vm="1" ret="">Shadow Offset Y</element>
+<element tag="00700247" alias="ShadowColor" vr="US" vm="3" ret="">Shadow Color</element>
+<element tag="00700248" alias="Underlined" vr="CS" vm="1" ret="">Underlined</element>
+<element tag="00700249" alias="Bold" vr="CS" vm="1" ret="">Bold</element>
+<element tag="00700250" alias="Italic" vr="CS" vm="1" ret="">Italic</element>
+<element tag="00700251" alias="ForegroundColor" vr="US" vm="3" ret="">Foreground Color</element>
+<element tag="00700252" alias="BackgroundColor" vr="US" vm="3" ret="">Background Color</element>
+<element tag="00700253" alias="Thickness" vr="FD" vm="1" ret="">Thickness</element>
+<element tag="00700254" alias="LineDashingStyle" vr="CS" vm="1" ret="">Line Dashing Style</element>
+<element tag="00700255" alias="LinePattern" vr="UL" vm="1" ret="">Line Pattern</element>
+<element tag="00700256" alias="FillPattern" vr="OB" vm="1" ret="">Fill Pattern</element>
+<element tag="00700257" alias="FillMode" vr="CS" vm="1" ret="">Fill Mode</element>
+<element tag="00700261" alias="GapLength" vr="FL" vm="1" ret="">Gap Length</element>
+<element tag="00700273" alias="RotationPoint" vr="FL" vm="1" ret="">Rotation Point</element>
+<element tag="00700274" alias="TickAlignment" vr="CS" vm="1" ret="">Tick Alignment</element>
+<element tag="00700277" alias="ShowTextAtRotationPoint" vr="CS" vm="1" ret="">Show Text at Rotation Point</element>
+<element tag="00700278" alias="ShowTickText" vr="CS" vm="1" ret="">Show Tick Text</element>
+<element tag="00700279" alias="TickTextAlignment" vr="CS" vm="1" ret="">Tick Text Alignment</element>
+<element tag="00700282" alias="CompoundGraphicsDimensionType" vr="CS" vm="1" ret="">Compound Graphics Dimension Type</element>
+<element tag="00700283" alias="LineXORStyle" vr="CS" vm="1" ret="">Line XOR Style</element>
+<element tag="00700284" alias="ForegroundTransparency" vr="FL" vm="1" ret="">Foreground Transparency</element>
+<element tag="00700285" alias="BackgroundTransparency" vr="FL" vm="1" ret="">Background Transparency</element>
+<element tag="00700287" alias="NumberOfMainTicks" vr="US" vm="1" ret="">Number of Main Ticks</element>
+<element tag="00700288" alias="TableOfMainTickPositions" vr="FL" vm="2-n" ret="">Table of Main Tick Positions</element>
+<element tag="00700289" alias="TableOfMainTickValues" vr="FL" vm="2-n" ret="">Table of Main Tick Values</element>
+<element tag="00700292" alias="PrivateGraphicTypeUID" vr="ST" vm="1" ret="">Private Graphic Type UID</element>
+<element tag="00700293" alias="PrivateGraphicTypeName" vr="ST" vm="1" ret="">Private Graphic Type Name</element>
+<element tag="00700294" alias="CompoundGraphicType" vr="ST" vm="1" ret="">Compound Graphic Type</element>
+<element tag="00700295" alias="AnnotationGroupID" vr="UL" vm="1" ret="">Annotation Group ID</element>
 <element tag="00700306" alias="ShapeType" vr="CS" vm="1" ret="">Shape Type</element>
 <element tag="00700308" alias="RegistrationSequence" vr="SQ" vm="1" ret="">Registration Sequence</element>
 <element tag="00700309" alias="MatrixRegistrationSequence" vr="SQ" vm="1" ret="">Matrix Registration Sequence</element>
