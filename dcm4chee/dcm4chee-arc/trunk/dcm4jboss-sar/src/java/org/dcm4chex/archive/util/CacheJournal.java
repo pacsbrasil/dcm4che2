@@ -62,6 +62,7 @@ public class CacheJournal {
 
     private File journalRootDir;
     private File dataRootDir;
+    private MemoryCache memoryCache = new MemoryCache(0);
     private SimpleDateFormat journalFilePathFormat =
             new SimpleDateFormat(DEFAULT_FILE_PATH_PATTERN);
     private boolean freeIsRunning = false;
@@ -73,6 +74,14 @@ public class CacheJournal {
     public void setJournalRootDir(File journalRootDir) {
         assertWritableDiretory(journalRootDir);
         this.journalRootDir = journalRootDir;
+    }
+
+    public void setMemoryCacheCapacity(int capacity) {
+        this.memoryCache = new MemoryCache(capacity);
+    }
+
+    public int getMemoryCacheCapacity() {
+        return memoryCache.capacity();
     }
 
     public File getDataRootDir() {
@@ -106,8 +115,14 @@ public class CacheJournal {
         long time = System.currentTimeMillis();
         File journalFile = getJournalFile(time);
         if (journalFile.exists()) {
-            log.debug("M-UPDATE {}", journalFile);
+            if (memoryCache.contains(path)) {
+                log.debug("{} already contains entry for {}", journalFile, f);
+                return;
+            } else {
+                log.debug("M-UPDATE {}", journalFile);
+            }
         } else {
+            memoryCache.clear();
             mkdirs(journalFile.getParentFile());
             log.debug("M-WRITE {}", journalFile);
         }
@@ -117,6 +132,7 @@ public class CacheJournal {
         } finally {
             journal.close();
         }
+        memoryCache.add(path);
         f.setLastModified(time);
     }
 
@@ -229,4 +245,52 @@ public class CacheJournal {
         return true;
     }
 
+    private static class MemoryCache {
+
+        private final String[] elements;
+        private int size = 0;
+        private int next = 0;
+
+        public MemoryCache(int capacity) {
+            elements = new String[capacity];
+        }
+
+        public int capacity() {
+            return elements.length;
+        }
+
+        public boolean contains(String path) {
+            if (size == 0) {
+                return false;
+            }
+            for (int i = next - 1; i >= 0; i--) {
+                if (elements[i].equals(path)) {
+                    return true;
+                }
+            }
+            for (int i = size - 1; i >= next; i--) {
+                if (elements[i].equals(path)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public void add(String path) {
+            if (elements.length == 0) {
+                return;
+            }
+            elements[next] = path;
+            next = (next + 1) % elements.length;
+            if (size < elements.length) {
+                size++;
+            }
+        }
+
+        public void clear() {
+            size = 0;
+            Arrays.fill(elements, null);
+        }
+
+    }
 }
