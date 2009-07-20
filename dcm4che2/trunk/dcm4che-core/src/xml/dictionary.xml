@@ -1433,15 +1433,30 @@
 <element tag="00400400" alias="CommentsOnTheScheduledProcedureStep" vr="LT" vm="1" ret="">Comments on the Scheduled Procedure Step</element>
 <element tag="00400440" alias="ProtocolContextSequence" vr="SQ" vm="1" ret="">Protocol Context Sequence</element>
 <element tag="00400441" alias="ContentItemModifierSequence" vr="SQ" vm="1" ret="">Content Item Modifier Sequence</element>
-<element tag="0040050A" alias="SpecimenAccessionNumber" vr="LO" vm="1" ret="">Specimen Accession Number</element>
-<element tag="00400550" alias="SpecimenSequence" vr="SQ" vm="1" ret="">Specimen Sequence</element>
+<element tag="00400500" alias="ScheduledSpecimenSequence" vr="SQ" vm="1" ret="">Scheduled Specimen Sequence</element>
+<element tag="0040050A" alias="SpecimenAccessionNumber" vr="LO" vm="1" ret="RET">Specimen Accession Number</element>
+<element tag="00400512" alias="ContainerIdentifier" vr="LO" vm="1" ret="">Container Identifier</element>
+<element tag="00400513" alias="IssuerOfTheContainerIdentifierSequence" vr="SQ" vm="1" ret="">Issuer of the Container Identifier Sequence</element>
+<element tag="00400515" alias="AlternateContainerIdentifierSequence" vr="SQ" vm="1" ret="">Alternate Container Identifier Sequence</element>
+<element tag="00400518" alias="ContainerTypeCodeSequence" vr="SQ" vm="1" ret="">Container Type Code Sequence</element>
+<element tag="0040051A" alias="ContainerDescription" vr="LO" vm="1" ret="">Container Description</element>
+<element tag="00400520" alias="ContainerComponentSequence" vr="SQ" vm="1" ret="">Container Component Sequence</element>
+<element tag="00400550" alias="SpecimenSequence" vr="SQ" vm="1" ret="RET">Specimen Sequence</element>
 <element tag="00400551" alias="SpecimenIdentifier" vr="LO" vm="1" ret="">Specimen Identifier</element>
 <element tag="00400552" alias="SpecimenDescriptionSequenceTrial" vr="SQ" vm="1" ret="RET">Specimen Description Sequence - Trial</element>
 <element tag="00400553" alias="SpecimenDescriptionTrial" vr="ST" vm="1" ret="RET">Specimen Description - Trial</element>
+<element tag="00400554" alias="SpecimenUID" vr="UI" vm="1" ret="">Specimen UID</element>
 <element tag="00400555" alias="AcquisitionContextSequence" vr="SQ" vm="1" ret="">Acquisition Context Sequence</element>
 <element tag="00400556" alias="AcquisitionContextDescription" vr="ST" vm="1" ret="">Acquisition Context Description</element>
+<element tag="00400560" alias="SpecimenDescriptionSequence" vr="SQ" vm="1" ret="">Specimen Description Sequence</element>
+<element tag="00400562" alias="IssuerOfTheSpecimenIdentifierSequence" vr="SQ" vm="1" ret="">Issuer of the Specimen Identifier Sequence</element>
 <element tag="0040059A" alias="SpecimenTypeCodeSequence" vr="SQ" vm="1" ret="">Specimen Type Code Sequence</element>
-<element tag="004006FA" alias="SlideIdentifier" vr="LO" vm="1" ret="">Slide Identifier</element>
+<element tag="00400600" alias="SpecimenShortDescription" vr="LO" vm="1" ret="">Specimen Short Description</element>
+<element tag="00400602" alias="SpecimenDetailedDescription" vr="UT" vm="1" ret="">Specimen Detailed Description</element>
+<element tag="00400610" alias="SpecimenPreparationSequence" vr="SQ" vm="1" ret="">Specimen Preparation Sequence</element>
+<element tag="00400612" alias="SpecimenPreparationStepContentItemSequence" vr="SQ" vm="1" ret="">Specimen Preparation Step Content Item Sequence</element>
+<element tag="00400620" alias="SpecimenLocalizationContentItemSequence" vr="SQ" vm="1" ret="">Specimen Localization Content Item Sequence</element>
+<element tag="004006FA" alias="SlideIdentifier" vr="LO" vm="1" ret="RET">Slide Identifier</element>
 <element tag="0040071A" alias="ImageCenterPointCoordinatesSequence" vr="SQ" vm="1" ret="">Image Center Point Coordinates Sequence</element>
 <element tag="0040072A" alias="XOffsetInSlideCoordinateSystem" vr="DS" vm="1" ret="">X offset in Slide Coordinate System</element>
 <element tag="0040073A" alias="YOffsetInSlideCoordinateSystem" vr="DS" vm="1" ret="">Y offset in Slide Coordinate System</element>
@@ -1652,11 +1667,19 @@
 <element tag="00460147" alias="CylinderPower" vr="FD" vm="1" ret="">Cylinder Power</element>
 <element tag="00500004" alias="CalibrationImage" vr="CS" vm="1" ret="">Calibration Image</element>
 <element tag="00500010" alias="DeviceSequence" vr="SQ" vm="1" ret="">Device Sequence</element>
+<element tag="00500012" alias="ContainerComponentTypeCodeSequence" vr="SQ" vm="1" ret="">Container Component Type Code Sequence</element>
+<element tag="00500013" alias="ContainerComponentThickness" vr="FD" vm="1" ret="">Container Component Thickness</element>
 <element tag="00500014" alias="DeviceLength" vr="DS" vm="1" ret="">Device Length</element>
+<element tag="00500015" alias="ContainerComponentWidth" vr="FD" vm="1" ret="">Container Component Width</element>
 <element tag="00500016" alias="DeviceDiameter" vr="DS" vm="1" ret="">Device Diameter</element>
 <element tag="00500017" alias="DeviceDiameterUnits" vr="CS" vm="1" ret="">Device Diameter Units</element>
 <element tag="00500018" alias="DeviceVolume" vr="DS" vm="1" ret="">Device Volume</element>
 <element tag="00500019" alias="IntermarkerDistance" vr="DS" vm="1" ret="">Intermarker Distance</element>
+<element tag="0050001A" alias="ContainerComponentMaterial" vr="CS" vm="1" ret="">Container Component Material</element>
+<element tag="0050001B" alias="ContainerComponentID" vr="LO" vm="1" ret="">Container Component ID</element>
+<element tag="0050001C" alias="ContainerComponentLength" vr="FD" vm="1" ret="">Container Component Length</element>
+<element tag="0050001D" alias="ContainerComponentDiameter" vr="FD" vm="1" ret="">Container Component Diameter</element>
+<element tag="0050001E" alias="ContainerComponentDescription" vr="LO" vm="1" ret="">Container Component Description</element>
 <element tag="00500020" alias="DeviceDescription" vr="LO" vm="1" ret="">Device Description</element>
 <element tag="00540010" alias="EnergyWindowVector" vr="US" vm="1-n" ret="">Energy Window Vector</element>
 <element tag="00540011" alias="NumberOfEnergyWindows" vr="US" vm="1" ret="">Number of Energy Windows</element>

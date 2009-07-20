@@ -62,6 +62,9 @@
             <param name="fname" value="sup119_ft3" />
         </antcall>
         <antcall target="unzip-odt">
+            <param name="fname" value="sup122_ft2" />
+        </antcall>
+        <antcall target="unzip-odt">
             <param name="fname" value="sup130_ft" />
         </antcall>
         <antcall target="unzip-odt">
@@ -87,6 +90,10 @@
         </antcall>
         <antcall target="grep">
             <param name="fname" value="sup119_ft3" />
+            <param name="style" value="p6_element" />
+        </antcall>
+        <antcall target="grep">
+            <param name="fname" value="sup122_ft2" />
             <param name="style" value="p6_element" />
         </antcall>
         <antcall target="grep">

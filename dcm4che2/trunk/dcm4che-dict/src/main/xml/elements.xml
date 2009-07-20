@@ -4,6 +4,7 @@
 <!ENTITY p06 SYSTEM "../../../target/xml/p6_element/08_06pu.xml">
 <!ENTITY sup117 SYSTEM "../../../target/xml/p6_element/sup117_ft.xml">
 <!ENTITY sup119 SYSTEM "../../../target/xml/p6_element/sup119_ft3.xml">
+<!ENTITY sup122 SYSTEM "../../../target/xml/p6_element/sup122_ft2.xml">
 <!ENTITY sup130 SYSTEM "../../../target/xml/p6_element/sup130_ft.xml">
 <!ENTITY cp800 SYSTEM "../../../target/xml/p6_element/cp800_ft.xml">
 ]>
@@ -12,6 +13,7 @@
 &p06;
 &sup117;
 &sup119;
+&sup122;
 &sup130;
 &cp800;
 </elements>

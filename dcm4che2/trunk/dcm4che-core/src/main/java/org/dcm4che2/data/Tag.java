@@ -4396,10 +4396,31 @@ public class Tag {
     /** (0040,0441) VR=SQ, VM=1 Content Item Modifier Sequence  */
     public static final int ContentItemModifierSequence = 0x00400441;
 
-    /** (0040,050A) VR=LO, VM=1 Specimen Accession Number  */
+    /** (0040,0500) VR=SQ, VM=1 Scheduled Specimen Sequence  */
+    public static final int ScheduledSpecimenSequence = 0x00400500;
+
+    /** (0040,050A) VR=LO, VM=1 Specimen Accession Number RET */
     public static final int SpecimenAccessionNumber = 0x0040050A;
 
-    /** (0040,0550) VR=SQ, VM=1 Specimen Sequence  */
+    /** (0040,0512) VR=LO, VM=1 Container Identifier  */
+    public static final int ContainerIdentifier = 0x00400512;
+
+    /** (0040,0513) VR=SQ, VM=1 Issuer of the Container Identifier Sequence  */
+    public static final int IssuerOfTheContainerIdentifierSequence = 0x00400513;
+
+    /** (0040,0515) VR=SQ, VM=1 Alternate Container Identifier Sequence  */
+    public static final int AlternateContainerIdentifierSequence = 0x00400515;
+
+    /** (0040,0518) VR=SQ, VM=1 Container Type Code Sequence  */
+    public static final int ContainerTypeCodeSequence = 0x00400518;
+
+    /** (0040,051A) VR=LO, VM=1 Container Description  */
+    public static final int ContainerDescription = 0x0040051A;
+
+    /** (0040,0520) VR=SQ, VM=1 Container Component Sequence  */
+    public static final int ContainerComponentSequence = 0x00400520;
+
+    /** (0040,0550) VR=SQ, VM=1 Specimen Sequence RET */
     public static final int SpecimenSequence = 0x00400550;
 
     /** (0040,0551) VR=LO, VM=1 Specimen Identifier  */
@@ -4411,16 +4432,40 @@ public class Tag {
     /** (0040,0553) VR=ST, VM=1 Specimen Description - Trial RET */
     public static final int SpecimenDescriptionTrial = 0x00400553;
 
+    /** (0040,0554) VR=UI, VM=1 Specimen UID  */
+    public static final int SpecimenUID = 0x00400554;
+
     /** (0040,0555) VR=SQ, VM=1 Acquisition Context Sequence  */
     public static final int AcquisitionContextSequence = 0x00400555;
 
     /** (0040,0556) VR=ST, VM=1 Acquisition Context Description  */
     public static final int AcquisitionContextDescription = 0x00400556;
 
+    /** (0040,0560) VR=SQ, VM=1 Specimen Description Sequence  */
+    public static final int SpecimenDescriptionSequence = 0x00400560;
+
+    /** (0040,0562) VR=SQ, VM=1 Issuer of the Specimen Identifier Sequence  */
+    public static final int IssuerOfTheSpecimenIdentifierSequence = 0x00400562;
+
     /** (0040,059A) VR=SQ, VM=1 Specimen Type Code Sequence  */
     public static final int SpecimenTypeCodeSequence = 0x0040059A;
 
-    /** (0040,06FA) VR=LO, VM=1 Slide Identifier  */
+    /** (0040,0600) VR=LO, VM=1 Specimen Short Description  */
+    public static final int SpecimenShortDescription = 0x00400600;
+
+    /** (0040,0602) VR=UT, VM=1 Specimen Detailed Description  */
+    public static final int SpecimenDetailedDescription = 0x00400602;
+
+    /** (0040,0610) VR=SQ, VM=1 Specimen Preparation Sequence  */
+    public static final int SpecimenPreparationSequence = 0x00400610;
+
+    /** (0040,0612) VR=SQ, VM=1 Specimen Preparation Step Content Item Sequence  */
+    public static final int SpecimenPreparationStepContentItemSequence = 0x00400612;
+
+    /** (0040,0620) VR=SQ, VM=1 Specimen Localization Content Item Sequence  */
+    public static final int SpecimenLocalizationContentItemSequence = 0x00400620;
+
+    /** (0040,06FA) VR=LO, VM=1 Slide Identifier RET */
     public static final int SlideIdentifier = 0x004006FA;
 
     /** (0040,071A) VR=SQ, VM=1 Image Center Point Coordinates Sequence  */
@@ -5053,8 +5098,17 @@ public class Tag {
     /** (0050,0010) VR=SQ, VM=1 Device Sequence  */
     public static final int DeviceSequence = 0x00500010;
 
+    /** (0050,0012) VR=SQ, VM=1 Container Component Type Code Sequence  */
+    public static final int ContainerComponentTypeCodeSequence = 0x00500012;
+
+    /** (0050,0013) VR=FD, VM=1 Container Component Thickness  */
+    public static final int ContainerComponentThickness = 0x00500013;
+
     /** (0050,0014) VR=DS, VM=1 Device Length  */
     public static final int DeviceLength = 0x00500014;
+
+    /** (0050,0015) VR=FD, VM=1 Container Component Width  */
+    public static final int ContainerComponentWidth = 0x00500015;
 
     /** (0050,0016) VR=DS, VM=1 Device Diameter  */
     public static final int DeviceDiameter = 0x00500016;
@@ -5067,6 +5121,21 @@ public class Tag {
 
     /** (0050,0019) VR=DS, VM=1 Intermarker Distance  */
     public static final int IntermarkerDistance = 0x00500019;
+
+    /** (0050,001A) VR=CS, VM=1 Container Component Material  */
+    public static final int ContainerComponentMaterial = 0x0050001A;
+
+    /** (0050,001B) VR=LO, VM=1 Container Component ID  */
+    public static final int ContainerComponentID = 0x0050001B;
+
+    /** (0050,001C) VR=FD, VM=1 Container Component Length  */
+    public static final int ContainerComponentLength = 0x0050001C;
+
+    /** (0050,001D) VR=FD, VM=1 Container Component Diameter  */
+    public static final int ContainerComponentDiameter = 0x0050001D;
+
+    /** (0050,001E) VR=LO, VM=1 Container Component Description  */
+    public static final int ContainerComponentDescription = 0x0050001E;
 
     /** (0050,0020) VR=LO, VM=1 Device Description  */
     public static final int DeviceDescription = 0x00500020;
