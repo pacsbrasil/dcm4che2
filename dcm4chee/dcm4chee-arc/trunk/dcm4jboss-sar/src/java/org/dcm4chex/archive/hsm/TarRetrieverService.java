@@ -242,10 +242,16 @@ public class TarRetrieverService extends ServiceMBeanSupport {
         String fpath = fileID.substring(tarEnd + 1)
                             .replace('/', File.separatorChar);
         File f = new File(cacheDir, fpath);
+        if (f.exists()) {
+            journal.record(cacheDir, true);
+            return f;
+        }
+        boolean extracted = false;
         while (!f.exists()) {
             if (extracting.add(tarName)) {
                 try {
                     fetchAndExtractTar(fsID, tarPath, tarName, cacheDir);
+                    extracted = true;
                 } finally {
                     synchronized (extracting) {
                         extracting.remove(tarName);
@@ -267,7 +273,7 @@ public class TarRetrieverService extends ServiceMBeanSupport {
                 }
             }
         }
-        journal.record(cacheDir);
+        journal.record(cacheDir, !extracted);
         return f;
     }
 
