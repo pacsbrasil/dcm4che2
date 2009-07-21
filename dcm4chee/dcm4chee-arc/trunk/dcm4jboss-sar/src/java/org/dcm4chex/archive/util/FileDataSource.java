@@ -72,13 +72,17 @@ import org.jboss.logging.Logger;
 public class FileDataSource implements DataSource {
 
     private static final Logger log = Logger.getLogger(FileDataSource.class);
-    private static final Dataset EXTRACTED_FRAMES;
+    private static Dataset defaultContributingEquipment;
 
-    static { //TODO final DCM code value not yet available
-        EXTRACTED_FRAMES = DcmObjectFactory.getInstance().newDataset();
-        EXTRACTED_FRAMES.putLO(Tags.CodeValue, "121350");
-        EXTRACTED_FRAMES.putSH(Tags.CodingSchemeDesignator, "99DCM4CHEE");
-        EXTRACTED_FRAMES.putLO(Tags.CodeMeaning, "EXTRACTED FRAMES");
+    static {
+        FileDataSource.defaultContributingEquipment =
+                DcmObjectFactory.getInstance().newDataset();
+        Dataset purpose = defaultContributingEquipment
+                .putSQ(Tags.PurposeOfReferenceCodeSeq).addNewItem();
+        purpose.putLO(Tags.CodeValue, "109105");
+        purpose.putSH(Tags.CodingSchemeDesignator, "DCM");
+        purpose.putLO(Tags.CodeMeaning, "Frame Extracting Equipment");
+        defaultContributingEquipment.putLO(Tags.Manufacturer, "dcm4che.org");
     }
     private final File file;
     private final Dataset mergeAttrs;
@@ -90,12 +94,22 @@ public class FileDataSource implements DataSource {
     private boolean excludePrivate = false;
     private int[] simpleFrameList;
     private int[] calculatedFrameList;
-    private Dataset contributingEquipment;
+    private Dataset contributingEquipment =
+            FileDataSource.defaultContributingEquipment;
 
     public FileDataSource(File file, Dataset mergeAttrs, byte[] buffer) {
         this.file = file;
         this.mergeAttrs = mergeAttrs;
         this.buffer = buffer;
+    }
+
+    public static final Dataset getDefaultContributingEquipment() {
+        return defaultContributingEquipment;
+    }
+
+    public static final void setDefaultContributingEquipment(
+            Dataset contributingEquipment) {
+        FileDataSource.defaultContributingEquipment = contributingEquipment;
     }
 
     /**
@@ -136,7 +150,7 @@ public class FileDataSource implements DataSource {
     }
 
     public final void setSimpleFrameList(int[] simpleFrameList) {
-        if (calculatedFrameList != null) {
+        if (simpleFrameList != null) {
             if (calculatedFrameList != null) {
                 throw new IllegalStateException();
             }
@@ -147,8 +161,8 @@ public class FileDataSource implements DataSource {
                 if (simpleFrameList[i] <= 0) {
                     throw new IllegalArgumentException();
                 }
-                if (i != 0 && calculatedFrameList[i]
-                           <= calculatedFrameList[i-1]) {
+                if (i != 0 && simpleFrameList[i]
+                           <= simpleFrameList[i-1]) {
                     throw new IllegalArgumentException();
                 }
             }
@@ -260,7 +274,7 @@ public class FileDataSource implements DataSource {
                 simpleFrameList = null;
             }
             if (simpleFrameList != null) {
-                addSourceImageSeq(ds);
+                addFrameExtractionSeq(ds);
                 addContributingEquipmentSeq(ds);
                 adjustNumberOfFrames(ds);
                 ds.putUI(Tags.SOPInstanceUID,
@@ -406,18 +420,21 @@ public class FileDataSource implements DataSource {
         }
     }
 
-    private void addSourceImageSeq(Dataset ds) {
-        DcmElement seq = getOrPutSQ(ds, Tags.SourceImageSeq);
+    private void addFrameExtractionSeq(Dataset ds) {
+        DcmElement seq = getOrPutSQ(ds, Tags.FrameExtractionSeq);
         Dataset item = seq.addNewItem();
-        item.putUI(Tags.RefSOPClassUID, ds.getString(Tags.SOPClassUID));
-        item.putUI(Tags.RefSOPInstanceUID, ds.getString(Tags.SOPInstanceUID));
-        item.putIS(Tags.RefFrameNumber, simpleFrameList);
-        item.putSQ(Tags.PurposeOfReferenceCodeSeq).addItem(EXTRACTED_FRAMES);
-    }
+        item.putUI(Tags.MultiFrameSourceSOPInstanceUID,
+                ds.getString(Tags.SOPInstanceUID));
+        if (calculatedFrameList != null) {
+            item.putUL(Tags.CalculatedFrameList, calculatedFrameList);
+        } else {
+            item.putUL(Tags.SimpleFrameList, simpleFrameList);
+        }
+     }
 
     private DcmElement getOrPutSQ(Dataset ds, int tag) {
-        DcmElement seq = ds.putSQ(Tags.SourceImageSeq);
-        return seq != null ? seq : ds.putSQ(Tags.SourceImageSeq);
+        DcmElement seq = ds.putSQ(tag);
+        return seq != null ? seq : ds.putSQ(tag);
     }
 
     private int[] calculateFrameList(int frames) {
