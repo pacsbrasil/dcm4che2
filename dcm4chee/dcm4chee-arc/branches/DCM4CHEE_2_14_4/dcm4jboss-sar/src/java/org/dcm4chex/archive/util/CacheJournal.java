@@ -101,11 +101,20 @@ public class CacheJournal {
     }
 
     public synchronized void record(File f) throws IOException {
+        record(f, false);
+    }
+
+    public synchronized void record(File f, boolean update)
+            throws IOException {
         String path = f.getPath().substring(
                     dataRootDir.getPath().length() + 1);
         long time = System.currentTimeMillis();
         File journalFile = getJournalFile(time);
         if (journalFile.exists()) {
+            if (update && journalFile.equals(getJournalFile(f.lastModified()))) {
+                log.debug("{} already contains entry for {}", journalFile, f);
+                return;
+            }
             log.debug("M-UPDATE {}", journalFile);
         } else {
             mkdirs(journalFile.getParentFile());
