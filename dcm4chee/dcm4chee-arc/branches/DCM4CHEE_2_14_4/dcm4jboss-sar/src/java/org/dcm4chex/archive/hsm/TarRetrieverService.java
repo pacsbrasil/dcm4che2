@@ -134,14 +134,6 @@ public class TarRetrieverService extends ServiceMBeanSupport {
         journal.setJournalFilePathFormat(journalFilePathFormat);
     }
 
-    public int getMemoryCacheCapacity() {
-        return journal.getMemoryCacheCapacity();
-    }
-
-    public void setMemoryCacheCapacity(int capacity) {
-        journal.setMemoryCacheCapacity(capacity);
-    }
-
     public boolean isCheckMD5() {
         return checkMD5;
     }

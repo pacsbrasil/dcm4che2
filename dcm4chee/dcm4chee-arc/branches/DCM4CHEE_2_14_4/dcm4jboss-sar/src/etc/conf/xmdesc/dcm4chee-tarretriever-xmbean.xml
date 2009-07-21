@@ -43,7 +43,7 @@
       <b>Attention:</b> You have to take care for moving existing journal files
       to the new location yourself!]]>
       </description>
-      <name>CacheJournalRootDirectory</name>
+      <name>CachJournalRootDirectory</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="tar-extracted-journal" />
@@ -61,20 +61,6 @@
       <type>java.lang.String</type>
       <descriptors>
         <value value="yyyy/MM/dd/HH/mm" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getMemoryCacheCapacity"
-      setMethod="setMemoryCacheCapacity">
-      <description><![CDATA[Defines maximal number of journal file entries
-      cached in memory to reduce number of duplicate entries in journal files.
-      Should be set about the expected number of concurrent retrieves of
-      objects located on TAR file systems.]]>
-      </description>
-      <name>MemoryCacheCapacity</name>
-      <type>int</type>
-      <descriptors>
-        <value value="5" />
       </descriptors>
    </attribute>
    <attribute access="read-write" 
