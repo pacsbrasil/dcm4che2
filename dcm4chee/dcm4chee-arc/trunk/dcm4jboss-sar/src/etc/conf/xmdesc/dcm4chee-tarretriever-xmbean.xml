@@ -43,7 +43,7 @@
       <b>Attention:</b> You have to take care for moving existing journal files
       to the new location yourself!]]>
       </description>
-      <name>CachJournalRootDirectory</name>
+      <name>CacheJournalRootDirectory</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="tar-extracted-journal" />
