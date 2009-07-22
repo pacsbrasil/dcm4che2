@@ -49,6 +49,7 @@ import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Executor;
 
 import org.apache.commons.cli.CommandLine;
@@ -215,6 +216,14 @@ public class DcmRcv extends StorageService {
     private FileCache cache = new FileCache();
 
     private File devnull;
+
+    private Properties calling2dir;
+
+    private Properties called2dir;
+
+    private String callingdefdir = "OTHER";
+
+    private String calleddefdir = "OTHER";
 
     private int fileBufferSize = 1024;
 
@@ -414,6 +423,41 @@ public class DcmRcv extends StorageService {
                         + " Do not store received objects by default.");
         opts.addOption(OptionBuilder.create("dest"));
 
+        OptionBuilder.withArgName("file|url");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "file path or URL of properties for mapping Calling AETs to "
+                + "sub-directories of the storage directory specified by "
+                + "-dest, to separate the storage location dependend on "
+                + "Calling AETs.");
+        opts.addOption(OptionBuilder.create("calling2dir"));
+
+
+        OptionBuilder.withArgName("file|url");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "file path or URL of properties for mapping Called AETs to "
+                + "sub-directories of the storage directory specified by "
+                + "-dest, to separate the storage location dependend on "
+                + "Called AETs.");
+        opts.addOption(OptionBuilder.create("called2dir"));
+
+        OptionBuilder.withArgName("sub-dir");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "storage sub-directory used for Calling AETs for which no "
+                + " mapping is defined by properties specified by "
+                + "-calling2dir, 'OTHER' by default.");
+        opts.addOption(OptionBuilder.create("callingdefdir"));
+
+        OptionBuilder.withArgName("sub-dir");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "storage sub-directory used for Called AETs for which no "
+                + " mapping is defined by properties specified by "
+                + "-called2dir, 'OTHER' by default.");
+        opts.addOption(OptionBuilder.create("calleddefdir"));
+
         OptionBuilder.withArgName("dir");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
@@ -556,6 +600,16 @@ public class DcmRcv extends StorageService {
 
         if (cl.hasOption("dest"))
             dcmrcv.setDestination(cl.getOptionValue("dest"));
+        if (cl.hasOption("calling2dir"))
+            dcmrcv.setCalling2Dir(
+                    loadProperties(cl.getOptionValue("calling2dir")));
+        if (cl.hasOption("called2dir"))
+            dcmrcv.setCalled2Dir(
+                    loadProperties(cl.getOptionValue("called2dir")));
+        if (cl.hasOption("callingdefdir"))
+            dcmrcv.setCallingDefDir(cl.getOptionValue("callingdefdir"));
+        if (cl.hasOption("calleddefdir"))
+            dcmrcv.setCalledDefDir(cl.getOptionValue("calleddefdir"));
         if (cl.hasOption("journal"))
             dcmrcv.setJournal(cl.getOptionValue("journal"));
         if (cl.hasOption("journalfilepath"))
@@ -711,6 +765,37 @@ public class DcmRcv extends StorageService {
         }
     }
 
+    public void setCalling2Dir(Properties calling2dir) {
+        this.calling2dir = calling2dir;
+    }
+
+    public void setCalled2Dir(Properties called2dir) {
+        this.called2dir = called2dir;
+    }
+
+    private static Properties loadProperties(String url) {
+        Properties props = new Properties();
+        try {
+            InputStream inStream = openFileOrURL(url);
+            try {
+                props.load(inStream);
+            } finally {
+                inStream.close();
+            }
+        } catch (Exception e) {
+            exit("Failed to load properties from " + url);
+        }
+        return props;
+    }
+
+    public void setCallingDefDir(String callingdefdir) {
+        this.callingdefdir = callingdefdir;
+    }
+
+    public void setCalledDefDir(String calleddefdir) {
+        this.calleddefdir = calleddefdir;
+    }
+
     public void setJournal(String journalRootDir) {
         cache.setJournalRootDir(new File(journalRootDir));
     }
@@ -837,9 +922,8 @@ public class DcmRcv extends StorageService {
         else {
             String cuid = rq.getString(Tag.AffectedSOPClassUID);
             String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
-            File file = devnull == null
-                    ? new File(cache.getCacheRootDir(), iuid + ".part")
-                    : devnull;
+            File file = devnull != null ? devnull
+                    : new File(mkDir(as), iuid + ".part");
             LOG.info("M-WRITE {}", file);
             try {
                 DicomOutputStream dos = new DicomOutputStream(
@@ -874,6 +958,25 @@ public class DcmRcv extends StorageService {
                 }
             }
         }
+    }
+
+    private File mkDir(Association as) {
+        File dir = cache.getCacheRootDir();
+        if (called2dir == null && calling2dir == null) {
+            return dir;
+        }
+        if (called2dir != null) {
+            dir = new File(dir,
+                    called2dir.getProperty(as.getCalledAET(), calleddefdir));
+        }
+        if (calling2dir != null) {
+            dir = new File(dir,
+                    calling2dir.getProperty(as.getCallingAET(), callingdefdir));
+        }
+        if (dir.mkdirs()) {
+            LOG.info("M-WRITE {}", dir);
+        }
+        return dir;
     }
 
 }
