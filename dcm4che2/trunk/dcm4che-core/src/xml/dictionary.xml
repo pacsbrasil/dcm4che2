@@ -1644,7 +1644,7 @@
 <element tag="00460076" alias="KeratometricPower" vr="FD" vm="1" ret="">Keratometric Power</element>
 <element tag="00460077" alias="KeratometricAxis" vr="FD" vm="1" ret="">Keratometric Axis</element>
 <element tag="00460080" alias="FlatKeratometricAxisSequence" vr="SQ" vm="1" ret="">Flat Keratometric Axis Sequence</element>
-<element tag="00460092" alias="OptotypeBackgroundColor" vr="CS" vm="1" ret="">Optotype Background Color</element>
+<element tag="00460092" alias="BackgroundColor" vr="CS" vm="1" ret="">Background Color</element>
 <element tag="00460094" alias="Optotype" vr="CS" vm="1" ret="">Optotype</element>
 <element tag="00460095" alias="OptotypePresentation" vr="CS" vm="1" ret="">Optotype Presentation</element>
 <element tag="00460097" alias="SubjectiveRefractionRightEyeSequence" vr="SQ" vm="1" ret="">Subjective Refraction Right Eye Sequence</element>
@@ -1842,18 +1842,18 @@
 <element tag="00700232" alias="LineStyleSequence" vr="SQ" vm="1" ret="">Line Style Sequence</element>
 <element tag="00700233" alias="FillStyleSequence" vr="SQ" vm="1" ret="">Fill Style Sequence</element>
 <element tag="00700234" alias="GraphicGroupSequence" vr="SQ" vm="1" ret="">Graphic Group Sequence</element>
-<element tag="00700241" alias="TextColor" vr="US" vm="3" ret="">Text Color</element>
+<element tag="00700241" alias="TextCIELabValue" vr="US" vm="3" ret="">Text CIELab Value</element>
 <element tag="00700242" alias="HorizontalAlignment" vr="CS" vm="1" ret="">Horizontal Alignment</element>
 <element tag="00700243" alias="VerticalAlignment" vr="CS" vm="1" ret="">Vertical Alignment</element>
 <element tag="00700244" alias="ShadowStyle" vr="CS" vm="1" ret="">Shadow Style</element>
 <element tag="00700245" alias="ShadowOffsetX" vr="US" vm="1" ret="">Shadow Offset X</element>
 <element tag="00700246" alias="ShadowOffsetY" vr="US" vm="1" ret="">Shadow Offset Y</element>
-<element tag="00700247" alias="ShadowColor" vr="US" vm="3" ret="">Shadow Color</element>
+<element tag="00700247" alias="ShadowCIELabValue" vr="US" vm="3" ret="">Shadow CIELab Value</element>
 <element tag="00700248" alias="Underlined" vr="CS" vm="1" ret="">Underlined</element>
 <element tag="00700249" alias="Bold" vr="CS" vm="1" ret="">Bold</element>
 <element tag="00700250" alias="Italic" vr="CS" vm="1" ret="">Italic</element>
-<element tag="00700251" alias="ForegroundColor" vr="US" vm="3" ret="">Foreground Color</element>
-<element tag="00700252" alias="BackgroundColor" vr="US" vm="3" ret="">Background Color</element>
+<element tag="00700251" alias="ForegroundCIELabValue" vr="US" vm="3" ret="">Foreground CIELab Value</element>
+<element tag="00700252" alias="BackgroundCIELabValue" vr="US" vm="3" ret="">Background CIELab Value</element>
 <element tag="00700253" alias="Thickness" vr="FD" vm="1" ret="">Thickness</element>
 <element tag="00700254" alias="LineDashingStyle" vr="CS" vm="1" ret="">Line Dashing Style</element>
 <element tag="00700255" alias="LinePattern" vr="UL" vm="1" ret="">Line Pattern</element>

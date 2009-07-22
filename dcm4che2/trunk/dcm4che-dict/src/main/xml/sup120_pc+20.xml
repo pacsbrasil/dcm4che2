@@ -10,18 +10,18 @@
 <element tag="(0070,0232)" vr="SQ" vm="1" ret="">Line Style Sequence</element>
 <element tag="(0070,0233)" vr="SQ" vm="1" ret="">Fill Style Sequence</element>
 <element tag="(0070,0234)" vr="SQ" vm="1" ret="">Graphic Group Sequence</element>
-<element tag="(0070,0241)" vr="US" vm="3" ret="">Text Color</element>
+<element tag="(0070,0241)" vr="US" vm="3" ret="">Text CIELab Value</element>
 <element tag="(0070,0242)" vr="CS" vm="1" ret="">Horizontal Alignment</element>
 <element tag="(0070,0243)" vr="CS" vm="1" ret="">Vertical Alignment</element>
 <element tag="(0070,0244)" vr="CS" vm="1" ret="">Shadow Style</element>
 <element tag="(0070,0245)" vr="US" vm="1" ret="">Shadow Offset X</element>
 <element tag="(0070,0246)" vr="US" vm="1" ret="">Shadow Offset Y</element>
-<element tag="(0070,0247)" vr="US" vm="3" ret="">Shadow Color</element>
+<element tag="(0070,0247)" vr="US" vm="3" ret="">Shadow CIELab Value</element>
 <element tag="(0070,0248)" vr="CS" vm="1" ret="">Underlined</element>
 <element tag="(0070,0249)" vr="CS" vm="1" ret="">Bold</element>
 <element tag="(0070,0250)" vr="CS" vm="1" ret="">Italic</element>
-<element tag="(0070,0251)" vr="US" vm="3" ret="">Foreground Color</element>
-<element tag="(0070,0252)" vr="US" vm="3" ret="">Background Color</element>
+<element tag="(0070,0251)" vr="US" vm="3" ret="">Foreground CIELab Value</element>
+<element tag="(0070,0252)" vr="US" vm="3" ret="">Background CIELab Value</element>
 <element tag="(0070,0253)" vr="FD" vm="1" ret="">Thickness</element>
 <element tag="(0070,0254)" vr="CS" vm="1" ret="">Line Dashing Style</element>
 <element tag="(0070,0255)" vr="UL" vm="1" ret="">Line Pattern</element>

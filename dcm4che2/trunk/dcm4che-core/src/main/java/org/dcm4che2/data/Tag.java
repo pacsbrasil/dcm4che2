@@ -5029,8 +5029,8 @@ public class Tag {
     /** (0046,0080) VR=SQ, VM=1 Flat Keratometric Axis Sequence  */
     public static final int FlatKeratometricAxisSequence = 0x00460080;
 
-    /** (0046,0092) VR=CS, VM=1 Optotype Background Color  */
-    public static final int OptotypeBackgroundColor = 0x00460092;
+    /** (0046,0092) VR=CS, VM=1 Background Color  */
+    public static final int BackgroundColor = 0x00460092;
 
     /** (0046,0094) VR=CS, VM=1 Optotype  */
     public static final int Optotype = 0x00460094;
@@ -5623,8 +5623,8 @@ public class Tag {
     /** (0070,0234) VR=SQ, VM=1 Graphic Group Sequence  */
     public static final int GraphicGroupSequence = 0x00700234;
 
-    /** (0070,0241) VR=US, VM=3 Text Color  */
-    public static final int TextColor = 0x00700241;
+    /** (0070,0241) VR=US, VM=3 Text CIELab Value  */
+    public static final int TextCIELabValue = 0x00700241;
 
     /** (0070,0242) VR=CS, VM=1 Horizontal Alignment  */
     public static final int HorizontalAlignment = 0x00700242;
@@ -5641,8 +5641,8 @@ public class Tag {
     /** (0070,0246) VR=US, VM=1 Shadow Offset Y  */
     public static final int ShadowOffsetY = 0x00700246;
 
-    /** (0070,0247) VR=US, VM=3 Shadow Color  */
-    public static final int ShadowColor = 0x00700247;
+    /** (0070,0247) VR=US, VM=3 Shadow CIELab Value  */
+    public static final int ShadowCIELabValue = 0x00700247;
 
     /** (0070,0248) VR=CS, VM=1 Underlined  */
     public static final int Underlined = 0x00700248;
@@ -5653,11 +5653,11 @@ public class Tag {
     /** (0070,0250) VR=CS, VM=1 Italic  */
     public static final int Italic = 0x00700250;
 
-    /** (0070,0251) VR=US, VM=3 Foreground Color  */
-    public static final int ForegroundColor = 0x00700251;
+    /** (0070,0251) VR=US, VM=3 Foreground CIELab Value  */
+    public static final int ForegroundCIELabValue = 0x00700251;
 
-    /** (0070,0252) VR=US, VM=3 Background Color  */
-    public static final int BackgroundColor = 0x00700252;
+    /** (0070,0252) VR=US, VM=3 Background CIELab Value  */
+    public static final int BackgroundCIELabValue = 0x00700252;
 
     /** (0070,0253) VR=FD, VM=1 Thickness  */
     public static final int Thickness = 0x00700253;
