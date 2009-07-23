@@ -183,7 +183,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private Map<String,List<String>> directForwardingMap =
             new HashMap<String, List<String>>();
 
-    private String localStorageAET;
+    protected String localStorageAET;
 
     private boolean recordStudyAccessTime = true;
 
@@ -1235,7 +1235,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     }
     
-    Socket createSocket(String moveCalledAET, AEDTO destAE) throws Exception {
+    protected Socket createSocket(String moveCalledAET, AEDTO destAE) throws Exception {
         return tlsConfig.createSocket(aeMgr().findByAET(moveCalledAET), destAE);
     }
 
