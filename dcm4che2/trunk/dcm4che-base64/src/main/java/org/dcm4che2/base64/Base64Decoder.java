@@ -76,31 +76,32 @@ public class Base64Decoder {
         return out;
     }
 
-    public static byte[] decode(char[] in) {
-        if ((in.length & 3) != 0) {
+    public static byte[] decode(CharSequence in) {
+        int inlen = in.length();
+        if ((inlen & 3) != 0) {
             throw new IllegalArgumentException(
-                    "length: " + in.length + " % 4 != 0");
+                    "length: " + in.length() + " % 4 != 0");
         }
-        int padding = in.length > 0 && in[in.length - 1] == '='
-                    ? in.length > 1 && in[in.length - 2] == '=' ? 2 : 1 : 0;
-        byte[] out = new byte[in.length / 4 * 3 - padding];
-        int inlen = in.length - padding;
+        int padding = inlen > 0 && in.charAt(inlen-1) == '='
+                    ? inlen > 1 && in.charAt(inlen-2) == '=' ? 2 : 1 : 0;
+        byte[] out = new byte[inlen / 4 * 3 - padding];
+        inlen -= padding;
         int i = 3;
         int j = 0;
         int b2,b3;
         for (; i < inlen; i += 4) {
-            out[j++] = (byte)((INV_BASE64[in[i-3]] << 2)
-                    | ((b2 = INV_BASE64[in[i-2]]) >>> 4));
+            out[j++] = (byte)((INV_BASE64[in.charAt(i-3)] << 2)
+                    | ((b2 = INV_BASE64[in.charAt(i-2)]) >>> 4));
             out[j++] = (byte)((b2 << 4)
-                    | ((b3 = INV_BASE64[in[i-1]]) >>> 2));
-            out[j++] = (byte)((b3 << 6) | INV_BASE64[in[i]]);
+                    | ((b3 = INV_BASE64[in.charAt(i-1)]) >>> 2));
+            out[j++] = (byte)((b3 << 6) | INV_BASE64[in.charAt(i)]);
         }
         if (padding > 0) {
-            out[j++] = (byte)((INV_BASE64[in[i-3]] << 2)
-                    | ((b2 = INV_BASE64[in[i-2]]) >>> 4));
+            out[j++] = (byte)((INV_BASE64[in.charAt(i-3)] << 2)
+                    | ((b2 = INV_BASE64[in.charAt(i-2)]) >>> 4));
             if (padding < 2) {
                 out[j++] = (byte)((b2 << 4)
-                        | ((b3 = INV_BASE64[in[i-1]]) >>> 2));
+                        | ((b3 = INV_BASE64[in.charAt(i-1)]) >>> 2));
             }
         }
         assert j == out.length;

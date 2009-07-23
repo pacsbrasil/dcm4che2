@@ -50,15 +50,18 @@ public class Base64Encoder {
         int i = 2;
         int j = 0;
         for (j = 0; i < in.length; i += 3) {
-            out[j++] = BASE64[in[i-2] >>> 2];
-            out[j++] = BASE64[((in[i-2] & 0x03) << 4) | (in[i-1] >>> 4)];
-            out[j++] = BASE64[((in[i-1] & 0x0F) << 2) | (in[i] >>> 6)];
+            out[j++] = BASE64[(in[i-2] >>> 2) & 0x3F];
+            out[j++] = BASE64[((in[i-2] & 0x03) << 4)
+                            | ((in[i-1] >>> 4) & 0x0F)];
+            out[j++] = BASE64[((in[i-1] & 0x0F) << 2)
+                            | ((in[i] >>> 6) & 0x03)];
             out[j++] = BASE64[in[i] & 0x3F];
         }
         if (i-2 < in.length) {
-            out[j++] = BASE64[in[i-2] >>> 2];
+            out[j++] = BASE64[(in[i-2] >>> 2) & 0x3F];
             if (i-1 < in.length) {
-                out[j++] = BASE64[((in[i-2] & 0x03) << 4) | (in[i-1] >>> 4)];
+                out[j++] = BASE64[((in[i-2] & 0x03) << 4)
+                                | ((in[i-1] >>> 4) & 0x0F)];
                 out[j++] = BASE64[(in[i-1] & 0x0F) << 2];
             } else {
                 out[j++] = BASE64[((in[i-2] & 0x03) << 4)];
