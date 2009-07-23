@@ -159,9 +159,9 @@ public class Xml2Dcm {
         }
         if (cl.hasOption("a") && cl.hasOption("d"))
             exit("xml2dcm: Option -a and -d are mutual exclusive");
-        if (cl.hasOption("e") && !cl.hasOption("u"))
+        if (cl.hasOption("e") && cl.hasOption("u"))
             exit("xml2dcm: Option -e and -u are mutual exclusive");
-        if (cl.hasOption("E") && !cl.hasOption("U"))
+        if (cl.hasOption("E") && cl.hasOption("U"))
             exit("xml2dcm: Option -E and -U are mutual exclusive");
         return cl;
     }
