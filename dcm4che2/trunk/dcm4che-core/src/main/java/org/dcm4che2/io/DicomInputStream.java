@@ -500,15 +500,7 @@ public class DicomInputStream extends FilterInputStream implements
             if (vallen == -1 || vr == VR.SQ) {
                 DicomElement a = vr == VR.SQ ? attrs.putSequence(tag) : attrs
                         .putFragments(tag, vr, ts.bigEndian());
-                if (sqStack == null) { // lazy creation
-                    sqStack = new ArrayList<DicomElement>();
-                }
-                sqStack.add(a);
-                try {
-                    parse(vallen, Tag.SequenceDelimitationItem);
-                } finally {
-                    sqStack.remove(sqStack.size() - 1);
-                }
+                readItems(a, vallen);
             } else {
                 DicomElement a = attrs.putBytes(tag, vr, readBytes(vallen), ts
                         .bigEndian());
@@ -518,6 +510,18 @@ public class DicomInputStream extends FilterInputStream implements
             }
         }
         return true;
+    }
+
+    public void readItems(DicomElement sq, int sqlen) throws IOException {
+        if (sqStack == null) { // lazy creation
+            sqStack = new ArrayList<DicomElement>();
+        }
+        sqStack.add(sq);
+        try {
+            parse(sqlen, Tag.SequenceDelimitationItem);
+        } finally {
+            sqStack.remove(sqStack.size() - 1);
+        }
     }
 
     private void readItemValue() throws IOException, DicomCodingException {

@@ -334,6 +334,11 @@ abstract class FilteredDicomObject extends AbstractDicomObject
         return filter(tag) ? attrs.get(tag) : null;
     }
 
+    public DicomElement get(int tag, VR vr)
+    {
+        return filter(tag) ? attrs.get(tag, vr) : null;
+    }
+
     public DicomObject getParent()
     {
         return attrs.getParent();

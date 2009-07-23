@@ -38,12 +38,14 @@
 
 package org.dcm4che2.data;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 
+import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.util.DateUtils;
 
 abstract class AbstractDicomObject implements DicomObject {
@@ -363,7 +365,7 @@ abstract class AbstractDicomObject implements DicomObject {
     }
 
     public DicomObject getNestedDicomObject(int tag) {
-        DicomElement a = get(tag);
+        DicomElement a = get(tag, VR.SQ);
         return a == null || a.isEmpty() ? null : a.getDicomObject();
     }
 
@@ -371,8 +373,16 @@ abstract class AbstractDicomObject implements DicomObject {
         return toInt(get(tag), 0);
     }
 
+    public int getInt(int tag, VR vr) {
+        return toInt(get(tag, vr), 0);
+    }
+
     public int getInt(int tag, int defVal) {
         return toInt(get(tag), defVal);
+    }
+
+    public int getInt(int tag, VR vr, int defVal) {
+        return toInt(get(tag, vr), defVal);
     }
 
     private int toInt(DicomElement a, int defVal) {
@@ -383,8 +393,16 @@ abstract class AbstractDicomObject implements DicomObject {
         return toInts(get(tag));
     }
 
+    public int[] getInts(int tag, VR vr) {
+        return toInts(get(tag, vr));
+    }
+
     public int[] getInts(int tag, int[] defVal) {
         return toInts(get(tag), defVal);
+    }
+
+    public int[] getInts(int tag, VR vr, int[] defVal) {
+        return toInts(get(tag, vr), defVal);
     }
 
     private int[] toInts(DicomElement a) {
@@ -399,8 +417,16 @@ abstract class AbstractDicomObject implements DicomObject {
         return toShorts(get(tag));
     }
 
+    public short[] getShorts(int tag, VR vr) {
+        return toShorts(get(tag, vr));
+    }
+
     public short[] getShorts(int tag, short[] defVal) {
         return toShorts(get(tag), defVal);
+    }
+
+    public short[] getShorts(int tag, VR vr, short[] defVal) {
+        return toShorts(get(tag, vr), defVal);
     }
 
     private short[] toShorts(DicomElement a) {
@@ -415,8 +441,16 @@ abstract class AbstractDicomObject implements DicomObject {
         return toFloat(get(tag), 0.f);
     }
 
+    public float getFloat(int tag, VR vr) {
+        return toFloat(get(tag, vr), 0.f);
+    }
+
     public float getFloat(int tag, float defVal) {
         return toFloat(get(tag), defVal);
+    }
+
+    public float getFloat(int tag, VR vr, float defVal) {
+        return toFloat(get(tag, vr), defVal);
     }
 
     private float toFloat(DicomElement a, float defVal) {
@@ -427,8 +461,16 @@ abstract class AbstractDicomObject implements DicomObject {
         return toFloats(get(tag));
     }
 
+    public float[] getFloats(int tag, VR vr) {
+        return toFloats(get(tag, vr));
+    }
+
     public float[] getFloats(int tag, float[] defVal) {
         return toFloats(get(tag), defVal);
+    }
+
+    public float[] getFloats(int tag, VR vr, float[] defVal) {
+        return toFloats(get(tag, vr), defVal);
     }
 
     private float[] toFloats(DicomElement a) {
@@ -443,8 +485,16 @@ abstract class AbstractDicomObject implements DicomObject {
         return toDouble(get(tag), 0.);
     }
 
+    public double getDouble(int tag, VR vr) {
+        return toDouble(get(tag, vr), 0.);
+    }
+
     public double getDouble(int tag, double defVal) {
         return toDouble(get(tag), defVal);
+    }
+
+    public double getDouble(int tag, VR vr, double defVal) {
+        return toDouble(get(tag, vr), defVal);
     }
 
     private double toDouble(DicomElement a, double defVal) {
@@ -455,8 +505,16 @@ abstract class AbstractDicomObject implements DicomObject {
         return toDoubles(get(tag));
     }
 
+    public double[] getDoubles(int tag, VR vr) {
+        return toDoubles(get(tag, vr));
+    }
+
     public double[] getDoubles(int tag, double[] defVal) {
         return toDoubles(get(tag), defVal);
+    }
+
+    public double[] getDoubles(int tag, VR vr, double[] defVal) {
+        return toDoubles(get(tag, vr), defVal);
     }
 
     private double[] toDoubles(DicomElement a) {
@@ -471,8 +529,16 @@ abstract class AbstractDicomObject implements DicomObject {
         return toString(get(tag), null);
     }
 
+    public String getString(int tag, VR vr) {
+        return toString(get(tag, vr), null);
+    }
+
     public String getString(int tag, String defVal) {
         return toString(get(tag), defVal);
+    }
+
+    public String getString(int tag, VR vr, String defVal) {
+        return toString(get(tag, vr), defVal);
     }
 
     private String toString(DicomElement a, String defVal) {
@@ -484,8 +550,16 @@ abstract class AbstractDicomObject implements DicomObject {
         return toStrings(get(tag));
     }
 
+    public String[] getStrings(int tag, VR vr) {
+        return toStrings(get(tag, vr));
+    }
+
     public String[] getStrings(int tag, String[] defVal) {
         return toStrings(get(tag), defVal);
+    }
+
+    public String[] getStrings(int tag, VR vr, String[] defVal) {
+        return toStrings(get(tag, vr), defVal);
     }
 
     private String[] toStrings(DicomElement a) {
@@ -502,8 +576,16 @@ abstract class AbstractDicomObject implements DicomObject {
         return toDate(get(tag), null);
     }
 
+    public Date getDate(int tag, VR vr) {
+        return toDate(get(tag, vr), null);
+    }
+
     public Date getDate(int tag, Date defVal) {
         return toDate(get(tag), defVal);
+    }
+
+    public Date getDate(int tag, VR vr, Date defVal) {
+        return toDate(get(tag, vr), defVal);
     }
 
     private Date toDate(DicomElement a, Date defVal) {
@@ -514,8 +596,16 @@ abstract class AbstractDicomObject implements DicomObject {
         return toDates(get(tag));
     }
 
+    public Date[] getDates(int tag, VR vr) {
+        return toDates(get(tag, vr));
+    }
+
     public Date[] getDates(int tag, Date[] defVal) {
         return toDates(get(tag), defVal);
+    }
+
+    public Date[] getDates(int tag, VR vr, Date[] defVal) {
+        return toDates(get(tag, vr), defVal);
     }
 
     private Date[] toDates(DicomElement a) {
@@ -530,8 +620,16 @@ abstract class AbstractDicomObject implements DicomObject {
         return toDateRange(get(tag), null);
     }
 
+    public DateRange getDateRange(int tag, VR vr) {
+        return toDateRange(get(tag, vr), null);
+    }
+
     public DateRange getDateRange(int tag, DateRange defVal) {
         return toDateRange(get(tag), defVal);
+    }
+
+    public DateRange getDateRange(int tag, VR vr, DateRange defVal) {
+        return toDateRange(get(tag, vr), defVal);
     }
 
     private DateRange toDateRange(DicomElement a, DateRange defVal) {
@@ -543,8 +641,8 @@ abstract class AbstractDicomObject implements DicomObject {
     }
 
     public Date getDate(int daTag, int tmTag, Date defVal) {
-        Date da = getDate(daTag);
-        return da == null ? defVal : DateUtils.toDateTime(da, getDate(tmTag));
+        Date da = getDate(daTag, VR.DA);
+        return da == null ? defVal : DateUtils.toDateTime(da, getDate(tmTag, VR.TM));
     }
 
     public Date[] getDates(int daTag, int tmTag) {
@@ -552,8 +650,8 @@ abstract class AbstractDicomObject implements DicomObject {
     }
 
     public Date[] getDates(int daTag, int tmTag, Date[] defVal) {
-        Date[] da = getDates(daTag);
-        Date[] tm = getDates(tmTag);
+        Date[] da = getDates(daTag, VR.DA);
+        Date[] tm = getDates(tmTag, VR.TM);
         if (da == null)
             return defVal;
         if (tm != null) {
@@ -569,10 +667,10 @@ abstract class AbstractDicomObject implements DicomObject {
     }
 
     public DateRange getDateRange(int daTag, int tmTag, DateRange defVal) {
-        DateRange da = getDateRange(daTag);
+        DateRange da = getDateRange(daTag, VR.DA);
         if (da == null)
             return defVal;
-        DateRange tm = getDateRange(tmTag);
+        DateRange tm = getDateRange(tmTag, VR.TM);
         if (tm == null)
             return da;
         return new DateRange(
@@ -587,7 +685,14 @@ abstract class AbstractDicomObject implements DicomObject {
         return item != null ? item.get(tagPath[last]) : null;
     }
 
-    public DicomElement remove(int[] tagPath) {
+    public DicomElement get(int[] tagPath, VR vr) {
+        checkTagPathLength(tagPath);
+        final int last = tagPath.length - 1;
+        final DicomObject item = getItem(tagPath, last, true);
+        return item != null ? item.get(tagPath[last], vr) : null;
+    }
+
+   public DicomElement remove(int[] tagPath) {
         checkTagPathLength(tagPath);
         final int last = tagPath.length - 1;
         final DicomObject item = getItem(tagPath, last, true);
@@ -635,96 +740,192 @@ abstract class AbstractDicomObject implements DicomObject {
         return toInt(get(tagPath), 0);
     }
 
+    public int getInt(int[] tagPath, VR vr) {
+        return toInt(get(tagPath, vr), 0);
+    }
+
     public int getInt(int[] tagPath, int defVal) {
         return toInt(get(tagPath), defVal);
+    }
+
+    public int getInt(int[] tagPath, VR vr, int defVal) {
+        return toInt(get(tagPath, vr), defVal);
     }
 
     public int[] getInts(int[] tagPath) {
         return toInts(get(tagPath));
     }
 
+    public int[] getInts(int[] tagPath, VR vr) {
+        return toInts(get(tagPath, vr));
+    }
+
     public int[] getInts(int[] tagPath, int[] defVal) {
         return toInts(get(tagPath), defVal);
+    }
+
+    public int[] getInts(int[] tagPath, VR vr, int[] defVal) {
+        return toInts(get(tagPath, vr), defVal);
     }
 
     public short[] getShorts(int[] tagPath) {
         return toShorts(get(tagPath));
     }
 
+    public short[] getShorts(int[] tagPath, VR vr) {
+        return toShorts(get(tagPath, vr));
+    }
+
     public short[] getShorts(int[] tagPath, short[] defVal) {
         return toShorts(get(tagPath), defVal);
+    }
+
+    public short[] getShorts(int[] tagPath, VR vr, short[] defVal) {
+        return toShorts(get(tagPath, vr), defVal);
     }
 
     public float getFloat(int[] tagPath) {
         return toFloat(get(tagPath), 0.f);
     }
 
+    public float getFloat(int[] tagPath, VR vr) {
+        return toFloat(get(tagPath, vr), 0.f);
+    }
+
     public float getFloat(int[] tagPath, float defVal) {
         return toFloat(get(tagPath), defVal);
+    }
+
+    public float getFloat(int[] tagPath, VR vr, float defVal) {
+        return toFloat(get(tagPath, vr), defVal);
     }
 
     public float[] getFloats(int[] tagPath) {
         return toFloats(get(tagPath));
     }
 
+    public float[] getFloats(int[] tagPath, VR vr) {
+        return toFloats(get(tagPath, vr));
+    }
+
     public float[] getFloats(int[] tagPath, float[] defVal) {
         return toFloats(get(tagPath), defVal);
+    }
+
+    public float[] getFloats(int[] tagPath, VR vr, float[] defVal) {
+        return toFloats(get(tagPath, vr), defVal);
     }
 
     public double getDouble(int[] tagPath) {
         return toDouble(get(tagPath), 0.);
     }
 
+    public double getDouble(int[] tagPath, VR vr) {
+        return toDouble(get(tagPath, vr), 0.);
+    }
+
     public double getDouble(int[] tagPath, double defVal) {
         return toDouble(get(tagPath), defVal);
+    }
+
+    public double getDouble(int[] tagPath, VR vr, double defVal) {
+        return toDouble(get(tagPath, vr), defVal);
     }
 
     public double[] getDoubles(int[] tagPath) {
         return toDoubles(get(tagPath));
     }
 
+    public double[] getDoubles(int[] tagPath, VR vr) {
+        return toDoubles(get(tagPath, vr));
+    }
+
     public double[] getDoubles(int[] tagPath, double[] defVal) {
         return toDoubles(get(tagPath), defVal);
+    }
+
+    public double[] getDoubles(int[] tagPath, VR vr, double[] defVal) {
+        return toDoubles(get(tagPath, vr), defVal);
     }
 
     public String getString(int[] tagPath) {
         return toString(get(tagPath), null);
     }
 
+    public String getString(int[] tagPath, VR vr) {
+        return toString(get(tagPath, vr), null);
+    }
+
     public String getString(int[] tagPath, String defVal) {
         return toString(get(tagPath), defVal);
+    }
+
+    public String getString(int[] tagPath, VR vr, String defVal) {
+        return toString(get(tagPath, vr), defVal);
     }
 
     public String[] getStrings(int[] tagPath) {
         return toStrings(get(tagPath));
     }
 
+    public String[] getStrings(int[] tagPath, VR vr) {
+        return toStrings(get(tagPath, vr));
+    }
+
     public String[] getStrings(int[] tagPath, String[] defVal) {
         return toStrings(get(tagPath), defVal);
+    }
+
+    public String[] getStrings(int[] tagPath, VR vr, String[] defVal) {
+        return toStrings(get(tagPath, vr), defVal);
     }
 
     public Date getDate(int[] tagPath) {
         return toDate(get(tagPath), null);
     }
 
+    public Date getDate(int[] tagPath, VR vr) {
+        return toDate(get(tagPath, vr), null);
+    }
+
     public Date getDate(int[] tagPath, Date defVal) {
         return toDate(get(tagPath), defVal);
+    }
+
+    public Date getDate(int[] tagPath, VR vr, Date defVal) {
+        return toDate(get(tagPath, vr), defVal);
     }
 
     public Date[] getDates(int[] tagPath) {
         return toDates(get(tagPath));
     }
 
+    public Date[] getDates(int[] tagPath, VR vr) {
+        return toDates(get(tagPath, vr));
+    }
+
     public Date[] getDates(int[] tagPath, Date[] defVal) {
         return toDates(get(tagPath), defVal);
+    }
+
+    public Date[] getDates(int[] tagPath, VR vr, Date[] defVal) {
+        return toDates(get(tagPath, vr), defVal);
     }
 
     public DateRange getDateRange(int[] tagPath) {
         return toDateRange(get(tagPath), null);
     }
 
+    public DateRange getDateRange(int[] tagPath, VR vr) {
+        return toDateRange(get(tagPath, vr), null);
+    }
+
     public DateRange getDateRange(int[] tagPath, DateRange defVal) {
         return toDateRange(get(tagPath), defVal);
+    }
+
+    public DateRange getDateRange(int[] tagPath, VR vr, DateRange defVal) {
+        return toDateRange(get(tagPath, vr), defVal);
     }
 
     public Date getDate(int[] itemPath, int daTag, int tmTag) {
@@ -903,5 +1104,32 @@ abstract class AbstractDicomObject implements DicomObject {
         int last = tagPath.length - 1;
         DicomObject item = getItem(tagPath, last, false);
         return item.putStrings(tagPath[last], vr, val);
+    }
+
+    public DicomElement get(int tag, VR vr) {
+        DicomElement e = get(tag);
+        if (e == null || e.vr() == vr) {
+            return e;
+        }
+        if (e.vr() != VR.UN) {
+            throw new UnsupportedOperationException("Update VR from " + e.vr()
+                    + " to " + vr + " not supported");
+        }
+        if (vr != VR.SQ) {
+            return putBytes(tag, vr, e.getBytes());
+        }
+        DicomElement sq = putSequence(tag);
+        if (!e.isEmpty()) {
+            byte[] b = e.getBytes();
+            DicomInputStream in = new DicomInputStream(
+                    new ByteArrayInputStream(b), UID.ImplicitVRLittleEndian);
+            try {
+                in.readItems(sq, b.length);
+            } catch (IOException e1) {
+                throw new RuntimeException("Failed to parse value of " + e
+                        + " as sequence of items", e1);
+            }
+        }
+        return sq;
     }
 }

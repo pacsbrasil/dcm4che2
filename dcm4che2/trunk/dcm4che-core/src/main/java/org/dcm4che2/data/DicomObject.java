@@ -365,11 +365,15 @@ public interface DicomObject extends Serializable {
      */
     DicomElement get(int tag);
 
+    DicomElement get(int tag, VR vr);
+
     /**
      * @param tagPath
      * @return
      */
     DicomElement get(int[] tagPath);
+
+    DicomElement get(int[] tagPath, VR vr);
 
     /**
      * @param tag
@@ -410,6 +414,8 @@ public interface DicomObject extends Serializable {
      */
     int getInt(int tag);
 
+    int getInt(int tag, VR vr);
+
     /**
      * @param tag
      *            (group, element) as 8 byte integer: ggggeeee.
@@ -419,17 +425,23 @@ public interface DicomObject extends Serializable {
      */
     int getInt(int tag, int defVal);
 
+    int getInt(int tag, VR vr, int defVal);
+
     /**
      * @param tagPath
      * @return
      */
     int getInt(int[] tagPath);
 
+    int getInt(int[] tagPath, VR vr);
+
     /**
      * @param tagPath
      * @return
      */
     int getInt(int[] tagPath, int defVal);
+
+    int getInt(int[] tagPath, VR vr, int defVal);
 
     /**
      * @param tag
@@ -438,6 +450,8 @@ public interface DicomObject extends Serializable {
      */
     int[] getInts(int tag);
 
+    int[] getInts(int tag, VR vr);
+
     /**
      * @param tag
      *            (group, element) as 8 byte integer: ggggeeee.
@@ -445,17 +459,23 @@ public interface DicomObject extends Serializable {
      */
     int[] getInts(int tag, int[] defVal);
 
+    int[] getInts(int tag, VR vr, int[] defVal);
+
     /**
      * @param tagPath
      * @return
      */
     int[] getInts(int[] tagPath);
 
+    int[] getInts(int[] tagPath, VR vr);
+
     /**
      * @param tagPath
      * @return
      */
     int[] getInts(int[] tagPath, int[] defVal);
+
+    int[] getInts(int[] tagPath, VR vr, int[] defVal);
 
     /**
      * @param tag
@@ -464,6 +484,8 @@ public interface DicomObject extends Serializable {
      */
     short[] getShorts(int tag);
 
+    short[] getShorts(int tag, VR vr);
+
     /**
      * @param tag
      *            (group, element) as 8 byte integer: ggggeeee.
@@ -471,24 +493,32 @@ public interface DicomObject extends Serializable {
      */
     short[] getShorts(int tag, short[] defVal);
 
+    short[] getShorts(int tag, VR vr, short[] defVal);
+
     /**
      * @param tagPath
      * @return
      */
     short[] getShorts(int[] tagPath);
 
+    short[] getShorts(int[] tagPath, VR vr);
+
     /**
      * @param tagPath
      * @return
      */
     short[] getShorts(int[] tagPath, short[] defVal);
-    
+
+    short[] getShorts(int[] tagPath, VR vr, short[] defVal);
+
     /**
      * @param tag
      *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     float getFloat(int tag);
+
+    float getFloat(int tag, VR vr);
 
     /**
      * @param tag
@@ -497,17 +527,23 @@ public interface DicomObject extends Serializable {
      */
     float getFloat(int tag, float defVal);
 
+    float getFloat(int tag, VR vr, float defVal);
+
     /**
      * @param tagPath
      * @return
      */
     float getFloat(int[] tagPath);
 
+    float getFloat(int[] tagPath, VR vr);
+
     /**
      * @param tagPath
      * @return
      */
     float getFloat(int[] tagPath, float defVal);
+
+    float getFloat(int[] tagPath, VR vr, float defVal);
 
     /**
      * @param tag
@@ -516,6 +552,8 @@ public interface DicomObject extends Serializable {
      */
     float[] getFloats(int tag);
 
+    float[] getFloats(int tag, VR vr);
+
     /**
      * @param tag
      *            (group, element) as 8 byte integer: ggggeeee.
@@ -523,17 +561,23 @@ public interface DicomObject extends Serializable {
      */
     float[] getFloats(int tag, float[] defVal);
 
+    float[] getFloats(int tag, VR vr, float[] defVal);
+
     /**
      * @param tagPath
      * @return
      */
     float[] getFloats(int[] tagPath);
 
+    float[] getFloats(int[] tagPath, VR vr);
+
     /**
      * @param tagPath
      * @return
      */
     float[] getFloats(int[] tagPath, float[] defVal);
+
+    float[] getFloats(int[] tagPath, VR vr, float[] defVal);
 
     /**
      * @param tag
@@ -542,6 +586,8 @@ public interface DicomObject extends Serializable {
      */
     double getDouble(int tag);
 
+    double getDouble(int tag, VR vr);
+
     /**
      * @param tag
      *            (group, element) as 8 byte integer: ggggeeee.
@@ -549,17 +595,23 @@ public interface DicomObject extends Serializable {
      */
     double getDouble(int tag, double defVal);
 
+    double getDouble(int tag, VR vr, double defVal);
+
     /**
      * @param tagPath
      * @return
      */
     double getDouble(int[] tagPath);
 
+    double getDouble(int[] tagPath, VR vr);
+
     /**
      * @param tagPath
      * @return
      */
     double getDouble(int[] tagPath, double defVal);
+
+    double getDouble(int[] tagPath, VR vr, double defVal);
 
     /**
      * @param tag
@@ -568,6 +620,8 @@ public interface DicomObject extends Serializable {
      */
     double[] getDoubles(int tag);
 
+    double[] getDoubles(int tag, VR vr);
+
     /**
      * @param tag
      *            (group, element) as 8 byte integer: ggggeeee.
@@ -575,17 +629,23 @@ public interface DicomObject extends Serializable {
      */
     double[] getDoubles(int tag, double[] defVal);
 
+    double[] getDoubles(int tag, VR vr, double[] defVal);
+
     /**
      * @param tagPath
      * @return
      */
     double[] getDoubles(int[] tagPath);
 
+    double[] getDoubles(int[] tagPath, VR vr);
+
     /**
      * @param tagPath
      * @return
      */
     double[] getDoubles(int[] tagPath, double[] defVal);
+
+    double[] getDoubles(int[] tagPath, VR vr, double[] defVal);
 
     /**
      * @param tag
@@ -594,6 +654,8 @@ public interface DicomObject extends Serializable {
      */
     String getString(int tag);
 
+    String getString(int tag, VR vr);
+
     /**
      * @param tag
      *            (group, element) as 8 byte integer: ggggeeee.
@@ -601,17 +663,23 @@ public interface DicomObject extends Serializable {
      */
     String getString(int tag, String defVal);
 
+    String getString(int tag, VR vr, String defVal);
+
     /**
      * @param tagPath
      * @return
      */
     String getString(int[] tagPath);
 
+    String getString(int[] tagPath, VR vr);
+
     /**
      * @param tagPath
      * @return
      */
     String getString(int[] tagPath, String defVal);
+
+    String getString(int[] tagPath, VR vr, String defVal);
 
     /**
      * @param tag
@@ -620,6 +688,8 @@ public interface DicomObject extends Serializable {
      */
     String[] getStrings(int tag);
 
+    String[] getStrings(int tag, VR vr);
+
     /**
      * @param tag
      *            (group, element) as 8 byte integer: ggggeeee.
@@ -627,17 +697,23 @@ public interface DicomObject extends Serializable {
      */
     String[] getStrings(int tag, String[] defVal);
 
+    String[] getStrings(int tag, VR vr, String[] defVal);
+
     /**
      * @param tagPath
      * @return
      */
     String[] getStrings(int[] tagPath);
 
+    String[] getStrings(int[] tagPath, VR vr);
+
     /**
      * @param tagPath
      * @return
      */
     String[] getStrings(int[] tagPath, String[] defVal);
+
+    String[] getStrings(int[] tagPath, VR vr, String[] defVal);
 
     /**
      * @param tag
@@ -646,12 +722,16 @@ public interface DicomObject extends Serializable {
      */
     Date getDate(int tag);
 
+    Date getDate(int tag, VR vr);
+
     /**
      * @param tag
      *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     Date getDate(int tag, Date defVal);
+
+    Date getDate(int tag, VR vr, Date defVal);
 
     /**
      * @param daTag
@@ -673,11 +753,15 @@ public interface DicomObject extends Serializable {
      */
     Date getDate(int[] tagPath);
 
+    Date getDate(int[] tagPath, VR vr);
+
     /**
      * @param tagPath
      * @return
      */
     Date getDate(int[] tagPath, Date defVal);
+
+    Date getDate(int[] tagPath, VR vr, Date defVal);
 
     /**
      * @param itemPath
@@ -701,12 +785,16 @@ public interface DicomObject extends Serializable {
      */
     Date[] getDates(int tag);
 
+    Date[] getDates(int tag, VR vr);
+
     /**
      * @param tag
      *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     Date[] getDates(int tag, Date[] defVal);
+
+    Date[] getDates(int tag, VR vr, Date[] defVal);
 
     /**
      * @param daTag
@@ -728,11 +816,15 @@ public interface DicomObject extends Serializable {
      */
     Date[] getDates(int[] tagPath);
 
+    Date[] getDates(int[] tagPath, VR vr);
+
     /**
      * @param tagPath
      * @return
      */
     Date[] getDates(int[] tagPath, Date[] defVal);
+
+    Date[] getDates(int[] tagPath, VR vr, Date[] defVal);
 
     /**
      * @param itemPath
@@ -757,12 +849,16 @@ public interface DicomObject extends Serializable {
      */
     DateRange getDateRange(int tag);
 
+    DateRange getDateRange(int tag, VR vr);
+
     /**
      * @param tag
      *            (group, element) as 8 byte integer: ggggeeee.
      * @return
      */
     DateRange getDateRange(int tag, DateRange defVal);
+
+    DateRange getDateRange(int tag, VR vr, DateRange defVal);
 
     /**
      * @param daTag
@@ -784,11 +880,15 @@ public interface DicomObject extends Serializable {
      */
     DateRange getDateRange(int[] tagPath);
 
+    DateRange getDateRange(int[] tagPath, VR vr);
+
     /**
      * @param tagPath
      * @return
      */
     DateRange getDateRange(int[] tagPath, DateRange defVal);
+
+    DateRange getDateRange(int[] tagPath, VR vr, DateRange defVal);
 
     /**
      * @param itemPath

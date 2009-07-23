@@ -195,8 +195,18 @@ public class DicomObjects {
             return e != null ? new UnmodifiableDicomElement(e) : null;
         }
 
+        public DicomElement get(int tag, VR vr) {
+            DicomElement e = dcmobj.get(tag, vr);
+            return e != null ? new UnmodifiableDicomElement(e) : null;
+        }
+
         public DicomElement get(int[] tagPath) {
             DicomElement e = dcmobj.get(tagPath);
+            return e != null ? new UnmodifiableDicomElement(e) : null;
+        }
+
+        public DicomElement get(int[] tagPath, VR vr) {
+            DicomElement e = dcmobj.get(tagPath, vr);
             return e != null ? new UnmodifiableDicomElement(e) : null;
         }
 
@@ -220,6 +230,10 @@ public class DicomObjects {
             return dcmobj.getDate(tag, defVal);
         }
 
+        public Date getDate(int tag, VR vr, Date defVal) {
+            return dcmobj.getDate(tag, vr, defVal);
+        }
+
         public Date getDate(int daTag, int tmTag, Date defVal) {
             return dcmobj.getDate(daTag, tmTag, defVal);
         }
@@ -232,8 +246,16 @@ public class DicomObjects {
             return dcmobj.getDate(tag);
         }
 
+        public Date getDate(int tag, VR vr) {
+            return dcmobj.getDate(tag, vr);
+        }
+
         public Date getDate(int[] tagPath, Date defVal) {
             return dcmobj.getDate(tagPath, defVal);
+        }
+
+        public Date getDate(int[] tagPath, VR vr, Date defVal) {
+            return dcmobj.getDate(tagPath, vr, defVal);
         }
 
         public Date getDate(int[] itemPath, int daTag, int tmTag, Date defVal) {
@@ -248,8 +270,16 @@ public class DicomObjects {
             return dcmobj.getDate(tagPath);
         }
 
+        public Date getDate(int[] tagPath, VR vr) {
+            return dcmobj.getDate(tagPath, vr);
+        }
+
         public DateRange getDateRange(int tag, DateRange defVal) {
             return dcmobj.getDateRange(tag, defVal);
+        }
+
+        public DateRange getDateRange(int tag, VR vr, DateRange defVal) {
+            return dcmobj.getDateRange(tag, vr, defVal);
         }
 
         public DateRange getDateRange(int daTag, int tmTag, DateRange defVal) {
@@ -264,8 +294,16 @@ public class DicomObjects {
             return dcmobj.getDateRange(tag);
         }
 
+        public DateRange getDateRange(int tag, VR vr) {
+            return dcmobj.getDateRange(tag, vr);
+        }
+
         public DateRange getDateRange(int[] tagPath, DateRange defVal) {
             return dcmobj.getDateRange(tagPath, defVal);
+        }
+
+        public DateRange getDateRange(int[] tagPath, VR vr, DateRange defVal) {
+            return dcmobj.getDateRange(tagPath, vr, defVal);
         }
 
         public DateRange getDateRange(int[] itemPath, int daTag, int tmTag,
@@ -281,8 +319,16 @@ public class DicomObjects {
             return dcmobj.getDateRange(tagPath);
         }
 
+        public DateRange getDateRange(int[] tagPath, VR vr) {
+            return dcmobj.getDateRange(tagPath, vr);
+        }
+
         public Date[] getDates(int tag, Date[] defVal) {
             return dcmobj.getDates(tag, defVal);
+        }
+
+        public Date[] getDates(int tag, VR vr, Date[] defVal) {
+            return dcmobj.getDates(tag, vr, defVal);
         }
 
         public Date[] getDates(int daTag, int tmTag, Date[] defVal) {
@@ -297,8 +343,16 @@ public class DicomObjects {
             return dcmobj.getDates(tag);
         }
 
+        public Date[] getDates(int tag, VR vr) {
+            return dcmobj.getDates(tag, vr);
+        }
+
         public Date[] getDates(int[] tagPath, Date[] defVal) {
             return dcmobj.getDates(tagPath, defVal);
+        }
+
+        public Date[] getDates(int[] tagPath, VR vr, Date[] defVal) {
+            return dcmobj.getDates(tagPath, vr, defVal);
         }
 
         public Date[] getDates(int[] itemPath, int daTag, int tmTag,
@@ -314,100 +368,200 @@ public class DicomObjects {
             return dcmobj.getDates(tagPath);
         }
 
+        public Date[] getDates(int[] tagPath, VR vr) {
+            return dcmobj.getDates(tagPath, vr);
+        }
+
         public double getDouble(int tag, double defVal) {
             return dcmobj.getDouble(tag, defVal);
+        }
+
+        public double getDouble(int tag, VR vr, double defVal) {
+            return dcmobj.getDouble(tag, vr, defVal);
         }
 
         public double getDouble(int tag) {
             return dcmobj.getDouble(tag);
         }
 
+        public double getDouble(int tag, VR vr) {
+            return dcmobj.getDouble(tag, vr);
+        }
+
         public double getDouble(int[] tagPath, double defVal) {
             return dcmobj.getDouble(tagPath, defVal);
+        }
+
+        public double getDouble(int[] tagPath, VR vr, double defVal) {
+            return dcmobj.getDouble(tagPath, vr, defVal);
         }
 
         public double getDouble(int[] tagPath) {
             return dcmobj.getDouble(tagPath);
         }
 
+        public double getDouble(int[] tagPath, VR vr) {
+            return dcmobj.getDouble(tagPath, vr);
+        }
+
         public double[] getDoubles(int tag, double[] defVal) {
             return dcmobj.getDoubles(tag, defVal);
+        }
+
+        public double[] getDoubles(int tag, VR vr, double[] defVal) {
+            return dcmobj.getDoubles(tag, vr, defVal);
         }
 
         public double[] getDoubles(int tag) {
             return dcmobj.getDoubles(tag);
         }
 
+        public double[] getDoubles(int tag, VR vr) {
+            return dcmobj.getDoubles(tag, vr);
+        }
+
         public double[] getDoubles(int[] tagPath, double[] defVal) {
             return dcmobj.getDoubles(tagPath, defVal);
+        }
+
+        public double[] getDoubles(int[] tagPath, VR vr, double[] defVal) {
+            return dcmobj.getDoubles(tagPath, vr, defVal);
         }
 
         public double[] getDoubles(int[] tagPath) {
             return dcmobj.getDoubles(tagPath);
         }
 
+        public double[] getDoubles(int[] tagPath, VR vr) {
+            return dcmobj.getDoubles(tagPath, vr);
+        }
+
         public float getFloat(int tag, float defVal) {
             return dcmobj.getFloat(tag, defVal);
+        }
+
+        public float getFloat(int tag, VR vr, float defVal) {
+            return dcmobj.getFloat(tag, vr, defVal);
         }
 
         public float getFloat(int tag) {
             return dcmobj.getFloat(tag);
         }
 
+        public float getFloat(int tag, VR vr) {
+            return dcmobj.getFloat(tag, vr);
+        }
+
         public float getFloat(int[] tagPath, float defVal) {
             return dcmobj.getFloat(tagPath, defVal);
+        }
+
+        public float getFloat(int[] tagPath, VR vr, float defVal) {
+            return dcmobj.getFloat(tagPath, vr, defVal);
         }
 
         public float getFloat(int[] tagPath) {
             return dcmobj.getFloat(tagPath);
         }
 
+        public float getFloat(int[] tagPath, VR vr) {
+            return dcmobj.getFloat(tagPath, vr);
+        }
+
         public float[] getFloats(int tag, float[] defVal) {
             return dcmobj.getFloats(tag, defVal);
+        }
+
+        public float[] getFloats(int tag, VR vr, float[] defVal) {
+            return dcmobj.getFloats(tag, vr, defVal);
         }
 
         public float[] getFloats(int tag) {
             return dcmobj.getFloats(tag);
         }
 
+        public float[] getFloats(int tag, VR vr) {
+            return dcmobj.getFloats(tag, vr);
+        }
+
         public float[] getFloats(int[] tagPath, float[] defVal) {
             return dcmobj.getFloats(tagPath, defVal);
+        }
+
+        public float[] getFloats(int[] tagPath, VR vr, float[] defVal) {
+            return dcmobj.getFloats(tagPath, vr, defVal);
         }
 
         public float[] getFloats(int[] tagPath) {
             return dcmobj.getFloats(tagPath);
         }
 
+        public float[] getFloats(int[] tagPath, VR vr) {
+            return dcmobj.getFloats(tagPath, vr);
+        }
+
         public int getInt(int tag, int defVal) {
             return dcmobj.getInt(tag, defVal);
+        }
+
+        public int getInt(int tag, VR vr, int defVal) {
+            return dcmobj.getInt(tag, vr, defVal);
         }
 
         public int getInt(int tag) {
             return dcmobj.getInt(tag);
         }
 
+        public int getInt(int tag, VR vr) {
+            return dcmobj.getInt(tag, vr);
+        }
+
         public int getInt(int[] tagPath, int defVal) {
             return dcmobj.getInt(tagPath, defVal);
+        }
+
+        public int getInt(int[] tagPath, VR vr, int defVal) {
+            return dcmobj.getInt(tagPath, vr, defVal);
         }
 
         public int getInt(int[] tagPath) {
             return dcmobj.getInt(tagPath);
         }
 
+        public int getInt(int[] tagPath, VR vr) {
+            return dcmobj.getInt(tagPath, vr);
+        }
+
         public int[] getInts(int tag, int[] defVal) {
             return dcmobj.getInts(tag, defVal);
+        }
+
+        public int[] getInts(int tag, VR vr, int[] defVal) {
+            return dcmobj.getInts(tag, vr, defVal);
         }
 
         public int[] getInts(int tag) {
             return dcmobj.getInts(tag);
         }
 
+        public int[] getInts(int tag, VR vr) {
+            return dcmobj.getInts(tag, vr);
+        }
+
         public int[] getInts(int[] tagPath, int[] defVal) {
             return dcmobj.getInts(tagPath, defVal);
         }
 
+        public int[] getInts(int[] tagPath, VR vr, int[] defVal) {
+            return dcmobj.getInts(tagPath, vr, defVal);
+        }
+
         public int[] getInts(int[] tagPath) {
             return dcmobj.getInts(tagPath);
+        }
+
+        public int[] getInts(int[] tagPath, VR vr) {
+            return dcmobj.getInts(tagPath, vr);
         }
 
         public long getItemOffset() {
@@ -446,16 +600,32 @@ public class DicomObjects {
             return dcmobj.getShorts(tag, defVal);
         }
 
+        public short[] getShorts(int tag, VR vr, short[] defVal) {
+            return dcmobj.getShorts(tag, vr, defVal);
+        }
+
         public short[] getShorts(int tag) {
             return dcmobj.getShorts(tag);
+        }
+
+        public short[] getShorts(int tag, VR vr) {
+            return dcmobj.getShorts(tag, vr);
         }
 
         public short[] getShorts(int[] tagPath, short[] defVal) {
             return dcmobj.getShorts(tagPath, defVal);
         }
 
+        public short[] getShorts(int[] tagPath, VR vr, short[] defVal) {
+            return dcmobj.getShorts(tagPath, vr, defVal);
+        }
+
         public short[] getShorts(int[] tagPath) {
             return dcmobj.getShorts(tagPath);
+        }
+
+        public short[] getShorts(int[] tagPath, VR vr) {
+            return dcmobj.getShorts(tagPath, vr);
         }
 
         public SpecificCharacterSet getSpecificCharacterSet() {
@@ -466,32 +636,64 @@ public class DicomObjects {
             return dcmobj.getString(tag, defVal);
         }
 
+        public String getString(int tag, VR vr, String defVal) {
+            return dcmobj.getString(tag, vr, defVal);
+        }
+
         public String getString(int tag) {
             return dcmobj.getString(tag);
+        }
+
+        public String getString(int tag, VR vr) {
+            return dcmobj.getString(tag, vr);
         }
 
         public String getString(int[] tagPath, String defVal) {
             return dcmobj.getString(tagPath, defVal);
         }
 
+        public String getString(int[] tagPath, VR vr, String defVal) {
+            return dcmobj.getString(tagPath, vr, defVal);
+        }
+
         public String getString(int[] tagPath) {
             return dcmobj.getString(tagPath);
+        }
+
+        public String getString(int[] tagPath, VR vr) {
+            return dcmobj.getString(tagPath, vr);
         }
 
         public String[] getStrings(int tag, String[] defVal) {
             return dcmobj.getStrings(tag, defVal);
         }
 
+        public String[] getStrings(int tag, VR vr, String[] defVal) {
+            return dcmobj.getStrings(tag, vr, defVal);
+        }
+
         public String[] getStrings(int tag) {
             return dcmobj.getStrings(tag);
+        }
+
+        public String[] getStrings(int tag, VR vr) {
+            return dcmobj.getStrings(tag, vr);
         }
 
         public String[] getStrings(int[] tagPath, String[] defVal) {
             return dcmobj.getStrings(tagPath, defVal);
         }
 
+        public String[] getStrings(int[] tagPath, VR vr, String[] defVal) {
+            return dcmobj.getStrings(tagPath, vr, defVal);
+        }
+
         public String[] getStrings(int[] tagPath) {
             return dcmobj.getStrings(tagPath);
+        }
+
+        public String[] getStrings(int[] tagPath, VR vr) {
+            return dcmobj.getStrings(tagPath, vr);
         }
 
         public void initFileMetaInformation(String cuid, String iuid,

@@ -128,4 +128,32 @@ public class DicomObjectTest extends TestCase {
         dcm.putStrings(Tag.ImageType, VR.CS, IMAGE_TYPES);
         assertEquals(IMAGE_TYPES.length, dcm.vm(Tag.ImageType));
     }
+
+    public void testGetPrivateWithSpecifiedVR() throws IOException {
+        DicomInputStream dis = new DicomInputStream(
+                locateFile("VEPRO_BROKER.dcm"));
+        DicomObject dcmobj = dis.readDicomObject();
+        dis.close();
+        DicomElement sq1 = dcmobj.get(
+                dcmobj.resolveTag(0x00570010, "VEPRO BROKER 1.0"), VR.SQ);
+        assertNotNull(sq1);
+        assertEquals(1, sq1.countItems());
+        DicomObject item1 = sq1.getDicomObject();
+        DicomElement sq2 = item1.get(
+                item1.resolveTag(0x00570030, "VEPRO BROKER 1.0 DATA REPLACE"),
+                VR.SQ);
+        assertNotNull(sq2);
+        assertEquals(1, sq2.countItems());
+        DicomObject item2 = sq2.getDicomObject();
+        assertEquals("NOID1431920080528182346", item2.getString(Tag.PatientID));
+        assertEquals("20080528", item1.getString(
+                item1.resolveTag(0x00570040, "VEPRO BROKER 1.0 DATA REPLACE"),
+                VR.DA));
+        assertEquals("182346", item1.getString(
+                item1.resolveTag(0x00570041, "VEPRO BROKER 1.0 DATA REPLACE"),
+                VR.TM));
+        assertEquals("Filter_CT_4", item1.getString(
+                item1.resolveTag(0x00570042, "VEPRO BROKER 1.0 DATA REPLACE"),
+                VR.SH));
+    }
 }
