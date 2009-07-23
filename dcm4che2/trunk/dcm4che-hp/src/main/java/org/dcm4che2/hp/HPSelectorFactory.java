@@ -533,39 +533,39 @@ public class HPSelectorFactory {
         if (vrStr.length() == 2) {
             switch (vrStr.charAt(0) << 8 | vrStr.charAt(1)) {
             case 0x4154:
-                return new Int(item, Tag.SelectorATValue, match, filterOp);
+                return new Int(item, Tag.SelectorATValue, match, filterOp, VR.AT);
             case 0x4353:
-                return new Str(item, Tag.SelectorCSValue, match, filterOp);
+                return new Str(item, Tag.SelectorCSValue, match, filterOp, VR.CS);
             case 0x4453:
-                return new Flt(item, Tag.SelectorDSValue, match, filterOp);
+                return new Flt(item, Tag.SelectorDSValue, match, filterOp, VR.DS);
             case 0x4644:
-                return new Dbl(item, Tag.SelectorFDValue, match, filterOp);
+                return new Dbl(item, Tag.SelectorFDValue, match, filterOp, VR.FD);
             case 0x464c:
-                return new Flt(item, Tag.SelectorFLValue, match, filterOp);
+                return new Flt(item, Tag.SelectorFLValue, match, filterOp, VR.FL);
             case 0x4953:
-                return new Int(item, Tag.SelectorISValue, match, filterOp);
+                return new Int(item, Tag.SelectorISValue, match, filterOp, VR.IS);
             case 0x4c4f:
-                return new Str(item, Tag.SelectorLOValue, match, filterOp);
+                return new Str(item, Tag.SelectorLOValue, match, filterOp, VR.LO);
             case 0x4c54:
-                return new Str(item, Tag.SelectorLTValue, match, filterOp);
+                return new Str(item, Tag.SelectorLTValue, match, filterOp, VR.LT);
             case 0x504e:
-                return new Str(item, Tag.SelectorPNValue, match, filterOp);
+                return new Str(item, Tag.SelectorPNValue, match, filterOp, VR.PN);
             case 0x5348:
-                return new Str(item, Tag.SelectorSHValue, match, filterOp);
+                return new Str(item, Tag.SelectorSHValue, match, filterOp, VR.SH);
             case 0x534c:
-                return new Int(item, Tag.SelectorSLValue, match, filterOp);
+                return new Int(item, Tag.SelectorSLValue, match, filterOp, VR.SL);
             case 0x5351:
-                return new CodeValueSelector(item, match, filterOp);
+                return new CodeValueSelector(item, match, filterOp, VR.SQ);
             case 0x5353:
-                return new Int(item, Tag.SelectorSSValue, match, filterOp);
+                return new Int(item, Tag.SelectorSSValue, match, filterOp, VR.SS);
             case 0x5354:
-                return new Str(item, Tag.SelectorSTValue, match, filterOp);
+                return new Str(item, Tag.SelectorSTValue, match, filterOp, VR.ST);
             case 0x554c:
-                return new UInt(item, Tag.SelectorULValue, match, filterOp);
+                return new UInt(item, Tag.SelectorULValue, match, filterOp, VR.UL);
             case 0x5553:
-                return new Int(item, Tag.SelectorUSValue, match, filterOp);
+                return new Int(item, Tag.SelectorUSValue, match, filterOp, VR.US);
             case 0x5554:
-                return new Str(item, Tag.SelectorUTValue, match, filterOp);
+                return new Str(item, Tag.SelectorUTValue, match, filterOp, VR.UT);
             }
         }
         throw new IllegalArgumentException(
@@ -678,11 +678,14 @@ public class HPSelectorFactory {
 
         protected final FilterOp filterOp;
 
+        protected final VR vr;
+
         AttributeValueSelector(DicomObject item, boolean match,
-                FilterOp filterOp) {
+                FilterOp filterOp, VR vr) {
             super(item, match);
             this.valueNumber = item.getInt(Tag.SelectorValueNumber);
             this.filterOp = filterOp;
+            this.vr = vr;
         }
 
         AttributeValueSelector(int tag, String privateCreator, int valueNumber,
@@ -690,6 +693,7 @@ public class HPSelectorFactory {
             super(tag, privateCreator, usageFlag == null || isMatch(usageFlag));
             this.valueNumber = valueNumber;
             this.filterOp = filterOp != null ? filterOp : FilterOp.MEMBER_OF;
+            this.vr = vr;
             item.putInt(Tag.SelectorValueNumber, VR.US, valueNumber);
             if (filterOp != null) {
                 item.putString(Tag.FilterbyOperator, VR.CS,
@@ -741,8 +745,9 @@ public class HPSelectorFactory {
     private static class Str extends AttributeValueSelector {
         protected final String[] params;
 
-        Str(DicomObject item, int valueTag, boolean match, FilterOp filterOp) {
-            super(item, match, filterOp);
+        Str(DicomObject item, int valueTag, boolean match, FilterOp filterOp,
+                VR vr) {
+            super(item, match, filterOp, vr);
             if (filterOp.isNumeric())
                 throw new IllegalArgumentException("Filter-by Operator: "
                         + item.get(Tag.FilterbyOperator)
@@ -763,7 +768,7 @@ public class HPSelectorFactory {
         }
 
         public boolean matches(DicomObject dcmobj, int frame) {
-            String[] values = dcmobj.getStrings(resolveTag(dcmobj));
+            String[] values = dcmobj.getStrings(resolveTag(dcmobj), vr);
             if (values == null || values.length < Math.max(valueNumber, 1))
                 return match;
             return filterOp.op(values, valueNumber, params);
@@ -809,8 +814,9 @@ public class HPSelectorFactory {
     private static class Int extends AttributeValueSelector {
         private final int[] params;
 
-        Int(DicomObject item, int valueTag, boolean match, FilterOp filterOp) {
-            super(item, match, filterOp);
+        Int(DicomObject item, int valueTag, boolean match, FilterOp filterOp,
+                VR vr) {
+            super(item, match, filterOp, vr);
             this.params = item.getInts(valueTag);
             if (params == null || params.length == 0)
                 throw new IllegalArgumentException("Missing "
@@ -830,7 +836,7 @@ public class HPSelectorFactory {
         }
 
         public boolean matches(DicomObject dcmobj, int frame) {
-            int[] values = dcmobj.getInts(resolveTag(dcmobj));
+            int[] values = dcmobj.getInts(resolveTag(dcmobj), vr);
             if (values == null
                     || values.length < (valueNumber == 0 ? 1
                             : valueNumber == FRAME_INDEX ? frame : valueNumber))
@@ -851,8 +857,9 @@ public class HPSelectorFactory {
     private static class UInt extends AttributeValueSelector {
         private final long[] params;
 
-        UInt(DicomObject item, int valueTag, boolean match, FilterOp filterOp) {
-            super(item, match, filterOp);
+        UInt(DicomObject item, int valueTag, boolean match, FilterOp filterOp,
+                VR vr) {
+            super(item, match, filterOp, vr);
             int[] tmp = item.getInts(valueTag);
             if (tmp == null || tmp.length == 0)
                 throw new IllegalArgumentException("Missing "
@@ -872,7 +879,7 @@ public class HPSelectorFactory {
         }
 
         public boolean matches(DicomObject dcmobj, int frame) {
-            int[] values = dcmobj.getInts(resolveTag(dcmobj));
+            int[] values = dcmobj.getInts(resolveTag(dcmobj), vr);
             if (values == null
                     || values.length < (valueNumber == 0 ? 1
                             : valueNumber == FRAME_INDEX ? frame : valueNumber))
@@ -905,8 +912,9 @@ public class HPSelectorFactory {
     private static class Flt extends AttributeValueSelector {
         private final float[] params;
 
-        Flt(DicomObject item, int valueTag, boolean match, FilterOp filterOp) {
-            super(item, match, filterOp);
+        Flt(DicomObject item, int valueTag, boolean match, FilterOp filterOp,
+                VR vr) {
+            super(item, match, filterOp, vr);
             this.params = item.getFloats(valueTag);
             if (params == null || params.length == 0)
                 throw new IllegalArgumentException("Missing "
@@ -926,7 +934,7 @@ public class HPSelectorFactory {
         }
 
         public boolean matches(DicomObject dcmobj, int frame) {
-            float[] values = dcmobj.getFloats(resolveTag(dcmobj));
+            float[] values = dcmobj.getFloats(resolveTag(dcmobj), vr);
             if (values == null
                     || values.length < (valueNumber == 0 ? 1
                             : valueNumber == FRAME_INDEX ? frame : valueNumber))
@@ -946,8 +954,9 @@ public class HPSelectorFactory {
     private static class Dbl extends AttributeValueSelector {
         private final double[] params;
 
-        Dbl(DicomObject item, int valueTag, boolean match, FilterOp filterOp) {
-            super(item, match, filterOp);
+        Dbl(DicomObject item, int valueTag, boolean match, FilterOp filterOp,
+                VR vr) {
+            super(item, match, filterOp, vr);
             this.params = item.getDoubles(valueTag);
             if (params == null || params.length == 0)
                 throw new IllegalArgumentException("Missing "
@@ -967,7 +976,7 @@ public class HPSelectorFactory {
         }
 
         public boolean matches(DicomObject dcmobj, int frame) {
-            double[] values = dcmobj.getDoubles(resolveTag(dcmobj));
+            double[] values = dcmobj.getDoubles(resolveTag(dcmobj), vr);
             if (values == null
                     || values.length < (valueNumber == 0 ? 1
                             : valueNumber == FRAME_INDEX ? frame : valueNumber))
@@ -980,8 +989,9 @@ public class HPSelectorFactory {
     private static class CodeValueSelector extends AttributeValueSelector {
         private final DicomElement params;
 
-        CodeValueSelector(DicomObject item, boolean match, FilterOp filterOp) {
-            super(item, match, filterOp);
+        CodeValueSelector(DicomObject item, boolean match, FilterOp filterOp,
+                VR vr) {
+            super(item, match, filterOp, vr);
             if (filterOp.isNumeric())
                 throw new IllegalArgumentException("Filter-by Operator: "
                         + item.get(Tag.FilterbyOperator)
@@ -1003,7 +1013,7 @@ public class HPSelectorFactory {
         }
 
         public boolean matches(DicomObject dcmobj, int frame) {
-            DicomElement values = dcmobj.get(resolveTag(dcmobj));
+            DicomElement values = dcmobj.get(resolveTag(dcmobj), vr);
             if (values == null || values.isEmpty())
                 return match;
             return filterOp.op(values, params);
@@ -1031,7 +1041,7 @@ public class HPSelectorFactory {
         }
 
         public boolean matches(DicomObject dcmobj, int frame) {
-            DicomElement values1 = dcmobj.get(resolveTag(dcmobj));
+            DicomElement values1 = dcmobj.get(resolveTag(dcmobj), VR.SQ);
             if (values1 == null || values1.isEmpty())
                 return match;
             for (int i = 0, n = values1.countItems(); i < n; i++) {
@@ -1053,7 +1063,7 @@ public class HPSelectorFactory {
                     .getNestedDicomObject(Tag.SharedFunctionalGroupsSequence);
             if (sharedFctGrp != null) {
                 DicomElement fctGrp = sharedFctGrp
-                        .get(resolveTag(sharedFctGrp));
+                        .get(resolveTag(sharedFctGrp), VR.SQ);
                 if (fctGrp != null) {
                     return matches(fctGrp, frame);
                 }
@@ -1075,7 +1085,7 @@ public class HPSelectorFactory {
         private boolean op(DicomObject frameFctGrp, int frame) {
             if (frameFctGrp == null)
                 return match;
-            DicomElement fctGrp = frameFctGrp.get(resolveTag(frameFctGrp));
+            DicomElement fctGrp = frameFctGrp.get(resolveTag(frameFctGrp), VR.SQ);
             if (fctGrp == null)
                 return match;
             return matches(fctGrp, frame);
