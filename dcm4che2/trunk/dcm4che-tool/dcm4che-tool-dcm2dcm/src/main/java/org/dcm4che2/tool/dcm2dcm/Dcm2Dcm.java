@@ -198,7 +198,8 @@ public class Dcm2Dcm {
         throw new RuntimeException();
     }
 
-    public static void main(String[] args) throws Exception {
+    @SuppressWarnings("unchecked")
+	public static void main(String[] args) throws Exception {
         CommandLine cl = parse(args);
         Dcm2Dcm dcm2dcm = new Dcm2Dcm();
         dcm2dcm.setNoFileMetaInformation(cl.hasOption("no-fmi"));
@@ -220,7 +221,7 @@ public class Dcm2Dcm {
 
         }
 
-        List argList = cl.getArgList();
+        List<String> argList = (List<String>) cl.getArgList();
         int argc = argList.size();
 
         File dest = new File((String) argList.get(argc - 1));
@@ -254,10 +255,10 @@ public class Dcm2Dcm {
         this.transcoderBufferSize = transcoderBufferSize;
     }
 
-    private int mconvert(List args, int optind, File destDir) {
+    private int mconvert(List<String> args, int optind, File destDir) {
         int count = 0;
         for (int i = optind, n = args.size() - 1; i < n; ++i) {
-            File src = new File((String) args.get(i));
+            File src = new File(args.get(i));
             count += mconvert(src, new File(destDir, src.getName()));
         }
         return count;
