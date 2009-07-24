@@ -4,11 +4,11 @@
   <parent>
     <groupId>dcm4che</groupId>
     <artifactId>dcm4chee-xds</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
   </parent>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-xdscfg</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>XDS Configuration Managment Tool</name>
   <modules>

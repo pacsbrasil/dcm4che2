@@ -4,7 +4,7 @@
   <parent>
     <groupId>dcm4che</groupId>
     <artifactId>dcm4chee-xdsb-repo</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
   </parent>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-xdsb-repo-webretrieve</artifactId>
@@ -25,7 +25,7 @@
     <dependency>
       <groupId>dcm4che</groupId>
   	  <artifactId>dcm4chee-xds-common</artifactId>
-  	  <version>1.0.0</version>
+  	  <version>1.0.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>  
     <dependency>
