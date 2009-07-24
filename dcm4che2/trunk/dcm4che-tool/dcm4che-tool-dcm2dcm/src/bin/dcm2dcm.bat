@@ -5,6 +5,17 @@ rem -------------------------------------------------------------------------
 
 rem $Id: dcm2dcm.bat 5252 2007-10-04 21:32:38Z gunterze $
 
+rem Need jai-imageio-1.1 or jai-imageio-1.2 installed!! 
+rem (download from https://jai-imageio.dev.java.net/binary-builds.html)
+
+rem For jai-imageio-1.1 CLASSPATH Installation, set
+rem set JIIO_LIB=C:\Program Files\Sun Microsystems\JAI Image IO Tools 1.1\lib
+rem set PATH=%JIIO_LIB%;%PATH%
+
+rem For jai-imageio-1.2 CLASSPATH Installation, set
+rem set JIIO_LIB=%INSTALLDIR%\lib\ext
+rem set PATH=%INSTALLDIR%\bin;$PATH
+
 if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
@@ -45,8 +56,8 @@ set JAVA=%JAVA_HOME%\bin\java
 set CP=%DCM4CHE_HOME%\etc\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-2.0.20-SNAPSHOT.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-2.0.20-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-image-2.0.20-SNAPSHOT.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-2.0.20-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-rle-2.0.20-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.5.0.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.5.0.jar
@@ -54,4 +65,3 @@ set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.13.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-1.2.jar
 echo "%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%
 "%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%
-
