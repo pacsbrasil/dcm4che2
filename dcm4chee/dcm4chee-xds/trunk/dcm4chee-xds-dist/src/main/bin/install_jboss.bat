@@ -1,6 +1,6 @@
 @echo off
 rem -------------------------------------------------------------------------
-rem copy needed JBOSS components into DCM4CHEE-XDS installation
+rem copy needed JBOSS components into stand alone DCM4CHEE-XDS installation
 rem -------------------------------------------------------------------------
 
 if "%OS%" == "Windows_NT"  setlocal

@@ -4,13 +4,13 @@
   <parent>
     <groupId>dcm4che</groupId>
     <artifactId>dcm4chee-xdsb-repo</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
   </parent>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-xdsb-repo-ws</artifactId>
   <packaging>war</packaging>
   <name>Webservice for XDSb Repository</name>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.0</version>
   <description></description>
   <build>
     <plugins>
@@ -27,7 +27,7 @@
     <dependency>
       <groupId>dcm4che</groupId>
   	<artifactId>dcm4chee-xds-common</artifactId>
-  	<version>1.0.0-SNAPSHOT</version>
+  	<version>1.0.0</version>
       <scope>provided</scope>
     </dependency>  
     <dependency>
