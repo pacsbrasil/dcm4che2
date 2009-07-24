@@ -7,11 +7,11 @@
 
 ### $Id: dcm2jpg 826 2007-04-27 13:35:50Z gunterze $ ###
 
-# Need jai-imageio-1.2 or jai-imageio-1.2 installed!! 
+# Need jai-imageio-1.1 or jai-imageio-1.2 installed!! 
 # (download from https://jai-imageio.dev.java.net/binary-builds.html)
 #
-# For jai-imageio-1.2 CLASSPATH Installation, set
-# JIIO_LIB=$INSTALLDIR/jai_imageio-1.2/lib
+# For jai-imageio-1.1 CLASSPATH Installation, set
+# JIIO_LIB=$INSTALLDIR/jai_imageio-1_1/lib
 # export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$JIIO_LIB"
 #
 # For jai-imageio-1.2 CLASSPATH Installation, set
