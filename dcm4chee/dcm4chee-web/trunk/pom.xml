@@ -35,6 +35,14 @@
         <enabled>false</enabled>
       </releases>
     </repository>
+    <repository>
+	    <snapshots>
+	       	<enabled>false</enabled>
+	    </snapshots>
+	    <id>ejb3unit</id>
+	    <name>ejb3unit repository</name>
+	    <url>http://ejb3unit.sourceforge.net/maven2</url>
+    </repository>
   </repositories>
   <pluginRepositories>
     <pluginRepository>
