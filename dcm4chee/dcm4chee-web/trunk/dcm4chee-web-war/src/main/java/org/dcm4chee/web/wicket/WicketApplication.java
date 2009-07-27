@@ -4,6 +4,9 @@ import org.apache.wicket.Page;
 import org.apache.wicket.Request;
 import org.apache.wicket.Response;
 import org.apache.wicket.Session;
+import org.apache.wicket.authentication.AuthenticatedWebApplication;
+import org.apache.wicket.authentication.AuthenticatedWebSession;
+import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebApplication;
 
 /**
@@ -12,11 +15,18 @@ import org.apache.wicket.protocol.http.WebApplication;
  * 
  * @see wicket.myproject.Start#main(String[])
  */
-public class WicketApplication extends WebApplication {
+public class WicketApplication extends AuthenticatedWebApplication {
     /**
      * Constructor
      */
     public WicketApplication() {
+    }
+    
+    @Override
+    protected void init() {
+        super.init();
+        getApplicationSettings().setAccessDeniedPage(LoginPage.class);
+        mountBookmarkablePage("/login", LoginPage.class);
     }
 
     @Override
@@ -25,8 +35,13 @@ public class WicketApplication extends WebApplication {
     }
 
     @Override
-    public Session newSession(Request request, Response response) {
-         return new WicketSession(request);
+    protected Class<? extends WebPage> getSignInPageClass() {
+        return LoginPage.class;
+    }
+
+    @Override
+    protected Class<? extends AuthenticatedWebSession> getWebSessionClass() {
+        return JaasWicketSession.class;
     }
 
 }

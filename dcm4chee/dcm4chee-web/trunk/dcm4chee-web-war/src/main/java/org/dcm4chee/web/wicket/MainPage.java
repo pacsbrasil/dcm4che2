@@ -38,6 +38,7 @@
 
 package org.dcm4chee.web.wicket;
 
+import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.WebPage;
 import org.dcm4chee.web.wicket.ae.AEMgtPage;
 import org.dcm4chee.web.wicket.folder.StudyListPage;
@@ -50,7 +51,7 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since July 7, 2009
  */
-
+@AuthorizeInstantiation({"user","WebUser"})
 public class MainPage extends WebPage {
     
     private static Logger log = LoggerFactory.getLogger(MainPage.class);

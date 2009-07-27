@@ -35,30 +35,23 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+package org.dcm4chee.web.wicket;
 
-package org.dcm4chee.web.wicket.util;
-
-import javax.naming.InitialContext;
+import org.apache.wicket.authentication.panel.SignInPanel;
+import org.apache.wicket.markup.html.WebPage;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * <p/>
+ * The original implementation checks the length of the top level domain (2 <= x <= 4) but in case of simple hostnames this would be fail!
+ * 
+ * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since Dec 19, 2008
+ * @since July 20, 2009
  */
-public class JNDIUtils {
-
-    public static Object lookup(String name) {
-        try {
-            InitialContext jndiCtx = new InitialContext();
-            try {
-                return jndiCtx.lookup(name);
-            } finally {
-                try  {
-                    jndiCtx.close();
-                } catch ( Exception ignore ) {}
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+public class LoginPage extends WebPage
+{
+  public LoginPage()
+  {
+    add(new SignInPanel("signInPanel"));
+  }
 }

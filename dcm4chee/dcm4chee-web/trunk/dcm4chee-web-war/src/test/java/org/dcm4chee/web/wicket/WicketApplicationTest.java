@@ -1,0 +1,98 @@
+package org.dcm4chee.web.wicket;
+
+
+import java.net.URL;
+
+import org.apache.wicket.Page;
+import org.apache.wicket.util.tester.FormTester;
+import org.apache.wicket.util.tester.WicketTester;
+import org.dcm4chee.archive.entity.AE;
+import org.dcm4chee.archive.entity.Code;
+import org.dcm4chee.archive.entity.File;
+import org.dcm4chee.archive.entity.FileSystem;
+import org.dcm4chee.archive.entity.GPPPS;
+import org.dcm4chee.archive.entity.GPSPS;
+import org.dcm4chee.archive.entity.GPSPSPerformer;
+import org.dcm4chee.archive.entity.GPSPSRequest;
+import org.dcm4chee.archive.entity.Instance;
+import org.dcm4chee.archive.entity.MPPS;
+import org.dcm4chee.archive.entity.MWLItem;
+import org.dcm4chee.archive.entity.Media;
+import org.dcm4chee.archive.entity.OtherPatientID;
+import org.dcm4chee.archive.entity.Patient;
+import org.dcm4chee.archive.entity.RequestAttributes;
+import org.dcm4chee.archive.entity.Series;
+import org.dcm4chee.archive.entity.Study;
+import org.dcm4chee.archive.entity.StudyOnFileSystem;
+import org.dcm4chee.archive.entity.VerifyingObserver;
+import org.dcm4chee.web.dao.StudyListBean;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.bm.testsuite.BaseSessionBeanFixture;
+
+public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
+{
+    private WicketApplication testApplicaton;
+    private WicketTester wicketTester;
+
+    private static final Class<?>[] usedBeans = {Patient.class, Study.class, Series.class, Instance.class,
+        File.class, FileSystem.class, StudyOnFileSystem.class, VerifyingObserver.class,
+        Media.class, MPPS.class, GPSPS.class, GPPPS.class, GPSPSRequest.class, GPSPSPerformer.class,
+        MWLItem.class,  
+        OtherPatientID.class, AE.class, RequestAttributes.class, Code.class};
+    private static Logger log = LoggerFactory.getLogger(WicketApplicationTest.class);
+
+    public WicketApplicationTest() throws Exception {
+        super(StudyListBean.class, usedBeans);
+    }
+    @Override
+    public void setUp() throws Exception
+    {
+        super.setUp();
+        testApplicaton = new WicketApplication();
+        wicketTester = new WicketTester(testApplicaton);
+        URL url = this.getClass().getResource("/wicket.login.file");
+        //Set login configuration file! '=' means: overwrite other login configuration given in Java security properties file.
+        System.setProperty("java.security.auth.login.config", "="+url.getPath()); 
+    }
+    
+    @Test
+    public void testShouldAuthChallenge()
+    {
+        wicketTester.startPage(MainPage.class);
+        wicketTester.assertRenderedPage(LoginPage.class);
+    }
+
+    @Test
+    public void testAdminLoginShouldAllow() {
+        checkLogin("admin", "admin", MainPage.class);
+    }
+    @Test
+    public void testAdminLoginShouldFail() {
+        checkLogin("admin", "admon", LoginPage.class);
+    }
+    @Test
+    public void testUserLoginShouldAllow() {
+        checkLogin("user", "user", MainPage.class);
+    }
+    @Test
+    public void testUserLoginShouldFail() {
+        checkLogin("user", "wrong", LoginPage.class);
+    }
+    @Test
+    public void testUnknownLoginShouldFail() {
+        checkLogin("unknown", "unknown", LoginPage.class);
+    }
+    private void checkLogin(String user, String passwd, Class pageClass) {
+        wicketTester.startPage(MainPage.class);
+        FormTester formTester = wicketTester.newFormTester("signInPanel:signInForm");
+        formTester.setValue("username", user);
+        formTester.setValue("password", passwd);
+        formTester.submit();
+        wicketTester.assertRenderedPage(pageClass);
+    }
+
+}
