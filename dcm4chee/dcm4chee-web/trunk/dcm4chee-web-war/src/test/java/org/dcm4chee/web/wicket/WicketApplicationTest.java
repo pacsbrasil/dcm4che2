@@ -4,6 +4,8 @@ package org.dcm4chee.web.wicket;
 import java.net.URL;
 
 import org.apache.wicket.Page;
+import org.apache.wicket.Session;
+import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.util.tester.FormTester;
 import org.apache.wicket.util.tester.WicketTester;
 import org.dcm4chee.archive.entity.AE;
@@ -35,6 +37,8 @@ import com.bm.testsuite.BaseSessionBeanFixture;
 
 public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
 {
+    private static final String USER = "user";
+    private static final String ADMIN = "admin";
     private WicketApplication testApplicaton;
     private WicketTester wicketTester;
 
@@ -68,24 +72,42 @@ public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
 
     @Test
     public void testAdminLoginShouldAllow() {
-        checkLogin("admin", "admin", MainPage.class);
+        checkLogin(ADMIN, ADMIN, MainPage.class);
     }
     @Test
     public void testAdminLoginShouldFail() {
-        checkLogin("admin", "admon", LoginPage.class);
+        checkLogin(ADMIN, "admon", LoginPage.class);
     }
     @Test
     public void testUserLoginShouldAllow() {
-        checkLogin("user", "user", MainPage.class);
+        checkLogin(USER, USER, MainPage.class);
     }
     @Test
     public void testUserLoginShouldFail() {
-        checkLogin("user", "wrong", LoginPage.class);
+        checkLogin(USER, "wrong", LoginPage.class);
     }
     @Test
     public void testUnknownLoginShouldFail() {
         checkLogin("unknown", "unknown", LoginPage.class);
     }
+
+    @Test
+    public void testAdminRoles() {
+         checkRoles(ADMIN, new String[]{"WebUser","WebAdmin","Doctor","JBossAdmin","AuditLogUser"});
+    }
+    @Test
+    public void testUserRoles() {
+        checkRoles( USER, new String[]{"WebUser","AuditLogUser"});
+    }
+    @Test
+    public void testDocRoles() {
+        checkRoles( "doc", new String[]{"WebUser","Doctor","AuditLogUser"});
+    }
+    @Test
+    public void testGuestRoles() {
+        checkRoles( "guest", new String[]{"WebUser"});
+    }
+
     private void checkLogin(String user, String passwd, Class pageClass) {
         wicketTester.startPage(MainPage.class);
         FormTester formTester = wicketTester.newFormTester("signInPanel:signInForm");
@@ -95,4 +117,20 @@ public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
         wicketTester.assertRenderedPage(pageClass);
     }
 
+    private void checkRoles(String user, String[] roles) {
+        Roles r = null;
+        try {
+            checkLogin(user, user, MainPage.class);
+            Session session = Session.get();
+            assertNotNull("Wicket Session is null", session);
+            assertEquals("Wrong Class of Wicket Session!", JaasWicketSession.class, session.getClass());
+            r = ((JaasWicketSession) session).getRoles();
+            assertEquals("Wrong number of roles!",roles.length, r.size());
+            for ( String role : roles) {
+                assertTrue("Missing role:"+role, r.hasRole(role));
+            }
+        } catch (Throwable t) {
+            fail(user+"("+r+"): "+t.getMessage());
+        }
+    }
 }
