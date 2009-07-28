@@ -429,7 +429,13 @@ public class RLEImageReader extends ImageReader {
             } else if (b != -128){
                 l = -b + 1;
                 b = nextByte();
-                Arrays.fill(bs, pos, pos + l, b);
+                if ( pos+l < bs.length ) {
+                    Arrays.fill(bs, pos, pos + l, b);
+                } else {
+                    Arrays.fill(bs, pos, bs.length-1, b);
+                    //log.warn("Should fill "+l+" bytes with '"+b+"' at position "+pos+
+                    //        " but only "+(bs.length-pos)+" bytes remaining");
+                }
                 pos += l;
             }
         }        
