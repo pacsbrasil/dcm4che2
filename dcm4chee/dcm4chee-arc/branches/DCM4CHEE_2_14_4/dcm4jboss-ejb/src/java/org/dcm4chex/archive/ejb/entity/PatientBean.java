@@ -486,8 +486,8 @@ public abstract class PatientBean implements EntityBean {
         // Remove OtherPatientIDs only related to this Patient
         for ( Iterator iter = getOtherPatientIds().iterator() ; iter.hasNext() ; ) {
             OtherPatientIDLocal opid = (OtherPatientIDLocal) iter.next();
-            iter.remove();
-            if (opid.getPatients().isEmpty()) {
+            if (opid.getPatients().size() == 1) {
+            	iter.remove();
                 opid.remove();
             }
         }
