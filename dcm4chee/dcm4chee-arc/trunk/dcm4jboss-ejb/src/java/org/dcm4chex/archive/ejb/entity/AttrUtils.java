@@ -200,7 +200,7 @@ class AttrUtils {
             } else if (dsEl.hasItems()) {
                 refEl = oldAttrs.putSQ(tag);
                 for (int i = 0; i < numItems; i++) {
-                    refEl.addItem(dsEl.getItem());
+                    refEl.addItem(dsEl.getItem(i));
                 }
             } else if (dsEl.hasDataFragments()) {
                 refEl = oldAttrs.putXXsq(tag, vr);
