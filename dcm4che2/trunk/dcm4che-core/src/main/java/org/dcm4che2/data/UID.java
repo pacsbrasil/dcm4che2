@@ -54,6 +54,9 @@ public class UID {
        }
     }
 
+    /** Dcm4che Attributes Modification Notification SOP Class - SOP Class */
+    public static final String Dcm4cheAttributesModificationNotificationSOPClass = "1.2.40.0.13.1.3.1.2.3.1.1";
+
     /** Private Study Root Query/Retrieve Information Model - FIND - SOP Class */
     public static final String PrivateStudyRootQueryRetrieveInformationModelFIND = "1.2.40.0.13.1.5.1.4.1.2.2.1";
 
