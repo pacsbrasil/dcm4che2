@@ -995,14 +995,16 @@ public class DcmSnd extends StorageCommitmentService {
         } finally {
             CloseUtils.safeClose(in);
         }
-        info.cuid = dcmObj.getString(Tag.SOPClassUID);
+        info.cuid = dcmObj.getString(Tag.MediaStorageSOPClassUID,
+                dcmObj.getString(Tag.SOPClassUID));
         if (info.cuid == null) {
             System.err.println("WARNING: Missing SOP Class UID in " + f
                     + " - skipped.");
             System.out.print('F');
             return;
         }
-        info.iuid = dcmObj.getString(Tag.SOPInstanceUID);
+        info.iuid = dcmObj.getString(Tag.MediaStorageSOPInstanceUID,
+                dcmObj.getString(Tag.SOPInstanceUID));
         if (info.iuid == null) {
             System.err.println("WARNING: Missing SOP Instance UID in " + f
                     + " - skipped.");
