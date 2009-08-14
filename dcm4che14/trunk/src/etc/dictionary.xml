@@ -2631,6 +2631,7 @@
   <uid value="1.2.40.0.13.1.5.1.4.1.2.1.1.2" name="Dcm4che Virtual Multi-frame Patient Root Query/Retrieve Information Model - FIND" key="Dcm4cheVirtualMultiFramePatientRootQueryRetrieveInformationModelFIND" />
   <uid value="1.2.40.0.13.1.5.1.4.1.2.2.1.2" name="Dcm4che Virtual Multi-frame Study Root Query/Retrieve Information Model - FIND" key="Dcm4cheVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND" />
   <uid value="1.2.40.0.13.1.3.1.2.3.1" name="Dcm4che Study Management SOP Class" key="Dcm4cheStudyManagement" />
+  <uid value="1.2.40.0.13.1.3.1.2.3.1.1" name="Dcm4che Attributes Modification Notification SOP Class" key="Dcm4cheAttributesModificationNotificationSOPClass" />
   <uid value="1.2.40.0.13.1.1.3.10" name="Dcm4che Study Info SOP Class" key="Dcm4cheStudyInfo" />
   <uid value="1.2.40.0.13.1.5.1.4.1.1.104.1" name="Dcm4che Encapsulated Document Storage" key="Dcm4cheEncapsulatedDocumentStorage" />
   <uid value="1.2.124.113532.3500.7" name="Agfa Attribute Presentation State" key="AgfaAttributePresentationState" />
