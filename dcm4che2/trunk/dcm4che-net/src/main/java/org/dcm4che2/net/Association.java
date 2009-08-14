@@ -396,6 +396,43 @@ public class Association implements Runnable {
         return rsp;
     }
 
+    public void cstore(String cuid, String iuid, int priority,
+            String moveOriginatorAET, int moveOriginatorMsgId, DataWriter data,
+            String tsuid, DimseRSPHandler rspHandler) throws IOException,
+            InterruptedException {
+        cstore(cuid, cuid, iuid, priority, moveOriginatorAET,
+                moveOriginatorMsgId, data, tsuid, rspHandler);
+    }
+
+    public void cstore(String asuid, String cuid, String iuid, int priority,
+            String moveOriginatorAET, int moveOriginatorMsgId,
+            DataWriter data, String tsuid, DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        PresentationContext pc = pcFor(asuid, tsuid);
+        DicomObject cstorerq = CommandUtils.mkCStoreRQ(ae.nextMessageID(),
+                cuid, iuid, priority, moveOriginatorAET, moveOriginatorMsgId);
+        invoke(pc.getPCID(), cstorerq, data, rspHandler,
+                ae.getDimseRspTimeout());
+    }
+
+    public DimseRSP cstore(String cuid, String iuid, int priority,
+            String moveOriginatorAET, int moveOriginatorMsgId,
+            DataWriter data, String tsuid) throws IOException,
+            InterruptedException {
+        return cstore(cuid, cuid, iuid, priority, moveOriginatorAET,
+                moveOriginatorMsgId, data, tsuid);
+    }
+
+    public DimseRSP cstore(String asuid, String cuid, String iuid,
+            int priority, String moveOriginatorAET, int moveOriginatorMsgId,
+            DataWriter data, String tsuid) throws IOException,
+            InterruptedException {
+        FutureDimseRSP rsp = new FutureDimseRSP();
+        cstore(asuid, cuid, iuid, priority, moveOriginatorAET,
+                moveOriginatorMsgId, data, tsuid, rsp);
+        return rsp;
+    }
+
     public void cfind(String cuid, int priority, DicomObject data,
             String tsuid, DimseRSPHandler rspHandler) throws IOException,
             InterruptedException {
