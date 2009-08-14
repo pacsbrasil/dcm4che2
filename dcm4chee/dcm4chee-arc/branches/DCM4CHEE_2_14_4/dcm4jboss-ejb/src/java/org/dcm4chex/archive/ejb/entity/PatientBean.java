@@ -819,7 +819,7 @@ public abstract class PatientBean implements EntityBean {
                 attrs = getAttributes(false);
                 appendOtherPatientIds(attrs, ds);
                 AttrUtils.updateAttributes(attrs, 
-                        filter.filter(ds).exclude(OTHER_PID_SQ), log);
+                        filter.filter(ds).exclude(OTHER_PID_SQ), null, log);
             } else {
                 log.debug("-merge update-strategy not specified.  Not synchronizing other patient ids!");
                 attrs = filter.filter(ds);
@@ -847,7 +847,7 @@ public abstract class PatientBean implements EntityBean {
     public void updateAttributes(Dataset ds) {
         Dataset attrs = getAttributes(false);
         boolean b = appendOtherPatientIds(attrs, ds);
-        if (AttrUtils.updateAttributes(attrs, ds.exclude(OTHER_PID_SQ), log) || b) {
+        if (AttrUtils.updateAttributes(attrs, ds.exclude(OTHER_PID_SQ), null, log) || b) {
             setAttributes(attrs);
         }
     }

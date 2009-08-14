@@ -982,16 +982,18 @@ public abstract class StudyBean implements EntityBean {
     /** 
     * @ejb.interface-method
     */
-   public void updateAttributes( Dataset newAttrs) {
+   public boolean updateAttributes( Dataset newAttrs, Dataset modifiedAttrs) {
        Dataset oldAttrs = getAttributes(false);
        if ( oldAttrs == null ) {
            setAttributes( newAttrs );
        } else {
            AttributeFilter filter = AttributeFilter.getStudyAttributeFilter();
-           if ( AttrUtils.updateAttributes(oldAttrs, filter.filter(newAttrs), log) ) {
-               setAttributes(oldAttrs);
-           }
+           if (!AttrUtils.updateAttributes(oldAttrs, filter.filter(newAttrs),
+                   modifiedAttrs, log) )
+               return false;
+           setAttributes(oldAttrs);
        }
+       return true;
    }
     /**
      * @throws DcmServiceException 
@@ -1004,7 +1006,7 @@ public abstract class StudyBean implements EntityBean {
             Dataset attrs;
             if (filter.isMerge()) {
                 attrs = getAttributes(false);
-                AttrUtils.updateAttributes(attrs, filter.filter(ds), log);
+                AttrUtils.updateAttributes(attrs, filter.filter(ds), null, log);
             } else {
                 attrs = filter.filter(ds);
             }

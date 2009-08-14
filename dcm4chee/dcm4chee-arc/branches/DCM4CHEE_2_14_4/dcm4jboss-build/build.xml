@@ -254,6 +254,18 @@
               value="../dcm4jboss-rid/src/etc/conf/xmdesc" />
     <antcall target="xslt">
       <param name="in"
+             value="${dcm4jboss-sar.xmdesc}/dcm4chee-attrsmodscp-xmbean.xml" />
+      <param name="out" value="attrsmodscp-xmbean.xml" />
+      <param name="mbean" value="dcm4chee.archive:service=AttributesModificationScp" />
+    </antcall>
+    <antcall target="xslt">
+      <param name="in"
+             value="${dcm4jboss-sar.xmdesc}/dcm4chee-attrsmodscu-xmbean.xml" />
+      <param name="out" value="attrsmodscu-xmbean.xml" />
+      <param name="mbean" value="dcm4chee.archive:service=AttributesModificationScu" />
+    </antcall>
+    <antcall target="xslt">
+      <param name="in"
              value="${dcm4jboss-sar.xmdesc}/dcm4chee-auditlog-xmbean.xml" />
       <param name="out" value="auditlog-xmbean.xml" />
       <param name="mbean" value="dcm4chee.archive:service=AuditLogger" />

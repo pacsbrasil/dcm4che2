@@ -107,6 +107,10 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="
+         dcm4chee.archive:service=AttributesModificationScp#CalledAETitles
+         dcm4chee.archive:service=AttributesModificationScp#CallingAETitles
+         dcm4chee.archive:service=AttributesModificationScu#ForwardingRules
+         dcm4chee.archive:service=AttributesModificationScu#CallingAETitle
          dcm4chee.archive:service=AuditLogger#SupressLogForAETitles
          dcm4chee.archive:service=AuditLogger#LocalAETitles
          dcm4chee.archive:service=ContentEditService#CalledAETitle
@@ -137,7 +141,7 @@
          dcm4chee.archive:service=MPPSEmulator#CalledAETitle
          dcm4chee.archive:service=MPPSScp#CalledAETitles
          dcm4chee.archive:service=MPPSScp#CallingAETitles
-         dcm4chee.archive:service=MPPSScu#ForwardAETitles
+         dcm4chee.archive:service=MPPSScu#ForwardingRules
          dcm4chee.archive:service=MPPSScu#CallingAETitle
          dcm4chee.archive:service=MWLFindScp#CalledAETitles
          dcm4chee.archive:service=MWLFindScp#CallingAETitles
