@@ -201,7 +201,8 @@ public class DcmRcv extends StorageService {
             UID.AmbulatoryECGWaveformStorage, UID.HemodynamicWaveformStorage,
             UID.CardiacElectrophysiologyWaveformStorage,
             UID.BasicVoiceAudioWaveformStorage, UID.HangingProtocolStorage,
-            UID.SiemensCSANonImageStorage };
+            UID.SiemensCSANonImageStorage,
+            UID.Dcm4cheAttributesModificationNotificationSOPClass };
 
     private final Executor executor;
 
