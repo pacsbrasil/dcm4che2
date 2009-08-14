@@ -77,5 +77,6 @@
         <attr tag="00700082"/> <!-- Presentation Creation Date -->
         <attr tag="00700083"/> <!-- Presentation Creation Time -->
         <attr tag="00700084"/> <!-- Content Creator s Name -->
+        <attr tag="04000561"/> <!-- Original Attributes Sequence -->
     </instance>
 </dcm4chee-attribute-filter>

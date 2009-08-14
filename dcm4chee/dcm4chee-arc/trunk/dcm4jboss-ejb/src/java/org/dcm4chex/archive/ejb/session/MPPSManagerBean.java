@@ -602,7 +602,7 @@ public abstract class MPPSManagerBean implements SessionBean {
             ds = (Dataset) iter.next();
             iuid = ds.getString(Tags.SeriesInstanceUID);
             series = seriesHome.findBySeriesIuid(iuid);
-            series.updateAttributes(ds, true);
+            series.updateAttributes(ds, true, null);
             dsSer = refSeriesSeq.addNewItem();
             dsSer.putAll(series.getAttributes(true));
             Iterator iter2 = series.getInstances().iterator();
@@ -634,9 +634,9 @@ public abstract class MPPSManagerBean implements SessionBean {
             boolean updateStudyAttributes) {
         try {
             SeriesLocal series = seriesHome.findBySeriesIuid(uid);
-            series.updateAttributes(newAttrs, true);
+            series.updateAttributes(newAttrs, true, null);
             if (updateStudyAttributes) {
-                series.getStudy().updateAttributes(newAttrs);
+                series.getStudy().updateAttributes(newAttrs, null);
             }
         } catch (FinderException e) {
             throw new EJBException(e);

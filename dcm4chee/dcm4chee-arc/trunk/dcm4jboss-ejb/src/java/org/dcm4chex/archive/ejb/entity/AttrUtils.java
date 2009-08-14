@@ -179,7 +179,7 @@ class AttrUtils {
     }
 
     public static boolean updateAttributes(Dataset oldAttrs, Dataset newAttrs,
-            Logger log) {
+            Dataset modifiedAttrs, Logger log) {
         boolean updateEntity = false;
         for (Iterator it = newAttrs.iterator(); it.hasNext();) {
             DcmElement dsEl = (DcmElement) it.next();
@@ -188,12 +188,26 @@ class AttrUtils {
             if (dsEl.equals(refEl)) {
                 continue;
             }
+            final int vr = dsEl.vr();
             if (refEl == null || refEl.isEmpty()) {
                 log.info("Add " + dsEl);
+                if (modifiedAttrs != null) {
+                    modifiedAttrs.putXX(tag, vr);
+                }
             } else {
-                log.info("Change " + refEl + " to " + dsEl);                
+                log.info("Change " + refEl + " to " + dsEl);
+                if (modifiedAttrs != null) {
+                    if (refEl.hasItems()) {
+                        final DcmElement modEl = modifiedAttrs.putSQ(tag);
+                        final int oldNumItems = refEl.countItems();
+                        for (int i = 0; i < oldNumItems; i++) {
+                            modEl.addItem(refEl.getItem(i));
+                        }
+                    } else {
+                        modifiedAttrs.putXX(tag, vr, refEl.getByteBuffer());
+                    }
+                }
             }
-            final int vr = dsEl.vr();
             final int numItems = dsEl.countItems();
             if (dsEl.isEmpty()) {
                 oldAttrs.putXX(tag, vr);

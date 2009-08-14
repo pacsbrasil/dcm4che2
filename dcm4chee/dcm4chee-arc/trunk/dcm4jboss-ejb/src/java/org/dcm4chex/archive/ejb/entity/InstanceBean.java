@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.ejb.CreateException;
@@ -73,6 +74,7 @@ import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
+import org.dcm4chex.archive.ejb.interfaces.VerifyingObserverLocal;
 import org.dcm4chex.archive.ejb.interfaces.VerifyingObserverLocalHome;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.util.AETs;
@@ -619,7 +621,29 @@ public abstract class InstanceBean implements EntityBean {
         setRetrieveAETs(AETs.update(getRetrieveAETs(), oldAET, newAET));
     }
 
-    private static String toString(Set s) {
+    /** 
+    * @ejb.interface-method
+    */
+   public boolean updateAttributes( Dataset newAttrs, Dataset modifiedAttrs ) {
+       Dataset oldAttrs = getAttributes(false);
+       Dataset newCode = newAttrs.getItem(Tags.ConceptNameCodeSeq);
+       if (newCode != null) {
+           updateSrCode(oldAttrs.getItem(Tags.ConceptNameCodeSeq), newCode);
+       }
+       updateVerifyingObservers(
+               oldAttrs.get(Tags.VerifyingObserverSeq),
+               newAttrs.get(Tags.VerifyingObserverSeq));
+       AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(
+               newAttrs.getString(Tags.SOPClassUID,
+                       oldAttrs.getString(Tags.SOPClassUID)));
+       if (!AttrUtils.updateAttributes(oldAttrs, filter.filter(newAttrs),
+               modifiedAttrs, log) )
+           return false;
+       setAttributes(oldAttrs);
+       return true;
+   }
+
+   private static String toString(Set s) {
         if (s.isEmpty())
             return null;
         String[] a = (String[]) s.toArray(new String[s.size()]);
@@ -721,7 +745,7 @@ public abstract class InstanceBean implements EntityBean {
         DcmElement oldObservers = attrs.get(Tags.VerifyingObserverSeq);
         if (filter.isOverwrite()) {
             if (filter.isMerge()) {
-                AttrUtils.updateAttributes(attrs, filter.filter(ds), log);
+                AttrUtils.updateAttributes(attrs, filter.filter(ds), null, log);
             } else {
                 attrs = filter.filter(ds);
             }

@@ -2,36 +2,38 @@
 <!DOCTYPE mbean PUBLIC "DCMSCU attributes template extends jboss_xmbean_1_1.dtd" "dcm4chee-scu-xmbean.dtd">
 
 <mbean>
-   <description>DICOM Modality Performed Procedure Step SCU Service. Used  to forward MPPS messages received by
-   the MPPS SCP Service.</description>
+   <description>Attributes Modification SCU Service. Forwards Attributes
+   Modification Notifications received by the Attributes Modification SCP
+   Service according specified Forwarding Rules.</description>
 
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager"/>
    </descriptors>
 
-   <class>org.dcm4chex.archive.dcm.mppsscu.MPPSScuService</class>
+   <class>org.dcm4chex.archive.dcm.modify.AttributesModificationScuService</class>
 
    <constructor>
       <description>The default constructor</description>
-      <name>MPPSScuService</name>
+      <name>AttributesModificationScuService</name>
    </constructor>
 
    <!-- Attributes -->
    <attribute access="read-write" getMethod="getForwardingRules" setMethod="setForwardingRules">
-      <description><![CDATA[List of forwarding rules, dependent upon which
-        application - identified by the Calling AE title - sent the MPPS.
-        The comma separated list of AE titles after the (optional) condition 
-        defines the forwarding destination (the other MPPS SCP) by its Called
-        AE Title.
-        <br><br>Syntax:
-        <br> rules = ( rule { newline  rule } | 'NONE' ) (* 'NONE' = no forwarding *)
-        <br> rule = ['[' 'calling' ['!'] '=' from ']'] to
-        <br> from = aet { '|'  aet } (* calling AE titles *)
-        <br> to = aet { ',' aet } (* destination AE titles *)
-        <br><br>Example: [calling!=ORDER_FILLER]ORDER_FILLER
-        <br>=> Forwards received MPPS to ORDER_FILLER, except MPPS received
-        from ORDER_FILLER]]>
+      <description><![CDATA[List of forwarding rules, dependent upon from which
+application - identified by the Calling AE title - the Attributes
+Modification Notification was received by the Attributes Modification SCP.
+The comma separated list of AE titles after the (optional) condition defines
+the forwarding destinations (= other Attributes Modification SCPs) by their
+Called AE Titles.
+<br><br>Syntax:
+<br> rules = ( rule { newline  rule } | 'NONE' ) (* 'NONE' = no forwarding *)
+<br> rule = ['[' 'calling' ['!'] '=' from ']'] to
+<br> from = aet { '|'  aet } (* calling AE titles *)
+<br> to = aet { ',' aet } (* destination AE titles *)
+<br><br>Example: [calling!=CENTRAL]CENTRAL
+<br>=> Forwards received Attributes Modification Notifications to CENTRAL,
+except Attributes Modification Notifications received from CENTRAL]]>
       </description>
       <name>ForwardingRules</name>
       <type>java.lang.String</type>
@@ -40,7 +42,7 @@
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getCallingAET" setMethod="setCallingAET">
-      <description>Calling AE Ttle used in the Association Request.
+      <description>Calling AE Title used in the Association Request.
       </description>
       <name>CallingAETitle</name>
       <type>java.lang.String</type>
@@ -49,7 +51,7 @@
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getConcurrency" setMethod="setConcurrency">
-      <description>Maximum number of concurrent forwarded MPPS messages.
+      <description>Maximum number of concurrent forwarded Attributes Modification Notifications.
       </description>
       <name>Concurrency</name>
       <type>int</type>
@@ -57,16 +59,25 @@
          <value value="1"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="getPriority" setMethod="setPriority">
+      <description>Priority used in Attributes Modification Notifications C-STORE RQs.
+      Enumerated Values: LOW, MEDIUM, HIGH.
+      </description>
+      <name>Priority</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="MEDIUM"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="getRetryIntervalls" setMethod="setRetryIntervalls">
-      <description>Number and intervals of retries for failed 
-      MPPS forward requests. &lt;br&gt;Format:
-      &lt;br&gt;Comma separated list of &lt;i&gt;number&lt;/i&gt;x&lt;i&gt;interval&lt;/i&gt; pairs.
-      &lt;br&gt;The interval can be specified in seconds (##s),
-      minutes (##m), hours (##h) or days (##d).
-      &lt;br&gt;Example: 
-      &lt;br&gt;5x1m,10x10m means retry a total of 5 times, one minute
-      apart for each retry; then retry a total of 10 times, 10 minutes 
-      apart for each retry.</description>
+      <description><![CDATA[Number and intervals of retries for failed
+Attributes Modification Notifications.
+<br>Format:
+<br>Comma separated list of <i&gt;number</i>x<i>interval</i> pairs.
+<br>The interval can be specified in seconds (##s), minutes (##m), hours (##h) or days (##d).
+<br>Example: 
+<br>5x1m,10x10m means retry a total of 5 times, one minute apart for each retry;
+then retry a total of 10 times, 10 minutes apart for each retry.]]></description>
       <name>RetryIntervals</name>
       <type>java.lang.String</type>
       <descriptors>
@@ -93,11 +104,11 @@
       <type>javax.management.ObjectName</type>
    </attribute>
    <attribute access="read-write"
-      getMethod="getMppsScpServiceName"
-      setMethod="setMppsScpServiceName">
+      getMethod="getAttributesModificationScpServiceName"
+      setMethod="setAttributesModificationScpServiceName">
       <description>Used internally. Do not modify.
       </description>
-      <name>MppsScpServiceName</name>
+      <name>AttributesModificationScpServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
    <attribute access="read-write"
@@ -112,25 +123,5 @@
 
    <!-- Operations -->
    &defaultOperations;
-   <operation impact="ACTION">
-      <description>Send MPPS to Application Entity specified by AET.</description>
-      <name>sendMPPS</name>
-      <parameter>
-        <description>if true, send N-CREATE, otherwise N-SET MPPS message.</description>
-        <name>create</name>
-        <type>boolean</type>
-      </parameter>
-      <parameter>
-        <description>MPPS Dataset</description>
-        <name>mpps</name>
-        <type>org.dcm4che.data.Dataset</type>
-      </parameter>
-      <parameter>
-        <description>Application Entity Title</description>
-        <name>aet</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>void</return-type>
-   </operation>   
-   
+
 </mbean>
