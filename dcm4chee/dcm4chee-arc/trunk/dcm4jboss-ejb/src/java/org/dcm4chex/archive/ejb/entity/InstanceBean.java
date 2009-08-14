@@ -515,14 +515,20 @@ public abstract class InstanceBean implements EntityBean {
             return false;
         }
         try {
+            for (Iterator iter = new ArrayList(getVerifyingObservers()).iterator(); iter.hasNext();) {
+                VerifyingObserverLocal verifier = 
+                        (VerifyingObserverLocal) iter.next();
+                verifier.remove();
+            }
             Collection c = getVerifyingObservers();
-            c.clear();
             if (newObservers != null) {
                 for (int i = 0, n = newObservers.countItems(); i < n; i++) {
                     c.add(observerHome.create(newObservers.getItem(i)));
                 }
             }
         } catch (CreateException e) {
+            throw new EJBException(e);
+        } catch (RemoveException e) {
             throw new EJBException(e);
         }
         return true;
