@@ -556,4 +556,25 @@ public class IANScuService extends AbstractScuService implements
         return scn;
     }
 
+    public void scheduleRandomIAN(String retrieveAET, String availability,
+            int numSeries, int numInstancesPerSeries) {
+        Dataset ian = DcmObjectFactory.getInstance().newDataset();
+        UIDGenerator gen = UIDGenerator.getInstance();
+        ian.putUI(Tags.StudyInstanceUID, gen.createUID());
+        DcmElement ianSeriesSeq = ian.putSQ(Tags.RefSeriesSeq);
+        for (int i = 0; i < numSeries; i++) {
+            Dataset ianSeries = ianSeriesSeq.addNewItem();
+            ianSeries.putUI(Tags.SeriesInstanceUID, gen.createUID());
+            DcmElement ianSOPSeq = ianSeries.putSQ(Tags.RefSOPSeq);
+            for (int j = 0; j < numInstancesPerSeries; j++) {
+                Dataset refSOP = ianSOPSeq.addNewItem();
+                refSOP.putUI(Tags.RefSOPClassUID, UIDs.SecondaryCaptureImageStorage);
+                refSOP.putUI(Tags.RefSOPInstanceUID, gen.createUID());
+                refSOP.putAE(Tags.RetrieveAET, retrieveAET);
+                refSOP.putCS(Tags.InstanceAvailability, availability);
+            }
+        }
+        schedule(null, null, null, ian);
+    }
+
 }

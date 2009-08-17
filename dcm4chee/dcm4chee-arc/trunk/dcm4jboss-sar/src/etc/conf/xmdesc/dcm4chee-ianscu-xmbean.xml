@@ -194,5 +194,31 @@
 
    <!-- Operations -->
    &defaultOperations;
+   <operation impact="ACTION">
+      <description>schedule random IAN for testing</description>
+      <name>scheduleRandomIAN</name>
+      <parameter>
+        <description>Retrieve AE Title of all referenced instances</description>
+        <name>retrieveAET</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Availability (ONLINE, NEARLINE , OFFLINE or NOT AVAILABLE)
+         of all referenced instances</description>
+        <name>availability</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Number of referenced Series</description>
+        <name>numSeries</name>
+        <type>int</type>
+      </parameter>
+      <parameter>
+        <description>Number of referenced Instances per referenced Series</description>
+        <name>numInstancesPerSeries</name>
+        <type>int</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
    
 </mbean>
