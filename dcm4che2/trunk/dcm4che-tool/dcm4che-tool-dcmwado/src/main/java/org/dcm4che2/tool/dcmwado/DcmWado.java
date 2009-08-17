@@ -327,7 +327,7 @@ public class DcmWado {
                 dcmwado.addContentType("application/dicom");
             }
             if (cl.hasOption("jpeg")) {
-                dcmwado.addContentType(" image/jpeg");
+                dcmwado.addContentType("image/jpeg");
             }
             if (cl.hasOption("gif")) {
                 dcmwado.addContentType("image/gif)");
