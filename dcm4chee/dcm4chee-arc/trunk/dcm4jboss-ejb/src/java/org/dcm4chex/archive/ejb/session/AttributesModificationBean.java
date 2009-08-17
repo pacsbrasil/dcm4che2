@@ -119,8 +119,8 @@ public abstract class AttributesModificationBean implements SessionBean {
      * @ejb.interface-method
      */
     public boolean modifyAttributes(Dataset attrs, Date time, String system,
-            String reason, boolean updateOriginalAttributesSeq)
-            throws DcmServiceException {
+            String reason, boolean updateOriginalAttributesSeq,
+            int entityNotFoundErrorCode) throws DcmServiceException {
         try {
             String level = attrs.getString(Tags.QueryRetrieveLevel);
             if (level == null)
@@ -141,6 +141,10 @@ public abstract class AttributesModificationBean implements SessionBean {
             throw new DcmServiceException(
                     Status.DataSetDoesNotMatchSOPClassError, e.getMessage());
         } catch (ObjectNotFoundException e) {
+            if (entityNotFoundErrorCode != 0) {
+                throw new DcmServiceException(entityNotFoundErrorCode,
+                        "No entity with specified uid found");
+            }
             log.info("No entity with specified uid found - ignore update:");
             log.debug(attrs);
             return false;

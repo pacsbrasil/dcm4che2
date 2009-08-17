@@ -66,14 +66,32 @@ public class AttributesModificationScpService extends AbstractScpService {
 
     private boolean updateOriginalAttributesSeq;
 
+    private int entityNotFoundErrorCode;
+
     private AttributesModificationScp scp = new AttributesModificationScp(this);
 
-    public void setUpdateOriginalAttributesSeq(boolean enable) {
+    public final void setUpdateOriginalAttributesSeq(boolean enable) {
         this.updateOriginalAttributesSeq = enable;
     }
 
-    public boolean isUpdateOriginalAttributesSeq() {
+    public final boolean isUpdateOriginalAttributesSeq() {
         return updateOriginalAttributesSeq;
+    }
+
+    public final void setEntityNotFoundErrorCodeAsString(
+            String entityNotFoundErrorCode) {
+        this.entityNotFoundErrorCode = entityNotFoundErrorCode.endsWith("H")
+                ? Integer.parseInt(entityNotFoundErrorCode
+                        .substring(0, entityNotFoundErrorCode.length()-1), 16)
+                : Integer.parseInt(entityNotFoundErrorCode);
+    }
+
+    public final String getEntityNotFoundErrorCodeAsString() {
+        return String.format("%04XH", entityNotFoundErrorCode);
+    }
+
+    public final int getEntityNotFoundErrorCode() {
+        return entityNotFoundErrorCode;
     }
 
     protected void bindDcmServices(DcmServiceRegistry services) {

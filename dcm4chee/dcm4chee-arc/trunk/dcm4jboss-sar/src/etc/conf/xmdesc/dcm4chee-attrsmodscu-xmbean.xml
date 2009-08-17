@@ -84,7 +84,21 @@ then retry a total of 10 times, 10 minutes apart for each retry.]]></description
          <value value="5x1m,12x5m,24x1h,7x1d"/>
       </descriptors>
    </attribute>
-   
+   <attribute access="read-write" getMethod="getNoRetryErrorCodeAsString"
+        setMethod="setNoRetryErrorCodeAsString">
+      <description><![CDATA[Defines particular Error Code in C-STORE RSP, which
+shall <b>not</b> cause retry of the failed Attributes Modification Notifications.
+Typically used to avoid retries of Attributes Modification Notifications failed
+because the target entity does not exists at the forward destination. S. also
+attribute <i>EntityNotFoundErrorCode</i> of the <i>Attributes Modification SCP
+Service</i>.]]>
+      </description>
+      <name>NoRetryErrorCode</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="B006H"/>
+      </descriptors>
+   </attribute>   
    &defaultSCUAttributes;
    
    <attribute access="read-write"

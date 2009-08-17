@@ -80,7 +80,8 @@ public class AttributesModificationScp extends DcmServiceBase {
                     ds.getString(Tags.ReasonForTheAttributeModification, "COERCE");
             if (getAttributesModification().modifyAttributes(
                     ds, new Date(), modifyingSystem, reason,
-                    service.isUpdateOriginalAttributesSeq()))
+                    service.isUpdateOriginalAttributesSeq(),
+                    service.getEntityNotFoundErrorCode()))
                 service.sendAttributesModificationNotification(ds);
         } catch (DcmServiceException e) {
             throw e;
