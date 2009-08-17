@@ -90,6 +90,8 @@ public class AttributesModificationScuService extends AbstractScuService impleme
 
     private int priority;
 
+    private int noRetryErrorCode;
+
     public final String getPriority() {
         return DicomPriority.toString(priority);
     }
@@ -106,13 +108,30 @@ public class AttributesModificationScuService extends AbstractScuService impleme
         this.forwardingRules = new ForwardingRules(forwardingRules);
     }
 
-    public String getRetryIntervalls() {
+    public final String getRetryIntervalls() {
         return retryIntervalls.toString();
     }
 
-    public void setRetryIntervalls(String text) {
+    public final void setRetryIntervalls(String text) {
         retryIntervalls = new RetryIntervalls(text);
     }
+
+    public final int getNoRetryErrorCode() {
+        return noRetryErrorCode;
+    }
+
+    public final void setNoRetryErrorCodeAsString(
+            String noRetryErrorCode) {
+        this.noRetryErrorCode = noRetryErrorCode.endsWith("H")
+                ? Integer.parseInt(noRetryErrorCode
+                        .substring(0, noRetryErrorCode.length()-1), 16)
+                : Integer.parseInt(noRetryErrorCode);
+    }
+
+    public final String getNoRetryErrorCodeAsString() {
+        return String.format("%04XH", noRetryErrorCode);
+    }
+
 
     public final ObjectName getJmsServiceName() {
         return jmsDelegate.getJmsServiceName();
@@ -239,11 +258,12 @@ public class AttributesModificationScuService extends AbstractScuService impleme
             final Command cmdRsp = dimseRsp.getCommand();
             final int status = cmdRsp.getStatus();
             if (status != 0) {
-                log.error("Received Error Status "
+                log.warn("Received Error Status "
                         + Integer.toHexString(status) + "H, Error Comment: "
                         + cmdRsp.getString(Tags.ErrorComment));
-                throw new DcmServiceException(status, cmdRsp
-                        .getString(Tags.ErrorComment));
+                if (status != noRetryErrorCode)
+                    throw new DcmServiceException(status,
+                            cmdRsp.getString(Tags.ErrorComment));
             }
         } finally {
             try {

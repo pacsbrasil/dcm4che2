@@ -81,6 +81,20 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+        getMethod="getEntityNotFoundErrorCodeAsString"
+        setMethod="setEntityNotFoundErrorCodeAsString">
+      <description><![CDATA[Defines Error Code returned if there is no entity
+stored in the archive to which the received Attributes Modification Notification
+applies. 0 => return Success Status in that case. See also attribute
+<i>NoRetryErrorCode</i> of the <i>Attributes Modification SCU Service</i>.]]>
+      </description>
+      <name>EntityNotFoundErrorCode</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="B006H"/>
+      </descriptors>
+   </attribute>   
+   <attribute access="read-write"
       getMethod="getAEServiceName"
       setMethod="setAEServiceName">
       <description>Used internally. Do NOT modify.
