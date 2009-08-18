@@ -89,6 +89,14 @@ if not errorlevel == 1 (set JAVA_OPTS=%JAVA_OPTS% -server)
 rem JVM memory allocation pool parameters. Modify as appropriate.
 set JAVA_OPTS=%JAVA_OPTS% -Xms128m -Xmx512m
 
+rem Uncomment to enable the jconsole agent locally
+rem JAVA_OPTS=%JAVA_OPTS% -Dcom.sun.management.jmxremote
+
+rem Uncomment to enable the jconsole agent remotely on port 12345 with disabled security and ssl transport
+rem set JAVA_OPTS=%JAVA_OPTS% -Dcom.sun.management.jmxremote.port=12345
+rem set JAVA_OPTS=%JAVA_OPTS% -Dcom.sun.management.jmxremote.authenticate=false
+rem set JAVA_OPTS=%JAVA_OPTS% -Dcom.sun.management.jmxremote.ssl=false
+
 rem With Sun JVMs reduce the RMI GCs to once per hour
 set JAVA_OPTS=%JAVA_OPTS% -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000
 
