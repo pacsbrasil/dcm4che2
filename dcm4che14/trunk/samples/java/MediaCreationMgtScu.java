@@ -359,11 +359,11 @@ public class MediaCreationMgtScu {
             char[] keypasswd = cfg.getProperty("tls-key-passwd", "secret")
                     .toCharArray();
             tls.setKey(tls.loadKeyStore(DcmSnd.class.getResource(cfg
-                    .getProperty("tls-key", "identity.p12")), keypasswd),
+                    .getProperty("tls-key", "certificates/test_sys_1.p12")), keypasswd),
                     keypasswd);
             tls
                     .setTrust(tls.loadKeyStore(DcmSnd.class.getResource(cfg
-                            .getProperty("tls-cacerts", "cacerts.jks")), cfg
+                            .getProperty("tls-cacerts", "certificates/mesa_certs.jks")), cfg
                             .getProperty("tls-cacerts-passwd", "secret")
                             .toCharArray()));
             tls.init();

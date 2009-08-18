@@ -561,11 +561,11 @@ public class DcmRcv extends DcmServiceBase
             char[] keypasswd = cfg.getProperty("tls-key-passwd", "secret").toCharArray();
             tls.setKey(
                     tls.loadKeyStore(
-                    DcmRcv.class.getResource(cfg.getProperty("tls-key", "identity.p12")),
+                    DcmRcv.class.getResource(cfg.getProperty("tls-key", "certificates/test_sys_1.p12")),
                     keypasswd),
                     keypasswd);
             tls.setTrust(tls.loadKeyStore(
-                    DcmRcv.class.getResource(cfg.getProperty("tls-cacerts", "cacerts.jks")),
+                    DcmRcv.class.getResource(cfg.getProperty("tls-cacerts", "certificates/mesa_certs.jks")),
                     cfg.getProperty("tls-cacerts-passwd", "secret").toCharArray()));
             this.server.setServerSocketFactory(
                     tls.getServerSocketFactory(protocol.getCipherSuites()));

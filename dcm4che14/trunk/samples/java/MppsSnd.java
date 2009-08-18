@@ -463,12 +463,12 @@ public class MppsSnd implements PollDirSrv.Handler {
             tls.setKey(
                 tls.loadKeyStore(
                     MppsSnd.class.getResource(
-                        cfg.getProperty("tls-key","identity.p12")),
+                        cfg.getProperty("tls-key","certificates/test_sys_1.p12")),
                     keypasswd),
                 keypasswd);
             tls.setTrust(tls.loadKeyStore(
                 MppsSnd.class.getResource(
-                    cfg.getProperty("tls-cacerts", "cacerts.jks")),
+                    cfg.getProperty("tls-cacerts", "certificates/mesa_certs.jks")),
                 cfg.getProperty("tls-cacerts-passwd", "secret").toCharArray()));
             tls.init();
         } catch (Exception ex) {

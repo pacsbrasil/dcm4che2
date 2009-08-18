@@ -193,8 +193,8 @@ public class ConfigProperties extends Properties {
      * absolute URI, this URI is converted directly to a URL. If the file reference
      * is a relative URI this is resolved relative to a given base URL.
      * <p>Example: For a class de.iftm.dcm4che.servicesCDimseService the method call
-     * fileRefToURL(CDimseService.class.getResource(""), "resources/identity.p12")
-     * results to the URL "file:/D:/DcmServices/build/classes/de/iftm/dcm4che/services/resources/identity.p12"
+     * fileRefToURL(CDimseService.class.getResource(""), "resources/certificates/test_sys_1.p12")
+     * results to the URL "file:/D:/DcmServices/build/classes/de/iftm/dcm4che/services/resources/certificates/test_sys_1.p12"
      *
      * @param baseURL the base URL to which relative file references are resolved.
      *                May be null, if the fileRef is a absolute reference.

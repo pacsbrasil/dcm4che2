@@ -170,11 +170,11 @@ public class Hl7Rcv implements HL7Service
             char[] keypasswd = cfg.getProperty("tls-key-passwd", "secret").toCharArray();
             tls.setKey(
                     tls.loadKeyStore(
-                    Hl7Rcv.class.getResource(cfg.getProperty("tls-key", "identity.p12")),
+                    Hl7Rcv.class.getResource(cfg.getProperty("tls-key", "certificates/test_sys_1.p12")),
                     keypasswd),
                     keypasswd);
             tls.setTrust(tls.loadKeyStore(
-                    Hl7Rcv.class.getResource(cfg.getProperty("tls-cacerts", "cacerts.jks")),
+                    Hl7Rcv.class.getResource(cfg.getProperty("tls-cacerts", "certificates/mesa_certs.jks")),
                     cfg.getProperty("tls-cacerts-passwd", "secret").toCharArray()));
             this.server.setServerSocketFactory(
                     tls.getServerSocketFactory(protocol.getCipherSuites()));
