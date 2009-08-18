@@ -112,6 +112,16 @@ public class EchoService extends AbstractScuService {
         }
     }
 
+    public boolean checkEcho(String title, String host, int port, 
+            String cipherSuites) {
+        AEDTO ae = new AEDTO();
+        ae.setTitle(title);
+        ae.setHostName(host);
+        ae.setPort(port);
+        ae.setCipherSuitesAsString(cipherSuites);
+        return checkEcho(ae);
+    }
+    
     public boolean checkEcho(AEDTO aeData) {
         try {
             ActiveAssociation aa = openAssociation(aeData, UIDs.Verification);
