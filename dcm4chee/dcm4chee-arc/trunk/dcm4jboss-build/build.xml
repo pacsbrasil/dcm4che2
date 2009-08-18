@@ -123,6 +123,9 @@
         <include name="libclib_jiio.so"/>
         <include name="clib_jiio*.dll"/>
       </zipfileset>
+      <zipfileset dir="${dcm4che14.home}/bin" prefix="${dist.db.config}/conf">
+        <include name="certificates/*"/>
+      </zipfileset>
       <zipfileset dir="${dcm4che14.home}" prefix="${dist.db}/doc">
         <include name="licenses/*"/>
       </zipfileset>
