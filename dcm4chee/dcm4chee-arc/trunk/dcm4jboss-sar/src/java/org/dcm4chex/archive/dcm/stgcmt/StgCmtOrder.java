@@ -49,7 +49,7 @@ import org.dcm4chex.archive.common.BaseJmsOrder;
  * @version $Revision$ $Date$
  * @since Jan 5, 2005
  */
-class StgCmtOrder extends BaseJmsOrder implements Serializable {
+public class StgCmtOrder extends BaseJmsOrder implements Serializable {
 
     private static final long serialVersionUID = 3256437014860936248L;
 
