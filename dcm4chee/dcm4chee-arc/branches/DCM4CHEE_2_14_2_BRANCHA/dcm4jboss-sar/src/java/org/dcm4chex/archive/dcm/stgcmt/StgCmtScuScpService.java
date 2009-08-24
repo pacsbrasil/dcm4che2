@@ -116,7 +116,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
     private static final int PCID_STGCMT = 1;
 
-    private ObjectName queryRetrieveScpServiceName;
+    protected ObjectName queryRetrieveScpServiceName;
 
     private String queueName = "StgCmtScuScp";
 
@@ -410,17 +410,18 @@ public class StgCmtScuScpService extends AbstractScpService implements
     private void process(StgCmtOrder order) throws Exception {
         AEManager aeMgr = aeMgr();
         String aet = order.getCalledAET();
-        AEDTO localAE = aeMgr.findByAET(order.getCallingAET());
+        String callingAET = getCallingAET(order);
+        AEDTO callingAE = aeMgr.findByAET(callingAET);
         AEDTO remoteAE = aeMgr.findByAET(aet);
         Dataset ds = order.isScpRole() ? commit(order) : order.getActionInfo();
         AssociationFactory af = AssociationFactory.getInstance();
-        Association a = af.newRequestor(tlsConfig.createSocket(localAE, remoteAE));
+        Association a = af.newRequestor(tlsConfig.createSocket(callingAE, remoteAE));
         a.setAcTimeout(acTimeout);
         a.setDimseTimeout(dimseTimeout);
         a.setSoCloseDelay(soCloseDelay);
         AAssociateRQ rq = af.newAAssociateRQ();
         rq.setCalledAET(aet);
-        rq.setCallingAET(order.getCallingAET());
+        rq.setCallingAET(callingAET);
         rq.addPresContext(af.newPresContext(PCID_STGCMT,
                         UIDs.StorageCommitmentPushModel,
                         valuesToStringArray(tsuidMap)));
@@ -470,6 +471,11 @@ public class StgCmtScuScpService extends AbstractScpService implements
         }
     }
 
+	// allow the calling AET to be overridden in subclasses
+    protected String getCallingAET(StgCmtOrder order) {
+    	return order.getCallingAET();
+    }
+    
     private void invokeDimse(ActiveAssociation aa, Command cmd, Dataset ds,
             String prompt) throws InterruptedException, IOException,
             DcmServiceException {
