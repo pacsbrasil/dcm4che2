@@ -586,6 +586,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         HashSet ppsuids = new HashSet();
         DcmElement refSerSeq = ian.putSQ(Tags.RefSeriesSeq);
         Collection seriess = study.getSeries();
+        String fsRetrieveAet = null;//RetrieveAET from Filesystem of order. To force Type1 Attribute RetrieveAET
         for (Iterator siter = seriess.iterator(); siter.hasNext();) {
             SeriesLocal series = (SeriesLocal) siter.next();
             Dataset serAttrs = series.getAttributes(false);
@@ -605,6 +606,13 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                 refSOP.putUI(Tags.RefSOPInstanceUID, inst.getSopIuid());
                 DatasetUtils.putRetrieveAET(refSOP, inst.getRetrieveAETs(),
                         inst.getExternalRetrieveAET());
+                if ( !refSOP.containsValue(Tags.RetrieveAET)) { //check Type1
+                    if ( fsRetrieveAet == null ) {
+                        FileSystemLocal fs = fileSystemHome.findByPrimaryKey(order.getFsPk());
+                        fsRetrieveAet = fs.getRetrieveAET();
+                    }
+                    refSOP.putAE(Tags.RetrieveAET, fsRetrieveAet);
+                }
                 refSOP.putCS(Tags.InstanceAvailability, Availability.toString(
                         delStudyFromDB ? Availability.UNAVAILABLE
                                        : inst.getAvailabilitySafe()));
