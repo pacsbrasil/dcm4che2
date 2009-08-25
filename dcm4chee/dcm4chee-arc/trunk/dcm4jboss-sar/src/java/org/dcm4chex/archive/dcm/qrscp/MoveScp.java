@@ -157,7 +157,7 @@ public class MoveScp extends DcmServiceBase implements AssociationListener {
             } catch (DcmServiceException e) {
                 throw e;
             } catch (UnknownAETException e) {
-                throw new DcmServiceException(Status.MoveDestinationUnknown, dest);
+                throw new DcmServiceException(Status.MoveDestinationUnknown, "Unknown move destination:" + dest);
             } catch (SQLException e) {
                 service.getLog().error("Query DB failed:", e);
                 throw new DcmServiceException(Status.UnableToCalculateNumberOfMatches, e);
