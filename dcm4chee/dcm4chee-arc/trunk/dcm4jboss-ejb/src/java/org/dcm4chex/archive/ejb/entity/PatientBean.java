@@ -844,12 +844,14 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
-    public void updateAttributes(Dataset ds) {
+    public boolean updateAttributes(Dataset ds) {
         Dataset attrs = getAttributes(false);
         boolean b = appendOtherPatientIds(attrs, ds);
         if (AttrUtils.updateAttributes(attrs, ds.exclude(OTHER_PID_SQ), null, log) || b) {
             setAttributes(attrs);
+            return true;
         }
+        return false;
     }
 
     private boolean appendOtherPatientIds(Dataset attrs, Dataset ds) {
