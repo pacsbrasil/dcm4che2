@@ -221,29 +221,13 @@ public class ORMService extends AbstractHL7Service {
                 opIdx = op.length == 1 ? 0 : i;
                 switch (op[opIdx]) {
                 case NW:
-                    addMissingAttributes(ds);
-                    log("Schedule", ds);
-                    logDataset("Insert MWL Item:", ds);
-                    mwlManager.addWorklistItem(ds);
-                    updateRequestAttributes(ds, mwlManager);
+                	processNW(ds, mwlManager);
                     break;
                 case XO:
-                    log("Update", ds);
-                    logDataset("Update MWL Item:", ds);
-                    if (!mwlManager.updateWorklistItem(ds)) {
-                        log("No Such ", ds);
-                        addMissingAttributes(ds);
-                        log("->Schedule New ", ds);
-                        logDataset("Insert MWL Item:", ds);
-                        mwlManager.addWorklistItem(ds);
-                    }
-                    updateRequestAttributes(ds, mwlManager);
+                	processXO(ds, mwlManager);
                     break;
                 case CA:
-                    log("Cancel", ds);
-                    if (mwlManager.removeWorklistItem(ds) == null) {
-                        log("No Such ", ds);
-                    }
+                	processCA(ds, mwlManager);
                     break;
                 case NOOP:
                     log("NOOP", ds);
@@ -266,7 +250,35 @@ public class ORMService extends AbstractHL7Service {
             throw new HL7Exception("AE", e.getMessage(), e);
         }
     }
+    
+    protected void processNW(Dataset ds, MWLManager mwlManager) throws Exception {
+        addMissingAttributes(ds);
+        log("Schedule", ds);
+        logDataset("Insert MWL Item:", ds);
+        mwlManager.addWorklistItem(ds);
+        updateRequestAttributes(ds, mwlManager);    	
+    }
+    
+    protected void processXO(Dataset ds, MWLManager mwlManager) throws Exception {
+        log("Update", ds);
+        logDataset("Update MWL Item:", ds);
+        if (!mwlManager.updateWorklistItem(ds)) {
+            log("No Such ", ds);
+            addMissingAttributes(ds);
+            log("->Schedule New ", ds);
+            logDataset("Insert MWL Item:", ds);
+            mwlManager.addWorklistItem(ds);
+        }
+        updateRequestAttributes(ds, mwlManager);
+    }
 
+    protected void processCA(Dataset ds, MWLManager mwlManager) throws Exception {
+    	log("Cancel", ds);
+    	if (mwlManager.removeWorklistItem(ds) == null) {
+    		log("No Such ", ds);
+    	}
+    }
+    
     private void updateRequestAttributes(Dataset mwlitem,
             MWLManager mwlManager) throws Exception {
         MPPSManager mppsManager = getMPPSManager();
@@ -329,7 +341,7 @@ public class ORMService extends AbstractHL7Service {
         updateSPSStatus(mwlitem, mwlManager);
     }
 
-    private void updateSPSStatus(Dataset ds, MWLManager mwlManager)
+    protected void updateSPSStatus(Dataset ds, MWLManager mwlManager)
             throws PatientMismatchException, RemoteException {
         log("Change SPS status of MWL Item:", ds);
         if (!mwlManager.updateSPSStatus(ds)) {
