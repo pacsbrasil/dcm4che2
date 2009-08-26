@@ -942,16 +942,19 @@ public abstract class StudyBean implements EntityBean {
     /** 
     * @ejb.interface-method
     */
-   public void updateAttributes( Dataset newAttrs) {
+   public boolean updateAttributes( Dataset newAttrs) {
        Dataset oldAttrs = getAttributes(false);
        if ( oldAttrs == null ) {
            setAttributes( newAttrs );
+           return true;
        } else {
            AttributeFilter filter = AttributeFilter.getStudyAttributeFilter();
            if ( AttrUtils.updateAttributes(oldAttrs, filter.filter(newAttrs), log) ) {
                setAttributes(oldAttrs);
+               return true;
            }
        }
+       return false;
    }
     /**
      * @throws DcmServiceException 

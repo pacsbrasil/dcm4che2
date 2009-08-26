@@ -482,17 +482,20 @@ public abstract class SeriesBean implements EntityBean {
      * 
      * @ejb.interface-method
      */
-    public void updateAttributes( Dataset newAttrs, boolean overwriteReqAttrSQ ) {
+    public boolean updateAttributes( Dataset newAttrs, boolean overwriteReqAttrSQ ) {
         Dataset oldAttrs = getAttributes(false);
         boolean updated = updateSeriesRequest(oldAttrs, newAttrs, overwriteReqAttrSQ);
         if ( oldAttrs == null ) {
             setAttributes( newAttrs );
+            return true;
         } else {
             AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
             if (AttrUtils.updateAttributes(oldAttrs, filter.filter(newAttrs), log) ) {
                 setAttributes(oldAttrs);
+                return true;
             }
         }
+        return updated;
     }
     
     private boolean updateSeriesRequest(Dataset oldAttrs, Dataset newAttrs,
