@@ -711,13 +711,17 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private String[] selectReferencedDirectoryURI(String uri) {
         if ( referencedDirectoryPath == null ) {
-            FileSystemDTO[] fsDTOs = getFileSystemMgt().getFileSystemsOfGroup(this.refFileSystemGroupID);
-            String uriPath;
-            for ( FileSystemDTO dto : fsDTOs ) {
-                uriPath = FileUtils.toFile(dto.getDirectoryPath()).toURI().toString();
-                if (uri.startsWith(uriPath)) {
-                    return new String[]{ dto.getDirectoryPath(), uriPath};
+            try {
+                FileSystemDTO[] fsDTOs = getFileSystemMgt().getFileSystemsOfGroup(this.refFileSystemGroupID);
+                String uriPath;
+                for ( FileSystemDTO dto : fsDTOs ) {
+                    uriPath = FileUtils.toFile(dto.getDirectoryPath()).toURI().toString();
+                    if (uri.startsWith(uriPath)) {
+                        return new String[]{ dto.getDirectoryPath(), uriPath};
+                    }
                 }
+            } catch (Exception x ) {
+                log.error("Can't get FilesystemMgt Bean!",x);
             }
         } else {
             for ( int i = 0; i< referencedDirectoryURI.length ; i++) {
