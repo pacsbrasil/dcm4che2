@@ -553,7 +553,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                         }
                     }
                     fsDTO = getFileSystemMgt().getFileSystemOfGroup(
-                            refFileSystemGroupID, isURI(selected[0]) ?  
+                            refFileSystemGroupID, selected[0].startsWith("file:") ?  
                                     new URI(selected[0]).getPath() : selected[0]);
                     retrieveAET = fsDTO.getRetrieveAET();
                     availability = Availability.toString(fsDTO.getAvailability());
