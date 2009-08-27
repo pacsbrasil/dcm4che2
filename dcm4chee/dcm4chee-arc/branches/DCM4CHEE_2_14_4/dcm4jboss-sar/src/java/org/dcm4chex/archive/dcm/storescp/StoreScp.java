@@ -57,6 +57,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
@@ -117,6 +118,8 @@ import org.jboss.logging.Logger;
  * @since 03.08.2003
  */
 public class StoreScp extends DcmServiceBase implements AssociationListener {
+
+    private static final String ALL = "ALL";
 
     private static final int MISSING_USER_ID_ERR_STATUS = 0xCE10;
 
@@ -180,9 +183,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private boolean checkIncorrectWorklistEntry = true;
 
-    private String referencedDirectoryPath;
+    private String[] referencedDirectoryPath;
 
-    private String referencedDirectoryURI;
+    private String[] referencedDirectoryURI;
 
     private String refFileSystemGroupID;
 
@@ -297,14 +300,33 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     public final String getReferencedDirectoryPath() {
-        return referencedDirectoryPath;
+        if (referencedDirectoryPath == null)
+            return ALL;
+        StringBuffer sb = new StringBuffer();
+        String nl = System.getProperty("line.separator", "\n");
+        for ( String s : referencedDirectoryPath) {
+            sb.append(s).append(nl);
+        }
+        return sb.toString();
     }
 
     public final void setReferencedDirectoryPath(String pathOrURI) {
-        String trimmed = pathOrURI.trim();
-        referencedDirectoryURI = isURI(trimmed) ? (trimmed + '/') :
+        if ( ALL.equals(pathOrURI)) {
+            referencedDirectoryURI = null;
+            referencedDirectoryPath = null;
+        } else  {
+            StringTokenizer st = new StringTokenizer(pathOrURI, " \t\r\n;");
+            int len = st.countTokens();
+            referencedDirectoryURI = new String[len];
+            referencedDirectoryPath = new String[len];
+            String trimmed;
+            for ( int i = 0 ; st.hasMoreElements() ; i++ ) {
+                trimmed = st.nextToken().trim();
+                referencedDirectoryURI[i] = isURI(trimmed) ? (trimmed + '/') :
                 FileUtils.toFile(trimmed).toURI().toString();
-        referencedDirectoryPath = trimmed;
+                referencedDirectoryPath[i] = trimmed;
+            }
+        }
     }
 
     public void setReferencedFileSystemGroupID(String groupID) {
@@ -513,14 +535,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                                 "Missing (0040,E010) Retrieve URI - required for Dcm4che Retrieve URI Transfer Syntax");
                     }
                 } else {
-                    if (!uri.startsWith(referencedDirectoryURI)) {
+                    String[] selected = selectReferencedDirectoryURI(uri);
+                    if (selected == null) {
                         throw new DcmServiceException(
                                 Status.DataSetDoesNotMatchSOPClassError,
                                 "(0040,E010) Retrieve URI: " + uri
                                 + " does not match with configured Referenced Directory Path: "
-                                + referencedDirectoryPath);
+                                + getReferencedDirectoryPath());
                     }
-                    filePath = uri.substring(referencedDirectoryURI.length());
+                    filePath = uri.substring(selected[1].length());
                     if (uri.startsWith("file:/")) {
                         file = new File(new URI(uri));
                         if (!file.isFile()) {
@@ -530,8 +553,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                         }
                     }
                     fsDTO = getFileSystemMgt().getFileSystemOfGroup(
-                            refFileSystemGroupID, isURI(referencedDirectoryPath) ?  
-                                    new URI(referencedDirectoryPath).getPath() : referencedDirectoryPath);
+                            refFileSystemGroupID, isURI(selected[0]) ?  
+                                    new URI(selected[0]).getPath() : selected[0]);
                     retrieveAET = fsDTO.getRetrieveAET();
                     availability = Availability.toString(fsDTO.getAvailability());
                     if (file != null && readReferencedFile) {
@@ -684,6 +707,26 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
+    }
+
+    private String[] selectReferencedDirectoryURI(String uri) {
+        if ( referencedDirectoryPath == null ) {
+            FileSystemDTO[] fsDTOs = getFileSystemMgt().getFileSystemsOfGroup(this.refFileSystemGroupID);
+            String uriPath;
+            for ( FileSystemDTO dto : fsDTOs ) {
+                uriPath = FileUtils.toFile(dto.getDirectoryPath()).toURI().toString();
+                if (uri.startsWith(uriPath)) {
+                    return new String[]{ dto.getDirectoryPath(), uriPath};
+                }
+            }
+        } else {
+            for ( int i = 0; i< referencedDirectoryURI.length ; i++) {
+                if ( uri.startsWith(referencedDirectoryURI[i]) ) {
+                    return new String[]{referencedDirectoryPath[i], referencedDirectoryURI[i]};
+                }
+            }
+        }
+        return null;
     }
 
     private SeriesStored initSeriesStored(Dataset ds, String callingAET,
