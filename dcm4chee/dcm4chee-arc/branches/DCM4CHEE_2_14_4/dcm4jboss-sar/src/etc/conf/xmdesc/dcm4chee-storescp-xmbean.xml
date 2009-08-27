@@ -316,7 +316,9 @@ received DICOM Composite Object *and* in the matching Patient Record.
       configured, which directory path match the value. If an URI is specified,
       the (0040,E010) Retrieve URI in received objects must start with the value
        + '/'. If a directory path is specified, the Retrieve URI must
-      start with 'file:' + absolute directory path. Otherwise the storage will fail.]]>
+      start with 'file:' + absolute directory path. Otherwise the storage will fail.<br/>
+      Multiple path/URI can be specified (one per line)<br/>
+      ALL means All configured filesystems of <i>ReferencedFileSystemGroupID</i>]]>
       </description>
       <name>ReferencedDirectoryPath</name>
       <type>java.lang.String</type>
