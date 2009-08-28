@@ -3,7 +3,7 @@
 	<property file="build.properties"/>
 	<property file="../build.properties" />
 
-	<property name="version" value="2.14.5"/>
+	<property name="version" value="2.14.6"/>
 
 	<property name="javac.debug" value="on"/>
 	<property name="javac.deprecation" value="off"/>

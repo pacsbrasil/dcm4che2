@@ -16,49 +16,49 @@ to download and install:
 (only needed to build test suite for dcm4jboss-ejb - not need to build
 application)
 
-dcm4chee-2.14.3 archive also relies on
+dcm4chee-2.14.6 archive also relies on
 
 - dcm4che-1.4.22 : DICOM Library
 
 which binary and source distribution package is also available at
 http://sourceforge.net/projects/dcm4che. The binary package is sufficient to
 build dcm4chee archive. If you download the source package, you have to build
-all components of dcm4che-1.4.22 (ant release) before building dcm4chee-2.14.3.
+all components of dcm4che-1.4.22 (ant release) before building dcm4chee-2.14.6.
 
-dcm4chee-2.14.3 archive also make use of
+dcm4chee-2.14.6 archive also make use of
 
 - dcm4che-audit-logger : JMX Service for emitting DICOM Supp95 Audit Trail
   Messages, and
 - dcm4che-audit-login : JAAS login module emitting User Authentication message
 
-which sources are not included by dcm4chee-2.14.3-src.zip, but provided in a
-separate ZIP archive: dcm4chee-audit-2.14.3-src.zip at
+which sources are not included by dcm4chee-2.14.6-src.zip, but provided in a
+separate ZIP archive: dcm4chee-audit-2.14.6-src.zip at
 http://sourceforge.net/projects/dcm4che. Follow the build instructions include
 in dcm4chee-audit, to build and install these artifacts in your local Maven
 Repository (default: ~/.m2/repository) for usage by following build task for 
-dcm4chee-2.14.3 archive.
+dcm4chee-2.14.6 archive.
 
-dcm4chee-2.14.3 archive also make use of
+dcm4chee-2.14.6 archive also make use of
 
 - dcm4chee-docstore : Generic Document Storage (used by RID - Retrieve Information for Display) 
 
-which sources are not included by dcm4chee-2.14.3-src.zip, but provided in a
-separate ZIP archive: dcm4chee-docstore-0.0.3-src.zip at
+which sources are not included by dcm4chee-2.14.6-src.zip, but provided in a
+separate ZIP archive: dcm4chee-docstore-1.0.0-src.zip at
 http://sourceforge.net/projects/dcm4che. Follow the build instructions include
 in dcm4chee-docstore, to build and install these artifacts in your local Maven
 Repository (default: ~/.m2/repository) for usage by following build task for 
-dcm4chee-2.14.3 archive.
+dcm4chee-2.14.6 archive.
 
-dcm4chee-2.14.3 archive has compile dependency to
+dcm4chee-2.14.6 archive has compile dependency to
 
 - dcm4chee-xds-infoset : XDS Infoset classes (XDS Query for Consumer and Document Lifecycle)
 
-which sources are not included by dcm4chee-2.14.3-src.zip, but provided in a
-separate ZIP archive: dcm4chee-xds-infoset-0.0.3-src.zip at
+which sources are not included by dcm4chee-2.14.6-src.zip, but provided in a
+separate ZIP archive: dcm4chee-xds-infoset-1.0.0-src.zip at
 http://sourceforge.net/projects/dcm4che. Follow the build instructions include
 in dcm4chee-xds-infoset, to build and install these artifacts in your local Maven
 Repository (default: ~/.m2/repository) for usage by following build task for 
-dcm4chee-2.14.3 archive.
+dcm4chee-2.14.6 archive.
 
 Create an environment variable pointing to the Ant home directory (ANT_HOME)
 and add the $ANT_HOME/bin directory to your PATH.
