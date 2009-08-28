@@ -315,6 +315,14 @@ class SqlBuilder {
     static String toUpperCase(String s) {
         return s != null ? s.toUpperCase() : null;
     }
+    static String[] toUpperCase(String[] sa) {
+        if ( sa == null ) return null;
+        String[] san = new String[sa.length];
+        for ( int i = 0 ; i < sa.length ; i++ ) {
+            san[i] =  sa[i].toUpperCase();
+        }
+        return san;
+    }
 
     public Match addRangeMatch(String alias, String field, boolean type2,
             Date[] range) {
