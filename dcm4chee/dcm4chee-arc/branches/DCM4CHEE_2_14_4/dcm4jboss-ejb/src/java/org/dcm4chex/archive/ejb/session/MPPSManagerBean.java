@@ -516,17 +516,19 @@ public abstract class MPPSManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset unlinkMpps(String mppsIUID) throws FinderException {
+    public Dataset unlinkMpps(String mppsIUID) throws FinderException, CreateException {
         MPPSLocal mpps = mppsHome.findBySopIuid(mppsIUID);
         Dataset mppsAttrs = mpps.getAttributes();
         Dataset mppsAttrsSav = mpps.getAttributes();
         DcmElement ssaSQ = mppsAttrs.get(Tags.ScheduledStepAttributesSeq);
         Dataset ds = null;
+        List spsIDs = new ArrayList(ssaSQ.countItems());
         String rpID, spsID;
         for (int i = ssaSQ.countItems() - 1; i >= 0; i--) {
             ds = ssaSQ.getItem(i);
             rpID = ds.getString(Tags.RequestedProcedureID);
             spsID = ds.getString(Tags.SPSID);
+            spsIDs.add(rpID+"_"+spsID);
             if (spsID != null) {
                 try {
                     MWLItemLocal mwlItem = mwlItemHome.findByRpIdAndSpsId(rpID,
@@ -552,6 +554,40 @@ public abstract class MPPSManagerBean implements SessionBean {
         mppsAttrs.putSQ(Tags.ScheduledStepAttributesSeq).addItem(ds);
         mpps.setAttributes(mppsAttrs);
         mppsAttrsSav.putAll(mpps.getPatient().getAttributes(true));
+        Collection seriesDS = getSeriesAndStudyDS(mpps.getSopIuid());
+        boolean noOtherMpps = mppsHome.findByStudyIuid(studyIUID).size() < 2;
+        Dataset series=null, item;
+        DcmElement reqAttrSQ, newReqAttrSQ;
+        Collection seriesChgd = new ArrayList();
+        boolean remainingReqAttrs = false;
+        for ( Iterator iter = seriesDS.iterator() ; iter.hasNext() ; ) {
+            series = (Dataset) iter.next();
+            reqAttrSQ = series.get(Tags.RequestAttributesSeq);
+            if ( reqAttrSQ != null && reqAttrSQ.countItems() > 0 ) {
+                seriesChgd.add(series);
+                newReqAttrSQ = series.putSQ(Tags.RequestAttributesSeq);
+                for ( int i = 0 ; i < reqAttrSQ.countItems() ; i++) {
+                    item = reqAttrSQ.getItem(i);
+                    rpID = item.getString(Tags.RequestedProcedureID);
+                    spsID = item.getString(Tags.SPSID);
+                    if ( !spsIDs.contains(rpID+"_"+spsID)) {
+                        newReqAttrSQ.addItem(item);
+                    }
+                }
+                if ( newReqAttrSQ.countItems() > 0 ) {
+                    remainingReqAttrs = true;
+                }
+            }
+        }
+        if ( series != null && !remainingReqAttrs && noOtherMpps ) {
+            if ( seriesChgd.size() == 0 ) {
+                seriesChgd.add(series);
+            } else {
+                series = (Dataset) seriesChgd.iterator().next();
+            }
+            series.putSH(Tags.AccessionNumber);
+        }
+        this.updateSeriesAndStudy(seriesChgd);
         return mppsAttrsSav;
     }
 
