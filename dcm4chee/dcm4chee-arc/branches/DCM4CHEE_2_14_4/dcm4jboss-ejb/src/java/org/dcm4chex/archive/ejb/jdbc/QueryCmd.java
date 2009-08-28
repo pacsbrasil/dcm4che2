@@ -401,7 +401,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 "Study.referringPhysicianPhoneticName" }, type2, keys
                 .getString(Tags.ReferringPhysicianName));
         sqlBuilder.addWildCardMatch(null, "Study.studyDescription", type2,
-                SqlBuilder.toUpperCase(keys.getString(Tags.StudyDescription)));
+                SqlBuilder.toUpperCase(keys.getStrings(Tags.StudyDescription)));
         sqlBuilder.addListOfStringMatch(null, "Study.studyStatusId", type2,
                 keys.getStrings(Tags.StudyStatusID));
         AttributeFilter filter = AttributeFilter.getStudyAttributeFilter();
@@ -452,14 +452,14 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         sqlBuilder.addWildCardMatch(null, "Series.laterality", type2,
                 keys.getStrings(Tags.Laterality));
         sqlBuilder.addWildCardMatch(null, "Series.institutionName", type2,
-                SqlBuilder.toUpperCase(keys.getString(Tags.InstitutionName)));
+                SqlBuilder.toUpperCase(keys.getStrings(Tags.InstitutionName)));
         sqlBuilder.addWildCardMatch(null, "Series.stationName", type2,
-                SqlBuilder.toUpperCase(keys.getString(Tags.StationName)));
+                SqlBuilder.toUpperCase(keys.getStrings(Tags.StationName)));
         sqlBuilder.addWildCardMatch(null, "Series.seriesDescription", type2,
-                SqlBuilder.toUpperCase(keys.getString(Tags.SeriesDescription)));
+                SqlBuilder.toUpperCase(keys.getStrings(Tags.SeriesDescription)));
         sqlBuilder.addWildCardMatch(null, "Series.institutionalDepartmentName",
                 type2, SqlBuilder.toUpperCase(keys
-                        .getString(Tags.InstitutionalDepartmentName)));
+                        .getStrings(Tags.InstitutionalDepartmentName)));
         sqlBuilder.addPNMatch(new String[] { "Series.performingPhysicianName",
                 "Series.performingPhysicianIdeographicName",
                 "Series.performingPhysicianPhoneticName" }, type2,
