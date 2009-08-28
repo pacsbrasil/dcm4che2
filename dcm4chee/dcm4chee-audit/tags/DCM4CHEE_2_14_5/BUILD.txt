@@ -20,11 +20,11 @@ http downloads (s.  http://maven.apache.org/guides/mini/guide-proxies.html ).
 
 After that,
 
-$ cd dcm4chee-audit-2.14.3
+$ cd dcm4chee-audit-2.14.6
 $ mvn install
 
 will download necessary artifacts from public Maven Repositories by http,
-build dcm4chee-audit-logger-2.13.0.jar and dcm4chee-audit-login-2.13.0.jar,
+build dcm4chee-audit-logger-2.14.6.jar and dcm4chee-audit-login-2.14.6.jar,
 and install them in your local Maven Repository (default: ~/-m2/repository),
 for usage by the build tasks for the dcm4chee archive application or the
 Audit Record Repository.
