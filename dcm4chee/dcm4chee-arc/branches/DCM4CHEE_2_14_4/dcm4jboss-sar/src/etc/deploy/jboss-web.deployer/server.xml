@@ -33,9 +33,9 @@
          maxThreads="150" scheme="https" secure="true"
          clientAuth="true" sslProtocol="TLS"
          ciphers="SSL_RSA_WITH_NULL_SHA,TLS_RSA_WITH_AES_128_CBC_SHA"
-         keystoreFile="${jboss.server.home.dir}/conf/identity.p12"
+         keystoreFile="${jboss.server.home.dir}/conf/certificates/test_sys_1.p12"
          keystorePass="secret" keystoreType="PKCS12"
-         truststoreFile="${jboss.server.home.dir}/conf/cacerts.jks"
+         truststoreFile="${jboss.server.home.dir}/conf/certificates/mesa_certs.jks"
          truststorePass="secret" truststoreType="JKS"
          SSLImplementation="org.dcm4chee.audit.tomcat.ATNAImplementation"
    />
