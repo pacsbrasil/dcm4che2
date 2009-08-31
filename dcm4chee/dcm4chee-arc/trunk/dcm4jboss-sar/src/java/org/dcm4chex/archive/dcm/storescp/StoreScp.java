@@ -311,7 +311,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     public final void setReferencedDirectoryPath(String pathOrURI) {
-        if ( ALL.equals(pathOrURI)) {
+        if ( ALL.equals(pathOrURI.trim())) {
             referencedDirectoryURI = null;
             referencedDirectoryPath = null;
         } else  {
