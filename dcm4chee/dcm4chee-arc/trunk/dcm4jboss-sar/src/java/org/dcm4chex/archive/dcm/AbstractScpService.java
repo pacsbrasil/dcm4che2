@@ -878,8 +878,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 }
             }
             if (coerced) {
-                log
-                        .info(parent == null ? ("Coerce " + oldEl + " to " + el)
+                log.info(parent == null ? ("Coerce " + oldEl + " to " + el)
                                 : ("Coerce " + oldEl + " to " + el
                                         + " in item of " + parent));
             } else {
@@ -973,9 +972,11 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 if (ae == null)
                     ae = aeMgr().findByAET(callingAET);
                 String institution = ae.getInstitution();
-                ds.putLO(Tags.InstitutionName, institution);
-                if (log.isInfoEnabled()) {
-                    log.info("Add missing Institution Name " + institution);
+                if (institution!=null && institution.length()>0) {
+                	ds.putLO(Tags.InstitutionName, institution);
+                	if (log.isInfoEnabled()) {
+                		log.info("Add missing Institution Name " + institution);
+                	}
                 }
             } catch (UnknownAETException e) {
                 if (log.isDebugEnabled()) {
@@ -993,9 +994,11 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 if (ae == null)
                     ae = aeMgr().findByAET(callingAET);
                 String department = ae.getDepartment();
-                ds.putLO(Tags.InstitutionalDepartmentName, department);
-                if (log.isInfoEnabled()) {
-                    log.info("Add missing Institutional Department Name " + department);
+                if (department!=null && department.length()>0) {
+                	ds.putLO(Tags.InstitutionalDepartmentName, department);
+                	if (log.isInfoEnabled()) {
+                		log.info("Add missing Institutional Department Name " + department);
+                	}
                 }
             } catch (UnknownAETException e) {
                 if (log.isDebugEnabled()) {
