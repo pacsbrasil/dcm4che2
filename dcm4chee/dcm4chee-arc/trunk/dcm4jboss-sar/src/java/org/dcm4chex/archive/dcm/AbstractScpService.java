@@ -950,10 +950,17 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 try {
                     if (ae == null) ae = aeMgr().findByAET(callingAET);
                     String issuer = ae.getIssuerOfPatientID();
-                    ds.putLO(Tags.IssuerOfPatientID, issuer);
-                    if (log.isInfoEnabled()) {
-                        log.info("Add missing Issuer Of Patient ID " + issuer
-                                + " for Patient ID " + pid);
+                    if (issuer != null && issuer.length() != 0) {
+                        ds.putLO(Tags.IssuerOfPatientID, issuer);
+                        if (log.isInfoEnabled()) {
+                            log.info("Add missing Issuer Of Patient ID " + issuer
+                                    + " for Patient ID " + pid);
+                        }
+                    } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Missing Issuer Of Patient ID in AE configuration for " + callingAET
+                                    + " - no supplement of Issuer Of Patient ID");
+                        }
                     }
                 } catch (UnknownAETException e) {
                     if (log.isDebugEnabled()) {
@@ -972,11 +979,16 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 if (ae == null)
                     ae = aeMgr().findByAET(callingAET);
                 String institution = ae.getInstitution();
-                if (institution!=null && institution.length()>0) {
-                	ds.putLO(Tags.InstitutionName, institution);
-                	if (log.isInfoEnabled()) {
-                		log.info("Add missing Institution Name " + institution);
-                	}
+                if (institution != null && institution.length() != 0) {
+                    ds.putLO(Tags.InstitutionName, institution);
+                    if (log.isInfoEnabled()) {
+                        log.info("Add missing Institution Name " + institution);
+                    }
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Missing Institution Name in AE configuration for " + callingAET
+                                + " - no supplement of Institution Name");
+                    }
                 }
             } catch (UnknownAETException e) {
                 if (log.isDebugEnabled()) {
@@ -994,11 +1006,16 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 if (ae == null)
                     ae = aeMgr().findByAET(callingAET);
                 String department = ae.getDepartment();
-                if (department!=null && department.length()>0) {
-                	ds.putLO(Tags.InstitutionalDepartmentName, department);
-                	if (log.isInfoEnabled()) {
-                		log.info("Add missing Institutional Department Name " + department);
-                	}
+                if (department != null && department.length() != 0) {
+                    ds.putLO(Tags.InstitutionalDepartmentName, department);
+                    if (log.isInfoEnabled()) {
+                        log.info("Add missing Institutional Department Name " + department);
+                    }
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Missing Institutional Department Name in AE configuration for " + callingAET
+                                + " - no supplement of Institutional Department Name");
+                    }
                 }
             } catch (UnknownAETException e) {
                 if (log.isDebugEnabled()) {
