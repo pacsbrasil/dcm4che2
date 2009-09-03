@@ -84,7 +84,7 @@ QueryRetrieveScp service.</description>
       <name>SupplementInstitutionName</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true"/>
+         <value value="false"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -98,7 +98,7 @@ QueryRetrieveScp service.</description>
       <name>SupplementInstitutionalDepartmentName</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true"/>
+         <value value="false"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
