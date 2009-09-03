@@ -184,6 +184,29 @@ public class PIXQueryService extends ServiceMBeanSupport {
             return mockResponse;
         }
         if (isPIXManagerLocal()) {
+        	return performLocalPIXQuery(patientID, issuer, domains);
+        } else {
+        	return performRemotePIXQuery(patientID, issuer, domains);
+        }
+    }
+
+    /**
+     * Initiates a local PIX query.
+     * 
+     * @param patientID
+     *   The patient ID to use in the PIX query.  Can contain wildcards.
+     * @param issuer
+     *   The issuer to use in the PIX query.
+     * @param domains
+     *   An array of domains used to constrain the results.  If null, use all known domains.
+     * @return
+     *   If nothing is found, returns an empty list.  Otherwise, returns a list of 
+     *   primary patient IDs/issuers (as stored in the patient table) that match
+     *   the query criteria and belong in the domains that were passed in.
+     * @throws Exception
+     */
+    protected List performLocalPIXQuery(String patientID, String issuer,
+            String[] domains) throws Exception {
              if (issuersOfOnlyPrimaryPatientIDs.contains(issuer)) {
                 return pixQuery().queryCorrespondingPIDsByPrimaryPatientID(
                         patientID, issuer, domains);
@@ -195,6 +218,27 @@ public class PIXQueryService extends ServiceMBeanSupport {
                         patientID, issuer, domains);
             }           
         }
+    
+    /**
+     * Initiates a remote PIX query.
+     * 
+     * @param patientID
+     *   The patient ID to use in the PIX query.  Cannot contain wildcards.
+     * @param issuer
+     *   The issuer to use in the PIX query.
+     * @param domains
+     *   An array of domains used to constrain the results.  If null, use all known domains.
+     * @return 
+     *   If the ID/issuer are unknown to the PIX manager, returns null.  
+     *   Otherwise, returns the linkage set (including the query constraints if issuer matches one of the domains).
+     * 
+     * @throws Exception
+     */
+    protected List performRemotePIXQuery(String patientID, String issuer,
+            String[] domains) throws Exception {
+    	if (isPIXManagerLocal()) {
+    		throw new Exception("No remote PIX manager has been configured");
+    	}
         List<String[]> res = (List<String[]>)server.invoke(hl7SendServiceName, "sendQBP_Q23",
                 new Object[] {
                     pixManager,
