@@ -62,6 +62,14 @@ import org.dcm4chex.archive.ejb.interfaces.OtherPatientIDLocalHome;
  * 
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.OtherPatientIDLocal findByPatientIdAndIssuer(java.lang.String pid, java.lang.String issuer)"
  *             query="SELECT OBJECT(o) FROM OtherPatientID AS o WHERE o.patientId = ?1 AND o.issuerOfPatientId = ?2"
+ * 
+ * @ejb.finder signature="java.util.Collection findByPatientIdAndIssuerLike(java.lang.String pid, java.lang.String issuer)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByPatientIdAndIssuerLike(java.lang.String pid, java.lang.String issuer)"
+ *             query="SELECT OBJECT(opid) FROM OtherPatientID AS opid
+ *             WHERE (opid.patientId LIKE ?1 AND opid.issuerOfPatientId = ?2)"
+ *             strategy="on-find" eager-load-group="*"
+ *             
  */
 public abstract class OtherPatientIDBean implements EntityBean {
     

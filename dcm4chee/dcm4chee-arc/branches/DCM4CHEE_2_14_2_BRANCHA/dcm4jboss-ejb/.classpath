@@ -6,7 +6,7 @@
 	<classpathentry kind="src" path="src/resources"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="/dcm4che14"/>
-	<classpathentry exported="true" kind="var" path="JBOSS_HOME/server/default/lib/jboss-j2ee.jar" sourcepath="/JBOSS_SRC/j2ee/src/main"/>
+	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/jboss-j2ee.jar" sourcepath="/JBOSS_SRC/j2ee/src/main"/>
 	<classpathentry kind="var" path="JBOSS_HOME/lib/concurrent.jar"/>
 	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/jboss-common-jdbc-wrapper.jar"/>
 	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-system.jar" sourcepath="/JBOSS_SRC/system/src/main"/>
