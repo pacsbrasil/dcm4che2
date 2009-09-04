@@ -1242,34 +1242,37 @@ public class WADOSupport {
         } else {
             w = (int) (h * aspectRatio + .5f);
         }
-        // convert YBR to RGB to workaround jai-imageio-core issue #173:
-        // CLibJPEGImageWriter ignores CororSpace != sRGB
-        // force conversion of YBR Colorspace to iRGB here because ColorConvertOp previously used was ~10 times slower
-        boolean b = bi.getColorModel().getColorSpace() instanceof SimpleYBRColorSpace;
-        if (b || w != bi.getWidth() || h != bi.getHeight()) {
-            if (b || bi.getSampleModel() instanceof BandedSampleModel) {
-                // convert RGB color-by-plane to TYPE_INT_RGB, otherwise
-                // scaleOp.filter(bi, null) will throw
-                // ImagingOpException("Unable to transform src image")
-                BufferedImage tmp = new BufferedImage(bi.getWidth(),
-                        bi.getHeight(), BufferedImage.TYPE_INT_RGB);
-                Graphics2D g = tmp.createGraphics();
-                try {
-                    g.drawImage(bi, 0, 0, null);
-                } finally {
-                    g.dispose();
-                }
-                bi = tmp;
-            }
-            AffineTransform scale = AffineTransform.getScaleInstance(
-                    (double) w / bi.getWidth(), (double) h / bi.getHeight());
-            AffineTransformOp scaleOp = new AffineTransformOp(scale,
-                    AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-            BufferedImage biDest = scaleOp.filter(bi, null);
-            return biDest;
-        } else {
+        boolean ybr = bi.getColorModel().getColorSpace() instanceof SimpleYBRColorSpace;
+        boolean rescale = w != bi.getWidth() || h != bi.getHeight();
+        if (!ybr && !rescale)
             return bi;
+
+        boolean banded = bi.getSampleModel() instanceof BandedSampleModel;
+        if (ybr || banded) {
+            // convert YBR to RGB to workaround jai-imageio-core issue #173:
+            // CLibJPEGImageWriter ignores CororSpace != sRGB
+            // convert RGB color-by-plane to TYPE_INT_RGB, otherwise
+            // scaleOp.filter(bi, null) will throw
+            // ImagingOpException("Unable to transform src image")
+            BufferedImage tmp = new BufferedImage(bi.getWidth(),
+                    bi.getHeight(), BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = tmp.createGraphics();
+            try {
+                g.drawImage(bi, 0, 0, null);
+            } finally {
+                g.dispose();
+            }
+            bi = tmp;
         }
+        if (!rescale)
+            return bi;
+
+        AffineTransform scale = AffineTransform.getScaleInstance(
+                (double) w / bi.getWidth(), (double) h / bi.getHeight());
+        AffineTransformOp scaleOp = new AffineTransformOp(scale,
+                AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+        BufferedImage biDest = scaleOp.filter(bi, null);
+        return biDest;
     }
 
         /**
