@@ -468,8 +468,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
                 "2.3.1");// get MSH for patient information update (ADT^A08)
         addEVN(sb, timestamp);
         addPID(sb, ds);
-        sb.append("\r");
-        sb.append("PV1||||||||||||||||||||||||||||||||||||||||||||||||||||");
+        sb.append("\rPV1||||||||||||||||||||||||||||||||||||||||||||||||||||\r");
         // PatientClass(2),VisitNr(19) and VisitIndicator(51) ???
         final String charsetName = getCharsetName();
         if (useForward) {
@@ -493,6 +492,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
         for (int i = 0, len = priorPats.length; i < len; i++) {
             sb.setLength(SBlen);
             addMRG(sb, priorPats[i]);
+            sb.append('\r');
             if (useForward) {
                 forward(sb.toString().getBytes(charsetName));
             } else {
@@ -509,7 +509,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
                 .format(new Date());
         StringBuffer sb = makeMSH(timestamp, "QBP^Q23", null, pixManager, "2.5");
         String qpd = makeQPD(pixQueryName, patientID, issuer, domains);
-        sb.append('\r').append(qpd).append("\rRCP|I||||||");
+        sb.append('\r').append(qpd).append("\rRCP|I||||||\r");
         String s = sb.toString();
         log.info("Query PIX Manager " + pixManager + ":\n"
                 + s.replace('\r', '\n'));
