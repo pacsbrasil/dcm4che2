@@ -58,6 +58,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.TransferSyntax;
 import org.dcm4che2.data.VR;
+import org.dcm4che2.data.VRMap;
 import org.dcm4che2.util.ByteUtils;
 import org.dcm4che2.util.TagUtils;
 import org.slf4j.Logger;
@@ -221,16 +222,21 @@ public class DicomInputStream extends FilterInputStream implements
             // ignore read errors; we'll guess something smart
         }
         reset();
-        boolean bigEndian = b[1] != 0;
-        expectFmiEnd = b[bigEndian ? 1 : 0] == 2;
-        try {
-            VR.valueOf(((b[4] & 0xff) << 8) | (b[5] & 0xff));
-            return bigEndian ? TransferSyntax.ExplicitVRBigEndian
-                    : TransferSyntax.ExplicitVRLittleEndian;
-        } catch (IllegalArgumentException e) {
-            return bigEndian ? TransferSyntax.ImplicitVRBigEndian
-                    : TransferSyntax.ImplicitVRLittleEndian;
+        
+        final VRMap vrmap = VRMap.getVRMap();
+        final int vrcode = ((b[4] & 0xff) << 8) | (b[5] & 0xff);
+        VR vr;
+        if ((vr = vrmap.vrOf(ByteUtils.bytesLE2tag(b, 0))) != VR.UN) {
+            expectFmiEnd = b[0] == 2;
+            return vrcode == vr.code() ? TransferSyntax.ExplicitVRLittleEndian
+                                       : TransferSyntax.ImplicitVRLittleEndian;
         }
+        if ((vr = vrmap.vrOf(ByteUtils.bytesBE2tag(b, 0))) != VR.UN) {
+            expectFmiEnd = b[1] == 2;
+            return vrcode == vr.code() ? TransferSyntax.ExplicitVRBigEndian
+                                       : TransferSyntax.ImplicitVRBigEndian;
+        }
+        throw new DicomCodingException("Not a DICOM Stream");
     }
 
     @Override
