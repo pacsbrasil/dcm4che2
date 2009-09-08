@@ -911,8 +911,7 @@ abstract class StringElement extends ValueElement {
     }
 
     private static int parseIS(String s) {
-        if (s.startsWith("+")) s = s.substring(1);
-        return (int) Long.parseLong(s);
+        return (int) Long.parseLong(s.startsWith("+") ? s.substring(1) : s);
     }
 
     static DcmElement createIS(int tag, ByteBuffer data) {
