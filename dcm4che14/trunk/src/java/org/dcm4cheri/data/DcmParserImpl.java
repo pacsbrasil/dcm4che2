@@ -710,13 +710,14 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     }
     
     private String decodeUID(byte[] data, int rlen1) {
+        while (rlen1 >= 0 && data[rlen1] == 0 || data[rlen1] == ' ')
+            rlen1--;
         if (rlen1 < 0) {
             log.warn("Empty Transfer Syntax UID in FMI");
             return "";
         }
         try {
-            return new String(data, 0, data[rlen1] == 0 ? rlen1 : rlen1+1,
-                        "US-ASCII");
+            return new String(data, 0, rlen1+1, "US-ASCII");
         } catch (UnsupportedEncodingException ex) {
             log.warn("Decoding Transfer Syntax UID in FMI failed!", ex);
             return null;
