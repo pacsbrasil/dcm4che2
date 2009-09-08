@@ -544,7 +544,7 @@ public abstract class VR {
             int[] t = new int[val.length];
             for (int i = 0; i < val.length; i++)
             {
-                t[i] = (int) Long.parseLong(val[i]);
+                t[i] = (int) Long.parseLong(skipLeadingPlus(val[i]));
             }
             return toBytes(t, bigEndian);
         }
@@ -576,7 +576,8 @@ public abstract class VR {
             int end;
             while ((end = sb.indexOf("\\", begin)) != -1)
             {
-                outIntLE(out, (int) Long.parseLong(sb.substring(begin, end)));
+                outIntLE(out, (int) Long.parseLong(
+                        skipLeadingPlus(sb.substring(begin, end))));
                 begin = end + 1;
             }
             String remain = sb.substring(begin);
@@ -586,7 +587,7 @@ public abstract class VR {
                 sb.append(remain);
                 return null;
             }
-            outIntLE(out, (int) Long.parseLong(remain));
+            outIntLE(out, (int) Long.parseLong(skipLeadingPlus(remain)));
             return out.toByteArray();
         }
 
@@ -1372,7 +1373,7 @@ public abstract class VR {
         {
             if (val == null || val.length == 0)
                 return 0;
-            return (int) Long.parseLong(toString(val, bigEndian, null));
+            return (int) Long.parseLong(skipLeadingPlus(toString(val, bigEndian, null)));
         }
 
         @Override
@@ -1384,9 +1385,14 @@ public abstract class VR {
             int[] is = new int[ss.length];
             for (int i = 0; i < is.length; i++)
                 if (ss[i].length() > 0)
-                    is[i] = (int) Long.parseLong(ss[i]);
+                    is[i] = (int) Long.parseLong(skipLeadingPlus(ss[i]));
             return is;
         }
+
+    }
+
+    private static String skipLeadingPlus(String s) {
+        return s.startsWith("+") ? s.substring(1) : s;
     }
 
     private static final class LO extends StringVR
