@@ -871,7 +871,7 @@ abstract class StringElement extends ValueElement {
     final static Check IS_CHECK = new Check() {
         public String check(String s) {
             try {
-                Integer.parseInt(s);
+                parseIS(s);
                 if (s.length() > 12) {
                     log.warn("IS Value: " + s + " exeeds IS length limit: 12");
                 }
@@ -894,7 +894,7 @@ abstract class StringElement extends ValueElement {
         public final int getInt(int index) throws DcmValueException {
             String s = super.getString(index, null);
             try {
-                return Integer.parseInt(s);
+                return parseIS(s);
             } catch (NumberFormatException ex) {
                 throw new DcmValueException(s, ex);
             }
@@ -904,10 +904,15 @@ abstract class StringElement extends ValueElement {
             String[] ss = super.getStrings(null);
             int[] retval = new int[ss.length];
             for (int i = 0; i < retval.length; ++i) {
-                retval[i] = Integer.parseInt(ss[i]);
+                retval[i] = parseIS(ss[i]);
             }
             return retval;
         }
+    }
+
+    private static int parseIS(String s) {
+        if (s.startsWith("+")) s = s.substring(1);
+        return (int) Long.parseLong(s);
     }
 
     static DcmElement createIS(int tag, ByteBuffer data) {
