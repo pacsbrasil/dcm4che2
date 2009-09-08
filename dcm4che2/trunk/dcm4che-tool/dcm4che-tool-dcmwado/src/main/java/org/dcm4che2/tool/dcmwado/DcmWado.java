@@ -39,7 +39,6 @@
 package org.dcm4che2.tool.dcmwado;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,7 +46,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -84,11 +82,11 @@ public class DcmWado {
         "by <base-url>.\n\n" +
         "Options:";
     private static final String EXAMPLE = 
-        "\nExample 1: dcmwado http://localhost:8080/dcm4jboss-wado/wado -dcm \\" +
+        "\nExample 1: dcmwado http://localhost:8080/wado -dcm \\" +
         "\n      -uid 1.2.3.4:1.2.3.4.5:1.2.3.4.5.6 -dir /tmp/wado  \n" +
         "=> Request single DICOM Object with specified uids from the local WADO " +
         "server listening on port 8080, and store it in directory /tmp/wado" +
-        "\nExample 2: dcmwado http://localhost:8080/dcm4jboss-wado/wado -dcm \\" +
+        "\nExample 2: dcmwado http://localhost:8080/wado -dcm \\" +
         "\n      /cdrom/DICOM -nostore\n" +
         "=> Scan all DICOM files under directory /cdrom/DICOM and request for " +
         "each file the corresponding DICOM Object from the local WADO " +
@@ -111,7 +109,8 @@ public class DcmWado {
     private boolean noKeepAlive;
     private boolean followsRedirect = true;
     private File dir = new File(".");
-    private ArrayList<URL> url = new ArrayList<URL>();
+    private File outfile;
+    private ArrayList<String[]> uids = new ArrayList<String[]>();
     private byte[] buffer = new byte[8 * KB];
     private long totalSize = 0L;
 
@@ -231,6 +230,19 @@ public class DcmWado {
                 "working directory by default");
         opts.addOption(OptionBuilder.create("dir"));
         
+        OptionBuilder.withArgName("dirpath");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription("Directory to store retrieved objects, " +
+                "working directory by default");
+        opts.addOption(OptionBuilder.create("dir"));
+
+        OptionBuilder.withArgName("file");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription("Store retrieved object to specified file, "
+                + "use SOP Instance UID + format specific file extension as "
+                + "file name by default.");
+        opts.addOption(OptionBuilder.create("o"));
+
         opts.addOption("nostore", false, "Do not store retrieved objects to files.");
         opts.addOption("nokeepalive", false, "Close TCP connection after each response.");
         opts.addOption("noredirect", false, "Disable HTTP redirects.");        
@@ -398,6 +410,9 @@ public class DcmWado {
             if (cl.hasOption("dir")) {
                 dcmwado.setDirectory(new File(cl.getOptionValue("dir")));
             }
+            if (cl.hasOption("o")) {
+                dcmwado.setOutput(new File(cl.getOptionValue("o")));
+            }
             if (cl.hasOption("nostore")) {
                 dcmwado.setDirectory(null);
             }
@@ -407,16 +422,16 @@ public class DcmWado {
                 dcmwado.setBufferSize(parseInt(cl.getOptionValue("bs"), 
                         "Invalid value of -bs", 1, 1000) * KB);
             }
-            List argList = cl.getArgList();
-            dcmwado.setBaseURL((String) argList.get(0));
+            List<String> argList = cl.getArgList();
+            dcmwado.setBaseURL(argList.get(0));
             if (cl.hasOption("uid")) {
-                dcmwado.initURL(cl.getOptionValues("uid"));
+                dcmwado.setUIDs(cl.getOptionValues("uid"));
             } else {
 
                 System.out.println("Scanning files for uids");
                 long t1 = System.currentTimeMillis();
                 for (int i = 1, n = argList.size(); i < n; i++) {
-                    dcmwado.addURL(new File((String) argList.get(i)));
+                    dcmwado.addFile(new File(argList.get(i)));
                 }
                 long t2 = System.currentTimeMillis();
                 System.out.println("\nScanned " + dcmwado.getNumberOfRequests() 
@@ -459,6 +474,11 @@ public class DcmWado {
         if (dir != null && dir.mkdirs())
             System.out.println("INFO: Create directory " + dir);
         this.dir = dir;
+    }
+
+    public final void setOutput(File file)
+    {
+        this.outfile = file;
     }
 
     public final void setAnnotation(String[] annotation)
@@ -520,7 +540,7 @@ public class DcmWado {
 
     public final int getNumberOfRequests()
     {
-        return url.size();
+        return uids.size();
     }
 
     public final void setPresentation(String[] psuid)
@@ -562,9 +582,9 @@ public class DcmWado {
         this.noKeepAlive = noKeepAlive;
     }
 
-    public void initURL(String[] uid) throws MalformedURLException
+    public void setUIDs(String[] uid) throws MalformedURLException
     {
-         url.add(makeURL(uid, tsuid));
+         uids.add(uid);
     }
 
     public final void setWindow(String[] window)
@@ -582,13 +602,13 @@ public class DcmWado {
         return totalSize;
     }    
 
-    public void addURL(File f)
+    public void addFile(File f)
     {
         if (f.isDirectory())
         {            
             File[] fs = f.listFiles();
             for (int i = 0; i < fs.length; i++)
-                addURL(fs[i]);
+                addFile(fs[i]);
             return;
         }
         DicomObject dcmObj = new BasicDicomObject();
@@ -597,12 +617,14 @@ public class DcmWado {
             in = new DicomInputStream(f);
             in.setHandler(new StopTagInputHandler(Tag.StudyID));//use StudyID to have seriesIUID included!
             in.readDicomObject(dcmObj, -1);
-            String[] uid = { dcmObj.getString(Tag.StudyInstanceUID),
-                    dcmObj.getString(Tag.SeriesInstanceUID),
-                    dcmObj.getString(Tag.SOPInstanceUID) };
-            String[] ts = tsfile ? new String[] { in.getTransferSyntax().uid() }
-                    : tsuid;
-            url.add(makeURL(uid, ts));
+            String[] uid = new String[tsfile ? 4 : 3];
+            uid[0] = dcmObj.getString(Tag.StudyInstanceUID);
+            uid[1] =  dcmObj.getString(Tag.SeriesInstanceUID);
+            uid[2] = dcmObj.getString(Tag.SOPInstanceUID);
+            if (tsfile) {
+                uid[3] = in.getTransferSyntax().uid();
+            }
+            uids.add(uid);
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("WARNING: Failed to parse " + f + " - skipped.");
@@ -616,14 +638,15 @@ public class DcmWado {
 
     public void fetchObjects()
     {
-        for (Iterator iter = url.iterator(); iter.hasNext();)
+        for (Iterator<String[]> iter = uids.iterator(); iter.hasNext();)
         {
-            fetch((URL) iter.next());            
+            fetch(iter.next());
         }  
     }
     
-    private void fetch(URL url)
+    private void fetch(String[] uids)
     {
+        URL url = makeURL(uids);
         try
         {
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -634,8 +657,13 @@ public class DcmWado {
             OutputStream out = null;
             try {
                 in = con.getInputStream();
-                out = getOutputStream(URLEncoder
-                        .encode(url.getQuery(), "UTF-8"));
+                if (dir != null) {
+                    out = new FileOutputStream(outfile != null
+                            ? (outfile.isAbsolute() 
+                                    ? outfile : new File(dir, outfile.getPath()))
+                            : new File(dir,
+                                    uids[2] + toFileExt(con.getContentType())));
+                }
                 copy(in, out);
             } finally {
                 CloseUtils.safeClose(out);
@@ -653,6 +681,17 @@ public class DcmWado {
         }
     }
 
+    private static String toFileExt(String mimeType) {
+        if ("image/jpeg".equals(mimeType)) return ".jpeg";
+        if ("application/dicom".equals(mimeType)) return ".dcm";
+        if ("text/html".equals(mimeType)) return ".html";
+        if ("application/xhtml+xml".equals(mimeType)) return ".xhtml";
+        if ("text/xml".equals(mimeType)) return ".xml";
+        if ("text/plain".equals(mimeType)) return ".txt";
+        if ("video/mpeg".equals(mimeType)) return ".mpeg";
+        return "";
+    }
+
     private void copy(InputStream in, OutputStream out)
     throws IOException
     {
@@ -665,18 +704,12 @@ public class DcmWado {
         }
     }
 
-    private OutputStream getOutputStream(String fname)
-    throws FileNotFoundException {
-         return dir != null ? new FileOutputStream(new File(dir, fname)) : null;
-    }
-
-    private URL makeURL(String[] uid, String[] tsuid) 
-    throws MalformedURLException {
+    private URL makeURL(String[] uids) {
         StringBuffer sb = new StringBuffer(256);
         sb.append(baseurl).append("?requestType=").append(requestType);
-        sb.append("&studyUID=").append(uid[0]);
-        sb.append("&seriesUID=").append(uid[1]);
-        sb.append("&objectUID=").append(uid[2]);
+        sb.append("&studyUID=").append(uids[0]);
+        sb.append("&seriesUID=").append(uids[1]);
+        sb.append("&objectUID=").append(uids[2]);
         if (!contentType.isEmpty()) {
             sb.append("&contentType=");
             append(contentType, sb);
@@ -716,26 +749,31 @@ public class DcmWado {
             sb.append("&presentationSeriesUID=").append(psuid[0]);
             sb.append("&presentationUID=").append(psuid[1]);
         }
-        if (tsuid != null) {
+        if (tsfile || tsuid != null) {
             sb.append("&transferSyntax=");
-            append(tsuid, sb);
+            if (tsfile)
+                sb.append(uids[3]);
+            else
+                append(tsuid, sb);
         }        
-        return new URL(sb.toString());
+        try {
+            return new URL(sb.toString());
+        } catch (MalformedURLException e) {
+            throw new AssertionError(e);
+        }
     }
 
-    private static void append(List l, StringBuffer sb)
+    private static void append(List<String> ss, StringBuffer sb)
     {
-        for (Iterator iter = l.iterator(); iter.hasNext();) {
-            sb.append(iter.next()).append(',');
-        }
+        for (String s : ss)
+            sb.append(s).append(',');
         sb.setLength(sb.length()-1);
     }
 
-    private static void append(String[] a, StringBuffer sb)
+    private static void append(String[] ss, StringBuffer sb)
     {
-        for (int i = 0; i < a.length; i++) {
-            sb.append(a[i]).append(',');
-        }
+        for (String s : ss)
+            sb.append(s).append(',');
         sb.setLength(sb.length()-1);
     }
     
