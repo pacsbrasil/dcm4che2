@@ -248,6 +248,21 @@
     </descriptors>
   </attribute>
 
+  <attribute access="read-write" getMethod="getCheckFreeDiskSpaceRetryInterval"
+    setMethod="setCheckFreeDiskSpaceRetryInterval">
+    <description><![CDATA[Pause check for free available disk space for the
+      specified time interval after no configured file system was found with
+      sufficent (= more than specified by  <i>MinimumFreeDiskSpace</i>)
+      available disk space.
+      <p>Format: ##m (in minutes) | ##s (in seconds).]]>
+    </description>
+    <name>CheckFreeDiskSpaceRetryInterval</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="60s" />
+    </descriptors>
+  </attribute>
+
   <attribute access="read-write" getMethod="getDeleterThresholds"
     setMethod="setDeleterThresholds">
     <description><![CDATA[Defines thresholds dependent on hour of day, for

@@ -115,7 +115,11 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     private long checkFreeDiskSpaceMaxInterval;
 
+    private long checkFreeDiskSpaceRetryInterval;
+
     private long checkFreeDiskSpaceTime;
+
+    private boolean noFreeDiskSpace;
 
     private DeleterThresholds deleterThresholds;
 
@@ -475,6 +479,14 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         this.checkFreeDiskSpaceMaxInterval = RetryIntervalls.parseInterval(s);
     }
 
+    public final String getCheckFreeDiskSpaceRetryInterval() {
+        return RetryIntervalls.formatInterval(checkFreeDiskSpaceRetryInterval);
+    }
+
+    public final void setCheckFreeDiskSpaceRetryInterval(String s) {
+        this.checkFreeDiskSpaceRetryInterval = RetryIntervalls.parseInterval(s);
+    }
+
     public final String getDeleterThresholds() {
         return deleterThresholds == null ? NONE : deleterThresholds.toString();
     }
@@ -757,16 +769,20 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
             return null;
         }
         if (checkFreeDiskSpaceTime < System.currentTimeMillis()) {
+            noFreeDiskSpace = false;
             if (!(checkFreeDiskSpace(storageFileSystem)
                     || switchFileSystem(fsMgt, storageFileSystem))) {
                 log.error("High Water Mark reached on storage file system "
                         + storageFileSystem + " - no alternative storage file "
                         + "system configured for file system group "
                         + getFileSystemGroupID());
+                checkFreeDiskSpaceTime = System.currentTimeMillis()
+                        + checkFreeDiskSpaceRetryInterval;
+                noFreeDiskSpace = true;
                 return null;
             }
         }
-        return storageFileSystem;
+        return noFreeDiskSpace ? null : storageFileSystem;
     }
 
     private synchronized boolean switchFileSystem(FileSystemMgt2 fsMgt,
