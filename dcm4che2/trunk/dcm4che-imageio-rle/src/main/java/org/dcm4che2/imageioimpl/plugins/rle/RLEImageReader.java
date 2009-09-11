@@ -68,12 +68,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2009-07-28 07:38:19 +0200 (Tue, 28 Jul
+ *          2009) $
  * @since May 11, 2006
  * 
  */
 public class RLEImageReader extends ImageReader {
-	private static final Logger log = LoggerFactory.getLogger(RLEImageReader.class);
+    private static final Logger log = LoggerFactory
+            .getLogger(RLEImageReader.class);
     private int[] header = new int[16];
     private byte[] buf = new byte[8192];
     private long headerPos;
@@ -81,20 +83,21 @@ public class RLEImageReader extends ImageReader {
     private int bufPos;
     private int bufLen;
     private ImageInputStream iis;
-    private int width = -1, height=-1;
+    private int width = -1, height = -1;
     private ColorModel colorModel;
     private boolean convertSpace = false;
-    
+
     public RLEImageReader(ImageReaderSpi originator) {
         super(originator);
     }
 
     @Override
-    public void setInput(Object input, boolean seekForwardOnly, boolean ignoreMetadata) {
+    public void setInput(Object input, boolean seekForwardOnly,
+            boolean ignoreMetadata) {
         super.setInput(input, seekForwardOnly, ignoreMetadata);
         iis = (ImageInputStream) input;
     }
-    
+
     @Override
     public int getHeight(int imageIndex) throws IOException {
         return height;
@@ -140,181 +143,193 @@ public class RLEImageReader extends ImageReader {
         if (db instanceof DataBufferByte) {
             DataBufferByte dbb = (DataBufferByte) db;
             byte[][] bankData = dbb.getBankData();
-            ComponentSampleModel sm = (ComponentSampleModel) bi.getSampleModel();
+            ComponentSampleModel sm = (ComponentSampleModel) bi
+                    .getSampleModel();
             int[] bankIndices = sm.getBankIndices();
             int[] bandOffsets = sm.getBandOffsets();
             int pixelStride = sm.getPixelStride();
             for (int i = 0; i < nSegs; i++) {
-                 seekSegment(i+1);
-                 unrle(bankData[bankIndices[i]], bandOffsets[i], pixelStride);                    
+                seekSegment(i + 1);
+                unrle(bankData[bankIndices[i]], bandOffsets[i], pixelStride);
             }
-        } else{
-            short[] ss = db instanceof DataBufferUShort 
-                    ? ((DataBufferUShort) db).getData()
+        } else {
+            short[] ss = db instanceof DataBufferUShort ? ((DataBufferUShort) db)
+                    .getData()
                     : ((DataBufferShort) db).getData();
             unrle(ss);
             seekSegment(2);
-            unrle(ss);            
+            unrle(ss);
         }
         seekInputToEndOfRLEData();
-        BufferedImage retImage = getDestination(param,bi);
-        if( retImage==bi ) {
-        	log.debug("Returning raw, unconverted image.");
-        	return retImage;
+        BufferedImage retImage = getDestination(param, bi);
+        if (retImage == bi) {
+            log.debug("Returning raw, unconverted image.");
+            return retImage;
         }
-        if( retImage.getColorModel().getNumComponents()==3 ) {
-        	convertColorSpaceToRGB(param, bi, retImage);
-        }
-        else {
-        	copyGrayRegion(param, bi, retImage);
+        if (retImage.getColorModel().getNumComponents() == 3) {
+            convertColorSpaceToRGB(param, bi, retImage);
+        } else {
+            copyGrayRegion(param, bi, retImage);
         }
         return retImage;
     }
 
-    /** Copies the subregion/sub-sampling in param from src to dest
+    /**
+     * Copies the subregion/sub-sampling in param from src to dest
      * 
      * @param param
      * @param src
      * @param dest
      */
-    private void copyGrayRegion(ImageReadParam param, BufferedImage src, BufferedImage dest) {
-    	Rectangle region = param.getSourceRegion();
-    	int w = width;
-    	int h = height;
-    	int x = 0;
-    	int y = 0;
-    	if( region!=null ) {
-    		w = (int) region.getWidth();
-    		h = (int) region.getHeight();
-    		x = (int) region.getX();
-    		y = (int) region.getY();
-    	}
+    private void copyGrayRegion(ImageReadParam param, BufferedImage src,
+            BufferedImage dest) {
+        Rectangle region = param.getSourceRegion();
+        int w = width;
+        int h = height;
+        int x = 0;
+        int y = 0;
+        if (region != null) {
+            w = (int) region.getWidth();
+            h = (int) region.getHeight();
+            x = (int) region.getX();
+            y = (int) region.getY();
+        }
 
-    	int sampleX = param.getSourceXSubsampling();
-    	int sampleY = param.getSourceYSubsampling();
-    	int srcX = param.getSubsamplingXOffset()+x;
-    	int srcY = param.getSubsamplingYOffset()+y;
-    	int srcW = Math.min(w,width-srcX);
-    	int srcH = Math.min(h,height-srcY);
-    	int destW = srcW/sampleX;
-    	int destH = srcH / sampleY;    	
-    	
-    	int [] pixel = null;
-    	SampleModel srcSm = src.getSampleModel();
-    	DataBuffer srcDb = src.getRaster().getDataBuffer();
-    	SampleModel destSm = dest.getSampleModel();
-    	DataBuffer destDb = dest.getRaster().getDataBuffer();
-       	for(int iy=0; iy<destH; iy++) {
-   			for(int ix=0; ix<destW; ix++) {
-   				pixel = srcSm.getPixel(ix*sampleX+srcX,iy*sampleY+srcY, pixel, srcDb);
-   				destSm.setPixel(ix,iy,pixel,destDb);
-   			}
-   		}
-	}
+        int sampleX = param.getSourceXSubsampling();
+        int sampleY = param.getSourceYSubsampling();
+        int srcX = param.getSubsamplingXOffset() + x;
+        int srcY = param.getSubsamplingYOffset() + y;
+        int srcW = Math.min(w, width - srcX);
+        int srcH = Math.min(h, height - srcY);
+        int destW = srcW / sampleX;
+        int destH = srcH / sampleY;
 
-	/** This method uses the source colour space to allow conversion to RGB from YBR CS */
-    private void convertColorSpaceToRGB(ImageReadParam param, BufferedImage src, BufferedImage dest) {
-    	Rectangle region = param.getSourceRegion();
-    	int w = width;
-    	int h = height;
-    	int x = 0;
-    	int y = 0;
-    	if( region!=null ) {
-    		w = (int) region.getWidth();
-    		h = (int) region.getHeight();
-    		x = (int) region.getX();
-    		y = (int) region.getY();
-    	}
-
-    	int sampleX = param.getSourceXSubsampling();
-    	int sampleY = param.getSourceYSubsampling();
-    	int srcX = param.getSubsamplingXOffset()+x;
-    	int srcY = param.getSubsamplingYOffset()+y;
-    	int srcW = Math.min(w,width-srcX);
-    	int srcH = Math.min(h,height-srcY);
-    	int destW = srcW/sampleX;
-    	int[] srcRgb = new int[srcW];
-    	int[] destRgb = srcRgb;
-    	if( srcW!=destW ) destRgb = new int[destW];
-    	int destH = srcH / sampleY;
-    	log.debug("Converting image "+src.getColorModel().getColorSpace()+" to "+dest.getColorModel().getColorSpace());
-    	for(int iy=0; iy<destH; iy++) {
-    		src.getRGB(srcX, iy*sampleY+srcY, srcW, 1, srcRgb, 0, width);
-    		if( srcRgb!=destRgb ) {
-    			for(int ix=0; ix<destW; ix++) {
-    				destRgb[ix] = srcRgb[ix*sampleX];
-    			}
-    		}
-    		dest.setRGB(0,iy,destW,1,destRgb,0,width);
-    	}
-	}
+        int[] pixel = null;
+        SampleModel srcSm = src.getSampleModel();
+        DataBuffer srcDb = src.getRaster().getDataBuffer();
+        SampleModel destSm = dest.getSampleModel();
+        DataBuffer destDb = dest.getRaster().getDataBuffer();
+        for (int iy = 0; iy < destH; iy++) {
+            for (int ix = 0; ix < destW; ix++) {
+                pixel = srcSm.getPixel(ix * sampleX + srcX,
+                        iy * sampleY + srcY, pixel, srcDb);
+                destSm.setPixel(ix, iy, pixel, destDb);
+            }
+        }
+    }
 
     /**
-	 * This returns a full buffered image containing the entire image data, in
-	 * whatever color space the image is actually in. This MAY be the final
-	 * destination BI, but not necessarily if the size/ position or color spaces
-	 * change.
-	 * 
-	 * @param param
-	 * @return
-	 */
-	private BufferedImage getReadImage(ImageReadParam param) {
-		BufferedImage bi = param.getDestination();
-		ImageTypeSpecifier imageType = param.getDestinationType();
-		if (bi == null && imageType == null) {
-			throw new IllegalArgumentException(
-					"RLE Image Reader needs set ImageReadParam.destination or an ImageTypeSpecifier");
-		}
-		if (imageType != null) {
-			width = imageType.getSampleModel().getWidth();
-			height = imageType.getSampleModel().getHeight();
-			colorModel = imageType.getColorModel();
-		} else {
-			return bi;
-		}
+     * This method uses the source colour space to allow conversion to RGB from
+     * YBR CS
+     */
+    private void convertColorSpaceToRGB(ImageReadParam param,
+            BufferedImage src, BufferedImage dest) {
+        Rectangle region = param.getSourceRegion();
+        int w = width;
+        int h = height;
+        int x = 0;
+        int y = 0;
+        if (region != null) {
+            w = (int) region.getWidth();
+            h = (int) region.getHeight();
+            x = (int) region.getX();
+            y = (int) region.getY();
+        }
 
-		convertSpace = (colorModel.getColorSpace().getType() == ColorSpace.TYPE_YCbCr && (bi == null || bi
-				.getColorModel().getColorSpace().getType() != ColorSpace.TYPE_YCbCr));
-		WritableRaster raster = Raster.createWritableRaster(imageType
-				.getSampleModel(), null);
-		bi = new BufferedImage(colorModel, raster, false, null);
-		return bi;
-	}
+        int sampleX = param.getSourceXSubsampling();
+        int sampleY = param.getSourceYSubsampling();
+        int srcX = param.getSubsamplingXOffset() + x;
+        int srcY = param.getSubsamplingYOffset() + y;
+        int srcW = Math.min(w, width - srcX);
+        int srcH = Math.min(h, height - srcY);
+        int destW = srcW / sampleX;
+        int[] srcRgb = new int[srcW];
+        int[] destRgb = srcRgb;
+        if (srcW != destW)
+            destRgb = new int[destW];
+        int destH = srcH / sampleY;
+        log.debug("Converting image " + src.getColorModel().getColorSpace()
+                + " to " + dest.getColorModel().getColorSpace());
+        for (int iy = 0; iy < destH; iy++) {
+            src.getRGB(srcX, iy * sampleY + srcY, srcW, 1, srcRgb, 0, width);
+            if (srcRgb != destRgb) {
+                for (int ix = 0; ix < destW; ix++) {
+                    destRgb[ix] = srcRgb[ix * sampleX];
+                }
+            }
+            dest.setRGB(0, iy, destW, 1, destRgb, 0, width);
+        }
+    }
 
-	/**
-	 * Get the destination buffered image, in the correct colour space etc. if
-	 * this returns readImage directly, just use readImage as the return value.
-	 * 
-	 * @param param
-	 * @param readImage
-	 * @return
-	 */
-	private BufferedImage getDestination(ImageReadParam param, BufferedImage readImage) {
+    /**
+     * This returns a full buffered image containing the entire image data, in
+     * whatever color space the image is actually in. This MAY be the final
+     * destination BI, but not necessarily if the size/ position or color spaces
+     * change.
+     * 
+     * @param param
+     * @return
+     */
+    private BufferedImage getReadImage(ImageReadParam param) {
         BufferedImage bi = param.getDestination();
-        if( bi!=null ) return bi;
-        
+        ImageTypeSpecifier imageType = param.getDestinationType();
+        if (bi == null && imageType == null) {
+            throw new IllegalArgumentException(
+                    "RLE Image Reader needs set ImageReadParam.destination or an ImageTypeSpecifier");
+        }
+        if (imageType != null) {
+            width = imageType.getSampleModel().getWidth();
+            height = imageType.getSampleModel().getHeight();
+            colorModel = imageType.getColorModel();
+        } else {
+            return bi;
+        }
+
+        convertSpace = (colorModel.getColorSpace().getType() == ColorSpace.TYPE_YCbCr && (bi == null || bi
+                .getColorModel().getColorSpace().getType() != ColorSpace.TYPE_YCbCr));
+        WritableRaster raster = Raster.createWritableRaster(imageType
+                .getSampleModel(), null);
+        bi = new BufferedImage(colorModel, raster, false, null);
+        return bi;
+    }
+
+    /**
+     * Get the destination buffered image, in the correct colour space etc. if
+     * this returns readImage directly, just use readImage as the return value.
+     * 
+     * @param param
+     * @param readImage
+     * @return
+     */
+    private BufferedImage getDestination(ImageReadParam param,
+            BufferedImage readImage) {
+        BufferedImage bi = param.getDestination();
+        if (bi != null)
+            return bi;
+
         Rectangle region = param.getSourceRegion();
         int sampleX = param.getSourceXSubsampling();
         int sampleY = param.getSourceYSubsampling();
-        if( region!=null && region.getX()==0 && region.getY()==0 && region.getWidth()==width && region.getHeight()==height ) region = null;
-        if( region==null && sampleX==1 && sampleY==1 && !convertSpace) 
-        	return readImage;
-        int destWidth = width/sampleX;
-        int destHeight = height/sampleY;
-        if( region!=null ) {
-        	destWidth = (int) (region.getWidth()/sampleX);
-        	destHeight = (int) (region.getHeight()/sampleY);
+        if (region != null && region.getX() == 0 && region.getY() == 0
+                && region.getWidth() == width && region.getHeight() == height)
+            region = null;
+        if (region == null && sampleX == 1 && sampleY == 1 && !convertSpace)
+            return readImage;
+        int destWidth = width / sampleX;
+        int destHeight = height / sampleY;
+        if (region != null) {
+            destWidth = (int) (region.getWidth() / sampleX);
+            destHeight = (int) (region.getHeight() / sampleY);
         }
         int type = BufferedImage.TYPE_BYTE_GRAY;
-        if( convertSpace || readImage.getColorModel().getNumComponents()==3 ) {
-        	type = BufferedImage.TYPE_3BYTE_BGR;
+        if (convertSpace || readImage.getColorModel().getNumComponents() == 3) {
+            type = BufferedImage.TYPE_3BYTE_BGR;
+        } else if (readImage.getColorModel().getComponentSize(0) > 8) {
+            type = BufferedImage.TYPE_USHORT_GRAY;
         }
-        else if( readImage.getColorModel().getComponentSize(0)>8 ) {
-        	type = BufferedImage.TYPE_USHORT_GRAY;
-        }
-    	return new BufferedImage(destWidth, destHeight, type);
+        return new BufferedImage(destWidth, destHeight, type);
     }
-    
+
     private void readRLEHeader() throws IOException {
         headerPos = iis.getStreamPosition();
         fillBuffer();
@@ -322,8 +337,9 @@ public class RLEImageReader extends ImageReader {
             throw new EOFException();
         }
         for (int i = 0; i < 16; i++, bufPos += 4) {
-            header[i] = buf[bufPos] & 0xff | (buf[bufPos+1] & 0xff) << 8 
-                | (buf[bufPos+2] & 0xff) << 16 | (buf[bufPos+3] & 0xff) << 24;
+            header[i] = buf[bufPos] & 0xff | (buf[bufPos + 1] & 0xff) << 8
+                    | (buf[bufPos + 2] & 0xff) << 16
+                    | (buf[bufPos + 3] & 0xff) << 24;
         }
     }
 
@@ -331,7 +347,7 @@ public class RLEImageReader extends ImageReader {
         long segPos = headerPos + header[seg];
         if (segPos < bufOff) { // backwards seek should not happen!
             iis.seek(segPos);
-            fillBuffer();            
+            fillBuffer();
         } else {
             while (segPos - bufOff >= bufLen) {
                 fillBuffer();
@@ -341,13 +357,13 @@ public class RLEImageReader extends ImageReader {
     }
 
     private void seekInputToEndOfRLEData() throws IOException {
-        iis.seek(bufOff + bufPos);        
+        iis.seek(bufOff + bufPos);
     }
-    
+
     private byte nextByte() throws IOException {
         if (bufPos == bufLen)
             fillBuffer();
-        return buf[bufPos++];        
+        return buf[bufPos++];
     }
 
     private void nextBytes(byte[] bs, int off, int len) throws IOException {
@@ -359,20 +375,20 @@ public class RLEImageReader extends ImageReader {
             System.arraycopy(buf, bufPos, bs, off + pos, read);
             bufPos += read;
             pos += read;
-        }        
+        }
     }
-    
+
     private void fillBuffer() throws IOException {
         bufOff = iis.getStreamPosition();
         bufPos = 0;
         bufLen = iis.read(buf);
         if (bufLen <= 0) {
             throw new EOFException();
-        }        
+        }
     }
-    
+
     private void checkDestination(int nSegs, BufferedImage bi)
-    throws IIOException {
+            throws IIOException {
         WritableRaster raster = bi.getRaster();
         int nBands = raster.getNumBands();
         int dataType = raster.getTransferType();
@@ -380,20 +396,19 @@ public class RLEImageReader extends ImageReader {
             if (nBands == nSegs && dataType == DataBuffer.TYPE_BYTE)
                 return;
         } else if (nSegs == 2) {
-            if (nBands == 1 && (dataType == DataBuffer.TYPE_USHORT 
-                    || dataType == DataBuffer.TYPE_SHORT))
+            if (nBands == 1
+                    && (dataType == DataBuffer.TYPE_USHORT || dataType == DataBuffer.TYPE_SHORT))
                 return;
         } else {
-            throw new IIOException("Unsupported Number of RLE Segments: " 
-                        + (nSegs & 0xffffffffL));            
+            throw new IIOException("Unsupported Number of RLE Segments: "
+                    + (nSegs & 0xffffffffL));
         }
         throw new IIOException("Number of RLE Segments: " + nSegs
-                + " incompatible with Destination[bands=" + nBands
-                + ", data=" + raster.getDataBuffer() + "]");            
+                + " incompatible with Destination[bands=" + nBands + ", data="
+                + raster.getDataBuffer() + "]");
     }
-    
-    private void unrle(byte[] bs, int off, int pixelStride)
-            throws IOException {
+
+    private void unrle(byte[] bs, int off, int pixelStride) throws IOException {
         if (pixelStride == 1) {
             unrle(bs);
             return;
@@ -407,14 +422,14 @@ public class RLEImageReader extends ImageReader {
                 for (int i = 0; i < l; i++, pos += pixelStride) {
                     bs[pos] = nextByte();
                 }
-            } else if (b != -128){
+            } else if (b != -128) {
                 l = -b + 1;
                 b = nextByte();
                 for (int i = 0; i < l; i++, pos += pixelStride) {
                     bs[pos] = b;
                 }
             }
-        }        
+        }
     }
 
     private void unrle(byte[] bs) throws IOException {
@@ -426,23 +441,23 @@ public class RLEImageReader extends ImageReader {
                 l = b + 1;
                 nextBytes(bs, pos, l);
                 pos += l;
-            } else if (b != -128){
+            } else if (b != -128) {
                 l = -b + 1;
                 b = nextByte();
-                if ( pos+l < bs.length ) {
+                if (pos + l < bs.length) {
                     Arrays.fill(bs, pos, pos + l, b);
                 } else {
-                    Arrays.fill(bs, pos, bs.length-1, b);
-                    //log.warn("Should fill "+l+" bytes with '"+b+"' at position "+pos+
-                    //        " but only "+(bs.length-pos)+" bytes remaining");
+                    Arrays.fill(bs, pos, bs.length - 1, b);
+                    // log.warn("Should fill "+l+" bytes with '"+b+
+                    // "' at position "+pos+
+                    // " but only "+(bs.length-pos)+" bytes remaining");
                 }
                 pos += l;
             }
-        }        
+        }
     }
 
-    private void unrle(short[] ss)
-    throws IOException {
+    private void unrle(short[] ss) throws IOException {
         int v, l, pos = 0;
         byte b;
         while (pos < ss.length) {
@@ -452,16 +467,16 @@ public class RLEImageReader extends ImageReader {
                 for (int i = 0; i < l; i++, pos++) {
                     ss[pos] <<= 8;
                     ss[pos] |= nextByte() & 0xff;
-               }
-             } else if (b != -128) {
+                }
+            } else if (b != -128) {
                 l = -b + 1;
                 v = nextByte() & 0xff;
                 for (int i = 0; i < l; i++, pos++) {
                     ss[pos] <<= 8;
                     ss[pos] |= v;
                 }
-             }
-        }        
+            }
+        }
     }
 
 }
