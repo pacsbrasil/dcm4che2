@@ -288,9 +288,8 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         String filePath = fileDTO.getFilePath();
         String tarPath = null;
         if (dirpath.startsWith("tar:")) {
-            dirpath = dirpath.substring(4);
             filePath = filePath.substring(0, filePath.indexOf('!'));
-            tarPath = dirpath + '/' + filePath;
+            tarPath = dirpath.substring(4) + '/' + filePath;
             Integer status = (Integer) checkedTars.get(tarPath);
             if (status != null) {
                 return updateFileStatus(fsmgt, fileDTO, status.intValue());
