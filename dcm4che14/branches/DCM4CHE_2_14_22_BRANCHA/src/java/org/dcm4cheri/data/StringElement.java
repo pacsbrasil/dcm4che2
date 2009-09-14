@@ -69,52 +69,126 @@ abstract class StringElement extends ValueElement {
 
     private interface Trim {
         public String trim(String s);
+
+        public int begin(ByteBuffer data);
+
+        public int end(ByteBuffer data);
+
     }
 
     private final static Trim NO_TRIM = new Trim() {
         public String trim(String s) {
             return s;
         }
+
+        public int begin(ByteBuffer data) {
+            return 0;
+        }
+
+        public int end(ByteBuffer data) {
+            return data.limit();
+        }
+
     };
 
     private final static Trim TRAIL_TRIM = new Trim() {
         public String trim(String s) {
             char ch;
-            for (int r = s.length(); r > 0; --r) {
-                if ((ch = s.charAt(r - 1)) != '\0' && ch != ' ') {
-                    return s.substring(0, r);
+            int r = s.length();
+            while (r > 0) {
+                if ((ch = s.charAt(--r)) != '\0' && ch != ' ') {
+                    return s.substring(0, r+1);
                 }
             }
             return "";
         }
+
+        public int begin(ByteBuffer data) {
+            return 0;
+        }
+
+        public int end(ByteBuffer data) {
+            int ch;
+            int r = data.limit();
+            while (r > 0) {
+                if ((ch = data.get(--r)) !='\0' && ch != ' ') {
+                    return r + 1;
+                }
+            }
+            return 0;
+        }
+
     };
 
     private final static Trim PN_TRIM = new Trim() {
         public String trim(String s) {
             char ch;
-            for (int r = s.length(); r > 0; --r) {
-                if ((ch = s.charAt(r - 1)) != '^' && ch != ' ' && ch != '\0') {
-                    return s.substring(0, r);
+            int r = s.length();
+            while (r > 0) {
+                if ((ch = s.charAt(--r)) != '\0' && ch != ' ' && ch != '^') {
+                    return s.substring(0, r+1);
                 }
             }
             return "";
         }
+
+        public int begin(ByteBuffer data) {
+            return 0;
+        }
+
+        public int end(ByteBuffer data) {
+            int ch;
+            int r = data.limit();
+            while (r > 0) {
+                if ((ch = data.get(--r)) !='\0' && ch != ' ' && ch != '^') {
+                    return r + 1;
+                }
+            }
+            return 0;
+        }
+
     };
 
     private final static Trim TOT_TRIM = new Trim() {
         public String trim(String s) {
             char ch;
-            for (int r = s.length(); r > 0; --r) {
-                if ((ch = s.charAt(r - 1)) != ' ' && ch != '\0') {
-                    for (int l = 0; l < r; ++l) {
-                        if (s.charAt(l) != ' ') {
-                            return s.substring(l, r);
+            int r = s.length();
+            while (r > 0) {
+                if ((ch = s.charAt(--r)) != '\0' && ch != ' ') {
+                    int l = 0;
+                    while (l <= r) {
+                        if (s.charAt(l++) != ' ') {
+                            return s.substring(l-1, r+1);
                         }
                     }
                 }
             }
             return "";
         }
+
+
+        public int begin(ByteBuffer data) {
+            int r = data.limit();
+            int l = 0;
+            while (l < r) {
+                if (data.get(l++) != ' ') {
+                    return l-1;
+                }
+            }
+            return 0;
+        }
+
+        public int end(ByteBuffer data) {
+            int ch;
+            int r = data.limit();
+            while (r > 0) {
+                if ((ch = data.get(--r)) !='\0' && ch != ' ') {
+                    return r + 1;
+                }
+            }
+            return 0;
+        }
+
     };
 
     private interface Check {
@@ -200,6 +274,51 @@ abstract class StringElement extends ValueElement {
     StringElement(int tag, ByteBuffer data, Trim trim) {
         super(tag, data);
         this.trim = trim;
+    }
+
+    public int hashCode() {
+        if (data == null)
+            return tag;
+        return tag ^ hashCode(data, trim.begin(data), trim.end(data));
+    }
+
+    private int hashCode(ByteBuffer data, int begin, int end) {
+        if (begin == end) {
+            return 0;
+        }
+        int h = 1;
+        int p = begin;
+        for (int i = end - 1; i >= p; i--)
+            h = 31 * h + data.get(i);
+        return h;
+    }
+
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof StringElement))
+            return false;
+        StringElement se = (StringElement) o;
+        if (tag != se.tag)
+            return false;
+        if (data == null)
+            return (se.data == null 
+                    || trim.begin(se.data) == trim.end(se.data));
+        if (se.data == null)
+            return trim.begin(data) == trim.end(data);
+        return equals(data, trim.begin(data), trim.end(data),
+                se.data, trim.begin(se.data), trim.end(se.data));
+    }
+
+    private boolean equals(ByteBuffer data1, int begin1, int end1,
+            ByteBuffer data2, int begin2, int end2) {
+        if (end1 - begin1 != end2 - begin2)
+            return false;
+        for (int i = end1 - 1, j = end2 - 1; i >= begin1; i--, j-- ) {
+            if (data1.get(i) != data2.get(j))
+                return false;
+        }
+        return true;
     }
 
     public String getString(int index, SpecificCharacterSet cs)
