@@ -86,6 +86,9 @@ public class RLEImageReader extends ImageReader {
     private int width = -1, height = -1;
     private ColorModel colorModel;
     private boolean convertSpace = false;
+    private int curSeg;
+    private int nSegs;
+    private long segEnd;
 
     public RLEImageReader(ImageReaderSpi originator) {
         super(originator);
@@ -136,7 +139,7 @@ public class RLEImageReader extends ImageReader {
             throw new IllegalStateException("Input not set");
         BufferedImage bi = getReadImage(param);
         readRLEHeader();
-        int nSegs = header[0];
+        nSegs = header[0];
         checkDestination(nSegs, bi);
         WritableRaster raster = bi.getRaster();
         DataBuffer db = raster.getDataBuffer();
@@ -156,9 +159,10 @@ public class RLEImageReader extends ImageReader {
             short[] ss = db instanceof DataBufferUShort ? ((DataBufferUShort) db)
                     .getData()
                     : ((DataBufferShort) db).getData();
-            unrle(ss);
+            seekSegment(1);
+            unrle(ss, 8);
             seekSegment(2);
-            unrle(ss);
+            unrle(ss, 0);
         }
         seekInputToEndOfRLEData();
         BufferedImage retImage = getDestination(param, bi);
@@ -345,6 +349,7 @@ public class RLEImageReader extends ImageReader {
 
     private void seekSegment(int seg) throws IOException {
         long segPos = headerPos + header[seg];
+        segEnd = seg < nSegs ? headerPos + header[seg+1] : Long.MAX_VALUE;
         if (segPos < bufOff) { // backwards seek should not happen!
             iis.seek(segPos);
             fillBuffer();
@@ -354,6 +359,7 @@ public class RLEImageReader extends ImageReader {
             }
             bufPos = (int) (segPos - bufOff);
         }
+        curSeg = seg;
     }
 
     private void seekInputToEndOfRLEData() throws IOException {
@@ -361,6 +367,8 @@ public class RLEImageReader extends ImageReader {
     }
 
     private byte nextByte() throws IOException {
+        if (bufOff + bufPos >= segEnd) 
+            throw new EOFException();
         if (bufPos == bufLen)
             fillBuffer();
         return buf[bufPos++];
@@ -415,67 +423,84 @@ public class RLEImageReader extends ImageReader {
         }
         int l, pos = off;
         byte b;
-        while (pos < bs.length) {
-            b = nextByte();
-            if (b >= 0) {
-                l = b + 1;
-                for (int i = 0; i < l; i++, pos += pixelStride) {
-                    bs[pos] = nextByte();
-                }
-            } else if (b != -128) {
-                l = -b + 1;
+        try {
+            while (pos < bs.length) {
                 b = nextByte();
-                for (int i = 0; i < l; i++, pos += pixelStride) {
-                    bs[pos] = b;
+                if (b >= 0) {
+                    l = checkLengthTooLong(b + 1,
+                            (off + bs.length - pos) / pixelStride);
+                    for (int i = 0; i < l; i++, pos += pixelStride) {
+                        bs[pos] = nextByte();
+                    }
+                } else if (b != -128) {
+                    l = checkLengthTooLong(-b + 1,
+                            (off + bs.length - pos) / pixelStride);
+                    b = nextByte();
+                    for (int i = 0; i < l; i++, pos += pixelStride) {
+                        bs[pos] = b;
+                    }
                 }
             }
+        } catch (EOFException e) {
+            log.warn("RLE Segment #{} too short, set missing {} bytes to 0",
+                    curSeg, (bs.length - pos + off) / pixelStride);
         }
     }
 
     private void unrle(byte[] bs) throws IOException {
         int l, pos = 0;
         byte b;
-        while (pos < bs.length) {
-            b = nextByte();
-            if (b >= 0) {
-                l = b + 1;
-                nextBytes(bs, pos, l);
-                pos += l;
-            } else if (b != -128) {
-                l = -b + 1;
+        try {
+            while (pos < bs.length) {
                 b = nextByte();
-                if (pos + l < bs.length) {
+                if (b >= 0) {
+                    l = checkLengthTooLong(b + 1, bs.length - pos);
+                    nextBytes(bs, pos, l);
+                    pos += l;
+                } else if (b != -128) {
+                    l = checkLengthTooLong(-b + 1, bs.length - pos);
+                    b = nextByte();
                     Arrays.fill(bs, pos, pos + l, b);
-                } else {
-                    Arrays.fill(bs, pos, bs.length - 1, b);
-                    // log.warn("Should fill "+l+" bytes with '"+b+
-                    // "' at position "+pos+
-                    // " but only "+(bs.length-pos)+" bytes remaining");
+                    pos += l;
                 }
-                pos += l;
             }
+        } catch (EOFException e) {
+            log.warn("RLE Segment #{} too short, set missing {} bytes to 0",
+                    curSeg, bs.length - pos);
         }
     }
 
-    private void unrle(short[] ss) throws IOException {
+    private int checkLengthTooLong(int length, int max) {
+        if (length > max) {
+            log.warn("RLE Segment #{} too long, truncate {} bytes",
+                    curSeg, length - max);
+            return max;
+        }
+        return length;
+    }
+
+    private void unrle(short[] ss, int shiftLeft) throws IOException {
         int v, l, pos = 0;
         byte b;
-        while (pos < ss.length) {
-            b = nextByte();
-            if (b >= 0) {
-                l = b + 1;
-                for (int i = 0; i < l; i++, pos++) {
-                    ss[pos] <<= 8;
-                    ss[pos] |= nextByte() & 0xff;
-                }
-            } else if (b != -128) {
-                l = -b + 1;
-                v = nextByte() & 0xff;
-                for (int i = 0; i < l; i++, pos++) {
-                    ss[pos] <<= 8;
-                    ss[pos] |= v;
+        try {
+            while (pos < ss.length) {
+                b = nextByte();
+                if (b >= 0) {
+                    l = checkLengthTooLong(b + 1, ss.length - pos);
+                    for (int i = 0; i < l; i++, pos++) {
+                        ss[pos] |= (nextByte() & 0xff) << shiftLeft;
+                    }
+                } else if (b != -128) {
+                    l = checkLengthTooLong(-b + 1, ss.length - pos);
+                    v = (nextByte() & 0xff) << shiftLeft;
+                    for (int i = 0; i < l; i++, pos++) {
+                        ss[pos] |= v;
+                    }
                 }
             }
+        } catch (EOFException e) {
+            log.warn("RLE Segment #{} too short, set missing {} bytes to 0",
+                    curSeg, ss.length - pos);
         }
     }
 
