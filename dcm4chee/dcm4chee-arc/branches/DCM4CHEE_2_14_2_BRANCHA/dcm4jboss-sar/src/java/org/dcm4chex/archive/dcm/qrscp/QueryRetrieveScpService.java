@@ -1405,7 +1405,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
      * @param assoc
      * 				the active association
      */
-    protected void coerceOutboundCStoreRQ(Dataset ds, AEDTO aeData, Association assoc){
+    protected void coerceOutboundCStoreRQ(Dataset ds, AEDTO aeData, Association assoc) throws Exception {
 	    /*
 	     * Apply outbound CStore sytlesheet
      */
@@ -1423,6 +1423,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 	    	 */
 	    	coerceAttributes(ds, coerce);
 	    }
+        postCoercionProcessing(ds, Command.C_STORE_RQ);
     }
     
     private PresContext selectAcceptedPresContext(Association a, FileInfo info) {
@@ -1528,4 +1529,23 @@ public class QueryRetrieveScpService extends AbstractScpService {
              }
         }
     }
+    
+    /**
+     * Callback for post-processing the dataset after the dataset has been
+     * coerced.
+     * 
+     * @param ds
+     *                the coerced dataset
+     * @param command
+     *                DICOM command type
+     * @throws Exception
+     */
+    void postCoercionProcessing(Dataset ds, int command) throws Exception {
+        doPostCoercionProcessing(ds,command);
+    }
+
+    protected void doPostCoercionProcessing(Dataset ds, int command) throws Exception {
+        // Extension Point for customized QueryRetrieveScpService
+    }
+
 }
