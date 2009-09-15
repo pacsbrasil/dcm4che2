@@ -54,6 +54,7 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.DeleteStudyOrdersAndMaxAccessTime;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.SeriesStored;
@@ -1004,7 +1005,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         long minAccessTime = 0;
         long sizeToDel = sizeToDel0;
         do {
-            Collection<DeleteStudyOrder> orders = 
+            DeleteStudyOrdersAndMaxAccessTime deleteOrdersAndAccessTime = 
                     fsMgt.createDeleteOrdersForStudiesOnFSGroup(
                             getFileSystemGroupID(), minAccessTime,
                             notAccessedAfter,
@@ -1012,14 +1013,15 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                             externalRetrieveable, storageNotCommited,
                             copyOnMedia, copyOnFSGroup, copyArchived,
                             copyOnReadOnlyFS);
-            if (orders.isEmpty()) {
+            if (deleteOrdersAndAccessTime == null) {
                 if (sizeToDel0 != Long.MAX_VALUE) {
                     log.warn("Could not find any further study for deletion on "
                             + "file system group " + getFileSystemGroupID());
                 }
                 break;
             }
-            Iterator<DeleteStudyOrder> orderIter = orders.iterator();
+            Iterator<DeleteStudyOrder> orderIter = 
+                    deleteOrdersAndAccessTime.deleteStudyOrders.iterator();
             do {
                 DeleteStudyOrder order = orderIter.next();
                 if (fsMgt.removeStudyOnFSRecord(order)) {
@@ -1034,8 +1036,8 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                     sizeToDel -= fsMgt.getStudySize(order);
                     countStudies++;
                 }
-                minAccessTime = order.getAccessTime();
             } while (sizeToDel > 0 && orderIter.hasNext());
+            minAccessTime = deleteOrdersAndAccessTime.maxAccessTime;
         } while (sizeToDel > 0);
         return countStudies;
     }
