@@ -285,8 +285,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     protected void addPatientMatch() {
         sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
-        DcmElement otherPatIdSQ = getOtherPatientIdMatchSQ();
-        if (otherPatIdSQ != null) {
+        DcmElement otherPatIdSQ = keys.get(Tags.OtherPatientIDSeq);
+        if (useOtherPatientIdSequenceForMatch(otherPatIdSQ)) {
             addListOfPatIdMatch(otherPatIdSQ);
         } else {
             sqlBuilder.addWildCardMatch(null, "Patient.patientId", type2, keys
@@ -324,33 +324,22 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 .add(MATCHING_OTHER_PAT_ID_SEQ));
     }
 
-    private DcmElement getOtherPatientIdMatchSQ() {
-        DcmElement otherPatIdSQ = keys.get(Tags.OtherPatientIDSeq);
+    private boolean useOtherPatientIdSequenceForMatch(DcmElement otherPatIdSQ) {
         if (otherPatIdSQ == null || !otherPatIdSQ.hasItems())
-            return null;
+            return false;
         StringBuffer sb = new StringBuffer();
         String patId = keys.getString(Tags.PatientID);
         if (checkMatchValue(patId, "Patient ID", sb)) {
             String issuer = keys.getString(Tags.IssuerOfPatientID);
             if (checkMatchValue(issuer, "Issuer of Patient ID", sb)) {
-                Dataset item;
-                for (int i = 0, len = otherPatIdSQ.countItems(); i < len; i++) {
-                    item = otherPatIdSQ.getItem(i);
-                    if (!checkMatchValue(item.getString(Tags.PatientID),
-                            "PatientID of item", sb)
-                            || !checkMatchValue(item
-                                    .getString(Tags.IssuerOfPatientID),
-                                    "Issuer of item", sb)) {
-                        break;
-                    }
+                if (sb.length() == 0) {
+                    return true;
                 }
-                if (sb.length() == 0)
-                    return otherPatIdSQ;
             }
         }
         log.warn("Matching of items in OtherPatientIdSequence disabled! Reason: " + sb);
         otherPatientIDMatchNotSupported = true;
-        return null;
+        return false;
     }
 
     private void addListOfPatIdMatch(DcmElement otherPatIdSQ) {
@@ -360,8 +349,14 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         Dataset item;
         for (int i = 0, len = otherPatIdSQ.countItems(); i < len; i++) {
             item = otherPatIdSQ.getItem(i);
-            addIdAndIssuerPair(n, item.getString(Tags.PatientID), item
-                    .getString(Tags.IssuerOfPatientID));
+            StringBuffer sb = new StringBuffer();
+            String pid = item.getString(Tags.PatientID);
+            String issuer = item.getString(Tags.IssuerOfPatientID);
+            if (!checkMatchValue(pid, "PatientID of item", sb) || !checkMatchValue(issuer, "Issuer of item", sb)) {
+                log.warn("Skipping pid '" + pid + "' and issuer '" + issuer + "' in other patient id sequence because: " + sb);
+            } else {            
+            	addIdAndIssuerPair(n, item.getString(Tags.PatientID), item.getString(Tags.IssuerOfPatientID));
+            }
         }
     }
 
