@@ -65,6 +65,7 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.common.DeleteStudyOrdersAndMaxAccessTime;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.SeriesStored;
@@ -520,7 +521,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**    
      * @ejb.interface-method
      */
-    public Collection createDeleteOrdersForStudiesOnFSGroup(
+    public DeleteStudyOrdersAndMaxAccessTime createDeleteOrdersForStudiesOnFSGroup(
             String fsGroup, long minAccessTime, long maxAccessTime, int limit,
             boolean externalRetrieveable, boolean storageNotCommited,
             boolean copyOnMedia, String copyOnFSGroup, boolean copyArchived,
@@ -547,23 +548,27 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         return orders;
     }
 
-    private Collection createDeleteOrders(
+    private DeleteStudyOrdersAndMaxAccessTime createDeleteOrders(
             Collection sofs, boolean externalRetrieveable,
             boolean storageNotCommited, boolean copyOnMedia,
             String copyOnFSGroup, boolean copyArchived,
             boolean copyOnReadOnlyFS) throws FinderException {
+        if (sofs.isEmpty())
+            return null;
         Collection orders = new ArrayList(sofs.size());
+        long maxAccessTime = 0;
         for (Iterator iter = sofs.iterator(); iter.hasNext();) {
             StudyOnFileSystemLocal sof = (StudyOnFileSystemLocal) iter.next();
+            maxAccessTime = sof.getAccessTime().getTime();
             if (sof.matchDeleteConstrains(externalRetrieveable,
                     storageNotCommited, copyOnMedia, copyOnFSGroup,
                     copyArchived, copyOnReadOnlyFS)) {
                 orders.add(new DeleteStudyOrder(sof.getPk(),
                         sof.getStudy().getPk(), sof.getFileSystem().getPk(),
-                        sof.getAccessTime().getTime()));
+                        maxAccessTime));
             }
         }
-        return orders;
+        return new DeleteStudyOrdersAndMaxAccessTime(orders, maxAccessTime);
     }
 
     /**    
