@@ -41,8 +41,10 @@ package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Iterator;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
@@ -165,6 +167,19 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
         DatasetUtils.fromByteArray(rs.getBytes(2), ds); //mwl item
         ds.putAll(dsPat);
         adjustDataset(ds, keys);
+        removeItemIfOnlyContainsEmptyAttributes(ds, Tags.RefStudySeq);
+        removeItemIfOnlyContainsEmptyAttributes(ds, Tags.RefPatientSeq);
         return ds.subSet(keys);
     }
+
+    private void removeItemIfOnlyContainsEmptyAttributes(Dataset ds, int sqTag) {
+        Dataset item = ds.getItem(sqTag);
+        if (item == null || item.isEmpty())
+            return;
+        for (Iterator it = item.iterator(); it.hasNext();)
+            if (!((DcmElement) it.next()).isEmpty())
+                return;
+        ds.putSQ(sqTag);
+    }
+
 }
