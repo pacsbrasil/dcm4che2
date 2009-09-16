@@ -824,16 +824,24 @@ abstract class StringElement extends ValueElement {
         }
 
         public final float getFloat(int index) throws DcmValueException {
-            return Float.parseFloat(super.getString(index, null));
+            return Float.parseFloat(commaToPeriod(super.getString(index, null)));
         }
 
         public final float[] getFloats() throws DcmValueException {
             String[] ss = super.getStrings(null);
             float[] retval = new float[ss.length];
             for (int i = 0; i < retval.length; ++i) {
-                retval[i] = Float.parseFloat(ss[i]);
+                retval[i] = Float.parseFloat(commaToPeriod(ss[i]));
             }
             return retval;
+        }
+
+        private static String commaToPeriod(String ds) {
+            String s = ds.replace(',', '.');
+            if (s != ds) {
+                log.warn("Illegal DS value: " + ds);
+            }
+            return s;
         }
     }
 
