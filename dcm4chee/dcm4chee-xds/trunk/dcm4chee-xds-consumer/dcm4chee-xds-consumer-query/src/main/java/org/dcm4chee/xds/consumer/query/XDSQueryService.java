@@ -75,6 +75,7 @@ import javax.xml.ws.soap.SOAPBinding;
 import org.apache.log4j.Logger;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4chee.xds.common.XDSConstants;
+import org.dcm4chee.xds.common.XDSPerformanceLogger;
 import org.dcm4chee.xds.common.audit.HttpUserInfo;
 import org.dcm4chee.xds.common.audit.XDSQueryMessage;
 import org.dcm4chee.xds.common.delegate.XdsHttpCfgDelegate;
@@ -189,8 +190,29 @@ public class XDSQueryService extends ServiceMBeanSupport {
 
     public AdhocQueryResponse findDocuments(String patId, String status,
             boolean useLeafClass) throws SOAPException, JAXBException {
-        patId = getAffinityDomainPatientID(patId);
-        return patId == null ? null : performQuery( queryFac.createFindDocumentsRequest(patId, getListString(status), useLeafClass) );
+        
+        AdhocQueryResponse response = null;
+        
+        if ( patId != null ) {
+            XDSPerformanceLogger perfLogger = new XDSPerformanceLogger("XDS.B", "REGISTRY_STORED_QUERY");
+            perfLogger.startSubEvent("GetAffinityDomainPatientID");
+            perfLogger.setSubEventProperty("PatientID", patId);
+            
+            patId = getAffinityDomainPatientID(patId);
+            
+            perfLogger.endSubEvent();
+            perfLogger.startSubEvent("FindDocuments");
+            perfLogger.setSubEventProperty("PatientID", patId);
+            perfLogger.setSubEventProperty("Status", status);
+            
+            response = performQuery(queryFac.createFindDocumentsRequest(
+                    patId, getListString(status), useLeafClass));
+            
+            perfLogger.endSubEvent();
+            perfLogger.flush();
+        }
+        
+        return response;
     }
 
     public AdhocQueryResponse findFolders(String patId, String status,

@@ -193,7 +193,7 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
                 log.debug("Failed to log RetrieveDocumentSetRequest! Ignored", ignore);
             }
         }
-        XDSPerformanceLogger perfLogger = new XDSPerformanceLogger("XDSb", "RetrieveDocumentSet");
+        XDSPerformanceLogger perfLogger = new XDSPerformanceLogger("XDS.B", "RETRIEVE_DOCUMENT_SET");
         String docUid, reqRepoUid;
         XDSDocument doc;
         RetrieveDocumentSetResponseType rsp = objFac.createRetrieveDocumentSetResponseType();

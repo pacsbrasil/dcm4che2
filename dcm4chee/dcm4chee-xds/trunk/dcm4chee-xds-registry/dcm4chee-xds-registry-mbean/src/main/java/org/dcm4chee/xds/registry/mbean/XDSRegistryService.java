@@ -146,7 +146,7 @@ public class XDSRegistryService extends ServiceMBeanSupport {
     }
     public RegistryResponseType registerDocuments(SubmitObjectsRequest req) throws XDSException {
         boolean success = false;
-        XDSPerformanceLogger perfLogger = new XDSPerformanceLogger("XDSb", "RegisterDocuments");
+        XDSPerformanceLogger perfLogger = new XDSPerformanceLogger("XDS.B", "REGISTER_DOCUMENTS");
         try {
             log.debug("------------RegisterDocuments request:"+req);
             perfLogger.startSubEvent("LogAndVerify");
@@ -199,7 +199,7 @@ public class XDSRegistryService extends ServiceMBeanSupport {
     }
     public RegistryResponse registerDocumentsA(org.dcm4chee.xds.infoset.v21.SubmitObjectsRequest req) throws XDSException {
         boolean success = false;
-        XDSPerformanceLogger perfLogger = new XDSPerformanceLogger("XDSa", "RegisterDocuments");
+        XDSPerformanceLogger perfLogger = new XDSPerformanceLogger("XDS", "REGISTER_DOCUMENTS");
         try {
             log.debug("------------RegisterDocuments request:"+req);
             perfLogger.startSubEvent("LogAndVerify");

@@ -2,6 +2,8 @@ package org.dcm4chee.xds.common;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.helpers.ISO8601DateFormat;
 import org.jboss.util.id.GUID;
@@ -64,7 +66,7 @@ public class XDSPerformanceLogger {
 	}
 	
 	public void setEventProperty(String name, String value) {
-		addNode(eventProperties, name, value);
+		addNode(eventProperties, name, XmlEscapeUtil.escape(value));
 	}
 
 	public void startSubEvent(String subEventType) {
@@ -74,7 +76,7 @@ public class XDSPerformanceLogger {
 	}
 
 	public void setSubEventProperty(String name, String value) {
-		addNode(subEventProperties, name, value);
+		addNode(subEventProperties, name, XmlEscapeUtil.escape(value));
 	}
 	
 	public void endSubEvent() {
@@ -91,4 +93,64 @@ public class XDSPerformanceLogger {
 	private void addNode(StringBuilder builder, String name, String value) {
 		builder.append(LT + name + GT + value + LTS + name + GT); 
 	}
+	
+	/**
+	 * Utility for escaping XML character values.
+	 */
+	private static class XmlEscapeUtil {
+
+        private static XmlEscapeUtil houdini = new XmlEscapeUtil();
+        private Map<Integer, String> encodedValues = new HashMap<Integer, String>();
+        
+        /**
+         * Escapes the characters in a {@code String} using XML entities. Supports the five
+         * basic XML entities (gt, lt, quot, amp, apos). Unicode characters greater than
+         * 0x7f (ASCII limit) are escaped to their numerical \\u equivalent.
+         * @param str the {@code String} to escape, may be null
+         * @return a new escaped {@code String}, {@code null} if null string input
+         */
+        public static String escape(String s) {
+            if ( s == null ) return null;
+            StringBuffer b = new StringBuffer(s.length());
+            houdini.escape(b, s);
+            return b.toString();
+        }
+        
+        private XmlEscapeUtil() {
+            // pumping a multi-dimensional array into a map allows us the flexibility of
+            // pumping the same array into an inverse map if the need for an unescape method
+            // comes up - and it doesn't take any extra effort to code it this way
+            String[][] correspondingValues = {
+                    {"quot", "34"},  // " - double-quote
+                    {"amp", "38"},   // & - ampersand
+                    {"lt", "60"},    // < - less-than
+                    {"gt", "62"},    // > - greater-than
+                    {"apos", "39"}}; // ' - apostrophe
+                    
+            for ( int i = 0; i < correspondingValues.length; i++ ) {
+                encodedValues.put(Integer.parseInt(correspondingValues[i][1]), correspondingValues[i][0]);
+            }
+        }
+        
+        private void escape(StringBuffer buffer, String str) {
+            int len = str.length();
+            for (int i = 0; i < len; i++) {
+                char c = str.charAt(i);
+                String entityName = encodedValues.get((int) c);
+                if ( entityName == null ) {
+                    if (c > 0x7F) {
+                        buffer.append("&#");
+                        buffer.append(Integer.toString(c, 10));
+                        buffer.append(';');
+                    } else {
+                        buffer.append(c);
+                    }
+                } else {
+                    buffer.append('&');
+                    buffer.append(entityName);
+                    buffer.append(';');
+                }
+            }
+        }
+    }
 }

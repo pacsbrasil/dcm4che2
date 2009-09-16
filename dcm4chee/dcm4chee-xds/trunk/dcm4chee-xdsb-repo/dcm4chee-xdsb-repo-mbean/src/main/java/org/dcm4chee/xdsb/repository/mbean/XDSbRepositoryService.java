@@ -259,7 +259,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
     public RegistryResponseType storeAndRegisterDocuments(ProvideAndRegisterDocumentSetRequestType req) throws XDSException {
         Map<String, XDSDocument> storedDocuments = null;
         boolean success = false;
-        XDSPerformanceLogger perfLogger = new XDSPerformanceLogger("XDSb", "ProvideAndRegisterDocumentSet");
+        XDSPerformanceLogger perfLogger = new XDSPerformanceLogger("XDS.B", "PROVIDE_AND_REGISTER_DOCUMENT_SET-B");
         try {
             log.debug("------------ProvideAndRegisterDocumentSetRequest:"+req);
             perfLogger.startSubEvent("LogAndVerify");
@@ -304,13 +304,13 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
             logImport(submissionUID, patId, replyTo, true);
             RegistryResponseType rsp = dispatchSubmitObjectsRequest(submitRequest, perfLogger);
             success = checkResponse( rsp );
-            perfLogger.startSubEvent("AuditAndBuildResponse");
+            perfLogger.startSubEvent("AuditResponse");
             logExport(submissionUID, patId, replyTo, success);
+            perfLogger.endSubEvent();
             log.info("ProvideAndRegisterDocumentSetRequest success:"+success);
             if ( logResponseMessage ) {
                 log.info("Received RegistryResponse:"+InfoSetUtil.marshallObject(objFac.createRegistryResponse(rsp), indentXmlLog));
             }
-            perfLogger.endSubEvent();
             CommonMessageContext ctx = MessageContextAssociation.peekMessageContext();
             ctx.put("DISABLE_FORCE_MTOM_RESPONSE", Boolean.toString(disableForceMTOMResponse));
             return rsp;
@@ -353,6 +353,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         }
         log.info("Received RegistryResponse:"+InfoSetUtil.marshallObject(
                 objFac.createRegistryResponse(rsp), indentXmlLog) );
+        perfLogger.setSubEventProperty("Success", String.valueOf(checkResponse(rsp)));
         perfLogger.endSubEvent();
         return rsp;
     }

@@ -54,9 +54,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.activation.DataHandler;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSession;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Result;
@@ -84,10 +81,12 @@ import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.xds.common.UUID;
 import org.dcm4chee.xds.common.XDSConstants;
+import org.dcm4chee.xds.common.XDSPerformanceLogger;
 import org.dcm4chee.xds.common.audit.HttpUserInfo;
 import org.dcm4chee.xds.common.audit.XDSExportMessage;
 import org.dcm4chee.xds.common.delegate.XdsHttpCfgDelegate;
 import org.dcm4chee.xds.common.exception.XDSException;
+import org.dcm4chee.xds.common.utils.InfoSetUtil;
 import org.dcm4chee.xds.infoset.v30.ExtrinsicObjectType;
 import org.dcm4chee.xds.infoset.v30.ObjectFactory;
 import org.dcm4chee.xds.infoset.v30.ProvideAndRegisterDocumentSetRequestType;
@@ -95,7 +94,6 @@ import org.dcm4chee.xds.infoset.v30.RegistryPackageType;
 import org.dcm4chee.xds.infoset.v30.RegistryResponseType;
 import org.dcm4chee.xds.infoset.v30.SubmitObjectsRequest;
 import org.dcm4chee.xds.infoset.v30.ProvideAndRegisterDocumentSetRequestType.Document;
-import org.dcm4chee.xds.common.utils.InfoSetUtil;
 import org.dcm4chee.xds.infoset.v30.ws.DocumentRepositoryPortType;
 import org.dcm4chee.xds.infoset.v30.ws.DocumentRepositoryPortTypeFactory;
 import org.jboss.system.ServiceMBeanSupport;
@@ -362,6 +360,10 @@ public class XDSbSourceService extends ServiceMBeanSupport {
     public RegistryResponseType exportDocuments(ProvideAndRegisterDocumentSetRequestType req) throws XDSException {
         try {
             log.debug("------------exportDocuments");
+            
+            XDSPerformanceLogger perfLogger = new XDSPerformanceLogger("XDS.B", "PROVIDE_AND_REGISTER_DOCUMENT_SET-B");
+            perfLogger.startSubEvent("CreateSubmitObjectsRequest");
+            
             SubmitObjectsRequest submitRequest = req.getSubmitObjectsRequest();
             if (logRequest) {
                 log.info(InfoSetUtil.getLogMessage(req));
@@ -376,6 +378,10 @@ public class XDSbSourceService extends ServiceMBeanSupport {
             String patId = InfoSetUtil.getExternalIdentifierValue(UUID.XDSSubmissionSet_patientId,registryPackage);
             log.info("SubmissionUID:"+submissionUID);
             log.info("patId:"+patId);
+            
+            perfLogger.setEventProperty("SubmissionSetUID", submissionUID);
+            perfLogger.setEventProperty("PatientID", patId);
+            
             httpCfgDelegate.configTLS(xdsRepositoryURI);
             DocumentRepositoryPortType port = null;
             if (useSOAP11) {
@@ -397,7 +403,18 @@ public class XDSbSourceService extends ServiceMBeanSupport {
                 }
                 handlerChain.add(new EnsureMtomHandler());
                 binding.setHandlerChain(handlerChain);               
-            }            
+            }  
+            
+            perfLogger.endSubEvent();
+            
+            perfLogger.startSubEvent("ProvideAndRegisterDocuments");
+            StringBuffer documentIDs = new StringBuffer();
+            for ( Document document : req.getDocument() ) {
+                documentIDs.append(document.getId()).append(",");
+            }
+            documentIDs.setLength(documentIDs.length() - 1);
+            perfLogger.setSubEventProperty("DocumentUUIDs", documentIDs.toString());
+            
             log.info("####################################################");
             log.info("####################################################");
             log.info("XDS.b: Send provide and register document-b request to repository:"+xdsRepositoryURI);
@@ -409,7 +426,14 @@ public class XDSbSourceService extends ServiceMBeanSupport {
                         objFac.createRegistryResponse(rsp), indentXmlLog) );
             }
             boolean success = checkResponse( rsp );
+            
+            perfLogger.setSubEventProperty("Success", String.valueOf(success));
+            perfLogger.endSubEvent();
+            
+            perfLogger.startSubEvent("AuditResponse");
             logXdsBExport(submissionUID, patId, success);
+            perfLogger.endSubEvent();
+            perfLogger.flush();
             log.info("ProvideAndRegisterDocumentSetRequest success:"+success);
             return rsp;
             /*_*/
