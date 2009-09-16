@@ -46,6 +46,8 @@ import java.util.regex.Pattern;
 import org.dcm4che2.util.ByteUtils;
 import org.dcm4che2.util.DateUtils;
 import org.dcm4che2.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -56,6 +58,9 @@ import org.xml.sax.SAXException;
  * @version $Revision$ $Date$
  */
 public abstract class VR {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(VR.class);
+
     /**
      * Fragments are used for encapsulation of an encoded (=compressed) pixel
      * data stream into the Pixel Data (7FE0,0010) portion of the DICOM Data
@@ -944,7 +949,8 @@ public abstract class VR {
         {
             if (val == null || val.length == 0)
                 return 0f;
-            return Float.parseFloat(toString(val, bigEndian, null));
+            return Float.parseFloat(
+                    commaToPeriod(toString(val, bigEndian, null)));
         }
 
         @Override
@@ -956,7 +962,7 @@ public abstract class VR {
             float[] fs = new float[ss.length];
             for (int i = 0; i < fs.length; i++)
                 if (ss[i].length() > 0)
-                    fs[i] = Float.parseFloat(ss[i]);
+                    fs[i] = Float.parseFloat(commaToPeriod(ss[i]));
             return fs;
         }
 
@@ -965,7 +971,8 @@ public abstract class VR {
         {
             if (val == null || val.length == 0)
                 return 0f;
-            return Double.parseDouble(toString(val, bigEndian, null));
+            return Double.parseDouble(
+                    commaToPeriod(toString(val, bigEndian, null)));
         }
 
         @Override
@@ -977,9 +984,18 @@ public abstract class VR {
             double[] fs = new double[ss.length];
             for (int i = 0; i < fs.length; i++)
                 if (ss[i].length() > 0)
-                    fs[i] = Double.parseDouble(ss[i]);
+                    fs[i] = Double.parseDouble(commaToPeriod(ss[i]));
             return fs;
         }
+
+        private static String commaToPeriod(String ds) {
+            String s = ds.replace(',', '.');
+            if (s != ds) {
+                LOG.warn("Illegal DS value: {}", ds);
+            }
+            return s;
+        }
+
     }
 
     private static final class DT extends ASCIIVR
