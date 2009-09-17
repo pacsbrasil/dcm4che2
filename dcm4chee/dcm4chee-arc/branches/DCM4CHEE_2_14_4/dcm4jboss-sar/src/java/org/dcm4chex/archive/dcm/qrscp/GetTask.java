@@ -159,48 +159,50 @@ class GetTask implements Runnable {
     }
 
     public void run() {
-        service.scheduleSendPendingRsp(sendPendingRsp);
-        try {
-            Set<String> localUIDs = retrieveInfo.removeLocalIUIDs();
-            boolean updateLocalUIDs = false;
-            while (!canceled && retrieveInfo.nextMoveForward()) {
-                String retrieveAET = retrieveInfo.getMoveForwardAET();
-                Collection<String> iuids = retrieveInfo.getMoveForwardUIDs();
-                moveScu = new MoveScu(service, calledAET, calledAET,
-                        retrieveAET, 0);
-                if (iuids.size() == total) {
-                    moveScu.forwardMoveRQ(pcid, msgID, priority,
-                            service.getLocalStorageAET(), rqData, iuids);
-                } else {
-                    moveScu.splitAndForwardMoveRQ(pcid, msgID, priority,
-                            service.getLocalStorageAET(), iuids);
-                }
-                if (moveScu.completed() > 0 || moveScu.warnings() > 0) {
-                    updateLocalUIDs = true;
-                }
-                moveScu = null;
-            }
-            if (!canceled) {
-                try {
-                    if (updateLocalUIDs) {
-                        FileInfo[][] fileInfo = 
-                            RetrieveCmd.create(rqData).getFileInfos();
-                        retrieveInfo = new RetrieveInfo(service, fileInfo);
-                        localUIDs = retrieveInfo.removeLocalIUIDs();
+        Set<String> localUIDs = retrieveInfo.removeLocalIUIDs();
+        boolean updateLocalUIDs = false;
+        if (retrieveInfo.nextMoveForward()) {
+            service.scheduleSendPendingRsp(sendPendingRsp);
+            try {
+                do {
+                    String retrieveAET = retrieveInfo.getMoveForwardAET();
+                    Collection<String> iuids = retrieveInfo.getMoveForwardUIDs();
+                    moveScu = new MoveScu(service, calledAET, calledAET,
+                            retrieveAET, 0);
+                    if (iuids.size() == total) {
+                        moveScu.forwardMoveRQ(pcid, msgID, priority,
+                                service.getLocalStorageAET(), rqData, iuids);
+                    } else {
+                        moveScu.splitAndForwardMoveRQ(pcid, msgID, priority,
+                                service.getLocalStorageAET(), iuids);
                     }
-                    if (!localUIDs.isEmpty()) {
-                        service.prefetchTars(retrieveInfo.getLocalFiles());
-                        removeInstancesOfUnsupportedStorageSOPClasses();
-                        retrieveInstances();
+                    if (moveScu.completed() > 0 || moveScu.warnings() > 0) {
+                        updateLocalUIDs = true;
                     }
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
+                    moveScu = null;
+                } while (!canceled && retrieveInfo.nextMoveForward());
+            } finally {
+                sendPendingRsp.cancel();
             }
-            
-        } finally {
-            sendPendingRsp.cancel();
         }
+        if (!canceled) {
+            try {
+                if (updateLocalUIDs) {
+                    FileInfo[][] fileInfo = 
+                        RetrieveCmd.create(rqData).getFileInfos();
+                    retrieveInfo = new RetrieveInfo(service, fileInfo);
+                    localUIDs = retrieveInfo.removeLocalIUIDs();
+                }
+                if (!localUIDs.isEmpty()) {
+                    service.prefetchTars(retrieveInfo.getLocalFiles());
+                    removeInstancesOfUnsupportedStorageSOPClasses();
+                    retrieveInstances();
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+
         if (!canceled) {
             failedIUIDs.addAll(remainingIUIDs);
             remainingIUIDs.clear();
@@ -214,6 +216,9 @@ class GetTask implements Runnable {
         Association a = assoc.getAssociation();
         Collection<List<FileInfo>> localFiles = retrieveInfo.getLocalFiles();
         for (List<FileInfo> list : localFiles) {
+            if (service.isSendPendingRetrieveRSP()) {
+                sendGetRsp(Status.Pending, null);
+            }
             final FileInfo fileInfo = list.get(0);
             final String iuid = fileInfo.sopIUID;
             DimseListener storeScpListener = new DimseListener() {
@@ -294,8 +299,6 @@ class GetTask implements Runnable {
     }
 
     private void sendGetRsp(int status, Dataset ds) {
-        if (assoc == null)
-            return;
         Command rspCmd = DcmObjectFactory.getInstance().newCommand();
         rspCmd.initCGetRSP(msgID, sopClassUID, status);
         if (!remainingIUIDs.isEmpty()) {
@@ -311,9 +314,7 @@ class GetTask implements Runnable {
             assoc.getAssociation().write(
                     AssociationFactory.getInstance().newDimse(pcid, rspCmd, ds));
         } catch (Exception e) {
-            log.info("Failed to send C-GET RSP to "
-                    + assoc.getAssociation().getCallingAET(), e);
-            assoc  = null;
+            log.info("Failed to send C-GET RSP to " + callingAET, e);
         }
     }
 
