@@ -50,6 +50,10 @@
         </executions>
         <configuration>
           <packageName>org.dcm4chee.xds.infoset.v30</packageName>
+          <wsdlFiles> 
+          	<wsdlFile>registry.wsdl</wsdlFile>
+          	<wsdlFile>repository.wsdl</wsdlFile>
+          </wsdlFiles>
           <extension>true</extension>
           <keep>true</keep>
           <verbose>true</verbose>
