@@ -143,7 +143,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
 //    private static final String SOP_IUIDS = "SOP_IUIDS";
 
-    final StoreScpService service;
+    protected final StoreScpService service;
 
     private final Logger log;
 
@@ -651,8 +651,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
             boolean newSeries = seriesStored == null;
             if (newSeries) {
-                seriesStored = initSeriesStored(ds, callingAET, retrieveAET);
-                assoc.putProperty(SERIES_STORED, seriesStored);
                 Dataset mwlFilter = service.getCoercionAttributesFor(callingAET,
                         STORE2MWL_XSL, ds, assoc);
                 if (mwlFilter != null) {
@@ -666,8 +664,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     service.generatePatientID(ds, ds);
                 }
             }
-            appendInstanceToSeriesStored(seriesStored, ds, retrieveAET,
-                    availability);
             perfMon.start(activeAssoc, rq,
                     PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
             long fileLength = file != null ? file.length() : 0L;
@@ -675,6 +671,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     fsDTO != null ? fsDTO.getPk() : -1L,
                     filePath, fileLength, md5sum,
                     newSeries);
+            if(newSeries) {
+               seriesStored = initSeriesStored(ds, callingAET, retrieveAET);
+               assoc.putProperty(SERIES_STORED, seriesStored);
+            }
+            appendInstanceToSeriesStored(seriesStored, ds, retrieveAET, availability);
             ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
             coerced = merge(coerced, coercedElements);
             perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DATASET,
