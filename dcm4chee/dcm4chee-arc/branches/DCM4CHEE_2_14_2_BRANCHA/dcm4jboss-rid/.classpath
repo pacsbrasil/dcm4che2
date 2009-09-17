@@ -11,6 +11,8 @@
 	<classpathentry kind="var" path="FOP_HOME/build/fop.jar"/>
 	<classpathentry kind="src" path="/dcm4jboss-ejb"/>
 	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/activation.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/dcm4chee-docstore-store"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/dcm4chee-docstore"/>
+	<classpathentry kind="var" path="JBOSS_HOME/server/production/lib/jboss-j2ee.jar"/>
+	<classpathentry kind="lib" path="/dcm4jboss-sar/lib/dcm4che-audit-2.0.19.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
