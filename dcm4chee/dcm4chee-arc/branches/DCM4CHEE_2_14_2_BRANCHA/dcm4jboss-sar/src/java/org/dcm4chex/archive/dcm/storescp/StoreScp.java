@@ -618,9 +618,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
             boolean newSeries = seriesStored == null;
             if (newSeries) {
-                seriesStored = initSeriesStored(ds, callingAET,
-                        fsDTO.getRetrieveAET());
-                assoc.putProperty(SERIES_STORED, seriesStored);
                 Dataset mwlFilter = service.getCoercionAttributesFor(callingAET,
                         STORE2MWL_XSL, ds, assoc);
                 if (mwlFilter != null) {
@@ -632,13 +629,17 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 service.supplementIssuerOfPatientID(ds, callingAET);
                 service.generatePatientID(ds, ds);
             }
-            appendInstanceToSeriesStored(seriesStored, ds, fsDTO);
             perfMon.start(activeAssoc, rq,
                     PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
             long fileLength = file != null ? file.length() : 0L;
             Dataset coercedElements = updateDB(store, ds, fsDTO.getPk(),
                     filePath, fileLength, md5sum,
                     newSeries);
+            if (newSeries) {
+            	seriesStored = initSeriesStored(ds, callingAET, fsDTO.getRetrieveAET());
+                assoc.putProperty(SERIES_STORED, seriesStored);
+            }
+            appendInstanceToSeriesStored(seriesStored, ds, fsDTO);
             ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
             coerced = merge(coerced, coercedElements);
             perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DATASET,
