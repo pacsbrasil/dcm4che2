@@ -268,7 +268,7 @@ public class MoveTask implements Runnable {
     }
 
     public void run() {
-        service.scheduleSendPendingRsp(sendPendingRsp);
+        service.scheduleSendPendingCMoveRsp(sendPendingRsp);
         try {
             Set<String> localUIDs = retrieveInfo.removeLocalIUIDs();
             boolean updateLocalUIDs = false;

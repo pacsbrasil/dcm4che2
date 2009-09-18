@@ -620,29 +620,62 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isSendPendingRetrieveRSP"
-      setMethod="setSendPendingRetrieveRSP">
-      <description><![CDATA[Flag indicating if optional C-Move/C-Get Response DICOM
+      getMethod="isSendPendingCMoveRSP"
+      setMethod="setSendPendingCMoveRSP">
+      <description><![CDATA[Flag indicating if optional C-MOVE Response DICOM
       message with pending status are returned in the interval defined by
-      attribute <i>PendingRetrieveResponseInterval</i>.]]>
+      attribute <i>PendingCMoveResponseInterval</i>.]]>
       </description>
-      <name>SendPendingRetrieveResponse</name>
+      <name>SendPendingCMoveResponse</name>
       <type>boolean</type>
       <descriptors>
          <value value="true"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getPendingRetrieveRSPInterval"
-      setMethod="setPendingRetrieveRSPInterval">
-      <description><![CDATA[Interval in ms in which C-Move/C-Get Response DICOM
-      message with pending status are returned. Even send (identical) response
+      getMethod="getPendingCMoveRSPInterval"
+      setMethod="setPendingCMoveRSPInterval">
+      <description><![CDATA[Interval in ms in which C-MOVE Response DICOM
+      messages with pending status are returned. Even send (identical) response
       messages, if no storage sub-operation was performed during such interval,
-      to keep the association alive. Only effective, if sending C-Move/C-Get Response
+      to keep the association alive. Only effective, if sending C-Move Response
       DICOM message with pending status is activated by attribute
-      <i>SendPendingRetrieveResponse</i>.]]>
+      <i>SendPendingCMoveResponse</i>.]]>
       </description>
-      <name>PendingRetrieveResponseInterval</name>
+      <name>PendingCMoveResponseInterval</name>
+      <type>long</type>
+      <descriptors>
+         <value value="5000"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isSendPendingCGetRSP"
+      setMethod="setSendPendingCGetRSP">
+      <description><![CDATA[Flag indicating if optional C-GET Response DICOM
+      messages with pending status are returned between C-STORE requests. If
+      requested objects have to be fetched from an other/external retrieve AE,
+      identical C-GET Responses with pending status are returned in the
+      interval defined by attribute <i>PendingCGetResponseInterval</i>, until
+      all requested objects are received from the other/external retrieve AE
+      and sending C-STORE requests to the C-GET SCU starts.]]>
+      </description>
+      <name>SendPendingCGetResponse</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPendingCGetRSPInterval"
+      setMethod="setPendingCGetRSPInterval">
+      <description><![CDATA[Interval in ms in which identical C-Get Response
+      DICOM messages with pending status are returned if requested objects have
+      to be fetched from an other/external retrieve AE before the first C-STORE
+      requests is sent to the C-GET SCU . Only effective, if sending C-Get
+      Response DICOM message with pending status is activated by attribute
+      <i>SendPendingCGetResponse</i>.]]>
+      </description>
+      <name>PendingCGetResponseInterval</name>
       <type>long</type>
       <descriptors>
          <value value="5000"/>

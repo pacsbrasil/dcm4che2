@@ -172,9 +172,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private DicomSecurityDelegate dicomSecurity =
             new DicomSecurityDelegate(this);
 
-    private boolean sendPendingRetrieveRSP = true;
+    private boolean sendPendingCMoveRSP = true;
 
-    private long pendingRetrieveRSPInterval = 5000;
+    private boolean sendPendingCGetRSP = true;
+
+    private long pendingCMoveRSPInterval = 5000;
+
+    private long pendingCGetRSPInterval = 5000;
     
     private boolean forwardAsMoveOriginator = true;
 
@@ -700,23 +704,42 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.maxStoreOpsInvoked = maxStoreOpsInvoked;
     }
 
-    public final boolean isSendPendingRetrieveRSP() {
-        return sendPendingRetrieveRSP;
+    public final boolean isSendPendingCMoveRSP() {
+        return sendPendingCMoveRSP;
     }
 
-    public final void setSendPendingRetrieveRSP(boolean sendPendingRetrieveRSP) {
-        this.sendPendingRetrieveRSP = sendPendingRetrieveRSP;
+    public final void setSendPendingCMoveRSP(boolean sendPendingCMoveRSP) {
+        this.sendPendingCMoveRSP = sendPendingCMoveRSP;
     }
 
-    public final void setPendingRetrieveRSPInterval(long ms) {
+    public final boolean isSendPendingCGetRSP() {
+        return sendPendingCGetRSP;
+    }
+
+    public final void setSendPendingCGetRSP(boolean sendPendingCGetRSP) {
+        this.sendPendingCGetRSP = sendPendingCGetRSP;
+    }
+
+   public final void setPendingCMoveRSPInterval(long ms) {
         if (ms <= 0) {
-            throw new IllegalArgumentException("pendingRetrieveRSPInterval: " +  ms);
+            throw new IllegalArgumentException("pendingCMoveRSPInterval: " +  ms);
         }
-        pendingRetrieveRSPInterval = ms ;
+        pendingCMoveRSPInterval = ms ;
     }
     
-    public final long getPendingRetrieveRSPInterval() {
-        return pendingRetrieveRSPInterval ;
+    public final long getPendingCMoveRSPInterval() {
+        return pendingCMoveRSPInterval ;
+    }
+    
+    public final void setPendingCGetRSPInterval(long ms) {
+        if (ms <= 0) {
+            throw new IllegalArgumentException("pendingCGetRSPInterval: " +  ms);
+        }
+        pendingCGetRSPInterval = ms ;
+    }
+    
+    public final long getPendingCGetRSPInterval() {
+        return pendingCGetRSPInterval ;
     }
     
     public final boolean isForwardAsMoveOriginator() {
@@ -1345,9 +1368,15 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return ds;
     }
 
-    void scheduleSendPendingRsp(TimerTask sendPendingRsp) {
-        if (sendPendingRetrieveRSP) {
-            pendingRspTimer.schedule(sendPendingRsp, 0, pendingRetrieveRSPInterval);
+    void scheduleSendPendingCMoveRsp(TimerTask sendPendingRsp) {
+        if (sendPendingCMoveRSP) {
+            pendingRspTimer.schedule(sendPendingRsp, 0, pendingCMoveRSPInterval);
+        }
+     }
+
+    void scheduleSendPendingCGetRsp(TimerTask sendPendingRsp) {
+        if (sendPendingCGetRSP) {
+            pendingRspTimer.schedule(sendPendingRsp, 0, pendingCGetRSPInterval);
         }
      }
 
