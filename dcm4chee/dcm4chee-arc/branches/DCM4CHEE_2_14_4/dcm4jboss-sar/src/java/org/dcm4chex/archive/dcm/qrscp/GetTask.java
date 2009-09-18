@@ -162,7 +162,7 @@ class GetTask implements Runnable {
         Set<String> localUIDs = retrieveInfo.removeLocalIUIDs();
         boolean updateLocalUIDs = false;
         if (retrieveInfo.nextMoveForward()) {
-            service.scheduleSendPendingRsp(sendPendingRsp);
+            service.scheduleSendPendingCGetRsp(sendPendingRsp);
             try {
                 do {
                     String retrieveAET = retrieveInfo.getMoveForwardAET();
@@ -216,7 +216,7 @@ class GetTask implements Runnable {
         Association a = assoc.getAssociation();
         Collection<List<FileInfo>> localFiles = retrieveInfo.getLocalFiles();
         for (List<FileInfo> list : localFiles) {
-            if (service.isSendPendingRetrieveRSP()) {
+            if (service.isSendPendingCGetRSP()) {
                 sendGetRsp(Status.Pending, null);
             }
             final FileInfo fileInfo = list.get(0);
