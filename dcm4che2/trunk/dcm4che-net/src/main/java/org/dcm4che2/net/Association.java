@@ -183,11 +183,11 @@ public class Association implements Runnable {
     }
     
 
-    final AAssociateAC getAssociateAC() {
+    public final AAssociateAC getAssociateAC() {
         return associateAC;
     }
 
-    final AAssociateRQ getAssociateRQ() {
+    public final AAssociateRQ getAssociateRQ() {
         return associateRQ;
     }
 
