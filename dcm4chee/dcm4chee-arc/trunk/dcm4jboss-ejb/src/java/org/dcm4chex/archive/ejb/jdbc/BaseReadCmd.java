@@ -157,8 +157,8 @@ public abstract class BaseReadCmd extends BaseCmd {
                 }
             }
         }
-        throw new SQLException(
-                "give up executing SQL statement after all retries: " + sql);
+        throw (SQLException) new SQLException(
+                "give up executing SQL statement after all retries: " + sql).initCause(lastException);
     }
 
     public boolean next() throws SQLException {
