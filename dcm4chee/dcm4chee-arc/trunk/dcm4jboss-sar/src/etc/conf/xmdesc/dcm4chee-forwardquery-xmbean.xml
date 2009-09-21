@@ -3,8 +3,8 @@
 
 <mbean>
    <description><![CDATA[Query based Forward Service.<br />
-		Provides auto-routing of DICOM objects that fulfills criteria defined by an SQL Query. 
-		to a remote DICOM application.<br />
+		Provides auto-routing of DICOM objects to a remote DICOM application 
+		that fulfills criteria defined by an SQL Query.
 		<p>The SQL statement must be defined with following rules:</p>
 		1) Series.series_iuid and Series.retrieve_aets must be the first columns of the select statement.<br />
 		2) The where clause should contain a Series.updated_time. ]]>
@@ -24,7 +24,7 @@
 
    <!-- Attributes -->
    <attribute access="read-write" getMethod="getCalledAET" setMethod="setCalledAET">
-      <description>AE title of the STORE SCP, to which the Dicom object should be forwarded.
+      <description>AE title of the STORE SCP, to which the Dicom objects should be forwarded.
       </description>
       <name>CalledAETitle</name>
       <type>java.lang.String</type>
@@ -77,7 +77,7 @@
       <name>Delay</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="0s"/>
+         <value value="1h"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
