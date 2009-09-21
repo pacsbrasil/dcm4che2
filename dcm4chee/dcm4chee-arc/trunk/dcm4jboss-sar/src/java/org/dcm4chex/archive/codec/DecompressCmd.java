@@ -52,6 +52,7 @@ import java.io.OutputStream;
 import java.nio.ByteOrder;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
+import java.util.Arrays;
 
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
@@ -216,41 +217,65 @@ public class DecompressCmd extends CodecCmd {
     private void write(WritableRaster raster, OutputStream out,
             ByteOrder byteOrder) throws IOException {
         DataBuffer buffer = raster.getDataBuffer();
-        final int stride = ((ComponentSampleModel) raster.getSampleModel())
-                .getScanlineStride();
+        ComponentSampleModel sm = (ComponentSampleModel) raster.getSampleModel();
+        checkSampleModel(sm);
+        final int stride = sm.getScanlineStride();
         final int h = raster.getHeight();
         final int w = raster.getWidth();
-        final int b = raster.getNumBands();
-        final int wb = w * b;
-        switch (buffer.getDataType()) {
-        case DataBuffer.TYPE_BYTE:
-            for (int i = 0; i < h; ++i)
-                out.write(((DataBufferByte) buffer).getData(), i * stride, wb);
-            break;
-        case DataBuffer.TYPE_USHORT:
-            if (byteOrder == ByteOrder.LITTLE_ENDIAN)
+        final int numBands = sm.getNumBands();
+        final int numBanks = buffer.getNumBanks();
+        final int l = w * numBands  / numBanks;
+        for (int b = 0; b < numBanks; b++) {
+            switch (buffer.getDataType()) {
+            case DataBuffer.TYPE_BYTE:
                 for (int i = 0; i < h; ++i)
-                    writeShortLE(((DataBufferUShort) buffer).getData(), i
-                            * stride, wb, out);
-            else
-                for (int i = 0; i < h; ++i)
-                    writeShortBE(((DataBufferUShort) buffer).getData(), i
-                            * stride, wb, out);
-            break;
-        case DataBuffer.TYPE_SHORT:
-            if (byteOrder == ByteOrder.LITTLE_ENDIAN)
-                for (int i = 0; i < h; ++i)
-                    writeShortLE(((DataBufferShort) buffer).getData(), i
-                            * stride, wb, out);
-            else
-                for (int i = 0; i < h; ++i)
-                    writeShortBE(((DataBufferShort) buffer).getData(), i
-                            * stride, wb, out);
-            break;
-        default:
-            throw new RuntimeException(buffer.getClass().getName()
-                    + " not supported");
+                    out.write(((DataBufferByte) buffer).getData(b), 
+                            i * stride, l);
+                break;
+            case DataBuffer.TYPE_USHORT:
+                if (byteOrder == ByteOrder.LITTLE_ENDIAN)
+                    for (int i = 0; i < h; ++i)
+                        writeShortLE(((DataBufferUShort) buffer).getData(b),
+                                i * stride, l, out);
+                else
+                    for (int i = 0; i < h; ++i)
+                        writeShortBE(((DataBufferUShort) buffer).getData(b),
+                                i * stride, l, out);
+                break;
+            case DataBuffer.TYPE_SHORT:
+                if (byteOrder == ByteOrder.LITTLE_ENDIAN)
+                    for (int i = 0; i < h; ++i)
+                        writeShortLE(((DataBufferShort) buffer).getData(b),
+                                i * stride, l, out);
+                else
+                    for (int i = 0; i < h; ++i)
+                        writeShortBE(((DataBufferShort) buffer).getData(b),
+                                i * stride, l, out);
+                break;
+            default:
+                throw new RuntimeException(buffer.getClass().getName()
+                        + " not supported");
+            }
         }
+    }
+
+    private static int[] OFF_0 = { 0 };
+    private static int[] OFF_0_0_0 = { 0, 0, 0 };
+    private static int[] OFF_0_1_2 = { 0, 1, 2 };
+
+    private void checkSampleModel(ComponentSampleModel sm) {
+        int[] bandOffsets = sm.getBandOffsets();
+        int[] bankIndices = sm.getBankIndices();
+        if (!(Arrays.equals(OFF_0, bandOffsets)
+                        && Arrays.equals(OFF_0, bankIndices))
+                && !(Arrays.equals(OFF_0_0_0, bandOffsets)
+                        && Arrays.equals(OFF_0_1_2, bankIndices))
+                && !(Arrays.equals(OFF_0_0_0, bankIndices)
+                        && Arrays.equals(OFF_0_1_2, bandOffsets)))
+            throw new RuntimeException(sm.getClass().getName()
+                    + " with bandOffsets=" + Arrays.asList(bandOffsets)
+                    + " with bankIndices=" + Arrays.asList(bankIndices)
+                    + " not supported");
     }
 
     private void writeShortLE(short[] data, int off, int len, OutputStream out)
