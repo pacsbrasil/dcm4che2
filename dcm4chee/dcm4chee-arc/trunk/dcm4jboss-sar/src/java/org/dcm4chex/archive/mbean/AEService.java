@@ -215,7 +215,7 @@ public class AEService extends ServiceMBeanSupport {
     }
 
     public final void setOtherServiceAETAttrs(String s) {
-        StringTokenizer stk = new StringTokenizer(s, "\r\n\t ");
+        StringTokenizer stk = new StringTokenizer(s, "\r\n\t; ");
         int count = stk.countTokens();
         ObjectName[] names = new ObjectName[count];
         String[] attrs = new String[count];
@@ -273,6 +273,14 @@ public class AEService extends ServiceMBeanSupport {
         }
         fileSystemMgt().updateFileSystemRetrieveAET(prevAET, newAET,
                 updateStudiesBatchSize);
+        AEManager aeManager = aeMgr();
+        boolean sendNotification = false;
+        try {
+            AEDTO ae = aeManager.findByAET(prevAET);
+            ae.setTitle(newAET);
+            aeManager.updateAE(ae);
+            sendNotification = true;
+        } catch (UnknownAETException e) {}
         for (int i = 0; i < otherServiceNames.length; i++) {
             if (server.isRegistered(otherServiceNames[i])) {
                 updateAETitle(otherServiceNames[i], otherServiceAETAttrs[i],
@@ -285,13 +293,9 @@ public class AEService extends ServiceMBeanSupport {
                 }
             }
         }
-        AEManager aeManager = aeMgr();
-        try {
-            AEDTO ae = aeManager.findByAET(prevAET);
-            ae.setTitle(newAET);
-            aeManager.updateAE(ae);
+        if (sendNotification) {
             notifyAETchange(prevAET, newAET, "");
-        } catch (UnknownAETException e) {}
+        }
     }
 
     private boolean updateAETitle(ObjectName name, String attr,
