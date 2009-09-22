@@ -135,7 +135,7 @@ abstract class Match {
         protected void appendBodyTo(StringBuffer sb) {
             sb.append(column);
             sb.append(" = \'");
-            sb.append(value);
+            sb.append(value == null ? value : value.replaceAll("'", "''"));
             sb.append('\'');
         }
     }
