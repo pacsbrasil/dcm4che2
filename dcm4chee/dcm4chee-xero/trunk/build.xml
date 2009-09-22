@@ -16,7 +16,7 @@
      <ant dir="xero-util" target="${childCall}" inheritAll="false">
       <propertyset refid="childProperties" />
      </ant>
-     <ant dir="xero-wado" target="${childCall}" inheritAll="false">
+     <ant dir="wado2" target="${childCall}" inheritAll="false">
       <propertyset refid="childProperties" />
      </ant>
      <ant dir="xero" target="${childCall}" inheritAll="false">
