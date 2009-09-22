@@ -275,7 +275,9 @@ public class PatientMatching implements Serializable{
 
     public boolean noMatchesFor(String pid, String issuer, String familyName,
             String givenName, String middleName, String birthdate) {
-        return !(trustPatientIDWithIssuer && pid != null && issuer != null)
+        return !unknownPatientIDAlwaysMatch && pid == null
+                || !unknownIssuerAlwaysMatch && issuer == null
+                || !(trustPatientIDWithIssuer && pid != null && issuer != null)
                 && noMatchesFor(familyName, givenName, middleName, birthdate);
     }
 
