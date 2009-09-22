@@ -56,8 +56,11 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.SPSStatus;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
+import org.dcm4chex.archive.ejb.entity.AttrUtils;
 import org.dcm4chex.archive.ejb.interfaces.MWLItemLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
@@ -165,13 +168,22 @@ public abstract class PatientUpdateBean implements SessionBean {
     }
     
     /**
+     * 
+     * @ejb.interface-method
+     */
+    public void updatePatient(StudyLocal study, Dataset attrs)
+            throws FinderException, CreateException {
+        updatePatient(study, attrs, null);    	
+    }
+    
+    /**
      * Update patient data as well as relink study with the patient if the patient
      * is different than original one.
      * @throws CreateException 
      * 
      * @ejb.interface-method
      */
-    public void updatePatient(StudyLocal study, Dataset attrs)
+    public void updatePatient(StudyLocal study, Dataset attrs, Dataset modified)
             throws FinderException, CreateException {
 		String pid = attrs.getString(Tags.PatientID);
 
@@ -181,7 +193,7 @@ public abstract class PatientUpdateBean implements SessionBean {
 		if (pid == null || pid.length() == 0)
 			return;
 		
-		PatientLocal newPatient = updateOrCreate(attrs);
+		PatientLocal newPatient = updateOrCreate(attrs, modified);
 		
 		// Case 1: it's matching the same patient. Do nothing
 		if(study.getPatient().getPatientId().equals(pid))
@@ -197,15 +209,29 @@ public abstract class PatientUpdateBean implements SessionBean {
      */
     public void updatePatient(Dataset attrs)
             throws CreateException, FinderException {
+        updatePatient(attrs, null);
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public void updatePatient(Dataset attrs, Dataset modified)
+            throws CreateException, FinderException {
         LOG.info("Update " + attrs.getString(Tags.PatientName)
                 + " with PID " + attrs.getString(Tags.PatientID));
-        updateOrCreate(attrs);
+        updateOrCreate(attrs, modified);
     }
 
     private PatientLocal updateOrCreate(Dataset ds)
             throws CreateException, FinderException {
+       return updateOrCreate(ds, null);
+    }
+    
+
+    private PatientLocal updateOrCreate(Dataset ds, Dataset modified)
+            throws CreateException, FinderException {
        try {
-            return findAndUpdatePatient(ds);
+            return findAndUpdatePatient(ds, modified);
        } catch (ObjectNotFoundException e) {
             PatientLocal pat;
             try {
@@ -214,7 +240,7 @@ public abstract class PatientUpdateBean implements SessionBean {
                 // Check if patient record was inserted by concurrent thread
                 // with unique index on (pat_id, pat_id_issuer)
                 try {
-                    return findAndUpdatePatient(ds);
+                    return findAndUpdatePatient(ds, modified);
                 } catch (FinderException fe) {
                     throw ce;
                 }
@@ -223,6 +249,9 @@ public abstract class PatientUpdateBean implements SessionBean {
             // with non-unique index on (pat_id, pat_id_issuer)
             try {
                 patHome.selectByPatientId(ds);
+                if(modified!=null) {
+                     modified.putAll(ds);	
+                }	
                 return pat;
             } catch (NonUniquePatientException nupe) {
                 try {
@@ -230,14 +259,20 @@ public abstract class PatientUpdateBean implements SessionBean {
                 } catch (RemoveException e1) {
                     throw new EJBException(e);
                 }
-                return findAndUpdatePatient(ds);
+                return findAndUpdatePatient(ds, modified);
             }
         }
     }
 
-    private PatientLocal findAndUpdatePatient(Dataset ds) throws FinderException {
+    private PatientLocal findAndUpdatePatient(Dataset ds, Dataset modified) throws FinderException {
+    	Dataset origModAttrs=null;
+    	if( modified != null ) {
+    	   origModAttrs = DcmObjectFactory.getInstance().newDataset(); 	
+        }
         PatientLocal pat = patHome.selectByPatientId(ds);
-        pat.updateAttributes(ds);
+        if(pat.updateAttributes(ds, origModAttrs)) {
+            AttrUtils.fetchModifiedAttributes(ds, origModAttrs, modified);
+        }   
         return pat;
     }
 

@@ -664,7 +664,7 @@ public abstract class InstanceBean implements EntityBean {
             Dataset attrs;
             if (filter.isMerge()) {
                 attrs = getAttributes(false);
-                AttrUtils.updateAttributes(attrs, filter.filter(ds), log);
+                AttrUtils.updateAttributes(attrs, filter.filter(ds), null, log);
             } else {
                 attrs = filter.filter(ds);
             }

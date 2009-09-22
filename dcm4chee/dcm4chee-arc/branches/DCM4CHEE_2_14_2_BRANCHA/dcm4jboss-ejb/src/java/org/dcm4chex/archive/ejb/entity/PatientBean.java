@@ -678,9 +678,9 @@ public abstract class PatientBean implements EntityBean {
             Dataset attrs;
             if (filter.isMerge()) {
                 attrs = getAttributes(false);
-                appendOtherPatientIds(attrs, ds);
+                appendOtherPatientIds(attrs, ds, null);
                 AttrUtils.updateAttributes(attrs, 
-                        filter.filter(ds).exclude(OTHER_PID_SQ), log);
+                        filter.filter(ds).exclude(OTHER_PID_SQ), null, log);
             } else {
                 log.debug("-merge update-strategy not specified.  Not synchronizing other patient ids!");
                 attrs = filter.filter(ds);
@@ -690,7 +690,7 @@ public abstract class PatientBean implements EntityBean {
             Dataset attrs = getAttributes(false);
             boolean b = false;
             if (filter.isMerge())
-                 b = appendOtherPatientIds(attrs, ds);
+                 b = appendOtherPatientIds(attrs, ds, null);
             else
                 log.debug("-merge update-strategy not specified.  Not synchronizing other patient ids!");
 
@@ -705,41 +705,53 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
-    public boolean updateAttributes(Dataset ds) {
-        Dataset attrs = getAttributes(false);
-        boolean b = appendOtherPatientIds(attrs, ds);
-        if (AttrUtils.updateAttributes(attrs, ds.exclude(OTHER_PID_SQ), log) || b) {
-            setAttributes(attrs);
-            return true;
+    public boolean updateAttributes(Dataset newAttrs, Dataset modifiedAttrs) {
+        Dataset oldAttrs = getAttributes(false);
+        boolean b = appendOtherPatientIds(oldAttrs, newAttrs, modifiedAttrs);
+        if( oldAttrs==null ) {
+            setAttributes( newAttrs );
+        } 
+        else { 
+            AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(); 
+            if (!AttrUtils.updateAttributes(oldAttrs, filter.filter(newAttrs).exclude(OTHER_PID_SQ), modifiedAttrs, log) && ! b) 
+                return false;
+            setAttributes(oldAttrs);
         }
-        return false;
+        return true;
     }
 
-    private boolean appendOtherPatientIds(Dataset attrs, Dataset ds) {
-        DcmElement nopidsq = ds.get(Tags.OtherPatientIDSeq);
+    private boolean appendOtherPatientIds(Dataset oldAttrs, Dataset newAttrs, Dataset modifiedAttrs) {
+        DcmElement nopidsq = newAttrs.get(Tags.OtherPatientIDSeq);
         if (nopidsq == null || nopidsq.isEmpty() || nopidsq.getItem().isEmpty()) {
             return false;
         }
-        boolean update = false;
-        DcmElement opidsq = attrs.get(Tags.OtherPatientIDSeq);
-        if (opidsq == null) {
-            opidsq = attrs.putSQ(Tags.OtherPatientIDSeq);
+        DcmElement oopidsq = oldAttrs.get(Tags.OtherPatientIDSeq);
+        if( oopidsq != null && nopidsq.equals(oopidsq) ) {
+            return false;
+        }
+        if (oopidsq == null) {
+            oopidsq = oldAttrs.putSQ(Tags.OtherPatientIDSeq);
+        }
+        if( modifiedAttrs != null ) {
+            DcmElement sq = modifiedAttrs.putSQ(Tags.OtherPatientIDSeq);
+            for (int i = 0, n = oopidsq.countItems(); i < n; i++) {
+                sq.addItem(oopidsq.getItem(i));
+            }
         }
         for (int i = 0, n = nopidsq.countItems(); i < n; i++) {
             Dataset nopid = nopidsq.getItem(i);
             String pid = nopid.getString(Tags.PatientID);
             String issuer = nopid.getString(Tags.IssuerOfPatientID);
-            if (!containsPID(pid, issuer, opidsq)) {
-                opidsq.addItem(nopid);
+            if (!containsPID(pid, issuer, oopidsq)) {
+                oopidsq.addItem(nopid);
                 getOtherPatientIds().add(opidHome.valueOf(pid, issuer));
-                update = true;
                 log.info("Add additional Other Patient ID: "
                         + pid + "^^^"
                         +  issuer
                         + " to " + prompt());
             }
         }
-        return update;
+        return true;
     }
 
     /**

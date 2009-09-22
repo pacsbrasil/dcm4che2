@@ -45,6 +45,7 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmValueException;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.SpecificCharacterSet;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
@@ -56,7 +57,7 @@ import org.dcm4chex.archive.ejb.conf.AttributeFilter;
  * @version $Id$
  * @since Jul 6, 2006
  */
-class AttrUtils {
+public class AttrUtils {
 
     private static final int FORBIDDEN_ATTRIBUTE_COERCION = 0xCB00;
     
@@ -179,7 +180,7 @@ class AttrUtils {
     }
 
     public static boolean updateAttributes(Dataset oldAttrs, Dataset newAttrs,
-            Logger log) {
+            Dataset modifiedAttrs, Logger log) {
         boolean updateEntity = false;
         for (Iterator it = newAttrs.iterator(); it.hasNext();) {
             DcmElement dsEl = (DcmElement) it.next();
@@ -188,19 +189,33 @@ class AttrUtils {
             if (dsEl.equals(refEl)) {
                 continue;
             }
+            final int vr = dsEl.vr();
             if (refEl == null || refEl.isEmpty()) {
                 log.info("Add " + dsEl);
+                if (modifiedAttrs != null) {
+                    modifiedAttrs.putXX(tag, vr);
+                }
             } else {
                 log.info("Change " + refEl + " to " + dsEl);                
+                if (modifiedAttrs != null) {
+                    if (refEl.hasItems()) {
+                        final DcmElement modEl = modifiedAttrs.putSQ(tag);
+                        final int oldNumItems = refEl.countItems();
+                        for (int i = 0; i < oldNumItems; i++) {
+                            modEl.addItem(refEl.getItem(i));
+                        }
+                    } else {
+                        modifiedAttrs.putXX(tag, vr, refEl.getByteBuffer());
+                    }
+                }
             }
-            final int vr = dsEl.vr();
             final int numItems = dsEl.countItems();
             if (dsEl.isEmpty()) {
                 oldAttrs.putXX(tag, vr);
             } else if (dsEl.hasItems()) {
                 refEl = oldAttrs.putSQ(tag);
                 for (int i = 0; i < numItems; i++) {
-                    refEl.addItem(dsEl.getItem());
+                    refEl.addItem(dsEl.getItem(i));
                 }
             } else if (dsEl.hasDataFragments()) {
                 refEl = oldAttrs.putXXsq(tag, vr);
@@ -213,5 +228,63 @@ class AttrUtils {
             updateEntity = true;
         }
         return updateEntity;
+    }
+    
+    /**
+     * Determine the subset of the new attributes that have been applied 
+     * from the total set of the new attributes and the set of the changed attributes  
+     * @param newAttrs Dataset of all new attributes
+     * @param modifiedOrigAttrs Dataset of the original attributes that have been changed
+     * @param modifiedAttrs Dataset of the new attributes that have been applied 
+     * @param filter Attribute filter
+     */
+    public static void fetchModifiedAttributes(Dataset newAttrs, Dataset modifiedOrigAttrs, Dataset modifiedAttrs, AttributeFilter filter) {
+   	    fetchModifiedAttributes((filter!=null && newAttrs !=null)?filter.filter(newAttrs):newAttrs, modifiedOrigAttrs, modifiedAttrs);
+    }
+    
+    /**
+     * Determine the subset of the new attributes that have been applied 
+     * from the total set of the new attributes and the set of the changed attributes  
+     * @param newAttrs Dataset of all new attributes
+     * @param modifiedOrigAttrs Dataset of the original attributes that have been changed
+     * @param modifiedAttrs Dataset of the new attributes that have been applied 
+     */
+    public static void fetchModifiedAttributes(Dataset newAttrs, Dataset modifiedOrigAttrs, Dataset modifiedAttrs) {
+        if(newAttrs==null||modifiedOrigAttrs==null||modifiedAttrs==null) return;
+        if(modifiedOrigAttrs.isEmpty()) {
+            // All new attributes have been applied
+            modifiedAttrs.putAll(newAttrs);
+        }
+        else {
+            for (Iterator it = modifiedOrigAttrs.iterator(); it.hasNext();) {
+                // Walk through all elements of the changed attributes
+                // Replace the value of the old one with the new one
+                DcmElement modEl = (DcmElement) it.next();
+                final int tag = modEl.tag();
+                DcmElement newEl = newAttrs.get(tag);
+                if(newEl == null|| newEl.isEmpty()) {
+                    continue;
+                }
+                if(newEl.hasItems()) {
+                    // Sequence or fragment
+                    DcmElement sq = null;
+                    LOOP:for (int i = 0, n = newEl.countItems(); i <n; i++) {
+                        Dataset childDs = newEl.getItem(i);
+                        for (int j = 0, m = modEl.countItems(); j <m; j++) {
+                            if(childDs.equals( modEl.getItem(j))) {
+                                continue LOOP;
+                            }
+                        }
+                        if(sq == null) {
+                            sq = modifiedAttrs.putSQ(tag);
+                        }	
+                        sq.addItem(childDs);
+                    }                        
+                }
+                else {
+                    modifiedAttrs.putXX(tag, newEl.vr(), newEl.getByteBuffer());
+                }
+            }
+        }
     }
 }

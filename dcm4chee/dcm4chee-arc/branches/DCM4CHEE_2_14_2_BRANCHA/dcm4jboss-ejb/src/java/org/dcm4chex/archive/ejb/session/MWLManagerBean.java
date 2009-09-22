@@ -170,7 +170,7 @@ public abstract class MWLManagerBean implements SessionBean {
         try {
             if (patHome.selectByPatientId(ds).isIdentical(pat)) {
                 if (updatePatient) {
-                    pat.updateAttributes(ds.subSet(PATIENT_ATTRS_WITH_CHARSET));
+                    pat.updateAttributes(ds.subSet(PATIENT_ATTRS_WITH_CHARSET), null);
                 }
                 return mwlItem;
             }

@@ -466,7 +466,7 @@ public abstract class SeriesBean implements EntityBean {
 
     public void ejbPostCreate(Dataset ds, StudyLocal study)
             throws CreateException {
-        updateAttributes(ds, false);
+        updateAttributes(ds, false, null);
         setStudy(study);
         updateMpps();
         log.info("Created " + prompt());
@@ -482,20 +482,20 @@ public abstract class SeriesBean implements EntityBean {
      * 
      * @ejb.interface-method
      */
-    public boolean updateAttributes( Dataset newAttrs, boolean overwriteReqAttrSQ ) {
+    public boolean updateAttributes( Dataset newAttrs, 
+            boolean overwriteReqAttrSQ, Dataset modifiedAttrs ) {
         Dataset oldAttrs = getAttributes(false);
         boolean updated = updateSeriesRequest(oldAttrs, newAttrs, overwriteReqAttrSQ);
         if ( oldAttrs == null ) {
             setAttributes( newAttrs );
-            return true;
         } else {
             AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
-            if (AttrUtils.updateAttributes(oldAttrs, filter.filter(newAttrs), log) ) {
-                setAttributes(oldAttrs);
-                return true;
-            }
+            if (!AttrUtils.updateAttributes(oldAttrs, filter.filter(newAttrs),
+                    modifiedAttrs, log) )
+                return false;
+            setAttributes(oldAttrs);
         }
-        return updated;
+        return true;
     }
     
     private boolean updateSeriesRequest(Dataset oldAttrs, Dataset newAttrs,
@@ -929,7 +929,7 @@ public abstract class SeriesBean implements EntityBean {
             Dataset attrs;
             if (filter.isMerge()) {
                 attrs = getAttributes(false);
-                AttrUtils.updateAttributes(attrs, filter.filter(ds), log);
+                AttrUtils.updateAttributes(attrs, filter.filter(ds), null, log);
             } else {
                 attrs = filter.filter(ds);
             }
