@@ -142,7 +142,7 @@ abstract class Match
         {
             sb.append(column);
             sb.append(" = \'");
-            sb.append(value);
+            sb.append(value == null ? value : value.replaceAll("'", "''"));
             sb.append('\'');
         }
     }
