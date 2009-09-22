@@ -1022,7 +1022,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
             }
             Iterator<DeleteStudyOrder> orderIter = 
                     deleteOrdersAndAccessTime.deleteStudyOrders.iterator();
-            do {
+            while (sizeToDel > 0 && orderIter.hasNext()) {
                 DeleteStudyOrder order = orderIter.next();
                 if (fsMgt.removeStudyOnFSRecord(order)) {
                     try {
@@ -1036,7 +1036,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                     sizeToDel -= fsMgt.getStudySize(order);
                     countStudies++;
                 }
-            } while (sizeToDel > 0 && orderIter.hasNext());
+            }
             minAccessTime = deleteOrdersAndAccessTime.maxAccessTime;
         } while (sizeToDel > 0);
         return countStudies;
