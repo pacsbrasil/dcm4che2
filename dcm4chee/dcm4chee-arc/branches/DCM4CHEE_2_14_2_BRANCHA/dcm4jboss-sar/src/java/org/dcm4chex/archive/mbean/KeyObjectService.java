@@ -219,9 +219,6 @@ public class KeyObjectService extends ServiceMBeanSupport {
 		compositSopClassUIDs.put( "StandalonePETCurveStorage", UIDs.StandalonePETCurveStorage );
 		compositSopClassUIDs.put( "StandaloneVOILUTStorage", UIDs.StandaloneVOILUTStorage );
 		compositSopClassUIDs.put( "StereometricRelationshipStorage", UIDs.StereometricRelationshipStorage );
-		compositSopClassUIDs.put( "VideoEndoscopicImageStorage", UIDs.VideoEndoscopicImageStorage );
-		compositSopClassUIDs.put( "VideoMicroscopicImageStorage", UIDs.VideoMicroscopicImageStorage );
-		compositSopClassUIDs.put( "VideoPhotographicImageStorage", UIDs.VideoPhotographicImageStorage );
 		compositSopClassUIDs.put( "XRayRadiationDoseSR", UIDs.XRayRadiationDoseSR );
 	}
     
