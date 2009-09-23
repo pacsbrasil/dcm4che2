@@ -171,11 +171,12 @@ public class KeyObjectService extends ServiceMBeanSupport {
 	 */
 	private void setDefaultWaveformSopCuids() {
 		waveformSopClassUIDs.clear();
-		waveformSopClassUIDs.put( "TwelveLeadECGWaveformStorage", UIDs.TwelveLeadECGWaveformStorage );
-		waveformSopClassUIDs.put( "GeneralECGWaveformStorage", UIDs.GeneralECGWaveformStorage );
 		waveformSopClassUIDs.put( "AmbulatoryECGWaveformStorage", UIDs.AmbulatoryECGWaveformStorage );
-		waveformSopClassUIDs.put( "HemodynamicWaveformStorage", UIDs.HemodynamicWaveformStorage );
+		waveformSopClassUIDs.put( "BasicVoiceAudioWaveformStorage", UIDs.BasicVoiceAudioWaveformStorage );
 		waveformSopClassUIDs.put( "CardiacElectrophysiologyWaveformStorage", UIDs.CardiacElectrophysiologyWaveformStorage );
+		waveformSopClassUIDs.put( "GeneralECGWaveformStorage", UIDs.GeneralECGWaveformStorage );
+		waveformSopClassUIDs.put( "HemodynamicWaveformStorage", UIDs.HemodynamicWaveformStorage );
+		waveformSopClassUIDs.put( "TwelveLeadECGWaveformStorage", UIDs.TwelveLeadECGWaveformStorage );
 	}
     
 	/**
@@ -184,9 +185,44 @@ public class KeyObjectService extends ServiceMBeanSupport {
 	private void setDefaultCompositeSopCuids() {
 		compositSopClassUIDs.clear();
 		compositSopClassUIDs.put( "BasicTextSR", UIDs.BasicTextSR );
-		compositSopClassUIDs.put( "EnhancedSR", UIDs.EnhancedSR );
+		compositSopClassUIDs.put( "BlendingSoftcopyPresentationStateStorage", UIDs.BlendingSoftcopyPresentationStateStorage );
+		compositSopClassUIDs.put( "ChestCADSR", UIDs.ChestCADSR );
+		compositSopClassUIDs.put( "ColorSoftcopyPresentationStateStorage", UIDs.ColorSoftcopyPresentationStateStorage );
 		compositSopClassUIDs.put( "ComprehensiveSR", UIDs.ComprehensiveSR );
+		compositSopClassUIDs.put( "Dcm4cheEncapsulatedDocumentStorage", UIDs.Dcm4cheEncapsulatedDocumentStorage );
+		compositSopClassUIDs.put( "DeformableSpatialRegistrationStorage", UIDs.DeformableSpatialRegistrationStorage );
+		compositSopClassUIDs.put( "EncapsulatedPDFStorage", UIDs.EncapsulatedPDFStorage );
+		compositSopClassUIDs.put( "EnhancedSR", UIDs.EnhancedSR );
+		compositSopClassUIDs.put( "GrayscaleSoftcopyPresentationStateStorage", UIDs.GrayscaleSoftcopyPresentationStateStorage );
 		compositSopClassUIDs.put( "KeyObjectSelectionDocument", UIDs.KeyObjectSelectionDocument );
+		compositSopClassUIDs.put( "MRSpectroscopyStorage", UIDs.MRSpectroscopyStorage );
+		compositSopClassUIDs.put( "MammographyCADSR", UIDs.MammographyCADSR );
+		compositSopClassUIDs.put( "ProcedureLogStorage", UIDs.ProcedureLogStorage );
+		compositSopClassUIDs.put( "PseudoColorSoftcopyPresentationStateStorage", UIDs.PseudoColorSoftcopyPresentationStateStorage );
+		compositSopClassUIDs.put( "RTBeamsTreatmentRecordStorage", UIDs.RTBeamsTreatmentRecordStorage );
+		compositSopClassUIDs.put( "RTBrachyTreatmentRecordStorage", UIDs.RTBrachyTreatmentRecordStorage );
+		compositSopClassUIDs.put( "RTDoseStorage", UIDs.RTDoseStorage );
+		compositSopClassUIDs.put( "RTIonBeamsTreatmentRecordStorage", UIDs.RTIonBeamsTreatmentRecordStorage );
+		compositSopClassUIDs.put( "RTIonPlanStorage", UIDs.RTIonPlanStorage );
+		compositSopClassUIDs.put( "RTPlanStorage", UIDs.RTPlanStorage );
+		compositSopClassUIDs.put( "RTStructureSetStorage", UIDs.RTStructureSetStorage );
+		compositSopClassUIDs.put( "RTTreatmentSummaryRecordStorage", UIDs.RTTreatmentSummaryRecordStorage );
+		compositSopClassUIDs.put( "RawDataStorage", UIDs.RawDataStorage );
+		compositSopClassUIDs.put( "RealWorldValueMappingStorage", UIDs.RealWorldValueMappingStorage );
+		compositSopClassUIDs.put( "SegmentationStorage", UIDs.SegmentationStorage );
+		compositSopClassUIDs.put( "SiemensCSANonImageStorage", UIDs.SiemensCSANonImageStorage );
+		compositSopClassUIDs.put( "SpatialFiducialsStorage", UIDs.SpatialFiducialsStorage );
+		compositSopClassUIDs.put( "SpatialRegistrationStorage", UIDs.SpatialRegistrationStorage );
+		compositSopClassUIDs.put( "StandaloneCurveStorage", UIDs.StandaloneCurveStorage );
+		compositSopClassUIDs.put( "StandaloneModalityLUTStorage", UIDs.StandaloneModalityLUTStorage );
+		compositSopClassUIDs.put( "StandaloneOverlayStorage", UIDs.StandaloneOverlayStorage );
+		compositSopClassUIDs.put( "StandalonePETCurveStorage", UIDs.StandalonePETCurveStorage );
+		compositSopClassUIDs.put( "StandaloneVOILUTStorage", UIDs.StandaloneVOILUTStorage );
+		compositSopClassUIDs.put( "StereometricRelationshipStorage", UIDs.StereometricRelationshipStorage );
+		compositSopClassUIDs.put( "VideoEndoscopicImageStorage", UIDs.VideoEndoscopicImageStorage );
+		compositSopClassUIDs.put( "VideoMicroscopicImageStorage", UIDs.VideoMicroscopicImageStorage );
+		compositSopClassUIDs.put( "VideoPhotographicImageStorage", UIDs.VideoPhotographicImageStorage );
+		compositSopClassUIDs.put( "XRayRadiationDoseSR", UIDs.XRayRadiationDoseSR );
 	}
     
     
