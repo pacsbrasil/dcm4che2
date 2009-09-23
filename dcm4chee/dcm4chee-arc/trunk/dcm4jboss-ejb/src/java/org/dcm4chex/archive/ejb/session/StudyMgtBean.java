@@ -57,13 +57,11 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
-import org.dcm4chex.archive.ejb.entity.AttrUtils;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
@@ -212,43 +210,7 @@ public abstract class StudyMgtBean implements SessionBean {
         }
     }
 
-    /**
-     * @ejb.interface-method
-     */
-    public void updatePatientOnly(String iuid, Dataset ds, Dataset modAttrs)
-            throws DcmServiceException {
-        try {
-            StudyLocal study = getStudy(iuid);
-            AttributeFilter patientFilter = AttributeFilter.getPatientAttributeFilter();
-            Dataset patientAttr = patientFilter.filter(ds);
-            PatientUpdateLocal patientUpdate = patientUpdateHome.create();
-            try {
-                patientUpdate.updatePatient(study, patientAttr, modAttrs);
-            } finally {
-                patientUpdate.remove();
-            }
-        } catch (Exception e) {
-            throw new EJBException(e);
-        }
-    }
     
-    /**
-     * @ejb.interface-method
-     */
-    public void updateStudyOnly(String iuid, Dataset ds, Dataset modAttrs) throws DcmServiceException {
-        try {
-            StudyLocal study = getStudy(iuid);
-            Dataset origModAttrs = DcmObjectFactory.getInstance().newDataset(); 	
-            if( study.updateAttributes(ds, origModAttrs) ) {
-                AttrUtils.fetchModifiedAttributes(ds, origModAttrs, modAttrs, AttributeFilter.getStudyAttributeFilter());
-            }
-        }
-        catch (Exception e) {
-            throw new EJBException(e);
-        }
-    }
-
-
     /**
      * @ejb.interface-method
      */
