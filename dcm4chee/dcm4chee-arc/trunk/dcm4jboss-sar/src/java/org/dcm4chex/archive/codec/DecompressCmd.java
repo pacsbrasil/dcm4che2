@@ -155,12 +155,15 @@ public class DecompressCmd extends CodecCmd {
         this.iis = parser.getImageInputStream();
         this.itemParser = new ItemParser(parser, frames, tsuid);
         this.siis = new SegmentedImageInputStream(iis, itemParser);
-        if (samples == 3) {
-            ds.putUS(Tags.PlanarConfiguration, 0);
-            if (tsuid.equals(UIDs.JPEGBaseline)
-                    || tsuid.equals(UIDs.JPEGExtended)) {
-                ds.putCS(Tags.PhotometricInterpretation, "RGB");
-            }
+    }
+
+    public static void adjustPhotometricInterpretation(Dataset ds, String tsOrig) {
+        String pmi = ds.getString(Tags.PhotometricInterpretation, "MONOCHROME2");
+        if (pmi.startsWith("YBR") && (tsOrig.equals(UIDs.JPEGBaseline)
+                || tsOrig.equals(UIDs.JPEGExtended)
+                || tsOrig.equals(UIDs.JPEG2000Lossless)
+                || tsOrig.equals(UIDs.JPEG2000Lossy))) {
+            ds.putCS(Tags.PhotometricInterpretation, "RGB");
         }
     }
 
