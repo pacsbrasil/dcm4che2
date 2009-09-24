@@ -89,6 +89,7 @@ import com.sun.media.imageio.stream.SegmentedImageInputStream;
 public class Transcoder {
 
     private static final String RGB = "RGB";
+    private static final String YBR = "YBR";
     private static final String YBR_FULL_422 = "YBR_FULL_422";
     private static final String YBR_RCT = "YBR_RCT";
     private static final String YBR_ICT = "YBR_ICT";
@@ -460,15 +461,14 @@ public class Transcoder {
         if (getSamplesPerPixel() == 1) {
             return pmi;
         }
-        if (decodeParam.encapsulated) {
-            if (decodeParam.equals(UIDs.JPEGBaseline)
-                    || decodeParam.equals(UIDs.JPEGExtended)
-                    || decodeParam.equals(UIDs.JPEG2000Lossless)
-                    || decodeParam.equals(UIDs.JPEG2000Lossy)) {
-                pmi = RGB;
-            }
+        if (decodeParam.encapsulated && pmi.startsWith(YBR) &&
+                (decodeParam.equals(UIDs.JPEGBaseline)
+                        || decodeParam.equals(UIDs.JPEGExtended)
+                        || decodeParam.equals(UIDs.JPEG2000Lossless)
+                        || decodeParam.equals(UIDs.JPEG2000Lossy))) {
+            pmi = RGB;
         }
-        if (encodeParam.encapsulated) {
+        if (encodeParam.encapsulated && pmi.equals(RGB)) {
             if (encodeTS.equals(UIDs.JPEGBaseline)
                     || encodeTS.equals(UIDs.JPEGExtended)) {
                 return YBR_FULL_422;
