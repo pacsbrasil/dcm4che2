@@ -36,26 +36,20 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-import java.awt.Point;
-import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
-import java.awt.image.ComponentColorModel;
 import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
-import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
-import java.awt.image.WritableRaster;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteOrder;
-import java.util.Hashtable;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -282,11 +276,9 @@ public class Transcoder {
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             reader = f.getReaderForTransferSyntax(tsuid);
             siis = new SegmentedImageInputStream(iis, itemParser);
-            bi = createBufferedImage();
-        } else {
-            bi = pixelDataParam.createBufferedImage(isCompressionLossless(),
-                    getMaxBits());
         }
+        bi = pixelDataParam.createBufferedImage(isCompressionLossless(),
+                    getMaxBits());
         if (log.isDebugEnabled()) {
             log.debug("read header: " + pixelDataParam);
         }
@@ -581,30 +573,33 @@ public class Transcoder {
             ios.flushBefore(ios.getStreamPosition());
             Raster raster = bi.getRaster();
             DataBuffer buffer = raster.getDataBuffer();
-            final int stride = ((ComponentSampleModel) raster.getSampleModel())
-                    .getScanlineStride();
+            ComponentSampleModel sm = (ComponentSampleModel) raster.getSampleModel();
+            final int stride = sm.getScanlineStride();
             final int h = raster.getHeight();
             final int w = raster.getWidth();
-            final int b = raster.getNumBands();
-            final int wb = w * b;
-            switch (buffer.getDataType()) {
-            case DataBuffer.TYPE_BYTE:
-                for (int i = 0; i < h; ++i)
-                    ios.write(((DataBufferByte) buffer).getData(), i * stride,
-                            wb);
-                break;
-            case DataBuffer.TYPE_USHORT:
-                for (int i = 0; i < h; ++i)
-                    ios.writeShorts(((DataBufferUShort) buffer).getData(), i
-                            * stride, wb);
-                break;
-            case DataBuffer.TYPE_SHORT:
-                for (int i = 0; i < h; ++i)
-                    ios.writeShorts(((DataBufferShort) buffer).getData(), i
-                            * stride, wb);
-                break;
-            default:
-                throw new RuntimeException("dataType:" + buffer.getDataType());
+            final int numBands = sm.getNumBands();
+            final int numBanks = buffer.getNumBanks();
+            final int l = w * numBands  / numBanks;
+            for (int b = 0; b < numBanks; b++) {
+                switch (buffer.getDataType()) {
+                case DataBuffer.TYPE_BYTE:
+                    for (int i = 0; i < h; ++i)
+                        ios.write(((DataBufferByte) buffer).getData(b),
+                                i * stride, l);
+                    break;
+                case DataBuffer.TYPE_USHORT:
+                    for (int i = 0; i < h; ++i)
+                        ios.writeShorts(((DataBufferUShort) buffer).getData(b),
+                                i * stride, l);
+                    break;
+                case DataBuffer.TYPE_SHORT:
+                    for (int i = 0; i < h; ++i)
+                        ios.writeShorts(((DataBufferShort) buffer).getData(b),
+                                i * stride, l);
+                    break;
+                default:
+                    throw new RuntimeException("dataType:" + buffer.getDataType());
+                }
             }
             ios.flushBefore(ios.getStreamPosition());
         }
@@ -700,35 +695,6 @@ public class Transcoder {
      */
     public void setIgnoreMissingPixelData(boolean ignoreMissingPixelData) {
         this.ignoreMissingPixelData = ignoreMissingPixelData;
-    }
-
-    protected BufferedImage createBufferedImage() {
-        int pixelStride;
-        int[] bandOffset;
-        int dataType;
-        int colorSpace;
-        if (pixelDataParam.getSamplesPerPixel() == 3) {
-            pixelStride = 3;
-            bandOffset = new int[] { 0, 1, 2 };
-            dataType = DataBuffer.TYPE_BYTE;
-            colorSpace = ColorSpace.CS_sRGB;
-        } else {
-            pixelStride = 1;
-            bandOffset = new int[] { 0 };
-            dataType = pixelDataParam.getBitsAllocated() == 8 
-                    ? DataBuffer.TYPE_BYTE
-                    : DataBuffer.TYPE_USHORT;
-            colorSpace = ColorSpace.CS_GRAY;
-        }
-        SampleModel sm = new PixelInterleavedSampleModel(dataType,
-                pixelDataParam.getColumns(), pixelDataParam.getRows(),
-                pixelStride, pixelDataParam.getColumns() * pixelStride,
-                bandOffset);
-        ColorModel cm = new ComponentColorModel(
-                ColorSpace.getInstance(colorSpace), sm.getSampleSize(), false,
-                false, Transparency.OPAQUE, dataType);
-        WritableRaster r = Raster.createWritableRaster(sm, new Point(0, 0));
-        return new BufferedImage(cm, r, false, new Hashtable());
     }
 
 }
