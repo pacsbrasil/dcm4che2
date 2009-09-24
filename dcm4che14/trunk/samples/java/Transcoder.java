@@ -456,8 +456,17 @@ public class Transcoder {
     }
 
     private String getPhotometricInterpretation() {
+        String pmi = pixelDataParam.getPhotoMetricInterpretation();
         if (getSamplesPerPixel() == 1) {
-            return pixelDataParam.getPhotoMetricInterpretation();
+            return pmi;
+        }
+        if (decodeParam.encapsulated) {
+            if (decodeParam.equals(UIDs.JPEGBaseline)
+                    || decodeParam.equals(UIDs.JPEGExtended)
+                    || decodeParam.equals(UIDs.JPEG2000Lossless)
+                    || decodeParam.equals(UIDs.JPEG2000Lossy)) {
+                pmi = RGB;
+            }
         }
         if (encodeParam.encapsulated) {
             if (encodeTS.equals(UIDs.JPEGBaseline)
@@ -471,7 +480,7 @@ public class Transcoder {
                 return YBR_ICT;
             }
         }
-        return RGB;
+        return pmi;
     }
 
     private int getSamplesPerPixel() {
