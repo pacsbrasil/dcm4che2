@@ -112,9 +112,8 @@ public class DecompressCmd extends CodecCmd {
             BufferedOutputStream bos = new BufferedOutputStream(dos, buffer);
             try {
                 DcmEncodeParam encParam = DcmEncodeParam.valueOf(outTS);
-                String inTS = getTransferSyntax(ds);
-                adjustPhotometricInterpretation(ds, inTS);
-                DecompressCmd cmd = new DecompressCmd(ds, inTS, parser);
+                DecompressCmd cmd = new DecompressCmd(ds,
+                        getTransferSyntax(ds), parser);
                 int len = cmd.getPixelDataLength();
                 FileMetaInfo fmi = dof.newFileMetaInfo(ds, outTS);
                 ds.setFileMetaInfo(fmi);
@@ -156,15 +155,12 @@ public class DecompressCmd extends CodecCmd {
         this.iis = parser.getImageInputStream();
         this.itemParser = new ItemParser(parser, frames, tsuid);
         this.siis = new SegmentedImageInputStream(iis, itemParser);
-    }
-
-    public static void adjustPhotometricInterpretation(Dataset ds, String tsOrig) {
-        String pmi = ds.getString(Tags.PhotometricInterpretation, "MONOCHROME2");
-        if (pmi.startsWith("YBR") && (tsOrig.equals(UIDs.JPEGBaseline)
-                || tsOrig.equals(UIDs.JPEGExtended)
-                || tsOrig.equals(UIDs.JPEG2000Lossless)
-                || tsOrig.equals(UIDs.JPEG2000Lossy))) {
-            ds.putCS(Tags.PhotometricInterpretation, "RGB");
+        if (samples == 3) {
+            ds.putUS(Tags.PlanarConfiguration, 0);
+            if (tsuid.equals(UIDs.JPEGBaseline)
+                    || tsuid.equals(UIDs.JPEGExtended)) {
+                ds.putCS(Tags.PhotometricInterpretation, "RGB");
+            }
         }
     }
 
