@@ -112,8 +112,9 @@ public class DecompressCmd extends CodecCmd {
             BufferedOutputStream bos = new BufferedOutputStream(dos, buffer);
             try {
                 DcmEncodeParam encParam = DcmEncodeParam.valueOf(outTS);
-                DecompressCmd cmd = new DecompressCmd(ds,
-                        getTransferSyntax(ds), parser);
+                String inTS = getTransferSyntax(ds);
+                adjustPhotometricInterpretation(ds, inTS);
+                DecompressCmd cmd = new DecompressCmd(ds, inTS, parser);
                 int len = cmd.getPixelDataLength();
                 FileMetaInfo fmi = dof.newFileMetaInfo(ds, outTS);
                 ds.setFileMetaInfo(fmi);
