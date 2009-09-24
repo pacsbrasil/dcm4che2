@@ -92,6 +92,9 @@ class SqlBuilder {
     public void setSelect(String[] fields) {
         select = JdbcProperties.getInstance().getProperties(fields);
     }
+    public void setFieldNamesForSelect(String[] fields) {
+        select = fields;
+    }
 
     public void setSelectCount( String[] fields, boolean distinct) {
         StringBuffer sb = new StringBuffer();
@@ -388,7 +391,7 @@ class SqlBuilder {
         StringBuffer sb = new StringBuffer("SELECT ");
         if (distinct) sb.append("DISTINCT ");
         if (limit > 0 || offset > 0) {
-            appendLimitbeforeFrom(sb, appendTo(new StringBuffer(), select).toString());
+            appendLimitbeforeFrom(sb);
         } else {
             appendTo(sb, select);            
         }
@@ -411,7 +414,7 @@ class SqlBuilder {
         return sb.toString();
     }
 
-    public StringBuffer appendLimitbeforeFrom(StringBuffer sb, String select) {
+    public StringBuffer appendLimitbeforeFrom(StringBuffer sb) {
         System.out.println("Database:"+getDatabase());
         switch (getDatabase()) {
         case JdbcProperties.HSQL :
@@ -420,11 +423,11 @@ class SqlBuilder {
             sb.append(" ");
             sb.append(limit);
             sb.append(" ");
-            sb.append(select);
+            appendTo(sb, select);
             break;
         case JdbcProperties.DB2 :
             sb.append("* FROM ( SELECT ");
-            sb.append(select);
+            appendTo(sb, select);
             sb.append(", ROW_NUMBER() OVER (ORDER BY ");
             appendTo(sb, orderby.toArray(new String[orderby.size()]));
             sb.append(") AS rownum ");
@@ -455,10 +458,10 @@ class SqlBuilder {
             sb.append(" SKIP ");
             sb.append(offset);
             sb.append(" ");
-            sb.append(select);
+            appendTo(sb, select);
             break;
         default:
-            sb.append(select);
+            appendTo(sb, select);
         break;
         }
         return sb;

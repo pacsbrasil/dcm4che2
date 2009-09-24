@@ -46,6 +46,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -91,7 +92,8 @@ public final class QueryForwardCmd extends BaseReadCmd {
             StringBuffer sb = new StringBuffer(sql.length()+30);
             sb.append(sql.substring(0, pos0));//select [distinct]
             sqlBuilder.setLimit(limit);
-            sqlBuilder.appendLimitbeforeFrom(sb, sql.substring(pos0,pos1));
+            sqlBuilder.setFieldNamesForSelect(toFields(sql.substring(pos0,pos1)));
+            sqlBuilder.appendLimitbeforeFrom(sb);
             int pos2 = sql1.indexOf("FOR READ ONLY", pos1); //DB2?
             if (pos2 > 0) {
                 sb.append(sql.substring(pos1, pos2));
@@ -108,6 +110,16 @@ public final class QueryForwardCmd extends BaseReadCmd {
         }
     }
     
+    private static String[] toFields(String s) {
+        StringTokenizer st = new StringTokenizer(s, ",");
+        String[] fields = new String[st.countTokens()];
+        int i = 0;
+        while (st.hasMoreTokens()) {
+            fields[i++] = st.nextToken();
+        }
+        return fields;
+    }
+
     public Map<String,List<String>> getSeriesIUIDs(Long updatedBefore) throws SQLException {
         if (stmt == null) 
             open();
