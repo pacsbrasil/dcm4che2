@@ -415,7 +415,6 @@ class SqlBuilder {
     }
 
     public StringBuffer appendLimitbeforeFrom(StringBuffer sb) {
-        System.out.println("Database:"+getDatabase());
         switch (getDatabase()) {
         case JdbcProperties.HSQL :
             sb.append("LIMIT ");
