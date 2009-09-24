@@ -299,6 +299,9 @@ public class FileDataSource implements DataSource {
                 write(ds, out, enc);
                 return;
             }
+            if (encapsulated && !enc.encapsulated) {
+                DecompressCmd.adjustPhotometricInterpretation(ds, tsOrig);
+            }
             log.debug("Dataset:\n");
             log.debug(ds);
             write(ds, out, enc);
