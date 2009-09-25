@@ -177,8 +177,8 @@
 								src="images/send.gif" alt="send" border="0"
 								title="&SendSelectedEntitiesToSpecifiedDestination;"
 								onclick="return confirm('&confirmSendSelectedEntitiesTo1;' 
-         + document.myForm.destination.options[document.myForm.destination.selectedIndex ].text
-         + '&confirmSendSelectedEntitiesTo2;')">
+								+ document.myForm.destination.options[document.myForm.destination.selectedIndex ].text
+								+ '&confirmSendSelectedEntitiesTo2;')">
 								<xsl:if test="total &lt;= 0">
 									<xsl:attribute name="disabled">disabled</xsl:attribute>
 								</xsl:if>
