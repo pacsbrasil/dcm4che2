@@ -45,8 +45,10 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -824,10 +826,14 @@ public class StoreScpService extends AbstractScpService {
 
     private void checkPendingSeriesStored() throws Exception {
         Storage store = getStorage();
-        SeriesStored[] seriesStored = store
-                .checkSeriesStored(seriesStoredNotificationDelay);
-        for (int i = 0; i < seriesStored.length; i++) {
-            sendSeriesStoredNotification(store, seriesStored[i]);
+        Timestamp updatedBefore = new Timestamp(
+                System.currentTimeMillis() - seriesStoredNotificationDelay);
+        Collection<Long> seriesPks = store.getPksOfPendingSeries(updatedBefore);
+        for (Long seriesPk : seriesPks) {
+            SeriesStored seriesStored = 
+                    store.makeSeriesStored(seriesPk, updatedBefore);
+            if (seriesStored != null)
+                sendSeriesStoredNotification(store, seriesStored);
         }
     }
 
