@@ -101,6 +101,7 @@ public class MwlReplicaService extends AbstractScuService {
     private long taskInterval = 0L;
     private Integer listenerID;
     private String timerIDMwlReplica;
+    private boolean isRunning;
     private String issuerOfPatient;
     private boolean forceIssuerCoercion;
     private boolean debugMode;
@@ -123,12 +124,10 @@ public class MwlReplicaService extends AbstractScuService {
     private final NotificationListener mwlReplicationListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
             log.debug("mwlReplicationListener notified!");
-            try {
-                process();
-            } catch (Exception e) {
-                log.error("MWL Replication process failed!", e);
-                errorHistory.add("process:"+e.getMessage());
-            }
+            new Thread(new Runnable(){
+                public void run() {
+                    process();
+                }}).start();
         }
     };
 
@@ -265,6 +264,11 @@ public class MwlReplicaService extends AbstractScuService {
     public int getTotalErrorCount() {
         return this.totalErrorCount;
     }
+    
+    public boolean isRunning() {
+        return isRunning;
+    }
+        
     public String showErrorHistory() {
         StringBuffer sb = new StringBuffer(errorHistory.size()*20);
         sb.append(errorCount).append(" (").append(totalErrorCount).append(" since service start) Errors:");
@@ -300,6 +304,13 @@ public class MwlReplicaService extends AbstractScuService {
     }
 
     private boolean process() {
+        synchronized(this) {
+            if (isRunning) {
+                log.info("replicateMWL is already running!");
+                return false;
+            }
+            isRunning = true;
+        }
         log.info("MWL Replication process started!");
         try {
             List l = replicateMWLEntries(calledAETs, null);
@@ -307,7 +318,10 @@ public class MwlReplicaService extends AbstractScuService {
             return true;
         } catch (Exception e) {
             log.error("MWL replication process failed!", e);
+            errorHistory.add("process:"+e.getMessage());
             return false;
+        } finally {
+            isRunning = false;
         }
     }
     public List replicateMWLEntries(final String[] aets, Dataset searchDS) {
@@ -492,18 +506,12 @@ public class MwlReplicaService extends AbstractScuService {
         ds.putLO( Tags.RequestedProcedureDescription );
         ds.putSQ(Tags.RequestedProcedureCodeSeq);
         ds.putUI( Tags.StudyInstanceUID );
-        {
-            Dataset dsRefStdy = ds.putSQ( Tags.RefStudySeq ).addNewItem();
-            dsRefStdy.putUI( Tags.RefSOPClassUID );
-            dsRefStdy.putUI( Tags.RefSOPInstanceUID );
-        }
         ds.putSH(Tags.RequestedProcedurePriority);
         ds.putLO(Tags.PatientTransportArrangements);
         //other Attrs from requested procedure Module
         ds.putLO(Tags.ReasonForTheRequestedProcedure);
         ds.putLT(Tags.RequestedProcedureComments);
         ds.putSQ(Tags.ReasonforRequestedProcedureCodeSeq);
-        ds.putSQ(Tags.RefStudySeq);
         ds.putLO(Tags.RequestedProcedureLocation);
         ds.putLO(Tags.ConfidentialityCode);
         ds.putSH(Tags.ReportingPriority);

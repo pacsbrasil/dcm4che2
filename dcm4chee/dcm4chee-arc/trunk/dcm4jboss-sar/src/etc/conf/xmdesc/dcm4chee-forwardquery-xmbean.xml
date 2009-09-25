@@ -94,6 +94,14 @@
       </descriptors>
    </attribute>
    
+      <attribute access="read-only"
+      getMethod="isRunning">
+      <description>Current state if a forward task is running. Used to avoid concurrency!
+      </description>
+      <name>isRunning</name>
+      <type>boolean</type>
+   </attribute>
+
    <attribute access="read-write" getMethod="getForwardPriority" setMethod="setForwardPriority">
       <description>Forwarding priority. Enumerated Values: LOW, MEDIUM, HIGH.
       </description>

@@ -80,6 +80,7 @@ NotificationListener {
 
     private Integer schedulerID;
     private String timerIDForwardPolling;
+    private boolean isRunning;
 
     private ObjectName moveScuServiceName;
     
@@ -135,6 +136,10 @@ NotificationListener {
         return lastCheckResult == null ? "NOT CHECKED" : lastCheckResult;
     }
 
+    public boolean isRunning() {
+        return isRunning;
+    }
+        
     private void checkSQL(String newSql) throws SQLException {
         sqlIsValid = false;
         String sql = newSql.toUpperCase();
@@ -246,6 +251,13 @@ NotificationListener {
             log.warn("No Query defined!");
             return 0;
         }
+        synchronized(this) {
+            if (isRunning) {
+                log.info("ForwardByQuery is already running!");
+                return -1;
+            }
+            isRunning = true;
+        }
         int nrOfSeries = 0;
         try {
             long scheduledTime = 0L;
@@ -260,11 +272,13 @@ NotificationListener {
                 log.info("Schedule MoveOrder:"+order);
                 this.scheduleMove(order, scheduledTime);
             }
+            return nrOfSeries;
         } catch (Exception e) {
             log.error("Failed to check for forward:", e);
             return 0;
+        } finally {
+            isRunning = false;
         }
-        return nrOfSeries;
     }
     
     public String showSQL() {

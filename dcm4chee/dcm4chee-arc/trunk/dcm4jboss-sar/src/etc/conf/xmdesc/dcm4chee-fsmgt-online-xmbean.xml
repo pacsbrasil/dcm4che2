@@ -495,6 +495,13 @@
       <value value="5m" />
     </descriptors>
   </attribute>
+   <attribute access="read-only"
+      getMethod="isRunningScheduleStudiesForDeletion">
+      <description>Current state if ScheduleStudiesForDeletion task is running. Used to avoid concurrency!
+      </description>
+      <name>isRunningScheduleStudiesForDeletion</name>
+      <type>boolean</type>
+   </attribute>
  
   <attribute access="read-write"
     getMethod="getScheduleStudiesForDeletionBatchSize"
@@ -528,6 +535,13 @@
       <value value="1m" />
     </descriptors>
   </attribute>
+   <attribute access="read-only"
+      getMethod="isRunningDeleteOrphanedPrivateFiles">
+      <description>Current state if DeleteOrphanedPrivateFiles task is running. Used to avoid concurrency!
+      </description>
+      <name>isRunningDeleteOrphanedPrivateFiles</name>
+      <type>boolean</type>
+   </attribute>
 
    <attribute access="read-write"
       getMethod="getDeleteOrphanedPrivateFilesBatchSize"

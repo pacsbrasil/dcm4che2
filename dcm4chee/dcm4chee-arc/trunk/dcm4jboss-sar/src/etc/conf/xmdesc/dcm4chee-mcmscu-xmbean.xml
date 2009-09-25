@@ -132,6 +132,13 @@
          <value value="NEVER"/>
       </descriptors>
    </attribute>
+   <attribute access="read-only"
+      getMethod="isRunningScheduleMedia">
+      <description>Current state if ScheduleMedia task is running. Used to avoid concurrency!
+      </description>
+      <name>isRunningScheduleMedia</name>
+      <type>boolean</type>
+   </attribute>
    <attribute access="read-write" getMethod="getUpdateMediaStatusInterval" setMethod="setUpdateMediaStatusInterval">
       <description>Interval in which the Media Creation Server is queried for the status
           of pending Media Creation Requests.
@@ -143,6 +150,13 @@
          <value value="NEVER"/>
       </descriptors>
    </attribute>
+   <attribute access="read-only"
+      getMethod="isRunningUpdateMediaStatus">
+      <description>Current state if UpdateMediaStatus task is running. Used to avoid concurrency!
+      </description>
+      <name>isRunningUpdateMediaStatus</name>
+      <type>boolean</type>
+   </attribute>
    <attribute access="read-write" getMethod="getBurnMediaInterval" setMethod="setBurnMediaInterval">
       <description>Interval in which creation of media with studies
           received that are older than configured MaxStudyAge is triggered
@@ -153,6 +167,13 @@
       <descriptors>
          <value value="NEVER"/>
       </descriptors>
+   </attribute>
+   <attribute access="read-only"
+      getMethod="isRunningBurnMedia">
+      <description>Current state if BurnMedia task is running. Used to avoid concurrency!
+      </description>
+      <name>isRunningBurnMedia</name>
+      <type>boolean</type>
    </attribute>
    <attribute access="read-write" getMethod="isAutomaticMediaCreation" setMethod="setAutomaticMediaCreation">
       <description>Enables automatic media creation.

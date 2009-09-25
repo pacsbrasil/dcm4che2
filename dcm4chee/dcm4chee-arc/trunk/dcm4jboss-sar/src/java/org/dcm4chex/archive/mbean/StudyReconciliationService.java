@@ -84,6 +84,7 @@ public class StudyReconciliationService extends AbstractScuService {
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
     private long taskInterval = 0L;
+    private boolean isRunning;
 
     private int disabledStartHour;
 
@@ -135,11 +136,15 @@ public class StudyReconciliationService extends AbstractScuService {
                             + disabledStartHour + " and " + disabledEndHour
                             + " !");
             } else {
-                try {
-                    log.info(check());
-                } catch (Exception e) {
-                    log.error("Study Reconciliation failed!", e);
-                }
+                new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            log.info(check());
+                        } catch (Exception e) {
+                            log.error("Study Reconciliation failed!", e);
+                        }
+                    }
+                }).start();
             }
         }
     };
@@ -189,6 +194,10 @@ public class StudyReconciliationService extends AbstractScuService {
         }
     }
 
+    public boolean isRunning() {
+        return isRunning;
+    }
+    
     /**
      * Getter for minStudyAge.
      * <p>
@@ -247,84 +256,96 @@ public class StudyReconciliationService extends AbstractScuService {
     }
 
     public String check() throws Exception {
-        long start = System.currentTimeMillis();
-        StudyReconciliation studyReconciliation = newStudyReconciliation();
-        Timestamp createdBefore = new Timestamp(System.currentTimeMillis()
-                - this.minStudyAge);
-        Collection col = studyReconciliation.getStudyIuidsWithStatus(
-                scheduledStatus, createdBefore, limitNumberOfStudiesPerTask);
-        log.info("Check " + col.size()
-                + " Studies for Reconcilitiation (status:"
-                + this.scheduledStatus + ")");
-        if (col.isEmpty()) {
-            log.debug("No Studies with status " + scheduledStatus
-                    + " found for Reconcilitiation!");
-            return "Nothing to do!";
+        synchronized(this) {
+            if (isRunning) {
+                String msg = "SyncFileStatus is already running!";
+                log.info(msg);
+                return msg;
+            }
+            isRunning = true;
         }
-        Map archiveStudy;
-        Dataset qrSeriesDS = getSeriesQueryDS();
-        Dataset qrInstanceDS = getInstanceQueryDS();
-        ActiveAssociation aa = openAssociation(calledAET, 
-                UIDs.StudyRootQueryRetrieveInformationModelFIND);        
-        int numPatUpdt = 0, numPatMerge = 0, numFailures = 0;
         try {
-            String studyIuid;
-            for (Iterator iter = col.iterator(); iter.hasNext();) {
-                studyIuid = (String) iter.next();
-                qrSeriesDS.putUI(Tags.StudyInstanceUID, studyIuid);
-                archiveStudy = query(aa, qrSeriesDS, Tags.SeriesInstanceUID);
-                Dataset patDS = checkStudy(qrSeriesDS, qrInstanceDS,
-                        archiveStudy, aa);
-                if (patDS != null) {
-                    log.debug("check Patient info of study " + studyIuid);
-                    Dataset origPatDS = (Dataset) archiveStudy.values().iterator().next();
-                    if (compare(patDS, origPatDS, Tags.PatientID)
-                            && compare(patDS, origPatDS,
-                                    Tags.IssuerOfPatientID)) {
-                        if (!compare(patDS, origPatDS, Tags.PatientName)
-                                || !compare(patDS, origPatDS,
-                                        Tags.PatientBirthDate)
-                                        || !compare(patDS, origPatDS,
-                                                Tags.PatientSex)) {
-                            log.info("UPDATE patient: "
+            long start = System.currentTimeMillis();
+            StudyReconciliation studyReconciliation = newStudyReconciliation();
+            Timestamp createdBefore = new Timestamp(System.currentTimeMillis()
+                    - this.minStudyAge);
+            Collection col = studyReconciliation.getStudyIuidsWithStatus(
+                    scheduledStatus, createdBefore, limitNumberOfStudiesPerTask);
+            log.info("Check " + col.size()
+                    + " Studies for Reconcilitiation (status:"
+                    + this.scheduledStatus + ")");
+            if (col.isEmpty()) {
+                log.debug("No Studies with status " + scheduledStatus
+                        + " found for Reconcilitiation!");
+                return "Nothing to do!";
+            }
+            Map archiveStudy;
+            Dataset qrSeriesDS = getSeriesQueryDS();
+            Dataset qrInstanceDS = getInstanceQueryDS();
+            ActiveAssociation aa = openAssociation(calledAET, 
+                    UIDs.StudyRootQueryRetrieveInformationModelFIND);        
+            int numPatUpdt = 0, numPatMerge = 0, numFailures = 0;
+            try {
+                String studyIuid;
+                for (Iterator iter = col.iterator(); iter.hasNext();) {
+                    studyIuid = (String) iter.next();
+                    qrSeriesDS.putUI(Tags.StudyInstanceUID, studyIuid);
+                    archiveStudy = query(aa, qrSeriesDS, Tags.SeriesInstanceUID);
+                    Dataset patDS = checkStudy(qrSeriesDS, qrInstanceDS,
+                            archiveStudy, aa);
+                    if (patDS != null) {
+                        log.debug("check Patient info of study " + studyIuid);
+                        Dataset origPatDS = (Dataset) archiveStudy.values().iterator().next();
+                        if (compare(patDS, origPatDS, Tags.PatientID)
+                                && compare(patDS, origPatDS,
+                                        Tags.IssuerOfPatientID)) {
+                            if (!compare(patDS, origPatDS, Tags.PatientName)
+                                    || !compare(patDS, origPatDS,
+                                            Tags.PatientBirthDate)
+                                            || !compare(patDS, origPatDS,
+                                                    Tags.PatientSex)) {
+                                log.info("UPDATE patient: "
+                                        + origPatDS.getString(Tags.PatientID));
+                                studyReconciliation.updatePatient(origPatDS);
+                                numPatUpdt++;
+                            }
+                        } else {
+                            log.info("MERGE patient: "
+                                    + patDS.getString(Tags.PatientID)
+                                    + " with "
                                     + origPatDS.getString(Tags.PatientID));
-                            studyReconciliation.updatePatient(origPatDS);
-                            numPatUpdt++;
+                            studyReconciliation.mergePatient(origPatDS, patDS);
+                            numPatMerge++;
                         }
+                        studyReconciliation.updateStudyAndSeries(studyIuid,
+                                successStatus, archiveStudy);
                     } else {
-                        log.info("MERGE patient: "
-                                + patDS.getString(Tags.PatientID)
-                                + " with "
-                                + origPatDS.getString(Tags.PatientID));
-                        studyReconciliation.mergePatient(origPatDS, patDS);
-                        numPatMerge++;
+                        numFailures++;
+                        studyReconciliation.updateStatus(studyIuid,
+                                failureStatus);
                     }
-                    studyReconciliation.updateStudyAndSeries(studyIuid,
-                            successStatus, archiveStudy);
-                } else {
-                    numFailures++;
-                    studyReconciliation.updateStatus(studyIuid,
-                            failureStatus);
+                }
+            } finally {
+                try {
+                    aa.release(true);
+                } catch (Exception e) {
+                    log.warn(
+                            "Failed to release association " + aa.getAssociation(),
+                            e);
                 }
             }
+            StringBuffer sb = new StringBuffer();
+            sb.append(col.size()).append(
+                    " studies checked for Reconciliation!(updt:")
+                    .append(numPatUpdt);
+            sb.append(";merged:").append(numPatMerge).append(";failed:").append(
+                    numFailures);
+            sb.append(") in ").append(System.currentTimeMillis() - start).append(
+                    " ms");
+            return sb.toString();
         } finally {
-            try {
-                aa.release(true);
-            } catch (Exception e) {
-                log.warn(
-                        "Failed to release association " + aa.getAssociation(),
-                        e);
-            }
+            isRunning = false;
         }
-        StringBuffer sb = new StringBuffer();
-        sb.append(col.size()).append(
-                " studies checked for Reconciliation!(updt:")
-                .append(numPatUpdt);
-        sb.append(";merged:").append(numPatMerge).append(";failed:").append(
-                numFailures);
-        sb.append(") in ").append(System.currentTimeMillis() - start).append(
-                " ms");
-        return sb.toString();
     }
 
     /**

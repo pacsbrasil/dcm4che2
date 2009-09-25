@@ -147,6 +147,13 @@ objects.
       <value value="NEVER" />
     </descriptors>
   </attribute>
+   <attribute access="read-only"
+      getMethod="isRunning">
+      <description>Current state if compression task is running. Used to avoid concurrency!
+      </description>
+      <name>isRunning</name>
+      <type>boolean</type>
+   </attribute>
 
   <attribute access="read-write" getMethod="getLimitNumberOfFilesPerTask"
     setMethod="setLimitNumberOfFilesPerTask">

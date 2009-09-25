@@ -482,6 +482,13 @@ which Series Stored Notifications were not yet emitted.]]>
          <value value="1m"/>
       </descriptors>
    </attribute>
+   <attribute access="read-only"
+      getMethod="isRunning">
+      <description>Current state if CheckPendingSeriesStored task is running. Used to avoid concurrency!
+      </description>
+      <name>isRunning</name>
+      <type>boolean</type>
+   </attribute>
    <attribute access="read-write"
       getMethod="getSeriesStoredNotificationDelay"
       setMethod="setSeriesStoredNotificationDelay">
