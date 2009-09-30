@@ -799,6 +799,8 @@ public class DcmRcv extends StorageService {
 
     public void setJournal(String journalRootDir) {
         cache.setJournalRootDir(new File(journalRootDir));
+        // If the journal is used, then generate an instance name so it is thread safe.
+        cache.generateDefaultInstance("DcmRcv");
     }
 
     public void setJournalFilePathFormat(String format) {
