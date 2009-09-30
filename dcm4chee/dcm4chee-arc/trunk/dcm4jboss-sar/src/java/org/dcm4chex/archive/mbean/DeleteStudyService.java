@@ -39,6 +39,7 @@ package org.dcm4chex.archive.mbean;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Date;
 
 import javax.jms.JMSException;
@@ -57,6 +58,7 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.exceptions.ConcurrentStudyStorageException;
+import org.dcm4chex.archive.exceptions.NoSuchSeriesException;
 import org.dcm4chex.archive.exceptions.NoSuchStudyException;
 import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -84,6 +86,16 @@ public class DeleteStudyService extends ServiceMBeanSupport
     private boolean createIANonStudyDelete = false;
 
     private int availabilityOfExternalRetrieveable;
+
+    private boolean deleteSeriesBySeries;
+
+    public boolean isDeleteSeriesBySeries() {
+        return deleteSeriesBySeries;
+    }
+
+    public void setDeleteSeriesBySeries(boolean deleteSeriesBySeries) {
+        this.deleteSeriesBySeries = deleteSeriesBySeries;
+    }
 
     public boolean isDeleteStudyFromDB() {
         return deleteStudyFromDB;
@@ -190,7 +202,11 @@ public class DeleteStudyService extends ServiceMBeanSupport
                     m.invoke(this, new Object[] { actionOrder.getData() });
                 } else if (order instanceof DeleteStudyOrder) {
                     try {
-                        deleteStudy((DeleteStudyOrder) order);
+                        if (deleteSeriesBySeries) {
+                            deleteSeries((DeleteStudyOrder) order);
+                        } else {
+                            deleteStudy((DeleteStudyOrder) order);
+                        }
                     } catch (ConcurrentStudyStorageException e) {
                         log.info(e.getMessage());
                     } 
@@ -268,6 +284,50 @@ public class DeleteStudyService extends ServiceMBeanSupport
                 sendJMXNotification(new StudyDeleted(ian));
             } catch (Exception e) {
                 log.error("Failed to create IAN on Study Delete:", e);
+            }
+        }
+    }
+
+    private void deleteSeries(DeleteStudyOrder order) throws Exception {
+        FileSystemMgt2 fsMgt = fileSystemMgt();
+        Collection<Long> seriesPks = fsMgt.getSeriesPks(order);
+        for (Long seriesPk : seriesPks) {
+            Dataset ian = null;
+            // prepare IAN if series may be deleted from DB by fsMgt.deleteSeries()
+            if (createIANonStudyDelete && deleteStudyFromDB) {
+                try {
+                    ian = fsMgt.createIAN(order, seriesPk, true);
+                } catch (NoSuchSeriesException e) {
+                    // Series may be already deleted from DB by previous
+                    // attempt processing this DeleteStudyOrder
+                    continue;
+                }
+            }
+            String[] filePaths = fsMgt.deleteSeries(order, seriesPk, 
+                    availabilityOfExternalRetrieveable, deleteStudyFromDB,
+                    deletePatientWithoutObjects);
+            if (filePaths.length == 0) {
+                // Files of this Series already deleted by previous attempt 
+                // processing this DeleteStudyOrder
+                continue;
+            }
+            for (int i = 0; i < filePaths.length; i++) {
+                FileUtils.delete(FileUtils.toFile(filePaths[i]), true);
+            }
+            if (createIANonStudyDelete) {
+                try {
+                    try {
+                        ian = fsMgt.createIAN(order, seriesPk, false);
+                    } catch (NoSuchSeriesException e) {
+                        // OK, in case of series was deleted from DB
+                        if (ian == null) {
+                            throw e;
+                        }
+                    }
+                    sendJMXNotification(new StudyDeleted(ian));
+                } catch (Exception e) {
+                    log.error("Failed to create IAN on Study Delete:", e);
+                }
             }
         }
     }
