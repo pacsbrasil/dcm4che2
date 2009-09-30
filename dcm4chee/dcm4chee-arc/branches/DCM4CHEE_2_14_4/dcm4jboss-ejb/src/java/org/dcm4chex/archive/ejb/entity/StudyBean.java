@@ -1069,6 +1069,20 @@ public abstract class StudyBean implements EntityBean {
     }
     
     /**
+     * @ejb.select query="SELECT s.pk FROM Series s WHERE s.study.pk = ?1"
+     *             transaction-type="Supports"
+     */
+    public abstract Collection ejbSelectSeriesPks(java.lang.Long study_fk)
+            throws FinderException;
+
+    /**    
+     * @ejb.interface-method
+     */
+    public Collection getSeriesPks() throws FinderException {      
+        return ejbSelectSeriesPks(getPk());
+    }
+    
+    /**
      * @ejb.select query="SELECT Object(i) FROM Instance i WHERE i.series.study.pk = ?1 AND i.media IS NULL"
      *             transaction-type="Supports"
      */

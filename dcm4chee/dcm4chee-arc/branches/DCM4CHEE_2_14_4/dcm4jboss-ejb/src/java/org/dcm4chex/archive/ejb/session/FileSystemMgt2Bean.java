@@ -89,6 +89,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesOfSeriesCmd;
 import org.dcm4chex.archive.exceptions.ConcurrentStudyStorageException;
+import org.dcm4chex.archive.exceptions.NoSuchSeriesException;
 import org.dcm4chex.archive.exceptions.NoSuchStudyException;
 
 /**
@@ -629,6 +630,59 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**    
      * @ejb.interface-method
      */
+    public Dataset createIAN(DeleteStudyOrder order, Long seriesPk,
+            boolean delStudyFromDB) 
+            throws FinderException, NoSuchSeriesException {
+        SeriesLocal series;
+        try {
+            series = seriesHome.findByPrimaryKey(seriesPk);
+        } catch (ObjectNotFoundException e) {
+            throw new NoSuchSeriesException(e);
+        }
+        StudyLocal study = series.getStudy();
+        PatientLocal pat = study.getPatient();
+        Dataset ian = DcmObjectFactory.getInstance().newDataset();
+        ian.putAll(pat.getAttributes(false).subSet(IAN_PAT_TAGS));
+        ian.putSH(Tags.StudyID, study.getStudyId());
+        ian.putUI(Tags.StudyInstanceUID, study.getStudyIuid());
+        DcmElement refPPSSeq = ian.putSQ(Tags.RefPPSSeq);
+        HashSet ppsuids = new HashSet();
+        DcmElement refSerSeq = ian.putSQ(Tags.RefSeriesSeq);
+        String fsRetrieveAet = null;//RetrieveAET from Filesystem of order. To force Type1 Attribute RetrieveAET
+        Dataset serAttrs = series.getAttributes(false);
+        Dataset refPPS = serAttrs.getItem(Tags.RefPPSSeq);
+        if (refPPS != null
+                && ppsuids.add(refPPS.getString(Tags.RefSOPInstanceUID))) {
+            refPPSSeq.addItem(refPPS);
+        }
+        Dataset refSer = refSerSeq.addNewItem();
+        refSer.putUI(Tags.SeriesInstanceUID, series.getSeriesIuid());
+        DcmElement refSopSeq = refSer.putSQ(Tags.RefSOPSeq);
+        Collection insts = series.getInstances();
+        for (Iterator iiter = insts.iterator(); iiter.hasNext();) {
+            InstanceLocal inst = (InstanceLocal) iiter.next();
+            Dataset refSOP = refSopSeq.addNewItem();
+            refSOP.putUI(Tags.RefSOPClassUID, inst.getSopCuid());
+            refSOP.putUI(Tags.RefSOPInstanceUID, inst.getSopIuid());
+            DatasetUtils.putRetrieveAET(refSOP, inst.getRetrieveAETs(),
+                    inst.getExternalRetrieveAET());
+            if ( !refSOP.containsValue(Tags.RetrieveAET)) { //check Type1
+                if ( fsRetrieveAet == null ) {
+                    FileSystemLocal fs = fileSystemHome.findByPrimaryKey(order.getFsPk());
+                    fsRetrieveAet = fs.getRetrieveAET();
+                }
+                refSOP.putAE(Tags.RetrieveAET, fsRetrieveAet);
+            }
+            refSOP.putCS(Tags.InstanceAvailability, Availability.toString(
+                    delStudyFromDB ? Availability.UNAVAILABLE
+                            : inst.getAvailabilitySafe()));
+        }
+        return ian;
+    }
+
+    /**    
+     * @ejb.interface-method
+     */
     public String[] deleteStudy(DeleteStudyOrder order,
             int availabilityOfExtRetr, boolean delStudyFromDB,
             boolean delPatientWithoutObjects)
@@ -675,6 +729,82 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                     series.updateRetrieveAETs();
                     series.updateAvailability();
                 }
+                study.updateRetrieveAETs();
+                study.updateAvailability();
+             }
+            return fpaths;
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        } catch (RemoveException e) {
+            throw new EJBException(e);
+        }
+    }
+
+    /**    
+     * @ejb.interface-method
+     */
+    public Collection getSeriesPks(DeleteStudyOrder order)
+            throws ConcurrentStudyStorageException {
+        try {
+            long fsPk = order.getFsPk();
+            StudyLocal study = studyHome.findByPrimaryKey(order.getStudyPk());
+            Collection seriesPKs = study.getSeriesPks();
+            FileSystemLocal fs = fileSystemHome.findByPrimaryKey(fsPk);
+            try {
+                // check if new objects belonging to the study were stored
+                // after this DeleteStudyOrder was scheduled
+                sofHome.findByStudyAndFileSystem(study, fs);
+                throw new ConcurrentStudyStorageException(
+                        "Concurrent storage of study[uid="
+                        + study.getStudyIuid() + "] on file system[dir="
+                        + fs.getDirectoryPath() + "] - do not delete study");
+            } catch (ObjectNotFoundException onfe) {
+            }
+            return seriesPKs;
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+    }
+
+    /**    
+     * @ejb.interface-method
+     */
+    public String[] deleteSeries(DeleteStudyOrder order, Long seriesPk,
+            int availabilityOfExtRetr, boolean delStudyFromDB,
+            boolean delPatientWithoutObjects)
+            throws ConcurrentStudyStorageException {
+        try {
+            long fsPk = order.getFsPk();
+            SeriesLocal series = seriesHome.findByPrimaryKey(seriesPk);
+            FileSystemLocal fs = fileSystemHome.findByPrimaryKey(fsPk);
+            Collection files = series.getFiles(fsPk);
+            String fsPath = fs.getDirectoryPath();
+            String[] fpaths = new String[files.size()];
+            int i = 0;
+            for (Iterator iter = files.iterator(); iter.hasNext(); i++) {
+                FileLocal f = (FileLocal) iter.next();
+                fpaths[i] = fsPath + '/' + f.getFilePath();
+                f.remove();
+            }
+            StudyLocal study = series.getStudy();
+            if (delStudyFromDB && series.getAllFiles().isEmpty()) {
+                series.remove();
+                if (study.getSeries().isEmpty()) {
+                    PatientLocal pat = study.getPatient();
+                    study.remove();
+                    if (delPatientWithoutObjects) {
+                        deletePatientWithoutObjects(pat);
+                    }
+                }
+            } else {
+                Collection insts = series.getInstances();
+                for (Iterator iiter = insts.iterator(); iiter.hasNext();) {
+                    InstanceLocal inst = (InstanceLocal) iiter.next();
+                    inst.updateRetrieveAETs();
+                    inst.updateAvailability(availabilityOfExtRetr);
+                }
+                series.updateRetrieveAETs();
+                series.updateAvailability();
                 study.updateRetrieveAETs();
                 study.updateAvailability();
              }
