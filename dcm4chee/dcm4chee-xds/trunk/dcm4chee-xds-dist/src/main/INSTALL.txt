@@ -39,15 +39,15 @@ Installation Procedure:
 
 1. Download and extract the binary distribution package of JBoss 4.2.3GA.
 
-2. Download and extract the binary distribution package of dcm4chee-xds-1.0.0.
+2. Download and extract the binary distribution package of dcm4chee-xds-1.0.1.
 
-4. Change directory to dcm4chee-xds-1.0.0/bin
+4. Change directory to dcm4chee-xds-1.0.1/bin
 
 5. Execute the install_jboss.bat or install_jboss.sh script, as appropriate for your operating system, 
    with the path of the JBoss 4.2.3GA installation directory as parameter.
 
 7. Execute the patch_jbossws.bat or patch_jbossws.sh script, as appropriate
-   for your operating system, with the path of the dcm4chee-xds-1.0.0 installation
+   for your operating system, with the path of the dcm4chee-xds-1.0.1 installation
    installation directory as parameter. Necessary to accept faulty
    (AttachmentPart Id mismatch) SwA (SOAP with Attachment) requests from Axis2
    based Web Service clients and to disable schema validation during deployment,
@@ -59,4 +59,4 @@ Installation Procedure:
    This copies several jar files to JBOSS endorsed directory to avoid conflicts between JDK Webservice Stack and JBOSS WS.
 
 8b. Only applicable in JDK5 environment:
-   Download dfcmd_service.zip and extract to dcm4chee-xds-1.0.0/server/default.
+   Download dfcmd_service.zip and extract to dcm4chee-xds-1.0.1/server/default.
