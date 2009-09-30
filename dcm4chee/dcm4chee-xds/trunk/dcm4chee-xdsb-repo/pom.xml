@@ -4,11 +4,11 @@
   <parent>
     <groupId>dcm4che</groupId>
     <artifactId>dcm4chee-xds</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
   </parent>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-xdsb-repo</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <packaging>pom</packaging>
   <name>Implementation of XDS.b Repository</name>
   <modules>
@@ -20,7 +20,7 @@
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-xds-infoset-v30</artifactId>
-      <version>1.0.1</version>
+      <version>1.0.2</version>
       <scope>provided</scope>
     </dependency>   
     <dependency>

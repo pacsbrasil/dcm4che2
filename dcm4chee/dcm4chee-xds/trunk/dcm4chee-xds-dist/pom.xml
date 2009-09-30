@@ -3,28 +3,28 @@
 	<parent>
 		<groupId>dcm4che</groupId>
 		<artifactId>dcm4chee-xds</artifactId>
-		<version>1.0.1</version>
+		<version>1.0.2</version>
 	</parent>
 	<groupId>dcm4che</groupId>
 	<artifactId>dcm4chee-xds-dist</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
 	<name>Assemble Distribution for DCM4CHEE XDS Implementation</name>
 	<dependencies>
 		<dependency>
 			<groupId>dcm4che</groupId>
 			<artifactId>dcm4chee-xds-infoset-v30</artifactId>
-			<version>1.0.1</version>
+			<version>1.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>dcm4che</groupId>
 			<artifactId>dcm4chee-xds-infoset-v21</artifactId>
-			<version>1.0.1</version>
+			<version>1.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>dcm4che</groupId>
 			<artifactId>dcm4chee-docstore-store</artifactId>
-			<version>1.0.1</version>
+			<version>1.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>dcm4che</groupId>
