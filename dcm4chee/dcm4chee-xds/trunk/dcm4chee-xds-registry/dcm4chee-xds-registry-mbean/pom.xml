@@ -4,11 +4,11 @@
   <parent>
     <groupId>dcm4che</groupId>
     <artifactId>dcm4chee-xds-registry</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
   </parent>
   <groupId>dcm4che</groupId>
   <artifactId>dcm4chee-xds-registry-mbean</artifactId>
-  <version>1.0.1-SNAPSHOT</version>
+  <version>1.0.1</version>
   <packaging>jboss-sar</packaging>
   <name>JMX service for XDS.a and XDS.b Mocking Registry Webservice</name>
   <build>
@@ -25,19 +25,19 @@
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-xds-common</artifactId>
-      <version>1.0.1-SNAPSHOT</version>
+      <version>1.0.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-xds-infoset-v30</artifactId>
-      <version>1.0.1-SNAPSHOT</version>
+      <version>1.0.1</version>
       <scope>provided</scope>
     </dependency>      
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4chee-xds-infoset-v21</artifactId>
-      <version>1.0.1-SNAPSHOT</version>
+      <version>1.0.1</version>
       <scope>provided</scope>
     </dependency>      
     <dependency>
