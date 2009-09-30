@@ -1,3 +1,0 @@
-The generated artefacts can not be used for XDS.b Repository actor because of the necessary changes for MTOM/XOP support!
-TODO: Include MTOM/XOP support with binding customization.
-
