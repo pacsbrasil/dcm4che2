@@ -392,6 +392,12 @@ public abstract class StorageBean implements SessionBean {
                 // check if Series record was inserted by concurrent thread
                 try {
                     series = findBySeriesIuid(uid);
+    				String msg = "RECOVERY from CreateException successful";
+                    if ( log.isInfoEnabled() ) {
+                    	log.info(msg);
+                    } else {
+                    	log.error(msg);
+                    }
                 } catch (Exception e2) {
                     throw e1;
                 }
@@ -413,6 +419,12 @@ public abstract class StorageBean implements SessionBean {
                 // check if Study record was inserted by concurrent thread
                 try {
                     study = studyHome.findByStudyIuid(uid);
+    				String msg = "RECOVERY from CreateException successful";
+                    if ( log.isInfoEnabled() ) {
+                    	log.info(msg);
+                    } else {
+                    	log.error(msg);
+                    }
                 } catch (Exception e2) {
                     throw e1;
                 }
@@ -431,6 +443,12 @@ public abstract class StorageBean implements SessionBean {
     			// check if Patient record was inserted by concurrent thread
     			try {
     				c = patHome.selectByPatientDemographic(ds);
+    				String msg = "RECOVERY from CreateException successful";
+                    if ( log.isInfoEnabled() ) {
+                    	log.info(msg);
+                    } else {
+                    	log.error(msg);
+                    }
     			} catch (Exception e2) {
     				throw e1;
     			}

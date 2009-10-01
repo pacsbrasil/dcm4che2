@@ -102,6 +102,13 @@ public abstract class OtherPatientIDBean implements EntityBean {
                     log.debug("Can neither find nor create. Retry to find.");
                     OtherPatientIDLocal opidLocal = opidhome.findByPatientIdAndIssuer(pid, issuer);
                     log.debug("Found now the other patient ID in the retry.");
+                    
+                    String msg = "RECOVERY from CreateException successful";
+                    if ( log.isInfoEnabled() ) {
+                    	log.info(msg);
+                    } else {
+                    	log.error(msg);
+                    }
                     return opidLocal;
                 }
             }
