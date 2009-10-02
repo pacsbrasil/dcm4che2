@@ -67,6 +67,9 @@ public class FileCache {
     private File cacheRootDir;
     private String defaultInstance;
 
+    /** Number of dashes to find the separator for instance name */
+    private int numberOfDash = 1;
+
     private SimpleDateFormat journalFilePathFormat =
             new SimpleDateFormat(DEFAULT_JOURNAL_FILE_PATH_PATTERN);
     private boolean freeIsRunning = false;
@@ -128,6 +131,11 @@ public class FileCache {
 
     public void setJournalFilePathFormat(String format) {
         this.journalFilePathFormat = new SimpleDateFormat(format);
+        String testFormat = this.journalFilePathFormat.format(new Date());
+        numberOfDash = 1;
+        for(int i=0; i<testFormat.length(); i++) {
+            if( testFormat.charAt(i)=='-' ) numberOfDash++;
+        }
     }
 
     /** Record a newly created file in the journaling cache, (default instance) */
@@ -264,10 +272,23 @@ public class FileCache {
         return true;
     }
     
+    /** Returns the nth index of ch in s */
+    public static int nthIndexOf(String s, char ch, int n) {
+        assert n>=0;
+        int l=s.length();
+        for(int i=0; i<l; i++) {
+            if( s.charAt(i)==ch ) {
+                n--;
+                if( n<0 ) return i;
+            }
+        }
+        return -1;
+    }
+    
     /** Returns the base instance name from the file */
     protected String getInstanceFromFile(File file) {
         String sFile = file.getName();
-        int dash = sFile.lastIndexOf("-");
+        int dash = nthIndexOf(sFile,'-',numberOfDash);
         if( dash==-1 ) return null;
         return sFile.substring(dash+1);
     }
