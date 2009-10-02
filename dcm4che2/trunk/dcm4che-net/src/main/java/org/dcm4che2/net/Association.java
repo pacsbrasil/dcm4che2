@@ -728,9 +728,9 @@ public class Association implements Runnable {
                     "Presentation Context not accepted - " + pc);
         rspHandler.setPcid(pcid);
         rspHandler.setMsgId(cmd.getInt(Tag.MessageID));
-        rspHandler.setTimeout(System.currentTimeMillis() + rspTimeout);
         addDimseRSPHandler(cmd.getInt(Tag.MessageID), rspHandler);
         encoder.writeDIMSE(pcid, cmd, data, pc.getTransferSyntax());
+        rspHandler.setTimeout(System.currentTimeMillis() + rspTimeout);
     }
 
     void cancel(int pcid, int msgid) throws IOException {

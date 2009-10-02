@@ -118,7 +118,7 @@ public class NetworkApplicationEntity {
 
     private boolean packPDV;
 
-    private int dimseRspTimeout = 60000;
+    private int dimseRspTimeout = 10000;
 
     private int retrieveRspTimeout = 600000;
 

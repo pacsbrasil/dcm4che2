@@ -49,7 +49,7 @@ import org.dcm4che2.data.DicomObject;
  * 
  */
 public class DimseRSPHandler {
-    private long timeout;
+    private long timeout = Long.MAX_VALUE;
 
     private int msgId;
 
