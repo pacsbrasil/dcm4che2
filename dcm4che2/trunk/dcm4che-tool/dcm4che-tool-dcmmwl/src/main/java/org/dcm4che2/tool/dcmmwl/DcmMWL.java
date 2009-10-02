@@ -682,7 +682,7 @@ public class DcmMWL {
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
-        OptionBuilder.withDescription("timeout in ms for receiving DIMSE-RSP, 60s by default");
+        OptionBuilder.withDescription("timeout in ms for receiving DIMSE-RSP, 10s by default");
         opts.addOption(OptionBuilder.create("rspTO"));
 
         OptionBuilder.withArgName("ms");

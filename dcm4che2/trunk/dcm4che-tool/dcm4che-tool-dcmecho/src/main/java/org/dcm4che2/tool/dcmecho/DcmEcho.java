@@ -345,7 +345,7 @@ public class DcmEcho {
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "timeout in ms for receiving DIMSE-RSP, 60s by default");
+                "timeout in ms for receiving DIMSE-RSP, 10s by default");
         opts.addOption(OptionBuilder.create("rspTO"));
 
         OptionBuilder.withArgName("ms");

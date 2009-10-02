@@ -139,7 +139,7 @@ public class DcmMoverCli {
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "(All) Timeout in ms for receiving DIMSE-RSP, 60s by default.");
+                "(All) Timeout in ms for receiving DIMSE-RSP, 10s by default.");
         opts.addOption(OptionBuilder.create("rspTO"));
 
         opts.addOption("tcpdelay", false,
