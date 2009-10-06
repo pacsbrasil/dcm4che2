@@ -1098,15 +1098,16 @@ public abstract class StudyBean implements EntityBean {
     }
     
     /**
-     * @ejb.select query="SELECT DISTINCT st.pk FROM Study AS st, IN(st.series) s WHERE s.ppsIuid IS NULL AND s.sourceAET = ?1 AND st.updatedTime < ?2"
+     * @jboss.query signature="int ejbSelectWithMissingPpsIuidFromSrcAETReceivedLastOfStudyBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore, int limit)"
+     * query="SELECT DISTINCT st.pk FROM Study AS st, IN(st.series) s WHERE s.ppsIuid IS NULL AND s.sourceAET = ?1 AND st.updatedTime < ?2 LIMIT ?3"
      *             transaction-type="Supports"
      */
-    public abstract Collection ejbSelectWithMissingPpsIuidFromSrcAETReceivedLastOfStudyBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore) throws FinderException;
+    public abstract Collection ejbSelectWithMissingPpsIuidFromSrcAETReceivedLastOfStudyBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore, int limit) throws FinderException;
 
     /**
      * @ejb.home-method
      */
-    public Collection ejbHomeSelectWithMissingPpsIuidFromSrcAETReceivedLastOfStudyBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore) throws FinderException {
-        return ejbSelectWithMissingPpsIuidFromSrcAETReceivedLastOfStudyBefore(srcAET, receivedBefore);
+    public Collection ejbHomeSelectWithMissingPpsIuidFromSrcAETReceivedLastOfStudyBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore, int limit) throws FinderException {
+        return ejbSelectWithMissingPpsIuidFromSrcAETReceivedLastOfStudyBefore(srcAET, receivedBefore, limit);
     }
 }

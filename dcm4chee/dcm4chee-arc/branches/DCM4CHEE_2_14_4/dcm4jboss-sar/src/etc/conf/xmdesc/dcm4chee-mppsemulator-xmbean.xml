@@ -58,6 +58,18 @@
    </attribute>
   
    <attribute access="read-write"
+      getMethod="getLimitNrOfSeriesPerTask"
+      setMethod="setLimitNrOfSeriesPerTask">
+      <description>Max number of series that are emulated in one task.
+      </description>
+      <name>LimitNrOfSeriesPerTask</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1000"/>
+      </descriptors>
+   </attribute>
+   
+   <attribute access="read-write"
       getMethod="getTimerIDCheckSeriesWithoutMPPS"
       setMethod="setTimerIDCheckSeriesWithoutMPPS">
       <description>Used internally. Do NOT modify.
