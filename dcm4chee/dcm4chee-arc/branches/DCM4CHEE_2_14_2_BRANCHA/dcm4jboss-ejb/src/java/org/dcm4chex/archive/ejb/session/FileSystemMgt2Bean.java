@@ -539,9 +539,11 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         Collection orders = new ArrayList(sofs.size());
         for (Iterator iter = sofs.iterator(); iter.hasNext();) {
             StudyOnFileSystemLocal sof = (StudyOnFileSystemLocal) iter.next();
-            orders.add(new DeleteStudyOrder(sof.getPk(),
+            DeleteStudyOrder deleteStudyOrder = new DeleteStudyOrder(sof.getPk(),
                     sof.getStudy().getPk(), sof.getFileSystem().getPk(),
-                    sof.getAccessTime().getTime()));
+                    sof.getAccessTime().getTime());
+            deleteStudyOrder.processOrderProperties(suid);
+            orders.add(deleteStudyOrder);
         }
         return orders;
     }
@@ -557,9 +559,11 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             if (sof.matchDeleteConstrains(externalRetrieveable,
                     storageNotCommited, copyOnMedia, copyOnFSGroup,
                     copyArchived, copyOnReadOnlyFS)) {
-                orders.add(new DeleteStudyOrder(sof.getPk(),
+                DeleteStudyOrder deleteStudyOrder = new DeleteStudyOrder(sof.getPk(),
                         sof.getStudy().getPk(), sof.getFileSystem().getPk(),
-                        sof.getAccessTime().getTime()));
+                                sof.getAccessTime().getTime());
+                deleteStudyOrder.processOrderProperties(sof.getStudy().getStudyIuid());
+                orders.add(deleteStudyOrder);
             }
         }
         return orders;
