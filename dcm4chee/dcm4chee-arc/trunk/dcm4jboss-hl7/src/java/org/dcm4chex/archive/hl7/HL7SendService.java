@@ -305,6 +305,11 @@ public class HL7SendService extends ServiceMBeanSupport implements
         for (int i = 0; i < dests.length; i++) {
             HL7SendOrder order = new HL7SendOrder(hl7msg, dests[i]);
             try {
+                order.processOrderProperties(msh);
+            } catch (Exception e) {
+                log.error("Failed to process order properties for " + order, e);
+            }
+            try {
                 log.info("Scheduling " + order);
                 jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
                         0L);
