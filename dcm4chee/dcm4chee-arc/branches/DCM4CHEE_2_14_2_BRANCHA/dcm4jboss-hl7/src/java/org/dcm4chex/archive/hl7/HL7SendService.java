@@ -46,7 +46,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
-import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -70,9 +69,8 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che2.audit.message.ActiveParticipant;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
-import org.dcm4che2.audit.message.QueryMessage;
 import org.dcm4che2.audit.message.ParticipantObject;
-import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
+import org.dcm4che2.audit.message.QueryMessage;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
@@ -84,7 +82,6 @@ import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dom4j.Document;
 import org.dom4j.io.SAXContentHandler;
-import org.jboss.security.SecurityAssociation;
 import org.jboss.system.ServiceMBeanSupport;
 import org.regenstrief.xhl7.HL7XMLReader;
 import org.regenstrief.xhl7.MLLPDriver;
@@ -295,6 +292,11 @@ public class HL7SendService extends ServiceMBeanSupport implements
         int count = 0;
         for (int i = 0; i < dests.length; i++) {
             HL7SendOrder order = new HL7SendOrder(hl7msg, dests[i]);
+            try {
+                order.processOrderProperties(msh);
+            } catch (Exception e) {
+                log.error("Failed to process order properties for " + order, e);
+            }
             try {
                 log.info("Scheduling " + order);
                 jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
