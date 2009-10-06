@@ -94,6 +94,7 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
 
     private String[] stationAETs = {};
     private long[] delays;
+    private int limitNrOfSeriesPerTask;
     
     private ObjectName mppsScuServiceName;
     
@@ -171,6 +172,14 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
         return isRunning;
     }
     
+    public int getLimitNrOfSeriesPerTask() {
+        return limitNrOfSeriesPerTask;
+    }
+
+    public void setLimitNrOfSeriesPerTask(int limit) {
+        this.limitNrOfSeriesPerTask = limit;
+    }
+
     public void handleNotification(Notification notification, Object handback) {
         if (stationAETs.length > 0) {
             new Thread(new Runnable(){
@@ -204,7 +213,7 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
                 Collection<Long> studyPks;
                 try {
                     studyPks = (Collection<Long>) mppsEmulator.getStudiesWithMissingMPPS(stationAETs[i],
-                            delays[i]);
+                            delays[i], limitNrOfSeriesPerTask);
                 } catch (Exception e) {
                     log.error("Failed to emulate MPPS for series received from " + 
                             stationAETs[i] + " failed:", e);
