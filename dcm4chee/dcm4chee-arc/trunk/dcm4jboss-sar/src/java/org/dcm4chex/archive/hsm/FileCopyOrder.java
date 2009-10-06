@@ -48,6 +48,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.BaseJmsOrder;
+import org.dcm4chex.archive.common.JmsOrderProperties;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 
@@ -136,5 +137,25 @@ public class FileCopyOrder extends BaseJmsOrder {
         }
         sb.append("\n");
         return sb.toString();
+    }
+    
+    /**
+     * Processes order attributes based on the {@code Dataset} set in the {@code ctor}.
+     * @see BaseJmsOrder#processOrderProperties(Object...)
+     */
+    @Override
+    public void processOrderProperties(Object... properties) {
+        this.setOrderProperty(JmsOrderProperties.STUDY_INSTANCE_UID, ian.getString(Tags.StudyInstanceUID));
+        
+        List<String> seriesUIDList = new ArrayList<String>();
+        DcmElement refSeriesSeq = ian.get(Tags.RefSeriesSeq);
+        if ( refSeriesSeq != null ) {
+            for ( int i = 0; i < refSeriesSeq.countItems(); i++ ) {
+                Dataset refSeriesDS = refSeriesSeq.getItem(i);
+                seriesUIDList.add(refSeriesDS.getString(Tags.SeriesInstanceUID));
+            }
+        }
+        
+        this.setOrderMultiProperty(JmsOrderProperties.SERIES_INSTANCE_UID, seriesUIDList.toArray(new String[0]));
     }
 }

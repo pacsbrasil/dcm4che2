@@ -422,8 +422,9 @@ public class IANScuService extends AbstractScuService implements
             log.debug(ian);
         }
         for (int i = 0; i < notifiedAETs.length; ++i) {
-            IANOrder order = new IANOrder(notifiedAETs[i], patid, patname,
-                    studyid, ian);
+            IANOrder order = new IANOrder(notifiedAETs[i], patid, patname, studyid, ian);
+            order.processOrderProperties();
+            
             try {
                 log.info("Scheduling " + order);
                 jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,

@@ -40,10 +40,15 @@
 package org.dcm4chex.archive.dcm.stymgt;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.BaseJmsOrder;
+import org.dcm4chex.archive.common.JmsOrderProperties;
 
 public class StudyMgtOrder extends BaseJmsOrder implements Serializable {
 	
@@ -116,5 +121,29 @@ public class StudyMgtOrder extends BaseJmsOrder implements Serializable {
 	            return "N_DELETE_RQ";
 	      }
 		  return Integer.toHexString(cmdField).toUpperCase();
+	}
+	
+	/**
+	 * Processes order attributes based on the values set in the {@code ctor}.
+	 * @see BaseJmsOrder#processOrderProperties(Object...)
+	*/
+	@Override
+	public void processOrderProperties(Object... properties) {
+		this.setOrderProperty(JmsOrderProperties.CALLED_AE_TITLE, this.callingAET);
+		this.setOrderProperty(JmsOrderProperties.CALLING_AE_TITLE, this.calledAET);
+		this.setOrderProperty(JmsOrderProperties.STUDY_INSTANCE_UID, ds.getString(Tags.StudyInstanceUID));
+		this.setOrderProperty(JmsOrderProperties.ISSUER_OF_PATIENT_ID, ds.getString(Tags.IssuerOfPatientID));
+		this.setOrderProperty(JmsOrderProperties.PATIENT_ID, ds.getString(Tags.PatientID));
+        
+		List<String> seriesUIDList = new ArrayList<String>();
+		DcmElement refSeriesSeq = ds.get(Tags.RefSeriesSeq);
+		if ( refSeriesSeq != null ) {
+			for ( int j = 0; j < refSeriesSeq.countItems(); j++ ) {
+				Dataset refSeriesDS = refSeriesSeq.getItem(j);
+				seriesUIDList.add(refSeriesDS.getString(Tags.SeriesInstanceUID));
+			}
+		}
+        
+		this.setOrderMultiProperty(JmsOrderProperties.SERIES_INSTANCE_UID, seriesUIDList.toArray(new String[0]));
 	}
 }

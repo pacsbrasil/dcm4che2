@@ -188,6 +188,7 @@ public class StudyMgtScuService extends AbstractScuService implements
         for (int i = 0; i < forwardAETs.length; i++) {
             StudyMgtOrder order = new StudyMgtOrder(origCallingAET,
                     forwardAETs[i], commandField, actionTypeID, iuid, dataset);
+            order.processOrderProperties();
             try {
                 log.info("Scheduling " + order);
                 jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
