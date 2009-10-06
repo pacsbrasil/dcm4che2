@@ -92,4 +92,18 @@ public class DeleteStudyOrder extends BaseJmsOrder implements Serializable {
     public long getAccessTime() {
         return accessTime;
     }
+    
+    /**
+     * Processes expected order properties that conform to the following varargs:
+     * <ul>
+     * <li>{ (String) studyInstanceUID }</li>
+     * </ul>
+     * @see BaseJmsOrder#processOrderProperties(Object...)
+     */
+    @Override
+    public void processOrderProperties(Object... properties) {
+        String studyInstanceUID = 
+            (properties != null && properties.length == 1) ? (String) properties[0] : null;
+        this.setOrderProperty(JmsOrderProperties.STUDY_INSTANCE_UID, studyInstanceUID); 
+    }
 }
