@@ -40,10 +40,14 @@
 package org.dcm4chex.archive.dcm.ianscu;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.BaseJmsOrder;
+import org.dcm4chex.archive.common.JmsOrderProperties;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -65,8 +69,6 @@ public class IANOrder extends BaseJmsOrder implements Serializable {
     private final String studyid;
 
     private final Dataset ian;
-
-    private int failureCount;
 
     public IANOrder(String dest, String patid, String patname, String studyid,
             Dataset ian) {
@@ -104,5 +106,28 @@ public class IANOrder extends BaseJmsOrder implements Serializable {
     public String getOrderDetails() {
         return "dest=" + dest + ", suid="
                 + ian.getString(Tags.StudyInstanceUID);
+    }
+
+    /**
+     * Processes order attributes based on the {@code Dataset} and patientID set in the {@code ctor}.
+     * @see BaseJmsOrder#processOrderProperties(Object...)
+     */
+    @Override
+    public void processOrderProperties(Object... properties) {
+        this.setOrderProperty(JmsOrderProperties.STUDY_INSTANCE_UID, ian.getString(Tags.StudyInstanceUID));
+        this.setOrderProperty(JmsOrderProperties.PATIENT_ID, 
+                this.patid != null ? this.patid : ian.getString(Tags.PatientID));
+        this.setOrderProperty(JmsOrderProperties.ISSUER_OF_PATIENT_ID, ian.getString(Tags.IssuerOfPatientID));
+        
+        List<String> seriesUIDList = new ArrayList<String>();
+        DcmElement refSeriesSeq = ian.get(Tags.RefSeriesSeq);
+        if ( refSeriesSeq != null ) {
+            for ( int j = 0; j < refSeriesSeq.countItems(); j++ ) {
+                Dataset refSeriesDS = refSeriesSeq.getItem(j);
+                seriesUIDList.add(refSeriesDS.getString(Tags.SeriesInstanceUID));
+            }
+        }
+        
+        this.setOrderMultiProperty(JmsOrderProperties.SERIES_INSTANCE_UID, seriesUIDList.toArray(new String[0]));
     }
 }

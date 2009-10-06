@@ -40,9 +40,14 @@
 package org.dcm4chex.archive.dcm.stgcmt;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
+import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.BaseJmsOrder;
+import org.dcm4chex.archive.common.JmsOrderProperties;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -88,5 +93,16 @@ public class StgCmtOrder extends BaseJmsOrder implements Serializable {
     public String toString() {
         return "calling=" + callingAET + ", called=" + calledAET
             + ", role=" + (scpRole ? "SCP" : "SCU");
+    }
+    
+    /**
+     * Processes order attributes based on the {@code Dataset} and AE titles set in the {@code ctor}.
+     * @see BaseJmsOrder#processOrderProperties(Object...)
+     */
+    @Override
+    public void processOrderProperties(Object... properties) {
+        this.setOrderProperty(JmsOrderProperties.CALLED_AE_TITLE, calledAET);
+        this.setOrderProperty(JmsOrderProperties.CALLING_AE_TITLE, callingAET);
+        this.setOrderProperty(JmsOrderProperties.TRANSACTION_UID, actionInfo.getString(Tags.TransactionUID));
     }
 }

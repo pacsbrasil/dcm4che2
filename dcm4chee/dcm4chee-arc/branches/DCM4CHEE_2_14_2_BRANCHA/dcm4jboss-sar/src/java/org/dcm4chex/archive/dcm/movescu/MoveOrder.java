@@ -42,6 +42,7 @@ package org.dcm4chex.archive.dcm.movescu;
 import java.io.Serializable;
 
 import org.dcm4chex.archive.common.BaseJmsOrder;
+import org.dcm4chex.archive.common.JmsOrderProperties;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -185,4 +186,16 @@ public class MoveOrder extends BaseJmsOrder implements Serializable {
         this.studyIuids = studyIuids;
     }
 
+    /**
+     * Processes order attributes based on the values set in the {@code ctor}.
+     * @see BaseJmsOrder#processOrderProperties(Object...)
+     */
+    @Override
+    public void processOrderProperties(Object... properties) {
+        this.setOrderProperty(JmsOrderProperties.RETRIEVE_AE_TITLE, this.retrieveAET);
+        this.setOrderProperty(JmsOrderProperties.DESTINATION_AE_TITLE, this.moveDestination);
+        this.setOrderProperty(JmsOrderProperties.PATIENT_ID, this.patientId);
+        this.setOrderMultiProperty(JmsOrderProperties.STUDY_INSTANCE_UID, this.studyIuids);
+        this.setOrderMultiProperty(JmsOrderProperties.SERIES_INSTANCE_UID, this.seriesIuids);
+    }
 }

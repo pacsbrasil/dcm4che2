@@ -100,8 +100,10 @@ public class StudyMgtScpService extends AbstractScpService {
 		Association a = assoc.getAssociation();
 		long eventID = super.getNextNotificationSequenceNumber();
 		Notification notif = new Notification(EVENT_TYPE, this, eventID);
-		notif.setUserData(new StudyMgtOrder(a.getCallingAET(), a
-				.getCalledAET(), cmdField, actionTypeID, iuid, ds));
+		StudyMgtOrder studyMgtOrder = new StudyMgtOrder(a.getCallingAET(), a
+				.getCalledAET(), cmdField, actionTypeID, iuid, ds);
+		studyMgtOrder.processOrderProperties();
+		notif.setUserData(studyMgtOrder);
 		super.sendNotification(notif);
 	}
 

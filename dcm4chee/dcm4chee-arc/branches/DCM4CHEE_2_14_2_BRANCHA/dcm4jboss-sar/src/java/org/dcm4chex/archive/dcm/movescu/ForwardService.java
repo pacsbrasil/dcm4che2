@@ -290,8 +290,10 @@ public class ForwardService extends ServiceMBeanSupport {
     protected void scheduleMove(String retrieveAET, String destAET, int priority,
             String pid, String studyIUID, String seriesIUID, String[] sopIUIDs,
             long scheduledTime) {
-        scheduleMove(new MoveOrder(retrieveAET, destAET, priority,
-                pid, studyIUID, seriesIUID, sopIUIDs),scheduledTime);
+        MoveOrder moveOrder = new MoveOrder(retrieveAET, destAET, priority,
+                        pid, studyIUID, seriesIUID, sopIUIDs);
+        moveOrder.processOrderProperties();
+        scheduleMove(moveOrder,scheduledTime);
     }
     
     protected void scheduleMove(MoveOrder order,

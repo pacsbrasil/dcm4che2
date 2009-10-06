@@ -180,15 +180,19 @@ public class MoveScuService extends AbstractScuService implements
     public void scheduleMove(String retrieveAET, String destAET,
             int priority, String pid, String studyIUID, String seriesIUID,
             String[] sopIUIDs, long scheduledTime) {
-        scheduleMoveOrder(new MoveOrder(retrieveAET, destAET, priority, pid,
-                studyIUID, seriesIUID, sopIUIDs), scheduledTime);
+        MoveOrder moveOrder = new MoveOrder(retrieveAET, destAET, priority, pid,
+                        studyIUID, seriesIUID, sopIUIDs);        
+        moveOrder.processOrderProperties();
+        scheduleMoveOrder(moveOrder, scheduledTime);
     }
 
     public void scheduleMove(String retrieveAET, String destAET, int priority,
             String pid, String[] studyIUIDs, String[] seriesIUIDs,
             String[] sopIUIDs, long scheduledTime) {
-        scheduleMoveOrder(new MoveOrder(retrieveAET, destAET, priority, pid,
-                studyIUIDs, seriesIUIDs, sopIUIDs), scheduledTime);
+        MoveOrder moveOrder = new MoveOrder(retrieveAET, destAET, priority, pid,
+                        studyIUIDs, seriesIUIDs, sopIUIDs);
+        moveOrder.processOrderProperties();
+        scheduleMoveOrder(moveOrder, scheduledTime);
     }
 
     public void scheduleMoveOrder(MoveOrder order, long scheduledTime) {

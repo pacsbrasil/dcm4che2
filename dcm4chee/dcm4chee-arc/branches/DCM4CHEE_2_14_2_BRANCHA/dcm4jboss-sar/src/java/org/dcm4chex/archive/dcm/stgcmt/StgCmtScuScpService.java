@@ -296,8 +296,8 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
     public void queueStgCmtOrder(String calling, String called,
             Dataset actionInfo, boolean scpRole) throws Exception {
-        StgCmtOrder order = new StgCmtOrder(calling, called, actionInfo,
-                scpRole);
+        StgCmtOrder order = new StgCmtOrder(calling, called, actionInfo, scpRole);
+        order.processOrderProperties();
         jmsDelegate.queue(queueName, order, 0, 0);
     }
 

@@ -186,8 +186,11 @@ public class FileCopyService extends AbstractFileCopyService {
     }
     
     protected BaseJmsOrder createOrder(Dataset ian) {
-        return new FileCopyOrder(ian, ForwardingRules.toAET(destination),
+        FileCopyOrder fileCopyOrder = new FileCopyOrder(ian, ForwardingRules.toAET(destination),
                 getRetrieveAETs());
+        fileCopyOrder.processOrderProperties();
+        
+        return fileCopyOrder;
     }
 
     protected void process(BaseJmsOrder order) throws Exception {
