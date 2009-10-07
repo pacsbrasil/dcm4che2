@@ -58,11 +58,11 @@
    </attribute>
   
    <attribute access="read-write"
-      getMethod="getLimitNrOfSeriesPerTask"
-      setMethod="setLimitNrOfSeriesPerTask">
-      <description>Max number of series that are emulated in one task.
+      getMethod="getLimitNrOfStudiesPerTask"
+      setMethod="setLimitNrOfStudiesPerTask">
+      <description>Max number of studies that are emulated in one task.
       </description>
-      <name>LimitNrOfSeriesPerTask</name>
+      <name>LimitNrOfStudiesPerTask</name>
       <type>int</type>
       <descriptors>
          <value value="1000"/>
