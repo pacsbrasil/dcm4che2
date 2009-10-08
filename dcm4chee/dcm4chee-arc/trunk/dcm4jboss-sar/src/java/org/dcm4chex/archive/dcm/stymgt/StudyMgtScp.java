@@ -228,7 +228,7 @@ class StudyMgtScp extends DcmServiceBase {
         try {
             StudyMgt stymgt = getStudyMgtHome().create();
             try {
-                stymgt.updateStudy(iuid, ds);
+                stymgt.updateStudy(iuid, ds, service.studyMovePatientMatching());
             } finally {
                 try {
                     stymgt.remove();
