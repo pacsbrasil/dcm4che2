@@ -847,10 +847,14 @@ public class StoreScpService extends AbstractScpService {
                 System.currentTimeMillis() - seriesStoredNotificationDelay);
         Collection<Long> seriesPks = store.getPksOfPendingSeries(updatedBefore);
         for (Long seriesPk : seriesPks) {
-            SeriesStored seriesStored = 
-                    store.makeSeriesStored(seriesPk, updatedBefore);
-            if (seriesStored != null)
-                sendSeriesStoredNotification(store, seriesStored);
+            try {
+                SeriesStored seriesStored = 
+                        store.makeSeriesStored(seriesPk, updatedBefore);
+                if (seriesStored != null)
+                    sendSeriesStoredNotification(store, seriesStored);
+            } catch ( Exception x ) {
+                log.warn("makeSeriesStored for series(pk="+seriesPk+") failed! Ignored! Reason:"+x);
+            }
         }
     }
 
