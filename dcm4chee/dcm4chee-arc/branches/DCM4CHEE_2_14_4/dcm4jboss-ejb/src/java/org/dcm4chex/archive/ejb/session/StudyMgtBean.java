@@ -104,8 +104,6 @@ public abstract class StudyMgtBean implements SessionBean {
 
     private InstanceLocalHome instHome;
 
-    private PatientUpdateLocalHome patientUpdateHome;
-
     public void setSessionContext(SessionContext arg0) throws EJBException,
             RemoteException {
         Context jndiCtx = null;
@@ -119,8 +117,6 @@ public abstract class StudyMgtBean implements SessionBean {
                     .lookup("java:comp/env/ejb/Series");
             instHome = (InstanceLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/Instance");
-            patientUpdateHome = (PatientUpdateLocalHome) jndiCtx
-                    .lookup("java:comp/env/ejb/PatientUpdate");
 
         } catch (NamingException e) {
             throw new EJBException(e);
@@ -179,41 +175,9 @@ public abstract class StudyMgtBean implements SessionBean {
     }
 
     /**
-     * This method is invoked when post-storage message is processed. All
-     * patient and study attributes will be replaced with the new data, which is
-     * different from data coercion during the storage, where only empty
-     * attibutes are updated.
-     * @param matching 
-     * 
      * @ejb.interface-method
      */
-    public void updateStudyAndPatientOnly(String iuid, Dataset ds,
-            PatientMatching matching) throws DcmServiceException {
-        try {
-            StudyLocal study = getStudy(iuid);
-            AttributeFilter patientFilter = AttributeFilter
-                    .getPatientAttributeFilter();
-            AttributeFilter studyFilter = AttributeFilter
-                    .getStudyAttributeFilter();
-            Dataset patientAttr = patientFilter.filter(ds);
-            Dataset studyAttr = studyFilter.filter(ds);
-
-            PatientUpdateLocal patientUpdate = patientUpdateHome.create();
-            try {
-                patientUpdate.updatePatient(study, patientAttr, matching);
-            } finally {
-                patientUpdate.remove();
-            }
-            updateStudy(iuid, studyAttr);
-        } catch (Exception e) {
-            throw new EJBException(e);
-        }
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public void updateStudy(String iuid, Dataset ds) throws DcmServiceException {
+    public void updateStudy(String iuid, Dataset ds, PatientMatching matching) throws DcmServiceException {
         try {
             StudyLocal study = getStudy(iuid);
             if (study == null) {
@@ -237,6 +201,10 @@ public abstract class StudyMgtBean implements SessionBean {
                 }
                 updateDerivedSeriesFields(dirtySeries);
                 updateDerivedStudyFields(dirtyStudies);
+            }
+            PatientLocal pat = findOrCreatePatient(ds, matching);
+            if ( pat.getPk() != study.getPatient().getPk()) {
+                study.setPatient(pat);
             }
         } catch (FinderException e) {
             throw new EJBException(e);

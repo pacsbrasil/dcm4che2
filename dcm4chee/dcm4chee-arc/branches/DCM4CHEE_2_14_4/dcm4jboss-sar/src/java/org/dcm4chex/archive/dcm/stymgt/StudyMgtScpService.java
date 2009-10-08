@@ -52,6 +52,7 @@ import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceRegistry;
+import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 
 public class StudyMgtScpService extends AbstractScpService {
@@ -79,6 +80,8 @@ public class StudyMgtScpService extends AbstractScpService {
 
     private StudyMgtScp stymgtScp = new StudyMgtScp(this);
 
+    private PatientMatching studyMovePatientMatching;
+    
     /**
      * @return Returns the ignoreDeleteFailed.
      */
@@ -92,6 +95,18 @@ public class StudyMgtScpService extends AbstractScpService {
      */
     public void setIgnoreDeleteFailed(boolean ignoreDeleteFailed) {
         stymgtScp.setIgnoreDeleteFailed(ignoreDeleteFailed);
+    }
+
+    public String getStudyMovePatientMatching() {
+        return studyMovePatientMatching.toString();
+    }
+
+    public void setStudyMovePatientMatching(String s) {
+        this.studyMovePatientMatching = new PatientMatching(s.trim());
+    }
+
+    public PatientMatching studyMovePatientMatching() {
+        return studyMovePatientMatching;
     }
 
     protected void bindDcmServices(DcmServiceRegistry services) {
