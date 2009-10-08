@@ -309,6 +309,12 @@ public abstract class StorageBean implements SessionBean {
     private SeriesStored makeSeriesStored(SeriesLocal series)
             throws FinderException {
         StudyLocal study = series.getStudy();
+        PatientLocal pat = study.getPatient();
+        if ( pat == null ) {
+            log.warn("Failed: SeriesStored for series "+series.getSeriesIuid()+" (pk="+series.getPk()+
+                    ") Reason: Missing reference to a patient! Study iuid:"+study.getStudyIuid());
+            return null;
+        }
         UpdateDerivedFieldsUtils.updateDerivedFieldsOf(series);
         UpdateDerivedFieldsUtils.updateDerivedFieldsOf(study);
         Dataset ian = DcmObjectFactory.getInstance().newDataset();
@@ -325,6 +331,11 @@ public abstract class StorageBean implements SessionBean {
             }
             String[] retrieveAETs = StringUtils.split(
                     inst.getRetrieveAETs(), '\\');
+            if ( retrieveAETs == null ) {
+                log.warn("Failed SeriesStored for series "+series.getSeriesIuid()+" (pk="+series.getPk()+
+                        ") Reason: Found Instance with status RECEIVED but without Retrieve AET! iuid:"+inst.getSopIuid());
+                return null;
+            }
             if (commonRetrieveAETs == null) {
                 commonRetrieveAETs = new HashSet();
                 commonRetrieveAETs.addAll(Arrays.asList(retrieveAETs));
@@ -341,7 +352,6 @@ public abstract class StorageBean implements SessionBean {
         if (commonRetrieveAETs == null) {
             return null;
         }
-        PatientLocal pat = study.getPatient();
         Dataset patAttrs = pat.getAttributes(false);
         Dataset studyAttrs = study.getAttributes(false);
         Dataset seriesAttrs = series.getAttributes(false);
