@@ -72,6 +72,7 @@ import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.ParticipantObject;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4che2.audit.message.ProcedureRecordMessage;
+import org.dcm4che2.audit.message.AuditEvent.ActionCode;
 import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.PrivateTags;
@@ -93,6 +94,7 @@ public class MPPSScpService extends AbstractScpService {
 
     public static final String EVENT_TYPE_MPPS_RECEIVED = "org.dcm4chex.archive.dcm.mppsscp#received";
     public static final String EVENT_TYPE_MPPS_LINKED = "org.dcm4chex.archive.dcm.mppsscp#linked";
+    public static final String EVENT_TYPE_MPPS_DELETED = "org.dcm4chex.archive.dcm.mppsscp#deleted";
 
     public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {
 
@@ -346,9 +348,38 @@ public class MPPSScpService extends AbstractScpService {
             spsID = ssaSQ.getItem(i).getString(Tags.SPSID);
             sb.append(spsID).append(", ");
         }
-        logProcedureRecord(mppsAttrs, ssaSQ.getItem().getString(Tags.AccessionNumber), sb.substring(0,sb.length()-2));
+        logProcedureRecord(mppsAttrs, ssaSQ.getItem().getString(Tags.AccessionNumber), 
+                ProcedureRecordMessage.UPDATE, sb.substring(0,sb.length()-2));
     }
 
+    /**    
+     * Deletes MPPS entries specified by an array of MPPS IUIDs.    
+     * <p>          
+     *      
+     * @param iuids  The List of Instance UIDs of the MPPS Entries to delete.       
+     * @return      
+     * @throws HomeFactoryException         
+     * @throws CreateException      
+     * @throws RemoteException      
+     */     
+    public boolean deleteMPPSEntries(String[] iuids) throws RemoteException, CreateException, HomeFactoryException {        
+        MPPSManager mgr = getMPPSManagerHome().create();        
+        Dataset[] mppsAttrs = mgr.deleteMPPSEntries(iuids);
+        boolean success = true;
+        for ( Dataset ds : mppsAttrs ) {
+            if ( ds != null ) {
+                sendMPPSNotification(ds, MPPSScpService.EVENT_TYPE_MPPS_DELETED);
+                Dataset ssaItem = ds.getItem(Tags.ScheduledStepAttributesSeq);
+                logProcedureRecord(ds, ssaItem == null ? null : ssaItem.getString(Tags.AccessionNumber), 
+                        ProcedureRecordMessage.DELETE, 
+                        "MPPS deleted:"+ds.getString(Tags.SOPInstanceUID));
+            } else {
+                success = false;
+            }
+        }
+        return success;   
+    }  
+    
     public void logMppsLinkRecord(Map map, String spsID, String mppsIUID ) {
         Dataset mppsAttrs = (Dataset) map.get("mppsAttrs");
         Dataset mwlAttrs = (Dataset) map.get("mwlAttrs");
@@ -374,19 +405,21 @@ public class MPPSScpService extends AbstractScpService {
                 log.warn("Failed to log procedureRecord:", e);
             }
         } else {
-            logProcedureRecord(mppsAttrs, mwlAttrs.getString(Tags.AccessionNumber), desc);
+            logProcedureRecord(mppsAttrs, mwlAttrs.getString(Tags.AccessionNumber), 
+                    ProcedureRecordMessage.UPDATE, desc);
         }
     }
 
-    private void logProcedureRecord(Dataset mppsAttrs, String accNr,
+    private void logProcedureRecord(Dataset mppsAttrs, String accNr, ActionCode actionCode,
             String desc) {
         HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
                 .isEnableDNSLookups());
-        log.debug("log Procedure Record! actionCode:" + ProcedureRecordMessage.UPDATE);
-        log.info("mppsAttrs:");log.info(mppsAttrs);
+        if ( log.isDebugEnabled()) {
+            log.debug("log Procedure Record! actionCode:" + actionCode);
+            log.debug("mppsAttrs:");log.debug(mppsAttrs);
+        }
         try {
-            ProcedureRecordMessage msg = new ProcedureRecordMessage(
-                    ProcedureRecordMessage.UPDATE);
+            ProcedureRecordMessage msg = new ProcedureRecordMessage(actionCode);
             msg.addUserPerson(userInfo.getUserId(), null, null, userInfo
                     .getHostName(), true);
             PersonName pn = mppsAttrs.getPersonName(Tags.PatientName);

@@ -950,9 +950,7 @@ public abstract class SeriesBean implements EntityBean {
             log.warn("Illegal PPS Date/Time format: " + e.getMessage());
         }
         Dataset refPPS = ds.getItem(Tags.RefPPSSeq);
-        if (refPPS != null) {
-            setPpsIuid(refPPS.getString(Tags.RefSOPInstanceUID));
-        }
+        setPpsIuid(refPPS == null ? null : refPPS.getString(Tags.RefSOPInstanceUID));
         byte[] b = DatasetUtils.toByteArray(ds, filter.getTransferSyntaxUID());
         if (log.isDebugEnabled()) {
             log.debug("setEncodedAttributes(byte[" + b.length + "])");

@@ -230,6 +230,43 @@ public abstract class MPPSManagerBean implements SessionBean {
     }
 
     /**
+     * Delete a list of mpps entries.
+     * 
+     * @ejb.interface-method
+     */
+    public Dataset[] deleteMPPSEntries(String[] iuids) {
+        Dataset[] mppsAttrs = new Dataset[iuids.length];
+        MPPSLocal mpps;
+        for (int i = 0; i < iuids.length; i++) {
+            try {
+                mpps = mppsHome.findBySopIuid(iuids[i]);
+                mppsAttrs[i] = mpps.getAttributes();
+                mppsAttrs[i].putAll(mpps.getPatient().getAttributes(false));
+                mpps.remove();
+                removePpsAttrsFromSeries(iuids[i]);
+            } catch (Exception x) {
+                log.error("Cant delete mpps:" + iuids[i], x);
+            }
+        }
+        return mppsAttrs;
+    }
+
+    private void removePpsAttrsFromSeries(String pps_iuid) throws FinderException {
+        Collection c = seriesHome.findByPpsIuid(pps_iuid);
+        if ( log.isDebugEnabled() ) log.debug("Series with PPS IUID:"+pps_iuid+" found:"+c);
+        SeriesLocal series;
+        Dataset attrs;
+        for ( Iterator it = c.iterator() ; it.hasNext() ; ) {
+            series = (SeriesLocal) it.next();
+            attrs = series.getAttributes(true);
+            attrs.remove(Tags.PPSStartDate);
+            attrs.remove(Tags.PPSStartTime);
+            attrs.remove(Tags.RefPPSSeq);
+            series.setAttributes(attrs);
+        }
+    }
+
+    /**
      * @ejb.interface-method
      */
     public Dataset createIANwithPatSummaryAndStudyID(String iuid) {
