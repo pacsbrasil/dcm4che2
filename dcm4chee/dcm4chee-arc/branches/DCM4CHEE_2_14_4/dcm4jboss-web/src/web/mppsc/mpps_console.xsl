@@ -66,6 +66,15 @@
 							</input>
 						</td>
 					</xsl:if>
+                   	<td width="40" bgcolor="eeeeee"> 	 
+                    	<input type="image" name="del" value="del" src="images/loeschen.gif" 	 
+                        	   border="0" title="Delete selected MPPS entries" 	 
+                               onclick="return confirm('Delete selected MPPS entries?')"> 	 
+                        	<xsl:if test="total &lt;= 0"> 	 
+                            	<xsl:attribute name="disabled">disabled</xsl:attribute> 	 
+                            </xsl:if> 	 
+                     	</input> 	 
+                     </td>
 				</table>
 				<table border="0" cellpadding="0" cellspacing="0" bgcolor="eeeeee">
 					<tr valign="top">

@@ -97,6 +97,14 @@ public class MPPSConsoleCtrl extends Dcm4cheeFormController {
                 return "link";
             } else if ( request.getParameter("unlink.x") != null ) {//action from unlink button. (sticky support;redirect to mwl ctrl.)
                 return unlink(request.getParameterValues( "mppsIUID" ));
+            } else if ( request.getParameter("del.x") != null ) {//action from delete button.   
+                if ( model.getMppsIUIDs() != null ) {
+                    delegate.deleteMPPSEntries(model.getMppsIUIDs());
+                    model.setMppsIUIDs(null, false);
+                    model.filterWorkList( true );
+                } else {
+                    model.setPopupMsg("mpps.err_delete","");
+                }
             } else {
                 String action = request.getParameter("action");
                 if ( action != null ) {
