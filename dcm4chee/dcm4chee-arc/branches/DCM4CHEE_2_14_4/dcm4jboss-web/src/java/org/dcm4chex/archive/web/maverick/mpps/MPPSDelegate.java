@@ -122,6 +122,23 @@ public class MPPSDelegate {
     }
 
     /**
+     * Deletes MPPS entries specified by an array of MPPS IUIDs.
+     * <p>
+     *
+     * @param iuids  The List of Instance UIDs of the MPPS Entries to delete.
+     * @return
+     */
+    public boolean deleteMPPSEntries(String[] iuids) {
+        try {
+            Object o = server.invoke(mppsScpServiceName, "deleteMPPSEntries",
+                    new Object[] { iuids }, new String[] { String[].class.getName() });
+            return ((Boolean) o).booleanValue();
+        } catch (Exception x) {
+            log.error("Exception occured in deleteMPPSEntries: " + x.getMessage(), x);
+        }
+        return false;
+    }
+    /**
      * @param mppsIUIDs
      */
     public boolean unlinkMPPS(String[] mppsIUIDs) {
