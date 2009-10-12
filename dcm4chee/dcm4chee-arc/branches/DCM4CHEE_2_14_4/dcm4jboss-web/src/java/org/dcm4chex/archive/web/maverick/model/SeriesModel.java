@@ -250,4 +250,8 @@ public class SeriesModel extends AbstractModel {
         return getDateTime(Tags.PPSEndDate, Tags.PPSEndTime);
     }
 
+    public String getPPSIUID() {
+        Dataset item = ds.getItem(Tags.RefPPSSeq);
+        return item == null ? null : item.getString(Tags.RefSOPInstanceUID);
+    }
 }
