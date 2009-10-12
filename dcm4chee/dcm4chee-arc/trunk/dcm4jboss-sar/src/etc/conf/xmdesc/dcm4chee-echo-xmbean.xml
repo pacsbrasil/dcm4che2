@@ -51,6 +51,16 @@
      <return-type>java.lang.String</return-type>
 	</operation>
    <operation impact="ACTION">
+     <description>Send a single echo request to the specified AE title.</description>
+     <name>echo</name>
+     <parameter>
+       <description>AE title to test</description>
+       <name>aeTitle</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <return-type>java.lang.String</return-type>
+	</operation>
+   <operation impact="ACTION">
      <description>Send an echo request to the specified AE title, for the specified number of times.</description>
      <name>echo</name>
      <parameter>
@@ -85,6 +95,39 @@
      <name>echoAll</name>
      <return-type>[Ljava.lang.String;</return-type>
 	</operation>
+   <operation impact="ACTION">
+     <description>Checks if an echo request with the specified AE configuration works correctly.&lt;br&gt;
+     			  This method is quiet (no error messages or exceptions) but 
+     			  return textual timing information or failure as result!     			
+     </description>
+     <name>echo</name>
+     <parameter>
+       <description>AE title</description>
+       <name>title</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Hostname or IP address</description>
+       <name>hostname</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Port number</description>
+       <name>port</name>
+       <type>int</type>
+     </parameter>
+     <parameter>
+       <description>Cipher Suites separated by ','. Use RFC-2246 string representation (e.g. 'SSL_RSA_WITH_3DES_EDE_CBC_SHA')</description>
+       <name>cipherSuites</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Number of echoes to test.(All in one Association)</description>
+       <name>nrOfTests</name>
+       <type>int</type>
+     </parameter>
+     <return-type>java.lang.String</return-type>
+   </operation>
    <operation impact="ACTION">
      <description>Checks if an echo request with the specified AE configuration works correctly.&lt;br&gt;
      			  This method is quiet (no error messages or exceptions)!     			

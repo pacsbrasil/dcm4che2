@@ -39,8 +39,13 @@
 
 package org.dcm4chex.archive.mbean;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.rmi.RemoteException;
 import java.util.List;
+
+import javax.ejb.FinderException;
 
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.UIDs;
@@ -48,6 +53,7 @@ import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
+import org.dcm4chex.archive.exceptions.UnknownAETException;
 
 /**
  * <description>
@@ -77,18 +83,32 @@ public class EchoService extends AbstractScuService {
     }
 
     public String echo(String aet) throws Exception {
-        return echo(aeMgt().findByAET(aet), 1);
+        return echo(aet, 1);
     }
-    public String echo(String aet, Integer nrOfTests) throws Exception {
-        return echo(aeMgt().findByAET(aet), nrOfTests);
+    public String echo(String aet, Integer nrOfTests) {
+        try {
+            return echo(aeMgt().findByAET(aet), nrOfTests);
+        } catch (Throwable e) {
+            return "Echo failed:"+e.getMessage();
+        }
     }
 
-    public String echo(AEDTO aeData, Integer nrOfTests) throws Exception {
-        try {
+    public String echo(AEDTO aeData, Integer nrOfTests) throws InterruptedException, IOException  {
+        StringWriter swr = new StringWriter(nrOfTests*20+50);
+        StringBuffer echoResult = swr.getBuffer();
+        echoResult.append("DICOM Echo to ").append(aeData).append(":\n");
+       try {
+             long t0 = System.currentTimeMillis();
             ActiveAssociation aa = openAssociation(aeData, UIDs.Verification);
             try {
-                echo(aa, nrOfTests.intValue());
-                return "Echo " + aeData + " successfully!";
+                long t1 = System.currentTimeMillis();
+                echoResult.append("Open Association in ").append(t1-t0).append(" ms.\n");
+                echo(aa, nrOfTests.intValue(), nrOfTests > 1 ? echoResult : null);
+                echoResult.append("Total time for successfully echo ").append(aeData.getTitle());
+                if ( nrOfTests > 1 ) {
+                    echoResult.append(' ').append(nrOfTests).append(" times");
+                }
+                echoResult.append(": ").append(System.currentTimeMillis()-t0).append(" ms!");
             } finally {
                 try {
                     aa.release(true);
@@ -96,20 +116,50 @@ public class EchoService extends AbstractScuService {
                     log.warn("Failed to release " + aa.getAssociation());
                 }
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.error("Echo " + aeData + " failed", e);
-            return "Echo " + aeData + " failed: " + e;        
+            echoResult.append("Echo failed! Reason: ").append(e.getMessage());
+            e.printStackTrace(new PrintWriter(swr));//write to echoResult
         }
+        return echoResult.toString();
     }
     
-    private void echo(ActiveAssociation aa, int nrOfTests)
-            throws Exception {
+    private void echo(ActiveAssociation aa, int nrOfTests, StringBuffer echoResult)
+             throws InterruptedException, IOException {
         AssociationFactory aFact = AssociationFactory.getInstance();
         DcmObjectFactory oFact = DcmObjectFactory.getInstance();
+        long t0, t1, diff;
+        int nrOfLT1ms = 0;
         for (int i = 0; i < nrOfTests; i++) {
+            t0 = System.currentTimeMillis();
             aa.invoke(aFact.newDimse(PCID_ECHO, 
                     oFact.newCommand().initCEchoRQ(i)), null);
+            if ( echoResult != null ) {
+                t1 = System.currentTimeMillis();
+                diff = t1 - t0;
+                if (diff < 1) {
+                    nrOfLT1ms++;
+                } else {
+                    if (nrOfLT1ms > 0) {
+                        echoResult.append(nrOfLT1ms).append(" Echoes, each done in less than 1 ms!\n");
+                        nrOfLT1ms = 0;
+                    }
+                    echoResult.append("Echo done in ").append(System.currentTimeMillis() - t0).append(" ms!\n");
+                }
+            }
         }
+        if (nrOfLT1ms > 0)
+            echoResult.append(nrOfLT1ms).append(" Echoes, each done in less than 1 ms!\n");
+    }
+
+    public String echo(String title, String host, int port, String cipherSuites, int nrOfTests) 
+            throws InterruptedException, IOException {
+        AEDTO ae = new AEDTO();
+        ae.setTitle(title);
+        ae.setHostName(host);
+        ae.setPort(port);
+        ae.setCipherSuitesAsString(cipherSuites);
+        return echo(ae,nrOfTests);
     }
 
     public boolean checkEcho(String title, String host, int port, 
@@ -126,7 +176,7 @@ public class EchoService extends AbstractScuService {
         try {
             ActiveAssociation aa = openAssociation(aeData, UIDs.Verification);
             try {
-                echo(aa, 1);
+                echo(aa, 1, null);
                 return true;
             } finally {
                 try {
