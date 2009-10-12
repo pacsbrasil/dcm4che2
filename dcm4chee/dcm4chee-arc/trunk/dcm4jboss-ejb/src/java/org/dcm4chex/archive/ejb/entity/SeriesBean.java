@@ -71,6 +71,7 @@ import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
+import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesRequestLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesRequestLocalHome;
@@ -885,6 +886,10 @@ public abstract class SeriesBean implements EntityBean {
         MPPSLocal mpps = null;
         if (ppsiuid != null) try {
             mpps = mppsHome.findBySopIuid(ppsiuid);
+            PatientLocal pat = this.getStudy().getPatient();
+            if ( pat.getPk() != mpps.getPatient().getPk() ) {
+                mpps.setPatient(pat);
+            }
         } catch (ObjectNotFoundException ignore) {
         } catch (FinderException e) {
             throw new EJBException(e);
