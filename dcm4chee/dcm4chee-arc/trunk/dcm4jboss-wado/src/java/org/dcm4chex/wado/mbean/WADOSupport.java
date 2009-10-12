@@ -181,8 +181,6 @@ public class WADOSupport {
     private ObjectName auditLogName = null;
     private ObjectName storeScpServiceName = null;
 
-    private Boolean auditLogIHEYr4 = null;
-
     /**
      * List of Hosts where audit log is disabled.
      * <p>
@@ -1687,26 +1685,8 @@ public class WADOSupport {
         }
     }
     
-    protected boolean isAuditLogIHEYr4() {
-        if (auditLogName == null) {
-            return false;
-        }
-        if (auditLogIHEYr4 == null) {
-            try {
-                this.auditLogIHEYr4 = (Boolean) server.getAttribute(
-                        auditLogName, "IHEYr4");
-            } catch (Exception e) {
-                log.warn("JMX failure: ", e);
-                this.auditLogIHEYr4 = Boolean.FALSE;
-            }
-        }
-        return auditLogIHEYr4.booleanValue();
-    }
-
     protected void logInstancesSent(WADORequestObject req,
             WADOResponseObject resp) {
-        if (!isAuditLogIHEYr4())
-            return;
         Dataset ds = resp.getPatInfo();
         Patient patient = alf.newPatient(ds.getString(Tags.PatientID), ds
                 .getString(Tags.PatientName));

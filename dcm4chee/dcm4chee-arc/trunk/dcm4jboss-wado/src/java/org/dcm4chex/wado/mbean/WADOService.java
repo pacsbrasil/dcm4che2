@@ -429,11 +429,6 @@ public class WADOService extends AbstractCacheService {
         long t1 = System.currentTimeMillis();
         WADOResponseObject resp = support.getWADOObject(reqVO);
         if (support.isAuditLogEnabled(reqVO)) {
-            if (support.isAuditLogIHEYr4() && resp.getPatInfo() != null) {
-                support.logInstancesSent(reqVO, resp);
-            } else {
-                log.debug("Suppress (IHEYr4) audit log! No patient info available!");
-            }
             logExport(reqVO, resp);
         } else {
             log.debug("Suppress audit log! Disabled for host:"
@@ -445,8 +440,6 @@ public class WADOService extends AbstractCacheService {
     }
 
     private void logExport(WADORequestObject reqObj, WADOResponseObject resp) {
-        if (support.isAuditLogIHEYr4())
-            return;
         try {
             HttpUserInfo userInfo = new HttpUserInfo(reqObj.getRequest(),
                     AuditMessage.isEnableDNSLookups());
