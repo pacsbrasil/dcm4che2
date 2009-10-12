@@ -188,8 +188,26 @@ public class FolderMoveDelegate {
         //update model for view
         _updateStudyWithSeries( destStudy, cm );
         _updateStudyWithSeries( srcStudy, cm );
+        if ( checkMovedSeriesForPpsIuid(destStudy, iaSrc) ) {
+            folderForm.setPopupMsg("folder.err_move_seriesWithPPS", (String)null);
+        }
     }
 
+    private boolean checkMovedSeriesForPpsIuid(StudyModel destStudy, long[] iaSrc) {
+        SeriesModel series;
+        long pk;
+        for ( Iterator it = destStudy.getSeries().iterator() ; it.hasNext() ; ) {
+            series = (SeriesModel) it.next();
+            pk = series.getPk();
+            for ( int i = 0 ; i < iaSrc.length ; i++) {
+                if ( pk == iaSrc[i] && series.getPPSIUID() != null ){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     private void _move_instances( ContentManager cm, int dest ) throws Exception {
         long iDestSeries = -1,iDestStdy = -1, iDestPat = -1;
         if ( dest == SERIES ) {
