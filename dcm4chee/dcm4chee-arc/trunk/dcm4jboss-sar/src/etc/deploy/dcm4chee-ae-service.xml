@@ -7,8 +7,7 @@
 	name="dcm4chee.archive:service=AE"
 	xmbean-dd="xmdesc/dcm4chee-ae-xmbean.xml">	
     <depends>jboss.j2ee:service=EJB,jndiName=ejb/AEManager</depends>
-    <depends optional-attribute-name="AuditLoggerName"
-      >dcm4chee.archive:service=AuditLogger</depends>
+    <depends>dcm4chee.archive:service=AuditLogger</depends>
     <depends optional-attribute-name="EchoServiceName"
       >dcm4chee.archive:service=ECHOService</depends>
   </mbean>

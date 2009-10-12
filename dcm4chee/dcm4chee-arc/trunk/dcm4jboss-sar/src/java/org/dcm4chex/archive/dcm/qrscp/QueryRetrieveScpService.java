@@ -1191,23 +1191,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return (String) requestStgCmtFromAETs.get(moveDest);
     }
 
-    void logInstancesSent(RemoteNode node, InstancesAction action) {
-        if (auditLogger.isAuditLogIHEYr4()) {
-            try {
-                server.invoke(auditLogger.getAuditLoggerName(), "logInstancesSent", new Object[] {
-                        node, action }, new String[] { RemoteNode.class.getName(),
-                        InstancesAction.class.getName() });
-            } catch (Exception e) {
-                log.warn("Audit Log failed:", e);
-            }
-        }
-    }
-
     protected void logInstancesSent(Association moveOrGetAs,
             Association storeAs, ArrayList fileInfos) {
-        if (auditLogger.isAuditLogIHEYr4()) {
-            return;
-        }
         try {
             InstanceSorter sorter = new InstanceSorter();
             FileInfo fileInfo = null;

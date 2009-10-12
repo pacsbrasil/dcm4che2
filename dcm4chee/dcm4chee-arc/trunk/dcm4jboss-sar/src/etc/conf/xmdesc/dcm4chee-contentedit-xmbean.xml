@@ -222,14 +222,6 @@ about instances moved to trash. Must be activated for compliance with
       <name>MppsScpServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
-      <attribute access="read-write"
-      getMethod="getAuditLoggerName"
-      setMethod="setAuditLoggerName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>AuditLoggerName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
 
    <!-- Operations -->
    &defaultOperations;

@@ -271,14 +271,6 @@ received GP-PPS N-CREATE request *and* in the matching Patient Record.
       <type>javax.management.ObjectName</type>
    </attribute>
    <attribute access="read-write"
-      getMethod="getAuditLoggerName"
-      setMethod="setAuditLoggerName">
-      <description>Used internally. Do NOT modify.      
-      </description>
-      <name>AuditLoggerName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getAEServiceName"
       setMethod="setAEServiceName">
       <description>Used internally. Do NOT modify.

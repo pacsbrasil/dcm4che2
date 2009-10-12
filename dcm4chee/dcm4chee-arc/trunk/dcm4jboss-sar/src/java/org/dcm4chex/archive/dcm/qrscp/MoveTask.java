@@ -424,13 +424,6 @@ public class MoveTask implements Runnable {
             } catch (IOException ignore) {
             }
         }
-        if (instancesAction != null) {
-            service.logInstancesSent(remoteNode, instancesAction);
-        }
-        if (!successfulTransferred.isEmpty()) {
-            service.logInstancesSent(moveAssoc.getAssociation(),
-                    storeAssoc.getAssociation(), successfulTransferred);
-        }
         service.updateStudyAccessTime(studyInfos);
         String stgCmtAET = service.getStgCmtAET(moveDest);
         if (stgCmtAET != null && refSOPSeq.countItems() > 0) {

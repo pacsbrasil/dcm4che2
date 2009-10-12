@@ -5,8 +5,7 @@
   <mbean code="org.dcm4chex.rid.mbean.RIDService"
     name="dcm4chee.archive:service=RIDService"
     xmbean-dd="xmdesc/dcm4chee-rid-xmbean.xml">
-    <depends optional-attribute-name="AuditLoggerName"
-      >dcm4chee.archive:service=AuditLogger</depends>
+    <depends>dcm4chee.archive:service=AuditLogger</depends>
     <depends optional-attribute-name="QueryRetrieveScpName"
       >dcm4chee.archive:service=QueryRetrieveScp</depends>
   </mbean>

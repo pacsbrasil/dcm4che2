@@ -104,7 +104,6 @@ import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
-import org.dcm4chex.archive.mbean.AuditLoggerDelegate;
 import org.dcm4chex.archive.mbean.HttpUserInfo;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
@@ -135,8 +134,6 @@ public class XDSIService extends ServiceMBeanSupport {
     public  static final String SOURCE_ID = "sourceId";
 
     private static final String NONE = "NONE";
-
-    protected AuditLoggerDelegate auditLogger = new AuditLoggerDelegate(this);
 
     private ObjectName ianScuServiceName;
     private ObjectName keyObjectServiceName;
@@ -384,14 +381,6 @@ public class XDSIService extends ServiceMBeanSupport {
             this.docRepositoryAET = null;
         else
             this.docRepositoryAET = docRepositoryAET;
-    }
-
-    public final ObjectName getAuditLoggerName() {
-        return auditLogger.getAuditLoggerName();
-    }
-
-    public final void setAuditLoggerName(ObjectName auditLogName) {
-        this.auditLogger.setAuditLoggerName(auditLogName);
     }
 
     public final ObjectName getPixQueryServiceName() {
@@ -867,13 +856,6 @@ public class XDSIService extends ServiceMBeanSupport {
         Document metadata = md.getMetadata();
         boolean b = sendSOAP(metadata, docs , null);
         logExport(md, user, b);
-        if ( b ) {
-            logIHEYr4Export( kos.getString(Tags.PatientID), 
-                    kos.getString(Tags.PatientName),
-                    this.getDocRepositoryURI(), 
-                    docRepositoryAET,
-                    getSUIDs(kos));
-        }
         return b;
     }
 
@@ -915,13 +897,6 @@ public class XDSIService extends ServiceMBeanSupport {
         Document metadata = md.getMetadata();
         boolean b = sendSOAP(metadata,docs , null);
         logExport(md, user, b);
-        if ( b ) {
-            logIHEYr4Export( ds.getString(Tags.PatientID), 
-                    ds.getString(Tags.PatientName),
-                    this.getDocRepositoryURI(), 
-                    docRepositoryAET,
-                    getSUIDs(ds));
-        }
         return b;
     }
 
@@ -953,24 +928,6 @@ public class XDSIService extends ServiceMBeanSupport {
         return suids;
     }
 
-    private void logIHEYr4Export(String patId, String patName, String node, String aet, Set suids) {
-        if (!auditLogger.isAuditLogIHEYr4()) return;
-        try {
-            URL url = new URL(node);
-            InetAddress inet = InetAddress.getByName(url.getHost());
-            server.invoke(auditLogger.getAuditLoggerName(),
-                    "logExport",
-                    new Object[] { patId, patName, "XDSI Export", 
-                suids,
-                inet.getHostAddress(), inet.getHostName(), aet},
-                new String[] { String.class.getName(), String.class.getName(), String.class.getName(), 
-                Set.class.getName(),
-                String.class.getName(), String.class.getName(), String.class.getName()});
-            /*_*/
-        } catch (Exception e) {
-            log.warn("Audit Log failed:", e);
-        }		
-    }
     private void logExport(XDSMetadata metaData, String user, boolean success) {
         Dataset manifest = metaData.getManifest();
         try {

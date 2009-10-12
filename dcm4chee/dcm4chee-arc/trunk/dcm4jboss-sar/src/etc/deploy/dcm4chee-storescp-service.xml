@@ -11,8 +11,7 @@
       >CheckPendingSeriesStored</attribute>
     <depends optional-attribute-name="AEServiceName"
       >dcm4chee.archive:service=AE</depends>
-    <depends optional-attribute-name="AuditLoggerName"
-      >dcm4chee.archive:service=AuditLogger</depends>
+    <depends>dcm4chee.archive:service=AuditLogger</depends>
     <depends optional-attribute-name="DcmServerName"
       >dcm4chee.archive:service=DcmServer</depends>
     <depends optional-attribute-name="MwlScuServiceName"

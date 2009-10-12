@@ -175,7 +175,6 @@ public class RIDSupport {
 
     private ObjectName queryRetrieveScpName;
     private ObjectName auditLogName;
-    private Boolean auditLogIHEYr4;
 
     private ECGSupport ecgSupport = null;
 
@@ -654,24 +653,7 @@ public class RIDSupport {
         return instances.isEmpty() ? null : (Dataset) instances.get(0);
     }
 
-    private boolean isAuditLogIHEYr4() {
-        if (auditLogName == null) {
-            return false;
-        }
-        if (auditLogIHEYr4 == null) {
-            try {
-                this.auditLogIHEYr4 = (Boolean) server.getAttribute(
-                        auditLogName, "IHEYr4");
-            } catch (Exception e) {
-                log.warn("JMX failure: ", e);
-                this.auditLogIHEYr4 = Boolean.FALSE;
-            }
-        }
-        return auditLogIHEYr4.booleanValue();
-    }
-
     private void logExport(RIDRequestObject reqObj, Dataset ds, String mediaType ) {
-        if (isAuditLogIHEYr4()) return;
         try {
             HttpUserInfo userInfo = new HttpUserInfo(reqObj.getRequest(), AuditMessage.isEnableDNSLookups());
             String user = userInfo.getUserId();

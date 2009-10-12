@@ -681,90 +681,49 @@ public class StoreScpService extends AbstractScpService {
 
     private void logInstancesStored(Socket s, SeriesStored seriesStored) {
         try {
-            if (auditLogger.isAuditLogIHEYr4()) {
-                final AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
-                Dataset ian = seriesStored.getIAN();
-                Dataset pps = ian.getItem(Tags.RefPPSSeq);
-                String ppsiuid = pps != null ? pps
-                        .getString(Tags.RefSOPInstanceUID) : null;
-                InstancesAction action = alf.newInstancesAction("Create", ian
-                        .getString(Tags.StudyInstanceUID), alf.newPatient(
-                        seriesStored.getPatientID(), seriesStored
-                                .getPatientName()));
-                action.setMPPSInstanceUID(ppsiuid);
-                action.setAccessionNumber(seriesStored.getAccessionNumber());
-                DcmElement sq = ian.getItem(Tags.RefSeriesSeq).get(
-                        Tags.RefSOPSeq);
-                int n = sq.countItems();
-                for (int i = 0; i < n; i++) {
-                    action.addSOPClassUID(sq.getItem(i).getString(
-                            Tags.RefSOPClassUID));
-                }
-                action.setNumberOfInstances(n);
-                RemoteNode remoteNode;
-                if (s != null) {
-                    remoteNode = alf.newRemoteNode(s,
-                            seriesStored.getSourceAET());
-                } else {
-                    try {
-                        InetAddress iAddr = InetAddress.getLocalHost();
-                        remoteNode = alf.newRemoteNode(iAddr.getHostAddress(),
-                                iAddr.getHostName(), "LOCAL");
-                    } catch (UnknownHostException x) {
-                        remoteNode = alf.newRemoteNode("127.0.0.1",
-                                "localhost", "LOCAL");
-                    }
-                }
-                server.invoke(auditLogger.getAuditLoggerName(),
-                        "logInstancesStored",
-                        new Object[] { remoteNode, action }, new String[] {
-                                RemoteNode.class.getName(),
-                                InstancesAction.class.getName() });
-            } else {
-                InstanceSorter sorter = new InstanceSorter();
-                Dataset ian = seriesStored.getIAN();
-                String suid = ian.getString(Tags.StudyInstanceUID);
-                Dataset series = ian.getItem(Tags.RefSeriesSeq);
-                DcmElement refSops = series.get(Tags.RefSOPSeq);
-                for (int i = 0, n = refSops.countItems(); i < n; i++) {
-                    final Dataset refSop = refSops.getItem(i);
-                    sorter.addInstance(suid, refSop
-                            .getString(Tags.RefSOPClassUID), refSop
-                            .getString(Tags.RefSOPInstanceUID), null);
-                }
-                InstancesTransferredMessage msg = new InstancesTransferredMessage(
-                        InstancesTransferredMessage.CREATE);
-                String srcAET = seriesStored.getSourceAET();
-                String srcHost = s != null ? AuditMessage.hostNameOf(s
-                        .getInetAddress()) : null;
-                String srcID = srcHost != null ? srcHost : srcAET;
-                msg.addSourceProcess(srcID, new String[] { srcAET }, null,
-                        srcHost, true);
-                msg.addDestinationProcess(AuditMessage.getProcessID(),
-                        calledAETs, AuditMessage.getProcessName(), AuditMessage
-                                .getLocalHostName(), false);
-                msg.addPatient(seriesStored.getPatientID(),
-                        formatPN(seriesStored.getPatientName()));
-                String accno = seriesStored.getAccessionNumber();
-                Dataset pps = ian.getItem(Tags.RefPPSSeq);
-                ParticipantObjectDescription desc = new ParticipantObjectDescription();
-                if (accno != null) {
-                    desc.addAccession(accno);
-                }
-                if (pps != null) {
-                    desc.addMPPS(pps.getString(Tags.RefSOPInstanceUID));
-                }
-                for (String cuid : sorter.getCUIDs(suid)) {
-                    ParticipantObjectDescription.SOPClass sopClass = new ParticipantObjectDescription.SOPClass(
-                            cuid);
-                    sopClass.setNumberOfInstances(sorter.countInstances(suid,
-                            cuid));
-                    desc.addSOPClass(sopClass);
-                }
-                msg.addStudy(ian.getString(Tags.StudyInstanceUID), desc);
-                msg.validate();
-                Logger.getLogger("auditlog").info(msg);
+            InstanceSorter sorter = new InstanceSorter();
+            Dataset ian = seriesStored.getIAN();
+            String suid = ian.getString(Tags.StudyInstanceUID);
+            Dataset series = ian.getItem(Tags.RefSeriesSeq);
+            DcmElement refSops = series.get(Tags.RefSOPSeq);
+            for (int i = 0, n = refSops.countItems(); i < n; i++) {
+                final Dataset refSop = refSops.getItem(i);
+                sorter.addInstance(suid, refSop
+                        .getString(Tags.RefSOPClassUID), refSop
+                        .getString(Tags.RefSOPInstanceUID), null);
             }
+            InstancesTransferredMessage msg = new InstancesTransferredMessage(
+                    InstancesTransferredMessage.CREATE);
+            String srcAET = seriesStored.getSourceAET();
+            String srcHost = s != null ? AuditMessage.hostNameOf(s
+                    .getInetAddress()) : null;
+            String srcID = srcHost != null ? srcHost : srcAET;
+            msg.addSourceProcess(srcID, new String[] { srcAET }, null,
+                    srcHost, true);
+            msg.addDestinationProcess(AuditMessage.getProcessID(),
+                    calledAETs, AuditMessage.getProcessName(), AuditMessage
+                            .getLocalHostName(), false);
+            msg.addPatient(seriesStored.getPatientID(),
+                    formatPN(seriesStored.getPatientName()));
+            String accno = seriesStored.getAccessionNumber();
+            Dataset pps = ian.getItem(Tags.RefPPSSeq);
+            ParticipantObjectDescription desc = new ParticipantObjectDescription();
+            if (accno != null) {
+                desc.addAccession(accno);
+            }
+            if (pps != null) {
+                desc.addMPPS(pps.getString(Tags.RefSOPInstanceUID));
+            }
+            for (String cuid : sorter.getCUIDs(suid)) {
+                ParticipantObjectDescription.SOPClass sopClass = new ParticipantObjectDescription.SOPClass(
+                        cuid);
+                sopClass.setNumberOfInstances(sorter.countInstances(suid,
+                        cuid));
+                desc.addSOPClass(sopClass);
+            }
+            msg.addStudy(ian.getString(Tags.StudyInstanceUID), desc);
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
         } catch (Exception e) {
             log.warn("Audit Log failed:", e);
         }

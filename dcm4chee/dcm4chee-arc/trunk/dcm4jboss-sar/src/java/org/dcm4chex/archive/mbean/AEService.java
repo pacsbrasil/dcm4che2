@@ -80,8 +80,6 @@ public class AEService extends ServiceMBeanSupport {
 
     private static final int MAX_MAX_CACHE_SIZE = 1000;
 
-    private AuditLoggerDelegate auditLogger = new AuditLoggerDelegate(this);
-
     private ObjectName echoServiceName;
 
     private boolean dontSaveIP = true;
@@ -111,14 +109,6 @@ public class AEService extends ServiceMBeanSupport {
      */
     public void setEchoServiceName(ObjectName echoServiceName) {
         this.echoServiceName = echoServiceName;
-    }
-
-    public ObjectName getAuditLoggerName() {
-        return auditLogger.getAuditLoggerName();
-    }
-
-    public void setAuditLoggerName(ObjectName auditLogName) {
-        this.auditLogger.setAuditLoggerName(auditLogName);
     }
 
     /**
@@ -478,23 +468,16 @@ public class AEService extends ServiceMBeanSupport {
     private void logActorConfig(String desc, AuditEvent.TypeCode eventTypeCode) {
         log.info(desc);
         try {
-            if (auditLogger.isAuditLogIHEYr4()) {
-                server.invoke(auditLogger.getAuditLoggerName(), 
-                        "logActorConfig",
-                        new Object[] { desc, "NetWorking" },
-                        new String[] { String.class.getName(), String.class.getName(), });
-            } else {
-                HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
-                SecurityAlertMessage msg = new SecurityAlertMessage(eventTypeCode);
-                msg.addReportingProcess(AuditMessage.getProcessID(),
-                        AuditMessage.getLocalAETitles(),
-                        AuditMessage.getProcessName(),
-                        AuditMessage.getLocalHostName());
-                msg.addPerformingPerson(userInfo.getUserId(), null, null, userInfo.getHostName());
-                msg.addAlertSubjectWithNodeID(AuditMessage.getLocalNodeID(), desc);
-                msg.validate();
-                Logger.getLogger("auditlog").info(msg);
-            }
+            HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+            SecurityAlertMessage msg = new SecurityAlertMessage(eventTypeCode);
+            msg.addReportingProcess(AuditMessage.getProcessID(),
+                    AuditMessage.getLocalAETitles(),
+                    AuditMessage.getProcessName(),
+                    AuditMessage.getLocalHostName());
+            msg.addPerformingPerson(userInfo.getUserId(), null, null, userInfo.getHostName());
+            msg.addAlertSubjectWithNodeID(AuditMessage.getLocalNodeID(), desc);
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
         } catch (Exception e) {
             log.warn("Failed to log ActorConfig:", e);
         }

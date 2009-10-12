@@ -128,7 +128,6 @@ import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.exceptions.UnknownAETException;
-import org.dcm4chex.archive.mbean.AuditLoggerDelegate;
 import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -181,8 +180,6 @@ public class ExportManagerService extends AbstractScuService
     private int bufferSize;
 
     private boolean deleteKeyObjects;
-
-    private AuditLoggerDelegate auditLogger = new AuditLoggerDelegate(this);
 
     private int exportDelay = 2000;
     
@@ -394,14 +391,6 @@ public class ExportManagerService extends AbstractScuService
     public final void setIANScuServiceName(ObjectName ianScuServiceName) {
         this.ianScuServiceName = ianScuServiceName;
     }    
-
-    public final ObjectName getAuditLoggerName() {
-        return auditLogger.getAuditLoggerName();
-    }
-
-    public final void setAuditLoggerName(ObjectName auditLogName) {
-        this.auditLogger.setAuditLoggerName(auditLogName);
-    }
 
     public final String getQueueName() {
         return queueName;
@@ -804,45 +793,29 @@ public class ExportManagerService extends AbstractScuService
             String mediaID = mediaIDPrefix + fsid;
             PersonName pn = manifest.getPersonName(Tags.PatientName);            
             String pname = pn != null ? pn.format() : null;
-            if (auditLogger.isAuditLogIHEYr4()) {
-                AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
-                Patient pat = alf.newPatient(pid, pname);
-                for (String suid : sorter.getSUIDs()) {
-                    pat.addStudyInstanceUID(suid);
-
-                }
-                server.invoke(auditLogger.getAuditLoggerName(), "logExport", new Object[] { user,
-                        new Patient[] { pat }, null, mediaID, null },
-                        new String[] { String.class.getName(),
-                        Patient[].class.getName(),
-                        String.class.getName(),
-                        String.class.getName(),
-                        Destination.class.getName() });
-            } else {
-                DataExportMessage msg = new DataExportMessage();
-                msg.addExporterProcess(AuditMessage.getProcessID(), 
-                        new String[] { callingAET },
-                        AuditMessage.getProcessName(), user == null,
-                        AuditMessage.getLocalHostName());
-                if (user != null) {
-                    msg.addExporterPerson(user, null, null, true, null);
-                }
-                msg.addDestinationMedia(mediaID, fsuid);
-                msg.addPatient(pid, pname);
-                for (String suid : sorter.getSUIDs()) {
-                    ParticipantObjectDescription desc = new ParticipantObjectDescription();
-                    for (String cuid : sorter.getCUIDs(suid)) {
-                        ParticipantObjectDescription.SOPClass sopClass =
-                                new ParticipantObjectDescription.SOPClass(cuid);
-                        sopClass.setNumberOfInstances(
-                                sorter.countInstances(suid, cuid));
-                        desc.addSOPClass(sopClass);
-                    }
-                    msg.addStudy(suid, desc);
-                }
-                msg.validate();
-                Logger.getLogger("auditlog").info(msg);
+            DataExportMessage msg = new DataExportMessage();
+            msg.addExporterProcess(AuditMessage.getProcessID(), 
+                    new String[] { callingAET },
+                    AuditMessage.getProcessName(), user == null,
+                    AuditMessage.getLocalHostName());
+            if (user != null) {
+                msg.addExporterPerson(user, null, null, true, null);
             }
+            msg.addDestinationMedia(mediaID, fsuid);
+            msg.addPatient(pid, pname);
+            for (String suid : sorter.getSUIDs()) {
+                ParticipantObjectDescription desc = new ParticipantObjectDescription();
+                for (String cuid : sorter.getCUIDs(suid)) {
+                    ParticipantObjectDescription.SOPClass sopClass =
+                            new ParticipantObjectDescription.SOPClass(cuid);
+                    sopClass.setNumberOfInstances(
+                            sorter.countInstances(suid, cuid));
+                    desc.addSOPClass(sopClass);
+                }
+                msg.addStudy(suid, desc);
+            }
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
         } catch (Exception e) {
             log.warn("Audit Log failed:", e);
         }

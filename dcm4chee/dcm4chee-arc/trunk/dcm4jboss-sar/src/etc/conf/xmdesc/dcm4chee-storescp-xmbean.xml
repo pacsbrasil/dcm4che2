@@ -1027,14 +1027,6 @@ Notifications for one Series.]]>
       <name>DcmServerName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getAuditLoggerName"
-      setMethod="setAuditLoggerName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>AuditLoggerName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>   
    <attribute access="read-write" 
       getMethod="getTemplatesServiceName"
       setMethod="setTemplatesServiceName">

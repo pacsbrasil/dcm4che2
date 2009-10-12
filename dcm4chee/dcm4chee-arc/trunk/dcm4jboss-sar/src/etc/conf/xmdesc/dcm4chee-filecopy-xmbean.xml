@@ -34,10 +34,14 @@
         of a directory path (e.g.: tar:ftp://user@pass/service).
         <p><b>Attention:</b> The file system must have already been configured
         by invoking operation <code>File System Management
-        Service#addNearlineFileSystem()</code>. Otherwise the copy task will
+        Service#addRWFileSystem()</code>. Otherwise the copy task will
         fail! If you configured a tar URI as destination file system, the name
         of the configured file system has to match that URI, and not only the
-        <Directory/Mount Point> part!
+        <Directory/Mount Point> part! <p />
+        The filesystem status and/or availability may be also changed to fulfil 
+        configured deleter criteria. <br />
+        (see also <code>updateFileSystemStatus and updateFileSystemAvailability in
+        File System Managment Service</code>)
         ]]>
       </description>
       <name>DestinationFileSystem</name>

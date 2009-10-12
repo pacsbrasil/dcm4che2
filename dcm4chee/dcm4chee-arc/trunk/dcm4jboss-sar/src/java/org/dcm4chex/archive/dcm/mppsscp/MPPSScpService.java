@@ -338,8 +338,6 @@ public class MPPSScpService extends AbstractScpService {
     public void unlinkMpps(String mppsIUID) throws RemoteException, CreateException, HomeFactoryException, FinderException {
         MPPSManager mgr = getMPPSManagerHome().create();
         Dataset mppsAttrs = mgr.unlinkMpps(mppsIUID);
-        if (auditLogger.isAuditLogIHEYr4())
-            return;
         DcmElement ssaSQ = mppsAttrs.get(Tags.ScheduledStepAttributesSeq);
         String spsID;
         StringBuffer sb = new StringBuffer();
@@ -384,30 +382,8 @@ public class MPPSScpService extends AbstractScpService {
         Dataset mppsAttrs = (Dataset) map.get("mppsAttrs");
         Dataset mwlAttrs = (Dataset) map.get("mwlAttrs");
         String desc = "MPPS "+mppsIUID+" linked with MWL entry "+spsID;
-        if (auditLogger.isAuditLogIHEYr4()) {
-            try {
-                server.invoke(auditLogger.getAuditLoggerName(),
-                        "logProcedureRecord",
-                        new Object[] { "Modify", 
-                    mppsAttrs.getString(Tags.PatientID), 
-                    mppsAttrs.getString(Tags.PatientName),
-                    mwlAttrs.getString(Tags.PlacerOrderNumber), 
-                    mwlAttrs.getString(Tags.FillerOrderNumber), 
-                    mppsAttrs.getItem(Tags.ScheduledStepAttributesSeq).getString(Tags.StudyInstanceUID), 
-                    mwlAttrs.getString(Tags.AccessionNumber),
-                    desc},
-                    new String[] { String.class.getName(),
-                    String.class.getName(), String.class.getName(),
-                    String.class.getName(), String.class.getName(),
-                    String.class.getName(), String.class.getName(),
-                    String.class.getName()});
-            } catch (Exception e) {
-                log.warn("Failed to log procedureRecord:", e);
-            }
-        } else {
-            logProcedureRecord(mppsAttrs, mwlAttrs.getString(Tags.AccessionNumber), 
-                    ProcedureRecordMessage.UPDATE, desc);
-        }
+        logProcedureRecord(mppsAttrs, mwlAttrs.getString(Tags.AccessionNumber), 
+                ProcedureRecordMessage.UPDATE, desc);
     }
 
     private void logProcedureRecord(Dataset mppsAttrs, String accNr, ActionCode actionCode,

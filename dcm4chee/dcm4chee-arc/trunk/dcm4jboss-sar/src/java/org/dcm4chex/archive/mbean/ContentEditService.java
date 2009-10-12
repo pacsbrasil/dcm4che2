@@ -91,8 +91,6 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     private static final int DELETED = 1;
 
-    private AuditLoggerDelegate auditLogger = new AuditLoggerDelegate(this);
-
     private boolean auditEnabled;
 
     private boolean createIANonMoveToTrash;
@@ -127,14 +125,6 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     protected void stopService() throws Exception {
-    }
-
-    public ObjectName getAuditLoggerName() {
-        return auditLogger.getAuditLoggerName();
-    }
-
-    public void setAuditLoggerName(ObjectName auditLogName) {
-        this.auditLogger.setAuditLoggerName(auditLogName);
     }
 
     public void setAuditEnabled(boolean auditEnabled) {
@@ -911,7 +901,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     private void logPatientRecord(Dataset ds, AuditEvent.ActionCode actionCode) {
-        if (auditLogger.isAuditLogIHEYr4() || !auditEnabled)
+        if (!auditEnabled)
             return;
         HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
                 .isEnableDNSLookups());
@@ -939,7 +929,7 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     private void logInstancesAccessed(Collection<Dataset> studies,
             AuditEvent.ActionCode actionCode, boolean addIUID, String detailMessage) {
-        if (auditLogger.isAuditLogIHEYr4() || !auditEnabled)
+        if (!auditEnabled)
             return;
         HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
                 .isEnableDNSLookups());
@@ -985,7 +975,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     private void logStudyDeleted(Dataset studyMgtDs) {
-        if (auditLogger.isAuditLogIHEYr4() || !auditEnabled)
+        if (!auditEnabled)
             return;
         HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
                 .isEnableDNSLookups());
