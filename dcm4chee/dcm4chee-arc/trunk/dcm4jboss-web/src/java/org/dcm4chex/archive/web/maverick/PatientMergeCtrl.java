@@ -99,16 +99,6 @@ public class PatientMergeCtrl extends Dcm4cheeFormController {
             Dataset prior;
             for (int i = 0; i < priorPats.length; i++) {
                 prior = priorPats[i];
-                AuditLoggerDelegate.logPatientRecord(getCtx(),
-                        AuditLoggerDelegate.MODIFY,
-                        dominant.getString(Tags.PatientID),
-                        dominant.getString(Tags.PatientName),
-                        makeMergeDesc(prior));
-                AuditLoggerDelegate.logPatientRecord(getCtx(),
-                        AuditLoggerDelegate.DELETE,
-                        prior.getString(Tags.PatientID),
-                        prior.getString(Tags.PatientName),
-                        makeMergeDesc(dominant));
             }
         }
     }

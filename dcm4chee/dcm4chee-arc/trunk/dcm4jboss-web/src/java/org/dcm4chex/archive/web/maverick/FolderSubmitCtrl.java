@@ -366,14 +366,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
                 delegate.movePatientToTrash(pat.getPk());
                 for (int j = 0, m = studies.size(); j < m; j++) {
                     Dataset study = (Dataset) studies.get(j);
-                    AuditLoggerDelegate.logStudyDeleted(getCtx(), pat
-                            .getPatientID(), pat.getPatientName(), study
-                            .getString(Tags.StudyInstanceUID), study
-                            .getInt(Tags.NumberOfStudyRelatedInstances, 0),
-                            null);
                 }
-                AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.DELETE, pat
-                        .getPatientID(), pat.getPatientName(), null);
             } else {
                 deleteStudies( pat );
             }
@@ -388,22 +381,10 @@ public class FolderSubmitCtrl extends FolderCtrl {
             StudyModel study = (StudyModel) studies.get(i);
             if (folderForm.isSticky(study)) {
                 delegate.moveStudyToTrash(study.getPk());
-                AuditLoggerDelegate.logStudyDeleted(getCtx(),
-                        pat.getPatientID(),
-                        pat.getPatientName(),
-                        study.getStudyIUID(),
-                        study.getNumberOfInstances(),
-                        null);
             } else {
                 StringBuffer sb = new StringBuffer("Deleted ");
                 final int deletedInstances = deleteSeries( study.getSeries(), sb);
                 if (deletedInstances > 0) {
-                    AuditLoggerDelegate.logStudyDeleted(getCtx(),
-                            pat.getPatientID(),
-                            pat.getPatientName(),
-                            study.getStudyIUID(),
-                            deletedInstances,
-                            AuditLoggerDelegate.trim(sb));
                 }
 
             }
@@ -635,18 +616,6 @@ public class FolderSubmitCtrl extends FolderCtrl {
         folderForm.getStickyInstances().clear();
     }
 
-
-    protected void logProcedureRecord( PatientModel pat, StudyModel study, String desc ) {
-        AuditLoggerDelegate.logProcedureRecord(getCtx(),
-                AuditLoggerDelegate.MODIFY,
-                pat.getPatientID(),
-                pat.getPatientName(),
-                study.getPlacerOrderNumber(),
-                study.getFillerOrderNumber(),
-                study.getStudyIUID(),
-                study.getAccessionNumber(),
-                desc );
-    }
 
     private String logout() {
         getCtx().getRequest().getSession().invalidate();

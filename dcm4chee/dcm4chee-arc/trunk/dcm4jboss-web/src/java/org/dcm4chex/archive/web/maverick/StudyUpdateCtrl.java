@@ -160,16 +160,6 @@ public class StudyUpdateCtrl extends Dcm4cheeFormController {
             for (int i = 0, n = studies.size(); i < n; i++)
                 studies.set(i, new StudyModel((Dataset) studies.get(i)));
             pat.setStudies(studies);
-
-            AuditLoggerDelegate.logProcedureRecord(getCtx(),
-                    AuditLoggerDelegate.CREATE,
-                    pat.getPatientID(),
-                    pat.getPatientName(),
-                    study.getPlacerOrderNumber(),
-                    study.getFillerOrderNumber(),
-                    study.getStudyIUID(),
-                    study.getAccessionNumber(),
-                    "new study:"+study.getStudyIUID() );
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -188,53 +178,37 @@ public class StudyUpdateCtrl extends Dcm4cheeFormController {
             //updating data model
             StringBuffer sb = new StringBuffer();
             boolean modified = false;            
-            if (AuditLoggerDelegate.isModified("Placer Order Number",
-                    study.getPlacerOrderNumber(), placerOrderNumber, sb)) {
+            if (StudyModel.isModified(study.getPlacerOrderNumber(), placerOrderNumber)) {
                 study.setPlacerOrderNumber(placerOrderNumber);
                 modified = true;
             }
-            if (AuditLoggerDelegate.isModified("Filler Order Number",
-                    study.getFillerOrderNumber(), fillerOrderNumber, sb)) {
+            if (StudyModel.isModified(study.getFillerOrderNumber(), fillerOrderNumber)) {
                 study.setFillerOrderNumber(fillerOrderNumber);
                 modified = true;
             }
-            if (AuditLoggerDelegate.isModified("Accession Number",
-                    study.getAccessionNumber(), accessionNumber, sb)) {
+            if (StudyModel.isModified(study.getAccessionNumber(), accessionNumber)) {
                 study.setAccessionNumber(accessionNumber);
                 modified = true;
             }
-            if (AuditLoggerDelegate.isModified("Referring Physician",
-                    study.getReferringPhysician(), referringPhysician, sb)) {
+            if (StudyModel.isModified(study.getReferringPhysician(), referringPhysician)) {
                 study.setReferringPhysician(referringPhysician);
                 modified = true;
             }
-            if (AuditLoggerDelegate.isModified("Study Date/Time",
-                    study.getStudyDateTime(), studyDateTime, sb)) {
+            if (StudyModel.isModified(study.getStudyDateTime(), studyDateTime)) {
                 study.setStudyDateTime(studyDateTime);
                 modified = true;
             }
-            if (AuditLoggerDelegate.isModified("Study Description",
-                    study.getStudyDescription(), studyDescription, sb)) {
+            if (StudyModel.isModified(study.getStudyDescription(), studyDescription)) {
                 study.setStudyDescription(studyDescription);
                 modified = true;
             }
-            if (AuditLoggerDelegate.isModified("Study ID",
-                    study.getStudyID(), studyID, sb)) {
+            if (StudyModel.isModified(study.getStudyID(), studyID)) {
                 study.setStudyID(studyID);
                 modified = true;
             }
             if (modified) {
                 FolderSubmitCtrl.getDelegate().updateStudy(study.toDataset());
                 PatientModel pat = form.getPatientByPk(patPk);
-                AuditLoggerDelegate.logProcedureRecord(getCtx(),
-                        AuditLoggerDelegate.MODIFY,
-                        pat.getPatientID(),
-                        pat.getPatientName(),
-                        study.getPlacerOrderNumber(),
-                        study.getFillerOrderNumber(),
-                        study.getStudyIUID(),
-                        study.getAccessionNumber(),
-                        AuditLoggerDelegate.trim(sb));
             }
         } catch (Exception e) {
             // TODO Auto-generated catch block

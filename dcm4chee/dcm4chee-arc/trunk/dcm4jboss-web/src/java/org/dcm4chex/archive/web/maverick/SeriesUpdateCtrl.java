@@ -168,17 +168,6 @@ public class SeriesUpdateCtrl extends Dcm4cheeFormController {
             for (int i = 0, n = allSeries.size(); i < n; i++)
                 allSeries.set(i, new SeriesModel((Dataset) allSeries.get(i)));
             form.getStudyByPk(patPk, studyPk).setSeries(allSeries);
-
-            AuditLoggerDelegate.logProcedureRecord(getCtx(),
-                    AuditLoggerDelegate.CREATE,
-                    pat.getPatientID(),
-                    pat.getPatientName(),
-                    study.getPlacerOrderNumber(),
-                    study.getFillerOrderNumber(),
-                    study.getStudyIUID(),
-                    study.getAccessionNumber(),
-                    "new series:"+series.getSeriesIUID() );
-
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -200,48 +189,33 @@ public class SeriesUpdateCtrl extends Dcm4cheeFormController {
             StringBuffer sb = new StringBuffer("Series[");
             sb.append(series.getSeriesIUID()).append(" ] modified: ");
             boolean modified = false;            
-            if (AuditLoggerDelegate.isModified("Body Part Examined",
-                    series.getBodyPartExamined(), bodyPartExamined, sb)) {
+            if (StudyModel.isModified(series.getBodyPartExamined(), bodyPartExamined)) {
                 series.setBodyPartExamined(bodyPartExamined);
                 modified = true;
             }
-            if (AuditLoggerDelegate.isModified("Laterality",
-                    series.getLaterality(), laterality, sb)) {
+            if (StudyModel.isModified(series.getLaterality(), laterality)) {
                 series.setLaterality(laterality);
                 modified = true;
             }
-            if (AuditLoggerDelegate.isModified("Modality",
-                    series.getModality(), modality, sb)) {
+            if (StudyModel.isModified(series.getModality(), modality)) {
                 series.setModality(modality);
                 modified = true;
             }
-            if (AuditLoggerDelegate.isModified("Series Date/Time",
-                    series.getSeriesDateTime(), seriesDateTime, sb)) {
+            if (StudyModel.isModified(series.getSeriesDateTime(), seriesDateTime)) {
                 series.setSeriesDateTime(seriesDateTime);
                 modified = true;
             }
-            if (AuditLoggerDelegate.isModified("Series Description",
-                    series.getSeriesDescription(), seriesDescription, sb)) {
+            if (StudyModel.isModified(series.getSeriesDescription(), seriesDescription)) {
                 series.setSeriesDescription(seriesDescription);
                 modified = true;
             }
-            if (AuditLoggerDelegate.isModified("Series Number",
-                    series.getSeriesNumber(), seriesNumber, sb)) {
+            if (StudyModel.isModified(series.getSeriesNumber(), seriesNumber)) {
                 series.setSeriesNumber(seriesNumber);
                 modified = true;
             }
             if (modified) {
                 FolderSubmitCtrl.getDelegate().updateSeries(series.toDataset());
                 PatientModel pat = form.getPatientByPk(patPk);
-                AuditLoggerDelegate.logProcedureRecord(getCtx(),
-                        AuditLoggerDelegate.MODIFY,
-                        pat.getPatientID(),
-                        pat.getPatientName(),
-                        study.getPlacerOrderNumber(),
-                        study.getFillerOrderNumber(),
-                        study.getStudyIUID(),
-                        study.getAccessionNumber(),
-                        AuditLoggerDelegate.trim(sb));
             }
         } catch (Exception e) {
             // TODO Auto-generated catch block

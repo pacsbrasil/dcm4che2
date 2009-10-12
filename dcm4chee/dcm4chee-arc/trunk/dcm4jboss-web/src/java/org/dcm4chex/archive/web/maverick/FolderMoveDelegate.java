@@ -156,8 +156,6 @@ public class FolderMoveDelegate {
         StudyModel study;
         for ( int i = 0, len=iaSrc.length ; i < len ; i++ ) {
             study = new StudyModel( cm.getStudy( iaSrc[i] ) );
-            ctrl.logProcedureRecord(destPat,study,"study moved from " + srcPat.getPatientName()+ 
-                    " ("+srcPat.getPatientID()+")" );
         }
     }
 
@@ -190,12 +188,6 @@ public class FolderMoveDelegate {
         //update model for view
         _updateStudyWithSeries( destStudy, cm );
         _updateStudyWithSeries( srcStudy, cm );
-        //audit log for source study
-        ctrl.logProcedureRecord(pat,srcStudy,iaSrc.length + " series moved to " + 
-                destStudy.getStudyDescription()+ " ("+destStudy.getStudyIUID()+")");
-        //audit log for destination study
-        ctrl.logProcedureRecord(pat,destStudy,iaSrc.length + " series moved from " + 
-                srcStudy.getStudyDescription()+ " ("+srcStudy.getStudyIUID()+")");
     }
 
     private void _move_instances( ContentManager cm, int dest ) throws Exception {
@@ -242,10 +234,8 @@ public class FolderMoveDelegate {
         _updateSeriesWithInstances( destSeries, cm );
         _updateSeriesWithInstances( (SeriesModel) sourcePath.get(2), cm );//0..patient,1..study,2..series,3..instances
 
-        if ( destStudy != null ) destStudy.update( cm.getStudy( destStudy.getPk() ) );
-        /*_*/	
-        ctrl.logProcedureRecord(pat,srcStudy,iaSrc.length + " instances moved to " + 
-                destSeries.getSeriesDescription()+ " ("+destSeries.getSeriesIUID()+")");
+        if ( destStudy != null ) 
+            destStudy.update( cm.getStudy( destStudy.getPk() ) );
     }
 //  *********** dummy datasets for series/study creation
 

@@ -51,7 +51,6 @@ import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.ejb.jdbc.QueryPrivateStudiesCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.web.maverick.AuditLoggerDelegate;
 import org.dcm4chex.archive.web.maverick.ContentEditDelegate;
 import org.dcm4chex.archive.web.maverick.FolderCtrl;
 import org.dcm4chex.archive.web.maverick.model.InstanceModel;
@@ -342,10 +341,6 @@ public class TrashFolderCtrl extends FolderCtrl {
         }
     }
 
-
-
-
-
     /**
      * 
      */
@@ -355,19 +350,6 @@ public class TrashFolderCtrl extends FolderCtrl {
         folderForm.getStickyStudies().clear();		
         folderForm.getStickySeries().clear();		
         folderForm.getStickyInstances().clear();		
-    }
-
-
-    protected void logProcedureRecord( PatientModel pat, StudyModel study, String desc ) {
-        AuditLoggerDelegate.logProcedureRecord(getCtx(),
-                AuditLoggerDelegate.MODIFY,
-                pat.getPatientID(),
-                pat.getPatientName(),
-                study.getPlacerOrderNumber(),
-                study.getFillerOrderNumber(),
-                study.getStudyIUID(),
-                study.getAccessionNumber(),
-                desc );
     }
 
     private String logout() {

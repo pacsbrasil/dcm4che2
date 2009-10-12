@@ -94,8 +94,6 @@ public class PatientUpdateCtrl extends Dcm4cheeFormController {
             form.getStickyPatients().add( String.valueOf( pat.getPk() ) );
             form.getPatients().add(0, pat);
             form.setEditPatient(null);
-            AuditLoggerDelegate.logPatientRecord(getCtx(), AuditLoggerDelegate.CREATE, pat
-                    .getPatientID(), pat.getPatientName(), null);
             return SUCCESS;
         } catch (Exception e) {
             form.setExternalPopupMsg("folder.err_createPatient",new String[]{e.getMessage()});
@@ -110,27 +108,21 @@ public class PatientUpdateCtrl extends Dcm4cheeFormController {
                     getCtx()).getPatientByPk(pk);
             StringBuffer sb = new StringBuffer();
             boolean modified = false;            
-            if (AuditLoggerDelegate.isModified("Patient Name",
-                    pat.getPatientName(), patientName, sb)) {
+            if (PatientModel.isModified(pat.getPatientName(), patientName)) {
                 pat.setPatientName(patientName);
                 modified = true;
             }
-            if (AuditLoggerDelegate.isModified("Patient Sex",
-                    pat.getPatientSex(), patientSex, sb)) {
+            if (PatientModel.isModified(pat.getPatientSex(), patientSex)) {
                 pat.setPatientSex(patientSex);
                 modified = true;
             }
-            if (AuditLoggerDelegate.isModified("Birth Date",
-                    pat.getPatientBirthDate(), patientBirthDate, sb)) {
+            if (PatientModel.isModified(pat.getPatientBirthDate(), patientBirthDate)) {
                 pat.setPatientBirthDate(patientBirthDate);
                 modified = true;
             }
             if (modified) {
                 //updating data model
                 FolderSubmitCtrl.getDelegate().updatePatient(pat.toDataset());
-                AuditLoggerDelegate.logPatientRecord(getCtx(), 
-                        AuditLoggerDelegate.MODIFY, pat.getPatientID(),
-                        pat.getPatientName(), AuditLoggerDelegate.trim(sb));
             }
             return SUCCESS;
         } catch (Exception e) {

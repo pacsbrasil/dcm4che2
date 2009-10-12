@@ -75,6 +75,12 @@ public abstract class AbstractModel extends BasicDatasetModel {
         super(ds);
     }
 
+    public static boolean isModified(String prevVal, String newVal) {
+        return ! (prevVal == null || prevVal.length() == 0
+                ? newVal == null || newVal.length() == 0
+                : prevVal.equals(newVal));
+    }
+    
     public boolean update( Dataset dsNew ) {
         ByteBuffer bb = ds.getByteBuffer(PrivateTags.SeriesPk);
         long pk = bb == null ? -1 : Convert.toLong(bb.array());
