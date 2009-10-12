@@ -373,13 +373,6 @@ date, 'HH' by the current hour and 'mm' by the current minute.<br/>
     <type>javax.management.ObjectName</type>
   </attribute>
 
-  <attribute access="read-write" getMethod="getAuditLoggerName"
-    setMethod="setAuditLoggerName">
-    <description>Used internally. Do NOT modify. </description>
-    <name>AuditLoggerName</name>
-    <type>javax.management.ObjectName</type>
-  </attribute>
-
   <attribute access="read-write" getMethod="getSchedulerServiceName"
     setMethod="setSchedulerServiceName">
     <description>Used internally. Do NOT modify. </description>
