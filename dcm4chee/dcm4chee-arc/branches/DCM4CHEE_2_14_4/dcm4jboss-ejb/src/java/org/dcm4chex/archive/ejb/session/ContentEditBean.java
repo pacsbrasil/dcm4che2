@@ -382,9 +382,11 @@ public abstract class ContentEditBean implements SessionBean {
                 study_pk));
         Collection seriess = study.getSeries();
         Collection movedSeriess = new ArrayList();
+        MPPSLocal mpps;
         for (int i = 0; i < series_pks.length; i++) {
             SeriesLocal series = seriesHome.findByPrimaryKey(new Long(
                     series_pks[i]));
+            updateMPPSandRemoveRefPPSSeq(series);
             StudyLocal oldStudy = series.getStudy();
             if (oldStudy.isIdentical(study)) continue;
             seriess.add(series);                
@@ -393,6 +395,29 @@ public abstract class ContentEditBean implements SessionBean {
         }
         UpdateDerivedFieldsUtils.updateDerivedFieldsOf(study);
         return getStudyMgtDataset( study, movedSeriess, null );
+    }
+
+    private void updateMPPSandRemoveRefPPSSeq(SeriesLocal series) {
+        MPPSLocal mpps = series.getMpps();
+        if (mpps != null) {
+            Dataset mppsAttrs = mpps.getAttributes();
+            DcmElement pssq = mppsAttrs.get(Tags.PerformedSeriesSeq);
+            DcmElement newPssq = mppsAttrs.putSQ(Tags.PerformedSeriesSeq);
+            Dataset item;
+            String suid = series.getSeriesIuid();
+            for ( int j = 0 ; j < pssq.countItems() ; j++ ) {
+                item = pssq.getItem(j);
+                if ( !item.getString(Tags.SeriesInstanceUID).equals(suid))
+                    newPssq.addItem(item);
+            }
+            mpps.setAttributes(mppsAttrs);
+            series.removeMPPS();
+        }
+        Dataset serAttrs = series.getAttributes(true);
+        serAttrs.remove(Tags.PPSStartDate);
+        serAttrs.remove(Tags.PPSStartTime);
+        serAttrs.remove(Tags.RefPPSSeq);
+        series.setAttributes(serAttrs);
     }
 
     /**

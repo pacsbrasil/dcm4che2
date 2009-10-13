@@ -881,6 +881,13 @@ public abstract class SeriesBean implements EntityBean {
         setRetrieveAETs(AETs.update(getRetrieveAETs(), oldAET, newAET));
     }
 
+    /**    
+     * @ejb.interface-method
+     */
+    public void removeMPPS() {      
+        this.setMpps(null);
+    }
+    
     private void updateMpps() {
         final String ppsiuid = getPpsIuid();
         MPPSLocal mpps = null;
