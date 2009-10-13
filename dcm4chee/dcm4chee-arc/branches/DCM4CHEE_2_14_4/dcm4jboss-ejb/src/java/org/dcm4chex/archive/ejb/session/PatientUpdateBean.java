@@ -62,6 +62,7 @@ import org.dcm4chex.archive.common.SPSStatus;
 import org.dcm4chex.archive.ejb.interfaces.MWLItemLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.exceptions.NonUniquePatientException;
 import org.dcm4chex.archive.exceptions.PatientAlreadyExistsException;
@@ -174,23 +175,30 @@ public abstract class PatientUpdateBean implements SessionBean {
      */
     public void updatePatient(StudyLocal study, Dataset attrs,
             PatientMatching matching) throws FinderException, CreateException {
-		String pid = attrs.getString(Tags.PatientID);
+        String pid = attrs.getString(Tags.PatientID);
 
-		// If the patient id is not included, then we don't have to do any
-		// patient update. Although patient id is type 2 in DICOM, but for DC,
-		// we enforce this.
-		if (pid == null || pid.length() == 0)
-			return;
-		
-		PatientLocal newPatient = updateOrCreate(attrs, matching);
-		
-		// Case 1: it's matching the same patient. Do nothing
-		if(study.getPatient().getPatientId().equals(pid))
-			return;
-			
-		// Case 2: there's no matching, a new patient is created. The study is updated.
-		// Case 3: it's matching another existing patient. The study is updated.
-		study.setPatient(newPatient);
+        // If the patient id is not included, then we don't have to do any
+        // patient update. Although patient id is type 2 in DICOM, but for DC,
+        // we enforce this.
+        if (pid == null || pid.length() == 0)
+            return;
+
+        PatientLocal newPatient = updateOrCreate(attrs, matching);
+        PatientLocal oldPat = study.getPatient();
+        // Case 1: it's matching the same patient. Do nothing
+        if(oldPat.getPk() == newPatient.getPk())
+            return;
+
+        // Case 2: there's no matching, a new patient is created. The study is updated.
+        // Case 3: it's matching another existing patient. The study is updated.
+        study.setPatient(newPatient);
+        SeriesLocal series;
+        for ( Iterator it = study.getSeries().iterator() ; it.hasNext() ; ) {
+            series = (SeriesLocal) it.next();
+            if (series.getMpps() != null) {
+                series.getMpps().setPatient(newPatient);
+            }
+        }
     }
 
     /**
