@@ -79,7 +79,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * @ejb.finder signature="java.util.Collection findByFSGroupAndAccessedBetween(java.lang.String groupId, java.sql.Timestamp tsAfter, java.sql.Timestamp tsBefore, int limit )"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findByFSGroupAndAccessedBetween(java.lang.String groupId, java.sql.Timestamp tsAfter, java.sql.Timestamp tsBefore, int limit )"
- *              query="SELECT DISTINCT OBJECT(sof) FROM StudyOnFileSystem sof, IN (sof.study.series) s WHERE sof.fileSystem.groupID = ?1 AND sof.fileSystem.status IN (0,1) AND sof.accessTime > ?2 AND sof.accessTime < ?3 AND s.seriesStatus = 0 ORDER BY sof.accessTime ASC LIMIT ?4"
+ *              query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.fileSystem.groupID = ?1 AND sof.fileSystem.status IN (0,1) AND sof.accessTime > ?2 AND sof.accessTime < ?3 ORDER BY sof.accessTime ASC LIMIT ?4"
  *              strategy="on-find" eager-load-group="*"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupIdAndStatusAndFileStatus(org.dcm4chex.archive.ejb.interfaces.StudyLocal study, java.lang.String fsGroupId, int fsStatus, int fileStatus)"
  *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study = ?1 AND f.fileSystem.groupID = ?2 AND f.fileSystem.status = ?3 AND f.fileStatus = ?4"
@@ -196,7 +196,8 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
             boolean copyArchived,
             boolean copyOnReadOnlyFS) throws FinderException {
         StudyLocal study = getStudy();
-        if (externalRetrieveable && !study.isStudyExternalRetrievable()
+        if (study.getNumberOfReceivingSeries() != 0
+                || externalRetrieveable && !study.isStudyExternalRetrievable()
                 || storageNotCommited && study.getNumberOfCommitedInstances() != 0
                 || copyOnMedia && !study.isStudyAvailableOnMedia()) {
             return false;
