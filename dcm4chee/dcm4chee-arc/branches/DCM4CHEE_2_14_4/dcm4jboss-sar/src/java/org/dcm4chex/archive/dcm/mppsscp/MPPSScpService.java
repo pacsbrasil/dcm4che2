@@ -212,7 +212,15 @@ public class MPPSScpService extends AbstractScpService {
                         dominant = (Dataset)map.get("mwlPat");
                     }
                     prior = (Dataset) map.get("mppsPat");
-                    mapPrior.put(prior.getString(PrivateTags.PatientPk), prior);
+                    if (prior != null)
+                        mapPrior.put(prior.getString(PrivateTags.PatientPk), prior);
+                    Collection studyPats = (Collection) map.get("studyPats");
+                    if ( studyPats != null ) {
+                        for ( Iterator it = studyPats.iterator() ; it.hasNext() ;) {
+                            prior = (Dataset) it.next();
+                            mapPrior.put(prior.getString(PrivateTags.PatientPk), prior);
+                        }
+                    }
                 }
                 logMppsLinkRecord(map, spsid, mppsIUIDs[j]);
                 try {

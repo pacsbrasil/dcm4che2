@@ -397,9 +397,14 @@ public abstract class MPPSManagerBean implements SessionBean {
             PatientLocal mppsPat = mpps.getPatient();
             Dataset mwlAttrs = mwlItem.getAttributes();
             Map map = updateLinkedMpps(mpps, mwlItem, mwlAttrs, mwlPat.getAttributes(true));
+            Map studyPats = getMismatchStudyPatients(mpps, mwlPat.getPk(), mppsPat.getPk());
             if (!mwlPat.equals(mppsPat)) {
                 map.put("mwlPat", mwlPat.getAttributes(true));
                 map.put("mppsPat", mppsPat.getAttributes(true));
+            }
+            if (studyPats.size() > 0 ) {
+                map.put("mwlPat", mwlPat.getAttributes(true));
+                map.put("studyPats", studyPats.values());
             }
             return map;
         } catch (ObjectNotFoundException e) {
@@ -407,6 +412,21 @@ public abstract class MPPSManagerBean implements SessionBean {
         } catch (FinderException e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
+    }
+
+    private Map getMismatchStudyPatients(MPPSLocal mpps, Long mwlPatPk,
+            Long mppsPatPk) {
+        Map studyPats = new HashMap();
+        PatientLocal studyPat;
+        Long studyPatPk;
+        for ( Iterator it = mpps.getSeries().iterator() ; it.hasNext() ; ) {
+            studyPat = ((SeriesLocal) it.next()).getStudy().getPatient();
+            studyPatPk =  studyPat.getPk();
+            if ( studyPatPk != mwlPatPk && studyPatPk != mppsPatPk) {
+                studyPats.put(studyPatPk, studyPat.getAttributes(true));
+            }
+        }
+        return studyPats;
     }
 
     private Map updateLinkedMpps(MPPSLocal mpps, MWLItemLocal mwlItem, Dataset mwlAttrs,
