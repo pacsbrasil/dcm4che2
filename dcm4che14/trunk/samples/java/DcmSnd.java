@@ -121,7 +121,9 @@ public class DcmSnd implements PollDirSrv.Handler {
     private int acTimeout = 5000;
     private int dimseTimeout = 0;
     private int soCloseDelay = 500;
-    private String uidSuffix = null;
+    private String studyUIDSuffix = null;
+    private String seriesUIDSuffix = null;
+    private String instUIDSuffix = null;
     private AAssociateRQ assocRQ = aFact.newAAssociateRQ();
     private boolean packPDVs = false;
     private boolean truncPostPixelData = false;
@@ -172,7 +174,9 @@ public class DcmSnd implements PollDirSrv.Handler {
             new LongOpt("poll-done-dir", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("repeat-dimse", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("repeat-assoc", LongOpt.REQUIRED_ARGUMENT, null, 2),
-            new LongOpt("uid-suffix", LongOpt.REQUIRED_ARGUMENT, null, 2),
+            new LongOpt("study-uid-suffix", LongOpt.REQUIRED_ARGUMENT, null, 2),
+            new LongOpt("series-uid-suffix", LongOpt.REQUIRED_ARGUMENT, null, 2),
+            new LongOpt("inst-uid-suffix", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("merge-config", LongOpt.REQUIRED_ARGUMENT, null, 'm'),
             new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
             new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
@@ -276,7 +280,9 @@ public class DcmSnd implements PollDirSrv.Handler {
             Integer.parseInt(cfg.getProperty("repeat-assoc", "1"));
         this.repeatSingle =
             Integer.parseInt(cfg.getProperty("repeat-dimse", "1"));
-        this.uidSuffix = cfg.getProperty("uid-suffix");
+        this.studyUIDSuffix = cfg.getProperty("study-uid-suffix");
+        this.seriesUIDSuffix = cfg.getProperty("series-uid-suffix");
+        this.instUIDSuffix = cfg.getProperty("inst-uid-suffix");
         this.mode = argc > 1 ? SEND : initPollDirSrv(cfg) ? POLL : ECHO;
         initAssocParam(cfg, url, mode == ECHO);
         initTLS(cfg);
@@ -471,15 +477,10 @@ public class DcmSnd implements PollDirSrv.Handler {
         }
     }
 
-    private boolean sendDataset(
-        ActiveAssociation active,
-        File file,
-        DcmParser parser,
-        Dataset ds)
-        throws InterruptedException, IOException {
-        if (uidSuffix != null && uidSuffix.length() > 0) {
-            applyUIDSuffix(ds);
-        }
+    private boolean sendDataset(ActiveAssociation active, File file,
+            DcmParser parser, Dataset ds)
+            throws InterruptedException, IOException {
+        applyUIDSuffix(ds);
         doOverwrite(ds);
         String sopInstUID = ds.getString(Tags.SOPInstanceUID);
         if (sopInstUID == null) {
@@ -551,15 +552,18 @@ public class DcmSnd implements PollDirSrv.Handler {
     }
 
     private void applyUIDSuffix(Dataset ds) {
-        ds.putUI(
-            Tags.StudyInstanceUID,
-            ds.getString(Tags.StudyInstanceUID, "") + uidSuffix);
-        ds.putUI(
-            Tags.SeriesInstanceUID,
-            ds.getString(Tags.SeriesInstanceUID, "") + uidSuffix);
-        ds.putUI(
-            Tags.SOPInstanceUID,
-            ds.getString(Tags.SOPInstanceUID, "") + uidSuffix);
+        if (studyUIDSuffix != null)
+            ds.putUI(
+                Tags.StudyInstanceUID,
+                ds.getString(Tags.StudyInstanceUID, "") + studyUIDSuffix);
+        if (seriesUIDSuffix != null)
+            ds.putUI(
+                Tags.SeriesInstanceUID,
+                ds.getString(Tags.SeriesInstanceUID, "") + seriesUIDSuffix);
+        if (instUIDSuffix != null)
+            ds.putUI(
+                Tags.SOPInstanceUID,
+                ds.getString(Tags.SOPInstanceUID, "") + instUIDSuffix);
     }
 
     private void doOverwrite(Dataset ds) {
