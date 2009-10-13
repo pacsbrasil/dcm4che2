@@ -53,7 +53,10 @@
       with
          <br>%p will be replaced by the path of tarball to copy,
          <br>%d will be replaced by the destination file system name,
-         <br>%f will be replaced by the destination TAR file path.
+         <br>%f will be replaced by the destination TAR file path
+         <br>Alternatively a suffix of ':%f' specifies, that the TAR file path
+         on the destination file system shall be returned from the command 
+         in stdout.
          <br>NONE = write tarball on local accessable file system.
       Only effective, if the destination file system name is a tar URI.
        ]]>

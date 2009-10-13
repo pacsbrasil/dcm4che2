@@ -39,11 +39,13 @@
 
 package org.dcm4chex.archive.hsm;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -82,7 +84,8 @@ public class FileCopyService extends AbstractFileCopyService {
     private static final String FILE_PARAM = "%f";
     private static final int MD5SUM_ENTRY_LEN = 52;
     
-    private String[] tarCopyCmd = null;   
+    private String[] tarCopyCmd = null;
+    private boolean tarFileIDFromStdOut;
     private File tarOutgoingDir;
     private File absTarOutgoingDir;
     
@@ -94,6 +97,8 @@ public class FileCopyService extends AbstractFileCopyService {
         for (int i = 0; i < tarCopyCmd.length; i++) {
             sb.append(tarCopyCmd[i]);
         }
+        if (tarFileIDFromStdOut)
+            sb.append(":%f");
         return sb.toString();
     }
 
@@ -102,6 +107,9 @@ public class FileCopyService extends AbstractFileCopyService {
             this.tarCopyCmd = null;
             return;
         }
+        if (tarFileIDFromStdOut = cmd.endsWith(":%f"))
+            cmd = cmd.substring(0, cmd.length()-3);
+
         String[] a = StringUtils.split(cmd, '%');
         try {
             String[] b = new String[a.length + a.length - 1];
@@ -292,12 +300,15 @@ public class FileCopyService extends AbstractFileCopyService {
                 mkTar(fileInfos, tarFile, tarEntryNames);
                 String cmd = makeCommand(tarFile.getPath(), destPath, tarPath);
                 log.info("Copy to HSM: " + cmd);
-                Executer ex = new Executer(cmd);
+                ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+                Executer ex = new Executer(cmd, stdout , null);
                 int exit = ex.waitFor();
                 if (exit != 0) {
                     throw new IOException("Non-zero exit code(" + exit 
                             + ") of " + cmd);
                 }
+                if (tarFileIDFromStdOut)
+                    tarPath = stdout.toString();
             } finally {
                 log.info("M-DELETE " + tarFile);
                 tarFile.delete();
