@@ -94,6 +94,7 @@ public final class QueryForwardCmd extends BaseReadCmd {
             sqlBuilder.setLimit(limit);
             sqlBuilder.setFieldNamesForSelect(toFields(sql.substring(pos0,pos1)));
             sqlBuilder.appendLimitbeforeFrom(sb);
+            sb.append(' ');
             int pos2 = sql1.indexOf("FOR READ ONLY", pos1); //DB2?
             if (pos2 > 0) {
                 sb.append(sql.substring(pos1, pos2));
