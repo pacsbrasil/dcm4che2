@@ -45,6 +45,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.management.InstanceNotFoundException;
+import javax.management.ListenerNotFoundException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
@@ -64,9 +66,7 @@ import org.dcm4che2.audit.message.ParticipantObject.TypeCode;
 import org.dcm4che2.audit.message.ParticipantObject.TypeCodeRole;
 import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
 import org.dcm4chex.archive.common.SeriesStored;
-import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
 import org.dcm4chex.archive.mbean.HttpUserInfo;
-import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCacheImpl;
@@ -91,6 +91,7 @@ public class WADOService extends AbstractCacheService {
             onSeriesStored(seriesStored);
         }
     };
+    private boolean clearCacheForReceivedSeries = false;
 
     public WADOService() {
         cache = WADOCacheImpl.getWADOCache();
@@ -319,6 +320,22 @@ public class WADOService extends AbstractCacheService {
         return sb.toString();
     }
 
+    public void setEnableClearCacheForReceivedSeries(boolean b) throws InstanceNotFoundException, ListenerNotFoundException {
+        if (b != clearCacheForReceivedSeries) {
+            clearCacheForReceivedSeries = b;
+            if (b) {
+                server.addNotificationListener(getStoreScpServiceName(),
+                        seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
+            } else {
+                server.removeNotificationListener(getStoreScpServiceName(),
+                        seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
+            }
+        }
+    }
+    public boolean isEnableClearCacheForReceivedSeries() {
+        return clearCacheForReceivedSeries;
+    }
+
     /**
      * Getter for the name of the StoreScp Service Name.
      * <p>
@@ -492,17 +509,6 @@ public class WADOService extends AbstractCacheService {
         }
     }
 
-    protected void startService() throws Exception {
-        server.addNotificationListener(getStoreScpServiceName(),
-                seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
-
-    }
-
-    protected void stopService() throws Exception {
-        server.removeNotificationListener(getStoreScpServiceName(),
-                seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
-    }
-    
     private void onSeriesStored(SeriesStored seriesStored) {
         Dataset ian = seriesStored.getIAN();
         String studyIUID = ian.getString(Tags.StudyInstanceUID);
