@@ -127,9 +127,9 @@ public abstract class MPPSEmulatorBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Collection getStudiesWithMissingMPPS(String sourceAET, long delay, int limit) throws FinderException {
+    public Collection getStudiesWithMissingMPPS(String sourceAET, long delay) throws FinderException {
         return studyHome.selectWithMissingPpsIuidFromSrcAETReceivedLastOfStudyBefore(sourceAET, 
-                new Timestamp(System.currentTimeMillis() - delay), limit);
+                new Timestamp(System.currentTimeMillis() - delay));
     }
 
     /**
