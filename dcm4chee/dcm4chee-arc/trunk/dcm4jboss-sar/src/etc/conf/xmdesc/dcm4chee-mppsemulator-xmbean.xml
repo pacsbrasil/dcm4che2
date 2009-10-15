@@ -66,18 +66,6 @@
    </attribute>
 
    <attribute access="read-write"
-      getMethod="getLimitNrOfStudiesPerTask"
-      setMethod="setLimitNrOfStudiesPerTask">
-      <description>Max number of studies that are emulated in one task.
-      </description>
-      <name>LimitNrOfStudiesPerTask</name>
-      <type>int</type>
-      <descriptors>
-         <value value="1000"/>
-      </descriptors>
-   </attribute>
-   
-   <attribute access="read-write"
       getMethod="getTimerIDCheckSeriesWithoutMPPS"
       setMethod="setTimerIDCheckSeriesWithoutMPPS">
       <description>Used internally. Do NOT modify.
