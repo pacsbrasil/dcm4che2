@@ -106,6 +106,18 @@ date, 'HH' by the current hour and 'mm' by the current minute.<br/>
       <value value="false" />
     </descriptors>
   </attribute>
+  <attribute access="read-write" 
+    getMethod="isEnableClearCacheForReceivedSeries"
+    setMethod="setEnableClearCacheForReceivedSeries">
+    <description>Disable/enable removing cache entries when a series is received. 
+    	This is only required when modified objects are resent with the same SOP Instance UID (NOT DICOM conform!).
+    </description>
+    <name>EnableClearCacheForReceivedSeries</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="false" />
+    </descriptors>
+  </attribute>
 
 
   <attribute access="read-write" getMethod="getDeleterThresholds"
