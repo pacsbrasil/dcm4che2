@@ -146,6 +146,8 @@ import org.dcm4chex.archive.util.Convert;
  * 	            query="SELECT SUM(f.fileSize) FROM File f WHERE f.instance.series.study.pk = ?1 AND f.fileSystem.pk = ?2"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesForAvailability(java.lang.Long pk, int availability)"
  *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study.pk = ?1 AND f.fileSystem.availability = ?2"
+ * @jboss.query signature="int ejbSelectNumberOfReceivingSeries(java.lang.Long pk)"
+ *                  query="SELECT COUNT(s) FROM Series s WHERE s.study.pk = ?1 AND s.seriesStatus <> 0"
  *
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  *
@@ -595,6 +597,11 @@ public abstract class StudyBean implements EntityBean {
     /**
      * @ejb.select query=""
      */ 
+    public abstract int ejbSelectNumberOfReceivingSeries(Long pk) throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     */ 
     public abstract int ejbSelectNumberOfExternalRetrieveableInstances(Long pk) throws FinderException;
 
     /**
@@ -603,6 +610,14 @@ public abstract class StudyBean implements EntityBean {
      */
     public int getNumberOfCommitedInstances() throws FinderException {
         return ejbSelectNumberOfCommitedInstances(getPk());
+    }
+
+    /**
+     * @ejb.interface-method
+     * @jboss.method-attributes read-only="true"
+     */
+    public int getNumberOfReceivingSeries() throws FinderException {
+        return ejbSelectNumberOfReceivingSeries(getPk());
     }
 
     /**
