@@ -389,10 +389,10 @@ class SqlBuilder {
             throw new IllegalStateException("from not initalized");
 
         StringBuffer sb = new StringBuffer("SELECT ");
-        if (distinct) sb.append("DISTINCT ");
         if (limit > 0 || offset > 0) {
             appendLimitbeforeFrom(sb);
         } else {
+            if (distinct) sb.append("DISTINCT ");
             appendTo(sb, select);            
         }
         sb.append(" FROM ");
@@ -415,6 +415,8 @@ class SqlBuilder {
     }
 
     public StringBuffer appendLimitbeforeFrom(StringBuffer sb) {
+        if (distinct && getDatabase()!= JdbcProperties.FIREBIRD) 
+            sb.append("DISTINCT ");
         switch (getDatabase()) {
         case JdbcProperties.HSQL :
             sb.append("LIMIT ");
@@ -457,6 +459,7 @@ class SqlBuilder {
             sb.append(" SKIP ");
             sb.append(offset);
             sb.append(" ");
+            if (distinct) sb.append("DISTINCT ");
             appendTo(sb, select);
             break;
         default:

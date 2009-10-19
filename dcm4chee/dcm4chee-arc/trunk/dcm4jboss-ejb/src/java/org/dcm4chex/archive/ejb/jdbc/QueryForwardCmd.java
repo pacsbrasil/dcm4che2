@@ -55,6 +55,7 @@ import java.util.StringTokenizer;
  */
 public final class QueryForwardCmd extends BaseReadCmd {
 
+    private static final int SELECT_LEN = 7;
     public static int transactionIsolationLevel = 0;
     
     private QueryForwardCmd(String sql) throws SQLException {
@@ -83,16 +84,17 @@ public final class QueryForwardCmd extends BaseReadCmd {
         if (limit > 0 ) {
             String sql1 = sql.toUpperCase();
             int pos0 = sql1.indexOf("DISTINCT");
-            if (pos0 == -1) {
-                pos0 = 7;
-            } else {
+            if (pos0 != -1) {
+                sqlBuilder.setDistinct(true);
                 pos0 += 9;
+            } else {
+                pos0 = SELECT_LEN;
             }
             int pos1 = sql1.indexOf("FROM");
             StringBuffer sb = new StringBuffer(sql.length()+30);
-            sb.append(sql.substring(0, pos0));//select [distinct]
+            sb.append(sql.substring(0, SELECT_LEN));
             sqlBuilder.setLimit(limit);
-            sqlBuilder.setFieldNamesForSelect(toFields(sql.substring(pos0,pos1)));
+            sqlBuilder.setFieldNamesForSelect(toFields(sql.substring(pos0, pos1)));
             sqlBuilder.appendLimitbeforeFrom(sb);
             sb.append(' ');
             int pos2 = sql1.indexOf("FOR READ ONLY", pos1); //DB2?
@@ -102,7 +104,7 @@ public final class QueryForwardCmd extends BaseReadCmd {
                 sb.append(sql.substring(pos2));
             } else {
                 sb.append(sql.substring(pos1));
-               sqlBuilder.appendLimitAtEnd(sb);
+                sqlBuilder.appendLimitAtEnd(sb);
             }
             log.debug("SQL with LIMIT:"+sb);
             return sb.toString();
