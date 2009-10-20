@@ -7,7 +7,7 @@ div.queryoptions { background: #FFF;}
 div.querybuttons { background: #DDD; padding: 5 0 0 5;}
 div.viewport { background: #DDD; padding: 5;}
 
-
+td.test { border-style: solid; }
 col.attrname { width: 200px; }
 col.tag { width: 100px; }
 td.tag input { width: 90px; }

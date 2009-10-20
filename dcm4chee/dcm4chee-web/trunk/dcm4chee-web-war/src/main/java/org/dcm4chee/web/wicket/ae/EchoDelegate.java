@@ -38,51 +38,70 @@
 
 package org.dcm4chee.web.wicket.ae;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.wicket.markup.html.panel.Panel;
+import javax.management.MBeanServerConnection;
+import javax.management.MBeanServerFactory;
+import javax.management.ObjectName;
+
 import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.dao.AEHomeLocal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since Jan 5, 2009
+ * @since Aug 18, 2009
  */
-public class AEMgtPage extends Panel {
+public class EchoDelegate {
 
-    private static final long serialVersionUID = 1L;
-    private boolean editMode = false;
-    private EditAETPanel editPanel;
-    private AEListPanel listPanel;
+    private ObjectName echoServiceName = null;
+    private MBeanServerConnection server;
       
-    private static Logger log = LoggerFactory.getLogger(AEMgtPage.class);
+    private static Logger log = LoggerFactory.getLogger(EchoDelegate.class);
     
-    public AEMgtPage(final String id) {
-        super(id);
-        AEMgtDelegate.getInstance().updateAEList();
-        if ( listPanel == null ) {
-            listPanel = new AEListPanel("ae_panel", this);
+    public EchoDelegate() {
+        init();
+    }
+    
+    private void init() {
+        log.debug("ECHO Delegate init! server:"+server);
+        if (server != null) return;
+        List servers = MBeanServerFactory.findMBeanServer(null);
+        if (servers != null && !servers.isEmpty()) {
+            server = (MBeanServerConnection) servers.get(0);
         }
-        this.addOrReplace( editMode ? editPanel : listPanel);
+        String s = "dcm4chee.archive:service=ECHOService";
+        try {
+            echoServiceName = new ObjectName(s);
+
+        } catch (Exception e) {
+            log.error( "Exception in init! ",e );
+        }
     }
     
-    public void setEditPage(AE ae) {
-        editMode = true;
-        editPanel = new EditAETPanel("ae_panel", this, ae);
-        this.addOrReplace(editPanel);
+    public String echo(AE ae, int nrOfTests) {
+        log.debug("ECHO:"+ae);
+        try {
+            return (String) server.invoke(echoServiceName, "echo", 
+                new Object[]{ae.getTitle(), ae.getHostName(), ae.getPort(), toString(ae.getCipherSuites()), nrOfTests}, 
+                new String[]{String.class.getName(), String.class.getName(), 
+                    int.class.getName(), String.class.getName(), int.class.getName()});
+        } catch (Exception x) {
+            String msg = "DICOM Echo failed! Reason:"+x.getMessage();
+            log.error(msg,x);
+            return msg;
+        }
     }
-    
-    public void setListPage() {
-        editMode = false;
-        addOrReplace(listPanel);
-}
-    
-    public static String getModuleName() {
-        return "aet";
+
+    private String toString(List<String> strings) {
+        if ( strings == null || strings.size() < 1)
+            return null;
+        StringBuilder sb = new StringBuilder();
+        for ( String s : strings ) {
+            sb.append(s).append(',');
+        }
+        sb.setLength(sb.length()-1);
+        return sb.toString();
     }
 }

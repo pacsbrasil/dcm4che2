@@ -38,6 +38,12 @@
 
 package org.dcm4chee.web.wicket.ae;
 
+import java.util.List;
+
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
@@ -46,6 +52,8 @@ import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.wicket.common.ComponentUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -56,8 +64,24 @@ public class AEListPanel extends Panel {
 
     private AEMgtPage page;
     
+    private static Logger log = LoggerFactory.getLogger(AEListPanel.class);
+    List<AE> aeList = AEMgtDelegate.getInstance().getAEList();
+    
+    DicomEchoPanel echoPanel;
+    @SuppressWarnings("serial")
     public AEListPanel(String id, AEMgtPage p) {
         super(id);
+        setOutputMarkupId(true);
+        final ModalWindow mw = new ModalWindow("echoPanel");
+        mw.setCssClassName(ModalWindow.CSS_CLASS_GRAY);
+        mw.setWindowClosedCallback(new WindowClosedCallback(){
+            public void onClose(AjaxRequestTarget target) {
+                AEMgtDelegate.getInstance().updateAEList();
+                target.addComponent(AEListPanel.this);
+            }});
+        echoPanel = new DicomEchoPanel(mw, true);
+        mw.setContent( echoPanel );
+        add(mw);
         ComponentUtil util = new ComponentUtil(AEMgtPage.getModuleName());
         util.addLabel(this, "titleHdr");
         util.addLabel(this, "hostHdr");
@@ -73,7 +97,7 @@ public class AEListPanel extends Panel {
         util.addLabel(this, "departmentHdr");
         util.addLabel(this, "installedHdr");
         page = p;
-        add(new PropertyListView("list", p.getAEList() ) {
+        add(new PropertyListView("list", aeList ) {
 
             @Override
             protected void populateItem(final ListItem item) {
@@ -106,9 +130,15 @@ public class AEListPanel extends Panel {
                     
                     @Override
                     public void onClick() {
-                        page.removeAET((AE)item.getModelObject());
+                        AEMgtDelegate.getInstance().removeAET((AE)item.getModelObject());
                     }
                 });
+                item.add(new AjaxLink("echo") {
+                    @Override
+                    public void onClick(AjaxRequestTarget target) {
+                        echoPanel.setAE((AE) item.getModelObject());
+                        mw.show(target);
+                    }});
             }
             
         });

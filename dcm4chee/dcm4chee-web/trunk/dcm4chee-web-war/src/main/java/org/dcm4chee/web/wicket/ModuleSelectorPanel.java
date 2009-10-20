@@ -42,13 +42,17 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.behavior.HeaderContributor;
 import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
 import org.apache.wicket.extensions.markup.html.tabs.ITab;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.resource.loader.ClassStringResourceLoader;
 import org.dcm4chee.web.wicket.common.LocaleSelectorLink;
 import org.slf4j.Logger;
@@ -67,6 +71,12 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
 
     public ModuleSelectorPanel(String id) {
         super(id, new ArrayList());
+        add(new AjaxFallbackLink("logout"){
+            public void onClick(final AjaxRequestTarget target) {
+                getSession().invalidate();
+                setResponsePage(LoginPage.class);
+            }
+        }.add(new Label("logoutLabel", new ResourceModel("logout"))));
         add(new LocaleSelectorLink("lang_en","en"));
         add(new LocaleSelectorLink("lang_de","de"));
         add(new LocaleSelectorLink("lang_fr","fr"));

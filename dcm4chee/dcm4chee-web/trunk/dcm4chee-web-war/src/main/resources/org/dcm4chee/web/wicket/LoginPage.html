@@ -1,13 +1,22 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
+<html
     xmlns:wicket="http://wicket.sourceforge.net/">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>Please Log In</title>
+    <link href="style.css" rel="stylesheet" />
   </head>
-  <body>
-     <div wicket:id="signInPanel"/>
+  <body onload="self.focus();document.forms[0].elements[0].focus()">
+	<div class="module-selector">
+		<span class="login-desc" wicket:id="loginLabel">[User Login]</span>
+		<div class="tab-logo">
+	   		<img src="images/logo.gif" /><br/>
+		</div>
+		<div class="tab-lang">
+	   		<a href="#" wicket:id="lang_en"><img src="images/lang_en.gif" /></a>
+	   		<a href="#" wicket:id="lang_de"><img src="images/lang_de.gif" /></a>
+	   		<a href="#" wicket:id="lang_fr"><img src="images/lang_fr.gif" /></a>
+		</div>
+ 	</div>
+    <div class=signin" wicket:id="signInPanel"/>
   </body>
 </html>

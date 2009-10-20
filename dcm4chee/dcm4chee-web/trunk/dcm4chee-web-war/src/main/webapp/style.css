@@ -10,14 +10,20 @@ h3 { font-size:16px; }
 h4 { font-size:13.4px; }
 p,ul,ol,li,dl,dt,dd,div,td,th { font-size:13.4px; }
 
-table { border-collapse: collapse; empty-cells: show; width: 100%;  background: #fff;}
-th, td { border-width: 1px; border-style: solid; }
+div.module-panel table { border-collapse: collapse; empty-cells: show; width: 100%;  background: #fff;}
+div.module-panel th, div.module-panel td { width: auto; border-width: 1px; border-style: solid; border-color: #aaaaaa; }
+
+div.signin {height: 100%; background: #99bbaa;}
+div.signin table { width: 100%; background: #99bbaa; padding: 50 }
+div.signin tr, td { width: 50%; height: 35px; border-style: none;}
 
 div.module-selector { width: 100%; height: 43px; background: #FFF url("images/menu-bg.gif") top left repeat-x; font-weight: bold; list-style-type: none; margin: 0; padding: 0; z-index: 1;}
 
+div.module-selector span.login-desc { margin: 13 0 0 0; padding: 0 10 0 10; float: left; font-size: 16px; }
 div.module-selector div.tab-logo { margin: 13 0 0 0; padding: 0 10 0 10; height: 43px; float: right; }
 div.module-selector div.tab-lang { margin: 13 0 0 0; height: 43px; float: right; }
 div.module-selector div.tab-lang img { border: none; }
+div.module-selector div.tab-lang a { color: #666;}
 div.module-panel { width: 100%; background: none #FFF; }
 div.tabpanel div.tab-row li { margin: 0 0 0 0; display: block; float: left; list-style-type: none; }
 div.tabpanel div.tab-row a:link, div.tabpanel div.tab-row a:visited {

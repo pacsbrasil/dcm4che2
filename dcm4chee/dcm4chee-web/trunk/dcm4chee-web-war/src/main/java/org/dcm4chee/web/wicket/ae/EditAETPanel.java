@@ -38,14 +38,12 @@
 
 package org.dcm4chee.web.wicket.ae;
 
-import java.io.Serializable;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.DropDownChoice;
@@ -57,18 +55,14 @@ import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
-import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.validation.IValidator;
 import org.apache.wicket.validation.validator.NumberValidator;
 import org.apache.wicket.validation.validator.StringValidator;
 import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.web.dao.AEHomeLocal;
-import org.dcm4chee.web.dao.FileSystemHomeLocal;
 import org.dcm4chee.web.wicket.common.ComponentUtil;
 import org.dcm4chee.web.wicket.common.UrlValidator1;
-import org.dcm4chee.web.wicket.util.JNDIUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,23 +73,12 @@ import org.slf4j.LoggerFactory;
  */
 
 public class EditAETPanel extends Panel {
-    URL url;
+    transient AEMgtDelegate delegate = AEMgtDelegate.getInstance();
     private static Logger log = LoggerFactory.getLogger(EditAETPanel.class);
-    private AEHomeLocal aeHome = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
-    private FileSystemHomeLocal fsHome = (FileSystemHomeLocal) JNDIUtils.lookup(FileSystemHomeLocal.JNDI_NAME);
-    private List<String> fsGroups = new ArrayList<String>();
-    private static List<String> availableCiphersuites = new ArrayList<String>();
-    static {
-        availableCiphersuites.clear();
-        availableCiphersuites.add("-");
-        availableCiphersuites.add("SSL_RSA_WITH_NULL_SHA");
-        availableCiphersuites.add("TLS_RSA_WITH_AES_128_CBC_SHA");
-        availableCiphersuites.add("SSL_RSA_WITH_3DES_EDE_CBC_SHA");
-    }
     
     public EditAETPanel( String id, final AEMgtPage page, final AE ae) {
         super(id);
-        initFSGroups();
+        setOutputMarkupId(true);
         Form form = new Form("form");
         add(form);
         CompoundPropertyModel model = new CompoundPropertyModel(ae);
@@ -106,17 +89,16 @@ public class EditAETPanel extends Panel {
         util.addLabeledTextField(form, "hostName","host")
             .add(StringValidator.minimumLength(1)).setRequired(true); 
         util.addLabeledTextField(form, "port").add(NumberValidator.range(1,65535));
-        final CiphersuitesModel cipherModel = new CiphersuitesModel(ae);
-        form.add(new PropertyListView("cipherSuites", cipherModel.getCiphers()) {
-            @Override
-            protected void populateItem(final ListItem item) {
-                item.add(new Label("ciphersLabel", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{item.getIndex()+1} ) ) );
-                item.add(new DropDownChoice("ciphersuite", cipherModel.getModel(item.getIndex()), availableCiphersuites));
-            }
-        }); 
+        form.add(new Label("ciphersLabel1", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{1} ) ) );
+        form.add(new DropDownChoice("ciphersuite1", new CipherModel(ae, 0), AEMgtDelegate.AVAILABLE_CIPHERSUITES));
+        form.add(new Label("ciphersLabel2", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{2} ) ) );
+        form.add(new DropDownChoice("ciphersuite2", new CipherModel(ae, 1), AEMgtDelegate.AVAILABLE_CIPHERSUITES));
+        form.add(new Label("ciphersLabel3", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{3} ) ) );
+        form.add(new DropDownChoice("ciphersuite3", new CipherModel(ae, 2), AEMgtDelegate.AVAILABLE_CIPHERSUITES));
         util.addLabeledTextField(form, "description"); 
         util.addLabeledTextField(form, "issuerOfPatientID", "issuer"); 
-        util.addLabeledDropDownChoice(form, "fileSystemGroupID", null, fsGroups).setNullValid(true);
+        util.addLabeledDropDownChoice(form, "fileSystemGroupID", null, 
+                delegate.getFSGroupIDs()).setNullValid(true);
         util.addLabeledTextField(form, "wadoURL").add(new UrlValidator1()); //Wicket UrlValidator doesn't accept http://hostname:8080/web!
         util.addLabeledTextField(form, "userID"); 
         form.add(new Label("passwdLabel", new ResourceModel("aet.passwd") ) );
@@ -136,9 +118,10 @@ public class EditAETPanel extends Panel {
 
             @Override
             public void onSubmit() {
-                submit();
-                page.update();
-                page.setListPage();
+                if (submit() ) {
+                    AEMgtDelegate.getInstance().updateAEList();
+                    page.setListPage();
+                }
             }
         });
         form.add(new Link("cancel") {
@@ -147,13 +130,27 @@ public class EditAETPanel extends Panel {
             public void onClick() {
                 page.setListPage();
             }});
+        final ModalWindow mw = new ModalWindow("echoPanel");
+        mw.setCssClassName(ModalWindow.CSS_CLASS_GRAY);
+        mw.setContent(new DicomEchoPanel(ae,mw,true));
+        mw.setWindowClosedCallback(new WindowClosedCallback(){
+            public void onClose(AjaxRequestTarget target) {
+                log.info("#### EchoPanel closed!");
+                AEMgtDelegate.getInstance().updateAEList();
+                target.addComponent(EditAETPanel.this);
+                log.info("#### ae:"+ae);
+            }});
+        
+        form.add(mw);
+        form.add(new AjaxButton("echo") {
+
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form form) {
+                mw.show(target);
+            }});
+
     }
     
-    private void initFSGroups() {
-        fsGroups.clear();
-        fsGroups.addAll(fsHome.listGroupIDs());
-    }
-
     private TextField newTextField(String id, IValidator v) {
         TextField tf = new TextField(id);
         tf.add( new AttributeModifier("title", true, 
@@ -162,90 +159,15 @@ public class EditAETPanel extends Panel {
         return tf;
     }
     
-    private void submit() {
-        AE ae = (AE) getModelObject();
-        if ( ae.getPk() == -1) {
-            aeHome.createAET(ae);
-        } else {
-            aeHome.updateAET(ae);
+    private boolean submit() {
+        try {
+            AE ae = (AE) getModelObject();
+            delegate.update(ae);
+            return true;
+        } catch ( Exception x ) {
+            error((String)new ResourceModel("aet.titleAlreadyExist").wrapOnAssignment(this).getObject());
+            return false;
         }
     }
-    
-    
-    private class CiphersuitesModel implements Serializable {
-        private AE ae;
-        private List ciphers;
-        private int minSuites, maxSuites;
-        
-        public CiphersuitesModel(AE ae) {
-            this(ae, 3, 3);
-        }
-        public CiphersuitesModel(AE ae, int min, int max) {
-            this.ae = ae;
-            minSuites = min;
-            this.maxSuites = max;
-            init();
-        }
-        
-        private void init() {
-            ciphers = ae.getCipherSuites();
-            if ( ciphers == null )
-                ciphers = new ArrayList<String>();
-            if ( ciphers.size() < minSuites ) {
-                while ( ciphers.size() < minSuites ) {
-                    ciphers.add(null);
-                }
-            } else if ( ciphers.size() < maxSuites ) {
-                ciphers.add(null);
-            }
-        }
-        
-        public CipherModel getModel(int idx) {
-            return new CipherModel(this, idx);
-        }
-
-        public List getCiphers() {
-            return ciphers;
-        }
-
-        public void store() {
-            ae.setCipherSuites(ciphers);
-        }
-    }
-    private class CipherModel implements IModel {
-        private CiphersuitesModel ciphers;
-        private int idx;
-        
-        public CipherModel( CiphersuitesModel m, int idx ) {
-            this.ciphers = m;
-            this.idx = idx;
-        }
-        
-        public Object getObject() {
-            List<String> l = ciphers.getCiphers();
-            if ( l != null & l.size() > idx ) {
-                return l.get(idx);
-            }
-            return null;
-        }
-
-        public void setObject(Object o) {
-            String s = (String)o;
-            if ( "-".equals(s) || "".equals(s)) s = null;
-            List<String> l = ciphers.getCiphers();
-            if ( l != null && l.size() > idx ) {
-                l.set(idx, s);
-            } else if ( s != null && l.size() == idx ) {
-                log.debug("create new CipherSuite item!:"+s);
-                l.add(s);
-            } else {
-                log.warn("CipherModel has illegal index ("+idx+", l:"+l.size()+")! set will be ignored!");
-            }
-            ciphers.store();
-        }
-
-        public void detach() {
-        }
-        
-    }
-}
+      
+ }

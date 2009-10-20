@@ -26,6 +26,7 @@ public class WicketApplication extends AuthenticatedWebApplication {
     protected void init() {
         super.init();
         getApplicationSettings().setAccessDeniedPage(LoginPage.class);
+        getApplicationSettings().setPageExpiredErrorPage(LoginPage.class);
         mountBookmarkablePage("/login", LoginPage.class);
     }
 

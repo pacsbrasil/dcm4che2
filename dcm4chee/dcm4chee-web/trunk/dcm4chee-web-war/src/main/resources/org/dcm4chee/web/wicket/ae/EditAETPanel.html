@@ -20,16 +20,24 @@
 	             <span class="ae-desc" wicket:id="portLabel">[Port]</span>
 	             <input class="ae-value" wicket:id="port" type="text" size="6" />
 	          </div><br/>
-	          <div wicket:id="cipherSuites">
-	             <div class="ae-cipher-row">
-	                <span class="ae-desc" wicket:id="ciphersLabel">[Ciphersuites]</span>
-	                <div class="ae-value">
-	             		<select wicket:id="ciphersuite">
-		             		<option value="-">-</option>
-	             		</select>
-	             	</div>
-	             </div><br/>
-	          </div>          
+             <div class="ae-cipher-row">
+                <span class="ae-desc" wicket:id="ciphersLabel1">[Ciphersuites]</span>
+                <div class="ae-value">
+             		<select wicket:id="ciphersuite1" />
+             	</div>
+             </div><br/>
+             <div class="ae-cipher-row">
+                <span class="ae-desc" wicket:id="ciphersLabel2">[Ciphersuites]</span>
+                <div class="ae-value">
+             		<select wicket:id="ciphersuite2" />
+             	</div>
+             </div><br/>
+             <div class="ae-cipher-row">
+                <span class="ae-desc" wicket:id="ciphersLabel3">[Ciphersuites]</span>
+                <div class="ae-value">
+             		<select wicket:id="ciphersuite3" />
+             	</div>
+             </div><br/>
 	          <div class="ae-table-row">
 	             <span class="ae-desc" wicket:id="descriptionLabel">[Description]</span>
 	             <input class="ae-value" wicket:id="description" type="text" size="50" />
@@ -75,8 +83,10 @@
 	      </div>
 	  </div>  
 	  <div class="ae-buttons">
-	    <div class="ae-submit"><button type="submit" wicket:id="submit">Submit</button></div>
-	    <div class="ae-cancel"><button type="submit" wicket:id="cancel">Cancel</button></div>
+	    <button type="submit" wicket:id="submit">Submit</button>
+	    <button type="submit" wicket:id="cancel">Cancel</button>
+	    <div wicket:id="echoPanel" >echoPanel</div>
+	    <button type="submit" wicket:id="echo">Echo</button>
 	  </div>
 	</form>
 </wicket:panel>

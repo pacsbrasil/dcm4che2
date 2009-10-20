@@ -39,10 +39,10 @@ package org.dcm4chee.web.wicket;
 
 import org.apache.wicket.authentication.panel.SignInPanel;
 import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.markup.html.basic.Label;
+import org.dcm4chee.web.wicket.common.LocaleSelectorLink;
 
 /**
- * <p/>
- * The original implementation checks the length of the top level domain (2 <= x <= 4) but in case of simple hostnames this would be fail!
  * 
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
@@ -50,8 +50,12 @@ import org.apache.wicket.markup.html.WebPage;
  */
 public class LoginPage extends WebPage
 {
-  public LoginPage()
-  {
-    add(new SignInPanel("signInPanel"));
-  }
+    public LoginPage()
+    {
+        add(new Label("loginLabel", "User Login"));
+        add(new LocaleSelectorLink("lang_en","en"));
+        add(new LocaleSelectorLink("lang_de","de"));
+        add(new LocaleSelectorLink("lang_fr","fr"));
+        add(new SignInPanel("signInPanel"));  
+    }
 }

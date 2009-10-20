@@ -36,29 +36,70 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket.util;
+package org.dcm4chee.web.wicket.ae;
 
-import javax.naming.InitialContext;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.dcm4chee.archive.entity.AE;
+import org.dcm4chee.archive.util.JNDIUtils;
+import org.dcm4chee.web.dao.AEHomeLocal;
+import org.dcm4chee.web.dao.FileSystemHomeLocal;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since Dec 19, 2008
+ * @since Oct 1, 2009
  */
-public class JNDIUtils {
+public class AEMgtDelegate {
 
-    public static Object lookup(String name) {
-        try {
-            InitialContext jndiCtx = new InitialContext();
-            try {
-                return jndiCtx.lookup(name);
-            } finally {
-                try  {
-                    jndiCtx.close();
-                } catch ( Exception ignore ) {}
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    private static final long serialVersionUID = 1L;
+    private static AEMgtDelegate singleton;
+    private List<AE> list = new ArrayList<AE>();
+    private AEHomeLocal aeHome = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
+    private FileSystemHomeLocal fsHome = (FileSystemHomeLocal) JNDIUtils.lookup(FileSystemHomeLocal.JNDI_NAME);    
+
+    public static List<String> AVAILABLE_CIPHERSUITES = new ArrayList<String>();
+    static {
+        AVAILABLE_CIPHERSUITES.clear();
+        AVAILABLE_CIPHERSUITES.add("-");
+        AVAILABLE_CIPHERSUITES.add("SSL_RSA_WITH_NULL_SHA");
+        AVAILABLE_CIPHERSUITES.add("TLS_RSA_WITH_AES_128_CBC_SHA");
+        AVAILABLE_CIPHERSUITES.add("SSL_RSA_WITH_3DES_EDE_CBC_SHA");
+    }
+        
+    private AEMgtDelegate() {
+    }
+    
+    public static AEMgtDelegate getInstance() {
+        if ( singleton == null )
+            singleton = new AEMgtDelegate();
+        return singleton;
+    }
+    
+    public List<AE> getAEList() {
+        return list;
+    }
+    
+    public List<String> getFSGroupIDs() {
+        return fsHome.listGroupIDs();        
+    }
+    
+    public void updateAEList() {
+        list.clear();
+        list.addAll(aeHome.findAll());
+    }
+    public void removeAET(AE ae) {
+        aeHome.removeAET(ae.getPk());
+        updateAEList();
+    }
+    
+    public void update(AE ae) {
+        if ( ae.getPk() == -1) {
+            aeHome.createAET(ae);
+        } else {
+            aeHome.updateAET(ae);
         }
     }
+    
 }

@@ -28,7 +28,7 @@ import org.dcm4chee.web.dao.StudyListLocal;
 import org.dcm4chee.web.wicket.WicketSession;
 import org.dcm4chee.web.wicket.common.ComponentUtil;
 import org.dcm4chee.web.wicket.common.DateTimeLabel;
-import org.dcm4chee.web.wicket.util.JNDIUtils;
+import org.dcm4chee.archive.util.JNDIUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

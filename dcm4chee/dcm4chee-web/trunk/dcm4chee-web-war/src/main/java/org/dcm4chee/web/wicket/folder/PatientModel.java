@@ -50,7 +50,7 @@ import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.web.dao.StudyListLocal;
 import org.dcm4chee.web.wicket.util.DateUtils;
-import org.dcm4chee.web.wicket.util.JNDIUtils;
+import org.dcm4chee.archive.util.JNDIUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

@@ -5,7 +5,8 @@
 </head>
 <body>
 <wicket:panel>
-	<table style="clear: both">
+	<div wicket:id="echoPanel" >echoPanel</div>
+	<table class="ae-list" style="clear: both">
 	  <tr>
 	    <th wicket:id="titleHdrLabel">Title</th>
 	    <th wicket:id="hostHdrLabel">Host</th>
@@ -43,6 +44,7 @@
 	    <td>
 	        <a wicket:id="editAET" href="#">edit</a>
 	        <a wicket:id="removeAET" href="#">del</a>
+	        <a wicket:id="echo" href="#">echo</a>
 	    </td>
 	  </tr>
 	</table>
