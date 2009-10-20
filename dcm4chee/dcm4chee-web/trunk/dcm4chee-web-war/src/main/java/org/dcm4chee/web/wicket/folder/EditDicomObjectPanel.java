@@ -38,6 +38,7 @@
 
 package org.dcm4chee.web.wicket.folder;
 
+import java.io.Serializable;
 import java.util.Iterator;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -281,7 +282,7 @@ public class EditDicomObjectPanel extends Panel {
         }
 
         @Override
-        public void setObject(Object object) {
+        public void setObject(Serializable object) {
             Object prev = super.getObject();
             if (object == null) {
                 if (prev != null) {

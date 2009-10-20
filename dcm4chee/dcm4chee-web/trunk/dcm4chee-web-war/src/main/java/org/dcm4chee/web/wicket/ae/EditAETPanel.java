@@ -82,7 +82,7 @@ public class EditAETPanel extends Panel {
         Form form = new Form("form");
         add(form);
         CompoundPropertyModel model = new CompoundPropertyModel(ae);
-        setModel(model);
+        setDefaultModel(model);
         ComponentUtil util = new ComponentUtil(AEMgtPage.getModuleName());
         
         util.addLabeledTextField(form, "title").add(new AETitleValidator()).setRequired(true); 
@@ -161,7 +161,7 @@ public class EditAETPanel extends Panel {
     
     private boolean submit() {
         try {
-            AE ae = (AE) getModelObject();
+            AE ae = (AE) getDefaultModelObject();
             delegate.update(ae);
             return true;
         } catch ( Exception x ) {

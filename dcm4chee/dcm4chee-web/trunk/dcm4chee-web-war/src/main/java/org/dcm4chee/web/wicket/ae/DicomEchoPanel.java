@@ -118,7 +118,7 @@ public class DicomEchoPanel extends Panel {
         add(HeaderContributor.forCss(DicomEchoPanel.class, "style.css"));
         add(form);
         CompoundPropertyModel model = new CompoundPropertyModel(aeEcho);
-        setModel(model);
+        setDefaultModel(model);
         form.add(new Label("aetLabel", new ResourceModel("aet.echoAETitle")));
         form.add(new Label("ciphersLabel", new ResourceModel("aet.echoCiphers")));
         form.add(new Label("nrOfTestsLabel", new ResourceModel("aet.echoNrOfTests")));

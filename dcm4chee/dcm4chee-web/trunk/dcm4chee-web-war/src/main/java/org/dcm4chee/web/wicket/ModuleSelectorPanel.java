@@ -133,6 +133,10 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
             String t = getStringLoader().loadStringResource(null, tabTitlePropertyName);
             return new Model(t == null ? clazzName : t);
         }
+
+        public boolean isVisible() {
+            return true;
+        }
     }
 
 }

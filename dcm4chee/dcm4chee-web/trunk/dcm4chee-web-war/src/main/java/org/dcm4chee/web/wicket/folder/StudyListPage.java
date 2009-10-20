@@ -1,5 +1,6 @@
 package org.dcm4chee.web.wicket.folder;
 
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -106,7 +107,7 @@ public class StudyListPage extends Panel {
         //property key according notSearched and getTotal.
         Model keySelectModel = new Model() {
             @Override
-            public Object getObject() {
+            public Serializable getObject() {
                 return notSearched ? "folder.notSearched" :
                         viewport.getTotal() == 0 ? "folder.noMatchingStudiesFound" : 
                             "folder.studiesFound";
