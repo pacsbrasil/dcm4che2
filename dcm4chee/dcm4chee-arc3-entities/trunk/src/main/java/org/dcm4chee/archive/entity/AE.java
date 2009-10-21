@@ -43,6 +43,7 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 
@@ -56,6 +57,9 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "ae")
+@NamedQuery(name="AE.findByTitle",
+  query="select ae from AE ae where title = :title"
+)
 public class AE extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -3132017392325052134L;
