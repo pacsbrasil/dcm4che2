@@ -42,6 +42,7 @@ import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 import org.dcm4chee.archive.entity.AE;
 import org.jboss.annotation.ejb.LocalBinding;
@@ -70,6 +71,12 @@ public class AEHomeBean implements AEHomeLocal {
                 .getResultList();
         em.clear();
         return l;
+    }
+
+    public AE findByTitle(String title) {
+        Query q = em.createNamedQuery("AE.findByTitle");
+        q.setParameter("title", title);
+        return  (AE) q.getSingleResult();
     }
     
     public AE createAET(AE ae){

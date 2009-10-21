@@ -57,6 +57,8 @@ public interface AEHomeLocal {
 
     List<AE> findAll();
     
+    AE findByTitle(String title);
+    
     AE createAET(AE ae);
 
     AE updateAET(AE ae);
