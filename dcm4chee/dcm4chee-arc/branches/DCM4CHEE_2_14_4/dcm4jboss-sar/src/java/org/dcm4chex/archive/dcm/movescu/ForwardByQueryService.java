@@ -140,14 +140,14 @@ NotificationListener {
         return isRunning;
     }
         
-    private void checkSQL(String newSql) throws SQLException {
+    private void checkSQL(String sql) throws SQLException {
         sqlIsValid = false;
-        String sql = newSql.toUpperCase();
-        if ( sql.indexOf("DELETE ") != -1 ) {
+        String sqlUC = sql.toUpperCase();
+        if ( sqlUC.indexOf("DELETE ") != -1 ) {
             lastCheckResult = "DELETE is not allowed in this SQL statement!";
             throw new IllegalArgumentException(lastCheckResult);
         }
-        if ( sql.indexOf("UPDATE ") != -1 ) {
+        if ( sqlUC.indexOf("UPDATE ") != -1 ) {
             lastCheckResult = "UPDATE is not allowed in this SQL statement!";
             throw new IllegalArgumentException(lastCheckResult);
         }
