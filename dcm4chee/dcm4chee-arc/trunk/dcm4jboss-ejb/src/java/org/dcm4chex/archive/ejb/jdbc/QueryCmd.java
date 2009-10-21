@@ -916,6 +916,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                             Types.VARCHAR,      // Instance.retrieveAETs
                             Types.VARCHAR,      // Instance.externalRetrieveAET
                             Types.INTEGER,      // Instance.availability
+                            Types.TIMESTAMP,    // Instance.updatedTime
                             Types.VARCHAR,      // Media.filesetId
                             Types.VARCHAR,      // Media.filesetIuid
                             });
@@ -958,8 +959,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                             "Instance.retrieveAETs",                    // (13)
                             "Instance.externalRetrieveAET",             // (14)
                             "Instance.availability",                    // (15)
-                            "Media.filesetId",                          // (16)
-                            "Media.filesetIuid",                        // (17)
+                            "Instance.updatedTime",                     // (16)
+                            "Media.filesetId",                          // (17)
+                            "Media.filesetIuid",                        // (18)
                             };
         }
 
@@ -1059,8 +1061,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             ds.putSH(PrivateTags.CallingAET, rs.getString(12));
             DatasetUtils.putRetrieveAET(ds, rs.getString(13), rs.getString(14));
             ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(15)]);
-            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(16));
-            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(17));
+            ds.putDT(PrivateTags.InstanceUpdated, rs.getTimestamp(16));
+            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(17));
+            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(18));
             ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
         }
     }
