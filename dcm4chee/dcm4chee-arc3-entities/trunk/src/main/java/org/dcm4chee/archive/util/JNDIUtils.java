@@ -53,11 +53,12 @@ public class JNDIUtils {
             try {
                 return jndiCtx.lookup(name);
             } finally {
-                jndiCtx.close();
+                try  {
+                    jndiCtx.close();
+                } catch ( Exception ignore ) {}
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-
 }
