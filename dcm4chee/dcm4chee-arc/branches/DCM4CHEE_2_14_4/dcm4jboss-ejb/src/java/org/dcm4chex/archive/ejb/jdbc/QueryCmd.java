@@ -39,6 +39,8 @@
 
 package org.dcm4chex.archive.ejb.jdbc;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.HashMap;
@@ -57,6 +59,7 @@ import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.common.SecurityUtils;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
+import org.dcm4chex.archive.ejb.jdbc.BaseDSQueryCmd.IntList;
 import org.dcm4chex.archive.ejb.jdbc.Match.Node;
 
 /**
@@ -355,7 +358,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             if (!checkMatchValue(pid, "PatientID of item", sb) || !checkMatchValue(issuer, "Issuer of item", sb)) {
                 log.warn("Skipping pid '" + pid + "' and issuer '" + issuer + "' in other patient id sequence because: " + sb);
             } else {            
-            	addIdAndIssuerPair(n, item.getString(Tags.PatientID), item.getString(Tags.IssuerOfPatientID));
+                addIdAndIssuerPair(n, item.getString(Tags.PatientID), item.getString(Tags.IssuerOfPatientID));
             }
         }
     }
@@ -423,11 +426,19 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     protected void addNestedSeriesMatch() {
         sqlBuilder.addModalitiesInStudyNestedMatch(null, keys
                 .getStrings(Tags.ModalitiesInStudy));
-        keys.setPrivateCreatorID(PrivateTags.CreatorID);
-        sqlBuilder.addCallingAETsNestedMatch(false, keys
-                .getStrings(PrivateTags.CallingAET));
+        sqlBuilder.addCallingAETsNestedMatch(false, getCallingAETs(keys));
         matchingKeys.add(Tags.ModalitiesInStudy);
         matchingKeys.add(PrivateTags.CallingAET);
+    }
+
+    private String[] getCallingAETs(Dataset ds) {
+        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        ByteBuffer bb = ds.getByteBuffer(PrivateTags.CallingAET);
+        try {
+            if (bb != null)
+                return StringUtils.split(new String(bb.array(), "UTF-8"), '\\');
+        } catch (UnsupportedEncodingException ignore) {}
+        return new String[]{};
     }
 
     protected void addSeriesMatch() {
@@ -461,9 +472,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 keys.getString(Tags.PerformingPhysicianName));
         sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime", type2, keys
                 .getDateTimeRange(Tags.PPSStartDate, Tags.PPSStartTime));
-        keys.setPrivateCreatorID(PrivateTags.CreatorID);
-        sqlBuilder.addListOfStringMatch(null, "Series.sourceAET", type2, keys
-                .getStrings(PrivateTags.CallingAET));
+        sqlBuilder.addListOfStringMatch(null, "Series.sourceAET", type2, getCallingAETs(keys));
         if (this.isMatchRequestAttributes()) {
             Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
 
@@ -642,7 +651,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         try {
             String pn = el.getString(null);
             if (pn == null) {
-            	return "";
+                return "";
             }
             int pos = pn.indexOf('=');
             if (pos != -1)
