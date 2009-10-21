@@ -56,7 +56,7 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
-import org.apache.wicket.validation.validator.NumberValidator;
+import org.apache.wicket.validation.validator.RangeValidator;
 import org.apache.wicket.validation.validator.StringValidator;
 import org.dcm4chee.archive.entity.AE;
 import org.slf4j.Logger;
@@ -122,11 +122,11 @@ public class DicomEchoPanel extends Panel {
         form.add(new Label("echoResultLabel", new ResourceModel("aet.echoResult")));
         form.add(new TextField("title").add(new AETitleValidator()).setRequired(true)); 
         form.add(new TextField("hostName").add(StringValidator.minimumLength(1)).setRequired(true)); 
-        form.add( new TextField("port").add(NumberValidator.range(1,65535)));
+        form.add( new TextField("port").add(new RangeValidator(1,65535)));
         form.add(new DropDownChoice("ciphersuite1", new CipherModel(aeEcho, 0), AEMgtDelegate.AVAILABLE_CIPHERSUITES));
         form.add(new DropDownChoice("ciphersuite2", new CipherModel(aeEcho, 1), AEMgtDelegate.AVAILABLE_CIPHERSUITES));
         form.add(new DropDownChoice("ciphersuite3", new CipherModel(aeEcho, 2), AEMgtDelegate.AVAILABLE_CIPHERSUITES));
-        form.add( new TextField("nrOfTests", nrOfTestsModel, Integer.class).add(NumberValidator.range(1,2000)));
+        form.add( new TextField("nrOfTests", nrOfTestsModel, Integer.class).add(new RangeValidator(1,2000)));
         resultLabel.setOutputMarkupId(true).setEnabled(false);
         form.add(resultLabel);
         form.add(new AjaxButton("cancel", new ResourceModel("aet.cancelButton"))

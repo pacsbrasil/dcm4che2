@@ -56,7 +56,7 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.validation.IValidator;
-import org.apache.wicket.validation.validator.NumberValidator;
+import org.apache.wicket.validation.validator.RangeValidator;
 import org.apache.wicket.validation.validator.StringValidator;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.wicket.common.ComponentUtil;
@@ -86,7 +86,7 @@ public class EditAETPanel extends Panel {
         util.addLabeledTextField(form, "title").add(new AETitleValidator()).setRequired(true); 
         util.addLabeledTextField(form, "hostName","host")
             .add(StringValidator.minimumLength(1)).setRequired(true); 
-        util.addLabeledTextField(form, "port").add(NumberValidator.range(1,65535));
+        util.addLabeledTextField(form, "port").add(new RangeValidator(1,65535));
         form.add(new Label("ciphersLabel1", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{1} ) ) );
         form.add(new DropDownChoice("ciphersuite1", new CipherModel(ae, 0), AEMgtDelegate.AVAILABLE_CIPHERSUITES));
         form.add(new Label("ciphersLabel2", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{2} ) ) );
