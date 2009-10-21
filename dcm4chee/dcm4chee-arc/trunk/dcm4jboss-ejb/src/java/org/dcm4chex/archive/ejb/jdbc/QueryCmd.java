@@ -39,6 +39,8 @@
 
 package org.dcm4chex.archive.ejb.jdbc;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.HashMap;
@@ -423,11 +425,19 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     protected void addNestedSeriesMatch() {
         sqlBuilder.addModalitiesInStudyNestedMatch(null, keys
                 .getStrings(Tags.ModalitiesInStudy));
-        keys.setPrivateCreatorID(PrivateTags.CreatorID);
-        sqlBuilder.addCallingAETsNestedMatch(false, keys
-                .getStrings(PrivateTags.CallingAET));
+        sqlBuilder.addCallingAETsNestedMatch(false, getCallingAETs(keys));
         matchingKeys.add(Tags.ModalitiesInStudy);
         matchingKeys.add(PrivateTags.CallingAET);
+    }
+
+    private String[] getCallingAETs(Dataset ds) {
+        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        ByteBuffer bb = ds.getByteBuffer(PrivateTags.CallingAET);
+        try {
+            if (bb != null)
+                return StringUtils.split(new String(bb.array(), "UTF-8"), '\\');
+        } catch (UnsupportedEncodingException ignore) {}
+        return new String[]{};
     }
 
     protected void addSeriesMatch() {
@@ -461,9 +471,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 keys.getString(Tags.PerformingPhysicianName));
         sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime", type2, keys
                 .getDateTimeRange(Tags.PPSStartDate, Tags.PPSStartTime));
-        keys.setPrivateCreatorID(PrivateTags.CreatorID);
-        sqlBuilder.addListOfStringMatch(null, "Series.sourceAET", type2, keys
-                .getStrings(PrivateTags.CallingAET));
+        sqlBuilder.addListOfStringMatch(null, "Series.sourceAET", type2, getCallingAETs(keys));
         if (this.isMatchRequestAttributes()) {
             Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
 
