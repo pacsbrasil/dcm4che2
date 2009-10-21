@@ -43,17 +43,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.naming.InitialContext;
-
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
+import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.dao.StudyListLocal;
 import org.dcm4chee.web.wicket.util.DateUtils;
-import org.dcm4chee.archive.util.JNDIUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

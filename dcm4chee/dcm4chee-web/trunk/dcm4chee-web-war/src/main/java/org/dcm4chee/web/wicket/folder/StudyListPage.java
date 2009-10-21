@@ -1,7 +1,6 @@
 package org.dcm4chee.web.wicket.folder;
 
 import java.io.Serializable;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -20,16 +19,15 @@ import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
+import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.dao.StudyListLocal;
 import org.dcm4chee.web.wicket.WicketSession;
 import org.dcm4chee.web.wicket.common.ComponentUtil;
 import org.dcm4chee.web.wicket.common.DateTimeLabel;
-import org.dcm4chee.archive.util.JNDIUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

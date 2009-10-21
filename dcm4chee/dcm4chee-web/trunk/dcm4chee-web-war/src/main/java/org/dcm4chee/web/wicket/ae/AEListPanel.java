@@ -50,6 +50,7 @@ import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.wicket.common.ComponentUtil;
 import org.slf4j.Logger;
@@ -74,6 +75,7 @@ public class AEListPanel extends Panel {
         setOutputMarkupId(true);
         final ModalWindow mw = new ModalWindow("echoPanel");
         mw.setCssClassName(ModalWindow.CSS_CLASS_GRAY);
+        mw.setTitle(new ResourceModel("aet.echoPanelTitle"));
         mw.setWindowClosedCallback(new WindowClosedCallback(){
             public void onClose(AjaxRequestTarget target) {
                 AEMgtDelegate.getInstance().updateAEList();

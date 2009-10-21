@@ -45,12 +45,11 @@ import java.util.List;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.Series;
+import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.dao.StudyListLocal;
 import org.dcm4chee.web.wicket.util.DateUtils;
-import org.dcm4chee.archive.util.JNDIUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

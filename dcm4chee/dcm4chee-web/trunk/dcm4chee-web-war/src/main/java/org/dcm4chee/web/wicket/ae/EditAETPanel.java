@@ -51,8 +51,6 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.markup.html.list.ListItem;
-import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.ResourceModel;
@@ -131,6 +129,7 @@ public class EditAETPanel extends Panel {
                 page.setListPage();
             }});
         final ModalWindow mw = new ModalWindow("echoPanel");
+        mw.setTitle(new ResourceModel("aet.echoPanelTitle"));
         mw.setCssClassName(ModalWindow.CSS_CLASS_GRAY);
         mw.setContent(new DicomEchoPanel(ae,mw,true));
         mw.setWindowClosedCallback(new WindowClosedCallback(){
@@ -141,7 +140,7 @@ public class EditAETPanel extends Panel {
                 log.info("#### ae:"+ae);
             }});
         
-        form.add(mw);
+        add(mw);
         form.add(new AjaxButton("echo") {
 
             @Override

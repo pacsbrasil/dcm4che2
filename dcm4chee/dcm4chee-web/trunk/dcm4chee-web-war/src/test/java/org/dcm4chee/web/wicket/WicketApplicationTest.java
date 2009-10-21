@@ -3,7 +3,6 @@ package org.dcm4chee.web.wicket;
 
 import java.net.URL;
 
-import org.apache.wicket.Page;
 import org.apache.wicket.Session;
 import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.util.tester.FormTester;
@@ -28,7 +27,6 @@ import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.entity.StudyOnFileSystem;
 import org.dcm4chee.archive.entity.VerifyingObserver;
 import org.dcm4chee.web.dao.StudyListBean;
-import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

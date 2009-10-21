@@ -38,13 +38,8 @@
 
 package org.dcm4chee.web.wicket.ae;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.wicket.markup.html.panel.Panel;
 import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.dao.AEHomeLocal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

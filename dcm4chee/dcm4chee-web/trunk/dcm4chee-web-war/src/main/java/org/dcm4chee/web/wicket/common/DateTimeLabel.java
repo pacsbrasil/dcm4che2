@@ -44,7 +44,6 @@ import java.util.Locale;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.util.convert.IConverter;
-import org.apache.wicket.util.convert.converters.DateConverter;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
