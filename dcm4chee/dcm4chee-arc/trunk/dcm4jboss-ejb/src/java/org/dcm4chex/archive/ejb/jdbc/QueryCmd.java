@@ -357,7 +357,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             if (!checkMatchValue(pid, "PatientID of item", sb) || !checkMatchValue(issuer, "Issuer of item", sb)) {
                 log.warn("Skipping pid '" + pid + "' and issuer '" + issuer + "' in other patient id sequence because: " + sb);
             } else {            
-            	addIdAndIssuerPair(n, item.getString(Tags.PatientID), item.getString(Tags.IssuerOfPatientID));
+                addIdAndIssuerPair(n, item.getString(Tags.PatientID), item.getString(Tags.IssuerOfPatientID));
             }
         }
     }
@@ -650,7 +650,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         try {
             String pn = el.getString(null);
             if (pn == null) {
-            	return "";
+                return "";
             }
             int pos = pn.indexOf('=');
             if (pos != -1)
