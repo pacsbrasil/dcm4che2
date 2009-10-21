@@ -54,6 +54,7 @@ public class PrivateTags {
     public static final int InstancePk = 0x00430013;
     public static final int CallingAET = 0x00430014;
     public static final int CalledAET = 0x00430015;
+    public static final int InstanceUpdated = 0x00430016;
     public static final int WorkItemSeq = 0x00430020;
     public static final int Dcm4cheURIReferencedTransferSyntaxUID = 0x00430030;
 }
