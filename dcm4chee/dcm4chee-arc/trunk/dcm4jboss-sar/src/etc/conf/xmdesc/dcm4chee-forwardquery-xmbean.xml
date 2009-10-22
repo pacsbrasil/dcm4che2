@@ -49,7 +49,7 @@
       <description><![CDATA[SQL statement to filter series for forwarding.<p />
       	Default Query to find series that are stored (series_status=0) and not forwarded (ext_retr_aet is null) 
       	and has associated Request Attributes (a reference in series_req):<br />
-      	SELECT DISTINCT series.series_iuid, series.retrieve_aets 
+      	SELECT DISTINCT series.series_iuid, series.retrieve_aets, series.pk 
          	FROM series INNER JOIN series_req ON series.pk = series_req.series_fk 
          	WHERE series.series_status = 0 AND series.ext_retr_aet IS NULL 
          		AND series.updated_time &lt; ? ORDER BY series.pk]]>  
@@ -57,7 +57,7 @@
       <name>Query</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="SELECT DISTINCT series.series_iuid, series.retrieve_aets 
+         <value value="SELECT DISTINCT series.series_iuid, series.retrieve_aets, series.pk 
          	FROM series INNER JOIN series_req ON series.pk = series_req.series_fk 
          	WHERE series.series_status = 0 AND series.ext_retr_aet IS NULL 
          		AND series.updated_time &lt; ? ORDER BY series.pk"/>
