@@ -48,16 +48,16 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since Jan 5, 2009
  */
-public class AEMgtPage extends Panel {
+public class AEMgtPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
     private boolean editMode = false;
     private EditAETPanel editPanel;
     private AEListPanel listPanel;
       
-    private static Logger log = LoggerFactory.getLogger(AEMgtPage.class);
+    private static Logger log = LoggerFactory.getLogger(AEMgtPanel.class);
     
-    public AEMgtPage(final String id) {
+    public AEMgtPanel(final String id) {
         super(id);
         AEMgtDelegate.getInstance().updateAEList();
         if ( listPanel == null ) {

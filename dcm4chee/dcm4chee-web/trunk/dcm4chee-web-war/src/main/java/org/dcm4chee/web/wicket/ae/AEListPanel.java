@@ -63,14 +63,14 @@ import org.slf4j.LoggerFactory;
  */
 public class AEListPanel extends Panel {
 
-    private AEMgtPage page;
+    private AEMgtPanel page;
     
     private static Logger log = LoggerFactory.getLogger(AEListPanel.class);
     List<AE> aeList = AEMgtDelegate.getInstance().getAEList();
     
     DicomEchoPanel echoPanel;
     @SuppressWarnings("serial")
-    public AEListPanel(String id, AEMgtPage p) {
+    public AEListPanel(String id, AEMgtPanel p) {
         super(id);
         setOutputMarkupId(true);
         final ModalWindow mw = new ModalWindow("echoPanel");
@@ -84,7 +84,7 @@ public class AEListPanel extends Panel {
         echoPanel = new DicomEchoPanel(mw, true);
         mw.setContent( echoPanel );
         add(mw);
-        ComponentUtil util = new ComponentUtil(AEMgtPage.getModuleName());
+        ComponentUtil util = new ComponentUtil(AEMgtPanel.getModuleName());
         util.addLabel(this, "titleHdr");
         util.addLabel(this, "hostHdr");
         util.addLabel(this, "portHdr");

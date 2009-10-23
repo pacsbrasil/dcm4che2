@@ -40,7 +40,7 @@ package org.dcm4chee.web.wicket;
 
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.WebPage;
-import org.dcm4chee.web.wicket.ae.AEMgtPage;
+import org.dcm4chee.web.wicket.ae.AEMgtPanel;
 import org.dcm4chee.web.wicket.folder.StudyListPage;
 import org.dcm4chee.web.wicket.fs.FileSystemPage;
 import org.slf4j.Logger;
@@ -65,7 +65,7 @@ public class MainPage extends WebPage {
 
     private void addModules(ModuleSelectorPanel selectorPanel) {
         selectorPanel.addModule(StudyListPage.class);
-        selectorPanel.addModule(AEMgtPage.class);
+        selectorPanel.addModule(AEMgtPanel.class);
         selectorPanel.addModule(FileSystemPage.class);
     }
 }

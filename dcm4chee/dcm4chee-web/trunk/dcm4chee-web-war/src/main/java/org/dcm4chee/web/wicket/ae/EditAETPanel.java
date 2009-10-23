@@ -74,14 +74,14 @@ public class EditAETPanel extends Panel {
     transient AEMgtDelegate delegate = AEMgtDelegate.getInstance();
     private static Logger log = LoggerFactory.getLogger(EditAETPanel.class);
     
-    public EditAETPanel( String id, final AEMgtPage page, final AE ae) {
+    public EditAETPanel( String id, final AEMgtPanel page, final AE ae) {
         super(id);
         setOutputMarkupId(true);
         Form form = new Form("form");
         add(form);
         CompoundPropertyModel model = new CompoundPropertyModel(ae);
         setDefaultModel(model);
-        ComponentUtil util = new ComponentUtil(AEMgtPage.getModuleName());
+        ComponentUtil util = new ComponentUtil(AEMgtPanel.getModuleName());
         
         util.addLabeledTextField(form, "title").add(new AETitleValidator()).setRequired(true); 
         util.addLabeledTextField(form, "hostName","host")
