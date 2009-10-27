@@ -85,6 +85,8 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
     private static final String RESULT_XSL = "cfindrsp.xsl";
     private static final String QUERY_XML = "-cfindrq.xml";
     private static final String RESULT_XML = "-cfindrsp.xml";
+    
+    protected static final String FORCE_PIX_QUERY_FLAG = "ForcePIXQueryFlag";
 
     private static final MultiDimseRsp NO_MATCH_RSP = new MultiDimseRsp() {
 
@@ -150,9 +152,12 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             }
             service.postCoercionProcessing(rqData, Command.C_FIND_RQ);
             service.supplementIssuerOfPatientID(rqData, callingAET);
-            if (!isUniversalMatching(rqData.getString(Tags.PatientID))
-                    && service.isPixQueryCallingAET(callingAET)) {
-                pixQuery(rqData);
+            if ( !isUniversalMatching(rqData.getString(Tags.PatientID)) ) {
+                Object forcePixQuery=assoc.getAssociation().getProperty(FORCE_PIX_QUERY_FLAG);
+                if( ( forcePixQuery!=null && forcePixQuery.equals(Boolean.TRUE) )||
+                    service.isPixQueryCallingAET(callingAET) ) {
+                    pixQuery(rqData);
+                }    
             }
             boolean hideWithoutIssuerOfPID = 
                     service.isHideWithoutIssuerOfPIDFromAET(callingAET);
@@ -164,14 +169,15 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
                 if (subject != null) {
                     rsp = newMultiCFindRsp(rqData, hideWithoutIssuerOfPID, subject);
                 } else {
-                    log
-                            .info("Missing user identification -> no records returned");
+                    log.info("Missing user identification -> no records returned");
                     rsp = NO_MATCH_RSP;
                 }
             }
             perfMon.stop(assoc, rq, PerfCounterEnum.C_FIND_SCP_QUERY_DB);
             return rsp;
-        } catch (Exception e) {
+        } catch (DcmServiceException e) {
+            throw e;
+        }catch (Exception e) {
             log.error("Query DB failed:", e);
             throw new DcmServiceException(Status.UnableToProcess, e);
         }
@@ -310,7 +316,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
 
     protected MultiDimseRsp newMultiCFindRsp(Dataset rqData,
             boolean hideWithoutIssuerOfPID, Subject subject)
-            throws SQLException {
+            throws SQLException, DcmServiceException {
         QueryCmd queryCmd = QueryCmd.create(rqData, filterResult,
                 service.isNoMatchForNoValue(), hideWithoutIssuerOfPID, subject);
         queryCmd.execute();
