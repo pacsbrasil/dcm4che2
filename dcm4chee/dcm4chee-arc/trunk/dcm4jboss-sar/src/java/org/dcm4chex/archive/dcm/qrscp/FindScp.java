@@ -86,6 +86,8 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
     private static final String QUERY_XML = "-cfindrq.xml";
     private static final String RESULT_XML = "-cfindrsp.xml";
 
+    protected static final String FORCE_PIX_QUERY_FLAG = "ForcePIXQueryFlag";
+
     private static final MultiDimseRsp NO_MATCH_RSP = new MultiDimseRsp() {
 
         public DimseListener getCancelListener() {
@@ -150,9 +152,12 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             }
             service.postCoercionProcessing(rqData, Command.C_FIND_RQ);
             service.supplementInstitutionalData(rqData, callingAET);
-            if (!isUniversalMatching(rqData.getString(Tags.PatientID))
-                    && service.isPixQueryCallingAET(callingAET)) {
-                pixQuery(rqData);
+            if ( !isUniversalMatching(rqData.getString(Tags.PatientID)) ) {
+                Object forcePixQuery = assoc.getAssociation().getProperty(FORCE_PIX_QUERY_FLAG);
+                if( ( forcePixQuery!=null && forcePixQuery.equals(Boolean.TRUE) )||
+                    service.isPixQueryCallingAET(callingAET) ) {
+                    pixQuery(rqData);
+                }    
             }
             boolean hideWithoutIssuerOfPID = 
                     service.isHideWithoutIssuerOfPIDFromAET(callingAET);
@@ -302,7 +307,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
 
     protected MultiDimseRsp newMultiCFindRsp(Dataset rqData,
             boolean hideWithoutIssuerOfPID, Subject subject)
-            throws SQLException {
+            throws SQLException, DcmServiceException {
         QueryCmd queryCmd = QueryCmd.create(rqData, filterResult,
                 service.isNoMatchForNoValue(), hideWithoutIssuerOfPID, subject);
         queryCmd.execute();
