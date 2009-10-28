@@ -217,6 +217,17 @@
          <value value="secret" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      setMethod="setKeyStoreType"
+      getMethod="getKeyStoreType">
+      <description>The keystore type.  Set to NONE to use the system default.
+      </description>
+      <name>KeyStoreType</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="PKCS12" />
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="getTrustStoreURL" setMethod="setTrustStoreURL">
       <!-- Security -->     
       <description>URL of trust store containing accepted certificates,
