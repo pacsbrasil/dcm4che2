@@ -118,6 +118,7 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
 
     private String keystoreURL = "resource:identity.p12";
     private String keystorePassword;
+    private String keystoreType;
     private String trustStoreURL = "resource:cacerts.jks";
     private String trustStorePassword;
     private HostnameVerifier origHostnameVerifier = null;
@@ -276,6 +277,22 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
         if ( NONE.equals(keyStorePassword)) keyStorePassword = null;
         this.keystorePassword = keyStorePassword.trim();
     }
+    
+    public String getKeystoreType() {
+    	if (keystoreType == null) {
+    		return NONE;
+    	}
+    	return keystoreType;
+    }
+    
+    public void setKeystoreType(String keystoreType) {
+    	if (NONE.compareToIgnoreCase(keystoreType) == 0) {
+    		this.keystoreType = null;
+    	} else {
+    		this.keystoreType = keystoreType;
+    	}
+    }
+    
     public String getKeyStoreURL() {
         return keystoreURL;
     }
@@ -321,7 +338,8 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
             System.setProperty(KEY_STORE, keyStorePath);
             if ( keystorePassword != null ) 
                 System.setProperty(KEY_STORE_PASSWORD, keystorePassword);
-            System.setProperty(KEY_STORE_TYPE,"PKCS12");
+            if ( keystoreType != null )
+                System.setProperty(KEY_STORE_TYPE, keystoreType);
             System.setProperty(TRUST_STORE, trustStorePath);
             if ( trustStorePassword != null )
                 System.setProperty(TRUST_STORE_PASSWORD, trustStorePassword);
