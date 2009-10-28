@@ -415,7 +415,8 @@ class SqlBuilder {
     }
 
     public StringBuffer appendLimitbeforeFrom(StringBuffer sb) {
-        if (distinct && getDatabase()!= JdbcProperties.FIREBIRD) 
+        if (distinct && getDatabase()!= JdbcProperties.FIREBIRD 
+                && getDatabase()!= JdbcProperties.HSQL) 
             sb.append("DISTINCT ");
         switch (getDatabase()) {
         case JdbcProperties.HSQL :
@@ -424,6 +425,7 @@ class SqlBuilder {
             sb.append(" ");
             sb.append(limit);
             sb.append(" ");
+            if (distinct) sb.append("DISTINCT ");
             appendTo(sb, select);
             break;
         case JdbcProperties.DB2 :
