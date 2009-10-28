@@ -152,7 +152,7 @@ NotificationListener {
             throw new IllegalArgumentException(lastCheckResult);
         }
         try {
-            QueryForwardCmd cmd = QueryForwardCmd.getInstance(sql, 1);
+            QueryForwardCmd cmd = QueryForwardCmd.getInstance(sql, this.limit > 0 ? 1 : 0);
             cmd.setUpdateDatabaseMaxRetries(1);
             Map<String, List<String>> chk = cmd.getSeriesIUIDs(sql.indexOf('?') != -1 ? System.currentTimeMillis() : null);
             log.debug("CheckSQL: QueryForwardCmd.getSeriesIUIDs done with result:"+chk);
