@@ -287,8 +287,11 @@ public class RetrieveCmd extends BaseReadCmd {
                 rs = pstmt.executeQuery();
                 addFileInfos(result);
             }
+            log.trace("getFileInfos finished!");
         } finally {
+            log.trace("getFileInfos: Close Connection.");
             close();
+            log.trace("getFileInfos: Connection closed.");
         }
         return toArray(result);
     }
