@@ -372,6 +372,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
             log.error("Failed to access Storage EJB", e);
         }
         Dataset actionInfo = order.getActionInfo();
+        log.trace("StgCmt actionInfo:");log.trace(actionInfo);
         DcmElement refSOPSeq = actionInfo.get(Tags.RefSOPSeq);
         Map fileInfos = null;
         if (storage != null) {
