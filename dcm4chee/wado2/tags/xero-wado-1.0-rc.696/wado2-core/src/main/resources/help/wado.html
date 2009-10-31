@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>WADO Image Retrieval Service</title>
+</head>
+
+<body>
+<h2>WADO Image Retrieval Service</h2>
+
+<h3>Overview</h3>
+Standards compliant implementation of the DICOM WADO specification (see <a
+href="http://medical.nema.org/dicom/2007/07_18pu.pdf">Part 18: Web Access to
+DICOM Persistent Objects (WADO)</a>). This implementation allows access to:
+<ul>
+  <li>Images - the standard JPEG or other image format instances</li>
+  <li>Audio - streamed audio in a variety of standard web formats</li>
+  <li>Video - MPEG-2 video from DICOM containing MPEG-2 formatted data.</li>
+  <li>Reports - From structured reports and/or embedded PDF. May also have
+    report sources from other systems with custom conversion to an HTML
+  report.</li>
+</ul>
+
+<h2>FAQ</h2>
+
+<p>TODO - add an FAQ section on various retrieval types</p>
+
+<h2>Content Types</h2>
+
+<p>The parameter contentType can choose the format of the returned objects.
+Some content types are incompatible with some arguments. The content type is
+comma-delimited, one of the available types will be chosen, with the first one
+listed being preferred.</p>
+
+<table border="1">
+  <tbody>
+    <tr>
+      <th>Content Type</th>
+      <th>Description</th>
+      <th>Type</th>
+    </tr>
+    <tr>
+      <td>image/jpeg</td>
+      <td>Returns a single image object in lossy JPEG format. Applies window
+        levelling and other image operations. (default for images)</td>
+      <td>Image</td>
+    </tr>
+    <tr>
+      <td>image/png</td>
+      <td>Returns a lossless image object, with window levelling and other
+        image operations. (default for overlay/pixel padding)</td>
+      <td>Image</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>text/html</td>
+      <td>Returns a browser-displayable HTML report or header for an object.
+        (default for SR except SR that contains PDF)</td>
+      <td>HTML</td>
+    </tr>
+    <tr>
+      <td>text/xml</td>
+      <td>Returns an XML representation of the entire DICOM header. Fairly
+        large and slow, but allows arbitrary XSL or other processing to be
+        applied.</td>
+      <td>XML</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>application/pdf</td>
+      <td>Returns PDF from the DICOM header (default for this type of file)</td>
+      <td>PDF</td>
+    </tr>
+    <tr>
+      <td>audio/basic</td>
+      <td>Returns basic audio streams.</td>
+      <td>Audio</td>
+    </tr>
+    <tr>
+      <td>video/mpeg2</td>
+      <td>Returns MPEG-2 containing DICOM objects as a video stream.</td>
+      <td>Video</td>
+    </tr>
+    <tr>
+      <td>multipart/mime</td>
+      <td>Returns objects as a streamed response, images and DICOM headers as
+        seprarate objects, with overlays and pixel padding as PNG and regular
+        images as JPEG 12</td>
+      <td>Multi</td>
+    </tr>
+    <tr>
+      <td>application/zip</td>
+      <td>Same as multipart/mime in a streamed ZIP file instead.</td>
+      <td>Multi</td>
+    </tr>
+    <tr>
+      <td>application/dicom</td>
+      <td>Returns a DICOM file.</td>
+      <td>DICOM</td>
+    </tr>
+  </tbody>
+</table>
+
+<p></p>
+
+<h3>Parameters</h3>
+
+<table border="1">
+  <tbody>
+    <tr>
+      <th>Parameter</th>
+      <th>Description</th>
+      <th>Notes</th>
+      <td>Types</td>
+    </tr>
+    <tr>
+      <td>requestType</td>
+      <td>Defines the type of request to perform</td>
+      <td>Required. Use WADO for this service</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>studyUID</td>
+      <td>Constrain by the study UID of the requested study</td>
+      <td>Recommended - some PACS systems require this, Impax Data Center is
+        faster if the data is supplied</td>
+      <td>All</td>
+    </tr>
+    <tr>
+      <td>seriesUID</td>
+      <td>Constrain by the series UID of the requested series</td>
+      <td>Recommended - some PACS systems require this, Impax Data Center is
+        faster if the data is supplied</td>
+      <td>All</td>
+    </tr>
+    <tr>
+      <td>objectUID</td>
+      <td>Constrain by the object UID of the requested DICOM object</td>
+      <td>Required except for multi-DICOM return values</td>
+      <td>All</td>
+    </tr>
+    <tr>
+      <td>frameNumber</td>
+      <td>If the DICOM object is a multi-frame, then the frame number is a
+        required field.</td>
+      <td>1 based</td>
+      <td>Image</td>
+    </tr>
+    <tr>
+      <td>rows</td>
+      <td>Scale the image upto the indicated number of rows</td>
+      <td></td>
+      <td>Image</td>
+    </tr>
+    <tr>
+      <td>columns</td>
+      <td>Scale the image upto the indicated number of columns</td>
+      <td></td>
+      <td>Image</td>
+    </tr>
+    <tr>
+      <td>windowWidth,
+
+        <p>windowCenter</p>
+      </td>
+      <td>Apply a specific window width/center to the returned image</td>
+      <td></td>
+      <td>Image</td>
+    </tr>
+    <tr>
+      <td>presentaitonUID</td>
+      <td>Apply a specific GSPS to the returned image</td>
+      <td></td>
+      <td>Image</td>
+    </tr>
+    <tr>
+      <td>flip</td>
+      <td>Set to true to invert the image</td>
+      <td></td>
+      <td>Image</td>
+    </tr>
+    <tr>
+      <td>rotation</td>
+      <td>Sets the rotation to use.</td>
+      <td></td>
+      <td>Image</td>
+    </tr>
+    <tr>
+      <td>useOrig</td>
+      <td>Return the raw, unchanged, no headers fixed DICOM file.</td>
+      <td></td>
+      <td>DICOM</td>
+    </tr>
+    <tr>
+      <td>simpleFrameList</td>
+      <td>A dash and comma separated list of frames to include in the DICOM</td>
+      <td></td>
+      <td>DICOM</td>
+    </tr>
+    <tr>
+      <td>transferSyntax</td>
+      <td>A backslash separated list of acceptable transfer syntaxes. Returns
+        the raw encoding on disk if that is one of the transfer syntaxes,
+        otherwise uses the first transfer syntax</td>
+      <td>Supports no-pixel data and no-pixel data deflate.</td>
+      <td>DICOM</td>
+    </tr>
+    <tr>
+      <td>help</td>
+      <td>Whether to show this help message.</td>
+      <td>Defaults to false</td>
+      <td>All</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>
