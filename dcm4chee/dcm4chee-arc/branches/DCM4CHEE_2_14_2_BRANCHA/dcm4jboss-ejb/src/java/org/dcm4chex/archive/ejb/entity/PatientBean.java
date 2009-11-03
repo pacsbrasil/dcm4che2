@@ -739,17 +739,34 @@ public abstract class PatientBean implements EntityBean {
             }
         }
         for (int i = 0, n = nopidsq.countItems(); i < n; i++) {
-            Dataset nopid = nopidsq.getItem(i);
-            String pid = nopid.getString(Tags.PatientID);
-            String issuer = nopid.getString(Tags.IssuerOfPatientID);
-            if (!containsPID(pid, issuer, oopidsq)) {
-                oopidsq.addItem(nopid);
-                getOtherPatientIds().add(opidHome.valueOf(pid, issuer));
+            Dataset nItem = nopidsq.getItem(i);
+            String nopid = nItem.getString(Tags.PatientID);
+            String issuer = nItem.getString(Tags.IssuerOfPatientID);
+            Dataset oItem = findOtherPIDByIssuer(issuer,oopidsq);
+            if (oItem==null) {
+                oopidsq.addItem(nItem);
+                getOtherPatientIds().add(opidHome.valueOf(nopid, issuer));
                 log.info("Add additional Other Patient ID: "
-                        + pid + "^^^"
+                        + nopid + "^^^"
                         +  issuer
                         + " to " + prompt());
-            }
+            }	
+            else {
+            	try {
+            	    String oopid = oItem.getString(Tags.PatientID);
+            	    if( ! oopid.equals(nopid) ) {
+            	        oItem.putLO(Tags.PatientID, nopid);
+                        OtherPatientIDLocal oopidBean = opidHome.findByPatientIdAndIssuer(oopid, issuer);
+                        getOtherPatientIds().remove(oopidBean);
+                        if (oopidBean.getPatients().isEmpty()) {
+                            oopidBean.remove();
+                        }
+                        getOtherPatientIds().add(opidHome.valueOf(nopid, issuer));
+                        log.info("Other Patient ID of " + oopid + "^^^" + issuer
+                              + " is replaced by" + nopid + "^^^" + issuer + " to " + prompt());
+                    }
+            	} catch (Exception onfe) {}
+            }	
         }
         return true;
     }
@@ -823,6 +840,17 @@ public abstract class PatientBean implements EntityBean {
         }
         return false;
     }
+
+    private Dataset findOtherPIDByIssuer(String issuer, DcmElement opidsq) {
+        for (int i = 0, n = opidsq.countItems(); i < n; i++) {
+            Dataset opid = opidsq.getItem(i);
+            if (opid.getString(Tags.IssuerOfPatientID).equals(issuer)) {
+                    return opid;
+            }
+        }
+        return null;
+    }
+
 
     private static String toUpperCase(String s) {
         return s != null ? s.toUpperCase() : null;
