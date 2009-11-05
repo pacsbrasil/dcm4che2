@@ -51,7 +51,8 @@ import org.dcm4chex.archive.common.HPLevel;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2008-01-31 03:48:04 +0100 (Thu, 31 Jan
+ *          2008) $
  * @since Aug 17, 2005
  */
 public class HPQueryCmd extends BaseDSQueryCmd {
@@ -64,112 +65,119 @@ public class HPQueryCmd extends BaseDSQueryCmd {
     private static final String[] SELECT = { "HP.encodedAttributes" };
 
     private static final String USER_CODE = "user_code";
-    private static final String[] REGION_CODE = new String[]{"region_code","rel_hpdef_region","rel_hpdef_region.hpdef_fk",
-    														 "rel_hpdef_region.region_fk"};
-    private static final String[] PROC_CODE = new String[]{"proc_code","rel_hpdef_proc","rel_hpdef_proc.hpdef_fk",
-    														"rel_hpdef_proc.proc_fk"};
-    private static final String[] REASON_CODE = new String[]{"reason_code","rel_hpdef_reason",
-    													"rel_hpdef_reason.hpdef_fk","rel_hpdef_reason.reason_fk"};
+    private static final String[] REGION_CODE = new String[] { "region_code",
+            "rel_hpdef_region", "rel_hpdef_region.hpdef_fk",
+            "rel_hpdef_region.region_fk" };
+    private static final String[] PROC_CODE = new String[] { "proc_code",
+            "rel_hpdef_proc", "rel_hpdef_proc.hpdef_fk",
+            "rel_hpdef_proc.proc_fk" };
+    private static final String[] REASON_CODE = new String[] { "reason_code",
+            "rel_hpdef_reason", "rel_hpdef_reason.hpdef_fk",
+            "rel_hpdef_reason.reason_fk" };
 
     public HPQueryCmd(Dataset keys) throws SQLException {
-		super(keys, true, false, transactionIsolationLevel);
-	        defineColumnTypes(new int[] { blobAccessType });
-		String s;
-		int i;
-		// ensure keys contains (8,0005) for use as result filter
-		if (!keys.contains(Tags.SpecificCharacterSet)) {
-			keys.putCS(Tags.SpecificCharacterSet);
-		}
-		sqlBuilder.setSelect(SELECT);
-		sqlBuilder.setFrom(FROM);
-		sqlBuilder.setLeftJoin(getLeftJoin());
-		sqlBuilder.addListOfUidMatch(null, "HP.sopIuid", SqlBuilder.TYPE1, keys
-				.getStrings(Tags.SOPInstanceUID));
-		sqlBuilder.addListOfUidMatch(null, "HP.sopCuid", SqlBuilder.TYPE1, keys
-				.getStrings(Tags.SOPClassUID));
-		sqlBuilder.addWildCardMatch(null, "HP.hangingProtocolName",
-				SqlBuilder.TYPE2, keys.getStrings(Tags.HangingProtocolName));
-		if ((s = keys.getString(Tags.HangingProtocolLevel)) != null) {
-			sqlBuilder.addIntValueMatch(null, "HP.hangingProtocolLevelAsInt",
-					SqlBuilder.TYPE1, HPLevel.toInt(s));
-		}
-		if ((i = keys.getInt(Tags.NumberOfPriorsReferenced, -1)) != -1) {
-			sqlBuilder.addIntValueMatch(null, "HP.numberOfPriorsReferenced",
-					SqlBuilder.TYPE1, i);
-		}
-		if ((i = keys.getInt(Tags.NumberOfScreens, -1)) != -1) {
-			sqlBuilder.addIntValueMatch(null, "HP.numberOfScreens",
-					SqlBuilder.TYPE2, i);
-		}
-		sqlBuilder.addWildCardMatch(null, "HP.hangingProtocolUserGroupName",
-				SqlBuilder.TYPE2, keys.getStrings(Tags.HangingProtocolUserGroupName));
-		addCodeMatch(keys
-				.getItem(Tags.HangingProtocolUserIdentificationCodeSeq),
-				USER_CODE);
-		Dataset item = keys.getItem(Tags.HangingProtocolDefinitionSeq);
-		if (item != null) {
-			sqlBuilder.addWildCardMatch(null, "HPDefinition.modality",
-					SqlBuilder.TYPE2, item.getStrings(Tags.Modality));
-			sqlBuilder.addWildCardMatch(null, "HPDefinition.laterality",
-					SqlBuilder.TYPE2, item.getStrings(Tags.Laterality));
-			addCodeMatch(item.getItem(Tags.AnatomicRegionSeq), REGION_CODE);
-			addCodeMatch(item.getItem(Tags.ProcedureCodeSeq), PROC_CODE);
-			addCodeMatch(item.getItem(Tags.ReasonforRequestedProcedureCodeSeq),
-					REASON_CODE);
-		}
-	}
+        super(keys, true, false, transactionIsolationLevel);
+        defineColumnTypes(new int[] { blobAccessType });
+        String s;
+        int i;
+        // ensure keys contains (8,0005) for use as result filter
+        if (!keys.contains(Tags.SpecificCharacterSet)) {
+            keys.putCS(Tags.SpecificCharacterSet);
+        }
+        sqlBuilder.setSelect(SELECT);
+        sqlBuilder.setFrom(FROM);
+        sqlBuilder.setLeftJoin(getLeftJoin());
+        sqlBuilder.addListOfUidMatch(null, "HP.sopIuid", SqlBuilder.TYPE1, keys
+                .getStrings(Tags.SOPInstanceUID));
+        sqlBuilder.addListOfUidMatch(null, "HP.sopCuid", SqlBuilder.TYPE1, keys
+                .getStrings(Tags.SOPClassUID));
+        sqlBuilder.addWildCardMatch(null, "HP.hangingProtocolName",
+                SqlBuilder.TYPE2, keys.getStrings(Tags.HangingProtocolName));
+        if ((s = keys.getString(Tags.HangingProtocolLevel)) != null) {
+            sqlBuilder.addIntValueMatch(null, "HP.hangingProtocolLevelAsInt",
+                    SqlBuilder.TYPE1, HPLevel.toInt(s));
+        }
+        if ((i = keys.getInt(Tags.NumberOfPriorsReferenced, -1)) != -1) {
+            sqlBuilder.addIntValueMatch(null, "HP.numberOfPriorsReferenced",
+                    SqlBuilder.TYPE1, i);
+        }
+        if ((i = keys.getInt(Tags.NumberOfScreens, -1)) != -1) {
+            sqlBuilder.addIntValueMatch(null, "HP.numberOfScreens",
+                    SqlBuilder.TYPE2, i);
+        }
+        sqlBuilder.addWildCardMatch(null, "HP.hangingProtocolUserGroupName",
+                SqlBuilder.TYPE2, keys
+                        .getStrings(Tags.HangingProtocolUserGroupName));
+        addCodeMatch(keys
+                .getItem(Tags.HangingProtocolUserIdentificationCodeSeq),
+                USER_CODE);
+        Dataset item = keys.getItem(Tags.HangingProtocolDefinitionSeq);
+        if (item != null) {
+            sqlBuilder.addWildCardMatch(null, "HPDefinition.modality",
+                    SqlBuilder.TYPE2, item.getStrings(Tags.Modality));
+            sqlBuilder.addWildCardMatch(null, "HPDefinition.laterality",
+                    SqlBuilder.TYPE2, item.getStrings(Tags.Laterality));
+            addCodeMatch(item.getItem(Tags.AnatomicRegionSeq), REGION_CODE);
+            addCodeMatch(item.getItem(Tags.ProcedureCodeSeq), PROC_CODE);
+            addCodeMatch(item.getItem(Tags.ReasonforRequestedProcedureCodeSeq),
+                    REASON_CODE);
+        }
+    }
 
     private void addCodeMatch(Dataset item, String alias) {
         if (item != null) {
             sqlBuilder.addSingleValueMatch(alias, "Code.codeValue",
-                    SqlBuilder.TYPE2,
-                    item.getString(Tags.CodeValue));
-            sqlBuilder.addSingleValueMatch(alias, "Code.codingSchemeDesignator",
-                    SqlBuilder.TYPE2,
-                    item.getString(Tags.CodingSchemeDesignator));
+                    SqlBuilder.TYPE2, item.getString(Tags.CodeValue));
+            sqlBuilder.addSingleValueMatch(alias,
+                    "Code.codingSchemeDesignator", SqlBuilder.TYPE2, item
+                            .getString(Tags.CodingSchemeDesignator));
         }
     }
 
     private void addCodeMatch(Dataset item, String[] codeQuery) {
-        if ( isMatchCode(item) ){
-        	SqlBuilder subQuery = new SqlBuilder();
-        	subQuery.setSelect(new String[]{"HPDefinition.pk"});
-        	subQuery.setFrom(new String[]{"HPDefinition",codeQuery[1],"Code"});
-        	subQuery.addFieldValueMatch(null, "HPDefinition.pk", SqlBuilder.TYPE1, null, codeQuery[2]);
-        	subQuery.addFieldValueMatch(null, "Code.pk", SqlBuilder.TYPE1, null, codeQuery[3]);
-        	subQuery.addSingleValueMatch(null, "Code.codeValue",
-                    SqlBuilder.TYPE2,
-                    item.getString(Tags.CodeValue));
-        	subQuery.addSingleValueMatch(null, "Code.codingSchemeDesignator",
-                    SqlBuilder.TYPE2,
-                    item.getString(Tags.CodingSchemeDesignator));
-            Match.Node node0 = sqlBuilder.addNodeMatch("OR",false);
-            node0.addMatch( new Match.Subquery(subQuery, null, null));
+        if (isMatchCode(item)) {
+            SqlBuilder subQuery = new SqlBuilder();
+            subQuery.setSelect(new String[] { "HPDefinition.pk" });
+            subQuery.setFrom(new String[] { "HPDefinition", codeQuery[1],
+                    "Code" });
+            subQuery.addFieldValueMatch(null, "HPDefinition.pk",
+                    SqlBuilder.TYPE1, null, codeQuery[2]);
+            subQuery.addFieldValueMatch(null, "Code.pk", SqlBuilder.TYPE1,
+                    null, codeQuery[3]);
+            subQuery.addSingleValueMatch(null, "Code.codeValue",
+                    SqlBuilder.TYPE2, item.getString(Tags.CodeValue));
+            subQuery.addSingleValueMatch(null, "Code.codingSchemeDesignator",
+                    SqlBuilder.TYPE2, item
+                            .getString(Tags.CodingSchemeDesignator));
+            Match.Node node0 = sqlBuilder.addNodeMatch("OR", false);
+            node0.addMatch(new Match.Subquery(subQuery, null, null));
         }
     }
 
     private boolean isMatchCode(Dataset code) {
         return code != null
-                && (code.containsValue(Tags.CodeValue)
-                        || code.containsValue(Tags.CodingSchemeDesignator));
+                && (code.containsValue(Tags.CodeValue) || code
+                        .containsValue(Tags.CodingSchemeDesignator));
     }
 
     private String[] getLeftJoin() {
-        ArrayList list = new ArrayList(); 	 
-        if (isMatchCode(keys.getItem(Tags.HangingProtocolUserIdentificationCodeSeq))) {
-        	list.add("Code");
-        	list.add(USER_CODE);
-        	list.add("HP.user_fk");
-        	list.add("Code.pk");
+        ArrayList list = new ArrayList();
+        if (isMatchCode(keys
+                .getItem(Tags.HangingProtocolUserIdentificationCodeSeq))) {
+            list.add("Code");
+            list.add(USER_CODE);
+            list.add("HP.user_fk");
+            list.add("Code.pk");
         }
-        Dataset item = keys.getItem(Tags.HangingProtocolDefinitionSeq); 	 
-        if (item != null && !item.isEmpty()) { 	 
-                list.add("HPDefinition"); 	 
-                list.add(null); 	 
-                list.add("HP.pk"); 	 
-                list.add("HPDefinition.hp_fk"); 	 
+        Dataset item = keys.getItem(Tags.HangingProtocolDefinitionSeq);
+        if (item != null && !item.isEmpty()) {
+            list.add("HPDefinition");
+            list.add(null);
+            list.add("HP.pk");
+            list.add("HPDefinition.hp_fk");
         }
-        return (String[]) (list.isEmpty() ? null : list.toArray(new String[list.size()])); 	 
+        return (String[]) (list.isEmpty() ? null : list.toArray(new String[list
+                .size()]));
     }
 
     public void execute() throws SQLException {
@@ -178,9 +186,9 @@ public class HPQueryCmd extends BaseDSQueryCmd {
 
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
-        DatasetUtils.fromByteArray( rs.getBytes(1), ds);
+        DatasetUtils.fromByteArray(rs.getBytes(1), ds);
         adjustDataset(ds, keys);
         return ds.subSet(keys);
     }
-	
+
 }
