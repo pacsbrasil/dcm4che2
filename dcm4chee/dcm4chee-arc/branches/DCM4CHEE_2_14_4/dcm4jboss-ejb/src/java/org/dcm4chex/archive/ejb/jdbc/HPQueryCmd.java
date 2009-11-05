@@ -140,6 +140,8 @@ public class HPQueryCmd extends BaseDSQueryCmd {
             subQuery.setSelect(new String[] { "HPDefinition.pk" });
             subQuery.setFrom(new String[] { "HPDefinition", codeQuery[1],
                     "Code" });
+            subQuery.addFieldValueMatch(null, "HP.pk", SqlBuilder.TYPE1, null,
+                    "HPDefinition.hp_fk");
             subQuery.addFieldValueMatch(null, "HPDefinition.pk",
                     SqlBuilder.TYPE1, null, codeQuery[2]);
             subQuery.addFieldValueMatch(null, "Code.pk", SqlBuilder.TYPE1,
