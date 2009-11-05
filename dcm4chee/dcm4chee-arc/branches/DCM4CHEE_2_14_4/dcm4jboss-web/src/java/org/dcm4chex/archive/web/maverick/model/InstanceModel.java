@@ -79,8 +79,6 @@ public class InstanceModel extends AbstractModel {
                 || UIDs.CardiacElectrophysiologyWaveformStorage.equals(cuid)
                 || UIDs.BasicVoiceAudioWaveformStorage.equals(cuid))
             return new WaveformModel(ds);
-        if ( UIDs.EncapsulatedPDFStorage.equals(cuid)) 
-            return new StructuredReportModel(ds);
         if ( ds.getString(Tags.MIMETypeOfEncapsulatedDocument) != null) {
             return new EncapsulatedModel(ds);
         }
