@@ -118,12 +118,24 @@ public class StoreScpService extends AbstractScpService {
 
     private final NotificationListener checkPendingSeriesStoredListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
-            try {
-                log.info("Check for Pending Series Stored");
-                checkPendingSeriesStored();
-            } catch (Exception e) {
-                log.error("Check for Pending Series Stored failed:", e);
+            synchronized(this) {
+                if (isRunning) {
+                    log.info("checkPendingSeriesStored is already running!");
+                    return;
+                }
+                isRunning = true;
             }
+            new Thread(new Runnable(){
+                public void run() {
+                    try {
+                        log.info("Check for Pending Series Stored");
+                        checkPendingSeriesStored();
+                    } catch (Exception e) {
+                        log.error("Check for Pending Series Stored failed:", e);
+                    } finally {
+                        isRunning = false;
+                    }
+                }}).start();
         }
     };
 
@@ -187,6 +199,7 @@ public class StoreScpService extends AbstractScpService {
     private Map otherCUIDS = new LinkedHashMap();
 
     private String timerIDCheckPendingSeriesStored;
+    private boolean isRunning;
 
     private String[] unrestrictedAppendPermissionsToAETitles;
 
@@ -232,6 +245,10 @@ public class StoreScpService extends AbstractScpService {
         }
     }
 
+    public boolean isRunning() {
+        return isRunning;
+    }
+            
     public final String getSeriesStoredNotificationDelay() {
         return RetryIntervalls.formatInterval(seriesStoredNotificationDelay);
     }

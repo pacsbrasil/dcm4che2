@@ -10,6 +10,7 @@
 package org.dcm4chex.archive.hsm;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -48,6 +49,8 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     private static final String DIR_PARAM = "%d";
 
     private String timerIDCheckSyncFileStatus;
+    
+    private boolean isRunning;
 
     private long minFileAge = 0L;
 
@@ -86,12 +89,16 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
                     log.debug("SyncFileStatus ignored in time between "
                             + disabledStartHour + " and " + disabledEndHour
                             + " !");
-            } else {
-                try {
-                    check();
-                } catch (Exception e) {
-                    log.error("check file status failed!", e);
-                }
+            } else { 
+                new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            check();
+                        } catch (Exception e) {
+                            log.error("check file status failed!", e);
+                        }
+                    }
+                }).start();
             }
         }
 
@@ -251,6 +258,10 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         return sameday ? inside : !inside;
     }
 
+    public boolean isRunning() {
+        return isRunning;
+    }
+    
     protected void startService() throws Exception {
         listenerID = scheduler.startScheduler(timerIDCheckSyncFileStatus,
                 taskInterval, timerListener);
@@ -262,24 +273,36 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         super.stopService();
     }
 
-    public int check() throws Exception {
+    private int check() throws Exception  {
         if (fileSystem == null) {
             return 0;
         }
-        FileSystemMgt2 fsmgt = newFileSystemMgt();
-        FileDTO[] c = fsmgt.findFilesByStatusAndFileSystem(fileSystem,
-                checkFileStatus, new Timestamp(System.currentTimeMillis()
-                        - minFileAge), limitNumberOfFilesPerTask);
-        if (c.length == 0) {
-            return 0;
+        synchronized(this) {
+            if (isRunning) {
+                log.info("SyncFileStatus is already running!");
+                return -1;
+            }
+            isRunning = true;
         }
-        int count = 0;
-        HashMap checkedTars = new HashMap();
-        for (int i = 0; i < c.length; i++) {
-            if (check(fsmgt, c[i], checkedTars))
-                ++count;
+        try {
+            FileSystemMgt2 fsmgt = newFileSystemMgt();
+            FileDTO[] c = fsmgt.findFilesByStatusAndFileSystem(fileSystem,
+                    checkFileStatus, new Timestamp(System.currentTimeMillis()
+                            - minFileAge), limitNumberOfFilesPerTask);
+            if (log.isDebugEnabled()) log.debug("found "+c.length+" files to check status.");
+            if (c.length == 0) {
+                return 0;
+            }
+            int count = 0;
+            HashMap checkedTars = new HashMap();
+            for (int i = 0; i < c.length; i++) {
+                if (check(fsmgt, c[i], checkedTars))
+                    ++count;
+            }
+            return count;
+        } finally {
+            isRunning = false;
         }
-        return count;
     }
 
     private boolean check(FileSystemMgt2 fsmgt, FileDTO fileDTO,
@@ -353,5 +376,4 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     public boolean applyPattern(String s) {
         return pattern.matcher(s).matches();
     }
-
 }

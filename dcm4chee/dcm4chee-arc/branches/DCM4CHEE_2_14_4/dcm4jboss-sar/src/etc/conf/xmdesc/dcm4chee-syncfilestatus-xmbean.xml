@@ -167,6 +167,14 @@
       </descriptors>
    </attribute>
 
+   <attribute access="read-only"
+      getMethod="isRunning">
+      <description>Current state if syncFileStatus task is running. Used to avoid concurrency!
+      </description>
+      <name>isRunning</name>
+      <type>boolean</type>
+   </attribute>
+
    <attribute access="read-write"
       getMethod="getTimerIDCheckSyncFileStatus"
       setMethod="setTimerIDCheckSyncFileStatus">
@@ -191,7 +199,9 @@
    &defaultOperations;
 
    <operation impact="ACTION">
-      <description>Check files for status changes.</description>
+      <description><![CDATA[Check files for status changes.<br />
+      	Return number of updated files or -1 if check is already running (Timer).
+      ]]></description>
       <name>check</name>
       <return-type>int</return-type>
    </operation>

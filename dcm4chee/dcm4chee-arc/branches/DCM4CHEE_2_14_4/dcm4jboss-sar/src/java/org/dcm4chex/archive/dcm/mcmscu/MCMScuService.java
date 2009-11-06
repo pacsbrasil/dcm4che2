@@ -135,10 +135,13 @@ public class MCMScuService extends AbstractScuService implements
     private long maxStudyAge;
 
     private long scheduleMediaInterval;
+    private boolean isRunningScheduleMedia;
 
     private long updateMediaStatusInterval;
+    private boolean isRunningUpdateMediaStatus;
 
     private long burnMediaInterval;
+    private boolean isRunningBurnMedia;
 
     private Integer scheduleMediaListenerID;
 
@@ -230,19 +233,31 @@ public class MCMScuService extends AbstractScuService implements
 
     private final NotificationListener scheduleMediaListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
-            scheduleMedia();
+            new Thread(new Runnable() {
+                public void run() {
+                    scheduleMedia();
+                }
+            }).start();
         }
     };
 
     private final NotificationListener updateMediaStatusListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
-            updateMediaStatus();
+            new Thread(new Runnable() {
+                public void run() {
+                    updateMediaStatus();
+                }
+            }).start();
         }
     };
 
     private final NotificationListener burnMediaListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
-            burnMedia();
+            new Thread(new Runnable() {
+                public void run() {
+                    burnMedia();
+                }
+            }).start();
         }
     };
 
@@ -465,6 +480,18 @@ public class MCMScuService extends AbstractScuService implements
         }
     }
 
+    public boolean isRunningScheduleMedia() {
+        return isRunningScheduleMedia;
+    }
+
+    public boolean isRunningUpdateMediaStatus() {
+        return isRunningUpdateMediaStatus;
+    }
+
+    public boolean isRunningBurnMedia() {
+        return isRunningBurnMedia;
+    }
+
     /**
      * Returns the retrieve AET defined in this MBean.
      * <p>
@@ -614,31 +641,42 @@ public class MCMScuService extends AbstractScuService implements
      * @return Number of instances
      */
     public int scheduleMedia() {
-        log.info("Check for studies for scheduling on media");
-        long l1 = System.currentTimeMillis();
-        MediaComposer mc = null;
+        synchronized(this) {
+            if (isRunningScheduleMedia) {
+                log.info("RunningScheduleMedia is already running!");
+                return -1;
+            }
+            isRunningScheduleMedia = true;
+        }
         try {
-            mc = this.lookupMediaComposer();
-            Collection studies = mc.getStudiesReceivedBefore(getSearchDate());
-            if ( studies.isEmpty() ) {
-            	log.info("No Studies found for scheduling on media!");
-            	return 0;
+            log.info("Check for studies for scheduling on media");
+            long l1 = System.currentTimeMillis();
+            MediaComposer mc = null;
+            try {
+                mc = this.lookupMediaComposer();
+                Collection studies = mc.getStudiesReceivedBefore(getSearchDate());
+                if ( studies.isEmpty() ) {
+                	log.info("No Studies found for scheduling on media!");
+                	return 0;
+                }
+                List mediaPool = null;
+                String prefix = getFileSetIdPrefix();
+                log.info(studies.size() + " are selected for scheduling on media!");
+                for (Iterator iter = studies.iterator(); iter.hasNext();) {
+                    mediaPool = mc.assignStudyToMedia((StudyLocal) iter.next(),
+                            mediaPool, maxMediaUsage, prefix);
+                }
+                log.info("Schedule of " + studies.size()
+                        + " studies completed. Number of collecting media:"
+                        + mediaPool.size() + ". time:"
+                        + (System.currentTimeMillis() - l1) + " ms!");
+                return studies.size();
+            } catch (Exception x) {
+                log.error("Can not create MediaComposer!", x);
+                return -1;
             }
-            List mediaPool = null;
-            String prefix = getFileSetIdPrefix();
-            log.info(studies.size() + " are selected for scheduling on media!");
-            for (Iterator iter = studies.iterator(); iter.hasNext();) {
-                mediaPool = mc.assignStudyToMedia((StudyLocal) iter.next(),
-                        mediaPool, maxMediaUsage, prefix);
-            }
-            log.info("Schedule of " + studies.size()
-                    + " studies completed. Number of collecting media:"
-                    + mediaPool.size() + ". time:"
-                    + (System.currentTimeMillis() - l1) + " ms!");
-            return studies.size();
-        } catch (Exception x) {
-            log.error("Can not create MediaComposer!", x);
-            return -1;
+        } finally {
+            isRunningScheduleMedia = false;
         }
     }
 
@@ -1017,109 +1055,121 @@ public class MCMScuService extends AbstractScuService implements
     }
 
     public String updateMediaStatus() {
-        List procList;
-        try {
-            procList = this.lookupMediaComposer().getWithStatus(
-                    MediaDTO.BURNING);
-            if (procList.isEmpty())
-                return "No Media in processing status.";
-        } catch (Exception e) {
-            log.error("Check for pending media creation processes fails!", e);
-            return "Error: Check for pending media creation processes fails!";
-        }
-        ActiveAssociation aa;
-        try {
-            aa = openAssociation(mcmScpAET,
-                            UIDs.MediaCreationManagementSOPClass);
-        } catch (Exception e) {
-            log.error("Cant get media creation status!", e);
-            return "Error: could not open association!";
-        }
-        try {
-            Association as = aa.getAssociation();
-            String iuid = null;
-            MediaDTO mediaDTO = null;
-            int[] getAttrs = new int[] { Tags.ExecutionStatus,
-                    Tags.ExecutionStatusInfo, Tags.FailedSOPSeq };
-            int mediaStatus;
-            int mediaWithAction = 0;
-            int mediaDone = 0;
-            int mediaFailed = 0;
-            for (Iterator iter = procList.iterator(); iter.hasNext();) {
-                mediaDTO = (MediaDTO) iter.next();
-                iuid = mediaDTO.getMediaCreationRequestIuid();
-                mediaStatus = mediaDTO.getMediaStatus();
-                if (iuid != null && iuid.length() > 0) {
-                    mediaWithAction++;
-                    Command cmdRq = DcmObjectFactory.getInstance().newCommand();
-                    cmdRq.initNGetRQ(as.nextMsgID(),
-                            UIDs.MediaCreationManagementSOPClass, iuid,
-                            getAttrs);
-                    FutureRSP futureRsp = aa.invoke(AssociationFactory
-                            .getInstance().newDimse(1, cmdRq));
-                    Dimse rsp = futureRsp.get();
-                    Command cmdRsp = rsp.getCommand();
-                    Dataset dataRsp = rsp.getDataset();
-                    int status = cmdRsp.getStatus();
-                    if (status != 0) {
-                        log
-                                .error("Cant get media creation status! Failure Status:"
-                                        + Integer.toHexString(status)
-                                        + ": "
-                                        + cmdRsp.getString(Tags.ErrorComment,
-                                                "")
-                                        + (dataRsp == null ? ""
-                                                : ("\n" + dataRsp)));
-                    } else {
-                        if (log.isDebugEnabled())
-                            log.debug("Received Attributes:\n" + dataRsp);
-                        String execStatus = dataRsp
-                                .getString(Tags.ExecutionStatus);
-                        if ("DONE".equals(execStatus)) {
-                            mediaDone++;
-                            mediaComposer.setMediaStatus(mediaDTO.getPk(),
-                                    MediaDTO.COMPLETED,
-                                    "successfully completed");
-                            if (log.isInfoEnabled())
-                                log.info("Media " + mediaDTO.getFilesetId()
-                                        + " successfully created!");
-                        } else if ("FAILURE".equals(execStatus)) {
-                            mediaFailed++;
-                            String info = dataRsp
-                                    .getString(Tags.ExecutionStatusInfo);
-                            if ("NO_INSTANCE".equals(info)) {
-                                info = info + "("
-                                        + dataRsp.vm(Tags.FailedSOPSeq)
-                                        + " number of instances missing)";
-                            }
-                            log.error("Cant create media "
-                                    + mediaDTO.getFilesetId() + "! Reason:"
-                                    + info);
-                            mediaComposer.setMediaStatus(mediaDTO.getPk(),
-                                    MediaDTO.ERROR, info);
-                        } else {
-                            mediaComposer.setMediaStatus(mediaDTO.getPk(),
-                                    mediaStatus, execStatus);
-                        }
-                    }
-                }// end if iuid
-            }// end for
-            return "Media creation status:" + mediaFailed + " media FAILED, "
-                    + mediaDone + " media done! Total: " + procList.size()
-                    + " media processing / " + mediaWithAction
-                    + " with N-ACTION";
-        } catch (Exception x) {
-            log.error("Cant get media creation status! Reason: unexpected error.",
-                            x);
-            return "Cant get media create status: Unexpected error"
-                    + x.getMessage();
-        } finally {
-            try {
-                aa.release(true);
-            } catch (Exception e) {
-                log.warn("Failed to release association " + aa.getAssociation(),
-                        e);
+        synchronized(this) {
+            if (isRunningUpdateMediaStatus) {
+                String msg = "UpdateMediaStatus is already running!"; 
+                log.info(msg);
+                return msg;
             }
+            isRunningUpdateMediaStatus = true;
+        }
+        try {
+            List procList;
+            try {
+                procList = this.lookupMediaComposer().getWithStatus(
+                        MediaDTO.BURNING);
+                if (procList.isEmpty())
+                    return "No Media in processing status.";
+            } catch (Exception e) {
+                log.error("Check for pending media creation processes fails!", e);
+                return "Error: Check for pending media creation processes fails!";
+            }
+            ActiveAssociation aa;
+            try {
+                aa = openAssociation(mcmScpAET,
+                                UIDs.MediaCreationManagementSOPClass);
+            } catch (Exception e) {
+                log.error("Cant get media creation status!", e);
+                return "Error: could not open association!";
+            }
+            try {
+                Association as = aa.getAssociation();
+                String iuid = null;
+                MediaDTO mediaDTO = null;
+                int[] getAttrs = new int[] { Tags.ExecutionStatus,
+                        Tags.ExecutionStatusInfo, Tags.FailedSOPSeq };
+                int mediaStatus;
+                int mediaWithAction = 0;
+                int mediaDone = 0;
+                int mediaFailed = 0;
+                for (Iterator iter = procList.iterator(); iter.hasNext();) {
+                    mediaDTO = (MediaDTO) iter.next();
+                    iuid = mediaDTO.getMediaCreationRequestIuid();
+                    mediaStatus = mediaDTO.getMediaStatus();
+                    if (iuid != null && iuid.length() > 0) {
+                        mediaWithAction++;
+                        Command cmdRq = DcmObjectFactory.getInstance().newCommand();
+                        cmdRq.initNGetRQ(as.nextMsgID(),
+                                UIDs.MediaCreationManagementSOPClass, iuid,
+                                getAttrs);
+                        FutureRSP futureRsp = aa.invoke(AssociationFactory
+                                .getInstance().newDimse(1, cmdRq));
+                        Dimse rsp = futureRsp.get();
+                        Command cmdRsp = rsp.getCommand();
+                        Dataset dataRsp = rsp.getDataset();
+                        int status = cmdRsp.getStatus();
+                        if (status != 0) {
+                            log
+                                    .error("Cant get media creation status! Failure Status:"
+                                            + Integer.toHexString(status)
+                                            + ": "
+                                            + cmdRsp.getString(Tags.ErrorComment,
+                                                    "")
+                                            + (dataRsp == null ? ""
+                                                    : ("\n" + dataRsp)));
+                        } else {
+                            if (log.isDebugEnabled())
+                                log.debug("Received Attributes:\n" + dataRsp);
+                            String execStatus = dataRsp
+                                    .getString(Tags.ExecutionStatus);
+                            if ("DONE".equals(execStatus)) {
+                                mediaDone++;
+                                mediaComposer.setMediaStatus(mediaDTO.getPk(),
+                                        MediaDTO.COMPLETED,
+                                        "successfully completed");
+                                if (log.isInfoEnabled())
+                                    log.info("Media " + mediaDTO.getFilesetId()
+                                            + " successfully created!");
+                            } else if ("FAILURE".equals(execStatus)) {
+                                mediaFailed++;
+                                String info = dataRsp
+                                        .getString(Tags.ExecutionStatusInfo);
+                                if ("NO_INSTANCE".equals(info)) {
+                                    info = info + "("
+                                            + dataRsp.vm(Tags.FailedSOPSeq)
+                                            + " number of instances missing)";
+                                }
+                                log.error("Cant create media "
+                                        + mediaDTO.getFilesetId() + "! Reason:"
+                                        + info);
+                                mediaComposer.setMediaStatus(mediaDTO.getPk(),
+                                        MediaDTO.ERROR, info);
+                            } else {
+                                mediaComposer.setMediaStatus(mediaDTO.getPk(),
+                                        mediaStatus, execStatus);
+                            }
+                        }
+                    }// end if iuid
+                }// end for
+                return "Media creation status:" + mediaFailed + " media FAILED, "
+                        + mediaDone + " media done! Total: " + procList.size()
+                        + " media processing / " + mediaWithAction
+                        + " with N-ACTION";
+            } catch (Exception x) {
+                log.error("Cant get media creation status! Reason: unexpected error.",
+                                x);
+                return "Cant get media create status: Unexpected error"
+                        + x.getMessage();
+            } finally {
+                try {
+                    aa.release(true);
+                } catch (Exception e) {
+                    log.warn("Failed to release association " + aa.getAssociation(),
+                            e);
+                }
+            }
+        } finally {
+            isRunningUpdateMediaStatus = false;
         }
     }
 
@@ -1129,6 +1179,13 @@ public class MCMScuService extends AbstractScuService implements
      * @return Number of media creations initiated.
      */
     public int burnMedia() {
+        synchronized(this) {
+            if (isRunningBurnMedia) {
+                log.info("BurnMedia is already running!");
+                return -1;
+            }
+            isRunningBurnMedia = true;
+        }
         log.info("Check for scheduled Media to burn");
         try {
             Collection c = lookupMediaComposer().getWithStatus(MediaDTO.OPEN);
@@ -1155,6 +1212,8 @@ public class MCMScuService extends AbstractScuService implements
         } catch (Exception e) {
             log.error("Failed to initiate media creation:", e);
             return -1;
+        } finally {
+            isRunningBurnMedia = false;
         }
     }
 

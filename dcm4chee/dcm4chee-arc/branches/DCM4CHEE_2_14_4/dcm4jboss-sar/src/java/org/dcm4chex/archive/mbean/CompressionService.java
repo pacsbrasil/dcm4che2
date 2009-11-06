@@ -106,6 +106,7 @@ public class CompressionService extends ServiceMBeanSupport {
     private int bufferSize = 8192;
 
     private String timerIDCheckFilesToCompress;
+    private boolean isRunning;            
 
     private static final String[] CODEC_NAMES = new String[] { "JPLL", "JLSL",
             "J2KR" };
@@ -124,11 +125,15 @@ public class CompressionService extends ServiceMBeanSupport {
                             + disabledStartHour + " and " + disabledEndHour
                             + " !");
             } else {
-                try {
-                    checkForFilesToCompress();
-                } catch (Exception e) {
-                    log.error("Delayed compression failed!", e);
-                }
+                new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            checkForFilesToCompress();
+                        } catch (Exception e) {
+                            log.error("Delayed compression failed!", e);
+                        }
+                    }
+                }).start();
             }
         }
     };
@@ -198,6 +203,10 @@ public class CompressionService extends ServiceMBeanSupport {
                     taskInterval, delayedCompressionListener);
         }
     }
+    
+    public boolean isRunning() {
+        return isRunning;
+    }            
 
     public final void setCompressionRules(String rules) {
         this.compressionRuleList.clear();
@@ -303,40 +312,51 @@ public class CompressionService extends ServiceMBeanSupport {
     }
 
     public void checkForFilesToCompress() throws FinderException, IOException {
-        log.info("Check For Files To Compress on attached filesystems!");
-        String cuid;
-        Timestamp before;
-        CompressionRule info;
-        FileDTO[] files;
-        int limit = limitNumberOfFilesPerTask;
-        byte[] buffer = null;
-        FileSystemMgt2 fsMgt = newFileSystemMgt();
-        for (int g = 0; g < fileSystemGroupIDs.length; g++) {
-        FileSystemDTO[] fsDTOs = fsMgt.getRWFileSystemsOfGroup(fileSystemGroupIDs[g]);
-        for (int i = 0, len = compressionRuleList.size(); i < len && limit > 0; i++) {
-            info = (CompressionRule) compressionRuleList.get(i);
-            cuid = info.getCUID();
-            before = new Timestamp(System.currentTimeMillis() - info.getDelay());
-            for (int j = 0; j < fsDTOs.length; j++) {
-                files = fsMgt.findFilesToCompress(fsDTOs[j], cuid,
-                        before, limit);
-                if (files.length > 0) {
-                    if (buffer == null)
-                        buffer = new byte[bufferSize];
-                    log.debug("Compress " + files.length
-                            + " files on filesystem " + fsDTOs[j]
-                            + " triggered by " + info);
-                    for (int k = 0; k < files.length; k++) {
-                        try {
-                            doCompress(fsMgt, files[k], info, buffer);
-                        } catch (CompressionFailedException e) {
-                            log.error(e.getMessage(), e);
+        synchronized(this) {
+            if (isRunning) {
+                log.info("checkForFilesToCompress is already running!");
+                return;
+            }
+            isRunning = true;
+        }
+        try {
+            log.info("Check For Files To Compress on attached filesystems!");
+            String cuid;
+            Timestamp before;
+            CompressionRule info;
+            FileDTO[] files;
+            int limit = limitNumberOfFilesPerTask;
+            byte[] buffer = null;
+            FileSystemMgt2 fsMgt = newFileSystemMgt();
+            for (int g = 0; g < fileSystemGroupIDs.length; g++) {
+                FileSystemDTO[] fsDTOs = fsMgt.getRWFileSystemsOfGroup(fileSystemGroupIDs[g]);
+                for (int i = 0, len = compressionRuleList.size(); i < len && limit > 0; i++) {
+                    info = (CompressionRule) compressionRuleList.get(i);
+                    cuid = info.getCUID();
+                    before = new Timestamp(System.currentTimeMillis() - info.getDelay());
+                    for (int j = 0; j < fsDTOs.length; j++) {
+                        files = fsMgt.findFilesToCompress(fsDTOs[j], cuid,
+                                before, limit);
+                        if (files.length > 0) {
+                            if (buffer == null)
+                                buffer = new byte[bufferSize];
+                            log.debug("Compress " + files.length
+                                    + " files on filesystem " + fsDTOs[j]
+                                    + " triggered by " + info);
+                            for (int k = 0; k < files.length; k++) {
+                                try {
+                                    doCompress(fsMgt, files[k], info, buffer);
+                                } catch (CompressionFailedException e) {
+                                    log.error(e.getMessage(), e);
+                                }
+                            }
+                            limit -= files.length;
                         }
                     }
-                    limit -= files.length;
                 }
             }
-        }
+        } finally {
+            isRunning = false;
         }
     }
 

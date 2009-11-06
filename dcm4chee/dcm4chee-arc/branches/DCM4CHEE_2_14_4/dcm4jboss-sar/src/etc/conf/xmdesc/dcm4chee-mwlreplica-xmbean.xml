@@ -123,6 +123,14 @@
       </descriptors>
    </attribute>
 
+   <attribute access="read-only"
+      getMethod="isRunning">
+      <description>Current state if replication task is running. Used to avoid concurrency!
+      </description>
+      <name>isRunning</name>
+      <type>boolean</type>
+   </attribute>
+
    &defaultSCUAttributes;
 
    <attribute access="read-write" getMethod="getPriority" setMethod="setPriority">

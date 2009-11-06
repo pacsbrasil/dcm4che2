@@ -93,8 +93,10 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     private String timerIDDeleteOrphanedPrivateFiles;
 
     private long scheduleStudiesForDeletionInterval;
+    private boolean isRunningScheduleStudiesForDeletion;
 
     private long deleteOrphanedPrivateFilesInterval;
+    private boolean isRunningDeleteOrphanedPrivateFiles;
 
     private String defRetrieveAET;
 
@@ -242,6 +244,14 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         }
     }
 
+    public boolean isRunningScheduleStudiesForDeletion() {
+        return isRunningScheduleStudiesForDeletion;
+    }
+
+    public boolean isRunningDeleteOrphanedPrivateFiles() {
+        return isRunningDeleteOrphanedPrivateFiles;
+    }
+
     protected void startService() throws Exception {
         scheduleStudiesForDeletionListenerID = scheduler.startScheduler(
                 timerIDScheduleStudiesForDeletion,
@@ -271,7 +281,11 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     private final NotificationListener scheduleStudiesForDeletionListener =
             new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
-            startScheduleStudiesForDeletion();
+            new Thread(new Runnable() {
+                public void run() {
+                    startScheduleStudiesForDeletion();
+                }
+            }).start();
         }
     };
 
@@ -967,36 +981,47 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         if (maxNotAccessedFor == 0 && deleterThresholds == null) {
             return 0;
         }
-        log.info("Check file system group " + getFileSystemGroupID()
-                + " for deletion of studies");
-        int countStudies = 0;
-        FileSystemMgt2 fsMgt = fileSystemMgt();
-        if (maxNotAccessedFor > 0) {
-            countStudies = scheduleStudiesForDeletion(fsMgt,
-                    System.currentTimeMillis() - maxNotAccessedFor,
-                    Long.MAX_VALUE);
-        }
-        if (deleterThresholds != null) {
-            FileSystemDTO[] fsDTOs = fsMgt.getFileSystemsOfGroup(
-                    getFileSystemGroupID());
-            long threshold = getCurrentDeleterThreshold(fsMgt, fsDTOs);
-            long usable = calcUsableDiskSpace(fsDTOs);
-            long sizeToDel = threshold - usable;
-            if (sizeToDel > 0) {
-                log.info("Try to free " + sizeToDel
-                        + " of disk space on file system group "
-                        + getFileSystemGroupID());
-                countStudies += scheduleStudiesForDeletion(fsMgt,
-                        System.currentTimeMillis() - minNotAccessedFor,
-                        sizeToDel);
+        synchronized(this) {
+            if (isRunningScheduleStudiesForDeletion) {
+                log.info("ScheduleStudiesForDeletion is already running!");
+                return -1;
             }
+            isRunningScheduleStudiesForDeletion = true;
+        } 
+        try {
+            log.info("Check file system group " + getFileSystemGroupID()
+                    + " for deletion of studies");
+            int countStudies = 0;
+            FileSystemMgt2 fsMgt = fileSystemMgt();
+            if (maxNotAccessedFor > 0) {
+                countStudies = scheduleStudiesForDeletion(fsMgt,
+                        System.currentTimeMillis() - maxNotAccessedFor,
+                        Long.MAX_VALUE);
+            }
+            if (deleterThresholds != null) {
+                FileSystemDTO[] fsDTOs = fsMgt.getFileSystemsOfGroup(
+                        getFileSystemGroupID());
+                long threshold = getCurrentDeleterThreshold(fsMgt, fsDTOs);
+                long usable = calcUsableDiskSpace(fsDTOs);
+                long sizeToDel = threshold - usable;
+                if (sizeToDel > 0) {
+                    log.info("Try to free " + sizeToDel
+                            + " of disk space on file system group "
+                            + getFileSystemGroupID());
+                    countStudies += scheduleStudiesForDeletion(fsMgt,
+                            System.currentTimeMillis() - minNotAccessedFor,
+                            sizeToDel);
+                }
+            }
+            if (countStudies > 0) {
+                log.info("Scheduled " + countStudies
+                        + " studies for deletion on file system group "
+                        + getFileSystemGroupID());
+            }
+            return countStudies;
+        } finally {
+            isRunningScheduleStudiesForDeletion = false;
         }
-        if (countStudies > 0) {
-            log.info("Scheduled " + countStudies
-                    + " studies for deletion on file system group "
-                    + getFileSystemGroupID());
-        }
-        return countStudies;
     }
 
     private int scheduleStudiesForDeletion(FileSystemMgt2 fsMgt,
@@ -1065,27 +1090,38 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public int deleteOrphanedPrivateFiles() throws Exception {
-        log.info("Check file system group " + getFileSystemGroupID()
-                + " for deletion of orphaned private files");
-        FileSystemMgt2 fsMgt = fileSystemMgt();
-        FileDTO[] fileDTOs = fsMgt.getOrphanedPrivateFilesOnFSGroup(
-                getFileSystemGroupID(), deleteOrphanedPrivateFilesBatchSize);
-        int deleted = 0;
-        for (int i = 0; i < fileDTOs.length; i++) {
-            FileDTO fileDTO = fileDTOs[i];
-            File file = FileUtils.toFile(fileDTO.getDirectoryPath(),
-                    fileDTO.getFilePath());
-            try {
-                fsMgt.deletePrivateFile(fileDTO.getPk());
-            } catch (Exception e) {
-                log.warn("Failed to remove File Record[pk=" + fileDTO.getPk()
-                        + "] from DB:", e);
-                log.info("-> Keep dereferenced file: " + file);
-                continue;
+        synchronized(this) {
+            if (isRunningDeleteOrphanedPrivateFiles) {
+                log.info("DeleteOrphanedPrivateFiles is already running!");
+                return -1;
             }
-            FileUtils.delete(file, true);
-            deleted++;
+            isRunningDeleteOrphanedPrivateFiles = true;
+        }  
+        try {
+            log.info("Check file system group " + getFileSystemGroupID()
+                    + " for deletion of orphaned private files");
+            FileSystemMgt2 fsMgt = fileSystemMgt();
+            FileDTO[] fileDTOs = fsMgt.getOrphanedPrivateFilesOnFSGroup(
+                    getFileSystemGroupID(), deleteOrphanedPrivateFilesBatchSize);
+            int deleted = 0;
+            for (int i = 0; i < fileDTOs.length; i++) {
+                FileDTO fileDTO = fileDTOs[i];
+                File file = FileUtils.toFile(fileDTO.getDirectoryPath(),
+                        fileDTO.getFilePath());
+                try {
+                    fsMgt.deletePrivateFile(fileDTO.getPk());
+                } catch (Exception e) {
+                    log.warn("Failed to remove File Record[pk=" + fileDTO.getPk()
+                            + "] from DB:", e);
+                    log.info("-> Keep dereferenced file: " + file);
+                    continue;
+                }
+                FileUtils.delete(file, true);
+                deleted++;
+            }
+            return deleted;
+        } finally {
+            isRunningDeleteOrphanedPrivateFiles = false;
         }
-        return deleted;
     }
 }

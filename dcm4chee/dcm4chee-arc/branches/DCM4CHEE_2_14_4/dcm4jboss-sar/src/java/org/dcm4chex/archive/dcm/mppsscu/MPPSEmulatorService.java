@@ -98,6 +98,7 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
     private ObjectName mppsScuServiceName;
     
     private String timerIDCheckSeriesWithoutMPPS;
+    private boolean isRunning;
 
     public ObjectName getSchedulerServiceName() {
         return scheduler.getSchedulerServiceName();
@@ -166,6 +167,10 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
         }
     }
 
+    public boolean isRunning() {
+        return isRunning;
+    }
+    
     public void handleNotification(Notification notification, Object handback) {
         if (stationAETs.length > 0) {
             new Thread(new Runnable(){
@@ -176,60 +181,71 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
     }
 
     public int emulateMPPS() {
-        log.info("Check for received series without MPPS");
         if (stationAETs.length == 0)
             return 0;
+        synchronized(this) {
+            if (isRunning) {
+                log.info("EmulateMPPS is already running!");
+                return -1;
+            }
+            isRunning = true;
+        }
+        log.info("Check for received series without MPPS");
         int num = 0;
         MPPSEmulator mppsEmulator;
         try {
-            mppsEmulator = getMPPSEmulatorHome().create();
-        } catch (Exception e) {
-            log.error("Failed to emulate MPPS:", e);
-            return 0;
-        }
-        for (int i = 0; i < stationAETs.length; ++i) {
-            Collection<Long> studyPks;
             try {
-                studyPks = (Collection<Long>) mppsEmulator.getStudiesWithMissingMPPS(stationAETs[i],
-                        delays[i]);
+                mppsEmulator = getMPPSEmulatorHome().create();
             } catch (Exception e) {
-                log.error("Failed to emulate MPPS for series received from " + 
-                        stationAETs[i] + " failed:", e);
-                continue;
+                log.error("Failed to emulate MPPS:", e);
+                return 0;
             }
-            log.info("Found "+studyPks.size()+" studies with missing MPPS for sourceAET:"+stationAETs[i]);
-            Dataset[] studyMpps;
-            Dataset mpps;
-            for ( Long studyPk : studyPks ) {
+            for (int i = 0; i < stationAETs.length; ++i) {
+                Collection<Long> studyPks;
                 try {
-                    studyMpps = mppsEmulator.generateMPPS(studyPk);
-                } catch (Exception x) {
-                    log.error("Failed to emulate MPPS for Study pk:" + studyPk, x);
+                    studyPks = (Collection<Long>) mppsEmulator.getStudiesWithMissingMPPS(stationAETs[i],
+                            delays[i]);
+                } catch (Exception e) {
+                    log.error("Failed to emulate MPPS for series received from " + 
+                            stationAETs[i] + " failed:", e);
                     continue;
                 }
-                for ( int j = 0 ; j < studyMpps.length ; j++) {
-                    mpps = studyMpps[j];
-                    Dataset ssa = mpps.getItem(Tags.ScheduledStepAttributesSeq);
-                    String suid = ssa.getString(Tags.StudyInstanceUID);
-                    log.info("Emulate MPPS for Study:" + suid + " of Patient:"
-                        + mpps.getString(Tags.PatientName)
-                            + " received from Station:" + mpps.getString(Tags.PerformedStationAET)+" ("
-                            + mpps.getString(Tags.Modality)+ ")");
+                log.info("Found "+studyPks.size()+" studies with missing MPPS for sourceAET:"+stationAETs[i]);
+                Dataset[] studyMpps;
+                Dataset mpps;
+                for ( Long studyPk : studyPks ) {
                     try {
-                        createMPPS(mpps);
-                        updateMPPS(mpps);
-                        ++num;
-                    } catch (Exception e) {
-                        log.error("Failed to emulate MPPS for Study:" + suid 
-                                + " of Patient:" + mpps.getString(Tags.PatientName)
+                        studyMpps = mppsEmulator.generateMPPS(studyPk);
+                    } catch (Exception x) {
+                        log.error("Failed to emulate MPPS for Study pk:" + studyPk, x);
+                        continue;
+                    }
+                    for ( int j = 0 ; j < studyMpps.length ; j++) {
+                        mpps = studyMpps[j];
+                        Dataset ssa = mpps.getItem(Tags.ScheduledStepAttributesSeq);
+                        String suid = ssa.getString(Tags.StudyInstanceUID);
+                        log.info("Emulate MPPS for Study:" + suid + " of Patient:"
+                            + mpps.getString(Tags.PatientName)
                                 + " received from Station:" + mpps.getString(Tags.PerformedStationAET)+" ("
-                                + mpps.getString(Tags.Modality)+ "):",
-                                e);
+                                + mpps.getString(Tags.Modality)+ ")");
+                        try {
+                            createMPPS(mpps);
+                            updateMPPS(mpps);
+                            ++num;
+                        } catch (Exception e) {
+                            log.error("Failed to emulate MPPS for Study:" + suid 
+                                    + " of Patient:" + mpps.getString(Tags.PatientName)
+                                    + " received from Station:" + mpps.getString(Tags.PerformedStationAET)+" ("
+                                    + mpps.getString(Tags.Modality)+ "):",
+                                    e);
+                        }
                     }
                 }
             }
+            return num;
+        } finally {
+            isRunning = false;
         }
-        return num;
     }
 
     private void fillType2Attrs(Dataset ds, int[] tags) {

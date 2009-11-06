@@ -74,7 +74,8 @@ public class MD5CheckService extends ServiceMBeanSupport {
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
     private long taskInterval = 0L;
-	private long maxCheckedBefore;
+    private boolean isRunning;
+    private long maxCheckedBefore;
 
     private int disabledStartHour;
     private int disabledEndHour;
@@ -95,11 +96,14 @@ public class MD5CheckService extends ServiceMBeanSupport {
                             + disabledStartHour + " and " + disabledEndHour
                             + " !");
             } else {
-                try {
-                	check();
-                } catch (Exception e) {
-                    log.error("MD5 check failed!", e);
-                }
+                new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            check();
+                        } catch (Exception e) {
+                            log.error("MD5 check failed!", e);
+                        } 
+                    }}).start();
             }
         }
     };
@@ -147,6 +151,9 @@ public class MD5CheckService extends ServiceMBeanSupport {
         }
     }
 
+    public boolean isRunning() {
+        return isRunning;
+    }
 
     public int getLimitNumberOfFilesPerTask() {
         return limitNumberOfFilesPerTask;
@@ -179,32 +186,44 @@ public class MD5CheckService extends ServiceMBeanSupport {
     }
     
     public String check() throws Exception {
-    	if ( log.isDebugEnabled() ) log.debug("MD5 check started!");
-    	int corrupted = 0;
-    	int total = 0;
-        Timestamp before = new Timestamp( System.currentTimeMillis() - this.maxCheckedBefore );
-        FileDTO[] files;
-        int limit = limitNumberOfFilesPerTask;
-        FileSystemMgt2 fsMgt = newFileSystemMgt();
-        FileSystemDTO[] fsdirs =fsMgt.getAllFileSystems();
-        byte[] buffer = null;
-        for (int j = 0; j < fsdirs.length; j++) {
-            files = fsMgt.findFilesForMD5Check(fsdirs[j].getDirectoryPath(), before, limit);
-        	if ( log.isDebugEnabled() ) log.debug("Check MD5 for " + files.length + " files on filesystem " + fsdirs[j]);
-            if (files.length > 0) {
-            	if (buffer == null)
-            		buffer = new byte[bufferSize];
-                total += files.length;
-                for (int k = 0; k < files.length; k++) {
-					if ( ! doCheck(fsMgt, files[k], buffer) ) 
-                    	corrupted++;
-                }
-                limit -= files.length;
+        synchronized(this) {
+            if (isRunning) {
+                String msg = "MD5check is already running!";
+                log.info(msg);
+                return msg;
             }
+            isRunning = true;
         }
-        if ( corrupted > 0 ) 
-        	log.warn( corrupted + " files are corrupted!");
-    	return corrupted + " of "+ total + " files corrupted!";
+        try {
+        	if ( log.isDebugEnabled() ) log.debug("MD5 check started!");
+        	int corrupted = 0;
+        	int total = 0;
+            Timestamp before = new Timestamp( System.currentTimeMillis() - this.maxCheckedBefore );
+            FileDTO[] files;
+            int limit = limitNumberOfFilesPerTask;
+            FileSystemMgt2 fsMgt = newFileSystemMgt();
+            FileSystemDTO[] fsdirs =fsMgt.getAllFileSystems();
+            byte[] buffer = null;
+            for (int j = 0; j < fsdirs.length; j++) {
+                files = fsMgt.findFilesForMD5Check(fsdirs[j].getDirectoryPath(), before, limit);
+            	if ( log.isDebugEnabled() ) log.debug("Check MD5 for " + files.length + " files on filesystem " + fsdirs[j]);
+                if (files.length > 0) {
+                	if (buffer == null)
+                		buffer = new byte[bufferSize];
+                    total += files.length;
+                    for (int k = 0; k < files.length; k++) {
+    					if ( ! doCheck(fsMgt, files[k], buffer) ) 
+                        	corrupted++;
+                    }
+                    limit -= files.length;
+                }
+            }
+            if ( corrupted > 0 ) 
+            	log.warn( corrupted + " files are corrupted!");
+        	return corrupted + " of "+ total + " files corrupted!";
+        } finally {
+            isRunning = false;
+        }
     }
     
     /**
