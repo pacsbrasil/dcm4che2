@@ -284,13 +284,11 @@ public class EditDicomObjectPanel extends Panel {
         @Override
         public void setObject(Serializable object) {
             Object prev = super.getObject();
-            if (object == null) {
-                if (prev != null) {
+            if (vr != 0) {
+                if (object == null) {
                     EditDicomObjectPanel.this.dcmObj.putNull(tagPath, 
                             VR.valueOf(vr));
-                }
-            } else {
-                if (!object.equals(prev)) {
+                } else if (!object.equals(prev)) {
                     EditDicomObjectPanel.this.dcmObj.putString(tagPath,
                             VR.valueOf(vr), (String) object);
                 }
