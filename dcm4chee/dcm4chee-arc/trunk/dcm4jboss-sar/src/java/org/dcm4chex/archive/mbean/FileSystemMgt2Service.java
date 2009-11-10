@@ -710,6 +710,16 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         return toString(fss);
     }
 
+    public File[] listFileSystemDirectories() throws Exception {
+        FileSystemDTO[] fss = fileSystemMgt()
+                .getFileSystemsOfGroup(getFileSystemGroupID());
+        sortFileSystems(fss);
+        File[] dirs = new File[fss.length];
+        for (int i = 0; i < fss.length; i++)
+            dirs[i] = FileUtils.toFile(fss[i].getDirectoryPath());
+        return dirs;
+    }
+
     public FileSystemDTO addRWFileSystem(String dirPath) throws Exception {
         return fileSystemMgt().addAndLinkFileSystem(
                 mkFileSystemDTO(dirPath, FileSystemStatus.RW));
@@ -798,6 +808,11 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
             }
         }
         return noFreeDiskSpace ? null : storageFileSystem;
+    }
+
+    public File selectStorageDirectory() throws Exception {
+        FileSystemDTO dto = selectStorageFileSystem();
+        return dto != null ? FileUtils.toFile(dto.getDirectoryPath()) : null;
     }
 
     private synchronized boolean switchFileSystem(FileSystemMgt2 fsMgt,
