@@ -626,6 +626,15 @@
     <return-type>java.lang.String</return-type>
   </operation>
 
+  <operation impact="INFO">
+    <description><![CDATA[Return Directory Paths for all configured file
+      systems associated with the file system group managed my this service
+      as array of Files.]]>
+    </description>
+    <name>listFileSystemDirectories</name>
+    <return-type>[Ljava.io.File;</return-type>
+  </operation>
+
   <operation impact="ACTION">
     <description><![CDATA[Add RW file system to the file system group managed
       my this service. The file system is also linked to existing other file
@@ -739,6 +748,12 @@
     <description>Select Storage File System</description>
     <name>selectStorageFileSystem</name>
     <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
+  </operation>
+
+  <operation impact="ACTION">
+    <description>Select Storage File System and return Directory</description>
+    <name>selectStorageDirectory</name>
+    <return-type>java.io.File</return-type>
   </operation>
 
   <operation impact="ACTION">
