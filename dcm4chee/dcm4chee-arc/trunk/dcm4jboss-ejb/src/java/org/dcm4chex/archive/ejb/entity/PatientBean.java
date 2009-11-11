@@ -896,6 +896,7 @@ public abstract class PatientBean implements EntityBean {
                 sq.addItem(oopidsq.getItem(i));
             }
         }
+        boolean updated=false;
         for (int i = 0, n = nopidsq.countItems(); i < n; i++) {
             Dataset nItem = nopidsq.getItem(i);
             String nopid = nItem.getString(Tags.PatientID);
@@ -908,6 +909,7 @@ public abstract class PatientBean implements EntityBean {
                         + nopid + "^^^"
                         +  issuer
                         + " to " + prompt());
+                updated=true;
             }	
             else {
             	try {
@@ -922,11 +924,12 @@ public abstract class PatientBean implements EntityBean {
                         getOtherPatientIds().add(opidHome.valueOf(nopid, issuer));
                         log.info("Other Patient ID of " + oopid + "^^^" + issuer
                               + " is replaced by" + nopid + "^^^" + issuer + " to " + prompt());
+                        updated=true;
                     }
             	} catch (Exception onfe) {}
             }	
         }
-        return true;
+        return updated;
     }
 
     /**
