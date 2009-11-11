@@ -746,7 +746,6 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
 
     /**
      * @ejb.interface-method
-     * @ejb.transaction type="RequiresNew"
      */
     public void replaceFile(long pk, String path, String tsuid, long size,
             byte[] md5, int status) throws FinderException {
