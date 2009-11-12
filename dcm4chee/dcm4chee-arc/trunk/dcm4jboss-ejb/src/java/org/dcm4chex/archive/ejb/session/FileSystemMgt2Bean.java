@@ -364,7 +364,6 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
 
     /**
      * @ejb.interface-method
-     * @ejb.transaction type="NotSupported"
      */
     public FileSystemDTO updateFileSystemAvailability(String groupID,
             String dirPath, int availability, int availabilityOfExtRetr,
