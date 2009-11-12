@@ -210,8 +210,16 @@ public class StoreScpService extends AbstractScpService {
 
     private boolean md5sum = true;
 
-    private StoreScp scp = new StoreScp(this);
+    private StoreScp scp = null;
 
+    public StoreScpService() {
+        scp = createScp();
+    }
+    
+    protected StoreScp createScp() {
+        return new StoreScp(this);
+    }
+    
     protected StoreScp getScp() {
         return scp;
     }
@@ -785,7 +793,7 @@ public class StoreScpService extends AbstractScpService {
                 seriesStored.getSeriesInstanceUID());
     }
 
-    private void sendSeriesStoredNotification(Storage store,
+    public void sendSeriesStoredNotification(Storage store,
             SeriesStored seriesStored)
             throws FinderException, RemoteException {
         sendJMXNotification(seriesStored);

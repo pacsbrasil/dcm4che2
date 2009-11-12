@@ -647,6 +647,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     && !seriuid.equals(seriesStored.getSeriesInstanceUID())) {
                 service.logInstancesStoredAndUpdateDerivedFields(store,
                         assoc.getSocket(), seriesStored);
+                doAfterSeriesIsStored(store, assoc, seriesStored);
                 seriesStored = null;
             }
             boolean newSeries = seriesStored == null;
@@ -1204,8 +1205,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         SeriesStored seriesStored = (SeriesStored) assoc.getProperty(SERIES_STORED);
         if (seriesStored != null) {
             try {
+            	Storage store = getStorage(assoc);
                 service.logInstancesStoredAndUpdateDerivedFields(
-                        getStorage(assoc), assoc.getSocket(), seriesStored);
+                		store, assoc.getSocket(), seriesStored);
+                doAfterSeriesIsStored(store, assoc, seriesStored);
              } catch (Exception e) {
                 log.error("Clean up on Association close failed:", e);
             }
@@ -1216,5 +1219,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         if (assoc.getAAssociateAC() != null)
             perfMon.assocRelEnd(assoc, Command.C_STORE_RQ);
     }
-
+    
+    // extension point for specialized implementations of StoreScp
+    protected void doAfterSeriesIsStored(Storage store, Association assoc, SeriesStored seriesStored) throws Exception {
+    	return;
+    }
 }
