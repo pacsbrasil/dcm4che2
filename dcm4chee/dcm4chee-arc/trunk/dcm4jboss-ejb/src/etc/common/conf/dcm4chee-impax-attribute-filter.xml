@@ -23,6 +23,7 @@
     <attr tag="00120031"/> <!-- Clinical Trial Site Name -->        
     <attr tag="00120040"/> <!-- Clinical Trial Subject ID -->        
     <attr tag="00120042"/> <!-- Clinical Trial Subject Reading ID -->        
+    <attr tag="00380500"/> <!-- Patient State -->
     <attr tag="0040050A"/> <!-- Specimen Accession Number -->        
     <attr tag="00400550"/> <!-- Specimen Seq --> 
   </patient>
@@ -193,6 +194,7 @@
         <attr tag="00187050"/> <!-- Filter Material -->
         <attr tag="00187060"/> <!-- Exposure Control Mode -->
         <attr tag="00187062"/> <!-- Exposure Control Mode Description -->
+        <attr tag="00189087"/> <!-- MR Diffusion b-Value -->
         <attr tag="00189117"/> <!-- MR Diffusion Sequence --> 
         <attr tag="00200012"/> <!-- Acquisition Number -->
         <attr tag="00200013"/> <!-- Instance Number -->
