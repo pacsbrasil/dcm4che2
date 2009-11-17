@@ -71,8 +71,10 @@
 	</path>
 	
 	<path id="xdoclet.path">
+      <pathelement location="${basedir}/lib/xjavadoc-1.5-snapshot050611.jar"/>
 		<fileset dir="${xdoclet.lib}">
 			<include name="*.jar"/>
+          <exclude name="xjavadoc-1.1.jar"/>
 		</fileset>
 		<path refid="base.path"/>
 	</path>
