@@ -131,6 +131,7 @@
          dcm4chee.archive:service=IANScp#CallingAETitles
          dcm4chee.archive:service=IANScu#NotifiedAETitles
          dcm4chee.archive:service=IANScu#CallingAETitle
+         dcm4chee.archive:service=LossyCompressionService#SourceAETitle
          dcm4chee.archive:service=MCMScu#CallingAETitle
          dcm4chee.archive:service=MCMScu#RetrieveAETitle
          dcm4chee.archive:service=MCMScu#MoveDestinationAETitle

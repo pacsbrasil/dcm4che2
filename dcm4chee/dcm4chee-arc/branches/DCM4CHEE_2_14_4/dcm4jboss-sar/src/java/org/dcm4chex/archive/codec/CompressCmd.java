@@ -65,6 +65,7 @@ import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
@@ -89,7 +90,20 @@ public abstract class CompressCmd extends CodecCmd {
 
     private static final byte[] ITEM_TAG = { (byte) 0xfe, (byte) 0xff,
             (byte) 0x00, (byte) 0xe0};
-
+    private static final String[] DERIVED_PRIMARY = { "DERIVED", "PRIMARY" };
+    private static final Dataset LOSSY_COMPRESSION =
+            newCodeItem("113040", "DCM", "Lossy Compression");
+    private static final Dataset UNCOMPRESSED_PREDECESSOR =
+            newCodeItem("121320", "DCM", "Uncompressed predecessor");
+    
+    private static Dataset newCodeItem(String value, String schemeDesignator,
+            String meaning) {
+        Dataset item = DcmObjectFactory.getInstance().newDataset();
+        item.putSH(Tags.CodeValue, value);
+        item.putSH(Tags.CodingSchemeDesignator, schemeDesignator);
+        item.putLO(Tags.CodeMeaning, meaning);
+        return item;
+    }
     private static class Jpeg2000 extends CompressCmd {
 
         public Jpeg2000(Dataset ds, String tsuid) {
@@ -146,6 +160,99 @@ public abstract class CompressCmd extends CodecCmd {
         }
     }
     
+    private static class JpegLossy extends CompressCmd {
+
+        private final float quality;
+        private final float compressionRatio;
+        private final String iuid;
+        private final String suid;
+
+        public JpegLossy(Dataset ds, String tsuid, float quality,
+                float compressionRatio, String iuid, String suid) {
+            super(ds, tsuid);
+            if (suid != null && iuid == null)
+                throw new IllegalArgumentException(
+                        "New Series Instance UID requires new SOP Instance UID");
+            this.quality = quality;
+            this.compressionRatio = compressionRatio;
+            this.iuid = iuid;
+            this.suid = suid;
+        }
+
+        public void coerceDataset(Dataset ds) {
+            if (samples == 3) {
+                ds.putUS(Tags.PlanarConfiguration, 0);
+                ds.putCS(Tags.PhotometricInterpretation, YBR_FULL_422);
+            }
+            ds.putUS(Tags.BitsStored, bitsUsed());
+            ds.putCS(Tags.LossyImageCompression, "01");
+            ds.putCS(Tags.LossyImageCompressionMethod, "ISO_10918_1");
+            ds.putDS(Tags.LossyImageCompressionRatio, compressionRatio);
+            if (iuid != null) {
+                updateImageType(ds);
+                updateDerivationDescription(ds);
+                updateDerivationCodeSequence(ds);
+                updateSourceImageSequence(ds);
+                ds.putUI(Tags.SOPInstanceUID, iuid);
+                if (suid != null)
+                    ds.putUI(Tags.SeriesInstanceUID, suid);
+            }
+        }
+
+        private void updateImageType(Dataset ds) {
+            String[] imageType = ds.getStrings(Tags.ImageType);
+            if (imageType == null || imageType.length == 0)
+                imageType = DERIVED_PRIMARY;
+            else
+                imageType[0] = DERIVED_PRIMARY[0];
+            ds.putCS(Tags.ImageType, imageType);
+        }
+
+        private void updateDerivationDescription(Dataset ds) {
+            StringBuilder desc = new StringBuilder(32);
+            String olddesc = ds.getString(Tags.DerivationDescription);
+            if (olddesc != null) {
+                desc.append(olddesc).append("; ");
+            }
+            desc.append("Lossy Compression ")
+                .append(compressionRatio).append(":1");
+            ds.putST(Tags.DerivationImageSeq, desc.toString());
+        }
+
+        private void updateDerivationCodeSequence(Dataset ds) {
+            DcmElement codes = ds.get(Tags.DerivationCodeSeq);
+            if (codes == null)
+                codes = ds.putSQ(Tags.DerivationCodeSeq);
+            codes.addItem(LOSSY_COMPRESSION);
+        }
+
+        private void updateSourceImageSequence(Dataset ds) {
+            DcmElement sourceImages = ds.get(Tags.SourceImageSeq);
+            if (sourceImages == null)
+                sourceImages = ds.putSQ(Tags.SourceImageSeq);
+            Dataset sourceImage = sourceImages.addNewItem();
+            sourceImage.putUI(Tags.RefSOPClassUID, 
+                    ds.getString(Tags.SOPClassUID));
+            sourceImage.putUI(Tags.RefSOPInstanceUID,
+                    ds.getString(Tags.SOPInstanceUID));
+            sourceImage.putSQ(Tags.PurposeOfReferenceCodeSeq)
+                    .addItem(UNCOMPRESSED_PREDECESSOR);
+        }
+
+        protected void initWriteParam(ImageWriteParam param) {
+            param.setCompressionType("JPEG");
+            param.setCompressionQuality(quality);
+        }
+
+        protected int bitsUsed() {
+            return Math.min(12, bitsStored);
+        }
+    };
+
+    private int bitmask() {
+        return 0xffff >>> (bitsAllocated - bitsUsed());
+    }
+
     public static byte[] compressFile(File inFile, File outFile, String tsuid,
     		int[] pxdataVR, byte[] buffer)
     		throws Exception {
@@ -172,7 +279,8 @@ public abstract class CompressCmd extends CodecCmd {
                 compressCmd.coerceDataset(ds);
                 ds.writeFile(bos, encParam);
                 ds.writeHeader(bos, encParam, Tags.PixelData, VRs.OB, -1);
-                int read = compressCmd.compress(decParam.byteOrder, in, bos);
+                int read = compressCmd.compress(decParam.byteOrder, in, bos,
+                        null);
                 ds.writeHeader(bos, encParam, Tags.SeqDelimitationItem,
                         VRs.NONE, 0);
                 skipFully(in, p.getReadLength() - read);
@@ -185,6 +293,55 @@ public abstract class CompressCmd extends CodecCmd {
     	} finally {
     		in.close();
     	}
+    }
+
+    public static byte[] compressFileJPEGLossy(File inFile, File outFile,
+            float quality, float estimatedCompressionRatio, 
+            float[] actualCompressionRatio, String iuid, String suid,
+            byte[] buffer, Dataset ds) throws Exception {
+        if (suid != null && iuid == null)
+            throw new IllegalArgumentException(
+                    "New Series Instance UID requires new SOP Instance UID");
+        log.info("M-READ file:" + inFile);
+        InputStream in = new BufferedInputStream(new FileInputStream(inFile));
+        try {
+            DcmParser p = DcmParserFactory.getInstance().newDcmParser(in);
+            if (ds == null)
+                ds = DcmObjectFactory.getInstance().newDataset();
+            p.setDcmHandler(ds.getDcmHandler());
+            p.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
+            String tsuid = ds.getInt(Tags.BitsAllocated, 8) > 8
+                    ? UIDs.JPEGExtended : UIDs.JPEGBaseline;
+            FileMetaInfo fmi = DcmObjectFactory.getInstance()
+                    .newFileMetaInfo(ds, tsuid);
+            ds.setFileMetaInfo(fmi);
+            log.info("M-WRITE file:" + outFile);
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            DigestOutputStream dos = new DigestOutputStream(
+                    new FileOutputStream(outFile), md);
+            BufferedOutputStream bos = new BufferedOutputStream(dos, buffer);
+            try {
+                DcmDecodeParam decParam = p.getDcmDecodeParam();
+                DcmEncodeParam encParam = DcmEncodeParam.valueOf(tsuid);
+                CompressCmd compressCmd = 
+                    new JpegLossy(ds, tsuid, quality, estimatedCompressionRatio, iuid, suid);
+                compressCmd.coerceDataset(ds);
+                ds.writeFile(bos, encParam);
+                ds.writeHeader(bos, encParam, Tags.PixelData, VRs.OB, -1);
+                int read = compressCmd.compress(decParam.byteOrder, in, bos,
+                        actualCompressionRatio);
+                ds.writeHeader(bos, encParam, Tags.SeqDelimitationItem,
+                        VRs.NONE, 0);
+                skipFully(in, p.getReadLength() - read);
+                p.parseDataset(decParam, -1);
+                ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);
+            } finally {
+                bos.close();
+            }
+            return md.digest();
+        } finally {
+            in.close();
+        }
     }
 
     private static void skipFully(InputStream in, int n) throws IOException {
@@ -220,8 +377,8 @@ public abstract class CompressCmd extends CodecCmd {
 
     protected abstract void initWriteParam(ImageWriteParam param);
 
-    public int compress(ByteOrder byteOrder, InputStream in, OutputStream out)
-            throws Exception {
+    public int compress(ByteOrder byteOrder, InputStream in, OutputStream out,
+            float[] compressionRatio) throws Exception {
         long t1;
         ImageWriter w = null;
         BufferedImage bi = null;
@@ -287,6 +444,9 @@ public abstract class CompressCmd extends CodecCmd {
         int pixelDataLength = frameLength * frames;
         log.info("finished compression " + ((float) pixelDataLength / end)
                 + " : 1 in " + (t2 - t1) + "ms.");
+        if (compressionRatio != null && compressionRatio.length > 0)
+            compressionRatio[0] =
+                (float) pixelDataLength * bitsUsed() / bitsAllocated / end;
         return pixelDataLength;
     }
 
@@ -300,26 +460,28 @@ public abstract class CompressCmd extends CodecCmd {
 
     private void readLE(InputStream in, short[][] data) throws IOException {
         int lo, hi;
+        int bitmask = bitmask();
         for (int i = 0; i < data.length; i++) {
             short[] bank = data[i];
             for (int j = 0; j < bank.length; j++) {
                 lo = in.read();
                 hi = in.read();
                 if ((lo | hi) < 0) throw new EOFException();
-                bank[j] = (short) ((lo & 0xff) + (hi << 8));
+                bank[j] = (short) (((lo & 0xff) + (hi << 8)) & bitmask);
             }
         }
     }
 
     private void readBE(InputStream in, short[][] data) throws IOException {
         int lo, hi;
+        int bitmask = bitmask();
         for (int i = 0; i < data.length; i++) {
             short[] bank = data[i];
             for (int j = 0; j < bank.length; j++) {
                 hi = in.read();
                 lo = in.read();
                 if ((lo | hi) < 0) throw new EOFException();
-                bank[j] = (short) ((lo & 0xff) + (hi << 8));
+                bank[j] = (short) (((lo & 0xff) + (hi << 8)) & bitmask);
             }
         }
     }

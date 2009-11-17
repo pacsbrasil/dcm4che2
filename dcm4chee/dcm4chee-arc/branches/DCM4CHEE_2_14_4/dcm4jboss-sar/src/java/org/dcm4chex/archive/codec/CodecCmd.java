@@ -62,6 +62,8 @@ public abstract class CodecCmd {
 
     static final Logger log = Logger.getLogger(CodecCmd.class);
 
+    static final String YBR_FULL_422 = "YBR_FULL_422";
+
     static final String YBR_RCT = "YBR_RCT";
 
     static final String JPEG2000 = "jpeg2000";
@@ -96,8 +98,6 @@ public abstract class CodecCmd {
 
     protected final int frameLength;
 
-    protected final int bitsUsed;
-
     protected final String tsuid;
 
     protected final int dataType;
@@ -109,7 +109,6 @@ public abstract class CodecCmd {
         this.columns = ds.getInt(Tags.Columns, 1);
         this.bitsAllocated = ds.getInt(Tags.BitsAllocated, 8);
         this.bitsStored = ds.getInt(Tags.BitsStored, bitsAllocated);
-        this.bitsUsed = bitsAllocated;
         this.pixelRepresentation = ds.getInt(Tags.PixelRepresentation, 0);
         this.planarConfiguration = ds.getInt(Tags.PlanarConfiguration, 0);
         this.frameLength = rows * columns * samples * bitsAllocated / 8;
@@ -177,8 +176,12 @@ public abstract class CodecCmd {
     }
 
     protected BufferedImage getBufferedImage() {
-        return biPool.borrowOrCreateBufferedImage(rows, columns, bitsUsed,
+        return biPool.borrowOrCreateBufferedImage(rows, columns, bitsUsed(),
                 samples, planarConfiguration, dataType);
+    }
+
+    protected int bitsUsed() {
+        return bitsAllocated;
     }
 
     protected void returnBufferedImage(BufferedImage bi) {

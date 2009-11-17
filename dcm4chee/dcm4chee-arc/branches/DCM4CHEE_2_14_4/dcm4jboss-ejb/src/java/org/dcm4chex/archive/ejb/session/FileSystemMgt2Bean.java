@@ -46,6 +46,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -900,6 +901,24 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**
      * @ejb.interface-method
      */
+    public void replaceFileAndCoerceAttributes(long pk, String path,
+            String tsuid, long size, byte[] md5, int status, Dataset ds) {
+        try {
+            FileLocal oldFile = fileHome.findByPrimaryKey(pk);
+            oldFile.setFilePath(path);
+            oldFile.setFileTsuid(tsuid);
+            oldFile.setFileSize(size);
+            oldFile.setFileMd5(md5);
+            oldFile.setFileStatus(status);
+            oldFile.getInstance().coerceAttributes(ds, null);
+        } catch (Exception e) {
+            throw new EJBException(e);
+        }
+    }
+
+    /**
+     * @ejb.interface-method
+     */
     public void setFileStatus(long pk, int status) throws FinderException {
         fileHome.findByPrimaryKey(pk).setFileStatus(status);
     }
@@ -1042,5 +1061,36 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
      */
     public String getExternalRetrieveAET(String iuid) throws FinderException {
         return instHome.findBySopIuid(iuid).getExternalRetrieveAET();
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Collection<FileDTO> getFilesOfSeriesOnFileSystemGroup(
+            String seriesIUID, String fsGroupID) throws FinderException {
+        return omitDuplicateFiles(fileHome.findFilesOfSeriesOnFileSystemGroup(
+                seriesIUID, fsGroupID));
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Collection<FileDTO>  findFilesToLossyCompress(String fsGroupID,
+            String cuid, String bodyPart, String srcAET, Timestamp before,
+            int limit) throws FinderException {
+        return omitDuplicateFiles(bodyPart == null
+                ? fileHome.findFilesToLossyCompress(
+                        fsGroupID, cuid, srcAET, before, limit)
+                : fileHome.findFilesToLossyCompress(
+                        fsGroupID, cuid, bodyPart, srcAET, before, limit));
+    }
+
+    private Collection<FileDTO> omitDuplicateFiles(Collection<FileLocal> in) {
+        Collection<FileDTO> out = new ArrayList<FileDTO>(in.size());
+        Set<String> iuids = new HashSet<String>(in.size());
+        for (FileLocal file : in)
+            if (iuids.add(file.getInstance().getSopIuid()))
+                out.add(file.getFileDTO());
+        return out;
     }
 }

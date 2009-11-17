@@ -1077,7 +1077,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                         }
                     } else {
                         int read = compressCmd.compress(decParam.byteOrder,
-                                parser.getInputStream(), bos);
+                                parser.getInputStream(), bos, null);
                         skipFully(in, parser.getReadLength() - read);
                     }
                     ds.writeHeader(bos, encParam, Tags.SeqDelimitationItem,

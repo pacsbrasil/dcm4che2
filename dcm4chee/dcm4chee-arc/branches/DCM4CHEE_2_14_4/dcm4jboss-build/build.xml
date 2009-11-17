@@ -431,6 +431,12 @@
     </antcall>
     <antcall target="xslt">
       <param name="in"
+             value="${dcm4jboss-sar.xmdesc}/dcm4chee-lossycompression-xmbean.xml" />
+      <param name="out" value="lossycompression-xmbean.xml" />
+      <param name="mbean" value="dcm4chee.archive:service=LossyCompressionService" />
+    </antcall>
+    <antcall target="xslt">
+      <param name="in"
              value="${dcm4jboss-sar.xmdesc}/dcm4chee-mcmscu-xmbean.xml" />
       <param name="out" value="mcmscu-xmbean.xml" />
       <param name="mbean" value="dcm4chee.archive:service=MCMScu" />
