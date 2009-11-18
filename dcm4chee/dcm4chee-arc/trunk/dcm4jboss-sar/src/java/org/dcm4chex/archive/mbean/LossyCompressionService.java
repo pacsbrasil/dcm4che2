@@ -43,7 +43,6 @@ import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -68,7 +67,6 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
-import org.dcm4chex.archive.mbean.CompressionService.CompressionRule;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
@@ -303,7 +301,7 @@ public class LossyCompressionService extends ServiceMBeanSupport {
             float compressionQuality, float estimatedCompressionRatio,
             boolean archive) throws Exception {
         FileSystemMgt2 fsmgt = newFileSystemMgt();
-        Collection<FileDTO> fileDTOs = fsmgt.getFilesOfSeriesOnFileSystemGroup(
+        FileDTO[] fileDTOs = fsmgt.getFilesOfSeriesOnFileSystemGroup(
                 seriesIUID.trim(), fsGroupID);
         byte[] buffer = new byte[bufferSize];
         float[] pixelCompressionRatio = new float[1];
@@ -316,8 +314,8 @@ public class LossyCompressionService extends ServiceMBeanSupport {
         float sumPixelCompressionRatio = 0.f;
         int count = 0;
         String suid = uidGenerator.createUID();
-        for (Iterator<FileDTO> iter = fileDTOs.iterator(); iter.hasNext();) {
-            FileDTO fileDTO = iter.next();
+        for (int i = 0; i < fileDTOs.length; i++) {
+            FileDTO fileDTO = fileDTOs[i];
             String tsuid = fileDTO.getFileTsuid();
             if (isLossyCompressed(tsuid))
                 continue;
@@ -372,7 +370,7 @@ public class LossyCompressionService extends ServiceMBeanSupport {
                     updateSeriesDescription(ds);
                     ds.setPrivateCreatorID(PrivateTags.CreatorID);
                     ds.putAE(PrivateTags.CallingAET, sourceAET);
-                    importFile(fileDTO, ds, suid, iter.hasNext());
+                    importFile(fileDTO, ds, suid, i == fileDTOs.length - 1);
                     destFile = null;
                 }
             } finally {
@@ -493,7 +491,7 @@ public class LossyCompressionService extends ServiceMBeanSupport {
             byte[] buffer = null;
             FileSystemMgt2 fsMgt = newFileSystemMgt();
             for (CompressionRule rule : compressionRuleList) {
-                Collection<FileDTO> files = fsMgt.findFilesToLossyCompress(
+                FileDTO[] files = fsMgt.findFilesToLossyCompress(
                             fsGroupID, uidOf(rule.cuid), rule.bodyPart,
                             rule.srcAET, new Timestamp(
                                     System.currentTimeMillis() - rule.delay),

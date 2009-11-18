@@ -89,12 +89,12 @@ import org.dcm4chex.archive.ejb.interfaces.MD5;
  * @ejb.finder signature="java.util.Collection findFilesToLossyCompress(java.lang.String fsGroupId, java.lang.String cuid, java.lang.String sourceAET, java.sql.Timestamp before, int limit)"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findFilesToLossyCompress(java.lang.String fsGroupId, java.lang.String cuid, java.lang.String sourceAET, java.sql.Timestamp before, int limit)"
- *             query="SELECT OBJECT(f) FROM File AS f WHERE f.fileStatus = 0 AND f.fileTsuid NOT IN ('1.2.840.10008.1.2.4.50','1.2.840.10008.1.2.4.51','1.2.840.10008.1.2.4.81','1.2.840.10008.1.2.4.91') AND f.fileSystem.status IN (0,1) AND f.fileSystem.groupID = ?1 AND f.instance.sopCuid = ?2 AND f.instance.series.sourceAET = ?3 AND f.instance.series.updatedTime < ?4 ORDER BY f.pk DESC LIMIT ?5"
+ *             query="SELECT OBJECT(f) FROM File AS f WHERE f.fileStatus = 0 AND f.fileTsuid NOT IN ('1.2.840.10008.1.2.4.50','1.2.840.10008.1.2.4.51','1.2.840.10008.1.2.4.81','1.2.840.10008.1.2.4.91') AND f.fileSystem.status IN (0,1) AND f.fileSystem.groupID = ?1 AND f.instance.sopCuid = ?2 AND f.instance.series.sourceAET = ?3 AND (f.createdTime IS NULL OR f.createdTime < ?4) LIMIT ?5"
  *             strategy="on-find" eager-load-group="*"
  * @ejb.finder signature="java.util.Collection findFilesToLossyCompress(java.lang.String fsGroupId, java.lang.String cuid, java.lang.String bodyPart, java.lang.String sourceAET, java.sql.Timestamp before, int limit)"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findFilesToLossyCompress(java.lang.String fsGroupId, java.lang.String cuid, java.lang.String bodyPart, java.lang.String sourceAET, java.sql.Timestamp before, int limit)"
- *             query="SELECT OBJECT(f) FROM File AS f WHERE f.fileStatus = 0 AND f.fileTsuid NOT IN ('1.2.840.10008.1.2.4.50','1.2.840.10008.1.2.4.51','1.2.840.10008.1.2.4.81','1.2.840.10008.1.2.4.91') AND f.fileSystem.status IN (0,1) AND f.fileSystem.groupID = ?1 AND f.instance.sopCuid = ?2 AND f.instance.series.bodyPartExamined = ?3 AND f.instance.series.sourceAET = ?4 AND f.instance.series.updatedTime < ?5 ORDER BY f.pk DESC LIMIT ?6"
+ *             query="SELECT OBJECT(f) FROM File AS f WHERE f.fileStatus = 0 AND f.fileTsuid NOT IN ('1.2.840.10008.1.2.4.50','1.2.840.10008.1.2.4.51','1.2.840.10008.1.2.4.81','1.2.840.10008.1.2.4.91') AND f.fileSystem.status IN (0,1) AND f.fileSystem.groupID = ?1 AND f.instance.sopCuid = ?2 AND f.instance.series.bodyPartExamined = ?3 AND f.instance.series.sourceAET = ?4 AND (f.createdTime IS NULL OR f.createdTime < ?5) LIMIT ?6"
  *             strategy="on-find" eager-load-group="*"
  */
 public abstract class FileBean implements EntityBean {
