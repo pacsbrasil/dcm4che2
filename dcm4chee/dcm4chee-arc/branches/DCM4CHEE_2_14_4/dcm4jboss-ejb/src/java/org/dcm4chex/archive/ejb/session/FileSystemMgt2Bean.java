@@ -46,7 +46,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -1066,31 +1065,22 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Collection<FileDTO> getFilesOfSeriesOnFileSystemGroup(
+    public FileDTO[] getFilesOfSeriesOnFileSystemGroup(
             String seriesIUID, String fsGroupID) throws FinderException {
-        return omitDuplicateFiles(fileHome.findFilesOfSeriesOnFileSystemGroup(
+        return toFileDTOs(fileHome.findFilesOfSeriesOnFileSystemGroup(
                 seriesIUID, fsGroupID));
     }
 
     /**
      * @ejb.interface-method
      */
-    public Collection<FileDTO>  findFilesToLossyCompress(String fsGroupID,
+    public FileDTO[]  findFilesToLossyCompress(String fsGroupID,
             String cuid, String bodyPart, String srcAET, Timestamp before,
             int limit) throws FinderException {
-        return omitDuplicateFiles(bodyPart == null
+        return toFileDTOs(bodyPart == null
                 ? fileHome.findFilesToLossyCompress(
                         fsGroupID, cuid, srcAET, before, limit)
                 : fileHome.findFilesToLossyCompress(
                         fsGroupID, cuid, bodyPart, srcAET, before, limit));
-    }
-
-    private Collection<FileDTO> omitDuplicateFiles(Collection<FileLocal> in) {
-        Collection<FileDTO> out = new ArrayList<FileDTO>(in.size());
-        Set<String> iuids = new HashSet<String>(in.size());
-        for (FileLocal file : in)
-            if (iuids.add(file.getInstance().getSopIuid()))
-                out.add(file.getFileDTO());
-        return out;
     }
 }
