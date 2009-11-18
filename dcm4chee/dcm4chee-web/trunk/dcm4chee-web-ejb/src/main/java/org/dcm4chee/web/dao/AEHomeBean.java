@@ -79,14 +79,11 @@ public class AEHomeBean implements AEHomeLocal {
         return  (AE) q.getSingleResult();
     }
     
-    public AE createAET(AE ae){
-        em.persist(ae);
-        return ae;
-    }
-    
-    public AE updateAET(AE ae) {
-        em.merge(ae);
-        return ae;
+    public void updateOrCreateAET(AE ae){
+        if ( ae.getPk() == -1) 
+            em.persist(ae);
+        else
+            em.merge(ae);
     }
 
     public void removeAET(long pk) {
