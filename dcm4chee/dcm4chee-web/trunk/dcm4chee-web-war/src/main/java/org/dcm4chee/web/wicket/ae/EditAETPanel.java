@@ -50,19 +50,17 @@ import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.TextField;
-import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.validation.IValidator;
 import org.apache.wicket.validation.validator.RangeValidator;
-import org.apache.wicket.validation.validator.StringValidator;
 import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.web.wicket.common.ComponentUtil;
+import org.dcm4chee.web.wicket.common.BaseForm;
+import org.dcm4chee.web.wicket.common.MessageWindow;
+import org.dcm4chee.web.wicket.common.TooltipBehaviour;
 import org.dcm4chee.web.wicket.common.UrlValidator1;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -71,86 +69,84 @@ import org.slf4j.LoggerFactory;
  */
 
 public class EditAETPanel extends Panel {
+    private static final long serialVersionUID = -7828832445229102456L;
     transient AEMgtDelegate delegate = AEMgtDelegate.getInstance();
-    private static Logger log = LoggerFactory.getLogger(EditAETPanel.class);
+    private MessageWindow msgWin = new MessageWindow("feedbackWin");
     
+    @SuppressWarnings("serial")
     public EditAETPanel( String id, final AEMgtPanel page, final AE ae) {
         super(id);
         setOutputMarkupId(true);
-        Form form = new Form("form");
+        BaseForm form = new BaseForm("form");
+        form.setResourceIdPrefix("aet.");
+        form.setTooltipBehaviour(new TooltipBehaviour("aet."));
         add(form);
-        CompoundPropertyModel model = new CompoundPropertyModel(ae);
+        CompoundPropertyModel<AE> model = new CompoundPropertyModel<AE>(ae);
         setDefaultModel(model);
-        ComponentUtil util = new ComponentUtil(AEMgtPanel.getModuleName());
-        
-        util.addLabeledTextField(form, "title").add(new AETitleValidator()).setRequired(true); 
-        util.addLabeledTextField(form, "hostName","host")
-            .add(StringValidator.minimumLength(1)).setRequired(true); 
-        util.addLabeledTextField(form, "port").add(new RangeValidator(1,65535));
+        form.addLabeledTextField("title").add(new AETitleValidator()).setRequired(true); 
+        form.addLabeledTextField("hostName").setRequired(true); 
+        form.addLabeledTextField("port").add(new RangeValidator(1,65535));
         form.add(new Label("ciphersLabel1", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{1} ) ) );
         form.add(new DropDownChoice("ciphersuite1", new CipherModel(ae, 0), AEMgtDelegate.AVAILABLE_CIPHERSUITES));
         form.add(new Label("ciphersLabel2", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{2} ) ) );
         form.add(new DropDownChoice("ciphersuite2", new CipherModel(ae, 1), AEMgtDelegate.AVAILABLE_CIPHERSUITES));
         form.add(new Label("ciphersLabel3", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{3} ) ) );
         form.add(new DropDownChoice("ciphersuite3", new CipherModel(ae, 2), AEMgtDelegate.AVAILABLE_CIPHERSUITES));
-        util.addLabeledTextField(form, "description"); 
-        util.addLabeledTextField(form, "issuerOfPatientID", "issuer"); 
-        util.addLabeledDropDownChoice(form, "fileSystemGroupID", null, 
+        form.addLabeledTextField("description"); 
+        form.addLabeledTextField("issuerOfPatientID"); 
+        form.addLabeledDropDownChoice("fileSystemGroupID", null, 
                 delegate.getFSGroupIDs()).setNullValid(true);
-        util.addLabeledTextField(form, "wadoURL").add(new UrlValidator1()); //Wicket UrlValidator doesn't accept http://hostname:8080/web!
-        util.addLabeledTextField(form, "userID"); 
-        form.add(new Label("passwdLabel", new ResourceModel("aet.passwd") ) );
+        form.addLabeledTextField("wadoURL").add(new UrlValidator1()); //Wicket UrlValidator doesn't accept http://hostname:8080/web!
+        form.addLabeledTextField("userID"); 
+        form.add(new Label("passwordLabel", new ResourceModel("aet.password") ) );
         form.add(new PasswordTextField("password").setRequired(false)); 
-        util.addLabeledTextField(form, "stationName"); 
-        util.addLabeledTextField(form, "institution"); 
-        util.addLabeledTextField(form, "department"); 
+        form.addLabeledTextField("stationName"); 
+        form.addLabeledTextField("institution"); 
+        form.addLabeledTextField("department"); 
         form.add(new Label("installedLabel", new ResourceModel("aet.installed") ) );
         form.add(new AjaxCheckBox("installed"){
-
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
             }
-            
         }); 
-        form.add(new Button("submit") {
-
+        form.add(new Button("submit", new ResourceModel("saveBtn")) {
             @Override
-            public void onSubmit() {
+            public final void onSubmit() {
                 if (submit() ) {
                     AEMgtDelegate.getInstance().updateAEList();
                     page.setListPage();
                 }
-            }
+            }            
         });
-        form.add(new Link("cancel") {
-
+        form.add(new Button("cancel", new ResourceModel("cancelBtn")) {
             @Override
-            public void onClick() {
+            public void onSubmit() {
                 page.setListPage();
-            }});
-        final ModalWindow mw = new ModalWindow("echoPanel");
-        mw.setTitle(new ResourceModel("aet.echoPanelTitle"));
-        mw.setCssClassName(ModalWindow.CSS_CLASS_GRAY);
-        mw.setContent(new DicomEchoPanel(ae,mw,true));
+            }}.setDefaultFormProcessing(false));
+
+        final DicomEchoWindow mw = new DicomEchoWindow("echoPanel", true);
         mw.setWindowClosedCallback(new WindowClosedCallback(){
             public void onClose(AjaxRequestTarget target) {
-                log.info("#### EchoPanel closed!");
                 AEMgtDelegate.getInstance().updateAEList();
                 target.addComponent(EditAETPanel.this);
-                log.info("#### ae:"+ae);
             }});
         
         add(mw);
-        form.add(new AjaxButton("echo") {
-
+        form.add(new AjaxButton("echo", new ResourceModel("aet.echoButton")) {
+            @SuppressWarnings("unchecked")
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form form) {
-                mw.show(target);
+                mw.show(target, ae);
+            }
+            @Override
+            protected void onError(AjaxRequestTarget target, Form form) {
+                mw.show(target, ae);
             }});
-
+        this.add(msgWin);
     }
     
-    private TextField newTextField(String id, IValidator v) {
+    @SuppressWarnings({ "unchecked", "unused" })
+    private TextField newTextField(final String id, final IValidator v) {
         TextField tf = new TextField(id);
         tf.add( new AttributeModifier("title", true, 
                 new ResourceModel("ae."+id+".descr")));
@@ -164,7 +160,7 @@ public class EditAETPanel extends Panel {
             delegate.update(ae);
             return true;
         } catch ( Exception x ) {
-            error((String)new ResourceModel("aet.titleAlreadyExist").wrapOnAssignment(this).getObject());
+            msgWin.setErrorMessage(getString("aet.titleAlreadyExist"));
             return false;
         }
     }

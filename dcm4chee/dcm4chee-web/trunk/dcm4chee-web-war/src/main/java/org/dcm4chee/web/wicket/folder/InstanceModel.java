@@ -56,16 +56,12 @@ import org.dcm4chee.archive.util.JNDIUtils;
  * @version $Revision$ $Date$
  * @since Dec 12, 2008
  */
-public class InstanceModel implements Serializable {
+public class InstanceModel extends AbstractDicomModel implements Serializable {
 
-    private long pk;
-    private boolean selected;
-    private boolean details;
-    private DicomObject dataset;
     private List<FileModel> files = new ArrayList<FileModel>();
 
     public InstanceModel(Instance inst) {
-        this.pk = inst.getPk();
+        setPk(inst.getPk());
         this.dataset = inst.getAttributes(true);
     }
 
@@ -93,34 +89,6 @@ public class InstanceModel implements Serializable {
         }
         return dataset.getString(
                 new int[] { Tag.ConceptNameCodeSequence, 0, Tag.CodeMeaning });
-    }
-
-    public long getPk() {
-        return pk;
-    }
-
-    public void setPk(long pk) {
-        this.pk = pk;
-    }
-
-    public DicomObject getDataset() {
-        return dataset;
-    }
-
-    public boolean isSelected() {
-        return selected;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
-
-    public boolean isDetails() {
-        return details;
-    }
-
-    public void setDetails(boolean details) {
-        this.details = details;
     }
 
     public String getDatetime() {
@@ -158,7 +126,7 @@ public class InstanceModel implements Serializable {
     }
 
     public int getRowspan() {
-        int rowspan = details ? 2 : 1;
+        int rowspan = isDetails() ? 2 : 1;
         for (FileModel file : files) {
             rowspan += file.getRowspan();
         }
@@ -184,7 +152,7 @@ public class InstanceModel implements Serializable {
     public void expand() {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        for (File file : dao.findFilesOfInstance(pk)) {
+        for (File file : dao.findFilesOfInstance(getPk())) {
             this.files.add(new FileModel(file));
         }
     }
@@ -192,6 +160,6 @@ public class InstanceModel implements Serializable {
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        dataset = dao.updateInstance(pk, dicomObject).getAttributes(true);
+        dataset = dao.updateInstance(getPk(), dicomObject).getAttributes(true);
     }
 }

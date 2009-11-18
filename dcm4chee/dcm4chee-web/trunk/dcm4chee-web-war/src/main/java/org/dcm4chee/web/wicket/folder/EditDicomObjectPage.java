@@ -43,18 +43,24 @@ import org.apache.wicket.markup.html.WebPage;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since Jan 5, 2009
+ * @since Nov 12, 2009
  */
-public class EditInstancePage extends WebPage {
+public class EditDicomObjectPage extends WebPage {
 
-    public EditInstancePage(final Page page,
-            final InstanceModel model) {
+    public EditDicomObjectPage(final Page page,
+            final AbstractDicomModel model) {
         add(new EditDicomObjectPanel("dicomobject", model.getDataset()) {
 
             @Override
             protected void onCancel() {
                 setResponsePage(page);
+            }
+
+            @Override
+            protected void onApply() {
+                model.update(getDicomObject());
             }
 
             @Override

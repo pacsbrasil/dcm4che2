@@ -56,45 +56,13 @@ import org.dcm4chee.web.wicket.util.DateUtils;
  * @version $Revision$ $Date$
  * @since Dec 12, 2008
  */
-public class PatientModel implements Serializable {
+public class PatientModel extends AbstractDicomModel implements Serializable {
 
-    private long pk;
-    private boolean selected;
-    private boolean details;
-    private DicomObject dataset;
     private List<StudyModel> studies = new ArrayList<StudyModel>();
 
     public PatientModel(Patient patient) {
-        this.pk = patient.getPk();
+        setPk(patient.getPk());
         this.dataset = patient.getAttributes();
-    }
-
-    public long getPk() {
-        return pk;
-    }
-
-    public void setPk(long pk) {
-        this.pk = pk;
-    }
-
-    public DicomObject getDataset() {
-        return dataset;
-    }
-
-    public boolean isSelected() {
-        return selected;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
-
-    public boolean isDetails() {
-        return details;
-    }
-
-    public void setDetails(boolean details) {
-        this.details = details;
     }
 
     public String getName() {
@@ -126,7 +94,7 @@ public class PatientModel implements Serializable {
     }
 
     public int getRowspan() {
-        int rowspan = details ? 2 : 1;
+        int rowspan = isDetails() ? 2 : 1;
         for (StudyModel study : studies) {
             rowspan += study.getRowspan();
         }
@@ -154,7 +122,7 @@ public class PatientModel implements Serializable {
     public void expand(boolean latestStudyFirst) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        for (Study study : dao.findStudiesOfPatient(pk, latestStudyFirst)) {
+        for (Study study : dao.findStudiesOfPatient(getPk(), latestStudyFirst)) {
             this.studies.add(new StudyModel(study));
         }
     }
@@ -162,6 +130,6 @@ public class PatientModel implements Serializable {
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        dataset = dao.updatePatient(pk, dicomObject).getAttributes();
+        dataset = dao.updatePatient(getPk(), dicomObject).getAttributes();
     }
 }

@@ -61,7 +61,6 @@ public class AEMgtDelegate {
 
     public static List<String> AVAILABLE_CIPHERSUITES = new ArrayList<String>();
     static {
-        AVAILABLE_CIPHERSUITES.clear();
         AVAILABLE_CIPHERSUITES.add("-");
         AVAILABLE_CIPHERSUITES.add("SSL_RSA_WITH_NULL_SHA");
         AVAILABLE_CIPHERSUITES.add("TLS_RSA_WITH_AES_128_CBC_SHA");
@@ -95,11 +94,7 @@ public class AEMgtDelegate {
     }
     
     public void update(AE ae) {
-        if ( ae.getPk() == -1) {
-            aeHome.createAET(ae);
-        } else {
-            aeHome.updateAET(ae);
-        }
+        aeHome.updateOrCreateAET(ae);
     }
     
 }

@@ -38,8 +38,6 @@
 
 package org.dcm4chee.web.wicket.ae;
 
-import java.util.List;
-
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
@@ -52,9 +50,6 @@ import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.web.wicket.common.ComponentUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -63,50 +58,43 @@ import org.slf4j.LoggerFactory;
  */
 public class AEListPanel extends Panel {
 
+    private static final long serialVersionUID = 1L;
+
     private AEMgtPanel page;
     
-    private static Logger log = LoggerFactory.getLogger(AEListPanel.class);
-    List<AE> aeList = AEMgtDelegate.getInstance().getAEList();
-    
-    DicomEchoPanel echoPanel;
     @SuppressWarnings("serial")
     public AEListPanel(String id, AEMgtPanel p) {
         super(id);
         setOutputMarkupId(true);
-        final ModalWindow mw = new ModalWindow("echoPanel");
-        mw.setCssClassName(ModalWindow.CSS_CLASS_GRAY);
-        mw.setTitle(new ResourceModel("aet.echoPanelTitle"));
+        final DicomEchoWindow mw = new DicomEchoWindow("echoPanel", true);
         mw.setWindowClosedCallback(new WindowClosedCallback(){
             public void onClose(AjaxRequestTarget target) {
                 AEMgtDelegate.getInstance().updateAEList();
                 target.addComponent(AEListPanel.this);
             }});
-        echoPanel = new DicomEchoPanel(mw, true);
-        mw.setContent( echoPanel );
         add(mw);
-        ComponentUtil util = new ComponentUtil(AEMgtPanel.getModuleName());
-        util.addLabel(this, "titleHdr");
-        util.addLabel(this, "hostHdr");
-        util.addLabel(this, "portHdr");
-        util.addLabel(this, "cipherHdr");
-        util.addLabel(this, "descriptionHdr");
-        util.addLabel(this, "issuerHdr");
-        util.addLabel(this, "fsgrpHdr");
-        util.addLabel(this, "wadoHdr");
-        util.addLabel(this, "userHdr");
-        util.addLabel(this, "stationHdr");
-        util.addLabel(this, "institutionHdr");
-        util.addLabel(this, "departmentHdr");
-        util.addLabel(this, "installedHdr");
+        add( new Label("titleHdrLabel", new ResourceModel("aet.titleHdr")));
+        add( new Label("hostHdrLabel", new ResourceModel("aet.hostHdr")));
+        add( new Label("portHdrLabel", new ResourceModel("aet.portHdr")));
+        add( new Label("cipherHdrLabel", new ResourceModel("aet.cipherHdr")));
+        add( new Label("descriptionHdrLabel", new ResourceModel("aet.descriptionHdr")));
+        add( new Label("issuerHdrLabel", new ResourceModel("aet.issuerHdr")));
+        add( new Label("fsgrpHdrLabel", new ResourceModel("aet.fsgrpHdr")));
+        add( new Label("wadoHdrLabel", new ResourceModel("aet.wadoHdr")));
+        add( new Label("userHdrLabel", new ResourceModel("aet.userHdr")));
+        add( new Label("stationHdrLabel", new ResourceModel("aet.stationHdr")));
+        add( new Label("institutionHdrLabel", new ResourceModel("aet.institutionHdr")));
+        add( new Label("departmentHdrLabel", new ResourceModel("aet.departmentHdr")));
+        add( new Label("installedHdrLabel", new ResourceModel("aet.installedHdr")));
         page = p;
-        add(new PropertyListView("list", aeList ) {
+        add(new PropertyListView<AE>("list", AEMgtDelegate.getInstance().getAEList() ) {
 
             @Override
-            protected void populateItem(final ListItem item) {
+            protected void populateItem(final ListItem<AE> item) {
                 item.add(new Label("title"));
                 item.add(new Label("hostName"));
                 item.add(new Label("port"));
-                item.add(new ListView("cipherSuites", ((AE) item.getModelObject()).getCipherSuites()) {
+                item.add(new ListView("cipherSuites", item.getModelObject().getCipherSuites()) {
                     @Override
                     protected void populateItem(final ListItem item1) {
                         item1.add(new Label("ciphersuite", item1.getModel()));
@@ -125,21 +113,20 @@ public class AEListPanel extends Panel {
                     
                     @Override
                     public void onClick() {
-                        page.setEditPage( (AE)item.getModelObject());
+                        page.setEditPage(item.getModelObject());
                     }
                 });
                 item.add(new Link("removeAET") {
                     
                     @Override
                     public void onClick() {
-                        AEMgtDelegate.getInstance().removeAET((AE)item.getModelObject());
+                        AEMgtDelegate.getInstance().removeAET(item.getModelObject());
                     }
                 });
                 item.add(new AjaxLink("echo") {
                     @Override
                     public void onClick(AjaxRequestTarget target) {
-                        echoPanel.setAE((AE) item.getModelObject());
-                        mw.show(target);
+                        mw.show(target, item.getModelObject());
                     }});
             }
             
@@ -151,6 +138,5 @@ public class AEListPanel extends Panel {
                 page.setEditPage(new AE());
             }
         });
-
     }
 }

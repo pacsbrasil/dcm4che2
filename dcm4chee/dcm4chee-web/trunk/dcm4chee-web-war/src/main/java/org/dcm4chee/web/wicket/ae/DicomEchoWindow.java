@@ -43,14 +43,13 @@ import java.util.List;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
-import org.apache.wicket.behavior.HeaderContributor;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
-import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.CompoundPropertyModel;
@@ -59,6 +58,8 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.validation.validator.RangeValidator;
 import org.apache.wicket.validation.validator.StringValidator;
 import org.dcm4chee.archive.entity.AE;
+import org.dcm4chee.web.wicket.common.BaseForm;
+import org.dcm4chee.web.wicket.common.TooltipBehaviour;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,81 +68,27 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since Aug 18, 2009
  */
-public class DicomEchoPanel extends Panel {
-    
-    private ModalWindow mw;
+@SuppressWarnings("serial")
+public class DicomEchoWindow extends ModalWindow {
+
     private boolean echoOnShow;
     private AE aeOri;
     private final AE aeEcho = new AE();
-    private Integer nrOfTests = 1;
-    private String result;
-    
+
     private static Logger log = LoggerFactory.getLogger(DicomEchoPanel.class);
 
-    private IModel nrOfTestsModel = new IModel() {
-        public Object getObject() {
-            return nrOfTests;
-        }
-        public void setObject(Object object) {
-            nrOfTests = (Integer)object;
-        }
-        public void detach() {}
-    };
-    
-    private Label resultLabel = new Label("result", new AbstractReadOnlyModel() {
-        @Override
-        public Object getObject() {
-            return result;
-        }}) {
-        @Override
-        public void onComponentTag(ComponentTag tag) {
-            tag.getAttributes().put("class", result.indexOf("success") != -1 ? 
-                    "ae_echo_succeed" : "ae_echo_failed");
-            super.onComponentTag(tag);
-        }
-    };
-        
-    private AjaxButton saveBtn = new SaveButton("save");
-    
-    public DicomEchoPanel(AE ae, final ModalWindow mw, boolean echoOnShow) {
-        this(mw,echoOnShow);
-        setAE(ae);
-    }
-    public DicomEchoPanel(final ModalWindow mw, boolean echoOnShow) {
-        super("content");
-        this.mw = mw;
+    public DicomEchoWindow(String id, boolean echoOnShow) {
+        super(id);
         this.echoOnShow = echoOnShow;
-        Form form = new Form("form");
-        add(HeaderContributor.forCss(DicomEchoPanel.class, "style.css"));
-        add(form);
-        CompoundPropertyModel model = new CompoundPropertyModel(aeEcho);
-        setDefaultModel(model);
-        form.add(new Label("aetLabel", new ResourceModel("aet.echoAETitle")));
-        form.add(new Label("ciphersLabel", new ResourceModel("aet.echoCiphers")));
-        form.add(new Label("nrOfTestsLabel", new ResourceModel("aet.echoNrOfTests")));
-        form.add(new Label("echoResultLabel", new ResourceModel("aet.echoResult")));
-        form.add(new TextField("title").add(new AETitleValidator()).setRequired(true)); 
-        form.add(new TextField("hostName").add(StringValidator.minimumLength(1)).setRequired(true)); 
-        form.add( new TextField("port").add(new RangeValidator(1,65535)));
-        form.add(new DropDownChoice("ciphersuite1", new CipherModel(aeEcho, 0), AEMgtDelegate.AVAILABLE_CIPHERSUITES));
-        form.add(new DropDownChoice("ciphersuite2", new CipherModel(aeEcho, 1), AEMgtDelegate.AVAILABLE_CIPHERSUITES));
-        form.add(new DropDownChoice("ciphersuite3", new CipherModel(aeEcho, 2), AEMgtDelegate.AVAILABLE_CIPHERSUITES));
-        form.add( new TextField("nrOfTests", nrOfTestsModel, Integer.class).add(new RangeValidator(1,2000)));
-        resultLabel.setOutputMarkupId(true).setEnabled(false);
-        form.add(resultLabel);
-        form.add(new AjaxButton("cancel", new ResourceModel("aet.cancelButton"))
-        {
-            @Override
-            protected void onSubmit(AjaxRequestTarget target, Form form) {
-                mw.close(target);
-            }
-        });
-        saveBtn.setEnabled(false);
-        form.add(saveBtn);
-        form.add(new EchoButton("echo"));
-        add(new FeedbackPanel("feedback").setOutputMarkupId(true));
+        setTitle(new ResourceModel("aet.echoPanelTitle"));
+        setContent(new DicomEchoPanel("content"));
     }
-
+    
+    public void show(AjaxRequestTarget target, AE ae) {
+        setAE(ae);
+        super.show(target);
+    }
+    
     public void setAE(final AE ae) {
         aeOri = ae;
         copyNetCfg(aeOri, aeEcho);
@@ -178,6 +125,79 @@ public class DicomEchoPanel extends Panel {
         return false;
     }
 
+    
+    @SuppressWarnings("serial")
+    public class DicomEchoPanel extends Panel {
+    
+    private Integer nrOfTests = 1;
+    private String result;
+    private boolean saveFailed;
+    
+    private IModel<Integer> nrOfTestsModel = new IModel<Integer>() {
+        public Integer getObject() {
+            return nrOfTests;
+        }
+        public void setObject(Integer object) {
+            nrOfTests = (Integer)object;
+        }
+        public void detach() {}
+    };
+    
+    private Label resultLabel = new Label("result", new AbstractReadOnlyModel() {
+        @Override
+        public Object getObject() {
+            return result;
+        }}) {
+        @Override
+        public void onComponentTag(ComponentTag tag) {
+            tag.getAttributes().put("class", saveFailed ? "ae_save_failed" :
+                     result.indexOf("success") != -1 ?
+                    "ae_echo_succeed" : "ae_echo_failed");
+            saveFailed = false;
+            super.onComponentTag(tag);
+        }
+    };
+        
+    private AjaxButton saveBtn = new SaveButton("save");
+    
+    public DicomEchoPanel(String id) {
+        super(id);
+        BaseForm form = new BaseForm("form");
+        form.setTooltipBehaviour(new TooltipBehaviour("aet."));
+        add(CSSPackageResource.getHeaderContribution(DicomEchoPanel.class, "style.css"));
+        add(form);
+        CompoundPropertyModel<AE> model = new CompoundPropertyModel<AE>(aeEcho);
+        setDefaultModel(model);
+        form.add(new Label("aetLabel", new ResourceModel("aet.echoAETitle")));
+        form.add(new Label("ciphersLabel", new ResourceModel("aet.echoCiphers")));
+        form.add(new Label("nrOfTestsLabel", new ResourceModel("aet.echoNrOfTests")));
+        form.add(new Label("echoResultLabel", new ResourceModel("aet.echoResult")));
+        form.add(new TextField("title").add(new AETitleValidator()).setRequired(true).setOutputMarkupId(true)); 
+        form.add(new TextField("hostName").add(StringValidator.minimumLength(1)).setRequired(true).setOutputMarkupId(true)); 
+        form.add( new TextField("port").add(new RangeValidator(1,65535)).setOutputMarkupId(true));
+        form.add(new DropDownChoice("ciphersuite1", new CipherModel(aeEcho, 0), AEMgtDelegate.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
+        form.add(new DropDownChoice("ciphersuite2", new CipherModel(aeEcho, 1), AEMgtDelegate.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
+        form.add(new DropDownChoice("ciphersuite3", new CipherModel(aeEcho, 2), AEMgtDelegate.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
+        form.add( new TextField("nrOfTests", nrOfTestsModel, Integer.class).add(new RangeValidator(1,2000)).setOutputMarkupId(true));
+        resultLabel.setOutputMarkupId(true).setEnabled(false);
+        form.add(resultLabel);
+        form.add(new AjaxButton("cancel", new ResourceModel("cancelBtn"))
+        {
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form form) {
+                close(target);
+            }
+            @Override
+            protected void onError(AjaxRequestTarget target, Form form) {
+                close(target);
+            }
+        });
+        saveBtn.setEnabled(false);
+        form.add(saveBtn);
+        form.add(new EchoButton("echo"));
+    }
+
+
     @Override
     protected void onBeforeRender() {
         if (echoOnShow) {
@@ -192,7 +212,7 @@ public class DicomEchoPanel extends Panel {
 
     class EchoButton extends AjaxButton {
         private EchoButton(String id) {
-            super(id);
+            super(id, new ResourceModel("aet.echoButton"));
         }
         @Override
         protected void onSubmit(AjaxRequestTarget target, Form form) {
@@ -203,29 +223,32 @@ public class DicomEchoPanel extends Panel {
                 target.addComponent(saveBtn);
             }
             target.addComponent(resultLabel);
-            target.addComponent(DicomEchoPanel.this.get("feedback"));
-        }
+       }
         @Override
         protected void onError(AjaxRequestTarget target, Form form) {
-            target.addComponent(DicomEchoPanel.this.get("feedback"));
+            target.addComponent(resultLabel);
+            BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
         }
     }
 
     class SaveButton extends AjaxButton {
         private SaveButton(String id) {
-            super(id, new ResourceModel("aet.saveButton"));
+            super(id, new ResourceModel("saveBtn"));
         }
         @Override
         protected void onSubmit(AjaxRequestTarget target, Form form) {
             try {
                 AEMgtDelegate.getInstance().update(copyNetCfg(aeEcho, aeOri));
+                saveFailed = false;
                 saveBtn.setEnabled(false);
-                mw.close(target);
+                close(target);
             } catch (Exception x) {
-                error((String)new ResourceModel("aet.titleAlreadyExist").wrapOnAssignment(this).getObject());
+                result = (String) getString("aet.titleAlreadyExist");
+                saveFailed = true;
+                target.addComponent(resultLabel);
                 target.addComponent(saveBtn);
-                target.addComponent(DicomEchoPanel.this.get("feedback"));
             }
         }
+    }
     }
 }

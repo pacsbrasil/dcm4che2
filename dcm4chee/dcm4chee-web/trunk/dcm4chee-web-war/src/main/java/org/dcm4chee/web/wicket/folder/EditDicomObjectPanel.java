@@ -44,17 +44,18 @@ import java.util.Iterator;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
@@ -63,6 +64,9 @@ import org.dcm4che2.data.ElementDictionary;
 import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.util.TagUtils;
+import org.dcm4chee.web.wicket.common.BaseForm;
+import org.dcm4chee.web.wicket.common.MessageWindow;
+import org.dcm4chee.web.wicket.common.TooltipBehaviour;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -74,15 +78,19 @@ public class EditDicomObjectPanel extends Panel {
     private static ElementDictionary dict = ElementDictionary.getDictionary();
     private final DicomObject dcmObj;
     private final WebMarkupContainer table;
+    private MessageWindow mw = new MessageWindow("mw");
+    private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("folder.");
 
     public EditDicomObjectPanel(String id, DicomObject dcmObj) {
         super(id);
+        add(CSSPackageResource.getHeaderContribution(EditDicomObjectPanel.class, "style.css"));
+        add(mw);
         this.dcmObj = new BasicDicomObject();
         dcmObj.copyTo(this.dcmObj);
-        add(new FeedbackPanel("feedback"));
         Form form = new Form("form");
         add(form);
         table = new WebMarkupContainer("table");
+        addHdrLabels(table);
         table.setOutputMarkupId(true);
         form.add(table);
         RepeatingView rv = new RepeatingView("elements") {
@@ -96,24 +104,39 @@ public class EditDicomObjectPanel extends Panel {
             
         };
         table.add(rv);
-        form.add(new Button("submit") {
-
+        form.add(new Button("apply", new ResourceModel("applyBtn")){
+            @Override
+            public void onSubmit() {
+                EditDicomObjectPanel.this.onApply();
+            }
+        });
+        form.add(new Button("submit", new ResourceModel("saveBtn")) {
             @Override
             public void onSubmit() {
                 EditDicomObjectPanel.this.onSubmit();
             }
         });
-        form.add(new Link("cancel") {
+        form.add(new Button("cancel", new ResourceModel("cancelBtn")) {
 
             @Override
-            public void onClick() {
+            public void onSubmit() {
                 EditDicomObjectPanel.this.onCancel();
-            }});
+            }}.setDefaultFormProcessing(false));
+    }
+
+    private void addHdrLabels(WebMarkupContainer table) {
+        table.add(new Label("nameHdr", new ResourceModel("folder.nameHdr")).add(tooltipBehaviour));
+        table.add(new Label("tagHdr", new ResourceModel("folder.tagHdr")).add(tooltipBehaviour));
+        table.add(new Label("vrHdr", new ResourceModel("folder.vrHdr")).add(tooltipBehaviour));
+        table.add(new Label("lenHdr", new ResourceModel("folder.lenHdr")).add(tooltipBehaviour));
+        table.add(new Label("valueHdr", new ResourceModel("folder.valueHdr")).add(tooltipBehaviour));
     }
 
     protected DicomObject getDicomObject() {
         return dcmObj;
     }
+
+    protected void onApply() {}
 
     protected void onSubmit() {}
 
@@ -194,11 +217,11 @@ public class EditDicomObjectPanel extends Panel {
                 String nesting) {
             super(id, "addelement", EditDicomObjectPanel.this);
             add(new Label("name", nesting + "New Attribute"));
-            Form form = new Form("form");
+            Form form = new BaseForm("form");
             add(form);
             final Model tagModel = new Model("(0008,0000)");
             form.add(new TextField("tag", tagModel).add(new PatternValidator(
-                    "\\([0-9a-fA-F]{4},[0-9a-fA-F]{4}\\)")));
+                    "\\([0-9a-fA-F]{4},[0-9a-fA-F]{4}\\)")).setOutputMarkupId(true));
             add(new AjaxSubmitLink("add", form){
 
                 @Override
@@ -209,12 +232,18 @@ public class EditDicomObjectPanel extends Panel {
                         EditDicomObjectPanel.this.dcmObj
                                 .getNestedDicomObject(itemPath)
                                 .putNull(tag, null);
+                    } else {
+                        mw.setTitle(new ResourceModel(MessageWindow.TITLE_WARNING));
+                        mw.show(target, "msgwindow.msg.GroupLengthElementNotAllowed");
                     }
                     if (target != null) {
                         target.addComponent(table);
                     }
                 }
-
+                @Override
+                protected void onError(AjaxRequestTarget target, Form form) {
+                    target.addComponent(form.get("tag"));
+                }
             });
         }
 

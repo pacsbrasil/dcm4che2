@@ -38,30 +38,64 @@
 
 package org.dcm4chee.web.wicket.folder;
 
-import org.apache.wicket.Page;
-import org.apache.wicket.markup.html.WebPage;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4chee.archive.entity.Patient;
+import org.dcm4chee.archive.entity.Study;
+import org.dcm4chee.archive.util.JNDIUtils;
+import org.dcm4chee.web.dao.StudyListLocal;
+import org.dcm4chee.web.wicket.util.DateUtils;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since Jan 5, 2009
+ * @since Nov 12, 2009
  */
-public class EditStudyPage extends WebPage {
+public abstract class AbstractDicomModel implements Serializable {
 
-    public EditStudyPage(final Page page,
-            final StudyModel model) {
-        add(new EditDicomObjectPanel("dicomobject", model.getDataset()) {
+    private long pk;
+    private boolean selected;
+    private boolean details;
+    protected DicomObject dataset;
 
-            @Override
-            protected void onCancel() {
-                setResponsePage(page);
-            }
-
-            @Override
-            protected void onSubmit() {
-                model.update(getDicomObject());
-                setResponsePage(page);
-            }
-        });
+    public long getPk() {
+        return pk;
     }
+
+    public void setPk(long pk) {
+        this.pk = pk;
+    }
+    
+    public DicomObject getDataset() {
+        return dataset;
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+
+    public boolean isDetails() {
+        return details;
+    }
+
+    public void setDetails(boolean details) {
+        this.details = details;
+    }
+
+    public abstract int getRowspan();
+    
+    public abstract void collapse();
+
+    public abstract boolean isCollapsed();
+
+    public abstract void update(DicomObject dicomObject);
 }

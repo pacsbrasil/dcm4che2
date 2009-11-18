@@ -58,45 +58,13 @@ import org.dcm4chee.web.wicket.util.DateUtils;
  * @version $Revision$ $Date$
  * @since Dec 12, 2008
  */
-public class StudyModel implements Serializable {
+public class StudyModel extends AbstractDicomModel implements Serializable {
 
-    private long pk;
-    private boolean selected;
-    private boolean details;
-    private DicomObject dataset;
     private List<PPSModel> ppss = new ArrayList<PPSModel>();
 
     public StudyModel(Study study) {
-        this.pk = study.getPk();
+        setPk(study.getPk());
         dataset = study.getAttributes(true);
-    }
-
-    public long getPk() {
-        return pk;
-    }
-
-    public void setPk(long pk) {
-        this.pk = pk;
-    }
-
-    public DicomObject getDataset() {
-        return dataset;
-    }
-
-    public boolean isSelected() {
-        return selected;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
-
-    public boolean isDetails() {
-        return details;
-    }
-
-    public void setDetails(boolean details) {
-        this.details = details;
     }
 
     public String getDatetime() {
@@ -163,7 +131,7 @@ public class StudyModel implements Serializable {
     }
 
     public int getRowspan() {
-        int rowspan = details ? 2 : 1;
+        int rowspan = isDetails() ? 2 : 1;
         for (PPSModel pps : ppss) {
             rowspan += pps.getRowspan();
         }
@@ -191,7 +159,7 @@ public class StudyModel implements Serializable {
     public void expand() {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        for (Series series : dao.findSeriesOfStudy(pk)) {
+        for (Series series : dao.findSeriesOfStudy(getPk())) {
             add(series);
         }
     }
@@ -213,6 +181,6 @@ public class StudyModel implements Serializable {
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        dataset = dao.updateStudy(pk, dicomObject).getAttributes(true);
+        dataset = dao.updateStudy(getPk(), dicomObject).getAttributes(true);
     }
 }

@@ -44,16 +44,16 @@ import java.util.ArrayList;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.behavior.HeaderContributor;
 import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
 import org.apache.wicket.extensions.markup.html.tabs.ITab;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.resource.loader.ClassStringResourceLoader;
+import org.apache.wicket.resource.loader.PackageStringResourceLoader;
 import org.dcm4chee.web.wicket.common.LocaleSelectorLink;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,26 +80,29 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
         add(new LocaleSelectorLink("lang_en","en"));
         add(new LocaleSelectorLink("lang_de","de"));
         add(new LocaleSelectorLink("lang_fr","fr"));
-        add(new FeedbackPanel("feedback"));
 
     }
 
     public void addModule(final Class<? extends Panel> clazz) {
         ITab tab = new ModuleTab(clazz);
         super.getTabs().add(tab);
-        add(HeaderContributor.forCss(clazz, "style.css"));
+        if (clazz.getResource("style.css") != null)
+            add(CSSPackageResource.getHeaderContribution(clazz, "style.css"));
     }
     private final class ModuleTab implements ITab {
-        transient private ClassStringResourceLoader stringLoader; 
+        private transient ClassStringResourceLoader classStringLoader; 
+        private transient PackageStringResourceLoader pkgStringLoader;
         private static final String TAB_TITLE_EXT = ".tabTitle";
         private Class<? extends Panel> clazz;
         private String clazzName;
         private String tabTitlePropertyName;
         private Panel panel;
+        private IModel titleModel;
 
         public ModuleTab(Class<? extends Panel> clazz2) {
             clazz = clazz2;
             clazzName = clazz.getName().substring(clazz.getName().lastIndexOf('.')+1);
+            pkgStringLoader = new PackageStringResourceLoader();
             try {
                 Method m = clazz.getDeclaredMethod("getModuleName");
                 tabTitlePropertyName = m.invoke(null)+TAB_TITLE_EXT;
@@ -109,10 +112,15 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
             }
         }
 
-        private ClassStringResourceLoader getStringLoader() {
-            if ( stringLoader == null )
-                stringLoader = new ClassStringResourceLoader(clazz);
-            return stringLoader;
+        private ClassStringResourceLoader getClassStringLoader() {
+            if ( classStringLoader == null )
+                classStringLoader = new ClassStringResourceLoader(clazz);
+            return classStringLoader;
+        }
+        private PackageStringResourceLoader getPackageStringLoader() {
+            if ( pkgStringLoader == null )
+                pkgStringLoader = new PackageStringResourceLoader();
+            return pkgStringLoader;
         }
 
         public Panel getPanel(String panelId)
@@ -129,8 +137,19 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
             return panel;
         }
 
+        /**
+         * Get title of the tab.
+         * Use ClassStringResourceLoader and PackageStringResourceLoader to get the title String.
+         * Using a ResourceModel at this point would fail because the panel isn't instantiated by
+         * the TabbedPane. 
+         * Therefore the title must be either configured in package.properties or &lt;clazz&gt;.properties! 
+         * Other ResourceLoaders will be ignored!
+         */
         public IModel getTitle() {
-            String t = getStringLoader().loadStringResource(null, tabTitlePropertyName);
+            String t = getClassStringLoader().loadStringResource(null, tabTitlePropertyName);
+            if (t== null)
+                t = getPackageStringLoader().loadStringResource(clazz, tabTitlePropertyName, 
+                        getSession().getLocale(), null);
             return new Model(t == null ? clazzName : t);
         }
 

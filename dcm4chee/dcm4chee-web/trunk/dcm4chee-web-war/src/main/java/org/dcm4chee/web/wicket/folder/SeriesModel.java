@@ -56,47 +56,15 @@ import org.dcm4chee.web.wicket.util.DateUtils;
  * @version $Revision$ $Date$
  * @since Dec 12, 2008
  */
-public class SeriesModel implements Serializable {
+public class SeriesModel extends AbstractDicomModel implements Serializable {
 
-    private long pk;
-    private boolean selected;
-    private boolean details;
     private String sourceAET;
-    private DicomObject dataset;
     private List<InstanceModel> instances = new ArrayList<InstanceModel>();
 
     public SeriesModel(Series series) {
-        this.pk = series.getPk();
+        setPk(series.getPk());
         this.sourceAET = series.getSourceAET();
         this.dataset = series.getAttributes(true);
-    }
-
-    public long getPk() {
-        return pk;
-    }
-
-    public void setPk(long pk) {
-        this.pk = pk;
-    }
-
-    public DicomObject getDataset() {
-        return dataset;
-    }
-
-    public boolean isSelected() {
-        return selected;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
-
-    public boolean isDetails() {
-        return details;
-    }
-
-    public void setDetails(boolean details) {
-        this.details = details;
     }
 
     public String getDatetime() {
@@ -178,7 +146,7 @@ public class SeriesModel implements Serializable {
     }
 
     public int getRowspan() {
-        int rowspan = details ? 2 : 1;
+        int rowspan = isDetails() ? 2 : 1;
         for (InstanceModel inst : instances) {
             rowspan += inst.getRowspan();
         }
@@ -206,7 +174,7 @@ public class SeriesModel implements Serializable {
     public void expand() {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        for (Instance inst : dao.findInstancesOfSeries(pk)) {
+        for (Instance inst : dao.findInstancesOfSeries(getPk())) {
             this.instances.add(new InstanceModel(inst));
         }
     }
@@ -214,7 +182,7 @@ public class SeriesModel implements Serializable {
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        dataset = dao.updateSeries(pk, dicomObject).getAttributes(true);
+        dataset = dao.updateSeries(getPk(), dicomObject).getAttributes(true);
     }
 
     public boolean containedBySamePPS(SeriesModel series) {

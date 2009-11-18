@@ -7,12 +7,13 @@ div.queryoptions { background: #FFF;}
 div.querybuttons { background: #DDD; padding: 5 0 0 5;}
 div.viewport { background: #DDD; padding: 5;}
 
-td.test { border-style: solid; }
+div.dicomobject td { border-style: solid; border-width: 1px; background:#99bbaa; }
 col.attrname { width: 200px; }
 col.tag { width: 100px; }
 td.tag input { width: 90px; }
 col.vr { width: 30px; }
 col.len { width: 60px; }
+col.val { width: 300px; }
 td.val input { width: 100%; }
 col.action { width: 30px; }
 td.item, td.newitem, td.newattr { font-style: italic; }

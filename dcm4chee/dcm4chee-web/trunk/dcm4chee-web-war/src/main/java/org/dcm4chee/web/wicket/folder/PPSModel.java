@@ -57,12 +57,8 @@ import org.dcm4chee.archive.util.JNDIUtils;
  * @version $Revision$ $Date$
  * @since Dec 19, 2008
  */
-public class PPSModel implements Serializable {
+public class PPSModel extends AbstractDicomModel implements Serializable {
 
-    private long pk;
-    private boolean selected;
-    private boolean details;
-    private DicomObject dataset;
     private SeriesModel series1;
     private int numberOfInstances;
     private int numberOfSeries;
@@ -70,39 +66,11 @@ public class PPSModel implements Serializable {
 
     public PPSModel(MPPS mpps, SeriesModel series1) {
         if (mpps != null) {
-            pk = mpps.getPk();
+            setPk(mpps.getPk());
             this.dataset = mpps.getAttributes();
         }
         this.series1 = series1;
         series.add(series1);
-    }
-
-    public long getPk() {
-        return pk;
-    }
-
-    public void setPk(long pk) {
-        this.pk = pk;
-    }
-
-    public DicomObject getDataset() {
-        return dataset;
-    }
-
-    public boolean isSelected() {
-        return selected;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
-
-    public boolean isDetails() {
-        return details;
-    }
-
-    public void setDetails(boolean details) {
-        this.details = details;
     }
 
     public List<SeriesModel> getSeries() {
@@ -219,7 +187,7 @@ public class PPSModel implements Serializable {
     }
 
     public int getRowspan() {
-        int rowspan = details ? 2 : 1;
+        int rowspan = isDetails() ? 2 : 1;
         for (SeriesModel ser : series) {
             rowspan += ser.getRowspan();
         }
@@ -258,6 +226,6 @@ public class PPSModel implements Serializable {
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        dataset = dao.updateMPPS(pk, dicomObject).getAttributes();
+        dataset = dao.updateMPPS(getPk(), dicomObject).getAttributes();
     }
 }

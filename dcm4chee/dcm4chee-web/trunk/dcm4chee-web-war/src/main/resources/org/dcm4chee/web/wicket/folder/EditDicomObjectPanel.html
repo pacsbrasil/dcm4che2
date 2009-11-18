@@ -5,11 +5,6 @@
 </head>
 <body>
 <wicket:panel>
-  <div wicket:id="feedback">
-  <ul>
-    <li class="feedbackPanelERROR"><span class="feedbackPanelERROR"></span></li>
-  </ul>
-  </div>
   <form wicket:id="form">
   <table wicket:id="table">
     <colgroup>
@@ -22,11 +17,11 @@
     </colgroup>
     <thead>
       <tr>
-        <th class="attrname">Attribute Name</th>
-        <th class="tag">Tag</th>
-        <th class="vr">VR</th>
-        <th class="len">Length</th>
-        <th class="val">Value</th>
+        <th class="attrname" wicket:id="nameHdr">Attribute Name</th>
+        <th class="tag" wicket:id="tagHdr">Tag</th>
+        <th class="vr" wicket:id="vrHdr">VR</th>
+        <th class="len" wicket:id="lenHdr">Length</th>
+        <th class="val" wicket:id="valueHdr">Value</th>
         <th></th>
       </tr>
     </thead>
@@ -63,10 +58,11 @@
       </wicket:fragment>
     </tbody>
   </table>
-  <button type="submit">Apply</button>
-  <button type="submit" wicket:id="submit">Submit</button>
-  <button type="submit" wicket:id="cancel">Cancel</button>
+  <input type="submit" wicket:id="apply" />
+  <input type="submit" wicket:id="submit"/>
+  <input type="submit" wicket:id="cancel"/>
   </form>
+  <div wicket:id="mw" >MessageWindow</div>
 </wicket:panel>
 </body>
 </html>

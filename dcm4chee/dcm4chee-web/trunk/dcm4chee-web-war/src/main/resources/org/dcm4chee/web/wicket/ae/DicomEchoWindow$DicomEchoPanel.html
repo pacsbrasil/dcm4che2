@@ -46,7 +46,7 @@
 	<br />
 	<span class="ae-desc" wicket:id="nrOfTestsLabel">[NrOfTests]</span>
 	<input class="ae-value" wicket:id="nrOfTests" type="text" size="4" />
-	<button class="ae-echo" type="submit" wicket:id="echo">Echo</button><br/>
+	<input class="ae-echo" type="submit" wicket:id="echo">Echo</input><br/>
 	<span class="ae-desc" wicket:id="echoResultLabel">[Result]</span>
 	<div class="ae-echo-result">
 		<textarea name="result" class="ae-echo-result" wicket:id="result" 
@@ -54,17 +54,10 @@
 	</div>
 	<br />
 	<div class="ae_button">
-		<button class="ae-cancel" type="submit" wicket:id="cancel">Cancel</button>
-		<button class="ae-submit" type="submit" wicket:id="save">Save</button>
+		<input class="ae-cancel" type="submit" wicket:id="cancel"/>
+		<input class="ae-submit" type="submit" wicket:id="save"/>
 	</div>
 	</form>
-	<div wicket:id="feedback" class="feedback" >
-	<ul>
-	  <li>
-	    <span>FEEDBACK</span>
-	  </li>
-	</ul>
-	</div>
 </wicket:panel>
 </body>
 </html>

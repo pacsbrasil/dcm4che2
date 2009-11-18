@@ -40,10 +40,12 @@ package org.dcm4chee.web.wicket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.apache.wicket.Component;
 import org.apache.wicket.authentication.panel.SignInPanel;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.StringResourceModel;
+import org.dcm4chee.web.wicket.common.FocusOnLoadBehaviour;
 import org.dcm4chee.web.wicket.common.LocaleSelectorLink;
 
 /**
@@ -52,10 +54,8 @@ import org.dcm4chee.web.wicket.common.LocaleSelectorLink;
  * @version $Revision$ $Date$
  * @since July 20, 2009
  */
-public class LoginPage extends WebPage
-{
-    public LoginPage()
-    {
+public class LoginPage extends WebPage {
+    public LoginPage() {
         String nodeInfo;
         try {
             nodeInfo = InetAddress.getLocalHost().getHostName();
@@ -67,6 +67,12 @@ public class LoginPage extends WebPage
         add(new LocaleSelectorLink("lang_en","en"));
         add(new LocaleSelectorLink("lang_de","de"));
         add(new LocaleSelectorLink("lang_fr","fr"));
-        add(new SignInPanel("signInPanel"));  
+        add(new SignInPanel("signInPanel") {
+            protected void onSignInFailed() {
+                Component user = LoginPage.this.get("signInPanel:signInForm:username");
+                user.add(new FocusOnLoadBehaviour(new FocusOnLoadBehaviour().new FocusAndSelectTextStrategy()));
+            }
+        });  
+        this.get("signInPanel:signInForm").add(new FocusOnLoadBehaviour());
     }
 }

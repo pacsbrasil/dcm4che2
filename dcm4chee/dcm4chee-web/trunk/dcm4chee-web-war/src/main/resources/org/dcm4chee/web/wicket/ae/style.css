@@ -6,7 +6,7 @@ table.ae-list {}
 table.ae-list th {background: #99bbaa; border-color: #666;}
 table.ae-list td {background: #aaccbb;}
 
-div.ae-table-panel { padding: 10 0 0 0; width: 100% ; height: 524; background: none #99bbaa;}
+div.ae-table-panel { padding: 10 0 0 0; width: 100% ; height: 524; background: none #99bbaa; }
 
 div.ae-table-panel div.ae-table-row { float: left; padding: 1 0 0 0; width: 100%; height: 30; background: #99bbaa;}
 div.ae-table-panel div.ae-cipher-row { float: left; padding: 1 0 0 0; width: 100%; height: 30; background: #99bbaa;}
@@ -18,4 +18,5 @@ div.ae-buttons { background: none #aaaaaa; padding: 5 0 0 0; width: 100%; height
 
 form.ae-echo, div.ae-echo { padding: 20 10 10 10; background: #99bbaa; border-style: double; border-color: black}
 .ae_echo_succeed {background: none #aaffaa; }
-.ae_echo_failed {background: none red; }
+.ae_echo_failed {background: none #ff6666; }
+.ae_save_failed {background: none red; }
