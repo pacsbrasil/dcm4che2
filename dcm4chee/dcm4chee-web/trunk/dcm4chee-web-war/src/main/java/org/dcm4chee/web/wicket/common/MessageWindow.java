@@ -72,8 +72,8 @@ public class MessageWindow extends ModalWindow {
 
     public MessageWindow(String id) {
         super(id);
-        setInitialWidth(400);
-        setInitialHeight(300);
+        setInitialWidth(300);
+        setInitialHeight(200);
         setTitle(new ResourceModel(TITLE_INFO,"MessageWindow"));
         setContent(new MessageWindowPanel("content"));
         add(new AutoOpenBehaviour());

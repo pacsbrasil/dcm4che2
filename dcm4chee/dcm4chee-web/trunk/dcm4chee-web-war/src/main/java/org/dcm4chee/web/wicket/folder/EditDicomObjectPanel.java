@@ -234,7 +234,7 @@ public class EditDicomObjectPanel extends Panel {
                                 .putNull(tag, null);
                     } else {
                         mw.setTitle(new ResourceModel(MessageWindow.TITLE_WARNING));
-                        mw.show(target, "msgwindow.msg.GroupLengthElementNotAllowed");
+                        mw.show(target, this.getString("msgwindow.msg.GroupLengthElementNotAllowed"));
                     }
                     if (target != null) {
                         target.addComponent(table);
