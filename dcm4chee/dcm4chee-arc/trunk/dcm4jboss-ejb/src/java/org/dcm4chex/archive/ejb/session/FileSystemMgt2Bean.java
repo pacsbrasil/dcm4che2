@@ -1087,6 +1087,34 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                         fsGroupID, cuid, bodyPart, srcAET, before, limit));
     }
 
+    /**
+     * @ejb.interface-method
+     */
+    public FileDTO[]  findFilesToLossyCompressWithExternalRetrieveAET(
+            String fsGroupID, String retrieveAET,
+            String cuid, String bodyPart, String srcAET, Timestamp before,
+            int limit) throws FinderException {
+        return toFileDTOs(bodyPart == null
+                ? fileHome.findFilesToLossyCompressWithExternalRetrieveAET(
+                        fsGroupID, retrieveAET, cuid, srcAET, before, limit)
+                : fileHome.findFilesToLossyCompressWithExternalRetrieveAET(
+                        fsGroupID, retrieveAET, cuid, bodyPart, srcAET, before, limit));
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public FileDTO[]  findFilesToLossyCompressWithCopyOnOtherFileSystemGroup(
+            String fsGroupID, String otherFSGroupID,
+            String cuid, String bodyPart, String srcAET, Timestamp before,
+            int limit) throws FinderException {
+        return toFileDTOs(bodyPart == null
+                ? fileHome.findFilesToLossyCompressWithCopyOnOtherFileSystemGroup(
+                        fsGroupID, otherFSGroupID, cuid, srcAET, before, limit)
+                : fileHome.findFilesToLossyCompressWithCopyOnOtherFileSystemGroup(
+                        fsGroupID, otherFSGroupID, cuid, bodyPart, srcAET, before, limit));
+    }
+
 }
 
 

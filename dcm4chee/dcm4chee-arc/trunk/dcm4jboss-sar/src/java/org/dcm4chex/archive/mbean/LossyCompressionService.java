@@ -43,7 +43,6 @@ import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -117,6 +116,10 @@ public class LossyCompressionService extends ServiceMBeanSupport {
 
     private List<CompressionRule> compressionRuleList =
             new ArrayList<CompressionRule>();
+
+    private String externalRetrieveAET;
+
+    private String copyOnFSGroupID;
 
     private boolean isRunning;
 
@@ -219,12 +222,34 @@ public class LossyCompressionService extends ServiceMBeanSupport {
     }
 
     public final String getCompressionRules() {
-        StringBuffer sb = new StringBuffer();
-        Iterator iter = this.compressionRuleList.iterator();
-        while (iter.hasNext()) {
-            sb.append(((CompressionRule) iter.next())).append("\r\n");
-        }
+        StringBuilder sb = new StringBuilder();
+        for (CompressionRule compressionRule : compressionRuleList)
+            sb.append(compressionRule).append("\r\n");
         return sb.toString();
+    }
+
+    public final String getExternalRetrieveAET() {
+        return maskNull(externalRetrieveAET, "-");
+    }
+
+    public final void setExternalRetrieveAET(String externalRetrieveAET) {
+        this.externalRetrieveAET = unmaskNull(externalRetrieveAET.trim(), "-");
+    }
+
+    public final String getCopyOnFSGroupID() {
+        return maskNull(copyOnFSGroupID, "-");
+    }
+
+    public final void setCopyOnFSGroupID(String copyOnFSGroupID) {
+        this.copyOnFSGroupID = unmaskNull(copyOnFSGroupID.trim(), "-");;
+    }
+
+    private static String maskNull(String val, String mask) {
+        return val == null ? mask : val;
+    }
+
+    private static String unmaskNull(String val, String mask) {
+        return val.length() == 0 || val.equals("-") ? null : val;
     }
 
     public int getLimitNumberOfFilesPerTask() {
@@ -491,11 +516,19 @@ public class LossyCompressionService extends ServiceMBeanSupport {
             byte[] buffer = null;
             FileSystemMgt2 fsMgt = newFileSystemMgt();
             for (CompressionRule rule : compressionRuleList) {
-                FileDTO[] files = fsMgt.findFilesToLossyCompress(
+                Timestamp before = new Timestamp(
+                        System.currentTimeMillis() - rule.delay);
+                FileDTO[] files = externalRetrieveAET != null
+                    ? fsMgt.findFilesToLossyCompressWithExternalRetrieveAET(
+                            fsGroupID, externalRetrieveAET, uidOf(rule.cuid), rule.bodyPart,
+                            rule.srcAET, before, limit)
+                    : copyOnFSGroupID != null
+                    ? fsMgt.findFilesToLossyCompressWithCopyOnOtherFileSystemGroup(
+                            fsGroupID, copyOnFSGroupID, uidOf(rule.cuid), rule.bodyPart,
+                            rule.srcAET, before, limit)
+                    : fsMgt.findFilesToLossyCompress(
                             fsGroupID, uidOf(rule.cuid), rule.bodyPart,
-                            rule.srcAET, new Timestamp(
-                                    System.currentTimeMillis() - rule.delay),
-                            limit);
+                            rule.srcAET, before, limit);
                 for (FileDTO fileDTO : files) {
                     if (buffer == null)
                         buffer = new byte[bufferSize];
