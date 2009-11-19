@@ -118,6 +118,33 @@ JPEG Lossy compression of received images.
     </descriptors>
   </attribute>
 
+  <attribute access="read-write" getMethod="getExternalRetrieveAET"
+    setMethod="setExternalRetrieveAET">
+    <description><![CDATA[Constrains lossy compression to objects which are
+     external retrievable from specified Application Entity.
+     <br>'-' = no such constrain.]]>
+    </description>
+    <name>ExternalRetrieveAETitle</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="-" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write" getMethod="getCopyOnFSGroupID"
+    setMethod="setCopyOnFSGroupID">
+    <description><![CDATA[Constrains lossy compression to objects for which
+     there is a copy available on a file system of the specified file system
+     group. Only effective if <b>ExternalRetrieveAETitle</b> = '-'.
+     <br>'-' = no such constrain.]]>
+    </description>
+    <name>CopyOnOtherFileSystemGroupID</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="-" />
+    </descriptors>
+  </attribute>
+
   <attribute access="read-write" getMethod="getSourceAET"
     setMethod="setSourceAET">
     <description><![CDATA[Source AE Title used by operation
