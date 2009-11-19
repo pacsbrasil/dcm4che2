@@ -52,10 +52,10 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.Association;
 
 /**
- * @author gunter.zeilinter@tiani.com
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since 11.06.2004
- *
+ * 
  */
 public class CompressionRules {
 
@@ -67,10 +67,10 @@ public class CompressionRules {
 
     static final int J2KR = 3;
 
-    static final String[] CODES = { "NONE", "JPLL", "JLSL", "J2KR"};
+    static final String[] CODES = { "NONE", "JPLL", "JLSL", "J2KR" };
 
     static final String[] TSUIDS = { null, UIDs.JPEGLossless,
-            UIDs.JPEGLSLossless, UIDs.JPEG2000Lossless,};
+            UIDs.JPEGLSLossless, UIDs.JPEG2000Lossless, };
 
     private final ArrayList list = new ArrayList();
 
@@ -90,7 +90,8 @@ public class CompressionRules {
         StringTokenizer stk = new StringTokenizer(s, "\r\n;");
         while (stk.hasMoreTokens()) {
             String tk = stk.nextToken().trim();
-            if (tk.length() == 0) continue;
+            if (tk.length() == 0)
+                continue;
             try {
                 int endCond = tk.indexOf(']') + 1;
                 Condition cond = new Condition(tk.substring(0, endCond));
@@ -105,30 +106,32 @@ public class CompressionRules {
 
     public String getTransferSyntaxFor(Association assoc, Dataset ds) {
         Map param = new HashMap();
-        param.put("calling", new String[]{assoc.getCallingAET()});
-		param.put("called", new String[]{assoc.getCalledAET()});
+        param.put("calling", new String[] { assoc.getCallingAET() });
+        param.put("called", new String[] { assoc.getCalledAET() });
         if (ds != null) {
-			putIntoIfNotNull(param, "cuid", ds, Tags.SOPClassUID);
-			putIntoIfNotNull(param, "pmi", ds, Tags.PhotometricInterpretation);
-			putIntoIfNotNull(param, "imgtype", ds, Tags.ImageType);
+            putIntoIfNotNull(param, "cuid", ds, Tags.SOPClassUID);
+            putIntoIfNotNull(param, "pmi", ds, Tags.PhotometricInterpretation);
+            putIntoIfNotNull(param, "imgtype", ds, Tags.ImageType);
         }
         for (Iterator it = list.iterator(); it.hasNext();) {
             Entry e = (Entry) it.next();
-            if (e.condition.isTrueFor(param)) return TSUIDS[e.compression];
+            if (e.condition.isTrueFor(param))
+                return TSUIDS[e.compression];
         }
         return null;
     }
 
     private void putIntoIfNotNull(Map param, String key, Dataset ds, int tag) {
-		String[] val = ds.getStrings(tag);
-		if (val != null && val.length != 0) {
-			param.put(key, val);
-		}
-	}
+        String[] val = ds.getStrings(tag);
+        if (val != null && val.length != 0) {
+            param.put(key, val);
+        }
+    }
 
-	public String toString() {
-	    final String newline = System.getProperty("line.separator", "\n");
-        if (list.isEmpty()) return newline;
+    public String toString() {
+        final String newline = System.getProperty("line.separator", "\n");
+        if (list.isEmpty())
+            return newline;
         StringBuffer sb = new StringBuffer();
         for (Iterator it = list.iterator(); it.hasNext();) {
             Entry e = (Entry) it.next();
