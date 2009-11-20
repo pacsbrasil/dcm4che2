@@ -217,7 +217,7 @@ public abstract class CompressCmd extends CodecCmd {
             }
             desc.append("Lossy Compression ")
                 .append(compressionRatio).append(":1");
-            ds.putST(Tags.DerivationImageSeq, desc.toString());
+            ds.putST(Tags.DerivationDescription, desc.toString());
         }
 
         private void updateDerivationCodeSequence(Dataset ds) {
