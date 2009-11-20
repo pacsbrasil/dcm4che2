@@ -211,15 +211,12 @@
         <attr tag="00209163"/> <!-- In-concatenation Total Number -->
         <attr tag="00209228"/> <!-- Concatenation Frame Offset Number -->
         <attr tag="00280002"/> <!-- Samples per pixels -->
-        <attr tag="00280004"/> <!-- Photometric Interpretation -->
-        <attr tag="00280006"/> <!-- Planar Configuration -->
         <attr tag="00280008"/> <!-- Number of Frames -->
         <attr tag="00280009"/> <!-- Frame Increment Pointer -->
         <attr tag="00280010"/> <!-- Rows -->
         <attr tag="00280011"/> <!-- Columns -->
         <attr tag="00280030"/> <!-- Pixel Spacing -->
         <attr tag="00280100"/> <!-- Bits Allocated -->
-        <attr tag="00280101"/> <!-- Bits Stored -->
         <attr tag="00280102"/> <!-- High Bit -->
         <attr tag="00280103"/> <!-- Pixel Representation -->
         <attr tag="00280120"/> <!-- Pixel Padding Value -->
@@ -227,7 +224,6 @@
         <attr tag="00281051"/> <!-- Window Width -->
         <attr tag="00281052"/> <!-- Rescale Intercept -->
         <attr tag="00281053"/> <!-- Rescale Slope -->
-        <attr tag="00282110"/> <!-- Lossy Image Compression -->
         <attr tag="00400302"/> <!-- Entrance Dose -->
         <attr tag="00400316"/> <!-- Organ Dose -->
         <attr tag="0040A032"/> <!-- Observation DateTime -->
