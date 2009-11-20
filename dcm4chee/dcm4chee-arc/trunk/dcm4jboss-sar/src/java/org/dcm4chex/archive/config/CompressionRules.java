@@ -50,6 +50,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.Association;
+import org.dcm4chex.archive.codec.CompressCmd;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -67,23 +68,28 @@ public class CompressionRules {
 
     static final int J2KR = 3;
 
-    static final String[] CODES = { "NONE", "JPLL", "JLSL", "J2KR" };
+    static final int JPLY = 4;
+
+    static final String[] CODES = { "NONE", "JPLL", "JLSL", "J2KR", "JPLY" };
 
     static final String[] TSUIDS = { null, UIDs.JPEGLossless,
-            UIDs.JPEGLSLossless, UIDs.JPEG2000Lossless, };
+            UIDs.JPEGLSLossless, UIDs.JPEG2000Lossless, UIDs.JPEGBaseline};
 
     private final ArrayList list = new ArrayList();
 
     private static final class Entry {
 
         final Condition condition;
-
         final int compression;
-
-        Entry(Condition condition, int compression) {
+        final float quality;
+        final float ratio;
+        
+        Entry(Condition condition, int compression, float quality, float ratio) {
             this.condition = condition;
             this.compression = compression;
-        }
+            this.quality = quality;
+            this.ratio = ratio;
+       }
     }
 
     public CompressionRules(String s) {
@@ -95,16 +101,33 @@ public class CompressionRules {
             try {
                 int endCond = tk.indexOf(']') + 1;
                 Condition cond = new Condition(tk.substring(0, endCond));
-                int compression = Math.max(0, Arrays.asList(CODES).indexOf(
-                        tk.substring(endCond)));
-                list.add(new Entry(cond, compression));
+                String codec = tk.substring(endCond);
+                int compression;
+                float quality = 0.75f;
+                float ratio = 5.f;
+                if (codec.startsWith("JPLY(")) {
+                    if (!codec.endsWith(")"))
+                        throw new IllegalArgumentException();
+                    int endQuality = codec.indexOf(':');
+                    if (endQuality == -1)
+                        throw new IllegalArgumentException();
+                    compression = JPLY;
+                    quality = Float.parseFloat(codec.substring(5, endQuality));
+                    ratio =  Float.parseFloat(
+                            codec.substring(endQuality + 1, codec.length()-1));
+                } else {
+                    compression = Arrays.asList(CODES).indexOf(codec);
+                    if (compression == -1)
+                        throw new IllegalArgumentException();
+                }
+                list.add(new Entry(cond, compression, quality, ratio));
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException(tk);
             }
         }
     }
 
-    public String getTransferSyntaxFor(Association assoc, Dataset ds) {
+    public CompressCmd getCompressFor(Association assoc, Dataset ds) {
         Map param = new HashMap();
         param.put("calling", new String[] { assoc.getCallingAET() });
         param.put("called", new String[] { assoc.getCalledAET() });
@@ -112,11 +135,17 @@ public class CompressionRules {
             putIntoIfNotNull(param, "cuid", ds, Tags.SOPClassUID);
             putIntoIfNotNull(param, "pmi", ds, Tags.PhotometricInterpretation);
             putIntoIfNotNull(param, "imgtype", ds, Tags.ImageType);
+            putIntoIfNotNull(param, "bodypart", ds, Tags.BodyPartExamined);
         }
         for (Iterator it = list.iterator(); it.hasNext();) {
             Entry e = (Entry) it.next();
-            if (e.condition.isTrueFor(param))
-                return TSUIDS[e.compression];
+            if (e.condition.isTrueFor(param)) {
+                return (e.compression == NONE)? null : (e.compression == JPLY) 
+                        ? CompressCmd.createJPEGLossyCompressCmd(
+                                ds, e.quality, e.ratio, null, null)
+                        : CompressCmd.createCompressCmd(
+                                ds, TSUIDS[e.compression]);
+            }
         }
         return null;
     }
@@ -137,6 +166,9 @@ public class CompressionRules {
             Entry e = (Entry) it.next();
             e.condition.toStringBuffer(sb);
             sb.append(CODES[e.compression]);
+            if (e.compression == JPLY) {
+                sb.append('(').append(e.quality).append(':').append(e.ratio).append(')');
+            }
             sb.append(newline);
         }
         return sb.toString();

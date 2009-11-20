@@ -100,7 +100,7 @@ public abstract class CodecCmd {
 
     protected final String tsuid;
 
-    protected final int dataType;
+   protected final int dataType;
 
     protected CodecCmd(Dataset ds, String tsuid) {
         this.samples = ds.getInt(Tags.SamplesPerPixel, 1);
@@ -169,6 +169,10 @@ public abstract class CodecCmd {
 
     public static void resetBufferedImagePoolHitRate() {
         biPool.resetHitRate();
+    }
+
+    public final String getTransferSyntaxUID() {
+        return tsuid;
     }
 
     public int getPixelDataLength() {

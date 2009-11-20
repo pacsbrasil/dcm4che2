@@ -312,8 +312,10 @@ public abstract class CompressCmd extends CodecCmd {
                 ds = DcmObjectFactory.getInstance().newDataset();
             p.setDcmHandler(ds.getDcmHandler());
             p.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
-            String tsuid = ds.getInt(Tags.BitsAllocated, 8) > 8
-                    ? UIDs.JPEGExtended : UIDs.JPEGBaseline;
+            CompressCmd compressCmd = createJPEGLossyCompressCmd(ds, quality,
+                        estimatedCompressionRatio, iuid, suid);
+            compressCmd.coerceDataset(ds);
+            String tsuid = compressCmd.getTransferSyntaxUID();
             FileMetaInfo fmi = DcmObjectFactory.getInstance()
                     .newFileMetaInfo(ds, tsuid);
             ds.setFileMetaInfo(fmi);
@@ -325,9 +327,6 @@ public abstract class CompressCmd extends CodecCmd {
             try {
                 DcmDecodeParam decParam = p.getDcmDecodeParam();
                 DcmEncodeParam encParam = DcmEncodeParam.valueOf(tsuid);
-                CompressCmd compressCmd = 
-                    new JpegLossy(ds, tsuid, quality, estimatedCompressionRatio, iuid, suid);
-                compressCmd.coerceDataset(ds);
                 ds.writeFile(bos, encParam);
                 ds.writeHeader(bos, encParam, Tags.PixelData, VRs.OB, -1);
                 int read = compressCmd.compress(decParam.byteOrder, in, bos,
@@ -371,6 +370,16 @@ public abstract class CompressCmd extends CodecCmd {
         throw new IllegalArgumentException("tsuid:" + tsuid);
     }
 
+    public static CompressCmd createJPEGLossyCompressCmd(Dataset ds,
+            float quality, float ratio, String iuid, String suid) {
+        return new JpegLossy(ds,
+                ds.getInt(Tags.BitsAllocated, 8) > 8
+                    ? UIDs.JPEGExtended 
+                    : UIDs.JPEGBaseline,
+                quality, ratio, iuid, suid);
+    }
+
+    
     protected CompressCmd(Dataset ds, String tsuid) {
         super(ds, tsuid);
     }

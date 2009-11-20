@@ -436,32 +436,44 @@ received DICOM Composite Object *and* in the matching Patient Record.
    <attribute access="read-write"
       getMethod="getCompressionRules"
       setMethod="setCompressionRules">
-      <description><![CDATA[List of image compression rules. Note that the value of the <b>MaxConcurrentCodec</b> attribute in the Compression Service also effects the on-the-fly
-compression and decompression during the store of images by the
-StoreSCP service.
-      <br>Format:
-      <br>[<i>condition</i>!=<i>value</i>]<i>compression</i>
-      <br>where
-      <br><i>condition</i>&#8212;when to apply the compression rule. Separate
-      multiple <i>condition</i>!=<i>value</i> statements with a comma. The possible condition 
-      values are:
-      <br>calling - called AE title. Apply the rule to the called AE titles listed as values.
-      <br>called - called AE title. Apply the rule to the calling AE titles listed as values.
-      <br>pmi - photometric interpretation.
-      <br>cuid - SOP Class UID. Apply the rule for the SOP Class UIDs listed as values.
-      <br>imgtype - type of image. Apply the rule to the image types listed as values, such as RGB.
-      <br>
-      <br><i>value</i>&#8212;the value of the condition. Each condition can
-      have multiple values, separated by | (pipe).For example, 
-      <code>[calling!=SCU1|SCU2]</code>
-      <br>    
-      <br><i>compression</i>&#8212;the type of compression to apply to each condition!=value pair, separated by a space.
-      Possible values are:
-      <br>NONE - do not apply compression.
-      <br>JPLL - JPEG Lossless
-      <br>JLSL - JPEG-LS Lossless
-      <br>J2KR - JPEG 2000 Lossless
-      ]]>
+      <description><![CDATA[List of image compression rules. First matching
+rule for a received uncompressed image defines its compression. Enables to set
+compression methods dependent on Calling/Called AE Title in the A-Associate RQ
+from the Storage SCU and on values of particular image attributes
+(s. <b>Attributes for compression conditions</b> below).</p>
+<p>
+<b>Syntax:</b><br>
+&lt;compression rules&gt; := (&lt;compression rule&gt; &lt;EOL&gt;)+<br><br>
+&lt;compression rule&gt; := [&lt;conditions&gt;] &lt;compression&gt;<br><br>
+&lt;conditions&gt; := '<tt>[</tt>' &lt;condition&gt; {'<tt>,</tt>' &lt;condition&gt;} '<tt>]</tt>'<br><br>
+&lt;condition&gt; := &lt;attribute&gt; ['<tt>!</tt>']'<tt>=</tt>' &lt;value&gt; {'<tt>|</tt>' &lt;value&gt;}<br><br>
+&lt;attribute&gt; := '<tt>calling</tt>' | '<tt>called</tt>' | '<tt>pmi</tt>' | '<tt>cuid</tt>' | '<tt>imgtype</tt>' | '<tt>bodypart</tt>'<br><br>
+&lt;compression&gt; := 'NONE' | 'JPLL' | 'JLSL' | 'J2KR' | ('JPLY' ['<tt>(</tt>' &lt;quality&gt; '<tt>:</tt>' &lt;ratio&gt; '<tt>)</tt>'])<br><br>
+&lt;quality&gt; := used compression quality between 0.0 and 1.0, 0.75 by default.<br><br>
+&lt;ratio&gt; := estimated compression ratio documented in attribute <i>Lossy Image Compression Ratio (0028,2112)</i>, 5.0 by default.
+<p>
+<b>Supported compression modes:</b>
+<ul>
+<li><tt>NONE</tt> - do not apply compression.</li>
+<li><tt>JPLL</tt> - JPEG Lossless</li>
+<li><tt>JLSL</tt> - JPEG-LS Lossless</li>
+<li><tt>J2KR</tt> - JPEG 2000 Lossless</li>
+<li><tt>JPLY</tt> - JPEG Lossy</li>
+</ul>
+<p>
+<b>Attributes for compression conditions:</b>
+<ul>
+<li><tt>calling</tt> - Calling AE title in A-Associate RQ from Storage SCU.</li>
+<li><tt>called</tt> - Called AE title in A-Associate RQ from Storage SCU.</li>
+<li><tt>pmi</tt> - <i>Photometric Interpretation (0028,0004)</i> of image.</li>
+<li><tt>cuid</tt> - <i>SOP Class UID (0008,0016)</i> of image.</li>
+<li><tt>imgtype</tt> - <i>Image Type (0008,0008)</i> of image.</li>
+<li><tt>bodypart</tt> - <i>Body Part Examined (0018,0015)</i> of image.</li>
+</ul>
+<p>
+The value of the attribute <b>MaxConcurrentCodec</b> of the <b>Compression
+Service</b> also effects the on-the-fly compression and decompression during
+the store of images by the Storage SCP.]]>
       </description>
       <name>CompressionRules</name>
       <type>java.lang.String</type>
