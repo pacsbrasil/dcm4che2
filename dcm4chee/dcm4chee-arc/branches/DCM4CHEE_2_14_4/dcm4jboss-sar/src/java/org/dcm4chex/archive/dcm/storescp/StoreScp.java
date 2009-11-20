@@ -323,7 +323,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             for ( int i = 0 ; st.hasMoreElements() ; i++ ) {
                 trimmed = st.nextToken().trim();
                 referencedDirectoryURI[i] = isURI(trimmed) ? (trimmed + '/') :
-                FileUtils.toFile(trimmed).toURI().toString();
+                    FileUtils.toFile(trimmed).toURI().toString();
                 referencedDirectoryPath[i] = trimmed;
             }
         }
@@ -604,20 +604,23 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 filePath = file.getPath().substring(
                         baseDir.getPath().length() + 1).replace(
                         File.separatorChar, '/');
-                String compressTSUID = (parser.getReadTag() == Tags.PixelData && parser
-                        .getReadLength() != -1) ? compressionRules
-                        .getTransferSyntaxFor(assoc, ds) : null;
-                String tsuid = (compressTSUID != null) ? compressTSUID : rq
-                        .getTransferSyntaxUID();
-                ds.setFileMetaInfo(objFact.newFileMetaInfo(rqCmd
-                        .getAffectedSOPClassUID(), rqCmd
-                        .getAffectedSOPInstanceUID(), tsuid));
+                CompressCmd compressCmd = null;
+                if (parser.getReadTag() == Tags.PixelData
+                        && parser.getReadLength() != -1) {
+                    compressCmd = compressionRules.getCompressFor(assoc, ds);
+                    if (compressCmd != null)
+                        compressCmd.coerceDataset(ds);
+                }
+                ds.setFileMetaInfo(objFact.newFileMetaInfo(ds,
+                        compressCmd != null 
+                            ? compressCmd.getTransferSyntaxUID()
+                            : rq.getTransferSyntaxUID()));
 
                 perfMon.start(activeAssoc, rq,
                         PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
                 perfMon.setProperty(activeAssoc, rq,
                         PerfPropertyEnum.DICOM_FILE, file);
-                md5sum = storeToFile(parser, ds, file, getByteBuffer(assoc));
+                md5sum = storeToFile(parser, ds, file, compressCmd, getByteBuffer(assoc));
                 perfMon.stop(activeAssoc, rq,
                         PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
             }
@@ -647,6 +650,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     && !seriuid.equals(seriesStored.getSeriesInstanceUID())) {
                 service.logInstancesStoredAndUpdateDerivedFields(store,
                         assoc.getSocket(), seriesStored);
+                doAfterSeriesIsStored(store, assoc, seriesStored);
                 seriesStored = null;
             }
             boolean newSeries = seriesStored == null;
@@ -660,7 +664,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 if (!callingAET.equals(calledAET)) {
                     service.ignorePatientIDForUnscheduled(ds,
                             Tags.RequestAttributesSeq, callingAET);
-                    service.supplementIssuerOfPatientID(ds, callingAET);
                     service.generatePatientID(ds, ds);
                 }
             }
@@ -1039,7 +1042,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     private byte[] storeToFile(DcmParser parser, Dataset ds, File file,
-            byte[] buffer) throws Exception {
+            CompressCmd compressCmd, byte[] buffer) throws Exception {
         log.info("M-WRITE file:" + file);
         MessageDigest md = null;
         BufferedOutputStream bos = null;
@@ -1055,11 +1058,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             DcmDecodeParam decParam = parser.getDcmDecodeParam();
             String tsuid = ds.getFileMetaInfo().getTransferSyntaxUID();
             DcmEncodeParam encParam = DcmEncodeParam.valueOf(tsuid);
-            CompressCmd compressCmd = null;
-            if (!decParam.encapsulated && encParam.encapsulated) {
-                compressCmd = CompressCmd.createCompressCmd(ds, tsuid);
-                compressCmd.coerceDataset(ds);
-            }
             ds.writeFile(bos, encParam);
             if (parser.getReadTag() == Tags.PixelData) {
                 int len = parser.getReadLength();
@@ -1204,8 +1202,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         SeriesStored seriesStored = (SeriesStored) assoc.getProperty(SERIES_STORED);
         if (seriesStored != null) {
             try {
+            	Storage store = getStorage(assoc);
                 service.logInstancesStoredAndUpdateDerivedFields(
-                        getStorage(assoc), assoc.getSocket(), seriesStored);
+                		store, assoc.getSocket(), seriesStored);
+                doAfterSeriesIsStored(store, assoc, seriesStored);
              } catch (Exception e) {
                 log.error("Clean up on Association close failed:", e);
             }
@@ -1216,5 +1216,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         if (assoc.getAAssociateAC() != null)
             perfMon.assocRelEnd(assoc, Command.C_STORE_RQ);
     }
-
+    
+    // extension point for specialized implementations of StoreScp
+    protected void doAfterSeriesIsStored(Storage store, Association assoc, SeriesStored seriesStored) throws Exception {
+    	return;
+    }
 }

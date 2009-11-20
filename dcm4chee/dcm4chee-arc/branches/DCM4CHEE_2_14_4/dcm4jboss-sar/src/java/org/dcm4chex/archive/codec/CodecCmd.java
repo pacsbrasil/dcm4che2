@@ -52,8 +52,7 @@ import EDU.oswego.cs.dl.util.concurrent.Semaphore;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision$ $Date: 2006-05-15 11:59:33 +0200 (Mon, 15 May
- *          2006) $
+ * @version $Revision$ $Date$
  * @since 14.03.2005
  * 
  */
@@ -100,7 +99,7 @@ public abstract class CodecCmd {
 
     protected final String tsuid;
 
-    protected final int dataType;
+   protected final int dataType;
 
     protected CodecCmd(Dataset ds, String tsuid) {
         this.samples = ds.getInt(Tags.SamplesPerPixel, 1);
@@ -169,6 +168,10 @@ public abstract class CodecCmd {
 
     public static void resetBufferedImagePoolHitRate() {
         biPool.resetHitRate();
+    }
+
+    public final String getTransferSyntaxUID() {
+        return tsuid;
     }
 
     public int getPixelDataLength() {
