@@ -44,5 +44,6 @@ div.tabpanel div.tab-row a:hover { background: #aaa; }
 p.seperator { width: 100%; height: 1px;}
 
 .msgWindow { background: #99bbaa; width: 100% ; height: 100%; text-align: center;}
-.msgWindow-msg { padding: 10 10 10 10; background: #99bbaa; line-height: 30px; text-align: center;}
-.msgWindow-button { padding: 50 10 10 10; background: #99bbaa; width: auto ; height: auto; text-align: center; }
+.msgWindow_content {height: 63%; width: 90%;position: absolute; left: 5%; top: 40px;}
+.msgWindow-msg { width:90%; position: absolute; left: 5%; top: 45%;}
+.msgWindow-button { width:50%;position: absolute; left: 25%; top: 80%; }

@@ -40,6 +40,7 @@ package org.dcm4chee.web.wicket.common;
 
 import java.lang.reflect.Field;
 
+import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.behavior.AbstractBehavior;
@@ -47,6 +48,7 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.internal.HtmlHeaderContainer;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.ResourceModel;
@@ -94,6 +96,15 @@ public class MessageWindow extends ModalWindow {
         this.msg = msg;
         setTitle(new ResourceModel(TITLE_ERROR,"MessageWindow"));
     }
+    
+    public void renderHead( HtmlHeaderContainer container ) {
+        super.renderHead(container);
+        if (msg != null && !isShown()) {
+            Component c = this.get("content:close");
+            container.getHeaderResponse().renderOnLoadJavascript("self.focus();var elem=document.getElementById('"+
+                    c.getMarkupId() + "');elem.focus()");
+        }
+    }
 
     @Override
     protected void onBeforeRender() {
@@ -107,6 +118,12 @@ public class MessageWindow extends ModalWindow {
         }
     }
     
+    @Override
+    public void show(final AjaxRequestTarget target) {
+        super.show(target);
+        target.focusComponent(this.get("content:close"));
+    }
+
     private void show() {
         try {
             if (showField == null) {
@@ -145,7 +162,7 @@ public class MessageWindow extends ModalWindow {
                 public void onClick(AjaxRequestTarget target) {
                     close(target);
                 }
-            }.add(new Label("closeLabel", new ResourceModel("closeBtn"))));
+            }.add(new Label("closeLabel", new ResourceModel("closeBtn"))) );
         }
 
         /**

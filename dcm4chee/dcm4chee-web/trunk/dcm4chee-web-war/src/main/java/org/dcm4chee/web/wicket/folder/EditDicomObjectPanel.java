@@ -50,7 +50,6 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
-import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.repeater.RepeatingView;
@@ -74,17 +73,18 @@ import org.dcm4chee.web.wicket.common.TooltipBehaviour;
  * @since Jan 15, 2009
  */
 public class EditDicomObjectPanel extends Panel {
-
+    private static final long serialVersionUID = 1934305435730718692L;
     private static ElementDictionary dict = ElementDictionary.getDictionary();
     private final DicomObject dcmObj;
     private final WebMarkupContainer table;
     private MessageWindow mw = new MessageWindow("mw");
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("folder.");
 
-    public EditDicomObjectPanel(String id, DicomObject dcmObj) {
+    public EditDicomObjectPanel(String id, DicomObject dcmObj, String title) {
         super(id);
         add(CSSPackageResource.getHeaderContribution(EditDicomObjectPanel.class, "style.css"));
         add(mw);
+        add(new Label("title", new ResourceModel("dicom.edit.title."+title)));
         this.dcmObj = new BasicDicomObject();
         dcmObj.copyTo(this.dcmObj);
         Form form = new Form("form");

@@ -59,6 +59,7 @@ import org.apache.wicket.validation.validator.RangeValidator;
 import org.apache.wicket.validation.validator.StringValidator;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.wicket.common.BaseForm;
+import org.dcm4chee.web.wicket.common.FocusOnLoadBehaviour;
 import org.dcm4chee.web.wicket.common.TooltipBehaviour;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,6 +88,7 @@ public class DicomEchoWindow extends ModalWindow {
     public void show(AjaxRequestTarget target, AE ae) {
         setAE(ae);
         super.show(target);
+        target.focusComponent(this.get("content:form:cancel"));        
     }
     
     public void setAE(final AE ae) {
@@ -191,7 +193,7 @@ public class DicomEchoWindow extends ModalWindow {
             protected void onError(AjaxRequestTarget target, Form form) {
                 close(target);
             }
-        });
+        }).add(FocusOnLoadBehaviour.newSimpleFocusBehaviour());
         saveBtn.setEnabled(false);
         form.add(saveBtn);
         form.add(new EchoButton("echo"));

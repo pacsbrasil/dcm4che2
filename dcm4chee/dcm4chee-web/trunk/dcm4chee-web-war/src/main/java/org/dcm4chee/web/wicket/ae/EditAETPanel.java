@@ -58,6 +58,7 @@ import org.apache.wicket.validation.IValidator;
 import org.apache.wicket.validation.validator.RangeValidator;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.wicket.common.BaseForm;
+import org.dcm4chee.web.wicket.common.FocusOnLoadBehaviour;
 import org.dcm4chee.web.wicket.common.MessageWindow;
 import org.dcm4chee.web.wicket.common.TooltipBehaviour;
 import org.dcm4chee.web.wicket.common.UrlValidator1;
@@ -83,7 +84,8 @@ public class EditAETPanel extends Panel {
         add(form);
         CompoundPropertyModel<AE> model = new CompoundPropertyModel<AE>(ae);
         setDefaultModel(model);
-        form.addLabeledTextField("title").add(new AETitleValidator()).setRequired(true); 
+        form.addLabeledTextField("title").add(new AETitleValidator())
+            .setRequired(true).add(FocusOnLoadBehaviour.newFocusAndSelectBehaviour()); 
         form.addLabeledTextField("hostName").setRequired(true); 
         form.addLabeledTextField("port").add(new RangeValidator(1,65535));
         form.add(new Label("ciphersLabel1", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{1} ) ) );

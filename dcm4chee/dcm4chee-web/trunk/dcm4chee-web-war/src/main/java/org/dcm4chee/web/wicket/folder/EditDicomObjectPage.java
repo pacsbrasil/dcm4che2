@@ -51,7 +51,7 @@ public class EditDicomObjectPage extends WebPage {
 
     public EditDicomObjectPage(final Page page,
             final AbstractDicomModel model) {
-        add(new EditDicomObjectPanel("dicomobject", model.getDataset()) {
+        add(new EditDicomObjectPanel("dicomobject", model.getDataset(), model.getClass().getSimpleName()) {
 
             @Override
             protected void onCancel() {

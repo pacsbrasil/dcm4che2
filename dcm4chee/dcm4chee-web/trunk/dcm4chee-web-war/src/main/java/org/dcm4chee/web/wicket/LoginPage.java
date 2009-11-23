@@ -70,7 +70,7 @@ public class LoginPage extends WebPage {
         add(new SignInPanel("signInPanel") {
             protected void onSignInFailed() {
                 Component user = LoginPage.this.get("signInPanel:signInForm:username");
-                user.add(new FocusOnLoadBehaviour(new FocusOnLoadBehaviour().new FocusAndSelectTextStrategy()));
+                user.add(FocusOnLoadBehaviour.newFocusAndSelectBehaviour());
             }
         });  
         this.get("signInPanel:signInForm").add(new FocusOnLoadBehaviour());

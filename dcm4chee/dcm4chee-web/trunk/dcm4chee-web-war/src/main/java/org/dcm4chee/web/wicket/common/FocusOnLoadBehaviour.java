@@ -67,6 +67,17 @@ public class FocusOnLoadBehaviour extends AbstractBehavior {
         focusStrategy = strategy;
     }
     
+    public static FocusOnLoadBehaviour newSimpleFocusBehaviour() {
+        FocusOnLoadBehaviour fb = new FocusOnLoadBehaviour();
+        fb.focusStrategy = fb.new SimpleFocusStrategy();
+        return fb;
+    }
+    public static FocusOnLoadBehaviour newFocusAndSelectBehaviour() {
+        FocusOnLoadBehaviour fb = new FocusOnLoadBehaviour();
+        fb.focusStrategy = fb.new FocusAndSelectTextStrategy();
+        return fb;
+    }
+    
     public void bind( Component component ) {
         this.component = component;
         if ( focusStrategy == null ) {
@@ -91,16 +102,26 @@ public class FocusOnLoadBehaviour extends AbstractBehavior {
     private boolean setFocusOnEmpty(IHeaderResponse headerResponse, Component c) {
         Object o = c.getDefaultModelObject();
         if ( o == null || o.toString().length() < 1) {
-            headerResponse.renderOnLoadJavascript("self.focus();document.getElementById('" + c.getMarkupId() + "').focus()");
+            headerResponse.renderOnLoadJavascript(getJavaScriptString(c));
             return true;
         }
         return false;
+    }
+    private String getJavaScriptString(Component c) {
+        return "self.focus();var elem=document.getElementById('"+
+                c.getMarkupId() + "');elem.focus()";
     }
 
     public interface FocusStrategy {
         void focus( IHeaderResponse headerResponse, Component c );
     }
     
+    public class SimpleFocusStrategy implements FocusStrategy {
+        public void focus(IHeaderResponse headerResponse, Component c) {
+            headerResponse.renderOnLoadJavascript(getJavaScriptString(c));
+        }
+    }
+
     public class EmptyFocusStrategy implements FocusStrategy {
         public void focus(IHeaderResponse headerResponse, Component c) {
             setFocusOnEmpty(headerResponse, c);
@@ -110,8 +131,7 @@ public class FocusOnLoadBehaviour extends AbstractBehavior {
     public class FocusAndSelectTextStrategy implements FocusStrategy {
         public void focus(IHeaderResponse headerResponse, Component c) {
             if ( c instanceof TextField) {
-                headerResponse.renderOnLoadJavascript("self.focus();var elem =document.getElementById('"+
-                        c.getMarkupId() + "');elem.focus();elem.select();");
+                headerResponse.renderOnLoadJavascript(getJavaScriptString(c)+";elem.select()");
             }
         }
     }

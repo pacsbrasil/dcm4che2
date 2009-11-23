@@ -8,6 +8,7 @@ div.querybuttons { background: #DDD; padding: 5 0 0 5;}
 div.viewport { background: #DDD; padding: 5;}
 
 div.dicomobject td { border-style: solid; border-width: 1px; background:#99bbaa; }
+.editTitle { text-align: center; font-size: 20px; font-weight: bold; }
 col.attrname { width: 200px; }
 col.tag { width: 100px; }
 td.tag input { width: 90px; }
