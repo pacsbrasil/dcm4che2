@@ -448,7 +448,14 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         FileSystemLocal prev = selectDefRWFileSystemsOfGroup(dto.getGroupID());
         if (prev == null) {
             dto.setStatus(FileSystemStatus.DEF_RW);
+			
+            // there is no RW+ or RW file-system, how about other states (i.e. RO, PENDING)
+            Collection c = fileSystemHome.findByGroupId(dto.getGroupID());
+            if (!c.isEmpty()) {
+            	prev = (FileSystemLocal) c.iterator().next();
+            }
         }
+
         FileSystemLocal fs = fileSystemHome.create(dto);
         if (prev != null) {
             FileSystemLocal prev0 = prev;
