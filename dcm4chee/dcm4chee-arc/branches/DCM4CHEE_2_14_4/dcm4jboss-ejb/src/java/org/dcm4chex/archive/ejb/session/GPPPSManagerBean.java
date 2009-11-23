@@ -135,7 +135,7 @@ public abstract class GPPPSManagerBean implements SessionBean {
     throws DcmServiceException {
         checkDuplicate(ds.getString(Tags.SOPInstanceUID));
         PatientLocal pat = findOrCreatePatient(ds, matching);
-        Collection gpsps = findRefGpsps(ds.get(Tags.RefGPSPSSeq), pat);
+        Collection gpsps = findRefGpsps(ds, pat);
         GPPPSLocal pps = doCreate(ds, pat);
         if (gpsps != null) {
             pps.setGpsps(gpsps);
@@ -180,8 +180,9 @@ public abstract class GPPPSManagerBean implements SessionBean {
         }
     }
 
-    private Collection findRefGpsps(DcmElement spssq, PatientLocal pat)
+    private Collection findRefGpsps(Dataset pps, PatientLocal pat)
     throws DcmServiceException {
+        DcmElement spssq = pps.get(Tags.RefGPSPSSeq);
         if (spssq == null) return null;
         int n = spssq.countItems();
         ArrayList c = new ArrayList(n);
@@ -216,6 +217,16 @@ public abstract class GPPPSManagerBean implements SessionBean {
                             + " of the N-ACTION request");
                     throw new DcmServiceException(GPSPS_DIFF_TRANS_UID);                
                 }
+                Dataset spsAttrs = sps.getAttributes();
+                DcmElement ppss = spsAttrs.get(Tags.ResultingGPPPSSeq);
+                if (ppss == null)
+                    ppss = spsAttrs.putSQ(Tags.ResultingGPPPSSeq);
+                Dataset refpps = ppss.addNewItem();
+                refpps.putUI(Tags.RefSOPClassUID,
+                        pps.getString(Tags.SOPClassUID));
+                refpps.putUI(Tags.RefSOPInstanceUID,
+                        pps.getString(Tags.SOPInstanceUID));
+                sps.setAttributes(spsAttrs);
                 c.add(sps);
             } catch (ObjectNotFoundException e) {
                 log.info("Referenced GP-SPS(iuid=" + spsiuid
