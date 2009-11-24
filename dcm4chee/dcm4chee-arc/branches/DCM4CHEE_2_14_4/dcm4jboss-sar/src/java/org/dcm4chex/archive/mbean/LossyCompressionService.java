@@ -43,6 +43,8 @@ import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -326,7 +328,7 @@ public class LossyCompressionService extends ServiceMBeanSupport {
             float compressionQuality, float estimatedCompressionRatio,
             boolean archive) throws Exception {
         FileSystemMgt2 fsmgt = newFileSystemMgt();
-        FileDTO[] fileDTOs = fsmgt.getFilesOfSeriesOnFileSystemGroup(
+        Collection<FileDTO> fileDTOs = fsmgt.getFilesOfSeriesOnFileSystemGroup(
                 seriesIUID.trim(), fsGroupID);
         byte[] buffer = new byte[bufferSize];
         float[] pixelCompressionRatio = new float[1];
@@ -339,8 +341,8 @@ public class LossyCompressionService extends ServiceMBeanSupport {
         float sumPixelCompressionRatio = 0.f;
         int count = 0;
         String suid = uidGenerator.createUID();
-        for (int i = 0; i < fileDTOs.length; i++) {
-            FileDTO fileDTO = fileDTOs[i];
+        for (Iterator<FileDTO> iter = fileDTOs.iterator(); iter.hasNext();) {
+            FileDTO fileDTO = iter.next();
             String tsuid = fileDTO.getFileTsuid();
             if (isLossyCompressed(tsuid))
                 continue;
@@ -395,7 +397,7 @@ public class LossyCompressionService extends ServiceMBeanSupport {
                     updateSeriesDescription(ds);
                     ds.setPrivateCreatorID(PrivateTags.CreatorID);
                     ds.putAE(PrivateTags.CallingAET, sourceAET);
-                    importFile(fileDTO, ds, suid, i == fileDTOs.length - 1);
+                    importFile(fileDTO, ds, suid, !iter.hasNext());
                     destFile = null;
                 }
             } finally {

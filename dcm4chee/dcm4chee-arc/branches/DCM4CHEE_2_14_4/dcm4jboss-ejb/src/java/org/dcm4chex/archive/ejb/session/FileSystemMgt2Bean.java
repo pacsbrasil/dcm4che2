@@ -46,6 +46,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -1065,10 +1066,21 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public FileDTO[] getFilesOfSeriesOnFileSystemGroup(
+    public Collection<FileDTO> getFilesOfSeriesOnFileSystemGroup(
             String seriesIUID, String fsGroupID) throws FinderException {
-        return toFileDTOs(fileHome.findFilesOfSeriesOnFileSystemGroup(
+        return omitDuplicateFiles(fileHome.findFilesOfSeriesOnFileSystemGroup(
                 seriesIUID, fsGroupID));
+    }
+
+    private Collection<FileDTO> omitDuplicateFiles(
+            Collection<FileLocal> files) {
+        int size = files.size();
+        Set<Object> iuids = new HashSet<Object>(size * 4 / 3);
+        Collection<FileDTO> out = new ArrayList<FileDTO>(size);
+        for (FileLocal file : files)
+            if (iuids.add(file.getInstance().getPrimaryKey()))
+                out.add(file.getFileDTO());
+        return out ;
     }
 
     /**
