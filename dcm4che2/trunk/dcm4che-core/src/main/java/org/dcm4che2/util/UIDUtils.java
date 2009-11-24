@@ -160,14 +160,8 @@ public class UIDUtils {
         byte[] b17 = new byte[17];
         fill(b17, 1, uuid.getMostSignificantBits());
         fill(b17, 9, uuid.getLeastSignificantBits());
-        String uuidStr = new BigInteger(b17).toString();
-        int rootLength = root.length();
-        int uuidLength = uuidStr.length();
-        char[] dst = new char[rootLength + 1 + uuidLength];
-        root.getChars(0, rootLength, dst, 0);
-        dst[rootLength] = '.';
-        uuidStr.getChars(0, uuidLength, dst, rootLength + 1);
-        return new String(dst);
+        return new StringBuilder(64).append(root).append('.')
+                .append(new BigInteger(b17)).toString();
     }
 
     private static void fill(byte[] bb, int off, long val) {
