@@ -258,7 +258,7 @@ public class StudyListPage extends Panel {
                     }
                 }
 
-            });
+            }.add(new TooltipBehaviour("folder.","patDetail")));
             item.add( new Link("edit") {
                 
                 @Override
@@ -266,8 +266,8 @@ public class StudyListPage extends Panel {
                     setResponsePage(
                             new EditDicomObjectPage(StudyListPage.this.getPage(), patModel));
                 }
-            });
-            item.add(new CheckBox("selected"));
+            }.add(new TooltipBehaviour("folder.","patEdit")));
+            item.add(new CheckBox("selected").add(new TooltipBehaviour("folder.","patSelect")));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 @Override
@@ -333,14 +333,14 @@ public class StudyListPage extends Panel {
                 }
             });
             item.add(cell);
-            item.add(new Label("datetime"));
-            item.add(new Label("id"));
-            item.add(new Label("accessionNumber"));
-            item.add(new Label("modalities"));
-            item.add(new Label("description"));
-            item.add(new Label("numberOfSeries"));
-            item.add(new Label("numberOfInstances"));
-            item.add(new Label("availability"));
+            item.add(new Label("datetime").add(new TooltipBehaviour("folder.study","DateTime")));
+            item.add(new Label("id").add(new TooltipBehaviour("folder.study","Id")));
+            item.add(new Label("accessionNumber").add(new TooltipBehaviour("folder.","accessionNumber")));
+            item.add(new Label("modalities").add(new TooltipBehaviour("folder.","modalities")));
+            item.add(new Label("description").add(new TooltipBehaviour("folder.study","Description")));
+            item.add(new Label("numberOfSeries").add(new TooltipBehaviour("folder.study","NoS")));
+            item.add(new Label("numberOfInstances").add(new TooltipBehaviour("folder.study","NoI")));
+            item.add(new Label("availability").add(new TooltipBehaviour("folder.study","Availability")));
             item.add(new Label("pk").add(new TooltipBehaviour("folder.", "studyPk")));
             item.add(new AjaxFallbackLink("toggledetails") {
 
@@ -352,7 +352,7 @@ public class StudyListPage extends Panel {
                     }
                 }
 
-            });
+            }.add(new TooltipBehaviour("folder.","studyDetail")));
             item.add( new Link("edit") {
                 
                 @Override
@@ -360,8 +360,8 @@ public class StudyListPage extends Panel {
                     setResponsePage(
                             new EditDicomObjectPage(StudyListPage.this.getPage(), studyModel));
                 }
-            });
-            item.add( new CheckBox("selected"));
+            }.add(new TooltipBehaviour("folder.","studyEdit")));
+            item.add( new CheckBox("selected").add(new TooltipBehaviour("folder.","studySelect")));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 @Override
@@ -428,14 +428,14 @@ public class StudyListPage extends Panel {
                 }
             });
             item.add(cell);
-            item.add(new Label("datetime"));
-            item.add(new Label("id"));
-            item.add(new Label("spsid"));
-            item.add(new Label("modality"));
-            item.add(new Label("description"));
-            item.add(new Label("numberOfSeries"));
-            item.add(new Label("numberOfInstances"));
-            item.add(new Label("status"));
+            item.add(new Label("datetime").add(new TooltipBehaviour("folder.pps","DateTime")));
+            item.add(new Label("id").add(new TooltipBehaviour("folder.pps","Id")));
+            item.add(new Label("spsid").add(new TooltipBehaviour("folder.","spsid")));
+            item.add(new Label("modality").add(new TooltipBehaviour("folder.pps","Modality")));
+            item.add(new Label("description").add(new TooltipBehaviour("folder.pps","Description")));
+            item.add(new Label("numberOfSeries").add(new TooltipBehaviour("folder.pps","NoS")));
+            item.add(new Label("numberOfInstances").add(new TooltipBehaviour("folder.pps","NoI")));
+            item.add(new Label("status").add(new TooltipBehaviour("folder.pps","Status")));
             item.add(new Label("pk").add(new TooltipBehaviour("folder.", "ppsPk")));
             item.add(new AjaxFallbackLink("toggledetails") {
 
@@ -451,7 +451,7 @@ public class StudyListPage extends Panel {
                 public boolean isVisible() {
                     return ppsModel.getDataset() != null;
                 }
-            });
+            }.add(new TooltipBehaviour("folder.","ppsDetail")));
             item.add(new Link("edit") {
 
                 @Override
@@ -463,8 +463,8 @@ public class StudyListPage extends Panel {
                 public boolean isVisible() {
                     return ppsModel.getDataset() != null;
                 }
-            });
-            item.add(new CheckBox("selected"));
+            }.add(new TooltipBehaviour("folder.","ppsEdit")));
+            item.add(new CheckBox("selected").add(new TooltipBehaviour("folder.","ppsSelect")));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 @Override
@@ -531,13 +531,13 @@ public class StudyListPage extends Panel {
                 }
             });
             item.add(cell);
-            item.add(new Label("datetime"));
-            item.add(new Label("seriesNumber"));
-            item.add(new Label("sourceAET"));
-            item.add(new Label("modality"));
-            item.add(new Label("description"));
-            item.add(new Label("numberOfInstances"));
-            item.add(new Label("availability"));
+            item.add(new Label("datetime").add(new TooltipBehaviour("folder.series","DateTime")));
+            item.add(new Label("seriesNumber").add(new TooltipBehaviour("folder.","seriesNumber")));
+            item.add(new Label("sourceAET").add(new TooltipBehaviour("folder.","sourceAET")));
+            item.add(new Label("modality").add(new TooltipBehaviour("folder.series","Modality")));
+            item.add(new Label("description").add(new TooltipBehaviour("folder.series","Description")));
+            item.add(new Label("numberOfInstances").add(new TooltipBehaviour("folder.series","NoI")));
+            item.add(new Label("availability").add(new TooltipBehaviour("folder.series","Availability")));
             item.add(new Label("pk").add(new TooltipBehaviour("folder.", "seriesPk")));
             item.add(new AjaxFallbackLink("toggledetails") {
 
@@ -549,15 +549,15 @@ public class StudyListPage extends Panel {
                     }
                 }
 
-            });
+            }.add(new TooltipBehaviour("folder.","seriesDetail")));
             item.add(new Link("edit") {
                 
                 @Override
                 public void onClick() {
                     setResponsePage(new EditDicomObjectPage(StudyListPage.this.getPage(), seriesModel));
                 }
-            });
-            item.add(new CheckBox("selected"));
+            }.add(new TooltipBehaviour("folder.","seriesEdit")));
+            item.add(new CheckBox("selected").add(new TooltipBehaviour("folder.","seriesSelect")));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 @Override
@@ -624,11 +624,11 @@ public class StudyListPage extends Panel {
                 }
             });
             item.add(cell);
-            item.add(new Label("datetime"));
-            item.add(new Label("instanceNumber"));
-            item.add(new Label("sopClassUID"));
-            item.add(new Label("description"));
-            item.add(new Label("availability"));
+            item.add(new Label("datetime").add(new TooltipBehaviour("folder.instance","DateTime")));
+            item.add(new Label("instanceNumber").add(new TooltipBehaviour("folder.","instanceNumber")));
+            item.add(new Label("sopClassUID").add(new TooltipBehaviour("folder.","sopClassUID")));
+            item.add(new Label("description").add(new TooltipBehaviour("folder.instance","Description")));
+            item.add(new Label("availability").add(new TooltipBehaviour("folder.instance","Availability")));
             item.add(new Label("pk").add(new TooltipBehaviour("folder.", "instancePk")));
             item.add(new AjaxFallbackLink("toggledetails") {
 
@@ -640,15 +640,15 @@ public class StudyListPage extends Panel {
                     }
                 }
 
-            });
+            }.add(new TooltipBehaviour("folder.","instanceDetail")));
             item.add(new Link("edit") {
                 
                 @Override
                 public void onClick() {
                     setResponsePage(new EditDicomObjectPage(StudyListPage.this.getPage(), instModel));
                 }
-            });
-            item.add(new CheckBox("selected"));
+            }.add(new TooltipBehaviour("folder.","instanceEdit")));
+            item.add(new CheckBox("selected").add(new TooltipBehaviour("folder.","instanceSelect")));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 @Override
@@ -676,13 +676,13 @@ public class StudyListPage extends Panel {
         @Override
         protected void populateItem(final ListItem item) {
             final FileModel fileModel = (FileModel) item.getModelObject();
-            item.add(new DateTimeLabel("file.createdTime"));
-            item.add(new Label("file.fileSize"));
-            item.add(new Label("file.transferSyntaxUID"));
-            item.add(new Label("file.fileSystem.directoryPath"));
-            item.add(new Label("file.filePath"));
-            item.add(new Label("file.fileSystem.availability"));
-            item.add(new Label("file.pk"));
+            item.add(new DateTimeLabel("file.createdTime").add(new TooltipBehaviour("folder.file.","createdTime")));
+            item.add(new Label("file.fileSize").add(new TooltipBehaviour("folder.file.","fileSize")));
+            item.add(new Label("file.transferSyntaxUID").add(new TooltipBehaviour("folder.file.","transferSyntaxUID")));
+            item.add(new Label("file.fileSystem.directoryPath").add(new TooltipBehaviour("folder.file.fileSystem.","directoryPath")));
+            item.add(new Label("file.filePath").add(new TooltipBehaviour("folder.file.","filePath")));
+            item.add(new Label("file.fileSystem.availability").add(new TooltipBehaviour("folder.file.fileSystem.","availability")));
+            item.add(new Label("file.pk").add(new TooltipBehaviour("folder.","filePk")));
             item.add(new AjaxFallbackLink("toggledetails") {
 
                 @Override
@@ -693,8 +693,8 @@ public class StudyListPage extends Panel {
                     }
                 }
 
-            });
-            item.add(new CheckBox("selected"));
+            }.add(new TooltipBehaviour("folder.","fileDetail")));
+            item.add(new CheckBox("selected").add(new TooltipBehaviour("folder.","fileSelect")));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 @Override
