@@ -46,6 +46,7 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
+import org.apache.wicket.markup.html.list.OddEvenListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
@@ -88,6 +89,12 @@ public class AEListPanel extends Panel {
         add( new Label("installedHdrLabel", new ResourceModel("aet.installedHdr")));
         page = p;
         add(new PropertyListView<AE>("list", AEMgtDelegate.getInstance().getAEList() ) {
+
+            @Override
+            protected ListItem<AE> newItem(final int index)
+            {
+                    return new OddEvenListItem<AE>(index, getListItemModel(getModel(), index));
+            }
 
             @Override
             protected void populateItem(final ListItem<AE> item) {

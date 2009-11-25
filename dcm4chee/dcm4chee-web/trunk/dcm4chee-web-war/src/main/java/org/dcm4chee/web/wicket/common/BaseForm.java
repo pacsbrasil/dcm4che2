@@ -46,6 +46,7 @@ import java.util.Set;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.DropDownChoice;
@@ -168,13 +169,21 @@ public class BaseForm extends Form {
         public Object component(Component c) {
             if (!visited.contains(c)) {
                 visited.add(c);
-                if ( tooltipBehaviour != null )
+                if ( tooltipBehaviour != null && componentHasNoTooltip(c))
                     c.add(tooltipBehaviour);
                 if (c instanceof FormComponent)
                     c.add(markInvalidBehaviour);
             }
             return IVisitor.CONTINUE_TRAVERSAL;
         }
+    }
+
+    public boolean componentHasNoTooltip(Component c) {
+        for ( IBehavior b : c.getBehaviors() ) {
+            if ( b instanceof TooltipBehaviour )
+                return false;
+        }
+        return true;
     }
 
 }
