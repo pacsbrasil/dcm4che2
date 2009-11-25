@@ -121,8 +121,8 @@ public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
             checkLogin(user, user, MainPage.class);
             Session session = Session.get();
             assertNotNull("Wicket Session is null", session);
-            assertEquals("Wrong Class of Wicket Session!", JaasWicketSession.class, session.getClass());
-            r = ((JaasWicketSession) session).getRoles();
+            assertEquals("Wrong Class of Wicket Session!", WicketSession.class, session.getClass());
+            r = ((WicketSession) session).getRoles();
             assertEquals("Wrong number of roles!",roles.length, r.size());
             for ( String role : roles) {
                 assertTrue("Missing role:"+role, r.hasRole(role));

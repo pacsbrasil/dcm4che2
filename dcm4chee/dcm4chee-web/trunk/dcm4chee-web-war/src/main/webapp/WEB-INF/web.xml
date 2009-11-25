@@ -23,6 +23,30 @@
 			<param-name>applicationClassName</param-name>
 			<param-value>org.dcm4chee.web.wicket.WicketApplication</param-value>
  		</init-param>
+	    <init-param>
+	      <param-name>securityDomainName</param-name>
+	      <param-value>dcm4chee</param-value>
+	    </init-param>
+	    <init-param>
+	      <param-name>rolesGroupName</param-name>
+	      <param-value>Roles</param-value>
+	    </init-param>
+	    <!-- Name of LoginPage that is used for sign in. Default is org.dcm4chee.web.wicket.LoginPage
+	    <init-param>
+	      <param-name>signinPageClass</param-name>
+	      <param-value>your.Login.Page</param-value>
+	    </init-param> -->
+		<!-- Name of Page to show Access denied. Default is signinPageClass
+	    <init-param>
+	      <param-name>accessDeniedPage</param-name>
+	      <param-value>your.access.denied.Page</param-value>
+	    </init-param> -->
+		<!-- Name of Page to show internal errors. No Default.
+	    <init-param>
+	      <param-name>internalErrorPageClass</param-name>
+	      <param-value>your.internal.error.Page</param-value>
+	    </init-param> -->
+ 		
  	</filter>
 
  <filter-mapping>

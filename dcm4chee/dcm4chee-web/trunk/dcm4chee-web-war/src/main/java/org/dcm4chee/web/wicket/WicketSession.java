@@ -39,8 +39,6 @@
 package org.dcm4chee.web.wicket;
 
 import org.apache.wicket.Request;
-import org.apache.wicket.authentication.AuthenticatedWebSession;
-import org.apache.wicket.authorization.strategies.role.Roles;
 import org.dcm4chee.web.wicket.folder.ViewPort;
 
 /**
@@ -48,10 +46,9 @@ import org.dcm4chee.web.wicket.folder.ViewPort;
  * @version $Revision$ $Date$
  * @since Jan 13, 2009
  */
-public class WicketSession extends AuthenticatedWebSession {
+public class WicketSession extends JaasWicketSession {
 
     private ViewPort viewport = new ViewPort();
-    private String username;
 
     public WicketSession(Request request) {
         super(request);
@@ -61,19 +58,4 @@ public class WicketSession extends AuthenticatedWebSession {
         return viewport;
     }
 
-    @Override
-    public boolean authenticate(String username, String password) {
-        boolean success = username.equals(password);
-        if ( success )
-          this.username = username;
-        return success;
-    }
-
-    @Override
-    public Roles getRoles() {
-        Roles roles = new Roles();
-        if ( isSignedIn() )
-          roles.add("user");
-        return roles;
-    }
 }
