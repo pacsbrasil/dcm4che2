@@ -356,8 +356,7 @@ public class Jpg2Dcm {
                 jpg2Dcm.loadConfiguration(new File(cl.getOptionValue("C")), false);
             }
             if (cl.hasOption(LONG_OPT_UID_PREFIX)) {
-                UIDUtils.setUseHostAddress(false);
-                UIDUtils.setRoot(cl.getOptionValue(LONG_OPT_UID_PREFIX));
+                 UIDUtils.setRoot(cl.getOptionValue(LONG_OPT_UID_PREFIX));
             }
             if (cl.hasOption(LONG_OPT_MPEG)) {
                 jpg2Dcm.setTransferSyntax(UID.MPEG2);
