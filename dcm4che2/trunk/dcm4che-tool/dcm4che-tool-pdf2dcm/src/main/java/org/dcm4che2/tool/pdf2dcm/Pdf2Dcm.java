@@ -185,7 +185,6 @@ public class Pdf2Dcm {
                 pdf2Dcm.loadConfiguration(new File(cl.getOptionValue("c")));
             }
             if (cl.hasOption("uid")) {
-                UIDUtils.setUseHostAddress(false);
                 UIDUtils.setRoot(cl.getOptionValue("uid"));
             }
             List argList = cl.getArgList();
