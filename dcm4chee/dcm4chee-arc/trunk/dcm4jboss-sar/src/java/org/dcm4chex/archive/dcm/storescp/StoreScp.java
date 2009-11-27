@@ -1089,16 +1089,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 parser.parseDataset(decParam, -1);
                 ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);
             }
+            // ensure data is written on storage device
+            // before returning successful C-STORE RSP
             bos.flush();
             fos.getFD().sync();
         } finally {
-            // We don't want to ignore the IOException since in rare cases the
-            // close() may cause
-            // exception due to running out of physical space while the File
-            // System still holds
-            // some internally cached data. In this case, we do want to fail
-            // this C-STORE.
-            fos.close();
+            try {
+                fos.close();
+            } catch (Exception ignore) {}
         }
         return md != null ? md.digest() : null;
     }
