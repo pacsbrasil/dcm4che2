@@ -716,6 +716,7 @@ public abstract class MPPSManagerBean implements SessionBean {
             StudyLocal study = series.getStudy();
             study.setAttributes(ds);
             dsN.putAll(study.getAttributes(true));
+            dsN.putAll(study.getPatient().getAttributes(true));
         }
         return dsN;
     }
