@@ -152,7 +152,7 @@ public abstract class StudyMgtBean implements SessionBean {
         try {
             return patHome.selectPatient(ds, matching, true);
         } catch (ObjectNotFoundException onfe) {
-            return ds.contains(Tags.PatientName) ? patHome.create(ds) : null;
+            return patHome.create(ds);
         }
     }
 
@@ -202,9 +202,11 @@ public abstract class StudyMgtBean implements SessionBean {
                 updateDerivedSeriesFields(dirtySeries);
                 updateDerivedStudyFields(dirtyStudies);
             }
-            PatientLocal pat = findOrCreatePatient(ds, matching);
-            if ( pat != null && pat.getPk() != study.getPatient().getPk()) {
-                study.setPatient(pat);
+            if ( ds.contains(Tags.PatientID) || ds.contains(Tags.PatientName)) {
+                PatientLocal pat = findOrCreatePatient(ds, matching);
+                if ( pat.getPk() != study.getPatient().getPk()) {
+                    study.setPatient(pat);
+                }
             }
         } catch (FinderException e) {
             throw new EJBException(e);
