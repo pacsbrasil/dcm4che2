@@ -3,12 +3,12 @@
   <parent>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-arr</artifactId>
-    <version>3.0.8</version>
+    <version>3.0.9</version>
   </parent>
   <name>Web Application for ARR</name>
   <groupId>dcm4che.dcm4chee</groupId>
   <artifactId>dcm4chee-arr-seam-web-${db}</artifactId>
-  <version>3.0.8</version>
+  <version>3.0.9</version>
   <packaging>war</packaging>
   <properties>
     <ear>dcm4chee-arr-${db}-${version}</ear>
@@ -17,13 +17,13 @@
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-arr-entities-${db}</artifactId>
-      <version>3.0.8</version>
+      <version>3.0.9</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-arr-seam-ejb</artifactId>
-      <version>3.0.8</version>
+      <version>3.0.9</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
