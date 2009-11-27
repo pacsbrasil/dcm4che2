@@ -1047,13 +1047,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         log.info("M-WRITE file:" + file);
         MessageDigest md = null;
         BufferedOutputStream bos = null;
+        FileOutputStream fos = new FileOutputStream(file);
         if (service.isMd5sum()) {
             md = MessageDigest.getInstance("MD5");
-            DigestOutputStream dos = new DigestOutputStream(
-                    new FileOutputStream(file), md);
+            DigestOutputStream dos = new DigestOutputStream(fos, md);
             bos = new BufferedOutputStream(dos, buffer);
         } else {
-            bos = new BufferedOutputStream(new FileOutputStream(file), buffer);
+            bos = new BufferedOutputStream(fos, buffer);
         }
         try {
             DcmDecodeParam decParam = parser.getDcmDecodeParam();
@@ -1089,6 +1089,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 parser.parseDataset(decParam, -1);
                 ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);
             }
+            bos.flush();
+            fos.getFD().sync();
         } finally {
             // We don't want to ignore the IOException since in rare cases the
             // close() may cause
@@ -1096,7 +1098,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             // System still holds
             // some internally cached data. In this case, we do want to fail
             // this C-STORE.
-            bos.close();
+            fos.close();
         }
         return md != null ? md.digest() : null;
     }
