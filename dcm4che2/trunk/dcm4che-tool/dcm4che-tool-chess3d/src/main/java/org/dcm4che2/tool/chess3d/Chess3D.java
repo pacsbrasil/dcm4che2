@@ -327,7 +327,6 @@ public class Chess3D {
                 extruder.setWindow( cl.getOptionValue("win"));
             }
             if (cl.hasOption("uid")) {
-                UIDUtils.setUseHostAddress(false);
                 UIDUtils.setRoot(cl.getOptionValue("uid"));
             }
             if (cl.hasOption("S")) {
