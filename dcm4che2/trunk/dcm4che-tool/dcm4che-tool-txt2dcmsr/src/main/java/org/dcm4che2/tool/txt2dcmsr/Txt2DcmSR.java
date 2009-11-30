@@ -227,7 +227,6 @@ public class Txt2DcmSR {
                 txt2dcmsr.loadConfiguration(new File(cl.getOptionValue("c")));
             }
             if (cl.hasOption("uid")) {
-                UIDUtils.setUseHostAddress(false);
                 UIDUtils.setRoot(cl.getOptionValue("uid"));
             }
             txt2dcmsr.setParagraphs(cl.hasOption("para"));
