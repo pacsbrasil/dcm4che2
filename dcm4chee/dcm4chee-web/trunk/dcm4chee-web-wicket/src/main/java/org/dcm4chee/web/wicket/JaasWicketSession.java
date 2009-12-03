@@ -62,44 +62,72 @@ import org.slf4j.LoggerFactory;
  * JAAS based Wicket Session to use JBoss web security.
  */
 public class JaasWicketSession extends AuthenticatedWebSession {
-
-    public static final String ROLES_NAME = "Roles";
-
-    /** The name of the application-policy (JBoss login-config.xml) */
-    public static final String APPLICATION_POLICY_NAME = "dcm4chee";
-
-    private final static Logger log = LoggerFactory.getLogger(JaasWicketSession.class);
+    private static final long serialVersionUID = 4250326508961222475L;
+    private String securityDomainName;
+    private String rolesGroupName;
+    private boolean useRoleMapping;
+    private String userRoleName;
+    private String adminRoleName;
+    private boolean onlyUSERandADMIN;
 
     private Subject subject;
     private Roles roles = new Roles();
+
+    private final static Logger log = LoggerFactory.getLogger(JaasWicketSession.class);
 
     @SuppressWarnings("deprecation")
     public JaasWicketSession(Request req) {
         super(req);
     }
+    
+    private void init() {
+        if (securityDomainName == null) {
+            BaseWicketApplication app = (BaseWicketApplication) getApplication();
+            this.securityDomainName = app.getInitParameter("securityDomainName");
+            if ( securityDomainName == null) securityDomainName = "dcm4chee";
+            this.rolesGroupName = app.getInitParameter("rolesGroupName");
+            if ( rolesGroupName == null) rolesGroupName = "Roles";
+            this.userRoleName = app.getInitParameter("userRoleName");
+            this.adminRoleName = app.getInitParameter("adminRoleName");
+            this.onlyUSERandADMIN = "true".equals(app.getInitParameter("onlyUSERandADMIN"));
+            this.useRoleMapping = userRoleName != null || adminRoleName != null;
+        }
+    }
 
     public boolean authenticate(String username, String password) {
+        init();
         if (log.isDebugEnabled()) 
             log.debug("authenticate(" + username + ", " + password + ")");
-
         boolean authenticated = false;
         LoginCallbackHandler handler = new LoginCallbackHandler(username, password);
         try {
-            LoginContext ctx = new LoginContext(APPLICATION_POLICY_NAME, handler);
+            LoginContext ctx = new LoginContext(securityDomainName, handler);
             ctx.login();
             authenticated = true;
             subject = ctx.getSubject();
-
+            String name;
             for (Principal p : subject.getPrincipals()) {
                 if (log.isDebugEnabled()) log.debug("Principal for " + username + ": " + p.toString());
                 // Group is a subclass of Principal, and the members are the names of the roles
-                if ((p instanceof Group) && (ROLES_NAME.equalsIgnoreCase(p.getName()))) {
+                if ((p instanceof Group) && (rolesGroupName.equalsIgnoreCase(p.getName()))) {
                     Group g = (Group) p;
                     Enumeration<? extends Principal> members = g.members();
                     while (members.hasMoreElements()) {
                         Principal member = members.nextElement();
-                        roles.add(member.getName());
-                        if (log.isDebugEnabled()) log.debug("Added role user:"+ username + " role:" + member.getName());
+                        name = member.getName();
+                        if (useRoleMapping) {
+                            if (name.equals(userRoleName))
+                                roles.add(Roles.USER);
+                            if (name.equals(adminRoleName))
+                                roles.add(Roles.ADMIN);
+                            if (onlyUSERandADMIN) {
+                                if ( roles.size() < 2)
+                                    continue;
+                                else 
+                                    break;
+                            }
+                        }
+                        roles.add(name);
                     }
                 }
             }

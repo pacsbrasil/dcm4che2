@@ -38,8 +38,10 @@
 
 package org.dcm4chee.web.wicket.ae;
 
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.dcm4chee.archive.entity.AE;
+import org.dcm4chee.web.wicket.BaseWicketPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +61,7 @@ public class AEMgtPanel extends Panel {
     
     public AEMgtPanel(final String id) {
         super(id);
+        add(CSSPackageResource.getHeaderContribution(BaseWicketPage.class, "base_style.css"));
         AEMgtDelegate.getInstance().updateAEList();
         if ( listPanel == null ) {
             listPanel = new AEListPanel("ae_panel", this);

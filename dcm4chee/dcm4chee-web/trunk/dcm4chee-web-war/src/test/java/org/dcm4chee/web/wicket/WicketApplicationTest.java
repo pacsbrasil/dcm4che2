@@ -5,6 +5,7 @@ import java.net.URL;
 
 import org.apache.wicket.Session;
 import org.apache.wicket.authorization.strategies.role.Roles;
+import org.apache.wicket.protocol.http.MockServletContext;
 import org.apache.wicket.util.tester.FormTester;
 import org.apache.wicket.util.tester.WicketTester;
 import org.dcm4chee.archive.entity.AE;
@@ -51,19 +52,20 @@ public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
         super(StudyListBean.class, usedBeans);
     }
     @Override
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         super.setUp();
         testApplicaton = new WicketApplication();
         wicketTester = new WicketTester(testApplicaton);
+        MockServletContext ctx =(MockServletContext)wicketTester.getApplication().getServletContext();
+        ctx.addInitParameter("securityDomainName", "dcm4chee");
+        ctx.addInitParameter("rolesGroupName", "Roles");
         URL url = this.getClass().getResource("/wicket.login.file");
         //Set login configuration file! '=' means: overwrite other login configuration given in Java security properties file.
         System.setProperty("java.security.auth.login.config", "="+url.getPath()); 
     }
     
     @Test
-    public void testShouldAuthChallenge()
-    {
+    public void testShouldAuthChallenge() {
         wicketTester.startPage(MainPage.class);
         wicketTester.assertRenderedPage(LoginPage.class);
     }
@@ -129,6 +131,7 @@ public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
             }
         } catch (Throwable t) {
             fail(user+"("+r+"): "+t.getMessage());
+            t.printStackTrace();
         }
     }
 }

@@ -4,6 +4,7 @@ import org.apache.wicket.Page;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.authentication.AuthenticatedWebSession;
 import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.settings.IExceptionSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,11 +15,11 @@ import org.slf4j.LoggerFactory;
  * @see wicket.myproject.Start#main(String[])
  */
 public class BaseWicketApplication extends AuthenticatedWebApplication {
-    private String securityDomainName;
-    private String rolesGroupName;
+
     private Class<? extends Page> homePage;
     private Class<? extends WebPage> signinPage;
     private Class<? extends Page> accessDeniedPage;
+    private Class<? extends Page> pageExpiredPage;
     private Class<? extends Page> internalErrorPage;
 
     private final static Logger log = LoggerFactory.getLogger(BaseWicketApplication.class);
@@ -29,19 +30,21 @@ public class BaseWicketApplication extends AuthenticatedWebApplication {
     @Override
     protected void init() {
         super.init();
-        this.securityDomainName = getInitParameter("securityDomainName");
-        this.rolesGroupName = getInitParameter("rolesGroupName");
         homePage = getPageClass(getInitParameter("homePageClass"), null);
         signinPage = (Class<? extends WebPage>) getPageClass(getInitParameter("signinPageClass"), LoginPage.class);
-        accessDeniedPage = (Class<? extends WebPage>) getPageClass(getInitParameter("accessDeniedPage"), signinPage);
+        accessDeniedPage = (Class<? extends Page>) getPageClass(getInitParameter("accessDeniedPage"), signinPage);
+        pageExpiredPage = (Class<? extends Page>) getPageClass(getInitParameter("pageExpiredPage"), signinPage);
         internalErrorPage = getPageClass(getInitParameter("internalErrorPageClass"), null);
         getApplicationSettings().setAccessDeniedPage(accessDeniedPage);
-        getApplicationSettings().setPageExpiredErrorPage(signinPage);
+        getApplicationSettings().setPageExpiredErrorPage(pageExpiredPage);
         if ( internalErrorPage != null ) {
             getApplicationSettings().setInternalErrorPage(internalErrorPage);
             mountBookmarkablePage("/internalError", internalErrorPage);
+            this.getExceptionSettings().setUnexpectedExceptionDisplay(IExceptionSettings.SHOW_INTERNAL_ERROR_PAGE);
         }
         mountBookmarkablePage("/login", signinPage);
+        if (pageExpiredPage != signinPage)
+            mountBookmarkablePage("/expired", pageExpiredPage);
         if (accessDeniedPage != signinPage)
             mountBookmarkablePage("/denied", accessDeniedPage);
     }
@@ -76,13 +79,5 @@ public class BaseWicketApplication extends AuthenticatedWebApplication {
     @Override
     protected Class<? extends AuthenticatedWebSession> getWebSessionClass() {
         return JaasWicketSession.class;
-    }
-
-    public String getSecurityDomainName() {
-        return securityDomainName;
-    }
-
-    public String getRolesGroupName() {
-        return rolesGroupName;
     }
 }

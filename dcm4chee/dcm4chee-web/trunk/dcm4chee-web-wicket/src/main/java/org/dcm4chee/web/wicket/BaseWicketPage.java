@@ -38,27 +38,58 @@
 
 package org.dcm4chee.web.wicket;
 
+import org.apache.wicket.Application;
+import org.apache.wicket.Component;
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
-import org.dcm4chee.web.wicket.ae.AEMgtPanel;
-import org.dcm4chee.web.wicket.folder.StudyListPage;
-import org.dcm4chee.web.wicket.fs.FileSystemPage;
+import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
+import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.resource.loader.ClassStringResourceLoader;
+import org.apache.wicket.resource.loader.PackageStringResourceLoader;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
  * @since July 7, 2009
  */
-@AuthorizeInstantiation({"user","WebUser"})
-public class MainPage extends BaseWicketPage {
-    
-    public MainPage() {
-        super();
-        addModules(getModuleSelectorPanel());
+public class BaseWicketPage extends WebPage {
+
+    private ModuleSelectorPanel selectorPanel;
+
+    private static final ResourceReference CSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+
+    public BaseWicketPage() {
+        add( new Label("app_browser_title", new AbstractReadOnlyModel() {
+
+            @Override
+            public Object getObject() {
+                return getBrowserTitle();
+            }
+        } ));
+        selectorPanel = new ModuleSelectorPanel("modules");
+        if ( getCSS() != null)
+            add(CSSPackageResource.getHeaderContribution(getCSS()));
+        add(selectorPanel);
     }
-    
-    private void addModules(ModuleSelectorPanel selectorPanel) {
-        selectorPanel.addModule(StudyListPage.class);
-        selectorPanel.addModule(AEMgtPanel.class);
-        selectorPanel.addModule(FileSystemPage.class);
+
+    public ModuleSelectorPanel getModuleSelectorPanel() {
+        return selectorPanel;
+    }
+
+    protected ResourceReference getCSS() {
+        return CSS;
+    }
+
+    protected String getBrowserTitle() {
+        Class clazz = Application.get().getHomePage();
+        String s = new ClassStringResourceLoader(clazz).loadStringResource(null, "application.browser_title");
+        if (s==null) {
+            s = new PackageStringResourceLoader().loadStringResource(clazz, "application.browser_title", 
+                    getSession().getLocale(), null);
+        }
+        return s == null ? "DCM4CHEE" : s;
     }
 }

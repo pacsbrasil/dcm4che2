@@ -42,12 +42,14 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
 import org.apache.wicket.extensions.markup.html.tabs.ITab;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
@@ -68,19 +70,29 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
 
     private static final long serialVersionUID = 1L;
     private static Logger log = LoggerFactory.getLogger(ModuleSelectorPanel.class);
+    private boolean showLogout = true;
 
     public ModuleSelectorPanel(String id) {
         super(id, new ArrayList());
         add(new AjaxFallbackLink("logout"){
+            @Override
             public void onClick(final AjaxRequestTarget target) {
                 getSession().invalidate();
                 setResponsePage(LoginPage.class);
             }
+            @Override
+            public boolean isVisible() {
+                return showLogout;
+            }
         }.add(new Label("logoutLabel", new ResourceModel("logout"))));
-        add(new LocaleSelectorLink("lang_en","en"));
-        add(new LocaleSelectorLink("lang_de","de"));
-        add(new LocaleSelectorLink("lang_fr","fr"));
-
+        add(new LocaleSelectorLink("lang_en","en").add(new Image("img_en", 
+                new ResourceReference(ModuleSelectorPanel.class, "images/lang_en.gif"))));
+        add(new LocaleSelectorLink("lang_de","de").add(new Image("img_de", 
+                new ResourceReference(ModuleSelectorPanel.class, "images/lang_de.gif"))));
+        add(new LocaleSelectorLink("lang_fr","fr").add(new Image("img_fr", 
+                new ResourceReference(ModuleSelectorPanel.class, "images/lang_fr.gif"))));
+        add(new Image("img_logo", new ResourceReference(ModuleSelectorPanel.class, 
+                "images/logo.gif")));
     }
 
     public void addModule(final Class<? extends Panel> clazz) {
@@ -89,6 +101,11 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
         if (clazz.getResource("style.css") != null)
             add(CSSPackageResource.getHeaderContribution(clazz, "style.css"));
     }
+    
+    public void setShowLogoutLink(boolean show) {
+        showLogout = show;
+    }
+    
     private final class ModuleTab implements ITab {
         private transient ClassStringResourceLoader classStringLoader; 
         private transient PackageStringResourceLoader pkgStringLoader;

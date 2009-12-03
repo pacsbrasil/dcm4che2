@@ -3,20 +3,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>Please Log In</title>
-    <link href="style.css" rel="stylesheet" />
   </head>
   <body>
-	<div class="module-selector">
-		<span class="login-desc" wicket:id="loginLabel">[User Login]</span>
-		<div class="tab-logo">
-	   		<img src="images/logo.gif" /><br/>
-		</div>
-		<div class="tab-lang">
-	   		<a href="#" wicket:id="lang_en"><img src="images/lang_en.gif" /></a>
-	   		<a href="#" wicket:id="lang_de"><img src="images/lang_de.gif" /></a>
-	   		<a href="#" wicket:id="lang_fr"><img src="images/lang_fr.gif" /></a>
-		</div>
- 	</div>
-    <div class=signin" wicket:id="signInPanel"/>
+ 	<wicket:extend>
+ 		<div class="signin">
+ 			<span class="login-desc" wicket:id="loginLabel">[User Login]</span>
+ 			<div wicket:id="signInPanel" ></div>
+ 		</div>
+	</wicket:extend>
   </body>
 </html>
