@@ -646,14 +646,14 @@ Notifications for one Series.]]>
       <type>java.lang.String</type>
       <descriptors>
          <value value="
+         ImplicitVRLittleEndian
+         ExplicitVRLittleEndian
          JPEGLossless
          JPEGLossless14
          JPEGLSLossless
          RLELossless
          JPEG2000Lossless
          JPEG2000Lossless
-         ExplicitVRLittleEndian
-         ImplicitVRLittleEndian
          JPEGBaseline
          JPEGExtended
          JPEGLSLossy
@@ -746,8 +746,8 @@ Notifications for one Series.]]>
       <type>java.lang.String</type>
       <descriptors>
          <value value="
-           ExplicitVRLittleEndian
            ImplicitVRLittleEndian
+           ExplicitVRLittleEndian
            Dcm4cheURIReferenced
            "/>
       </descriptors>
@@ -796,9 +796,9 @@ Notifications for one Series.]]>
       <type>java.lang.String</type>
       <descriptors>
          <value value="
-           DeflatedExplicitVRLittleEndian
-           ExplicitVRLittleEndian
            ImplicitVRLittleEndian
+           ExplicitVRLittleEndian
+           DeflatedExplicitVRLittleEndian
            Dcm4cheURIReferenced
            "/>
       </descriptors>
@@ -869,8 +869,8 @@ Notifications for one Series.]]>
       <type>java.lang.String</type>
       <descriptors>
          <value value="
-           ExplicitVRLittleEndian
            ImplicitVRLittleEndian
+           ExplicitVRLittleEndian
            Dcm4cheURIReferenced
          "/>
       </descriptors>
