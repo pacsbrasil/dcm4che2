@@ -307,21 +307,20 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     }
     
     private FileFormat detectMglibFileFormat(byte[] b) throws IOException {
-		String s;
-		boolean compressed = false;
-		while ((s = in.readLine()) != null) {
-			rPos += s.length() + 1;
-			if ("ENDINFO".equals(s)) {
-				break;
-			}
-			if ("COMPRESSION MG1.1".equals(s)) {
-				compressed = true;
-			}
-		}
+        String s;
+        boolean compressed = false;
+        while ((s = in.readLine()) != null) {
+            rPos += s.length() + 1;
+            if ("ENDINFO".equals(s)) {
+                break;
+            }
+            if ("COMPRESSION MG1.1".equals(s)) {
+                compressed = true;
+            }
+        }
+        return (compressed ? FileFormat.MGLIB_COMPRESSED : FileFormat.MGLIB);
+    }
 
-		return (compressed ? FileFormat.MGLIB_COMPRESSED : FileFormat.MGLIB);
-	}
-    
     public int parseHeader() throws IOException {
         eof = false;
         try {
@@ -574,8 +573,8 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
                 } else {
                     if (rLen < 0)
                         throw new DcmParseException(logMsg()
-                        		+ ", value length [" + (rLen&0xffffffffL)
-                        		+ "] exceeds maximal supported length[2^31-1]");
+                                + ", value length [" + (rLen&0xffffffffL)
+                                + "] exceeds maximal supported length[2^31-1]");
                     readValue();
                     lread += rLen;
                 }
@@ -736,12 +735,12 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         if (len == 0)
             return b0;
         byte[] retval;
-		try {
-			retval = new byte[len];
-		} catch (OutOfMemoryError e) {
+        try {
+            retval = new byte[len];
+        } catch (OutOfMemoryError e) {
             throw new DcmParseException(logMsg()
-            		+ ", out of memory allocating byte[]");                    	
-		}
+                    + ", out of memory allocating byte[]");
+        }
         in.readFully(retval, 0, len);
         rPos += len;
         if (unBuf != null)
