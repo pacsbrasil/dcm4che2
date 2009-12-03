@@ -66,9 +66,10 @@ import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 
 final class RetrieveInfo {
 
-    private static final String[] NATIVE_LE_TS = { UIDs.ExplicitVRLittleEndian,
-        UIDs.ImplicitVRLittleEndian };
-    
+    private static final String[] IVR_LE_TS = { UIDs.ImplicitVRLittleEndian };
+
+    private static final String[] EVR_LE_TS = { UIDs.ExplicitVRLittleEndian };
+
     private static final String[] NO_PIXEL_TS = { UIDs.NoPixelData };
     
     private static final String[] NO_PIXEL_DEFL_TS = { UIDs.NoPixelDataDeflate,
@@ -177,7 +178,9 @@ final class RetrieveInfo {
                 continue;
             }
             rq.addPresContext(asf.newPresContext(rq.nextPCID(), cuid, 
-                    NATIVE_LE_TS));
+                    IVR_LE_TS));
+            rq.addPresContext(asf.newPresContext(rq.nextPCID(), cuid, 
+                    EVR_LE_TS));
             if (offerNoPixelDataDeflate) {
                 rq.addPresContext(asf.newPresContext(rq.nextPCID(), cuid, 
                         NO_PIXEL_DEFL_TS));
