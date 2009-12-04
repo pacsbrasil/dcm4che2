@@ -77,6 +77,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     private static final int ITEM_TAG = 0xFFFEE000;
     private static final int ITEM_DELIMITATION_ITEM_TAG = 0xFFFEE00D;
     private static final int SEQ_DELIMITATION_ITEM_TAG = 0xFFFEE0DD;
+    private static final int MIN_MAX_VALLEN = 0x10000; // 64K
     
     private final byte[] b0 = new byte[0];
     private final byte[] b12 = new byte[12];
@@ -84,6 +85,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
             ByteBuffer.wrap(b12).order(ByteOrder.LITTLE_ENDIAN);
 //    private boolean explicitVR = false;
     private DcmDecodeParam decodeParam = DcmDecodeParam.IVR_LE;
+    private int maxValLen = Integer.MAX_VALUE;
         
     private DataInput in = null;
     private DcmHandler handler = null;
@@ -118,6 +120,17 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
 
     public ImageInputStream getImageInputStream() {
         return (ImageInputStream)in;
+    }
+
+    public int getMaxValueLength() {
+        return maxValLen;
+    }
+
+    public void setMaxValueLength(int maxValLen) {
+        if (maxValLen < MIN_MAX_VALLEN)
+            throw new IllegalArgumentException(
+                    "maxValLen: " + maxValLen + " < " + MIN_MAX_VALLEN);
+        this.maxValLen = maxValLen;
     }
 
     public final int getReadTag() {
@@ -571,10 +584,11 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
                     }                    
                     lread += parseSequence(rVR, rLen);
                 } else {
-                    if (rLen < 0)
+                    if (rLen < 0 || rLen > maxValLen)
                         throw new DcmParseException(logMsg()
                                 + ", value length [" + (rLen&0xffffffffL)
-                                + "] exceeds maximal supported length[2^31-1]");
+                                + "] exceeds maximal supported length ["
+                                + maxValLen + "]");
                     readValue();
                     lread += rLen;
                 }
@@ -746,5 +760,6 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         if (unBuf != null)
             unBuf.write(retval, 0, len);
         return retval;
-    }    
+    }
+
 }

@@ -80,6 +80,10 @@ public interface DcmParser {
 
     DcmDecodeParam getDcmDecodeParam();
 
+    void setMaxValueLength(int maxValLen);
+
+    int getMaxValueLength();
+
     FileFormat detectFileFormat() throws IOException;
 
     int parseHeader() throws IOException;
