@@ -905,6 +905,19 @@ Notifications for one Series.]]>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getMaxValueLength"
+      setMethod="setMaxValueLength">
+      <description>Maximum value length of non-pixel data attributes of 
+      received objects. Storage of objects with attributes with larger value
+      length will fail.
+      </description>
+      <name>MaximumValueLength</name>
+      <type>int</type>
+      <descriptors>
+         <value value="67108864"/> <!-- 64MiB -->
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getBufferSize"
       setMethod="setBufferSize">
       <description>Size of byte buffer used for copying data from TCP channel to file.

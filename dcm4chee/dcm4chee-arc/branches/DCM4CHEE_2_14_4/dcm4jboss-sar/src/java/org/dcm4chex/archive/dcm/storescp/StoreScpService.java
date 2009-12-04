@@ -206,6 +206,10 @@ public class StoreScpService extends AbstractScpService {
     private FileSystemMgt2Delegate fsmgt = new FileSystemMgt2Delegate(this);
     private ObjectName mwlScuServiceName;
 
+    private static final int MIN_MAX_VALLEN = 0x10000; // 64K
+
+    private int maxValueLength = Integer.MAX_VALUE;
+
     private int bufferSize = 8192;
 
     private boolean md5sum = true;
@@ -264,6 +268,17 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setMd5sum(boolean md5sum) {
         this.md5sum = md5sum;
+    }
+
+    public int getMaxValueLength() {
+        return maxValueLength;
+    }
+
+    public void setMaxValueLength(int maxValueLength) {
+        if (maxValueLength < MIN_MAX_VALLEN)
+            throw new IllegalArgumentException("maxValueLength: "
+                    + maxValueLength + " < " + MIN_MAX_VALLEN);
+        this.maxValueLength = maxValueLength;
     }
 
     public final int getBufferSize() {
