@@ -363,7 +363,7 @@ public class ORMService extends AbstractHL7Service {
         updateSPSStatus(mwlitem, mwlManager);
     }
 
-    private void updateSPSStatus(Dataset ds, MWLManager mwlManager)
+    protected void updateSPSStatus(Dataset ds, MWLManager mwlManager)
             throws PatientMismatchException, RemoteException {
         log("Change SPS status of MWL Item:", ds);
         if (!mwlManager.updateSPSStatus(ds)) {

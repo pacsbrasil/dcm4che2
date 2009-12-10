@@ -243,16 +243,15 @@ public class ADTService extends AbstractHL7Service {
             }
             Dataset pat = xslt(msg, pidXslPath);
             checkPID(pat);
-            PatientUpdate update = getPatientUpdate();
             if (contains(patientMergeMessageTypes, msgtype)) {
                 Dataset mrg = xslt(msg, mrgXslPath);
                 try {
                     checkMRG(mrg);
-                    update.mergePatient(pat, mrg, patientMatching);
+                    mergePatient(pat, mrg, patientMatching);
                 }
                 catch (HL7Exception e) {
                     if (handleEmptyMrgAsUpdate) {
-                        update.updatePatient(pat, patientMatching);
+                        updatePatient(pat, patientMatching);
                     }
                     else {
                         throw e;
@@ -262,7 +261,7 @@ public class ADTService extends AbstractHL7Service {
             else if (changePatientIdentifierListMessageType.equals(msgtype)) {
                 Dataset mrg = xslt(msg, mrgXslPath);
                 checkMRG(mrg);
-                update.changePatientIdentifierList(pat, mrg, patientMatching);
+                changePatientIdentifierList(pat, mrg, patientMatching);
             }
             else if (deletePatientMessageType.equals(msgtype)) {
                 try {
@@ -275,10 +274,10 @@ public class ADTService extends AbstractHL7Service {
                 }
             }
             else if (patientArrivingMessageType.equals(msgtype)) {
-                update.patientArrived(pat, patientMatching);
+                patientArrived(pat, patientMatching);
             }
             else {
-                update.updatePatient(pat, patientMatching);
+                updatePatient(pat, patientMatching);
             }
         }
         catch (HL7Exception e) {
@@ -325,7 +324,7 @@ public class ADTService extends AbstractHL7Service {
         try {
             Dataset pid = xslt(msg, pidXslPath);
             checkPID(pid);
-            getPatientUpdate().updatePatient(pid, patientMatching);
+            updatePatient(pid, patientMatching);
         }
         catch (HL7Exception e) {
             throw e;
@@ -344,7 +343,7 @@ public class ADTService extends AbstractHL7Service {
             Dataset mrg = xslt(msg, mrgXslPath);
             checkPID(pid);
             checkMRG(mrg);
-            getPatientUpdate().mergePatient(pid, mrg, patientMatching);
+            mergePatient(pid, mrg, patientMatching);
         }
         catch (HL7Exception e) {
             throw e;
@@ -355,6 +354,26 @@ public class ADTService extends AbstractHL7Service {
         catch (Exception e) {
             throw new HL7Exception("AE", e.getMessage(), e);
         }
+    }
+
+    protected void mergePatient(Dataset dominant, Dataset prior, PatientMatching patientMatching) throws Exception {
+        getPatientUpdate().mergePatient(dominant, prior, patientMatching);
+    }
+
+    protected void updatePatient(Dataset attrs, PatientMatching patientMatching) throws Exception {
+        getPatientUpdate().updatePatient(attrs, patientMatching);
+    }
+
+    protected void changePatientIdentifierList(Dataset correct, Dataset prior, PatientMatching patientMatching) throws Exception {
+        getPatientUpdate().changePatientIdentifierList(correct, prior, patientMatching);
+    }
+
+    protected void patientArrived(Dataset ds, PatientMatching patientMatching) throws Exception {
+        getPatientUpdate().patientArrived(ds,patientMatching);
+    }
+
+    protected void updateOtherPatientIDsOrCreate(Dataset ds, PatientMatching patientMatching) throws Exception {
+        getPatientUpdate().updateOtherPatientIDsOrCreate(ds, patientMatching);
     }
 
     private void checkPID(Dataset pid) throws HL7Exception {
@@ -419,7 +438,6 @@ public class ADTService extends AbstractHL7Service {
             pids = filteredPids;
         }
         
-        PatientUpdate patUpdate = getPatientUpdate();
         for (int i = 0, n = pids.size(); i < n; ++i) {
             String[] pid = (String[]) pids.get(i);
             if (!contains(issuersOfOnlyOtherPatientIDs, pid[ISSUER])) {
@@ -431,7 +449,7 @@ public class ADTService extends AbstractHL7Service {
                         opids.addItem(toDataset(opid));
                     }
                 }
-                patUpdate.updateOtherPatientIDsOrCreate(ds, patientMatching);
+                updateOtherPatientIDsOrCreate(ds, patientMatching);
             }
         }
         return true;
