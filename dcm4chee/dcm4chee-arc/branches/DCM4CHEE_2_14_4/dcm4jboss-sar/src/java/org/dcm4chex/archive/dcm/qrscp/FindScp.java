@@ -149,6 +149,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
                 service.coerceAttributes(rqData, coerce);
             }
             service.supplementIssuerOfPatientID(rqData, callingAET);
+            boolean otherPIDinRQ = rqData.contains(Tags.OtherPatientIDSeq);
             if (!isUniversalMatching(rqData.getString(Tags.PatientID))
                     && service.isPixQueryCallingAET(callingAET)) {
                 pixQuery(rqData);
@@ -157,11 +158,13 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
                     service.isHideWithoutIssuerOfPIDFromAET(callingAET);
             MultiDimseRsp rsp;
             if (service.hasUnrestrictedQueryPermissions(callingAET)) {
-                rsp = newMultiCFindRsp(rqData, hideWithoutIssuerOfPID, null);
+                rsp = newMultiCFindRsp(rqData, hideWithoutIssuerOfPID,
+                        otherPIDinRQ, null);
             } else {
                 Subject subject = (Subject) a.getProperty("user");
                 if (subject != null) {
-                    rsp = newMultiCFindRsp(rqData, hideWithoutIssuerOfPID, subject);
+                    rsp = newMultiCFindRsp(rqData, hideWithoutIssuerOfPID,
+                            otherPIDinRQ, subject);
                 } else {
                     log
                             .info("Missing user identification -> no records returned");
@@ -300,11 +303,13 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
     }
 
     protected MultiDimseRsp newMultiCFindRsp(Dataset rqData,
-            boolean hideWithoutIssuerOfPID, Subject subject)
-            throws SQLException {
+            boolean hideWithoutIssuerOfPID, boolean otherPIDinRQ,
+            Subject subject) throws SQLException {
         QueryCmd queryCmd = QueryCmd.create(rqData, filterResult,
                 service.isNoMatchForNoValue(), hideWithoutIssuerOfPID, subject);
         queryCmd.execute();
+        if (!otherPIDinRQ) // remove OPIDSeq added by pixQuery
+            rqData.remove(Tags.OtherPatientIDSeq);
         return new MultiCFindRsp(queryCmd);
     }
 
