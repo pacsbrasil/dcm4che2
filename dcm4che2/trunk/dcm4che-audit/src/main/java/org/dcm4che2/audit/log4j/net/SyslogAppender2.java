@@ -300,7 +300,7 @@ public class SyslogAppender2 extends AppenderSkeleton {
     }
 
 
-    public void setTlsProtocols(String tlsProtocol) {
+    public void setTlsProtocol(String tlsProtocol) {
         this.tlsProtocol = tlsProtocol;
     }
 
