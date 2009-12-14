@@ -972,9 +972,10 @@ public class NetworkApplicationEntity {
         aarq.setMaxOpsPerformed(minZeroAsMax(maxOpsPerformed,
                 remoteAE.maxOpsInvoked));
 
-        LinkedHashMap<String, LinkedHashSet<String>> cuid2ts = new LinkedHashMap<String, LinkedHashSet<String>>();
-        HashSet<String> scu = new HashSet<String>();
-        HashSet<String> scp = new HashSet<String>();
+        Map<String, Collection<String>> cuid2ts = 
+                new LinkedHashMap<String, Collection<String>>();
+        Collection<String> scu = new HashSet<String>();
+        Collection<String> scp = new HashSet<String>();
         evaluateTC(aarq, cuid2ts, scu, scp, remoteAE.getTransferCapability());
         if (cuid2ts.isEmpty()) {
             log.info("No common Transfer Capability between local AE "
@@ -986,14 +987,11 @@ public class NetworkApplicationEntity {
             aarq.addPresentationContext(pctx);
             return aarq;
         }
-        int freePc = 128 - cuid2ts.size();
-        if (freePc < 0) {
-            log.info("Not all of " + cuid2ts.size() + " common Transfer "
-                    + "Capabilities can be offered in Association request");
+        initPCs(aarq, cuid2ts);
+        if (!cuid2ts.isEmpty()) {
+            log.info("Maximum number (128) of offered Presentation Context reached"
+                    + " -  cannot offer all Transfer Capabilities in A-ASSOCIATE-RQ");
         }
-        freePc = initPCwithUncompressedLETS(aarq, cuid2ts, freePc);
-        initPCwith1TS(aarq, cuid2ts, freePc);
-        initPCwithRemainingTS(aarq, cuid2ts);
         for (String cuid : scp) {
             aarq.addRoleSelection(new RoleSelection(cuid, scu.contains(cuid),
                     true));
@@ -1005,9 +1003,8 @@ public class NetworkApplicationEntity {
     }
 
     private void evaluateTC(AAssociateRQ aarq,
-            LinkedHashMap<String, LinkedHashSet<String>> cuid2ts,
-            HashSet<String> scu, HashSet<String> scp,
-            TransferCapability[] remoteTCs) {
+            Map<String, Collection<String>> cuid2ts, Collection<String> scu,
+            Collection<String> scp, TransferCapability[] remoteTCs) {
         for (int i = 0; i < transferCapability.length; i++) {
             TransferCapability tc = transferCapability[i];
             String cuid = tc.getSopClass();
@@ -1024,7 +1021,7 @@ public class NetworkApplicationEntity {
                     continue;
                 }
             }
-            LinkedHashSet<String> ts = cuid2ts.get(cuid);
+            Collection<String> ts = cuid2ts.get(cuid);
             if (ts == null) {
                 cuid2ts.put(cuid, ts1);
             }
@@ -1041,85 +1038,42 @@ public class NetworkApplicationEntity {
         }
     }
 
-    private int initPCwithUncompressedLETS(AAssociateRQ aarq,
-            Map<String, LinkedHashSet<String>> cuid2ts, int freePc) {
-        for (Iterator<Map.Entry<String, LinkedHashSet<String>>> iter =
-                cuid2ts.entrySet().iterator(); freePc > 0 && iter.hasNext();) {
-            Map.Entry<String, LinkedHashSet<String>> e = iter.next();
-            String cuid = e.getKey();
-            LinkedHashSet<String> ts = e.getValue();
-            boolean implicitVR = ts.remove(UID.ImplicitVRLittleEndian);
-            boolean explicitVR = ts.remove(UID.ExplicitVRLittleEndian);
-            if (!implicitVR && !explicitVR) {
-                continue;
-            }
-            PresentationContext pctx = new PresentationContext();
-            pctx.setPCID(aarq.nextPCID());
-            pctx.setAbstractSyntax(cuid);
-            pctx.addTransferSyntax(implicitVR ? UID.ImplicitVRLittleEndian
-                    : UID.ExplicitVRLittleEndian);
-            if (implicitVR && explicitVR) {
-                if (offerDefaultTSInSeparatePC && freePc > 0) {
-                    aarq.addPresentationContext(pctx);
-                    pctx = new PresentationContext();
-                    pctx.setPCID(aarq.nextPCID());
-                    pctx.setAbstractSyntax(cuid);
-                    --freePc;
-                }
-                pctx.addTransferSyntax(UID.ExplicitVRLittleEndian);
-            }
-            aarq.addPresentationContext(pctx);
-            if (ts.isEmpty()) {
-                iter.remove();
-            }
-            else {
-                --freePc;
-            }
-        }
-        return freePc;
-    }
-
-    private void initPCwith1TS(AAssociateRQ aarq,
-            Map<String, LinkedHashSet<String>> cuid2ts, int freePc) {
-        while (freePc > 0 && !cuid2ts.isEmpty()) {
-            for (Iterator<Map.Entry<String, LinkedHashSet<String>>> iter =
-                    cuid2ts.entrySet().iterator(); freePc > 0 && iter.hasNext();) {
-                Map.Entry<String, LinkedHashSet<String>> e = iter.next();
+    /* Initialize offered Presentation Context in AA-RQ according given
+     * Transfer Capabilities, each with only one offered Transfer Syntax.
+     * Because the maximal number of offered Presentation Contexts in an AA-RQ
+     * is limited to 128, it may be not possible to offer all Transfer Syntaxes
+     * of supported Transfer Capabilities in the AA-RQ. */
+    private void initPCs(AAssociateRQ aarq,
+            Map<String, Collection<String>> cuid2ts) {
+        String[] tsdefs = { UID.ImplicitVRLittleEndian, UID.JPEGBaseline1,
+                UID.JPEGExtended24, UID.JPEGLossless, UID.JPEGLSLossless };
+        while (!cuid2ts.isEmpty() &&
+                aarq.getNumberOfPresentationContexts() < 128)
+            for (Iterator<Map.Entry<String,Collection<String>>> iter =
+                    cuid2ts.entrySet().iterator(); iter.hasNext() &&
+                    aarq.getNumberOfPresentationContexts() < 128;) {
+                Map.Entry<String, Collection<String>> e = iter.next();
                 String cuid = e.getKey();
-                LinkedHashSet<String> ts = e.getValue();
-                Iterator<String> tsiter = ts.iterator();
+                Collection<String> ts = e.getValue();
                 PresentationContext pctx = new PresentationContext();
                 pctx.setPCID(aarq.nextPCID());
                 pctx.setAbstractSyntax(cuid);
-                pctx.addTransferSyntax(tsiter.next());
+                pctx.addTransferSyntax(selectTS(ts, tsdefs));
                 aarq.addPresentationContext(pctx);
-                tsiter.remove();
-                if (ts.isEmpty()) {
+                if (ts.isEmpty())
                     iter.remove();
-                }
-                else {
-                    --freePc;
-                }
             }
-        }
     }
 
-    private void initPCwithRemainingTS(AAssociateRQ aarq,
-            Map<String, LinkedHashSet<String>> cuid2ts) {
-        for (Iterator<Map.Entry<String, LinkedHashSet<String>>> iter =
-                cuid2ts.entrySet().iterator(); iter.hasNext()
-                && aarq.getNumberOfPresentationContexts() < 128;) {
-            Map.Entry<String, LinkedHashSet<String>> e = iter.next();
-            String cuid = e.getKey();
-            LinkedHashSet<String> ts = e.getValue();
-            PresentationContext pctx = new PresentationContext();
-            pctx.setPCID(aarq.nextPCID());
-            pctx.setAbstractSyntax(cuid);
-            for (String tsuid : ts) {
-                pctx.addTransferSyntax(tsuid);
-            }
-            aarq.addPresentationContext(pctx);
-        }
+
+    private String selectTS(Collection<String> ts, String[] tsdefs) {
+        for (String tsdef : tsdefs)
+            if (ts.remove(tsdef))
+                return tsdef;
+        Iterator<String> tsiter = ts.iterator();
+        String uid = tsiter.next();
+        tsiter.remove();
+        return uid;
     }
 
     private TransferCapability findTC(TransferCapability[] tcs, String cuid,
