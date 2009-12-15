@@ -39,100 +39,25 @@
 package org.dcm4chee.arr.listeners.udp;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.Date;
 
-import javax.jms.BytesMessage;
-import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueSender;
-import javax.jms.QueueSession;
-import javax.naming.InitialContext;
-
-import org.jboss.system.ServiceMBeanSupport;
+import org.dcm4chee.arr.listeners.common.AbstractSyslogListener;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Jan 24, 2007
  */
-public class UDPListener extends ServiceMBeanSupport {
+public class UDPListener extends AbstractSyslogListener {
     
-    private static final String QUEUE_FACTORY = "java:ConnectionFactory";
-    private static final String QUEUE = "queue/ARRIncoming";
-
     private static final int MAX_PACKAGE_SIZE = 65507;
-    
-    private static final int MIN_MSG_LEN = 100;
 
-    private static final int MSG_PROMPT_LEN = 200;
-    
-    private static final int MIN_XMLDECL_LEN = 20;
-    
-    private static final int DEFAULT_PORT = 4000;
-    
-    private static final int JMS_RETRY_COUNT = 6;
-    
-    private static final int JMS_RETRY_INTERVAL = 3000; // milliseconds
-    
-    private QueueConnectionFactory connFactory;
-    private QueueConnection conn;
-    private Queue queue;
-    private QueueSession session;
-    private QueueSender sender;
-    
-    private InetAddress laddr;
-    private int port = DEFAULT_PORT;
     private int maxMsgSize = MAX_PACKAGE_SIZE;
-    private int rcvBuf = 0;
-    private boolean enableDNSLookups = false;
-
     private DatagramSocket socket;
     private Thread thread;
-    private long lastStartedAt;
-    private long lastStoppedAt;
-    
-    public Date getLastStoppedAt() {
-        return toDate(lastStoppedAt);
-    }
-
-    public Date getLastStartedAt() {
-        return toDate(lastStartedAt);
-    }
-
-    private static Date toDate(long ms) {
-        return ms > 0 ? new Date(ms) : null;
-    }
-    
-    public final String getLocalAddress() {
-        return laddr == null ? "0.0.0.0" : laddr.getHostAddress();
-    }
-    
-    public void setLocalAddress(String laddrStr) {
-        try {
-            laddr = InetAddress.getByName(laddrStr);           
-        } catch (UnknownHostException e) {
-            throw new IllegalArgumentException("Unknown Host: " + laddrStr);
-        }
-    }
-    
-    public final int getPort() {
-        return port;        
-    }
-
-    public void setPort(int port) {
-        if (port < 0 || port > 0xFFFF) {
-            throw new IllegalArgumentException("port: " + port);
-        }
-        this.port = port;        
-    }
 
     public final int getMaxMessageSize() {
         return maxMsgSize;
@@ -146,56 +71,7 @@ public class UDPListener extends ServiceMBeanSupport {
         this.maxMsgSize = maxMessageSize;
     }
 
-    public final int getReceiveBufferSize() {
-        return rcvBuf;
-    }
-
-    public void setReceiveBufferSize(int rcvBuf)  {
-        if (rcvBuf < 0) {
-            throw new IllegalArgumentException("rcvBuf: " + rcvBuf);
-        }
-        this.rcvBuf = rcvBuf;
-    }
-
-    public boolean isEnableDNSLookups() {
-        return enableDNSLookups;
-    }
-
-    public void setEnableDNSLookups(boolean enable) {
-        this.enableDNSLookups = enable;
-    }
-
-    protected void createService() throws Exception {
-        InitialContext jndiCtx = new InitialContext();
-        connFactory = (QueueConnectionFactory) jndiCtx.lookup(QUEUE_FACTORY);
-        queue = (Queue) jndiCtx.lookup(QUEUE);
-    }
-    
-    protected synchronized void startService() throws Exception {
-        if (conn == null) {
-            initJMS();
-        }
-        startServer();
-    }
-
-    protected synchronized void initJMS() throws Exception {
-        conn = connFactory.createQueueConnection();
-        session = conn.createQueueSession(false, 
-                QueueSession.AUTO_ACKNOWLEDGE);
-        sender = session.createSender(queue);
-    }
-    
-    protected synchronized void stopService() {
-        stopServer();
-        if (conn != null) {
-            try { conn.close(); } catch (Exception ignore) {}
-            conn = null;
-            session = null;
-            sender = null;
-        }
-    }
-
-    private void startServer() throws SocketException {
+    protected void startServer() throws SocketException {
         if (socket != null) {
             stopServer();
         }
@@ -225,7 +101,8 @@ public class UDPListener extends ServiceMBeanSupport {
                         }
                         break;
                     }
-                    onMessage(data, p.getLength(), p.getAddress());
+                    onMessage(p.getData(), p.getOffset(), p.getLength(), 
+                            p.getAddress());
                     p.setLength(data.length);
                 }
                 socket = null;
@@ -244,119 +121,11 @@ public class UDPListener extends ServiceMBeanSupport {
         thread.start();
     }    
 
-    private void stopServer() {
+    protected void stopServer() {
         if (socket != null) {
             socket.close();
             try { thread.join(); } catch (Exception ignore) {}
             socket = null;
-        }
-    }
-
-    private void onMessage(byte[] data, int length, InetAddress from) {
-        if (enableDNSLookups) {
-            // initialize from.hostName, so it will show up in log messages
-            from.getHostName();
-        }
-        if (log.isDebugEnabled()) {
-             log.debug("Received message from " + from + " - "
-                     + prompt(data));
-        }
-        int end = length;
-        while (end > 0 && data[end-1] != '>') {
-            --end;
-        }
-        int off = indexOfXML(data, end);
-        if (off == -1) {
-            log.warn("Ignore unexpected message from " + from + " - " 
-                        + prompt(data));
-            return;
-        }
-        
-        sendMessage(data, off, end - off, from);
-    }
-    
-    private static int indexOfXML(byte[] data, int end) {
-        int off = -1;
-        for (int i = 0, n = end - MIN_MSG_LEN; i < n; ++i) {
-            if (data[i] != '<') continue;           
-            switch (data[i+1]) {
-            case '?':
-                if (data[i+2] == 'x' && data[i+3] == 'm' && data[i+4] == 'l') {
-                    off = i;
-                    i += MIN_XMLDECL_LEN;
-                }
-                continue;
-            case 'A':
-                return (data[i+2] == 'u' 
-                     && data[i+3] == 'd'
-                     && data[i+4] == 'i' 
-                     && data[i+5] == 't'
-                     && data[i+6] == 'M' 
-                     && data[i+7] == 'e'
-                     && data[i+8] == 's'
-                     && data[i+9] == 's'
-                    && data[i+10] == 'a' 
-                    && data[i+11] == 'g'
-                    && data[i+12] == 'e') ? (off != -1 ? off : i) : -1;
-            case 'I':
-                return (data[i+2] == 'H'
-                     && data[i+3] == 'E'
-                     && data[i+4] == 'Y'
-                     && data[i+5] == 'r'
-                     && data[i+6] == '4') ? (off != -1 ? off : i) : -1;
-            default:
-                if (off != -1) {
-                    return -1;
-                }
-            }
-        }
-        return -1;
-    }
-
-    private static String prompt(byte[] data) {
-        try {
-            return data.length > MSG_PROMPT_LEN
-                    ? (new String(data, 0, MSG_PROMPT_LEN, "UTF-8") + "...") 
-                    : new String(data, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void sendMessage(byte[] data, int off, int length, InetAddress from) {
-        for(int i = 0; i < JMS_RETRY_COUNT; i++) {
-            try {     
-                BytesMessage msg = session.createBytesMessage();
-                msg.setStringProperty("sourceHostAddress", from.getHostAddress());
-                if (enableDNSLookups) {
-                    msg.setStringProperty("sourceHostName", from.getHostName());
-                }
-                msg.writeBytes(data, off, length);
-                sender.send(msg);
-                return;
-            } catch (javax.jms.IllegalStateException e) {
-                // typically caused by "session.createBytesMessage"
-                handleJMSDisconnection();
-                continue;
-            } catch (Exception e) {
-                if( e.getCause() instanceof IllegalStateException ) {
-                    // typically caused by "sender.send"
-                    handleJMSDisconnection();
-                    continue;
-                }
-                log.error("Failed to schedule processing message received from " 
-                        + from + " - " +  prompt(data), e);
-                return;
-            }            
-        }
-    }
-
-    private void handleJMSDisconnection() {
-        try {
-            initJMS();
-            log.info("Reconnected to JMS");
-        } catch(Exception ex) {
-            try { Thread.sleep(JMS_RETRY_INTERVAL);} catch (InterruptedException e1) {}
         }
     }
 }

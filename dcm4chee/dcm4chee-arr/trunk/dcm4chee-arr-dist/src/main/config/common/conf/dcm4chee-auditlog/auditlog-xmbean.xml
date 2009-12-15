@@ -11,5 +11,4 @@
 <attribute name="QualifyHostname"/>
 <attribute name="EncodeUserIsRequestorTrue"/>
 <attribute name="ConfigurationDirectory"/>
-<attribute name="State"/>
 </mbean>

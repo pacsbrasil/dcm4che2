@@ -25,6 +25,18 @@
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
+      <artifactId>dcm4chee-arr-listeners-common</artifactId>
+      <type>sar</type>
+      <version>3.0.9</version>
+    </dependency>
+    <dependency>
+      <groupId>dcm4che.dcm4chee</groupId>
+      <artifactId>dcm4chee-arr-listeners-tcp</artifactId>
+      <type>sar</type>
+      <version>3.0.9</version>
+    </dependency>
+    <dependency>
+      <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-arr-listeners-udp</artifactId>
       <type>sar</type>
       <version>3.0.9</version>
@@ -83,6 +95,16 @@
               <contextRoot>/dcm4chee-arr</contextRoot>
               <bundleFileName>seam-web.war</bundleFileName>
             </webModule>
+            <sarModule>
+              <groupId>dcm4che.dcm4chee</groupId>
+              <artifactId>dcm4chee-arr-listeners-common</artifactId>
+              <bundleFileName>listeners-common.sar</bundleFileName>
+            </sarModule>
+            <sarModule>
+              <groupId>dcm4che.dcm4chee</groupId>
+              <artifactId>dcm4chee-arr-listeners-tcp</artifactId>
+              <bundleFileName>listeners-tcp.sar</bundleFileName>
+            </sarModule>
             <sarModule>
               <groupId>dcm4che.dcm4chee</groupId>
               <artifactId>dcm4chee-arr-listeners-udp</artifactId>
