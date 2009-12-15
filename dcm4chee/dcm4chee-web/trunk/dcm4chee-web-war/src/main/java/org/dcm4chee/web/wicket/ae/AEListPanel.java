@@ -40,10 +40,7 @@ package org.dcm4chee.web.wicket.ae;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.authorization.Action;
-import org.apache.wicket.authorization.AuthorizationException;
-import org.apache.wicket.authorization.UnauthorizedActionException;
-import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
@@ -53,7 +50,9 @@ import org.apache.wicket.markup.html.list.OddEvenListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
 import org.dcm4chee.archive.entity.AE;
+import org.dcm4chee.web.wicket.common.markup.modal.ConfirmationWindow;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -77,6 +76,16 @@ public class AEListPanel extends Panel {
                 target.addComponent(AEListPanel.this);
             }});
         add(mw);
+        final ConfirmationWindow confirm = new ConfirmationWindow<AE>("confirm"){
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, AE ae) {
+                AEMgtDelegate.getInstance().removeAET(ae);
+                target.addComponent(AEListPanel.this);
+            }
+            @Override
+            public void onDecline(AjaxRequestTarget target, AE ae) {}
+        };
+        add(confirm);
         add( new Label("titleHdrLabel", new ResourceModel("aet.titleHdr")));
         add( new Label("hostHdrLabel", new ResourceModel("aet.hostHdr")));
         add( new Label("portHdrLabel", new ResourceModel("aet.portHdr")));
@@ -119,20 +128,24 @@ public class AEListPanel extends Panel {
                 item.add(new Label("institution"));
                 item.add(new Label("department"));
                 item.add(new Label("installed"));
-                item.add(new Link("editAET") {
+                Link editAET = new Link("editAET") {
                     
                     @Override
                     public void onClick() {
                         page.setEditPage(item.getModelObject());
                     }
-                });
-                item.add(new Link("removeAET") {
-                    
+                };
+                item.add(editAET);
+                MetaDataRoleAuthorizationStrategy.authorize(editAET, RENDER, "WebAdmin");
+                AjaxLink removeAET = new AjaxLink("removeAET") {
                     @Override
-                    public void onClick() {
-                        AEMgtDelegate.getInstance().removeAET(item.getModelObject());
+                    public void onClick(AjaxRequestTarget target) {
+                        AE ae = item.getModelObject();
+                        confirm.confirm(target, new StringResourceModel("aet.confirmDelete",AEListPanel.this, null,new Object[]{ae}), ae);
                     }
-                });
+                };
+                item.add(removeAET);
+                MetaDataRoleAuthorizationStrategy.authorize(removeAET, RENDER, "WebAdmin");
                 item.add(new AjaxLink("echo") {
                     @Override
                     public void onClick(AjaxRequestTarget target) {
@@ -141,12 +154,14 @@ public class AEListPanel extends Panel {
             }
             
         });
-        add(new Link("newAET") {
+        Link newAET = new Link("newAET") {
             
             @Override
             public void onClick() {
                 page.setEditPage(new AE());
             }
-        });
+        };
+        add(newAET);
+        MetaDataRoleAuthorizationStrategy.authorize(newAET, RENDER, "WebAdmin");
     }
 }

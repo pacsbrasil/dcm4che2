@@ -1,6 +1,7 @@
 package org.dcm4chee.web.wicket.ae;
 
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -8,6 +9,9 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 
+import org.apache.wicket.authorization.strategies.role.IRoleCheckingStrategy;
+import org.apache.wicket.authorization.strategies.role.RoleAuthorizationStrategy;
+import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.util.tester.FormTester;
 import org.apache.wicket.util.tester.WicketTester;
 import org.dcm4chee.archive.entity.AE;
@@ -53,6 +57,8 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
     }
     @Test
     public void testEditAERequiredFields() {
+        wicketTester.getApplication().getSecuritySettings().setAuthorizationStrategy(
+                new RoleAuthorizationStrategy(new UserRolesAuthorizer("WebAdmin")));
         wicketTester.startPage(AETestPage.class);
         wicketTester.getComponentFromLastRenderedPage("aemgt:ae_panel").getSession().setLocale(new Locale("en"));
         wicketTester.clickLink("aemgt:ae_panel:newAET");
@@ -70,6 +76,8 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
     
     @Test
     public void testEditAEValidators() {
+        wicketTester.getApplication().getSecuritySettings().setAuthorizationStrategy(
+                new RoleAuthorizationStrategy(new UserRolesAuthorizer("WebAdmin")));
         wicketTester.startPage(AETestPage.class);
         wicketTester.getComponentFromLastRenderedPage("aemgt:ae_panel").getSession().setLocale(new Locale("en"));
         wicketTester.clickLink("aemgt:ae_panel:newAET");
@@ -89,6 +97,8 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
     
     @Test
     public void testNewAE() {
+        wicketTester.getApplication().getSecuritySettings().setAuthorizationStrategy(
+                new RoleAuthorizationStrategy(new UserRolesAuthorizer("WebAdmin")));
         wicketTester.startPage(AETestPage.class);
         for ( AE ae : aeList ) {
             wicketTester.clickLink("aemgt:ae_panel:newAET");
@@ -123,12 +133,38 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
         ae.setPort(port);
         return ae;
     }
+    
+    @Test
+    public void testUnauthorizedEdit() {
+        wicketTester.getApplication().getSecuritySettings().setAuthorizationStrategy(
+                new RoleAuthorizationStrategy(new UserRolesAuthorizer("dummy")));
+        wicketTester.startPage(AETestPage.class);
+        wicketTester.getComponentFromLastRenderedPage("aemgt:ae_panel").getSession().setLocale(new Locale("en"));
+        wicketTester.assertInvisible("aemgt:ae_panel:newAET");
+        wicketTester.assertInvisible("aemgt:ae_panel:list:0:editAET");
+        wicketTester.assertInvisible("aemgt:ae_panel:list:0:removeAET");
+    }
+    
     private void initDummyMBean() {
         MBeanServer mbServer = MBeanServerFactory.createMBeanServer();
         try {
             mbServer.createMBean("org.dcm4chee.web.wicket.ae.DummyEchoMBean", 
                     new ObjectName("dcm4chee.archive:service=ECHOService"));
         } catch (Exception ignore) {log.error("Can't create DummyEchoMBean!",ignore);}        
+    }
+    
+    private static final class UserRolesAuthorizer implements IRoleCheckingStrategy, Serializable {
+            private static final long serialVersionUID = 1L;
+
+            private final Roles roles;
+
+            public UserRolesAuthorizer(String roles) {
+                    this.roles = new Roles(roles);
+            }
+
+            public boolean hasAnyRole(Roles roles) {
+                    return this.roles.hasAnyRole(roles);
+            }
     }
     
 }

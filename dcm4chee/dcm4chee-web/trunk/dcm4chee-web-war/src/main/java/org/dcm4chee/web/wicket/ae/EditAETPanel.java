@@ -59,9 +59,9 @@ import org.apache.wicket.validation.validator.RangeValidator;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.wicket.common.BaseForm;
 import org.dcm4chee.web.wicket.common.FocusOnLoadBehaviour;
-import org.dcm4chee.web.wicket.common.MessageWindow;
 import org.dcm4chee.web.wicket.common.TooltipBehaviour;
 import org.dcm4chee.web.wicket.common.UrlValidator1;
+import org.dcm4chee.web.wicket.common.markup.modal.MessageWindow;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>

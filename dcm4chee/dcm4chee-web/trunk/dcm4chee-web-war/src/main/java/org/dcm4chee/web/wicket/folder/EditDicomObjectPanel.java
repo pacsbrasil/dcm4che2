@@ -64,8 +64,8 @@ import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.util.TagUtils;
 import org.dcm4chee.web.wicket.common.BaseForm;
-import org.dcm4chee.web.wicket.common.MessageWindow;
 import org.dcm4chee.web.wicket.common.TooltipBehaviour;
+import org.dcm4chee.web.wicket.common.markup.modal.MessageWindow;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
