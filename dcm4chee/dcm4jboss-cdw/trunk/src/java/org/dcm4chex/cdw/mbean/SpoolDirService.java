@@ -381,11 +381,16 @@ public class SpoolDirService extends ServiceMBeanSupport
     public File[] getEmulateRequestFiles(String aet,
             final long lastModifiedBefore) {
         File dir = new File(emulateRequestDir, aet);
-        return dir.listFiles(new FileFilter() {
+        return maskNull(dir.listFiles(new FileFilter() {
 
             public boolean accept(File f) {
                 return f.lastModified() < lastModifiedBefore;
-            }});
+            }}));
+    }
+
+    private static File[] NO_FILES = {};
+    private static File[] maskNull(File[] files) {
+        return files == null ? NO_FILES : files;
     }
 
     public void purge() {
