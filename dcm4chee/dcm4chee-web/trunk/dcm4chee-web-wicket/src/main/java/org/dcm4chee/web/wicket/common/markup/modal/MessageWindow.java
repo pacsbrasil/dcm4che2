@@ -36,49 +36,39 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket.common;
+package org.dcm4chee.web.wicket.common.markup.modal;
 
-import java.lang.reflect.Field;
-
-import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.behavior.AbstractBehavior;
-import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
-import org.apache.wicket.markup.html.IHeaderContributor;
-import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.internal.HtmlHeaderContainer;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.ResourceModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
  * @since Nov 02, 2009
  */
-public class MessageWindow extends ModalWindow {
+public class MessageWindow extends AutoOpenModalWindow {
+    private static final long serialVersionUID = 2325295574246960490L;
+    protected static final String TITLE_DEFAULT = "MessageWindow";
     public static final String TITLE_INFO="msgwindow.title.info";
     public static final String TITLE_WARNING="msgwindow.title.warn";
     public static final String TITLE_ERROR="msgwindow.title.error";
     
-    private static final long serialVersionUID = 0L;
-    private boolean renderScript;
-    private transient Field showField;
     private String msg;
-
-    private static Logger log = LoggerFactory.getLogger(MessageWindow.class);
 
     public MessageWindow(String id) {
         super(id);
+        initContent();
+    }
+
+    protected void initContent() {
         setInitialWidth(300);
         setInitialHeight(200);
-        setTitle(new ResourceModel(TITLE_INFO,"MessageWindow"));
+        setTitle(new ResourceModel(TITLE_INFO,TITLE_DEFAULT));
         setContent(new MessageWindowPanel("content"));
-        add(new AutoOpenBehaviour());
     }
     
     public void setMessage(String msg) {
@@ -86,36 +76,24 @@ public class MessageWindow extends ModalWindow {
     }
     public void setInfoMessage(String msg) {
         this.msg = msg;
-        setTitle(new ResourceModel(TITLE_INFO,"MessageWindow"));
+        setTitle(new ResourceModel(TITLE_INFO,TITLE_DEFAULT));
     }
     public void setWarningMessage(String msg) {
         this.msg = msg;
-        setTitle(new ResourceModel(TITLE_WARNING,"MessageWindow"));
+        setTitle(new ResourceModel(TITLE_WARNING,TITLE_DEFAULT));
     }
     public void setErrorMessage(String msg) {
         this.msg = msg;
-        setTitle(new ResourceModel(TITLE_ERROR,"MessageWindow"));
+        setTitle(new ResourceModel(TITLE_ERROR,TITLE_DEFAULT));
     }
     
-    public void renderHead( HtmlHeaderContainer container ) {
-        super.renderHead(container);
-        if (msg != null && !isShown()) {
-            Component c = this.get("content:close");
-            container.getHeaderResponse().renderOnLoadJavascript("self.focus();var elem=document.getElementById('"+
-                    c.getMarkupId() + "');elem.focus()");
-        }
-    }
-
-    @Override
-    protected void onBeforeRender() {
-        if (msg != null && !isShown()) {
-            renderScript = true;
-            show();
-            super.onBeforeRender();
-            show();// super.shown is set to false for none Ajax requests!
-        } else {
-            super.onBeforeRender();
-        }
+    /**
+     * Called by onBeforeRender to check if window should be opened without AJAX for this request. 
+     *
+     * @return true when window should be opened. 
+     */
+    protected boolean needAutoOpen() {
+        return msg != null;
     }
     
     @Override
@@ -124,23 +102,6 @@ public class MessageWindow extends ModalWindow {
         target.focusComponent(this.get("content:close"));
     }
 
-    private void show() {
-        try {
-            if (showField == null) {
-                try {
-                    showField = ModalWindow.class.getDeclaredField("shown");
-                    showField.setAccessible(true);
-                } catch (Exception e) {
-                    log.error("Failed to initialize shown Field from ModalWindow!");
-                }
-            }
-            showField.set(this, true);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-    }
-    
-    
     public void show(AjaxRequestTarget target, String msg){
         this.msg = msg;
         show(target);
@@ -157,7 +118,7 @@ public class MessageWindow extends ModalWindow {
                     return msg;
                 }
             }));
-            add(new AjaxFallbackLink("close", new ResourceModel("closeBtn")){
+            add(new AjaxFallbackLink("close"){
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     close(target);
@@ -177,23 +138,5 @@ public class MessageWindow extends ModalWindow {
             msg = null;
             super.onAfterRender();
         }
-        
     }   
-    
-    private class AutoOpenBehaviour extends AbstractBehavior implements IHeaderContributor {
-        @Override
-        public void renderHead(IHeaderResponse response) {
-            if (renderScript) {
-                try {
-                    String script = getWindowOpenJavascript();
-                    response.renderOnDomReadyJavascript(script);
-                } catch (Exception e) {
-                    log.error("Error render Header with 'WindowOpenJavascript'");
-                }
-                renderScript = false;
-            }
-         }
-        
-    }
-
 }

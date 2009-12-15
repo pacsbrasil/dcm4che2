@@ -36,25 +36,17 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket.common;
+package org.dcm4chee.web.wicket.common.markup.modal;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
+import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
-import org.apache.wicket.feedback.FeedbackMessage;
-import org.apache.wicket.feedback.FeedbackMessages;
 import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.IHeaderResponse;
-import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.panel.FeedbackPanel;
-import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.markup.html.internal.HtmlHeaderContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,48 +55,49 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since Nov 02, 2009
  */
-public class FeedbackMessageWindow extends ModalWindow {
-    private static final long serialVersionUID = 0L;
+public abstract class AutoOpenModalWindow extends ModalWindow {
     private boolean renderScript;
     private transient Field showField;
-    private transient List<FeedbackMessage> messages;
 
-    private static Logger log = LoggerFactory.getLogger(FeedbackMessageWindow.class);
+    private static Logger log = LoggerFactory.getLogger(AutoOpenModalWindow.class);
 
-    public FeedbackMessageWindow(String id) {
+    public AutoOpenModalWindow(String id) {
         super(id);
-        messages = new ArrayList<FeedbackMessage>();
-        setInitialWidth(400);
-        setInitialHeight(300);
-        setTitle("FeedbackWindow");
-        setContent(new MessageWindowPanel("content"));
         add(new AutoOpenBehaviour());
+    }
+
+    public void renderHead( HtmlHeaderContainer container ) {
+        super.renderHead(container);
+        if (needAutoOpen() && !isShown()) {
+            Component c = this.get("content:close");
+            container.getHeaderResponse().renderOnLoadJavascript("self.focus();var elem=document.getElementById('"+
+                    c.getMarkupId() + "');elem.focus()");
+        }
     }
 
     @Override
     protected void onBeforeRender() {
-        if (checkNotRenderedFeedbackMessages() && !isShown()) {
+        if (needAutoOpen() && !isShown()) {
+            renderScript = true;
             show();
             super.onBeforeRender();
             show();// super.shown is set to false for none Ajax requests!
-            renderScript = true;
         } else {
             super.onBeforeRender();
         }
     }
+
+    /**
+     * Called by onBeforeRender to check if window should be opened without AJAX for this request. 
+     *
+     * @return true when window should be opened. 
+     */
+    protected abstract boolean needAutoOpen();
     
-    private boolean checkNotRenderedFeedbackMessages() {
-        FeedbackMessages fbMessages = getSession().getFeedbackMessages();
-        FeedbackMessage fbMsg;
-        boolean hasMsg = false;
-        for (final Iterator<FeedbackMessage> iter = fbMessages.iterator(); iter.hasNext();) {
-            fbMsg = iter.next();
-            if ( fbMsg.getReporter() != null && !fbMsg.isRendered() ) {
-                hasMsg = true;
-                messages.add(fbMsg);
-            }
-        }
-        return hasMsg;
+    @Override
+    public void show(final AjaxRequestTarget target) {
+        super.show(target);
+        target.focusComponent(this.get("content:close"));
     }
 
     private void show() {
@@ -122,30 +115,7 @@ public class FeedbackMessageWindow extends ModalWindow {
             log.error(e.getMessage(), e);
         }
     }
-
-    public class MessageWindowPanel extends Panel {
-        private static final long serialVersionUID = 0L;
-
-        public MessageWindowPanel(String id) {
-            super(id);
-            add(new FeedbackPanel("feedback"));
-            add(new AjaxFallbackLink("close", new ResourceModel("closeBtn")){
-                @Override
-                public void onClick(AjaxRequestTarget target) {
-                    close(target);
-                }
-            }.add(new Label("closeLabel", new ResourceModel("closeBtn"))));
-        }
         
-        /**
-         * Return always true because ModalWindow.beforeRender set visibility of content to false!
-         */
-        @Override
-        public boolean isVisible() {
-            return true;
-        }
-    }   
-    
     private class AutoOpenBehaviour extends AbstractBehavior implements IHeaderContributor {
         @Override
         public void renderHead(IHeaderResponse response) {
