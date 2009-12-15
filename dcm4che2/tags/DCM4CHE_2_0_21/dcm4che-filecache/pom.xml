@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><project>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>dcm4che</artifactId>
+    <groupId>dcm4che</groupId>
+    <version>2.0.21</version>
+  </parent>
+  <groupId>dcm4che</groupId>
+  <artifactId>dcm4che-filecache</artifactId>
+  <name>Journaling File Cache</name>
+  <version>2.0.21</version>
+  <description>LRU file cache using journal files for logging last file access</description>
+  <dependencies>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>1.5.0</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+</project>
