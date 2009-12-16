@@ -17,18 +17,21 @@
     <xsl:template match="rim2:LeafRegistryObjectList">
         <xsl:element name="RegistryObjectList" namespace="urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0">
             <xsl:copy-of select="@*" />
-            <xsl:apply-templates select="rim2:*" mode="addId"/>
+            <xsl:apply-templates select="rim2:*" mode="addId">
+            	<xsl:with-param name="main_id" select="position()"/>
+            </xsl:apply-templates>
        </xsl:element>
     </xsl:template> 
     
     <xsl:template match="rim2:*" mode="addId">
+    	<xsl:param name="main_id" />
         <xsl:variable name="name" select="local-name()"/>
         <xsl:variable name="prefix" select="substring($name,0,4)"/>
         <xsl:element name="{$name}" namespace="urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0">
             <xsl:copy-of select="@*" />
             <xsl:if test="$name='Classification' or $name='Association' or $name='ExternalIdentifier' ">
                 <xsl:if test="not(@id)">
-                    <xsl:attribute name="id"><xsl:value-of select="concat($prefix,'_',position())"/></xsl:attribute>
+                    <xsl:attribute name="id"><xsl:value-of select="concat($prefix,'_',$main_id,'_',position())"/></xsl:attribute>
                 </xsl:if>
             </xsl:if>
             <xsl:if test="$name='ExternalIdentifier' ">
@@ -45,8 +48,10 @@
 	                </xsl:otherwise>
 	            </xsl:choose>
             </xsl:if>
-            <xsl:apply-templates select="*|text()" mode="addId"/>
+            <xsl:apply-templates select="*|text()" mode="addId">
+                <xsl:with-param name="main_id" select="concat($main_id,'-',position())"/>
+            </xsl:apply-templates>
         </xsl:element>
     </xsl:template> 
-
+    
 </xsl:stylesheet>
