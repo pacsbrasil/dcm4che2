@@ -495,7 +495,6 @@ QueryRetrieveScp service.</description>
         UID value, or following defined symbolic names:
         Dcm4cheStudyRootQueryRetrieveInformationModelFIND,
         Dcm4cheBlockedStudyRootQueryRetrieveInformationModelFIND,
-        Dcm4cheVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND,
         ]]>
       </description>
       <name>AcceptedPrivateSOPClasses</name>
@@ -504,7 +503,6 @@ QueryRetrieveScp service.</description>
          <value value="
            Dcm4cheStudyRootQueryRetrieveInformationModelFIND
            Dcm4cheBlockedStudyRootQueryRetrieveInformationModelFIND
-           Dcm4cheVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND
            "/>
       </descriptors>
    </attribute>
@@ -543,36 +541,6 @@ QueryRetrieveScp service.</description>
          <value value="1000"/>
       </descriptors>
    </attribute>   
-   <attribute access="read-write"
-      getMethod="getVirtualEnhancedCTConfigFile"
-      setMethod="setVirtualEnhancedCTConfigFile">
-      <description><![CDATA[Configuration file which defines included
-      attributes in Enhanced CT Instance enities return by
-      Private Virtual Multiframe FIND Service.      
-      A relative path name is resolved relative to
-      <i>archive-install-directory</i>/server/default/.]]>  
-      </description>
-      <name>VirtualEnhancedCTConfigFile</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="conf/dcm4chee-vmf/enhanced-ct.xml"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getVirtualEnhancedMRConfigFile"
-      setMethod="setVirtualEnhancedMRConfigFile">
-      <description><![CDATA[Configuration file which defines included
-      attributes in Enhanced MR Instance entities return by
-      Private Virtual Multiframe FIND Service.      
-      A relative path name is resolved relative to
-      <i>archive-install-directory</i>/server/default/.]]>  
-      </description>
-      <name>VirtualEnhancedMRConfigFile</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="conf/dcm4chee-vmf/enhanced-mr.xml"/>
-      </descriptors>
-   </attribute>
    <attribute access="read-write"
       getMethod="getLogCallingAETs"
       setMethod="setLogCallingAETs">
