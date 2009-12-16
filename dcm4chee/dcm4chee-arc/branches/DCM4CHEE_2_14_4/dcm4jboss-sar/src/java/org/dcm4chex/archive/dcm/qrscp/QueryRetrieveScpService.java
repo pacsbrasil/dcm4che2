@@ -64,8 +64,6 @@ import javax.management.JMException;
 import javax.management.MBeanException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Templates;
 
 import org.dcm4che.auditlog.InstancesAction;
@@ -219,8 +217,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private FindScp tianiBlockedFindScp = new BlockedFindScp(this);
 
-    private FindScp tianiVMFFindScp = new VMFFindScp(this);
-
     private MoveScp moveScp = null;
 
     private GetScp getScp = null;
@@ -230,14 +226,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private int maxBlockedFindRSP = 10000;
 
     private int bufferSize = 8192;
-
-    private File virtualEnhancedCTConfigFile;
-
-    private Dataset virtualEnhancedCTConfig;
-
-    private File virtualEnhancedMRConfigFile;
-
-    private Dataset virtualEnhancedMRConfig;
 
     private static final String CSTORE_OUT_XSL = "out-cstorerq.xsl";
     
@@ -281,24 +269,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     protected FindScp createFindScp() {
         return new FindScp(this, true);
-    }
-	
-    public final String getVirtualEnhancedCTConfigFile() {
-        return virtualEnhancedCTConfigFile.getPath();
-    }
-
-    public final void setVirtualEnhancedCTConfigFile(String path) {
-        this.virtualEnhancedCTConfigFile = new File(path.replace('/',
-                File.separatorChar));
-    }
-
-    public final String getVirtualEnhancedMRConfigFile() {
-        return virtualEnhancedMRConfigFile.getPath();
-    }
-
-    public final void setVirtualEnhancedMRConfigFile(String path) {
-        this.virtualEnhancedMRConfigFile = new File(path.replace('/',
-                File.separatorChar));
     }
 
     public final ObjectName getTLSConfigName() {
@@ -1015,10 +985,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
         services.bind(
                 UIDs.Dcm4cheBlockedStudyRootQueryRetrieveInformationModelFIND,
                 tianiBlockedFindScp);
-        services
-                .bind(
-                        UIDs.Dcm4cheVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND,
-                        tianiVMFFindScp);
 
         services.bind(UIDs.PatientRootQueryRetrieveInformationModelMOVE,
                 moveScp);
@@ -1054,11 +1020,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 .unbind(UIDs.Dcm4cheBlockedStudyRootQueryRetrieveInformationModelFIND);
         services
                 .unbind(UIDs.Dcm4cheBlockedPatientStudyOnlyQueryRetrieveInformationModelFIND);
-
-        services
-                .unbind(UIDs.Dcm4cheVirtualMultiFramePatientRootQueryRetrieveInformationModelFIND);
-        services
-                .unbind(UIDs.Dcm4cheVirtualMultiFrameStudyRootQueryRetrieveInformationModelFIND);
 
         services.unbind(UIDs.PatientRootQueryRetrieveInformationModelMOVE);
         services.unbind(UIDs.StudyRootQueryRetrieveInformationModelMOVE);
@@ -1331,41 +1292,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
                         + studyIUID + " on " + dirpath, e);
             }
         }
-    }
-
-    Dataset getVMFConfig(String cuid) throws DcmServiceException {
-        if (UIDs.MRImageStorage.equals(cuid))
-            return getVirtualEnhancedMRConfig();
-        if (UIDs.CTImageStorage.equals(cuid))
-            return getVirtualEnhancedCTConfig();
-        throw new DcmServiceException(0xC001,
-                "Series contains instance(s) of different SOP Classes than MR or CT - "
-                        + cuid);
-    }
-
-    Dataset getVirtualEnhancedMRConfig() {
-        if (virtualEnhancedMRConfig == null)
-            virtualEnhancedMRConfig = loadVMFConfig(virtualEnhancedMRConfigFile);
-        return virtualEnhancedMRConfig;
-    }
-
-    Dataset getVirtualEnhancedCTConfig() {
-        if (virtualEnhancedCTConfig == null)
-            virtualEnhancedCTConfig = loadVMFConfig(virtualEnhancedCTConfigFile);
-        return virtualEnhancedCTConfig;
-    }
-
-    private Dataset loadVMFConfig(File file) throws ConfigurationException {
-        Dataset ds = DcmObjectFactory.getInstance().newDataset();
-        try {
-            SAXParserFactory f = SAXParserFactory.newInstance();
-            SAXParser p = f.newSAXParser();
-            p.parse(FileUtils.resolve(file), ds.getSAXHandler2(null));
-        } catch (Exception e) {
-            throw new ConfigurationException(
-                    "Failed to load VMF Configuration from " + file);
-        }
-        return ds;
     }
 
     void scheduleSendPendingCMoveRsp(TimerTask sendPendingRsp) {
