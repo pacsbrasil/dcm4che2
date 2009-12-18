@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:wicket="http://wicket.apache.org">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	    <title>
+	    	<wicket:message key="application.browser_title">
+	    		[Dashboard]
+			</wicket:message>
+		</title>
+		<link rel="stylesheet" type="text/css" href="style.css"/>
+	</head>
+	<body class="panel">
+		<wicket:panel>
+			<div wicket:id="modal-window" />
+			<p>
+				<a wicket:id="add-report-link" class="hyperlink" href="#">
+					<img wicket:id="add-report-image" class="image" />
+					<span>
+						<wicket:message key="dashboard.report.add_report.title">
+							[Add report]
+						</wicket:message>				
+					</span>
+				</a>
+			</p>
+			<br />
+			<table class="table">
+			  <thead>
+			    <tr>
+					<th class="table-header">
+						<wicket:message key="dashboard.report.table.title_title">
+							[title]
+						</wicket:message>
+					</th>
+					<th class="table-header">
+						<wicket:message key="dashboard.report.table.edit_title">
+							[edit]
+						</wicket:message>
+					</th>
+					<th class="table-header">
+						<wicket:message key="dashboard.report.table.remove_title">
+							[remove]
+						</wicket:message>
+					</th>
+					<th class="table-header">
+						<wicket:message key="dashboard.report.table.diagram_option_title">
+							[diagram]
+						</wicket:message>
+					</th>
+					<th class="table-header">
+						<wicket:message key="dashboard.report.table.table_option_title">
+							[table]
+						</wicket:message>
+					</th>
+			    </tr>
+			  </thead>
+			  <tbody class="table-text">
+			    <tr wicket:id="report-rows">
+					<td wicket:id="report-title">
+			      		[title]
+			      	</td>	      	
+					<td style="text-align: center">
+						<a wicket:id="edit-report-link" href="#">
+							<img class="image" src="images/reply.png" />
+						</a>
+			      	</td>
+					<td style="text-align: center">
+						<a wicket:id="remove-report-link" href="#">
+							<img class="image" src="images/action_remove.png" />
+						</a>
+			      	</td>
+		 	  	  	<td style="text-align:center">
+						<a wicket:id="report-diagram-link" href="#">
+							<div wicket:id="report-diagram-dropdown-choice-label" />
+						</a>
+		 	  	  	</td>
+		 	  	  	<td style="text-align:center">
+						<a wicket:id="report-table-link" href="#">
+							<img class="image" src="images/application.png" />
+						</a>
+		 	  	  	</td>
+			    </tr>
+			  </tbody>
+			</table>
+		</wicket:panel>
+	</body>
+</html>

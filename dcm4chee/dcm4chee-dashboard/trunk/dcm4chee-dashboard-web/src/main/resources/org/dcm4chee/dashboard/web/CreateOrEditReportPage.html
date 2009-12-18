@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:wicket="http://wicket.apache.org">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	    <title>
+	    	<wicket:message key="application.browser_title">
+	    		[User Management]
+			</wicket:message>
+		</title>
+		<link rel="stylesheet" type="text/css" href="style.css"/>
+	</head>
+	<body class="panel">
+		<br />
+    	<p>
+			<div wicket:id="page-title" />
+			<br />
+			<form wicket:id="create-or-edit-report-form">
+				 <table class="table-form">
+				 	<tr>
+				 		<td>
+							<wicket:message key="dashboard.report.createoredit.form.title.title" />
+						</td>
+						<td>
+							<input wicket:id="dashboard.report.createoredit.form.title.input" class="input" type="text" />
+							<div wicket:id="report-title-validator-message-label" />
+						</td>
+					</tr>
+					<tr>
+						<td>				
+							<wicket:message key="dashboard.report.createoredit.form.statement.title" />
+						</td>
+						<td>				
+							<textarea wicket:id="dashboard.report.createoredit.form.statement.input" class="input">
+							</textarea>
+							<div wicket:id="report-statement-validator-message-label" />
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<div wicket:id="report-diagram-dropdown-label" />
+						</td>
+						<td>				
+							<select wicket:id="report-diagram-dropdown-choice" class="input" size="1"></select>
+						</td>
+					</tr>
+					<tr>
+						<td>				
+							<wicket:message key="dashboard.report.createoredit.form.table.option.title" />
+						</td>
+						<td>				
+							<input wicket:id="report-table-checkbox" class="input" type="checkbox" style="float: left" />
+						</td>
+					</tr>
+					<tr>
+						<td>
+						</td>
+						<td>				
+							<input wicket:id="form-submit" class="button-submit" type="submit" wicket:message="value:dashboard.report.createoredit.form.submit" style="clear: left" />
+						</td>
+					</tr>
+				</table>
+			</form>
+        </p>
+        <br />
+        <p>
+			<div wicket:id="result-message">
+				[Result message]
+			</div>
+        </p>
+        <br />
+        <p>
+			<a wicket:id="close" class="hyperlink">
+				<wicket:message key="dashboard.report.createoredit.close">
+            		[Close]
+				</wicket:message>				
+			</a>
+        </p>
+	</body>
+</html>

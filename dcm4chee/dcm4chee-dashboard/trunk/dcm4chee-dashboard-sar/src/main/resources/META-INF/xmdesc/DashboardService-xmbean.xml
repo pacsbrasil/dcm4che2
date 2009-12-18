@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mbean PUBLIC
+   "-//JBoss//DTD JBOSS XMBEAN 1.2//EN"
+   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_2.dtd">
+<mbean>
+   <description>Management Bean.</description>
+   <descriptors>
+      <persistence persistPolicy="OnUpdate" />
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+   </descriptors>
+   <class>org.dcm4chee.dashboard.mbean.DashboardService</class>
+   <constructor>
+      <description>MBean Constructor.</description>
+      <name>org.dcm4chee.dashboard.mbean.DashboardService</name>
+   </constructor>
+	<attribute access="read-write" getMethod="getDataSourceName" setMethod="setDataSourceName">
+        <description>
+            Represents the jndi name for the configured data source
+        </description>
+        <name>dataSourceName</name>
+        <type>java.lang.String</type>
+        <descriptors>
+            <default value=""/>
+        </descriptors>
+    </attribute>
+	<attribute access="read-write" getMethod="getGroupList" setMethod="setGroupList">
+        <description>
+            Represents the configured file system groups, 
+            as strings, separated by newline
+        </description>
+        <name>groupList</name>
+        <type>java.lang.String</type>
+        <descriptors>
+            <default value=""/>
+        </descriptors>
+    </attribute>
+	<attribute access="read-write" getMethod="getPropertyNameList" setMethod="setPropertyNameList">
+        <description>
+            Represents the system property names to display, 
+            as strings, separated by newline
+        </description>
+        <name>propertyNameList</name>
+        <type>java.lang.String</type>
+        <descriptors>
+            <default value=""/>
+        </descriptors>
+    </attribute>
+	<attribute access="read-write" getMethod="getReportFilename" setMethod="setReportFilename">
+        <description>
+            Full path of file to contain the report declarations
+        </description>
+        <name>reportFilename</name>
+        <type>java.lang.String</type>
+        <descriptors>
+            <default value=""/>
+        </descriptors>
+    </attribute>
+   <operation>
+      <description>MBean Operation.</description>
+      <name>listAllFileSystemGroups</name>
+      <return-type>[Ljava.lang.String;</return-type>
+   </operation>
+   <operation>
+      <description>MBean Operation.</description>
+      <name>listFileSystemsOfGroup</name>
+      <parameter>
+         <description></description>
+         <name>groupname</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>[Ljava.io.File;</return-type>
+   </operation>
+   <operation>
+      <description>MBean Operation.</description>
+      <name>getMinimumFreeDiskSpaceOfGroup</name>
+      <parameter>
+         <description></description>
+         <name>groupname</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>long</return-type>
+   </operation>
+   <operation>
+      <description>MBean Operation.</description>
+      <name>getSystemProperties</name>
+	  <return-type>[Lorg.dcm4chee.dashboard.model.SystemPropertyModel;</return-type>
+   </operation>
+   <operation>
+      <description>MBean Operation.</description>
+      <name>listAllReports</name>
+      <return-type>[Lorg.dcm4chee.dashboard.model.ReportModel;</return-type>
+   </operation>
+   <operation>
+      <name>createReport</name>
+      <parameter>
+         <name>report</name>
+         <type>org.dcm4chee.dashboard.model.ReportModel</type>
+      </parameter>
+   </operation>
+   <operation>
+      <name>updateReport</name>
+      <parameter>
+         <name>report</name>
+         <type>org.dcm4chee.dashboard.model.ReportModel</type>
+      </parameter>
+   </operation>
+   <operation>
+      <name>deleteReport</name>
+      <parameter>
+         <name>report</name>
+         <type>org.dcm4chee.dashboard.model.ReportModel</type>
+      </parameter>
+   </operation>
+</mbean>
