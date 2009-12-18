@@ -73,7 +73,6 @@ implements DimseListener, AssociationListener, FutureRSP {
    
    // Constants -----------------------------------------------------
    private long setAfterCloseTO = 500;
-   private long getFindRSPdelay = 10;
    
    // Attributes ----------------------------------------------------
    private boolean closed = false;
@@ -81,21 +80,28 @@ implements DimseListener, AssociationListener, FutureRSP {
    private Dimse rsp = null;
    private final ArrayList pending = new ArrayList();
    private IOException exception = null;
+   private final Association assoc;
    
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
+   public FutureRSPImpl(Association assoc) {
+       this.assoc = assoc;
+       assoc.addAssociationListener(this);
+   }
    
    // Public --------------------------------------------------------
    
    // FutureRSP implementation ----------------------------------------------
    public synchronized void set(Dimse rsp) {
+      assoc.removeAssociationListener(this);
       this.rsp = rsp;
       ready = true;
       notifyAll();
    }
    
    public synchronized void setException(IOException ex) {
+      assoc.removeAssociationListener(this);
       exception = ex;
       ready = true;
       notifyAll();

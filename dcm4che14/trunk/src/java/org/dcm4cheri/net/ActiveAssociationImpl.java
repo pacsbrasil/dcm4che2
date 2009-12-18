@@ -186,8 +186,7 @@ final class ActiveAssociationImpl implements ActiveAssociation,
     }
 
     public FutureRSP invoke(Dimse rq) throws InterruptedException, IOException {
-        FutureRSPImpl retval = new FutureRSPImpl();
-        assoc.addAssociationListener(retval);
+        FutureRSPImpl retval = new FutureRSPImpl(assoc);
         invoke(rq, retval);
         return retval;
     }
