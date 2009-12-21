@@ -88,7 +88,10 @@
    </attribute>
 
    <attribute access="read-write" getMethod="isMPPSLinkedEnabled" setMethod="setMPPSLinkedEnabled">
-      <description>Enable/disable this service for MPPS Linked Notifications</description>
+      <description>Enable/disable this service for MPPS Linked Notifications.
+      MPPS Linked Notification is intended to provide ORM message notification
+      after manually linking an MPPS entry in dcm4chee-web with it's
+      corresponding MWL entry.</description>
       <name>MPPSLinkedEnabled</name>
       <type>boolean</type>
       <descriptors>
