@@ -68,11 +68,10 @@ class VMFFindScp extends FindScp {
     }
 
     protected MultiDimseRsp newMultiCFindRsp(Dataset rqData,
-            boolean hideWithoutIssuerOfPID, boolean otherPIDinRQ,
-            Subject subject) throws SQLException, DcmServiceException {
+            boolean hideWithoutIssuerOfPID, Subject subject)
+            throws SQLException, DcmServiceException {
         if (!"IMAGE".equals(rqData.getString(Tags.QueryRetrieveLevel)))
-            return super.newMultiCFindRsp(rqData, hideWithoutIssuerOfPID,
-                    otherPIDinRQ, subject);
+            return super.newMultiCFindRsp(rqData, hideWithoutIssuerOfPID, subject);
         final String studyIUID = rqData.getString(Tags.StudyInstanceUID);
         final String[] seriesIUIDs = rqData.getStrings(Tags.SeriesInstanceUID);
         if (seriesIUIDs == null || seriesIUIDs.length == 0)
