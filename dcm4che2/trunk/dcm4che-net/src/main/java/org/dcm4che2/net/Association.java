@@ -166,7 +166,6 @@ public class Association implements Runnable {
             throws IOException {
         Association a = new Association(socket, connector, false);
         a.setState(State.STA2);
-        a.startARTIM(connector.getRequestTimeout());
         return a;
     }
 
@@ -843,6 +842,8 @@ public class Association implements Runnable {
 
     public void run() {
         try {
+            startARTIM(requestor ? connector.getAcceptTimeout()
+                    : connector.getRequestTimeout());
             connector.incListenerConnectionCount();
             this.decoder = new PDUDecoder(this, in);
             while (!(state == State.STA1 || state == State.STA13))
@@ -994,12 +995,6 @@ public class Association implements Runnable {
 
     void sendAssociateRQ(AAssociateRQ rq) throws IOException {
         try {
-            // start ARTIM BEFORE sending A-ASSOCIATE-RQ PDU,
-            // otherwise A-ASSOCIATE-AC PDU may be received and processed,
-            // and startARTIM() invoked AFTER stopARTIM(), which may cause
-            // a socket close during established Association with
-            // WARN   - ARTIM timer expired in State: Sta6
-            startARTIM(connector.getAcceptTimeout());
             state.sendAssociateRQ(this, rq);
         } catch (IOException e) {
             closeSocket();
