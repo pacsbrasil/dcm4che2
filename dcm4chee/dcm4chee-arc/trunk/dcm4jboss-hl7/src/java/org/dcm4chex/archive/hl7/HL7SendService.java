@@ -49,11 +49,14 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.Map.Entry;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -93,8 +96,10 @@ import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.XSLTUtils;
 import org.dom4j.Document;
+import org.dom4j.Element;
 import org.dom4j.io.SAXContentHandler;
 import org.jboss.system.ServiceMBeanSupport;
+import org.regenstrief.xhl7.HL7XMLLiterate;
 import org.regenstrief.xhl7.HL7XMLReader;
 import org.regenstrief.xhl7.MLLPDriver;
 import org.xml.sax.InputSource;
@@ -293,7 +298,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
 
     private int forward(byte[] hl7msg, Document msg) {
         MSH msh = new MSH(msg);
-        Map param = new HashMap();
+        Map<String,String[]> param = new HashMap<String,String[]>();
         param.put("sending", new String[] { msh.sendingApplication + '^'
                 + msh.sendingFacility });
         param.put("receiving", new String[] { msh.receivingApplication + '^'
@@ -507,7 +512,189 @@ public class HL7SendService extends ServiceMBeanSupport implements
 
     }
 
-    public List sendQBP_Q23(String pixManager, String pixQueryName,
+    /**
+     * Sends a PDQ query with the parameters being contains in the input Map, and the output
+     * being contained in a List of Maps of Strings to Strings - the data being the result of the
+     * query.  The last list element is a continuation element if count is non-zero.
+     */
+    public List<Map<String,String>> sendQBP_Q22(String pdqManager, Map<String,String> query, String domain, int count, String continuation) 
+    throws Exception {
+        String timestamp = new SimpleDateFormat(DATETIME_FORMAT).format(new Date());
+        StringBuffer sb = makeMSH(timestamp, "QBP^Q22", null, pdqManager, "2.5");
+        String qpd = makeQPD_Q22(query,domain);
+        sb.append('\r').append(qpd).append("\rRCP|I||||||\r");
+        String s = sb.toString();
+        log.info("Query PDQ Manager " + pdqManager + ":\n"
+                + s.replace('\r', '\n'));
+        final String charsetName = getCharsetName();
+        Document msg = invoke(s.getBytes(charsetName), pdqManager);
+        log.info("PDQ Query returns:");
+        logMessage(msg);
+        List<Map<String,String>> ret = parsePDQ(msg);
+        log.info("Returning PDQ response now:"+toString(ret));
+        return ret;
+    }
+    
+    
+    public static final String toString(List<Map<String,String>> lst) {        
+        StringBuffer sb = new StringBuffer("[");
+        boolean listFirst = true;
+        for(Map<String,String> map : lst) {
+            if(listFirst) listFirst = false;
+            else sb.append(",\n  ");
+            sb.append("{");
+            boolean first = true;
+            for(Map.Entry<String,String> me : map.entrySet()) {
+                if( first ) first = false;
+                else sb.append(", ");
+                sb.append(me.getKey()).append(":\"").append(me.getValue()).append("\"");
+            }
+            sb.append("}");
+        }
+        sb.append(']');
+        return sb.toString();
+    }
+    
+    private static String[] FIELD_NAMES = new String[]{
+      null,
+      // PID-1
+      null,
+      null,
+      "PatientIDList",
+      null,
+      // PID-5
+      "PatientName",
+      "MothersMaidenName", 
+      "PatientBirthDate", 
+      "PatientSex", 
+      // PID-9
+      "PatientAlias",
+      "Race", 
+      "PatientAddress",
+      "CountyCode",
+      // PID-13
+      "PhoneNumberHome",
+      "PhoneNumberBusiness",
+      "PrimaryLanguage",
+      "MaritalStatus",
+      // PID-17
+      "Religion",
+      "PatientAccountNumber",
+      "SSNNumber",
+      "DriversLicenseNumber",
+      // PID-21
+      "MothersIdentifier",
+      "EthnicGroup",
+      "BirthPlace",
+      "MultipleBirthIndicator",
+      //PID-25
+      "BirthOrder",
+      "Citizenship",
+      "VeteransMilitaryStatus",
+      "Nationality",
+      //PID-29
+      "PatientDeathDateTime",
+      "PatientDeathIndicator",
+      "IdentityUnknownIndicator",
+      "IdentityReliabilityCode",
+      //PID-33
+      "LastUpdateDateTime",
+      "LastUpdateFacility",
+      "SpeciesCode",
+      "BreedCode",
+      //PID-37
+      "Strain",
+      "ProductionClassCode",
+      "TribalCitizenship",
+    };
+    /** Parse the PID entries into a list of maps */
+    public static final List<Map<String,String>> parsePDQ(Document msg) {
+        List<Map<String,String>> ret = new ArrayList<Map<String,String>>();
+        Element root = msg.getRootElement();
+        List<?> content = root.content();
+        for(Object c : content) {
+            if( !(c instanceof Element) ) continue;
+            Element e = (Element) c;
+            if( e.getName().equals("PID") ) {
+                Map<String,String> pid = new HashMap<String,String>();
+                pid.put("Type", "Patient");
+                List<?> fields = e.elements(HL7XMLLiterate.TAG_FIELD);
+                
+                int pidNo = 0;
+                for(Object f : fields) {
+                    pidNo++;
+                    if( pidNo>=FIELD_NAMES.length ) continue;
+                    String fieldName = FIELD_NAMES[pidNo];
+                    if( fieldName==null ) continue;
+                    Element field = (Element) f;
+                    if( field.isTextOnly() ) {
+                        String txt = field.getText();
+                        if( txt==null || txt.length() == 0 ) continue;
+                        pid.put(fieldName, txt);
+                        continue;
+                    }
+                    if( pidNo==3 ) {
+                        List<?> comps = field.elements(HL7XMLLiterate.TAG_COMPONENT);
+                        if (comps.size() < 3) {
+                            throw new IllegalArgumentException("Missing Authority in PID-3");           
+                        }
+                        Element authority = (Element) comps.get(2);
+                        List<?> authorityUID = authority.elements(HL7XMLLiterate.TAG_SUBCOMPONENT);
+                        pid.put("PatientID",field.getText());
+                        StringBuffer issuer = new StringBuffer(authority.getText());
+                        for (int i = 0; i < authorityUID.size(); i++) {
+                            issuer.append("&").append(((Element) authorityUID.get(i)).getText());
+                        }
+                        pid.put("IssuerOfPatientID", issuer.toString());
+                        continue;
+                    }
+                    if( pidNo==5 ) {
+                        String name = field.getText() + "^" + field.elementText(HL7XMLLiterate.TAG_COMPONENT);
+                        pid.put(fieldName,name);
+                        continue;
+                    }
+                    pid.put(fieldName, field.asXML());
+                }
+                ret.add(pid);
+            }
+        }
+        return ret;
+    }
+    
+    /**
+     * Sends a PDQ query with the parameters being contains in the input Map, and the output
+     * being a multi-line set of results.  Intended for test purposes, use the above method for
+     * parsing the results.
+     */
+    public String showQBP_Q22(String pdqManager, String query, String domain) 
+    throws Exception {
+        String timestamp = new SimpleDateFormat(DATETIME_FORMAT).format(new Date());
+        StringBuffer sb = makeMSH(timestamp, "QBP^Q22", null, pdqManager, "2.5");
+        String qpd = makeQPD_Q22(query,domain);
+        sb.append('\r').append(qpd).append("\rRCP|I||||||\r");
+        String s = sb.toString();
+        log.info("Query PDQ Manager " + pdqManager + ":\n"
+                + s.replace('\r', '\n'));
+        final String charsetName = getCharsetName();
+        Document msg = invoke(s.getBytes(charsetName), pdqManager);
+        log.info("PIX Query returns:");
+        logMessage(msg);
+        List<Map<String,String>> results = parsePDQ(msg);
+        return "PDQ query results:\n"+toString(results);
+    }
+
+    /** Sends a PIX query on the given patient ID and issuer, asking for
+     * items from domain, or all id's if domains is null.
+     * @param pixManager
+     * @param pixQueryName
+     * @param patientID
+     * @param issuer
+     * @param domains
+     * @return
+     * @throws Exception
+     */
+    @SuppressWarnings("unchecked")
+    public List<String[]> sendQBP_Q23(String pixManager, String pixQueryName,
             String patientID, String issuer, String[] domains)
             throws Exception {
         String timestamp = new SimpleDateFormat(DATETIME_FORMAT)
@@ -562,6 +749,30 @@ public class HL7SendService extends ServiceMBeanSupport implements
                 // used in makeMSH
             }
         }
+        return sb.toString();
+    }
+
+    private String makeQPD_Q22(Map<String,String> params,String domain) {
+        StringBuffer sb = new StringBuffer("QPD|IHE PDQ Query|");
+        sb.append((++queryTag)).append('|');
+        Iterator<Entry<String, String>> it = params.entrySet().iterator();
+        String sep = null;
+        while(it.hasNext()) {
+            Map.Entry<String,String> me = it.next();
+            if( sep==null ) sep = "~";
+            else sb.append(sep);
+            sb.append('@').append(me.getKey()).append("^").append(me.getValue());
+        }
+        sb.append("|||||");
+        if( domain!=null ) sb.append("^^^").append(domain);
+        return sb.toString();
+    }
+
+    /** Make the query assuming the string is already formatted for HL7 PDQ query. */
+    private String makeQPD_Q22(String query, String domain) {
+        StringBuffer sb = new StringBuffer("QPD|IHE PDQ Query|");
+        sb.append((++queryTag)).append('|').append(query);
+        if( domain!=null ) sb.append("|||||^^^").append(domain);
         return sb.toString();
     }
 
