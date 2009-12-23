@@ -79,7 +79,7 @@ class PID {
         return pids.size();
     }
     
-    static String[] toPID(Element pidfd) {
+    public static String[] toPID(Element pidfd) {
         List comps = pidfd.elements(HL7XMLLiterate.TAG_COMPONENT);
         if (comps.size() < 3) {
         	throw new IllegalArgumentException("Missing Authority in PID-3");        	

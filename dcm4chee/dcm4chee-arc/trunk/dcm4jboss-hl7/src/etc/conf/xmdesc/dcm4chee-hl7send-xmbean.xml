@@ -287,6 +287,59 @@
    </operation>
    
    <operation impact="ACTION">
+      <description>Send HL7 QBP^Q22 (=Query Patients, PDQ) message.</description>
+      <name>sendQBP_Q22</name>
+      <parameter>
+        <description>PDQ Manager Application^Facility</description>
+        <name>PDQManager</name>
+        <type>java.lang.String</type>
+      </parameter>     
+      <parameter>
+        <description>Query Parameters</description>
+        <name>params</name>
+        <type>java.util.Map</type>
+      </parameter>
+      <parameter>
+        <description>Domain for Patient IDs returned</description>
+        <name>domain</name>
+        <type>java.lang.String</type>
+      </parameter>     
+      <parameter>
+        <description>Maximum number of entries to return.  Will cause the last list entry to be the next continuation code.</description>
+        <name>count</name>
+        <type>int</type>
+      </parameter>
+      <parameter>
+        <description>Continuation flag.</description>
+        <name>continuation</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
+   </operation>
+   
+   <operation impact="ACTION">
+      <description>Show HL7 QBP^Q22 (=Query Patients, PDQ) message response.  Intended for test purposes
+      to ensure the service is working - use the sendQBP_Q22 method from code.</description>
+      <name>showQBP_Q22</name>
+      <parameter>
+        <description>PDQ Manager Application^Facility</description>
+        <name>PDQManager</name>
+        <type>java.lang.String</type>
+      </parameter>     
+      <parameter>
+        <description>Query Parameters</description>
+        <name>query</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Domain for Patient IDs returned</description>
+        <name>domain</name>
+        <type>java.lang.String</type>
+      </parameter>     
+      <return-type>java.lang.String</return-type>
+   </operation>
+   
+   <operation impact="ACTION">
       <description><![CDATA[Send HL7 message from a Dataset given in a file.<br/>
                         The XSL stylesheet given by filename is used to transform the dataset into a HL7 message.
       ]]></description>

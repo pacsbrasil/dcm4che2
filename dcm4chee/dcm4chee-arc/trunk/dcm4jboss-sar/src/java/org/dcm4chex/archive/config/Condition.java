@@ -122,10 +122,10 @@ public class Condition {
         return map.isEmpty();
     }
 
-    public boolean isTrueFor(Map param) {
-        Iterator it = param.entrySet().iterator();
+    public boolean isTrueFor(Map<String,String[]> param) {
+        Iterator<Map.Entry<String,String[]>> it = param.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry) it.next();
+            Map.Entry<String,String[]> entry = it.next();
             String key = (String) entry.getKey();
             String[] val = (String[]) entry.getValue();
             LinkedHashSet set = (LinkedHashSet) map.get(key);

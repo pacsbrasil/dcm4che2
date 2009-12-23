@@ -56,9 +56,9 @@ public class PIXQueryService extends ServiceMBeanSupport {
     private ObjectName hl7SendServiceName;
     private String pixQueryName;
     private String pixManager;
-    private List mockResponse;
-    private List issuersOfOnlyOtherPatientIDs;
-    private List issuersOfOnlyPrimaryPatientIDs;
+    private List<String[]> mockResponse;
+    private List<String> issuersOfOnlyOtherPatientIDs;
+    private List<String> issuersOfOnlyPrimaryPatientIDs;
 
     public final String getIssuersOfOnlyPrimaryPatientIDs() {
         return toString(issuersOfOnlyPrimaryPatientIDs);
@@ -76,24 +76,24 @@ public class PIXQueryService extends ServiceMBeanSupport {
         issuersOfOnlyOtherPatientIDs = toList(s);
     }
 
-    private String toString(List list) {
+    private String toString(List<String> list) {
         if (list == null || list.isEmpty()) {
             return "-";
         }
-        Iterator iter = list.iterator();
-        StringBuffer sb = new StringBuffer((String) iter.next());
+        Iterator<String> iter = list.iterator();
+        StringBuffer sb = new StringBuffer(iter.next());
         while (iter.hasNext()) {
-            sb.append(',').append((String) iter.next());
+            sb.append(',').append(iter.next());
         }
         return sb.toString();
     }
 
-    private List toList(String s) {
+    private List<String> toList(String s) {
         if (s.trim().equals("-")) {
             return null;
         }
         String[] a = StringUtils.split(s, ',');
-        ArrayList list = new ArrayList(a.length);
+        ArrayList<String> list = new ArrayList<String>(a.length);
         for (int i = 0; i < a.length; i++) {
             list.add(a[i].trim());
         }
@@ -132,17 +132,17 @@ public class PIXQueryService extends ServiceMBeanSupport {
         return mockResponse == null ? "-" : pids2cx(mockResponse);
     }
     
-    protected List getMockResponseInternal() {
+    protected List<String[]> getMockResponseInternal() {
         return mockResponse;
     }
 
-    private String pids2cx(List pids) {
+    private String pids2cx(List<String[]> pids) {
         StringBuffer sb = new StringBuffer();
-        for (Iterator iter = pids.iterator(); iter.hasNext();) {
+        for (Iterator<String[]> iter = pids.iterator(); iter.hasNext();) {
             if (sb.length() > 0) {
                 sb.append('~');
             }
-            String[] pid = (String[]) iter.next();
+            String[] pid = iter.next();
             sb.append(pid[0]).append("^^^").append(pid[1]);
             for (int i = 2; i < pid.length; i++) {
                 sb.append('&').append(pid[i]);                
@@ -156,9 +156,9 @@ public class PIXQueryService extends ServiceMBeanSupport {
         this.mockResponse = "-".equals(trim) ? null : cx2pids(trim);
     }
 
-    private List cx2pids(String s) {
+    private List<String[]> cx2pids(String s) {
         String[] cx = StringUtils.split(s, '~');
-        List l = new ArrayList(cx.length);
+        List<String[]> l = new ArrayList<String[]>(cx.length);
         for (int i = 0; i < cx.length; i++) {
             String[] comps = StringUtils.split(s, '^');
             String[] subcomps = StringUtils.split(comps[3], '&');
@@ -178,7 +178,7 @@ public class PIXQueryService extends ServiceMBeanSupport {
         }
     }
 
-    public List queryCorrespondingPIDs(String patientID, String issuer,
+    public List<String[]> queryCorrespondingPIDs(String patientID, String issuer,
             String[] domains) throws Exception {
         if (mockResponse != null) {
             return mockResponse;
@@ -205,7 +205,8 @@ public class PIXQueryService extends ServiceMBeanSupport {
      *   the query criteria and belong in the domains that were passed in.
      * @throws Exception
      */
-    protected List performLocalPIXQuery(String patientID, String issuer,
+    @SuppressWarnings("unchecked")
+    protected List<String[]> performLocalPIXQuery(String patientID, String issuer,
             String[] domains) throws Exception {
              if (issuersOfOnlyPrimaryPatientIDs.contains(issuer)) {
                 return pixQuery().queryCorrespondingPIDsByPrimaryPatientID(
@@ -234,7 +235,8 @@ public class PIXQueryService extends ServiceMBeanSupport {
      * 
      * @throws Exception
      */
-    protected List performRemotePIXQuery(String patientID, String issuer,
+    @SuppressWarnings("unchecked")
+    protected List<String[]> performRemotePIXQuery(String patientID, String issuer,
             String[] domains) throws Exception {
     	if (isPIXManagerLocal()) {
     		throw new Exception("No remote PIX manager has been configured");

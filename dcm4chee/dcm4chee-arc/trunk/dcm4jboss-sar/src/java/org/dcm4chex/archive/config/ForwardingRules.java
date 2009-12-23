@@ -137,7 +137,7 @@ public class ForwardingRules {
         return cal.getTimeInMillis();        
     }
     
-    public String[] getForwardDestinationsFor(Map param) {
+    public String[] getForwardDestinationsFor(Map<String,String[]> param) {
     	ArrayList l = new ArrayList(); 
         for (Iterator it = list.iterator(); it.hasNext();) {
             Entry e = (Entry) it.next();
