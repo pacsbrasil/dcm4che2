@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>Series Metadata Service</title>
+</head>
+
+<body>
+<h2>Series Metadata Service</h2>
+
+<h3>Overview</h3>
+C-FIND metadata service that will return a patient root hierarchy of results in
+a specified text format. Constraints to the C-FIND are applied by adding
+parameters that correspond to the DICOM tag names. As with any C-FIND query,
+constraints on the containing types can be applied as well as the requested
+level. 
+
+<p>An empty result set will be returned if query constraints are not provided.
+</p>
+
+<h3>Parameters</h3>
+
+<table border="1">
+  <tbody>
+    <tr>
+      <th>Parameter</th>
+      <th>Description</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td>Modality</td>
+      <td>Constrain by the modality of the series</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>BodyPartExamined</td>
+      <td>Constrain by the body part examined in the series</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>PPSStartDateTime</td>
+      <td>Performed Procedure Step start date time. </td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>seriesUID</td>
+      <td>Constrain by UID of the series</td>
+      <td>May contain some amount of text before a colon - this indicates a
+        synthetic series. The ACTUAL series UID will be listed at the next
+        level down, and that is the series UID to use when making most
+      requests.</td>
+    </tr>
+    <tr>
+      <td>SeriesNumber</td>
+      <td>Constrain by the number assigned to the series</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>SeriesDescription</td>
+      <td>Constrain by the content of the series description</td>
+      <td>Allows wildcards</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Return Attributes</h3>
+
+<table border="1">
+  <tbody>
+    <tr>
+      <th>XML Attribute</th>
+      <th>Description</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td>StationName</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>ManufacturerModelName</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Manufacturer</td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>* Attributes from image level</td>
+      <td>Attributes from the image level maybe included at the series level in
+        order to decrease redundancy. For instance, the rows/columns maybe the
+        same for 1000 or more images, as are min/max pixel, so these can be
+        included at the series level instead.</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Return Child Elements</h3>
+
+<table border="1">
+  <tbody>
+    <tr>
+      <th>XML Element</th>
+      <th>Description</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td>image</td>
+      <td>Indicates that there is an image child of this object</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>report</td>
+      <td>Indicates that a report is included in the study.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>gsps</td>
+      <td>Contains information about the GSPS to be applied to the images</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>keyObject</td>
+      <td>Contains information about key objects within this study</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>other</td>
+      <td>Another type that is unspecified/doesn't yet have special handling.
+        Should be retrievable via a WADO2 URL but that may not provide much
+        user information.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>
