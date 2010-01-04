@@ -100,6 +100,12 @@ import org.dcm4chex.archive.util.Convert;
  * @jboss.query signature="java.util.Collection findByPatientId(java.lang.String pid)"
  *              strategy="on-find" eager-load-group="*"
  * 
+ * @ejb.finder signature="java.util.Collection findByPatientIdLike(java.lang.String pid)"
+ *             query="SELECT OBJECT(p) FROM Patient AS p WHERE p.patientId LIKE ?1"
+ *             transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByPatientIdLike(java.lang.String pid)"
+ *              strategy="on-find" eager-load-group="*"
+ * 
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.PatientLocal findByPatientIdWithIssuer(java.lang.String pid, java.lang.String issuer)"
  *             query="SELECT OBJECT(p) FROM Patient AS p WHERE p.patientId = ?1 AND p.issuerOfPatientId = ?2"
  *             transaction-type="Supports"
