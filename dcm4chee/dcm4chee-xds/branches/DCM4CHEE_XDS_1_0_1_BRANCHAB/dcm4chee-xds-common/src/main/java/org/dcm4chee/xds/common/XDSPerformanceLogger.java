@@ -51,6 +51,9 @@ public class XDSPerformanceLogger {
 	}
 	
 	public void flush() {
+		if (subEventProperties != null) {
+			endSubEvent();
+		}
 		this.endTimestamp = new Date();
 		StringBuilder sb = new StringBuilder(LT + PERFORMANCE_LOG + GT);
 		addNode(sb, TUID, tuid);
@@ -78,6 +81,14 @@ public class XDSPerformanceLogger {
 	public void setSubEventProperty(String name, String value) {
 		addNode(subEventProperties, name, XmlEscapeUtil.escape(value));
 	}
+
+	public void setSubEventProperties(String name, String[][] nvp) {
+		subEventProperties.append(LT + name + GT);
+		for (String[] nv : nvp) {
+			addNode(subEventProperties, nv[0], XmlEscapeUtil.escape(nv[1]));
+		}
+		subEventProperties.append(LTS + name + GT);
+	}
 	
 	public void endSubEvent() {
 		subEventEndTimestamp = new Date();
@@ -88,6 +99,7 @@ public class XDSPerformanceLogger {
 		addNode(subEvents, TIME_TAKEN, String.valueOf((subEventEndTimestamp.getTime() - subEventStartTimestamp.getTime())));
 		subEvents.append(subEventProperties.toString());
 		subEvents.append(LTS + SUB_EVENT + GT);
+		subEventProperties = null;
 	}
 	
 	private void addNode(StringBuilder builder, String name, String value) {

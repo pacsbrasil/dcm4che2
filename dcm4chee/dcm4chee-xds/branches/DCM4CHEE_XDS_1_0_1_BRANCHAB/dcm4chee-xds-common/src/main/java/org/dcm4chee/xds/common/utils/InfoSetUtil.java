@@ -55,26 +55,37 @@ import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.dcm4chee.xds.common.UUID;
+import org.dcm4chee.xds.common.XDSConstants;
+import org.dcm4chee.xds.common.XDSPerformanceLogger;
+import org.dcm4chee.xds.infoset.v30.AssociationType1;
 import org.dcm4chee.xds.infoset.v30.ClassificationType;
 import org.dcm4chee.xds.infoset.v30.ExternalIdentifierType;
 import org.dcm4chee.xds.infoset.v30.ExtrinsicObjectType;
+import org.dcm4chee.xds.infoset.v30.InternationalStringType;
+import org.dcm4chee.xds.infoset.v30.LocalizedStringType;
 import org.dcm4chee.xds.infoset.v30.ObjectFactory;
 import org.dcm4chee.xds.infoset.v30.ProvideAndRegisterDocumentSetRequestType;
 import org.dcm4chee.xds.infoset.v30.RegistryError;
 import org.dcm4chee.xds.infoset.v30.RegistryErrorList;
+import org.dcm4chee.xds.infoset.v30.RegistryObjectListType;
 import org.dcm4chee.xds.infoset.v30.RegistryObjectType;
 import org.dcm4chee.xds.infoset.v30.RegistryPackageType;
 import org.dcm4chee.xds.infoset.v30.RegistryResponseType;
 import org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetResponseType;
 import org.dcm4chee.xds.infoset.v30.SlotType1;
 import org.dcm4chee.xds.infoset.v30.SubmitObjectsRequest;
+import org.dcm4chee.xds.infoset.v30.ValueListType;
 import org.dcm4chee.xds.infoset.v30.ProvideAndRegisterDocumentSetRequestType.Document;
 import org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetResponseType.DocumentResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
 public class InfoSetUtil {
+	private final static Logger log = LoggerFactory.getLogger(InfoSetUtil.class);
 
-    private static JAXBContext jaxbContext;
+	private static JAXBContext jaxbContext;
     private static ObjectFactory objFac = new ObjectFactory();
 
     public static Map getSlotsFromRegistryObject(RegistryObjectType ro) throws JAXBException {
@@ -260,6 +271,118 @@ public class InfoSetUtil {
         }
     }
 
+    public static void addRegistryObjectSubEventProperties(XDSPerformanceLogger perfLogger, RegistryObjectListType rol) {
+	    try {
+	    	if (rol != null) {
+		        List list = rol.getIdentifiable();
+		        if (list != null) {
+		        	for (Iterator iter = list.iterator(); iter.hasNext() ;) {
+			        	JAXBElement element = (JAXBElement)iter.next();
+			        	Object o = element.getValue();
+			            if (o instanceof ExtrinsicObjectType) {
+			            	ArrayList<String[]> nvps = new ArrayList<String[]>();
+			            	ExtrinsicObjectType extrinsicObject = (ExtrinsicObjectType)o;
+			            	nvps.add(new String[]{"ExtrinsicObjectUID", extrinsicObject.getId()});
+			            	nvps.add(new String[]{"DocumentUID", InfoSetUtil.getExternalIdentifierValue(UUID.XDSDocumentEntry_uniqueId, extrinsicObject)});
+			            	nvps.add(new String[]{"MimeType", extrinsicObject.getMimeType()});
+			            	List<SlotType1> slots = extrinsicObject.getSlot();
+			            	for (Iterator siter = slots.iterator() ; siter.hasNext() ;) {
+			                    SlotType1 slot = (SlotType1)siter.next();
+			                    String slotName = slot.getName();
+			                    if (slotName.compareToIgnoreCase("sourcePatientId") == 0) {
+			                    	ValueListType valueList = slot.getValueList();
+			                    	if (valueList != null) {
+			                    		List<String> slist = valueList.getValue();
+			                    		if (slist != null) {
+			                    			nvps.add(new String[]{"SourcePatientId", slist.get(0)});
+			                    		}
+			                    	}
+			                    }
+			            	}
+		            		InternationalStringType desc = extrinsicObject.getDescription();
+		            		if (desc != null) {
+		            			List<LocalizedStringType> locList = desc.getLocalizedString();
+		            			if (locList != null) {
+		            				LocalizedStringType locString = locList.get(0);
+		            				if (locString != null) {
+		            					nvps.add(new String[]{"Description", locString.getValue()});
+		            				}
+		            			}
+		            		}
+		            		perfLogger.setSubEventProperties("ExtrinsicObject", (String[][])nvps.toArray(new String[nvps.size()][]));
+			            }
+			        }
+		    	}
+	    	}
+	    } catch (Exception e) {
+	    	log.warn("could not add registry object list sub event properties for performance logging", e);
+	    }
+    }
+    
+    public static void addAssociationSubEventProperties(XDSPerformanceLogger perfLogger, RegistryObjectListType rol) { 
+    	try {
+	        if (rol != null) {
+	            List list = rol.getIdentifiable();
+	            if (list != null) {
+	            	Object o;
+		            AssociationType1 assoc;
+		            for ( Iterator iter = list.iterator(); iter.hasNext() ; ) {
+		                o = ((JAXBElement) iter.next()).getValue();
+		                if ( o instanceof AssociationType1) {
+		                	assoc = (AssociationType1) o;
+		                	String[][] nvps = new String[4][];
+		                	nvps[0] = new String[]{"Id", assoc.getId()};
+		                	nvps[1] = new String[]{"SourceObject", assoc.getSourceObject()};
+		                	nvps[2] = new String[]{"AssociationType", assoc.getAssociationType()};
+		                	nvps[3] = new String[]{"TargetObject", assoc.getTargetObject()};
+		                	perfLogger.setSubEventProperties("Association", nvps);
+		                }
+		            }
+	            }
+	        }
+        } catch (Exception exc) {
+        	log.warn("could not add association sub event properties to performance log", exc);
+        }
+    }
+    
+    public static void addRegistryResponseSubEventProperties(XDSPerformanceLogger perfLogger, RegistryResponseType rsp) {
+    	try {
+	        if (rsp != null) {
+	        	boolean responseStatus = getResponseStatus(rsp);
+	        	perfLogger.setSubEventProperty("Success", String.valueOf(responseStatus));
+	        	if (responseStatus == false) {
+		           	RegistryErrorList errorList = rsp.getRegistryErrorList();
+		           	if (errorList != null) {
+		           		List<RegistryError> errors = errorList.getRegistryError();
+		           		if (errors != null) {
+		           			for (Iterator iter = errors.iterator(); iter.hasNext() ;) {
+				           		RegistryError error = (RegistryError)iter.next();
+				           		if (error != null) {
+				           			String[][] nvps = new String[2][];
+				           			nvps[0] = new String[]{"ErrorCode", error.getErrorCode()};
+				           			nvps[1] = new String[]{"CodeContext", error.getCodeContext()};
+				           			perfLogger.setSubEventProperties("Error", nvps);
+				           		}
+				           	}
+		           		}
+		           	}
+	        	}
+	        }
+        } catch (Exception exc) {
+        	log.warn("could not add registry error sub event properties to performance log", exc);
+        }
+    }
+    
+    public static boolean getResponseStatus(RegistryResponseType rsp) throws Exception {
+        if ( rsp == null ){
+            log.error("No RegistryResponse from registry!");
+            return false;
+        }
+        log.debug("Check RegistryResponse:" + marshallObject(objFac.createRegistryResponse(rsp), true));
+        String status = rsp.getStatus();
+        log.debug("Rsp status:" + status );
+        return status == null ? false : XDSConstants.XDS_B_STATUS_SUCCESS.equalsIgnoreCase(status);
+    }
     
     private static void appendErrorListLog(RegistryErrorList errList,
             StringBuffer sb) {

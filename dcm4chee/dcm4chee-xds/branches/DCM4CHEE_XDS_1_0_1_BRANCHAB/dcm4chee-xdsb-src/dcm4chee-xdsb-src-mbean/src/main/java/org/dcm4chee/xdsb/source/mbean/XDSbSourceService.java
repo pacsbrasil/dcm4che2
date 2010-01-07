@@ -340,7 +340,7 @@ public class XDSbSourceService extends ServiceMBeanSupport {
         log.debug("unmarshalled ProvideAndRegisterDocumentSet Request:"+ req);
         unifyUIDs(req);
         RegistryResponseType rsp = exportDocuments( req );
-        return this.checkResponse(rsp);
+        return InfoSetUtil.getResponseStatus(rsp);
     }
 
     private void unifyUIDs(ProvideAndRegisterDocumentSetRequestType req) {
@@ -358,12 +358,11 @@ public class XDSbSourceService extends ServiceMBeanSupport {
     }
 
     public RegistryResponseType exportDocuments(ProvideAndRegisterDocumentSetRequestType req) throws XDSException {
-        try {
+        XDSPerformanceLogger perfLogger = new XDSPerformanceLogger("XDSSource", "ExportDocuments");
+        perfLogger.startSubEvent("CreateSubmitObjectsRequest");
+    	try {
             log.debug("------------exportDocuments");
-            
-            XDSPerformanceLogger perfLogger = new XDSPerformanceLogger("XDS.B", "PROVIDE_AND_REGISTER_DOCUMENT_SET-B");
-            perfLogger.startSubEvent("CreateSubmitObjectsRequest");
-            
+           
             SubmitObjectsRequest submitRequest = req.getSubmitObjectsRequest();
             if (logRequest) {
                 log.info(InfoSetUtil.getLogMessage(req));
@@ -374,13 +373,10 @@ public class XDSbSourceService extends ServiceMBeanSupport {
                 throw new XDSException( XDSConstants.XDS_ERR_REPOSITORY_ERROR, 
                         XDSConstants.XDS_ERR_MISSING_REGISTRY_PACKAGE, null);
             }
-            String submissionUID = InfoSetUtil.getExternalIdentifierValue(UUID.XDSSubmissionSet_uniqueId,registryPackage); 
-            String patId = InfoSetUtil.getExternalIdentifierValue(UUID.XDSSubmissionSet_patientId,registryPackage);
-            log.info("SubmissionUID:"+submissionUID);
-            log.info("patId:"+patId);
-            
-            perfLogger.setEventProperty("SubmissionSetUID", submissionUID);
-            perfLogger.setEventProperty("PatientID", patId);
+            String patId = InfoSetUtil.getExternalIdentifierValue(UUID.XDSSubmissionSet_patientId, registryPackage);
+            String submissionUID = InfoSetUtil.getExternalIdentifierValue(UUID.XDSSubmissionSet_uniqueId, registryPackage); 
+            log.debug("PatientID:"+patId);
+            log.debug("SubmissionSetUID:"+submissionUID);
             
             httpCfgDelegate.configTLS(xdsRepositoryURI);
             DocumentRepositoryPortType port = null;
@@ -406,15 +402,13 @@ public class XDSbSourceService extends ServiceMBeanSupport {
             }  
             
             perfLogger.endSubEvent();
-            
             perfLogger.startSubEvent("ProvideAndRegisterDocuments");
-            StringBuffer documentIDs = new StringBuffer();
-            for ( Document document : req.getDocument() ) {
-                documentIDs.append(document.getId()).append(",");
-            }
-            documentIDs.setLength(documentIDs.length() - 1);
-            perfLogger.setSubEventProperty("DocumentUUIDs", documentIDs.toString());
-            
+            perfLogger.setSubEventProperty("RepositoryURI", xdsRepositoryURI);
+            perfLogger.setSubEventProperty("PatientID", patId);
+            perfLogger.setSubEventProperty("SourceID", this.getSourceId());
+            perfLogger.setSubEventProperty("SubmissionSetUID", submissionUID);
+            InfoSetUtil.addRegistryObjectSubEventProperties(perfLogger, submitRequest.getRegistryObjectList());
+            InfoSetUtil.addAssociationSubEventProperties(perfLogger, submitRequest.getRegistryObjectList());
             log.info("####################################################");
             log.info("####################################################");
             log.info("XDS.b: Send provide and register document-b request to repository:"+xdsRepositoryURI);
@@ -425,15 +419,12 @@ public class XDSbSourceService extends ServiceMBeanSupport {
                 log.info("Received RegistryResponse:"+InfoSetUtil.marshallObject(
                         objFac.createRegistryResponse(rsp), indentXmlLog) );
             }
-            boolean success = checkResponse( rsp );
-            
-            perfLogger.setSubEventProperty("Success", String.valueOf(success));
+            boolean success = InfoSetUtil.getResponseStatus(rsp);
+            InfoSetUtil.addRegistryResponseSubEventProperties(perfLogger, rsp);
             perfLogger.endSubEvent();
-            
             perfLogger.startSubEvent("AuditResponse");
             logXdsBExport(submissionUID, patId, success);
             perfLogger.endSubEvent();
-            perfLogger.flush();
             log.info("ProvideAndRegisterDocumentSetRequest success:"+success);
             return rsp;
             /*_*/
@@ -441,18 +432,9 @@ public class XDSbSourceService extends ServiceMBeanSupport {
             throw x;
         } catch (Throwable t) {
             throw new XDSException(XDSConstants.XDS_ERR_REPOSITORY_ERROR,"Provide And Register failed!",t);
+        } finally {
+        	perfLogger.flush();
         }
-    }
-
-    private boolean checkResponse(RegistryResponseType rsp) throws Exception {
-        if ( rsp == null ){
-            log.error("No RegistryResponse from registry!");
-            return false;
-        }
-        log.debug("Check RegistryResponse:"+InfoSetUtil.marshallObject(objFac.createRegistryResponse(rsp), indentXmlLog) );
-        String status = rsp.getStatus();
-        log.debug("Rsp status:"+status );
-        return status == null ? false : XDSConstants.XDS_B_STATUS_SUCCESS.equalsIgnoreCase(rsp.getStatus());
     }
 
     public void testExport(String fnV2SubmReq, String fnDoc) throws Exception {

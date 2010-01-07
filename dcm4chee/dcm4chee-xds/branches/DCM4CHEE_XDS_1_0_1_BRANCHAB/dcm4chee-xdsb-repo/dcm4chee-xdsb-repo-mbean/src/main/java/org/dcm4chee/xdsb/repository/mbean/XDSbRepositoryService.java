@@ -40,16 +40,13 @@ package org.dcm4chee.xdsb.repository.mbean;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -62,9 +59,8 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.ws.BindingProvider;
 import javax.xml.ws.addressing.AddressingBuilder;
-import javax.xml.ws.soap.SOAPBinding;
+import javax.xml.ws.soap.SOAPFaultException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che2.audit.message.AuditEvent;
@@ -78,6 +74,12 @@ import org.dcm4chee.xds.common.audit.XDSImportMessage;
 import org.dcm4chee.xds.common.delegate.XDSbServiceDelegate;
 import org.dcm4chee.xds.common.delegate.XdsHttpCfgDelegate;
 import org.dcm4chee.xds.common.exception.XDSException;
+import org.dcm4chee.xds.common.store.DocumentStoreDelegate;
+import org.dcm4chee.xds.common.store.XDSDocument;
+import org.dcm4chee.xds.common.store.XDSDocumentWriter;
+import org.dcm4chee.xds.common.store.XDSDocumentWriterFactory;
+import org.dcm4chee.xds.common.store.XDSbDocument;
+import org.dcm4chee.xds.common.utils.InfoSetUtil;
 import org.dcm4chee.xds.infoset.v30.ExtrinsicObjectType;
 import org.dcm4chee.xds.infoset.v30.ObjectFactory;
 import org.dcm4chee.xds.infoset.v30.ProvideAndRegisterDocumentSetRequestType;
@@ -94,12 +96,6 @@ import org.dcm4chee.xds.infoset.v30.ValueListType;
 import org.dcm4chee.xds.infoset.v30.ProvideAndRegisterDocumentSetRequestType.Document;
 import org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetRequestType.DocumentRequest;
 import org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetResponseType.DocumentResponse;
-import org.dcm4chee.xds.common.store.DocumentStoreDelegate;
-import org.dcm4chee.xds.common.store.XDSDocument;
-import org.dcm4chee.xds.common.store.XDSDocumentWriter;
-import org.dcm4chee.xds.common.store.XDSDocumentWriterFactory;
-import org.dcm4chee.xds.common.store.XDSbDocument;
-import org.dcm4chee.xds.common.utils.InfoSetUtil;
 import org.dcm4chee.xds.infoset.v30.ws.DocumentRegistryPortType;
 import org.dcm4chee.xds.infoset.v30.ws.DocumentRegistryPortTypeFactory;
 import org.jboss.system.ServiceMBeanSupport;
@@ -259,7 +255,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
     public RegistryResponseType storeAndRegisterDocuments(ProvideAndRegisterDocumentSetRequestType req) throws XDSException {
         Map<String, XDSDocument> storedDocuments = null;
         boolean success = false;
-        XDSPerformanceLogger perfLogger = new XDSPerformanceLogger("XDS.B", "PROVIDE_AND_REGISTER_DOCUMENT_SET-B");
+        XDSPerformanceLogger perfLogger = new XDSPerformanceLogger("XDSRepository", "StoreAndRegisterDocuments");
         try {
             log.debug("------------ProvideAndRegisterDocumentSetRequest:"+req);
             perfLogger.startSubEvent("LogAndVerify");
@@ -274,9 +270,8 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
                         XDSConstants.XDS_ERR_MISSING_REGISTRY_PACKAGE, null);
             }
             String patId = checkPatientIDs(req, submissionSet);
+            String sourceId = InfoSetUtil.getExternalIdentifierValue(UUID.XDSSubmissionSet_sourceId, submissionSet);
             String submissionUID = InfoSetUtil.getExternalIdentifierValue(UUID.XDSSubmissionSet_uniqueId, submissionSet);
-
-            perfLogger.setEventProperty("SubmissionSetUID", submissionUID);
             if ( saveRequestAsFile ) {
                 File f = new File(resolvePath("log/xdsb/pnr-"+submissionUID+".xml"));
                 f.getParentFile().mkdirs();
@@ -302,8 +297,8 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
             //TODO: get replyTo from real WS Addressing Header
             String replyTo = AddressingBuilder.getAddressingBuilder().newAddressingConstants().getAnonymousURI();
             logImport(submissionUID, patId, replyTo, true);
-            RegistryResponseType rsp = dispatchSubmitObjectsRequest(submitRequest, perfLogger);
-            success = checkResponse( rsp );
+            RegistryResponseType rsp = dispatchSubmitObjectsRequest(submitRequest, patId, sourceId, submissionUID, perfLogger);
+            success = InfoSetUtil.getResponseStatus(rsp);
             perfLogger.startSubEvent("AuditResponse");
             logExport(submissionUID, patId, replyTo, success);
             perfLogger.endSubEvent();
@@ -329,7 +324,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         }
     }
     private RegistryResponseType dispatchSubmitObjectsRequest(
-            SubmitObjectsRequest submitRequest, XDSPerformanceLogger perfLogger) throws MalformedURLException,
+            SubmitObjectsRequest submitRequest, String patId, String sourceId, String submissionUID, XDSPerformanceLogger perfLogger) throws MalformedURLException,
             JAXBException, XDSException {
         if ( mockRegistryResponse ) {
             log.info("Mock RegistryResponse! Bypass 'Register Document Set' transaction!");
@@ -337,6 +332,11 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         }
         perfLogger.startSubEvent("RegisterDocuments");
         perfLogger.setSubEventProperty("RegistryURI", xdsRegistryURI);
+        perfLogger.setSubEventProperty("PatientID", patId);    
+        perfLogger.setSubEventProperty("SourceID", sourceId);
+        perfLogger.setSubEventProperty("SubmissionSetUID", submissionUID);
+        InfoSetUtil.addRegistryObjectSubEventProperties(perfLogger, submitRequest.getRegistryObjectList());
+        InfoSetUtil.addAssociationSubEventProperties(perfLogger, submitRequest.getRegistryObjectList());
         httpCfgDelegate.configTLS(xdsRegistryURI);
         DocumentRegistryPortType port = DocumentRegistryPortTypeFactory.getDocumentRegistryPortSoap12(xdsRegistryURI, 
         		XDSConstants.URN_IHE_ITI_2007_REGISTER_DOCUMENT_SET_B, java.util.UUID.randomUUID().toString());
@@ -348,12 +348,18 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         RegistryResponseType rsp;
         try {
             rsp = port.documentRegistryRegisterDocumentSetB(submitRequest);
-        } catch ( Exception x) {
+        } catch (Exception x) {
+        	perfLogger.setSubEventProperty("Success", "false");
+        	String[][] nvps = new String[2][];
+   			nvps[0] = new String[]{"ExceptionType", x.getClass().getCanonicalName()};
+   			nvps[1] = new String[]{"ExceptionMessage", x.getMessage()};
+   			perfLogger.setSubEventProperties("Error", nvps);
+   			perfLogger.endSubEvent();   			
             throw new XDSException( XDSConstants.XDS_ERR_REG_NOT_AVAIL, "Document Registry not available: "+xdsRegistryURI,x);
         }
         log.info("Received RegistryResponse:"+InfoSetUtil.marshallObject(
                 objFac.createRegistryResponse(rsp), indentXmlLog) );
-        perfLogger.setSubEventProperty("Success", String.valueOf(checkResponse(rsp)));
+        InfoSetUtil.addRegistryResponseSubEventProperties(perfLogger, rsp);
         perfLogger.endSubEvent();
         return rsp;
     }
@@ -442,7 +448,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
                     extrObj = (ExtrinsicObjectType) o;
                     document = (Document) docs.get(extrObj.getId());
                     xdsDoc = new XDSbDocument(extrObj, wrFac.getDocumentWriter(document.getValue(), -1));
-                    perfLogger.setSubEventProperty("DocumentUUID", xdsDoc.getDocumentUID());
+                    perfLogger.setSubEventProperty("DocumentUID", xdsDoc.getDocumentUID());
                     Node n = InfoSetUtil.getNodeForObject(elem);
                     doc = docStoreDelegate.storeDocument(xdsDoc, new DOMSource(n) );
                     if ( doc != null ) {
@@ -517,17 +523,6 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
             ro.getSlot().remove(oldSlot);
         }   
         ro.getSlot().add(slot);
-    }
-
-    private boolean checkResponse(RegistryResponseType rsp) throws JAXBException {
-        if ( rsp == null ){
-            log.error("No RegistryResponse from registry!");
-            return false;
-        }
-        log.debug("Check RegistryResponse:"+InfoSetUtil.marshallObject(objFac.createRegistryResponse(rsp), indentXmlLog) );
-        String status = rsp.getStatus();
-        log.debug("Rsp status:"+status );
-        return status == null ? false : XDSConstants.XDS_B_STATUS_SUCCESS.equalsIgnoreCase(rsp.getStatus());
     }
 
     /**
@@ -664,7 +659,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
     public DataHandler retrieveDocument(String docUid, String repositoryUID, String homeUid, boolean useLocalRepo) throws XDSException {
         RetrieveDocumentSetResponseType rsp = retrieveDocumentSet(docUid, repositoryUID, homeUid, useLocalRepo);
         try {
-            if ( checkResponse(rsp.getRegistryResponse()) ) {
+            if (InfoSetUtil.getResponseStatus(rsp.getRegistryResponse())) {
                 List<DocumentResponse> l = rsp.getDocumentResponse();
                 if ( l.size() == 1) {
                     DocumentResponse docRsp = l.get(0);
