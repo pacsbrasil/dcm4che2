@@ -195,7 +195,6 @@ public class FileSystemPanel extends Panel {
 
             add(fileSystemTreeTable);
         } catch (Exception e) {
-            e.printStackTrace();
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
             log.debug("Exception: ", e);
             this.redirectToInterceptPage(new InternalErrorPage());

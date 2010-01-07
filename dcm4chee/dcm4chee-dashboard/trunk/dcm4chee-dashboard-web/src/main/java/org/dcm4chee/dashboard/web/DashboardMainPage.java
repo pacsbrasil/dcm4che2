@@ -107,7 +107,7 @@ public class DashboardMainPage extends WebPage {
         }
     }
     
-    protected static ResultSet queryDatabase(String query) {
+    protected static ResultSet queryDatabase(String query) throws Exception {
 
         Context jndiCtx = null;
         try {
@@ -120,12 +120,12 @@ public class DashboardMainPage extends WebPage {
                     .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
                     .executeQuery(query);
         } catch (Exception e) {
+            throw e;
         } finally {
             try {
                 jndiCtx.close();
             } catch (NamingException ignore) {
             }
         }
-        return null;
     }
 }

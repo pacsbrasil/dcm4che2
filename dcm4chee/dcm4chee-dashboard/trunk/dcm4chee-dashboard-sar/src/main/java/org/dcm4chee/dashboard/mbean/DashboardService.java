@@ -233,7 +233,6 @@ public class DashboardService extends ServiceMBeanSupport {
             new File(this.reportFilename).delete();
             new File(tempFilename).renameTo(new File(this.reportFilename));
         } catch (IOException e) {
-            e.printStackTrace();
             log.debug("Exception: ", e);
         }
     }
