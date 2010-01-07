@@ -20,7 +20,7 @@
         <name>dataSourceName</name>
         <type>java.lang.String</type>
         <descriptors>
-            <default value=""/>
+            <value>java:pacsDS</value>
         </descriptors>
     </attribute>
 	<attribute access="read-write" getMethod="getGroupList" setMethod="setGroupList">
@@ -31,7 +31,7 @@
         <name>groupList</name>
         <type>java.lang.String</type>
         <descriptors>
-            <default value=""/>
+            <value>dcm4chee.archive:service=FileSystemMgt,group=ONLINE_STORAGE</value>
         </descriptors>
     </attribute>
 	<attribute access="read-write" getMethod="getPropertyNameList" setMethod="setPropertyNameList">
@@ -42,7 +42,10 @@
         <name>propertyNameList</name>
         <type>java.lang.String</type>
         <descriptors>
-            <default value=""/>
+            <value>os.name
+os.arch
+os.version
+java.version</value>
         </descriptors>
     </attribute>
 	<attribute access="read-write" getMethod="getReportFilename" setMethod="setReportFilename">
@@ -52,8 +55,8 @@
         <name>reportFilename</name>
         <type>java.lang.String</type>
         <descriptors>
-            <default value=""/>
-        </descriptors>
+        	<value>dashboard.reports</value>
+		</descriptors>
     </attribute>
    <operation>
       <description>MBean Operation.</description>
