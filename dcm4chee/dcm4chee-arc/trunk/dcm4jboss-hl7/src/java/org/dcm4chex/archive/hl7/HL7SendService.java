@@ -116,6 +116,10 @@ public class HL7SendService extends ServiceMBeanSupport implements
             new ParticipantObject.IDTypeCode(
                     "ITI-9","IHE Transactions","PIX Query");
 
+    private static final AuditEvent.TypeCode PIX_QUERY_EVENT_TYPE = 
+            new AuditEvent.TypeCode(
+                    "ITI-9","IHE Transactions","PIX Query");
+
     private static final String LOCAL_HL7_AET = "LOCAL^LOCAL";
 
     private static final String DATETIME_FORMAT = "yyyyMMddHHmmss";
@@ -475,7 +479,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
         String timestamp = new SimpleDateFormat(DATETIME_FORMAT)
                 .format(new Date());
         StringBuffer sb = makeMSH(timestamp, msgType, sending, receiving,
-                "2.3.1");// get MSH for patient information update (ADT^A08)
+                ++msgCtrlid, "2.3.1");// get MSH for patient information update (ADT^A08)
         addEVN(sb, timestamp);
         addPID(sb, ds);
         sb.append("\rPV1||||||||||||||||||||||||||||||||||||||||||||||||||||\r");
@@ -494,7 +498,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
         String timestamp = new SimpleDateFormat(DATETIME_FORMAT)
                 .format(new Date());
         StringBuffer sb = makeMSH(timestamp, "ADT^A40", sending, receiving,
-                "2.3.1");// get MSH for patient merge (ADT^A40)
+                ++msgCtrlid, "2.3.1");// get MSH for patient merge (ADT^A40)
         addEVN(sb, timestamp);
         addPID(sb, dsDominant);
         int SBlen = sb.length();
@@ -520,7 +524,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
     public List<Map<String,String>> sendQBP_Q22(String pdqManager, Map<String,String> query, String domain, int count, String continuation) 
     throws Exception {
         String timestamp = new SimpleDateFormat(DATETIME_FORMAT).format(new Date());
-        StringBuffer sb = makeMSH(timestamp, "QBP^Q22", null, pdqManager, "2.5");
+        StringBuffer sb = makeMSH(timestamp, "QBP^Q22", null, pdqManager, ++msgCtrlid, "2.5");
         String qpd = makeQPD_Q22(query,domain);
         sb.append('\r').append(qpd).append("\rRCP|I||||||\r");
         String s = sb.toString();
@@ -669,7 +673,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
     public String showQBP_Q22(String pdqManager, String query, String domain) 
     throws Exception {
         String timestamp = new SimpleDateFormat(DATETIME_FORMAT).format(new Date());
-        StringBuffer sb = makeMSH(timestamp, "QBP^Q22", null, pdqManager, "2.5");
+        StringBuffer sb = makeMSH(timestamp, "QBP^Q22", null, pdqManager, ++msgCtrlid, "2.5");
         String qpd = makeQPD_Q22(query,domain);
         sb.append('\r').append(qpd).append("\rRCP|I||||||\r");
         String s = sb.toString();
@@ -699,8 +703,10 @@ public class HL7SendService extends ServiceMBeanSupport implements
             throws Exception {
         String timestamp = new SimpleDateFormat(DATETIME_FORMAT)
                 .format(new Date());
-        StringBuffer sb = makeMSH(timestamp, "QBP^Q23", null, pixManager, "2.5");
-        String qpd = makeQPD(pixQueryName, patientID, issuer, domains);
+        long msgCtrlid = ++this.msgCtrlid;
+        long queryTag = ++this.queryTag;
+        StringBuffer sb = makeMSH(timestamp, "QBP^Q23", null, pixManager, msgCtrlid, "2.5");
+        String qpd = makeQPD(pixQueryName, queryTag, patientID, issuer, domains);
         sb.append('\r').append(qpd).append("\rRCP|I||||||\r");
         String s = sb.toString();
         log.info("Query PIX Manager " + pixManager + ":\n"
@@ -727,20 +733,23 @@ public class HL7SendService extends ServiceMBeanSupport implements
                         + " - " + rsp.textMessage);
                 throw new HL7Exception(rsp.acknowledgmentCode, rsp.textMessage);
             }
+            if (auditPIXQuery) {
+                auditPIXQuery(pixManager, patientID, issuer, msgCtrlid, queryTag, qpd, null);
+            }
             return rsp.getPatientIDs();
         } catch (Exception e) {
             if (auditPIXQuery) {
-                auditPIXQuery(pixManager, patientID, issuer, qpd, e);
+                auditPIXQuery(pixManager, patientID, issuer, msgCtrlid, queryTag, qpd, e);
             }
             throw e;
         }
     }
 
-    private String makeQPD(String pixQueryName, String patientID, String issuer,
-            String[] domains) {
+    private String makeQPD(String pixQueryName, long queryTag, 
+            String patientID, String issuer, String[] domains) {
         StringBuffer sb = new StringBuffer("QPD|");
         sb.append(pixQueryName).append('|');
-        sb.append((++queryTag)).append('|');
+        sb.append(queryTag).append('|');
         sb.append(patientID).append("^^^").append(issuer);
         if (domains != null && domains.length > 0) {
             sb.append("|^^^").append(domains[0]);
@@ -777,37 +786,66 @@ public class HL7SendService extends ServiceMBeanSupport implements
     }
 
     private void auditPIXQuery(String pixManager, String patientID,
-            String issuer, String qpd, Exception e) {
+            String issuer, long msgCtrlid, long queryTag, String qpd,
+            Exception e) {
         try {
-            HttpServletRequest httprq = (HttpServletRequest)
-                    PolicyContext.getContext(WEB_REQUEST_KEY);
-            AEDTO pixManagerInfo= aeMgt().findByAET(pixManager);
             QueryMessage msg = new QueryMessage();
+            msg.getAuditEvent().addEventTypeCode(PIX_QUERY_EVENT_TYPE);
+
             ActiveParticipant source1 = ActiveParticipant.createActivePerson(
-                    httprq != null
-                            ? maskNull(httprq.getRemoteUser(), "UNKOWN_USER")
-                            : AuditMessage.getProcessName(),
-                    null, null, AuditMessage.getLocalHostName(), true);
+                    sendingFacility + '|' + sendingApplication, // userID
+                    AuditMessage.getProcessID(),                // altUserID
+                    null,                                       // userName
+                    AuditMessage.getLocalHostName(),            // napID
+                    true);                                      // requester
             source1.addRoleIDCode(ActiveParticipant.RoleIDCode.SOURCE);
             msg.addActiveParticipant(source1);
-            ActiveParticipant source2 = ActiveParticipant.createActivePerson(
-                    sendingFacility + '|' + sendingApplication, null, null,
-                    AuditMessage.getLocalHostName(), false);
-            source2.addRoleIDCode(ActiveParticipant.RoleIDCode.SOURCE);
-            msg.addActiveParticipant(source2);
+
+            HttpServletRequest httprq = (HttpServletRequest)
+                    PolicyContext.getContext(WEB_REQUEST_KEY);
+            if (httprq != null) {
+                String remoteUser = httprq.getRemoteUser();
+                String remoteHost = httprq.getRemoteHost();
+                if (remoteUser != null) {
+                    ActiveParticipant source2 =
+                        ActiveParticipant.createActivePerson(
+                                remoteUser, // userID
+                                null,       // altUserID
+                                remoteUser, // userName
+                                remoteHost, // napID
+                                true);      // requester
+                    msg.addActiveParticipant(source2);
+                }
+            }
+
+            AEDTO pixManagerInfo= aeMgt().findByAET(pixManager);
             ActiveParticipant dest = ActiveParticipant.createActivePerson(
-                    pixManager.replace('^','|'), null, null,
-                    pixManagerInfo.getHostName(), false);
+                    pixManager.replace('^','|'),  // userID
+                    null,                         // altUserID
+                    null,                         // userName
+                    pixManagerInfo.getHostName(), // napID
+                    false);                       // requester
             dest.addRoleIDCode(ActiveParticipant.RoleIDCode.DESTINATION);
             msg.addActiveParticipant(dest);
+
+            ParticipantObject patObj = new ParticipantObject(
+                    patientID + "^^^" + issuer, 
+                    ParticipantObject.IDTypeCode.PATIENT_ID);
+            patObj.setParticipantObjectTypeCode(
+                    ParticipantObject.TypeCode.PERSON);
+            patObj.setParticipantObjectTypeCodeRole(
+                    ParticipantObject.TypeCodeRole.PATIENT);
+            msg.addParticipantObject(patObj);
+
             ParticipantObject queryObj = new ParticipantObject(
-                    patientID + "^^^" + issuer, PIX_QUERY);
+                    String.valueOf(queryTag), PIX_QUERY);
             queryObj.setParticipantObjectTypeCode(
                     ParticipantObject.TypeCode.SYSTEM);
             queryObj.setParticipantObjectTypeCodeRole(
                     ParticipantObject.TypeCodeRole.QUERY);
             queryObj.setParticipantObjectQuery(qpd.getBytes("UTF-8"));
             msg.addParticipantObject(queryObj);
+
             Logger auditlog = Logger.getLogger("auditlog");
             if (e == null) {
                 auditlog.info(msg);
@@ -818,10 +856,6 @@ public class HL7SendService extends ServiceMBeanSupport implements
         } catch (Exception e2) {
             log.warn("Failed to send Audit Log Used message", e2);
         }
-    }
-
-    private static String maskNull(String val, String def) {
-        return val !=null && val.length() != 0 ? val : def;
     }
 
     private void logMessage(Document msg) {
@@ -835,7 +869,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
     }
 
     private StringBuffer makeMSH(String timestamp, String msgType,
-            String sending, String receiving, String version) {
+            String sending, String receiving, long msgCtrlid, String version) {
         StringBuffer sb = new StringBuffer();
         sb.append("MSH|^~\\&|");
         int delim;
@@ -852,7 +886,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
         sb.append(receiving.substring(delim + 1)).append("|");
         sb.append(timestamp).append("||");
         sb.append(msgType).append("|");
-        sb.append(++msgCtrlid).append("|P|");
+        sb.append(msgCtrlid).append("|P|");
         sb.append(version).append("||||||||");
         return sb;
     }
