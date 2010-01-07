@@ -102,14 +102,17 @@ public class FileSystemPanel extends Panel {
             DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new FileSystemModel());
             DashboardDelegator delegator = new DashboardDelegator(((WicketApplication) getApplication()).getDashboardServiceName());
             String[] fileSystemGroups = delegator.listAllFileSystemGroups();
-            
+
             if (fileSystemGroups != null) {
                 for (String groupname : fileSystemGroups) {
                     FileSystemModel group = new FileSystemModel();
-                    group.setDirectoryPath(groupname.substring(groupname.indexOf("group=") + 6));
+                    
+                    int index = groupname.indexOf("group=");
+                    if (index < 0) continue;
+                    group.setDirectoryPath(groupname.substring(index + 6));
+                    
                     group.setDescription(groupname);
                     group.setGroup(true);
-
                     DefaultMutableTreeNode groupNode = new DefaultMutableTreeNode();
 
                     File[] fileSystems;
@@ -192,6 +195,7 @@ public class FileSystemPanel extends Panel {
 
             add(fileSystemTreeTable);
         } catch (Exception e) {
+            e.printStackTrace();
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
             log.debug("Exception: ", e);
             this.redirectToInterceptPage(new InternalErrorPage());

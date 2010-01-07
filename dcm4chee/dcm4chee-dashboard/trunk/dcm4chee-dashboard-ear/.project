@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>dcm4chee-dashboard-${db}</name>
+	<name>dcm4chee-dashboard-ear</name>
 	<comment></comment>
 	<projects>
 		<project>dcm4chee-monitor-ear</project>

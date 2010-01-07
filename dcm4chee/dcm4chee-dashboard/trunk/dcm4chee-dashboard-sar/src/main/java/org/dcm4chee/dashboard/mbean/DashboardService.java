@@ -240,12 +240,14 @@ public class DashboardService extends ServiceMBeanSupport {
     
     private String[] tokenize(String sourceString) {
         StringTokenizer st = new StringTokenizer(sourceString, newline);
-        List<String> tokens = new ArrayList<String>();
+        List<String> tokens = new ArrayList<String>();        
         while (st.hasMoreTokens()) {
             String token =  st.nextToken();
-            tokens.add(token.endsWith("\t") || 
-                       token.endsWith("\r") ||
-                       token.endsWith("\n")  ? token.substring(0, token.length() - 1) : st.nextToken());
+            if (token.endsWith("\t") || 
+                token.endsWith("\r") ||
+                token.endsWith("\n"))
+                    token = token.substring(0, token.length() - 1);
+            if (token.length() > 0) tokens.add(token);
         }
         return tokens.toArray(new String[0]);
     }
