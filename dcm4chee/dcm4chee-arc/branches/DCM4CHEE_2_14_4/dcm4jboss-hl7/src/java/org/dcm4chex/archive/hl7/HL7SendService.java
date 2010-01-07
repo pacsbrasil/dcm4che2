@@ -624,6 +624,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
             queryObj.setParticipantObjectTypeCodeRole(
                     ParticipantObject.TypeCodeRole.QUERY);
             queryObj.setParticipantObjectQuery(qpd.getBytes("UTF-8"));
+            queryObj.addParticipantObjectDetail("MSH-10", String.valueOf(msgCtrlid));
             msg.addParticipantObject(queryObj);
 
             Logger auditlog = Logger.getLogger("auditlog");
