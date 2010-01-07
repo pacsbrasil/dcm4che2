@@ -399,6 +399,10 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                 : FileUtils.formatSize(minFreeDiskSpace);
     }
 
+    public final long getMinFreeDiskSpaceBytes() {
+        return minFreeDiskSpace;
+    }
+
     public final void setMinFreeDiskSpace(String str) {
         this.minFreeDiskSpace = str.equalsIgnoreCase(NONE) ? 0
                 : FileUtils.parseSize(str, MIN_FREE_DISK_SPACE);
