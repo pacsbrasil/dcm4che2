@@ -40,8 +40,6 @@ package org.dcm4chee.dashboard.web;
 
 import org.apache.wicket.Page;
 import org.apache.wicket.protocol.http.WebApplication;
-import org.dcm4chee.dashboard.web.common.InternalErrorPage;
-import org.dcm4chee.dashboard.web.common.PageExpiredErrorPage;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -63,10 +61,6 @@ public class WicketApplication extends WebApplication {
     @Override
     protected void init() {
         super.init();
-        
-        getApplicationSettings().setInternalErrorPage(InternalErrorPage.class);
-        getApplicationSettings().setPageExpiredErrorPage(PageExpiredErrorPage.class);
-        
         this.dashboardServiceName = getInitParameter("DashboardServiceName");
     }
 
