@@ -139,7 +139,15 @@
     </descriptors>
   </attribute>
 
-  <attribute access="read-only" getMethod="getFreeDiskSpaceOnCurFS">
+  <attribute access="read-only" getMethod="getMinFreeDiskSpaceBytes">
+    <description><![CDATA[Get free available disk space on the current storage
+      file system in bytes, returned as a long.]]>
+    </description>
+    <name>MinimumFreeDiskSpaceBytes</name>
+    <type>long</type>
+  </attribute>
+
+<attribute access="read-only" getMethod="getFreeDiskSpaceOnCurFS">
     <description><![CDATA[Get free available disk space on the current storage
       file system in bytes.]]>
     </description>
