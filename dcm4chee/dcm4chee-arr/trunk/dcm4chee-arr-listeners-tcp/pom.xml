@@ -22,6 +22,7 @@
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-arr-listeners-common</artifactId>
       <version>3.0.9</version>
+      <type>jboss-sar</type>
       <scope>provided</scope>
     </dependency>
     <dependency>
