@@ -111,6 +111,10 @@ public class HL7SendService extends ServiceMBeanSupport implements
             new ParticipantObject.IDTypeCode(
                     "ITI-9","IHE Transactions","PIX Query");
 
+    private static final AuditEvent.TypeCode PIX_QUERY_EVENT_TYPE = 
+        new AuditEvent.TypeCode(
+                "ITI-9","IHE Transactions","PIX Query");
+
     private static final String LOCAL_HL7_AET = "LOCAL^LOCAL";
 
     private static final String DATETIME_FORMAT = "yyyyMMddHHmmss";
@@ -293,7 +297,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
 
     private int forward(byte[] hl7msg, Document msg) {
         MSH msh = new MSH(msg);
-        Map param = new HashMap();
+        Map<String,String[]> param = new HashMap<String,String[]>();
         param.put("sending", new String[] { msh.sendingApplication + '^'
                 + msh.sendingFacility });
         param.put("receiving", new String[] { msh.receivingApplication + '^'
@@ -533,10 +537,13 @@ public class HL7SendService extends ServiceMBeanSupport implements
                         + " - " + rsp.textMessage);
                 throw new HL7Exception(rsp.acknowledgmentCode, rsp.textMessage);
             }
+            if (auditPIXQuery) {
+                auditPIXQuery(pixManager, patientID, issuer, msgCtrlid, queryTag, qpd, null);
+            }
             return rsp.getPatientIDs();
         } catch (Exception e) {
             if (auditPIXQuery) {
-                auditPIXQuery(pixManager, patientID, issuer, qpd, e);
+                auditPIXQuery(pixManager, patientID, issuer, msgCtrlid, queryTag, qpd, e);
             }
             throw e;
         }
@@ -559,37 +566,66 @@ public class HL7SendService extends ServiceMBeanSupport implements
     }
 
     private void auditPIXQuery(String pixManager, String patientID,
-            String issuer, String qpd, Exception e) {
+            String issuer, long msgCtrlid, long queryTag, String qpd,
+            Exception e) {
         try {
-            HttpServletRequest httprq = (HttpServletRequest)
-                    PolicyContext.getContext(WEB_REQUEST_KEY);
-            AEDTO pixManagerInfo= aeMgt().findByAET(pixManager);
             QueryMessage msg = new QueryMessage();
+            msg.getAuditEvent().addEventTypeCode(PIX_QUERY_EVENT_TYPE);
+
             ActiveParticipant source1 = ActiveParticipant.createActivePerson(
-                    httprq != null
-                            ? maskNull(httprq.getRemoteUser(), "UNKOWN_USER")
-                            : AuditMessage.getProcessName(),
-                    null, null, AuditMessage.getLocalHostName(), true);
+                    sendingFacility + '|' + sendingApplication, // userID
+                    AuditMessage.getProcessID(),                // altUserID
+                    null,                                       // userName
+                    AuditMessage.getLocalHostName(),            // napID
+                    true);                                      // requester
             source1.addRoleIDCode(ActiveParticipant.RoleIDCode.SOURCE);
             msg.addActiveParticipant(source1);
-            ActiveParticipant source2 = ActiveParticipant.createActivePerson(
-                    sendingFacility + '|' + sendingApplication, null, null,
-                    AuditMessage.getLocalHostName(), false);
-            source2.addRoleIDCode(ActiveParticipant.RoleIDCode.SOURCE);
-            msg.addActiveParticipant(source2);
+
+            HttpServletRequest httprq = (HttpServletRequest)
+                    PolicyContext.getContext(WEB_REQUEST_KEY);
+            if (httprq != null) {
+                String remoteUser = httprq.getRemoteUser();
+                String remoteHost = httprq.getRemoteHost();
+                if (remoteUser != null) {
+                    ActiveParticipant source2 =
+                        ActiveParticipant.createActivePerson(
+                                remoteUser, // userID
+                                null,       // altUserID
+                                remoteUser, // userName
+                                remoteHost, // napID
+                                true);      // requester
+                    msg.addActiveParticipant(source2);
+                }
+            }
+
+            AEDTO pixManagerInfo= aeMgt().findByAET(pixManager);
             ActiveParticipant dest = ActiveParticipant.createActivePerson(
-                    pixManager.replace('^','|'), null, null,
-                    pixManagerInfo.getHostName(), false);
+                    pixManager.replace('^','|'),  // userID
+                    null,                         // altUserID
+                    null,                         // userName
+                    pixManagerInfo.getHostName(), // napID
+                    false);                       // requester
             dest.addRoleIDCode(ActiveParticipant.RoleIDCode.DESTINATION);
             msg.addActiveParticipant(dest);
+
+            ParticipantObject patObj = new ParticipantObject(
+                    patientID + "^^^" + issuer, 
+                    ParticipantObject.IDTypeCode.PATIENT_ID);
+            patObj.setParticipantObjectTypeCode(
+                    ParticipantObject.TypeCode.PERSON);
+            patObj.setParticipantObjectTypeCodeRole(
+                    ParticipantObject.TypeCodeRole.PATIENT);
+            msg.addParticipantObject(patObj);
+
             ParticipantObject queryObj = new ParticipantObject(
-                    patientID + "^^^" + issuer, PIX_QUERY);
+                    String.valueOf(queryTag), PIX_QUERY);
             queryObj.setParticipantObjectTypeCode(
                     ParticipantObject.TypeCode.SYSTEM);
             queryObj.setParticipantObjectTypeCodeRole(
                     ParticipantObject.TypeCodeRole.QUERY);
             queryObj.setParticipantObjectQuery(qpd.getBytes("UTF-8"));
             msg.addParticipantObject(queryObj);
+
             Logger auditlog = Logger.getLogger("auditlog");
             if (e == null) {
                 auditlog.info(msg);
@@ -600,10 +636,6 @@ public class HL7SendService extends ServiceMBeanSupport implements
         } catch (Exception e2) {
             log.warn("Failed to send Audit Log Used message", e2);
         }
-    }
-
-    private static String maskNull(String val, String def) {
-        return val !=null && val.length() != 0 ? val : def;
     }
 
     private void logMessage(Document msg) {
