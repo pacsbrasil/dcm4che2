@@ -113,21 +113,20 @@ public class CreateOrEditReportPage extends WebPage {
 
         private static final long serialVersionUID = 1L;
         
-        private ReportModel forReport;
         private boolean isNew;
 
-        public CreateOrEditReportForm(String id, final ReportModel forReport, final Label resultMessage, final ModalWindow window) {
+        public CreateOrEditReportForm(String id, ReportModel forReport, final Label resultMessage, final ModalWindow window) {
             super(id);
 
-            this.forReport = forReport == null ? new ReportModel(UUID.randomUUID().toString(), null, null, null, false) : forReport;
-            this.isNew = (forReport == null);
-            this.add(new TextField<String>("dashboard.report.createoredit.form.title.input", new PropertyModel<String>(this.forReport, "title"))
+            final ReportModel report = forReport == null ? new ReportModel(UUID.randomUUID().toString(), null, null, null, false) : forReport;
+            this.isNew = forReport == null;
+            this.add(new TextField<String>("dashboard.report.createoredit.form.title.input", new PropertyModel<String>(report, "title"))
             .setRequired(true)
             .add(new ReportTitleValidator())
             .add(new AttributeModifier("size", true, new ResourceModel("dashboard.report.createoredit.form.title.columns"))));
             this.add(new ValidatorMessageLabel("report-title-validator-message-label", (FormComponent<?>) this.get(0)).setOutputMarkupId(true));
             
-            this.add(new TextArea<String>("dashboard.report.createoredit.form.statement.input", new PropertyModel<String>(this.forReport, "statement"))
+            this.add(new TextArea<String>("dashboard.report.createoredit.form.statement.input", new PropertyModel<String>(report, "statement"))
             .setRequired(true)
             .add(new SQLSelectStatementValidator())
             .add(new AttributeModifier("rows", true, new ResourceModel("dashboard.report.createoredit.form.statement.rows")))
@@ -144,7 +143,7 @@ public class CreateOrEditReportPage extends WebPage {
                     try {
                         (jdbcConnection = DashboardMainPage.getDatabaseConnection())
                         .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
-                        .executeQuery(forReport.getStatement())
+                        .executeQuery(report.getStatement())
                         .close();
                     } catch (Exception e) {
                         message = e.getLocalizedMessage();
@@ -167,7 +166,7 @@ public class CreateOrEditReportPage extends WebPage {
             
             final String[] diagramOptions = new ResourceModel("dashboard.report.diagram.options").wrapOnAssignment(this.getParent()).getObject().split(";");
             add(new Label("report-diagram-dropdown-label", new ResourceModel("dashboard.report.createoredit.form.diagram.dropdown.title")));
-            add(new DropDownChoice<Integer>("report-diagram-dropdown-choice", new PropertyModel<Integer>(this.forReport, "diagram"), new ListModel<Integer>() {
+            add(new DropDownChoice<Integer>("report-diagram-dropdown-choice", new PropertyModel<Integer>(report, "diagram"), new ListModel<Integer>() {
 
                 private static final long serialVersionUID = 1L;
 
@@ -188,7 +187,7 @@ public class CreateOrEditReportPage extends WebPage {
                 }
             }).setNullValid(true));
 
-            add(new CheckBox("report-table-checkbox", new PropertyModel<Boolean>(this.forReport, "table")));
+            add(new CheckBox("report-table-checkbox", new PropertyModel<Boolean>(report, "table")));
 
             add(new AjaxFallbackButton("form-submit", CreateOrEditReportForm.this) {
                 private static final long serialVersionUID = 1L;
@@ -197,11 +196,12 @@ public class CreateOrEditReportPage extends WebPage {
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     try {
                         if (isNew) {
-                            new DashboardDelegator(((WicketApplication) getApplication()).getDashboardServiceName()).createReport(forReport);
+                            new DashboardDelegator(((WicketApplication) getApplication()).getDashboardServiceName()).createReport(report);
                             isNew = false;
-                        } else new DashboardDelegator(((WicketApplication) getApplication()).getDashboardServiceName()).updateReport(forReport);
+                        } else new DashboardDelegator(((WicketApplication) getApplication()).getDashboardServiceName()).updateReport(report);
                         window.close(target);
                     } catch (Exception e) {
+                        e.printStackTrace();
                       log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
                       log.debug("Exception: ", e);
 
