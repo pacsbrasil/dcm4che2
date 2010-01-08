@@ -38,6 +38,9 @@
 
 package org.dcm4chee.dashboard.web;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.AbstractList;
 import java.util.List;
 import java.util.UUID;
@@ -136,15 +139,28 @@ public class CreateOrEditReportPage extends WebPage {
     
                 @Override
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                    Connection jdbcConnection = null;
+                    String message = null;
                     try {
+                        (jdbcConnection = DashboardMainPage.getDatabaseConnection())
+                        .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
+                        .executeQuery(forReport.getStatement())
+                        .close();
                     } catch (Exception e) {
-                      log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
-                      log.debug("Exception: ", e);
-
-                      resultMessage.setDefaultModel(new ResourceModel("dashboard.report.createoredit.form.form-submit.failure-message"));
-                      resultMessage.add(new AttributeModifier("class", true, new Model<String>("message-error")));
-                      resultMessage.setVisible(true);
-                      setResponsePage(this.getPage());
+                        message = e.getLocalizedMessage();
+                        log.debug("Exception: ", e);
+                    } finally {
+                        try {
+                            jdbcConnection.close();
+                        } catch (SQLException ignore) {
+                        }
+                        resultMessage.setDefaultModel(new Model<String>(new ResourceModel(message == null ? "dashboard.report.createoredit.form.statement-test-submit.success-message" : 
+                                                                                          "dashboard.report.createoredit.form.statement-test-submit.failure-message")
+                                                            .wrapOnAssignment(this.getParent()).getObject().toString()
+                                                            + (message == null ? "" : message)));
+                        resultMessage.add(new AttributeModifier("class", true, new Model<String>(message == null ? "message-system" : "message-error")));              
+                        resultMessage.setVisible(true);
+                        setResponsePage(this.getPage());
                     }
                 }
             });

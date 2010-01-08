@@ -38,8 +38,10 @@
 
 package org.dcm4chee.dashboard.web;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
@@ -67,8 +69,13 @@ public class DisplayReportDiagramPage extends WebPage {
     
     public DisplayReportDiagramPage(ModalWindow modalWindow, ReportModel report) {
 
+        Connection jdbcConnection = null;
         try {
-            ResultSet resultSet = DashboardMainPage.queryDatabase(report.getStatement());
+            ResultSet resultSet = 
+                (jdbcConnection  = DashboardMainPage.getDatabaseConnection())
+                .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
+                .executeQuery(report.getStatement());
+
             ResultSetMetaData metaData = resultSet.getMetaData();
             JFreeChart chart = null;
             resultSet.beforeFirst();
@@ -157,6 +164,11 @@ public class DisplayReportDiagramPage extends WebPage {
             add(new Image("diagram"));
             add(new Label("error-message", new ResourceModel("dashboard.report.reportdiagram.statement.error").wrapOnAssignment(this).getObject()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
             add(new Label("error-reason", e.getMessage()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
+        } finally {
+            try {
+                jdbcConnection.close();
+            } catch (SQLException ignore) {
+            }
         }
     }
 }

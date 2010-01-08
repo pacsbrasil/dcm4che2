@@ -38,6 +38,7 @@
 
 package org.dcm4chee.dashboard.web;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -107,23 +108,21 @@ public class DashboardMainPage extends WebPage {
         }
     }
     
-    protected static ResultSet queryDatabase(String query) throws Exception {
+    protected static Connection getDatabaseConnection() throws Exception {
 
-        Context jndiCtx = null;
+        Context jndiContext = null;
         try {
-            jndiCtx = new InitialContext();
+            jndiContext = new InitialContext();
             return ((DataSource) 
-                    jndiCtx.lookup((String) MBeanServerLocator.locate().getAttribute(
+                    jndiContext.lookup((String) MBeanServerLocator.locate().getAttribute(
                             new ObjectName("org.dcm4chee.dashboard.mbean:service=DashboardService"),
                             "dataSourceName")
-                    )).getConnection()
-                    .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
-                    .executeQuery(query);
+                    )).getConnection();
         } catch (Exception e) {
             throw e;
         } finally {
             try {
-                jndiCtx.close();
+                jndiContext.close();
             } catch (NamingException ignore) {
             }
         }

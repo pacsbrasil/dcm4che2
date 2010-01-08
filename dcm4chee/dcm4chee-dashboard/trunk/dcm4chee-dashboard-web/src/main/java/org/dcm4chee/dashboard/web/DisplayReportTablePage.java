@@ -38,7 +38,9 @@
 
 package org.dcm4chee.dashboard.web;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
@@ -65,8 +67,13 @@ public class DisplayReportTablePage extends WebPage {
         RepeatingView reportRows = new RepeatingView("report-rows"); 
         add(reportRows);
 
+        Connection jdbcConnection = null;
         try {
-            ResultSet resultSet = DashboardMainPage.queryDatabase(report.getStatement());
+            ResultSet resultSet = 
+                (jdbcConnection  = DashboardMainPage.getDatabaseConnection())
+                .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
+                .executeQuery(report.getStatement());
+
             for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++)
                 columnHeaders.add(new Label(columnHeaders.newChildId(), resultSet.getMetaData().getColumnName(i)));
             
@@ -88,6 +95,11 @@ public class DisplayReportTablePage extends WebPage {
         } catch (Exception e) {
             add(new Label("error-message", new ResourceModel("dashboard.report.reporttable.statement.error").wrapOnAssignment(this).getObject()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
             add(new Label("error-reason", e.getMessage()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
+        } finally {
+            try {
+                jdbcConnection.close();
+            } catch (SQLException ignore) {
+            }
         }
     }
 }
