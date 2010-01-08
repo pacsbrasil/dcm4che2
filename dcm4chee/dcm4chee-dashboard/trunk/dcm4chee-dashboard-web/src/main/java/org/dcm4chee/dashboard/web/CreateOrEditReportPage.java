@@ -113,13 +113,10 @@ public class CreateOrEditReportPage extends WebPage {
 
         private static final long serialVersionUID = 1L;
         
-        private boolean isNew;
-
-        public CreateOrEditReportForm(String id, ReportModel forReport, final Label resultMessage, final ModalWindow window) {
+        public CreateOrEditReportForm(String id, final ReportModel forReport, final Label resultMessage, final ModalWindow window) {
             super(id);
 
             final ReportModel report = forReport == null ? new ReportModel(UUID.randomUUID().toString(), null, null, null, false) : forReport;
-            this.isNew = forReport == null;
             this.add(new TextField<String>("dashboard.report.createoredit.form.title.input", new PropertyModel<String>(report, "title"))
             .setRequired(true)
             .add(new ReportTitleValidator())
@@ -195,13 +192,12 @@ public class CreateOrEditReportPage extends WebPage {
                 @Override
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     try {
-                        if (isNew) {
+                        if (forReport == null)
                             new DashboardDelegator(((WicketApplication) getApplication()).getDashboardServiceName()).createReport(report);
-                            isNew = false;
-                        } else new DashboardDelegator(((WicketApplication) getApplication()).getDashboardServiceName()).updateReport(report);
+                        else 
+                            new DashboardDelegator(((WicketApplication) getApplication()).getDashboardServiceName()).updateReport(report);
                         window.close(target);
                     } catch (Exception e) {
-                        e.printStackTrace();
                       log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
                       log.debug("Exception: ", e);
 
