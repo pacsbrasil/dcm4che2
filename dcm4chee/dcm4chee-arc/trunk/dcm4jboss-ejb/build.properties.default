@@ -12,7 +12,7 @@ dcm4che14.home=${user.home}/dcm4che14/build/dcm4che-1.4.27
 xdoclet.home=${user.home}/xdoclet-1.2.3
 
 #Override with your Cactus dist location
-cactus.home=${user.home}/cactus-1.8.0-bin
+cactus.home=${user.home}/cactus-1.8.1-bin
 
 #Override with your JBoss dist location
 jboss.home=${user.home}/jboss-4.2.3.GA
