@@ -38,54 +38,35 @@
 
 package org.dcm4che2.util;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigInteger;
-import java.util.Properties;
 import java.util.UUID;
-
-import org.dcm4che2.data.ConfigurationError;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date:: 2009-11-24$
  * @since Aug 21, 2005
  * 
  */
+/**
+ * @author gunter
+ *
+ */
 public class UIDUtils {
 
-    private static final String UIDUTILS_PROPS = 
-                "org/dcm4che2/util/UIDUtils.properties";
-    private static final int EXPECT_DOT = 0;
+	private static final int EXPECT_DOT = 0;
     private static final int EXPECT_FIRST_DIGIT = 1;
     private static final int EXPECT_DOT_OR_DIGIT = 2;
     private static final int ILLEGAL_UID = -1;
-    private static String root;
-    private static boolean acceptLeadingZero = false;
 
-    static {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        InputStream is;
-        if (cl == null 
-                || (is = cl.getResourceAsStream(UIDUTILS_PROPS)) == null) {
-            is = UIDUtils.class.getClassLoader().getResourceAsStream(UIDUTILS_PROPS);
-            if (is == null) {
-                throw new ConfigurationError("Missing Resource: "
-                        + UIDUTILS_PROPS);
-            }
-        }
-        Properties p = new Properties();
-        try {
-            p.load(is);
-        } catch (IOException e) {
-            throw new ConfigurationError(
-                    "Failed to load resource org/dcm4che2/util/UIDUtils.properties",
-                    e);
-        } finally {
-            CloseUtils.safeClose(is);
-        }
-        setRoot(p.getProperty("root"));
-    }
+    /**
+     * UID root for UUIDs (Universally Unique Identifiers) generated in
+     * accordance with Rec. ITU-T X.667 | ISO/IEC 9834-8. Used by default.
+     * @see <a href="http://www.oid-info.com/get/2.25">OID repository {joint-iso-itu-t(2) uuid(25)}</a>
+     */
+    public static final String UUID_ROOT = "2.25";
+    
+    private static String root = UUID_ROOT;
+    private static boolean acceptLeadingZero = false;
 
     public static final boolean isAcceptLeadingZero() {
         return acceptLeadingZero;
