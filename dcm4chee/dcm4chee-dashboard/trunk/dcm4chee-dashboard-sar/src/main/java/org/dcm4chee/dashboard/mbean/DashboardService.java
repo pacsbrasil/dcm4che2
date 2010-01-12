@@ -205,7 +205,9 @@ public class DashboardService extends ServiceMBeanSupport {
     private void modifyReport(ReportModel report, boolean deleteLine) {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(this.reportFilename));
-            String tempFilename = UUID.randomUUID().toString();
+            File reportFile = new File(this.reportFilename);            
+            String tempFilename = reportFile.getAbsolutePath().substring(0, reportFile.getAbsolutePath().length() - reportFile.getName().length()) 
+                                + UUID.randomUUID().toString();
             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFilename, true));
             String line;
             while ((line = reader.readLine()) != null) {
@@ -230,8 +232,8 @@ public class DashboardService extends ServiceMBeanSupport {
             }
             reader.close();
             writer.close();
-            new File(this.reportFilename).delete();
-            new File(tempFilename).renameTo(new File(this.reportFilename));
+            reportFile.delete();
+            new File(tempFilename).renameTo(reportFile);
         } catch (IOException e) {
             log.debug("Exception: ", e);
         }
