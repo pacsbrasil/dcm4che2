@@ -129,17 +129,17 @@ public class FileSystemPanel extends Panel {
                         for (File file : fileSystems) {
                             FileSystemModel fsm = new FileSystemModel();
                             fsm.setDirectoryPath(file.getAbsolutePath());
-                            fsm.setOverallDiskSpace(file.getTotalSpace()/ FileSystemModel.MEGA);
-                            fsm.setUsableDiskSpace(Math.max((file.getTotalSpace() - minBytesFree)/ FileSystemModel.MEGA, 0));
-                            fsm.setFreeDiskSpace(Math.max((file.getUsableSpace() - minBytesFree)/ FileSystemModel.MEGA, 0));
+                            fsm.setOverallDiskSpace(file.getTotalSpace() / FileSystemModel.MEGA);
+                            fsm.setUsedDiskSpace(Math.max((file.getTotalSpace() - file.getUsableSpace()) / FileSystemModel.MEGA, 0));
+                            fsm.setFreeDiskSpace(Math.max(file.getUsableSpace() / FileSystemModel.MEGA, 0));
                             fsm.setMinimumFreeDiskSpace(minBytesFree/ FileSystemModel.MEGA);
-                            fsm.setUsedDiskSpace(Math.max((file.getTotalSpace() - file.getUsableSpace())/ FileSystemModel.MEGA, 0));
+                            fsm.setUsableDiskSpace(Math.max((file.getUsableSpace() - minBytesFree)/ FileSystemModel.MEGA, 0));
 
                             group.setOverallDiskSpace(group.getOverallDiskSpaceLong() + fsm.getOverallDiskSpaceLong());
                             group.setUsedDiskSpace(group.getUsedDiskSpaceLong() + fsm.getUsedDiskSpaceLong());
-                            group.setUsableDiskSpace(group.getUsableDiskSpaceLong() + fsm.getUsableDiskSpaceLong());
                             group.setFreeDiskSpace(group.getFreeDiskSpaceLong() + fsm.getFreeDiskSpaceLong());
                             group.setMinimumFreeDiskSpace(group.getMinimumFreeDiskSpaceLong() + (minBytesFree/ FileSystemModel.MEGA));
+                            group.setUsableDiskSpace(group.getUsableDiskSpaceLong() + fsm.getUsableDiskSpaceLong());
                             groupNode.add(new DefaultMutableTreeNode(fsm));
                         }
                     }
@@ -158,6 +158,12 @@ public class FileSystemPanel extends Panel {
                         Alignment.RIGHT, 30, Unit.PERCENT), new StringResourceModel(
                                 "filesystemlist.table.column.image", this, null).getObject(),
                 "userObject.directoryPath"),
+                new PropertyRenderableColumn(new ColumnLocation(
+                        Alignment.RIGHT, 9, Unit.PERCENT),
+                        new StringResourceModel(
+                                "filesystemlist.table.column.overall",
+                                this, null).getObject(),
+                "userObject.overallDiskSpaceString"), 
                 new PropertyRenderableColumn(new ColumnLocation(
                         Alignment.RIGHT, 9, Unit.PERCENT),
                         new StringResourceModel(
@@ -181,13 +187,7 @@ public class FileSystemPanel extends Panel {
                         new StringResourceModel(
                                 "filesystemlist.table.column.usable", this,
                                 null).getObject(),
-                "userObject.usableDiskSpaceString"),
-                new PropertyRenderableColumn(new ColumnLocation(
-                        Alignment.RIGHT, 9, Unit.PERCENT),
-                        new StringResourceModel(
-                                "filesystemlist.table.column.overall",
-                                this, null).getObject(),
-                "userObject.overallDiskSpaceString")
+                "userObject.usableDiskSpaceString")
             });
             fileSystemTreeTable.getTreeState().setAllowSelectMultiple(true);
             fileSystemTreeTable.getTreeState().collapseAll();
