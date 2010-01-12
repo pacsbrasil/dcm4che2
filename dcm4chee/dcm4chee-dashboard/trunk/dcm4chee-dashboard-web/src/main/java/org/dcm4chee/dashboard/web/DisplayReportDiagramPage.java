@@ -38,10 +38,14 @@
 
 package org.dcm4chee.dashboard.web;
 
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
@@ -53,12 +57,28 @@ import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.AxisState;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.CategoryTick;
+import org.jfree.chart.axis.ExtendedCategoryAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.Tick;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PiePlot3D;
+import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.category.CategoryStepRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.text.TextBlock;
+import org.jfree.text.TextFragment;
+import org.jfree.text.TextLine;
+import org.jfree.ui.RectangleEdge;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -112,21 +132,66 @@ public class DisplayReportDiagramPage extends WebPage {
                         true,
                         true);
 
+            } else if (report.getDiagram() == 2) {
+                if (metaData.getColumnCount() != 2) throw new Exception(new ResourceModel("dashboard.report.reportdiagram.image.render.error.2values").wrapOnAssignment(this).getObject());                
+
+                DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+                while (resultSet.next()) dataset.setValue(resultSet.getDouble(1), metaData.getColumnName(1) + " / " + metaData.getColumnName(2), resultSet.getString(2));
+
+                chart = new JFreeChart(new ResourceModel("dashboard.report.reportdiagram.image.label").wrapOnAssignment(this).getObject(), 
+                                       new CategoryPlot(dataset,
+
+                                               // JJJJ -> 18
+                                               // => Länge 4 => 18
+
+                                               // JJJJMM -> xx
+                                               // => Länge 6 -> 13, 14
+
+                                               
+                                               // JJJJMMDD -> 14 oder 13, wurscht
+                                               // => Länge 8 -> 14, 13
+                                               
+                                               
+                                               // JJJJ.MM.DD -> 14 oder 13, wurscht
+                                               // => Länge 10 -> 14, 13
+                                               
+                                               
+                                               
+                                               // bis 9 -> 13 ticks, ab 8 -> 14 ticks
+
+                                               // bis 10 -> 10 ticks, ab 11 -> 9 ticks
+                                               
+                                               // bis 15 -> 9 ticks, ab 16 -> 8 ticks
+                                               
+                                               // bis 19 -> 6 ticks, ab 20 -> 5 ticks
+                                               
+                                               // bis 25 -> 5 ticks, ab 26 -> 4 ticks
+                                               
+                                               // bis 35 -> 3 ticks, ab 36 -> 2 ticks
+                                               
+                                               
+                                               // JJJJ.MM.DD -> 14 oder 13, wurscht
+                                               
+                                               
+                                       new LabelAdaptingCategoryAxis(14, metaData.getColumnName(2)),
+                                       new NumberAxis(metaData.getColumnName(1)), 
+                                       new CategoryStepRenderer(true)));
+
             // Pie chart - 1 numeric value, 1 comparable value (used as category)
-            } else if ((report.getDiagram() == 2) || (report.getDiagram() == 3)) {
+            } else if ((report.getDiagram() == 3) || (report.getDiagram() == 4)) {
                 if (metaData.getColumnCount() != 2) throw new Exception(new ResourceModel("dashboard.report.reportdiagram.image.render.error.2values").wrapOnAssignment(this).getObject());
 
                 DefaultPieDataset dataset = new DefaultPieDataset();
                 while (resultSet.next()) dataset.setValue(resultSet.getString(2), resultSet.getDouble(1));
 
-                if (report.getDiagram() == 2) 
+                if (report.getDiagram() == 3)
                     // Pie chart 2D
                     chart = ChartFactory.createPieChart(new ResourceModel("dashboard.report.reportdiagram.image.label").wrapOnAssignment(this).getObject(), 
                             dataset,
                             true,
                             true,
                             true);
-                else if (report.getDiagram() == 3) {
+                else if (report.getDiagram() == 4) {
                     // Pie chart 3D
                     chart = ChartFactory.createPieChart3D(new ResourceModel("dashboard.report.reportdiagram.image.label").wrapOnAssignment(this).getObject(), 
                             dataset,
@@ -137,7 +202,7 @@ public class DisplayReportDiagramPage extends WebPage {
                 }
                 
             // Bar chart - 1 numeric value, 2 comparable values (used as category, series)
-            } else if (report.getDiagram() == 4) {
+            } else if (report.getDiagram() == 5) {
                 if ((metaData.getColumnCount() != 2) && (metaData.getColumnCount() != 3)) throw new Exception(new ResourceModel("dashboard.report.reportdiagram.image.render.error.3values").wrapOnAssignment(this).getObject());
 
                 DefaultCategoryDataset dataset = new DefaultCategoryDataset();
@@ -169,6 +234,44 @@ public class DisplayReportDiagramPage extends WebPage {
                 jdbcConnection.close();
             } catch (SQLException ignore) {
             }
+        }
+    }
+
+    public class LabelAdaptingCategoryAxis extends CategoryAxis {
+        
+        private static final long serialVersionUID = 1L;
+
+        private final int labeledTicks;
+
+        public LabelAdaptingCategoryAxis(int labeledTicks, String label) {
+            super(label);
+            this.labeledTicks = labeledTicks;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public List<CategoryTick> refreshTicks(Graphics2D g2, AxisState state, Rectangle2D dataArea, RectangleEdge edge) {
+
+            List<CategoryTick> currentTicks = super.refreshTicks(g2, state, dataArea, edge);
+            if (currentTicks.isEmpty()) return currentTicks;
+            int interval = currentTicks.size() / labeledTicks;
+            if (interval < 1) return currentTicks;
+           
+            List<CategoryTick> newTicks = new ArrayList<CategoryTick>(currentTicks.size());
+            for (int i = 0; i < currentTicks.size(); i++) {
+                CategoryTick tick = currentTicks.get(i);
+                TextBlock textBlock = new TextBlock();
+                textBlock.addLine(tick.getCategory().toString(), 
+                                  tick.getLabel().getLastLine().getFirstTextFragment().getFont(), 
+                                  tick.getLabel().getLastLine().getFirstTextFragment().getPaint());
+                tick = new CategoryTick(tick.getCategory(), 
+                                        textBlock, 
+                                        tick.getLabelAnchor(), 
+                                        tick.getRotationAnchor(), 
+                                        tick.getAngle());
+                newTicks.add(tick);
+            }
+            return newTicks;
         }
     }
 }

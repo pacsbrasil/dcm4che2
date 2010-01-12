@@ -139,7 +139,7 @@ public class FileSystemPanel extends Panel {
                             group.setUsedDiskSpace(group.getUsedDiskSpaceLong() + fsm.getUsedDiskSpaceLong());
                             group.setUsableDiskSpace(group.getUsableDiskSpaceLong() + fsm.getUsableDiskSpaceLong());
                             group.setFreeDiskSpace(group.getFreeDiskSpaceLong() + fsm.getFreeDiskSpaceLong());
-                            group.setMinimumFreeDiskSpace(minBytesFree/ FileSystemModel.MEGA);
+                            group.setMinimumFreeDiskSpace(group.getMinimumFreeDiskSpaceLong() + (minBytesFree/ FileSystemModel.MEGA));
                             groupNode.add(new DefaultMutableTreeNode(fsm));
                         }
                     }
