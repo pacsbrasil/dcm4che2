@@ -128,7 +128,8 @@ public class FileSystemPanel extends Panel {
                         
                         for (File file : fileSystems) {
                             FileSystemModel fsm = new FileSystemModel();
-                            fsm.setDirectoryPath(file.getAbsolutePath());
+                            fsm.setDirectoryPath(file.getPath());
+                            fsm.setDescription(file.getAbsolutePath());
                             fsm.setOverallDiskSpace(file.getTotalSpace() / FileSystemModel.MEGA);
                             fsm.setUsedDiskSpace(Math.max((file.getTotalSpace() - file.getUsableSpace()) / FileSystemModel.MEGA, 0));
                             fsm.setFreeDiskSpace(Math.max(file.getUsableSpace() / FileSystemModel.MEGA, 0));
@@ -331,7 +332,10 @@ public class FileSystemPanel extends Panel {
                     if (((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).isGroup())
                         tag.put("style", "background-image: url('images/server.png')");
                     else 
-                        tag.put("style", "background-image: url('images/hard_disk.png')");
+                        if (((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).getDirectoryPath().contains("tar:"))
+                            tag.put("style", "background-image: url('images/folder_files.png')");
+                        else
+                            tag.put("style", "background-image: url('images/hard_disk.png')");
                     tag.put("title", ((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).getDescription());
                 }
             };
