@@ -56,6 +56,7 @@ import org.apache.wicket.extensions.markup.html.tabs.ITab;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.pages.InternalErrorPage;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.jboss.mx.util.MBeanServerLocator;
 import org.slf4j.Logger;
@@ -75,7 +76,7 @@ public class DashboardMainPage extends WebPage {
     public DashboardMainPage(final PageParameters parameters) {
         try {
             this.add(new AjaxTabbedPanel("tabs", new ArrayList<ITab>(Arrays.asList(
-                new AbstractTab(new StringResourceModel("dashboard.tabs.tab1.name", this, null)) {
+                new AbstractTab(new ResourceModel("dashboard.tabs.tab1.name").wrapOnAssignment(this)) {
                 
                     private static final long serialVersionUID = 1L;
                 
@@ -83,7 +84,7 @@ public class DashboardMainPage extends WebPage {
                         return new FileSystemPanel(panelId);
                     }
                 },  
-                new AbstractTab(new StringResourceModel("dashboard.tabs.tab2.name", this, null)) {
+                new AbstractTab(new ResourceModel("dashboard.tabs.tab2.name").wrapOnAssignment(this)) {
                     
                     private static final long serialVersionUID = 1L;
                 
@@ -91,7 +92,7 @@ public class DashboardMainPage extends WebPage {
                         return new ReportPanel(panelId);
                     }
                 },
-                new AbstractTab(new StringResourceModel("dashboard.tabs.tab3.name", this, null)) {
+                new AbstractTab(new ResourceModel("dashboard.tabs.tab3.name").wrapOnAssignment(this)) {
                     
                     private static final long serialVersionUID = 1L;
                 

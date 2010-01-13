@@ -62,7 +62,6 @@ import org.apache.wicket.markup.html.pages.InternalErrorPage;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
-import org.apache.wicket.model.StringResourceModel;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.util.CSSUtils;
@@ -101,7 +100,7 @@ public class ReportPanel extends Panel {
                     
                     item.add(new Label("report-title", String.valueOf(report.getTitle())).add(new AttributeModifier("title", true, new Model<String>(report.getStatement().replace(System.getProperty("line.separator"), " ")))));                   
                     item.add(new CreateOrEditReportLink("edit-report-link", ((ReportModel) item.getModelObject())));
-                    item.add(new RemoveReportLink("remove-report-link", report).add(new AttributeModifier("onclick", true, new Model<String>("return confirm('" + new StringResourceModel("dashboard.report.table.remove_confirmation", this, null).getObject() + "');"))));
+                    item.add(new RemoveReportLink("remove-report-link", report).add(new AttributeModifier("onclick", true, new Model<String>("return confirm('" + new ResourceModel("dashboard.report.table.remove_confirmation").wrapOnAssignment(this).getObject() + "');"))));
 
                     PageParameters parameters = this.getPage().getPageParameters() != null ? this.getPage().getPageParameters() : new PageParameters();
                     parameters.add("uuid", report.getUuid());

@@ -89,6 +89,15 @@ public class DashboardDelegator {
                         .longValue();
     }
     
+    public long getExpectedDataVolumePerDay(String groupname) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException, AttributeNotFoundException {
+        return ((Long) server.invoke(
+                        this.objectName,
+                        "getExpectedDataVolumePerDay",
+                        new Object[] { groupname },
+                        new String[] { "java.lang.String" }))
+                        .longValue();
+        }
+
     public SystemPropertyModel[] getSystemProperties() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
         return (SystemPropertyModel[]) server.invoke(
                         this.objectName,

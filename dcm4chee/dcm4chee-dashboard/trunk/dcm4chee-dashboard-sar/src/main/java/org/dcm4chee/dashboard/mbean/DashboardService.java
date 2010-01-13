@@ -135,7 +135,13 @@ public class DashboardService extends ServiceMBeanSupport {
                       new ObjectName(groupname),
                       "MinimumFreeDiskSpaceBytes")).longValue();
     }
-    
+
+    public long getExpectedDataVolumePerDay(String groupname) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException, AttributeNotFoundException {
+        return ((Long) this.server.getAttribute(
+                      new ObjectName(groupname),
+                      "ExpectedDataVolumePerDayBytes")).longValue();
+    }
+
     public SystemPropertyModel[] getSystemProperties() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
 
         SystemPropertyModel[] properties = new SystemPropertyModel[this.propertyNameList.length];

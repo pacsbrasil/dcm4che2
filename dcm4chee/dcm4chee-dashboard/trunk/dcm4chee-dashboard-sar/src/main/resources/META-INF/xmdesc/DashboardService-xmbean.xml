@@ -83,6 +83,15 @@ java.version</value>
    </operation>
    <operation>
       <description>MBean Operation.</description>
+      <name>getExpectedDataVolumePerDay</name>
+      <parameter>
+         <name>groupname</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>long</return-type>
+   </operation>
+   <operation>
+      <description>MBean Operation.</description>
       <name>getSystemProperties</name>
 	  <return-type>[Lorg.dcm4chee.dashboard.model.SystemPropertyModel;</return-type>
    </operation>

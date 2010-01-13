@@ -70,7 +70,7 @@ import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -125,6 +125,7 @@ public class FileSystemPanel extends Panel {
                     
                     if (!((fileSystems == null) || (fileSystems.length == 0))) {
                         long minBytesFree = delegator.getMinimumFreeDiskSpaceOfGroup(groupname);
+                        long expectedBytesPerDay = delegator.getExpectedDataVolumePerDay(groupname);
                         
                         for (File file : fileSystems) {
                             FileSystemModel fsm = new FileSystemModel();
@@ -133,9 +134,10 @@ public class FileSystemPanel extends Panel {
                             fsm.setOverallDiskSpace(file.getTotalSpace() / FileSystemModel.MEGA);
                             fsm.setUsedDiskSpace(Math.max((file.getTotalSpace() - file.getUsableSpace()) / FileSystemModel.MEGA, 0));
                             fsm.setFreeDiskSpace(Math.max(file.getUsableSpace() / FileSystemModel.MEGA, 0));
-                            fsm.setMinimumFreeDiskSpace(minBytesFree/ FileSystemModel.MEGA);
-                            fsm.setUsableDiskSpace(Math.max((file.getUsableSpace() - minBytesFree)/ FileSystemModel.MEGA, 0));
-
+                            fsm.setMinimumFreeDiskSpace(minBytesFree / FileSystemModel.MEGA);
+                            fsm.setUsableDiskSpace(Math.max((file.getUsableSpace() - minBytesFree) / FileSystemModel.MEGA, 0));
+                            fsm.setRemainingTime(Math.max((file.getUsableSpace() - minBytesFree) / expectedBytesPerDay, 0));
+                            
                             group.setOverallDiskSpace(group.getOverallDiskSpaceLong() + fsm.getOverallDiskSpaceLong());
                             group.setUsedDiskSpace(group.getUsedDiskSpaceLong() + fsm.getUsedDiskSpaceLong());
                             group.setFreeDiskSpace(group.getFreeDiskSpaceLong() + fsm.getFreeDiskSpaceLong());
@@ -143,6 +145,7 @@ public class FileSystemPanel extends Panel {
                             group.setUsableDiskSpace(group.getUsableDiskSpaceLong() + fsm.getUsableDiskSpaceLong());
                             groupNode.add(new DefaultMutableTreeNode(fsm));
                         }
+                        group.setRemainingTime(Math.max(group.getUsableDiskSpaceLong() / (expectedBytesPerDay / FileSystemModel.MEGA), 0));
                     }
                     groupNode.setUserObject(group);
                     rootNode.add(groupNode);
@@ -151,44 +154,46 @@ public class FileSystemPanel extends Panel {
 
             FileSystemTreeTable fileSystemTreeTable = new FileSystemTreeTable("filesystem-tree-table", 
                     new DefaultTreeModel(rootNode), new IColumn[] {
-                new PropertyTreeColumn(new ColumnLocation(Alignment.LEFT,
-                        25, Unit.PERCENT), new StringResourceModel(
-                                "filesystemlist.table.column.name", this, null)
-                .getObject(), "userObject.directoryPath"),
+                new PropertyTreeColumn(new ColumnLocation(
+                        Alignment.LEFT, 22, Unit.PERCENT), 
+                        new ResourceModel(
+                                "filesystemlist.table.column.name").wrapOnAssignment(this).getObject(), 
+                                "userObject.directoryPath"),
                 new ImageRenderableColumn(new ColumnLocation(
-                        Alignment.RIGHT, 30, Unit.PERCENT), new StringResourceModel(
-                                "filesystemlist.table.column.image", this, null).getObject(),
-                "userObject.directoryPath"),
+                        Alignment.RIGHT, 30, Unit.PERCENT), 
+                        new ResourceModel(
+                                "filesystemlist.table.column.image").wrapOnAssignment(this).getObject(),
+                                "userObject.directoryPath"),
                 new PropertyRenderableColumn(new ColumnLocation(
-                        Alignment.RIGHT, 9, Unit.PERCENT),
-                        new StringResourceModel(
-                                "filesystemlist.table.column.overall",
-                                this, null).getObject(),
-                "userObject.overallDiskSpaceString"), 
+                        Alignment.RIGHT, 8, Unit.PERCENT),
+                        new ResourceModel(
+                                "filesystemlist.table.column.overall").wrapOnAssignment(this).getObject(),
+                                "userObject.overallDiskSpaceString"), 
                 new PropertyRenderableColumn(new ColumnLocation(
-                        Alignment.RIGHT, 9, Unit.PERCENT),
-                        new StringResourceModel(
-                                "filesystemlist.table.column.used", this,
-                                null).getObject(),
-                "userObject.usedDiskSpaceString"),
+                        Alignment.RIGHT, 8, Unit.PERCENT),
+                        new ResourceModel(
+                                "filesystemlist.table.column.used").wrapOnAssignment(this).getObject(),
+                                "userObject.usedDiskSpaceString"),
                 new PropertyRenderableColumn(new ColumnLocation(
-                        Alignment.RIGHT, 9, Unit.PERCENT),
-                        new StringResourceModel(
-                                "filesystemlist.table.column.free", this,
-                                null).getObject(),
-                "userObject.freeDiskSpaceString"),
+                        Alignment.RIGHT, 8, Unit.PERCENT),
+                        new ResourceModel(
+                                "filesystemlist.table.column.free").wrapOnAssignment(this).getObject(),
+                                "userObject.freeDiskSpaceString"),
                 new PropertyRenderableColumn(new ColumnLocation(
-                        Alignment.RIGHT, 9, Unit.PERCENT),
-                        new StringResourceModel(
-                                "filesystemlist.table.column.minimumfree", this,
-                                null).getObject(),
-                "userObject.minimumFreeDiskSpaceString"),
+                        Alignment.RIGHT, 8, Unit.PERCENT),
+                        new ResourceModel(
+                                "filesystemlist.table.column.minimumfree").wrapOnAssignment(this).getObject(),
+                                "userObject.minimumFreeDiskSpaceString"),
                 new PropertyRenderableColumn(new ColumnLocation(
-                        Alignment.RIGHT, 9, Unit.PERCENT),
-                        new StringResourceModel(
-                                "filesystemlist.table.column.usable", this,
-                                null).getObject(),
-                "userObject.usableDiskSpaceString")
+                        Alignment.RIGHT, 8, Unit.PERCENT),
+                        new ResourceModel(
+                                "filesystemlist.table.column.usable").wrapOnAssignment(this).getObject(),
+                                "userObject.usableDiskSpaceString"), 
+                new PropertyRenderableColumn(new ColumnLocation(
+                        Alignment.RIGHT, 8, Unit.PERCENT),
+                        new ResourceModel(
+                                "filesystemlist.table.column.remainingtime").wrapOnAssignment(this).getObject(),
+                                "userObject.remainingTimeString")
             });
             fileSystemTreeTable.getTreeState().setAllowSelectMultiple(true);
             fileSystemTreeTable.getTreeState().collapseAll();
@@ -196,6 +201,7 @@ public class FileSystemPanel extends Panel {
 
             add(fileSystemTreeTable);
         } catch (Exception e) {
+            e.printStackTrace();
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
             log.debug("Exception: ", e);
             this.redirectToInterceptPage(new InternalErrorPage());
@@ -215,6 +221,7 @@ public class FileSystemPanel extends Panel {
             return null;
         }
         
+        @SuppressWarnings("deprecation")
         @Override
         public Component newCell(MarkupContainer parent, String id, final TreeNode node, int level) {
             if (!((node instanceof DefaultMutableTreeNode) && (((DefaultMutableTreeNode) node)
@@ -351,7 +358,8 @@ public class FileSystemPanel extends Panel {
         
         private final int diskSpaceDisplayLength = 8;
         
-        private NumberFormat formatter;
+        private NumberFormat memoryFormatter;
+        private NumberFormat daysFormatter;
         
         private String directoryPath;
         private String description;
@@ -363,11 +371,17 @@ public class FileSystemPanel extends Panel {
         private long minimumFreeDiskSpace = 0;
         
         private boolean isGroup = false;
+
+        private long remainingTime = 0;
         
         public FileSystemModel() {
-            this.formatter = DecimalFormat.getInstance();
-            this.formatter.setMaximumFractionDigits(3);
-            this.formatter.setMinimumIntegerDigits(1);
+            this.memoryFormatter = DecimalFormat.getInstance();
+            this.memoryFormatter.setMaximumFractionDigits(3);
+            this.memoryFormatter.setMinimumIntegerDigits(1);
+
+            this.daysFormatter = DecimalFormat.getInstance();
+            this.daysFormatter.setMaximumFractionDigits(0);
+            this.daysFormatter.setMinimumIntegerDigits(1);
         }
 
         public void setDirectoryPath(String directoryPath) {
@@ -395,7 +409,7 @@ public class FileSystemPanel extends Panel {
         }
 
         public String getOverallDiskSpaceString() {
-            String overallDiskSpaceString = this.formatter.format(new Float(this.overallDiskSpace)/FileSystemModel.KILO);
+            String overallDiskSpaceString = this.memoryFormatter.format(new Float(this.overallDiskSpace)/FileSystemModel.KILO);
             return overallDiskSpaceString.substring(0, Math.min(overallDiskSpaceString.length(), this.diskSpaceDisplayLength)) + " GB";
         }
 
@@ -408,7 +422,7 @@ public class FileSystemPanel extends Panel {
         }
 
         public String getUsedDiskSpaceString() {
-            String usedDiskSpaceString = this.formatter.format(new Float(this.usedDiskSpace)/FileSystemModel.KILO);
+            String usedDiskSpaceString = this.memoryFormatter.format(new Float(this.usedDiskSpace)/FileSystemModel.KILO);
             return usedDiskSpaceString.substring(0, Math.min(usedDiskSpaceString.length(), this.diskSpaceDisplayLength)) + " GB";
         }
 
@@ -421,7 +435,7 @@ public class FileSystemPanel extends Panel {
         }
 
         public String getUsableDiskSpaceString() {
-            String usableDiskSpaceString = this.formatter.format(new Float(this.usableDiskSpace)/FileSystemModel.KILO);
+            String usableDiskSpaceString = this.memoryFormatter.format(new Float(this.usableDiskSpace)/FileSystemModel.KILO);
             return usableDiskSpaceString.substring(0, Math.min(usableDiskSpaceString.length(), this.diskSpaceDisplayLength)) + " GB";
         }
 
@@ -434,7 +448,7 @@ public class FileSystemPanel extends Panel {
         }
 
         public String getFreeDiskSpaceString() {
-            String freeDiskSpaceString = this.formatter.format(new Float(this.freeDiskSpace)/FileSystemModel.KILO);
+            String freeDiskSpaceString = this.memoryFormatter.format(new Float(this.freeDiskSpace)/FileSystemModel.KILO);
             return freeDiskSpaceString.substring(0, Math.min(freeDiskSpaceString.length(), this.diskSpaceDisplayLength)) + " GB";
         }
 
@@ -447,7 +461,7 @@ public class FileSystemPanel extends Panel {
         }
 
         public String getMinimumFreeDiskSpaceString() {
-            String minimumFreeDiskSpaceString = this.formatter.format(new Float(this.minimumFreeDiskSpace)/FileSystemModel.KILO);
+            String minimumFreeDiskSpaceString = this.memoryFormatter.format(new Float(this.minimumFreeDiskSpace)/FileSystemModel.KILO);
             return minimumFreeDiskSpaceString.substring(0, Math.min(minimumFreeDiskSpaceString.length(), this.diskSpaceDisplayLength)) + " GB";
         }
 
@@ -457,6 +471,18 @@ public class FileSystemPanel extends Panel {
 
         public boolean isGroup() {
             return isGroup;
+        }
+
+        public void setRemainingTime(long l) {
+            this.remainingTime = l;
+        }
+
+        public long getRemainingTime() {
+            return remainingTime;
+        }
+        
+        public String getRemainingTimeString() {
+            return this.daysFormatter.format(new Float(this.remainingTime)); 
         }
     }
 }
