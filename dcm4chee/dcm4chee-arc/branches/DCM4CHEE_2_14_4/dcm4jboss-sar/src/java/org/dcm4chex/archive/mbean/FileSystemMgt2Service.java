@@ -44,18 +44,16 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
-import javax.ejb.RemoveException;
 import javax.management.Attribute;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import org.dcm4chex.archive.common.Availability;
-import org.dcm4chex.archive.common.DeleteStudyOrdersAndMaxAccessTime;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
+import org.dcm4chex.archive.common.DeleteStudyOrdersAndMaxAccessTime;
 import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DeleterThresholds;
@@ -519,6 +517,10 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         return FileUtils.formatSize(expectedDataVolumePerDay);
     }
 
+    public final long getExpectedDataVolumePerDayBytes() {
+        return expectedDataVolumePerDay;
+    }
+
     public final void setExpectedDataVolumePerDay(String s) {
         this.expectedDataVolumePerDay = FileUtils.parseSize(s, FileUtils.MEGA);
     }
@@ -725,8 +727,11 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public FileSystemDTO addRWFileSystem(String dirPath) throws Exception {
-        return fileSystemMgt().addAndLinkFileSystem(
-                mkFileSystemDTO(dirPath, FileSystemStatus.RW));
+        return addRWFileSystem( mkFileSystemDTO(dirPath, FileSystemStatus.RW) );
+    }
+    
+    protected FileSystemDTO addRWFileSystem( FileSystemDTO fsDTO ) throws Exception {
+        return fileSystemMgt().addAndLinkFileSystem( fsDTO );
     }
 
     private FileSystemDTO mkFileSystemDTO(String dirPath, int status) {

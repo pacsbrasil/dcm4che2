@@ -304,6 +304,14 @@
     </descriptors>
   </attribute>
 
+  <attribute access="read-only" getMethod="getExpectedDataVolumePerDayBytes">
+    <description><![CDATA[Get expected data volume per day
+      in bytes, returned as a long.]]>
+    </description>
+    <name>ExpectedDataVolumePerDayBytes</name>
+    <type>long</type>
+  </attribute>
+
   <attribute access="read-write" getMethod="isAdjustExpectedDataVolumePerDay"
     setMethod="setAdjustExpectedDataVolumePerDay">
     <description><![CDATA[Update value of attribute ExpectedDataVolumePerDay

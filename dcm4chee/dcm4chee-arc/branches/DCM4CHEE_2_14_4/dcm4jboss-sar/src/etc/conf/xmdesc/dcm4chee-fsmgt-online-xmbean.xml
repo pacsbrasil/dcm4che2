@@ -147,7 +147,7 @@
     <type>long</type>
   </attribute>
 
-  <attribute access="read-only" getMethod="getFreeDiskSpaceOnCurFS">
+<attribute access="read-only" getMethod="getFreeDiskSpaceOnCurFS">
     <description><![CDATA[Get free available disk space on the current storage
       file system in bytes.]]>
     </description>
@@ -302,6 +302,14 @@
     <descriptors>
       <value value="100MB" />
     </descriptors>
+  </attribute>
+
+  <attribute access="read-only" getMethod="getExpectedDataVolumePerDayBytes">
+    <description><![CDATA[Get expected data volume per day
+      in bytes, returned as a long.]]>
+    </description>
+    <name>ExpectedDataVolumePerDayBytes</name>
+    <type>long</type>
   </attribute>
 
   <attribute access="read-write" getMethod="isAdjustExpectedDataVolumePerDay"
