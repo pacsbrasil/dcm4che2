@@ -53,7 +53,9 @@ import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.ContextImage;
+import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.markup.html.link.PopupSettings;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.pages.InternalErrorPage;
@@ -92,6 +94,7 @@ public class ReportPanel extends Panel {
 
                 private static final long serialVersionUID = 1L;
                 
+                @SuppressWarnings("unchecked")
                 @Override
                 protected void populateItem(ListItem<ReportModel> item) {
                     final ReportModel report = (ReportModel) item.getModelObject();
@@ -100,50 +103,16 @@ public class ReportPanel extends Panel {
                     item.add(new CreateOrEditReportLink("edit-report-link", ((ReportModel) item.getModelObject())));
                     item.add(new RemoveReportLink("remove-report-link", report).add(new AttributeModifier("onclick", true, new Model<String>("return confirm('" + new StringResourceModel("dashboard.report.table.remove_confirmation", this, null).getObject() + "');"))));
 
-                    item.add(new AjaxFallbackLink<Object>("report-diagram-link") {
+                    PageParameters parameters = this.getPage().getPageParameters() != null ? this.getPage().getPageParameters() : new PageParameters();
+                    parameters.add("uuid", report.getUuid());
 
-                        private static final long serialVersionUID = 1L;
-                        
-                        @Override
-                        public void onClick(AjaxRequestTarget target) {
-                            modalWindow.setPageCreator(new ModalWindow.PageCreator() {
-                                
-                                private static final long serialVersionUID = 1L;
-                                
-                                @Override
-                                public Page createPage() {
-                                    return new DisplayReportDiagramPage(modalWindow, report);
-                                }                
-                            })
-                            .setInitialWidth(new Integer(new ResourceModel("dashboard.report.reportdiagram.window.width").wrapOnAssignment(this).getObject().toString()))
-                            .setInitialHeight(new Integer(new ResourceModel("dashboard.report.reportdiagram.window.height").wrapOnAssignment(this).getObject().toString()))
-                            .setResizable(false)
-                            .show(target);
-                        }                    
-                    }
+                    item.add(new BookmarkablePageLink("report-diagram-link", DisplayReportDiagramPage.class, parameters)
+                    .setPopupSettings(new PopupSettings(PopupSettings.RESIZABLE | PopupSettings.SCROLLBARS))
                     .add(new Label("report-diagram-dropdown-choice-label", new Model<String>(report.getDiagram() != null ? diagramOptions[report.getDiagram()] : "")))
                     .setVisible(report.getDiagram() != null));
 
-                    item.add(new AjaxFallbackLink<Object>("report-table-link") {
-
-                        private static final long serialVersionUID = 1L;
-
-                        @Override
-                        public void onClick(AjaxRequestTarget target) {
-                            modalWindow.setPageCreator(new ModalWindow.PageCreator() {
-                                
-                                private static final long serialVersionUID = 1L;
-                                
-                                @Override
-                                public Page createPage() {
-                                    return new DisplayReportTablePage(modalWindow, report);
-                                }                
-                            })
-                            .setInitialWidth(new Integer(new ResourceModel("dashboard.report.reporttable.window.width").wrapOnAssignment(this).getObject().toString()))
-                            .setInitialHeight(new Integer(new ResourceModel("dashboard.report.reporttable.window.height").wrapOnAssignment(this).getObject().toString()))
-                            .show(target);
-                        }                    
-                    }
+                    item.add(new BookmarkablePageLink("report-table-link", DisplayReportTablePage.class, parameters)
+                    .setPopupSettings(new PopupSettings(PopupSettings.RESIZABLE | PopupSettings.SCROLLBARS))
                     .setVisible(report.getTable()));
 
                     item.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(item.getIndex()))));

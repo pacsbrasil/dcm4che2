@@ -48,36 +48,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisState;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryTick;
-import org.jfree.chart.axis.ExtendedCategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.axis.Tick;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PiePlot3D;
-import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.category.CategoryStepRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
-import org.jfree.data.time.TimeSeries;
-import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.text.TextBlock;
-import org.jfree.text.TextFragment;
-import org.jfree.text.TextLine;
 import org.jfree.ui.RectangleEdge;
 
 /**
@@ -87,10 +80,11 @@ import org.jfree.ui.RectangleEdge;
  */
 public class DisplayReportDiagramPage extends WebPage {
     
-    public DisplayReportDiagramPage(ModalWindow modalWindow, ReportModel report) {
+    public DisplayReportDiagramPage(PageParameters parameters) {
 
         Connection jdbcConnection = null;
         try {
+            ReportModel report = new DashboardDelegator(((WicketApplication) getApplication()).getDashboardServiceName()).getReport(parameters.getString("uuid"));
             ResultSet resultSet = 
                 (jdbcConnection  = DashboardMainPage.getDatabaseConnection())
                 .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
