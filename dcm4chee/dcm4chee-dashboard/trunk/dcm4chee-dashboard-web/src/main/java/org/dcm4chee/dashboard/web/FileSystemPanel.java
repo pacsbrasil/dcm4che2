@@ -129,8 +129,8 @@ public class FileSystemPanel extends Panel {
                         
                         for (File file : fileSystems) {
                             FileSystemModel fsm = new FileSystemModel();
-                            fsm.setDirectoryPath(file.getPath());
-                            fsm.setDescription(file.getAbsolutePath());
+                            fsm.setDirectoryPath(file.getName());                            
+                            fsm.setDescription(file.getName().startsWith("tar:") ? file.getName() : file.getAbsolutePath());
                             fsm.setOverallDiskSpace(file.getTotalSpace() / FileSystemModel.MEGA);
                             fsm.setUsedDiskSpace(Math.max((file.getTotalSpace() - file.getUsableSpace()) / FileSystemModel.MEGA, 0));
                             fsm.setFreeDiskSpace(Math.max(file.getUsableSpace() / FileSystemModel.MEGA, 0));
