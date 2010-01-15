@@ -132,18 +132,18 @@ public class FileSystemPanel extends Panel {
                             fsm.setOverallDiskSpace(file.getTotalSpace() / FileSystemModel.MEGA);
                             fsm.setUsedDiskSpace(Math.max((file.getTotalSpace() - file.getUsableSpace()) / FileSystemModel.MEGA, 0));
                             fsm.setFreeDiskSpace(Math.max(file.getUsableSpace() / FileSystemModel.MEGA, 0));
-                            fsm.setMinimumFreeDiskSpace(minBytesFree / FileSystemModel.MEGA);
+                            fsm.setMinimumFreeDiskSpace(fsm.getOverallDiskSpaceLong() == 0 ? 0 : minBytesFree / FileSystemModel.MEGA);
                             fsm.setUsableDiskSpace(Math.max((file.getUsableSpace() - minBytesFree) / FileSystemModel.MEGA, 0));
                             fsm.setRemainingTime(Math.max((file.getUsableSpace() - minBytesFree) / expectedBytesPerDay, 0));
                             
                             group.setOverallDiskSpace(group.getOverallDiskSpaceLong() + fsm.getOverallDiskSpaceLong());
                             group.setUsedDiskSpace(group.getUsedDiskSpaceLong() + fsm.getUsedDiskSpaceLong());
                             group.setFreeDiskSpace(group.getFreeDiskSpaceLong() + fsm.getFreeDiskSpaceLong());
-                            group.setMinimumFreeDiskSpace(group.getMinimumFreeDiskSpaceLong() + (minBytesFree/ FileSystemModel.MEGA));
+                            group.setMinimumFreeDiskSpace(group.getMinimumFreeDiskSpaceLong() + fsm.getMinimumFreeDiskSpaceLong());
                             group.setUsableDiskSpace(group.getUsableDiskSpaceLong() + fsm.getUsableDiskSpaceLong());
+                            group.setRemainingTime(group.getRemainingTime() + fsm.getRemainingTime());
                             groupNode.add(new DefaultMutableTreeNode(fsm));
                         }
-                        group.setRemainingTime(Math.max(group.getUsableDiskSpaceLong() / (expectedBytesPerDay / FileSystemModel.MEGA), 0));
                     }
                     groupNode.setUserObject(group);
                     rootNode.add(groupNode);
@@ -227,18 +227,15 @@ public class FileSystemPanel extends Panel {
 
             FileSystemModel fsm = (FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject();
 
-            double used = fsm.getOverallDiskSpaceLong() == 0 ? 0 : (100 * fsm
-                    .getUsedDiskSpaceLong())
-                    / fsm.getOverallDiskSpaceLong();
-            double usable = fsm.getOverallDiskSpaceLong() == 0 ? 0 : (100 * fsm
-                    .getUsableDiskSpaceLong())
-                    / fsm.getOverallDiskSpaceLong();
-
             DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-            dataset.addValue(used, new Integer(1), "");
-            dataset.addValue(usable - used, new Integer(2), "");
-            dataset.addValue(100 - (usable == 0 ? 100 : usable), new Integer(3), "");
-
+            dataset.addValue(fsm.getOverallDiskSpaceLong() == 0 ? 0 : (100 * 
+                    fsm.getUsedDiskSpaceLong())
+                    / fsm.getOverallDiskSpaceLong(), new Integer(1), "");
+            dataset.addValue(fsm.getOverallDiskSpaceLong() == 0 ? 0 : (100 * 
+                    fsm.getUsableDiskSpaceLong()
+                    / fsm.getOverallDiskSpaceLong()), new Integer(2), "");
+            dataset.addValue(fsm.getOverallDiskSpaceLong() == 0 ? 0 : 100, new Integer(3), "");
+            
             final JFreeChart chart = ChartFactory.createStackedBarChart(null,
                     null, null, dataset, PlotOrientation.HORIZONTAL, false,
                     false, false);
