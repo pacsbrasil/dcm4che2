@@ -702,6 +702,21 @@ public class StoreScpService extends AbstractScpService {
         }
     }
 
+    public FileDTO makeFile(Dataset dataset) throws Exception {
+        FileSystemDTO fsDTO = selectStorageFileSystem(defFileSystemGroupID);
+        File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
+        File file = scp.makeFile(baseDir, dataset, null);
+        String filePath = file.getPath().substring(
+                baseDir.getPath().length() + 1)
+                .replace(File.separatorChar, '/');
+        FileDTO fileDTO = new FileDTO();
+        fileDTO.setFileSystemPk(fsDTO.getPk());
+        fileDTO.setAvailability(fsDTO.getAvailability());
+        fileDTO.setDirectoryPath(fsDTO.getDirectoryPath());
+        fileDTO.setFilePath(filePath);
+        return fileDTO;
+    }
+
     private void logInstancesStored(Socket s, SeriesStored seriesStored) {
         try {
             InstanceSorter sorter = new InstanceSorter();
