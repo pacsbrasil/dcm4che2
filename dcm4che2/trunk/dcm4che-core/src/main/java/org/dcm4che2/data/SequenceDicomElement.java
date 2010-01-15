@@ -250,6 +250,7 @@ class SequenceDicomElement extends AbstractDicomElement {
 
     public DicomObject removeDicomObject(int index) {
         DicomObject ret = (DicomObject) items.remove(index);
+        ret.setParent(null);
         updateItemPositions(index);
         return ret;
     }
@@ -258,6 +259,7 @@ class SequenceDicomElement extends AbstractDicomElement {
         if (!items.remove(item)) {
             return false;
         }
+        item.setParent(null);
         updateItemPositions(item.getItemPosition()-1);
         return true;
     }
