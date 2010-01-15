@@ -64,7 +64,6 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.util.ListModel;
-import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.web.validator.ReportTitleValidator;
 import org.dcm4chee.dashboard.web.validator.SQLSelectStatementValidator;
@@ -193,9 +192,9 @@ public class CreateOrEditReportPage extends WebPage {
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     try {
                         if (forReport == null)
-                            new DashboardDelegator(((WicketApplication) getApplication()).getDashboardServiceName()).createReport(report);
+                            ((WicketApplication) getApplication()).getDashboardService().createReport(report);
                         else 
-                            new DashboardDelegator(((WicketApplication) getApplication()).getDashboardServiceName()).updateReport(report);
+                            ((WicketApplication) getApplication()).getDashboardService().updateReport(report);
                         window.close(target);
                     } catch (Exception e) {
                       log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());

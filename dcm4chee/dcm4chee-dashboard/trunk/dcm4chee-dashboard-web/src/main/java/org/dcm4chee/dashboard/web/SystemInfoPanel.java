@@ -52,7 +52,6 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.pages.InternalErrorPage;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.Model;
-import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.SystemPropertyModel;
 import org.dcm4chee.dashboard.util.CSSUtils;
 import org.slf4j.Logger;
@@ -73,7 +72,7 @@ public class SystemInfoPanel extends Panel {
         super(id);
 
         try {
-            add(new ListView<SystemPropertyModel>("system-property-instance-rows", Arrays.asList(new DashboardDelegator(((WicketApplication) getApplication()).getDashboardServiceName()).getSystemProperties())) {
+            add(new ListView<SystemPropertyModel>("system-property-instance-rows", Arrays.asList(((WicketApplication) getApplication()).getDashboardService().getSystemProperties())) {
 
                 private static final long serialVersionUID = 1L;
 

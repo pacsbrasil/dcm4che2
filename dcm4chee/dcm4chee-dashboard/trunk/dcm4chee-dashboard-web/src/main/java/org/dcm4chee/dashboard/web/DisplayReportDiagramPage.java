@@ -48,13 +48,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
-import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -80,11 +78,12 @@ import org.jfree.ui.RectangleEdge;
  */
 public class DisplayReportDiagramPage extends WebPage {
     
-    public DisplayReportDiagramPage(PageParameters parameters) {
-
+    public DisplayReportDiagramPage(ReportModel report) {
+        
         Connection jdbcConnection = null;
         try {
-            ReportModel report = new DashboardDelegator(((WicketApplication) getApplication()).getDashboardServiceName()).getReport(parameters.getString("uuid"));
+            if (report == null) throw new Exception("No report given to render diagram");
+            
             ResultSet resultSet = 
                 (jdbcConnection  = DashboardMainPage.getDatabaseConnection())
                 .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
@@ -126,6 +125,7 @@ public class DisplayReportDiagramPage extends WebPage {
                         true,
                         true);
 
+            // Category chart - 1 numeric value, 1 comparable value
             } else if (report.getDiagram() == 2) {
                 if (metaData.getColumnCount() != 2) throw new Exception(new ResourceModel("dashboard.report.reportdiagram.image.render.error.2values").wrapOnAssignment(this).getObject());                
 
@@ -134,39 +134,6 @@ public class DisplayReportDiagramPage extends WebPage {
 
                 chart = new JFreeChart(new ResourceModel("dashboard.report.reportdiagram.image.label").wrapOnAssignment(this).getObject(), 
                                        new CategoryPlot(dataset,
-
-                                               // JJJJ -> 18
-                                               // => Länge 4 => 18
-
-                                               // JJJJMM -> xx
-                                               // => Länge 6 -> 13, 14
-
-                                               
-                                               // JJJJMMDD -> 14 oder 13, wurscht
-                                               // => Länge 8 -> 14, 13
-                                               
-                                               
-                                               // JJJJ.MM.DD -> 14 oder 13, wurscht
-                                               // => Länge 10 -> 14, 13
-                                               
-                                               
-                                               
-                                               // bis 9 -> 13 ticks, ab 8 -> 14 ticks
-
-                                               // bis 10 -> 10 ticks, ab 11 -> 9 ticks
-                                               
-                                               // bis 15 -> 9 ticks, ab 16 -> 8 ticks
-                                               
-                                               // bis 19 -> 6 ticks, ab 20 -> 5 ticks
-                                               
-                                               // bis 25 -> 5 ticks, ab 26 -> 4 ticks
-                                               
-                                               // bis 35 -> 3 ticks, ab 36 -> 2 ticks
-                                               
-                                               
-                                               // JJJJ.MM.DD -> 14 oder 13, wurscht
-                                               
-                                               
                                        new LabelAdaptingCategoryAxis(14, metaData.getColumnName(2)),
                                        new NumberAxis(metaData.getColumnName(1)), 
                                        new CategoryStepRenderer(true)));
@@ -246,25 +213,31 @@ public class DisplayReportDiagramPage extends WebPage {
         @Override
         public List<CategoryTick> refreshTicks(Graphics2D g2, AxisState state, Rectangle2D dataArea, RectangleEdge edge) {
 
-            List<CategoryTick> currentTicks = super.refreshTicks(g2, state, dataArea, edge);
-            if (currentTicks.isEmpty()) return currentTicks;
-            int interval = currentTicks.size() / labeledTicks;
-            if (interval < 1) return currentTicks;
-           
-            List<CategoryTick> newTicks = new ArrayList<CategoryTick>(currentTicks.size());
-            for (int i = 0; i < currentTicks.size(); i++) {
-                CategoryTick tick = currentTicks.get(i);
-                TextBlock textBlock = new TextBlock();
-                textBlock.addLine(tick.getCategory().toString(), 
-                                  tick.getLabel().getLastLine().getFirstTextFragment().getFont(), 
-                                  tick.getLabel().getLastLine().getFirstTextFragment().getPaint());
-                tick = new CategoryTick(tick.getCategory(), 
-                                        textBlock, 
-                                        tick.getLabelAnchor(), 
-                                        tick.getRotationAnchor(), 
-                                        tick.getAngle());
-                newTicks.add(tick);
+            List<CategoryTick> standardTicks = super.refreshTicks(g2, state, dataArea, edge);
+System.out.println("CURRENT " + standardTicks.size() + " ticks");
+            if (standardTicks.isEmpty()) return standardTicks;
+System.out.println("Should be " + (standardTicks.size() / labeledTicks) + " ticks");
+            int interval = standardTicks.size() / labeledTicks;
+            if (interval < 1) return standardTicks;
+System.out.println("Reducing ...");
+            List<CategoryTick> newTicks = new ArrayList<CategoryTick>(standardTicks.size());
+            for (int i = 0; i < standardTicks.size(); i+=interval) {
+                if (i % (standardTicks.size() / labeledTicks) == 0) {
+                    CategoryTick tick = standardTicks.get(i);
+                    TextBlock textBlock = new TextBlock();
+                    textBlock.addLine(tick.getCategory().toString(), 
+                                      tick.getLabel().getLastLine().getFirstTextFragment().getFont(), 
+                                      tick.getLabel().getLastLine().getFirstTextFragment().getPaint());
+                    tick = new CategoryTick(tick.getCategory(), 
+                                            textBlock, 
+                                            tick.getLabelAnchor(), 
+                                            tick.getRotationAnchor(), 
+                                            tick.getAngle());
+                    newTicks.add(tick);
+                }
             }
+
+System.out.println("CALCULATED " + newTicks.size() + " ticks");
             return newTicks;
         }
     }

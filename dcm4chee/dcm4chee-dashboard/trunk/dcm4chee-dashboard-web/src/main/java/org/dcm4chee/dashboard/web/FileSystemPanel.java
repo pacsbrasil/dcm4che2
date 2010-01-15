@@ -71,7 +71,6 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
-import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -100,8 +99,7 @@ public class FileSystemPanel extends Panel {
 
         try {
             DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new FileSystemModel());
-            DashboardDelegator delegator = new DashboardDelegator(((WicketApplication) getApplication()).getDashboardServiceName());
-            String[] fileSystemGroups = delegator.listAllFileSystemGroups();
+            String[] fileSystemGroups = ((WicketApplication) getApplication()).getDashboardService().listAllFileSystemGroups();
 
             if (fileSystemGroups != null) {
                 for (String groupname : fileSystemGroups) {
@@ -117,15 +115,15 @@ public class FileSystemPanel extends Panel {
 
                     File[] fileSystems;
                     try {
-                        fileSystems = delegator.listFileSystemsOfGroup(groupname);
+                        fileSystems = ((WicketApplication) getApplication()).getDashboardService().listFileSystemsOfGroup(groupname);
                     } catch (MBeanException mbe) {
                         // if groupname does not exist
                         fileSystems = null;
                     }
                     
                     if (!((fileSystems == null) || (fileSystems.length == 0))) {
-                        long minBytesFree = delegator.getMinimumFreeDiskSpaceOfGroup(groupname);
-                        long expectedBytesPerDay = delegator.getExpectedDataVolumePerDay(groupname);
+                        long minBytesFree = ((WicketApplication) getApplication()).getDashboardService().getMinimumFreeDiskSpaceOfGroup(groupname);
+                        long expectedBytesPerDay = ((WicketApplication) getApplication()).getDashboardService().getExpectedDataVolumePerDay(groupname);
                         
                         for (File file : fileSystems) {
                             FileSystemModel fsm = new FileSystemModel();
@@ -155,7 +153,7 @@ public class FileSystemPanel extends Panel {
             FileSystemTreeTable fileSystemTreeTable = new FileSystemTreeTable("filesystem-tree-table", 
                     new DefaultTreeModel(rootNode), new IColumn[] {
                 new PropertyTreeColumn(new ColumnLocation(
-                        Alignment.LEFT, 22, Unit.PERCENT), 
+                        Alignment.LEFT, 17, Unit.PERCENT), 
                         new ResourceModel(
                                 "filesystemlist.table.column.name").wrapOnAssignment(this).getObject(), 
                                 "userObject.directoryPath"),
@@ -190,7 +188,7 @@ public class FileSystemPanel extends Panel {
                                 "filesystemlist.table.column.usable").wrapOnAssignment(this).getObject(),
                                 "userObject.usableDiskSpaceString"), 
                 new PropertyRenderableColumn(new ColumnLocation(
-                        Alignment.RIGHT, 8, Unit.PERCENT),
+                        Alignment.RIGHT, 13, Unit.PERCENT),
                         new ResourceModel(
                                 "filesystemlist.table.column.remainingtime").wrapOnAssignment(this).getObject(),
                                 "userObject.remainingTimeString")
@@ -201,7 +199,6 @@ public class FileSystemPanel extends Panel {
 
             add(fileSystemTreeTable);
         } catch (Exception e) {
-            e.printStackTrace();
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
             log.debug("Exception: ", e);
             this.redirectToInterceptPage(new InternalErrorPage());

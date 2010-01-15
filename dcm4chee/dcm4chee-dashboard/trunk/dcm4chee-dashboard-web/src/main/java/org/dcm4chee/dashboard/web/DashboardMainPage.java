@@ -39,7 +39,6 @@
 package org.dcm4chee.dashboard.web;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -57,7 +56,6 @@ import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.pages.InternalErrorPage;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
-import org.apache.wicket.model.StringResourceModel;
 import org.jboss.mx.util.MBeanServerLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -189,26 +189,6 @@ public class DashboardService extends ServiceMBeanSupport {
         }
     }
     
-    public ReportModel getReport(String uuid) {
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(this.reportFilename));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.startsWith(uuid)) {
-                    String all = line;
-                    while (!line.endsWith(";"))
-                        all += this.newline + (line = reader.readLine());
-                    String[] attributes = all.split(";");
-                    return attributes.length == 5 ? new ReportModel(attributes[0].replace(this.newline, ""), attributes[1], attributes[2], (attributes[3].equals("") ? null : new Integer(attributes[3])), Boolean.valueOf(attributes[4])) : null;
-                }
-            }
-            reader.close();
-        } catch (IOException e) {
-            log.debug("Exception: ", e);
-        }
-        return null;
-    }
-
     public void createReport(ReportModel report) {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(this.reportFilename, true));

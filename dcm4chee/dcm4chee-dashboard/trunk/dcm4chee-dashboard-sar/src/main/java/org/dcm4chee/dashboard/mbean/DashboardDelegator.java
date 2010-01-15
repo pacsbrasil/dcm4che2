@@ -110,14 +110,6 @@ public class DashboardDelegator {
                         "listAllReports", null, null);
     }
     
-    public ReportModel getReport(String uuid) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
-        return (ReportModel) server.invoke(
-                        this.objectName,
-                        "getReport", 
-                        new Object[] { uuid },
-                        new String[] { "java.lang.String" });
-    }
-
     public void createReport(ReportModel report) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
                         server.invoke(
                         this.objectName,

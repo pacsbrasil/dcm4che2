@@ -101,15 +101,6 @@ java.version</value>
       <return-type>[Lorg.dcm4chee.dashboard.model.ReportModel;</return-type>
    </operation>
    <operation>
-      <description>MBean Operation.</description>
-      <name>getReport</name>
-      <parameter>
-         <name>uuid</name>
-         <type>java.lang.String</type>
-      </parameter>
-      <return-type>org.dcm4chee.dashboard.model.ReportModel</return-type>
-   </operation>
-   <operation>
       <name>createReport</name>
       <parameter>
          <name>report</name>

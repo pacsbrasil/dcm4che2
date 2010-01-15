@@ -43,15 +43,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.PageParameters;
-import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
-import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.util.CSSUtils;
 
@@ -62,7 +59,7 @@ import org.dcm4chee.dashboard.util.CSSUtils;
  */
 public class DisplayReportTablePage extends WebPage {
 
-    public DisplayReportTablePage(PageParameters parameters) {
+    public DisplayReportTablePage(ReportModel report) {
 
         RepeatingView columnHeaders = new RepeatingView("column-headers"); 
         add(columnHeaders);
@@ -71,7 +68,6 @@ public class DisplayReportTablePage extends WebPage {
 
         Connection jdbcConnection = null;
         try {
-            ReportModel report = new DashboardDelegator(((WicketApplication) getApplication()).getDashboardServiceName()).getReport(parameters.getString("uuid"));
             ResultSet resultSet = 
                 (jdbcConnection  = DashboardMainPage.getDatabaseConnection())
                 .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)

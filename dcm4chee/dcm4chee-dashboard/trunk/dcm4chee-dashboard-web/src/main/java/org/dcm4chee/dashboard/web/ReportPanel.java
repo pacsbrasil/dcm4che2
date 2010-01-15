@@ -89,7 +89,7 @@ public class ReportPanel extends Panel {
             add(this.modalWindow = new ModalWindow("modal-window"));
             add(new CreateOrEditReportLink("add-report-link", null).add(new ContextImage("add-report-image", "images/file.png")));
 
-            add(new ListView<ReportModel>("report-rows", new DashboardDelegator(((WicketApplication) getApplication()).getDashboardServiceName()).listAllReports() != null ? Arrays.asList(new DashboardDelegator(((WicketApplication) getApplication()).getDashboardServiceName()).listAllReports()) : new ArrayList<ReportModel>()) {
+            add(new ListView<ReportModel>("report-rows", ((WicketApplication) getApplication()).getDashboardService().listAllReports() != null ? Arrays.asList(((WicketApplication) getApplication()).getDashboardService().listAllReports()) : new ArrayList<ReportModel>()) {
 
                 private static final long serialVersionUID = 1L;
                 
@@ -102,15 +102,31 @@ public class ReportPanel extends Panel {
                     item.add(new CreateOrEditReportLink("edit-report-link", ((ReportModel) item.getModelObject())));
                     item.add(new RemoveReportLink("remove-report-link", report).add(new AttributeModifier("onclick", true, new Model<String>("return confirm('" + new ResourceModel("dashboard.report.table.remove_confirmation").wrapOnAssignment(this).getObject() + "');"))));
 
-                    PageParameters parameters = this.getPage().getPageParameters() != null ? this.getPage().getPageParameters() : new PageParameters();
+                    final PageParameters parameters = this.getPage().getPageParameters() != null ? this.getPage().getPageParameters() : new PageParameters();
                     parameters.add("uuid", report.getUuid());
 
-                    item.add(new BookmarkablePageLink("report-diagram-link", DisplayReportDiagramPage.class, parameters)
+                    item.add(new Link("report-diagram-link") {
+
+                        private static final long serialVersionUID = 1L;
+
+                        @Override
+                        public void onClick() {
+                            setResponsePage(new DisplayReportDiagramPage(report));
+                        }
+                    }
                     .setPopupSettings(new PopupSettings(PopupSettings.RESIZABLE | PopupSettings.SCROLLBARS))
                     .add(new Label("report-diagram-dropdown-choice-label", new Model<String>(report.getDiagram() != null ? diagramOptions[report.getDiagram()] : "")))
                     .setVisible(report.getDiagram() != null));
 
-                    item.add(new BookmarkablePageLink("report-table-link", DisplayReportTablePage.class, parameters)
+                    item.add(new Link("report-table-link") {
+
+                        private static final long serialVersionUID = 1L;
+
+                        @Override
+                        public void onClick() {
+                            setResponsePage(new DisplayReportTablePage(report));
+                        }
+                    }
                     .setPopupSettings(new PopupSettings(PopupSettings.RESIZABLE | PopupSettings.SCROLLBARS))
                     .setVisible(report.getTable()));
 
@@ -188,7 +204,7 @@ public class ReportPanel extends Panel {
         @Override
         public void onClick() {
             try {
-                new DashboardDelegator(((WicketApplication) getApplication()).getDashboardServiceName()).deleteReport(this.forReport);
+                ((WicketApplication) getApplication()).getDashboardService().deleteReport(this.forReport);
                 DashboardMainPage page = new DashboardMainPage(this.getPage().getPageParameters());
                 ((AjaxTabbedPanel) page.get("tabs")).setSelectedTab(new Integer(new ResourceModel("dashboard.tabs.tab2.number").getObject()));
                 setResponsePage(page);

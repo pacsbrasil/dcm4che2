@@ -36,52 +36,31 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.dashboard.web;
+package org.dcm4chee.dashboard.web.common;
 
-import org.apache.wicket.Page;
-import org.apache.wicket.protocol.http.WebApplication;
-import org.dcm4chee.dashboard.mbean.DashboardDelegator;
-import org.dcm4chee.dashboard.web.common.InternalErrorPage;
-import org.dcm4chee.dashboard.web.common.PageExpiredErrorPage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.markup.html.link.Link;
+import org.dcm4chee.dashboard.web.DashboardMainPage;
 
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since 14.12.2009
+ * @since 28.09.2009
  */
-public class WicketApplication extends WebApplication {
-
-    private static Logger log = LoggerFactory.getLogger(WicketApplication.class);
+public class InternalErrorPage extends WebPage {
     
-    private DashboardDelegator dashboardService;
-    
-    public DashboardDelegator getDashboardService() {
-        return dashboardService;
-    }
+    public InternalErrorPage(){
 
-    public static WicketApplication get() {
-        return (WicketApplication) WebApplication.get();
-    }
+        Link<Object> backToMainLink = new Link<Object>("back-to-main") {
 
-    @Override
-    protected void init() {
-        super.init();
-        
-        getApplicationSettings().setInternalErrorPage(InternalErrorPage.class);
-        getApplicationSettings().setPageExpiredErrorPage(PageExpiredErrorPage.class);
+            private static final long serialVersionUID = 1L;
 
-        try {
-            this.dashboardService = new DashboardDelegator(getInitParameter("DashboardServiceName"));
-        } catch (Exception e) {
-            log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
-            log.debug("Exception: ", e);
-        }
-    }
-
-    @Override
-    public Class<? extends Page> getHomePage() {
-        return DashboardMainPage.class;
+            @Override
+            public void onClick() {
+                this.getSession().invalidateNow();
+                setResponsePage(DashboardMainPage.class);
+            }
+        };
+        add(backToMainLink);
     }
 }
