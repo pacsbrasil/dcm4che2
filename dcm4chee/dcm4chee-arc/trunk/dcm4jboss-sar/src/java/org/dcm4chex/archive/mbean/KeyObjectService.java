@@ -431,15 +431,15 @@ public class KeyObjectService extends ServiceMBeanSupport {
     
     public void storeAndRegister(Dataset dataset) throws Exception{                
         FileDTO fileDTO = (FileDTO) server.invoke(storeScpServiceName, "makeFile",
-                new Object[] { dataset, null },
-                new String[] { Dataset.class.getName(), String.class.getName() });
+                new Object[] { dataset},
+                new String[] { Dataset.class.getName() } );
              
         writeFile(fileDTO, dataset);
     }
     
     protected void writeFile(FileDTO fileDTO, Dataset dataset) throws Exception{
         File file = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO.getFilePath());
-        String tsUID = dataset.getFileMetaInfo().getTransferSyntaxUID();
+        String tsUID = UIDs.ExplicitVRLittleEndian;
 
         boolean deleteFile = true;
         try{

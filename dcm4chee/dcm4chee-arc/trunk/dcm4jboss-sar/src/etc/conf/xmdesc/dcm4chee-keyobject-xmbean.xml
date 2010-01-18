@@ -44,6 +44,13 @@
          <value value=""/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" 
+      getMethod="getStoreScpServiceName"
+      setMethod="setStoreScpServiceName">
+      <description>Used internally. Do NOT modify.</description>
+      <name>StoreScpServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
    
    &defaultAttributes;
 
