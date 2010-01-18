@@ -58,7 +58,7 @@ import org.dcm4che2.io.StopTagInputHandler;
 import org.dcm4che2.media.ApplicationProfile;
 import org.dcm4che2.media.DicomDirReader;
 import org.dcm4che2.media.DicomDirWriter;
-import org.dcm4che2.media.FilesetInformation;
+import org.dcm4che2.media.FileSetInformation;
 import org.dcm4che2.media.StdGenJPEGApplicationProfile;
 
 /**
@@ -100,7 +100,7 @@ public class DcmDir {
 
     private final File file;
     private DicomDirReader dicomdir;
-    private FilesetInformation fsinfo;
+    private FileSetInformation fsinfo;
     private ApplicationProfile ap = new StdGenJPEGApplicationProfile();
     private int maxValLen = DEF_MAX_VAL_LEN;
     private int maxWidth = DEF_MAX_WIDTH;
@@ -126,15 +126,15 @@ public class DcmDir {
 	this.checkDuplicate = b;	
     }
     
-    public final void fsinfo(FilesetInformation fsinfo) {
+    public final void fsinfo(FileSetInformation fsinfo) {
 	BasicDicomObject dest = new BasicDicomObject();
 	fsinfo.getDicomObject().copyTo(dest);
-	this.fsinfo = new FilesetInformation(dest);
+	this.fsinfo = new FileSetInformation(dest);
     }
     
-    public FilesetInformation fsinfo() {
+    public FileSetInformation fsinfo() {
         if (fsinfo == null) {
-            fsinfo = new FilesetInformation();
+            fsinfo = new FileSetInformation();
             fsinfo.init();
         }
         return fsinfo;
@@ -146,12 +146,12 @@ public class DcmDir {
 
     public void openRO() throws IOException {
         dicomdir = new DicomDirReader(file);        
-        fsinfo = dicomdir.getFilesetInformation();
+        fsinfo = dicomdir.getFileSetInformation();
     }
 
     public void open() throws IOException {
         dicomdir = new DicomDirWriter(file); 
-        fsinfo = dicomdir.getFilesetInformation();
+        fsinfo = dicomdir.getFileSetInformation();
     }
     
     public void setShowInactiveRecords(boolean b) {
@@ -164,8 +164,8 @@ public class DcmDir {
 		Integer.MAX_VALUE, "",
 		System.getProperty("line.separator", "\n"));
 	StringBuffer sb = new StringBuffer(512);	
-        FilesetInformation filesetInfo = dicomdir.getFilesetInformation();
-	filesetInfo.getDicomObject().toStringBuffer(sb, param);
+        FileSetInformation fileSetInfo = dicomdir.getFileSetInformation();
+	fileSetInfo.getDicomObject().toStringBuffer(sb, param);
         System.out.println(sb.toString());
         dump(dicomdir.findFirstRootRecord(), param, "", sb);
     }
@@ -189,20 +189,20 @@ public class DcmDir {
 	return writer().purge();
     }
         
-    public void setSpecificCharacterSetofFilesetDescriptorFile(String cs) {       
-        fsinfo().setSpecificCharacterSetofFilesetDescriptorFile(cs);
+    public void setSpecificCharacterSetofFileSetDescriptorFile(String cs) {       
+        fsinfo().setSpecificCharacterSetofFileSetDescriptorFile(cs);
     }
 
-    public void setFilesetDescriptorFileID(String fname) {
-        fsinfo().setFilesetDescriptorFile(new File(fname), file.getParentFile());
+    public void setFileSetDescriptorFileID(String fname) {
+        fsinfo().setFileSetDescriptorFile(new File(fname), file.getParentFile());
     }
 
     public void setMediaStorageSOPInstanceUID(String ui) {
         fsinfo().setMediaStorageSOPInstanceUID(ui);
     }
 
-    public void setFilesetID(String cs) {
-        fsinfo().setFilesetID(cs);
+    public void setFileSetID(String cs) {
+        fsinfo().setFileSetID(cs);
     }
 
     public void setExplicitItemLength(boolean b) {
@@ -538,17 +538,17 @@ public class DcmDir {
 
     private static void createDicomDir(DcmDir dcmdir, CommandLine cl) throws IOException {
 	if (cl.hasOption("id")) {
-	    dcmdir.setFilesetID(cl.getOptionValue("id"));
+	    dcmdir.setFileSetID(cl.getOptionValue("id"));
 	}
 	if (cl.hasOption("uid")) {
 	    dcmdir.setMediaStorageSOPInstanceUID(
 		    cl.getOptionValue("uid"));
 	}
 	if (cl.hasOption("desc")) {
-	    dcmdir.setFilesetDescriptorFileID(
+	    dcmdir.setFileSetDescriptorFileID(
 		    cl.getOptionValue("desc"));
 	    if (cl.hasOption("desccs")) {
-		dcmdir.setSpecificCharacterSetofFilesetDescriptorFile(
+		dcmdir.setSpecificCharacterSetofFileSetDescriptorFile(
 			cl.getOptionValue("desccs"));
 	    }
 	}

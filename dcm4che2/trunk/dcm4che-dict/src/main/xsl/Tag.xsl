@@ -119,7 +119,7 @@ public class <xsl:value-of select="$class"/> {
         <xsl:value-of select="@ret"/>
         <xsl:text> */
     public static final int </xsl:text>
-        <xsl:value-of select="@alias"/>
+        <xsl:value-of select="@keyword"/>
         <xsl:text> = 0x</xsl:text>
         <xsl:value-of select="translate(@tag,'x','0')"/>
         <xsl:text>;</xsl:text>

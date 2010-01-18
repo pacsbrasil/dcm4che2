@@ -92,7 +92,7 @@ extends AbstractHPComparator
     {
         this.sign = CodeString.sortingDirectionToSign(sortingDirection);
         this.sortOp = new BasicDicomObject();
-        sortOp.putString(Tag.SortbyCategory, VR.CS, CodeString.ALONG_AXIS);
+        sortOp.putString(Tag.SortByCategory, VR.CS, CodeString.ALONG_AXIS);
         sortOp.putString(Tag.SortingDirection, VR.CS, sortingDirection);
     }
     
@@ -143,7 +143,7 @@ extends AbstractHPComparator
         if ((iop = o.getFloats(tagPath)) != null)
             return iop;
         
-        tagPath[0] = Tag.PerframeFunctionalGroupsSequence;
+        tagPath[0] = Tag.PerFrameFunctionalGroupsSequence;
         tagPath[1] = frame;
         return o.getFloats(tagPath);
     }
@@ -156,7 +156,7 @@ extends AbstractHPComparator
         
         // Check the per frame first in the case of image position
         int[] tagPath = { 
-                Tag.PerframeFunctionalGroupsSequence, frame,
+                Tag.PerFrameFunctionalGroupsSequence, frame,
                 Tag.PlanePositionSequence, 0,
                 Tag.ImagePositionPatient };
         if ((ipp = o.getFloats(tagPath)) != null)

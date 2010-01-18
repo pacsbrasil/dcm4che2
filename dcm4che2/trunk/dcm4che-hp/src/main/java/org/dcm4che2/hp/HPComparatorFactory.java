@@ -74,7 +74,7 @@ public class HPComparatorFactory {
      * @return the new HPComparator
      */
     public static HPComparator createHPComparator(DicomObject sortingOp) {
-        if (sortingOp.containsValue(Tag.SortbyCategory))
+        if (sortingOp.containsValue(Tag.SortByCategory))
             return HPComparatorFactory.createSortByCategory(sortingOp);
         HPComparator cmp = new SortByAttribute(sortingOp);
         cmp = addSequencePointer(cmp);
@@ -84,10 +84,10 @@ public class HPComparatorFactory {
 
     private static HPComparator createSortByCategory(DicomObject sortingOp) {
         HPComparatorSpi spi = HangingProtocol.getHPComparatorSpi(sortingOp
-                .getString(Tag.SortbyCategory));
+                .getString(Tag.SortByCategory));
         if (spi == null)
             throw new IllegalArgumentException("Unsupported Sort-by Category: "
-                    + sortingOp.get(Tag.SortbyCategory));
+                    + sortingOp.get(Tag.SortByCategory));
         return spi.createHPComparator(sortingOp);
     }
 
@@ -464,7 +464,7 @@ public class HPComparatorFactory {
                 }
             }
             DicomElement frameFctGrpSeq = o
-                    .get(Tag.PerframeFunctionalGroupsSequence);
+                    .get(Tag.PerFrameFunctionalGroupsSequence);
             if (frameFctGrpSeq == null)
                 return null;
             DicomObject frameFctGrp = frameFctGrpSeq.getDicomObject(frame - 1);

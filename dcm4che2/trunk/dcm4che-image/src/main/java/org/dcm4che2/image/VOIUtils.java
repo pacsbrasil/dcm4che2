@@ -109,7 +109,7 @@ public class VOIUtils {
             DicomObject pr, int frame) {
         if (pr != null)
             return pr;
-        DicomElement framed = img.get(Tag.PerframeFunctionalGroupsSequence);
+        DicomElement framed = img.get(Tag.PerFrameFunctionalGroupsSequence);
         if (framed != null) {
             int size = framed.countItems();
             log
@@ -163,7 +163,7 @@ public class VOIUtils {
             return pr;
         }
 
-        DicomElement framed = img.get(Tag.PerframeFunctionalGroupsSequence);
+        DicomElement framed = img.get(Tag.PerFrameFunctionalGroupsSequence);
         if (framed != null) {
             int size = framed.countItems();
             if (frame >= 1 && frame <= size) {

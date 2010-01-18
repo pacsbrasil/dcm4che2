@@ -63,9 +63,9 @@ public interface HPSelector {
 
     String getImageSetSelectorUsageFlag();
 
-    String getFilterbyCategory();
+    String getFilterByCategory();
 
-    String getFilterbyAttributePresence();
+    String getFilterByAttributePresence();
 
     int getSelectorAttribute();
 
@@ -85,5 +85,5 @@ public interface HPSelector {
 
     int getSelectorValueNumber();
 
-    String getFilterbyOperator();
+    String getFilterByOperator();
 }

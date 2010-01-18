@@ -55,14 +55,14 @@ implements HPSelector
         return getDicomObject().getString(Tag.ImageSetSelectorUsageFlag);
     }
 
-    public String getFilterbyCategory()
+    public String getFilterByCategory()
     {
-        return getDicomObject().getString(Tag.FilterbyCategory);
+        return getDicomObject().getString(Tag.FilterByCategory);
     }
     
-    public String getFilterbyAttributePresence()
+    public String getFilterByAttributePresence()
     {
-        return getDicomObject().getString(Tag.FilterbyAttributePresence);
+        return getDicomObject().getString(Tag.FilterByAttributePresence);
     }
     
     public int getSelectorAttribute()
@@ -151,9 +151,9 @@ implements HPSelector
         return getDicomObject().getInt(Tag.SelectorValueNumber);
     }
 
-    public String getFilterbyOperator()
+    public String getFilterByOperator()
     {
-        return getDicomObject().getString(Tag.FilterbyOperator);
+        return getDicomObject().getString(Tag.FilterByOperator);
     }
 
 

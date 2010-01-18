@@ -241,7 +241,7 @@ public class HPSelectorFactory {
      * @return the new Display Set Filter
      */
     public static HPSelector createDisplaySetFilter(DicomObject item) {
-        if (item.containsValue(Tag.FilterbyCategory)) {
+        if (item.containsValue(Tag.FilterByCategory)) {
             return HPSelectorFactory.createFilterByCategory(item);
         }
         HPSelector sel = createDisplaySetSelector(item);
@@ -252,11 +252,11 @@ public class HPSelectorFactory {
 
     private static HPSelector createFilterByCategory(DicomObject filterOp) {
         HPSelectorSpi spi = HangingProtocol.getHPSelectorSpi(filterOp
-                .getString(Tag.FilterbyCategory));
+                .getString(Tag.FilterByCategory));
         if (spi == null)
             throw new IllegalArgumentException(
                     "Unsupported Filter-by Category: "
-                            + filterOp.get(Tag.FilterbyCategory));
+                            + filterOp.get(Tag.FilterByCategory));
         return spi.createHPSelector(filterOp);
     }
 
@@ -573,10 +573,10 @@ public class HPSelectorFactory {
     }
 
     private static HPSelector createDisplaySetSelector(DicomObject item) {
-        if (item.containsValue(Tag.FilterbyAttributePresence))
+        if (item.containsValue(Tag.FilterByAttributePresence))
             return new AttributePresenceSelector(item);
 
-        String filterOp = item.getString(Tag.FilterbyOperator);
+        String filterOp = item.getString(Tag.FilterByOperator);
         if (filterOp == null)
             throw new IllegalArgumentException(
                     "Missing (0072,0406) Filter-by Operator");
@@ -659,12 +659,12 @@ public class HPSelectorFactory {
             BaseAttributeSelector {
         AttributePresenceSelector(DicomObject item) {
             super(item, !isPresent(item
-                    .getString(Tag.FilterbyAttributePresence)));
+                    .getString(Tag.FilterByAttributePresence)));
         }
 
         AttributePresenceSelector(String filter, int tag, String privateCreator) {
             super(tag, privateCreator, !isPresent(filter));
-            item.putString(Tag.FilterbyAttributePresence, VR.CS, filter);
+            item.putString(Tag.FilterByAttributePresence, VR.CS, filter);
         }
 
         public boolean matches(DicomObject dcmobj, int frame) {
@@ -696,7 +696,7 @@ public class HPSelectorFactory {
             this.vr = vr;
             item.putInt(Tag.SelectorValueNumber, VR.US, valueNumber);
             if (filterOp != null) {
-                item.putString(Tag.FilterbyOperator, VR.CS,
+                item.putString(Tag.FilterByOperator, VR.CS,
                         filterOp.getCodeString());
             }
             item.putString(Tag.SelectorAttributeVR, VR.CS, vr.toString());
@@ -750,7 +750,7 @@ public class HPSelectorFactory {
             super(item, match, filterOp, vr);
             if (filterOp.isNumeric())
                 throw new IllegalArgumentException("Filter-by Operator: "
-                        + item.get(Tag.FilterbyOperator)
+                        + item.get(Tag.FilterByOperator)
                         + " conflicts with non-numeric VR: "
                         + item.get(Tag.SelectorAttributeVR));
 
@@ -994,7 +994,7 @@ public class HPSelectorFactory {
             super(item, match, filterOp, vr);
             if (filterOp.isNumeric())
                 throw new IllegalArgumentException("Filter-by Operator: "
-                        + item.get(Tag.FilterbyOperator)
+                        + item.get(Tag.FilterByOperator)
                         + " conflicts with non-numeric VR: SQ");
             this.params = item.get(Tag.SelectorCodeSequenceValue);
             if (params == null || params.countItems() == 0)
@@ -1069,7 +1069,7 @@ public class HPSelectorFactory {
                 }
             }
             DicomElement frameFctGrpSeq = dcmobj
-                    .get(Tag.PerframeFunctionalGroupsSequence);
+                    .get(Tag.PerFrameFunctionalGroupsSequence);
             if (frameFctGrpSeq == null)
                 return match;
             if (frame != 0) {

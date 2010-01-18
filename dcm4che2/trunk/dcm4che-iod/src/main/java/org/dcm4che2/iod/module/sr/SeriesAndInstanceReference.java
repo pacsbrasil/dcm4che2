@@ -88,20 +88,20 @@ public class SeriesAndInstanceReference extends Module {
         dcmobj.putString(Tag.RetrieveAETitle, VR.AE, ae);
     }
 
-    public String getStorageMediaFilesetID() {
-        return dcmobj.getString(Tag.StorageMediaFilesetID);
+    public String getStorageMediaFileSetID() {
+        return dcmobj.getString(Tag.StorageMediaFileSetID);
     }
 
-    public void setStorageMediaFilesetID(String sh) {
-        dcmobj.putString(Tag.StorageMediaFilesetID, VR.SH, sh);
+    public void setStorageMediaFileSetID(String sh) {
+        dcmobj.putString(Tag.StorageMediaFileSetID, VR.SH, sh);
     }
 
-    public String getStorageMediaFilesetUID() {
-        return dcmobj.getString(Tag.StorageMediaFilesetUID);
+    public String getStorageMediaFileSetUID() {
+        return dcmobj.getString(Tag.StorageMediaFileSetUID);
     }
 
-    public void setStorageMediaFilesetUID(String uid) {
-        dcmobj.putString(Tag.StorageMediaFilesetUID , VR.UI, uid);
+    public void setStorageMediaFileSetUID(String uid) {
+        dcmobj.putString(Tag.StorageMediaFileSetUID , VR.UI, uid);
     }
 
     public SOPInstanceReferenceAndMAC[] getReferencedInstances() {

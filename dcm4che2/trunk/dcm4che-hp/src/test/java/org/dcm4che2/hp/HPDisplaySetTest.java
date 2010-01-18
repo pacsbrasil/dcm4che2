@@ -158,12 +158,12 @@ public class HPDisplaySetTest extends TestCase {
         List filterOps = ds10.getFilterOperations();
         assertEquals(1, filterOps.size());
         HPSelector filterOp = (HPSelector) filterOps.get(0);
-        assertEquals("IMAGE_PLANE", filterOp.getFilterbyCategory());
+        assertEquals("IMAGE_PLANE", filterOp.getFilterByCategory());
         
         List sortingOps = ds10.getSortingOperations();
         assertEquals(1, sortingOps.size());
         HPComparator sortingOp = (HPComparator) sortingOps.get(0);
-        assertEquals("ALONG_AXIS", sortingOp.getSortbyCategory());
+        assertEquals("ALONG_AXIS", sortingOp.getSortByCategory());
      }
 
 

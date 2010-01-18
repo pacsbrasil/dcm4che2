@@ -76,7 +76,7 @@ extends AbstractHPComparator
     {
         this.sign = CodeString.sortingDirectionToSign(sortingDirection);
         this.sortOp = new BasicDicomObject();
-        sortOp.putString(Tag.SortbyCategory, VR.CS, CodeString.BY_ACQ_TIME);
+        sortOp.putString(Tag.SortByCategory, VR.CS, CodeString.BY_ACQ_TIME);
         sortOp.putString(Tag.SortingDirection, VR.CS, sortingDirection);
     }
     

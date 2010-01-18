@@ -48,62 +48,62 @@ import org.dcm4che2.util.UIDUtils;
 
 /**
  * @author Gunter Zeilinger<gunterze@gmail.com>
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date::            $
  * @since 10.07.2006
  */
 
-public class FilesetInformation extends FileMetaInformation {
+public class FileSetInformation extends FileMetaInformation {
 
     public static final int NO_KNOWN_INCONSISTENCIES = 0;
     public static final int KNOWN_INCONSISTENCIES = 0xffff;
     
-    public FilesetInformation(DicomObject dcmobj) {
+    public FileSetInformation(DicomObject dcmobj) {
         super(dcmobj);
     }
 
-    public FilesetInformation() {
+    public FileSetInformation() {
         super();
     }
     
     @Override
     public void init() {
         super.init();
-        dcmobj.putNull(Tag.FilesetID, VR.CS);
+        dcmobj.putNull(Tag.FileSetID, VR.CS);
         setOffsetFirstRootRecord(0);
         setOffsetLastRootRecord(0);
-        setFilesetConsistencyFlag(0);
+        setFileSetConsistencyFlag(0);
     }
 
-    public String getFilesetID() {
-        return dcmobj.getString(Tag.FilesetID);
+    public String getFileSetID() {
+        return dcmobj.getString(Tag.FileSetID);
     }
 
-    public void setFilesetID(String id) {
-        dcmobj.putString(Tag.FilesetID, VR.CS, id);
+    public void setFileSetID(String id) {
+        dcmobj.putString(Tag.FileSetID, VR.CS, id);
     }
 
-    public String[] getFilesetDescriptorFileID() {
-        return dcmobj.getStrings(Tag.FilesetDescriptorFileID);
+    public String[] getFileSetDescriptorFileID() {
+        return dcmobj.getStrings(Tag.FileSetDescriptorFileID);
     }
 
-    public void setFilesetDescriptorFileID(String[] cs) {
-        dcmobj.putStrings(Tag.FilesetDescriptorFileID, VR.CS, cs);
+    public void setFileSetDescriptorFileID(String[] cs) {
+        dcmobj.putStrings(Tag.FileSetDescriptorFileID, VR.CS, cs);
     }
 
-    public File getFilesetDescriptorFile(File basedir) {
-	return toFile(getFilesetDescriptorFileID(), basedir);
+    public File getFileSetDescriptorFile(File basedir) {
+        return toFile(getFileSetDescriptorFileID(), basedir);
     }
     
-    public void setFilesetDescriptorFile(File file, File basedir) {
-	setFilesetDescriptorFileID(toFileID(file, basedir));
+    public void setFileSetDescriptorFile(File file, File basedir) {
+        setFileSetDescriptorFileID(toFileID(file, basedir));
     }
     
-    public String getSpecificCharacterSetofFilesetDescriptorFile() {
-        return dcmobj.getString(Tag.SpecificCharacterSetOfFilesetDescriptorFile);
+    public String getSpecificCharacterSetofFileSetDescriptorFile() {
+        return dcmobj.getString(Tag.SpecificCharacterSetOfFileSetDescriptorFile);
     }
 
-    public void setSpecificCharacterSetofFilesetDescriptorFile(String cs) {
-        dcmobj.putString(Tag.FilesetID, VR.CS, cs);
+    public void setSpecificCharacterSetofFileSetDescriptorFile(String cs) {
+        dcmobj.putString(Tag.FileSetID, VR.CS, cs);
     }
     
     public int getOffsetFirstRootRecord() {
@@ -130,16 +130,16 @@ public class FilesetInformation extends FileMetaInformation {
         return getOffsetFirstRootRecord() == 0;
     }
 
-    public int getFilesetConsistencyFlag() {
-        return dcmobj.getInt(Tag.FilesetConsistencyFlag);
+    public int getFileSetConsistencyFlag() {
+        return dcmobj.getInt(Tag.FileSetConsistencyFlag);
     }
     
-    public void setFilesetConsistencyFlag(int flag) {
-        dcmobj.putInt(Tag.FilesetConsistencyFlag, VR.US, flag);
+    public void setFileSetConsistencyFlag(int flag) {
+        dcmobj.putInt(Tag.FileSetConsistencyFlag, VR.US, flag);
     }
     
     public boolean isNoKnownInconsistencies() {
-	return getFilesetConsistencyFlag() == NO_KNOWN_INCONSISTENCIES;
+	return getFileSetConsistencyFlag() == NO_KNOWN_INCONSISTENCIES;
     }
     
     @Override

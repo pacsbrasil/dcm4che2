@@ -90,9 +90,9 @@ implements HPComparator
         return getDicomObject().getInt(Tag.SelectorValueNumber);
     }
 
-    public String getSortbyCategory()
+    public String getSortByCategory()
     {
-        return getDicomObject().getString(Tag.SortbyCategory);
+        return getDicomObject().getString(Tag.SortByCategory);
     }
 
     public String getSortingDirection()

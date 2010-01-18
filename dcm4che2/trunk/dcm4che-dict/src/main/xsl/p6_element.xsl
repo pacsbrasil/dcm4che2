@@ -10,19 +10,30 @@
     <xsl:template match="table:table-row">
         <xsl:variable name="tag" select="normalize-space(table:table-cell[1])"/>
         <xsl:variable name="name" select="normalize-space(table:table-cell[2])"/>
+        <xsl:variable name="vr" select="normalize-space(table:table-cell[4])"/>
         <xsl:if test="$name and starts-with($tag,'(') and not(starts-with($tag,'(R'))">
             <element>
                 <xsl:attribute name="tag">
-                    <xsl:value-of select="$tag"/>
+                    <xsl:choose>
+                        <xsl:when test="$tag='(0020,3100 to 31FF)'">002031xx</xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="translate($tag,'(,)','')"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </xsl:attribute>
-                <xsl:attribute name="vr">
+                <xsl:attribute name="keyword">
                     <xsl:value-of select="normalize-space(table:table-cell[3])"/>
                 </xsl:attribute>
+                <xsl:attribute name="vr">
+                    <xsl:if test="not($vr='see note')">
+                        <xsl:value-of select="translate($vr,'or ','|')"/>
+                    </xsl:if>
+                </xsl:attribute>
                 <xsl:attribute name="vm">
-                    <xsl:value-of select="normalize-space(table:table-cell[4])"/>
+                    <xsl:value-of select="normalize-space(table:table-cell[5])"/>
                 </xsl:attribute>
                 <xsl:attribute name="ret">
-                    <xsl:value-of select="normalize-space(table:table-cell[5])"/>
+                    <xsl:value-of select="normalize-space(table:table-cell[6])"/>
                 </xsl:attribute>
                 <xsl:value-of select="$name"/>
             </element>

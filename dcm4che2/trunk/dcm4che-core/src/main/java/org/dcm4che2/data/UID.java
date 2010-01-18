@@ -84,6 +84,9 @@ public class UID {
     /** MPEG2 Main Profile @ Main Level - Transfer Syntax */
     public static final String MPEG2 = "1.2.840.10008.1.2.4.100";
 
+    /** MPEG2 Main Profile @ High Level - Transfer Syntax */
+    public static final String MPEG2MainProfileHighLevel = "1.2.840.10008.1.2.4.101";
+
     /** JPEG Baseline (Process 1) - Transfer Syntax */
     public static final String JPEGBaseline1 = "1.2.840.10008.1.2.4.50";
 
@@ -263,6 +266,18 @@ public class UID {
 
     /** Substance Administration Logging SOP Instance - Well-known SOP Instance */
     public static final String SubstanceAdministrationLoggingSOPInstance = "1.2.840.10008.1.42.1";
+
+    /** Hot Iron Color Palette SOP Instance - Well-known SOP Instance */
+    public static final String HotIronColorPaletteSOPInstance = "1.2.840.10008.1.5.1";
+
+    /** PET Color Palette SOP Instance - Well-known SOP Instance */
+    public static final String PETColorPaletteSOPInstance = "1.2.840.10008.1.5.2";
+
+    /** Hot Metal Blue Color Palette SOP Instance - Well-known SOP Instance */
+    public static final String HotMetalBlueColorPaletteSOPInstance = "1.2.840.10008.1.5.3";
+
+    /** PET 20 Step Color Palette SOP Instance - Well-known SOP Instance */
+    public static final String PET20StepColorPaletteSOPInstance = "1.2.840.10008.1.5.4";
 
     /** Basic Study Content Notification SOP Class (Retired) - SOP Class */
     public static final String BasicStudyContentNotificationSOPClassRetired = "1.2.840.10008.1.9";
@@ -558,6 +573,9 @@ public class UID {
     /** Blending Softcopy Presentation State Storage SOP Class - SOP Class */
     public static final String BlendingSoftcopyPresentationStateStorageSOPClass = "1.2.840.10008.5.1.4.1.1.11.4";
 
+    /** XA/XRF Grayscale Softcopy Presentation State Storage - SOP Class */
+    public static final String XAXRFGrayscaleSoftcopyPresentationStateStorage = "1.2.840.10008.5.1.4.1.1.11.5";
+
     /** X-Ray Angiographic Image Storage - SOP Class */
     public static final String XRayAngiographicImageStorage = "1.2.840.10008.5.1.4.1.1.12.1";
 
@@ -585,8 +603,14 @@ public class UID {
     /** X-Ray 3D Craniofacial Image Storage - SOP Class */
     public static final String XRay3DCraniofacialImageStorage = "1.2.840.10008.5.1.4.1.1.13.1.2";
 
+    /** Breast Tomosynthesis Image Storage - SOP Class */
+    public static final String BreastTomosynthesisImageStorage = "1.2.840.10008.5.1.4.1.1.13.1.3";
+
     /** Enhanced PET Image Storage - SOP Class */
     public static final String EnhancedPETImageStorage = "1.2.840.10008.5.1.4.1.1.130";
+
+    /** Basic Structured Display Storage - SOP Class */
+    public static final String BasicStructuredDisplayStorage = "1.2.840.10008.5.1.4.1.1.131";
 
     /** CT Image Storage - SOP Class */
     public static final String CTImageStorage = "1.2.840.10008.5.1.4.1.1.2";
@@ -611,6 +635,9 @@ public class UID {
 
     /** MR Spectroscopy Storage - SOP Class */
     public static final String MRSpectroscopyStorage = "1.2.840.10008.5.1.4.1.1.4.2";
+
+    /** Enhanced MR Color Image Storage - SOP Class */
+    public static final String EnhancedMRColorImageStorage = "1.2.840.10008.5.1.4.1.1.4.3";
 
     /** RT Image Storage - SOP Class */
     public static final String RTImageStorage = "1.2.840.10008.5.1.4.1.1.481.1";
@@ -648,6 +675,9 @@ public class UID {
     /** Ultrasound Image Storage - SOP Class */
     public static final String UltrasoundImageStorage = "1.2.840.10008.5.1.4.1.1.6.1";
 
+    /** Enhanced US Volume Storage - SOP Class */
+    public static final String EnhancedUSVolumeStorage = "1.2.840.10008.5.1.4.1.1.6.2";
+
     /** Raw Data Storage - SOP Class */
     public static final String RawDataStorage = "1.2.840.10008.5.1.4.1.1.66";
 
@@ -662,6 +692,9 @@ public class UID {
 
     /** Segmentation Storage - SOP Class */
     public static final String SegmentationStorage = "1.2.840.10008.5.1.4.1.1.66.4";
+
+    /** Surface Segmentation Storage - SOP Class */
+    public static final String SurfaceSegmentationStorage = "1.2.840.10008.5.1.4.1.1.66.5";
 
     /** Real World Value Mapping Storage - SOP Class */
     public static final String RealWorldValueMappingStorage = "1.2.840.10008.5.1.4.1.1.67";
@@ -738,6 +771,9 @@ public class UID {
     /** Spectacle Prescription Reports Storage - SOP Class */
     public static final String SpectaclePrescriptionReportsStorage = "1.2.840.10008.5.1.4.1.1.78.6";
 
+    /** Macular Grid Thickness and Volume Report Storage - SOP Class */
+    public static final String MacularGridThicknessandVolumeReportStorage = "1.2.840.10008.5.1.4.1.1.79.1";
+
     /** Standalone Overlay Storage (Retired) - SOP Class */
     public static final String StandaloneOverlayStorageRetired = "1.2.840.10008.5.1.4.1.1.8";
 
@@ -777,6 +813,9 @@ public class UID {
     /** X-Ray Radiation Dose SR Storage - SOP Class */
     public static final String XRayRadiationDoseSRStorage = "1.2.840.10008.5.1.4.1.1.88.67";
 
+    /** Colon CAD SR Storage - SOP Class */
+    public static final String ColonCADSRStorage = "1.2.840.10008.5.1.4.1.1.88.69";
+
     /** Standalone Curve Storage (Retired) - SOP Class */
     public static final String StandaloneCurveStorageRetired = "1.2.840.10008.5.1.4.1.1.9";
 
@@ -800,6 +839,15 @@ public class UID {
 
     /** Basic Voice Audio Waveform Storage - SOP Class */
     public static final String BasicVoiceAudioWaveformStorage = "1.2.840.10008.5.1.4.1.1.9.4.1";
+
+    /** General Audio Waveform Storage - SOP Class */
+    public static final String GeneralAudioWaveformStorage = "1.2.840.10008.5.1.4.1.1.9.4.2";
+
+    /** Arterial Pulse Waveform Storage - SOP Class */
+    public static final String ArterialPulseWaveformStorage = "1.2.840.10008.5.1.4.1.1.9.5.1";
+
+    /** Respiratory Waveform Storage - SOP Class */
+    public static final String RespiratoryWaveformStorage = "1.2.840.10008.5.1.4.1.1.9.6.1";
 
     /** Patient Root Query/Retrieve Information Model - FIND - SOP Class */
     public static final String PatientRootQueryRetrieveInformationModelFIND = "1.2.840.10008.5.1.4.1.2.1.1";
@@ -899,6 +947,21 @@ public class UID {
 
     /** Hanging Protocol Information Model - MOVE - SOP Class */
     public static final String HangingProtocolInformationModelMOVE = "1.2.840.10008.5.1.4.38.3";
+
+    /** Hanging Protocol Information Model - GET - SOP Class */
+    public static final String HangingProtocolInformationModelGET = "1.2.840.10008.5.1.4.38.4";
+
+    /** Color Palette Storage - Transfer */
+    public static final String ColorPaletteStorage = "1.2.840.10008.5.1.4.39.1";
+
+    /** Color Palette Information Model - FIND - Query/Retrieve */
+    public static final String ColorPaletteInformationModelFIND = "1.2.840.10008.5.1.4.39.2";
+
+    /** Color Palette Information Model - MOVE - Query/Retrieve */
+    public static final String ColorPaletteInformationModelMOVE = "1.2.840.10008.5.1.4.39.3";
+
+    /** Color Palette Information Model - GET - Query/Retrieve */
+    public static final String ColorPaletteInformationModelGET = "1.2.840.10008.5.1.4.39.4";
 
     /** Product Characteristics Query SOP Class - SOP Class */
     public static final String ProductCharacteristicsQuerySOPClass = "1.2.840.10008.5.1.4.41";

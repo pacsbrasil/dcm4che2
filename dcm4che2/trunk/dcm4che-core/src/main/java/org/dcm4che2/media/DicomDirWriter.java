@@ -115,7 +115,7 @@ public class DicomDirWriter extends DicomDirReader {
 	return f;
     }
 
-    public DicomDirWriter(File file, FilesetInformation fileSetInfo)
+    public DicomDirWriter(File file, FileSetInformation fileSetInfo)
     throws IOException {
 	super(new RandomAccessFile(file, "rw"), fileSetInfo);
 	this.file = file;
@@ -272,7 +272,7 @@ public class DicomDirWriter extends DicomDirReader {
     }
 
     public synchronized void deleteRecord(DicomObject rec) throws IOException {
-	if (rec.getInt(Tag.RecordInuseFlag) == INACTIVE) {
+	if (rec.getInt(Tag.RecordInUseFlag) == INACTIVE) {
 	    return; // already disabled
 	}
 	for (DicomObject child = readRecord(
@@ -282,7 +282,7 @@ public class DicomDirWriter extends DicomDirReader {
 			child.getInt(Tag.OffsetOfTheNextDirectoryRecord))) {
 	    deleteRecord(child);
 	}
-	rec.putInt(Tag.RecordInuseFlag, VR.US, INACTIVE);
+	rec.putInt(Tag.RecordInUseFlag, VR.US, INACTIVE);
 	markAsDirty(rec);
     }
 
@@ -302,9 +302,9 @@ public class DicomDirWriter extends DicomDirReader {
 	    raf.setLength(raf.getFilePointer());
 	    rollbackLen = -1;
 	    raf.seek(firstRecordPos - 14);
-	    raf.writeShort(FilesetInformation.NO_KNOWN_INCONSISTENCIES);
-	    filesetInfo.setFilesetConsistencyFlag(
-		    FilesetInformation.NO_KNOWN_INCONSISTENCIES);
+	    raf.writeShort(FileSetInformation.NO_KNOWN_INCONSISTENCIES);
+	    filesetInfo.setFileSetConsistencyFlag(
+		    FileSetInformation.NO_KNOWN_INCONSISTENCIES);
 	}
     }
 
@@ -319,8 +319,8 @@ public class DicomDirWriter extends DicomDirReader {
 	if (offsetLastRootRecord() != filesetInfo.getOffsetLastRootRecord()) {
 	    offsetLastRootRecord(filesetInfo.getOffsetLastRootRecord());
 	}
-	filesetInfo.setFilesetConsistencyFlag(
-		FilesetInformation.KNOWN_INCONSISTENCIES);
+	filesetInfo.setFileSetConsistencyFlag(
+		FileSetInformation.KNOWN_INCONSISTENCIES);
 	recordSeqLen((int) recordSeqLen);
 	raf.seek(firstRecordPos - dirInfoHeader.length);
 	raf.write(dirInfoHeader, 0, dirInfoHeader.length);
@@ -330,9 +330,9 @@ public class DicomDirWriter extends DicomDirReader {
 	}
 	dirtyRecords.clear();
 	raf.seek(firstRecordPos - 14);
-	raf.writeShort(FilesetInformation.NO_KNOWN_INCONSISTENCIES);
-        filesetInfo.setFilesetConsistencyFlag(
-        	    FilesetInformation.NO_KNOWN_INCONSISTENCIES);
+	raf.writeShort(FileSetInformation.NO_KNOWN_INCONSISTENCIES);
+        filesetInfo.setFileSetConsistencyFlag(
+        	    FileSetInformation.NO_KNOWN_INCONSISTENCIES);
     }
 
     @Override
@@ -344,7 +344,7 @@ public class DicomDirWriter extends DicomDirReader {
     private void writeDirRecordHeader(DicomObject rec) throws IOException {
 	ByteUtils.int2bytesLE(rec.getInt(Tag.OffsetOfTheNextDirectoryRecord),
 		dirRecordHeader, 8);
-	ByteUtils.ushort2bytesLE(rec.getInt(Tag.RecordInuseFlag),
+	ByteUtils.ushort2bytesLE(rec.getInt(Tag.RecordInUseFlag),
 		dirRecordHeader, 20);
 	ByteUtils.int2bytesLE(
 		rec.getInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity),
@@ -401,15 +401,15 @@ public class DicomDirWriter extends DicomDirReader {
 	log.debug("Write record @ {} to file {}", new Long(offset), file);
 	if (rollbackLen == -1) {
 	    rollbackLen = offset;
-	    filesetInfo.setFilesetConsistencyFlag(
-		    FilesetInformation.KNOWN_INCONSISTENCIES);
+	    filesetInfo.setFileSetConsistencyFlag(
+		    FileSetInformation.KNOWN_INCONSISTENCIES);
 	    raf.seek(firstRecordPos - 14);
-	    raf.writeShort(FilesetInformation.KNOWN_INCONSISTENCIES);
+	    raf.writeShort(FileSetInformation.KNOWN_INCONSISTENCIES);
 	}
 	raf.seek(offset);
 	out.setStreamPosition(offset);
 	dcmobj.putInt(Tag.OffsetOfTheNextDirectoryRecord, VR.UL, 0);
-	dcmobj.putInt(Tag.RecordInuseFlag, VR.US, INUSE);
+	dcmobj.putInt(Tag.RecordInUseFlag, VR.US, INUSE);
 	dcmobj.putInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity, VR.UL, 0);
 	out.writeItem(dcmobj, in.getTransferSyntax());
 	recordSeqLen = (int) (out.getStreamPosition() - firstRecordPos);
@@ -421,7 +421,7 @@ public class DicomDirWriter extends DicomDirReader {
 	for (DicomObject rec = readRecord(filesetInfo.getOffsetFirstRootRecord());
 		rec != null;
 		rec = readRecord(rec.getInt(Tag.OffsetOfTheNextDirectoryRecord))) {
-	    if (rec.getInt(Tag.RecordInuseFlag) != INACTIVE) {
+	    if (rec.getInt(Tag.RecordInUseFlag) != INACTIVE) {
 		purge(rec, purged);
 	    }
 	}
@@ -434,7 +434,7 @@ public class DicomDirWriter extends DicomDirReader {
 		rec.getInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity)); 
 		child != null;
 		child = readRecord(child.getInt(Tag.OffsetOfTheNextDirectoryRecord))) {
-	    if (child.getInt(Tag.RecordInuseFlag) != INACTIVE) {
+	    if (child.getInt(Tag.RecordInUseFlag) != INACTIVE) {
 		purge = purge(child, purged) && purge;
 	    }
 	}

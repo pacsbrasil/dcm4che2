@@ -14,16 +14,19 @@
     </xsl:template>
     <xsl:template match="table:table-row">
         <xsl:param name="ret"/>
-        <xsl:variable name="tag" select="normalize-space(table:table-cell[2])"/>
+        <xsl:variable name="tag" select="normalize-space(table:table-cell[3])"/>
         <element>
             <xsl:attribute name="tag">
-                <xsl:value-of select="$tag"/>
+                <xsl:value-of select="translate($tag,'(,)','')"/>
+            </xsl:attribute>
+            <xsl:attribute name="keyword">
+                <xsl:value-of select="normalize-space(table:table-cell[2])"/>
             </xsl:attribute>
             <xsl:attribute name="vr">
-                <xsl:value-of select="normalize-space(table:table-cell[3])"/>
+                <xsl:value-of select="normalize-space(table:table-cell[4])"/>
             </xsl:attribute>
             <xsl:attribute name="vm">
-                <xsl:value-of select="normalize-space(table:table-cell[4])"/>
+                <xsl:value-of select="normalize-space(table:table-cell[5])"/>
             </xsl:attribute>
             <xsl:attribute name="ret">
                 <xsl:value-of select="$ret"/>

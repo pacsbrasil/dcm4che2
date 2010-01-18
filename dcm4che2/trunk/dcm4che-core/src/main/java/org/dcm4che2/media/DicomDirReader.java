@@ -55,8 +55,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Revision$ $Date: 2008-03-31 17:40:14 +0200 (Mon, 31 Mar
- *          2008) $
+ * @version $Revision$ $Date::            $
  * @since Jun 25, 2005
  * 
  */
@@ -67,13 +66,13 @@ public class DicomDirReader {
 
     protected final RandomAccessFile raf;
     protected final DicomInputStream in;
-    protected final FilesetInformation filesetInfo;
+    protected final FileSetInformation filesetInfo;
     protected final IntHashtable<DicomObject> cache = new IntHashtable<DicomObject>();
     protected File file;
     protected boolean showInactiveRecords;
 
     protected DicomDirReader(RandomAccessFile raf,
-            FilesetInformation fileSetInfo) throws IOException {
+            FileSetInformation fileSetInfo) throws IOException {
         this.raf = raf;
         this.in = new DicomInputStream(raf,
                 TransferSyntax.ExplicitVRLittleEndian);
@@ -89,32 +88,32 @@ public class DicomDirReader {
         this.raf = raf;
         in = new DicomInputStream(raf);
         in.setHandler(new StopTagInputHandler(Tag.DirectoryRecordSequence));
-        filesetInfo = new FilesetInformation();
+        filesetInfo = new FileSetInformation();
         in.readDicomObject(filesetInfo.getDicomObject(), -1);
         in.setHandler(in);
     }
 
-    public int getFilesetConsistencyFlag() {
-        return filesetInfo.getFilesetConsistencyFlag();
+    public int getFileSetConsistencyFlag() {
+        return filesetInfo.getFileSetConsistencyFlag();
     }
 
     public boolean isNoKnownInconsistencies() {
         return filesetInfo.isNoKnownInconsistencies();
     }
 
-    public File getFilesetDescriptorFile() {
+    public File getFileSetDescriptorFile() {
         if (file == null) {
             throw new IllegalStateException("Unknown File-set Base Directory");
         }
-        return filesetInfo.getFilesetDescriptorFile(file.getParentFile());
+        return filesetInfo.getFileSetDescriptorFile(file.getParentFile());
     }
 
     public String getMediaStorageSOPInstanceUID() {
         return filesetInfo.getMediaStorageSOPInstanceUID();
     }
 
-    public String getSpecificCharacterSetofFilesetDescriptorFile() {
-        return filesetInfo.getSpecificCharacterSetofFilesetDescriptorFile();
+    public String getSpecificCharacterSetofFileSetDescriptorFile() {
+        return filesetInfo.getSpecificCharacterSetofFileSetDescriptorFile();
     }
 
     public boolean isEmpty() {
@@ -129,7 +128,7 @@ public class DicomDirReader {
         if (file == null) {
             throw new IllegalStateException("Unknown File-set Base Directory");
         }
-        return FilesetInformation.toFile(rec.getStrings(Tag.ReferencedFileID),
+        return FileSetInformation.toFile(rec.getStrings(Tag.ReferencedFileID),
                 file.getParentFile());
     }
 
@@ -137,14 +136,14 @@ public class DicomDirReader {
         if (file == null) {
             throw new IllegalStateException("Unknown File-set Base Directory");
         }
-        return FilesetInformation.toFileID(f, file.getParentFile());
+        return FileSetInformation.toFileID(f, file.getParentFile());
     }
 
     public void clearCache() {
         cache.clear();
     }
 
-    public FilesetInformation getFilesetInformation() {
+    public FileSetInformation getFileSetInformation() {
         return filesetInfo;
     }
 
@@ -232,7 +231,7 @@ public class DicomDirReader {
             boolean ignoreCaseOfPN) throws IOException {
         while (offset != 0) {
             DicomObject item = readRecord(offset);
-            if ((showInactiveRecords || item.getInt(Tag.RecordInuseFlag) != INACTIVE)
+            if ((showInactiveRecords || item.getInt(Tag.RecordInUseFlag) != INACTIVE)
                     && (keys == null || item.matches(keys, ignoreCaseOfPN)))
                 return item;
             offset = item.getInt(Tag.OffsetOfTheNextDirectoryRecord);

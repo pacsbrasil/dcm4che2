@@ -318,11 +318,11 @@ public class HPDisplaySet {
     }
 
     public String getPseudoColorType() {
-        return dcmobj.getString(Tag.PseudocolorType);
+        return dcmobj.getString(Tag.PseudoColorType);
     }
 
     public void setPseudoColorType(String type) {
-        dcmobj.putString(Tag.PseudocolorType, VR.CS, type);
+        dcmobj.putString(Tag.PseudoColorType, VR.CS, type);
     }
 
     public String getShowGrayscaleInverted() {

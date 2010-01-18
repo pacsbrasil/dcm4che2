@@ -135,10 +135,10 @@ public class DcmGPWL {
         Tag.ScheduledProcedureStepID,
         Tag.GeneralPurposeScheduledProcedureStepStatus,
         Tag.GeneralPurposeScheduledProcedureStepPriority,
-        Tag.ScheduledProcedureStepStartDateAndTime,
+        Tag.ScheduledProcedureStepStartDateTime,
         Tag.MultipleCopiesFlag,
-        Tag.ScheduledProcedureStepModificationDateAndTime,
-        Tag.ExpectedCompletionDateAndTime,
+        Tag.ScheduledProcedureStepModificationDateTime,
+        Tag.ExpectedCompletionDateTime,
         Tag.InputAvailabilityFlag,
     };
 
@@ -839,7 +839,7 @@ public class DcmGPWL {
                     dcmgpwl.addRefRequestAttr(toTag(matchingKeys[i - 1]), matchingKeys[i]);
             }
             if (cl.hasOption("D")) {
-                dcmgpwl.addAttr(Tag.ScheduledProcedureStepStartDateAndTime,
+                dcmgpwl.addAttr(Tag.ScheduledProcedureStepStartDateTime,
                         cl.getOptionValue("D"));
             }
             if (cl.hasOption("workitem")) {

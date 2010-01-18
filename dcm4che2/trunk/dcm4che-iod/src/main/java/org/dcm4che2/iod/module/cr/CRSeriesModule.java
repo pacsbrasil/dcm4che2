@@ -81,12 +81,12 @@ public class CRSeriesModule extends GeneralSeriesModule {
         dcmobj.putString(Tag.FilterType, VR.SH, s);
     }
 
-    public String getCollimatorgridName() {
-        return dcmobj.getString(Tag.CollimatorgridName);
+    public String getCollimatorGridName() {
+        return dcmobj.getString(Tag.CollimatorGridName);
     }
     
-    public void setCollimatorgridName(String s) {
-        dcmobj.putString(Tag.CollimatorgridName, VR.SH, s);
+    public void setCollimatorGridName(String s) {
+        dcmobj.putString(Tag.CollimatorGridName, VR.SH, s);
     }
 
     public float[] getFocalSpots() {

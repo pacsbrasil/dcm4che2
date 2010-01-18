@@ -195,12 +195,12 @@ public class SOPCommonModule extends Module {
         dcmobj.putString(Tag.SOPInstanceStatus, VR.CS, s);
     }
     
-    public Date getSOPAuthorizationDateAndTime() {
-        return dcmobj.getDate(Tag.SOPAuthorizationDateAndTime);
+    public Date getSOPAuthorizationDateTime() {
+        return dcmobj.getDate(Tag.SOPAuthorizationDateTime);
     }
     
-    public void setSOPAuthorizationDatetime(Date d) {
-        dcmobj.putDate(Tag.SOPAuthorizationDateAndTime, VR.DT, d);
+    public void setSOPAuthorizationDateTime(Date d) {
+        dcmobj.putDate(Tag.SOPAuthorizationDateTime, VR.DT, d);
     }
 
     public String getSOPAuthorizationComment() {

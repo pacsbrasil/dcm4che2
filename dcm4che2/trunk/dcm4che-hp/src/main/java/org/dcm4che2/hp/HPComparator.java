@@ -77,7 +77,7 @@ public interface HPComparator {
 
     int getSelectorValueNumber();
 
-    String getSortbyCategory();
+    String getSortByCategory();
 
     String getSortingDirection();
 }
