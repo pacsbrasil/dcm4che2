@@ -96,6 +96,16 @@ public class KeyObjectService extends ServiceMBeanSupport {
 	
     private int bufferSize = 8192;
 
+    private String fileSystemGroupID;
+
+    public final String getFileSystemGroupID() {
+        return fileSystemGroupID;
+    }
+
+    public final void setFileSystemGroupID(String fileSystemGroupID) {
+        this.fileSystemGroupID = fileSystemGroupID;
+    }
+
     public final ObjectName getStoreScpServiceName() {
         return storeScpServiceName;
     }
@@ -431,8 +441,8 @@ public class KeyObjectService extends ServiceMBeanSupport {
     
     public void storeAndRegister(Dataset dataset) throws Exception{                
         FileDTO fileDTO = (FileDTO) server.invoke(storeScpServiceName, "makeFile",
-                new Object[] { dataset},
-                new String[] { Dataset.class.getName() } );
+                new Object[] { fileSystemGroupID, dataset},
+                new String[] { String.class.getName(), Dataset.class.getName() } );
              
         writeFile(fileDTO, dataset);
     }

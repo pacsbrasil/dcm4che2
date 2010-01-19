@@ -41,9 +41,7 @@
 package org.dcm4chex.archive.dcm.storescp;
 
 import java.io.File;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -61,9 +59,6 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
-import org.dcm4che.auditlog.AuditLoggerFactory;
-import org.dcm4che.auditlog.InstancesAction;
-import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
@@ -96,8 +91,7 @@ import org.dcm4chex.archive.util.HomeFactoryException;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
- * @version $Revision$ $Date: 2008-02-11 23:01:28 +0100 (Mon, 11 Feb
- *          2008) $
+ * @version $Revision$ $Date::            $
  * @since 03.08.2003
  */
 public class StoreScpService extends AbstractScpService {
@@ -702,8 +696,9 @@ public class StoreScpService extends AbstractScpService {
         }
     }
 
-    public FileDTO makeFile(Dataset dataset) throws Exception {
-        FileSystemDTO fsDTO = selectStorageFileSystem(defFileSystemGroupID);
+    public FileDTO makeFile(String fileSystemGroupID, Dataset dataset) 
+            throws Exception {
+        FileSystemDTO fsDTO = selectStorageFileSystem(fileSystemGroupID);
         File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
         File file = scp.makeFile(baseDir, dataset, null);
         String filePath = file.getPath().substring(

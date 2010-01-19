@@ -44,6 +44,18 @@
          <value value=""/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getFileSystemGroupID"
+      setMethod="setFileSystemGroupID">
+      <description>ID of file system group, on which generated
+      KeyObjects are stored by operation storeAndRegister().
+      </description>
+      <name>FileSystemGroupID</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="ONLINE_STORAGE"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" 
       getMethod="getStoreScpServiceName"
       setMethod="setStoreScpServiceName">
