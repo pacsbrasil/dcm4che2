@@ -100,6 +100,8 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
 
     private String configDir;
 
+    private String fileSystemGroupID;
+
     private boolean mergePatientStudySeriesAttributesFromDB;
 
     private boolean noPixelData;
@@ -150,6 +152,14 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
 
     public final void setConfigDir(String path) {
         this.configDir = path;
+    }
+
+    public final String getFileSystemGroupID() {
+        return fileSystemGroupID;
+    }
+
+    public final void setFileSystemGroupID(String fileSystemGroupID) {
+        this.fileSystemGroupID = fileSystemGroupID;
     }
 
     public final boolean isMergePatientStudySeriesAttributesFromDB() {
@@ -432,8 +442,8 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
 
     private FileDTO makeFile(Dataset dataset) throws Exception {
         return (FileDTO) server.invoke(storeScpServiceName, "makeFile",
-                new Object[] { dataset },
-                new String[] { Dataset.class.getName() });
+                new Object[] { fileSystemGroupID, dataset},
+                new String[] { String.class.getName(), Dataset.class.getName() } );
     }
 
     private void importFile(FileDTO fileDTO, Dataset dataset) throws Exception {
