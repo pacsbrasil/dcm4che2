@@ -96,8 +96,7 @@ import org.dcm4chex.archive.util.HomeFactoryException;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
- * @version $Revision$ $Date: 2008-02-11 23:01:28 +0100 (Mon, 11 Feb
- *          2008) $
+ * @version $Revision$ $Date$
  * @since 03.08.2003
  */
 public class StoreScpService extends AbstractScpService {
@@ -682,6 +681,22 @@ public class StoreScpService extends AbstractScpService {
         removeRoleSelections(policy, cuids);
     }
     
+    public FileDTO makeFile(String fileSystemGroupID, Dataset dataset) 
+    throws Exception {
+        FileSystemDTO fsDTO = selectStorageFileSystem(fileSystemGroupID);
+        File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
+        File file = scp.makeFile(baseDir, dataset, null);
+        String filePath = file.getPath().substring(
+                baseDir.getPath().length() + 1)
+                .replace(File.separatorChar, '/');
+        FileDTO fileDTO = new FileDTO();
+        fileDTO.setFileSystemPk(fsDTO.getPk());
+        fileDTO.setAvailability(fsDTO.getAvailability());
+        fileDTO.setDirectoryPath(fsDTO.getDirectoryPath());
+        fileDTO.setFilePath(filePath);
+        return fileDTO;
+    }
+
     public FileSystemDTO selectStorageFileSystem(String fsgrpID)
             throws DcmServiceException {
         try {

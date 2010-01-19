@@ -44,6 +44,25 @@
          <value value=""/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getFileSystemGroupID"
+      setMethod="setFileSystemGroupID">
+      <description>ID of file system group, on which generated
+      KeyObjects are stored by operation storeAndRegister().
+      </description>
+      <name>FileSystemGroupID</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="ONLINE_STORAGE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getStoreScpServiceName"
+      setMethod="setStoreScpServiceName">
+      <description>Used internally. Do NOT modify.</description>
+      <name>StoreScpServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
    
    &defaultAttributes;
 
@@ -78,6 +97,16 @@
         <type>java.util.Collection</type>
       </parameter>
       <return-type>org.dcm4che.data.Dataset</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Stores a KeyObject and registers it in the database.</description>
+      <name>storeAndRegister</name>
+      <parameter>
+        <description>The KeyObject</description>
+        <name>dataset</name>
+        <type>org.dcm4che.data.Dataset</type>
+      </parameter>
+      <return-type>void</return-type>
    </operation>
    
 </mbean>

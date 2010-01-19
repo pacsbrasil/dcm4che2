@@ -39,7 +39,11 @@
 
 package org.dcm4chex.archive.mbean;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.rmi.RemoteException;
+import java.security.DigestOutputStream;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -51,17 +55,22 @@ import java.util.TreeMap;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
+import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
+import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
+import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -79,9 +88,31 @@ public class KeyObjectService extends ServiceMBeanSupport {
 	
     private static Logger log = Logger.getLogger( KeyObjectService.class.getName() );
 
-	private ContentManager contentMgr;
-	
-	public KeyObjectService() {
+    private ContentManager contentMgr;
+
+    private ObjectName storeScpServiceName;
+
+    private int bufferSize = 8192;
+
+    private String fileSystemGroupID;
+
+    public final String getFileSystemGroupID() {
+        return fileSystemGroupID;
+    }
+
+    public final void setFileSystemGroupID(String fileSystemGroupID) {
+        this.fileSystemGroupID = fileSystemGroupID;
+    }
+
+    public final ObjectName getStoreScpServiceName() {
+        return storeScpServiceName;
+    }
+
+    public final void setStoreScpServiceName(ObjectName storeScpServiceName) {
+        this.storeScpServiceName = storeScpServiceName;
+    }
+
+    public KeyObjectService() {
     }
     
     protected void startService() throws Exception {
@@ -371,5 +402,53 @@ public class KeyObjectService extends ServiceMBeanSupport {
                 .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
         contentMgr = home.create();
         return contentMgr;
+    }
+
+    public void storeAndRegister(Dataset dataset) throws Exception{                
+        FileDTO fileDTO = (FileDTO) server.invoke(storeScpServiceName, "makeFile",
+                new Object[] { fileSystemGroupID, dataset},
+                new String[] { String.class.getName(), Dataset.class.getName() } );
+             
+        writeFile(fileDTO, dataset);
+    }
+    
+    protected void writeFile(FileDTO fileDTO, Dataset dataset) throws Exception{
+        File file = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO.getFilePath());
+        String tsUID = UIDs.ExplicitVRLittleEndian;
+
+        boolean deleteFile = true;
+        try{
+            log.info("M-WRITE file: " + file);
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            DigestOutputStream dos = new DigestOutputStream(
+                    new FileOutputStream(file), md);
+            BufferedOutputStream out = 
+                new BufferedOutputStream(dos, new byte[bufferSize]);
+            try {
+                DcmEncodeParam encParam = DcmEncodeParam.valueOf(tsUID);
+                dataset.writeFile(out, encParam);
+            }finally{
+                out.close();
+            }
+            fileDTO.setFileMd5(md.digest());
+            fileDTO.setFileSize(file.length());
+            fileDTO.setFileTsuid(tsUID);
+            importFile(fileDTO, dataset);
+            deleteFile = false;
+        } finally {
+            if (deleteFile) {
+                log.info("M-DELETE file:" + file);
+                if (!file.delete()) {
+                    log.error("Failed to delete " + file);
+                }
+            }
+        }
+    }
+
+    protected void importFile(FileDTO fileDTO, Dataset dataset) throws Exception {
+        server.invoke(storeScpServiceName, "importFile",
+                new Object[] { fileDTO, dataset, null, Boolean.TRUE },
+                new String[] { FileDTO.class.getName(), Dataset.class.getName(),
+                        String.class.getName(), boolean.class.getName() });
     }
 }

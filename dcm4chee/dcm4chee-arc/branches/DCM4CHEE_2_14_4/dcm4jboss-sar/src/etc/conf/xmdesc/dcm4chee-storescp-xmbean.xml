@@ -1094,6 +1094,11 @@ Notifications for one Series.]]>
       <description>Create empty file in storage directory (internal use only)</description>
       <name>makeFile</name>
       <parameter>
+        <description>FileSystemGroupID</description>
+        <name>fsgroupid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
         <description>Dataset</description>
         <name>ds</name>
         <type>org.dcm4che.data.Dataset</type>
