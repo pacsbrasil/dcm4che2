@@ -54,6 +54,7 @@ xcopy /S "%JBOSS_CONF%\props" "%DCM4CHEE_CONF%\props\"
 xcopy /S "%JBOSS_CONF%\xmdesc" "%DCM4CHEE_CONF%\xmdesc\"
 
 xcopy /S "%JBOSS_SERV%\lib" "%DCM4CHEE_SERV%\lib\"
+del "%DCM4CHEE_SERV%\lib\jbossmq.jar"
 
 set JBOSS_DEPLOY=%JBOSS_SERV%\deploy
 set DCM4CHEE_DEPLOY=%DCM4CHEE_SERV%\deploy
@@ -74,6 +75,7 @@ copy "%JBOSS_DEPLOY%\mail-service.xml" "%DCM4CHEE_DEPLOY%"
 copy "%JBOSS_DEPLOY%\properties-service.xml" "%DCM4CHEE_DEPLOY%"
 copy "%JBOSS_DEPLOY%\quartz-ra.rar" "%DCM4CHEE_DEPLOY%"
 copy "%JBOSS_DEPLOY%\sqlexception-service.xml" "%DCM4CHEE_DEPLOY%"
+copy "%JBOSS_DEPLOY%\jms\jms-ra.rar" "%DCM4CHEE_DEPLOY%"
 
 xcopy /S "%JBOSS_DEPLOY%\ejb3.deployer" "%DCM4CHEE_DEPLOY%\ejb3.deployer\"
 xcopy /S "%JBOSS_DEPLOY%\http-invoker.sar" "%DCM4CHEE_DEPLOY%\http-invoker.sar\"
@@ -98,14 +100,6 @@ xcopy /S "%JBOSS_WEB%\jsf-libs" "%DCM4CHEE_WEB%\jsf-libs\"
 xcopy /S "%JBOSS_WEB%\META-INF" "%DCM4CHEE_WEB%\META-INF\"
 xcopy /S "%JBOSS_WEB%\ROOT.war" "%DCM4CHEE_WEB%\ROOT.war\"
 
-set JBOSS_JMS=%JBOSS_DEPLOY%\jms
-set DCM4CHEE_JMS=%DCM4CHEE_DEPLOY%\jms
-
-copy "%JBOSS_JMS%\jms-ds.xml" "%DCM4CHEE_JMS%"
-copy "%JBOSS_JMS%\jms-ra.rar" "%DCM4CHEE_JMS%"
-copy "%JBOSS_JMS%\jvm-il-service.xml" "%DCM4CHEE_JMS%"
-copy "%JBOSS_JMS%\uil2-service.xml" "%DCM4CHEE_JMS%"
-  
 set JBOSS_JMX_CONSOLE=%JBOSS_DEPLOY%\jmx-console.war
 set DCM4CHEE_JMX_CONSOLE=%DCM4CHEE_DEPLOY%\jmx-console.war
 
