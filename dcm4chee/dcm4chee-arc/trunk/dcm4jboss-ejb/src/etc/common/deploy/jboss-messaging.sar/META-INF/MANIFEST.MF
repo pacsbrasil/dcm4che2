@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.7.0
+Created-By: 1.4.2_14-b05 (Sun Microsystems Inc.)
+Specification-Title: JBoss Messaging
+Specification-Version: 1.3.0.GA
+Specification-Vendor: JBoss Inc. (http://www.jboss.org/)
+Implementation-Title: JBoss Messaging
+Implementation-URL: http://www.jboss.org/
+Implementation-Version: 1.3.0.GA (build: CVSTag=JBossMessaging_1_3_0_G
+ A date=200706012017)
+Implementation-Vendor: JBoss Inc. (http://www.jboss.org/)
+Implementation-Vendor-Id: http://www.jboss.org/
+

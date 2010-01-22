@@ -135,9 +135,6 @@
       </description>
       <name>QueueName</name>
       <type>java.lang.String</type>
-      <descriptors>
-         <value value="HL7Send" />
-      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getHL7ServerName"

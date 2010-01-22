@@ -144,7 +144,8 @@
       </zipfileset>
       <zipfileset dir="../dcm4jboss-ejb/src/etc/common"
         prefix="${dist.db.config}">
-        <include name="conf/*"/>
+        <include name="conf/**"/>
+        <include name="lib/*"/>
         <include name="deploy/**"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-ejb/src/etc/${db.name}"

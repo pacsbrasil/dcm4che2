@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE server>
+<!DOCTYPE server PUBLIC
+    "-//JBoss//DTD MBean Service 4.2//EN"
+    "http://www.jboss.org/j2ee/dtd/jboss-service_4_2.dtd">
+
 <!-- $Id$ -->
+
 <server>
-  <classpath codebase="lib" archives="dcm4chee.jar"/>
   <mbean code="org.dcm4chex.archive.mbean.JMSService"
     name="dcm4chee.archive:service=JMS"
     xmbean-dd="xmdesc/dcm4chee-jms-xmbean.xml">
-    <depends>jboss.mq:service=InvocationLayer,type=JVM</depends>
+    <depends>jboss.messaging:service=ServerPeer</depends>
+    <depends>jboss.messaging:service=PostOffice</depends>
   </mbean>
 </server>

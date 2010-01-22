@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+     Messaging Connection Factories deployment descriptor.
+
+     $Id: connection-factories-service.xml 2715 2007-05-19 15:31:23Z timfox $
+ -->
+
+<server>
+
+   <!-- The default connection factory does not support automatic failover or load balancing-
+        this is so we can maintain compatiblity with applications written for JBoss MQ which use this
+        connection factory.
+   -->     
+   <mbean code="org.jboss.jms.server.connectionfactory.ConnectionFactory"
+      name="jboss.messaging.connectionfactory:service=ConnectionFactory"
+      xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=bisocket</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
+
+      <attribute name="JNDIBindings">
+         <bindings>
+            <binding>/ConnectionFactory</binding>
+            <binding>/XAConnectionFactory</binding>
+            <binding>java:/ConnectionFactory</binding>
+            <binding>java:/XAConnectionFactory</binding>
+         </bindings>
+      </attribute>
+   </mbean>
+
+   <!-- A clustered connection factory that supports automatic failover and load balancing of created
+        connections.
+        This factory is not suitable to be used by MDBs,
+        see http://www.jboss.com/index.html?module=bb&op=viewtopic&t=108961
+   -->
+   <mbean code="org.jboss.jms.server.connectionfactory.ConnectionFactory"
+      name="jboss.messaging.connectionfactory:service=ClusteredConnectionFactory"
+      xmbean-dd="xmdesc/ConnectionFactory-xmbean.xml">
+      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends optional-attribute-name="Connector">jboss.messaging:service=Connector,transport=bisocket</depends>
+      <depends>jboss.messaging:service=PostOffice</depends>
+
+      <attribute name="JNDIBindings">
+         <bindings>
+            <binding>/ClusteredConnectionFactory</binding>
+            <binding>/ClusteredXAConnectionFactory</binding>
+            <binding>java:/ClusteredConnectionFactory</binding>
+            <binding>java:/ClusteredXAConnectionFactory</binding>
+         </bindings>
+      </attribute>
+
+      <attribute name="SupportsFailover">true</attribute>
+      <attribute name="SupportsLoadBalancing">true</attribute>      
+   </mbean>
+
+</server>
