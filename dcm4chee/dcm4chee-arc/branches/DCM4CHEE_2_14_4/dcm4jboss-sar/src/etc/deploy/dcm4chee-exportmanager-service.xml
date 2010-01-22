@@ -1,17 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE server PUBLIC
+    "-//JBoss//DTD MBean Service 4.2//EN"
+    "http://www.jboss.org/j2ee/dtd/jboss-service_4_2.dtd">
+
 <!-- $Id$ -->
+
 <server>
-  <classpath codebase="lib" archives="dcm4chee.jar"/>
-  <mbean code="org.jboss.mq.server.jmx.Queue"
-    name="dcm4chee.archive:service=Queue,name=ExportManager">
-    <depends optional-attribute-name="DestinationManager"
-      >jboss.mq:service=DestinationManager</depends>
+
+  <mbean code="org.jboss.jms.server.destination.QueueService"
+    name="dcm4chee.archive:service=Queue,name=ExportManager"
+    xmbean-dd="xmdesc/Queue-xmbean.xml">
+    <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+    <depends>jboss.messaging:service=PostOffice</depends>
   </mbean>
+
   <mbean code="org.dcm4chex.archive.tce.ExportManagerService"
     name="dcm4chee.archive:service=ExportManager"
     xmbean-dd="xmdesc/dcm4chee-exportmanager-xmbean.xml">
-    <depends optional-attribute-name="AuditLoggerName"
-      >dcm4chee.archive:service=AuditLogger</depends>
+    <attribute name="QueueName">ExportManager</attribute>
+    <depends>dcm4chee.archive:service=AuditLogger</depends>
     <depends optional-attribute-name="QueryRetrieveScpServiceName"
       >dcm4chee.archive:service=QueryRetrieveScp</depends>
     <depends optional-attribute-name="IANScuServiceName"
@@ -25,6 +32,5 @@
     <depends optional-attribute-name="TLSConfigName"
       >dcm4chee.archive:service=TLSConfig</depends>
     <depends>dcm4chee.archive:service=Queue,name=ExportManager</depends>
-    <attribute name="QueueName">ExportManager</attribute>
   </mbean>
 </server>

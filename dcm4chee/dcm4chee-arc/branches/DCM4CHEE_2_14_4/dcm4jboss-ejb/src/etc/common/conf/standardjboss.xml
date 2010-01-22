@@ -358,7 +358,7 @@
       <proxy-factory-config>
         <JMSProviderAdapterJNDI>DefaultJMSProvider</JMSProviderAdapterJNDI>
         <ServerSessionPoolFactoryJNDI>StdJMSPool</ServerSessionPoolFactoryJNDI>
-        <CreateJBossMQDestination>true</CreateJBossMQDestination>
+        <CreateJBossMQDestination>false</CreateJBossMQDestination>
         <!-- WARN: Don't set this to zero until a bug in the pooled executor is fixed -->
         <MinimumSize>1</MinimumSize>
         <MaximumSize>15</MaximumSize>
@@ -440,7 +440,7 @@
       <proxy-factory-config>
         <JMSProviderAdapterJNDI>DefaultJMSProvider</JMSProviderAdapterJNDI>
         <ServerSessionPoolFactoryJNDI>StdJMSPool</ServerSessionPoolFactoryJNDI>
-        <CreateJBossMQDestination>true</CreateJBossMQDestination>
+        <CreateJBossMQDestination>false</CreateJBossMQDestination>
         <!-- WARN: Don't set this to zero until a bug in the pooled executor is fixed -->
         <MinimumSize>1</MinimumSize>
         <MaximumSize>1</MaximumSize>
