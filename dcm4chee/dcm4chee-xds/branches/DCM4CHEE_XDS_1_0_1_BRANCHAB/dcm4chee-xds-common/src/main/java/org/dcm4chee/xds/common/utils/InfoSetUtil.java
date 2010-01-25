@@ -293,7 +293,7 @@ public class InfoSetUtil {
 			                    	ValueListType valueList = slot.getValueList();
 			                    	if (valueList != null) {
 			                    		List<String> slist = valueList.getValue();
-			                    		if (slist != null) {
+			                    		if (slist != null && slist.size() > 0) {
 			                    			nvps.add(new String[]{"SourcePatientId", slist.get(0)});
 			                    		}
 			                    	}
@@ -302,7 +302,7 @@ public class InfoSetUtil {
 		            		InternationalStringType desc = extrinsicObject.getDescription();
 		            		if (desc != null) {
 		            			List<LocalizedStringType> locList = desc.getLocalizedString();
-		            			if (locList != null) {
+		            			if (locList != null && locList.size() > 0) {
 		            				LocalizedStringType locString = locList.get(0);
 		            				if (locString != null) {
 		            					nvps.add(new String[]{"Description", locString.getValue()});
