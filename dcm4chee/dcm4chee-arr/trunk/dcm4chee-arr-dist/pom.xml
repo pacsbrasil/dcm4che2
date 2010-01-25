@@ -3,19 +3,19 @@
   <parent>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-arr</artifactId>
-    <version>3.0.9</version>
+    <version>3.0.10</version>
   </parent>
   <groupId>dcm4che.dcm4chee</groupId>
   <artifactId>dcm4chee-arr-dist-${db}</artifactId>
   <packaging>pom</packaging>
-  <version>3.0.9</version>
+  <version>3.0.10</version>
   <name>Assemble Distribution for ARR</name>
   <dependencies>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-arr-${db}</artifactId>
       <type>ear</type>
-      <version>3.0.9</version>
+      <version>3.0.10</version>
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>

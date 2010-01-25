@@ -3,17 +3,17 @@
   <parent>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-arr</artifactId>
-    <version>3.0.9</version>
+    <version>3.0.10</version>
   </parent>
   <name>Receiver MDB for ARR</name>
   <groupId>dcm4che.dcm4chee</groupId>
   <artifactId>dcm4chee-arr-listeners-mdb</artifactId>
-  <version>3.0.9</version>
+  <version>3.0.10</version>
   <dependencies>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-arr-entities-${db}</artifactId>
-      <version>3.0.9</version>
+      <version>3.0.10</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
