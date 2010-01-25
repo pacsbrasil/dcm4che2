@@ -3,7 +3,6 @@
   <mbean code="org.dcm4chee.arr.listeners.tcp.TCPListener"
     name="dcm4chee.arr:service=TCPListener"
     xmbean-dd="xmdesc/dcm4chee-arr-tcplistener-xmbean.xml">
-    <depends>jboss.mq.destination:service=Queue,name=ARRIncoming</depends>
-    <depends>jboss.mq:service=InvocationLayer,type=JVM</depends>
+    <depends>jboss.messaging.destination:service=Queue,name=ARRIncoming</depends>
   </mbean>
 </server>

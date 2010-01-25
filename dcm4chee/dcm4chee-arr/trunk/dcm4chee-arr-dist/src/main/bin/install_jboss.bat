@@ -45,11 +45,11 @@ md "%DCM4CHEE_HOME%\client"
 copy "%JBOSS_HOME%\client\jbossall-client.jar" "%DCM4CHEE_HOME%\client"
 
 xcopy /S "%JBOSS_HOME%\lib" "%DCM4CHEE_HOME%\lib\"
+del "%DCM4CHEE_SERV%\lib\jbossmq.jar"
 
 set JBOSS_CONF=%JBOSS_SERV%\conf
 set DCM4CHEE_CONF=%DCM4CHEE_SERV%\conf
 copy "%JBOSS_CONF%\jbossjta-properties.xml" "%DCM4CHEE_CONF%"
-copy "%JBOSS_CONF%\jboss-service.xml" "%DCM4CHEE_CONF%"
 copy "%JBOSS_CONF%\jndi.properties" "%DCM4CHEE_CONF%"
 copy "%JBOSS_CONF%\standardjboss.xml" "%DCM4CHEE_CONF%"
 copy "%JBOSS_CONF%\standardjbosscmp-jdbc.xml" "%DCM4CHEE_CONF%"
@@ -78,6 +78,7 @@ copy "%JBOSS_DEPLOY%\monitoring-service.xml" "%DCM4CHEE_DEPLOY%"
 copy "%JBOSS_DEPLOY%\properties-service.xml" "%DCM4CHEE_DEPLOY%"
 copy "%JBOSS_DEPLOY%\quartz-ra.rar" "%DCM4CHEE_DEPLOY%"
 copy "%JBOSS_DEPLOY%\sqlexception-service.xml" "%DCM4CHEE_DEPLOY%"
+copy "%JBOSS_DEPLOY%\jms\jms-ra.rar" "%DCM4CHEE_DEPLOY%"
 
 xcopy /S "%JBOSS_DEPLOY%\ejb3.deployer" "%DCM4CHEE_DEPLOY%\ejb3.deployer\"
 xcopy /S "%JBOSS_DEPLOY%\http-invoker.sar" "%DCM4CHEE_DEPLOY%\http-invoker.sar\"
@@ -86,14 +87,6 @@ xcopy /S "%JBOSS_DEPLOY%\jboss-bean.deployer" "%DCM4CHEE_DEPLOY%\jboss-bean.depl
 xcopy /S "%JBOSS_DEPLOY%\jboss-web.deployer" "%DCM4CHEE_DEPLOY%\jboss-web.deployer\"
 xcopy /S "%JBOSS_DEPLOY%\jbossws.sar" "%DCM4CHEE_DEPLOY%\jbossws.sar\"
 
-set JBOSS_JMS=%JBOSS_DEPLOY%\jms
-set DCM4CHEE_JMS=%DCM4CHEE_DEPLOY%\jms
-
-copy "%JBOSS_JMS%\jms-ds.xml" "%DCM4CHEE_JMS%"
-copy "%JBOSS_JMS%\jms-ra.rar" "%DCM4CHEE_JMS%"
-copy "%JBOSS_JMS%\jvm-il-service.xml" "%DCM4CHEE_JMS%"
-copy "%JBOSS_JMS%\uil2-service.xml" "%DCM4CHEE_JMS%"
-  
 set JBOSS_JMX_CONSOLE=%JBOSS_DEPLOY%\jmx-console.war
 set DCM4CHEE_JMX_CONSOLE=%DCM4CHEE_DEPLOY%\jmx-console.war
 

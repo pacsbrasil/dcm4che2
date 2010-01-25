@@ -36,7 +36,6 @@ cp -v "$JBOSS_HOME"/client/jbossall-client.jar "$DCM4CHEE_HOME"/client
 cp -v -R "$JBOSS_HOME"/lib "$DCM4CHEE_HOME"
 
 cp -v "$JBOSS_SERV"/conf/jbossjta-properties.xml \
-  "$JBOSS_SERV"/conf/jboss-service.xml \
   "$JBOSS_SERV"/conf/jndi.properties \
   "$JBOSS_SERV"/conf/standardjboss.xml \
   "$JBOSS_SERV"/conf/standardjbosscmp-jdbc.xml \
@@ -47,6 +46,7 @@ cp -v -R "$JBOSS_SERV"/conf/props \
 
 mkdir "$DCM4CHEE_SERV"/lib
 cp -v "$JBOSS_SERV"/lib/* "$DCM4CHEE_SERV"/lib
+rm -v "$DCM4CHEE_SERV"/lib/jbossmq.jar
 
 cp -v "$JBOSS_SERV"/deploy/bsh-deployer.xml \
   "$JBOSS_SERV"/deploy/cache-invalidation-service.xml \
@@ -65,6 +65,7 @@ cp -v "$JBOSS_SERV"/deploy/bsh-deployer.xml \
   "$JBOSS_SERV"/deploy/properties-service.xml \
   "$JBOSS_SERV"/deploy/quartz-ra.rar \
   "$JBOSS_SERV"/deploy/sqlexception-service.xml \
+  "$JBOSS_SERV"/deploy/jms/jms-ra.rar \
   "$DCM4CHEE_SERV"/deploy
 
 cp -v -R "$JBOSS_SERV"/deploy/ejb3.deployer \
@@ -74,12 +75,6 @@ cp -v -R "$JBOSS_SERV"/deploy/ejb3.deployer \
   "$JBOSS_SERV"/deploy/jboss-web.deployer \
   "$JBOSS_SERV"/deploy/jbossws.sar \
   "$DCM4CHEE_SERV"/deploy
-
-cp -v "$JBOSS_SERV"/deploy/jms/jms-ds.xml \
-  "$JBOSS_SERV"/deploy/jms/jms-ra.rar \
-  "$JBOSS_SERV"/deploy/jms/jvm-il-service.xml \
-  "$JBOSS_SERV"/deploy/jms/uil2-service.xml \
-  "$DCM4CHEE_SERV"/deploy/jms
 
 cp -v "$JBOSS_SERV"/deploy/jmx-console.war/checkJNDI.jsp \
   "$JBOSS_SERV"/deploy/jmx-console.war/displayMBeans.jsp \
