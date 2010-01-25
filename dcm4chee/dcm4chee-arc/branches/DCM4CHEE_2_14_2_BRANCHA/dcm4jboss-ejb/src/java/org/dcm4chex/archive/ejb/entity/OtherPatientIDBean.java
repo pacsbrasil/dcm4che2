@@ -60,6 +60,18 @@ import org.dcm4chex.archive.ejb.interfaces.OtherPatientIDLocalHome;
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
  * 
+ * @ejb.finder signature="java.util.Collection findByPatientId(java.lang.String pid)"
+ *             query="SELECT OBJECT(o) FROM OtherPatientID AS o WHERE o.patientId = ?1"
+ *             transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByPatientId(java.lang.String pid)"
+ *              strategy="on-find" eager-load-group="*"
+ *
+ * @ejb.finder signature="java.util.Collection findByPatientIdLike(java.lang.String pid)"
+ *             query="SELECT OBJECT(o) FROM OtherPatientID AS o WHERE o.patientId LIKE ?1"
+ *             transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findByPatientIdLike(java.lang.String pid)"
+ *              strategy="on-find" eager-load-group="*"
+ *              
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.OtherPatientIDLocal findByPatientIdAndIssuer(java.lang.String pid, java.lang.String issuer)"
  *             query="SELECT OBJECT(o) FROM OtherPatientID AS o WHERE o.patientId = ?1 AND o.issuerOfPatientId = ?2"
  * 
