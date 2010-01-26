@@ -51,7 +51,6 @@ set JBOSS_CONF=%JBOSS_SERV%\conf
 set DCM4CHEE_CONF=%DCM4CHEE_SERV%\conf
 copy "%JBOSS_CONF%\jbossjta-properties.xml" "%DCM4CHEE_CONF%"
 copy "%JBOSS_CONF%\jndi.properties" "%DCM4CHEE_CONF%"
-copy "%JBOSS_CONF%\standardjboss.xml" "%DCM4CHEE_CONF%"
 copy "%JBOSS_CONF%\standardjbosscmp-jdbc.xml" "%DCM4CHEE_CONF%"
 xcopy /S "%JBOSS_CONF%\props" "%DCM4CHEE_CONF%\props\"
 xcopy /S "%JBOSS_CONF%\xmdesc" "%DCM4CHEE_CONF%\xmdesc\"

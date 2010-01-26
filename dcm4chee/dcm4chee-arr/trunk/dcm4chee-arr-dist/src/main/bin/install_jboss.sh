@@ -37,7 +37,6 @@ cp -v -R "$JBOSS_HOME"/lib "$DCM4CHEE_HOME"
 
 cp -v "$JBOSS_SERV"/conf/jbossjta-properties.xml \
   "$JBOSS_SERV"/conf/jndi.properties \
-  "$JBOSS_SERV"/conf/standardjboss.xml \
   "$JBOSS_SERV"/conf/standardjbosscmp-jdbc.xml \
   "$DCM4CHEE_SERV"/conf
 cp -v -R "$JBOSS_SERV"/conf/props \
