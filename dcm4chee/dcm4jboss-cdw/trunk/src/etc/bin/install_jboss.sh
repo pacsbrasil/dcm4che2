@@ -37,18 +37,16 @@ cp -v "$JBOSS_HOME"/client/jbossall-client.jar \
 cp -v -R "$JBOSS_HOME"/lib "$DCM4CHEE_HOME"
 
 cp -v "$JBOSS_SERV"/conf/jbossjta-properties.xml \
-  "$JBOSS_SERV"/conf/jboss-service.xml \
   "$JBOSS_SERV"/conf/jndi.properties \
-  "$JBOSS_SERV"/conf/login-config.xml \
   "$JBOSS_SERV"/conf/standardjbosscmp-jdbc.xml \
-  "$JBOSS_SERV"/conf/standardjboss.xml \
   "$DCM4CHEE_SERV"/conf
 cp -v -R "$JBOSS_SERV"/conf/props \
   "$JBOSS_SERV"/conf/xmdesc \
   "$DCM4CHEE_SERV"/conf
 
-cp -v -R "$JBOSS_SERV"/lib "$DCM4CHEE_SERV"
-
+cp -v "$JBOSS_SERV"/lib/* "$DCM4CHEE_SERV/lib"
+rm -v "$DCM4CHEE_SERV"/lib/jbossmq.jar
+ 
 cp -v "$JBOSS_SERV"/deploy/hsqldb-ds.xml \
   "$JBOSS_SERV"/deploy/jboss-ha-local-jdbc.rar \
   "$JBOSS_SERV"/deploy/jbossjca-service.xml \
@@ -56,6 +54,7 @@ cp -v "$JBOSS_SERV"/deploy/hsqldb-ds.xml \
   "$JBOSS_SERV"/deploy/jmx-invoker-service.xml \
   "$JBOSS_SERV"/deploy/jsr88-service.xml \
   "$JBOSS_SERV"/deploy/monitoring-service.xml \
+  "$JBOSS_SERV"/deploy/jms/jms-ra.rar \
   "$DCM4CHEE_SERV"/deploy
 
 cp -v -R "$JBOSS_SERV"/deploy/http-invoker.sar \
@@ -64,13 +63,6 @@ cp -v -R "$JBOSS_SERV"/deploy/http-invoker.sar \
   "$JBOSS_SERV"/deploy/jboss-web.deployer \
   "$JBOSS_SERV"/deploy/management \
   "$DCM4CHEE_SERV"/deploy
-
-cp -v "$JBOSS_SERV"/deploy/jms/hsqldb-jdbc2-service.xml \
-  "$JBOSS_SERV"/deploy/jms/jms-ds.xml \
-  "$JBOSS_SERV"/deploy/jms/jms-ra.rar \
-  "$JBOSS_SERV"/deploy/jms/jvm-il-service.xml \
-  "$JBOSS_SERV"/deploy/jms/uil2-service.xml \
-  "$DCM4CHEE_SERV"/deploy/jms
 
 cp -v "$JBOSS_SERV"/deploy/jmx-console.war/checkJNDI.jsp \
   "$JBOSS_SERV"/deploy/jmx-console.war/displayMBeans.jsp \
