@@ -9,7 +9,6 @@
   <mbean code="org.dcm4chex.archive.mbean.JMSService"
     name="dcm4chee.archive:service=JMS"
     xmbean-dd="xmdesc/dcm4chee-jms-xmbean.xml">
-    <depends>jboss.messaging:service=ServerPeer</depends>
-    <depends>jboss.messaging:service=PostOffice</depends>
+    <depends>jboss.messaging.connectionfactory:service=ConnectionFactory</depends>
   </mbean>
 </server>
