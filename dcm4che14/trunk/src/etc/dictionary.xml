@@ -1310,6 +1310,7 @@
   <element tag="(0040,100A)" name="Reason for Requested Procedure Code Sequence" vr="SQ" vm="1" key="ReasonforRequestedProcedureCodeSeq" />
   <element tag="(0040,1010)" name="Names of Intended Recipients of Results" vr="PN" vm="1-n" key="NamesOfIntendedRecipientsOfResults" />
   <element tag="(0040,1011)" name="Intended Recipients of Results Identification Sequence" vr="SQ" vm="1" key="IntendedRecipientsOfResultsIdentificationSeq" />
+  <element tag="(0040,1012)" name="Reason For Performed Procedure Code Sequence" vr="SQ" vm="1" key="ReasonForPerformedProcedureCodeSeq" />
   <element tag="(0040,1101)" name="Person Identification Code Sequence" vr="SQ" vm="1" key="PersonIdentificationCodeSeq" />
   <element tag="(0040,1102)" name="Person's Address" vr="ST" vm="1" key="PersonAddress" />
   <element tag="(0040,1103)" name="Person's Telephone Numbers" vr="LO" vm="1-n" key="PersonTelephoneNumbers" />
