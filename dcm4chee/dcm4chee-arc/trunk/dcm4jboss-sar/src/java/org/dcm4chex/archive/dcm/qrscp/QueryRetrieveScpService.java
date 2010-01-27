@@ -41,6 +41,7 @@ package org.dcm4chex.archive.dcm.qrscp;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.sql.Types;
@@ -1393,11 +1394,20 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     protected File getFile(FileInfo info) throws Exception {
-        return getFile(info.basedir, info.fileID);
+        return getFile(info.basedir, info.fileID, info.size);
     }
 
     protected File getFile(FileDTO dto) throws Exception {
-        return getFile(dto.getDirectoryPath(), dto.getFilePath());
+        return getFile(dto.getDirectoryPath(), dto.getFilePath(), dto.getFileSize());
+    }
+
+    protected File getFile(String fsID, String fileID, long fileSize)
+            throws Exception {
+        File f = getFile(fsID, fileID);
+        if (f.length() < fileSize)
+            throw new IOException("File " + f + " truncated at "
+                    + (fileSize - f.length()) + " bytes");
+        return f;
     }
 
     public File getFile(String fsID, String fileID) throws Exception {
