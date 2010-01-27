@@ -257,12 +257,12 @@ public class MPPSScp extends DcmServiceBase {
             Dataset code = codesq.getItem(i);
             if (!code.containsValue(Tags.CodeValue))
                 throw new DcmServiceException(Status.MissingAttributeValue,
-                        "Missing Type 1 Attribute (0008, 0100) in item of "
+                        "Missing Code Value in item of "
                         + Tags.toString(tag));
 
             if (!code.containsValue(Tags.CodingSchemeDesignator))
                 throw new DcmServiceException(Status.MissingAttributeValue,
-                        "Missing Type 1 Attribute (0008, 0102) in item of "
+                        "Missing Coding Scheme Designator in item of "
                         + Tags.toString(tag));
         }
     }
