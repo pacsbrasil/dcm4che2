@@ -149,7 +149,8 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
             final int vr = key.vr();
             DcmElement el = ds.get(tag);
             if (el == null) {
-                el = ds.putXX(tag, vr);
+                ds.putXX(tag, vr);
+                continue;
             }
             if (vr == VRs.SQ) {
                 DcmElement filteredEl = null;
