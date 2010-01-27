@@ -64,7 +64,7 @@ import org.jboss.logging.Logger;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date::                     $
  */
 public class MPPSScp extends DcmServiceBase {
 
@@ -197,13 +197,15 @@ public class MPPSScp extends DcmServiceBase {
                     throw new DcmServiceException(Status.MissingAttributeValue,
                             "Missing Study Instance UID in Scheduled Step Attributes Seq.");
         }
+        checkCommonAttributs(mpps);
+        final String status = mpps.getString(Tags.PPSStatus);
         try {
-            if (PPSStatus.toInt(mpps.getString(Tags.PPSStatus)) ==
-                PPSStatus.IN_PROGRESS) {
+            if (PPSStatus.toInt(status) == PPSStatus.IN_PROGRESS) {
                 return;
             }
         } catch (IllegalArgumentException e) {}
-        throw new DcmServiceException(Status.InvalidAttributeValue);
+        throw new DcmServiceException(Status.InvalidAttributeValue,
+                "Invalid MPPS Status: " + status);
     }
 
     private void checkSetAttributs(Dataset mpps) throws DcmServiceException {
@@ -213,6 +215,7 @@ public class MPPSScp extends DcmServiceBase {
                             "Cannot update attribute "
                                     + Tags.toString(ONLY_NCREATE_ATTR[i]));
         }
+        checkCommonAttributs(mpps);
         final String status = mpps.getString(Tags.PPSStatus);
         try {
             if (status == null || PPSStatus.toInt(status) == PPSStatus.IN_PROGRESS) {
@@ -229,4 +232,39 @@ public class MPPSScp extends DcmServiceBase {
                                     + Tags.toString(TYPE1_FINAL_ATTR[i]));
         }
     }
+
+    private void checkCommonAttributs(Dataset mpps) throws DcmServiceException {
+        checkCode(mpps, Tags.ProcedureCodeSeq, true);
+        checkCode(mpps, Tags.ReasonForPerformedProcedureCodeSeq, false);
+        checkCode(mpps, Tags.PPSDiscontinuationReasonCodeSeq, true);
+    }
+
+    private void checkCode(Dataset mpps, int tag, boolean single)
+            throws DcmServiceException {
+        DcmElement codesq = mpps.get(tag);
+        if (codesq == null)
+            return;
+
+        int n = codesq.countItems();
+        if (n == 0)
+            return;
+
+        if (n > 1 && single)
+            throw new DcmServiceException(Status.InvalidAttributeValue,
+                    Tags.toString(tag) + " contains " + n + " items");
+
+        for (int i = 0; i < n; i++) {
+            Dataset code = codesq.getItem(i);
+            if (!code.containsValue(Tags.CodeValue))
+                throw new DcmServiceException(Status.MissingAttributeValue,
+                        "Missing Type 1 Attribute (0008, 0100) in item of "
+                        + Tags.toString(tag));
+
+            if (!code.containsValue(Tags.CodingSchemeDesignator))
+                throw new DcmServiceException(Status.MissingAttributeValue,
+                        "Missing Type 1 Attribute (0008, 0102) in item of "
+                        + Tags.toString(tag));
+        }
+    }
+
 }
