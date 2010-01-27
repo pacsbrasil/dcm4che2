@@ -78,8 +78,16 @@ import org.jfree.ui.RectangleEdge;
  */
 public class DisplayReportDiagramPage extends WebPage {
     
+    private ReportModel report;
+
     public DisplayReportDiagramPage(ReportModel report) {
         
+        this.report = report;
+    }
+    
+    @Override
+    public void onBeforeRender() {
+
         Connection jdbcConnection = null;
         try {
             if (report == null) throw new Exception("No report given to render diagram");
@@ -185,7 +193,7 @@ public class DisplayReportDiagramPage extends WebPage {
                                     new Integer(new ResourceModel("dashboard.report.reportdiagram.image.height").wrapOnAssignment(this).getObject().toString())));
 
             add(new Label("error-message", "").setVisible(false));
-            add(new Label("error-reason", "").setVisible(false));            
+            add(new Label("error-reason", "").setVisible(false));
         } catch (Exception e) {
             add(new Image("diagram"));
             add(new Label("error-message", new ResourceModel("dashboard.report.reportdiagram.statement.error").wrapOnAssignment(this).getObject()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
@@ -214,12 +222,9 @@ public class DisplayReportDiagramPage extends WebPage {
         public List<CategoryTick> refreshTicks(Graphics2D g2, AxisState state, Rectangle2D dataArea, RectangleEdge edge) {
 
             List<CategoryTick> standardTicks = super.refreshTicks(g2, state, dataArea, edge);
-System.out.println("CURRENT " + standardTicks.size() + " ticks");
             if (standardTicks.isEmpty()) return standardTicks;
-System.out.println("Should be " + (standardTicks.size() / labeledTicks) + " ticks");
             int interval = standardTicks.size() / labeledTicks;
             if (interval < 1) return standardTicks;
-System.out.println("Reducing ...");
             List<CategoryTick> newTicks = new ArrayList<CategoryTick>(standardTicks.size());
             for (int i = 0; i < standardTicks.size(); i+=interval) {
                 if (i % (standardTicks.size() / labeledTicks) == 0) {
@@ -236,8 +241,6 @@ System.out.println("Reducing ...");
                     newTicks.add(tick);
                 }
             }
-
-System.out.println("CALCULATED " + newTicks.size() + " ticks");
             return newTicks;
         }
     }

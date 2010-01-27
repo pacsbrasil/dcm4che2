@@ -93,14 +93,7 @@ public class ReportPanel extends Panel {
     private ModalWindow modalWindow;
     
     public ReportPanel(String id) {
-        super(id);
-        
-        add(this.modalWindow = new ModalWindow("modal-window"));
-        add(new ToggleFormLink("toggle-group-form-link", 
-                new AddGroupForm("add-group-form"), 
-                this, 
-                "toggle-group-form-image")
-        );        
+        super(id);        
     }
     
     @Override
@@ -108,6 +101,13 @@ public class ReportPanel extends Panel {
         super.onBeforeRender();
         
         try {
+            add(this.modalWindow = new ModalWindow("modal-window"));
+            add(new ToggleFormLink("toggle-group-form-link", 
+                    new AddGroupForm("add-group-form"), 
+                    this, 
+                    "toggle-group-form-image")
+            );        
+
             List<ReportModel> reports = new ArrayList<ReportModel>();
             for (ReportModel report : ((WicketApplication) getApplication()).getDashboardService().listAllReports())
                 reports.add(report);
@@ -155,9 +155,9 @@ public class ReportPanel extends Panel {
                                 this.modalWindow)
                     }
             );
-            reportTreeTable.getTreeState().setAllowSelectMultiple(false);
             reportTreeTable.setRootLess(true);
             reportTreeTable.getTreeState().expandAll();
+            reportTreeTable.getTreeState().setAllowSelectMultiple(false);
             add(reportTreeTable);
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
@@ -179,17 +179,15 @@ public class ReportPanel extends Panel {
 
             private static final long serialVersionUID = 1L;
 
-            public TreeFragment(String id, final TreeNode node, int level,
+            public TreeFragment(String id, final TreeNode node, int level, 
                     final IRenderNodeCallback renderNodeCallback) {
                 super(id, "fragment", ReportTreeTable.this);
 
                 add(newIndentation(this, "indent", node, level));
                 add(newJunctionLink(this, "link", "image", node));
-
-                MarkupContainer nodeLink = newNodeLink(this, "nodeLink", node);
-                nodeLink.setEnabled(false);
-                nodeLink.add(newNodeIcon(nodeLink, "icon", node));
-                nodeLink.add(new Label("label", new AbstractReadOnlyModel<Object>() {
+                add(newNodeLink(this, "nodeLink", node)
+                .add(newNodeIcon(this, "icon", node))
+                .add(new Label("label", new AbstractReadOnlyModel<Object>() {
 
                     private static final long serialVersionUID = 1L;
 
@@ -197,8 +195,8 @@ public class ReportPanel extends Panel {
                     public Object getObject() {
                         return renderNodeCallback.renderNode(node);
                     }
-                }));
-                add(nodeLink);
+                }))
+                .setEnabled(false));
             }
         }
 
@@ -219,10 +217,10 @@ public class ReportPanel extends Panel {
                 protected void onComponentTag(ComponentTag tag) {
                     super.onComponentTag(tag);
 
-                    if (((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getGroupUuid() == null)
-                        tag.put("style", "background-image: url('images/folder_files.png')");
-                    else 
-                        tag.put("style", "background-image: url('images/file.png')");
+                    tag.put("style", ((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getGroupUuid() == null ? 
+                            "background-image: url('images/folder_files.png')" : 
+                            "background-image: url('images/file.png')"
+                    );
                     tag.put("title", ((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getTitle());
                 }
             };
@@ -259,19 +257,23 @@ public class ReportPanel extends Panel {
         private static final long serialVersionUID = 1L;
         
         private Form<?> form;
-        private ToggleFormImage toggleFormImage;
         
-        public ToggleFormLink(String id, Form<?> form, MarkupContainer container, String toggleFormImageId) {
+        public ToggleFormLink(String id, final Form<?> form, MarkupContainer container, String toggleFormImageId) {
             super(id);
 
-            this.form = form;
             newAjaxComponent(this);
             container.add(this.form = form);
-            this.toggleFormImage = new ToggleFormImage(toggleFormImageId, this.form);
-            newAjaxComponent(
-                    this.toggleFormImage);
-            this.add(
-                    this.toggleFormImage);
+            
+            this.add(newAjaxComponent(new Image("toggle-group-form-image") {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onComponentTag(ComponentTag tag) {
+                    super.onComponentTag(tag);
+                    tag.put("src",form.isVisible() ? "images/action_remove.png" : "images/action_add.png");
+                }
+            }));
         }
 
         @Override
@@ -287,26 +289,7 @@ public class ReportPanel extends Panel {
         public void onClick(AjaxRequestTarget target) {
             this.form.setVisible(!this.form.isVisible()); 
             target.addComponent(this);
-            target.addComponent(this.toggleFormImage);
             target.addComponent(this.form);
-        }
-    };
-    
-    private final class ToggleFormImage extends Image {
-        
-        private static final long serialVersionUID = 1L;
-        
-        private Form<?> form;
-        
-        public ToggleFormImage(String id, Form<?> form) {
-            super(id);
-            this.form = form;
-        }
-        
-        @Override
-        protected void onComponentTag(ComponentTag tag) {
-            super.onComponentTag(tag);
-            tag.put("src", this.form.isVisible() ? "images/action_remove.png" : "images/action_add.png");
         }
     };
     

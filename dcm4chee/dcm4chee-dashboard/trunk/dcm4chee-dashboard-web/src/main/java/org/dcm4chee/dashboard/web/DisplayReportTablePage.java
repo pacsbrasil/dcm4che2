@@ -59,7 +59,15 @@ import org.dcm4chee.dashboard.util.CSSUtils;
  */
 public class DisplayReportTablePage extends WebPage {
 
+    private ReportModel report;
+
     public DisplayReportTablePage(ReportModel report) {
+        
+        this.report = report;
+    }
+    
+    @Override
+    public void onBeforeRender() {
 
         RepeatingView columnHeaders = new RepeatingView("column-headers"); 
         add(columnHeaders);
