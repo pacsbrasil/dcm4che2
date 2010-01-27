@@ -49,11 +49,11 @@ import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
-import org.apache.wicket.markup.html.pages.InternalErrorPage;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.dashboard.model.SystemPropertyModel;
 import org.dcm4chee.dashboard.util.CSSUtils;
+import org.dcm4chee.dashboard.web.common.InternalErrorPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,6 +70,11 @@ public class SystemInfoPanel extends Panel {
 
     public SystemInfoPanel(String id) {
         super(id);
+    }
+    
+    @Override
+    public void onBeforeRender() {
+        super.onBeforeRender();
 
         try {
             add(new ListView<SystemPropertyModel>("system-property-instance-rows", Arrays.asList(((WicketApplication) getApplication()).getDashboardService().getSystemProperties())) {
@@ -132,7 +137,7 @@ public class SystemInfoPanel extends Panel {
                 }
             });
         } catch (Exception e) {
-            log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
+            log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
             this.redirectToInterceptPage(new InternalErrorPage());
         }

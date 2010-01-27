@@ -65,12 +65,12 @@ import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation.Unit;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.pages.InternalErrorPage;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.dcm4chee.dashboard.web.common.InternalErrorPage;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -96,6 +96,11 @@ public class FileSystemPanel extends Panel {
 
     public FileSystemPanel(String id) {
         super(id);
+    }
+    
+    @Override
+    public void onBeforeRender() {
+        super.onBeforeRender();
 
         try {
             DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new FileSystemModel());
@@ -155,42 +160,42 @@ public class FileSystemPanel extends Panel {
                 new PropertyTreeColumn(new ColumnLocation(
                         Alignment.LEFT, 17, Unit.PERCENT), 
                         new ResourceModel(
-                                "filesystemlist.table.column.name").wrapOnAssignment(this).getObject(), 
+                                "dashboard.filesystem.table.column.name").wrapOnAssignment(this).getObject(), 
                                 "userObject.directoryPath"),
                 new ImageRenderableColumn(new ColumnLocation(
                         Alignment.RIGHT, 30, Unit.PERCENT), 
                         new ResourceModel(
-                                "filesystemlist.table.column.image").wrapOnAssignment(this).getObject(),
+                                "dashboard.filesystem.table.column.image").wrapOnAssignment(this).getObject(),
                                 "userObject.directoryPath"),
                 new PropertyRenderableColumn(new ColumnLocation(
                         Alignment.RIGHT, 8, Unit.PERCENT),
                         new ResourceModel(
-                                "filesystemlist.table.column.overall").wrapOnAssignment(this).getObject(),
+                                "dashboard.filesystem.table.column.overall").wrapOnAssignment(this).getObject(),
                                 "userObject.overallDiskSpaceString"), 
                 new PropertyRenderableColumn(new ColumnLocation(
                         Alignment.RIGHT, 8, Unit.PERCENT),
                         new ResourceModel(
-                                "filesystemlist.table.column.used").wrapOnAssignment(this).getObject(),
+                                "dashboard.filesystem.table.column.used").wrapOnAssignment(this).getObject(),
                                 "userObject.usedDiskSpaceString"),
                 new PropertyRenderableColumn(new ColumnLocation(
                         Alignment.RIGHT, 8, Unit.PERCENT),
                         new ResourceModel(
-                                "filesystemlist.table.column.free").wrapOnAssignment(this).getObject(),
+                                "dashboard.filesystem.table.column.free").wrapOnAssignment(this).getObject(),
                                 "userObject.freeDiskSpaceString"),
                 new PropertyRenderableColumn(new ColumnLocation(
                         Alignment.RIGHT, 8, Unit.PERCENT),
                         new ResourceModel(
-                                "filesystemlist.table.column.minimumfree").wrapOnAssignment(this).getObject(),
+                                "dashboard.filesystem.table.column.minimumfree").wrapOnAssignment(this).getObject(),
                                 "userObject.minimumFreeDiskSpaceString"),
                 new PropertyRenderableColumn(new ColumnLocation(
                         Alignment.RIGHT, 8, Unit.PERCENT),
                         new ResourceModel(
-                                "filesystemlist.table.column.usable").wrapOnAssignment(this).getObject(),
+                                "dashboard.filesystem.table.column.usable").wrapOnAssignment(this).getObject(),
                                 "userObject.usableDiskSpaceString"), 
                 new PropertyRenderableColumn(new ColumnLocation(
                         Alignment.RIGHT, 13, Unit.PERCENT),
                         new ResourceModel(
-                                "filesystemlist.table.column.remainingtime").wrapOnAssignment(this).getObject(),
+                                "dashboard.filesystem.table.column.remainingtime").wrapOnAssignment(this).getObject(),
                                 "userObject.remainingTimeString")
             });
             fileSystemTreeTable.getTreeState().setAllowSelectMultiple(true);
@@ -199,7 +204,7 @@ public class FileSystemPanel extends Panel {
 
             add(fileSystemTreeTable);
         } catch (Exception e) {
-            log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
+            log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
             this.redirectToInterceptPage(new InternalErrorPage());
         }
@@ -218,7 +223,6 @@ public class FileSystemPanel extends Panel {
             return null;
         }
         
-        @SuppressWarnings("deprecation")
         @Override
         public Component newCell(MarkupContainer parent, String id, final TreeNode node, int level) {
             if (!((node instanceof DefaultMutableTreeNode) && (((DefaultMutableTreeNode) node)
@@ -261,7 +265,7 @@ public class FileSystemPanel extends Panel {
                             : (row == 2) ? Color.blue : Color.white;
                 }
             };
-            renderer.setItemLabelsVisible(false);
+            renderer.setBaseItemLabelsVisible(false);
             plot.setRenderer(renderer);
 
             return new JFreeChartImage("image", chart, 350, 40) {
@@ -476,7 +480,7 @@ public class FileSystemPanel extends Panel {
         }
         
         public String getRemainingTimeString() {
-            return this.daysFormatter.format(new Float(this.remainingTime)); 
+            return "~ " + this.daysFormatter.format(new Float(this.remainingTime)); 
         }
     }
 }

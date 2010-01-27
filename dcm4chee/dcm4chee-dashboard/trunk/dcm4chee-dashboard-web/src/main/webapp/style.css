@@ -14,6 +14,9 @@ th, td {
 	border-style: none;
 }
 
+.hyperlink {
+	border-style: none;
+}
 
 /*	COLOR	*/
 
@@ -27,7 +30,7 @@ th, td {
 	color: #000000 !important;
 }
 
-.nothing {
+.nothing, .hyperlink-treetable {
 	/* Gray 1 */
 	color: #333333;
 }
@@ -157,12 +160,6 @@ th, td {
 	font-size: 16pt;
 }
 
-/* for dashboard FileSystemTreeTable */
-div.row, span {
-	height: 50px !important;
-	border-color: #666666 !important;
-}
-
 .table-data {
 	padding: 5px;
 }
@@ -179,7 +176,19 @@ div.tab-row li {
 	clear: both;
 }
 
+/* for dashboard FileSystemTreeTable */
+div[id="filesystem"] div.row, div[id="filesystem"] span {
+	height: 50px !important;
+	border-color: #666666 !important;
+}
+
+/* for dashboard ReportTreeTable */
+div[id="report"] div.row, div[id="report"] span {
+/*	height: 30px !important;*/
+	border-color: #666666 !important;
+}
+
 /* class of tree table of wicket extensions */
 span.c_ {
-	text-align: center;	
+	text-align: center;
 }

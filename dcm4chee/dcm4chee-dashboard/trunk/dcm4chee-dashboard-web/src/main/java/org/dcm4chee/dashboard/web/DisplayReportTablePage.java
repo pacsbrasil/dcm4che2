@@ -69,7 +69,7 @@ public class DisplayReportTablePage extends WebPage {
         Connection jdbcConnection = null;
         try {
             ResultSet resultSet = 
-                (jdbcConnection  = DashboardMainPage.getDatabaseConnection())
+                (jdbcConnection  = DashboardMainPage.getDatabaseConnection(report.getDataSource()))
                 .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
                 .executeQuery(report.getStatement());
 

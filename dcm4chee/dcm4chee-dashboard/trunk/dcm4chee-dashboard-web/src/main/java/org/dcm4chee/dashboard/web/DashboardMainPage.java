@@ -42,7 +42,6 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -53,10 +52,9 @@ import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
 import org.apache.wicket.extensions.markup.html.tabs.AbstractTab;
 import org.apache.wicket.extensions.markup.html.tabs.ITab;
 import org.apache.wicket.markup.html.WebPage;
-import org.apache.wicket.markup.html.pages.InternalErrorPage;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
-import org.jboss.mx.util.MBeanServerLocator;
+import org.dcm4chee.dashboard.web.common.InternalErrorPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,16 +105,19 @@ public class DashboardMainPage extends WebPage {
         }
     }
     
-    protected static Connection getDatabaseConnection() throws Exception {
+    protected static Connection getDatabaseConnection(String dataSourceName) throws Exception {
 
         Context jndiContext = null;
         try {
             jndiContext = new InitialContext();
+//            return ((DataSource) 
+//                    jndiContext.lookup((String) MBeanServerLocator.locate().getAttribute(
+//                            new ObjectName("org.dcm4chee.dashboard.mbean:service=DashboardService"),
+//                            dataSourceName)
+//                    )).getConnection();
             return ((DataSource) 
-                    jndiContext.lookup((String) MBeanServerLocator.locate().getAttribute(
-                            new ObjectName("org.dcm4chee.dashboard.mbean:service=DashboardService"),
-                            "dataSourceName")
-                    )).getConnection();
+                    jndiContext.lookup(dataSourceName))
+                    .getConnection();
         } catch (Exception e) {
             throw e;
         } finally {

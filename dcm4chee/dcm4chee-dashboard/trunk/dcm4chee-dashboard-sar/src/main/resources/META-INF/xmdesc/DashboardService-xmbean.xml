@@ -13,11 +13,11 @@
       <description>MBean Constructor.</description>
       <name>org.dcm4chee.dashboard.mbean.DashboardService</name>
    </constructor>
-	<attribute access="read-write" getMethod="getDataSourceName" setMethod="setDataSourceName">
+	<attribute access="read-write" getMethod="getDataSourceList" setMethod="setDataSourceList">
         <description>
-            Represents the jndi name for the configured data source
+            Represents the jndi names for the configured data sources
         </description>
-        <name>dataSourceName</name>
+        <name>dataSourceList</name>
         <type>java.lang.String</type>
         <descriptors>
             <value>java:pacsDS</value>
@@ -47,6 +47,16 @@ os.arch
 os.version
 java.version</value>
         </descriptors>
+    </attribute>
+	<attribute access="read-write" getMethod="getGroupFilename" setMethod="setGroupFilename">
+        <description>
+            Full path of file to contain the group declarations
+        </description>
+        <name>groupFilename</name>
+        <type>java.lang.String</type>
+        <descriptors>
+        	<value>dashboard.groups</value>
+		</descriptors>
     </attribute>
 	<attribute access="read-write" getMethod="getReportFilename" setMethod="setReportFilename">
         <description>
@@ -118,6 +128,25 @@ java.version</value>
       <name>deleteReport</name>
       <parameter>
          <name>report</name>
+         <type>org.dcm4chee.dashboard.model.ReportModel</type>
+      </parameter>
+   </operation>
+   <operation>
+      <description>MBean Operation.</description>
+      <name>listAllReportGroups</name>
+      <return-type>[Lorg.dcm4chee.dashboard.model.ReportModel;</return-type>
+   </operation>
+   <operation>
+      <name>createGroup</name>
+      <parameter>
+         <name>group</name>
+         <type>org.dcm4chee.dashboard.model.ReportModel</type>
+      </parameter>
+   </operation>
+   <operation>
+      <name>deleteGroup</name>
+      <parameter>
+         <name>group</name>
          <type>org.dcm4chee.dashboard.model.ReportModel</type>
       </parameter>
    </operation>

@@ -15,7 +15,7 @@
   <packaging>war</packaging>
   <properties>
     <ear>dcm4chee-dashboard-${version}-SNAPSHOT</ear>
-    <wicket.version>1.4.4</wicket.version>
+    <wicket.version>1.4.5</wicket.version>
   </properties>
   <dependencies>
   <dependency>

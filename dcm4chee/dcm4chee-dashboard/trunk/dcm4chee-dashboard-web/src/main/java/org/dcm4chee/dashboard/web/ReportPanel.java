@@ -39,32 +39,43 @@
 package org.dcm4chee.dashboard.web;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
+
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
 
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.Page;
-import org.apache.wicket.PageParameters;
+import org.apache.wicket.Component;
+import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
-import org.apache.wicket.markup.html.IHeaderContributor;
-import org.apache.wicket.markup.html.IHeaderResponse;
+import org.apache.wicket.extensions.markup.html.tree.table.AbstractColumn;
+import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation;
+import org.apache.wicket.extensions.markup.html.tree.table.IColumn;
+import org.apache.wicket.extensions.markup.html.tree.table.IRenderable;
+import org.apache.wicket.extensions.markup.html.tree.table.PropertyTreeColumn;
+import org.apache.wicket.extensions.markup.html.tree.table.TreeTable;
+import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation.Alignment;
+import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation.Unit;
+import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.image.ContextImage;
-import org.apache.wicket.markup.html.link.BookmarkablePageLink;
-import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.markup.html.link.PopupSettings;
-import org.apache.wicket.markup.html.list.ListItem;
-import org.apache.wicket.markup.html.list.ListView;
-import org.apache.wicket.markup.html.pages.InternalErrorPage;
+import org.apache.wicket.markup.html.form.Button;
+import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.image.Image;
+import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
-import org.dcm4chee.dashboard.mbean.DashboardDelegator;
+import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4chee.dashboard.model.ReportModel;
-import org.dcm4chee.dashboard.util.CSSUtils;
+import org.dcm4chee.dashboard.web.validator.ValidatorMessageLabel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,135 +95,265 @@ public class ReportPanel extends Panel {
     public ReportPanel(String id) {
         super(id);
         
+        add(this.modalWindow = new ModalWindow("modal-window"));
+        add(new ToggleFormLink("toggle-group-form-link", 
+                new AddGroupForm("add-group-form"), 
+                this, 
+                "toggle-group-form-image")
+        );        
+    }
+    
+    @Override
+    public void onBeforeRender() {
+        super.onBeforeRender();
+        
         try {
-            final String[] diagramOptions = new ResourceModel("dashboard.report.diagram.options").wrapOnAssignment(this).getObject().split(";");
-            add(this.modalWindow = new ModalWindow("modal-window"));
-            add(new CreateOrEditReportLink("add-report-link", null).add(new ContextImage("add-report-image", "images/file.png")));
+            List<ReportModel> reports = new ArrayList<ReportModel>();
+            for (ReportModel report : ((WicketApplication) getApplication()).getDashboardService().listAllReports())
+                reports.add(report);
 
-            add(new ListView<ReportModel>("report-rows", ((WicketApplication) getApplication()).getDashboardService().listAllReports() != null ? Arrays.asList(((WicketApplication) getApplication()).getDashboardService().listAllReports()) : new ArrayList<ReportModel>()) {
+            DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new ReportModel());
+            
+            for (ReportModel group : ((WicketApplication) getApplication()).getDashboardService().listAllReportGroups()) {
+                DefaultMutableTreeNode groupNode = new DefaultMutableTreeNode();
+                groupNode.setUserObject(group);
+                rootNode.add(groupNode);
+    
+                for (ReportModel report : ((WicketApplication) getApplication()).getDashboardService().listAllReports()) {
+                    if (report.getGroupUuid() != null && report.getGroupUuid().equals(group.getUuid())) {
+                        DefaultMutableTreeNode reportNode = new DefaultMutableTreeNode();
+                        reportNode.setUserObject(report);
+                        groupNode.add(reportNode);
+                    }
+                }
+            }
+
+            ReportTreeTable reportTreeTable = new ReportTreeTable("report-tree-table", 
+                    new DefaultTreeModel(rootNode), new IColumn[] {
+                        new PropertyTreeColumn(new ColumnLocation(Alignment.LEFT, 40, Unit.PERCENT), 
+                                new ResourceModel("dashboard.report.table.title_title").wrapOnAssignment(this).getObject(),  
+                                "userObject.title")
+                        ,
+                        new DynamicRenderableColumn(new ColumnLocation(Alignment.RIGHT, 10, Unit.PERCENT), 
+                                new ResourceModel("dashboard.report.table.link.edit").wrapOnAssignment(this).getObject(),  
+                                "CreateOrEditReportLink", 
+                                this.modalWindow)
+                        ,
+                        new DynamicRenderableColumn(new ColumnLocation(Alignment.RIGHT, 10, Unit.PERCENT), 
+                                new ResourceModel("dashboard.report.table.link.remove").wrapOnAssignment(this).getObject(),  
+                                "RemoveLink", 
+                                this.modalWindow)
+                        ,
+                        new DynamicRenderableColumn(new ColumnLocation(Alignment.RIGHT, 10, Unit.PERCENT), 
+                                new ResourceModel("dashboard.report.table.link.diagram").wrapOnAssignment(this).getObject(),  
+                                "DiagramLink", 
+                                this.modalWindow)
+                        ,
+                        new DynamicRenderableColumn(new ColumnLocation(Alignment.RIGHT, 10, Unit.PERCENT), 
+                                new ResourceModel("dashboard.report.table.link.table").wrapOnAssignment(this).getObject(),  
+                                "TableLink", 
+                                this.modalWindow)
+                    }
+            );
+            reportTreeTable.getTreeState().setAllowSelectMultiple(false);
+            reportTreeTable.setRootLess(true);
+            reportTreeTable.getTreeState().expandAll();
+            add(reportTreeTable);
+        } catch (Exception e) {
+            log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
+            log.debug("Exception: ", e);
+        }
+    }
+
+    private class ReportTreeTable extends TreeTable {
+
+        private static final long serialVersionUID = 1L;
+
+        public ReportTreeTable(String id, TreeModel model, IColumn[] columns) {
+            super(id, model, columns);
+            
+            add(new AttributeModifier("class", true, new Model<String>("table")));
+        }
+
+        private class TreeFragment extends Fragment {
+
+            private static final long serialVersionUID = 1L;
+
+            public TreeFragment(String id, final TreeNode node, int level,
+                    final IRenderNodeCallback renderNodeCallback) {
+                super(id, "fragment", ReportTreeTable.this);
+
+                add(newIndentation(this, "indent", node, level));
+                add(newJunctionLink(this, "link", "image", node));
+
+                MarkupContainer nodeLink = newNodeLink(this, "nodeLink", node);
+                nodeLink.setEnabled(false);
+                nodeLink.add(newNodeIcon(nodeLink, "icon", node));
+                nodeLink.add(new Label("label", new AbstractReadOnlyModel<Object>() {
+
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    public Object getObject() {
+                        return renderNodeCallback.renderNode(node);
+                    }
+                }));
+                add(nodeLink);
+            }
+        }
+
+        @Override
+        protected Component newTreePanel(MarkupContainer parent, String id, final TreeNode node, 
+                                         int level, IRenderNodeCallback renderNodeCallback) {
+            return new TreeFragment(id, node, level, renderNodeCallback);
+        }
+
+        @Override
+        protected Component newNodeIcon(MarkupContainer parent, String id, final TreeNode node) {
+
+            return new WebMarkupContainer(id) {
 
                 private static final long serialVersionUID = 1L;
-                
-                @SuppressWarnings("unchecked")
+
                 @Override
-                protected void populateItem(ListItem<ReportModel> item) {
-                    final ReportModel report = (ReportModel) item.getModelObject();
-                    
-                    item.add(new Label("report-title", String.valueOf(report.getTitle())).add(new AttributeModifier("title", true, new Model<String>(report.getStatement().replace(System.getProperty("line.separator"), " ")))));                   
-                    item.add(new CreateOrEditReportLink("edit-report-link", ((ReportModel) item.getModelObject())));
-                    item.add(new RemoveReportLink("remove-report-link", report).add(new AttributeModifier("onclick", true, new Model<String>("return confirm('" + new ResourceModel("dashboard.report.table.remove_confirmation").wrapOnAssignment(this).getObject() + "');"))));
+                protected void onComponentTag(ComponentTag tag) {
+                    super.onComponentTag(tag);
 
-                    final PageParameters parameters = this.getPage().getPageParameters() != null ? this.getPage().getPageParameters() : new PageParameters();
-                    parameters.add("uuid", report.getUuid());
-
-                    item.add(new Link("report-diagram-link") {
-
-                        private static final long serialVersionUID = 1L;
-
-                        @Override
-                        public void onClick() {
-                            setResponsePage(new DisplayReportDiagramPage(report));
-                        }
-                    }
-                    .setPopupSettings(new PopupSettings(PopupSettings.RESIZABLE | PopupSettings.SCROLLBARS))
-                    .add(new Label("report-diagram-dropdown-choice-label", new Model<String>(report.getDiagram() != null ? diagramOptions[report.getDiagram()] : "")))
-                    .setVisible(report.getDiagram() != null));
-
-                    item.add(new Link("report-table-link") {
-
-                        private static final long serialVersionUID = 1L;
-
-                        @Override
-                        public void onClick() {
-                            setResponsePage(new DisplayReportTablePage(report));
-                        }
-                    }
-                    .setPopupSettings(new PopupSettings(PopupSettings.RESIZABLE | PopupSettings.SCROLLBARS))
-                    .setVisible(report.getTable()));
-
-                    item.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(item.getIndex()))));
+                    if (((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getGroupUuid() == null)
+                        tag.put("style", "background-image: url('images/folder_files.png')");
+                    else 
+                        tag.put("style", "background-image: url('images/file.png')");
+                    tag.put("title", ((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getTitle());
                 }
-              });
-        } catch (Exception e) {
-            log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
-            log.debug("Exception: ", e);
-            this.redirectToInterceptPage(new InternalErrorPage());
+            };
+        }
+    };
+
+    private class DynamicRenderableColumn extends AbstractColumn {
+
+        private static final long serialVersionUID = 1L;
+
+        private String className;
+        private ModalWindow modalWindow;
+
+        public DynamicRenderableColumn(ColumnLocation location, String header, String className, ModalWindow modalWindow) {
+            super(location, header);
+            
+            this.className = className;
+            this.modalWindow = modalWindow;
+        }
+
+        @Override
+        public IRenderable newCell(TreeNode node, int level) {
+            return null;
+        }
+
+        @Override
+        public Component newCell(MarkupContainer parent, String id, final TreeNode node, int level) {
+            return new DynamicLinkPanel(id, this.className, (ReportModel) ((DefaultMutableTreeNode) node).getUserObject(), this.modalWindow);
         }
     }
     
-    private final class CreateOrEditReportLink extends AjaxFallbackLink<Object> {
+    private final class ToggleFormLink extends AjaxFallbackLink<Object> {
         
         private static final long serialVersionUID = 1L;
         
-        private ReportModel forReport;
+        private Form<?> form;
+        private ToggleFormImage toggleFormImage;
         
-        public CreateOrEditReportLink(String id, ReportModel report) {
+        public ToggleFormLink(String id, Form<?> form, MarkupContainer container, String toggleFormImageId) {
             super(id);
-            this.forReport = report;
+
+            this.form = form;
+            newAjaxComponent(this);
+            container.add(this.form = form);
+            this.toggleFormImage = new ToggleFormImage(toggleFormImageId, this.form);
+            newAjaxComponent(
+                    this.toggleFormImage);
+            this.add(
+                    this.toggleFormImage);
+        }
+
+        @Override
+        protected void onComponentTag(ComponentTag tag) {
+            super.onComponentTag(tag);
+            
+            tag.put("title", this.form.isVisible() ? 
+                    new ResourceModel("dashboard.report.add-group.visible.true").wrapOnAssignment(this).getObject()
+                    : new ResourceModel("dashboard.report.add-group.visible.false").wrapOnAssignment(this).getObject());
         }
         
         @Override
         public void onClick(AjaxRequestTarget target) {
-            
-            modalWindow.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {              
-                
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void onClose(AjaxRequestTarget target) {
-                    setResponsePage(DashboardMainPage.class, new PageParameters("tab=" + new ResourceModel("dashboard.tabs.tab2.number").getObject()));
-                }
-            })
-            .setPageCreator(new ModalWindow.PageCreator() {
-                
-                private static final long serialVersionUID = 1L;
-                
-                @Override
-                public Page createPage() {
-                    return new CreateOrEditReportPage(modalWindow, forReport);
-                }                
-            });
-
-            class DisableDefaultConfirmBehavior extends AbstractBehavior implements IHeaderContributor {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void renderHead(IHeaderResponse response) {
-                    response.renderOnDomReadyJavascript ("Wicket.Window.unloadConfirmation = false");
-                }
-            }
-            
-            ((ModalWindow) modalWindow.add(new DisableDefaultConfirmBehavior()))
-            .setInitialWidth(new Integer(new ResourceModel("dashboard.report.createoredit.window.width").wrapOnAssignment(this).getObject().toString()))
-            .setInitialHeight(new Integer(new ResourceModel("dashboard.report.createoredit.window.height").wrapOnAssignment(this).getObject().toString()))
-            .show(target);
-        }        
+            this.form.setVisible(!this.form.isVisible()); 
+            target.addComponent(this);
+            target.addComponent(this.toggleFormImage);
+            target.addComponent(this.form);
+        }
     };
     
-    private final class RemoveReportLink extends Link<Object> {
+    private final class ToggleFormImage extends Image {
         
         private static final long serialVersionUID = 1L;
         
-        private ReportModel forReport;
+        private Form<?> form;
         
-        public RemoveReportLink(String id, ReportModel report) {
+        public ToggleFormImage(String id, Form<?> form) {
             super(id);
-            this.forReport = report;
+            this.form = form;
         }
-
+        
         @Override
-        public void onClick() {
+        protected void onComponentTag(ComponentTag tag) {
+            super.onComponentTag(tag);
+            tag.put("src", this.form.isVisible() ? "images/action_remove.png" : "images/action_add.png");
+        }
+    };
+    
+    private final class AddGroupForm extends Form<Object> {
+        
+        private static final long serialVersionUID = 1L;
+        
+        private Model<String> newGroupname = new Model<String>();
+        
+        public AddGroupForm(String id) {
+            super(id);
+                      
+            newAjaxComponent(this);
+            this.setVisible(false);
+
+            this.add(newAjaxComponent(
+                    new Label("new-group-label", new ResourceModel("dashboard.report.add-group.label").wrapOnAssignment(this))));
+            TextField<String> groupTf
+            = new TextField<String>("new-groupname-input", newGroupname);
+            newAjaxComponent(groupTf);
+            groupTf.add(new PatternValidator("^[A-Za-z0-9]+$"));
+        groupTf.setRequired(true);
+        this.add(groupTf);
+        this.add(new ValidatorMessageLabel("new-groupname-validator-message-label", groupTf));
+            
+            this.add(new Button("add-group-submit"));
+        }
+        
+        @Override
+        protected void onSubmit() {
             try {
-                ((WicketApplication) getApplication()).getDashboardService().deleteReport(this.forReport);
+                ((WicketApplication) getApplication()).getDashboardService().createGroup(
+                        new ReportModel(null, this.newGroupname.getObject(), null, null, null, false, null));
+                
                 DashboardMainPage page = new DashboardMainPage(this.getPage().getPageParameters());
                 ((AjaxTabbedPanel) page.get("tabs")).setSelectedTab(new Integer(new ResourceModel("dashboard.tabs.tab2.number").getObject()));
-                setResponsePage(page);
-            } catch (Exception e) {
-                log.error(this.getClass().toString() + ": " + "onClick: " + e.getMessage());
+                setResponsePage(page);            
+            } catch (final Exception e) {
+                log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
                 log.debug("Exception: ", e);
-                this.redirectToInterceptPage(new InternalErrorPage());
             }
         }
+    };
+    
+    private Component newAjaxComponent(Component component) {
+        component.setOutputMarkupId(true);
+        component.setOutputMarkupPlaceholderTag(true);
+        return component;
     }
 }

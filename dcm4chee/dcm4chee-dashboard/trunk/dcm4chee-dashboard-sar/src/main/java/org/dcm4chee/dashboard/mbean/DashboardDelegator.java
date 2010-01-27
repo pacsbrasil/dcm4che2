@@ -62,6 +62,8 @@ public class DashboardDelegator {
     private final MBeanServer server = MBeanServerLocator.locate();
     private ObjectName objectName;
     
+    private String newline = System.getProperty("line.separator");
+    
     public DashboardDelegator(String objectName) throws MalformedObjectNameException, NullPointerException {
         this.objectName = new ObjectName(objectName);
     }
@@ -132,5 +134,35 @@ public class DashboardDelegator {
                         "deleteReport", 
                         new Object[] { report }, 
                         new String[] { "org.dcm4chee.dashboard.model.ReportModel" });       
+    }
+    
+    public String[] getDataSources() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException, AttributeNotFoundException {
+        return (String[]) server.getAttribute(
+                        this.objectName,
+                        "dataSourceList")
+                        .toString()
+                        .split(this.newline);
+    }
+
+    public ReportModel[] listAllReportGroups() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
+        return (ReportModel[]) server.invoke(
+                        this.objectName,
+                        "listAllReportGroups", null, null);
+    }
+
+    public void createGroup(ReportModel group) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
+        server.invoke(
+        this.objectName,
+        "createGroup", 
+        new Object[] { group }, 
+        new String[] { "org.dcm4chee.dashboard.model.ReportModel" });
+    }
+
+    public void deleteGroup(ReportModel group) throws InstanceNotFoundException, ReflectionException, MBeanException {
+        server.invoke(
+                this.objectName,
+                "deleteGroup", 
+                new Object[] { group }, 
+                new String[] { "org.dcm4chee.dashboard.model.ReportModel" });       
     }
 }

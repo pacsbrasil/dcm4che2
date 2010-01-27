@@ -42,8 +42,15 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.AbstractList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.MalformedObjectNameException;
+import javax.management.ReflectionException;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -59,7 +66,6 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
-import org.apache.wicket.markup.html.pages.InternalErrorPage;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
@@ -83,14 +89,31 @@ public class CreateOrEditReportPage extends WebPage {
     private static Logger log = LoggerFactory.getLogger(CreateOrEditReportPage.class);
    
     protected ModalWindow window;
+    private ReportModel report;
  
-    public CreateOrEditReportPage(final ModalWindow window, final ReportModel forReport) {
+    public CreateOrEditReportPage(final ModalWindow window, final ReportModel report) {
+        super();
+
+        this.report = report;
+        if (this.report == null) this.report = new ReportModel();
+        if (this.report.getGroupUuid() == null) {
+            this.report.setGroupUuid(this.report.getUuid());
+            this.report.setUuid(null);
+            this.report.setTitle(null);
+        }
+        this.window = window;
+    }
+
+    @Override
+    public void onBeforeRender() {
+        super.onBeforeRender();
+        
         try {
-            add(new Label("page-title", new ResourceModel(forReport == null ? "dashboard.report.createoredit.create.title" : "dashboard.report.createoredit.edit.title")));
+            add(new Label("page-title", new ResourceModel(this.report == null || this.report.getGroupUuid() == null ? "dashboard.report.createoredit.create.title" : "dashboard.report.createoredit.edit.title")));
             
             Label resultMessage;
             add(resultMessage = new Label("result-message"));
-            add(new CreateOrEditReportForm("create-or-edit-report-form", forReport, resultMessage, window));
+            add(new CreateOrEditReportForm("create-or-edit-report-form", this.report, resultMessage, this.window));
 
             add(new AjaxLink<Object>("close") {
 
@@ -102,44 +125,51 @@ public class CreateOrEditReportPage extends WebPage {
                 }
             }.setOutputMarkupId(true).setOutputMarkupPlaceholderTag(true));
         } catch (Exception e) {
-            log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
+            log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
-            this.redirectToInterceptPage(new InternalErrorPage());
         }
     }
-
+    
     private final class CreateOrEditReportForm extends Form<Object> {
 
         private static final long serialVersionUID = 1L;
         
-        public CreateOrEditReportForm(String id, final ReportModel forReport, final Label resultMessage, final ModalWindow window) {
+        public CreateOrEditReportForm(String id, final ReportModel report, final Label resultMessage, final ModalWindow window) throws InstanceNotFoundException, MalformedObjectNameException, AttributeNotFoundException, ReflectionException, MBeanException, NullPointerException {
             super(id);
 
-            final ReportModel report = forReport == null ? new ReportModel(UUID.randomUUID().toString(), null, null, null, false) : forReport;
-            this.add(new TextField<String>("dashboard.report.createoredit.form.title.input", new PropertyModel<String>(report, "title"))
+            final ReportModel thisReport = report == null ? new ReportModel(UUID.randomUUID().toString(), null, null, null, null, false, null) : report;
+            this.add(new TextField<String>("dashboard.report.createoredit.form.title.input", new PropertyModel<String>(thisReport, "title"))
             .setRequired(true)
             .add(new ReportTitleValidator())
             .add(new AttributeModifier("size", true, new ResourceModel("dashboard.report.createoredit.form.title.columns"))));
             this.add(new ValidatorMessageLabel("report-title-validator-message-label", (FormComponent<?>) this.get(0)).setOutputMarkupId(true));
             
-            this.add(new TextArea<String>("dashboard.report.createoredit.form.statement.input", new PropertyModel<String>(report, "statement"))
+            add(new Label("report-datasource-dropdown-label", new ResourceModel("dashboard.report.createoredit.form.datasource.dropdown.title")));
+            add(new DropDownChoice<String>("report-datasource-dropdown-choice", new PropertyModel<String>(thisReport, "dataSource"), Arrays.asList(((WicketApplication) getApplication()).getDashboardService().getDataSources())).setNullValid(true));
+
+            this.add(new TextArea<String>("dashboard.report.createoredit.form.statement.input", new PropertyModel<String>(thisReport, "statement"))
             .setRequired(true)
             .add(new SQLSelectStatementValidator())
             .add(new AttributeModifier("rows", true, new ResourceModel("dashboard.report.createoredit.form.statement.rows")))
             .add(new AttributeModifier("cols", true, new ResourceModel("dashboard.report.createoredit.form.statement.columns"))));
-            this.add(new ValidatorMessageLabel("report-statement-validator-message-label", (FormComponent<?>) this.get(2)).setOutputMarkupId(true));
-            
+            this.add(new ValidatorMessageLabel("report-statement-validator-message-label", (FormComponent<?>) this.get("dashboard.report.createoredit.form.statement.input")).setOutputMarkupId(true));
+
             add(new AjaxFallbackButton("statement-test-submit", CreateOrEditReportForm.this) {
                 private static final long serialVersionUID = 1L;
-    
+
                 @Override
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                    Connection jdbcConnection = null;
+                    Object dataSourceName = null;
                     String message = null;
+                    Connection jdbcConnection = null;
                     try {
-                        (jdbcConnection = DashboardMainPage.getDatabaseConnection())
+                        if ((dataSourceName = form.get("report-datasource-dropdown-choice").getDefaultModelObject()) == null) {
+                            message = new ResourceModel("dashboard.report.createoredit.form.statement-test-submit.no-datasource-message").wrapOnAssignment(this.getParent()).getObject();
+                            return;
+                        }
+                        (jdbcConnection = DashboardMainPage.getDatabaseConnection(dataSourceName.toString()))
                         .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
-                        .executeQuery(report.getStatement())
+                        .executeQuery(thisReport.getStatement())
                         .close();
                     } catch (Exception e) {
                         message = e.getLocalizedMessage();
@@ -148,6 +178,7 @@ public class CreateOrEditReportPage extends WebPage {
                         try {
                             jdbcConnection.close();
                         } catch (SQLException ignore) {
+                        } catch (NullPointerException ignore) {
                         }
                         resultMessage.setDefaultModel(new Model<String>(new ResourceModel(message == null ? "dashboard.report.createoredit.form.statement-test-submit.success-message" : 
                                                                                           "dashboard.report.createoredit.form.statement-test-submit.failure-message")
@@ -159,10 +190,11 @@ public class CreateOrEditReportPage extends WebPage {
                     }
                 }
             });
-            
-            final String[] diagramOptions = new ResourceModel("dashboard.report.diagram.options").wrapOnAssignment(this.getParent()).getObject().split(";");
+
+            final String[] diagramOptionsTypes = new ResourceModel("dashboard.report.diagram.options.types").wrapOnAssignment(this.getParent()).getObject().split(";");
+            final String[] diagramOptionsTooltips = new ResourceModel("dashboard.report.diagram.options.tooltips").wrapOnAssignment(this.getParent()).getObject().split(";");
             add(new Label("report-diagram-dropdown-label", new ResourceModel("dashboard.report.createoredit.form.diagram.dropdown.title")));
-            add(new DropDownChoice<Integer>("report-diagram-dropdown-choice", new PropertyModel<Integer>(report, "diagram"), new ListModel<Integer>() {
+            add(new DropDownChoice<Integer>("report-diagram-dropdown-choice", new PropertyModel<Integer>(thisReport, "diagram"), new ListModel<Integer>() {
 
                 private static final long serialVersionUID = 1L;
 
@@ -170,7 +202,7 @@ public class CreateOrEditReportPage extends WebPage {
                 public List<Integer> getObject() {
                     return new AbstractList<Integer>() {
                         public Integer get(int i) { return new Integer(i); }
-                        public int size() { return diagramOptions.length; }
+                        public int size() { return diagramOptionsTypes.length; }
                     };
                 }
             }, new ChoiceRenderer<Integer>() {
@@ -179,11 +211,11 @@ public class CreateOrEditReportPage extends WebPage {
                 
                 @Override
                 public Object getDisplayValue(Integer index) {
-                    return (index == null) ? null : diagramOptions[index];
+                    return (index == null) ? null : diagramOptionsTypes[index] + "(" + diagramOptionsTooltips[index] + ")";
                 }
             }).setNullValid(true));
 
-            add(new CheckBox("report-table-checkbox", new PropertyModel<Boolean>(report, "table")));
+            add(new CheckBox("report-table-checkbox", new PropertyModel<Boolean>(thisReport, "table")));
 
             add(new AjaxFallbackButton("form-submit", CreateOrEditReportForm.this) {
                 private static final long serialVersionUID = 1L;
@@ -191,10 +223,10 @@ public class CreateOrEditReportPage extends WebPage {
                 @Override
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     try {
-                        if (forReport == null)
-                            ((WicketApplication) getApplication()).getDashboardService().createReport(report);
+                        if (thisReport == null || thisReport.getUuid() == null)
+                            ((WicketApplication) getApplication()).getDashboardService().createReport(thisReport);
                         else 
-                            ((WicketApplication) getApplication()).getDashboardService().updateReport(report);
+                            ((WicketApplication) getApplication()).getDashboardService().updateReport(thisReport);
                         window.close(target);
                     } catch (Exception e) {
                       log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());

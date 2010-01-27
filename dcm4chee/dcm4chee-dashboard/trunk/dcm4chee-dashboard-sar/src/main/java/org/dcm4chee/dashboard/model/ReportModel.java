@@ -52,19 +52,23 @@ public class ReportModel implements Serializable {
     
     private String uuid;
     private String title;
+    private String dataSource;
     private String statement;
     private Integer diagram;
     private boolean table;
+    private String groupUuid;
     
     public ReportModel() {
     }
 
-    public ReportModel(String uuid, String title, String statement, Integer diagram, boolean table) {
+    public ReportModel(String uuid, String title, String dataSource, String statement, Integer diagram, boolean table, String groupUuid) {
         this.uuid = uuid;
         this.title = title;
+        this.dataSource = dataSource;
         this.statement = statement;
         this.diagram = diagram;
         this.table = table;
+        this.groupUuid = groupUuid;
     }
     
     public void setUuid(String uuid) {
@@ -83,8 +87,16 @@ public class ReportModel implements Serializable {
         return title;
     }
     
+    public void setDataSource(String dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    public String getDataSource() {
+        return dataSource;
+    }
+
     public void setStatement(Set<String> statement) {
-        
+
     }
     
     public String getStatement() {
@@ -105,5 +117,13 @@ public class ReportModel implements Serializable {
     
     public boolean getTable() {
         return table;
+    }
+
+    public void setGroupUuid(String groupUuid) {
+        this.groupUuid = groupUuid;
+    }
+
+    public String getGroupUuid() {
+        return groupUuid;
     }
 }

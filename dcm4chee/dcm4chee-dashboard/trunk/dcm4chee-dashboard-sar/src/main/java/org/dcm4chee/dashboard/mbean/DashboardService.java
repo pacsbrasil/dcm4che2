@@ -74,7 +74,8 @@ public class DashboardService extends ServiceMBeanSupport {
     private String[] jbossSystemTypesToQuery = new String[] {"Server", "ServerConfig", "ServerInfo"};
     private String newline = System.getProperty("line.separator");
 
-    private String dataSourceName;
+    // data source separator is ,
+    private String[] dataSourceList = new String[0];
     
     // group separator is ,
     private String[] groupList = new String[0];
@@ -82,14 +83,15 @@ public class DashboardService extends ServiceMBeanSupport {
     // property name separator is ,
     private String[] propertyNameList = new String[0];
 
-    private String reportFilename = "";  
+    private String reportFilename = "";
+    private String groupFilename = "";
     
-    public void setDataSourceName(String dataSourceName) {
-        this.dataSourceName = dataSourceName;
+    public void setDataSourceList(String dataSourceList) {
+        this.dataSourceList = tokenize(dataSourceList);
     }
 
-    public String getDataSourceName() {
-        return dataSourceName;
+    public String getDataSourceList() {
+        return arrayToString(this.dataSourceList);
     }
 
     public void setGroupList(String groupList) {
@@ -97,9 +99,7 @@ public class DashboardService extends ServiceMBeanSupport {
     }
 
     public String getGroupList() {
-        String groupString = "";
-        for (String group : this.groupList) groupString += (newline + group);
-        return (groupString.length() <= 0 ? groupString : groupString.substring(1)) + newline;
+        return arrayToString(this.groupList);
     }
     
     public void setPropertyNameList(String propertyNameList) {
@@ -107,9 +107,7 @@ public class DashboardService extends ServiceMBeanSupport {
     }
 
     public String getPropertyNameList() {
-        String nameString = "";
-        for (String name : this.propertyNameList) nameString += (newline + name);
-        return (nameString.length() <= 0 ? nameString : nameString.substring(1)) + newline;
+        return arrayToString(this.propertyNameList);
     }
     
     public void setReportFilename(String reportFilename) {
@@ -118,6 +116,14 @@ public class DashboardService extends ServiceMBeanSupport {
 
     public String getReportFilename() {
         return reportFilename;
+    }
+
+    public void setGroupFilename(String groupFilename) {
+        this.groupFilename = groupFilename;
+    }
+
+    public String getGroupFilename() {
+        return groupFilename;
     }
 
     public String[] listAllFileSystemGroups() throws MalformedObjectNameException, NullPointerException {
@@ -177,11 +183,11 @@ public class DashboardService extends ServiceMBeanSupport {
             }
             if (!all.equals("")) {
                 String[] attributes = all.split(";");
-                for (int i = 0; i < attributes.length; i += 5) {
+                for (int i = 0; i < attributes.length; i += 7) {
                     if (attributes[i].equals(this.newline)) break;
-                    reportList.add(new ReportModel(attributes[i].replace(this.newline, ""), attributes[i + 1], attributes[i + 2], (attributes[i + 3].equals("") ? null : new Integer(attributes[i + 3])), Boolean.valueOf(attributes[i + 4])));
+                    reportList.add(new ReportModel(attributes[i].replace(this.newline, ""), attributes[i + 1], attributes[i + 2], attributes[i + 3], (attributes[i + 4].equals("") ? null : new Integer(attributes[i + 4])), Boolean.valueOf(attributes[i + 5]), attributes[i + 6]));
                 }
-            }
+            }            
             return reportList.toArray(new ReportModel[0]);
         } catch (IOException e) {
             log.debug("Exception: ", e);
@@ -192,7 +198,7 @@ public class DashboardService extends ServiceMBeanSupport {
     public void createReport(ReportModel report) {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(this.reportFilename, true));
-            writer.write((report.getUuid() == null ? UUID.randomUUID() : report.getUuid()) + ";" + report.getTitle() + ";" + report.getStatement().replaceAll(";", "") + ";" + (report.getDiagram() == null ? "" : report.getDiagram()) + ";" + report.getTable() + ";");
+            writer.write((report.getUuid() == null ? UUID.randomUUID() : report.getUuid()) + ";" + report.getTitle() + ";" + (report.getDataSource() != null ? report.getDataSource() : "") + ";" + report.getStatement().replaceAll(";", "") + ";" + (report.getDiagram() == null ? "" : report.getDiagram()) + ";" + report.getTable() + ";" + report.getGroupUuid() + ";");
             writer.newLine();
             writer.close();
         } catch (IOException e) {
@@ -222,16 +228,16 @@ public class DashboardService extends ServiceMBeanSupport {
                     writer.newLine();
                 } else {
                     int result = 0;
-                    while (result < 5) { 
+                    while (result < 7) { 
                         int start = line.indexOf(";");
                         while (start != -1) {
                             result++;
                             start = line.indexOf(";", start+1);
                         }
-                        if (result < 5) line = reader.readLine();
+                        if (result < 7) line = reader.readLine();
                     }
                     if (!deleteLine) {
-                        writer.write(report.getUuid() + ";" + report.getTitle() + ";" + report.getStatement().replaceAll(";", "") + ";" + (report.getDiagram() == null ? "" : report.getDiagram()) + ";" + report.getTable() + ";");
+                        writer.write(report.getUuid() + ";" + report.getTitle() + ";" + (report.getDataSource() != null ? report.getDataSource() : "") + ";" + report.getStatement().replaceAll(";", "") + ";" + (report.getDiagram() == null ? "" : report.getDiagram()) + ";" + report.getTable() + ";" + report.getGroupUuid() + ";");
                         writer.newLine();
                     }
                 }
@@ -245,6 +251,80 @@ public class DashboardService extends ServiceMBeanSupport {
         }
     }
     
+    public ReportModel[] listAllReportGroups() {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(this.groupFilename));
+            List<ReportModel> groupList = new ArrayList<ReportModel>();
+
+            String line = "";
+            String all = "";
+            while ((line = reader.readLine()) != null){
+                all += line + this.newline;
+            }
+            if (!all.equals("")) {
+                String[] attributes = all.split(";");
+                for (int i = 0; i < attributes.length; i += 2) {
+                    if (attributes[i].equals(this.newline)) break;
+                    groupList.add(new ReportModel(attributes[i].replace(this.newline, ""), attributes[i + 1], null, null, null, false, null));
+                }
+            }
+            return groupList.toArray(new ReportModel[0]);
+        } catch (IOException e) {
+            log.debug("Exception: ", e);
+            return null;
+        }
+    }
+
+    public void createGroup(ReportModel group) {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(this.groupFilename, true));
+            writer.write((group.getUuid() == null ? UUID.randomUUID() : group.getUuid()) + ";" + group.getTitle() + ";");
+            writer.newLine();
+            writer.close();
+        } catch (IOException e) {
+            log.debug("Exception: ", e);
+        }        
+    }
+
+    public void deleteGroup(ReportModel group) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(this.reportFilename));
+            File reportFile = new File(this.reportFilename);            
+            String tempFilename = reportFile.getAbsolutePath().substring(0, reportFile.getAbsolutePath().length() - reportFile.getName().length()) 
+                                + UUID.randomUUID().toString();
+            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFilename, true));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!line.replace(this.newline,"").endsWith(group.getUuid() + ";")) {
+                    writer.write(line);
+                    writer.newLine();
+                }
+            }
+            reader.close();
+            writer.close();
+            reportFile.delete();
+            new File(tempFilename).renameTo(reportFile);
+            
+            reader = new BufferedReader(new FileReader(this.groupFilename));
+            File groupFile = new File(this.groupFilename);            
+            tempFilename = groupFile.getAbsolutePath().substring(0, groupFile.getAbsolutePath().length() - groupFile.getName().length()) 
+                                + UUID.randomUUID().toString();
+            writer = new BufferedWriter(new FileWriter(tempFilename, true));
+            while ((line = reader.readLine()) != null) {
+                if (!line.replace(this.newline,"").startsWith(group.getUuid())) {
+                    writer.write(line);
+                    writer.newLine();
+                }
+            }
+            reader.close();
+            writer.close();
+            groupFile.delete();
+            new File(tempFilename).renameTo(groupFile);            
+        } catch (IOException e) {
+            log.debug("Exception: ", e);
+        }
+    }
+
     private String[] tokenize(String sourceString) {
         StringTokenizer st = new StringTokenizer(sourceString, newline);
         List<String> tokens = new ArrayList<String>();        
@@ -257,5 +337,11 @@ public class DashboardService extends ServiceMBeanSupport {
             if (token.length() > 0) tokens.add(token);
         }
         return tokens.toArray(new String[0]);
+    }
+    
+    private String arrayToString(String[] array) {
+        String arrayString = "";
+        for (String string : array) arrayString += (newline + string);
+        return (arrayString.length() <= 0 ? arrayString : arrayString.substring(1)) + newline;
     }
 }

@@ -85,7 +85,7 @@ public class DisplayReportDiagramPage extends WebPage {
             if (report == null) throw new Exception("No report given to render diagram");
             
             ResultSet resultSet = 
-                (jdbcConnection  = DashboardMainPage.getDatabaseConnection())
+                (jdbcConnection  = DashboardMainPage.getDatabaseConnection(report.getDataSource()))
                 .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
                 .executeQuery(report.getStatement());
 

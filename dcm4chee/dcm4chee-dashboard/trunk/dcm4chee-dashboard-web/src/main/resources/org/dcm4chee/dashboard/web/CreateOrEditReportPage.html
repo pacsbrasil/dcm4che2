@@ -6,7 +6,7 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	    <title>
-	    	<wicket:message key="application.browser_title">
+	    	<wicket:message key="dashboard.application.browser_title">
 	    		[User Management]
 			</wicket:message>
 		</title>
@@ -26,6 +26,14 @@
 						<td>
 							<input wicket:id="dashboard.report.createoredit.form.title.input" class="input" type="text" />
 							<div wicket:id="report-title-validator-message-label" />
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<div wicket:id="report-datasource-dropdown-label" />
+						</td>
+						<td>				
+							<select wicket:id="report-datasource-dropdown-choice" class="input" size="1"></select>
 						</td>
 					</tr>
 					<tr>
