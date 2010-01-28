@@ -104,7 +104,7 @@ public class DashboardMainPage extends WebPage {
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
             log.debug("Exception: ", e);
-            this.redirectToInterceptPage(new InternalErrorPage());
+            this.redirectToInterceptPage(new InternalErrorPage(e));
         }
     }
     

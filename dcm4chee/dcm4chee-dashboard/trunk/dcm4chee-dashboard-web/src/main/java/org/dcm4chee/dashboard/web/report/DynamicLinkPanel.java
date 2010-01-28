@@ -172,6 +172,8 @@ public class DynamicLinkPanel extends Panel {
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
+            this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
+            throw new RuntimeException();
         }
     }
 
@@ -320,6 +322,8 @@ public class DynamicLinkPanel extends Panel {
     }
 
     private class DisplayDiagramAndTableLink extends AjaxDisplayLink {
+
+        private static final long serialVersionUID = 1L;
 
         public DisplayDiagramAndTableLink(String id, ReportModel report, ModalWindow modalWindow) {
             super(id, report, modalWindow);

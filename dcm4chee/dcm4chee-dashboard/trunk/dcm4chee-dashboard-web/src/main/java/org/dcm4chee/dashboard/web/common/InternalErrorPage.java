@@ -39,6 +39,7 @@
 package org.dcm4chee.dashboard.web.common;
 
 import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.dcm4chee.dashboard.web.DashboardMainPage;
 
@@ -48,8 +49,11 @@ import org.dcm4chee.dashboard.web.DashboardMainPage;
  * @since 28.09.2009
  */
 public class InternalErrorPage extends WebPage {
-    
-    public InternalErrorPage(){
+
+    public InternalErrorPage(Exception e) {
+        this();
+    }
+    public InternalErrorPage() {
 
         Link<Object> backToMainLink = new Link<Object>("back-to-main") {
 
@@ -62,5 +66,9 @@ public class InternalErrorPage extends WebPage {
             }
         };
         add(backToMainLink);
+
+        add(new Label("exception-message", this.getApplication().getSessionStore().getAttribute(getRequest(), "exception") != null ?
+                                           ((Exception) this.getApplication().getSessionStore().getAttribute(getRequest(), "exception")).getLocalizedMessage() :
+                                           ""));
     }
 }
