@@ -310,7 +310,7 @@ public class FileCopyService extends AbstractFileCopyService {
                             + ") of " + cmd);
                 }
                 if (tarFileIDFromStdOut)
-                    tarPath = stdout.toString();
+                    tarPath = stdout.toString().trim();
             } finally {
                 log.info("M-DELETE " + tarFile);
                 tarFile.delete();
