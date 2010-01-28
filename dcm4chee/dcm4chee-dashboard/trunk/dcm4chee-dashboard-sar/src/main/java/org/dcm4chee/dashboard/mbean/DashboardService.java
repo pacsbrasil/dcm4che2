@@ -173,21 +173,23 @@ public class DashboardService extends ServiceMBeanSupport {
 
     public ReportModel[] listAllReports() {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(this.reportFilename));
             List<ReportModel> reportList = new ArrayList<ReportModel>();
-
-            String line = "";
-            String all = "";
-            while ((line = reader.readLine()) != null){
-                all += line + this.newline;
-            }
-            if (!all.equals("")) {
-                String[] attributes = all.split(";");
-                for (int i = 0; i < attributes.length; i += 7) {
-                    if (attributes[i].equals(this.newline)) break;
-                    reportList.add(new ReportModel(attributes[i].replace(this.newline, ""), attributes[i + 1], attributes[i + 2], attributes[i + 3], (attributes[i + 4].equals("") ? null : new Integer(attributes[i + 4])), Boolean.valueOf(attributes[i + 5]), attributes[i + 6]));
+            
+            if (new File(this.reportFilename).exists()) {            
+                BufferedReader reader = new BufferedReader(new FileReader(this.reportFilename));
+                String line = "";
+                String all = "";
+                while ((line = reader.readLine()) != null){
+                    all += line + this.newline;
                 }
-            }            
+                if (!all.equals("")) {
+                    String[] attributes = all.split(";");
+                    for (int i = 0; i < attributes.length; i += 7) {
+                        if (attributes[i].equals(this.newline)) break;
+                        reportList.add(new ReportModel(attributes[i].replace(this.newline, ""), attributes[i + 1], attributes[i + 2], attributes[i + 3], (attributes[i + 4].equals("") ? null : new Integer(attributes[i + 4])), Boolean.valueOf(attributes[i + 5]), attributes[i + 6]));
+                    }
+                }
+            }
             return reportList.toArray(new ReportModel[0]);
         } catch (IOException e) {
             log.debug("Exception: ", e);
@@ -253,19 +255,21 @@ public class DashboardService extends ServiceMBeanSupport {
     
     public ReportModel[] listAllReportGroups() {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(this.groupFilename));
             List<ReportModel> groupList = new ArrayList<ReportModel>();
 
-            String line = "";
-            String all = "";
-            while ((line = reader.readLine()) != null){
-                all += line + this.newline;
-            }
-            if (!all.equals("")) {
-                String[] attributes = all.split(";");
-                for (int i = 0; i < attributes.length; i += 2) {
-                    if (attributes[i].equals(this.newline)) break;
-                    groupList.add(new ReportModel(attributes[i].replace(this.newline, ""), attributes[i + 1], null, null, null, false, null));
+            if (new File(this.groupFilename).exists()) {
+                BufferedReader reader = new BufferedReader(new FileReader(this.groupFilename));
+                String line = "";
+                String all = "";
+                while ((line = reader.readLine()) != null){
+                    all += line + this.newline;
+                }
+                if (!all.equals("")) {
+                    String[] attributes = all.split(";");
+                    for (int i = 0; i < attributes.length; i += 2) {
+                        if (attributes[i].equals(this.newline)) break;
+                        groupList.add(new ReportModel(attributes[i].replace(this.newline, ""), attributes[i + 1], null, null, null, false, null));
+                    }
                 }
             }
             return groupList.toArray(new ReportModel[0]);

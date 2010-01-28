@@ -167,6 +167,7 @@ public class ReportPanel extends Panel {
             reportTreeTable.getTreeState().setAllowSelectMultiple(false);
             add(reportTreeTable);
         } catch (Exception e) {
+            e.printStackTrace();
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
             this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
