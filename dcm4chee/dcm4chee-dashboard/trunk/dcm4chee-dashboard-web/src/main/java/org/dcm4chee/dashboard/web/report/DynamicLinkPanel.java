@@ -60,7 +60,7 @@ import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.web.DashboardMainPage;
 import org.dcm4chee.dashboard.web.WicketApplication;
-import org.dcm4chee.dashboard.web.common.InternalErrorPage;
+import org.dcm4chee.dashboard.web.report.display.DynamicDisplayPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,7 +95,7 @@ public class DynamicLinkPanel extends Panel {
         super.onBeforeRender();
 
         try {
-            add((this.link = (Link<Object>) ((Class<? extends Link<Object>>) Class.forName("org.dcm4chee.dashboard.web.DynamicLinkPanel$" + className)).getConstructors()[0].newInstance(new Object[] {
+            add((this.link = (Link<Object>) ((Class<? extends Link<Object>>) Class.forName("org.dcm4chee.dashboard.web.report.DynamicLinkPanel$" + className)).getConstructors()[0].newInstance(new Object[] {
                     this, 
                     "report-table-link", 
                     report, 
@@ -103,12 +103,13 @@ public class DynamicLinkPanel extends Panel {
             })));
             this.link.add(new Image("image"));
             
-            if (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DiagramLink
-                    || link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.TableLink) {
+            if (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramLink
+                    || link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayTableLink
+                    || link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramAndTableLink) {
                 this.link.setPopupSettings(new PopupSettings(PopupSettings.RESIZABLE | PopupSettings.SCROLLBARS));
             }
             
-            this.link.add(new Label("text", link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DiagramLink && report.getDiagram() != null ? 
+            this.link.add(new Label("text", (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramLink || link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramAndTableLink) && report.getDiagram() != null ? 
                     new ResourceModel("dashboard.report.diagram.options.types").wrapOnAssignment(this).getObject().split(";")[report.getDiagram()] : 
                     "")
             );
@@ -117,10 +118,12 @@ public class DynamicLinkPanel extends Panel {
                     ((link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.CreateOrEditReportLink
                             && (report != null))
                     || link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.RemoveLink
-                    || (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DiagramLink
+                    || (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramLink
                             && (report != null && report.getDiagram() != null && report.getDataSource() != null && !report.getDataSource().equals("")))
-                    || (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.TableLink
+                    || (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayTableLink
                             && (report != null && report.getTable() && report.getDataSource() != null && !report.getDataSource().equals("")))
+                    || (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramAndTableLink
+                            && (report != null && (report.getDiagram() != null || report.getTable()) && report.getDataSource() != null && !report.getDataSource().equals("")))
             ));
 
             Image image = (Image) this.link.get("image");
@@ -137,7 +140,9 @@ public class DynamicLinkPanel extends Panel {
                             return "images/reply.png";
                     else if (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.RemoveLink)
                         return "images/action_delete.png";
-                    else if (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.TableLink)
+                    else if (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayTableLink)
+                        return "images/application.png";
+                    else if (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramAndTableLink)
                         return "images/application.png";
                     else return "";
                 }
@@ -170,23 +175,22 @@ public class DynamicLinkPanel extends Panel {
         }
     }
 
-    private class CreateOrEditReportLink extends AjaxFallbackLink<Object> {
+    abstract private class AjaxDisplayLink extends AjaxFallbackLink<Object> {
         
         private static final long serialVersionUID = 1L;
         
-        private ReportModel report;
-        private ModalWindow modalWindow;
+        ReportModel report;
+        ModalWindow modalWindow;
         
-        public CreateOrEditReportLink(String id, ReportModel report, ModalWindow modalWindow) {
+        public AjaxDisplayLink(String id, ReportModel report, ModalWindow modalWindow) {
             super(id);
 
             this.report = report;
             this.modalWindow = modalWindow;
         }
         
-        @Override
-        public void onClick(AjaxRequestTarget target) {
-
+        void setAjaxDisplayProperties() {
+            
             this.modalWindow.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {              
                 
                 private static final long serialVersionUID = 1L;
@@ -195,27 +199,65 @@ public class DynamicLinkPanel extends Panel {
                 public void onClose(AjaxRequestTarget target) {
                     setResponsePage(DashboardMainPage.class, new PageParameters("tab=" + new ResourceModel("dashboard.tabs.tab2.number").getObject()));
                 }
-            })
-            .setPageCreator(new ModalWindow.PageCreator() {
-                
+            });
+//            .setPageCreator(new ModalWindow.PageCreator() {
+//                
+//                private static final long serialVersionUID = 1L;
+//                
+//                @Override
+//                public Page createPage() {
+//                    return new CreateOrEditReportPage(modalWindow, report);
+//                }                
+//            });
+        }
+        
+        class DisableDefaultConfirmBehavior extends AbstractBehavior implements IHeaderContributor {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void renderHead(IHeaderResponse response) {
+                response.renderOnDomReadyJavascript ("Wicket.Window.unloadConfirmation = false");
+            }
+        }
+    }    
+
+    abstract private class DisplayLink extends Link<Object> {
+        
+        private static final long serialVersionUID = 1L;
+      
+        ReportModel report;
+      
+        public DisplayLink(String id, ReportModel report, ModalWindow modalWindow) {
+            super(id);
+
+            this.report = report;
+        }
+    }
+
+    private class CreateOrEditReportLink extends AjaxDisplayLink {
+        
+        private static final long serialVersionUID = 1L;
+        
+        public CreateOrEditReportLink(String id, ReportModel report, ModalWindow modalWindow) {
+            super(id, report, modalWindow);
+        }
+        
+        @Override
+        public void onClick(AjaxRequestTarget target) {
+
+            setAjaxDisplayProperties();
+            
+            this.modalWindow.setPageCreator(new ModalWindow.PageCreator() {
+                  
                 private static final long serialVersionUID = 1L;
-                
+                  
                 @Override
                 public Page createPage() {
                     return new CreateOrEditReportPage(modalWindow, report);
                 }                
             });
 
-            class DisableDefaultConfirmBehavior extends AbstractBehavior implements IHeaderContributor {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void renderHead(IHeaderResponse response) {
-                    response.renderOnDomReadyJavascript ("Wicket.Window.unloadConfirmation = false");
-                }
-            }
-            
             ((ModalWindow) this.modalWindow.add(new DisableDefaultConfirmBehavior()))
             .setInitialWidth(new Integer(new ResourceModel("dashboard.dynamiclink.report.createoredit.window.width").wrapOnAssignment(this).getObject().toString()))
             .setInitialHeight(new Integer(new ResourceModel("dashboard.dynamiclink.report.createoredit.window.height").wrapOnAssignment(this).getObject().toString()))
@@ -223,16 +265,12 @@ public class DynamicLinkPanel extends Panel {
         }
     }    
 
-    private class RemoveLink extends Link<Object> {
+    private class RemoveLink extends DisplayLink {
         
         private static final long serialVersionUID = 1L;
         
-        private ReportModel report;
-        
         public RemoveLink(String id, ReportModel report, ModalWindow modalWindow) {
-            super(id);
-            
-            this.report = report;
+            super(id, report, modalWindow);
         }
 
         @Override
@@ -249,44 +287,62 @@ public class DynamicLinkPanel extends Panel {
             } catch (Exception e) {
                 log.error(this.getClass().toString() + ": " + "onClick: " + e.getMessage());
                 log.debug("Exception: ", e);
-                this.redirectToInterceptPage(new InternalErrorPage());
             }
         }
     }
-    
-    private class DiagramLink extends Link<Object> {
-        
-        private static final long serialVersionUID = 1L;
-        
-        private ReportModel report;
-        
-        public DiagramLink(String id, ReportModel report, ModalWindow modalWindow) {
-            super(id);
 
-            this.report = report;
+    private class DisplayDiagramLink extends DisplayLink {
+
+        private static final long serialVersionUID = 1L;
+
+        public DisplayDiagramLink(String id, ReportModel report, ModalWindow modalWindow) {
+            super(id, report, modalWindow);
         }
 
         @Override
         public void onClick() {
-            setResponsePage(new DisplayReportDiagramPage(this.report));
+            setResponsePage(new DynamicDisplayPage(this.report, true, false));
         }
     }
 
-    private class TableLink extends Link<Object> {
+    private class DisplayTableLink extends DisplayLink {
+        
+        public DisplayTableLink(String id, ReportModel report, ModalWindow modalWindow) {
+            super(id, report, modalWindow);
+        }
         
         private static final long serialVersionUID = 1L;
-        
-        private ReportModel report;
-        
-        public TableLink(String id, ReportModel report, ModalWindow modalWindow) {
-            super(id);
+      
+        @Override
+        public void onClick() {
+            setResponsePage(new DynamicDisplayPage(this.report, false, true));
+        }
+    }
 
-            this.report = report;
+    private class DisplayDiagramAndTableLink extends AjaxDisplayLink {
+
+        public DisplayDiagramAndTableLink(String id, ReportModel report, ModalWindow modalWindow) {
+            super(id, report, modalWindow);
         }
 
         @Override
-        public void onClick() {
-            setResponsePage(new DisplayReportTablePage(this.report));
+        public void onClick(AjaxRequestTarget target) {
+            setAjaxDisplayProperties();
+            
+            this.modalWindow.setPageCreator(new ModalWindow.PageCreator() {
+                
+                private static final long serialVersionUID = 1L;
+                  
+                @Override
+                public Page createPage() {
+                    return new DynamicDisplayPage(report, true, true);
+                }                
+            });
+
+            ((ModalWindow) this.modalWindow.add(new DisableDefaultConfirmBehavior()))
+            .setInitialWidth(new Integer(new ResourceModel("dashboard.dynamiclink.report.displaydiagramandtable.window.width").wrapOnAssignment(this).getObject().toString()))
+            .setInitialHeight(new Integer(new ResourceModel("dashboard.dynamiclink.report.displaydiagramandtable.window.height").wrapOnAssignment(this).getObject().toString()))
+            .show(target);
         }
     }
 }

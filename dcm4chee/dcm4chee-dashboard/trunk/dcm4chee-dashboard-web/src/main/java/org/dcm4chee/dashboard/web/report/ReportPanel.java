@@ -132,7 +132,7 @@ public class ReportPanel extends Panel {
 
             ReportTreeTable reportTreeTable = new ReportTreeTable("report-tree-table", 
                     new DefaultTreeModel(rootNode), new IColumn[] {
-                        new PropertyTreeColumn(new ColumnLocation(Alignment.LEFT, 40, Unit.PERCENT), 
+                        new PropertyTreeColumn(new ColumnLocation(Alignment.LEFT, 25, Unit.PERCENT), 
                                 new ResourceModel("dashboard.report.table.title_title").wrapOnAssignment(this).getObject(),  
                                 "userObject.title")
                         ,
@@ -148,12 +148,17 @@ public class ReportPanel extends Panel {
                         ,
                         new DynamicRenderableColumn(new ColumnLocation(Alignment.RIGHT, 10, Unit.PERCENT), 
                                 new ResourceModel("dashboard.report.table.link.diagram").wrapOnAssignment(this).getObject(),  
-                                "DiagramLink", 
+                                "DisplayDiagramLink", 
                                 this.modalWindow)
                         ,
                         new DynamicRenderableColumn(new ColumnLocation(Alignment.RIGHT, 10, Unit.PERCENT), 
                                 new ResourceModel("dashboard.report.table.link.table").wrapOnAssignment(this).getObject(),  
-                                "TableLink", 
+                                "DisplayTableLink", 
+                                this.modalWindow)
+                        ,
+                        new DynamicRenderableColumn(new ColumnLocation(Alignment.RIGHT, 15, Unit.PERCENT), 
+                                new ResourceModel("dashboard.report.table.link.diagram+table").wrapOnAssignment(this).getObject(),  
+                                "DisplayDiagramAndTableLink", 
                                 this.modalWindow)
                     }
             );
@@ -181,10 +186,11 @@ public class ReportPanel extends Panel {
 
             private static final long serialVersionUID = 1L;
 
-            public TreeFragment(String id, final TreeNode node, int level, 
-                    final IRenderNodeCallback renderNodeCallback) {
+            public TreeFragment(String id, final TreeNode node, int level, final IRenderNodeCallback renderNodeCallback) {
                 super(id, "fragment", ReportTreeTable.this);
 
+                setLinkType(LinkType.AJAX_FALLBACK);
+                
                 add(newIndentation(this, "indent", node, level));
                 add(newJunctionLink(this, "link", "image", node));
                 add(newNodeLink(this, "nodeLink", node)
@@ -199,7 +205,7 @@ public class ReportPanel extends Panel {
                     }
                 }))
                 .setEnabled(false));
-            }
+            }            
         }
 
         @Override
@@ -226,7 +232,7 @@ public class ReportPanel extends Panel {
                     tag.put("title", ((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getTitle());
                 }
             };
-        }
+        }        
     };
 
     private class DynamicRenderableColumn extends AbstractColumn {
