@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.dashboard.web;
+package org.dcm4chee.dashboard.web.report;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -51,6 +51,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.util.CSSUtils;
+import org.dcm4chee.dashboard.web.DashboardMainPage;
 
 /**
  * @author Robert David <robert.david@agfa.com>

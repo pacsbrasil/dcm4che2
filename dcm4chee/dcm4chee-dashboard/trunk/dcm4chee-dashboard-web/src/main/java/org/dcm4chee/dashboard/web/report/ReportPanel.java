@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.dashboard.web;
+package org.dcm4chee.dashboard.web.report;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,6 +75,8 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4chee.dashboard.model.ReportModel;
+import org.dcm4chee.dashboard.web.DashboardMainPage;
+import org.dcm4chee.dashboard.web.WicketApplication;
 import org.dcm4chee.dashboard.web.validator.ValidatorMessageLabel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

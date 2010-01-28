@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.dashboard.web;
+package org.dcm4chee.dashboard.web.filesystem;
 
 import java.awt.Color;
 import java.awt.Paint;
@@ -70,7 +70,9 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.dcm4chee.dashboard.web.WicketApplication;
 import org.dcm4chee.dashboard.web.common.InternalErrorPage;
+import org.dcm4chee.dashboard.web.common.JFreeChartImage;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;

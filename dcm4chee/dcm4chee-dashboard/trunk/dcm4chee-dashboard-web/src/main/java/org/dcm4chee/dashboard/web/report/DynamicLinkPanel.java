@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.dashboard.web;
+package org.dcm4chee.dashboard.web.report;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Page;
@@ -58,6 +58,8 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.model.ReportModel;
+import org.dcm4chee.dashboard.web.DashboardMainPage;
+import org.dcm4chee.dashboard.web.WicketApplication;
 import org.dcm4chee.dashboard.web.common.InternalErrorPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,23 +103,23 @@ public class DynamicLinkPanel extends Panel {
             })));
             this.link.add(new Image("image"));
             
-            if (link instanceof org.dcm4chee.dashboard.web.DynamicLinkPanel.DiagramLink
-                    || link instanceof org.dcm4chee.dashboard.web.DynamicLinkPanel.TableLink) {
+            if (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DiagramLink
+                    || link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.TableLink) {
                 this.link.setPopupSettings(new PopupSettings(PopupSettings.RESIZABLE | PopupSettings.SCROLLBARS));
             }
             
-            this.link.add(new Label("text", link instanceof org.dcm4chee.dashboard.web.DynamicLinkPanel.DiagramLink && report.getDiagram() != null ? 
+            this.link.add(new Label("text", link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DiagramLink && report.getDiagram() != null ? 
                     new ResourceModel("dashboard.report.diagram.options.types").wrapOnAssignment(this).getObject().split(";")[report.getDiagram()] : 
                     "")
             );
 
             this.link.setVisible(
-                    ((link instanceof org.dcm4chee.dashboard.web.DynamicLinkPanel.CreateOrEditReportLink
+                    ((link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.CreateOrEditReportLink
                             && (report != null))
-                    || link instanceof org.dcm4chee.dashboard.web.DynamicLinkPanel.RemoveLink
-                    || (link instanceof org.dcm4chee.dashboard.web.DynamicLinkPanel.DiagramLink
+                    || link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.RemoveLink
+                    || (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DiagramLink
                             && (report != null && report.getDiagram() != null && report.getDataSource() != null && !report.getDataSource().equals("")))
-                    || (link instanceof org.dcm4chee.dashboard.web.DynamicLinkPanel.TableLink
+                    || (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.TableLink
                             && (report != null && report.getTable() && report.getDataSource() != null && !report.getDataSource().equals("")))
             ));
 
@@ -128,33 +130,33 @@ public class DynamicLinkPanel extends Panel {
     
                 @Override
                 public Object getObject() {
-                    if (link instanceof org.dcm4chee.dashboard.web.DynamicLinkPanel.CreateOrEditReportLink)
+                    if (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.CreateOrEditReportLink)
                         if (report == null || report.getGroupUuid() == null)
                             return "images/file.png";
                         else
                             return "images/reply.png";
-                    else if (link instanceof org.dcm4chee.dashboard.web.DynamicLinkPanel.RemoveLink)
+                    else if (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.RemoveLink)
                         return "images/action_delete.png";
-                    else if (link instanceof org.dcm4chee.dashboard.web.DynamicLinkPanel.TableLink)
+                    else if (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.TableLink)
                         return "images/application.png";
                     else return "";
                 }
             }));
     
             // set the tooltip
-            if (this.link instanceof org.dcm4chee.dashboard.web.DynamicLinkPanel.CreateOrEditReportLink)
+            if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.CreateOrEditReportLink)
                 if (this.report.getGroupUuid() == null)
                     image.add(new AttributeModifier("title", true, new ResourceModel("dashboard.dynamiclink.report.create").wrapOnAssignment(this)));
-            if (this.link instanceof org.dcm4chee.dashboard.web.DynamicLinkPanel.RemoveLink) {
+            if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.RemoveLink) {
                 if (report.getGroupUuid() == null)
                     image.add(new AttributeModifier("title", true, new ResourceModel("dashboard.dynamiclink.report.group.remove").wrapOnAssignment(this)));
                 else
                     image.add(new AttributeModifier("title", true, new ResourceModel("dashboard.dynamiclink.report.remove").wrapOnAssignment(this)));
             }
             // set the image
-            if (this.link instanceof org.dcm4chee.dashboard.web.DynamicLinkPanel.CreateOrEditReportLink)
+            if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.CreateOrEditReportLink)
                 image.setImageResourceReference(new ResourceReference(DynamicLinkPanel.class, "images/file.png"));
-            else if (this.link instanceof org.dcm4chee.dashboard.web.DynamicLinkPanel.RemoveLink)
+            else if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.RemoveLink)
                 image.setImageResourceReference(new ResourceReference(DynamicLinkPanel.class, "images/application.png"));
     
             if (this.link instanceof RemoveLink)

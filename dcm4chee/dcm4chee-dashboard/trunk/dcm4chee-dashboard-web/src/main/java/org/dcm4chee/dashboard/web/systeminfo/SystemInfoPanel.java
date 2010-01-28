@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.dashboard.web;
+package org.dcm4chee.dashboard.web.systeminfo;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -53,6 +53,7 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.dashboard.model.SystemPropertyModel;
 import org.dcm4chee.dashboard.util.CSSUtils;
+import org.dcm4chee.dashboard.web.WicketApplication;
 import org.dcm4chee.dashboard.web.common.InternalErrorPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
