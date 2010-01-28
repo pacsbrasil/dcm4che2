@@ -56,7 +56,7 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.web.common.InternalErrorPage;
 import org.dcm4chee.dashboard.web.filesystem.FileSystemPanel;
-import org.dcm4chee.dashboard.web.filesystem.SystemInfoPanel;
+import org.dcm4chee.dashboard.web.systeminfo.SystemInfoPanel;
 import org.dcm4chee.dashboard.web.report.ReportPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
