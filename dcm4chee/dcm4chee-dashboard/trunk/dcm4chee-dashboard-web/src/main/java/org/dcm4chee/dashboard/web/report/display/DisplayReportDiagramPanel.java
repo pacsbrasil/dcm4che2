@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.dashboard.web.report;
+package org.dcm4chee.dashboard.web.report.display;
 
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
@@ -48,9 +48,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
+import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.model.ReportModel;
@@ -78,18 +78,22 @@ import org.jfree.ui.RectangleEdge;
  * @version $Revision$ $Date$
  * @since 18.11.2009
  */
-public class DisplayReportDiagramPage extends WebPage {
+public class DisplayReportDiagramPanel extends Panel {
     
+    private static final long serialVersionUID = 1L;
+
     private ReportModel report;
 
-    public DisplayReportDiagramPage(ReportModel report) {
+    public DisplayReportDiagramPanel(String id, ReportModel report) {
+        super(id);
         
         this.report = report;
     }
     
     @Override
     public void onBeforeRender() {
-
+        super.onBeforeRender();
+        
         Connection jdbcConnection = null;
         try {
             if (report == null) throw new Exception("No report given to render diagram");

@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.dashboard.web.report;
+package org.dcm4chee.dashboard.web.report.display;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -44,8 +44,8 @@ import java.sql.SQLException;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
@@ -58,18 +58,22 @@ import org.dcm4chee.dashboard.web.DashboardMainPage;
  * @version $Revision$ $Date$
  * @since 18.11.2009
  */
-public class DisplayReportTablePage extends WebPage {
+public class DisplayReportTablePanel extends Panel {
+
+    private static final long serialVersionUID = 1L;
 
     private ReportModel report;
 
-    public DisplayReportTablePage(ReportModel report) {
+    public DisplayReportTablePanel(String id, ReportModel report) {
+        super(id);
         
         this.report = report;
     }
     
     @Override
     public void onBeforeRender() {
-
+        super.onBeforeRender();
+        
         RepeatingView columnHeaders = new RepeatingView("column-headers"); 
         add(columnHeaders);
         RepeatingView reportRows = new RepeatingView("report-rows"); 

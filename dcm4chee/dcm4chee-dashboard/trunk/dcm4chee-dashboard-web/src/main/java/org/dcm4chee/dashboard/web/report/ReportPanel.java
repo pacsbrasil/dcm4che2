@@ -97,7 +97,7 @@ public class ReportPanel extends Panel {
     public ReportPanel(String id) {
         super(id);        
     }
-    
+
     @Override
     public void onBeforeRender() {
         super.onBeforeRender();
@@ -170,8 +170,8 @@ public class ReportPanel extends Panel {
             e.printStackTrace();
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
-            this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
-            throw new RuntimeException();
+//            this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
+//            throw new RuntimeException();
         }
     }
 
@@ -327,6 +327,11 @@ public class ReportPanel extends Panel {
         this.add(new ValidatorMessageLabel("new-groupname-validator-message-label", groupTf));
             
             this.add(new Button("add-group-submit"));
+        }
+
+        @Override
+        protected void onValidate() {
+System.out.println("ON  VALIDATE");
         }
         
         @Override
