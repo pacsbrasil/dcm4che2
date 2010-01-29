@@ -38,22 +38,32 @@
 	      <param-name>signinPageClass</param-name>
 	      <param-value>your.Login.Page</param-value>
 	    </init-param> -->
-		<!-- ClassName of Page to show Access denied. Default is signinPageClass -->
+		<!-- ClassName of Page to show Access denied. Default is signinPageClass
 	    <init-param>
 	      <param-name>accessDeniedPage</param-name>
 	      <param-value>org.dcm4chee.web.wicket.AccessDeniedPage</param-value>
-	    </init-param> 
-		<!-- ClassName of Page to show page expired page. Default is signinPageClass -->
+	    </init-param> -->
+		<!-- ClassName of Page to show page expired page. Default is signinPageClass 
 	    <init-param>
 	      <param-name>pageExpiredPage</param-name>
 	      <param-value>org.dcm4chee.web.wicket.PageExpiredErrorPage</param-value>
-	    </init-param> 
+	    </init-param> -->
 		<!-- Name of Page to show internal errors. No Default. -->
 	    <init-param>
 	      <param-name>internalErrorPageClass</param-name>
 	      <param-value>org.dcm4chee.web.wicket.InternalErrorPage</param-value>
 	    </init-param> 
- 		
+ 	
+ 		<!-- MBean Service Names -->
+	    <init-param>
+	      <param-name>echoServiceName</param-name>
+	      <param-value>dcm4chee.archive:service=ECHOService</param-value>
+	    </init-param> 
+	    <init-param>
+	      <param-name>moveScuServiceName</param-name>
+	      <param-value>dcm4chee.web:service=MoveScu</param-value>
+	    </init-param> 
+ 				
  	</filter>
 
  <filter-mapping>

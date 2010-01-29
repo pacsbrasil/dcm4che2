@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="dcm4chee-web-ejb/src/main/java"/>
+	<classpathentry kind="src" path="dcm4chee-web-war/src/main/java"/>
+	<classpathentry kind="src" path="dcm4chee-web-war/src/test/java"/>
+	<classpathentry kind="src" path="dcm4chee-web-wicket/src/main/java"/>
+	<classpathentry kind="lib" path="dcm4chee-web-ear/target/dcm4chee-web-ear-3.0.0-SNAPSHOT/dcm4chee-web-ejb-3.0.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="dcm4chee-web-ejb/target/dcm4chee-web-ejb-3.0.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="dcm4chee-web-wicket/target/dcm4chee-web-wicket-3.0.0-SNAPSHOT.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="dcm4chee-web-wicket/target/classes"/>
+</classpath>
