@@ -58,6 +58,8 @@ import org.dcm4chee.web.wicket.util.DateUtils;
  */
 public class SeriesModel extends AbstractDicomModel implements Serializable {
 
+    private static final long serialVersionUID = 1461384501283007745L;
+    
     private String sourceAET;
     private List<InstanceModel> instances = new ArrayList<InstanceModel>();
 
@@ -67,6 +69,10 @@ public class SeriesModel extends AbstractDicomModel implements Serializable {
         this.dataset = series.getAttributes(true);
     }
 
+    public String getSeriesInstanceUID() {
+        return dataset.getString(Tag.SeriesInstanceUID);
+    }
+    
     public String getDatetime() {
         return DateUtils.datm2str(
                 dataset.getString(Tag.SeriesDate, ""),
@@ -145,6 +151,7 @@ public class SeriesModel extends AbstractDicomModel implements Serializable {
         return instances;
     }
 
+    @Override
     public int getRowspan() {
         int rowspan = isDetails() ? 2 : 1;
         for (InstanceModel inst : instances) {
@@ -153,10 +160,12 @@ public class SeriesModel extends AbstractDicomModel implements Serializable {
         return rowspan;
     }
 
+    @Override
     public void collapse() {
         instances.clear();
     }
 
+    @Override
     public boolean isCollapsed() {
         return instances.isEmpty();
     }
@@ -171,6 +180,7 @@ public class SeriesModel extends AbstractDicomModel implements Serializable {
         }
     }
 
+    @Override
     public void expand() {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
@@ -179,6 +189,17 @@ public class SeriesModel extends AbstractDicomModel implements Serializable {
         }
     }
 
+    @Override
+    public int levelOfModel() {
+        return SERIES_LEVEL;
+    }
+   
+    @Override
+    public List<? extends AbstractDicomModel> getDicomModelsOfNextLevel() {
+        return instances;
+    }
+
+    @Override
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);

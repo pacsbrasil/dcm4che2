@@ -69,7 +69,7 @@ import org.slf4j.LoggerFactory;
 public class BaseForm extends Form {
 
     private static final long serialVersionUID = 0L;
-    private static final String LABEL_ID_EXTENSION = "Label";
+    public static final String LABEL_ID_EXTENSION = "Label";
 
     private static Logger log = LoggerFactory.getLogger(BaseForm.class);
     
@@ -114,15 +114,27 @@ public class BaseForm extends Form {
      */
     public TextField addLabeledTextField(String id) {
         TextField tf = new TextField(id);
-        addLabel(id);
+        addInternalLabel(id);
         add(tf);
         return tf;
     }
 
+    public TextField addLabeledTextField(String id, final IModel<Boolean> enabledModel) {
+        TextField tf = new TextField(id) {
+            @Override
+            public boolean isEnabled() {
+                return enabledModel.getObject();
+            }
+        };
+        addInternalLabel(id);
+        add(tf);
+        return tf;
+    }
+    
     public DropDownChoice addLabeledDropDownChoice(String id, IModel model, List<String> values) {
         DropDownChoice ch = model == null ? new DropDownChoice(id, values) :
                                             new DropDownChoice(id, model, values);
-        addLabel(id);
+        addInternalLabel(id);
         add(ch);
         return ch;
     }
@@ -130,17 +142,24 @@ public class BaseForm extends Form {
     public CheckBox addLabeledCheckBox(String id, IModel model) {
         CheckBox chk = model == null ? new CheckBox(id) :
                                             new CheckBox(id, model);
-        addLabel(id);
+        addInternalLabel(id);
         add(chk);
         return chk;
     }
     
-    public Label addLabel(String id) {
+    private Label addInternalLabel(String id) {
         String labelId = id+LABEL_ID_EXTENSION;
         Label l = new Label(labelId, new ResourceModel(toResourcekey(id)));
         add(l);
         return l;
     }
+    
+    public Label addLabel(String id) {
+        Label l = new Label(id, new ResourceModel(toResourcekey(id)));
+        add(l);
+        return l;
+    }
+
     private String toResourcekey(String id) {
         return resourceIdPrefix == null ? id : resourceIdPrefix+id;
     }

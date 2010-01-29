@@ -50,9 +50,13 @@ public class StudyListFilter implements Serializable {
     private String patientName = "*";
     private String patientID = "*";
     private String issuerOfPatientID = "*";
+    private boolean extendedPatQuery;
+    private String birthDateMin = "*";
+    private String birthDateMax = "*";
     private String accessionNumber = "*";
     private String studyDateMin = "*";
     private String studyDateMax = "*";
+    private boolean extendedStudyQuery;
     private String studyInstanceUID = "*";
     private String modality = "*";
     private String sourceAET = "*";
@@ -87,6 +91,30 @@ public class StudyListFilter implements Serializable {
         this.issuerOfPatientID = nullToAsterisk(issuerOfPatientID);
     }
 
+    public boolean isExtendedPatQuery() {
+        return extendedPatQuery;
+    }
+
+    public void setExtendedPatQuery(boolean extendedPatQuery) {
+        this.extendedPatQuery = extendedPatQuery;
+    }
+
+    public String getBirthDateMin() {
+        return birthDateMin;
+    }
+
+    public void setBirthDateMin(String birthdateMin) {
+        this.birthDateMin = nullToAsterisk(birthdateMin);
+    }
+
+    public String getBirthDateMax() {
+        return birthDateMax;
+    }
+
+    public void setBirthDateMax(String birthdateMax) {
+        this.birthDateMax = nullToAsterisk(birthdateMax);
+    }
+
     public String getAccessionNumber() {
         return accessionNumber;
     }
@@ -109,6 +137,14 @@ public class StudyListFilter implements Serializable {
 
     public void setStudyDateMax(String studyDate) {
         this.studyDateMax = nullToAsterisk(studyDate);
+    }
+
+    public boolean isExtendedStudyQuery() {
+        return extendedStudyQuery;
+    }
+
+    public void setExtendedStudyQuery(boolean extendedStudyQuery) {
+        this.extendedStudyQuery = extendedStudyQuery;
     }
 
     public String getStudyInstanceUID() {

@@ -223,6 +223,16 @@ public class PPSModel extends AbstractDicomModel implements Serializable {
         }
     }
 
+    @Override
+    public int levelOfModel() {
+        return PPS_LEVEL;
+    }
+   
+    @Override
+    public List<? extends AbstractDicomModel> getDicomModelsOfNextLevel() {
+        return series;
+    }
+    
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);

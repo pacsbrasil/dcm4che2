@@ -43,6 +43,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.model.IModel;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.Patient;
@@ -59,10 +61,12 @@ import org.dcm4chee.web.wicket.util.DateUtils;
 public class PatientModel extends AbstractDicomModel implements Serializable {
 
     private List<StudyModel> studies = new ArrayList<StudyModel>();
+    private IModel<Boolean> latestStudyFirst;
 
-    public PatientModel(Patient patient) {
+    public PatientModel(Patient patient, IModel latestStudyFirst) {
         setPk(patient.getPk());
         this.dataset = patient.getAttributes();
+        this.latestStudyFirst = latestStudyFirst;
     }
 
     public String getName() {
@@ -93,6 +97,7 @@ public class PatientModel extends AbstractDicomModel implements Serializable {
         return studies;
     }
 
+    @Override
     public int getRowspan() {
         int rowspan = isDetails() ? 2 : 1;
         for (StudyModel study : studies) {
@@ -101,10 +106,12 @@ public class PatientModel extends AbstractDicomModel implements Serializable {
         return rowspan;
     }
 
+    @Override
     public void collapse() {
         studies.clear();
     }
 
+    @Override
     public boolean isCollapsed() {
         return studies.isEmpty();
     }
@@ -119,14 +126,25 @@ public class PatientModel extends AbstractDicomModel implements Serializable {
         }
     }
 
-    public void expand(boolean latestStudyFirst) {
+    @Override
+    public void expand() {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        for (Study study : dao.findStudiesOfPatient(getPk(), latestStudyFirst)) {
+        for (Study study : dao.findStudiesOfPatient(getPk(), latestStudyFirst.getObject())) {
             this.studies.add(new StudyModel(study));
         }
     }
 
+    @Override
+    public int levelOfModel() {
+        return PATIENT_LEVEL;
+    }
+   
+    @Override
+    public List<? extends AbstractDicomModel> getDicomModelsOfNextLevel() {
+        return studies;
+    }
+    @Override
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);

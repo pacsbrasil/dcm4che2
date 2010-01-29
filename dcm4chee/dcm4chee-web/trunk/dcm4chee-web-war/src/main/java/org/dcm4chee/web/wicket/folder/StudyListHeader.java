@@ -1,14 +1,23 @@
 package org.dcm4chee.web.wicket.folder;
 
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.model.Model;
+import org.dcm4chee.web.wicket.WicketApplication;
+import org.dcm4chee.web.wicket.common.TooltipBehaviour;
 
 public class StudyListHeader extends Panel {
 
     private int headerExpandLevel = 1;
+    private int expandAllLevel = 5;
+    private Model<Boolean> autoExpand = new Model<Boolean>(false);
  
     private final class Row extends WebMarkupContainer {
 
@@ -33,43 +42,23 @@ public class StudyListHeader extends Panel {
         public Cell(String id, int entityLevel) {
             super(id);
             this.entityLevel = entityLevel;
-            add(new AjaxFallbackLink("collapse"){
-
-                @Override
-                public void onClick(AjaxRequestTarget target) {
-                    StudyListHeader.this.headerExpandLevel =
-                            Cell.this.entityLevel;
-                    if (target != null) {
-                        target.addComponent(StudyListHeader.this);
-                    }
-                }
-
-                @Override
-                public boolean isVisible() {
-                    return StudyListHeader.this.headerExpandLevel
-                            > Cell.this.entityLevel;
-                }
-
-            });
-
             add(new AjaxFallbackLink("expand"){
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    StudyListHeader.this.headerExpandLevel =
-                            Cell.this.entityLevel + 1;
+                    headerExpandLevel = headerExpandLevel > Cell.this.entityLevel ?
+                            Cell.this.entityLevel : Cell.this.entityLevel + 1;
                     if (target != null) {
                         target.addComponent(StudyListHeader.this);
                     }
                 }
-
+            }.add( new Image("expandImg", new AbstractReadOnlyModel<ResourceReference>() {
                 @Override
-                public boolean isVisible() {
-                    return StudyListHeader.this.headerExpandLevel
-                            == Cell.this.entityLevel;
+                public ResourceReference getObject() {
+                    return StudyListHeader.this.headerExpandLevel <= Cell.this.entityLevel ? 
+                            WicketApplication.IMAGE_EXPAND : WicketApplication.IMAGE_COLLAPSE;
                 }
-
-            });
+            })));
         }
 
         @Override
@@ -84,12 +73,50 @@ public class StudyListHeader extends Panel {
     public StudyListHeader(String id) {
         super(id);
         setOutputMarkupId(true);
-        add(new Row("patient", 0).add(new Cell("cell", 0)));
+        Cell patCell = new Cell("cell", 0);
+        patCell.add(new AjaxFallbackLink("expandAll"){
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                if (target != null) {
+                    headerExpandLevel = expandAllLevel;
+                    target.addComponent(StudyListHeader.this);
+                }
+            }
+            @Override
+            public boolean isVisible() {
+                return headerExpandLevel < expandAllLevel;
+            }
+        }.add(new Image("expandAllImg", WicketApplication.IMAGE_EXPAND_ALL)));
+        patCell.add(new AjaxCheckBox("autoExpand", autoExpand){
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                if (autoExpand.getObject()) {
+                    headerExpandLevel = expandAllLevel;
+                    target.addComponent(StudyListHeader.this);
+                }
+            }}.add(new TooltipBehaviour("folder.","autoExpand")));
+        add(new Row("patient", 0).add(patCell));
         add(new Row("study", 1).add(new Cell("cell", 1)));
         add(new Row("pps", 2).add(new Cell("cell", 2)));
         add(new Row("series", 3).add(new Cell("cell", 3)));
         add(new Row("instance", 4).add(new Cell("cell", 4)));
         add(new Row("file", 5));
+    }
+
+
+    public void setExpandAllLevel(int expandAllLevel) {
+        this.expandAllLevel = expandAllLevel;
+        if (autoExpand.getObject())
+            this.headerExpandLevel = expandAllLevel;
+    }
+    
+    public int getExpandAllLevel() {
+        return expandAllLevel;
+    }
+
+    public void expandToLevel(int level) {
+        headerExpandLevel = level;
     }
 
 }

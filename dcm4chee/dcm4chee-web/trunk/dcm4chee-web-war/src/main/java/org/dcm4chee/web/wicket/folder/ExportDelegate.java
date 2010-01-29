@@ -36,11 +36,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket.ae;
+package org.dcm4chee.web.wicket.folder;
 
-import java.util.List;
-
-import org.dcm4chee.archive.entity.AE;
+import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4chee.web.wicket.common.delegate.BaseMBeanDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,41 +48,41 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since Aug 18, 2009
  */
-public class EchoDelegate extends BaseMBeanDelegate {
+public class ExportDelegate extends BaseMBeanDelegate {
 
-    private static Logger log = LoggerFactory.getLogger(EchoDelegate.class);
-    
-    public EchoDelegate() {
+    private static ExportDelegate delegate;
+
+    private static Logger log = LoggerFactory.getLogger(ExportDelegate.class);
+
+    private ExportDelegate() {
         super();
     }
-    
-    public String echo(AE ae, int nrOfTests) {
-        log.debug("ECHO:"+ae);
-        try {
-            return (String) server.invoke(serviceObjectName, "echo", 
-                new Object[]{ae.getTitle(), ae.getHostName(), ae.getPort(), toString(ae.getCipherSuites()), nrOfTests}, 
-                new String[]{String.class.getName(), String.class.getName(), 
-                    int.class.getName(), String.class.getName(), int.class.getName()});
-        } catch (Exception x) {
-            String msg = "DICOM Echo failed! Reason:"+x.getMessage();
-            log.error(msg,x);
-            return msg;
-        }
-    }
 
-    private String toString(List<String> strings) {
-        if ( strings == null || strings.size() < 1)
-            return null;
-        StringBuilder sb = new StringBuilder();
-        for ( String s : strings ) {
-            sb.append(s).append(',');
+    public boolean export(String destAET, String patID, String[] studyIUIDs, String[] seriesIUIDs, String[] sopIUIDs, 
+            DimseRSPHandler handler) {
+        try {
+            server.invoke(serviceObjectName, "move", 
+                    new Object[]{null, destAET, patID, studyIUIDs, seriesIUIDs, sopIUIDs, handler, false}, 
+                    new String[]{String.class.getName(), String.class.getName(), String.class.getName(),
+                    String[].class.getName(), String[].class.getName(), String[].class.getName(), 
+                    DimseRSPHandler.class.getName(), boolean.class.getName()});
+            return true;
+        } catch (Exception x) {
+            String msg = "DICOM Export failed! Reason:"+x.getMessage();
+            log.error(msg,x);
+            return false;
         }
-        sb.setLength(sb.length()-1);
-        return sb.toString();
     }
 
     @Override
     public String getInitParameterName() {
-        return "echoServiceName";
+        return "moveScuServiceName";
     }
+
+    public static ExportDelegate getInstance() {
+        if (delegate==null)
+            delegate = new ExportDelegate();
+        return delegate;
+    }
+
 }

@@ -8,9 +8,10 @@
   <thead align="left" valign="top">
   <wicket:panel>
     <tr wicket:id="patient" class="patient">
-      <td wicket:id="cell" rowspan="6">
-        <a wicket:id="expand" href="#">(+)</a>
-        <a wicket:id="collapse" href="#">(-)</a>
+      <td wicket:id="cell" rowspan="6" class="expand">
+        <a wicket:id="expand" href="#"><img wicket:id="expandImg" alt="" /></a>
+        <a wicket:id="expandAll" href="#"><img wicket:id="expandAllImg" alt="(*)" /></a>
+        <input wicket:id="autoExpand" type="checkbox"></input>
       </td>
       <th colspan="5">Patient Name</th>
       <th>Patient ID/Issuer</th>
@@ -22,9 +23,8 @@
       <th></th>
     </tr>
     <tr wicket:id="study" class="study">
-      <td wicket:id=cell rowspan="5">
-        <a wicket:id="expand" href="#">(+)</a>
-        <a wicket:id="collapse" href="#">(-)</a>
+      <td wicket:id=cell rowspan="5" class="expand">
+        <a wicket:id="expand" href="#"><img wicket:id="expandImg" alt="" /></a>
       </td>
       <th colspan="4">Study Date/Time</th>
       <th>Study ID</th>
@@ -38,9 +38,8 @@
       <th></th>
     </tr>
     <tr wicket:id="pps" class="pps">
-      <td wicket:id="cell" rowspan="4">
-        <a wicket:id="expand" href="#">(+)</a>
-        <a wicket:id="collapse" href="#">(-)</a>
+      <td wicket:id="cell" rowspan="4" class="expand">
+        <a wicket:id="expand" href="#"><img wicket:id="expandImg" alt="" /></a>
       </td>
       <th colspan="3">PPS Start Date/Time</th>
       <th>PPS ID</th>
@@ -54,9 +53,8 @@
       <th></th>
     </tr>
     <tr wicket:id="series" class="series">
-      <td wicket:id="cell" rowspan="3">
-        <a wicket:id="expand" href="#">(+)</a>
-        <a wicket:id="collapse" href="#">(-)</a>
+      <td wicket:id="cell" rowspan="3" class="expand">
+        <a wicket:id="expand" href="#"><img wicket:id="expandImg" alt="" /></a>
       </td>
       <th colspan="2">Series Date/Time</th>
       <th>Series No</th>
@@ -70,9 +68,8 @@
       <th></th>
     </tr>
     <tr wicket:id="instance" class="instance">
-      <td wicket:id="cell" rowspan="2">
-        <a wicket:id="expand" href="#">(+)</a>
-        <a wicket:id="collapse" href="#">(-)</a>
+      <td wicket:id="cell" rowspan="2" class="expand">
+        <a wicket:id="expand" href="#"><img wicket:id="expandImg" alt="" /></a>
       </td>
       <th>Instance Date/Time</th>
       <th>Instance No</th>

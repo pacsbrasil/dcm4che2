@@ -65,6 +65,10 @@ public class InstanceModel extends AbstractDicomModel implements Serializable {
         this.dataset = inst.getAttributes(true);
     }
 
+    public String getSOPInstanceUID() {
+        return dataset.getString(Tag.SOPInstanceUID, "");
+    }
+    
     private static String toDescription(DicomObject dataset) {
         String pmi = dataset.getString(Tag.PhotometricInterpretation);
         if (pmi != null) {
@@ -125,6 +129,7 @@ public class InstanceModel extends AbstractDicomModel implements Serializable {
         return files;
     }
 
+    @Override
     public int getRowspan() {
         int rowspan = isDetails() ? 2 : 1;
         for (FileModel file : files) {
@@ -133,10 +138,12 @@ public class InstanceModel extends AbstractDicomModel implements Serializable {
         return rowspan;
     }
 
+    @Override
     public void collapse() {
         files.clear();
     }
 
+    @Override
     public boolean isCollapsed() {
         return files.isEmpty();
     }
@@ -149,6 +156,7 @@ public class InstanceModel extends AbstractDicomModel implements Serializable {
         }
     }
 
+    @Override
     public void expand() {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
@@ -157,6 +165,17 @@ public class InstanceModel extends AbstractDicomModel implements Serializable {
         }
     }
 
+    @Override
+    public int levelOfModel() {
+        return INSTANCE_LEVEL;
+    }
+
+    @Override
+    public List<? extends AbstractDicomModel> getDicomModelsOfNextLevel() {
+        return null; //instance is the last DICOM level.
+    }
+
+    @Override
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);

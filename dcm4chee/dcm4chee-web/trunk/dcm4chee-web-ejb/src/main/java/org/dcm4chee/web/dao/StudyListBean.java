@@ -104,26 +104,38 @@ public class StudyListBean implements StudyListLocal {
     private static void appendWhereClause(StringBuilder ql,
             StudyListFilter filter) {
         ql.append(" WHERE p.mergedWith IS NULL");
-        appendPatientNameFilter(ql, filter.getPatientName());
-        appendPatientIDFilter(ql, filter.getPatientID());
-        appendIssuerOfPatientIDFilter(ql, filter.getIssuerOfPatientID());
-        appendAccessionNumberFilter(ql, filter.getAccessionNumber());
-        appendStudyDateMinFilter(ql, filter.getStudyDateMin());
-        appendStudyDateMaxFilter(ql, filter.getStudyDateMax());
-        appendStudyInstanceUIDFilter(ql, filter.getStudyInstanceUID());
+        if ( !filter.isExtendedStudyQuery() || "*".equals(filter.getStudyInstanceUID()) ) {
+            appendPatientNameFilter(ql, filter.getPatientName());
+            appendPatientIDFilter(ql, filter.getPatientID());
+            appendIssuerOfPatientIDFilter(ql, filter.getIssuerOfPatientID());
+            if ( filter.isExtendedPatQuery()) {
+                appendPatientBirthDateFilter(ql, filter.getBirthDateMin(), filter.getBirthDateMax());
+            }
+            appendAccessionNumberFilter(ql, filter.getAccessionNumber());
+            appendStudyDateMinFilter(ql, filter.getStudyDateMin());
+            appendStudyDateMaxFilter(ql, filter.getStudyDateMax());
+        } else {
+            ql.append(" AND s.studyInstanceUID = :studyInstanceUID");
+        }
         appendModalityFilter(ql, filter.getModality());
         appendSourceAETFilter(ql, filter.getSourceAET());
     }
 
     private static void setQueryParameters(Query query, StudyListFilter filter) {
-        setPatientNameQueryParameter(query, filter.getPatientName());
-        setPatientIDQueryParameter(query, filter.getPatientID());
-        setIssuerOfPatientIDQueryParameter(query, filter.getIssuerOfPatientID());
-        setAccessionNumberQueryParameter(query, filter.getAccessionNumber());
-        setStudyDateMinQueryParameter(query, filter.getStudyDateMin());
-        setStudyDateMaxQueryParameter(query, filter.getStudyDateMax());
-        setStudyInstanceUIDQueryParameter(query, filter.getStudyInstanceUID());
-       setModalityQueryParameter(query, filter.getModality());
+        if ( !filter.isExtendedStudyQuery() || "*".equals(filter.getStudyInstanceUID()) ) {
+            setPatientNameQueryParameter(query, filter.getPatientName());
+            setPatientIDQueryParameter(query, filter.getPatientID());
+            setIssuerOfPatientIDQueryParameter(query, filter.getIssuerOfPatientID());
+            if ( filter.isExtendedPatQuery()) {
+                setPatientBirthDateQueryParameter(query, filter.getBirthDateMin(), filter.getBirthDateMax());
+            }
+            setAccessionNumberQueryParameter(query, filter.getAccessionNumber());
+            setStudyDateMinQueryParameter(query, filter.getStudyDateMin());
+            setStudyDateMaxQueryParameter(query, filter.getStudyDateMax());
+        } else {
+            setStudyInstanceUIDQueryParameter(query, filter.getStudyInstanceUID());
+        }
+        setModalityQueryParameter(query, filter.getModality());
         setSourceAETQueryParameter(query, filter.getSourceAET());
     }
 
@@ -247,6 +259,31 @@ public class StudyListBean implements StudyListLocal {
         }
     }
 
+    private static void appendPatientBirthDateFilter(StringBuilder ql,
+            String minDate, String maxDate) {
+        if (!"*".equals(minDate)) {
+            if ("*".equals(maxDate)) {
+                ql.append(" AND p.patientBirthDate >= :birthdateMin");
+            } else {
+                ql.append(" AND p.patientBirthDate BETWEEN :birthdateMin AND :birthdateMax");
+                
+            }
+        } else if ( !"*".equals(maxDate)) {
+            ql.append(" AND p.patientBirthDate <= :birthdateMax");
+        }
+    }
+    private static void setPatientBirthDateQueryParameter(Query query,
+            String minDate, String maxDate) {
+        if ( !"*".equals(minDate))
+            query.setParameter("birthdateMin", normalizeDate(minDate));
+        if ( !"*".equals(maxDate))
+            query.setParameter("birthdateMax", normalizeDate(maxDate));
+    }
+
+    private static String normalizeDate(String date) {
+        return date.substring(0,4)+date.substring(5,7)+date.substring(8);
+    }
+
     private static void appendStudyDateMinFilter(StringBuilder ql,
             String studyDate) {
         if (!"*".equals(studyDate)) {
@@ -310,13 +347,6 @@ public class StudyListBean implements StudyListLocal {
                     containsWildcard(accessionNumber) 
                             ? toLike(accessionNumber)
                             : accessionNumber);
-        }
-    }
-
-    private static void appendStudyInstanceUIDFilter(StringBuilder ql,
-            String studyInstanceUID) {
-        if (!"*".equals(studyInstanceUID)) {
-            ql.append(" AND s.studyInstanceUID = :studyInstanceUID");
         }
     }
 

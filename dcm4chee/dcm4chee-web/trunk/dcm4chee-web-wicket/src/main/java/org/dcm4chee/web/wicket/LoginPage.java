@@ -42,11 +42,9 @@ import java.net.UnknownHostException;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.authentication.panel.SignInPanel;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.StringResourceModel;
 import org.dcm4chee.web.wicket.common.FocusOnLoadBehaviour;
-import org.dcm4chee.web.wicket.common.LocaleSelectorLink;
 
 /**
  * 
@@ -60,7 +58,7 @@ public class LoginPage extends BaseWicketPage {
         this.getModuleSelectorPanel().setShowLogoutLink(false);
         String nodeInfo;
         try {
-            nodeInfo = InetAddress.getLocalHost().getHostName();
+            nodeInfo = System.getProperty("dcm4che.archive.nodename", InetAddress.getLocalHost().getHostName() );
         } catch (UnknownHostException e) {
             nodeInfo = "DCM4CHEE";
         }

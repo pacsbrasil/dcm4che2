@@ -67,6 +67,10 @@ public class StudyModel extends AbstractDicomModel implements Serializable {
         dataset = study.getAttributes(true);
     }
 
+    public String getStudyInstanceUID() {
+        return dataset.getString(Tag.StudyInstanceUID, "");
+    }
+
     public String getDatetime() {
         return DateUtils.datm2str(
                 dataset.getString(Tag.StudyDate, ""),
@@ -130,6 +134,7 @@ public class StudyModel extends AbstractDicomModel implements Serializable {
         return ppss;
     }
 
+    @Override
     public int getRowspan() {
         int rowspan = isDetails() ? 2 : 1;
         for (PPSModel pps : ppss) {
@@ -138,10 +143,12 @@ public class StudyModel extends AbstractDicomModel implements Serializable {
         return rowspan;
     }
 
+    @Override
     public void collapse() {
         ppss.clear();
     }
 
+    @Override
     public boolean isCollapsed() {
         return ppss.isEmpty();
     }
@@ -156,6 +163,7 @@ public class StudyModel extends AbstractDicomModel implements Serializable {
         }
     }
 
+    @Override
     public void expand() {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
@@ -164,6 +172,16 @@ public class StudyModel extends AbstractDicomModel implements Serializable {
         }
     }
 
+    @Override
+    public int levelOfModel() {
+        return STUDY_LEVEL;
+    }
+   
+    @Override
+    public List<? extends AbstractDicomModel> getDicomModelsOfNextLevel() {
+        return ppss;
+    }
+    
     private void add(Series series) {
         MPPS mpps = series.getModalityPerformedProcedureStep();
         SeriesModel seriesModel = new SeriesModel(series);
@@ -178,6 +196,7 @@ public class StudyModel extends AbstractDicomModel implements Serializable {
         ppss.add(new PPSModel(mpps, seriesModel));
     }
 
+    @Override
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);

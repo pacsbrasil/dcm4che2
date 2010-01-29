@@ -39,9 +39,8 @@
 package org.dcm4chee.web.wicket;
 
 import org.apache.wicket.Application;
-import org.apache.wicket.Component;
+import org.apache.wicket.IPageMap;
 import org.apache.wicket.ResourceReference;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
@@ -62,6 +61,16 @@ public class BaseWicketPage extends WebPage {
     private static final ResourceReference CSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
 
     public BaseWicketPage() {
+        super();
+        initLayout();
+    }
+
+    public BaseWicketPage(IPageMap pageMap) {
+        super(pageMap);
+        initLayout();
+    }
+    
+    private void initLayout() {
         add( new Label("app_browser_title", new AbstractReadOnlyModel() {
 
             @Override

@@ -39,17 +39,9 @@
 package org.dcm4chee.web.wicket.folder;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.Tag;
-import org.dcm4chee.archive.entity.Patient;
-import org.dcm4chee.archive.entity.Study;
-import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.dao.StudyListLocal;
-import org.dcm4chee.web.wicket.util.DateUtils;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -58,6 +50,12 @@ import org.dcm4chee.web.wicket.util.DateUtils;
  */
 public abstract class AbstractDicomModel implements Serializable {
 
+    public static final int PATIENT_LEVEL = 0;
+    public static final int STUDY_LEVEL = 1;
+    public static final int PPS_LEVEL = 2;
+    public static final int SERIES_LEVEL = 3;
+    public static final int INSTANCE_LEVEL = 4;
+    
     private long pk;
     private boolean selected;
     private boolean details;
@@ -93,9 +91,15 @@ public abstract class AbstractDicomModel implements Serializable {
 
     public abstract int getRowspan();
     
+    public abstract void expand();
+    
     public abstract void collapse();
 
     public abstract boolean isCollapsed();
+    
+    public abstract List<? extends AbstractDicomModel> getDicomModelsOfNextLevel();
+    
+    public abstract int levelOfModel();
 
     public abstract void update(DicomObject dicomObject);
 }

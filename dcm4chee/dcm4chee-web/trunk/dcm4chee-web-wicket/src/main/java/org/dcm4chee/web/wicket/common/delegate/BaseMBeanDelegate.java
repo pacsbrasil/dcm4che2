@@ -36,55 +36,67 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket.ae;
+package org.dcm4chee.web.wicket.common.delegate;
 
 import java.util.List;
 
-import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.web.wicket.common.delegate.BaseMBeanDelegate;
+import javax.management.MBeanServerConnection;
+import javax.management.MBeanServerFactory;
+import javax.management.ObjectName;
+
+import org.apache.wicket.Application;
+import org.apache.wicket.protocol.http.WebApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since Aug 18, 2009
+ * @since Jan 15, 2010
  */
-public class EchoDelegate extends BaseMBeanDelegate {
+public abstract class BaseMBeanDelegate {
 
-    private static Logger log = LoggerFactory.getLogger(EchoDelegate.class);
+    protected ObjectName serviceObjectName;
+    protected static MBeanServerConnection server;
+      
+    protected static Logger log = LoggerFactory.getLogger(BaseMBeanDelegate.class);
     
-    public EchoDelegate() {
-        super();
+    public BaseMBeanDelegate() {
+        init();
     }
     
-    public String echo(AE ae, int nrOfTests) {
-        log.debug("ECHO:"+ae);
-        try {
-            return (String) server.invoke(serviceObjectName, "echo", 
-                new Object[]{ae.getTitle(), ae.getHostName(), ae.getPort(), toString(ae.getCipherSuites()), nrOfTests}, 
-                new String[]{String.class.getName(), String.class.getName(), 
-                    int.class.getName(), String.class.getName(), int.class.getName()});
-        } catch (Exception x) {
-            String msg = "DICOM Echo failed! Reason:"+x.getMessage();
-            log.error(msg,x);
-            return msg;
+    @SuppressWarnings("unchecked")
+    protected void init() {
+        log.info("Init MBeanDelegate! server:"+server+" serviceObjectName:"+serviceObjectName);
+        if (server == null) {
+            List servers = MBeanServerFactory.findMBeanServer(null);
+            if (servers != null && !servers.isEmpty()) {
+                server = (MBeanServerConnection) servers.get(0);
+                log.debug("Found MBeanServer:"+server);
+            } else {
+                log.error("Failed to get MBeanServerConnection! MbeanDelegate class:"+getClass().getName());
+                return;
+            }
+        }
+        if (serviceObjectName == null) {
+            String s = ((WebApplication)Application.get()).getInitParameter(getInitParameterName());
+            try {
+                serviceObjectName = new ObjectName(s);
+                log.info("MBeanDelegate initialized! serviceName:"+serviceObjectName);
+            } catch (Exception e) {
+                log.error( "Failed to set ObjectName for MBeanService! serviceName("+
+                        getInitParameterName()+")="+s,e );
+            }
         }
     }
+   
+    /**
+     * Return name of Servlet InitParameter to get objectname of MBean service.
+     * @return
+     */
+    public abstract String getInitParameterName();
 
-    private String toString(List<String> strings) {
-        if ( strings == null || strings.size() < 1)
-            return null;
-        StringBuilder sb = new StringBuilder();
-        for ( String s : strings ) {
-            sb.append(s).append(',');
-        }
-        sb.setLength(sb.length()-1);
-        return sb.toString();
-    }
-
-    @Override
-    public String getInitParameterName() {
-        return "echoServiceName";
+    public boolean isInitialized() {
+        return serviceObjectName != null;
     }
 }
