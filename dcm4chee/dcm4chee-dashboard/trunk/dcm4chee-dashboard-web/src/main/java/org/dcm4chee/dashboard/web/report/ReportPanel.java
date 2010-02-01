@@ -95,25 +95,23 @@ public class ReportPanel extends Panel {
     private ModalWindow modalWindow;
     
     public ReportPanel(String id) {
-        super(id);        
-    }
+        super(id);
 
+        add(this.modalWindow = new ModalWindow("modal-window"));
+        add(new ToggleFormLink("toggle-group-form-link", 
+                new AddGroupForm("add-group-form"), 
+                this, 
+                "toggle-group-form-image")
+        );        
+    }
+    
     @Override
     public void onBeforeRender() {
-        super.onBeforeRender();
-
         try {
-            add(this.modalWindow = new ModalWindow("modal-window"));
-            add(new ToggleFormLink("toggle-group-form-link", 
-                    new AddGroupForm("add-group-form"), 
-                    this, 
-                    "toggle-group-form-image")
-            );        
-
             List<ReportModel> reports = new ArrayList<ReportModel>();
             for (ReportModel report : ((WicketApplication) getApplication()).getDashboardService().listAllReports())
                 reports.add(report);
-
+    
             DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new ReportModel());
             
             for (ReportModel group : ((WicketApplication) getApplication()).getDashboardService().listAllReportGroups()) {
@@ -165,13 +163,14 @@ public class ReportPanel extends Panel {
             reportTreeTable.setRootLess(true);
             reportTreeTable.getTreeState().expandAll();
             reportTreeTable.getTreeState().setAllowSelectMultiple(false);
-            add(reportTreeTable);
+            addOrReplace(reportTreeTable);
+            
+            super.onBeforeRender();
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
+            log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
             log.debug("Exception: ", e);
-//            this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
-//            throw new RuntimeException();
+            this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
+            throw new RuntimeException();
         }
     }
 
@@ -318,31 +317,22 @@ public class ReportPanel extends Panel {
 
             this.add(newAjaxComponent(
                     new Label("new-group-label", new ResourceModel("dashboard.report.add-group.label").wrapOnAssignment(this))));
-            TextField<String> groupTf
-            = new TextField<String>("new-groupname-input", newGroupname);
-            newAjaxComponent(groupTf);
-            groupTf.add(new PatternValidator("^[A-Za-z0-9]+$"));
-        groupTf.setRequired(true);
-        this.add(groupTf);
-        this.add(new ValidatorMessageLabel("new-groupname-validator-message-label", groupTf));
-            
+            TextField<String> groupTf;
+            this.add(newAjaxComponent((groupTf = new TextField<String>("new-groupname-input", newGroupname))
+            .add(new PatternValidator("^[A-Za-z0-9]+$"))
+            .setRequired(true)));
+            this.add(new ValidatorMessageLabel("new-groupname-validator-message-label", groupTf));
             this.add(new Button("add-group-submit"));
         }
 
-        @Override
-        protected void onValidate() {
-System.out.println("ON  VALIDATE");
-        }
-        
         @Override
         protected void onSubmit() {
             try {
                 ((WicketApplication) getApplication()).getDashboardService().createGroup(
                         new ReportModel(null, this.newGroupname.getObject(), null, null, null, false, null));
-                
-                DashboardMainPage page = new DashboardMainPage(this.getPage().getPageParameters());
+                DashboardMainPage page = (DashboardMainPage) this.getPage();
                 ((AjaxTabbedPanel) page.get("tabs")).setSelectedTab(new Integer(new ResourceModel("dashboard.tabs.tab2.number").getObject()));
-                setResponsePage(page);            
+                setResponsePage(page);
             } catch (final Exception e) {
                 log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
                 log.debug("Exception: ", e);

@@ -71,7 +71,7 @@ public class DashboardMainPage extends WebPage {
     private static final long serialVersionUID = 1L;
     
     private static Logger log = LoggerFactory.getLogger(DashboardMainPage.class);
-    
+
     public DashboardMainPage(final PageParameters parameters) {
         try {
             this.add(new AjaxTabbedPanel("tabs", new ArrayList<ITab>(Arrays.asList(
@@ -107,19 +107,13 @@ public class DashboardMainPage extends WebPage {
             this.redirectToInterceptPage(new InternalErrorPage(e));
         }
     }
-    
+
     public static Connection getDatabaseConnection(String dataSourceName) throws Exception {
 
         Context jndiContext = null;
         try {
-            jndiContext = new InitialContext();
-//            return ((DataSource) 
-//                    jndiContext.lookup((String) MBeanServerLocator.locate().getAttribute(
-//                            new ObjectName("org.dcm4chee.dashboard.mbean:service=DashboardService"),
-//                            dataSourceName)
-//                    )).getConnection();
             return ((DataSource) 
-                    jndiContext.lookup(dataSourceName))
+                    (jndiContext = new InitialContext()).lookup(dataSourceName))
                     .getConnection();
         } catch (Exception e) {
             throw e;

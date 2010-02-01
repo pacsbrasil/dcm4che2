@@ -77,22 +77,15 @@ public class DynamicLinkPanel extends Panel {
 
     private Link<Object> link;
     
-    private String className;
     private ReportModel report;
     private Object modalWindow;
 
-    public DynamicLinkPanel(String id, String className, ReportModel report, ModalWindow modalWindow) {
+    @SuppressWarnings("unchecked")
+    public DynamicLinkPanel(String id, String className, final ReportModel report, ModalWindow modalWindow) {
         super(id);
 
-        this.className = className;
         this.report = report;
         this.modalWindow = modalWindow;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void onBeforeRender() {
-        super.onBeforeRender();
 
         try {
             add((this.link = (Link<Object>) ((Class<? extends Link<Object>>) Class.forName("org.dcm4chee.dashboard.web.report.DynamicLinkPanel$" + className)).getConstructors()[0].newInstance(new Object[] {
@@ -101,33 +94,9 @@ public class DynamicLinkPanel extends Panel {
                     report, 
                     this.modalWindow
             })));
-            this.link.add(new Image("image"));
-            
-            if (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramLink
-                    || link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayTableLink
-                    || link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramAndTableLink) {
-                this.link.setPopupSettings(new PopupSettings(PopupSettings.RESIZABLE | PopupSettings.SCROLLBARS));
-            }
-            
-            this.link.add(new Label("text", (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramLink || link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramAndTableLink) && report.getDiagram() != null ? 
-                    new ResourceModel("dashboard.report.diagram.options.types").wrapOnAssignment(this).getObject().split(";")[report.getDiagram()] : 
-                    "")
-            );
-
-            this.link.setVisible(
-                    ((link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.CreateOrEditReportLink
-                            && (report != null))
-                    || link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.RemoveLink
-                    || (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramLink
-                            && (report != null && report.getDiagram() != null && report.getDataSource() != null && !report.getDataSource().equals("")))
-                    || (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayTableLink
-                            && (report != null && report.getTable() && report.getDataSource() != null && !report.getDataSource().equals("")))
-                    || (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramAndTableLink
-                            && (report != null && (report.getDiagram() != null || report.getTable()) && report.getDataSource() != null && !report.getDataSource().equals("")))
-            ));
-
-            Image image = (Image) this.link.get("image");
-            image.add(new AttributeModifier("src", true, new AbstractReadOnlyModel() {
+    
+            this.link.add(new Image("image")
+            .add(new AttributeModifier("src", true, new AbstractReadOnlyModel() {
     
                 private static final long serialVersionUID = 1L;
     
@@ -146,34 +115,71 @@ public class DynamicLinkPanel extends Panel {
                         return "images/application.png";
                     else return "";
                 }
-            }));
+            })));
     
-            // set the tooltip
-            if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.CreateOrEditReportLink)
-                if (this.report.getGroupUuid() == null)
-                    image.add(new AttributeModifier("title", true, new ResourceModel("dashboard.dynamiclink.report.create").wrapOnAssignment(this)));
-            if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.RemoveLink) {
-                if (report.getGroupUuid() == null)
-                    image.add(new AttributeModifier("title", true, new ResourceModel("dashboard.dynamiclink.report.group.remove").wrapOnAssignment(this)));
-                else
-                    image.add(new AttributeModifier("title", true, new ResourceModel("dashboard.dynamiclink.report.remove").wrapOnAssignment(this)));
+            if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramLink
+                    || this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayTableLink
+                    || this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramAndTableLink) {
+                this.link.setPopupSettings(new PopupSettings(PopupSettings.RESIZABLE | PopupSettings.SCROLLBARS));
             }
-            // set the image
+            
+            this.link.setVisible(
+                    ((this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.CreateOrEditReportLink
+                            && (report != null))
+                    || this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.RemoveLink
+                    || (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramLink
+                            && (report != null && report.getDiagram() != null && report.getDataSource() != null && !report.getDataSource().equals("")))
+                    || (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayTableLink
+                            && (report != null && report.getTable() && report.getDataSource() != null && !report.getDataSource().equals("")))
+                    || (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramAndTableLink
+                            && (report != null && (report.getDiagram() != null || report.getTable()) && report.getDataSource() != null && !report.getDataSource().equals("")))
+            ));
+
             if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.CreateOrEditReportLink)
-                image.setImageResourceReference(new ResourceReference(DynamicLinkPanel.class, "images/file.png"));
+                ((Image) this.link.get("image")).setImageResourceReference(new ResourceReference(DynamicLinkPanel.class, "images/file.png"));
             else if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.RemoveLink)
-                image.setImageResourceReference(new ResourceReference(DynamicLinkPanel.class, "images/application.png"));
-    
-            if (this.link instanceof RemoveLink)
-                if (report.getGroupUuid() == null)
-                    link.add(new AttributeModifier("onclick", true, new Model<String>("return confirm('" + new ResourceModel("dashboard.dynamiclink.report.group.remove_confirmation").wrapOnAssignment(this).getObject() + "');")));
-                else
-                    link.add(new AttributeModifier("onclick", true, new Model<String>("return confirm('" + new ResourceModel("dashboard.dynamiclink.report.remove_confirmation").wrapOnAssignment(this).getObject() + "');")));
+                ((Image) this.link.get("image")).setImageResourceReference(new ResourceReference(DynamicLinkPanel.class, "images/application.png"));
+            
+            if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramLink
+                || this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayTableLink)
+                System.out.println(this.link.isVisible());
+                
+            this.link.add(new Label("text"));               
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
             this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
-//            throw new RuntimeException();
+        }
+    }
+
+    @Override
+    public void onBeforeRender() {
+        super.onBeforeRender();
+        
+        try {
+            this.link.get("text").setDefaultModel(new Model<String>((link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramLink || link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramAndTableLink) && report.getDiagram() != null ? 
+                    new ResourceModel("dashboard.report.diagram.options.types").wrapOnAssignment(this).getObject().split(";")[report.getDiagram()] : 
+                    ""));
+
+            if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.CreateOrEditReportLink)
+                if (this.report.getGroupUuid() == null)
+                    this.link.get("image").add(new AttributeModifier("title", true, new ResourceModel("dashboard.dynamiclink.report.create").wrapOnAssignment(this)));
+            if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.RemoveLink) {
+                if (this.report.getGroupUuid() == null)
+                    this.link.get("image").add(new AttributeModifier("title", true, new ResourceModel("dashboard.dynamiclink.report.group.remove").wrapOnAssignment(this)));
+                else
+                    this.link.get("image").add(new AttributeModifier("title", true, new ResourceModel("dashboard.dynamiclink.report.remove").wrapOnAssignment(this)));
+            }
+            
+            if (this.link instanceof RemoveLink)
+                if (this.report.getGroupUuid() == null)
+                    this.link.add(new AttributeModifier("onclick", true, new Model<String>("return confirm('" + new ResourceModel("dashboard.dynamiclink.report.group.remove_confirmation").wrapOnAssignment(this).getObject() + "');")));
+                else
+                    this.link.add(new AttributeModifier("onclick", true, new Model<String>("return confirm('" + new ResourceModel("dashboard.dynamiclink.report.remove_confirmation").wrapOnAssignment(this).getObject() + "');")));
+        } catch (Exception e) {
+            log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
+            log.debug("Exception: ", e);
+            this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
         }
     }
 

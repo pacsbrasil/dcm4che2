@@ -130,7 +130,6 @@ public class CreateOrEditReportPage extends WebPage {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
             this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
-            throw new RuntimeException();
         }
     }
     
