@@ -34,12 +34,13 @@
             <value>dcm4chee.archive:service=FileSystemMgt,group=ONLINE_STORAGE</value>
         </descriptors>
     </attribute>
-	<attribute access="read-write" getMethod="getPropertyNameList" setMethod="setPropertyNameList">
+	<attribute access="read-write" getMethod="getPropertyList" setMethod="setPropertyList">
         <description>
-            Represents the system property names to display, 
+            Represents the system properties to display, 
             as strings, separated by newline
+            format is group;label;name
         </description>
-        <name>propertyNameList</name>
+        <name>propertyList</name>
         <type>java.lang.String</type>
         <descriptors>
             <value>os.name
@@ -103,7 +104,7 @@ java.version</value>
    <operation>
       <description>MBean Operation.</description>
       <name>getSystemProperties</name>
-	  <return-type>[Lorg.dcm4chee.dashboard.model.SystemPropertyModel;</return-type>
+	  <return-type>java.util.Map</return-type>
    </operation>
    <operation>
       <description>MBean Operation.</description>

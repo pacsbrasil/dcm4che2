@@ -62,29 +62,42 @@
 				</table>
 			</p>
 			<p>
+				<div id="systemproperty">
+					<div wicket:id="systemproperty-tree-table" />
+				</div>
+			</p>
+			<!-- 
+			<p>
 				<table class="table">
 					<thead>
 						<tr>
 							<th class="table-header">
-								<wicket:message key="dashboard.systeminfo.version-table.name.title" />
+								<wicket:message key="dashboard.systeminfo.properties-table.label.title" />
 							</th>
 							<th class="table-header">
-								<wicket:message key="dashboard.systeminfo.version-table.version.title" />
+								<wicket:message key="dashboard.systeminfo.properties-table.name.title" />
+							</th>
+							<th class="table-header">
+								<wicket:message key="dashboard.systeminfo.properties-table.value.title" />
 							</th>
 		    			</tr>
 		  			</thead>
 		  			<tbody class="table-text">
 						<tr wicket:id="system-property-instance-rows">
 							<td class="table-data">
+								<div wicket:id="label" />
+							</td>
+							<td class="table-data">
 								<div wicket:id="name" />
 							</td>
 							<td class="table-data">
-								<div wicket:id="version" />
+								<div wicket:id="value" />
 							</td>
 						</tr>
 					</tbody>
 				</table>
 			</p>
+			 -->
 		</wicket:panel>
 	</body>
 </html>

@@ -49,15 +49,35 @@ public class SystemPropertyModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
+    private String group;
+    private String label;
     private String name;
     private String value;
     
     public SystemPropertyModel() {
     }
 
-    public SystemPropertyModel(String name, String value) {
+    public SystemPropertyModel(String group, String label, String name, String value) {
+        this.setGroup(group);
+        this.setLabel(label);
         this.setName(name);
         this.setValue(value);
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public String getGroup() {
+        return group;
+    }   
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public String getLabel() {
+        return label;
     }
 
     public void setName(String name) {
@@ -74,5 +94,5 @@ public class SystemPropertyModel implements Serializable {
 
     public String getValue() {
         return value;
-    }   
+    }
 }

@@ -182,12 +182,6 @@ div[id="filesystem"] div.row, div[id="filesystem"] span {
 	border-color: #666666 !important;
 }
 
-/* for dashboard ReportTreeTable */
-div[id="report"] div.row, div[id="report"] span {
-/*	height: 30px !important;*/
-	border-color: #666666 !important;
-}
-
 /* class of tree table of wicket extensions */
 span.c_ {
 	text-align: center;

@@ -45,7 +45,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.UUID;
 
@@ -74,14 +76,9 @@ public class DashboardService extends ServiceMBeanSupport {
     private String[] jbossSystemTypesToQuery = new String[] {"Server", "ServerConfig", "ServerInfo"};
     private String newline = System.getProperty("line.separator");
 
-    // data source separator is ,
     private String[] dataSourceList = new String[0];
-    
-    // group separator is ,
     private String[] groupList = new String[0];
-
-    // property name separator is ,
-    private String[] propertyNameList = new String[0];
+    private String[] propertyList = new String[0];
 
     private String reportFilename = "";
     private String groupFilename = "";
@@ -102,12 +99,12 @@ public class DashboardService extends ServiceMBeanSupport {
         return arrayToString(this.groupList);
     }
     
-    public void setPropertyNameList(String propertyNameList) {
-        this.propertyNameList = tokenize(propertyNameList);
+    public void setPropertyList(String propertyList) {
+        this.propertyList = tokenize(propertyList);
     }
 
-    public String getPropertyNameList() {
-        return arrayToString(this.propertyNameList);
+    public String getPropertyList() {
+        return arrayToString(this.propertyList);
     }
     
     public void setReportFilename(String reportFilename) {
@@ -148,27 +145,36 @@ public class DashboardService extends ServiceMBeanSupport {
                       "ExpectedDataVolumePerDayBytes")).longValue();
     }
 
-    public SystemPropertyModel[] getSystemProperties() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
+    public Map<String, List<SystemPropertyModel>> getSystemProperties() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
 
-        SystemPropertyModel[] properties = new SystemPropertyModel[this.propertyNameList.length];
-        for (int i = 0; i < this.propertyNameList.length; i++) {
-            properties[i] = new SystemPropertyModel(
-                            this.propertyNameList[i], 
-                            (String) this.server.invoke(new ObjectName("jboss:name=SystemProperties,type=Service"),
-                                                "get", 
-                                                new Object[] {this.propertyNameList[i]}, new String[] {"java.lang.String"}));
-            if (properties[i].getValue() == null) {
-                for (String type : this.jbossSystemTypesToQuery) {
-                    try {
-                        properties[i].setValue((String) this.server.getAttribute(
-                                new ObjectName("jboss.system:type=" + type), 
-                                this.propertyNameList[i]));
-                        break;
-                    } catch (AttributeNotFoundException e) {}
+        Map<String, List<SystemPropertyModel>> propertyMap = new HashMap<String, List<SystemPropertyModel>>();
+        for (String property : this.propertyList) {
+            try {
+                String[] attributes = property.split(";");
+                SystemPropertyModel propertyModel = new SystemPropertyModel(
+                                attributes[0], 
+                                attributes[1],
+                                attributes[2], 
+                                (String) this.server.invoke(new ObjectName("jboss:name=SystemProperties,type=Service"),
+                                                    "get", 
+                                                    new Object[] {attributes[2]}, new String[] {"java.lang.String"}));
+                if (propertyModel.getValue() == null) {
+                    for (String type : this.jbossSystemTypesToQuery) {
+                        try {
+                            propertyModel.setValue((String) this.server.getAttribute(
+                                    new ObjectName("jboss.system:type=" + type), 
+                                    attributes[2]));
+                            break;
+                        } catch (AttributeNotFoundException e) {}
+                    }
                 }
+                if (!propertyMap.containsKey(attributes[0]))
+                        propertyMap.put(attributes[0], new ArrayList<SystemPropertyModel>());
+                propertyMap.get(attributes[0]).add(propertyModel);
+            } catch (Exception ignore) {
             }
         }
-        return properties;
+        return propertyMap;
     }
 
     public ReportModel[] listAllReports() {

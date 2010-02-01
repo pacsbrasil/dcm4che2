@@ -42,15 +42,34 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
 
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.Component;
+import org.apache.wicket.MarkupContainer;
+import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation;
+import org.apache.wicket.extensions.markup.html.tree.table.IColumn;
+import org.apache.wicket.extensions.markup.html.tree.table.PropertyRenderableColumn;
+import org.apache.wicket.extensions.markup.html.tree.table.PropertyTreeColumn;
+import org.apache.wicket.extensions.markup.html.tree.table.TreeTable;
+import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation.Alignment;
+import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation.Unit;
+import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
+import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.model.SystemPropertyModel;
 import org.dcm4chee.dashboard.util.CSSUtils;
 import org.dcm4chee.dashboard.web.WicketApplication;
@@ -77,19 +96,6 @@ public class SystemInfoPanel extends Panel {
         super.onBeforeRender();
         
         try {
-            add(new ListView<SystemPropertyModel>("system-property-instance-rows", Arrays.asList(((WicketApplication) getApplication()).getDashboardService().getSystemProperties())) {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                protected void populateItem(ListItem<SystemPropertyModel> item) {
-                    SystemPropertyModel property = item.getModelObject();
-                    item.add(new Label("name", String.valueOf(property.getName())));
-                    item.add(new Label("version", String.valueOf(property.getValue())));
-                    item.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(item.getIndex()))));
-                }
-              });
-            
             Class<?> memoryPoolMXBean = Thread.currentThread().getContextClassLoader()
                 .loadClass("java.lang.management.MemoryPoolMXBean");
             Class<?> memoryUsage = Thread.currentThread().getContextClassLoader()
@@ -136,14 +142,115 @@ public class SystemInfoPanel extends Panel {
                     item.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(item.getIndex()))));
                 }
             });
+            
+            DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new SystemPropertyModel());
+
+            Map<String, List<SystemPropertyModel>> propertyMap = ((WicketApplication) getApplication()).getDashboardService().getSystemProperties();
+            for (String key : propertyMap.keySet()) {
+                
+                SystemPropertyModel group = new SystemPropertyModel();
+                group.setLabel(key);
+                DefaultMutableTreeNode groupNode = new DefaultMutableTreeNode();
+                groupNode.setUserObject(group);
+                rootNode.add(groupNode);
+
+                for (SystemPropertyModel propertyModel : propertyMap.get(key)) {
+                    groupNode.add(new DefaultMutableTreeNode(propertyModel));
+                }
+            }
+
+            SystemPropertyTreeTable systemPropertyTreeTable = new SystemPropertyTreeTable("systemproperty-tree-table", 
+                    new DefaultTreeModel(rootNode), new IColumn[] {
+                new PropertyTreeColumn(new ColumnLocation(
+                        Alignment.LEFT, 40, Unit.PERCENT), 
+                        new ResourceModel(
+                                "dashboard.systemproperty.table.column.label").wrapOnAssignment(this).getObject(), 
+                                "userObject.label"),
+                new PropertyRenderableColumn(new ColumnLocation(
+                        Alignment.RIGHT, 30, Unit.PERCENT), 
+                        new ResourceModel(
+                                "dashboard.systemproperty.table.column.name").wrapOnAssignment(this).getObject(),
+                                "userObject.name"), 
+                new PropertyRenderableColumn(new ColumnLocation(
+                        Alignment.RIGHT, 30, Unit.PERCENT), 
+                        new ResourceModel(
+                                "dashboard.systemproperty.table.column.value").wrapOnAssignment(this).getObject(),
+                                "userObject.value")
+            });
+            systemPropertyTreeTable.getTreeState().setAllowSelectMultiple(true);
+            systemPropertyTreeTable.getTreeState().collapseAll();
+            systemPropertyTreeTable.setRootLess(true);
+            add(systemPropertyTreeTable);
         } catch (Exception e) {
+            e.printStackTrace();
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
             this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
-            super.onBeforeRender();
+            throw new RuntimeException();
         }
     }
     
+    private class SystemPropertyTreeTable extends TreeTable {
+
+        private static final long serialVersionUID = 1L;
+
+        public SystemPropertyTreeTable(String id, TreeModel model, IColumn[] columns) {
+            super(id, model, columns);
+            add(new AttributeModifier("class", true, new Model<String>("table")));
+        }
+
+        private class TreeFragment extends Fragment {
+
+            private static final long serialVersionUID = 1L;
+
+            public TreeFragment(String id, final TreeNode node, int level,
+                    final IRenderNodeCallback renderNodeCallback) {
+                super(id, "fragment", SystemPropertyTreeTable.this);
+
+                add(newIndentation(this, "indent", node, level));
+                add(newJunctionLink(this, "link", "image", node));
+
+                MarkupContainer nodeLink = newNodeLink(this, "nodeLink", node);
+                nodeLink.setEnabled(false);
+                nodeLink.add(newNodeIcon(nodeLink, "icon", node));
+                nodeLink.add(new Label("label", new AbstractReadOnlyModel<Object>() {
+
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    public Object getObject() {
+                        return renderNodeCallback.renderNode(node);
+                    }
+                }));
+                add(nodeLink);
+            }
+        }
+
+        @Override
+        protected Component newTreePanel(MarkupContainer parent, String id, final TreeNode node, 
+                                         int level, IRenderNodeCallback renderNodeCallback) {
+            return new TreeFragment(id, node, level, renderNodeCallback);
+        }
+
+        @Override
+        protected Component newNodeIcon(MarkupContainer parent, String id, final TreeNode node) {
+
+            return new WebMarkupContainer(id) {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onComponentTag(ComponentTag tag) {
+                    super.onComponentTag(tag);
+
+                    tag.put("style", "background-image: url('images/" + 
+                    ((((SystemPropertyModel) ((DefaultMutableTreeNode) node).getUserObject()).getGroup() == null) ? 
+                        "server" : "folder_files") + ".png')");
+                }
+            };
+        }
+    };
+
     private class MemoryInstanceModel implements Serializable {
         
         private static final long serialVersionUID = 1L;

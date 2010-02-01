@@ -39,6 +39,8 @@
 package org.dcm4chee.dashboard.mbean;
 
 import java.io.File;
+import java.util.List;
+import java.util.Map;
 
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
@@ -100,8 +102,9 @@ public class DashboardDelegator {
                         .longValue();
         }
 
-    public SystemPropertyModel[] getSystemProperties() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
-        return (SystemPropertyModel[]) server.invoke(
+    @SuppressWarnings("unchecked")
+    public Map<String, List<SystemPropertyModel>> getSystemProperties() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
+        return (Map<String, List<SystemPropertyModel>>) server.invoke(
                         this.objectName,
                         "getSystemProperties", null, null);
     }
