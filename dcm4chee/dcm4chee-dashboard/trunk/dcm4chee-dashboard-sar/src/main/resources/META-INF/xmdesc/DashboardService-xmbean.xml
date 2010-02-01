@@ -38,7 +38,7 @@
         <description>
             Represents the system properties to display, 
             as strings, separated by newline
-            format is group;label;name
+            format is group;label;property
         </description>
         <name>propertyList</name>
         <type>java.lang.String</type>
