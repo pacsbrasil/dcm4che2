@@ -102,7 +102,7 @@ public class FileSystemPanel extends Panel {
     @Override
     public void onBeforeRender() {
         super.onBeforeRender();
-
+        
         try {
             DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new FileSystemModel());
             String[] fileSystemGroups = ((WicketApplication) getApplication()).getDashboardService().listAllFileSystemGroups();
@@ -202,12 +202,12 @@ public class FileSystemPanel extends Panel {
             fileSystemTreeTable.getTreeState().setAllowSelectMultiple(true);
             fileSystemTreeTable.getTreeState().collapseAll();
             fileSystemTreeTable.setRootLess(true);
-
             add(fileSystemTreeTable);
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
             this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
+            throw new RuntimeException();
         }
     }
 

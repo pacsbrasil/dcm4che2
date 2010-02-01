@@ -75,7 +75,7 @@ public class SystemInfoPanel extends Panel {
     @Override
     public void onBeforeRender() {
         super.onBeforeRender();
-
+        
         try {
             add(new ListView<SystemPropertyModel>("system-property-instance-rows", Arrays.asList(((WicketApplication) getApplication()).getDashboardService().getSystemProperties())) {
 
@@ -140,6 +140,7 @@ public class SystemInfoPanel extends Panel {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
             this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
+            super.onBeforeRender();
         }
     }
     

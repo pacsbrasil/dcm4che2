@@ -107,6 +107,8 @@ public class ReportPanel extends Panel {
     
     @Override
     public void onBeforeRender() {
+        super.onBeforeRender();
+        
         try {
             List<ReportModel> reports = new ArrayList<ReportModel>();
             for (ReportModel report : ((WicketApplication) getApplication()).getDashboardService().listAllReports())
@@ -164,8 +166,6 @@ public class ReportPanel extends Panel {
             reportTreeTable.getTreeState().expandAll();
             reportTreeTable.getTreeState().setAllowSelectMultiple(false);
             addOrReplace(reportTreeTable);
-            
-            super.onBeforeRender();
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
             log.debug("Exception: ", e);

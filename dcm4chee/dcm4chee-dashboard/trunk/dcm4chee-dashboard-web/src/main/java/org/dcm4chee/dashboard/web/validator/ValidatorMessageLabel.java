@@ -74,7 +74,6 @@ public class ValidatorMessageLabel extends Label {
 
     @Override
     protected void onBeforeRender() {
-        super.onBeforeRender();
 
         this.setDefaultModel(null);
         if (component.getFeedbackMessage() != null){
@@ -87,5 +86,7 @@ public class ValidatorMessageLabel extends Label {
             component.getFeedbackMessage().markRendered();           
             this.add(new AttributeModifier("class", true, new Model<String>("message-validator")));
         } else this.setDefaultModel(null);
+        
+        super.onBeforeRender();
     }
 }

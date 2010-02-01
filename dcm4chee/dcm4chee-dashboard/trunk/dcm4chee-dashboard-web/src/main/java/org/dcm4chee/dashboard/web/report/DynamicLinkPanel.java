@@ -87,7 +87,7 @@ public class DynamicLinkPanel extends Panel {
         this.report = report;
         this.modalWindow = modalWindow;
 
-        try {
+        try {           
             add((this.link = (Link<Object>) ((Class<? extends Link<Object>>) Class.forName("org.dcm4chee.dashboard.web.report.DynamicLinkPanel$" + className)).getConstructors()[0].newInstance(new Object[] {
                     this, 
                     "report-table-link", 
@@ -116,7 +116,9 @@ public class DynamicLinkPanel extends Panel {
                     else return "";
                 }
             })));
-    
+
+            this.link.add(new Label("text"));
+
             if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramLink
                     || this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayTableLink
                     || this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramAndTableLink) {
@@ -141,14 +143,12 @@ public class DynamicLinkPanel extends Panel {
                 ((Image) this.link.get("image")).setImageResourceReference(new ResourceReference(DynamicLinkPanel.class, "images/application.png"));
             
             if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramLink
-                || this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayTableLink)
-                System.out.println(this.link.isVisible());
-                
-            this.link.add(new Label("text"));               
+                || this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayTableLink);
         } catch (Exception e) {
-            log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
+            log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
             log.debug("Exception: ", e);
             this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
+            throw new RuntimeException();
         }
     }
 
@@ -180,6 +180,7 @@ public class DynamicLinkPanel extends Panel {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
             this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
+            throw new RuntimeException();
         }
     }
 
