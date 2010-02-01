@@ -96,14 +96,25 @@ public class CreateOrEditReportPage extends WebPage {
     public CreateOrEditReportPage(final ModalWindow window, final ReportModel report) {
         super();
 
-        this.report = report;
-        if (this.report == null) this.report = new ReportModel();
-        if (this.report.getGroupUuid() == null) {
-            this.report.setGroupUuid(this.report.getUuid());
-            this.report.setUuid(null);
-            this.report.setTitle(null);
+        try {
+            this.report = report;
+            if (this.report == null) this.report = new ReportModel();
+            if (this.report.getGroupUuid() == null) {
+                this.report.setGroupUuid(this.report.getUuid());
+                this.report.setUuid(null);
+                this.report.setTitle(null);
+            }
+            this.window = window;
+            
+            Label resultMessage;
+            add(resultMessage = new Label("result-message"));
+            add(new CreateOrEditReportForm("create-or-edit-report-form", this.report, resultMessage, this.window));
+        } catch (Exception e) {
+            log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
+            log.debug("Exception: ", e);
+            this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
+            throw new RuntimeException();
         }
-        this.window = window;
     }
 
     @Override
@@ -111,13 +122,8 @@ public class CreateOrEditReportPage extends WebPage {
         super.onBeforeRender();
         
         try {
-            add(new Label("page-title", new ResourceModel(this.report == null || this.report.getGroupUuid() == null ? "dashboard.report.createoredit.create.title" : "dashboard.report.createoredit.edit.title")));
-            
-            Label resultMessage;
-            add(resultMessage = new Label("result-message"));
-            add(new CreateOrEditReportForm("create-or-edit-report-form", this.report, resultMessage, this.window));
-
-            add(new AjaxLink<Object>("close") {
+            addOrReplace(new Label("page-title", new ResourceModel(this.report == null || this.report.getGroupUuid() == null ? "dashboard.report.createoredit.create.title" : "dashboard.report.createoredit.edit.title")));
+            addOrReplace(new AjaxLink<Object>("close") {
 
                 private static final long serialVersionUID = 1L;
 
