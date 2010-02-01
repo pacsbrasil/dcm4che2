@@ -178,7 +178,7 @@ public class SystemInfoPanel extends Panel {
                                 "userObject.value")
             });
             systemPropertyTreeTable.getTreeState().setAllowSelectMultiple(true);
-            systemPropertyTreeTable.getTreeState().collapseAll();
+            systemPropertyTreeTable.getTreeState().expandAll();
             systemPropertyTreeTable.setRootLess(true);
             add(systemPropertyTreeTable);
         } catch (Exception e) {
@@ -245,7 +245,7 @@ public class SystemInfoPanel extends Panel {
 
                     tag.put("style", "background-image: url('images/" + 
                     ((((SystemPropertyModel) ((DefaultMutableTreeNode) node).getUserObject()).getGroup() == null) ? 
-                        "server" : "folder_files") + ".png')");
+                        "folder_open" : "comments") + ".png')");
                 }
             };
         }
