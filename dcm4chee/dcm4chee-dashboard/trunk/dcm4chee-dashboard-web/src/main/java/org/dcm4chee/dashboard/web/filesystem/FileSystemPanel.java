@@ -119,7 +119,8 @@ public class FileSystemPanel extends Panel {
                             ",AET=" + 
                             ((WicketApplication) getApplication()).getDashboardService().getDefaultRetrieveAETitle(groupname));
                     group.setGroup(true);
-                    DefaultMutableTreeNode groupNode = new DefaultMutableTreeNode();
+                    DefaultMutableTreeNode groupNode;
+                    rootNode.add(groupNode = new DefaultMutableTreeNode(group));
 
                     File[] fileSystems;
                     try {
@@ -149,12 +150,10 @@ public class FileSystemPanel extends Panel {
                             group.setFreeDiskSpace(group.getFreeDiskSpaceLong() + fsm.getFreeDiskSpaceLong());
                             group.setMinimumFreeDiskSpace(group.getMinimumFreeDiskSpaceLong() + fsm.getMinimumFreeDiskSpaceLong());
                             group.setUsableDiskSpace(group.getUsableDiskSpaceLong() + fsm.getUsableDiskSpaceLong());
+                            group.setRemainingTime(group.getRemainingTime() + fsm.getRemainingTime());
                             groupNode.add(new DefaultMutableTreeNode(fsm));
                         }
                     }
-                    group.setRemainingTime(-1);
-                    groupNode.setUserObject(group);
-                    rootNode.add(groupNode);
                 }
             }
             
@@ -164,9 +163,9 @@ public class FileSystemPanel extends Panel {
                 FileSystemModel group = new FileSystemModel();
                 group.setDirectoryPath(new ResourceModel("dashboard.filesystem.group.other").wrapOnAssignment(this).getObject());
                 group.setGroup(true);
-                DefaultMutableTreeNode groupNode = new DefaultMutableTreeNode();
-                groupNode.setUserObject(group);
-                rootNode.add(groupNode);
+                group.setRemainingTime(-1);
+                DefaultMutableTreeNode groupNode;
+                rootNode.add(groupNode = new DefaultMutableTreeNode(group));
 
                 for (String otherFileSystem : otherFileSystems) {
                     File file = new File(otherFileSystem);
@@ -237,7 +236,6 @@ public class FileSystemPanel extends Panel {
             fileSystemTreeTable.setRootLess(true);
             add(fileSystemTreeTable);
         } catch (Exception e) {
-            e.printStackTrace();
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
             this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
