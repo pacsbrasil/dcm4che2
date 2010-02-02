@@ -85,8 +85,10 @@ public class ValidatorMessageLabel extends Label {
             null);
                                 
         // set this message rendered to avoid the warning concerning the feedback panel
-        component.getFeedbackMessage().markRendered();           
-        this.add(new AttributeModifier("class", true, new Model<String>("message-validator")));
+        if (component.getFeedbackMessage() != null) {
+            component.getFeedbackMessage().markRendered();           
+            this.add(new AttributeModifier("class", true, new Model<String>("message-validator")));
+        }
         
         super.onBeforeRender();
     }
