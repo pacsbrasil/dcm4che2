@@ -115,7 +115,9 @@ public class FileSystemPanel extends Panel {
                     if (index < 0) continue;
                     group.setDirectoryPath(groupname.substring(index + 6));
                     
-                    group.setDescription(groupname);
+                    group.setDescription(groupname + 
+                            ",AET=" + 
+                            ((WicketApplication) getApplication()).getDashboardService().getDefaultRetrieveAETitle(groupname));
                     group.setGroup(true);
                     DefaultMutableTreeNode groupNode = new DefaultMutableTreeNode();
 
@@ -147,10 +149,10 @@ public class FileSystemPanel extends Panel {
                             group.setFreeDiskSpace(group.getFreeDiskSpaceLong() + fsm.getFreeDiskSpaceLong());
                             group.setMinimumFreeDiskSpace(group.getMinimumFreeDiskSpaceLong() + fsm.getMinimumFreeDiskSpaceLong());
                             group.setUsableDiskSpace(group.getUsableDiskSpaceLong() + fsm.getUsableDiskSpaceLong());
-                            group.setRemainingTime(group.getRemainingTime() + fsm.getRemainingTime());
                             groupNode.add(new DefaultMutableTreeNode(fsm));
                         }
                     }
+                    group.setRemainingTime(-1);
                     groupNode.setUserObject(group);
                     rootNode.add(groupNode);
                 }
@@ -235,6 +237,7 @@ public class FileSystemPanel extends Panel {
             fileSystemTreeTable.setRootLess(true);
             add(fileSystemTreeTable);
         } catch (Exception e) {
+            e.printStackTrace();
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
             this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);

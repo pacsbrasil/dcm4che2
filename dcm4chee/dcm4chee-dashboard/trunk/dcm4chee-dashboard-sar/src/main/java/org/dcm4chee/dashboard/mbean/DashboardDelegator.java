@@ -102,6 +102,14 @@ public class DashboardDelegator {
                         .longValue();
     }
 
+    public String getDefaultRetrieveAETitle(String groupname) throws AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException {
+        return ((String) server.invoke(
+                        this.objectName,
+                        "getDefaultRetrieveAETitle",
+                        new Object[] { groupname },
+                        new String[] { "java.lang.String" }));
+    }
+    
     public String[] listOtherFileSystems() throws InstanceNotFoundException, ReflectionException, MBeanException {
         return (String[]) this.server.invoke(
                         this.objectName, 

@@ -114,6 +114,15 @@ java.version</value>
    </operation>
    <operation>
       <description>MBean Operation.</description>
+      <name>getDefaultRetrieveAETitle</name>
+      <parameter>
+         <name>groupname</name>
+         <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.lang.String</return-type>
+   </operation>
+   <operation>
+      <description>MBean Operation.</description>
       <name>listOtherFileSystems</name>
       <return-type>[Ljava.lang.String;</return-type>
    </operation>

@@ -150,10 +150,16 @@ public class DashboardService extends ServiceMBeanSupport {
 
     public long getExpectedDataVolumePerDay(String groupname) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException, AttributeNotFoundException {
         return ((Long) this.server.getAttribute(
-                      new ObjectName(groupname),
+                       new ObjectName(groupname),
                       "ExpectedDataVolumePerDayBytes")).longValue();
     }
 
+    public String getDefaultRetrieveAETitle(String groupname) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException, AttributeNotFoundException {
+        return ((String) server.getAttribute(
+                       new ObjectName(groupname),
+                       "DefaultRetrieveAETitle"));
+    }
+    
     public String[] listOtherFileSystems() throws MalformedObjectNameException, NullPointerException {
         return this.otherList;
     }
