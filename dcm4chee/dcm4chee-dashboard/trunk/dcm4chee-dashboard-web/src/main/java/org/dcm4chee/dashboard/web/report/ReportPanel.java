@@ -228,8 +228,8 @@ public class ReportPanel extends Panel {
                     super.onComponentTag(tag);
 
                     tag.put("style", ((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getGroupUuid() == null ? 
-                            "background-image: url('images/folder_files.png')" : 
-                            "background-image: url('images/file.png')"
+                            "background-image: url('images/folder_files.gif')" : 
+                            "background-image: url('images/report.gif')"
                     );
                     tag.put("title", ((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getTitle());
                 }
@@ -281,7 +281,7 @@ public class ReportPanel extends Panel {
                 @Override
                 protected void onComponentTag(ComponentTag tag) {
                     super.onComponentTag(tag);
-                    tag.put("src",form.isVisible() ? "images/action_remove.png" : "images/action_add.png");
+                    tag.put("src",form.isVisible() ? "images/minus.gif" : "images/plus.gif");
                 }
             }));
         }

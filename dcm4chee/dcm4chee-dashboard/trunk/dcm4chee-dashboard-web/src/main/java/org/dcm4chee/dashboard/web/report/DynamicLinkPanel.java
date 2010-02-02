@@ -104,15 +104,15 @@ public class DynamicLinkPanel extends Panel {
                 public Object getObject() {
                     if (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.CreateOrEditReportLink)
                         if (report == null || report.getGroupUuid() == null)
-                            return "images/file.png";
+                            return "images/report.gif";
                         else
-                            return "images/reply.png";
+                            return "images/edit.gif";
                     else if (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.RemoveLink)
-                        return "images/action_delete.png";
+                        return "images/delete.gif";
                     else if (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayTableLink)
-                        return "images/application.png";
+                        return "images/table.gif";
                     else if (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramAndTableLink)
-                        return "images/application.png";
+                        return "images/table.gif";
                     else return "";
                 }
             })));
@@ -138,9 +138,9 @@ public class DynamicLinkPanel extends Panel {
             ));
 
             if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.CreateOrEditReportLink)
-                ((Image) this.link.get("image")).setImageResourceReference(new ResourceReference(DynamicLinkPanel.class, "images/file.png"));
+                ((Image) this.link.get("image")).setImageResourceReference(new ResourceReference(DynamicLinkPanel.class, "images/report.gif"));
             else if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.RemoveLink)
-                ((Image) this.link.get("image")).setImageResourceReference(new ResourceReference(DynamicLinkPanel.class, "images/application.png"));
+                ((Image) this.link.get("image")).setImageResourceReference(new ResourceReference(DynamicLinkPanel.class, "images/table.gif"));
             
             if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramLink
                 || this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayTableLink);

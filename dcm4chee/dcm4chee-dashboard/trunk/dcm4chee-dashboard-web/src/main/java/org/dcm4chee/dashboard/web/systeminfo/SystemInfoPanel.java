@@ -182,7 +182,6 @@ public class SystemInfoPanel extends Panel {
             systemPropertyTreeTable.setRootLess(true);
             add(systemPropertyTreeTable);
         } catch (Exception e) {
-            e.printStackTrace();
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
             this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
@@ -245,7 +244,7 @@ public class SystemInfoPanel extends Panel {
 
                     tag.put("style", "background-image: url('images/" + 
                     ((((SystemPropertyModel) ((DefaultMutableTreeNode) node).getUserObject()).getGroup() == null) ? 
-                        "folder_open" : "comments") + ".png')");
+                        "folder_open" : "property") + ".gif')");
                 }
             };
         }

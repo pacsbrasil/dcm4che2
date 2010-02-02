@@ -336,12 +336,12 @@ public class FileSystemPanel extends Panel {
                     super.onComponentTag(tag);
 
                     if (((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).isGroup())
-                        tag.put("style", "background-image: url('images/server.png')");
+                        tag.put("style", "background-image: url('images/filesystemgroup.gif')");
                     else 
                         if (((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).getDirectoryPath().contains("tar:"))
-                            tag.put("style", "background-image: url('images/folder_files.png')");
+                            tag.put("style", "background-image: url('images/folder_files.gif')");
                         else
-                            tag.put("style", "background-image: url('images/hard_disk.png')");
+                            tag.put("style", "background-image: url('images/filesystem.gif')");
                     tag.put("title", ((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).getDescription());
                 }
             };
