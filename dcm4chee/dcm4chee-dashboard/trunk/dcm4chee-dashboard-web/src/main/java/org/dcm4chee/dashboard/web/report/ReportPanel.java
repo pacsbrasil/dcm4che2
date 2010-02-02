@@ -228,10 +228,10 @@ public class ReportPanel extends Panel {
                 protected void onComponentTag(ComponentTag tag) {
                     super.onComponentTag(tag);
 
-                    tag.put("style", ((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getGroupUuid() == null ? 
-                            "background-image: url('images/folder_files.gif')" : 
-                            "background-image: url('images/report.gif')"
-                    );
+                    tag.put("style", "background-image: url('images/" + 
+                            ((((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getGroupUuid() == null) ? 
+                                "folder_files" : "report") + ".gif')");
+
                     tag.put("title", ((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getTitle());
                 }
             };

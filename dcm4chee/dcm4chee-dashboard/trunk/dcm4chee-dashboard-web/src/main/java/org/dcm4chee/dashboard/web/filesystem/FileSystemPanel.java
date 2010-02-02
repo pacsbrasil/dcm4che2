@@ -65,6 +65,7 @@ import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation.Unit;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
@@ -102,7 +103,7 @@ public class FileSystemPanel extends Panel {
     @Override
     public void onBeforeRender() {
         super.onBeforeRender();
-        
+
         try {
             DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new FileSystemModel());
             for (String groupname : ((WicketApplication) getApplication()).getDashboardService().listAllFileSystemGroups()) {
@@ -176,6 +177,7 @@ public class FileSystemPanel extends Panel {
                     group.setFreeDiskSpace(group.getFreeDiskSpaceLong() + fsm.getFreeDiskSpaceLong());
                     group.setMinimumFreeDiskSpace(group.getMinimumFreeDiskSpaceLong() + fsm.getMinimumFreeDiskSpaceLong());
                     group.setUsableDiskSpace(group.getUsableDiskSpaceLong() + fsm.getUsableDiskSpaceLong());
+                    group.setVisible(false);
                     groupNode.add(new DefaultMutableTreeNode(fsm));
                 }
             }
@@ -254,6 +256,19 @@ public class FileSystemPanel extends Panel {
                     .getUserObject() instanceof FileSystemModel)))
                 return null;
 
+            if (!((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).isVisible())
+                return new Image("image") {
+
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    protected void onComponentTag(ComponentTag tag) {
+                        tag.setName("img");
+                        super.onComponentTag(tag);
+                    }
+                };
+
+            
             FileSystemModel fsm = (FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject();
 
             DefaultCategoryDataset dataset = new DefaultCategoryDataset();
@@ -365,6 +380,14 @@ public class FileSystemPanel extends Panel {
                             tag.put("style", "background-image: url('images/folder_files.gif')");
                         else
                             tag.put("style", "background-image: url('images/filesystem.gif')");
+
+                    tag.put("style", "background-image: url('images/" + 
+                            (((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).isGroup() ?  
+                                    "filesystemgroup" :
+                                    ((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).getDirectoryPath().contains("tar:") ?
+                                            "folder_files" : 
+                                            "filesystem") + ".gif')"
+                    );
                     tag.put("title", ((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).getDescription());
                 }
             };
@@ -393,7 +416,8 @@ public class FileSystemPanel extends Panel {
         private long minimumFreeDiskSpace = 0;
         
         private boolean isGroup = false;
-
+        private boolean visible = true;
+        
         private long remainingTime = 0;
         
         public FileSystemModel() {
@@ -493,6 +517,14 @@ public class FileSystemPanel extends Panel {
 
         public boolean isGroup() {
             return isGroup;
+        }
+
+        public void setVisible(boolean visible) {
+            this.visible = visible;
+        }
+
+        public boolean isVisible() {
+            return visible;
         }
 
         public void setRemainingTime(long l) {
