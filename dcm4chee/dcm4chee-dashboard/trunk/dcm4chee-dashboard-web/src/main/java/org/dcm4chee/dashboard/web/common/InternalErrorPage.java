@@ -66,7 +66,6 @@ public class InternalErrorPage extends WebPage {
             }
         };
         add(backToMainLink);
-
         add(new Label("exception-message", this.getApplication().getSessionStore().getAttribute(getRequest(), "exception") != null ?
                                            ((Exception) this.getApplication().getSessionStore().getAttribute(getRequest(), "exception")).getLocalizedMessage() :
                                            ""));

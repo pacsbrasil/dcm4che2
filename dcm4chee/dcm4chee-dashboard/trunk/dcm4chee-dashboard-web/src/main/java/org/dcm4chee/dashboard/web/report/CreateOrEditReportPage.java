@@ -193,9 +193,9 @@ public class CreateOrEditReportPage extends WebPage {
                         resultMessage.setDefaultModel(new Model<String>(new ResourceModel(message == null ? "dashboard.report.createoredit.form.statement-test-submit.success-message" : 
                                                                                           "dashboard.report.createoredit.form.statement-test-submit.failure-message")
                                                             .wrapOnAssignment(this.getParent()).getObject().toString()
-                                                            + (message == null ? "" : message)));
-                        resultMessage.add(new AttributeModifier("class", true, new Model<String>(message == null ? "message-system" : "message-error")));              
-                        resultMessage.setVisible(true);
+                                                            + (message == null ? "" : message)))
+                        .add(new AttributeModifier("class", true, new Model<String>(message == null ? "message-system" : "message-error")))              
+                        .setVisible(true);
                         setResponsePage(this.getPage());
                     }
                 }
@@ -242,9 +242,9 @@ public class CreateOrEditReportPage extends WebPage {
                       log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
                       log.debug("Exception: ", e);
 
-                      resultMessage.setDefaultModel(new ResourceModel("dashboard.report.createoredit.form.form-submit.failure-message"));
-                      resultMessage.add(new AttributeModifier("class", true, new Model<String>("message-error")));
-                      resultMessage.setVisible(true);
+                      resultMessage.setDefaultModel(new ResourceModel("dashboard.report.createoredit.form.form-submit.failure-message"))
+                      .add(new AttributeModifier("class", true, new Model<String>("message-error")))
+                      .setVisible(true);
                       setResponsePage(this.getPage());
                     }
                 }

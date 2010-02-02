@@ -105,58 +105,50 @@ public class FileSystemPanel extends Panel {
         
         try {
             DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new FileSystemModel());
-            String[] fileSystemGroups = ((WicketApplication) getApplication()).getDashboardService().listAllFileSystemGroups();
+            for (String groupname : ((WicketApplication) getApplication()).getDashboardService().listAllFileSystemGroups()) {
+                FileSystemModel group = new FileSystemModel();
+                
+                int index = groupname.indexOf("group=");
+                if (index < 0) continue;
+                group.setDirectoryPath(groupname.substring(index + 6));
+                group.setDescription(groupname + ",AET=" + ((WicketApplication) getApplication())
+                        .getDashboardService().getDefaultRetrieveAETitle(groupname));
+                group.setGroup(true);
+                DefaultMutableTreeNode groupNode;
+                rootNode.add(groupNode = new DefaultMutableTreeNode(group));
 
-            if (fileSystemGroups != null) {
-                for (String groupname : fileSystemGroups) {
-                    FileSystemModel group = new FileSystemModel();
+                File[] fileSystems = null;
+                try {
+                    fileSystems = ((WicketApplication) getApplication()).getDashboardService().listFileSystemsOfGroup(groupname);
+                } catch (MBeanException mbe) {
+                }
+                
+                if (!((fileSystems == null) || (fileSystems.length == 0))) {
+                    long minBytesFree = ((WicketApplication) getApplication()).getDashboardService().getMinimumFreeDiskSpaceOfGroup(groupname);
                     
-                    int index = groupname.indexOf("group=");
-                    if (index < 0) continue;
-                    group.setDirectoryPath(groupname.substring(index + 6));
-                    
-                    group.setDescription(groupname + 
-                            ",AET=" + 
-                            ((WicketApplication) getApplication()).getDashboardService().getDefaultRetrieveAETitle(groupname));
-                    group.setGroup(true);
-                    DefaultMutableTreeNode groupNode;
-                    rootNode.add(groupNode = new DefaultMutableTreeNode(group));
-
-                    File[] fileSystems;
-                    try {
-                        fileSystems = ((WicketApplication) getApplication()).getDashboardService().listFileSystemsOfGroup(groupname);
-                    } catch (MBeanException mbe) {
-                        // if groupname does not exist
-                        fileSystems = null;
-                    }
-                    
-                    if (!((fileSystems == null) || (fileSystems.length == 0))) {
-                        long minBytesFree = ((WicketApplication) getApplication()).getDashboardService().getMinimumFreeDiskSpaceOfGroup(groupname);
-                        long expectedBytesPerDay = ((WicketApplication) getApplication()).getDashboardService().getExpectedDataVolumePerDay(groupname);
+                    for (File file : fileSystems) {
+                        FileSystemModel fsm = new FileSystemModel();
+                        fsm.setDirectoryPath(file.getName());                            
+                        fsm.setDescription(file.getName().startsWith("tar:") ? file.getName() : file.getAbsolutePath());
+                        fsm.setOverallDiskSpace(file.getTotalSpace() / FileSystemModel.MEGA);
+                        fsm.setUsedDiskSpace(Math.max((file.getTotalSpace() - file.getUsableSpace()) / FileSystemModel.MEGA, 0));
+                        fsm.setFreeDiskSpace(Math.max(file.getUsableSpace() / FileSystemModel.MEGA, 0));
+                        fsm.setMinimumFreeDiskSpace(fsm.getOverallDiskSpaceLong() == 0 ? 0 : minBytesFree / FileSystemModel.MEGA);
+                        fsm.setUsableDiskSpace(Math.max((file.getUsableSpace() - minBytesFree) / FileSystemModel.MEGA, 0));
+                        fsm.setRemainingTime(Math.max((file.getUsableSpace() - minBytesFree) / 
+                                ((WicketApplication) getApplication()).getDashboardService().getExpectedDataVolumePerDay(groupname), 0));
                         
-                        for (File file : fileSystems) {
-                            FileSystemModel fsm = new FileSystemModel();
-                            fsm.setDirectoryPath(file.getName());                            
-                            fsm.setDescription(file.getName().startsWith("tar:") ? file.getName() : file.getAbsolutePath());
-                            fsm.setOverallDiskSpace(file.getTotalSpace() / FileSystemModel.MEGA);
-                            fsm.setUsedDiskSpace(Math.max((file.getTotalSpace() - file.getUsableSpace()) / FileSystemModel.MEGA, 0));
-                            fsm.setFreeDiskSpace(Math.max(file.getUsableSpace() / FileSystemModel.MEGA, 0));
-                            fsm.setMinimumFreeDiskSpace(fsm.getOverallDiskSpaceLong() == 0 ? 0 : minBytesFree / FileSystemModel.MEGA);
-                            fsm.setUsableDiskSpace(Math.max((file.getUsableSpace() - minBytesFree) / FileSystemModel.MEGA, 0));
-                            fsm.setRemainingTime(Math.max((file.getUsableSpace() - minBytesFree) / expectedBytesPerDay, 0));
-                            
-                            group.setOverallDiskSpace(group.getOverallDiskSpaceLong() + fsm.getOverallDiskSpaceLong());
-                            group.setUsedDiskSpace(group.getUsedDiskSpaceLong() + fsm.getUsedDiskSpaceLong());
-                            group.setFreeDiskSpace(group.getFreeDiskSpaceLong() + fsm.getFreeDiskSpaceLong());
-                            group.setMinimumFreeDiskSpace(group.getMinimumFreeDiskSpaceLong() + fsm.getMinimumFreeDiskSpaceLong());
-                            group.setUsableDiskSpace(group.getUsableDiskSpaceLong() + fsm.getUsableDiskSpaceLong());
-                            group.setRemainingTime(group.getRemainingTime() + fsm.getRemainingTime());
-                            groupNode.add(new DefaultMutableTreeNode(fsm));
-                        }
+                        group.setOverallDiskSpace(group.getOverallDiskSpaceLong() + fsm.getOverallDiskSpaceLong());
+                        group.setUsedDiskSpace(group.getUsedDiskSpaceLong() + fsm.getUsedDiskSpaceLong());
+                        group.setFreeDiskSpace(group.getFreeDiskSpaceLong() + fsm.getFreeDiskSpaceLong());
+                        group.setMinimumFreeDiskSpace(group.getMinimumFreeDiskSpaceLong() + fsm.getMinimumFreeDiskSpaceLong());
+                        group.setUsableDiskSpace(group.getUsableDiskSpaceLong() + fsm.getUsableDiskSpaceLong());
+                        group.setRemainingTime(group.getRemainingTime() + fsm.getRemainingTime());
+                        groupNode.add(new DefaultMutableTreeNode(fsm));
                     }
                 }
             }
-            
+
             String[] otherFileSystems = ((WicketApplication) getApplication()).getDashboardService().listOtherFileSystems();
             if (otherFileSystems != null && otherFileSystems.length > 0) {
 
@@ -287,7 +279,7 @@ public class FileSystemPanel extends Panel {
 
             CategoryAxis categoryaxis = new CategoryAxis();
             categoryaxis.setLabel("%");
-            plot.setDomainAxis((CategoryAxis) categoryaxis);
+            plot.setDomainAxis(categoryaxis);
             StackedBarRenderer renderer = new StackedBarRenderer() {
 
                 private static final long serialVersionUID = 1L;
@@ -334,10 +326,9 @@ public class FileSystemPanel extends Panel {
                 add(newIndentation(this, "indent", node, level));
                 add(newJunctionLink(this, "link", "image", node));
 
-                MarkupContainer nodeLink = newNodeLink(this, "nodeLink", node);
-                nodeLink.setEnabled(false);
-                nodeLink.add(newNodeIcon(nodeLink, "icon", node));
-                nodeLink.add(new Label("label", new AbstractReadOnlyModel<Object>() {
+                add(newNodeLink(this, "nodeLink", node)
+                .add(newNodeIcon(this, "icon", node))
+                .add(new Label("label", new AbstractReadOnlyModel<Object>() {
 
                     private static final long serialVersionUID = 1L;
 
@@ -345,8 +336,8 @@ public class FileSystemPanel extends Panel {
                     public Object getObject() {
                         return renderNodeCallback.renderNode(node);
                     }
-                }));
-                add(nodeLink);
+                }))
+                .setEnabled(false));
             }
         }
 

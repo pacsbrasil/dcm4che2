@@ -14,7 +14,7 @@ public class JFreeChartImage extends NonCachingImage {
     private int width;
     private int height;
 
-    public JFreeChartImage(String id, JFreeChart chart, int width, int height){
+    public JFreeChartImage(String id, JFreeChart chart, int width, int height) {
         super(id, new Model<JFreeChart>(chart));
         this.width = width;
         this.height = height;
@@ -22,6 +22,7 @@ public class JFreeChartImage extends NonCachingImage {
 
     @Override
     protected Resource getImageResource() {
+        
         return new DynamicImageResource(){
 
             private static final long serialVersionUID = 1L;

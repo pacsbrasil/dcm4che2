@@ -150,9 +150,8 @@ public class SystemInfoPanel extends Panel {
                 
                 SystemPropertyModel group = new SystemPropertyModel();
                 group.setLabel(key);
-                DefaultMutableTreeNode groupNode = new DefaultMutableTreeNode();
-                groupNode.setUserObject(group);
-                rootNode.add(groupNode);
+                DefaultMutableTreeNode groupNode;
+                rootNode.add(groupNode = new DefaultMutableTreeNode(group));
 
                 for (SystemPropertyModel propertyModel : propertyMap.get(key)) {
                     groupNode.add(new DefaultMutableTreeNode(propertyModel));
@@ -209,10 +208,9 @@ public class SystemInfoPanel extends Panel {
                 add(newIndentation(this, "indent", node, level));
                 add(newJunctionLink(this, "link", "image", node));
 
-                MarkupContainer nodeLink = newNodeLink(this, "nodeLink", node);
-                nodeLink.setEnabled(false);
-                nodeLink.add(newNodeIcon(nodeLink, "icon", node));
-                nodeLink.add(new Label("label", new AbstractReadOnlyModel<Object>() {
+                add(newNodeLink(this, "nodeLink", node)
+                .add(newNodeIcon(this, "icon", node))
+                .add(new Label("label", new AbstractReadOnlyModel<Object>() {
 
                     private static final long serialVersionUID = 1L;
 
@@ -220,8 +218,8 @@ public class SystemInfoPanel extends Panel {
                     public Object getObject() {
                         return renderNodeCallback.renderNode(node);
                     }
-                }));
-                add(nodeLink);
+                }))
+                .setEnabled(false));
             }
         }
 

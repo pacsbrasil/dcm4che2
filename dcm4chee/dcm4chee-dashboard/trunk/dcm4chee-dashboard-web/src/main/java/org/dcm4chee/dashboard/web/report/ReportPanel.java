@@ -38,9 +38,6 @@
 
 package org.dcm4chee.dashboard.web.report;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
@@ -97,12 +94,19 @@ public class ReportPanel extends Panel {
     public ReportPanel(String id) {
         super(id);
 
-        add(this.modalWindow = new ModalWindow("modal-window"));
-        add(new ToggleFormLink("toggle-group-form-link", 
-                new AddGroupForm("add-group-form"), 
-                this, 
-                "toggle-group-form-image")
-        );        
+        try {
+            add(this.modalWindow = new ModalWindow("modal-window"));
+            add(new ToggleFormLink("toggle-group-form-link", 
+                    new AddGroupForm("add-group-form"), 
+                    this, 
+                    "toggle-group-form-image")
+            );
+        } catch (Exception e) {
+            log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
+            log.debug("Exception: ", e);
+            this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
+            throw new RuntimeException();
+        }
     }
     
     @Override
@@ -110,10 +114,6 @@ public class ReportPanel extends Panel {
         super.onBeforeRender();
         
         try {
-            List<ReportModel> reports = new ArrayList<ReportModel>();
-            for (ReportModel report : ((WicketApplication) getApplication()).getDashboardService().listAllReports())
-                reports.add(report);
-    
             DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new ReportModel());
             
             for (ReportModel group : ((WicketApplication) getApplication()).getDashboardService().listAllReportGroups()) {
@@ -167,7 +167,7 @@ public class ReportPanel extends Panel {
             reportTreeTable.getTreeState().setAllowSelectMultiple(false);
             addOrReplace(reportTreeTable);
         } catch (Exception e) {
-            log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
+            log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
             this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
             throw new RuntimeException();
@@ -195,6 +195,7 @@ public class ReportPanel extends Panel {
                 
                 add(newIndentation(this, "indent", node, level));
                 add(newJunctionLink(this, "link", "image", node));
+                
                 add(newNodeLink(this, "nodeLink", node)
                 .add(newNodeIcon(this, "icon", node))
                 .add(new Label("label", new AbstractReadOnlyModel<Object>() {

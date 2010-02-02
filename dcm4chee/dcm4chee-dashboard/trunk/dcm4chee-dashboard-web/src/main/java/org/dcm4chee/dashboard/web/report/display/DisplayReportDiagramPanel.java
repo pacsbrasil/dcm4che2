@@ -228,23 +228,25 @@ public class DisplayReportDiagramPanel extends Panel {
         public List<CategoryTick> refreshTicks(Graphics2D g2, AxisState state, Rectangle2D dataArea, RectangleEdge edge) {
 
             List<CategoryTick> standardTicks = super.refreshTicks(g2, state, dataArea, edge);
-            if (standardTicks.isEmpty()) return standardTicks;
-            int interval = standardTicks.size() / labeledTicks;
-            if (interval < 1) return standardTicks;
+            int interval;
+            if (standardTicks.isEmpty() || ((interval = (standardTicks.size() / labeledTicks)) < 1)) return standardTicks;
             List<CategoryTick> newTicks = new ArrayList<CategoryTick>(standardTicks.size());
+             
             for (int i = 0; i < standardTicks.size(); i+=interval) {
-                if (i % (standardTicks.size() / labeledTicks) == 0) {
+                if (i % interval == 0) {
                     CategoryTick tick = standardTicks.get(i);
                     TextBlock textBlock = new TextBlock();
                     textBlock.addLine(tick.getCategory().toString(), 
                                       tick.getLabel().getLastLine().getFirstTextFragment().getFont(), 
                                       tick.getLabel().getLastLine().getFirstTextFragment().getPaint());
-                    tick = new CategoryTick(tick.getCategory(), 
-                                            textBlock, 
-                                            tick.getLabelAnchor(), 
-                                            tick.getRotationAnchor(), 
-                                            tick.getAngle());
-                    newTicks.add(tick);
+                    newTicks.add(new CategoryTick(
+                                      tick.getCategory(), 
+                                      textBlock, 
+                                      tick.getLabelAnchor(), 
+                                      tick.getRotationAnchor(), 
+                                      tick.getAngle()
+                                )
+                    );
                 }
             }
             return newTicks;

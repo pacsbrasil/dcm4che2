@@ -75,17 +75,18 @@ public class ValidatorMessageLabel extends Label {
     @Override
     protected void onBeforeRender() {
 
-        this.setDefaultModel(null);
-        if (component.getFeedbackMessage() != null){
-            if (this.text != null)
-                this.setDefaultModel(new Model<String>(this.text.getObject().toString().replaceAll("\"", "")));
-            else
-                this.setDefaultModel(new Model<String>(component.getFeedbackMessage().getMessage().toString().replaceAll("\"", "")));
-
-            // set this message rendered to avoid the warning concerning the feedback panel
-            component.getFeedbackMessage().markRendered();           
-            this.add(new AttributeModifier("class", true, new Model<String>("message-validator")));
-        } else this.setDefaultModel(null);
+        this.setDefaultModel(
+        component.getFeedbackMessage() != null ? 
+            new Model<String>((
+                    this.text != null ? 
+                            this.text.getObject().toString().replaceAll("\"", "") :
+                            component.getFeedbackMessage().getMessage()
+                    ).toString().replaceAll("\"", "")) :
+            null);
+                                
+        // set this message rendered to avoid the warning concerning the feedback panel
+        component.getFeedbackMessage().markRendered();           
+        this.add(new AttributeModifier("class", true, new Model<String>("message-validator")));
         
         super.onBeforeRender();
     }
