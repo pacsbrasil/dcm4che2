@@ -155,7 +155,38 @@ public class FileSystemPanel extends Panel {
                     rootNode.add(groupNode);
                 }
             }
+            
+            String[] otherFileSystems = ((WicketApplication) getApplication()).getDashboardService().listOtherFileSystems();
+            if (otherFileSystems != null && otherFileSystems.length > 0) {
 
+                FileSystemModel group = new FileSystemModel();
+                group.setDirectoryPath(new ResourceModel("dashboard.filesystem.group.other").wrapOnAssignment(this).getObject());
+                group.setGroup(true);
+                DefaultMutableTreeNode groupNode = new DefaultMutableTreeNode();
+                groupNode.setUserObject(group);
+                rootNode.add(groupNode);
+
+                for (String otherFileSystem : otherFileSystems) {
+                    File file = new File(otherFileSystem);
+                    FileSystemModel fsm = new FileSystemModel();
+                    fsm.setDirectoryPath(file.getAbsolutePath());                            
+                    fsm.setDescription(file.getName().startsWith("tar:") ? file.getName() : file.getAbsolutePath());
+                    fsm.setOverallDiskSpace(file.getTotalSpace() / FileSystemModel.MEGA);
+                    fsm.setUsedDiskSpace(Math.max((file.getTotalSpace() - file.getUsableSpace()) / FileSystemModel.MEGA, 0));
+                    fsm.setFreeDiskSpace(Math.max(file.getUsableSpace() / FileSystemModel.MEGA, 0));
+                    fsm.setMinimumFreeDiskSpace(fsm.getOverallDiskSpaceLong() / FileSystemModel.MEGA);
+                    fsm.setUsableDiskSpace(Math.max(file.getUsableSpace() / FileSystemModel.MEGA, 0));
+                    fsm.setRemainingTime(-1);
+                    
+                    group.setOverallDiskSpace(group.getOverallDiskSpaceLong() + fsm.getOverallDiskSpaceLong());
+                    group.setUsedDiskSpace(group.getUsedDiskSpaceLong() + fsm.getUsedDiskSpaceLong());
+                    group.setFreeDiskSpace(group.getFreeDiskSpaceLong() + fsm.getFreeDiskSpaceLong());
+                    group.setMinimumFreeDiskSpace(group.getMinimumFreeDiskSpaceLong() + fsm.getMinimumFreeDiskSpaceLong());
+                    group.setUsableDiskSpace(group.getUsableDiskSpaceLong() + fsm.getUsableDiskSpaceLong());
+                    groupNode.add(new DefaultMutableTreeNode(fsm));
+                }
+            }
+            
             FileSystemTreeTable fileSystemTreeTable = new FileSystemTreeTable("filesystem-tree-table", 
                     new DefaultTreeModel(rootNode), new IColumn[] {
                 new PropertyTreeColumn(new ColumnLocation(
@@ -481,7 +512,7 @@ public class FileSystemPanel extends Panel {
         }
         
         public String getRemainingTimeString() {
-            return "~ " + this.daysFormatter.format(new Float(this.remainingTime)); 
+            return this.remainingTime >= 0 ? "~ " + this.daysFormatter.format(new Float(this.remainingTime)) : ""; 
         }
     }
 }

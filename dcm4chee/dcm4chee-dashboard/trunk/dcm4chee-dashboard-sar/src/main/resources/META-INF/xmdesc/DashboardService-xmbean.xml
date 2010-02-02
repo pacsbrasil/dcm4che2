@@ -34,6 +34,17 @@
             <value>dcm4chee.archive:service=FileSystemMgt,group=ONLINE_STORAGE</value>
         </descriptors>
     </attribute>
+	<attribute access="read-write" getMethod="getOtherList" setMethod="setOtherList">
+        <description>
+            Represents configured additional file systems to display, 
+            as strings, separated by newline
+        </description>
+        <name>otherList</name>
+        <type>java.lang.String</type>
+        <descriptors>
+            <value>dcm4chee.archive:service=FileSystemMgt,group=ONLINE_STORAGE</value>
+        </descriptors>
+    </attribute>
 	<attribute access="read-write" getMethod="getPropertyList" setMethod="setPropertyList">
         <description>
             Represents the system properties to display, 
@@ -100,6 +111,11 @@ java.version</value>
          <type>java.lang.String</type>
       </parameter>
       <return-type>long</return-type>
+   </operation>
+   <operation>
+      <description>MBean Operation.</description>
+      <name>listOtherFileSystems</name>
+      <return-type>[Ljava.lang.String;</return-type>
    </operation>
    <operation>
       <description>MBean Operation.</description>

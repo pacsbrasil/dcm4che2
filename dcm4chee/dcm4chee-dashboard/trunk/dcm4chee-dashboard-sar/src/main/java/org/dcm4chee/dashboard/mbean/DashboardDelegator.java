@@ -100,8 +100,14 @@ public class DashboardDelegator {
                         new Object[] { groupname },
                         new String[] { "java.lang.String" }))
                         .longValue();
-        }
+    }
 
+    public String[] listOtherFileSystems() throws InstanceNotFoundException, ReflectionException, MBeanException {
+        return (String[]) this.server.invoke(
+                        this.objectName, 
+                        "listOtherFileSystems", null, null);
+    }
+    
     @SuppressWarnings("unchecked")
     public Map<String, List<SystemPropertyModel>> getSystemProperties() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
         return (Map<String, List<SystemPropertyModel>>) server.invoke(

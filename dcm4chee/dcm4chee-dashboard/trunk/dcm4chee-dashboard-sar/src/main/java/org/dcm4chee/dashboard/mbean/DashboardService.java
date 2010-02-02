@@ -78,6 +78,7 @@ public class DashboardService extends ServiceMBeanSupport {
 
     private String[] dataSourceList = new String[0];
     private String[] groupList = new String[0];
+    private String[] otherList = new String[0];
     private String[] propertyList = new String[0];
 
     private String reportFilename = "";
@@ -99,6 +100,14 @@ public class DashboardService extends ServiceMBeanSupport {
         return arrayToString(this.groupList);
     }
     
+    public void setOtherList(String otherList) {
+        this.otherList = tokenize(otherList);
+    }
+
+    public String getOtherList() {
+        return arrayToString(otherList);
+    }
+
     public void setPropertyList(String propertyList) {
         this.propertyList = tokenize(propertyList);
     }
@@ -143,6 +152,10 @@ public class DashboardService extends ServiceMBeanSupport {
         return ((Long) this.server.getAttribute(
                       new ObjectName(groupname),
                       "ExpectedDataVolumePerDayBytes")).longValue();
+    }
+
+    public String[] listOtherFileSystems() throws MalformedObjectNameException, NullPointerException {
+        return this.otherList;
     }
 
     public Map<String, List<SystemPropertyModel>> getSystemProperties() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
