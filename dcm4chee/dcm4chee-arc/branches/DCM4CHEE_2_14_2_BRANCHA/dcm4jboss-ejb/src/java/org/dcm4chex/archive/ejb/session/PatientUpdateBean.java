@@ -201,6 +201,9 @@ public abstract class PatientUpdateBean implements SessionBean {
 			
 		// Case 2: there's no matching, a new patient is created. The study is updated.
 		// Case 3: it's matching another existing patient. The study is updated.
+		if(modified != null) {
+			modified.putAll( attrs );
+		}
 		study.setPatient(newPatient);
     }
 
