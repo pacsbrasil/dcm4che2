@@ -56,9 +56,12 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.common.SPSStatus;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
+import org.dcm4chex.archive.ejb.entity.AttrUtils;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.MWLItemLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
@@ -167,13 +170,22 @@ public abstract class PatientUpdateBean implements SessionBean {
     }
     
     /**
+     * 
+     * @ejb.interface-method
+     */
+    public void updatePatient(StudyLocal study, Dataset attrs, 
+        PatientMatching matching ) throws FinderException, CreateException {
+        updatePatient(study, attrs, null, matching);    	
+    }
+
+    /**
      * Update patient data as well as relink study with the patient if the patient
      * is different than original one.
      * @throws CreateException 
      * 
      * @ejb.interface-method
      */
-    public void updatePatient(StudyLocal study, Dataset attrs,
+    public void updatePatient(StudyLocal study, Dataset attrs, Dataset modified,
             PatientMatching matching) throws FinderException, CreateException {
 		String pid = attrs.getString(Tags.PatientID);
 
@@ -183,12 +195,14 @@ public abstract class PatientUpdateBean implements SessionBean {
 		if (pid == null || pid.length() == 0)
 			return;
 		
-		PatientLocal newPatient = updateOrCreate(attrs, matching);
+		PatientLocal newPatient = updateOrCreate(attrs, modified, matching);
 		PatientLocal oldPat = study.getPatient();
 		// Case 1: it's matching the same patient. Do nothing
 		if(oldPat.getPk() == newPatient.getPk())
 			return;
-			
+		if(modified != null) {
+			modified.putAll( attrs );
+		}
 		// Case 2: there's no matching, a new patient is created. The study is updated.
 		// Case 3: it's matching another existing patient. The study is updated.
 		study.setPatient(newPatient);
@@ -206,15 +220,28 @@ public abstract class PatientUpdateBean implements SessionBean {
      */
     public void updatePatient(Dataset attrs, PatientMatching matching)
             throws CreateException, FinderException {
+        updatePatient(attrs, null, matching);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void updatePatient(Dataset attrs, Dataset modified, PatientMatching matching)
+            throws CreateException, FinderException {
         LOG.info("Update " + attrs.getString(Tags.PatientName)
                 + " with PID " + attrs.getString(Tags.PatientID));
-        updateOrCreate(attrs, matching);
+        updateOrCreate(attrs, modified, matching);
     }
 
     private PatientLocal updateOrCreate(Dataset ds, PatientMatching matching)
             throws CreateException, FinderException {
+       return updateOrCreate(ds, null, matching);
+   }
+
+   private PatientLocal updateOrCreate(Dataset ds, Dataset modified, PatientMatching matching)
+            throws CreateException, FinderException {
        try {
-            return findAndUpdatePatient(ds, matching);
+            return findAndUpdatePatient(ds, modified, matching);
        } catch (ObjectNotFoundException e) {
             PatientLocal pat;
             try {
@@ -223,7 +250,7 @@ public abstract class PatientUpdateBean implements SessionBean {
                 // Check if patient record was inserted by concurrent thread
                 // with unique index on (pat_id, pat_id_issuer)
                 try {
-                    return findAndUpdatePatient(ds, matching);
+                    return findAndUpdatePatient(ds, modified, matching);
                 } catch (FinderException fe) {
                     throw ce;
                 }
@@ -232,6 +259,9 @@ public abstract class PatientUpdateBean implements SessionBean {
             // with non-unique index on (pat_id, pat_id_issuer)
             try {
                 patHome.selectPatient(ds, matching, false);
+                if(modified!=null) {
+                     modified.putAll(ds);	
+                }	
                 return pat;
             } catch (NonUniquePatientException nupe) {
                 try {
@@ -239,15 +269,21 @@ public abstract class PatientUpdateBean implements SessionBean {
                 } catch (RemoveException e1) {
                     throw new EJBException(e);
                 }
-                return findAndUpdatePatient(ds, matching);
+                return findAndUpdatePatient(ds, modified, matching);
             }
         }
     }
 
-    private PatientLocal findAndUpdatePatient(Dataset ds,
+    private PatientLocal findAndUpdatePatient(Dataset ds, Dataset modified,
             PatientMatching matching) throws FinderException {
+    	Dataset origModAttrs=null;
+    	if( modified != null ) {
+    	   origModAttrs = DcmObjectFactory.getInstance().newDataset(); 	
+        }
         PatientLocal pat = patHome.selectPatient(ds, matching, false);
-        pat.updateAttributes(ds);
+        if( pat.updateAttributes(ds, origModAttrs) ) {
+            AttrUtils.fetchModifiedAttributes(ds, origModAttrs, modified);
+        }
         return pat;
     }
 
