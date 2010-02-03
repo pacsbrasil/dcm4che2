@@ -1378,7 +1378,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
              */
             coerceAttributes(ds, coerce);
         }
-        postCoercionProcessing(ds, Command.C_STORE_RQ);
+        postCoercionProcessing(ds, Command.C_STORE_RQ,assoc);
     }
     
     private PresContext selectAcceptedPresContext(Association a, FileInfo info) {
@@ -1561,13 +1561,14 @@ public class QueryRetrieveScpService extends AbstractScpService {
      *                the coerced dataset
      * @param command
      *                DICOM command type
+     * @param assoc
+     *                current Association
      * @throws Exception
      */
-    void postCoercionProcessing(Dataset ds, int command) throws Exception {
-        doPostCoercionProcessing(ds,command);
+    void postCoercionProcessing(Dataset ds, int command, Association assoc) throws Exception {
+        doPostCoercionProcessing(ds,command,assoc);
     }
-
-    protected void doPostCoercionProcessing(Dataset ds, int command) throws Exception {
+    protected void doPostCoercionProcessing(Dataset ds, int command, Association assoc) throws Exception {
         // Extension Point for customized QueryRetrieveScpService
     }
 }

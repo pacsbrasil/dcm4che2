@@ -150,7 +150,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             if (coerce != null) {
                 service.coerceAttributes(rqData, coerce);
             }
-            service.postCoercionProcessing(rqData, Command.C_FIND_RQ);
+            service.postCoercionProcessing(rqData, Command.C_FIND_RQ, assoc.getAssociation());
             service.supplementInstitutionalData(rqData, callingAET);
             boolean otherPIDinRQ = rqData.contains(Tags.OtherPatientIDSeq);
             if ( !isUniversalMatching(rqData.getString(Tags.PatientID)) ) {
@@ -413,7 +413,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
                 if (coerce != null) {
                     service.coerceAttributes(data, coerce);
                 }
-                service.postCoercionProcessing(data, Command.C_FIND_RSP);
+                service.postCoercionProcessing(data, Command.C_FIND_RSP, assoc.getAssociation());
                 return data;
             } catch (DcmServiceException e) {
                 throw e;
