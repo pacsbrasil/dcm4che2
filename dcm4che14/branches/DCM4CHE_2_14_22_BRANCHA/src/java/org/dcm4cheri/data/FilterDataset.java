@@ -46,6 +46,7 @@ import org.dcm4che.data.FileFormat;
 import org.dcm4che.data.SpecificCharacterSet;
 
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.VRs;
 
 import java.io.File;
 import java.io.InputStream;
@@ -215,6 +216,14 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
 	    	throws IOException {
         throw new UnsupportedOperationException();
 	}
+
+    public DcmElement putXX(int tag, int vr) {
+        if (!filter(tag, vr)) {
+            throw new IllegalArgumentException(
+              "Tag " + Tags.toString(tag) + ", VR " + VRs.toString(vr) + " does not fit in this sub DataSet");
+        }
+        return backend.putXX(tag, vr);
+    }
     
     static final class Selection extends FilterDataset {
         private final Dataset filter;
