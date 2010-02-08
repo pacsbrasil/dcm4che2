@@ -156,29 +156,20 @@ public class DynamicLinkPanel extends Panel {
                     new ResourceModel("dashboard.report.diagram.options.types").wrapOnAssignment(this).getObject().split(";")[report.getDiagram()] : 
                     ""));
 
-//            if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.CreateOrEditReportLink)
-//                if (this.report.getGroupUuid() == null)
-//                    this.link.get("image").add(new AttributeModifier("title", true, new ResourceModel("dashboard.dynamiclink.report.create").wrapOnAssignment(this)));
-//            if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.RemoveLink) {
-//                if (this.report.getGroupUuid() == null)
-//                    this.link.get("image").add(new AttributeModifier("title", true, new ResourceModel("dashboard.dynamiclink.report.group.remove").wrapOnAssignment(this)));
-//                else
-//                    this.link.get("image").add(new AttributeModifier("title", true, new ResourceModel("dashboard.dynamiclink.report.remove").wrapOnAssignment(this)));
-//            }
-
-            
-            this.link.get("image").add(new AttributeModifier("title", true, new ResourceModel(
-                    this.report.getGroupUuid() == null ? 
+            this.link.get("image").add(new AttributeModifier("title", true, 
+                    (this.report.getGroupUuid() == null ? 
                             this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.CreateOrEditReportLink ?
-                                    "dashboard.dynamiclink.report.create" :
+                                    new ResourceModel("dashboard.dynamiclink.report.create" ).wrapOnAssignment(this) :
                                     this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.RemoveLink ? 
-                                            "dashboard.dynamiclink.report.group.remove" : 
-                                            ""
+                                            new ResourceModel("dashboard.dynamiclink.report.group.remove").wrapOnAssignment(this) : 
+                                            new Model<String>("")
                             : 
                             this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.CreateOrEditReportLink ? 
-                                    "dashboard.dynamiclink.report.edit" : 
-                                    "dashboard.dynamiclink.report.remove"
-            ).wrapOnAssignment(this)));
+                                    new ResourceModel("dashboard.dynamiclink.report.edit").wrapOnAssignment(this) : 
+                                    this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.RemoveLink ?
+                                            new ResourceModel("dashboard.dynamiclink.report.remove").wrapOnAssignment(this) : 
+                                            new Model<String>("")
+            )));
             
             if (this.link instanceof RemoveLink)
                     this.link.add(new AttributeModifier("onclick", true, new Model<String>("return confirm('" + new ResourceModel(
@@ -237,11 +228,14 @@ public class DynamicLinkPanel extends Panel {
         private static final long serialVersionUID = 1L;
       
         ReportModel report;
-      
+        @SuppressWarnings("unused")
+        ModalWindow modalWindow;
+        
         public DisplayLink(String id, ReportModel report, ModalWindow modalWindow) {
             super(id);
 
             this.report = report;
+            this.modalWindow = modalWindow;
         }
     }
 
@@ -315,18 +309,34 @@ public class DynamicLinkPanel extends Panel {
         }
     }
 
-    private class DisplayTableLink extends DisplayLink {
-        
+    private class DisplayTableLink extends AjaxDisplayLink {
+
+        private static final long serialVersionUID = 1L;
+
         public DisplayTableLink(String id, ReportModel report, ModalWindow modalWindow) {
             super(id, report, modalWindow);
         }
         
-        private static final long serialVersionUID = 1L;
-      
         @Override
-        public void onClick() {
-            setResponsePage(new DynamicDisplayPage(this.report, false, true));
-        }
+        public void onClick(AjaxRequestTarget target) {
+
+            setAjaxDisplayProperties();
+            
+            this.modalWindow.setPageCreator(new ModalWindow.PageCreator() {
+                  
+                private static final long serialVersionUID = 1L;
+                  
+                @Override
+                public Page createPage() {
+                    return new ConfigureReportPage(modalWindow, report);
+                }                
+            });
+
+            ((ModalWindow) this.modalWindow.add(new DisableDefaultConfirmBehavior()))
+            .setInitialWidth(new Integer(new ResourceModel("dashboard.dynamiclink.report.display.table.window.width").wrapOnAssignment(this).getObject().toString()))
+            .setInitialHeight(new Integer(new ResourceModel("dashboard.dynamiclink.report.display.table.window.height").wrapOnAssignment(this).getObject().toString()))
+            .show(target);
+        }        
     }
 
     private class DisplayDiagramAndTableLink extends AjaxDisplayLink {
@@ -352,8 +362,8 @@ public class DynamicLinkPanel extends Panel {
             });
 
             ((ModalWindow) this.modalWindow.add(new DisableDefaultConfirmBehavior()))
-            .setInitialWidth(new Integer(new ResourceModel("dashboard.dynamiclink.report.displaydiagramandtable.window.width").wrapOnAssignment(this).getObject().toString()))
-            .setInitialHeight(new Integer(new ResourceModel("dashboard.dynamiclink.report.displaydiagramandtable.window.height").wrapOnAssignment(this).getObject().toString()))
+            .setInitialWidth(new Integer(new ResourceModel("dashboard.dynamiclink.report.display.diagramandtable.window.width").wrapOnAssignment(this).getObject().toString()))
+            .setInitialHeight(new Integer(new ResourceModel("dashboard.dynamiclink.report.display.diagramandtable.window.height").wrapOnAssignment(this).getObject().toString()))
             .show(target);
         }
     }

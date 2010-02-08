@@ -138,7 +138,7 @@ public class ReportPanel extends Panel {
                         ,
                         new DynamicRenderableColumn(new ColumnLocation(Alignment.RIGHT, 10, Unit.PERCENT), 
                                 new ResourceModel("dashboard.report.table.link.edit").wrapOnAssignment(this).getObject(),  
-                                "CreateOrEditReportLink", 
+                                "CreateOrEditReportLink",
                                 this.modalWindow)
                         ,
                         new DynamicRenderableColumn(new ColumnLocation(Alignment.RIGHT, 10, Unit.PERCENT), 
@@ -232,7 +232,7 @@ public class ReportPanel extends Panel {
                             ((((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getGroupUuid() == null) ? 
                                 "folder_files" : "report") + ".gif')");
 
-                    tag.put("title", ((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getTitle());
+                    tag.put("title", ((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getStatement());
                 }
             };
         }        

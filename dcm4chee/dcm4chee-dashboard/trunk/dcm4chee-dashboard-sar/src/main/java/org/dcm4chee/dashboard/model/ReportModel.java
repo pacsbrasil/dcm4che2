@@ -95,8 +95,8 @@ public class ReportModel implements Serializable {
         return dataSource;
     }
 
-    public void setStatement(Set<String> statement) {
-
+    public void setStatement(String statement) {
+        this.statement = statement;
     }
     
     public String getStatement() {

@@ -41,6 +41,13 @@ package org.dcm4chee.dashboard.web;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -123,5 +130,28 @@ public class DashboardMainPage extends WebPage {
             } catch (NamingException ignore) {
             }
         }
+    }
+    
+    public static boolean isConfigurableStatement(String statement) {
+        Matcher m = Pattern.compile("\\[[A-Za-z0-9\\.]*\\]").matcher(statement);
+        return m.find();
+    }
+    
+    public static String createSQLStatement(String statement) {
+        return Pattern.compile("\\[[A-Za-z0-9\\.]*\\]").matcher(statement).replaceAll("?");
+    }
+
+    public static Map<String, String> getParameterMap(String statement) {
+        Map<String, String> parameters = new HashMap<String, String>();
+        Matcher m = Pattern.compile("\\[[A-Za-z0-9\\.]*\\]").matcher(statement);
+        while(m.find()) parameters.put(m.group(), null);
+        return parameters;
+    }
+
+    public static List<String> getParameters(String statement) {
+        List<String> parameters = new ArrayList<String>();
+        Matcher m = Pattern.compile("\\[[A-Za-z0-9\\.]*\\]").matcher(statement);
+        while(m.find()) parameters.add(m.group());
+        return parameters;
     }
 }

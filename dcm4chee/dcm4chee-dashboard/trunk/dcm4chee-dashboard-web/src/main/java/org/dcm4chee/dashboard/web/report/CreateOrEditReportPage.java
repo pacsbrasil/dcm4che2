@@ -169,10 +169,16 @@ public class CreateOrEditReportPage extends WebPage {
 
                 @Override
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                    Object dataSourceName = null;
+
                     String message = null;
                     Connection jdbcConnection = null;
                     try {
+                        if (DashboardMainPage.isConfigurableStatement(thisReport.getStatement())) {
+                            message = new ResourceModel("dashboard.report.createoredit.form.statement-test-submit.configurable-statement-message").wrapOnAssignment(this.getParent()).getObject();
+                            return;
+                        }
+                            
+                        Object dataSourceName = null;
                         if ((dataSourceName = form.get("report-datasource-dropdown-choice").getDefaultModelObject()) == null) {
                             message = new ResourceModel("dashboard.report.createoredit.form.statement-test-submit.no-datasource-message").wrapOnAssignment(this.getParent()).getObject();
                             return;
