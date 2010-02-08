@@ -295,18 +295,34 @@ public class DynamicLinkPanel extends Panel {
         }
     }
 
-    private class DisplayDiagramLink extends DisplayLink {
+    private class DisplayDiagramLink extends AjaxDisplayLink {
 
         private static final long serialVersionUID = 1L;
 
         public DisplayDiagramLink(String id, ReportModel report, ModalWindow modalWindow) {
             super(id, report, modalWindow);
         }
-
+        
         @Override
-        public void onClick() {
-            setResponsePage(new DynamicDisplayPage(this.report, true, false));
-        }
+        public void onClick(AjaxRequestTarget target) {
+
+            setAjaxDisplayProperties();
+            
+            this.modalWindow.setPageCreator(new ModalWindow.PageCreator() {
+                  
+                private static final long serialVersionUID = 1L;
+                  
+                @Override
+                public Page createPage() {
+                    return new ConfigureReportPage(modalWindow, report, true, false);
+                }                
+            });
+
+            ((ModalWindow) this.modalWindow.add(new DisableDefaultConfirmBehavior()))
+            .setInitialWidth(new Integer(new ResourceModel("dashboard.dynamiclink.report.display.diagram.window.width").wrapOnAssignment(this).getObject().toString()))
+            .setInitialHeight(new Integer(new ResourceModel("dashboard.dynamiclink.report.display.diagram.window.height").wrapOnAssignment(this).getObject().toString()))
+            .show(target);
+        }        
     }
 
     private class DisplayTableLink extends AjaxDisplayLink {
@@ -328,7 +344,7 @@ public class DynamicLinkPanel extends Panel {
                   
                 @Override
                 public Page createPage() {
-                    return new ConfigureReportPage(modalWindow, report);
+                    return new ConfigureReportPage(modalWindow, report, false, true);
                 }                
             });
 
@@ -346,21 +362,22 @@ public class DynamicLinkPanel extends Panel {
         public DisplayDiagramAndTableLink(String id, ReportModel report, ModalWindow modalWindow) {
             super(id, report, modalWindow);
         }
-
+        
         @Override
         public void onClick(AjaxRequestTarget target) {
+
             setAjaxDisplayProperties();
             
             this.modalWindow.setPageCreator(new ModalWindow.PageCreator() {
-                
+                  
                 private static final long serialVersionUID = 1L;
                   
                 @Override
                 public Page createPage() {
-                    return new DynamicDisplayPage(report, true, true);
+                    return new ConfigureReportPage(modalWindow, report, true, false);
                 }                
             });
-
+            
             ((ModalWindow) this.modalWindow.add(new DisableDefaultConfirmBehavior()))
             .setInitialWidth(new Integer(new ResourceModel("dashboard.dynamiclink.report.display.diagramandtable.window.width").wrapOnAssignment(this).getObject().toString()))
             .setInitialHeight(new Integer(new ResourceModel("dashboard.dynamiclink.report.display.diagramandtable.window.height").wrapOnAssignment(this).getObject().toString()))

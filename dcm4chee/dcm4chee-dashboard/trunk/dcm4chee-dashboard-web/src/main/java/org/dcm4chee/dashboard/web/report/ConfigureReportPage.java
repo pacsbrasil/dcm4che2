@@ -83,16 +83,22 @@ public class ConfigureReportPage extends WebPage {
     private ReportModel report;
     protected ModalWindow window;
     
-    public ConfigureReportPage(final ModalWindow window, final ReportModel report) {
+    private boolean diagram;
+    private boolean table;
+    
+    public ConfigureReportPage(final ModalWindow window, final ReportModel report, boolean diagram, boolean table) {
         super();
 
         try {           
             this.report = report;
             this.window = window;
             
+            this.diagram = diagram;
+            this.table = table;
+                
             Label resultMessage;
             add(resultMessage = new Label("result-message"));
-            add(new ConfigureReportForm("create-or-edit-report-form", this.report, resultMessage, this.window));
+            add(new ConfigureReportForm("configure-report-form", this.report, resultMessage, this.window));
         } catch (Exception e) {
             e.printStackTrace();
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
@@ -107,8 +113,8 @@ public class ConfigureReportPage extends WebPage {
         super.onBeforeRender();
 
         try {
-            if (!DashboardMainPage.isConfigurableStatement(report.getStatement()))
-                redirectToInterceptPage(new DynamicDisplayPage(report, false, true));
+            if (!DashboardMainPage.isConfigurableStatement(this.report.getStatement()))
+                redirectToInterceptPage(new DynamicDisplayPage(this.report, this.diagram, this.table));
 
             addOrReplace(new Label("page-title", new ResourceModel("dashboard.report.configure.title").wrapOnAssignment(this).getObject()));
             addOrReplace(new AjaxLink<Object>("close") {
@@ -218,7 +224,7 @@ public class ConfigureReportPage extends WebPage {
                             statement = statement.replaceFirst("\\?", (" " + parameterMap.get(parameterName) + " "));
                         }
                         report.setStatement(statement);
-                        window.redirectToInterceptPage(new DynamicDisplayPage(report, false, true));
+                        window.redirectToInterceptPage(new DynamicDisplayPage(report, diagram, table));
                     } catch (Exception e) {
                       log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
                       log.debug("Exception: ", e);
