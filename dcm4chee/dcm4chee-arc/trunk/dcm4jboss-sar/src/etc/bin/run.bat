@@ -92,6 +92,9 @@ set JAVA_OPTS=%JAVA_OPTS% -Xms128m -Xmx512m
 rem Specify the ID of the ServerPeer used by JBoss Messaging. Must be unique per JBoss instance
 set JAVA_OPTS=%JAVA_OPTS% -Djboss.messaging.ServerPeerID=0
 
+rem Use Compiling XSLT Processor (XSLTC)
+set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.transform.TransformerFactory=com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
+
 rem Uncomment to enable the jconsole agent locally
 rem JAVA_OPTS=%JAVA_OPTS% -Dcom.sun.management.jmxremote
 

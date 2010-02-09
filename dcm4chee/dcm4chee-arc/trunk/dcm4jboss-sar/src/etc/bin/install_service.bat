@@ -56,6 +56,9 @@ set JAVA_OPTS=%JAVA_OPTS% -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.
 rem Specify the ID of the ServerPeer used by JBoss Messaging. Must be unique per JBoss instance
 set JAVA_OPTS=%JAVA_OPTS% -Djboss.messaging.ServerPeerID=0
 
+rem Use Compiling XSLT Processor (XSLTC)
+set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.transform.TransformerFactory=com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
+
 rem Set java.library.path to find native jai-imageio components 
 set JAVA_OPTS=%JAVA_OPTS% -Djava.library.path=%JBOSS_HOME%\bin\native
 
