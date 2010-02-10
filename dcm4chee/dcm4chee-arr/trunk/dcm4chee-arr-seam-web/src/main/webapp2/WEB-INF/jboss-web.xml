@@ -25,5 +25,9 @@
     <ejb-ref-name>ejb/AuditRecordAccess</ejb-ref-name>
     <local-jndi-name>${ear}/AuditRecordAccessBean/local</local-jndi-name>
   </ejb-local-ref>
+  <ejb-local-ref>
+    <ejb-ref-name>ejb/AuditRecordQuery</ejb-ref-name>
+    <local-jndi-name>${ear}/AuditRecordQueryBean/local</local-jndi-name>
+  </ejb-local-ref>
   
 </jboss-web>

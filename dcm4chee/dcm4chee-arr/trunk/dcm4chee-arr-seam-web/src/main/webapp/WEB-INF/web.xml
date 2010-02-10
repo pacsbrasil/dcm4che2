@@ -52,6 +52,18 @@
     <url-pattern>*.seam</url-pattern>
   </servlet-mapping>
 
+  <!-- XML List View Servlet -->
+  <servlet>
+    <servlet-name>XML List View Servlet</servlet-name>
+    <servlet-class>org.dcm4chee.arr.seam.servlet.XMLListViewServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>XML List View Servlet</servlet-name>
+    <url-pattern>/xml</url-pattern>
+  </servlet-mapping>
+
   <!-- XML View Servlet -->
   <servlet>
     <servlet-name>XML View Servlet</servlet-name>
@@ -82,6 +94,12 @@
     <ejb-ref-type>Session</ejb-ref-type>
     <local-home />
     <local>org.dcm4chee.arr.seam.ejb.AuditRecordAccessLocal</local>
+  </ejb-local-ref>
+  <ejb-local-ref>
+    <ejb-ref-name>ejb/AuditRecordQuery</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <local-home />
+    <local>org.dcm4chee.arr.seam.ejb.AuditRecordQueryLocal</local>
   </ejb-local-ref>
 
   <session-config>
