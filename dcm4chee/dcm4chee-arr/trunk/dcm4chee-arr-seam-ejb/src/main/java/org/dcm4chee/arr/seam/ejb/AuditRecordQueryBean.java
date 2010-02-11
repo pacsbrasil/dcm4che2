@@ -56,7 +56,6 @@ import org.hibernate.Session;
 import org.hibernate.criterion.Conjunction;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.Expression;
-import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 
 /**
@@ -147,16 +146,14 @@ public class AuditRecordQueryBean implements AuditRecordQueryLocal {
             Conjunction criterion = Expression.conjunction();
 
             if (userID != null)
-                criterion.add(Expression.ilike("ap1.userID", userID,
-                        MatchMode.START));
+                criterion.add(Expression.like("ap1.userID", userID));
 
             if (altUserID != null)
-                criterion.add(Expression.ilike("ap1.alternativeUserID",
-                        altUserID, MatchMode.START));
+                criterion.add(Expression.like("ap1.alternativeUserID",
+                        altUserID));
 
             if (userName != null)
-                criterion.add(Expression.ilike("ap1.userName", userName,
-                        MatchMode.START));
+                criterion.add(Expression.ilike("ap1.userName", userName));
 
             if (userIsRequestor != null)
                 criterion.add(Expression.eq("ap1.userIsRequestor",
@@ -168,8 +165,8 @@ public class AuditRecordQueryBean implements AuditRecordQueryLocal {
             }
 
             if (napID != null)
-                criterion.add(Expression.ilike("ap1.networkAccessPointID",
-                        napID, MatchMode.START));
+                criterion.add(Expression.like("ap1.networkAccessPointID",
+                        napID));
 
             if (napTypes != null)
                 criterion.add(Expression.in("ap1.networkAccessPointType",
@@ -183,13 +180,11 @@ public class AuditRecordQueryBean implements AuditRecordQueryLocal {
             HttpServletRequest rq) {
         String sourceID = rq.getParameter("auditSourceID");
         if (sourceID != null)
-            criteria.add(Expression
-                    .ilike("sourceID", sourceID, MatchMode.START));
+            criteria.add(Expression.like("sourceID", sourceID));
         
         String siteID = rq.getParameter("auditEnterpriseSiteID");
         if (siteID != null)
-            criteria.add(Expression.ilike("enterpriseSiteID", siteID,
-                    MatchMode.START));
+            criteria.add(Expression.like("enterpriseSiteID", siteID));
 
         Integer[] sourceTypes = getIntegers(rq, "auditSourceTypeCode");
         if (sourceTypes != null)
@@ -211,8 +206,7 @@ public class AuditRecordQueryBean implements AuditRecordQueryLocal {
                 || objectRoles != null || lifeCycles != null) {
             criteria.createAlias("participantObjects", "po");
             if (objectID != null)
-                criteria.add(Expression.ilike("po.objectID", objectID,
-                        MatchMode.START));
+                criteria.add(Expression.like("po.objectID", objectID));
 
              if (objectIDTypes != null) {
                 // Split the IDTypes into two sets, one for code, which is String;
@@ -251,8 +245,7 @@ public class AuditRecordQueryBean implements AuditRecordQueryLocal {
             }
 
             if (objectName != null)
-                criteria.add(Expression.ilike("po.objectName", objectName,
-                        MatchMode.START));
+                criteria.add(Expression.ilike("po.objectName", objectName));
 
             if (objectTypes != null)
                 criteria.add(Expression.in("po.objectType", objectTypes));
