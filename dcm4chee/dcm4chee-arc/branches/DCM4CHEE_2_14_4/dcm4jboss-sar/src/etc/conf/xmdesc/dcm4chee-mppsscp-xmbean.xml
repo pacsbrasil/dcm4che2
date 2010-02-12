@@ -217,8 +217,10 @@ received MPPS N-CREATE request *and* in the matching Patient Record.
    <attribute access="read-write"
       getMethod="getLogCallingAETs"
       setMethod="setLogCallingAETs">
-      <description><![CDATA[List of the AE titles for the MPPS SCUs for which
-      coercion input and output should be logged in the log directory.
+      <description><![CDATA[List of the AE titles for the MPPS SCUs for which XMLized
+      N-CREATE and N-SET request attributes are logged into files 
+      <i>AET</i>/<i>timestamp</i>-mpps-ncreaterq.xml and 
+      <i>AET</i>/<i>timestamp</i>-mpps-nsetrq.xml in the log directory.
       Useful for creation of XSL stylesheets for attribute coercion.
       Separate multiple values by \ (backslash).
       NONE = no calling AE titles.]]>  
