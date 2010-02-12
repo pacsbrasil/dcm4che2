@@ -43,8 +43,6 @@ import java.util.List;
 import javax.ejb.Local;
 import javax.servlet.http.HttpServletRequest;
 
-import org.dcm4chee.arr.entities.AuditRecord;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date:: xxxx-xx-xx $
@@ -53,5 +51,5 @@ import org.dcm4chee.arr.entities.AuditRecord;
 @Local
 public interface AuditRecordQueryLocal {
 
-    List<AuditRecord> findRecords(HttpServletRequest rq);
+    List<byte[]> findRecords(HttpServletRequest rq);
 }

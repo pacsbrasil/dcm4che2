@@ -57,6 +57,7 @@ import org.hibernate.criterion.Conjunction;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.Expression;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -73,13 +74,13 @@ public class AuditRecordQueryBean implements AuditRecordQueryLocal {
     private transient Session session;
 
     @SuppressWarnings("unchecked")
-    public List<AuditRecord> findRecords(HttpServletRequest rq) {
+    public List<byte[]> findRecords(HttpServletRequest rq) {
         OutcomeIndicator outcome = OutcomeIndicator.MINOR_FAILURE;
         try {
             Criteria criteria = session.createCriteria(AuditRecord.class);
             buildCriteria(criteria, rq);
             outcome = OutcomeIndicator.MAJOR_FAILURE;
-            List<AuditRecord> result = criteria.list();
+            List<byte[]> result = criteria.list();
             outcome = OutcomeIndicator.SUCCESS;
             return result;
         } finally {
@@ -90,6 +91,7 @@ public class AuditRecordQueryBean implements AuditRecordQueryLocal {
     private static void buildCriteria(Criteria criteria,
             HttpServletRequest rq) {
         criteria.setResultTransformer(Criteria.ROOT_ENTITY);
+        criteria.setProjection(Projections.property("xmldata"));
         addCriteriaForEvent(criteria, rq);
         addCriteriaForActiveParticipant(criteria, rq);
         addCriteriaForAuditSource(criteria, rq);

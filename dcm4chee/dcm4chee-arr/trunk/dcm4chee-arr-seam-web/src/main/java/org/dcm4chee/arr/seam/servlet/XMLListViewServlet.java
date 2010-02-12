@@ -49,7 +49,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.dcm4chee.arr.entities.AuditRecord;
 import org.dcm4chee.arr.seam.ejb.AuditRecordQueryLocal;
 
 /**
@@ -68,7 +67,7 @@ public class XMLListViewServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest rq, HttpServletResponse rsp)
             throws ServletException, IOException {
-        List<AuditRecord> list;
+        List<byte[]> list;
         try {
             list = query(rq);
         } catch (Exception e) {
@@ -82,7 +81,7 @@ public class XMLListViewServlet extends HttpServlet {
         writeTo(list, rsp);
     }
 
-    private List<AuditRecord> query(HttpServletRequest rq) throws Exception {
+    private List<byte[]> query(HttpServletRequest rq) throws Exception {
         InitialContext jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
@@ -95,14 +94,14 @@ public class XMLListViewServlet extends HttpServlet {
         }
     }
 
-    protected void writeTo(List<AuditRecord> list, HttpServletResponse rsp)
+    protected void writeTo(List<byte[]> list, HttpServletResponse rsp)
             throws IOException, ServletException {
         rsp.setContentType("text/xml; charset=UTF-8");
         ServletOutputStream out = rsp.getOutputStream();
         try {
            out.println("<AuditMessages>");
-           for (AuditRecord rec : list) {
-                writeTo(rec.getXmldata(), out);
+           for (byte[] xmldata : list) {
+                writeTo(xmldata, out);
                 out.println();
            }
            out.println("</AuditMessages>");
