@@ -68,8 +68,10 @@ import org.jboss.logging.Logger;
  */
 public class MPPSScp extends DcmServiceBase {
 
-	private static final String CREATE_XSL = "mpps-ncreaterq.xsl";
-	private static final String SET_XSL = "mpps-nsetrq.xsl";
+    private static final String CREATE_XSL = "mpps-ncreaterq.xsl";
+    private static final String SET_XSL = "mpps-nsetrq.xsl";
+    private static final String CREATE_XML = "mpps-ncreaterq.xml";
+    private static final String SET_XML = "mpps-nsetrq.xml";
 
     private static final int[] TYPE1_NCREATE_ATTR = {
             Tags.ScheduledStepAttributesSeq, Tags.PPSID,
@@ -107,8 +109,9 @@ public class MPPSScp extends DcmServiceBase {
         if (iuid == null) {
             iuid = rspCmd.getAffectedSOPInstanceUID();
         }
-		log.debug("Creating MPPS:\n");
-		log.debug(mpps);
+        log.debug("Creating MPPS:\n");
+        log.debug(mpps);
+        service.logDIMSE(as, CREATE_XML, mpps);
         Dataset coerce = service.getCoercionAttributesFor(callingAET,
                 CREATE_XSL, mpps, as);
         if (coerce != null) {
@@ -157,8 +160,9 @@ public class MPPSScp extends DcmServiceBase {
         final Command cmd = rq.getCommand();
         final Dataset mpps = rq.getDataset();
         final String iuid = cmd.getRequestedSOPInstanceUID();
-		log.debug("Set MPPS:\n");
-		log.debug(mpps);
+        log.debug("Set MPPS:\n");
+        log.debug(mpps);
+        service.logDIMSE(as, SET_XML, mpps);
         Dataset coerce = service.getCoercionAttributesFor(callingAET, SET_XSL,
                 mpps, as);
         if (coerce != null) {
