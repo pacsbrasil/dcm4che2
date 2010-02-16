@@ -53,12 +53,16 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.extensions.yui.calendar.DatePicker;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.form.validation.IFormValidator;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
@@ -66,6 +70,7 @@ import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.web.DashboardMainPage;
 import org.dcm4chee.dashboard.web.report.display.DynamicDisplayPage;
+import org.dcm4chee.dashboard.web.validator.ValidatorMessageLabel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,7 +105,6 @@ public class ConfigureReportPage extends WebPage {
             add(resultMessage = new Label("result-message"));
             add(new ConfigureReportForm("configure-report-form", this.report, resultMessage, this.window));
         } catch (Exception e) {
-            e.printStackTrace();
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
             log.debug("Exception: ", e);
             this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
@@ -125,7 +129,9 @@ public class ConfigureReportPage extends WebPage {
                 public void onClick(AjaxRequestTarget target) {
                     window.close(target);
                 }
-            }.setOutputMarkupId(true).setOutputMarkupPlaceholderTag(true));
+            }
+            .setOutputMarkupId(true)
+            .setOutputMarkupPlaceholderTag(true));
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
@@ -138,7 +144,7 @@ public class ConfigureReportPage extends WebPage {
 
         private static final long serialVersionUID = 1L;
 
-        private Map<String, String> parameterMap;
+        private Map<String, String> parameterNames;
         
         public ConfigureReportForm(final String id, final ReportModel report, final Label resultMessage, final ModalWindow window) throws InstanceNotFoundException, MalformedObjectNameException, AttributeNotFoundException, ReflectionException, MBeanException, NullPointerException {
             super(id);
@@ -154,29 +160,56 @@ public class ConfigureReportPage extends WebPage {
 
             RepeatingView variableRows = new RepeatingView("variable-rows");
             add(variableRows);
-            
-            this.parameterMap = DashboardMainPage.getParameterMap(report.getStatement());
-            for (final String parameterName : parameterMap.keySet()) {
+
+            for (final String parameterName : (parameterNames = DashboardMainPage.getParameterMap(report.getStatement())).keySet()) {
+                TextField<String> textField;
                 variableRows.add(
-                        (new WebMarkupContainer(variableRows.newChildId())
+                        (((new WebMarkupContainer(parameterName)
                         .add(new Label("variable-name", parameterName.toString())))
-                        .add(new TextField<String>("variable-value", new Model<String>() {
+                        .add((textField = new TextField<String>("variable-value", new Model<String>() {
 
                             private static final long serialVersionUID = 1L;
 
                             @Override
                             public void setObject(String value) {
-                                parameterMap.put(parameterName, value);
-                            }
-                        })
-                ));
+                                parameterNames.put(parameterName, value != null ? value : "");
+                            }                            
+                        }))
+                        .add(new DatePicker())))
+                        .add(new CheckBox("variable-numeric", new Model<Boolean>())))
+                        .add(new ValidatorMessageLabel("report-variable-validator-message-label", textField).setOutputMarkupId(true))
+                );
             }
 
+            add(new IFormValidator() {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public FormComponent<?>[] getDependentFormComponents() {
+                    return null;
+                }
+
+                @Override
+                public void validate(Form<?> form) {
+                    for (String parameterName : parameterNames.keySet()) {                      
+                        if ((((CheckBox) get("variable-rows:" + parameterName + ":variable-numeric")).getValue() != null)
+                            && (!((TextField<?>) get("variable-rows:" + parameterName + ":variable-value")).getValue().matches("^([0-9\\.]+)$"))) 
+                                get("variable-rows:" + parameterName + ":variable-value").error(
+                                        new ResourceModel("dashboard.report.configure.form.variable.value.numeric.error").wrapOnAssignment(getParent()).getObject());
+                        }
+                    }
+                }                
+            );
+            
             add(new AjaxFallbackButton("statement-test-submit", ConfigureReportForm.this) {
+                
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                    
+System.out.println("test -> submit");
                     String message = null;
                     Connection jdbcConnection = null;
                     try {
@@ -187,11 +220,12 @@ public class ConfigureReportPage extends WebPage {
 
                         jdbcConnection = DashboardMainPage.getDatabaseConnection(report.getDataSource().toString());
                         String statement = DashboardMainPage.createSQLStatement(report.getStatement());
-                        for (String parameterName : DashboardMainPage.getParameters(report.getStatement())) {
+                        for (String parameterName : DashboardMainPage.getParameterOccurences(report.getStatement())) {
                             if (!statement.contains("?")) break;
-                            statement = statement.replaceFirst("\\?", (" " + parameterMap.get(parameterName) + " "));
+                            statement = statement.replaceFirst("\\?", (" " + parameterNames.get(parameterName) + " "));
                         }
                         jdbcConnection.createStatement().executeQuery(statement);
+System.out.println("test -> submit E");
                     } catch (Exception e) {
                         message = e.getLocalizedMessage();
                         log.debug("Exception: ", e);
@@ -218,12 +252,14 @@ public class ConfigureReportPage extends WebPage {
                 @Override
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     try {
+System.out.println("form -> submit");
                         String statement = DashboardMainPage.createSQLStatement(report.getStatement());
-                        for (String parameterName : DashboardMainPage.getParameters(report.getStatement())) {
+                        for (String parameterName : DashboardMainPage.getParameterOccurences(report.getStatement())) {
                             if (!statement.contains("?")) break;
-                            statement = statement.replaceFirst("\\?", (" " + parameterMap.get(parameterName) + " "));
+                            statement = statement.replaceFirst("\\?", (" " + parameterNames.get(parameterName) + " "));
                         }
                         report.setStatement(statement);
+System.out.println("form -> submit");
                         window.redirectToInterceptPage(new DynamicDisplayPage(report, diagram, table));
                     } catch (Exception e) {
                       log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
@@ -235,11 +271,10 @@ public class ConfigureReportPage extends WebPage {
                       setResponsePage(this.getPage());
                     }
                 }
-                
+
                 @Override
                 protected void onError(AjaxRequestTarget target, Form<?> form) {
-                    target.addComponent(form.get("report-title-validator-message-label"));
-                    target.addComponent(form.get("report-statement-validator-message-label"));
+                    target.addComponent(form);
                 }
             });
         }

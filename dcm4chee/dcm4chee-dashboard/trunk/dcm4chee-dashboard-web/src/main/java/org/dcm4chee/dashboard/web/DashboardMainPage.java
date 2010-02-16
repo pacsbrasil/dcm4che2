@@ -148,7 +148,7 @@ public class DashboardMainPage extends WebPage {
         return parameters;
     }
 
-    public static List<String> getParameters(String statement) {
+    public static List<String> getParameterOccurences(String statement) {
         List<String> parameters = new ArrayList<String>();
         Matcher m = Pattern.compile("\\[[A-Za-z0-9\\.]*\\]").matcher(statement);
         while(m.find()) parameters.add(m.group());

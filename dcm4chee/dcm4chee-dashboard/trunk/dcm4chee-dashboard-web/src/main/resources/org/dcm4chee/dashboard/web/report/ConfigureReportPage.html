@@ -44,9 +44,13 @@
 						</td>
 					</tr>
 		 	  	  	<tr wicket:id="variable-rows">
-			 	  	  	<td><div wicket:id="variable-name" /></td>
+			 	  	  	<td>
+			 	  	  		<div wicket:id="variable-name" />
+			 	  	  	</td>
 			 	  	  	<td>
 							<input wicket:id="variable-value" type="text" />
+							<input wicket:id="variable-numeric" type="checkbox" wicket:message="title:dashboard.report.configure.form.variable.title" />
+							<div wicket:id="report-variable-validator-message-label" />
 						</td>
 		 	  	  	</tr>
 					<tr>
