@@ -54,10 +54,10 @@
         <name>propertyList</name>
         <type>java.lang.String</type>
         <descriptors>
-            <value>os.name
-os.arch
-os.version
-java.version</value>
+            <value>Operating system;Name;os.name
+Operating system;Architecture;os.arch
+Operating system;Version;os.version
+Java;Version;java.version</value>
         </descriptors>
     </attribute>
 	<attribute access="read-write" getMethod="getGroupFilename" setMethod="setGroupFilename">
