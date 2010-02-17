@@ -59,7 +59,6 @@ import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.web.DashboardMainPage;
 import org.dcm4chee.dashboard.web.WicketApplication;
-import org.dcm4chee.dashboard.web.report.display.DynamicDisplayPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -374,7 +373,7 @@ public class DynamicLinkPanel extends Panel {
                   
                 @Override
                 public Page createPage() {
-                    return new ConfigureReportPage(modalWindow, report, true, false);
+                    return new ConfigureReportPage(modalWindow, report, true, true);
                 }                
             });
             
