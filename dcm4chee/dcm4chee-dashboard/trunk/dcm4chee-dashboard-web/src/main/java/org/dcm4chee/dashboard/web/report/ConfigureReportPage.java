@@ -40,6 +40,7 @@ package org.dcm4chee.dashboard.web.report;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.management.AttributeNotFoundException;
@@ -94,15 +95,16 @@ public class ConfigureReportPage extends WebPage {
     public ConfigureReportPage(final ModalWindow window, final ReportModel report, boolean diagram, boolean table) {
         super();
 
-        try {           
+        try {
             this.report = report;
             this.window = window;
             
             this.diagram = diagram;
             this.table = table;
-                
+
             Label resultMessage;
             add(resultMessage = new Label("result-message"));
+            resultMessage.setOutputMarkupId(true);
             add(new ConfigureReportForm("configure-report-form", this.report, resultMessage, this.window));
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
@@ -144,7 +146,8 @@ public class ConfigureReportPage extends WebPage {
 
         private static final long serialVersionUID = 1L;
 
-        private Map<String, String> parameterNames;
+        private Map<String, String> parameterNames = new HashMap<String, String>();
+        private Map<String, Boolean> parameterTypes = new HashMap<String, Boolean>();
         
         public ConfigureReportForm(final String id, final ReportModel report, final Label resultMessage, final ModalWindow window) throws InstanceNotFoundException, MalformedObjectNameException, AttributeNotFoundException, ReflectionException, MBeanException, NullPointerException {
             super(id);
@@ -161,7 +164,8 @@ public class ConfigureReportPage extends WebPage {
             RepeatingView variableRows = new RepeatingView("variable-rows");
             add(variableRows);
 
-            for (final String parameterName : (parameterNames = DashboardMainPage.getParameterMap(report.getStatement())).keySet()) {
+            for (final String parameterName : DashboardMainPage.getParameterSet(report.getStatement())) {
+
                 TextField<String> textField;
                 variableRows.add(
                         (((new WebMarkupContainer(parameterName)
@@ -176,7 +180,15 @@ public class ConfigureReportPage extends WebPage {
                             }                            
                         }))
                         .add(new DatePicker())))
-                        .add(new CheckBox("variable-numeric", new Model<Boolean>())))
+                        .add(new CheckBox("variable-numeric", new Model<Boolean>() {
+
+                            private static final long serialVersionUID = 1L;
+
+                            @Override
+                            public void setObject(Boolean value) {
+                                parameterTypes.put(parameterName, value != null ? value : false);
+                            }                            
+                        })))
                         .add(new ValidatorMessageLabel("report-variable-validator-message-label", textField).setOutputMarkupId(true))
                 );
             }
@@ -209,7 +221,6 @@ public class ConfigureReportPage extends WebPage {
                 @Override
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     
-System.out.println("test -> submit");
                     String message = null;
                     Connection jdbcConnection = null;
                     try {
@@ -217,15 +228,7 @@ System.out.println("test -> submit");
                             message = new ResourceModel("dashboard.report.configure.form.statement-test-submit.no-datasource-message").wrapOnAssignment(this.getParent()).getObject();
                             return;
                         }
-
-                        jdbcConnection = DashboardMainPage.getDatabaseConnection(report.getDataSource().toString());
-                        String statement = DashboardMainPage.createSQLStatement(report.getStatement());
-                        for (String parameterName : DashboardMainPage.getParameterOccurences(report.getStatement())) {
-                            if (!statement.contains("?")) break;
-                            statement = statement.replaceFirst("\\?", (" " + parameterNames.get(parameterName) + " "));
-                        }
-                        jdbcConnection.createStatement().executeQuery(statement);
-System.out.println("test -> submit E");
+                        (jdbcConnection = DashboardMainPage.getDatabaseConnection(report.getDataSource().toString())).createStatement().executeQuery(configureStatement());
                     } catch (Exception e) {
                         message = e.getLocalizedMessage();
                         log.debug("Exception: ", e);
@@ -241,7 +244,7 @@ System.out.println("test -> submit E");
                                                             + (message == null ? "" : message)))
                         .add(new AttributeModifier("class", true, new Model<String>(message == null ? "message-system" : "message-error")))              
                         .setVisible(true);
-                        setResponsePage(this.getPage());
+                        target.addComponent(resultMessage);                        
                     }
                 }
             });
@@ -252,14 +255,7 @@ System.out.println("test -> submit E");
                 @Override
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     try {
-System.out.println("form -> submit");
-                        String statement = DashboardMainPage.createSQLStatement(report.getStatement());
-                        for (String parameterName : DashboardMainPage.getParameterOccurences(report.getStatement())) {
-                            if (!statement.contains("?")) break;
-                            statement = statement.replaceFirst("\\?", (" " + parameterNames.get(parameterName) + " "));
-                        }
-                        report.setStatement(statement);
-System.out.println("form -> submit");
+                        report.setStatement(configureStatement());
                         window.redirectToInterceptPage(new DynamicDisplayPage(report, diagram, table));
                     } catch (Exception e) {
                       log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
@@ -277,6 +273,15 @@ System.out.println("form -> submit");
                     target.addComponent(form);
                 }
             });
+        }
+        
+        private String configureStatement() {
+            String statement = DashboardMainPage.createSQLStatement(report.getStatement());
+            for (String parameterName : DashboardMainPage.getParameterOccurences(report.getStatement())) {
+                if (!statement.contains("?")) break;
+                statement = statement.replaceFirst("\\?", (" " + (parameterTypes.get(parameterName) ? "'" : "") + parameterNames.get(parameterName) + (parameterTypes.get(parameterName) ? "'" : "") + " "));
+            }
+            return statement;
         }
     }
 }

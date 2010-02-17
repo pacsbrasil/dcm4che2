@@ -141,10 +141,16 @@ public class DashboardMainPage extends WebPage {
         return Pattern.compile("\\[[A-Za-z0-9\\.]*\\]").matcher(statement).replaceAll("?");
     }
 
-    public static Map<String, String> getParameterMap(String statement) {
-        Map<String, String> parameters = new HashMap<String, String>();
+//    public static Map<String, String> getParameterMap(String statement) {
+//        Map<String, String> parameters = new HashMap<String, String>();
+//        Matcher m = Pattern.compile("\\[[A-Za-z0-9\\.]*\\]").matcher(statement);
+//        while(m.find()) parameters.put(m.group(), null);
+//        return parameters;
+//    }
+    public static Set<String> getParameterSet(String statement) {
+        Set<String> parameters = new TreeSet<String>();
         Matcher m = Pattern.compile("\\[[A-Za-z0-9\\.]*\\]").matcher(statement);
-        while(m.find()) parameters.put(m.group(), null);
+        while(m.find()) parameters.add(m.group());
         return parameters;
     }
 
