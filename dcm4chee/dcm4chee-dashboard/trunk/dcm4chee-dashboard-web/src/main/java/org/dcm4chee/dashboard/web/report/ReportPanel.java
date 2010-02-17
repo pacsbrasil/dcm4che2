@@ -330,7 +330,7 @@ public class ReportPanel extends Panel {
         protected void onSubmit() {
             try {
                 ((WicketApplication) getApplication()).getDashboardService().createGroup(
-                        new ReportModel(null, this.newGroupname.getObject(), null, null, null, false, null));
+                        new ReportModel(null, this.newGroupname.getObject(), null, null, null, false, null, null));
                 DashboardMainPage page = (DashboardMainPage) this.getPage();
                 ((AjaxTabbedPanel) page.get("tabs")).setSelectedTab(new Integer(new ResourceModel("dashboard.tabs.tab2.number").getObject()));
                 setResponsePage(page);

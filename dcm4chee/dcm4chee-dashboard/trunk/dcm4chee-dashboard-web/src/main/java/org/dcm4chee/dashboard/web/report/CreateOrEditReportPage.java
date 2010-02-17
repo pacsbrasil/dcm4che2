@@ -147,7 +147,7 @@ public class CreateOrEditReportPage extends WebPage {
         public CreateOrEditReportForm(String id, final ReportModel report, final Label resultMessage, final ModalWindow window) throws InstanceNotFoundException, MalformedObjectNameException, AttributeNotFoundException, ReflectionException, MBeanException, NullPointerException {
             super(id);
 
-            final ReportModel thisReport = report == null ? new ReportModel(UUID.randomUUID().toString(), null, null, null, null, false, null) : report;
+            final ReportModel thisReport = report == null ? new ReportModel(UUID.randomUUID().toString(), null, null, null, null, false, null, null) : report;
             this.add(new TextField<String>("dashboard.report.createoredit.form.title.input", new PropertyModel<String>(thisReport, "title"))
             .setRequired(true)
             .add(new ReportTitleValidator())

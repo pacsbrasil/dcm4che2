@@ -12,6 +12,36 @@
 		<link rel="stylesheet" type="text/css" href="style.css"/>
 	</head>
 	<body class="panel">
+		<p>
+			<table class="table">
+				<thead>
+					<tr>
+						<th class="table-header">
+							<wicket:message key="dashboard.report.display.header.title" />
+						</th>
+						<th class="table-header">
+							<wicket:message key="dashboard.report.display.header.date" />
+						</th>
+						<th wicket: class="table-header">
+							<wicket:message key="dashboard.report.display.header.statement" />
+						</th>
+	    			</tr>
+	  			</thead>
+	  			<tbody class="table-text">
+					<tr class="odd">
+						<td class="table-data">
+							<div wicket:id="title" />
+						</td>
+						<td class="table-data">
+							<div wicket:id="date" />
+						</td>
+						<td class="table-data">
+							<div wicket:id="statement" />
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</p>
 		<div style="float: left; margin: 20px">
 			<div wicket:id="diagramPanel" />
 		</div>

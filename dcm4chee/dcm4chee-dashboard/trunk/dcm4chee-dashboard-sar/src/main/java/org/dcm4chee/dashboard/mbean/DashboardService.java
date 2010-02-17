@@ -209,9 +209,9 @@ public class DashboardService extends ServiceMBeanSupport {
                 }
                 if (!all.equals("")) {
                     String[] attributes = all.split(";");
-                    for (int i = 0; i < attributes.length; i += 7) {
+                    for (int i = 0; i < attributes.length; i += 8) {
                         if (attributes[i].equals(this.newline)) break;
-                        reportList.add(new ReportModel(attributes[i].replace(this.newline, ""), attributes[i + 1], attributes[i + 2], attributes[i + 3], (attributes[i + 4].equals("") ? null : new Integer(attributes[i + 4])), Boolean.valueOf(attributes[i + 5]), attributes[i + 6]));
+                        reportList.add(new ReportModel(attributes[i].replace(this.newline, ""), attributes[i + 1], attributes[i + 2], attributes[i + 3], (attributes[i + 4].equals("") ? null : new Integer(attributes[i + 4])), Boolean.valueOf(attributes[i + 5]), attributes[i + 6], new Long(attributes[i + 7])));
                     }
                 }
             }
@@ -225,7 +225,7 @@ public class DashboardService extends ServiceMBeanSupport {
     public void createReport(ReportModel report) {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(this.reportFilename, true));
-            writer.write((report.getUuid() == null ? UUID.randomUUID() : report.getUuid()) + ";" + report.getTitle() + ";" + (report.getDataSource() != null ? report.getDataSource() : "") + ";" + report.getStatement().replaceAll(";", "") + ";" + (report.getDiagram() == null ? "" : report.getDiagram()) + ";" + report.getTable() + ";" + report.getGroupUuid() + ";");
+            writer.write((report.getUuid() == null ? UUID.randomUUID() : report.getUuid()) + ";" + report.getTitle() + ";" + (report.getDataSource() != null ? report.getDataSource() : "") + ";" + report.getStatement().replaceAll(";", "") + ";" + (report.getDiagram() == null ? "" : report.getDiagram()) + ";" + report.getTable() + ";" + report.getGroupUuid() + ";" + report.getCreated() + ";");
             writer.newLine();
             writer.close();
         } catch (IOException e) {
@@ -255,16 +255,16 @@ public class DashboardService extends ServiceMBeanSupport {
                     writer.newLine();
                 } else {
                     int result = 0;
-                    while (result < 7) { 
+                    while (result < 8) { 
                         int start = line.indexOf(";");
                         while (start != -1) {
                             result++;
                             start = line.indexOf(";", start+1);
                         }
-                        if (result < 7) line = reader.readLine();
+                        if (result < 8) line = reader.readLine();
                     }
                     if (!deleteLine) {
-                        writer.write(report.getUuid() + ";" + report.getTitle() + ";" + (report.getDataSource() != null ? report.getDataSource() : "") + ";" + report.getStatement().replaceAll(";", "") + ";" + (report.getDiagram() == null ? "" : report.getDiagram()) + ";" + report.getTable() + ";" + report.getGroupUuid() + ";");
+                        writer.write(report.getUuid() + ";" + report.getTitle() + ";" + (report.getDataSource() != null ? report.getDataSource() : "") + ";" + report.getStatement().replaceAll(";", "") + ";" + (report.getDiagram() == null ? "" : report.getDiagram()) + ";" + report.getTable() + ";" + report.getGroupUuid() + ";" + report.getCreated() + ";");
                         writer.newLine();
                     }
                 }
@@ -293,7 +293,7 @@ public class DashboardService extends ServiceMBeanSupport {
                     String[] attributes = all.split(";");
                     for (int i = 0; i < attributes.length; i += 2) {
                         if (attributes[i].equals(this.newline)) break;
-                        groupList.add(new ReportModel(attributes[i].replace(this.newline, ""), attributes[i + 1], null, null, null, false, null));
+                        groupList.add(new ReportModel(attributes[i].replace(this.newline, ""), attributes[i + 1], null, null, null, false, null, null));
                     }
                 }
             }
