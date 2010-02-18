@@ -43,8 +43,10 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 
 /**
  * @author Damien Evans <damien.daddy@gmail.com>
@@ -56,6 +58,8 @@ import org.dcm4che2.data.Tag;
 @Entity
 @Table(name = "code")
 public class Code extends BaseEntity implements Serializable {
+
+    private static final String NOT_A_CODE_STRING = "Not a Code String! '(<code_value>, <code_scheme_designator>[;<code_scheme_version],<code_meaning>):";
 
     private static final long serialVersionUID = 3626021926959276349L;
 
@@ -89,13 +93,35 @@ public class Code extends BaseEntity implements Serializable {
 
     @Override
     public String toString() {
-        return '(' + codeValue
-                + ", " + codingSchemeDesignator
-                + (codingSchemeVersion != null
-                        ? ';' + codingSchemeVersion
-                        : "")
-                + ", \"codeMeaning\""
-                + ')';
+        StringBuilder sb = new StringBuilder().append('(').append(codeValue)
+                .append(", ").append(codingSchemeDesignator);
+        if (codingSchemeVersion != null) {
+            sb.append(';').append(codingSchemeVersion);
+        }
+        sb.append(", \"").append(codeMeaning).append("\")");
+        return sb.toString();
+    }
+    
+    public void parse(String c) {
+        int pos1 = c.indexOf(',');
+        int posEnd = c.indexOf(')');
+        if (c.charAt(0) != '(' || posEnd == -1 || pos1 == -1 || pos1 > posEnd) {
+            throw new IllegalArgumentException(NOT_A_CODE_STRING+c);
+        }
+        codeValue = c.substring(1,pos1).trim();
+        int pos2 = c.indexOf(',',++pos1);
+        if (pos2 == -1) {
+            throw new IllegalArgumentException(NOT_A_CODE_STRING+c);
+        }
+        int pos3 = c.indexOf(';', pos1);
+        if (pos3 == -1) {
+            codingSchemeDesignator = c.substring(pos1,pos2).trim();
+            codingSchemeVersion = null;
+        } else {
+            codingSchemeDesignator = c.substring(pos1,pos3).trim();
+            codingSchemeVersion = c.substring(++pos3, pos2).trim();
+        }
+        codeMeaning = c.substring(++pos2, posEnd).trim();
     }
 
     public void setAttributes(DicomObject attrs) {
@@ -106,4 +132,14 @@ public class Code extends BaseEntity implements Serializable {
         this.codeMeaning = attrs.getString(Tag.CodeMeaning);
     }
 
+    public DicomObject toCodeItem() {
+        DicomObject codeItem = new BasicDicomObject();
+        codeItem.putString(Tag.CodeValue, VR.SH, getCodeValue());
+        codeItem.putString(Tag.CodingSchemeDesignator, VR.SH, getCodingSchemeDesignator());
+        if (getCodingSchemeVersion() != null) {
+            codeItem.putString(Tag.CodingSchemeVersion, VR.SH, getCodingSchemeVersion());
+        }
+        codeItem.putString(Tag.CodeMeaning, VR.LO, getCodeMeaning());
+        return codeItem;
+    }
 }
