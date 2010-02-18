@@ -40,6 +40,9 @@
 package org.dcm4chex.archive.common;
 
 import java.io.DataOutput;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -63,7 +66,7 @@ public abstract class BaseJmsOrder implements Serializable {
     private int failureCount = 0;
     private Throwable throwable = null;  // Remember last exception happened
     private String origQueueName = null; // The original queue
-    private Properties orderProperties = new Properties();
+    private Properties orderProperties = null;
     public static final char PROPERTY_DELIMITER = ';';
     public static final char PROPERTY_DELIMITER_ESCAPE = '\\';
 
@@ -81,6 +84,7 @@ public abstract class BaseJmsOrder implements Serializable {
     public BaseJmsOrder()
     {
         id = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(new Date()) + counter++;
+        orderProperties = new Properties();
     }
     
     public final int getFailureCount() {
@@ -259,4 +263,14 @@ public abstract class BaseJmsOrder implements Serializable {
         }
         return sb.toString();
     }
+
+    /*
+     * Provide for deserialization of objects persisted against an earlier class definition.
+     */
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+		in.defaultReadObject();
+		if ( orderProperties == null ) {
+			orderProperties = new Properties();
+		}
+	}
 }
