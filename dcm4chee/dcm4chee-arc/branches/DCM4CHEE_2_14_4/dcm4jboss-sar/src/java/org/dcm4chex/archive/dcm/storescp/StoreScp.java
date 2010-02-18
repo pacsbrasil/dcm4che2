@@ -58,6 +58,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
@@ -196,6 +198,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private boolean coerceBeforeWrite = false;
     
     private PerfMonDelegate perfMon;
+
+    private volatile Executor syncFileExecutor;
 
     public StoreScp(StoreScpService service) {
         this.service = service;
@@ -1042,7 +1046,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 .hashCode());
     }
 
-    private byte[] storeToFile(DcmParser parser, Dataset ds, File file,
+    private byte[] storeToFile(DcmParser parser, Dataset ds, final File file,
             CompressCmd compressCmd, byte[] buffer) throws Exception {
         log.info("M-WRITE file:" + file);
         MessageDigest md = null;
@@ -1089,16 +1093,46 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 parser.parseDataset(decParam, -1);
                 ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);
             }
-            // ensure data is written on storage device
-            // before returning successful C-STORE RSP
             bos.flush();
-            fos.getFD().sync();
+            if (service.isSyncFileBeforeCStoreRSP()) {
+                fos.getFD().sync();
+            } else if (service.isSyncFileAfterCStoreRSP()) {
+                final FileOutputStream fos2 = fos;
+                syncFileExecutor().execute(new Runnable() {
+                    public void run() {
+                        try {
+                            fos2.getFD().sync();
+                        } catch (Exception e) {
+                            log.error("sync of " + file + " failed:", e);
+                        } finally {
+                            try {
+                                fos2.close();
+                            } catch (Exception ignore) {}
+                        }
+                    }});
+                fos = null;
+            }
         } finally {
-            try {
-                fos.close();
-            } catch (Exception ignore) {}
+            if (fos != null)
+                try {
+                    fos.close();
+                } catch (Exception ignore) {}
         }
         return md != null ? md.digest() : null;
+    }
+
+    private Executor syncFileExecutor() {
+        Executor result = syncFileExecutor;
+        if (result == null) {
+            synchronized (this) {
+                result = syncFileExecutor;
+                if (result == null) {
+                    syncFileExecutor = result
+                        = Executors.newSingleThreadExecutor();
+                }
+            }
+        }
+        return result;
     }
 
     private static void skipFully(InputStream in, int n) throws IOException {
