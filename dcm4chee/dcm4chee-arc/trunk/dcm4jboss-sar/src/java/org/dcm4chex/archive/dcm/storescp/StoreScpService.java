@@ -208,6 +208,10 @@ public class StoreScpService extends AbstractScpService {
 
     private boolean md5sum = true;
 
+    private boolean syncFileBeforeCStoreRSP = true;
+
+    private boolean syncFileAfterCStoreRSP = false;
+
     private StoreScp scp = null;
 
     public StoreScpService() {
@@ -270,6 +274,22 @@ public class StoreScpService extends AbstractScpService {
 
     public final void setMd5sum(boolean md5sum) {
         this.md5sum = md5sum;
+    }
+
+    public final void setSyncFileBeforeCStoreRSP(boolean syncFileBeforeCStoreRSP) {
+        this.syncFileBeforeCStoreRSP = syncFileBeforeCStoreRSP;
+    }
+
+    public final boolean isSyncFileBeforeCStoreRSP() {
+        return syncFileBeforeCStoreRSP;
+    }
+
+    public final void setSyncFileAfterCStoreRSP(boolean syncFileAfterCStoreRSP) {
+        this.syncFileAfterCStoreRSP = syncFileAfterCStoreRSP;
+    }
+
+    public final boolean isSyncFileAfterCStoreRSP() {
+        return syncFileAfterCStoreRSP;
     }
 
     public int getMaxValueLength() {

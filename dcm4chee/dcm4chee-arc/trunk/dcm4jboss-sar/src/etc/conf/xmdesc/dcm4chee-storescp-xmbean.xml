@@ -409,6 +409,39 @@ received DICOM Composite Object *and* in the matching Patient Record.
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isSyncFileBeforeCStoreRSP"
+      setMethod="setSyncFileBeforeCStoreRSP">
+      <description><![CDATA[Flush file system buffers after storage of received
+      objects <b>before</b> sending successful C-STORE RSP. <b>Excludes</b>
+      possibility of truncated files on disk, caused by a system crash just
+      after storage of a received object because the OS disk cache may not
+      yet have written to the storage device, at the expense of storage
+      performance.]]>
+      </description>
+      <name>SyncFileBeforeCStoreRSP</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isSyncFileAfterCStoreRSP"
+      setMethod="setSyncFileAfterCStoreRSP">
+      <description><![CDATA[Flush file system buffers after storage of received
+      objects <b>after</b> sending successful C-STORE RSP. <b>Minimize</b>
+      likilihood of truncated files on disk, caused by a system crash just
+      after storage of a received object because the OS disk cache may not
+      yet have written to the storage device, <b>without</b> significant
+      decrease of storage performance. Only effective, if
+      <b>SyncFileBeforeCStoreRSP</b> is <code>false</code>.]]>
+      </description>
+      <name>SyncFileAfterCStoreRSP</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isStoreDuplicateIfDiffMD5"
       setMethod="setStoreDuplicateIfDiffMD5">
       <description><![CDATA[Store a duplicate object if the MD5 sum of the
