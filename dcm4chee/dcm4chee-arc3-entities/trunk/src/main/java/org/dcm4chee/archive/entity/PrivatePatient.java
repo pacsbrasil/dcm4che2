@@ -43,6 +43,7 @@ import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -60,6 +61,9 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  */
 @Entity
 @Table(name = "priv_patient")
+@NamedQuery(name="PrivatePatient.findByIdAndIssuer",
+  query="select object(p) from PrivatePatient p where patientID = :patId and issuerOfPatientID = :issuer")
+
 public class PrivatePatient extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 943058791913251357L;

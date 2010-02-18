@@ -45,6 +45,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -61,6 +62,9 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  */
 @Entity
 @Table(name = "priv_study")
+@NamedQuery(name="PrivateStudy.findByIUID",
+  query="select object(ps) from PrivateStudy ps where studyInstanceUID = :iuid")
+
 public class PrivateStudy extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -7571163230633648191L;
