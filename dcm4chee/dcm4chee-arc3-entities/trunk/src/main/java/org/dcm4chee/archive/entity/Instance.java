@@ -41,11 +41,13 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -67,6 +69,9 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  */
 @Entity
 @Table(name = "instance")
+@NamedQuery(name="Instance.findByIUID",
+        query="select object(i) from Instance i where sopInstanceUID = :iuid")
+
 public class Instance extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -924140016923828861L;
@@ -129,18 +134,18 @@ public class Instance extends BaseEntity implements Serializable {
     @JoinColumn(name = "srcode_fk")
     private Code conceptNameCode;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade=CascadeType.REMOVE)
     @JoinColumn(name = "media_fk")
     private Media media;
 
-    @OneToMany(mappedBy = "instance", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "instance", fetch = FetchType.LAZY, cascade=CascadeType.REMOVE)
     private Set<VerifyingObserver> verifyingObservers;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "series_fk")
     private Series series;
 
-    @OneToMany(mappedBy = "instance", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "instance", fetch = FetchType.LAZY, cascade=CascadeType.REMOVE)
     private Set<File> files;
 
     public Date getCreatedTime() {

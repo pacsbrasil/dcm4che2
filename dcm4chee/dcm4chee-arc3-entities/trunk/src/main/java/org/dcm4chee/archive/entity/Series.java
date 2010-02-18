@@ -41,11 +41,13 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -69,6 +71,9 @@ import org.dcm4chee.archive.util.DicomObjectUtils;
  */
 @Entity
 @Table(name = "series")
+@NamedQuery(name="Series.findByIUID",
+        query="select object(s) from Series s where seriesInstanceUID = :iuid")
+
 public class Series extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -5882522097745649285L;
@@ -157,7 +162,7 @@ public class Series extends BaseEntity implements Serializable {
     @Column(name = "series_status", nullable = false)
     private StorageStatus storageStatus;
 
-    @OneToMany(mappedBy = "series", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "series", fetch = FetchType.LAZY, cascade=CascadeType.REMOVE)
     private Set<RequestAttributes> requestAttributes;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -168,7 +173,7 @@ public class Series extends BaseEntity implements Serializable {
     @JoinColumn(name = "study_fk")
     private Study study;
 
-    @OneToMany(mappedBy = "series", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "series", fetch = FetchType.LAZY, cascade=CascadeType.REMOVE)
     private Set<Instance> instances;
 
     public Date getCreatedTime() {

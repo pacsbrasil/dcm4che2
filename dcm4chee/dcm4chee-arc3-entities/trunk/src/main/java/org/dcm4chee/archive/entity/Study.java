@@ -42,6 +42,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -171,7 +172,7 @@ public class Study extends BaseEntity implements Serializable {
     @Column(name = "patient_fk", insertable = false, updatable = false)
     private Long patientFk;
 
-    @OneToMany(mappedBy = "study", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "study", fetch = FetchType.LAZY, cascade=CascadeType.REMOVE)
     private Set<Series> series;
 
     public Date getCreatedTime() {

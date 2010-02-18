@@ -124,22 +124,22 @@ public class Patient extends BaseEntity implements Serializable {
     @JoinColumn(name = "merge_fk")
     private Patient mergedWith;
 
-    @OneToMany(mappedBy = "mergedWith", fetch=FetchType.LAZY)
+    @OneToMany(mappedBy = "mergedWith", fetch=FetchType.LAZY, cascade=CascadeType.REMOVE)
     private Set<Patient> previous;
 
-    @OneToMany(mappedBy = "patient", fetch=FetchType.LAZY)
+    @OneToMany(mappedBy = "patient", fetch=FetchType.LAZY, cascade=CascadeType.REMOVE)
     private Set<Study> studies;
 
-    @OneToMany(mappedBy = "patient", fetch=FetchType.LAZY)
+    @OneToMany(mappedBy = "patient", fetch=FetchType.LAZY, cascade=CascadeType.REMOVE)
     private Set<MWLItem> modalityWorklistItems;
 
-    @OneToMany(mappedBy = "patient", fetch=FetchType.LAZY)
+    @OneToMany(mappedBy = "patient", fetch=FetchType.LAZY, cascade=CascadeType.REMOVE)
     private Set<MPPS> modalityPerformedProcedureSteps;
 
-    @OneToMany(mappedBy = "patient", fetch=FetchType.LAZY)
+    @OneToMany(mappedBy = "patient", fetch=FetchType.LAZY, cascade=CascadeType.REMOVE)
     private Set<GPSPS> generalPurposeScheduledProcedureSteps;
 
-    @OneToMany(mappedBy = "patient", fetch=FetchType.LAZY)
+    @OneToMany(mappedBy = "patient", fetch=FetchType.LAZY, cascade=CascadeType.REMOVE)
     private Set<GPPPS> generalPurposePerformedProcedureSteps;
 
     public Date getCreatedTime() {
