@@ -87,4 +87,10 @@ public class EchoDelegate extends BaseMBeanDelegate {
     public String getInitParameterName() {
         return "echoServiceName";
     }
+    
+    @Override
+    public String getDefaultServiceObjectName() {
+        return "dcm4chee.archive:service=ECHOService";
+    }
+
 }

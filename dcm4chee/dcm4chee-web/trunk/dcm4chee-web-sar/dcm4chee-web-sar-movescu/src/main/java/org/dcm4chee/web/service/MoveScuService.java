@@ -72,6 +72,7 @@ import org.dcm4che2.net.TransferCapability;
 import org.dcm4che2.util.StringUtils;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.dao.AEHomeLocal;
+import org.dcm4chee.web.service.common.AbstractScuService;
 import org.jboss.system.ServiceMBeanSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,34 +82,11 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since Jul 29, 2009
  */
-public class MoveScuService extends ServiceMBeanSupport {
+public class MoveScuService extends AbstractScuService {
 
-    private Device device;
-    private NetworkConnection localConn;
-    private NetworkApplicationEntity localNAE;
-    
     private String calledAET;
     private boolean relationQR = true;
-    private int priority;
 
-    private String keyStoreURL;
-    private String trustStoreURL;
-    private char[] keyStorePassword;
-    private char[] trustStorePassword;
-    private char[] keyPassword;
-    private String keyStoreType;
-    private String trustStoreType;
-    private String[] tlsProtocol;
-    private boolean needClientAuth;
-    
-    private AEHomeLocal aeHome;
-    
-    private Executor executor = new NewThreadExecutor("MoveSCU");
-    
-    private static final Logger LOG = LoggerFactory.getLogger(MoveScuService.class);
-    
-    private String NONE ="NONE";
-    
     private static final String[] ASSOC_CUIDS = {
         UID.StudyRootQueryRetrieveInformationModelMOVE,
         UID.PatientRootQueryRetrieveInformationModelMOVE,
@@ -131,111 +109,10 @@ public class MoveScuService extends ServiceMBeanSupport {
     private String[] QR_LEVELS = {"IMAGE", "SERIES", "STUDY", "PATIENT"};
     private String[][] QR_MOVE_CUIDS = {SERIES_LEVEL_MOVE_CUID, SERIES_LEVEL_MOVE_CUID,
             STUDY_LEVEL_MOVE_CUID, PATIENT_LEVEL_MOVE_CUID};
-
-    private static final String[] NATIVE_LE_TS = {
-        UID.ExplicitVRLittleEndian,
-        UID.ImplicitVRLittleEndian};
     
-    private static final String[] PRIORITIES = {"MEDIUM", "HIGH", "LOW"};
-        
     public MoveScuService() {
-        device = new Device("MoveSCU");
-        localConn = new NetworkConnection();
-        localNAE = new NetworkApplicationEntity();
-        localNAE.setNetworkConnection(localConn);
-        localNAE.setAssociationInitiator(true);
-        device.setNetworkApplicationEntity(localNAE);
-        device.setNetworkConnection(localConn);
-        configureTransferCapability(localNAE, ASSOC_CUIDS, NATIVE_LE_TS);
-    }
-
-    public int getMaxPDULengthReceive() {
-        return localNAE.getMaxPDULengthReceive();
-    }
-
-    public void setMaxPDULengthReceive(int maxPDULength) {
-        localNAE.setMaxPDULengthReceive(maxPDULength);
-    }
-
-    public int getMaxOpsInvoked() {
-        return localNAE.getMaxOpsInvoked();
-    }
-
-    public void setMaxOpsInvoked(int maxOpsInvoked) {
-        localNAE.setMaxOpsInvoked(maxOpsInvoked);
-    }
-
-    public int getRetrieveRspTimeout() {
-        return localNAE.getRetrieveRspTimeout();
-    }
-
-    public void setRetrieveRspTimeout(int retrieveRspTimeout) {
-        localNAE.setRetrieveRspTimeout(retrieveRspTimeout);
-    }
-
-    public boolean isPackPDV() {
-        return localNAE.isPackPDV();
-    }
-
-    public void setPackPDV(boolean packPDV) {
-        localNAE.setPackPDV(packPDV);
-    }
-
-    public int getAcceptTimeout() {
-        return localConn.getAcceptTimeout();
-    }
-
-    public void setAcceptTimeout(int timeout) {
-        localConn.setAcceptTimeout(timeout);
-    }
-
-    public int getConnectTimeout() {
-        return localConn.getConnectTimeout();
-    }
-
-    public void setConnectTimeout(int timeout) {
-        localConn.setConnectTimeout(timeout);
-    }
-
-    public int getReleaseTimeout() {
-        return localConn.getReleaseTimeout();
-    }
-
-    public void setReleaseTimeout(int timeout) {
-        localConn.setReleaseTimeout(timeout);
-    }
-
-    public int getRequestTimeout() {
-        return localConn.getRequestTimeout();
-    }
-
-    public void setRequestTimeout(int timeout) {
-        localConn.setRequestTimeout(timeout);
-    }
-    
-    public int getSocketCloseDelay() {
-        return localConn.getSocketCloseDelay();
-    }
-
-    public void setSocketCloseDelay(int timeout) {
-        localConn.setSocketCloseDelay(timeout);
-    }
-
-    public boolean isTcpNoDelay() {
-        return localConn.isTcpNoDelay();
-    }
-
-    public void setTcpNoDelay(boolean tcpNoDelay) {
-        localConn.setTcpNoDelay(tcpNoDelay);
-    }
-
-    public String getCallingAET() {
-        return localNAE.getAETitle();
-    }
-
-    public void setCallingAET(String callingAET) {
-        localNAE.setAETitle(callingAET);
-        device.setDeviceName(callingAET);
+        super();
+        configureTransferCapability(ASSOC_CUIDS, NATIVE_LE_TS);
     }
 
     public String getCalledAET() {
@@ -254,77 +131,6 @@ public class MoveScuService extends ServiceMBeanSupport {
         this.relationQR = relationQR;
     }
 
-    public String getPriority() {
-        return PRIORITIES[priority];
-    }
-
-    public void setPriority(String priorityName) {
-        this.priority = PRIORITIES[1].equals(priorityName) ? 1 : PRIORITIES[2].equals(priorityName) ? 2 : 0;
-    }
-
-    public String getKeyStoreURL() {
-        return keyStoreURL;
-    }
-
-    public void setKeyStoreURL(String keyStoreURL) {
-        this.keyStoreURL = keyStoreURL;
-    }
-
-    public void setKeyStorePassword(String keyStorePassword) {
-        this.keyStorePassword = none2null(keyStorePassword);
-    }
-
-    public String getTrustStoreURL() {
-        return trustStoreURL;
-    }
-
-    public void setTrustStoreURL(String trustStoreURL) {
-        this.trustStoreURL = trustStoreURL;
-    }
-
-    public void setTrustStorePassword(String trustStorePassword) {
-        this.trustStorePassword = none2null(trustStorePassword);
-    }
-
-    public void setKeyPassword(String keyPassword) {
-        this.keyPassword = none2null(keyPassword);
-    }
-    public String getKeyPassword() {
-        return keyPassword == null ? NONE : "******";
-    }
-
-    public String getTlsProtocol() {
-        return StringUtils.join(tlsProtocol, ',');
-    }
-
-    public void setTlsProtocol(String tlsProtocol) {
-        this.tlsProtocol = StringUtils.split(tlsProtocol, ',');
-    }
-
-    public String getKeyStoreType() {
-        return keyStoreType;
-    }
-
-    public void setKeyStoreType(String type) {
-        this.keyStoreType = type;
-    }
-
-    public String getTrustStoreType() {
-        return trustStoreType;
-    }
-
-    public void setTrustStoreType(String type) {
-        this.trustStoreType = type;
-    }
-
-    public boolean isNeedClientAuth() {
-        return needClientAuth;
-    }
-
-    public void setNeedClientAuth(boolean needClientAuth) {
-        this.needClientAuth = needClientAuth;
-    }
-
     public boolean move(String retrieveAET, String moveDest, String patId, String studyIUID, String seriesIUID) throws IOException, InterruptedException, GeneralSecurityException {
         MoveRspHandler rspHandler = new MoveRspHandler();
         this.move(retrieveAET, moveDest, patId, 
@@ -333,11 +139,8 @@ public class MoveScuService extends ServiceMBeanSupport {
         return rspHandler.getStatus() == 0;
     }
     
-    private char[] none2null(String s) {
-        return NONE.equals(s) ? null : s.toCharArray();
-    }
     /**
-     * Perform a DICOM Echo to given Application Entity Title.
+     * Perform a DICOM C-MOVE request to given Application Entity Title.
      * @throws IOException 
      * @throws InterruptedException 
      * @throws GeneralSecurityException 
@@ -377,57 +180,7 @@ public class MoveScuService extends ServiceMBeanSupport {
         }
     }
 
-    private Association open(String aet)
-            throws IOException, GeneralSecurityException {
-        AE ae = lookupAEHome().findByTitle(aet);
-        NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
-        NetworkConnection remoteConn = new NetworkConnection();
-   
-        remoteAE.setAETitle(ae.getTitle());
-        remoteAE.setInstalled(true);
-        remoteAE.setAssociationAcceptor(true);
-        remoteAE.setNetworkConnection(new NetworkConnection[] { remoteConn });
-   
-        remoteConn.setHostname(ae.getHostName());
-        remoteConn.setPort(ae.getPort());
-        List<String> ciphers = ae.getCipherSuites();
-        LOG.info("C-MOVE open associatien to {} url:{} Ciphers:{}", new Object[]{ae.getTitle(), ae, ciphers});
-        if (ciphers.size() > 0) {
-            String[] ciphers1 = (String[]) ciphers.toArray(new String[ciphers.size()]);
-            remoteConn.setTlsCipherSuite(ciphers1);
-            localConn.setTlsCipherSuite(ciphers1);
-            localConn.setTlsProtocol(tlsProtocol);
-            localConn.setTlsNeedClientAuth(needClientAuth);
-            KeyStore keyStore = loadKeyStore(keyStoreURL, keyStorePassword, keyStoreType);
-            KeyStore trustStore = loadKeyStore(trustStoreURL, trustStorePassword, trustStoreType);
-            device.initTLS(keyStore, keyPassword == null ? keyStorePassword : keyPassword, trustStore);
-        }
-        
-        try {
-            return localNAE.connect(remoteAE, executor);
-        } catch (Throwable t) {
-            log.error("localNAE.connect failed!",t);
-            throw new IOException("Failed to establish Association aet:"+ae.getTitle());
-        }
-    }
-    
-    private KeyStore loadKeyStore(String keyStoreURL, char[] password, String type) throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
-        InputStream in;
-        try {
-            in = new URL(keyStoreURL).openStream();
-        } catch (MalformedURLException e) {
-            in = new FileInputStream(keyStoreURL);
-        }
-        KeyStore key = KeyStore.getInstance(type);
-        try {
-            key.load(in, password);
-        } finally {
-            in.close();
-        }
-        return key;
-    }
-
-    public void configureTransferCapability(NetworkApplicationEntity ae, String[] cuids, String[] ts) {
+    public void configureTransferCapability(String[] cuids, String[] ts) {
         TransferCapability[] tcs = new TransferCapability[cuids.length];
         ExtRetrieveTransferCapability tc;
         for (int i = 0 ; i < cuids.length ; i++) {
@@ -437,19 +190,9 @@ public class MoveScuService extends ServiceMBeanSupport {
                     ExtRetrieveTransferCapability.RELATIONAL_RETRIEVAL, relationQR);
             tcs[i] = tc;
         }    
-        ae.setTransferCapability(tcs);
+        setTransferCapability(tcs);
     }
     
-    public TransferCapability selectTransferCapability(Association assoc, String[] cuid) {
-        TransferCapability tc;
-        for (int i = 0; i < cuid.length; i++) {
-            tc = assoc.getTransferCapabilityAsSCU(cuid[i]);
-            if (tc != null)
-                return tc;
-        }
-        return null;
-    }
-
     /**
      * Perform a DICOM Echo to given Application Entity Title.
      */
@@ -475,17 +218,6 @@ public class MoveScuService extends ServiceMBeanSupport {
         return true;
     }
 
-    public AEHomeLocal lookupAEHome() {
-        if ( aeHome == null ) {
-            try {
-                InitialContext jndiCtx = new InitialContext();
-                aeHome = (AEHomeLocal) jndiCtx.lookup(AEHomeLocal.JNDI_NAME);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return aeHome;
-    }
 /*_*/   
     private class MoveRspHandler extends DimseRSPHandler {
         private int status;

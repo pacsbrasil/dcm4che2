@@ -11,7 +11,10 @@
 	<version>3.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
       <modules>
+         <module>dcm4chee-web-sar-common</module>
          <module>dcm4chee-web-sar-movescu</module>
+         <module>dcm4chee-web-sar-contentedit</module>
+         <module>dcm4chee-web-sar-rejnotescu</module>
       </modules>
 	<name>JMX services for dcm4chee-web</name>
 	<dependencies>

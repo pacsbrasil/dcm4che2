@@ -80,6 +80,9 @@ public abstract class BaseMBeanDelegate {
         }
         if (serviceObjectName == null) {
             String s = ((WebApplication)Application.get()).getInitParameter(getInitParameterName());
+            if (s == null) {
+                s = getDefaultServiceObjectName();
+            }
             try {
                 serviceObjectName = new ObjectName(s);
                 log.info("MBeanDelegate initialized! serviceName:"+serviceObjectName);
@@ -95,6 +98,10 @@ public abstract class BaseMBeanDelegate {
      * @return
      */
     public abstract String getInitParameterName();
+    
+    public String getDefaultServiceObjectName() {
+        return null;
+    }
 
     public boolean isInitialized() {
         return serviceObjectName != null;
