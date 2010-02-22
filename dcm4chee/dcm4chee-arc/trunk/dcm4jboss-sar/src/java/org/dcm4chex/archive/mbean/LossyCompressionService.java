@@ -430,7 +430,7 @@ public class LossyCompressionService extends ServiceMBeanSupport {
                         updateSeriesDescription(ds);
                         ds.setPrivateCreatorID(PrivateTags.CreatorID);
                         ds.putAE(PrivateTags.CallingAET, sourceAET);
-                        importFile(fileDTO, ds, suid, i+1 < fileInfoss.length);
+                        importFile(fileDTO, ds, suid, i+1 >= fileInfoss.length);
                         destFile = null;
                     }
                 } finally {
