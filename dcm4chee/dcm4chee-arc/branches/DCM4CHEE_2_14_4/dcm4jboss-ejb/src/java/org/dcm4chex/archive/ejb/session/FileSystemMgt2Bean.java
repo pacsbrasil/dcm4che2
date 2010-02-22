@@ -901,10 +901,11 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void replaceFileAndCoerceAttributes(long pk, String path,
+    public void replaceFileAndCoerceAttributes(long fspk, long pk, String path,
             String tsuid, long size, byte[] md5, int status, Dataset ds) {
         try {
             FileLocal oldFile = fileHome.findByPrimaryKey(pk);
+            oldFile.setFileSystem(fileSystemHome.findByPrimaryKey(fspk));
             oldFile.setFilePath(path);
             oldFile.setFileTsuid(tsuid);
             oldFile.setFileSize(size);
