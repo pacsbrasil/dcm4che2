@@ -1077,26 +1077,6 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Collection<FileDTO> getFilesOfSeriesOnFileSystemGroup(
-            String seriesIUID, String fsGroupID) throws FinderException {
-        return omitDuplicateFiles(fileHome.findFilesOfSeriesOnFileSystemGroup(
-                seriesIUID, fsGroupID));
-    }
-
-    private Collection<FileDTO> omitDuplicateFiles(
-            Collection<FileLocal> files) {
-        int size = files.size();
-        Set<Object> iuids = new HashSet<Object>(size * 4 / 3);
-        Collection<FileDTO> out = new ArrayList<FileDTO>(size);
-        for (FileLocal file : files)
-            if (iuids.add(file.getInstance().getPrimaryKey()))
-                out.add(file.getFileDTO());
-        return out ;
-    }
-
-    /**
-     * @ejb.interface-method
-     */
     public FileDTO[]  findFilesToLossyCompress(String fsGroupID,
             String cuid, String bodyPart, String srcAET, Timestamp before,
             int limit) throws FinderException {
