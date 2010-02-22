@@ -378,6 +378,12 @@
     </antcall>
     <antcall target="xslt">
       <param name="in"
+             value="${dcm4jboss-sar.xmdesc}/dcm4chee-fsmgt-lossy-xmbean.xml" />
+      <param name="out" value="fsmgt-lossy-xmbean.xml" />
+      <param name="mbean" value="dcm4chee.archive:service=FileSystemMgt,group=LOSSY_STORAGE" />
+    </antcall>
+    <antcall target="xslt">
+      <param name="in"
              value="${dcm4jboss-sar.xmdesc}/dcm4chee-gpwlfeed-xmbean.xml" />
       <param name="out" value="gpwlfeed-xmbean.xml" />
       <param name="mbean" value="dcm4chee.archive:service=GPWLFeed" />
