@@ -8,6 +8,8 @@
   <mbean code="org.dcm4chex.archive.mbean.LossyCompressionService"
     name="dcm4chee.archive:service=LossyCompressionService"
     xmbean-dd="xmdesc/dcm4chee-lossycompression-xmbean.xml">
+    <attribute name="FileSystemMgtServiceNamePrefix"
+      >dcm4chee.archive:service=FileSystemMgt,group=</attribute>
     <attribute name="TimerIDCheckFilesToCompress"
       >CheckFilesToLossyCompress</attribute>
     <depends optional-attribute-name="SchedulerServiceName"

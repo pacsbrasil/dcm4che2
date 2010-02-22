@@ -26,15 +26,27 @@ JPEG Lossy compression of received images.
    <!-- Attributes -->
   &defaultAttributes;
 
-  <attribute access="read-write" getMethod="getFileSystemGroupID"
-    setMethod="setFileSystemGroupID">
-    <description><![CDATA[Group ID of writable file systems which are scanned
+  <attribute access="read-write" getMethod="getSourceFileSystemGroupID"
+    setMethod="setSourceFileSystemGroupID">
+    <description><![CDATA[Group ID of file systems which are scanned
      for image files to compress in configured <b>TaskInterval</b>.]]>
     </description>
-    <name>FileSystemGroupID</name>
+    <name>SourceFileSystemGroupID</name>
     <type>java.lang.String</type>
     <descriptors>
       <value value="ONLINE_STORAGE" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write" getMethod="getDestinationFileSystemGroupID"
+    setMethod="setDestinationFileSystemGroupID">
+    <description><![CDATA[Group ID of writable file systems to which lossy
+      compressed images are stored.]]>
+    </description>
+    <name>DestinationFileSystemGroupID</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="LOSSY_STORAGE" />
     </descriptors>
   </attribute>
 
@@ -208,6 +220,15 @@ JPEG Lossy compression of received images.
     <name>SchedulerServiceName</name>
     <type>javax.management.ObjectName</type>
   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getFileSystemMgtServiceNamePrefix"
+      setMethod="setFileSystemMgtServiceNamePrefix">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>FileSystemMgtServiceNamePrefix</name>
+      <type>java.lang.String</type>
+   </attribute>
 
   <attribute access="read-write" getMethod="getTimerIDCheckFilesToCompress"
     setMethod="setTimerIDCheckFilesToCompress">

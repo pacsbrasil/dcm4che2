@@ -66,6 +66,7 @@ import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -92,6 +93,8 @@ public class LossyCompressionService extends ServiceMBeanSupport {
 
     private ObjectName storeScpServiceName;
 
+    private FileSystemMgt2Delegate fsmgt = new FileSystemMgt2Delegate(this);
+
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
     private long taskInterval = 0L;
@@ -110,7 +113,9 @@ public class LossyCompressionService extends ServiceMBeanSupport {
 
     private File tmpDir;
 
-    private String fsGroupID;
+    private String srcFSGroupID;
+
+    private String destFSGroupID;
 
     private String sourceAET;
 
@@ -164,8 +169,28 @@ public class LossyCompressionService extends ServiceMBeanSupport {
         scheduler.setSchedulerServiceName(schedulerServiceName);
     }
 
-    public final String getFileSystemGroupID() {
-        return fsGroupID;
+    public String getFileSystemMgtServiceNamePrefix() {
+        return fsmgt.getFileSystemMgtServiceNamePrefix();
+    }
+
+    public void setFileSystemMgtServiceNamePrefix(String prefix) {
+        fsmgt.setFileSystemMgtServiceNamePrefix(prefix);
+    }
+
+    public final String getSourceFileSystemGroupID() {
+        return srcFSGroupID;
+    }
+
+    public final void setSourceFileSystemGroupID(String fsGroupID) {
+        this.srcFSGroupID = fsGroupID.trim();
+    }
+
+    public final String getDestinationFileSystemGroupID() {
+        return destFSGroupID;
+    }
+
+    public final void setDestinationFileSystemGroupID(String fsGroupID) {
+        this.destFSGroupID = fsGroupID.trim();
     }
 
     public String getTimerIDCheckFilesToCompress() {
@@ -175,10 +200,6 @@ public class LossyCompressionService extends ServiceMBeanSupport {
     public void setTimerIDCheckFilesToCompress(
             String timerIDCheckFilesToCompress) {
         this.timerIDCheckFilesToCompress = timerIDCheckFilesToCompress;
-    }
-
-    public final void setFileSystemGroupID(String fsGroupID) {
-        this.fsGroupID = fsGroupID.trim();
     }
 
     public final String getTaskInterval() {
@@ -327,9 +348,9 @@ public class LossyCompressionService extends ServiceMBeanSupport {
     public String compressSeriesJPEGLossy(String seriesIUID,
             float compressionQuality, float estimatedCompressionRatio,
             boolean archive) throws Exception {
-        FileSystemMgt2 fsmgt = newFileSystemMgt();
-        Collection<FileDTO> fileDTOs = fsmgt.getFilesOfSeriesOnFileSystemGroup(
-                seriesIUID.trim(), fsGroupID);
+        FileSystemMgt2 fsmgtEJB = newFileSystemMgt();
+        Collection<FileDTO> fileDTOs = fsmgtEJB.getFilesOfSeriesOnFileSystemGroup(
+                seriesIUID.trim(), srcFSGroupID);
         byte[] buffer = new byte[bufferSize];
         float[] pixelCompressionRatio = new float[1];
         float fileCompressionRatio;
@@ -349,8 +370,13 @@ public class LossyCompressionService extends ServiceMBeanSupport {
 
             File srcFile = FileUtils.toFile(fileDTO.getDirectoryPath(),
                     fileDTO.getFilePath());
-            File destFile = FileUtils.createNewFile(srcFile.getParentFile(),
-                    (int) Long.parseLong(srcFile.getName(), 16) + 1);
+            FileSystemDTO destfs =
+                    fsmgt.selectStorageFileSystem(destFSGroupID);
+            String destDirPath = destfs.getDirectoryPath();
+            File destFile = FileUtils.createNewFile(
+                    FileUtils.toFile(destDirPath,fileDTO.getFilePath())
+                            .getParentFile(),
+                    (int) Long.parseLong(srcFile.getName(), 16));
             File uncFile = null;
             try {
                 if (!isUncompressed(tsuid)) {
@@ -382,12 +408,14 @@ public class LossyCompressionService extends ServiceMBeanSupport {
                 sumPixelCompressionRatio += pixelCompressionRatio[0];
                 count++;
                 if (archive) {
-                    File baseDir = FileUtils.toFile(fileDTO.getDirectoryPath());
+                    File baseDir = FileUtils.toFile(destDirPath);
                     int baseDirPathLength = baseDir.getPath().length();
                     String destFilePath = destFile.getPath()
                             .substring(baseDirPathLength + 1)
                             .replace(File.separatorChar, '/');
                     fileDTO.setPk(0);
+                    fileDTO.setFileSystemPk(destfs.getPk());
+                    fileDTO.setDirectoryPath(destDirPath);
                     fileDTO.setSopInstanceUID(iuid);
                     fileDTO.setFilePath(destFilePath);
                     fileDTO.setFileSize((int) destFile.length());
@@ -516,25 +544,25 @@ public class LossyCompressionService extends ServiceMBeanSupport {
             log.info("Check For Files To Lossy Compress");
             int limit = limitNumberOfFilesPerTask;
             byte[] buffer = null;
-            FileSystemMgt2 fsMgt = newFileSystemMgt();
+            FileSystemMgt2 fsMgtEJB = newFileSystemMgt();
             for (CompressionRule rule : compressionRuleList) {
                 Timestamp before = new Timestamp(
                         System.currentTimeMillis() - rule.delay);
                 FileDTO[] files = externalRetrieveAET != null
-                    ? fsMgt.findFilesToLossyCompressWithExternalRetrieveAET(
-                            fsGroupID, externalRetrieveAET, uidOf(rule.cuid), rule.bodyPart,
+                    ? fsMgtEJB.findFilesToLossyCompressWithExternalRetrieveAET(
+                            srcFSGroupID, externalRetrieveAET, uidOf(rule.cuid), rule.bodyPart,
                             rule.srcAET, before, limit)
                     : copyOnFSGroupID != null
-                    ? fsMgt.findFilesToLossyCompressWithCopyOnOtherFileSystemGroup(
-                            fsGroupID, copyOnFSGroupID, uidOf(rule.cuid), rule.bodyPart,
+                    ? fsMgtEJB.findFilesToLossyCompressWithCopyOnOtherFileSystemGroup(
+                            srcFSGroupID, copyOnFSGroupID, uidOf(rule.cuid), rule.bodyPart,
                             rule.srcAET, before, limit)
-                    : fsMgt.findFilesToLossyCompress(
-                            fsGroupID, uidOf(rule.cuid), rule.bodyPart,
+                    : fsMgtEJB.findFilesToLossyCompress(
+                            srcFSGroupID, uidOf(rule.cuid), rule.bodyPart,
                             rule.srcAET, before, limit);
                 for (FileDTO fileDTO : files) {
                     if (buffer == null)
                         buffer = new byte[bufferSize];
-                    doCompress(fsMgt, fileDTO, rule, buffer);
+                    doCompress(fsMgtEJB, fileDTO, rule, buffer);
                     if (--limit <= 0)
                         break;
                 }
@@ -554,8 +582,13 @@ public class LossyCompressionService extends ServiceMBeanSupport {
         File destFile = null;
         File uncFile = null;
         try {
-            destFile = FileUtils.createNewFile(srcFile.getParentFile(),
-                    (int) Long.parseLong(srcFile.getName(), 16) + 1);
+            FileSystemDTO destfs =
+                    fsmgt.selectStorageFileSystem(destFSGroupID);
+            String destDirPath = destfs.getDirectoryPath();
+            destFile = FileUtils.createNewFile(
+                    FileUtils.toFile(destDirPath,fileDTO.getFilePath())
+                            .getParentFile(),
+                    (int) Long.parseLong(srcFile.getName(), 16));
             if (!isUncompressed(tsuid)) {
                 File absTmpDir = FileUtils.resolve(tmpDir);
                 if (absTmpDir.mkdirs())
@@ -569,14 +602,14 @@ public class LossyCompressionService extends ServiceMBeanSupport {
             Dataset ds = DcmObjectFactory.getInstance().newDataset();
             byte[] md5 = CompressCmd.compressFileJPEGLossy(srcFile, destFile,
                     rule.quality, rule.ratio, null , null, null, buffer, ds);
-            File baseDir = FileUtils.toFile(fileDTO.getDirectoryPath());
+            File baseDir = FileUtils.toFile(destDirPath);
             int baseDirPathLength = baseDir.getPath().length();
             String destFilePath = destFile.getPath()
                     .substring(baseDirPathLength + 1)
                     .replace(File.separatorChar, '/');
             if (log.isDebugEnabled())
                 log.debug("replace File " + srcFile + " with " + destFile);
-            fsMgt.replaceFileAndCoerceAttributes(fileDTO.getPk(),
+            fsMgt.replaceFileAndCoerceAttributes(destfs.getPk(), fileDTO.getPk(),
                     destFilePath, ds.getFileMetaInfo().getTransferSyntaxUID(),
                     destFile.length(), md5, FileStatus.DEFAULT, ds);
             destFile = null;
