@@ -215,6 +215,7 @@ public class RetrieveCmd extends BaseReadCmd {
                     Types.VARCHAR,      // FileSystem.retrieveAET
                     Types.INTEGER,      // FileSystem.availability
                     Types.VARCHAR,      // FileSystem.directoryPath
+                    Types.VARCHAR,      // FileSystem.groupID
                     Types.VARCHAR,      // File.filePath
                     Types.VARCHAR,      // File.fileTsuid
                     Types.VARCHAR,      // File.fileMd5Field
@@ -238,6 +239,7 @@ public class RetrieveCmd extends BaseReadCmd {
                     Types.VARCHAR,      // FileSystem.retrieveAET
                     Types.INTEGER,      // FileSystem.availability
                     Types.VARCHAR,      // FileSystem.directoryPath
+                    Types.VARCHAR,      // FileSystem.groupID
                     Types.VARCHAR,      // File.filePath
                     Types.VARCHAR,      // File.fileTsuid
                     Types.VARCHAR,      // File.fileMd5Field
@@ -319,11 +321,12 @@ public class RetrieveCmd extends BaseReadCmd {
         info.fileRetrieveAET = rs.getString(8);
         info.availability = rs.getInt(9);
         info.basedir = rs.getString(10);
-        info.fileID = rs.getString(11);
-        info.tsUID = rs.getString(12);
-        info.md5 = rs.getString(13);
-        info.size = rs.getInt(14);
-        info.status = rs.getInt(15);
+        info.fsGroupID = rs.getString(11);
+        info.fileID = rs.getString(12);
+        info.tsUID = rs.getString(13);
+        info.md5 = rs.getString(14);
+        info.size = rs.getInt(15);
+        info.status = rs.getInt(16);
         FileInfo seriesFileInfo = getCachedSeriesAttrs(info.seriesIUID);
         if (seriesFileInfo == null) {
             if (log.isDebugEnabled()) {
@@ -419,11 +422,12 @@ public class RetrieveCmd extends BaseReadCmd {
         info.fileRetrieveAET = rs.getString(14);
         info.availability = rs.getInt(15);
         info.basedir = rs.getString(16);
-        info.fileID = rs.getString(17);
-        info.tsUID = rs.getString(18);
-        info.md5 = rs.getString(19);
-        info.size = rs.getInt(20);
-        info.status = rs.getInt(21);
+        info.fsGroupID = rs.getString(17);
+        info.fileID = rs.getString(18);
+        info.tsUID = rs.getString(19);
+        info.md5 = rs.getString(20);
+        info.size = rs.getInt(21);
+        info.status = rs.getInt(22);
         addFileInfo(result, instPk, info.sopIUID, info);
     }
 
@@ -505,11 +509,12 @@ public class RetrieveCmd extends BaseReadCmd {
                         "FileSystem.retrieveAET",       // (8)
                         "FileSystem.availability",      // (9)
                         "FileSystem.directoryPath",     // (10)
-                        "File.filePath",                // (11)
-                        "File.fileTsuid",               // (12)
-                        "File.fileMd5Field",            // (13)
-                        "File.fileSize",                // (14)
-                        "File.fileStatus"               // (15)
+                        "FileSystem.groupID",           // (11)
+                        "File.filePath",                // (12)
+                        "File.fileTsuid",               // (13)
+                        "File.fileMd5Field",            // (14)
+                        "File.fileSize",                // (15)
+                        "File.fileStatus"               // (16)
                         }
                 : new String[] { 
                         "Instance.encodedAttributes",   // (1)
@@ -528,11 +533,12 @@ public class RetrieveCmd extends BaseReadCmd {
                         "FileSystem.retrieveAET",       // (14)
                         "FileSystem.availability",      // (15)
                         "FileSystem.directoryPath",     // (16)
-                        "File.filePath",                // (17)
-                        "File.fileTsuid",               // (18)
-                        "File.fileMd5Field",            // (19)
-                        "File.fileSize",                // (20)
-                        "File.fileStatus"               // (21)
+                        "FileSystem.groupID",           // (17)
+                        "File.filePath",                // (18)
+                        "File.fileTsuid",               // (19)
+                        "File.fileMd5Field",            // (20)
+                        "File.fileSize",                // (21)
+                        "File.fileStatus"               // (22)
                         };
         }
 
