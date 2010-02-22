@@ -59,7 +59,6 @@ import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.common.SecurityUtils;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
-import org.dcm4chex.archive.ejb.jdbc.BaseDSQueryCmd.IntList;
 import org.dcm4chex.archive.ejb.jdbc.Match.Node;
 
 /**

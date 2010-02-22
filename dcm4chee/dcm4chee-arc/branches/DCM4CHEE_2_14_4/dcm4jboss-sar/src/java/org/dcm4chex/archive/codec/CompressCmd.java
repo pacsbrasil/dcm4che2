@@ -77,6 +77,8 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4cheri.image.ImageWriterFactory;
+import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 
 import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
 
@@ -300,7 +302,7 @@ public abstract class CompressCmd extends CodecCmd {
     public static byte[] compressFileJPEGLossy(File inFile, File outFile,
             float quality, float estimatedCompressionRatio, 
             float[] actualCompressionRatio, String iuid, String suid,
-            byte[] buffer, Dataset ds) throws Exception {
+            byte[] buffer, Dataset ds, FileInfo fileInfo) throws Exception {
         if (suid != null && iuid == null)
             throw new IllegalArgumentException(
                     "New Series Instance UID requires new SOP Instance UID");
@@ -312,6 +314,12 @@ public abstract class CompressCmd extends CodecCmd {
                 ds = DcmObjectFactory.getInstance().newDataset();
             p.setDcmHandler(ds.getDcmHandler());
             p.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
+            if (fileInfo != null) {
+                DatasetUtils.fromByteArray(fileInfo.patAttrs,
+                        DatasetUtils.fromByteArray(fileInfo.studyAttrs,
+                        DatasetUtils.fromByteArray(fileInfo.seriesAttrs,
+                        DatasetUtils.fromByteArray(fileInfo.instAttrs, ds))));
+            }
             CompressCmd compressCmd = createJPEGLossyCompressCmd(ds, quality,
                         estimatedCompressionRatio, iuid, suid);
             compressCmd.coerceDataset(ds);

@@ -43,8 +43,6 @@ import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -69,6 +67,8 @@ import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
+import org.dcm4chex.archive.ejb.jdbc.FileInfo;
+import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
@@ -326,7 +326,7 @@ public class LossyCompressionService extends ServiceMBeanSupport {
                 estimatedCompressionRatio, actualCompressionRatio , 
                 newSOPInstanceUID ? uidGenerator.createUID() : null,
                 newSeriesInstanceUID ? uidGenerator.createUID() : null,
-                new byte[bufferSize], null);
+                new byte[bufferSize], null, null);
         return MessageFormat.format(COMPRESS_FILE_FORMAT,
                 (float) inFile.length() / outFile.length(),
                 actualCompressionRatio[0]);
@@ -348,9 +348,6 @@ public class LossyCompressionService extends ServiceMBeanSupport {
     public String compressSeriesJPEGLossy(String seriesIUID,
             float compressionQuality, float estimatedCompressionRatio,
             boolean archive) throws Exception {
-        FileSystemMgt2 fsmgtEJB = newFileSystemMgt();
-        Collection<FileDTO> fileDTOs = fsmgtEJB.getFilesOfSeriesOnFileSystemGroup(
-                seriesIUID.trim(), srcFSGroupID);
         byte[] buffer = new byte[bufferSize];
         float[] pixelCompressionRatio = new float[1];
         float fileCompressionRatio;
@@ -362,77 +359,87 @@ public class LossyCompressionService extends ServiceMBeanSupport {
         float sumPixelCompressionRatio = 0.f;
         int count = 0;
         String suid = uidGenerator.createUID();
-        for (Iterator<FileDTO> iter = fileDTOs.iterator(); iter.hasNext();) {
-            FileDTO fileDTO = iter.next();
-            String tsuid = fileDTO.getFileTsuid();
-            if (isLossyCompressed(tsuid))
-                continue;
+        Dataset keys = DcmObjectFactory.getInstance().newDataset();
+        keys.putUI(Tags.SeriesInstanceUID, seriesIUID.trim());
+        FileInfo[][] fileInfoss = 
+                RetrieveCmd.createSeriesRetrieve(keys).getFileInfos();
+        for (int i = 0; i < fileInfoss.length; i++) {
+            FileInfo[] fileInfos = fileInfoss[i];
+            for (int j = 0; j < fileInfos.length; j++) {
+                FileInfo fileInfo = fileInfos[j];
+                if (!fileInfo.fsGroupID.equals(srcFSGroupID)
+                        || isLossyCompressed(fileInfo.tsUID))
+                    continue;
 
-            File srcFile = FileUtils.toFile(fileDTO.getDirectoryPath(),
-                    fileDTO.getFilePath());
-            FileSystemDTO destfs =
+                File srcFile = FileUtils.toFile(fileInfo.basedir, fileInfo.fileID);
+                FileSystemDTO destfs =
                     fsmgt.selectStorageFileSystem(destFSGroupID);
-            String destDirPath = destfs.getDirectoryPath();
-            File destFile = FileUtils.createNewFile(
-                    FileUtils.toFile(destDirPath,fileDTO.getFilePath())
-                            .getParentFile(),
-                    (int) Long.parseLong(srcFile.getName(), 16));
-            File uncFile = null;
-            try {
-                if (!isUncompressed(tsuid)) {
-                    File absTmpDir = FileUtils.resolve(tmpDir);
-                    if (absTmpDir.mkdirs())
-                        log.info("Create directory for decompressed files");
-                    uncFile = new File(absTmpDir,
-                            fileDTO.getFilePath().replace('/', '-') + ".dcm");
-                    DecompressCmd.decompressFile(srcFile, uncFile,
-                            UIDs.ExplicitVRLittleEndian, VRs.OW, buffer);
-                    srcFile = uncFile;
+                String destDirPath = destfs.getDirectoryPath();
+                File destFile = FileUtils.createNewFile(
+                        FileUtils.toFile(destDirPath, fileInfo.fileID)
+                                .getParentFile(),
+                        (int) Long.parseLong(srcFile.getName(), 16));
+                File uncFile = null;
+                try {
+                    if (!isUncompressed(fileInfo.tsUID)) {
+                        File absTmpDir = FileUtils.resolve(tmpDir);
+                        if (absTmpDir.mkdirs())
+                            log.info("Create directory for decompressed files");
+                        uncFile = new File(absTmpDir,
+                                fileInfo.fileID.replace('/', '-') + ".dcm");
+                        DecompressCmd.decompressFile(srcFile, uncFile,
+                                UIDs.ExplicitVRLittleEndian, VRs.OW, buffer);
+                        srcFile = uncFile;
+                    }
+                    String iuid = uidGenerator.createUID();
+                    Dataset ds = DcmObjectFactory.getInstance().newDataset();
+                    byte[] md5 = CompressCmd.compressFileJPEGLossy(srcFile,
+                            destFile, compressionQuality, estimatedCompressionRatio,
+                            pixelCompressionRatio , iuid, suid, buffer, ds, fileInfo);
+                    fileCompressionRatio =
+                        (float) srcFile.length() / destFile.length();
+                    if (minFileCompressionRatio > fileCompressionRatio)
+                        minFileCompressionRatio = fileCompressionRatio;
+                    if (maxFileCompressionRatio < fileCompressionRatio)
+                        maxFileCompressionRatio = fileCompressionRatio;
+                    sumFileCompressionRatio += fileCompressionRatio;
+                    if (minPixelCompressionRatio > pixelCompressionRatio[0])
+                        minPixelCompressionRatio = pixelCompressionRatio[0];
+                    if (maxPixelCompressionRatio < pixelCompressionRatio[0])
+                        maxPixelCompressionRatio = pixelCompressionRatio[0];
+                    sumPixelCompressionRatio += pixelCompressionRatio[0];
+                    count++;
+                    if (archive) {
+                        File baseDir = FileUtils.toFile(destDirPath);
+                        int baseDirPathLength = baseDir.getPath().length();
+                        String destFilePath = destFile.getPath()
+                                .substring(baseDirPathLength + 1)
+                                .replace(File.separatorChar, '/');
+                        FileDTO fileDTO = new FileDTO();
+                        fileDTO.setRetrieveAET(destfs.getRetrieveAET());
+                        fileDTO.setFileSystemPk(destfs.getPk());
+                        fileDTO.setFileSystemGroupID(destfs.getGroupID());
+                        fileDTO.setDirectoryPath(destfs.getDirectoryPath());
+                        fileDTO.setAvailability(destfs.getAvailability());
+                        fileDTO.setUserInfo(destfs.getUserInfo());
+                        fileDTO.setFilePath(destFilePath);
+                        fileDTO.setFileTsuid(ds.getFileMetaInfo().getTransferSyntaxUID());
+                        fileDTO.setFileSize((int) destFile.length());
+                        fileDTO.setFileMd5(md5);
+
+                        updateSeriesDescription(ds);
+                        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+                        ds.putAE(PrivateTags.CallingAET, sourceAET);
+                        importFile(fileDTO, ds, suid, i+1 < fileInfoss.length);
+                        destFile = null;
+                    }
+                } finally {
+                    if (uncFile != null)
+                        FileUtils.delete(uncFile, false);
+                    if (destFile != null)
+                        FileUtils.delete(destFile, false);
                 }
-                String iuid = uidGenerator.createUID();
-                Dataset ds = DcmObjectFactory.getInstance().newDataset();
-                byte[] md5 = CompressCmd.compressFileJPEGLossy(srcFile,
-                        destFile, compressionQuality, estimatedCompressionRatio,
-                        pixelCompressionRatio , iuid, suid, buffer, ds);
-                fileCompressionRatio =
-                    (float) srcFile.length() / destFile.length();
-                if (minFileCompressionRatio > fileCompressionRatio)
-                    minFileCompressionRatio = fileCompressionRatio;
-                if (maxFileCompressionRatio < fileCompressionRatio)
-                    maxFileCompressionRatio = fileCompressionRatio;
-                sumFileCompressionRatio += fileCompressionRatio;
-                if (minPixelCompressionRatio > pixelCompressionRatio[0])
-                    minPixelCompressionRatio = pixelCompressionRatio[0];
-                if (maxPixelCompressionRatio < pixelCompressionRatio[0])
-                    maxPixelCompressionRatio = pixelCompressionRatio[0];
-                sumPixelCompressionRatio += pixelCompressionRatio[0];
-                count++;
-                if (archive) {
-                    File baseDir = FileUtils.toFile(destDirPath);
-                    int baseDirPathLength = baseDir.getPath().length();
-                    String destFilePath = destFile.getPath()
-                            .substring(baseDirPathLength + 1)
-                            .replace(File.separatorChar, '/');
-                    fileDTO.setPk(0);
-                    fileDTO.setFileSystemPk(destfs.getPk());
-                    fileDTO.setDirectoryPath(destDirPath);
-                    fileDTO.setSopInstanceUID(iuid);
-                    fileDTO.setFilePath(destFilePath);
-                    fileDTO.setFileSize((int) destFile.length());
-                    fileDTO.setFileMd5(md5);
-                    fileDTO.setFileTsuid(
-                            ds.getFileMetaInfo().getTransferSyntaxUID());
-                    updateSeriesDescription(ds);
-                    ds.setPrivateCreatorID(PrivateTags.CreatorID);
-                    ds.putAE(PrivateTags.CallingAET, sourceAET);
-                    importFile(fileDTO, ds, suid, !iter.hasNext());
-                    destFile = null;
-                }
-            } finally {
-                if (uncFile != null)
-                    FileUtils.delete(uncFile, false);
-                if (destFile != null)
-                    FileUtils.delete(destFile, false);
+                break;
             }
         }
         return count == 0 ? "No images compressed"
@@ -601,7 +608,7 @@ public class LossyCompressionService extends ServiceMBeanSupport {
             }
             Dataset ds = DcmObjectFactory.getInstance().newDataset();
             byte[] md5 = CompressCmd.compressFileJPEGLossy(srcFile, destFile,
-                    rule.quality, rule.ratio, null , null, null, buffer, ds);
+                    rule.quality, rule.ratio, null , null, null, buffer, ds, null);
             File baseDir = FileUtils.toFile(destDirPath);
             int baseDirPathLength = baseDir.getPath().length();
             String destFilePath = destFile.getPath()

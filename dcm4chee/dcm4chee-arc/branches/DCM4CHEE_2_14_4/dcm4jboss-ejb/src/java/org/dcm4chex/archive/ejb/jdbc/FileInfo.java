@@ -45,9 +45,9 @@ import java.io.Serializable;
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger </a>
  *  
  */
-public class FileInfo implements Serializable, Comparable {
+public class FileInfo implements Serializable, Comparable<FileInfo> {
 
-    private static final long serialVersionUID = 3058272542673017351L;
+    private static final long serialVersionUID = 7851930689047771597L;
 
     public long pk = -1;
 
@@ -77,6 +77,8 @@ public class FileInfo implements Serializable, Comparable {
 
     public String basedir = null;
 
+    public String fsGroupID = null;
+
     public String fileID = null;
 
     public String tsUID = null;
@@ -89,36 +91,7 @@ public class FileInfo implements Serializable, Comparable {
     
     public int availability = 0;
     
-    public FileInfo()
-    {    	
-    }
-
-    public FileInfo(long pk, String patID, String patName, byte[] patAttrs,
-            String studyIUID, String seriesIUID, byte[] studyAttrs, byte[] seriesAttrs,
-            byte[] instAttrs, String sopIUID, String sopCUID,
-            String extRetrieveAET, String fileRetrieveAET, int availability,
-            String basedir, String fileID, String tsUID, String md5, long size,
-            int status) {
-        this.pk = pk;
-        this.patID = patID;
-        this.patName = patName;
-        this.patAttrs = patAttrs;
-        this.studyIUID = studyIUID;
-        this.seriesIUID = seriesIUID;
-        this.studyAttrs = studyAttrs;
-        this.seriesAttrs = seriesAttrs;
-        this.instAttrs = instAttrs;
-        this.sopIUID = sopIUID;
-        this.sopCUID = sopCUID;
-        this.extRetrieveAET = extRetrieveAET;
-        this.fileRetrieveAET = fileRetrieveAET;
-        this.availability = availability;
-        this.basedir = basedir;
-        this.fileID = fileID;
-        this.tsUID = tsUID;
-        this.md5 = md5;
-        this.size = size;
-        this.status = status;
+    public FileInfo() {
     }
 
     public String toString() {
@@ -132,8 +105,7 @@ public class FileInfo implements Serializable, Comparable {
      * This will make sure the most available - and for files with equal
      * availability, the most recent - file will be listed first
      */
-    public int compareTo(Object o) {
-        FileInfo fi2 = (FileInfo) o;
+    public int compareTo(FileInfo fi2) {
         int diffAvail = availability - fi2.availability;
         return diffAvail != 0 ? diffAvail : fi2.pk < pk ? -1 : 1;
     }
