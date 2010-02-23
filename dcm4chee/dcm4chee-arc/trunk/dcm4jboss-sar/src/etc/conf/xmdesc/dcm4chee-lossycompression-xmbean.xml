@@ -53,8 +53,8 @@ JPEG Lossy compression of received images.
   <attribute access="read-write" getMethod="getTaskInterval"
     setMethod="setTaskInterval">
     <description><![CDATA[Interval in which the database is checked for image
-      files located on writeable file systems of the configured
-      <b>FileSystemGroupID</b> to compress.
+      files located on file systems of the configured
+      <b>SourceFileSystemGroupID</b> to compress.
       <br>Format: 
       <br><i>interval</i>!<i>from</i>-<i>to</i> or NEVER
       <br><i>interval</i> = ##s (in seconds), ##m (in minutes), ##h (in hours).
