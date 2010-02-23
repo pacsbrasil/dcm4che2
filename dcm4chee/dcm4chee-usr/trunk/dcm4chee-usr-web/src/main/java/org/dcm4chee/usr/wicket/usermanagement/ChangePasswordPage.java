@@ -107,7 +107,9 @@ public class ChangePasswordPage extends WebPage {
         public ChangePasswordForm(String id, String userId, User forUser, Model<String> oldPassword, Model<String> newPassword, Label resultMessage) {
             super(id);
             
-            this.forUser = forUser;
+            this.forUser = (forUser == null) ? 
+                    ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getUser(userId)
+                    : forUser;
             this.newPassword = newPassword;
 
             this.resultMessage = resultMessage;
@@ -123,7 +125,7 @@ public class ChangePasswordPage extends WebPage {
             this.add(oldPasswordVml);
 
             Label forUserLabel = new Label("for-user-label", this.forUser.getUserID());
-//            if (this.forUser.getUserID().equals(((JaasWicketSession) getSession()).getUsername())) {
+            
             if (this.forUser.getUserID().equals(userId)) {
                 forUserLabel.setVisible(false);
                 this.add(new PasswordValidator(this.forUser, oldPasswordTf));

@@ -47,14 +47,13 @@ import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.ComponentTag;
-import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
@@ -88,8 +87,7 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since 28.09.2009
  */
-@AuthorizeInstantiation({"ADMIN"})
-public class UserListPanel extends Panel {// implements IHeaderContributor {
+public class UserListPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
     
@@ -99,29 +97,17 @@ public class UserListPanel extends Panel {// implements IHeaderContributor {
     private List<String> allRoleNames;
 
     private ModalWindow messageWindow;
-    private boolean error;
-    
     private String userId;
 
-    public UserListPanel(String id, String userId) {
+    public UserListPanel(String id, String userId, ModalWindow messageWindow) {
         super(id);
         try {
             this.userId = userId;
-            
+
             this.allUsers = this.getAllUsers();
             this.allRoleNames = this.getAllRolenames();
 
-//            MessageHandlerLink mhl = null;
-//            add((mhl = new MessageHandlerLink("message-handler-link"))
-//                    .setMarkupId("message-handler-link"));
-            
-//            if (this.error = ((parameters != null) && parameters.containsKey("error")))
-//                mhl.setMessage(parameters.getString("error"));
-//            else
-//                mhl.setVisible(false);
-
-            add(this.messageWindow = new ModalWindow("error-message"));
-//            add(new LogoutLink("logout-link"));
+            this.messageWindow = messageWindow;
             
             add(new ToggleFormLink("toggle-user-form-link", 
                     new AddUserForm("add-user-form", this.allUsers),
@@ -143,8 +129,6 @@ public class UserListPanel extends Panel {// implements IHeaderContributor {
                 
                 final User user = this.allUsers.get(i);
                 
-//                JaasWicketSession session = (JaasWicketSession) this.getSession();
-                
                 WebMarkupContainer row_parent = new WebMarkupContainer(roleRows.newChildId());
                 Label userIDLabel = new Label("userID", user.getUserID().toString());
                 row_parent.add(userIDLabel);
@@ -155,15 +139,17 @@ public class UserListPanel extends Panel {// implements IHeaderContributor {
                 RemoveUserLink removeUserLink = new RemoveUserLink("remove-user-link", user);
                 removeUserLink.add(new AttributeModifier("title", true, new Model<String>(new StringResourceModel("userlist.remove_user.tooltip", this, null).getObject() + user.getUserID())));
                 removeUserLink.add(new AttributeModifier("onclick", true, new Model<String>("return confirm('" + new StringResourceModel("userlist.remove_user.confirmation", this, null).getObject() + "');")));
+                removeUserLink.add(new Image("img-delete", new ResourceReference(UserListPanel.class, "images/action_delete.png")));
                 row_parent.add(removeUserLink);
-//                if (session.getUsername().equals(user.getUserID())) {
+
                 if (this.userId.equals(user.getUserID())) {
                     add(new ChangePasswordLink("change-my-password-link", user, true));
                     removeUserLink.setVisible(false);
                 }
-
+                
                 row_parent.add(
                         new ChangePasswordLink("change-password-link", user, false)
+                        .add(new Image("img-change-password", new ResourceReference(UserListPanel.class, "images/login.png")))
                         .add(new AttributeModifier("title", true, new Model<String>(new StringResourceModel("userlist.change_password.tooltip", this, null).getObject())))
                 );
                 
@@ -177,7 +163,6 @@ public class UserListPanel extends Panel {// implements IHeaderContributor {
                     ContextImage roleImage = new ContextImage("role-image", "images/action_check.png");
                     roleImage.setVisible(false);
 
-//                    if (session.getUsername().equals(user.getUserID())) {
                     if (this.userId.equals(user.getUserID())) {
                         AuthenticatedWebApplication awa = (AuthenticatedWebApplication) getApplication(); 
                         if (rolename.equals(awa.getInitParameter("userRoleName")) || rolename.equals(awa.getInitParameter("adminRoleName"))) {
@@ -208,11 +193,6 @@ public class UserListPanel extends Panel {// implements IHeaderContributor {
             log.debug("Exception: ", e);
             this.redirectToInterceptPage(new InternalErrorPage());
         }
-    }
-    
-    public void renderHead(IHeaderResponse response) {
-         if (this.error)
-             response.renderOnLoadJavascript("var e=document.getElementById('message-handler-link'); var evObj = document.createEvent('MouseEvents'); evObj.initEvent('click', true, false); e.dispatchEvent(evObj)");
     }
 
     private final class AddUserForm extends Form<Object> {
@@ -274,14 +254,14 @@ public class UserListPanel extends Panel {// implements IHeaderContributor {
                 user.setUserID(newUsername.getObject());
                 user.setPassword(SecurityUtils.encodePassword(this.password.getObject()));
                 ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).createUser(user);
+                setResponsePage(this.getPage().getClass().newInstance());
             } catch (final Exception e) {
                 log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
                 log.debug("Exception: ", e);
                 pp = (this.getPage().getPageParameters() == null) ? new PageParameters(): this.getPage().getPageParameters();
                 pp.add("error", e.getMessage());
             }
-            setResponsePage(this.getPage());
-        }                
+        }
     };
     
     private final class AddRoleForm extends Form<Object> {
@@ -319,13 +299,13 @@ public class UserListPanel extends Panel {// implements IHeaderContributor {
                 role.setUserID(this.userId);
                 role.setRole(this.newRolename.getObject());
                 ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).addRole(role);
+                setResponsePage(this.getPage().getClass().newInstance());
             } catch (final Exception e) {
                 log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
                 log.debug("Exception: ", e);
                 pp = (this.getPage().getPageParameters() == null) ? new PageParameters(): this.getPage().getPageParameters();
                 pp.add("error", e.getMessage());                
             }
-            setResponsePage(this.getPage());
         }
     };
     
@@ -343,7 +323,9 @@ public class UserListPanel extends Panel {// implements IHeaderContributor {
         @Override
         protected void onComponentTag(ComponentTag tag) {
             super.onComponentTag(tag);
-            tag.put("src", this.forForm.isVisible() ? "images/action_remove.png" : "images/action_add.png");
+            tag.put("src", this.forForm.isVisible() ? 
+                    this.getRequestCycle().urlFor(new ResourceReference(UserListPanel.class, "images/action_remove.png"))
+                    : this.getRequestCycle().urlFor(new ResourceReference(UserListPanel.class, "images/action_add.png")));
         }
     };
     
@@ -390,6 +372,7 @@ public class UserListPanel extends Panel {// implements IHeaderContributor {
         
         public ChangePasswordLink(String id, User user, boolean myself) {
             super(id);
+            
             this.forUser = user;
         }
         
@@ -419,21 +402,6 @@ public class UserListPanel extends Panel {// implements IHeaderContributor {
         }
     };
     
-//    private final class LogoutLink extends Link<Object> {
-//        
-//        private static final long serialVersionUID = 1L;
-//        
-//        public LogoutLink(String id) {
-//            super(id);
-//        }
-//        
-//        @Override
-//        public void onClick() {
-//            getSession().invalidateNow();
-//            setResponsePage(LoginPage.class);
-//        }
-//    };
-    
     private final class HasRoleCheckBox extends AjaxCheckBox {
         
         private static final long serialVersionUID = 1L;
@@ -449,7 +417,6 @@ public class UserListPanel extends Panel {// implements IHeaderContributor {
             if ((e = ((HasRoleModel) this.getModel()).getException()) != null) {
                 log.error(this.getClass().toString() + ": " + "onUpdate: " + e.getMessage());
                 log.debug("Exception: ", e);
-//                showErrorMessage(target, e);
             }
         }
         
@@ -534,70 +501,20 @@ public class UserListPanel extends Panel {// implements IHeaderContributor {
         public void onClick() {
             try {
                 ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).deleteUser(user.getUserID());
-                setResponsePage(this.getPage());
+                setResponsePage(this.getPage().getClass().newInstance());
             } catch (Exception e) {
                 log.error(this.getClass().toString() + ": " + "onClick: " + e.getMessage());
                 log.debug("Exception: ", e);
             }
         }
     };
-    
-//    private final class MessageHandlerLink extends AjaxLink<Object> {
-//        
-//        private static final long serialVersionUID = 1L;
-//        
-//        private String message;
-//        
-//        public MessageHandlerLink(String id) {
-//            super(id);
-//        }
-//        
-//        private void setMessage(String message) {
-//            this.message = message;
-//        }
-//        
-//        private String getMessage() {
-//            return (message != null ? message : "");
-//        }                
-//        
-//        @Override
-//        public void onClick(AjaxRequestTarget target) {
-//            showErrorMessage(target, new Exception(getMessage()));
-//        }
-//    };
-    
-//    private void showErrorMessage(AjaxRequestTarget target, final Exception e) {
-//        
-//        messageWindow
-//            .setCloseButtonCallback(
-//                    new ModalWindow.CloseButtonCallback() {
-//            
-//                        private static final long serialVersionUID = 1L;
-//                        
-//                        public boolean onCloseButtonClicked(AjaxRequestTarget target) {
-//                            return true;
-//                        }
-//                    }
-//            ).setPageCreator(
-//                    new ModalWindow.PageCreator() {
-//            
-//                        private static final long serialVersionUID = 1L;
-//                        
-//                        @Override
-//                        public Page createPage() {
-//                            return new ModalErrorPage(getPage(), messageWindow, e.getLocalizedMessage());
-//                        }
-//                    }
-//            ).show(target);
-//    }
-    
+
     private List<User> getAllUsers() {
         
         List<User> allUsers = new ArrayList<User>();
         try {
             allUsers.addAll(((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).findAll());
         } catch (Exception e) {
-            e.printStackTrace();
             log.error(this.getClass().toString() + ": " + "getAllUsers: " + e.getMessage());
             log.debug("Exception: ", e);
             this.redirectToInterceptPage(new InternalErrorPage());

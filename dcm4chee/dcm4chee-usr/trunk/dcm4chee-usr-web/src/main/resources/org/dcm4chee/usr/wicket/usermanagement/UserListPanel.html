@@ -5,49 +5,10 @@
   xmlns:wicket="http://wicket.apache.org">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	    <title>
-	    	<wicket:message key="application.browser_title">
-	    		[User Management]
-			</wicket:message>
-		</title>
 		<link rel="stylesheet" type="text/css" href="style.css"/>
 	</head>
 	<body class="panel-userlist">
-		<wicket:panel>
-<!--
-		<a wicket:id="message-handler-link" href="#" />
-		<div wicket:id="error-message" />
-		<p>
-			<table width="100%" style="border-style: none">
-				<tr>
-					<td style="text-align: left">
-						<img class="image" src="images/logo.gif" style="background-color: white"/>
-					</td>
-					<td style="text-align: left">
-						<div class="title">						
-						<wicket:message key="application.title">
-							[User Management]
-						</wicket:message>
-						</div>
-					</td>
-					<td width="140px" style="text-align: right">
-						<a wicket:id="change-my-password-link" class="hyperlink" href="#">
-							<wicket:message key="application.change_password">
-								[Change password]
-							</wicket:message>
-						</a>
-					</td>
-					<td width="50px" style="text-align: right">
-						<a wicket:id="logout-link" class="hyperlink" href="#">
-							<wicket:message key="application.logout">
-								[Log out]
-							</wicket:message>
-						</a>
-					</td>
-				</tr>
-			</table>
-		</p>
--->
+	<wicket:panel>
 		<p>
 			<a wicket:id="toggle-user-form-link" class="hyperlink" href="#">
 				<img wicket:id="toggle-form-image-user" class="image" src="images/action_add.png" />
@@ -102,12 +63,12 @@
 		      	</td>		  
 				<td style="align: center">
 					<a wicket:id="remove-user-link" href="#">
-						<img class="image" src="images/action_delete.png" />
+						<img wicket:id="img-delete" class="image" src="images/action_delete.png" />
 					</a>
 		      	</td>
 				<td style="align: center">
 					<a wicket:id="change-password-link" href="#">
-						<img class="image" src="images/login.png" />
+						<img wicket:id="img-change-password" class="image" src="images/login.png" />
 					</a>
 		      	</td>
 	 	  	  	<td wicket:id="role-dividers" style="text-align:center">
