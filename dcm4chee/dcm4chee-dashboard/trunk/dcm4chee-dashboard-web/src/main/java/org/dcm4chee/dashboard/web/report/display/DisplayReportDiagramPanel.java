@@ -40,6 +40,8 @@ package org.dcm4chee.dashboard.web.report.display;
 
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -47,12 +49,18 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.imageio.ImageIO;
+
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.IRequestTarget;
+import org.apache.wicket.RequestCycle;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.protocol.http.WebResponse;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.web.DashboardMainPage;
 import org.dcm4chee.dashboard.web.common.JFreeChartImage;
@@ -72,6 +80,8 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.text.TextBlock;
 import org.jfree.ui.RectangleEdge;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -82,6 +92,8 @@ public class DisplayReportDiagramPanel extends Panel {
     
     private static final long serialVersionUID = 1L;
 
+    private static Logger log = LoggerFactory.getLogger(DisplayReportDiagramPanel.class);
+    
     private ReportModel report;
 
     public DisplayReportDiagramPanel(String id, ReportModel report) {
@@ -197,6 +209,40 @@ public class DisplayReportDiagramPanel extends Panel {
                                     chart, 
                                     new Integer(new ResourceModel("dashboard.report.reportdiagram.image.width").wrapOnAssignment(this).getObject().toString()), 
                                     new Integer(new ResourceModel("dashboard.report.reportdiagram.image.height").wrapOnAssignment(this).getObject().toString())));
+
+            final JFreeChart downloadableChart = chart; 
+            add(new Link<Object>("diagram-download") {
+                
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick() {        
+
+                    RequestCycle.get().setRequestTarget(new IRequestTarget() {
+
+                        public void respond(RequestCycle requestCycle) {
+
+                            WebResponse wr = (WebResponse) requestCycle.getResponse();
+                            wr.setContentType("text/html");
+                            wr.setHeader( "content-disposition", "attachment;filename=diagram.png");
+                    
+                                OutputStream os = wr.getOutputStream();
+                                try {
+                                    ImageIO.write(downloadableChart.createBufferedImage(800, 600), "png", os);
+                                    os.close();
+                                } catch (IOException e) {
+                                    log.error(this.getClass().toString() + ": " + "respond: " + e.getMessage());
+                                    log.debug("Exception: ", e);
+                                }
+                                wr.close();
+                        }
+
+                        @Override
+                        public void detach(RequestCycle arg0) {
+                        }
+                    });
+                }
+            });
 
             add(new Label("error-message", "").setVisible(false));
             add(new Label("error-reason", "").setVisible(false));

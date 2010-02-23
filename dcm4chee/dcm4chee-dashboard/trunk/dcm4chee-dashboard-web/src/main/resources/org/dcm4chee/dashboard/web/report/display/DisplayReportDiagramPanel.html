@@ -13,12 +13,20 @@
 	</head>
 	<body>
 		<wicket:panel>
-			<p>
-				<div wicket:id="error-message" />
-			</p>
-			<p>
-				<div wicket:id="error-reason" />
-			</p>
+			<div class="donotprint">
+				<p>
+					<div wicket:id="error-message" />
+				</p>
+				<p>
+					<div wicket:id="error-reason" />
+				</p>
+				<p>
+					<a wicket:id="diagram-download" class="hyperlink">
+						<wicket:message key="dashboard.report.reportdiagram.image.downloadlink.title" />
+					</a>
+					<input type="button" style="margin-left: 20px" wicket:message="value:dashboard.report.reportdiagram.image.printbutton.title" onclick="javascript:window.print()">
+				</p>
+			</div>
 			<img wicket:id="diagram"></img>
 		</wicket:panel>
 	</body>

@@ -38,20 +38,44 @@
 
 package org.dcm4chee.dashboard.web.report.display;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.IRequestTarget;
+import org.apache.wicket.RequestCycle;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.protocol.http.WebResponse;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.util.CSSUtils;
 import org.dcm4chee.dashboard.web.DashboardMainPage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
+import com.csvreader.CsvWriter;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -61,6 +85,8 @@ import org.dcm4chee.dashboard.web.DashboardMainPage;
 public class DisplayReportTablePanel extends Panel {
 
     private static final long serialVersionUID = 1L;
+    
+    private static Logger log = LoggerFactory.getLogger(DisplayReportTablePanel.class);
 
     private ReportModel report;
 
@@ -74,13 +100,46 @@ public class DisplayReportTablePanel extends Panel {
     public void onBeforeRender() {
         super.onBeforeRender();
         
-        RepeatingView columnHeaders = new RepeatingView("column-headers"); 
-        add(columnHeaders);
-        RepeatingView reportRows = new RepeatingView("report-rows"); 
-        add(reportRows);
-
         Connection jdbcConnection = null;
         try {
+
+            RepeatingView columnHeaders = new RepeatingView("column-headers"); 
+            add(columnHeaders);
+            RepeatingView reportRows = new RepeatingView("report-rows"); 
+            add(reportRows);
+    
+            final Document document = 
+                DocumentBuilderFactory
+                .newInstance()
+                .newDocumentBuilder()
+                .newDocument();
+
+            final List<String[]> csvList = new ArrayList<String[]>();
+            
+            Node node1 = document.createElement("report");
+            Node node2 = document.createElement("header");
+            node1.appendChild(node2);        
+    
+            Node node3 = document.createElement("title");
+            node2.appendChild(node3);
+            node3.appendChild(document.createTextNode(report.getTitle()));
+            
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(report.getCreated());
+            node3 = document.createElement("created");
+            node2.appendChild(node3);
+            node3.appendChild(document.createTextNode(new SimpleDateFormat("dd.MM.yyyy hh:mm").format(calendar.getTime())));
+    
+            node3 = document.createElement("statement");
+            node2.appendChild(node3);
+            node3.appendChild(document.createTextNode(report.getStatement()));
+
+            csvList.add(new String[] {report.getTitle(), new SimpleDateFormat("dd.MM.yyyy hh:mm").format(calendar.getTime()), report.getStatement()});
+            
+            node2 = document.createElement("table");
+            node1.appendChild(node2);
+            document.appendChild(node1);
+
             ResultSet resultSet = 
                 (jdbcConnection  = DashboardMainPage.getDatabaseConnection(report.getDataSource()))
                 .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
@@ -98,13 +157,105 @@ public class DisplayReportTablePanel extends Panel {
                 RepeatingView columnValues = new RepeatingView("column-values");
                 parent.add(columnValues);
                 
-                for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++)
+                Node rowNode = document.createElement("row");
+                
+                List<String> columnList = new ArrayList<String>();
+                
+                for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
                     columnValues.add(new WebMarkupContainer(columnValues.newChildId()).add(new Label("column-value", resultSet.getString(i))));
+                    columnList.add(resultSet.getString(i));
+                    
+                    Node columnNode = document.createElement(resultSet.getMetaData().getColumnName(i));
+                    rowNode.appendChild(columnNode);
+                    columnNode.appendChild(document.createTextNode(resultSet.getString(i)));
+                }
+                node2.appendChild(rowNode);
+
+                csvList.add(columnList.toArray(new String[0]));
             }
             resultSet.close();
+
+            add(new Link<Object>("table-download-xml") {
+                
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick() {        
+
+                    RequestCycle.get().setRequestTarget(new IRequestTarget() {
+
+                        public void respond(RequestCycle requestCycle) {
+
+                            WebResponse wr = null;
+                            try {
+                                StringWriter writer = new StringWriter();
+                                TransformerFactory
+                                    .newInstance()
+                                    .newTransformer()
+                                    .transform(new DOMSource(document), new StreamResult(writer));
+                                
+                                wr = (WebResponse) requestCycle.getResponse();
+                                wr.setContentType("text/xml");
+                                wr.setHeader( "content-disposition", "attachment;filename=table.xml");
+                        
+                                OutputStream os = wr.getOutputStream();
+                                os.write(writer.toString().getBytes());
+                                os.close();
+                            } catch (Exception e) {
+                                log.error(this.getClass().toString() + ": " + "respond: " + e.getMessage());
+                                log.debug("Exception: ", e);
+                            }
+                            wr.close();
+                        }
+
+                        @Override
+                        public void detach(RequestCycle arg0) {
+                        }
+                    });
+                }
+            });
+
+            add(new Link<Object>("table-download-csv") {
+                
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick() {        
+
+                    RequestCycle.get().setRequestTarget(new IRequestTarget() {
+
+                        public void respond(RequestCycle requestCycle) {
+
+                            WebResponse wr = null;
+                            try {
+                                wr = (WebResponse) requestCycle.getResponse();
+                                wr.setContentType("text/xml");
+                                wr.setHeader( "content-disposition", "attachment;filename=table.csv");
+                        
+                                OutputStream os = wr.getOutputStream();
+                                CsvWriter csvWriter = new CsvWriter(new BufferedWriter(new OutputStreamWriter(os)), ';');
+                                for (String[] row : csvList)
+                                    csvWriter.writeRecord(row);
+                                csvWriter.close();
+                                os.close();
+                            } catch (IOException e) {
+                                log.error(this.getClass().toString() + ": " + "respond: " + e.getMessage());
+                                log.debug("Exception: ", e);
+                            }
+                            wr.close();
+                        }
+
+                        @Override
+                        public void detach(RequestCycle arg0) {
+                        }
+                    });
+                }
+            });
+
             add(new Label("error-message", "").setVisible(false));
             add(new Label("error-reason", "").setVisible(false));
         } catch (Exception e) {
+            e.printStackTrace();
             add(new Label("error-message", new ResourceModel("dashboard.report.reporttable.statement.error").wrapOnAssignment(this).getObject()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
             add(new Label("error-reason", e.getMessage()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
         } finally {

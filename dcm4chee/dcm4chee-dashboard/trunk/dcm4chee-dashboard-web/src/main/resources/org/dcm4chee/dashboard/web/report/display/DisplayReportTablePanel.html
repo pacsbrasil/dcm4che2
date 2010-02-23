@@ -13,12 +13,23 @@
 	</head>
 	<body>
 		<wicket:panel>
-			<p>
-				<div wicket:id="error-message" />
-			</p>
-			<p>
-				<div wicket:id="error-reason" />
-			</p>
+			<div class="donotprint">
+				<p>
+					<div wicket:id="error-message" />
+				</p>
+				<p>
+					<div wicket:id="error-reason" />
+				</p>
+				<p>
+					<a wicket:id="table-download-xml" class="hyperlink">
+						<wicket:message key="dashboard.report.reporttable.xml.downloadlink.title" />
+					</a>
+					<a wicket:id="table-download-csv" class="hyperlink" style="margin-left: 20px">
+						<wicket:message key="dashboard.report.reporttable.csv.downloadlink.title" />
+					</a>
+					<input type="button" style="margin-left: 20px" wicket:message="value:dashboard.report.reporttable.table.printbutton.title" onclick="javascript:window.print()">
+				</p>
+			</div>
 			<table class="table">
 				<thead>
 					<tr>
