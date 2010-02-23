@@ -61,6 +61,10 @@ public class UserAccessBean implements UserAccess {
     @PersistenceContext(unitName="dcm4chee-usr")
     private EntityManager em;
 
+    public User getUser(String userId) {
+        return this.em.find(User.class, userId);
+    }
+
     public void createUser(User user) {
         this.em.persist(user);
     }

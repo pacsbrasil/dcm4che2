@@ -56,6 +56,7 @@ public interface UserAccess {
     
     public List<User> findAll();
 
+    public User getUser(String userId);
     public void createUser(User user);
     public void updateUser(String userId, String password);
     public void deleteUser(String userId);

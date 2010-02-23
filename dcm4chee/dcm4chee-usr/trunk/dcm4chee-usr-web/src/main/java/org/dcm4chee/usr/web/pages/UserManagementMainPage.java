@@ -39,6 +39,7 @@
 package org.dcm4chee.usr.web.pages;
 
 import org.apache.wicket.PageParameters;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.pages.InternalErrorPage;
 import org.dcm4chee.usr.web.session.JaasWicketSession;
@@ -57,12 +58,12 @@ public class UserManagementMainPage extends WebPage {
     
     private static Logger log = LoggerFactory.getLogger(UserManagementMainPage.class);
     
+    private ModalWindow messageWindow;
+    
     public UserManagementMainPage(final PageParameters parameters) {
         try {
             String name = ((JaasWicketSession) this.getSession()).getUsername();
-System.out.println(name);
-//System.out.println(((JaasWicketSession) this.getSession()).getRoles());
-            add(new UserListPanel("userListPanel", name));
+            add(new UserListPanel("userListPanel", name, messageWindow));
         } catch (Exception e) {
             e.printStackTrace();
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());

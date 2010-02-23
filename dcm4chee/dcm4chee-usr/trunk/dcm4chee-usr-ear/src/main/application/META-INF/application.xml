@@ -14,4 +14,10 @@
 			<context-root>dcm4chee-usr</context-root>
 		</web>
 	</module>
+	<module id="WebModule_1266942644114">
+		<web>
+			<web-uri>dcm4chee-usr-web-0.0.1.war</web-uri>
+			<context-root>dcm4chee-usr-web</context-root>
+		</web>
+	</module>
 </application>
