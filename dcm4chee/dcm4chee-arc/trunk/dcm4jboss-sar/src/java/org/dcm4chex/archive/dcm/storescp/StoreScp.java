@@ -199,7 +199,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private boolean coerceBeforeWrite = false;
     
-    private PerfMonDelegate perfMon;
+    protected PerfMonDelegate perfMon;
 
     private volatile Executor syncFileExecutor;
 
