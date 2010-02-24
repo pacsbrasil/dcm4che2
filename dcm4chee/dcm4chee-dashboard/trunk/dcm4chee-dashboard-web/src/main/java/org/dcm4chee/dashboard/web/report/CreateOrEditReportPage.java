@@ -54,7 +54,6 @@ import javax.management.ReflectionException;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.WebPage;
@@ -123,15 +122,6 @@ public class CreateOrEditReportPage extends WebPage {
         
         try {
             addOrReplace(new Label("page-title", new ResourceModel(this.report == null || this.report.getGroupUuid() == null ? "dashboard.report.createoredit.create.title" : "dashboard.report.createoredit.edit.title")));
-            addOrReplace(new AjaxLink<Object>("close") {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void onClick(AjaxRequestTarget target) {
-                    window.close(target);
-                }
-            }.setOutputMarkupId(true).setOutputMarkupPlaceholderTag(true));
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);

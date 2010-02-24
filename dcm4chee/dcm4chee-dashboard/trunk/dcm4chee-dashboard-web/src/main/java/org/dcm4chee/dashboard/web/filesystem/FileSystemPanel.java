@@ -65,7 +65,6 @@ import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation.Unit;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
@@ -257,13 +256,12 @@ public class FileSystemPanel extends Panel {
                 return null;
 
             if (!((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).isVisible())
-                return new Image("image") {
-
+                return new Label("image") {
+                
                     private static final long serialVersionUID = 1L;
 
                     @Override
                     protected void onComponentTag(ComponentTag tag) {
-                        tag.setName("img");
                         super.onComponentTag(tag);
                     }
                 };

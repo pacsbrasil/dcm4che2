@@ -48,7 +48,6 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
 import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.IHeaderResponse;
-import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.link.PopupSettings;
@@ -106,15 +105,15 @@ public class DynamicLinkPanel extends Panel {
                             "images/edit.gif" : 
                     (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.RemoveLink) ? 
                         "images/delete.gif" : 
+                    (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramLink) ?
+                        "images/diagram.gif" : 
                     (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayTableLink) ?
                         "images/table.gif" : 
                     (link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramAndTableLink) ? 
-                        "images/table.gif" : 
+                        "images/diagram+table.gif" : 
                     "";
                 }
             })));
-
-            this.link.add(new Label("text"));
 
             if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramLink
                     || this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayTableLink
@@ -151,10 +150,6 @@ public class DynamicLinkPanel extends Panel {
         super.onBeforeRender();
         
         try {
-            this.link.get("text").setDefaultModel(new Model<String>((link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramLink || link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramAndTableLink) && report.getDiagram() != null ? 
-                    new ResourceModel("dashboard.report.diagram.options.types").wrapOnAssignment(this).getObject().split(";")[report.getDiagram()] : 
-                    ""));
-
             this.link.get("image").add(new AttributeModifier("title", true, 
                     (this.report.getGroupUuid() == null ? 
                             this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.CreateOrEditReportLink ?
@@ -227,14 +222,10 @@ public class DynamicLinkPanel extends Panel {
         private static final long serialVersionUID = 1L;
       
         ReportModel report;
-        @SuppressWarnings("unused")
-        ModalWindow modalWindow;
-        
         public DisplayLink(String id, ReportModel report, ModalWindow modalWindow) {
             super(id);
 
             this.report = report;
-            this.modalWindow = modalWindow;
         }
     }
 

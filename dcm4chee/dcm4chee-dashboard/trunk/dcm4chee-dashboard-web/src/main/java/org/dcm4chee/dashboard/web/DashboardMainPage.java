@@ -41,9 +41,7 @@ package org.dcm4chee.dashboard.web;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -133,31 +131,28 @@ public class DashboardMainPage extends WebPage {
     }
     
     public static boolean isConfigurableStatement(String statement) {
-        Matcher m = Pattern.compile("\\[[A-Za-z0-9\\.]*\\]").matcher(statement);
+        Matcher m = Pattern.compile("(\\:\\[[A-Za-z0-9\\.]*\\]\\:|\\:#[A-Za-z0-9\\.]*#\\:)").matcher(statement);
         return m.find();
     }
     
     public static String createSQLStatement(String statement) {
-        return Pattern.compile("\\[[A-Za-z0-9\\.]*\\]").matcher(statement).replaceAll("?");
+        return Pattern.compile("\\:\\[[A-Za-z0-9\\.]*\\]\\:").matcher(
+                Pattern.compile("\\:#[A-Za-z0-9\\.]*#\\:").matcher(statement)
+                .replaceAll("?"))
+                .replaceAll("'?'");
     }
 
-//    public static Map<String, String> getParameterMap(String statement) {
-//        Map<String, String> parameters = new HashMap<String, String>();
-//        Matcher m = Pattern.compile("\\[[A-Za-z0-9\\.]*\\]").matcher(statement);
-//        while(m.find()) parameters.put(m.group(), null);
-//        return parameters;
-//    }
     public static Set<String> getParameterSet(String statement) {
         Set<String> parameters = new TreeSet<String>();
-        Matcher m = Pattern.compile("\\[[A-Za-z0-9\\.]*\\]").matcher(statement);
-        while(m.find()) parameters.add(m.group());
+        Matcher m = Pattern.compile("(\\:\\[[A-Za-z0-9\\.]*\\]\\:|\\:#[A-Za-z0-9\\.]*#\\:)").matcher(statement);
+        while(m.find()) parameters.add(m.group().replaceAll("(\\:\\[|\\]\\:|\\:#|#\\:)", ""));
         return parameters;
     }
 
     public static List<String> getParameterOccurences(String statement) {
         List<String> parameters = new ArrayList<String>();
-        Matcher m = Pattern.compile("\\[[A-Za-z0-9\\.]*\\]").matcher(statement);
-        while(m.find()) parameters.add(m.group());
+        Matcher m = Pattern.compile("(\\:\\[[A-Za-z0-9\\.]*\\]\\:|\\:#[A-Za-z0-9\\.]*#\\:)").matcher(statement);
+        while(m.find()) parameters.add(m.group().replaceAll("(\\:\\[|\\]\\:|\\:#|#\\:)", ""));
         return parameters;
     }
 }

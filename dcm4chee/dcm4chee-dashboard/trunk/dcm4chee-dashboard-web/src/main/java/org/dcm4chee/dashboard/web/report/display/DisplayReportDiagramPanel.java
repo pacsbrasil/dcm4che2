@@ -98,7 +98,7 @@ public class DisplayReportDiagramPanel extends Panel {
 
     public DisplayReportDiagramPanel(String id, ReportModel report) {
         super(id);
-        
+
         this.report = report;
     }
     
