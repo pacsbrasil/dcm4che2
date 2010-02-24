@@ -168,41 +168,6 @@ public class ConfigureReportPage extends WebPage {
                 );
             }
 
-            add(new AjaxFallbackButton("statement-test-submit", ConfigureReportForm.this) {
-                
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                    
-                    String message = null;
-                    Connection jdbcConnection = null;
-                    try {
-                        if (report.getDataSource() == null) {
-                            message = new ResourceModel("dashboard.report.configure.form.statement-test-submit.no-datasource-message").wrapOnAssignment(this.getParent()).getObject();
-                            return;
-                        }
-                        (jdbcConnection = DashboardMainPage.getDatabaseConnection(report.getDataSource().toString())).createStatement().executeQuery(configureStatement());
-                    } catch (Exception e) {
-                        message = e.getLocalizedMessage();
-                        log.debug("Exception: ", e);
-                    } finally {
-                        try {
-                            jdbcConnection.close();
-                        } catch (SQLException ignore) {
-                        } catch (NullPointerException ignore) {
-                        }
-                        resultMessage.setDefaultModel(new Model<String>(new ResourceModel(message == null ? "dashboard.report.configure.form.statement-test-submit.success-message" : 
-                                                                                          "dashboard.report.configure.form.statement-test-submit.failure-message")
-                            .wrapOnAssignment(this.getParent()).getObject().toString()
-                            + (message == null ? "" : message)))
-                            .add(new AttributeModifier("class", true, new Model<String>(message == null ? "message-system" : "message-error")))              
-                            .setVisible(true);
-                        target.addComponent(resultMessage);                        
-                    }
-                }
-            });
-
             add(new AjaxFallbackButton("form-submit", ConfigureReportForm.this) {
                 private static final long serialVersionUID = 1L;
     

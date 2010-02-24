@@ -73,6 +73,7 @@ import org.dcm4chee.dashboard.web.DashboardMainPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.csvreader.CsvWriter;
@@ -164,8 +165,8 @@ public class DisplayReportTablePanel extends Panel {
                 for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
                     columnValues.add(new WebMarkupContainer(columnValues.newChildId()).add(new Label("column-value", resultSet.getString(i))));
                     columnList.add(resultSet.getString(i));
-                    
-                    Node columnNode = document.createElement(resultSet.getMetaData().getColumnName(i));
+                    Element columnNode = document.createElement("column");
+                    columnNode.setAttribute("name", resultSet.getMetaData().getColumnName(i));
                     rowNode.appendChild(columnNode);
                     columnNode.appendChild(document.createTextNode(resultSet.getString(i)));
                 }

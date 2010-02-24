@@ -55,6 +55,7 @@ import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.IRequestTarget;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -244,10 +245,20 @@ public class DisplayReportDiagramPanel extends Panel {
                 }
             });
 
+            addOrReplace(new Button("diagram-print"));
             add(new Label("error-message", "").setVisible(false));
             add(new Label("error-reason", "").setVisible(false));
         } catch (Exception e) {
-            add(new Image("diagram"));
+            addOrReplace(new Link<Object>("diagram-download") {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick() {}}
+                .setVisible(false));
+            
+            addOrReplace(new Button("diagram-print").setVisible(false));
+            addOrReplace(new Image("diagram"));
             add(new Label("error-message", new ResourceModel("dashboard.report.reportdiagram.statement.error").wrapOnAssignment(this).getObject()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
             add(new Label("error-reason", e.getMessage()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
         } finally {
