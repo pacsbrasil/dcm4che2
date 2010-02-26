@@ -95,6 +95,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     private boolean forceNewRejNoteStudyIUID;
     
     private ObjectName rejNoteServiceName;
+    private ObjectName ianScuServiceName;
         
     public String getRejectionNoteCode() {
         return rejectNoteCode.toString()+"\r\n";
@@ -124,8 +125,16 @@ public class ContentEditService extends ServiceMBeanSupport {
         return rejNoteServiceName;
     }
 
-    public void setRejectionNoteServiceName(ObjectName rejNoteServiceName) {
-        this.rejNoteServiceName = rejNoteServiceName;
+    public void setRejectionNoteServiceName(ObjectName name) {
+        this.rejNoteServiceName = name;
+    }
+
+    public ObjectName getIANScuServiceName() {
+        return ianScuServiceName;
+    }
+
+    public void setIANScuServiceName(ObjectName name) {
+        this.ianScuServiceName = name;
     }
 
     public DicomObject moveInstanceToTrash(String iuid) throws InstanceNotFoundException, MBeanException, ReflectionException {
@@ -202,7 +211,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         processIANs(entityTree);
         return rejNotes;
     }
-    public DicomObject[] movePatientToTrash(String pid, String issuer) {
+    public DicomObject[] movePatientToTrash(String pid, String issuer) throws InstanceNotFoundException, MBeanException, ReflectionException {
         Collection<Instance> instances = lookupDicomEditLocal().movePatientToTrash(pid, issuer);
         if (instances.isEmpty())
             return null;
@@ -214,7 +223,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         processIANs(entityTree);
         return rejNotes;
     }
-    public DicomObject[] movePatientsToTrash(long[] pks) {
+    public DicomObject[] movePatientsToTrash(long[] pks) throws InstanceNotFoundException, MBeanException, ReflectionException {
         Collection<Instance> instances = lookupDicomEditLocal().movePatientsToTrash(pks);
         if (instances.isEmpty())
             return null;
@@ -504,15 +513,17 @@ public class ContentEditService extends ServiceMBeanSupport {
     
     private void processRejectionNote(DicomObject rejNote) throws InstanceNotFoundException, MBeanException, ReflectionException {
         log.info("RejectionNote KOS:"+rejNote);
-        server.invoke(rejNoteServiceName, "sendRejectionNote", 
+        server.invoke(rejNoteServiceName, "scheduleRejectionNote", 
                 new Object[]{rejNote}, new String[]{DicomObject.class.getName()});
     }
     
-    private void processIANs(Map<Patient, Map<Study, Map<Series, List<Instance>>>> entityTree) {
+    private void processIANs(Map<Patient, Map<Study, Map<Series, List<Instance>>>> entityTree) throws InstanceNotFoundException, MBeanException, ReflectionException {
         for (Map<Study, Map<Series, List<Instance>>> studyMap : entityTree.values()) {
             for ( Map.Entry<Study, Map<Series, List<Instance>>> studyEntry: studyMap.entrySet()) {
                 DicomObject ian = makeIAN(studyEntry.getKey(), studyEntry.getValue());
                 log.info("IAN:"+ian);
+                server.invoke(ianScuServiceName, "scheduleIAN", 
+                        new Object[]{ian}, new String[]{DicomObject.class.getName()});
             }
         }
     }

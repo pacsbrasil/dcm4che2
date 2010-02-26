@@ -8,6 +8,7 @@
          xmbean-dd="">
 
     <depends optional-attribute-name="RejectionNoteServiceName">dcm4chee.web:service=RejectionNoteSCU</depends>
+    <depends optional-attribute-name="IANScuServiceName">dcm4chee.web:service=IANSCU</depends>
 
     <xmbean>
       <description><![CDATA[<b>Content Edit Service for dcm4chee-web3</b>
@@ -66,6 +67,15 @@
       <description>Used internally. Do NOT modify.
       </description>
       <name>RejectionNoteServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   
+   <attribute access="read-write"
+      getMethod="getIANScuServiceName"
+      setMethod="setIANScuServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>IANScuServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
    
