@@ -171,15 +171,37 @@ public abstract class CompressCmd extends CodecCmd {
         private final String suid;
 
         public JpegLossy(Dataset ds, String tsuid, float quality,
-                float compressionRatio, String iuid, String suid) {
+                float compressionRatio, String iuid, String suid)
+                throws CompressionFailedException {
             super(ds, tsuid);
             if (suid != null && iuid == null)
                 throw new IllegalArgumentException(
                         "New Series Instance UID requires new SOP Instance UID");
+            if (samples == 3 ? !photometricInterpretation.equals("RGB")
+                    : !photometricInterpretation.equals("MONOCHROME2")
+                    && !photometricInterpretation.equals("MONOCHROME1"))
+                throw new CompressionFailedException(
+                        "JPEG Lossy compression of "
+                        + photometricInterpretation
+                        + " images not supported");
+            if (hasOverlayDataInPixelData(ds))
+                throw new CompressionFailedException(
+                        "JPEG Lossy compression of images with overlay data" +
+                        " in the Image Pixel Data not supported");
             this.quality = quality;
             this.compressionRatio = compressionRatio;
             this.iuid = iuid;
             this.suid = suid;
+        }
+
+        private static boolean hasOverlayDataInPixelData(Dataset ds) {
+            for (int i = 0; i < 16; i++) {
+                int g = i << 17;
+                if (ds.contains(Tags.OverlayRows | g)
+                        && !ds.contains(Tags.OverlayData | g))
+                    return true;
+            }
+            return false;
         }
 
         public void coerceDataset(Dataset ds) {
@@ -257,7 +279,8 @@ public abstract class CompressCmd extends CodecCmd {
     }
 
     public static byte[] compressFile(File inFile, File outFile, String tsuid,
-            int[] pxdataVR, byte[] buffer) throws Exception {
+            int[] planarConfiguration, int[] pxdataVR, byte[] buffer)
+            throws Exception {
         log.info("M-READ file:" + inFile);
         InputStream in = new BufferedInputStream(new FileInputStream(inFile));
         try {
@@ -266,6 +289,8 @@ public abstract class CompressCmd extends CodecCmd {
             Dataset ds = of.newDataset();
             p.setDcmHandler(ds.getDcmHandler());
             p.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
+            if (planarConfiguration != null && planarConfiguration.length != 0)
+                planarConfiguration[0] = ds.getInt(Tags.PlanarConfiguration, 0);
             if (pxdataVR != null && pxdataVR.length != 0)
                 pxdataVR[0] = p.getReadVR();
             FileMetaInfo fmi = of.newFileMetaInfo(ds, tsuid);
@@ -300,9 +325,10 @@ public abstract class CompressCmd extends CodecCmd {
     }
 
     public static byte[] compressFileJPEGLossy(File inFile, File outFile,
-            float quality, float estimatedCompressionRatio, 
-            float[] actualCompressionRatio, String iuid, String suid,
-            byte[] buffer, Dataset ds, FileInfo fileInfo) throws Exception {
+            int[] planarConfiguration, int[] pxdataVR, float quality,
+            float estimatedCompressionRatio, float[] actualCompressionRatio,
+            String iuid, String suid, byte[] buffer, Dataset ds,
+            FileInfo fileInfo) throws Exception {
         if (suid != null && iuid == null)
             throw new IllegalArgumentException(
                     "New Series Instance UID requires new SOP Instance UID");
@@ -314,6 +340,10 @@ public abstract class CompressCmd extends CodecCmd {
                 ds = DcmObjectFactory.getInstance().newDataset();
             p.setDcmHandler(ds.getDcmHandler());
             p.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
+            if (planarConfiguration != null && planarConfiguration.length != 0)
+                planarConfiguration[0] = ds.getInt(Tags.PlanarConfiguration, 0);
+            if (pxdataVR != null && pxdataVR.length != 0)
+                pxdataVR[0] = p.getReadVR();
             if (fileInfo != null) {
                 DatasetUtils.fromByteArray(fileInfo.patAttrs,
                         DatasetUtils.fromByteArray(fileInfo.studyAttrs,
@@ -379,7 +409,8 @@ public abstract class CompressCmd extends CodecCmd {
     }
 
     public static CompressCmd createJPEGLossyCompressCmd(Dataset ds,
-            float quality, float ratio, String iuid, String suid) {
+            float quality, float ratio, String iuid, String suid)
+            throws CompressionFailedException {
         return new JpegLossy(ds,
                 ds.getInt(Tags.BitsAllocated, 8) > 8
                     ? UIDs.JPEGExtended 

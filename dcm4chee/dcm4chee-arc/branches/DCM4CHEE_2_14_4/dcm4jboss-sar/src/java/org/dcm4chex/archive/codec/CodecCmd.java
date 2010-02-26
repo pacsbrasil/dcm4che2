@@ -52,7 +52,8 @@ import EDU.oswego.cs.dl.util.concurrent.Semaphore;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2006-05-15 11:59:33 +0200 (Mon, 15 May
+ *          2006) $
  * @since 14.03.2005
  * 
  */
@@ -79,6 +80,8 @@ public abstract class CodecCmd {
 
     static BufferedImagePool biPool = new BufferedImagePool();
 
+    protected final String photometricInterpretation;
+
     protected final int samples;
 
     protected final int frames;
@@ -99,9 +102,11 @@ public abstract class CodecCmd {
 
     protected final String tsuid;
 
-   protected final int dataType;
+    protected final int dataType;
 
     protected CodecCmd(Dataset ds, String tsuid) {
+        this.photometricInterpretation = 
+                ds.getString(Tags.PhotometricInterpretation, "MONCHROME2");
         this.samples = ds.getInt(Tags.SamplesPerPixel, 1);
         this.frames = ds.getInt(Tags.NumberOfFrames, 1);
         this.rows = ds.getInt(Tags.Rows, 1);
