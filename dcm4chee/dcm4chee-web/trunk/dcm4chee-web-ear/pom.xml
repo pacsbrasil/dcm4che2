@@ -46,7 +46,19 @@
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
+      <artifactId>dcm4chee-web-sar-ianscu</artifactId>
+      <type>sar</type>
+      <version>3.0.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-web-sar-contentedit</artifactId>
+      <type>sar</type>
+      <version>3.0.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>dcm4che.dcm4chee</groupId>
+      <artifactId>dcm4chee-web-sar-tlscfg</artifactId>
       <type>sar</type>
       <version>3.0.0-SNAPSHOT</version>
     </dependency>
@@ -75,7 +87,19 @@
             </sarModule>
             <sarModule>
               <groupId>dcm4che.dcm4chee</groupId>
+              <artifactId>dcm4chee-web-sar-rejnotescu</artifactId>
+            </sarModule>
+            <sarModule>
+              <groupId>dcm4che.dcm4chee</groupId>
+              <artifactId>dcm4chee-web-sar-ianscu</artifactId>
+            </sarModule>
+            <sarModule>
+              <groupId>dcm4che.dcm4chee</groupId>
               <artifactId>dcm4chee-web-sar-contentedit</artifactId>
+            </sarModule>
+            <sarModule>
+              <groupId>dcm4che.dcm4chee</groupId>
+              <artifactId>dcm4chee-web-sar-tlscfg</artifactId>
             </sarModule>
           </modules>
           <jboss>
