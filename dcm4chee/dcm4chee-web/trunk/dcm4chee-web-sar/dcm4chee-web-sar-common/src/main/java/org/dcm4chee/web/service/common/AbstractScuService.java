@@ -51,8 +51,13 @@ import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.concurrent.Executor;
 
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.naming.InitialContext;
 
+import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.Device;
@@ -80,19 +85,11 @@ public class AbstractScuService extends ServiceMBeanSupport {
     
     protected int priority;
 
-    private String keyStoreURL;
-    private String trustStoreURL;
-    private char[] keyStorePassword;
-    private char[] trustStorePassword;
-    private char[] keyPassword;
-    private String keyStoreType;
-    private String trustStoreType;
-    private String[] tlsProtocol;
-    private boolean needClientAuth;
-    
     private AEHomeLocal aeHome;
     
     private Executor executor;
+    
+    private ObjectName tlsCfgServiceName;    
   
     protected static final Logger LOG = LoggerFactory.getLogger(AbstractScuService.class);
     
@@ -213,74 +210,15 @@ public class AbstractScuService extends ServiceMBeanSupport {
     public void setPriority(String priorityName) {
         this.priority = PRIORITIES[1].equals(priorityName) ? 1 : PRIORITIES[2].equals(priorityName) ? 2 : 0;
     }
-
-    public String getKeyStoreURL() {
-        return keyStoreURL;
-    }
-
-    public void setKeyStoreURL(String keyStoreURL) {
-        this.keyStoreURL = keyStoreURL;
-    }
-
-    public void setKeyStorePassword(String keyStorePassword) {
-        this.keyStorePassword = none2null(keyStorePassword);
-    }
-
-    public String getTrustStoreURL() {
-        return trustStoreURL;
-    }
-
-    public void setTrustStoreURL(String trustStoreURL) {
-        this.trustStoreURL = trustStoreURL;
-    }
-
-    public void setTrustStorePassword(String trustStorePassword) {
-        this.trustStorePassword = none2null(trustStorePassword);
-    }
-
-    public void setKeyPassword(String keyPassword) {
-        this.keyPassword = none2null(keyPassword);
-    }
-    public String getKeyPassword() {
-        return keyPassword == null ? NONE : "******";
-    }
-
-    public String getTlsProtocol() {
-        return StringUtils.join(tlsProtocol, ',');
-    }
-
-    public void setTlsProtocol(String tlsProtocol) {
-        this.tlsProtocol = StringUtils.split(tlsProtocol, ',');
-    }
-
-    public String getKeyStoreType() {
-        return keyStoreType;
-    }
-
-    public void setKeyStoreType(String type) {
-        this.keyStoreType = type;
-    }
-
-    public String getTrustStoreType() {
-        return trustStoreType;
-    }
-
-    public void setTrustStoreType(String type) {
-        this.trustStoreType = type;
-    }
-
-    public boolean isNeedClientAuth() {
-        return needClientAuth;
-    }
-
-    public void setNeedClientAuth(boolean needClientAuth) {
-        this.needClientAuth = needClientAuth;
-    }
-
-    private char[] none2null(String s) {
-        return NONE.equals(s) ? null : s.toCharArray();
-    }
         
+    public ObjectName getTlsCfgServiceName() {
+        return tlsCfgServiceName;
+    }
+
+    public void setTlsCfgServiceName(ObjectName name) {
+        this.tlsCfgServiceName = name;
+    }
+    
     public Association open(String aet) throws IOException, GeneralSecurityException {
         return open(lookupAEHome().findByTitle(aet));
     }
@@ -300,15 +238,16 @@ public class AbstractScuService extends ServiceMBeanSupport {
         LOG.info("Open association to {} url:{} Ciphers:{}", new Object[]{ae.getTitle(), ae, ciphers});
         if (ciphers.size() > 0) {
             String[] ciphers1 = (String[]) ciphers.toArray(new String[ciphers.size()]);
-            remoteConn.setTlsCipherSuite(ciphers1);
-            localConn.setTlsCipherSuite(ciphers1);
-            localConn.setTlsProtocol(tlsProtocol);
-            localConn.setTlsNeedClientAuth(needClientAuth);
-            KeyStore keyStore = loadKeyStore(keyStoreURL, keyStorePassword, keyStoreType);
-            KeyStore trustStore = loadKeyStore(trustStoreURL, trustStorePassword, trustStoreType);
-            device.initTLS(keyStore, keyPassword == null ? keyStorePassword : keyPassword, trustStore);
+            try {
+                server.invoke(tlsCfgServiceName, "initTLS", 
+                        new Object[]{remoteConn, device, ciphers1}, 
+                        new String[]{NetworkConnection.class.getName(), 
+                        Device.class.getName(), ciphers1.getClass().getName()});
+            } catch (Exception e) {
+                log.error("Failed to initialize TLS! AE:"+ae+" ciphers:"+ciphers, e);
+                throw new IOException("Failed to initialize TLS aet:"+ae.getTitle());
+            }
         }
-        
         try {
             return localNAE.connect(remoteAE, executor);
         } catch (Throwable t) {
@@ -317,6 +256,9 @@ public class AbstractScuService extends ServiceMBeanSupport {
         }
     }
     
+    public TransferCapability[] getTransferCapability() {
+        return localNAE.getTransferCapability();        
+    }
     public void setTransferCapability(TransferCapability[] tc) {
         localNAE.setTransferCapability(tc);        
     }
@@ -330,23 +272,6 @@ public class AbstractScuService extends ServiceMBeanSupport {
         }
         return null;
     }
-    
-    
-    private KeyStore loadKeyStore(String keyStoreURL, char[] password, String type) throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
-        InputStream in;
-        try {
-            in = new URL(keyStoreURL).openStream();
-        } catch (MalformedURLException e) {
-            in = new FileInputStream(keyStoreURL);
-        }
-        KeyStore key = KeyStore.getInstance(type);
-        try {
-            key.load(in, password);
-        } finally {
-            in.close();
-        }
-        return key;
-    }
 
     public AEHomeLocal lookupAEHome() {
         if ( aeHome == null ) {
@@ -359,6 +284,5 @@ public class AbstractScuService extends ServiceMBeanSupport {
         }
         return aeHome;
     }
-
 }
 
