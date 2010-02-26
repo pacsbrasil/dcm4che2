@@ -56,9 +56,21 @@ public class WicketApplication extends WebApplication {
     private static Logger log = LoggerFactory.getLogger(WicketApplication.class);
     
     private DashboardDelegator dashboardService;
+
+    private String userRoleName;
+
+    private String adminRoleName;
     
     public DashboardDelegator getDashboardService() {
         return dashboardService;
+    }
+
+    public String getUserRoleName() {
+        return userRoleName;
+    }
+
+    public String getAdminRoleName() {
+        return adminRoleName;
     }
 
     public static WicketApplication get() {
@@ -72,6 +84,9 @@ public class WicketApplication extends WebApplication {
         getApplicationSettings().setInternalErrorPage(InternalErrorPage.class);
         getApplicationSettings().setPageExpiredErrorPage(PageExpiredErrorPage.class);
 
+        this.userRoleName = getInitParameter("userRoleName");
+        this.adminRoleName = getInitParameter("adminRoleName");
+        
         try {
             this.dashboardService = new DashboardDelegator(getInitParameter("DashboardServiceName"));
         } catch (Exception e) {

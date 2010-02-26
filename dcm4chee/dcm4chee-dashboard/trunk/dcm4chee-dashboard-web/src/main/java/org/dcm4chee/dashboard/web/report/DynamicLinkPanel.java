@@ -39,22 +39,28 @@
 package org.dcm4chee.dashboard.web.report;
 
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.Component;
 import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
 import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
+import org.apache.wicket.markup.MarkupStream;
 import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.IHeaderResponse;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
+import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.link.PopupSettings;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.protocol.http.WebRequest;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.web.DashboardMainPage;
 import org.dcm4chee.dashboard.web.WicketApplication;
@@ -84,15 +90,30 @@ public class DynamicLinkPanel extends Panel {
         this.report = report;
         this.modalWindow = modalWindow;
 
-        try {           
+        try {
+            if ((className.endsWith("CreateOrEditReportLink") || className.endsWith("RemoveLink"))
+                      && !((WebRequest) getRequest()).getHttpServletRequest().isUserInRole(((WicketApplication) getApplication()).getAdminRoleName())) {
+                          System.out.println("is user: " + ((WebRequest) getRequest()).getHttpServletRequest().isUserInRole(((WicketApplication) getApplication()).getUserRoleName()));
+                          System.out.println("is admin: " + ((WebRequest) getRequest()).getHttpServletRequest().isUserInRole(((WicketApplication) getApplication()).getAdminRoleName()));
+                          add(new Link("report-table-link") {
+
+                              private static final long serialVersionUID = 1L;
+
+                              @Override
+                              public void onClick() {                               
+                              }
+                          }
+                          .add(new Image("image")));
+                          return;
+                      }
+
             add((this.link = (Link<Object>) ((Class<? extends Link<Object>>) Class.forName("org.dcm4chee.dashboard.web.report.DynamicLinkPanel$" + className)).getConstructors()[0].newInstance(new Object[] {
-                    this, 
-                    "report-table-link", 
-                    report, 
-                    this.modalWindow
-            })));
-    
-            this.link.add(new Image("image")
+                 this, 
+                 "report-table-link", 
+                 report, 
+                 this.modalWindow
+            }))
+            .add(new Image("image")
             .add(new AttributeModifier("src", true, new AbstractReadOnlyModel() {
     
                 private static final long serialVersionUID = 1L;
@@ -113,8 +134,8 @@ public class DynamicLinkPanel extends Panel {
                         "images/diagram+table.gif" : 
                     "";
                 }
-            })));
-
+            }))));
+            
             if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramLink
                     || this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayTableLink
                     || this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramAndTableLink) {
@@ -150,6 +171,8 @@ public class DynamicLinkPanel extends Panel {
         super.onBeforeRender();
         
         try {
+            if (this.link == null) return;
+            
             this.link.get("image").add(new AttributeModifier("title", true, 
                     (this.report.getGroupUuid() == null ? 
                             this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.CreateOrEditReportLink ?
@@ -218,7 +241,7 @@ public class DynamicLinkPanel extends Panel {
     }    
 
     abstract private class DisplayLink extends Link<Object> {
-        
+            
         private static final long serialVersionUID = 1L;
       
         ReportModel report;
@@ -234,7 +257,7 @@ public class DynamicLinkPanel extends Panel {
         private static final long serialVersionUID = 1L;
         
         public CreateOrEditReportLink(String id, ReportModel report, ModalWindow modalWindow) {
-            super(id, report, modalWindow);
+            super(id, report, modalWindow);            
         }
         
         @Override

@@ -16,6 +16,26 @@
 	      <param-name>DashboardServiceName</param-name>
 	      <param-value>org.dcm4chee.dashboard.mbean:service=DashboardService</param-value>
 	    </init-param>
+	    <init-param>
+	      <param-name>userRoleName</param-name>
+	      <param-value>WebUser</param-value>
+	    </init-param>
+	    <init-param>
+	      <param-name>adminRoleName</param-name>
+	      <param-value>JBossAdmin</param-value>
+	    </init-param>
+	    <init-param>
+	      <param-name>hashEncoding</param-name>
+	      <param-value>base64</param-value>
+	    </init-param>
+	    <init-param>
+	      <param-name>hashCharset</param-name>
+	      <param-value>UTF-8</param-value>
+	    </init-param>
+	    <init-param>
+	      <param-name>hashAlgorithm</param-name>
+	      <param-value>SHA-1</param-value>
+	    </init-param>	
 	</filter>
 	<filter-mapping>
 		<filter-name>wicket.dcm4chee-dashboard</filter-name>
