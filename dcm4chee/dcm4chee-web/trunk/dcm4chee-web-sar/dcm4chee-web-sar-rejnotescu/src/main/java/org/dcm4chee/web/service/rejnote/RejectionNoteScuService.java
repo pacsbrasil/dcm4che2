@@ -41,11 +41,7 @@ package org.dcm4chee.web.service.rejnote;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.MessageListener;
-import javax.jms.ObjectMessage;
-import javax.management.ObjectName;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -57,23 +53,17 @@ import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4che2.net.NoPresentationContextException;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4che2.util.StringUtils;
-import org.dcm4chee.web.service.common.AbstractScuService;
-import org.dcm4chee.web.service.common.JMSDelegate;
-import org.dcm4chee.web.service.common.RetryIntervalls;
+import org.dcm4chee.web.service.common.AbstractScheduledScuService;
+import org.dcm4chee.web.service.common.DicomActionOrder;
 
 /**
  * @author franz.willer@gmail.com
  * @version $Revision$ $Date$
  * @since Feb 11, 2010
  */
-public class RejectionNoteScuService extends AbstractScuService implements MessageListener {
+public class RejectionNoteScuService extends AbstractScheduledScuService implements MessageListener {
 
     private String[] calledAETs;
-    private JMSDelegate jmsDelegate = new JMSDelegate(this);
-    private RetryIntervalls retryIntervalls = new RetryIntervalls();
-    private static int MESSAGE_PRIORITY_MIN = 0;
-    private int concurrency;
-    private String queueName;
     
     public RejectionNoteScuService() {
         super();
@@ -90,61 +80,18 @@ public class RejectionNoteScuService extends AbstractScuService implements Messa
     public void setCalledAETs(String calledAET) {
         this.calledAETs = NONE.equals(calledAET) ? null : StringUtils.split(calledAET, '\\');
     }
-
-    public final String getRetryIntervalls() {
-        return retryIntervalls.toString();
-    }
-
-    public final void setRetryIntervalls(String s) {
-        this.retryIntervalls = new RetryIntervalls(s);
-    }
-
-    public final String getQueueName() {
-        return queueName;
-    }
-    public final void setQueueName(String queueName) {
-        this.queueName = queueName;
-    }
-
-    public final ObjectName getJmsServiceName() {
-        return jmsDelegate.getJmsServiceName();
-    }
-    public final void setJmsServiceName(ObjectName jmsServiceName) {
-        jmsDelegate.setJmsServiceName(jmsServiceName);
-    }
-
-    public final int getConcurrency() {
-        return concurrency;
-    }
-    public final void setConcurrency(int concurrency) throws Exception {
-        if (concurrency <= 0)
-            throw new IllegalArgumentException("Concurrency: " + concurrency);
-        if (this.concurrency != concurrency) {
-            final boolean restart = getState() == STARTED;
-            if (restart)
-                stop();
-            this.concurrency = concurrency;
-            if (restart)
-                start();
-        }
-    }
     
-    protected void startService() throws Exception {
-        jmsDelegate.startListening(queueName, this, concurrency);
-    }
-
-    protected void stopService() throws Exception {
-        jmsDelegate.stopListening(queueName);
-    }
-    
-    public void sendRejectionNote(DicomObject kos) throws Exception {
+    public void scheduleRejectionNote(DicomObject kos) throws Exception {
         if (calledAETs != null) {
             for ( String aet : calledAETs) {
-                jmsDelegate.queue(queueName, new RejectionNoteOrder(aet,kos), Message.DEFAULT_PRIORITY, 0);
+                schedule(new DicomActionOrder(aet,kos, "Rejection Note"));
             }
         }
     }
     
+    public void process(DicomActionOrder order) throws Exception {
+        this.sendRejectionNote(order.getDestAET(), order.getDicomObject());
+    }
     private int sendRejectionNote(String aet, DicomObject kos) throws IOException, InterruptedException, GeneralSecurityException {
         Association assoc = open(aet);
         TransferCapability tc = assoc.getTransferCapabilityAsSCU(UID.KeyObjectSelectionDocumentStorage);
@@ -168,36 +115,6 @@ public class RejectionNoteScuService extends AbstractScuService implements Messa
     }
 
 
-    public void onMessage(Message message) {
-        ObjectMessage om = (ObjectMessage) message;
-        try {
-            RejectionNoteOrder order = (RejectionNoteOrder) om.getObject();
-            log.info("Start processing " + order);
-            try {
-                this.sendRejectionNote(order.getDestAET(), order.getRejectionNote());
-                log.info("Finished processing " + order);
-            } catch (Exception e) {
-                order.setThrowable(e);
-                final int failureCount = order.getFailureCount() + 1;
-                order.setFailureCount(failureCount);
-                final long delay = retryIntervalls.getIntervall(failureCount);
-                if (delay == -1L) {
-                    log.error("Give up to process " + order, e);
-                    jmsDelegate.fail(queueName, order);
-                } else {
-                    log.warn("Failed to process " + order + ". Scheduling retry.", e);
-                    jmsDelegate.queue(queueName, order, MESSAGE_PRIORITY_MIN, 
-                            System.currentTimeMillis() + delay);
-                }
-            }
-        } catch (JMSException e) {
-            log.error("jms error during processing message: " + message, e);
-        } catch (Throwable e) {
-            log.error("unexpected error during processing message: " + message,
-                    e);
-        }
-    }
-        
     private class RspHandler extends DimseRSPHandler {
         private int status;
 
