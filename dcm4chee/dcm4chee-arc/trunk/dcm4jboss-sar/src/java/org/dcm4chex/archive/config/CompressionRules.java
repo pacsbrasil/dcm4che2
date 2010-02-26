@@ -46,11 +46,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.Association;
 import org.dcm4chex.archive.codec.CompressCmd;
+import org.dcm4chex.archive.codec.CompressionFailedException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -59,6 +61,8 @@ import org.dcm4chex.archive.codec.CompressCmd;
  * 
  */
 public class CompressionRules {
+
+    static final Logger LOG = Logger.getLogger(CompressionRules.class);
 
     static final int NONE = 0;
 
@@ -140,11 +144,16 @@ public class CompressionRules {
         for (Iterator it = list.iterator(); it.hasNext();) {
             Entry e = (Entry) it.next();
             if (e.condition.isTrueFor(param)) {
-                return (e.compression == NONE)? null : (e.compression == JPLY) 
-                        ? CompressCmd.createJPEGLossyCompressCmd(
-                                ds, e.quality, e.ratio, null, null)
-                        : CompressCmd.createCompressCmd(
-                                ds, TSUIDS[e.compression]);
+                try {
+                    return (e.compression == NONE)? null : (e.compression == JPLY) 
+                            ? CompressCmd.createJPEGLossyCompressCmd(
+                                    ds, e.quality, e.ratio, null, null)
+                            : CompressCmd.createCompressCmd(
+                                    ds, TSUIDS[e.compression]);
+                } catch (CompressionFailedException e1) {
+                    LOG.info(e1.getMessage());
+                    continue;
+                }
             }
         }
         return null;

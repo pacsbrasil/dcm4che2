@@ -80,6 +80,8 @@ public abstract class CodecCmd {
 
     static BufferedImagePool biPool = new BufferedImagePool();
 
+    protected final String photometricInterpretation;
+
     protected final int samples;
 
     protected final int frames;
@@ -100,9 +102,11 @@ public abstract class CodecCmd {
 
     protected final String tsuid;
 
-   protected final int dataType;
+    protected final int dataType;
 
     protected CodecCmd(Dataset ds, String tsuid) {
+        this.photometricInterpretation = 
+                ds.getString(Tags.PhotometricInterpretation, "MONCHROME2");
         this.samples = ds.getInt(Tags.SamplesPerPixel, 1);
         this.frames = ds.getInt(Tags.NumberOfFrames, 1);
         this.rows = ds.getInt(Tags.Rows, 1);

@@ -59,6 +59,7 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.codec.CodecCmd;
 import org.dcm4chex.archive.codec.CompressCmd;
+import org.dcm4chex.archive.codec.CompressionFailedException;
 import org.dcm4chex.archive.codec.DecompressCmd;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
@@ -411,9 +412,10 @@ public class CompressionService extends ServiceMBeanSupport {
                 log.debug("Compress file " + srcFile + " to " + destFile
                         + " with CODEC:" + info.getCodec() + "("
                         + info.getTransferSyntax() + ")");
+            int[] planarConfiguration = new int[1];
             int[] pxvalVR = new int[1];
             byte[] md5 = CompressCmd.compressFile(srcFile, destFile, info
-                    .getTransferSyntax(), pxvalVR, buffer);
+                    .getTransferSyntax(), planarConfiguration, pxvalVR, buffer);
             if (verifyCompression && fileDTO.getFileMd5() != null) {
                 File absTmpDir = FileUtils.resolve(tmpDir);
                 if (absTmpDir.mkdirs())
@@ -422,7 +424,8 @@ public class CompressionService extends ServiceMBeanSupport {
                         .replace('/', '-')
                         + _DCM);
                 byte[] dec_md5 = DecompressCmd.decompressFile(destFile,
-                        decFile, fileDTO.getFileTsuid(), pxvalVR[0], buffer);
+                        decFile, fileDTO.getFileTsuid(), planarConfiguration[0],
+                        pxvalVR[0], buffer);
                 if (!Arrays.equals(dec_md5, fileDTO.getFileMd5())) {
                     log.info("MD5 sum after compression+decompression of "
                             + srcFile + " differs - compare pixel matrix");

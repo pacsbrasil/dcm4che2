@@ -35,7 +35,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chex.archive.mbean;
+package org.dcm4chex.archive.codec;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

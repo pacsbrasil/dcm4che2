@@ -95,7 +95,8 @@ public class DecompressCmd extends CodecCmd {
     private int[] simpleFrameList;
 
     public static byte[] decompressFile(File inFile, File outFile,
-            String outTS, int pxdataVR, byte[] buffer) throws Exception {
+            String outTS, int planarConfiguration, int pxdataVR,
+            byte[] buffer) throws Exception {
         log.info("M-READ file:" + inFile);
         FileImageInputStream fiis = new FileImageInputStream(inFile);
         try {
@@ -114,6 +115,8 @@ public class DecompressCmd extends CodecCmd {
                 DcmEncodeParam encParam = DcmEncodeParam.valueOf(outTS);
                 String inTS = getTransferSyntax(ds);
                 adjustPhotometricInterpretation(ds, inTS);
+                if (planarConfiguration >= 0 && ds.contains(Tags.PlanarConfiguration))
+                    ds.putUS(Tags.PlanarConfiguration, planarConfiguration);
                 DecompressCmd cmd = new DecompressCmd(ds, inTS, parser);
                 int len = cmd.getPixelDataLength();
                 FileMetaInfo fmi = dof.newFileMetaInfo(ds, outTS);

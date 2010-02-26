@@ -96,7 +96,7 @@ JPEG Lossy compression of received images.
     setMethod="setCompressionRules">
     <description><![CDATA[Specifies compression rules for particular SOP Class, Body Part Examined, Source AE Title.
 <br>
-<br>Format: <i>sop-class-name-or-uid</i>:<i>body-part</i>:<i>source-aet</i>:<i>delay</i>:<i>quality</i>:<i>ratio</i>
+<br>Format: <i>sop-class-name-or-uid</i>:<i>body-part</i>:<i>source-aet</i>:<i>delay</i>:<i>quality</i>:<i>ratio</i>:<i>near</i>
 <br>
 <br><i>sop-class-name-or-uid</i> = the UID of the SOP class, or a string name defined in the dictionary.xml file under uids type="SOPClass"
 <br><i>body-part</i> = Body Part Examined or '*'
@@ -104,6 +104,7 @@ JPEG Lossy compression of received images.
 <br><i>delay</i> = compression delay in minutes (##m), hours (##h) or days (##d)
 <br><i>quality</i> = compression quality between 0 (= lowest image quality / highest compression ratio) and 1.0 (= highest quality / lowest compression ratio)
 <br><i>ratio</i> = estimated compression ratio. Only used to fill attribute (0028,2112) <i>Lossy Image Compression Ratio</i> of compressed DICOM image
+<br><i>near</i> = maximal absolute derivation of pixel sample values by lossy compression+decompression. -1 = disables validation of compressed images 
 ]]>
     </description>
     <name>CompressionRules</name>
@@ -111,21 +112,21 @@ JPEG Lossy compression of received images.
     <descriptors>
       <value
         value="
-         ComputedRadiographyImageStorage:*:MOD_AET:5d:0.75:5.0
-         DigitalXRayImageStorageForPresentation:*:MOD_AET:5d:0.75:5.0
-         DigitalXRayImageStorageForProcessing:*:MOD_AET:5d:0.75:5.0
-         DigitalMammographyXRayImageStorageForPresentation:*:MOD_AET:5d:0.75:5.0
-         DigitalMammographyXRayImageStorageForProcessing:*:MOD_AET:5d:0.75:5.0
-         CTImageStorage:*:MOD_AET:5d:0.75:5.0
-         MRImageStorage:*:MOD_AET:5d:0.75:5.0
-         UltrasoundImageStorage:*:MOD_AET:5d:0.75:5.0
-         UltrasoundMultiframeImageStorage:*:MOD_AET:5d:0.75:5.0
-         UltrasoundImageStorageRetired:*:MOD_AET:5d:0.75:5.0
-         UltrasoundMultiframeImageStorageRetired:*:MOD_AET:5d:0.75:5.0
-         SecondaryCaptureImageStorage:*:MOD_AET:5d:0.75:5.0
-         XRayAngiographicImageStorage:*:MOD_AET:5d:0.75:5.0
-         XRayRadiofluoroscopicImageStorage:*:MOD_AET:5d:0.75:5.0
-         NuclearMedicineImageStorage:*:MOD_AET:5d:0.75:5.0
+         ComputedRadiographyImageStorage:*:MOD_AET:5d:0.75:5.0:64
+         DigitalXRayImageStorageForPresentation:*:MOD_AET:5d:0.75:5.0:64
+         DigitalXRayImageStorageForProcessing:*:MOD_AET:5d:0.75:5.0:64
+         DigitalMammographyXRayImageStorageForPresentation:*:MOD_AET:5d:0.75:5.0:64
+         DigitalMammographyXRayImageStorageForProcessing:*:MOD_AET:5d:0.75:5.0:64
+         CTImageStorage:*:MOD_AET:5d:0.75:5.0:64
+         MRImageStorage:*:MOD_AET:5d:0.75:5.0:64
+         UltrasoundImageStorage:*:MOD_AET:5d:0.75:5.0:64
+         UltrasoundMultiframeImageStorage:*:MOD_AET:5d:0.75:5.0:64
+         UltrasoundImageStorageRetired:*:MOD_AET:5d:0.75:5.0:64
+         UltrasoundMultiframeImageStorageRetired:*:MOD_AET:5d:0.75:5.0:64
+         SecondaryCaptureImageStorage:*:MOD_AET:5d:0.75:5.0:64
+         XRayAngiographicImageStorage:*:MOD_AET:5d:0.75:5.0:64
+         XRayRadiofluoroscopicImageStorage:*:MOD_AET:5d:0.75:5.0:64
+         NuclearMedicineImageStorage:*:MOD_AET:5d:0.75:5.0:64
          " />
     </descriptors>
   </attribute>
@@ -273,25 +274,39 @@ JPEG Lossy compression of received images.
   </operation>
 
   <operation impact="ACTION">
-    <description>Compress specified Series stored on given file-system group 
-    JPEG Lossy with specified quality. Prompts number of compressed images and
-    minimum/average/maximum Compression Ratio, measured on file length and on
-    bits per pixel.
+    <description><![CDATA[Compress specified Series located on file systems of
+    the configured <b>SourceFileSystemGroupID</b> JPEG Lossy with specified
+    quality. Prompts number of compressed images and minimum/average/maximum
+    Compression Ratio, measured on file length and on bits per pixel. If
+    decompress = True, also prompts minimum/average/maximum of maximal absolute
+    derivation of pixel sample values in decompressed images.]]>
     </description>
     <name>compressSeriesJPEGLossy</name>
     <parameter>
+      <description>Series Instance UID of Series to compress</description>
       <name>seriesIUID</name>
       <type>java.lang.String</type>
     </parameter>
     <parameter>
+      <description>Compression quality in the range 0.0 - 1.0.</description>
       <name>compressionQuality</name>
       <type>float</type>
     </parameter>
     <parameter>
+      <description>Estimated Compression Ratio stored in Lossy Image 
+      Compression Ratio (0028,2112) of compressed images.</description>
       <name>estimatedCompressionRatio</name>
       <type>float</type>
     </parameter>
     <parameter>
+      <description>Decompress lossy compressed images and calculate maximal
+      absolute derivation of pixel sample values.</description>
+      <name>decompress</name>
+      <type>boolean</type>
+    </parameter>
+    <parameter>
+      <description>Archive lossy compressed image as additional Series of the
+      same Study.</description>
       <name>archive</name>
       <type>boolean</type>
     </parameter>
@@ -299,9 +314,9 @@ JPEG Lossy compression of received images.
   </operation>
 
   <operation impact="ACTION">
-    <description><![CDATA[Checked for image files located on writeable file systems of
-    the configured <b>FileSystemGroupID</b> to compress according the configured
-    <b>CompressionRules</b>.]]>
+    <description><![CDATA[Checked for image files located on file systems of
+    the configured <b>SourceFileSystemGroupID</b> to compress according the
+    configured <b>CompressionRules</b>.]]>
     </description>
     <name>checkForFilesToCompress</name>
   </operation>

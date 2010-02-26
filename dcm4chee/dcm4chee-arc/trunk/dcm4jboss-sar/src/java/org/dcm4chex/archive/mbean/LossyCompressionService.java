@@ -59,6 +59,7 @@ import org.dcm4che.dict.VRs;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.codec.CompressCmd;
+import org.dcm4chex.archive.codec.CompressionFailedException;
 import org.dcm4chex.archive.codec.DecompressCmd;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.common.PrivateTags;
@@ -85,9 +86,12 @@ public class LossyCompressionService extends ServiceMBeanSupport {
         + " Pixel Compression Ratio: {1,number,#.##} : 1";
 
     private static final String COMPRESS_SERIES_FORMAT =
-        "{0} images compressed\n"
+        "{0,number,#} images compressed\n"
         + "File Compression Ratio: {1,number,#.##}/{2,number,#.##}/{3,number,#.##} : 1\n"
         + "Pixel Compression Ratio: {4,number,#.##}/{5,number,#.##}/{6,number,#.##} : 1";
+
+    private static final String MAX_DERIVATION_FORMAT =
+        "\nMaximal Absolute Pixel Sample Value Derivation: {0,number,#}/{1,number,#.##}/{2}";
 
     private static final UIDGenerator uidGenerator = UIDGenerator.getInstance();
 
@@ -322,8 +326,9 @@ public class LossyCompressionService extends ServiceMBeanSupport {
         File inFile = new File(inFilePath.trim());
         File outFile = new File(outFilePath.trim());
         float[] actualCompressionRatio = new float[1];
-        CompressCmd.compressFileJPEGLossy(inFile, outFile, compressionQuality,
-                estimatedCompressionRatio, actualCompressionRatio , 
+        CompressCmd.compressFileJPEGLossy(inFile, outFile, null, null,
+                compressionQuality, estimatedCompressionRatio,
+                actualCompressionRatio,
                 newSOPInstanceUID ? uidGenerator.createUID() : null,
                 newSeriesInstanceUID ? uidGenerator.createUID() : null,
                 new byte[bufferSize], null, null);
@@ -347,8 +352,10 @@ public class LossyCompressionService extends ServiceMBeanSupport {
 
     public String compressSeriesJPEGLossy(String seriesIUID,
             float compressionQuality, float estimatedCompressionRatio,
-            boolean archive) throws Exception {
+            boolean decompress, boolean archive) throws Exception {
         byte[] buffer = new byte[bufferSize];
+        int[] planarConfiguration = new int[1];
+        int[] pxdataVR = new int[1];
         float[] pixelCompressionRatio = new float[1];
         float fileCompressionRatio;
         float minFileCompressionRatio = Float.MAX_VALUE;
@@ -357,6 +364,10 @@ public class LossyCompressionService extends ServiceMBeanSupport {
         float minPixelCompressionRatio = Float.MAX_VALUE;;
         float maxPixelCompressionRatio = Float.MIN_VALUE;
         float sumPixelCompressionRatio = 0.f;
+        int maxDiffPixelData;
+        int minMaxDiffPixelData = Integer.MAX_VALUE;
+        int maxMaxDiffPixelData = Integer.MIN_VALUE;
+        float sumMaxDiffPixelData = 0.f;
         int count = 0;
         String suid = uidGenerator.createUID();
         Dataset keys = DcmObjectFactory.getInstance().newDataset();
@@ -380,6 +391,7 @@ public class LossyCompressionService extends ServiceMBeanSupport {
                                 .getParentFile(),
                         (int) Long.parseLong(srcFile.getName(), 16));
                 File uncFile = null;
+                File uncFile2 = null;
                 try {
                     if (!isUncompressed(fileInfo.tsUID)) {
                         File absTmpDir = FileUtils.resolve(tmpDir);
@@ -388,14 +400,16 @@ public class LossyCompressionService extends ServiceMBeanSupport {
                         uncFile = new File(absTmpDir,
                                 fileInfo.fileID.replace('/', '-') + ".dcm");
                         DecompressCmd.decompressFile(srcFile, uncFile,
-                                UIDs.ExplicitVRLittleEndian, VRs.OW, buffer);
+                                UIDs.ExplicitVRLittleEndian, -1, VRs.OW, buffer);
                         srcFile = uncFile;
                     }
                     String iuid = uidGenerator.createUID();
                     Dataset ds = DcmObjectFactory.getInstance().newDataset();
                     byte[] md5 = CompressCmd.compressFileJPEGLossy(srcFile,
-                            destFile, compressionQuality, estimatedCompressionRatio,
-                            pixelCompressionRatio , iuid, suid, buffer, ds, fileInfo);
+                            destFile, planarConfiguration, pxdataVR,
+                            compressionQuality, estimatedCompressionRatio,
+                            pixelCompressionRatio, iuid, suid, buffer, ds,
+                            fileInfo);
                     fileCompressionRatio =
                         (float) srcFile.length() / destFile.length();
                     if (minFileCompressionRatio > fileCompressionRatio)
@@ -409,6 +423,22 @@ public class LossyCompressionService extends ServiceMBeanSupport {
                         maxPixelCompressionRatio = pixelCompressionRatio[0];
                     sumPixelCompressionRatio += pixelCompressionRatio[0];
                     count++;
+                    if (decompress) {
+                        File absTmpDir = FileUtils.resolve(tmpDir);
+                        if (absTmpDir.mkdirs())
+                            log.info("Create directory for decompressed files");
+                        uncFile2 = new File(absTmpDir,
+                                fileInfo.fileID.replace('/', '+') + ".dcm");
+                        DecompressCmd.decompressFile(destFile, uncFile2,
+                                UIDs.ExplicitVRLittleEndian,
+                                planarConfiguration[0], pxdataVR[0], buffer);
+                        maxDiffPixelData = FileUtils.maxDiffPixelData(srcFile, uncFile2);
+                        if (minMaxDiffPixelData > maxDiffPixelData)
+                            minMaxDiffPixelData = maxDiffPixelData;
+                        if (maxMaxDiffPixelData < maxDiffPixelData)
+                            maxMaxDiffPixelData = maxDiffPixelData;
+                        sumMaxDiffPixelData += maxDiffPixelData;
+                    }
                     if (archive) {
                         File baseDir = FileUtils.toFile(destDirPath);
                         int baseDirPathLength = baseDir.getPath().length();
@@ -436,14 +466,18 @@ public class LossyCompressionService extends ServiceMBeanSupport {
                 } finally {
                     if (uncFile != null)
                         FileUtils.delete(uncFile, false);
+                    if (uncFile2 != null)
+                        FileUtils.delete(uncFile2, false);
                     if (destFile != null)
                         FileUtils.delete(destFile, false);
                 }
                 break;
             }
         }
-        return count == 0 ? "No images compressed"
-                : MessageFormat.format(COMPRESS_SERIES_FORMAT,
+        if (count == 0)
+            return "No images compressed";
+
+        String msg = MessageFormat.format(COMPRESS_SERIES_FORMAT,
                         count,
                         minFileCompressionRatio,
                         sumFileCompressionRatio / count,
@@ -451,6 +485,12 @@ public class LossyCompressionService extends ServiceMBeanSupport {
                         minPixelCompressionRatio,
                         sumPixelCompressionRatio / count,
                         maxPixelCompressionRatio);
+        if (decompress)
+            msg += MessageFormat.format(MAX_DERIVATION_FORMAT,
+                    minMaxDiffPixelData,
+                    sumMaxDiffPixelData / count,
+                    maxMaxDiffPixelData);
+        return msg;
     }
 
     private void updateSeriesDescription(Dataset ds) {
@@ -509,10 +549,11 @@ public class LossyCompressionService extends ServiceMBeanSupport {
         final long delay;
         final float quality;
         final float ratio;
+        final int near;
         
         public CompressionRule(String s) {
             String[] a = StringUtils.split(s, ':');
-            if (a.length != 6)
+            if (a.length != 7)
                 throw new IllegalArgumentException(s);
             uidOf(a[0]);
             cuid = a[0];
@@ -521,6 +562,7 @@ public class LossyCompressionService extends ServiceMBeanSupport {
             delay = RetryIntervalls.parseInterval(a[3]);
             quality = Float.parseFloat(a[4]);
             ratio = Float.parseFloat(a[5]);
+            near = Integer.parseInt(a[6]);
         }
 
         public String toString() {
@@ -529,7 +571,8 @@ public class LossyCompressionService extends ServiceMBeanSupport {
                     + ':' + srcAET
                     + ':' + RetryIntervalls.formatInterval(delay)
                     + ':' + quality
-                    + ':' + ratio;
+                    + ':' + ratio
+                    + ':' + near;
         }
 
     }
@@ -588,6 +631,7 @@ public class LossyCompressionService extends ServiceMBeanSupport {
                 fileDTO.getFilePath());
         File destFile = null;
         File uncFile = null;
+        File uncFile2 = null;
         try {
             FileSystemDTO destfs =
                     fsmgt.selectStorageFileSystem(destFSGroupID);
@@ -603,12 +647,33 @@ public class LossyCompressionService extends ServiceMBeanSupport {
                 uncFile = new File(absTmpDir,
                         fileDTO.getFilePath().replace('/', '-') + ".dcm");
                 DecompressCmd.decompressFile(srcFile, uncFile,
-                        UIDs.ExplicitVRLittleEndian, VRs.OW, buffer);
+                        UIDs.ExplicitVRLittleEndian, VRs.OW, -1, buffer);
                 srcFile = uncFile;
             }
             Dataset ds = DcmObjectFactory.getInstance().newDataset();
+            int[] planarConfiguration = new int[1];
+            int[] pxdataVR = new int[1];
             byte[] md5 = CompressCmd.compressFileJPEGLossy(srcFile, destFile,
-                    rule.quality, rule.ratio, null , null, null, buffer, ds, null);
+                    planarConfiguration, pxdataVR, rule.quality, rule.ratio,
+                    null, null, null, buffer, ds, null);
+            if (rule.near >= 0) {
+                File absTmpDir = FileUtils.resolve(tmpDir);
+                if (absTmpDir.mkdirs())
+                    log.info("Create directory for decompressed files");
+                uncFile2 = new File(absTmpDir,
+                        fileDTO.getFilePath().replace('/', '+') + ".dcm");
+                DecompressCmd.decompressFile(destFile, uncFile2,
+                        UIDs.ExplicitVRLittleEndian, planarConfiguration[0],
+                        pxdataVR[0], buffer);
+                int maxDiffPixelData = FileUtils.maxDiffPixelData(srcFile, uncFile2);
+                if (maxDiffPixelData > rule.near) {
+                    throw new CompressionFailedException(
+                            "Maximal absolute derivation of pixel sample values: "
+                            + maxDiffPixelData
+                            + " exeeds configured limit in compression rule: "
+                            + rule);
+                }
+            }
             File baseDir = FileUtils.toFile(destDirPath);
             int baseDirPathLength = baseDir.getPath().length();
             String destFilePath = destFile.getPath()
@@ -632,7 +697,9 @@ public class LossyCompressionService extends ServiceMBeanSupport {
         } finally {
             if (uncFile != null)
                 FileUtils.delete(uncFile, false);
-            if (destFile != null)
+            if (uncFile2 != null)
+                FileUtils.delete(uncFile2, false);
+           if (destFile != null)
                 FileUtils.delete(destFile, false);
         }
     }

@@ -262,6 +262,86 @@ public class FileUtils {
         }
     }
 
+    public static int maxDiffPixelData(File f1, File f2) throws IOException {
+        int maxDiff = 0;
+        InputStream in1 = new BufferedInputStream(new FileInputStream(f1));
+        try {
+            InputStream in2 = new BufferedInputStream(new FileInputStream(f2));
+            try {
+                DcmObjectFactory df = DcmObjectFactory.getInstance();
+                DcmParserFactory pf = DcmParserFactory.getInstance();
+                Dataset attrs1 = df.newDataset();
+                Dataset attrs2 = df.newDataset();
+                DcmParser p1 = pf.newDcmParser(in1);
+                DcmParser p2 = pf.newDcmParser(in2);
+                p1.setDcmHandler(attrs1.getDcmHandler());
+                p2.setDcmHandler(attrs2.getDcmHandler());
+                p1.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
+                p2.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
+                int samples = attrs1.getInt(Tags.SamplesPerPixel, 1);
+                int frames = attrs1.getInt(Tags.NumberOfFrames, 1);
+                int rows = attrs1.getInt(Tags.Rows, 1);
+                int columns = attrs1.getInt(Tags.Columns, 1);
+                int bitsAlloc = attrs1.getInt(Tags.BitsAllocated, 8);
+                int bitsStored = attrs1.getInt(Tags.BitsStored, bitsAlloc);
+                int bitsStored2 = attrs2.getInt(Tags.BitsStored, bitsAlloc);
+                int pixelRepresentation1 = attrs1.getInt(Tags.PixelRepresentation, 0);
+                int pixelRepresentation2 = attrs2.getInt(Tags.PixelRepresentation, 0);
+                int frameLength = rows * columns * samples * bitsAlloc / 8;
+                int pixelDataLength = frameLength * frames;
+                if (pixelDataLength > p1.getReadLength()
+                        || pixelDataLength > p2.getReadLength()) {
+                    return Integer.MAX_VALUE;
+                }
+                byte[] b1 = new byte[BUFFER_SIZE];
+                byte[] b2 = new byte[BUFFER_SIZE];
+                byte lsb1 = 0, lsb2 = 0;
+                int w1, w2, len, len2;
+                int bitmask1 = 0xffff >>> (bitsAlloc - bitsStored);
+                int bitmask2 = 0xffff >>> (bitsAlloc - bitsStored2);
+                int signed1 = pixelRepresentation1 != 0 ? (-1 & ~bitmask1)>>1 : 0;
+                int signed2 = pixelRepresentation2 != 0 ? (-1 & ~bitmask2)>>1 : 0;
+                int pos = 0;
+                while (pos < pixelDataLength) {
+                    len = in1.read(b1, 0, Math.min(pixelDataLength - pos,
+                            BUFFER_SIZE));
+                    if (len < 0) // EOF
+                        return Integer.MAX_VALUE;
+                    int off = 0;
+                    while (off < len) {
+                        off += len2 = in2.read(b2, off, len - off);
+                        if (len2 < 0) // EOF
+                            return Integer.MAX_VALUE;
+                    }
+                    if (bitsAlloc == 8)
+                        for (int i = 0; i < len; i++, pos++)
+                            maxDiff = Math.max(maxDiff,
+                                    Math.abs((b1[i] & 0xff) - (b2[i] & 0xff)));
+                    else {
+                        for (int i = 0; i < len; i++, pos++)
+                            // TODO assumes LE Byte Order
+                            if ((pos & 1) == 0) {
+                                lsb1 = b1[i];
+                                lsb2 = b2[i];
+                            } else {
+                                if (((w1 = ((b1[i] << 8) | (lsb1 & 0xff)) & bitmask1) & signed1) != 0)
+                                    w1 |= signed1;
+                                if (((w2 = ((b2[i] << 8) | (lsb2 & 0xff)) & bitmask2) & signed2) != 0)
+                                    w2 |= signed2;
+                                maxDiff = Math.max(maxDiff, Math.abs(w1 - w2));
+                            }
+                        
+                    }
+                }
+                return maxDiff;
+            } finally {
+                in2.close();
+            }
+        } finally {
+            in1.close();
+        }
+    }
+
     public static boolean delete(File file, boolean deleteEmptyParents) {
         log.info("M-DELETE file: " + file);
         if (!file.exists()) {
