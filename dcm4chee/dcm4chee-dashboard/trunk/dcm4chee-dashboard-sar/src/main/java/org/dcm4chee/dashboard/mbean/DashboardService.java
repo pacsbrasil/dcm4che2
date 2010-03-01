@@ -60,7 +60,6 @@ import javax.management.ReflectionException;
 
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
 
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.model.SystemPropertyModel;
@@ -239,7 +238,7 @@ public class DashboardService extends ServiceMBeanSupport {
     public void deleteReport(ReportModel report, boolean isGroup) {
         modifyReport(report, true, isGroup);
     }
-    
+
     private void modifyReport(ReportModel report, boolean delete, boolean isGroup) {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(isGroup ? this.groupFilename : this.reportFilename));

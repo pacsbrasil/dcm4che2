@@ -41,8 +41,6 @@ package org.dcm4chee.dashboard.model;
 import java.io.Serializable;
 import java.util.Calendar;
 
-import net.sf.json.JSONObject;
-
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$

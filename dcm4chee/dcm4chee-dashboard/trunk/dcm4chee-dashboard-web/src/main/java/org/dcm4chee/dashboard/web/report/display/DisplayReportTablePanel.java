@@ -256,6 +256,20 @@ public class DisplayReportTablePanel extends Panel {
             add(new Label("error-message", "").setVisible(false));
             add(new Label("error-reason", "").setVisible(false));
         } catch (Exception e) {
+            addOrReplace(new Link<Object>("table-download-xml") {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick() {}}
+                .setVisible(false));
+            addOrReplace(new Link<Object>("table-download-csv") {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick() {}}
+                .setVisible(false));
             add(new Label("error-message", new ResourceModel("dashboard.report.reporttable.statement.error").wrapOnAssignment(this).getObject()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
             add(new Label("error-reason", e.getMessage()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
         } finally {

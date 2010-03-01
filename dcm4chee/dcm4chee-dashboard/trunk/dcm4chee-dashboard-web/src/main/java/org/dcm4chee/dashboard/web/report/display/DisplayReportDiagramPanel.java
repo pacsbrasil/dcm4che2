@@ -256,7 +256,6 @@ public class DisplayReportDiagramPanel extends Panel {
                 @Override
                 public void onClick() {}}
                 .setVisible(false));
-            
             addOrReplace(new Button("diagram-print").setVisible(false));
             addOrReplace(new Image("diagram"));
             add(new Label("error-message", new ResourceModel("dashboard.report.reportdiagram.statement.error").wrapOnAssignment(this).getObject()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
