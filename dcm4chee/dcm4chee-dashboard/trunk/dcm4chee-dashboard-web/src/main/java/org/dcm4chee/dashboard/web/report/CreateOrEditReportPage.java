@@ -121,7 +121,7 @@ public class CreateOrEditReportPage extends WebPage {
         super.onBeforeRender();
         
         try {
-            addOrReplace(new Label("page-title", new ResourceModel(this.report == null || this.report.getGroupUuid() == null ? "dashboard.report.createoredit.create.title" : "dashboard.report.createoredit.edit.title")));
+            addOrReplace(new Label("page-title", new ResourceModel(this.report.getUuid() == null ? "dashboard.report.createoredit.create.title" : "dashboard.report.createoredit.edit.title")));
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
@@ -230,7 +230,7 @@ public class CreateOrEditReportPage extends WebPage {
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     try {
                         if (thisReport == null || thisReport.getUuid() == null)
-                            ((WicketApplication) getApplication()).getDashboardService().createReport(thisReport);
+                            ((WicketApplication) getApplication()).getDashboardService().createReport(thisReport, false);
                         else 
                             ((WicketApplication) getApplication()).getDashboardService().updateReport(thisReport);
                         window.close(target);

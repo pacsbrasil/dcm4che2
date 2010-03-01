@@ -58,6 +58,10 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
+import net.sf.json.JSONNull;
+import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
+
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.model.SystemPropertyModel;
 import org.jboss.system.ServiceMBeanSupport;
@@ -196,36 +200,31 @@ public class DashboardService extends ServiceMBeanSupport {
         return propertyMap;
     }
 
-    public ReportModel[] listAllReports() {
+    public ReportModel[] listAllReports(boolean groups) {
         try {
             List<ReportModel> reportList = new ArrayList<ReportModel>();
-            
-            if (new File(this.reportFilename).exists()) {            
-                BufferedReader reader = new BufferedReader(new FileReader(this.reportFilename));
-                String line = "";
-                String all = "";
-                while ((line = reader.readLine()) != null){
-                    all += line + this.newline;
-                }
-                if (!all.equals("")) {
-                    String[] attributes = all.split(";");
-                    for (int i = 0; i < attributes.length; i += 8) {
-                        if (attributes[i].equals(this.newline)) break;
-                        reportList.add(new ReportModel(attributes[i].replace(this.newline, ""), attributes[i + 1], attributes[i + 2], attributes[i + 3], (attributes[i + 4].equals("") ? null : new Integer(attributes[i + 4])), Boolean.valueOf(attributes[i + 5]), attributes[i + 6], new Long(attributes[i + 7])));
-                    }
-                }
+            if (new File(groups ? this.groupFilename : this.reportFilename).exists()) {
+                String line;
+                BufferedReader reader = new BufferedReader(new FileReader(groups ? this.groupFilename : this.reportFilename));
+                while ((line = reader.readLine()) != null)
+                    reportList.add((ReportModel) JSONObject.toBean(JSONObject.fromObject(line), ReportModel.class));
             }
             return reportList.toArray(new ReportModel[0]);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.debug("Exception: ", e);
             return null;
         }
     }
     
-    public void createReport(ReportModel report) {
+    public void createReport(ReportModel report, boolean isGroup) {
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(this.reportFilename, true));
-            writer.write((report.getUuid() == null ? UUID.randomUUID() : report.getUuid()) + ";" + report.getTitle() + ";" + (report.getDataSource() != null ? report.getDataSource() : "") + ";" + report.getStatement().replaceAll(";", "") + ";" + (report.getDiagram() == null ? "" : report.getDiagram()) + ";" + report.getTable() + ";" + report.getGroupUuid() + ";" + report.getCreated() + ";");
+            if (report.getUuid() == null)
+                report.setUuid(UUID.randomUUID().toString());
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter(isGroup ? this.groupFilename : this.reportFilename, true));
+            JSONObject jsonObject = JSONObject.fromObject(report);
+            if (isGroup) jsonObject.put("groupUuid", JSONNull.getInstance());
+            writer.write(jsonObject.toString());
             writer.newLine();
             writer.close();
         } catch (IOException e) {
@@ -234,37 +233,28 @@ public class DashboardService extends ServiceMBeanSupport {
     }
     
     public void updateReport(ReportModel report) {
-        modifyReport(report, false);
+        modifyReport(report, false, false);
     }
     
-    public void deleteReport(ReportModel report) {
-        modifyReport(report, true);
+    public void deleteReport(ReportModel report, boolean isGroup) {
+        modifyReport(report, true, isGroup);
     }
     
-    private void modifyReport(ReportModel report, boolean deleteLine) {
+    private void modifyReport(ReportModel report, boolean delete, boolean isGroup) {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(this.reportFilename));
-            File reportFile = new File(this.reportFilename);            
+            BufferedReader reader = new BufferedReader(new FileReader(isGroup ? this.groupFilename : this.reportFilename));
+            File reportFile = new File(isGroup ? this.groupFilename : this.reportFilename);            
             String tempFilename = reportFile.getAbsolutePath().substring(0, reportFile.getAbsolutePath().length() - reportFile.getName().length()) 
                                 + UUID.randomUUID().toString();
             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFilename, true));
             String line;
             while ((line = reader.readLine()) != null) {
-                if (!line.replace(this.newline,"").startsWith(report.getUuid())) {
-                    writer.write(line);
-                    writer.newLine();
+                if (!((ReportModel) JSONObject.toBean(JSONObject.fromObject(line), ReportModel.class)).getUuid().equals(report.getUuid())) {
+                  writer.write(line);
+                  writer.newLine();
                 } else {
-                    int result = 0;
-                    while (result < 8) { 
-                        int start = line.indexOf(";");
-                        while (start != -1) {
-                            result++;
-                            start = line.indexOf(";", start+1);
-                        }
-                        if (result < 8) line = reader.readLine();
-                    }
-                    if (!deleteLine) {
-                        writer.write(report.getUuid() + ";" + report.getTitle() + ";" + (report.getDataSource() != null ? report.getDataSource() : "") + ";" + report.getStatement().replaceAll(";", "") + ";" + (report.getDiagram() == null ? "" : report.getDiagram()) + ";" + report.getTable() + ";" + report.getGroupUuid() + ";" + report.getCreated() + ";");
+                    if (!delete) {
+                        writer.write(JSONObject.fromObject(report).toString());
                         writer.newLine();
                     }
                 }
@@ -273,82 +263,6 @@ public class DashboardService extends ServiceMBeanSupport {
             writer.close();
             reportFile.delete();
             new File(tempFilename).renameTo(reportFile);
-        } catch (IOException e) {
-            log.debug("Exception: ", e);
-        }
-    }
-    
-    public ReportModel[] listAllReportGroups() {
-        try {
-            List<ReportModel> groupList = new ArrayList<ReportModel>();
-
-            if (new File(this.groupFilename).exists()) {
-                BufferedReader reader = new BufferedReader(new FileReader(this.groupFilename));
-                String line = "";
-                String all = "";
-                while ((line = reader.readLine()) != null){
-                    all += line + this.newline;
-                }
-                if (!all.equals("")) {
-                    String[] attributes = all.split(";");
-                    for (int i = 0; i < attributes.length; i += 2) {
-                        if (attributes[i].equals(this.newline)) break;
-                        groupList.add(new ReportModel(attributes[i].replace(this.newline, ""), attributes[i + 1], null, null, null, false, null, null));
-                    }
-                }
-            }
-            return groupList.toArray(new ReportModel[0]);
-        } catch (IOException e) {
-            log.debug("Exception: ", e);
-            return null;
-        }
-    }
-
-    public void createGroup(ReportModel group) {
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(this.groupFilename, true));
-            writer.write((group.getUuid() == null ? UUID.randomUUID() : group.getUuid()) + ";" + group.getTitle() + ";");
-            writer.newLine();
-            writer.close();
-        } catch (IOException e) {
-            log.debug("Exception: ", e);
-        }        
-    }
-
-    public void deleteGroup(ReportModel group) {
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(this.reportFilename));
-            File reportFile = new File(this.reportFilename);            
-            String tempFilename = reportFile.getAbsolutePath().substring(0, reportFile.getAbsolutePath().length() - reportFile.getName().length()) 
-                                + UUID.randomUUID().toString();
-            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFilename, true));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (!line.replace(this.newline,"").endsWith(group.getUuid() + ";")) {
-                    writer.write(line);
-                    writer.newLine();
-                }
-            }
-            reader.close();
-            writer.close();
-            reportFile.delete();
-            new File(tempFilename).renameTo(reportFile);
-            
-            reader = new BufferedReader(new FileReader(this.groupFilename));
-            File groupFile = new File(this.groupFilename);            
-            tempFilename = groupFile.getAbsolutePath().substring(0, groupFile.getAbsolutePath().length() - groupFile.getName().length()) 
-                                + UUID.randomUUID().toString();
-            writer = new BufferedWriter(new FileWriter(tempFilename, true));
-            while ((line = reader.readLine()) != null) {
-                if (!line.replace(this.newline,"").startsWith(group.getUuid())) {
-                    writer.write(line);
-                    writer.newLine();
-                }
-            }
-            reader.close();
-            writer.close();
-            groupFile.delete();
-            new File(tempFilename).renameTo(groupFile);            
         } catch (IOException e) {
             log.debug("Exception: ", e);
         }

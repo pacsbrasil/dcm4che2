@@ -41,6 +41,8 @@ package org.dcm4chee.dashboard.model;
 import java.io.Serializable;
 import java.util.Calendar;
 
+import net.sf.json.JSONObject;
+
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
@@ -57,7 +59,7 @@ public class ReportModel implements Serializable {
     private Integer diagram;
     private boolean table;
     private String groupUuid;
-    private Calendar created;
+    private Calendar created = Calendar.getInstance();
     
     public ReportModel() {
     }
@@ -70,7 +72,6 @@ public class ReportModel implements Serializable {
         this.diagram = diagram;
         this.table = table;
         this.groupUuid = groupUuid;
-        this.created = Calendar.getInstance();
         if (created != null) this.created.setTimeInMillis(created);
     }
     
@@ -130,11 +131,11 @@ public class ReportModel implements Serializable {
         return groupUuid;
     }
 
-    public void setCreated(long created) {
-        this.created.setTimeInMillis(created);
+    public void setCreated(Long created) {
+        if (created != null) this.created.setTimeInMillis(created);
     }
 
-    public long getCreated() {
-        return created.getTimeInMillis();
+    public Long getCreated() {
+        return this.created != null ? created.getTimeInMillis() : null;
     }
 }

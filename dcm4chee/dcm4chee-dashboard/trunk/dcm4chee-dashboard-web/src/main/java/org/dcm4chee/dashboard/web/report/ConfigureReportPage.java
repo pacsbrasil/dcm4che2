@@ -210,7 +210,7 @@ public class ConfigureReportPage extends WebPage {
                 }
             });
         }
-        
+
         private String configureStatement() {
             String statement = DashboardMainPage.createSQLStatement(report.getStatement());
             for (String parameterName : DashboardMainPage.getParameterOccurences(report.getStatement())) {

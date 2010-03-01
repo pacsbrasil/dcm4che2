@@ -48,8 +48,6 @@ import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.authentication.AuthenticatedWebApplication;
-import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
 import org.apache.wicket.extensions.markup.html.tree.table.AbstractColumn;
@@ -72,8 +70,6 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
-import org.apache.wicket.protocol.http.WebApplication;
-import org.apache.wicket.protocol.http.WebRequest;
 import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.web.DashboardMainPage;
@@ -120,12 +116,12 @@ public class ReportPanel extends Panel {
         try {
             DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new ReportModel());
             
-            for (ReportModel group : ((WicketApplication) getApplication()).getDashboardService().listAllReportGroups()) {
+            for (ReportModel group : ((WicketApplication) getApplication()).getDashboardService().listAllReports(true)) {
                 DefaultMutableTreeNode groupNode = new DefaultMutableTreeNode();
                 groupNode.setUserObject(group);
                 rootNode.add(groupNode);
     
-                for (ReportModel report : ((WicketApplication) getApplication()).getDashboardService().listAllReports()) {
+                for (ReportModel report : ((WicketApplication) getApplication()).getDashboardService().listAllReports(false)) {
                     if (report.getGroupUuid() != null && report.getGroupUuid().equals(group.getUuid())) {
                         DefaultMutableTreeNode reportNode = new DefaultMutableTreeNode();
                         reportNode.setUserObject(report);
@@ -266,7 +262,7 @@ public class ReportPanel extends Panel {
             return new DynamicLinkPanel(id, this.className, (ReportModel) ((DefaultMutableTreeNode) node).getUserObject(), this.modalWindow);
         }
     }
-    
+
     private final class ToggleFormLink extends AjaxFallbackLink<Object> {
         
         private static final long serialVersionUID = 1L;
@@ -333,8 +329,8 @@ public class ReportPanel extends Panel {
         @Override
         protected void onSubmit() {
             try {
-                ((WicketApplication) getApplication()).getDashboardService().createGroup(
-                        new ReportModel(null, this.newGroupname.getObject(), null, null, null, false, null, null));
+                ((WicketApplication) getApplication()).getDashboardService().createReport(
+                        new ReportModel(null, this.newGroupname.getObject(), null, null, null, false, null, null), true);
                 DashboardMainPage page = (DashboardMainPage) this.getPage();
                 ((AjaxTabbedPanel) page.get("tabs")).setSelectedTab(new Integer(new ResourceModel("dashboard.tabs.tab2.number").getObject()));
                 setResponsePage(page);

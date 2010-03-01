@@ -123,18 +123,20 @@ public class DashboardDelegator {
                         "getSystemProperties", null, null);
     }
     
-    public ReportModel[] listAllReports() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
+    public ReportModel[] listAllReports(boolean groups) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
         return (ReportModel[]) server.invoke(
                         this.objectName,
-                        "listAllReports", null, null);
+                        "listAllReports", 
+                        new Object[] { groups },
+                        new String[] { "boolean" });
     }
     
-    public void createReport(ReportModel report) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
+    public void createReport(ReportModel report, boolean isGroup) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
                         server.invoke(
                         this.objectName,
                         "createReport", 
-                        new Object[] { report }, 
-                        new String[] { "org.dcm4chee.dashboard.model.ReportModel" });
+                        new Object[] { report, isGroup }, 
+                        new String[] { "org.dcm4chee.dashboard.model.ReportModel", "boolean"});
     }
     
     public void updateReport(ReportModel report) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
@@ -145,12 +147,12 @@ public class DashboardDelegator {
                         new String[] { "org.dcm4chee.dashboard.model.ReportModel" });       
     }
     
-    public void deleteReport(ReportModel report) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
+    public void deleteReport(ReportModel report, boolean isGroup) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
                         server.invoke(
                         this.objectName,
                         "deleteReport", 
-                        new Object[] { report }, 
-                        new String[] { "org.dcm4chee.dashboard.model.ReportModel" });       
+                        new Object[] { report, isGroup }, 
+                        new String[] { "org.dcm4chee.dashboard.model.ReportModel", "boolean" });       
     }
     
     public String[] getDataSources() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException, AttributeNotFoundException {
@@ -159,27 +161,5 @@ public class DashboardDelegator {
                         "dataSourceList")
                         .toString()
                         .split(this.newline);
-    }
-
-    public ReportModel[] listAllReportGroups() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
-        return (ReportModel[]) server.invoke(
-                        this.objectName,
-                        "listAllReportGroups", null, null);
-    }
-
-    public void createGroup(ReportModel group) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
-        server.invoke(
-        this.objectName,
-        "createGroup", 
-        new Object[] { group }, 
-        new String[] { "org.dcm4chee.dashboard.model.ReportModel" });
-    }
-
-    public void deleteGroup(ReportModel group) throws InstanceNotFoundException, ReflectionException, MBeanException {
-        server.invoke(
-                this.objectName,
-                "deleteGroup", 
-                new Object[] { group }, 
-                new String[] { "org.dcm4chee.dashboard.model.ReportModel" });       
     }
 }

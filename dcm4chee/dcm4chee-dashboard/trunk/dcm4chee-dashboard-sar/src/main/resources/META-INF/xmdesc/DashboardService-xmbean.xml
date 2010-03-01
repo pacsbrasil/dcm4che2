@@ -134,6 +134,10 @@ Java;Version;java.version</value>
    <operation>
       <description>MBean Operation.</description>
       <name>listAllReports</name>
+      <parameter>
+         <name>groups</name>
+         <type>boolean</type>
+      </parameter>
       <return-type>[Lorg.dcm4chee.dashboard.model.ReportModel;</return-type>
    </operation>
    <operation>
@@ -141,6 +145,10 @@ Java;Version;java.version</value>
       <parameter>
          <name>report</name>
          <type>org.dcm4chee.dashboard.model.ReportModel</type>
+      </parameter>
+      <parameter>
+         <name>isGroup</name>
+         <type>boolean</type>
       </parameter>
    </operation>
    <operation>
@@ -156,24 +164,9 @@ Java;Version;java.version</value>
          <name>report</name>
          <type>org.dcm4chee.dashboard.model.ReportModel</type>
       </parameter>
-   </operation>
-   <operation>
-      <description>MBean Operation.</description>
-      <name>listAllReportGroups</name>
-      <return-type>[Lorg.dcm4chee.dashboard.model.ReportModel;</return-type>
-   </operation>
-   <operation>
-      <name>createGroup</name>
       <parameter>
-         <name>group</name>
-         <type>org.dcm4chee.dashboard.model.ReportModel</type>
-      </parameter>
-   </operation>
-   <operation>
-      <name>deleteGroup</name>
-      <parameter>
-         <name>group</name>
-         <type>org.dcm4chee.dashboard.model.ReportModel</type>
+         <name>isGroup</name>
+         <type>boolean</type>
       </parameter>
    </operation>
 </mbean>

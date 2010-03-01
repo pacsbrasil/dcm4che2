@@ -39,21 +39,16 @@
 package org.dcm4chee.dashboard.web.report;
 
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.Component;
 import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
 import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
-import org.apache.wicket.markup.MarkupStream;
 import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.IHeaderResponse;
-import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
-import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.link.PopupSettings;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -93,8 +88,6 @@ public class DynamicLinkPanel extends Panel {
         try {
             if ((className.endsWith("CreateOrEditReportLink") || className.endsWith("RemoveLink"))
                       && !((WebRequest) getRequest()).getHttpServletRequest().isUserInRole(((WicketApplication) getApplication()).getAdminRoleName())) {
-                          System.out.println("is user: " + ((WebRequest) getRequest()).getHttpServletRequest().isUserInRole(((WicketApplication) getApplication()).getUserRoleName()));
-                          System.out.println("is admin: " + ((WebRequest) getRequest()).getHttpServletRequest().isUserInRole(((WicketApplication) getApplication()).getAdminRoleName()));
                           add(new Link("report-table-link") {
 
                               private static final long serialVersionUID = 1L;
@@ -293,11 +286,7 @@ public class DynamicLinkPanel extends Panel {
         @Override
         public void onClick() {
             try {
-                if (this.report.getGroupUuid() == null)
-                    ((WicketApplication) getApplication()).getDashboardService().deleteGroup(this.report);
-                else
-                    ((WicketApplication) getApplication()).getDashboardService().deleteReport(this.report);
-
+                ((WicketApplication) getApplication()).getDashboardService().deleteReport(this.report, this.report.getGroupUuid() == null);
                 DashboardMainPage page = new DashboardMainPage(this.getPage().getPageParameters());
                 ((AjaxTabbedPanel) page.get("tabs")).setSelectedTab(new Integer(new ResourceModel("dashboard.tabs.tab2.number").getObject()));
                 setResponsePage(page);
