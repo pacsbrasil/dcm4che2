@@ -203,12 +203,12 @@
 			<tr>
 		   		<td>&#160;</td>
         	</tr>
-			<!-- uncommentto test submitting two documents one manifest with a PDF doc 
+			<!-- uncommentto test submitting two documents one manifest with a PDF doc --> 
 			<tr>
 				<td>IUID of a PDF document:</td>
 		   		<td><input type="text" name="pdfIUID" value="" /></td>
         	</tr> 
-        	-->
+        	<!--   -->
 			<tr>
 				<td colspan="4" align="center">
 						<input type="submit" name="clear" value="Clear"/>

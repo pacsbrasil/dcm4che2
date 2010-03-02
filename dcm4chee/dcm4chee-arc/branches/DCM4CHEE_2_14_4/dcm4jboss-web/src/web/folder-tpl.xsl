@@ -1584,6 +1584,10 @@
                             <img src="images/sr_pdf.gif" alt="icon"
                                 border="0" title="&ViewDocument;" />
                         </a>
+						<a href="xdsiExport.m?docUID={sopIUID}">
+							<img src="images/xds.gif" alt="icon"
+								border="0" title="&ExportPDFtoXDSRepository;" />
+						</a>
                         <a href="inspectDicomHeader.m?instancePk={pk}"
                             target="dbAttrs">
                             <img src="images/dbattrs.gif" alt="icon"
