@@ -13,10 +13,7 @@
 	<version>0.0.1</version>
 	<packaging>war</packaging>
 	<properties>
-	<!-- 
-		<ear>dcm4chee-usr-${version}-SNAPSHOT</ear>
- -->
-		<wicket.version>1.4.2</wicket.version>
+		<wicket.version>1.4.6</wicket.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -29,7 +26,6 @@
 			<groupId>dcm4che.dcm4chee</groupId>
 			<artifactId>dcm4chee-usr-wicket</artifactId>
 			<version>0.0.1</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

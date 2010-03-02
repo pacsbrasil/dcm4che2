@@ -6,7 +6,6 @@
 		<project>dcm4chee-usr-web</project>
 		<project>dcm4chee-usr-entity</project>
 		<project>dcm4chee-usr-dao</project>
-		<project>dcm4chee-usr-wicket</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
