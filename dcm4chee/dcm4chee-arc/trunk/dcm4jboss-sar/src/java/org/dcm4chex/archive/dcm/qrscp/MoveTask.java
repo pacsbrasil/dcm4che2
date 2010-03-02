@@ -142,6 +142,8 @@ public class MoveTask implements Runnable {
 
     private PerfMonDelegate perfMon;
 
+    private Set<String> invalidRequestedUIDs = new HashSet<String>();
+
     private DimseListener cancelListener = new DimseListener() {
 
         public void dimseReceived(Association assoc, Dimse dimse) {
@@ -191,6 +193,9 @@ public class MoveTask implements Runnable {
         this.remainingIUIDs = retrieveInfo.getAvailableIUIDs();
         this.failedIUIDs = retrieveInfo.getNotAvailableIUIDs();
         moveAssoc.addCancelListener(msgID, cancelListener);
+        
+        if (service.getRetrieveRspStatusForNoMatchingInstanceToRetrieve() != Status.Success)
+        	findInvalidUIDsInRequest(moveRqData, fileInfo);
     }
 
     private ActiveAssociation openAssociation() throws Exception {
@@ -454,11 +459,19 @@ public class MoveTask implements Runnable {
     }
 
     private int status() {
-        return canceled ? Status.Cancel 
+        int status = canceled ? Status.Cancel 
                 : failedIUIDs.isEmpty() ? Status.Success
                 : completed == 0 && warnings == 0 
                         ? Status.UnableToPerformSuboperations
                         : Status.SubOpsOneOrMoreFailures;
+        
+        if (status == Status.Success && !invalidRequestedUIDs.isEmpty()) {
+        	status = service.getRetrieveRspStatusForNoMatchingInstanceToRetrieve();
+        	
+        	warnings += invalidRequestedUIDs.size();
+        }
+        
+        return status;
     }
 
     private void notifyMoveSCU(Command moveRspCmd, Dataset moveRspData) {
@@ -489,4 +502,41 @@ public class MoveTask implements Runnable {
         return rspCmd;
     }
 
+    private void findInvalidUIDsInRequest(Dataset moveRqData, FileInfo[][] fileInfo){
+        String qrLevel = moveRqData.getString(Tags.QueryRetrieveLevel);
+        String[] uids = null;
+        Set<String> existingIDs = new HashSet<String>();
+        
+        if ("IMAGE".equals(qrLevel)){
+        	uids = moveRqData.getStrings(Tags.SOPInstanceUID);
+        	for (FileInfo[] fi : fileInfo){
+        		existingIDs.add(fi[0].sopIUID);
+        	}
+        }
+        if ("SERIES".equals(qrLevel)){
+        	uids = moveRqData.getStrings(Tags.SeriesInstanceUID);
+        	for (FileInfo[] fi : fileInfo){
+        		existingIDs.add(fi[0].seriesIUID);
+        	}
+        }
+        if ("STUDY".equals(qrLevel)){
+        	uids = moveRqData.getStrings(Tags.StudyInstanceUID);
+        	for (FileInfo[] fi : fileInfo){
+        		existingIDs.add(fi[0].studyIUID);
+        	}
+        }
+        if ("PATIENT".equals(qrLevel)){
+        	uids = new String[] {moveRqData.getString(Tags.PatientID)};
+        	if (fileInfo.length != 0)
+        		existingIDs.add(fileInfo[0][0].patID);
+        }
+        
+        for (String rqUID : uids){
+        	if (!existingIDs.contains(rqUID))
+        		invalidRequestedUIDs.add(rqUID);
+        }
+        
+        if (!invalidRequestedUIDs.isEmpty())
+        	log.warn("Found invalid UIDs in c-move: "+invalidRequestedUIDs);
+    }
 }

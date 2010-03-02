@@ -1107,6 +1107,17 @@ QueryRetrieveScp service.</description>
       <name>PixQueryServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getRetrieveRspStatusForNoMatchingInstanceToRetrieve"
+      setMethod="setRetrieveRspStatusForNoMatchingInstanceToRetrieve">
+      <description>Retrieve response status when there is no matching instance to retrieve for one (or more) requested Patient/Study/Series/Image. Default is 0 = SUCCESS.
+      </description>
+      <name>RetrieveRspStatusForNoMatchingInstanceToRetrieve</name>
+      <type>int</type>
+      <descriptors>
+         <value value="0"/>
+      </descriptors>
+   </attribute>
 
    &defaultAttributes;
 

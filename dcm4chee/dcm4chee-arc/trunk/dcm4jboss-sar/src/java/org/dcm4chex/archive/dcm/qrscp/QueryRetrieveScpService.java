@@ -226,6 +226,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private int bufferSize = 8192;
 
+    private int retrieveRspStatusForNoMatchingInstanceToRetrieve = 0x0000;
+
     private static final String CSTORE_OUT_XSL = "out-cstorerq.xsl";
     
     private static final String COERCE_TPL = "COERCE_TPL";
@@ -1571,4 +1573,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
     protected void doPostCoercionProcessing(Dataset ds, int command, Association assoc) throws Exception {
         // Extension Point for customized QueryRetrieveScpService
     }
+
+	public int getRetrieveRspStatusForNoMatchingInstanceToRetrieve() {
+		return retrieveRspStatusForNoMatchingInstanceToRetrieve;
+	}
+
+	public void setRetrieveRspStatusForNoMatchingInstanceToRetrieve(
+			int retrieveRspStatusForNoMatchingInstanceToRetrieve) {
+		this.retrieveRspStatusForNoMatchingInstanceToRetrieve = retrieveRspStatusForNoMatchingInstanceToRetrieve;
+	}
 }
