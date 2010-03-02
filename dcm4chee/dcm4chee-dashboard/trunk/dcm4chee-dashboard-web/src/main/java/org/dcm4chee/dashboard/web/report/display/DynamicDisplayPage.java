@@ -43,6 +43,7 @@ import java.util.Calendar;
 
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.link.Link;
 import org.dcm4chee.dashboard.model.ReportModel;
 
 /**
@@ -60,5 +61,19 @@ public class DynamicDisplayPage extends WebPage {
         add(new Label("statement", report.getStatement()));
         add(displayDiagram ? new DisplayReportDiagramPanel("diagramPanel", report) : new Label("diagramPanel", "").setVisible(false));
         add(displayTable ? new DisplayReportTablePanel("tablePanel", report) : new Label("tablePanel", "").setVisible(false));
+    }
+    
+    class PlaceholderLink extends Link<Object> {
+        
+        private static final long serialVersionUID = 1L;
+
+        public PlaceholderLink(String id) {
+            super(id);
+            
+            this.setVisible(false);
+        }
+        
+        @Override
+        public void onClick() {}
     }
 }

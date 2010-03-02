@@ -288,23 +288,24 @@ public class SystemInfoPanel extends Panel {
         }
         
         public String getInit() {
-            String initMemoryString = this.formatter.format(new Float(this.init)/MemoryInstanceModel.MEGA);
-            return initMemoryString.substring(0, Math.min(initMemoryString.length(), this.memoryDisplayLength)) + " MB";
+            return format(this.init);
         }
         
         public String getUsed() {
-            String usedMemoryString = this.formatter.format(new Float(this.used)/MemoryInstanceModel.MEGA);
-            return usedMemoryString.substring(0, Math.min(usedMemoryString.length(), this.memoryDisplayLength)) + " MB";
+            return format(this.used);
         }
         
         public String getCommitted() {
-            String committedMemoryString = this.formatter.format(new Float(this.committed)/MemoryInstanceModel.MEGA);
-            return committedMemoryString.substring(0, Math.min(committedMemoryString.length(), this.memoryDisplayLength)) + " MB";
+            return format(this.committed);
         }
         
         public String getMax() {
-            String maxMemoryString = this.formatter.format(new Float(this.max)/MemoryInstanceModel.MEGA);
-            return maxMemoryString.substring(0, Math.min(maxMemoryString.length(), this.memoryDisplayLength)) + " MB";
+            return format(this.max);
+        }
+        
+        private String format(long memory) {
+            String memoryString = this.formatter.format(new Float(memory)/MemoryInstanceModel.MEGA);
+            return memoryString.substring(0, Math.min(memoryString.length(), this.memoryDisplayLength)) + " MB";
         }
     }
 }

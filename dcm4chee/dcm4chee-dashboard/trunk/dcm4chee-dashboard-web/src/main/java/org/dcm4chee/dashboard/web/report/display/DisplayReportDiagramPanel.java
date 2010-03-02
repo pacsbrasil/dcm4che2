@@ -249,13 +249,7 @@ public class DisplayReportDiagramPanel extends Panel {
             add(new Label("error-message", "").setVisible(false));
             add(new Label("error-reason", "").setVisible(false));
         } catch (Exception e) {
-            addOrReplace(new Link<Object>("diagram-download") {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void onClick() {}}
-                .setVisible(false));
+            addOrReplace(((DynamicDisplayPage) this.getPage()).new PlaceholderLink("diagram-download"));
             addOrReplace(new Button("diagram-print").setVisible(false));
             addOrReplace(new Image("diagram"));
             add(new Label("error-message", new ResourceModel("dashboard.report.reportdiagram.statement.error").wrapOnAssignment(this).getObject()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
