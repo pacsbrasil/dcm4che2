@@ -190,7 +190,7 @@
       <name>RidURL</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="http://localhost:8080/IHERetrieveDocument?requestType=DOCUMENT&amp;preferredContentType=application/pdf&amp;documentUID="/>
+         <value value="http://localhost:8080/rid/IHERetrieveDocument?requestType=DOCUMENT&amp;preferredContentType=application/pdf&amp;documentUID="/>
       </descriptors>
    </attribute>
    
