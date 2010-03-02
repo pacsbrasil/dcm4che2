@@ -50,7 +50,6 @@ import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.markup.html.link.PopupSettings;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
@@ -128,12 +127,6 @@ public class DynamicLinkPanel extends Panel {
                     "";
                 }
             }))));
-            
-            if (this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramLink
-                    || this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayTableLink
-                    || this.link instanceof org.dcm4chee.dashboard.web.report.DynamicLinkPanel.DisplayDiagramAndTableLink) {
-                this.link.setPopupSettings(new PopupSettings(PopupSettings.RESIZABLE | PopupSettings.SCROLLBARS));
-            }
             
             this.link.setVisible(
                     (report != null) && (

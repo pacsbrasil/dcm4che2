@@ -162,6 +162,7 @@ public class CreateOrEditReportPage extends WebPage {
 
                     String message = null;
                     Connection jdbcConnection = null;
+
                     try {
                         if (DashboardMainPage.isConfigurableStatement(thisReport.getStatement())) {
                             message = new ResourceModel("dashboard.report.createoredit.form.statement-test-submit.configurable-statement-message").wrapOnAssignment(this.getParent()).getObject();
@@ -173,6 +174,7 @@ public class CreateOrEditReportPage extends WebPage {
                             message = new ResourceModel("dashboard.report.createoredit.form.statement-test-submit.no-datasource-message").wrapOnAssignment(this.getParent()).getObject();
                             return;
                         }
+
                         (jdbcConnection = DashboardMainPage.getDatabaseConnection(dataSourceName.toString()))
                         .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
                         .executeQuery(thisReport.getStatement())

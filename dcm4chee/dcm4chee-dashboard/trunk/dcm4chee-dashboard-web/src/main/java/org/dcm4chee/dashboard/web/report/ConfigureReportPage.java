@@ -117,7 +117,6 @@ public class ConfigureReportPage extends WebPage {
         try {
             if (!DashboardMainPage.isConfigurableStatement(this.report.getStatement()))
                 redirectToInterceptPage(new DynamicDisplayPage(this.report, this.diagram, this.table));
-
             addOrReplace(new Label("page-title", new ResourceModel("dashboard.report.configure.title").wrapOnAssignment(this).getObject()));
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
@@ -176,12 +175,13 @@ public class ConfigureReportPage extends WebPage {
                     
                     String message = null;
                     Connection jdbcConnection = null;
-                    
+
                     try {
                         if (report.getDataSource() == null) {
                             message = new ResourceModel("dashboard.report.configure.form.statement-test-submit.no-datasource-message").wrapOnAssignment(this.getParent()).getObject();
                             return;
                         }
+
                         (jdbcConnection = DashboardMainPage.getDatabaseConnection(report.getDataSource().toString())).createStatement().executeQuery(configureStatement());
                         report.setStatement(configureStatement());
                         window.redirectToInterceptPage(new DynamicDisplayPage(report, diagram, table));
