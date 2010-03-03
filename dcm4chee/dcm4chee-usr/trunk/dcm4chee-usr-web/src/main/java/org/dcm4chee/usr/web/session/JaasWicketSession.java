@@ -102,7 +102,6 @@ System.out.println("LOGIN " + this.username);
 
         public void handle(Callback[] callbacks)
                 throws UnsupportedCallbackException {
-System.out.println("HENDL");
             for (int i = 0; i < callbacks.length; i++) {
                 Callback callback = callbacks[i];
                 if (callback instanceof NameCallback) {
