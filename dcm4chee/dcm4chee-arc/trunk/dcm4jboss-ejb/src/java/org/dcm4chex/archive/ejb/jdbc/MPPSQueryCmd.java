@@ -48,6 +48,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -77,44 +78,46 @@ public class MPPSQueryCmd extends BaseReadCmd {
      * @param ds
      * @throws SQLException
      */
-    public MPPSQueryCmd(Dataset filter, boolean emptyAccNo) throws SQLException {
+    public MPPSQueryCmd(Dataset keys, boolean emptyAccNo) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel);
+        AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
         defineColumnTypes(new int[] { blobAccessType, blobAccessType });
         // ensure keys contains (8,0005) for use as result filter
         sqlBuilder.setFrom(FROM);
         sqlBuilder.setRelations(RELATIONS);
         sqlBuilder.addListOfStringMatch(null, "MPPS.sopIuid",
                 SqlBuilder.TYPE1,
-                filter.getStrings(Tags.SOPInstanceUID) );
+                keys.getStrings(Tags.SOPInstanceUID) );
         if ( emptyAccNo ) {
         	sqlBuilder.addNULLValueMatch(null, "MPPS.accessionNumber", false );
         } else {
 	        sqlBuilder.addListOfStringMatch(null, "MPPS.accessionNumber",
 	                SqlBuilder.TYPE2,
-	                filter.getStrings(Tags.AccessionNumber) );
+	                keys.getStrings(Tags.AccessionNumber) );
         }
         sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE1,
-                filter.getStrings(Tags.PatientID) );
+                keys.getStrings(Tags.PatientID) );
         sqlBuilder.addPNMatch(new String[] {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},
                 SqlBuilder.TYPE2,
-                filter.getString(Tags.PatientName));
+                patAttrFilter.isICase(Tags.PatientName),
+                keys.getString(Tags.PatientName));
         sqlBuilder.addListOfStringMatch(null, "MPPS.modality",
                 SqlBuilder.TYPE1,
-                filter.getStrings(Tags.Modality));
+                keys.getStrings(Tags.Modality));
         sqlBuilder.addListOfStringMatch(null, "MPPS.performedStationAET",
                 SqlBuilder.TYPE1,
-                filter.getStrings(Tags.PerformedStationAET));
+                keys.getStrings(Tags.PerformedStationAET));
         sqlBuilder.addRangeMatch(null, "MPPS.ppsStartDateTime",
                 SqlBuilder.TYPE1,
-                filter.getDateTimeRange(Tags.PPSStartDate,Tags.PPSStartTime));
+                keys.getDateTimeRange(Tags.PPSStartDate,Tags.PPSStartTime));
         sqlBuilder.addListOfStringMatch(null, "MPPS.ppsStatusAsInt",
                 SqlBuilder.TYPE1,
-				filter.getStrings(Tags.PPSStatus));
+				keys.getStrings(Tags.PPSStatus));
     }
     
     public int count() throws SQLException {

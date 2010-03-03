@@ -46,6 +46,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -71,9 +72,10 @@ public class GPPPSQueryCmd extends BaseReadCmd {
      * @param ds
      * @throws SQLException
      */
-    public GPPPSQueryCmd(Dataset filter) throws SQLException {
+    public GPPPSQueryCmd(Dataset keys) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                     transactionIsolationLevel);
+        AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
         defineColumnTypes(new int[] { blobAccessType, blobAccessType });
         // ensure keys contains (8,0005) for use as result filter
         sqlBuilder.setSelect(SELECT);
@@ -81,22 +83,23 @@ public class GPPPSQueryCmd extends BaseReadCmd {
         sqlBuilder.setRelations(RELATIONS);
         sqlBuilder.addListOfStringMatch(null, "GPPPS.sopIuid",
                 SqlBuilder.TYPE1,
-                filter.getStrings(Tags.SOPInstanceUID) );
+                keys.getStrings(Tags.SOPInstanceUID) );
         sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE1,
-                filter.getStrings(Tags.PatientID) );
+                patAttrFilter.getStrings(keys, Tags.PatientID) );
         sqlBuilder.addPNMatch(new String[] {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},
                 SqlBuilder.TYPE2,
-                filter.getString(Tags.PatientName));
+                patAttrFilter.isICase(Tags.PatientName),
+                keys.getString(Tags.PatientName));
         sqlBuilder.addRangeMatch(null, "GPPPS.ppsStartDateTime",
                 SqlBuilder.TYPE1,
-                filter.getDateTimeRange(Tags.PPSStartDate,Tags.PPSStartTime));
+                keys.getDateTimeRange(Tags.PPSStartDate,Tags.PPSStartTime));
         sqlBuilder.addListOfStringMatch(null, "GPPPS.ppsStatusAsInt",
                 SqlBuilder.TYPE1,
-				filter.getStrings(Tags.PPSStatus));
+                keys.getStrings(Tags.PPSStatus));
     }
 
     public void execute() throws SQLException {

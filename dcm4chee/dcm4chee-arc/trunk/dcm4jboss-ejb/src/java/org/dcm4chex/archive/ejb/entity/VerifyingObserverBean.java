@@ -44,6 +44,7 @@ import javax.ejb.EntityBean;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -111,7 +112,8 @@ public abstract class VerifyingObserverBean implements EntityBean {
         PersonName ppn = pn.getPhonetic();
         String name;
         if ((name = pn.toComponentGroupString(false)) != null) {
-            setVerifyingObserverName(name.toUpperCase());
+            AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(null);
+            setVerifyingObserverName(filter.toUpperCase(name, Tags.VerifyingObserverName));
         }
         if (ipn != null && (name = ipn.toComponentGroupString(false)) != null) {
             setVerifyingObserverIdeographicName(name.toUpperCase());

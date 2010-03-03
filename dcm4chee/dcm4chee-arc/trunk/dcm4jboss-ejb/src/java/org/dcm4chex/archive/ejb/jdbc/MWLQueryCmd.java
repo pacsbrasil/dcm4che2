@@ -47,6 +47,7 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.SPSStatus;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -91,6 +92,7 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
      */
     public MWLQueryCmd(Dataset keys) throws SQLException {
         super(keys, true, false, transactionIsolationLevel);
+        AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
         defineColumnTypes(new int[] { blobAccessType, blobAccessType });
         // ensure keys contains (8,0005) for use as result filter
         if (!keys.contains(Tags.SpecificCharacterSet)) {
@@ -124,6 +126,7 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
                     "MWLItem.performingPhysicianName",
                     "MWLItem.performingPhysicianIdeographicName",
                     "MWLItem.performingPhysicianPhoneticName"},
+                    true, // TODO make ICASE configurable
                     SqlBuilder.TYPE2,
                     spsItem.getString(Tags.PerformingPhysicianName));
         }
@@ -138,15 +141,16 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
                 keys.getStrings(Tags.StudyInstanceUID));
         sqlBuilder.addWildCardMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE1,
-                keys.getStrings(Tags.PatientID));
+                patAttrFilter.getStrings(keys, Tags.PatientID));
         sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
                 SqlBuilder.TYPE2,
-                keys.getString(Tags.IssuerOfPatientID));
+                patAttrFilter.getString(keys, Tags.IssuerOfPatientID));
         sqlBuilder.addPNMatch(new String[] {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},
                 SqlBuilder.TYPE2,
+                patAttrFilter.isICase(Tags.PatientName),
                 keys.getString(Tags.PatientName));
         
         matchingKeys.add(MATCHING_KEYS);

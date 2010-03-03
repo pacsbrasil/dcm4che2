@@ -58,9 +58,11 @@ public final class AttributeFilter {
     static AttributeFilter patientFilter;
     static AttributeFilter studyFilter;
     static AttributeFilter seriesFilter;
-    static HashMap instanceFilters = new HashMap();
+    static HashMap<String, AttributeFilter> instanceFilters =
+            new HashMap<String, AttributeFilter>();
     private int[] tags = {};
     private int[] noCoercion = {};
+    private int[] iCase = {};
     private int[] vrs = {};
     private int[] fieldTags = {};
     private String[] fields = {};
@@ -111,11 +113,8 @@ public final class AttributeFilter {
     }
     
     public static AttributeFilter getInstanceAttributeFilter(String cuid) {
-        AttributeFilter filter = (AttributeFilter) instanceFilters.get(cuid);
-		if (filter == null) {
-		    filter = (AttributeFilter) instanceFilters.get(null);
-		}
-		return filter;
+        AttributeFilter filter = instanceFilters.get(cuid);
+        return filter == null ? instanceFilters.get(null) : filter;
     }
 
     AttributeFilter(String tsuid, boolean exclude, boolean excludePrivate,
@@ -129,6 +128,10 @@ public final class AttributeFilter {
     
     final void setNoCoercion(int[] noCoercion) {
         this.noCoercion = noCoercion;
+    }
+
+    final void setICase(int[] iCase) {
+        this.iCase = iCase;
     }
 
     final void setTags(int[] tags) {
@@ -192,9 +195,13 @@ public final class AttributeFilter {
     }
     
     public boolean isCoercionForbidden(int tag) {
-    	return Arrays.binarySearch(noCoercion, tag) >= 0;
+        return Arrays.binarySearch(noCoercion, tag) >= 0;
     }
-    
+
+    public boolean isICase(int tag) {
+        return Arrays.binarySearch(iCase, tag) >= 0;
+    }
+
     public final String getTransferSyntaxUID() {
         return tsuid;
     }
@@ -211,4 +218,27 @@ public final class AttributeFilter {
         return ds.subSet(tags, vrs, exclude, excludePrivate);
     }
 
+    public String[] getStrings(Dataset ds, int tag) {
+        return getStrings(ds, tag, tag);
+    }
+
+    public String[] getStrings(Dataset ds, int tag, int icasetag) {
+        String[] ss = ds.getStrings(tag);
+        if (ss != null && isICase(icasetag))
+            for (int i = 0; i < ss.length; i++)
+                ss[i] = toUpperCase(ss[i]);
+        return ss;
+    }
+
+    public String getString(Dataset ds, int tag) {
+        return toUpperCase(ds.getString(tag), tag);
+    }
+
+    public String toUpperCase(String s, int tag) {
+        return s != null && isICase(tag) ? s.toUpperCase() : s;
+    }
+
+    public static String toUpperCase(String s) {
+        return s != null ? s.toUpperCase() : s;
+    }
 }

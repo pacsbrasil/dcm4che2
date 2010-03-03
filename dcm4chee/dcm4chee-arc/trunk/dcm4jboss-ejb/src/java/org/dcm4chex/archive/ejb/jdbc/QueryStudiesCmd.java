@@ -54,6 +54,7 @@ import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.common.SecurityUtils;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.util.Convert;
 
 /**
@@ -103,7 +104,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
      * <p>
      * Dont use this feature for DICOM queries!
      *   
-     * @param filter                    Filter Dataset.
+     * @param keys                    Filter Dataset.
      * @param hideMissingStudies        Hide patients without studies.
      * @param noMatchForNoValue         disable type2 matches.Hide results where object does not have a value for a query attribute (NOT DICOM conform)
      * @param queryHasIssuerOfPID          Enable query if issuer of patient is set. Only effective if IssuerOfPatientID isn't a query attribute!
@@ -114,21 +115,24 @@ public class QueryStudiesCmd extends BaseReadCmd {
      * 
      * @throws SQLException
      */
-    public QueryStudiesCmd(Dataset filter, boolean hideMissingStudies, boolean noMatchForNoValue, Boolean queryHasIssuerOfPID, Subject subject)
+    public QueryStudiesCmd(Dataset keys, boolean hideMissingStudies, boolean noMatchForNoValue, Boolean queryHasIssuerOfPID, Subject subject)
     throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel);
+        AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
+        AttributeFilter studyAttrFilter = AttributeFilter.getStudyAttributeFilter();
+        AttributeFilter seriesAttrFilter = AttributeFilter.getSeriesAttributeFilter();
         checkPermissions = subject != null;
         boolean type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
         sqlBuilder.setFrom(getTables());
-        sqlBuilder.setLeftJoin( getLeftJoin(filter.containsValue(Tags.SeriesInstanceUID) || 
-                filter.containsValue(Tags.RequestAttributesSeq)));
+        sqlBuilder.setLeftJoin( getLeftJoin(keys.containsValue(Tags.SeriesInstanceUID) || 
+                keys.containsValue(Tags.RequestAttributesSeq)));
         sqlBuilder.setRelations(getRelations());
         sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
         sqlBuilder.addWildCardMatch(null, "Patient.patientId",
                 type2,
-                filter.getStrings(Tags.PatientID));
-        String issuer = filter.getString(Tags.IssuerOfPatientID);
+                patAttrFilter.getStrings(keys, Tags.PatientID));
+        String issuer = patAttrFilter.getString(keys, Tags.IssuerOfPatientID);
         if ( issuer != null ) {
             sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId", type2, issuer);
         } else if ( queryHasIssuerOfPID != null ) {
@@ -139,17 +143,18 @@ public class QueryStudiesCmd extends BaseReadCmd {
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},
                 type2,
-                filter.getString(Tags.PatientName));
+                patAttrFilter.isICase(Tags.PatientName),
+                keys.getString(Tags.PatientName));
         sqlBuilder.addRangeMatch(null, "Patient.patientBirthDate", type2,
-                filter.getString(Tags.PatientBirthDate));
+                keys.getString(Tags.PatientBirthDate));
         
         sqlBuilder.addWildCardMatch(null, "Study.studyId", type2,
-                filter.getStrings(Tags.StudyID));
-        if (filter.containsValue(Tags.RequestAttributesSeq) && 
-                filter.getItem(Tags.RequestAttributesSeq).containsValue(Tags.StudyInstanceUID)) {
+                studyAttrFilter.getStrings(keys, Tags.StudyID));
+        if (keys.containsValue(Tags.RequestAttributesSeq) && 
+                keys.getItem(Tags.RequestAttributesSeq).containsValue(Tags.StudyInstanceUID)) {
             Match.Node node0 = sqlBuilder.addNodeMatch("OR", false);
-            node0.addMatch(new Match.ListOfString(null, "Study.studyIuid", SqlBuilder.TYPE1, filter.getStrings(Tags.StudyInstanceUID)));
-            Dataset rqAttrs = filter.getItem(Tags.RequestAttributesSeq);
+            node0.addMatch(new Match.ListOfString(null, "Study.studyIuid", SqlBuilder.TYPE1, keys.getStrings(Tags.StudyInstanceUID)));
+            Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
     
             SqlBuilder subQuery = new SqlBuilder();
             subQuery.setSelect(new String[] { "SeriesRequest.pk" });
@@ -161,20 +166,20 @@ public class QueryStudiesCmd extends BaseReadCmd {
             node0.addMatch(new Match.Subquery(subQuery, null, null));
         } else {
             sqlBuilder.addListOfStringMatch(null, "Study.studyIuid",
-                    SqlBuilder.TYPE1, filter.getStrings( Tags.StudyInstanceUID));
+                    SqlBuilder.TYPE1, keys.getStrings( Tags.StudyInstanceUID));
         }
         
         sqlBuilder.addListOfStringMatch(null, "Series.seriesIuid",
-                SqlBuilder.TYPE1, filter.getStrings( Tags.SeriesInstanceUID));
+                SqlBuilder.TYPE1, keys.getStrings( Tags.SeriesInstanceUID));
         sqlBuilder.addRangeMatch(null, "Study.studyDateTime", type2,
-                filter.getDateTimeRange(Tags.StudyDate, Tags.StudyTime));
+                keys.getDateTimeRange(Tags.StudyDate, Tags.StudyTime));
         sqlBuilder.addWildCardMatch(null, "Study.accessionNumber", type2,
-                filter.getStrings(Tags.AccessionNumber));
+                studyAttrFilter.getStrings(keys, Tags.AccessionNumber));
         sqlBuilder.addModalitiesInStudyNestedMatch(null,
-                filter.getStrings(Tags.ModalitiesInStudy));
-        filter.setPrivateCreatorID(PrivateTags.CreatorID);
+                seriesAttrFilter.getStrings(keys, Tags.ModalitiesInStudy, Tags.Modality));
+        keys.setPrivateCreatorID(PrivateTags.CreatorID);
         sqlBuilder.addCallingAETsNestedMatch(false,
-                filter.getStrings(PrivateTags.CallingAET));
+                keys.getStrings(PrivateTags.CallingAET));
         this.hideMissingStudies = hideMissingStudies;	
         if ( this.hideMissingStudies ) {
             sqlBuilder.addNULLValueMatch(null,"Study.encodedAttributes", true);

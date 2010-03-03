@@ -717,15 +717,15 @@ public abstract class InstanceBean implements EntityBean {
     private void setAttributesInternal(Dataset ds, AttributeFilter filter) {
         setSopIuid(ds.getString(Tags.SOPInstanceUID));
         setSopCuid(ds.getString(Tags.SOPClassUID));
-        setInstanceNumber(ds.getString(Tags.InstanceNumber));
+        setInstanceNumber(filter.getString(ds, Tags.InstanceNumber));
         try {
             setContentDateTime(ds.getDateTime(Tags.ContentDate,
                     Tags.ContentTime));
         } catch (IllegalArgumentException e) {
             log.warn("Illegal Content Date/Time format: " + e.getMessage());
         }
-        setSrCompletionFlag(ds.getString(Tags.CompletionFlag));
-        setSrVerificationFlag(ds.getString(Tags.VerificationFlag));
+        setSrCompletionFlag(filter.getString(ds, Tags.CompletionFlag));
+        setSrVerificationFlag(filter.getString(ds, Tags.VerificationFlag));
         byte[] b = DatasetUtils.toByteArray(ds, filter.getTransferSyntaxUID());
         if (log.isDebugEnabled()) {
             log.debug("setEncodedAttributes(byte[" + b.length + "])");
@@ -733,7 +733,7 @@ public abstract class InstanceBean implements EntityBean {
         setEncodedAttributes(b);
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
-            setField(filter.getField(fieldTags[i]), ds.getString(fieldTags[i]));
+            setField(filter.getField(fieldTags[i]), filter.getString(ds, fieldTags[i]));
         }
     }
 

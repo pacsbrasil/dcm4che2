@@ -490,12 +490,13 @@ public abstract class PatientBean implements EntityBean {
         if (opidsq == null || opidsq.isEmpty() || opidsq.getItem().isEmpty()) {
             return;
         }
+        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
         Collection opids = getOtherPatientIds();
         for (int i = 0, n = opidsq.countItems(); i < n; i++) {
             Dataset opid = opidsq.getItem(i);
             opids.add(opidHome.valueOf(
-                    opid.getString(Tags.PatientID),
-                    opid.getString(Tags.IssuerOfPatientID)));
+                    filter.getString(opid, Tags.PatientID),
+                    filter.getString(opid, Tags.IssuerOfPatientID)));
         }
     }
 
@@ -554,6 +555,14 @@ public abstract class PatientBean implements EntityBean {
         if (matching.noMatchesFor(pid, issuer, familyName, givenName,
                 middleName, birthdate)) {
             throw new ObjectNotFoundException();
+        }
+        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
+        pid = filter.toUpperCase(pid, Tags.PatientID);
+        issuer = filter.toUpperCase(issuer, Tags.IssuerOfPatientID);
+        if (filter.isICase(Tags.PatientName)) {
+            familyName = AttributeFilter.toUpperCase(familyName);
+            givenName = AttributeFilter.toUpperCase(givenName);
+            middleName = AttributeFilter.toUpperCase(middleName);
         }
         Collection c;
         if (pid != null) {
@@ -796,11 +805,13 @@ public abstract class PatientBean implements EntityBean {
     }
 
     private void setAttributesInternal(Dataset ds, AttributeFilter filter) {
-        setPatientId(ds.getString(Tags.PatientID));
-        setIssuerOfPatientId(ds.getString(Tags.IssuerOfPatientID));
+        setPatientId(filter.getString(ds, Tags.PatientID));
+        setIssuerOfPatientId(filter.getString(ds, Tags.IssuerOfPatientID));
         PersonName pn = ds.getPersonName(Tags.PatientName);
         if (pn != null) {
-            setPatientName(toUpperCase(pn.toComponentGroupString(false)));
+            setPatientName(
+                    filter.toUpperCase(pn.toComponentGroupString(false),
+                            Tags.PatientName));
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 setPatientIdeographicName(ipn.toComponentGroupString(false));
@@ -811,7 +822,7 @@ public abstract class PatientBean implements EntityBean {
             }
         }
         setPatientBirthDate(normalizeDA(ds.getString(Tags.PatientBirthDate)));
-        setPatientSex(ds.getString(Tags.PatientSex));
+        setPatientSex(filter.getString(ds, Tags.PatientSex));
         byte[] b = DatasetUtils.toByteArray(ds, filter.getTransferSyntaxUID());
         if (log.isDebugEnabled()) {
             log.debug("setEncodedAttributes(byte[" + b.length + "])");
@@ -819,7 +830,7 @@ public abstract class PatientBean implements EntityBean {
         setEncodedAttributes(b);
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
-            setField(filter.getField(fieldTags[i]), ds.getString(fieldTags[i]));
+            setField(filter.getField(fieldTags[i]), filter.getString(ds, fieldTags[i]));
         }
     }
     
@@ -835,7 +846,7 @@ public abstract class PatientBean implements EntityBean {
             Dataset attrs;
             if (filter.isMerge()) {
                 attrs = getAttributes(false);
-                appendOtherPatientIds(attrs, ds, null);
+                appendOtherPatientIds(attrs, ds, null, filter);
                 AttrUtils.updateAttributes(attrs, 
                         filter.filter(ds).exclude(OTHER_PID_SQ), null, log);
             } else {
@@ -847,7 +858,7 @@ public abstract class PatientBean implements EntityBean {
             Dataset attrs = getAttributes(false);
             boolean b = false;
             if (filter.isMerge())
-                 b = appendOtherPatientIds(attrs, ds, null);
+                 b = appendOtherPatientIds(attrs, ds, null, filter);
             else
                 log.debug("-merge update-strategy not specified.  Not synchronizing other patient ids!");
 
@@ -871,12 +882,12 @@ public abstract class PatientBean implements EntityBean {
      */
     public boolean updateAttributes(Dataset newAttrs, Dataset modifiedAttrs) {
         Dataset oldAttrs = getAttributes(false);
-        boolean b = appendOtherPatientIds(oldAttrs, newAttrs, modifiedAttrs);
+        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(); 
+        boolean b = appendOtherPatientIds(oldAttrs, newAttrs, modifiedAttrs, filter);
         if( oldAttrs==null ) {
             setAttributes( newAttrs );
         } 
         else { 
-            AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(); 
             if (!AttrUtils.updateAttributes(oldAttrs, filter.filter(newAttrs).exclude(OTHER_PID_SQ), modifiedAttrs, log) && ! b) 
                  return false;
             setAttributes(oldAttrs);
@@ -884,7 +895,8 @@ public abstract class PatientBean implements EntityBean {
         return true;    
     }
 
-    private boolean appendOtherPatientIds(Dataset oldAttrs, Dataset newAttrs, Dataset modifiedAttrs) {
+    private boolean appendOtherPatientIds(Dataset oldAttrs, Dataset newAttrs,
+                Dataset modifiedAttrs, AttributeFilter filter) {
         DcmElement nopidsq = newAttrs.get(Tags.OtherPatientIDSeq);
         if (nopidsq == null || nopidsq.isEmpty() || nopidsq.getItem().isEmpty()) {
             return false;
@@ -905,8 +917,8 @@ public abstract class PatientBean implements EntityBean {
         boolean updated=false;
         for (int i = 0, n = nopidsq.countItems(); i < n; i++) {
             Dataset nItem = nopidsq.getItem(i);
-            String nopid = nItem.getString(Tags.PatientID);
-            String issuer = nItem.getString(Tags.IssuerOfPatientID);
+            String nopid = filter.getString(nItem, Tags.PatientID);
+            String issuer = filter.getString(nItem, Tags.IssuerOfPatientID);
             Dataset oItem = findOtherPIDByIssuer(issuer,oopidsq);
             if (oItem==null) {
                 oopidsq.addItem(nItem);
@@ -919,9 +931,9 @@ public abstract class PatientBean implements EntityBean {
             }	
             else {
             	try {
-            	    String oopid = oItem.getString(Tags.PatientID);
+            	    String oopid = filter.getString(oItem, Tags.PatientID);
             	    if( ! oopid.equals(nopid) ) {
-            	        oItem.putLO(Tags.PatientID, nopid);
+            	        oItem.putLO(Tags.PatientID, nItem.getString(Tags.PatientID));
                         OtherPatientIDLocal oopidBean = opidHome.findByPatientIdAndIssuer(oopid, issuer);
                         getOtherPatientIds().remove(oopidBean);
                         if (oopidBean.getPatients().isEmpty()) {
@@ -942,6 +954,7 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.interface-method
      */
     public boolean updateOtherPatientIDs(Dataset ds) {
+        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
         Dataset attrs = getAttributes(false);
         DcmElement opidsq = attrs.remove(Tags.OtherPatientIDSeq);
         DcmElement nopidsq = ds.get(Tags.OtherPatientIDSeq);
@@ -949,9 +962,9 @@ public abstract class PatientBean implements EntityBean {
         if (opidsq != null) {
             for (int i = 0, n = opidsq.countItems(); i < n; i++) {
                 Dataset opid = opidsq.getItem(i);
-                String pid = opid.getString(Tags.PatientID);
-                String issuer = opid.getString(Tags.IssuerOfPatientID);
-                if (nopidsq == null || !containsPID(pid, issuer, nopidsq)) {
+                String pid = filter.getString(opid, Tags.PatientID);
+                String issuer = filter.getString(opid, Tags.IssuerOfPatientID);
+                if (nopidsq == null || !containsPID(pid, issuer, nopidsq, filter)) {
                     try {
                         OtherPatientIDLocal otherPatientId = 
                             opidHome.findByPatientIdAndIssuer(pid, issuer);
@@ -973,9 +986,9 @@ public abstract class PatientBean implements EntityBean {
         if (nopidsq != null) {
             for (int i = 0, n = nopidsq.countItems(); i < n; i++) {
                 Dataset nopid = nopidsq.getItem(i);
-                String pid = nopid.getString(Tags.PatientID);
-                String issuer = nopid.getString(Tags.IssuerOfPatientID);
-                if (opidsq == null || !containsPID(pid, issuer, opidsq)) {
+                String pid = filter.getString(nopid, Tags.PatientID);
+                String issuer = filter.getString(nopid, Tags.IssuerOfPatientID);
+                if (opidsq == null || !containsPID(pid, issuer, opidsq, filter)) {
                     getOtherPatientIds().add(opidHome.valueOf(pid, issuer));
                     update = true;
                     log.info("Add additional Other Patient ID: "
@@ -995,12 +1008,13 @@ public abstract class PatientBean implements EntityBean {
         return update;
     }
 
-    private boolean containsPID(String pid, String issuer, DcmElement opidsq) {
+    private boolean containsPID(String pid, String issuer, DcmElement opidsq,
+            AttributeFilter filter) {
         for (int i = 0, n = opidsq.countItems(); i < n; i++) {
             Dataset opid = opidsq.getItem(i);
-            if (opid.getString(Tags.PatientID)
+            if (filter.getString(opid, Tags.PatientID)
                     .equals(pid)
-                && opid.getString(Tags.IssuerOfPatientID)
+                && filter.getString(opid, Tags.IssuerOfPatientID)
                     .equals(issuer)) {
                     return true;
             }
@@ -1016,10 +1030,6 @@ public abstract class PatientBean implements EntityBean {
             }
         }
         return null;
-    }
-
-    private static String toUpperCase(String s) {
-        return s != null ? s.toUpperCase() : null;
     }
 
     private static String normalizeDA(String s) {

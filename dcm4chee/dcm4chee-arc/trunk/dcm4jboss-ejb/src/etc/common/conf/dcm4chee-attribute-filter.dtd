@@ -65,8 +65,10 @@ Minimal descriptor for DICOM Standard Conformance of Query/Retrieve Service:
 
 <!ELEMENT attr EMPTY>
 <!ATTLIST attr tag CDATA #IMPLIED>
+<!ATTLIST attr seq CDATA #IMPLIED>
 <!ATTLIST attr vr (AE | AS | AT | CS | DA | DS | DT | FL |
                    FD | IS | LO | LT | OB | OF | OW | PN |
                    SH | SL | SQ | SS | ST | TM | UI | UL |
                    UN | US | UT) #IMPLIED>
 <!ATTLIST attr coerce (true | false ) "true">
+<!ATTLIST attr case-sensitive (true | false ) "true">
