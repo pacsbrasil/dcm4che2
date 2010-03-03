@@ -24,7 +24,6 @@ public class ChangePasswordLink extends AjaxFallbackLink<Object> {
 
     @Override
     public void onClick(AjaxRequestTarget target) {
-        System.out.println("the window is " + window);
         window
             .setCloseButtonCallback(
                     new ModalWindow.CloseButtonCallback() {

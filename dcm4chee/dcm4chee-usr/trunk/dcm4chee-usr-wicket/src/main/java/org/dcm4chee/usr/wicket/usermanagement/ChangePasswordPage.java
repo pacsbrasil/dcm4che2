@@ -54,7 +54,6 @@ import org.apache.wicket.markup.html.pages.InternalErrorPage;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
-import org.apache.wicket.model.StringResourceModel;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.wicket.util.JNDIUtils;
@@ -90,7 +89,8 @@ public class ChangePasswordPage extends WebPage {
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
             log.debug("Exception: ", e);
-            this.redirectToInterceptPage(new InternalErrorPage());
+            this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
+            throw new RuntimeException();
         }
     }
         
@@ -110,7 +110,7 @@ public class ChangePasswordPage extends WebPage {
             this.resultMessage = resultMessage;
             this.resultMessage.setVisible(false);
 
-            final Label oldPasswordLabel = new Label("old-password-label", new StringResourceModel("change_password.old_password.label", this, null));
+            final Label oldPasswordLabel = new Label("old-password-label", new ResourceModel("change_password.old_password.label").wrapOnAssignment(this));
             this.add(oldPasswordLabel);
 
             final PasswordTextField oldPasswordTf = new PasswordTextField("change_password.old_password.input", oldPassword);
@@ -154,14 +154,10 @@ public class ChangePasswordPage extends WebPage {
                         log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
                         log.debug("Exception: ", e);
                         
-//                        resultMessage.setDefaultModel(new StringResourceModel("change_password.failure-message", this, null));
-//                        resultMessage.add(new AttributeModifier("class", true, new Model<String>("message-error")));
-//                        resultMessage.setVisible(true);
-//                        setResponsePage(this.getPage());
                         resultMessage.setDefaultModel(new ResourceModel("change_password.failure-message"))
                         .add(new AttributeModifier("class", true, new Model<String>("message-error")))
                         .setVisible(true);
-                        setResponsePage(this.getPage());
+                        setResponsePage(this.getPage().getClass());
                     }
                 }
                 

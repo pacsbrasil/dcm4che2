@@ -62,7 +62,7 @@ public class UserValidator extends AbstractValidator<String> {
     public UserValidator(List<User> allUsers) {
         this.allUsers = allUsers;
     }
-    
+
     @Override
     protected void onValidate(IValidatable<String> validatable) {
         String username = validatable.getValue().toString();

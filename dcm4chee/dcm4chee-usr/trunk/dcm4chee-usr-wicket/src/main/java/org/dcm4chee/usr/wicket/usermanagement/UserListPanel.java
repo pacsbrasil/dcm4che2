@@ -49,8 +49,10 @@ import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.AjaxFormSubmitBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
+import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.ComponentTag;
@@ -221,59 +223,62 @@ public class UserListPanel extends Panel {
             newAjaxComponent(this)
                 .setVisible(false);
 
-            this.add(new Button("add-user-submit"));
-            
             this.add(newAjaxComponent(
                     new Label("new-username-label", new ResourceModel("userlist.add_user.username.label").wrapOnAssignment(this))));
-
             TextField<String> usernameTf;
             this.add(newAjaxComponent(
                     (usernameTf = new TextField<String>("userlist.add_user.username.input", newUsername))
                     .setRequired(true)
                     .add(new UserValidator(currentUserList)))
             );
-            
             this.add(newAjaxComponent(
                     new ValidatorMessageLabel("new-username-validator-message-label", usernameTf)));
             
             this.add(newAjaxComponent(
                     new Label("password-label-1", new ResourceModel("userlist.add_user.password_1.label").wrapOnAssignment(this))));
-            
             PasswordTextField passwordTf1 = null;
             this.add(newAjaxComponent(
                     (passwordTf1 = new PasswordTextField("userlist.add_user.password_1.input", password))));
-
             this.add(newAjaxComponent(
                     new ValidatorMessageLabel("password-validator-message-label-1", passwordTf1)));
-            
+         
             this.add(newAjaxComponent(
                     new Label("password-label-2", new ResourceModel("userlist.add_user.password_2.label").wrapOnAssignment(this))));
-            
             PasswordTextField passwordTf2 = null;
             this.add(newAjaxComponent(
                     (passwordTf2 = new PasswordTextField("userlist.add_user.password_2.input", new Model<String>("")))));
-            
             this.add(newAjaxComponent(
                     new ValidatorMessageLabel("password-validator-message-label-2", passwordTf2)));
 
             this.add(new EqualPasswordInputValidator(passwordTf1, passwordTf2));
-        }
         
-        @Override
-        protected void onSubmit() {
-            PageParameters pp = null;
-            try {
-                User user = new User();
-                user.setUserID(newUsername.getObject());
-                user.setPassword(SecurityUtils.encodePassword(this.password.getObject()));
-                ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).createUser(user);
-                setResponsePage(this.getPage().getClass());
-            } catch (final Exception e) {
-                log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
-                log.debug("Exception: ", e);
-                pp = (this.getPage().getPageParameters() == null) ? new PageParameters(): this.getPage().getPageParameters();
-                pp.add("error", e.getMessage());
-            }
+            add(new AjaxFallbackButton("add-user-submit", AddUserForm.this) {
+                
+                private static final long serialVersionUID = 1L;
+    
+                @Override
+                protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                    try {
+                        User user = new User();
+                        user.setUserID(newUsername.getObject());
+                        user.setPassword(SecurityUtils.encodePassword(password.getObject()));
+                        ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).createUser(user);
+                        setResponsePage(this.getPage().getClass());
+                    } catch (final Exception e) {
+                        log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
+                        log.debug("Exception: ", e);
+                        this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
+                        throw new RuntimeException();
+                    }
+                }
+                
+                @Override
+                protected void onError(AjaxRequestTarget target, Form<?> form) {
+                    target.addComponent(form.get("new-username-validator-message-label"));
+                    target.addComponent(form.get("password-validator-message-label-1"));
+                    target.addComponent(form.get("password-validator-message-label-2"));
+                }
+            });
         }
     };
     
@@ -281,44 +286,49 @@ public class UserListPanel extends Panel {
         
         private static final long serialVersionUID = 1L;
         
-        private String userId;
         private Model<String> newRolename = new Model<String>();
         
-        public AddRoleForm(String id, String userId, List<String> currentRoleNameList) {
+        public AddRoleForm(String id, final String userId, List<String> currentRoleNameList) {
             super(id);
             
-            this.userId = userId;
             newAjaxComponent(this).setVisible(false);
             
             this.add(newAjaxComponent(
                     new Label("new-rolename-label", new ResourceModel("userlist.add_role.rolename.label").wrapOnAssignment(this))));
-            
             TextField<String> rolenameTf = null;
             this.add(newAjaxComponent(
                     (rolenameTf = new TextField<String>("userlist.add_role.rolename.input", newRolename))
                     .setRequired(true)
                     .add(new RoleValidator(currentRoleNameList)))
             );
-            
             this.add(newAjaxComponent(
                     new ValidatorMessageLabel("new-rolename-validator-message-label", rolenameTf)));
-        }
-        
-        @Override
-        protected void onSubmit() {
-            PageParameters pp = null;
-            try {
-                Role role = new Role();
-                role.setUserID(this.userId);
-                role.setRole(this.newRolename.getObject());
-                ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).addRole(role);
-                setResponsePage(this.getPage().getClass());
-            } catch (final Exception e) {
-                log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
-                log.debug("Exception: ", e);
-                pp = (this.getPage().getPageParameters() == null) ? new PageParameters(): this.getPage().getPageParameters();
-                pp.add("error", e.getMessage());                
-            }
+            
+            this.add(new AjaxFallbackButton("add-role-submit", AddRoleForm.this) {
+                
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                    try {
+                        Role role = new Role();
+                        role.setUserID(userId);
+                        role.setRole(newRolename.getObject());
+                        ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).addRole(role);
+                        setResponsePage(this.getPage().getClass());
+                    } catch (final Exception e) {
+                        log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
+                        log.debug("Exception: ", e);
+                        this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
+                        throw new RuntimeException();               
+                    }
+                }
+                
+                @Override
+                protected void onError(AjaxRequestTarget target, Form<?> form) {
+                    target.addComponent(form.get("new-rolename-validator-message-label"));
+                }
+            });
         }
     };
     
@@ -355,7 +365,7 @@ public class UserListPanel extends Panel {
 
             newAjaxComponent(this);
 
-            container.add(this.forForm = forForm);
+            container.addOrReplace(this.forForm = forForm);
             this.open_close_tooltip_texts = open_close_tooltip_texts;
             this.add(newAjaxComponent(
                     (this.toggleFormImage = new ToggleFormImage(toggleFormImageId, forForm))));
