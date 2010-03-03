@@ -52,8 +52,8 @@
 				</th>
 				<th class="table-header"></th>
 				<th class="table-header"></th>
-				<th wicket:id="role-headers" class="table-header"></th>
 				<th class="table-header"></th>
+				<th wicket:id="role-headers" class="table-header"></th>
 		    </tr>
 		  </thead>
 		  <tbody class="table-text">
@@ -71,10 +71,6 @@
 						<img wicket:id="img-delete" class="image" src="images/action_delete.png" />
 					</a>
 		      	</td>
-	 	  	  	<td wicket:id="role-dividers" style="text-align:center">
-					<input wicket:id="role-checkbox" class="input-userlist" type="checkbox" />
-		 	  	  	<img wicket:id="role-image" class="image" />
-	 	  	  	</td>
 				<td style="width: 150px">
 					<a wicket:id="toggle-role-form-link" href="#">
 						<img wicket:id="toggle-form-image-role" class="image" src="images/action_add.png" />
@@ -85,6 +81,9 @@
 						<div wicket:id="new-rolename-validator-message-label" />
 					</form>
 		      	</td>
+	 	  	  	<td wicket:id="role-dividers" style="text-align:center">
+					<input wicket:id="role-checkbox" class="input-userlist" type="checkbox" />
+	 	  	  	</td>
 		    </tr>
 		  </tbody>
 		</table>
