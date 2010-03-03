@@ -181,7 +181,6 @@ public class UserListPanel extends Panel {
                     if (this.userId.equals(user.getUserID())) {
                         AuthenticatedWebApplication awa = (AuthenticatedWebApplication) getApplication(); 
                         if (rolename.equals(awa.getInitParameter("userRoleName")) || rolename.equals(awa.getInitParameter("adminRoleName"))) {
-                            roleCheckbox.setVisible(false);
                             for (Role role : user.getRoles()) {
                                 if (role.getRole().equals(rolename))
                                     roleCheckbox.setEnabled(false)
