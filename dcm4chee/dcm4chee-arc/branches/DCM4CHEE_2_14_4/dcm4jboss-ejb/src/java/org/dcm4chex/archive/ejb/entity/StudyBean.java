@@ -39,7 +39,6 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
-import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
@@ -960,18 +959,20 @@ public abstract class StudyBean implements EntityBean {
     
     private void setAttributesInternal(Dataset ds, AttributeFilter filter) {
         setStudyIuid(ds.getString(Tags.StudyInstanceUID));
-        setStudyId(ds.getString(Tags.StudyID));
-        setStudyStatusId(ds.getString(Tags.StudyStatusID));
+        setStudyId(filter.getString(ds, Tags.StudyID));
+        setStudyStatusId(filter.getString(ds, Tags.StudyStatusID));
         try {
             setStudyDateTime(ds.getDateTime(Tags.StudyDate, Tags.StudyTime));
         } catch (IllegalArgumentException e) {
             log.warn("Illegal Study Date/Time format: " + e.getMessage());
         }
         
-        setAccessionNumber(ds.getString(Tags.AccessionNumber));
+        setAccessionNumber(filter.getString(ds, Tags.AccessionNumber));
         PersonName pn = ds.getPersonName(Tags.ReferringPhysicianName);
         if (pn != null) {
-            setReferringPhysicianName(toUpperCase(pn.toComponentGroupString(false)));
+            setReferringPhysicianName(
+                    filter.toUpperCase(pn.toComponentGroupString(false),
+                            Tags.ReferringPhysicianName));
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 setReferringPhysicianIdeographicName(ipn.toComponentGroupString(false));                
@@ -981,7 +982,7 @@ public abstract class StudyBean implements EntityBean {
                 setReferringPhysicianPhoneticName(ppn.toComponentGroupString(false));                
             }
         }
-        setStudyDescription(toUpperCase(ds.getString(Tags.StudyDescription)));
+        setStudyDescription(filter.getString(ds, Tags.StudyDescription));
         
         byte[] b = DatasetUtils.toByteArray(ds, filter.getTransferSyntaxUID());
         if (log.isDebugEnabled()) {
@@ -990,7 +991,7 @@ public abstract class StudyBean implements EntityBean {
         setEncodedAttributes(b);
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
-            setField(filter.getField(fieldTags[i]), ds.getString(fieldTags[i]));
+            setField(filter.getField(fieldTags[i]), filter.getString(ds, fieldTags[i]));
         }
     }
 
@@ -1035,11 +1036,6 @@ public abstract class StudyBean implements EntityBean {
             }
         }
     }
-
-    private static String toUpperCase(String s) {
-        return s != null ? s.toUpperCase() : null;
-    }
-
 
     /**
      * 

@@ -50,6 +50,7 @@ import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.GPSPSPriority;
 import org.dcm4chex.archive.common.GPSPSStatus;
 import org.dcm4chex.archive.common.InputAvailabilityFlag;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -79,6 +80,7 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
     
     public GPWLQueryCmd(Dataset keys) throws SQLException {
         super(keys, true, false, transactionIsolationLevel);
+        AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
         defineColumnTypes(new int[] { blobAccessType, blobAccessType });
         String s;
         // ensure keys contains (8,0005) for use as result filter
@@ -126,6 +128,7 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
                     "GPSPSPerformer.humanPerformerIdeographicName",
                     "GPSPSPerformer.humanPerformerPhoneticName"},
                     SqlBuilder.TYPE2,
+                    true, // TODO make ICASE configurable
                     item.getString(Tags.HumanPerformerName));
             addCodeMatch(item.getItem(Tags.HumanPerformerCodeSeq), PERF_CODE);
         }
@@ -148,6 +151,7 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},
                 SqlBuilder.TYPE2,
+                patAttrFilter.isICase(Tags.PatientName),
                 keys.getString(Tags.PatientName));
     }
 

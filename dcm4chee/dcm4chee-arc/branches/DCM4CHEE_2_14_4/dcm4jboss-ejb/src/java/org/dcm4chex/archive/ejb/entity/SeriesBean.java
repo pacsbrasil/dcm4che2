@@ -880,14 +880,14 @@ public abstract class SeriesBean implements EntityBean {
         }
         setRetrieveAETs(AETs.update(getRetrieveAETs(), oldAET, newAET));
     }
-
+    
     /**    
      * @ejb.interface-method
      */
     public void removeMPPS() {      
         this.setMpps(null);
     }
-    
+
     private void updateMpps() {
         final String ppsiuid = getPpsIuid();
         MPPSLocal mpps = null;
@@ -934,18 +934,20 @@ public abstract class SeriesBean implements EntityBean {
 
     private void setAttributesInternal(Dataset ds, AttributeFilter filter) {
         setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
-        setSeriesNumber(ds.getString(Tags.SeriesNumber));
-        setModality(ds.getString(Tags.Modality));
-        setBodyPartExamined(ds.getString(Tags.BodyPartExamined));
-        setLaterality(ds.getString(Tags.Laterality));
-        setSeriesDescription(toUpperCase(ds.getString(Tags.SeriesDescription)));
-        setInstitutionName(toUpperCase(ds.getString(Tags.InstitutionName)));
+        setSeriesNumber(filter.getString(ds, Tags.SeriesNumber));
+        setModality(filter.getString(ds, Tags.Modality));
+        setBodyPartExamined(filter.getString(ds, Tags.BodyPartExamined));
+        setLaterality(filter.getString(ds, Tags.Laterality));
+        setSeriesDescription(filter.getString(ds, Tags.SeriesDescription));
+        setInstitutionName(filter.getString(ds, Tags.InstitutionName));
         setInstitutionalDepartmentName(
-                toUpperCase(ds.getString(Tags.InstitutionalDepartmentName)));
-        setStationName(toUpperCase(ds.getString(Tags.StationName)));
+                filter.getString(ds, Tags.InstitutionalDepartmentName));
+        setStationName(filter.getString(ds, Tags.StationName));
         PersonName pn = ds.getPersonName(Tags.PerformingPhysicianName);
         if (pn != null) {
-            setPerformingPhysicianName(toUpperCase(pn.toComponentGroupString(false)));
+            setPerformingPhysicianName(
+                    filter.toUpperCase(pn.toComponentGroupString(false),
+                            Tags.PerformingPhysicianName));
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 setPerformingPhysicianIdeographicName(ipn.toComponentGroupString(false));
@@ -970,7 +972,7 @@ public abstract class SeriesBean implements EntityBean {
         setEncodedAttributes(b);
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
-            setField(filter.getField(fieldTags[i]), ds.getString(fieldTags[i]));
+            setField(filter.getField(fieldTags[i]), filter.getString(ds, fieldTags[i]));
         }
     }
 
@@ -998,11 +1000,6 @@ public abstract class SeriesBean implements EntityBean {
                 setAttributesInternal(attrs, filter);
             }
         }
-    }
-
-
-    private static String toUpperCase(String s) {
-        return s != null ? s.toUpperCase() : null;
     }
 
     /**
@@ -1065,6 +1062,5 @@ public abstract class SeriesBean implements EntityBean {
      */
     public Collection getAllFiles() throws FinderException {      
         return ejbSelectAllFiles(getPk());
-    }
-    
+    }    
 }

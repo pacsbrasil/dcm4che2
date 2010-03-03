@@ -286,14 +286,15 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     }
 
     protected void addPatientMatch() {
+        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
         sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
         DcmElement otherPatIdSQ = keys.get(Tags.OtherPatientIDSeq);
         if (useOtherPatientIdSequenceForMatch(otherPatIdSQ)) {
             addListOfPatIdMatch(otherPatIdSQ);
         } else {
-            sqlBuilder.addWildCardMatch(null, "Patient.patientId", type2, keys
-                    .getStrings(Tags.PatientID));
-            String issuer = keys.getString(Tags.IssuerOfPatientID);
+            sqlBuilder.addWildCardMatch(null, "Patient.patientId", type2,
+                    filter.getStrings(keys, Tags.PatientID));
+            String issuer = filter.getString(keys, Tags.IssuerOfPatientID);
             if (issuer != null) {
                 sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
                         type2, issuer);
@@ -305,19 +306,19 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         sqlBuilder.addPNMatch(
                 new String[] { "Patient.patientName",
                         "Patient.patientIdeographicName",
-                        "Patient.patientPhoneticName" }, type2, keys
-                        .getString(Tags.PatientName));
+                        "Patient.patientPhoneticName" }, type2,
+                        filter.isICase(Tags.PatientName),
+                        keys.getString(Tags.PatientName));
         sqlBuilder
                 .addRangeMatch(null, "Patient.patientBirthDate", type2,
                         keys.getString(Tags.PatientBirthDate));
-        sqlBuilder.addWildCardMatch(null, "Patient.patientSex", type2, keys
-                .getStrings(Tags.PatientSex));
-        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
+        sqlBuilder.addWildCardMatch(null, "Patient.patientSex", type2,
+                filter.getStrings(keys, Tags.PatientSex));
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
             sqlBuilder.addWildCardMatch(null,
                     "Patient." + filter.getField(fieldTags[i]), type2,
-                    keys.getStrings(fieldTags[i]));
+                    filter.getStrings(keys, fieldTags[i]));
             
         }
         matchingKeys.add(MATCHING_PATIENT_KEYS);
@@ -329,7 +330,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     private boolean useOtherPatientIdSequenceForMatch(DcmElement otherPatIdSQ) {
         if (otherPatIdSQ == null || !otherPatIdSQ.hasItems())
             return false;
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         String patId = keys.getString(Tags.PatientID);
         if (checkMatchValue(patId, "Patient ID", sb)) {
             String issuer = keys.getString(Tags.IssuerOfPatientID);
@@ -345,19 +346,20 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     }
 
     private void addListOfPatIdMatch(DcmElement otherPatIdSQ) {
+        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
         Node n = sqlBuilder.addNodeMatch("OR", false);
-        addIdAndIssuerPair(n, keys.getString(Tags.PatientID), keys
-                .getString(Tags.IssuerOfPatientID));
+        addIdAndIssuerPair(n, filter.getString(keys, Tags.PatientID),
+                filter.getString(keys, Tags.IssuerOfPatientID));
         Dataset item;
         for (int i = 0, len = otherPatIdSQ.countItems(); i < len; i++) {
             item = otherPatIdSQ.getItem(i);
-            StringBuffer sb = new StringBuffer();
-            String pid = item.getString(Tags.PatientID);
-            String issuer = item.getString(Tags.IssuerOfPatientID);
+            StringBuilder sb = new StringBuilder();
+            String pid = filter.getString(item, Tags.PatientID);
+            String issuer = filter.getString(item, Tags.IssuerOfPatientID);
             if (!checkMatchValue(pid, "PatientID of item", sb) || !checkMatchValue(issuer, "Issuer of item", sb)) {
                 log.warn("Skipping pid '" + pid + "' and issuer '" + issuer + "' in other patient id sequence because: " + sb);
             } else {            
-                addIdAndIssuerPair(n, item.getString(Tags.PatientID), item.getString(Tags.IssuerOfPatientID));
+                addIdAndIssuerPair(n, filter.getString(item, Tags.PatientID), item.getString(Tags.IssuerOfPatientID));
             }
         }
     }
@@ -372,7 +374,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     }
 
     private boolean checkMatchValue(String value, String chkItem,
-            StringBuffer sb) {
+            StringBuilder sb) {
         if (value == null) {
             sb.append("Missing attribute ").append(chkItem);
         } else if (value.indexOf('*') != -1 || value.indexOf('?') != -1) {
@@ -385,28 +387,29 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     }
 
     protected void addStudyMatch() {
+        AttributeFilter filter = AttributeFilter.getStudyAttributeFilter();
         sqlBuilder.addListOfUidMatch(null, "Study.studyIuid", SqlBuilder.TYPE1,
                 keys.getStrings(Tags.StudyInstanceUID));
-        sqlBuilder.addWildCardMatch(null, "Study.studyId", type2, keys
-                .getStrings(Tags.StudyID));
+        sqlBuilder.addWildCardMatch(null, "Study.studyId", type2,
+                filter.getStrings(keys, Tags.StudyID));
         sqlBuilder.addRangeMatch(null, "Study.studyDateTime", type2, keys
                 .getDateTimeRange(Tags.StudyDate, Tags.StudyTime));
-        sqlBuilder.addWildCardMatch(null, "Study.accessionNumber", type2, keys
-                .getStrings(Tags.AccessionNumber));
+        sqlBuilder.addWildCardMatch(null, "Study.accessionNumber", type2,
+                filter.getStrings(keys, Tags.AccessionNumber));
         sqlBuilder.addPNMatch(new String[] { "Study.referringPhysicianName",
                 "Study.referringPhysicianIdeographicName",
-                "Study.referringPhysicianPhoneticName" }, type2, keys
-                .getString(Tags.ReferringPhysicianName));
+                "Study.referringPhysicianPhoneticName" }, type2,
+                filter.isICase(Tags.ReferringPhysicianName),
+                keys.getString(Tags.ReferringPhysicianName));
         sqlBuilder.addWildCardMatch(null, "Study.studyDescription", type2,
-                SqlBuilder.toUpperCase(keys.getStrings(Tags.StudyDescription)));
+                filter.getStrings(keys, Tags.StudyDescription));
         sqlBuilder.addListOfStringMatch(null, "Study.studyStatusId", type2,
-                keys.getStrings(Tags.StudyStatusID));
-        AttributeFilter filter = AttributeFilter.getStudyAttributeFilter();
+                filter.getStrings(keys, Tags.StudyStatusID));
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
             sqlBuilder.addWildCardMatch(null,
                     "Study." + filter.getField(fieldTags[i]), type2,
-                    keys.getStrings(fieldTags[i]));
+                    filter.getStrings(keys, fieldTags[i]));
             
         }
         matchingKeys.add(MATCHING_STUDY_KEYS);
@@ -441,33 +444,34 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     }
 
     protected void addSeriesMatch() {
+        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
         sqlBuilder.addListOfUidMatch(null, "Series.seriesIuid",
                 SqlBuilder.TYPE1, keys.getStrings(Tags.SeriesInstanceUID));
-        sqlBuilder.addWildCardMatch(null, "Series.seriesNumber", type2, keys
-                .getStrings(Tags.SeriesNumber));
-        String[] modality = keys.getStrings(Tags.Modality);
+        sqlBuilder.addWildCardMatch(null, "Series.seriesNumber", type2,
+                filter.getStrings(keys, Tags.SeriesNumber));
+        String[] modality = filter.getStrings(keys, Tags.Modality);
         if (modality == null || modality.length < 1)
-            modality = keys.getStrings(Tags.ModalitiesInStudy);
+            modality = filter.getStrings(keys, Tags.ModalitiesInStudy, Tags.Modality);
         sqlBuilder.addWildCardMatch(null, "Series.modality", SqlBuilder.TYPE1,
                 modality);
         sqlBuilder.addWildCardMatch(null, "Series.seriesNumber", type2,
-                keys.getStrings(Tags.SeriesNumber));
+                filter.getStrings(keys, Tags.SeriesNumber));
         sqlBuilder.addWildCardMatch(null, "Series.bodyPartExamined", type2,
-                keys.getStrings(Tags.BodyPartExamined));
+                filter.getStrings(keys, Tags.BodyPartExamined));
         sqlBuilder.addWildCardMatch(null, "Series.laterality", type2,
-                keys.getStrings(Tags.Laterality));
+                filter.getStrings(keys, Tags.Laterality));
         sqlBuilder.addWildCardMatch(null, "Series.institutionName", type2,
-                SqlBuilder.toUpperCase(keys.getStrings(Tags.InstitutionName)));
+                filter.getStrings(keys, Tags.InstitutionName));
         sqlBuilder.addWildCardMatch(null, "Series.stationName", type2,
-                SqlBuilder.toUpperCase(keys.getStrings(Tags.StationName)));
+                filter.getStrings(keys, Tags.StationName));
         sqlBuilder.addWildCardMatch(null, "Series.seriesDescription", type2,
-                SqlBuilder.toUpperCase(keys.getStrings(Tags.SeriesDescription)));
+                filter.getStrings(keys, Tags.SeriesDescription));
         sqlBuilder.addWildCardMatch(null, "Series.institutionalDepartmentName",
-                type2, SqlBuilder.toUpperCase(keys
-                        .getStrings(Tags.InstitutionalDepartmentName)));
+                type2, filter.getStrings(keys, Tags.InstitutionalDepartmentName));
         sqlBuilder.addPNMatch(new String[] { "Series.performingPhysicianName",
                 "Series.performingPhysicianIdeographicName",
                 "Series.performingPhysicianPhoneticName" }, type2,
+                filter.isICase(Tags.PerformingPhysicianName),
                 keys.getString(Tags.PerformingPhysicianName));
         sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime", type2, keys
                 .getDateTimeRange(Tags.PPSStartDate, Tags.PPSStartTime));
@@ -483,28 +487,28 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             subQuery.addListOfUidMatch(null, "SeriesRequest.studyIuid", type2,
                     rqAttrs.getStrings(Tags.StudyInstanceUID));
             subQuery.addWildCardMatch(null,
-                    "SeriesRequest.requestedProcedureId", SqlBuilder.TYPE1, rqAttrs
-                            .getStrings(Tags.RequestedProcedureID));
+                    "SeriesRequest.requestedProcedureId", SqlBuilder.TYPE1,
+                            filter.getStrings(rqAttrs, Tags.RequestedProcedureID));
             subQuery.addWildCardMatch(null, "SeriesRequest.spsId", SqlBuilder.TYPE1,
-                    rqAttrs.getStrings(Tags.SPSID));
+                    filter.getStrings(rqAttrs,Tags.SPSID));
             subQuery.addWildCardMatch(null, "SeriesRequest.requestingService",
-                    type2, rqAttrs.getStrings(Tags.RequestingService));
+                    type2, filter.getStrings(rqAttrs, Tags.RequestingService));
             subQuery.addPNMatch(new String[] {
                     "SeriesRequest.requestingPhysician",
                     "SeriesRequest.requestingPhysicianIdeographicName",
                     "SeriesRequest.requestingPhysicianPhoneticName" }, type2,
+                    filter.isICase(Tags.RequestingPhysician),
                     rqAttrs.getString(Tags.RequestingPhysician));
 
             Match.Node node0 = sqlBuilder.addNodeMatch("OR", false);
             node0.addMatch(new Match.Subquery(subQuery, null, null));
         }
 
-        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
             sqlBuilder.addWildCardMatch(null,
                     "Series." + filter.getField(fieldTags[i]), type2,
-                    keys.getStrings(fieldTags[i]));
+                    filter.getStrings(keys, fieldTags[i]));
             
         }
 
@@ -515,18 +519,19 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     }
 
     protected void addInstanceMatch() {
+        AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(null);
         sqlBuilder.addListOfUidMatch(null, "Instance.sopIuid",
                 SqlBuilder.TYPE1, keys.getStrings(Tags.SOPInstanceUID));
         sqlBuilder.addListOfUidMatch(null, "Instance.sopCuid",
                 SqlBuilder.TYPE1, keys.getStrings(Tags.SOPClassUID));
         sqlBuilder.addWildCardMatch(null, "Instance.instanceNumber", type2,
-                keys.getStrings(Tags.InstanceNumber));
+                filter.getStrings(keys, Tags.InstanceNumber));
         sqlBuilder.addRangeMatch(null, "Instance.contentDateTime", type2, keys
                 .getDateTimeRange(Tags.ContentDate, Tags.ContentTime));
         sqlBuilder.addSingleValueMatch(null, "Instance.srCompletionFlag",
-                type2, keys.getString(Tags.CompletionFlag));
+                type2, filter.getString(keys, Tags.CompletionFlag));
         sqlBuilder.addSingleValueMatch(null, "Instance.srVerificationFlag",
-                type2, keys.getString(Tags.VerificationFlag));
+                type2, filter.getString(keys, Tags.VerificationFlag));
         Dataset code = keys.getItem(Tags.ConceptNameCodeSeq);
         if (code != null) {
             sqlBuilder.addSingleValueMatch(SR_CODE, "Code.codeValue", type2,
@@ -551,18 +556,17 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     "VerifyingObserver.verifyingObserverIdeographicName",
                     "VerifyingObserver.verifyingObserverPhoneticName" },
                     SqlBuilder.TYPE1,
+                    filter.isICase(Tags.VerifyingObserverName),
                     voAttrs.getString(Tags.VerifyingObserverName));
 
             Match.Node node0 = sqlBuilder.addNodeMatch("OR", false);
             node0.addMatch(new Match.Subquery(subQuery, null, null));
         }
-        AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(null);
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
             sqlBuilder.addWildCardMatch(null,
                     "Instance." + filter.getField(fieldTags[i]), type2,
-                    keys.getStrings(fieldTags[i]));
-            
+                    filter.getStrings(keys, fieldTags[i]));
         }
         matchingKeys.add(MATCHING_INSTANCE_KEYS);
         matchingKeys.add(fieldTags);

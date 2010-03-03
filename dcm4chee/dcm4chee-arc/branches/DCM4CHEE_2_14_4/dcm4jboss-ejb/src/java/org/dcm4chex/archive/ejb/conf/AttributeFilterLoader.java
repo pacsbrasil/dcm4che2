@@ -59,11 +59,12 @@ class AttributeFilterLoader extends DefaultHandler {
     private static final int[] INST_SUPPL_TAGS = { Tags.RetrieveAET,
             Tags.InstanceAvailability, Tags.StorageMediaFileSetID,
             Tags.StorageMediaFileSetUID };
-    private final ArrayList tagList = new ArrayList();
-    private final ArrayList vrList = new ArrayList();
-    private final ArrayList noCoerceList = new ArrayList();
-    private final ArrayList fieldTagList = new ArrayList();
-    private final ArrayList fieldList = new ArrayList();
+    private final ArrayList<String> tagList = new ArrayList<String>();
+    private final ArrayList<String> vrList = new ArrayList<String>();
+    private final ArrayList<String> noCoerceList = new ArrayList<String>();
+    private final ArrayList<String> iCaseList = new ArrayList<String>();
+    private final ArrayList<String> fieldTagList = new ArrayList<String>();
+    private final ArrayList<String> fieldList = new ArrayList<String>();
     // private String cuid;
     private AttributeFilter filter;
 
@@ -82,14 +83,18 @@ class AttributeFilterLoader extends DefaultHandler {
         if (qName.equals("attr")) {
             String tag = attributes.getValue("tag");
             if (tag != null) {
-                tagList.add(tag);
-                String field = attributes.getValue("field");
-                if (field != null) {
-                    fieldTagList.add(tag);
-                    fieldList.add(field);
+                if (attributes.getValue("seq") == null) {
+                    tagList.add(tag);
+                    String field = attributes.getValue("field");
+                    if (field != null) {
+                        fieldTagList.add(tag);
+                        fieldList.add(field);
+                    }
+                    if ("false".equalsIgnoreCase(attributes.getValue("coerce")))
+                        noCoerceList.add(tag);
                 }
-                if ("false".equalsIgnoreCase(attributes.getValue("coerce")))
-                    noCoerceList.add(tag);
+                if ("false".equalsIgnoreCase(attributes.getValue("case-sensitive")))
+                    iCaseList.add(tag);
             } else {
                 String vr = attributes.getValue("vr");
                 if (vr != null) {
@@ -164,6 +169,7 @@ class AttributeFilterLoader extends DefaultHandler {
             filter.setFieldTags(parseInts(fieldTagList, false));
             filter.setFields((String[]) fieldList.toArray(new String[] {}));
             filter.setNoCoercion(parseInts(noCoerceList, true));
+            filter.setICase(parseInts(iCaseList, true));
             filter.setVRs(vrs);
             tagList.clear();
             fieldTagList.clear();
@@ -187,10 +193,10 @@ class AttributeFilterLoader extends DefaultHandler {
         return dst;
     }
 
-    private static int[] parseInts(ArrayList list, boolean sort) {
+    private static int[] parseInts(ArrayList<String> list, boolean sort) {
         int[] array = new int[list.size()];
         for (int i = 0; i < array.length; i++) {
-            array[i] = Integer.parseInt((String) list.get(i), 16);
+            array[i] = Integer.parseInt(list.get(i), 16);
         }
         if (sort) {
             Arrays.sort(array);
@@ -198,10 +204,10 @@ class AttributeFilterLoader extends DefaultHandler {
         return array;
     }
 
-    private static int[] parseVRs(ArrayList list) {
+    private static int[] parseVRs(ArrayList<String> list) {
         int[] array = new int[list.size()];
         for (int i = 0; i < array.length; i++) {
-            array[i] = VRs.valueOf((String) list.get(i));
+            array[i] = VRs.valueOf(list.get(i));
         }
         return array;
     }

@@ -288,13 +288,15 @@ class SqlBuilder {
         return false;
     }
 
-    public void addPNMatch(String[] nameFields, boolean type2, String val) {
+    public void addPNMatch(String[] nameFields, boolean type2, boolean icase,
+            String val) {
         if (val == null || val.length() == 0 || val.equals("*"))
             return;
         PersonName pn = DcmObjectFactory.getInstance().newPersonName(val);
         if (pn != null) {
+            String pnalpha = pn.toComponentGroupMatch();
             addWildCardMatch(null, nameFields[0], type2,
-                    toUpperCase(pn.toComponentGroupMatch()));
+                    icase ? pnalpha.toUpperCase() : pnalpha);
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 addWildCardMatch(null, nameFields[1], type2,
@@ -314,17 +316,6 @@ class SqlBuilder {
      */
     public boolean isMatchNotSupported() {
         return matchNotSupported;
-    }
-    static String toUpperCase(String s) {
-        return s != null ? s.toUpperCase() : null;
-    }
-    static String[] toUpperCase(String[] sa) {
-        if ( sa == null ) return null;
-        String[] san = new String[sa.length];
-        for ( int i = 0 ; i < sa.length ; i++ ) {
-            san[i] =  sa[i].toUpperCase();
-        }
-        return san;
     }
 
     public Match addRangeMatch(String alias, String field, boolean type2,

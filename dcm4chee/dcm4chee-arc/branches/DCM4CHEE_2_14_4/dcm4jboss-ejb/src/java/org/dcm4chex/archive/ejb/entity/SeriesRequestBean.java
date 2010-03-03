@@ -47,6 +47,7 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 
 /**
@@ -71,14 +72,16 @@ public abstract class SeriesRequestBean implements EntityBean {
      */
     public Long ejbCreate(Dataset ds, SeriesLocal series)
             throws CreateException {
+        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
         setStudyIuid(ds.getString(Tags.StudyInstanceUID));
-        setRequestedProcedureId(ds.getString(Tags.RequestedProcedureID));
-        setSpsId(ds.getString(Tags.SPSID));
-        setRequestingService(ds.getString(Tags.RequestingService));
+        setRequestedProcedureId(filter.getString(ds, Tags.RequestedProcedureID));
+        setSpsId(filter.getString(ds, Tags.SPSID));
+        setRequestingService(filter.getString(ds, Tags.RequestingService));
         PersonName pn = ds.getPersonName(Tags.RequestingPhysician);
         if (pn != null) {
             setRequestingPhysician(
-                    toUpperCase(pn.toComponentGroupString(false)));
+                    filter.toUpperCase(pn.toComponentGroupString(false),
+                            Tags.RequestingPhysician));
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 setRequestingPhysicianIdeographicName(
@@ -93,10 +96,6 @@ public abstract class SeriesRequestBean implements EntityBean {
         return null;
     }
 
-    private static String toUpperCase(String s) {
-        return s != null ? s.toUpperCase() : null;
-    }
-    
     public void ejbPostCreate(Dataset ds, SeriesLocal series)
             throws CreateException {
         setSeries(series);
