@@ -502,7 +502,8 @@ public class UserListPanel extends Panel {
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "getAllUsers: " + e.getMessage());
             log.debug("Exception: ", e);
-            this.redirectToInterceptPage(new InternalErrorPage());
+            this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
+            throw new RuntimeException();
         }
         return allUsers;
     }
@@ -518,7 +519,8 @@ public class UserListPanel extends Panel {
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "getAllRolenames: " + e.getMessage());
             log.debug("Exception: ", e);
-            this.redirectToInterceptPage(new InternalErrorPage());
+            this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
+            throw new RuntimeException();
         }
         return allRolenames;
     }
