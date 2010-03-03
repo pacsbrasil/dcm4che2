@@ -75,6 +75,7 @@ public class JaasWicketSession extends AuthenticatedWebSession {
             ctx.login();
             this.username = username;
             this.roles = app.getRoles(ctx.getSubject());
+System.out.println("LOGIN " + this.username);
             return true;
         } catch (LoginException e) {
             return false;
@@ -101,6 +102,7 @@ public class JaasWicketSession extends AuthenticatedWebSession {
 
         public void handle(Callback[] callbacks)
                 throws UnsupportedCallbackException {
+System.out.println("HENDL");
             for (int i = 0; i < callbacks.length; i++) {
                 Callback callback = callbacks[i];
                 if (callback instanceof NameCallback) {

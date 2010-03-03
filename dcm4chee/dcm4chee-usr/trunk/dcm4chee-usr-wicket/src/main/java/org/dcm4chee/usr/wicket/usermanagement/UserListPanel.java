@@ -54,6 +54,7 @@ import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
@@ -66,6 +67,7 @@ import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.pages.InternalErrorPage;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
@@ -93,13 +95,15 @@ public class UserListPanel extends Panel {
     
     private static Logger log = LoggerFactory.getLogger(UserListPanel.class);
     
+    private static final ResourceReference CSS = new CompressedResourceReference(UserListPanel.class, "wicket-style.css");
+    
     private List<User> allUsers;
     private List<String> allRoleNames;
 
-    private ModalWindow messageWindow;
+    private ModalWindow window;
     private String userId;
 
-    public UserListPanel(String id, String userId, ModalWindow messageWindow) {
+    public UserListPanel(String id, String userId, ModalWindow window) {
         super(id);
         try {
             this.userId = userId;
@@ -107,8 +111,11 @@ public class UserListPanel extends Panel {
             this.allUsers = this.getAllUsers();
             this.allRoleNames = this.getAllRolenames();
 
-            this.messageWindow = messageWindow;
+            this.window = window;
             
+            if (UserListPanel.CSS != null)
+                add(CSSPackageResource.getHeaderContribution(UserListPanel.CSS));
+
             add(new ToggleFormLink("toggle-user-form-link", 
                     new AddUserForm("add-user-form", this.allUsers),
                     this, 
@@ -143,12 +150,12 @@ public class UserListPanel extends Panel {
                 row_parent.add(removeUserLink);
 
                 if (this.userId.equals(user.getUserID())) {
-                    add(new ChangePasswordLink("change-my-password-link", user, true));
+//                    add(new ChangePasswordLink("change-my-password-link", this.window, this.userId, user));
                     removeUserLink.setVisible(false);
                 }
                 
                 row_parent.add(
-                        new ChangePasswordLink("change-password-link", user, false)
+                        new ChangePasswordLink("change-password-link", this.window, this.userId, user)
                         .add(new Image("img-change-password", new ResourceReference(UserListPanel.class, "images/login.png")))
                         .add(new AttributeModifier("title", true, new Model<String>(new StringResourceModel("userlist.change_password.tooltip", this, null).getObject())))
                 );
@@ -254,7 +261,7 @@ public class UserListPanel extends Panel {
                 user.setUserID(newUsername.getObject());
                 user.setPassword(SecurityUtils.encodePassword(this.password.getObject()));
                 ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).createUser(user);
-                setResponsePage(this.getPage().getClass().newInstance());
+                setResponsePage(this.getPage().getClass());
             } catch (final Exception e) {
                 log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
                 log.debug("Exception: ", e);
@@ -299,7 +306,7 @@ public class UserListPanel extends Panel {
                 role.setUserID(this.userId);
                 role.setRole(this.newRolename.getObject());
                 ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).addRole(role);
-                setResponsePage(this.getPage().getClass().newInstance());
+                setResponsePage(this.getPage().getClass());
             } catch (final Exception e) {
                 log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
                 log.debug("Exception: ", e);
@@ -364,44 +371,6 @@ public class UserListPanel extends Panel {
         }
     };
 
-    private final class ChangePasswordLink extends AjaxFallbackLink<Object> {
-        
-        private static final long serialVersionUID = 1L;
-        
-        private User forUser;
-        
-        public ChangePasswordLink(String id, User user, boolean myself) {
-            super(id);
-            
-            this.forUser = user;
-        }
-        
-        @Override
-        public void onClick(AjaxRequestTarget target) {
-            messageWindow
-                .setCloseButtonCallback(
-                        new ModalWindow.CloseButtonCallback() {
-        
-                            private static final long serialVersionUID = 1L;
-                            
-                            public boolean onCloseButtonClicked(AjaxRequestTarget target) {
-                                return true;
-                            }
-                        }
-                ).setPageCreator(
-                        new ModalWindow.PageCreator() {
-        
-                            private static final long serialVersionUID = 1L;
-                            
-                            @Override
-                            public Page createPage() {
-                                return new ChangePasswordPage(messageWindow, userId, forUser);
-                            }
-                        }
-                ).show(target);
-        }
-    };
-    
     private final class HasRoleCheckBox extends AjaxCheckBox {
         
         private static final long serialVersionUID = 1L;
@@ -501,7 +470,7 @@ public class UserListPanel extends Panel {
         public void onClick() {
             try {
                 ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).deleteUser(user.getUserID());
-                setResponsePage(this.getPage().getClass().newInstance());
+                setResponsePage(this.getPage().getClass());
             } catch (Exception e) {
                 log.error(this.getClass().toString() + ": " + "onClick: " + e.getMessage());
                 log.debug("Exception: ", e);

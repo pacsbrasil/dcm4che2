@@ -39,11 +39,17 @@
 package org.dcm4chee.usr.web.pages;
 
 import org.apache.wicket.PageParameters;
+import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.pages.InternalErrorPage;
+import org.dcm4chee.usr.dao.UserAccess;
+import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.web.session.JaasWicketSession;
+import org.dcm4chee.usr.wicket.usermanagement.ChangePasswordLink;
 import org.dcm4chee.usr.wicket.usermanagement.UserListPanel;
+import org.dcm4chee.usr.wicket.util.JNDIUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,18 +58,33 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since 18.11.2009
  */
+@AuthorizeInstantiation({"ADMIN"})
 public class UserManagementMainPage extends WebPage {
     
     private static final long serialVersionUID = 1L;
     
     private static Logger log = LoggerFactory.getLogger(UserManagementMainPage.class);
     
-    private ModalWindow messageWindow;
+    private ModalWindow window;
     
     public UserManagementMainPage(final PageParameters parameters) {
         try {
             String name = ((JaasWicketSession) this.getSession()).getUsername();
-            add(new UserListPanel("userListPanel", name, messageWindow));
+System.out.println("NAME: " + name);
+            add(this.window = new ModalWindow("window"));
+            add(new ChangePasswordLink("change-my-password-link", this.window, name, ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getUser(name)));
+            add(new Link<Object>("logout-link") {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick() {
+                    this.getSession().invalidateNow();
+                    setResponsePage(LoginPage.class);
+                }
+                
+            });
+            add(new UserListPanel("userListPanel", name, this.window));
         } catch (Exception e) {
             e.printStackTrace();
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
