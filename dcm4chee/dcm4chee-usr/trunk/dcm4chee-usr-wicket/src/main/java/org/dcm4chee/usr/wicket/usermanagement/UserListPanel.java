@@ -162,7 +162,7 @@ public class UserListPanel extends Panel {
                 RemoveUserLink removeUserLink = new RemoveUserLink("remove-user-link", user);
                 removeUserLink.add(new AttributeModifier("title", true, new Model<String>(new ResourceModel("userlist.remove_user.tooltip").wrapOnAssignment(this).getObject() + user.getUserID())));
                 removeUserLink.add(new AttributeModifier("onclick", true, new Model<String>("return confirm('" + new ResourceModel("userlist.remove_user.confirmation").wrapOnAssignment(this).getObject() + "');")));
-                removeUserLink.add(new Image("img-delete", new ResourceReference(UserListPanel.class, "images/action_delete.png")));
+                removeUserLink.add(new Image("img-delete", new ResourceReference(UserListPanel.class, "images/delete.gif")));
                 row_parent.add(removeUserLink);
 
                 if (this.userId.equals(user.getUserID()))
@@ -170,7 +170,7 @@ public class UserListPanel extends Panel {
                 
                 row_parent.add(
                         new ChangePasswordLink("change-password-link", this.window, this.userId, user)
-                        .add(new Image("img-change-password", new ResourceReference(UserListPanel.class, "images/login.png")))
+                        .add(new Image("img-change-password", new ResourceReference(UserListPanel.class, "images/changepassword.gif")))
                         .add(new AttributeModifier("title", true, new Model<String>(new ResourceModel("userlist.change_password.tooltip").wrapOnAssignment(this).getObject())))
                 );
                 
@@ -347,8 +347,8 @@ public class UserListPanel extends Panel {
         protected void onComponentTag(ComponentTag tag) {
             super.onComponentTag(tag);
             tag.put("src", this.forForm.isVisible() ? 
-                    this.getRequestCycle().urlFor(new ResourceReference(UserListPanel.class, "images/action_remove.png"))
-                    : this.getRequestCycle().urlFor(new ResourceReference(UserListPanel.class, "images/action_add.png")));
+                    this.getRequestCycle().urlFor(new ResourceReference(UserListPanel.class, "images/remove.gif"))
+                    : this.getRequestCycle().urlFor(new ResourceReference(UserListPanel.class, "images/plus.gif")));
         }
     };
     
