@@ -84,7 +84,8 @@ public class FileSystemDTO implements Serializable {
         return sb;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         return toString(new StringBuffer()).toString();
     }
 
@@ -101,7 +102,7 @@ public class FileSystemDTO implements Serializable {
     }
 
     public final void setDirectoryPath(String directoryPath) {
-        this.directoryPath = directoryPath;
+        this.directoryPath = directoryPath.trim();
     }
 
     public final String getGroupID() {
