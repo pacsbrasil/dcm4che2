@@ -192,6 +192,7 @@ public class AttributesModificationScuService extends AbstractScuService impleme
         Map<String,String[]> param = new HashMap<String,String[]>();
         param.put("calling", new String[] { 
                 modifiedAttrs.getString(PrivateTags.CallingAET) });
+        modifiedAttrs.setPrivateCreatorID(null);
         String[] destAETs = forwardingRules
                 .getForwardDestinationsFor(param);
         for (int i = 0; i < destAETs.length; i++) {

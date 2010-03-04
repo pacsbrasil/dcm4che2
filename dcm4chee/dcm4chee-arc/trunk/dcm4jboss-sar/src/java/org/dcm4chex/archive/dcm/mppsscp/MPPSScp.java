@@ -130,6 +130,7 @@ public class MPPSScp extends DcmServiceBase {
         createMPPS(mpps);
         mpps.setPrivateCreatorID(PrivateTags.CreatorID);
         mpps.putAE(PrivateTags.CallingAET, callingAET);
+        mpps.setPrivateCreatorID(null);
         service.sendMPPSNotification(mpps, MPPSScpService.EVENT_TYPE_MPPS_RECEIVED);
         return null;
     }
@@ -173,6 +174,7 @@ public class MPPSScp extends DcmServiceBase {
         updateMPPS(mpps);
         mpps.setPrivateCreatorID(PrivateTags.CreatorID);
         mpps.putAE(PrivateTags.CallingAET, callingAET);
+        mpps.setPrivateCreatorID(null);
         service.sendMPPSNotification(mpps, MPPSScpService.EVENT_TYPE_MPPS_RECEIVED);
         return null;
     }

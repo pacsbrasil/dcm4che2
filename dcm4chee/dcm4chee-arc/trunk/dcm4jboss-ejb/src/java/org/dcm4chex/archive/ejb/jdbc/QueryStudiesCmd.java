@@ -180,6 +180,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
         keys.setPrivateCreatorID(PrivateTags.CreatorID);
         sqlBuilder.addCallingAETsNestedMatch(false,
                 keys.getStrings(PrivateTags.CallingAET));
+        keys.setPrivateCreatorID(null);
         this.hideMissingStudies = hideMissingStudies;	
         if ( this.hideMissingStudies ) {
             sqlBuilder.addNULLValueMatch(null,"Study.encodedAttributes", true);
@@ -269,10 +270,13 @@ public class QueryStudiesCmd extends BaseReadCmd {
                 Dataset ds = dof.newDataset();
                 ds.setPrivateCreatorID(PrivateTags.CreatorID);
                 ds.putOB(PrivateTags.PatientPk, Convert.toBytes(rs.getLong(3)) );
+                ds.setPrivateCreatorID(null);
                 long studyPk = rs.getLong(4);
                 DatasetUtils.fromByteArray(patAttrs, ds);
                 if (styAttrs != null) {
+                    ds.setPrivateCreatorID(PrivateTags.CreatorID);
                     ds.putOB(PrivateTags.StudyPk, Convert.toBytes(studyPk) );
+                    ds.setPrivateCreatorID(null);
                     DatasetUtils.fromByteArray(styAttrs, ds);
                     ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(rs
                             .getString(5), '\\'));

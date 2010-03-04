@@ -100,8 +100,10 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
 	                filter.getStrings(Tags.AccessionNumber));
 	        sqlBuilder.addListOfStringMatch(null, "PrivateStudy.studyIuid",
 	                SqlBuilder.TYPE1, filter.getStrings( Tags.StudyInstanceUID));
+	        filter.setPrivateCreatorID(PrivateTags.CreatorID);
 	        sqlBuilder.addCallingAETsNestedMatch(true,
 	                filter.getStrings(PrivateTags.CallingAET));
+	        filter.setPrivateCreatorID(null);
         }
         if ( this.hideMissingStudies ) {
         	sqlBuilder.addNULLValueMatch(null,"PrivateStudy.encodedAttributes", true);
@@ -163,12 +165,16 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
                 Dataset ds = dof.newDataset();
                 ds.setPrivateCreatorID(PrivateTags.CreatorID);
                 ds.putOB(PrivateTags.PatientPk, Convert.toBytes(rs.getLong(3)) );
+                ds.setPrivateCreatorID(null);
                 long studyPk = rs.getLong(4);
                 DatasetUtils.fromByteArray(patAttrs, ds);
                 if (styAttrs != null) {
+                    ds.setPrivateCreatorID(PrivateTags.CreatorID);
                     ds.putOB(PrivateTags.StudyPk, Convert.toBytes(studyPk) );
+                    ds.setPrivateCreatorID(null);
                     DatasetUtils.fromByteArray(styAttrs, ds);
                 } 
+                ds.setPrivateCreatorID(null);
                 result.add(ds);
             }
             return result;
