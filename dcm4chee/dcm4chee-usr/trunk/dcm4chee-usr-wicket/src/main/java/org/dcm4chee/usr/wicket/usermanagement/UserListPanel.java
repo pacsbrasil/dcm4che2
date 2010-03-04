@@ -347,7 +347,7 @@ public class UserListPanel extends Panel {
         protected void onComponentTag(ComponentTag tag) {
             super.onComponentTag(tag);
             tag.put("src", this.forForm.isVisible() ? 
-                    this.getRequestCycle().urlFor(new ResourceReference(UserListPanel.class, "images/remove.gif"))
+                    this.getRequestCycle().urlFor(new ResourceReference(UserListPanel.class, "images/minus.gif"))
                     : this.getRequestCycle().urlFor(new ResourceReference(UserListPanel.class, "images/plus.gif")));
         }
     };
