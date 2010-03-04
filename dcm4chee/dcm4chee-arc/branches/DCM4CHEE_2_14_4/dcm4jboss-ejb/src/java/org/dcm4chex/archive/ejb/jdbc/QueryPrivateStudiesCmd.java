@@ -163,10 +163,13 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
                 Dataset ds = dof.newDataset();
                 ds.setPrivateCreatorID(PrivateTags.CreatorID);
                 ds.putOB(PrivateTags.PatientPk, Convert.toBytes(rs.getLong(3)) );
+                ds.setPrivateCreatorID(null);
                 long studyPk = rs.getLong(4);
                 DatasetUtils.fromByteArray(patAttrs, ds);
                 if (styAttrs != null) {
+                    ds.setPrivateCreatorID(PrivateTags.CreatorID);
                     ds.putOB(PrivateTags.StudyPk, Convert.toBytes(studyPk) );
+                    ds.setPrivateCreatorID(null);
                     DatasetUtils.fromByteArray(styAttrs, ds);
                 } 
                 result.add(ds);

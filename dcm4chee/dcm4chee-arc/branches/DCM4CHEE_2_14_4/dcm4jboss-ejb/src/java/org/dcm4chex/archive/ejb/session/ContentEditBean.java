@@ -275,6 +275,7 @@ public abstract class ContentEditBean implements SessionBean {
             Collection col = new ArrayList();
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             final long pk = Convert.toLong(ds.getByteBuffer(PrivateTags.PatientPk).array());
+            ds.setPrivateCreatorID(null);
             PatientLocal patient = patHome
             .findByPrimaryKey(new Long(pk));
             patient.setAttributes(ds);
@@ -299,6 +300,7 @@ public abstract class ContentEditBean implements SessionBean {
         try {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             final long pk = Convert.toLong(ds.getByteBuffer(PrivateTags.StudyPk).array());
+            ds.setPrivateCreatorID(null);
             StudyLocal study = studyHome
             .findByPrimaryKey(new Long(pk));
             study.setAttributes(ds);
@@ -317,6 +319,7 @@ public abstract class ContentEditBean implements SessionBean {
         try {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             final long pk = Convert.toLong(ds.getByteBuffer(PrivateTags.SeriesPk).array());
+            ds.setPrivateCreatorID(null);
             SeriesLocal series = seriesHome.findByPrimaryKey(new Long(pk));
             series.setAttributes(ds);
             StudyLocal study = series.getStudy();
@@ -438,6 +441,7 @@ public abstract class ContentEditBean implements SessionBean {
                 Dataset ds = series.getAttributes(true);
                 ds.setPrivateCreatorID(PrivateTags.CreatorID);
                 ds.putAE(PrivateTags.CallingAET, oldSeries.getSourceAET());
+                ds.setPrivateCreatorID(null);
                 series.setAttributes(ds);
                 missingSrcAET = false;
             }

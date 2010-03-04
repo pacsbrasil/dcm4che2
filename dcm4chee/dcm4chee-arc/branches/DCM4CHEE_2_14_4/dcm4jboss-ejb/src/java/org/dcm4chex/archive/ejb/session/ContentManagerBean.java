@@ -453,7 +453,8 @@ public abstract class ContentManagerBean implements SessionBean {
             ds = study.getAttributes();
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putOB(PrivateTags.StudyPk, Convert.toBytes(study.getPk().longValue()) );
-        	result.add(ds);
+            ds.setPrivateCreatorID(null);
+            result.add(ds);
         }
         return result;
     }
@@ -475,16 +476,17 @@ public abstract class ContentManagerBean implements SessionBean {
             ds = series.getAttributes();
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putOB(PrivateTags.SeriesPk, Convert.toBytes(series.getPk().longValue()) );
+            ds.setPrivateCreatorID(null);
             refPPS = ds.getItem(Tags.RefPPSSeq);
             if ( refPPS != null) {
-            	ppsUID = refPPS.getString(Tags.RefSOPInstanceUID);
-            	if ( ppsUID != null ) {
-            		try {
-	            		this.mergeMPPSAttr(ds, mppsHome.findBySopIuid(ppsUID));
-            		} catch ( FinderException ignore ) {}
-            	}
+                ppsUID = refPPS.getString(Tags.RefSOPInstanceUID);
+                if ( ppsUID != null ) {
+                    try {
+                        this.mergeMPPSAttr(ds, mppsHome.findBySopIuid(ppsUID));
+                    } catch ( FinderException ignore ) {}
+                }
             }
-           	result.add( ds );
+            result.add( ds );
         }
         return result;
     }
@@ -501,10 +503,11 @@ public abstract class ContentManagerBean implements SessionBean {
         Dataset ds;
         for (Iterator it = c.iterator(); it.hasNext();) {
             inst = (PrivateInstanceLocal) it.next();
-        	ds = inst.getAttributes();
+            ds = inst.getAttributes();
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putOB(PrivateTags.InstancePk, Convert.toBytes(inst.getPk().longValue()) );
-        	result.add(ds);
+            ds.setPrivateCreatorID(null);
+            result.add(ds);
         }
         return result;
     }

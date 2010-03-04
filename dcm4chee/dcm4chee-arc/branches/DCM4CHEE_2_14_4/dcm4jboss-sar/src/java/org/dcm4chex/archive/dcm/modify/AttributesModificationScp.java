@@ -74,7 +74,8 @@ public class AttributesModificationScp extends DcmServiceBase {
             String callingAET = assoc.getAssociation().getCallingAET();
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putAE(PrivateTags.CallingAET, callingAET);
-            String modifyingSystem =
+            ds.setPrivateCreatorID(null);
+           String modifyingSystem =
                     ds.getString(Tags.ModifyingSystem, callingAET);
             String reason = 
                     ds.getString(Tags.ReasonForTheAttributeModification, "COERCE");

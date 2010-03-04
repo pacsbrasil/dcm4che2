@@ -483,8 +483,9 @@ public abstract class SeriesBean implements EntityBean {
      */
     public Long ejbCreate(Dataset ds, StudyLocal study)
             throws CreateException {
-    	ds.setPrivateCreatorID(PrivateTags.CreatorID);
-    	setSourceAET(ds.getString(PrivateTags.CallingAET));
+        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        setSourceAET(ds.getString(PrivateTags.CallingAET));
+        ds.setPrivateCreatorID(null);
         setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
         return null;
     }
@@ -918,6 +919,7 @@ public abstract class SeriesBean implements EntityBean {
         if ( getSourceAET() == null ) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             setSourceAET(ds.getString(PrivateTags.CallingAET));
+            ds.setPrivateCreatorID(null);
         }
 }
 
@@ -1011,6 +1013,7 @@ public abstract class SeriesBean implements EntityBean {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putOB(PrivateTags.SeriesPk, Convert.toBytes(getPk().longValue()));
             ds.putAE(PrivateTags.CallingAET, getSourceAET());
+            ds.setPrivateCreatorID(null);
             ds.putIS(Tags.NumberOfSeriesRelatedInstances,
                     getNumberOfSeriesRelatedInstances());
             ds.putSH(Tags.StorageMediaFileSetID, getFilesetId());

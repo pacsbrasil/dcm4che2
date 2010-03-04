@@ -436,6 +436,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     private String[] getCallingAETs(Dataset ds) {
         ds.setPrivateCreatorID(PrivateTags.CreatorID);
         ByteBuffer bb = ds.getByteBuffer(PrivateTags.CallingAET);
+        ds.setPrivateCreatorID(null);
         try {
             if (bb != null)
                 return StringUtils.split(new String(bb.array(), "UTF-8"), '\\');
@@ -878,6 +879,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             DatasetUtils.putRetrieveAET(ds, rs.getString(12), rs.getString(13));
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putSH(PrivateTags.CallingAET, rs.getString(14));
+            ds.setPrivateCreatorID(null);
             ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(15)]);
             ds.putCS(Tags.QueryRetrieveLevel, "SERIES");
         }
@@ -1066,6 +1068,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             DatasetUtils.putRetrieveAET(ds, rs.getString(13), rs.getString(14));
             ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(15)]);
             ds.putDT(PrivateTags.InstanceUpdated, rs.getTimestamp(16));
+            ds.setPrivateCreatorID(null);
             ds.putSH(Tags.StorageMediaFileSetID, rs.getString(17));
             ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(18));
             ds.putCS(Tags.QueryRetrieveLevel, "IMAGE");
