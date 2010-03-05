@@ -18,6 +18,8 @@
       >dcm4chee.archive:service=DeleteStudy</depends>
     <depends optional-attribute-name="StoreScpServiceName"
       >dcm4chee.archive:service=StoreScp</depends>
+    <depends optional-attribute-name="FindScuServiceName"
+      >dcm4chee.archive:service=FindScu</depends>
     <depends>jboss.j2ee:jndiName=ejb/FileSystemMgt2,service=EJB</depends>
   </mbean>
 </server>
