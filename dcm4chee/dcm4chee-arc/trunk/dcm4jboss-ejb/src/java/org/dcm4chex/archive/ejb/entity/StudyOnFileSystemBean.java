@@ -197,7 +197,7 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
             boolean copyOnReadOnlyFS) throws FinderException {
         StudyLocal study = getStudy();
         if (study.getNumberOfReceivingSeries() != 0
-                || externalRetrieveable && !study.isStudyExternalRetrievable()
+                || externalRetrieveable && study.getExternalRetrieveAET() == null
                 || storageNotCommited && study.getNumberOfCommitedInstances() != 0
                 || copyOnMedia && !study.isStudyAvailableOnMedia()) {
             return false;

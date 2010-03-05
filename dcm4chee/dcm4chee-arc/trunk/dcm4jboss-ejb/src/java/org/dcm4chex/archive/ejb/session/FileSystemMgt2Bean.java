@@ -549,9 +549,11 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         Collection orders = new ArrayList(sofs.size());
         for (Iterator iter = sofs.iterator(); iter.hasNext();) {
             StudyOnFileSystemLocal sof = (StudyOnFileSystemLocal) iter.next();
-            DeleteStudyOrder deleteStudyOrder = new DeleteStudyOrder(sof.getPk(),
-                    sof.getStudy().getPk(), sof.getFileSystem().getPk(),
-                    sof.getAccessTime().getTime());
+            StudyLocal study = sof.getStudy();
+            DeleteStudyOrder deleteStudyOrder = new DeleteStudyOrder(
+                    sof.getPk(), study.getPk(), sof.getFileSystem().getPk(),
+                    sof.getAccessTime().getTime(),
+                    study.getExternalRetrieveAET(), study.getStudyIuid());
             deleteStudyOrder.processOrderProperties(suid);
             orders.add(deleteStudyOrder);
         }
@@ -573,10 +575,12 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             if (sof.matchDeleteConstrains(externalRetrieveable,
                     storageNotCommited, copyOnMedia, copyOnFSGroup,
                     copyArchived, copyOnReadOnlyFS)) {
-                DeleteStudyOrder deleteStudyOrder = new DeleteStudyOrder(sof.getPk(),
-                        sof.getStudy().getPk(), sof.getFileSystem().getPk(),
-                        maxAccessTime);
-                deleteStudyOrder.processOrderProperties(sof.getStudy().getStudyIuid());
+                StudyLocal study = sof.getStudy();
+                DeleteStudyOrder deleteStudyOrder = new DeleteStudyOrder(
+                        sof.getPk(), study.getPk(), sof.getFileSystem().getPk(),
+                        maxAccessTime, study.getExternalRetrieveAET(),
+                        study.getStudyIuid());
+                deleteStudyOrder.processOrderProperties(study.getStudyIuid());
                 orders.add(deleteStudyOrder);
             }
         }
@@ -695,8 +699,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
      * @ejb.interface-method
      */
     public String[] deleteStudy(DeleteStudyOrder order,
-            int availabilityOfExtRetr, boolean delStudyFromDB,
-            boolean delPatientWithoutObjects)
+            boolean delStudyFromDB, boolean delPatientWithoutObjects)
             throws ConcurrentStudyStorageException {
         try {
             long fsPk = order.getFsPk();
@@ -728,6 +731,8 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                     deletePatientWithoutObjects(pat);
                 }
             } else {
+                int availabilityOfExtRetr =
+                        order.getExternalRetrieveAvailability();
                 Collection seriess = study.getSeries();
                 for (Iterator siter = seriess.iterator(); siter.hasNext();) {
                     SeriesLocal series = (SeriesLocal) siter.next();
@@ -781,8 +786,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
      * @ejb.interface-method
      */
     public String[] deleteSeries(DeleteStudyOrder order, Long seriesPk,
-            int availabilityOfExtRetr, boolean delStudyFromDB,
-            boolean delPatientWithoutObjects)
+            boolean delStudyFromDB, boolean delPatientWithoutObjects)
             throws ConcurrentStudyStorageException {
         try {
             long fsPk = order.getFsPk();
@@ -808,6 +812,8 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                     }
                 }
             } else {
+                int availabilityOfExtRetr =
+                        order.getExternalRetrieveAvailability();
                 Collection insts = series.getInstances();
                 for (Iterator iiter = insts.iterator(); iiter.hasNext();) {
                     InstanceLocal inst = (InstanceLocal) iiter.next();

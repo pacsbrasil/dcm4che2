@@ -16,11 +16,11 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa HealthCare.
- * Portions created by the Initial Developer are Copyright (C) 2006-2008
+ * Portions created by the Initial Developer are Copyright (C) 2010
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * See listed authors below.
+ * See @authors listed below.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -35,39 +35,53 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chex.archive.mbean;
 
+package org.dcm4chex.archive.dcm.findscu;
+
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 
-import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Revision$ $Date$
- * @since Sep 22, 2008
+ * @version $Revision$ $Date:: xxxx-xx-xx $
+ * @since Mar 4, 2010
  */
-public class DeleteStudyDelegate {
+public class FindScuDelegate {
 
     private final ServiceMBeanSupport service;
+    private ObjectName findScuServiceName;
 
-    private ObjectName deleteStudyServiceName;
-
-    public DeleteStudyDelegate(ServiceMBeanSupport service) {
+    public FindScuDelegate(ServiceMBeanSupport service) {
         this.service = service;
     }
 
-    public ObjectName getDeleteStudyServiceName() {
-        return deleteStudyServiceName;
+    public ObjectName getFindScuServiceName() {
+        return findScuServiceName;
     }
 
-    public void setDeleteStudyServiceName(ObjectName deleteStudyServiceName) {
-        this.deleteStudyServiceName = deleteStudyServiceName;
+    public void setFindScuServiceName(ObjectName findScuServiceName) {
+        this.findScuServiceName = findScuServiceName;
     }
 
-    public void scheduleDeleteOrder(DeleteStudyOrder order) throws Exception {
-        service.getServer().invoke(deleteStudyServiceName,
-                "scheduleDeleteOrder", new Object[] { order },
-                new String[] { DeleteStudyOrder.class.getName() });
+    public String availabilityOfStudy(String aet, String uid) throws Exception {
+        try {
+            return (String) service.getServer().invoke(
+                    findScuServiceName, "availabilityOfStudy",
+                    new Object[]{ aet, uid },
+                    new String[]{ String.class.getName(), 
+                                  String.class.getName()});
+        } catch (InstanceNotFoundException e) {
+            throw e;
+        } catch (ReflectionException e) {
+            throw e;
+        } catch (MBeanException e) {
+            throw e.getTargetException();
+        }
+        
     }
+
 }
