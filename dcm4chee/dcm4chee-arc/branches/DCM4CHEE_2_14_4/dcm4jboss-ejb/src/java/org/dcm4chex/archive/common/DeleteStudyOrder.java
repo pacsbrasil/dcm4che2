@@ -59,13 +59,18 @@ public class DeleteStudyOrder extends BaseJmsOrder implements Serializable {
     private final long studyPk;
     private final long fsPk;
     private final long accessTime;
+    private final String studyIUID;
+    private final String externalRetrieveAET;
+    private int externalRetrieveAvailability = Availability.UNAVAILABLE;
 
     public DeleteStudyOrder(long sofPk, long studyPk, long fsPk,
-            long accessTime) {
+            long accessTime, String externalRetrieveAET, String studyIUID) {
         this.sofPk = sofPk;
         this.studyPk = studyPk;
         this.fsPk = fsPk;
         this.accessTime = accessTime;
+        this.studyIUID = studyIUID;
+        this.externalRetrieveAET = externalRetrieveAET;
     }
 
     public String toString() {
@@ -91,5 +96,21 @@ public class DeleteStudyOrder extends BaseJmsOrder implements Serializable {
 
     public long getAccessTime() {
         return accessTime;
+    }
+    
+    public String getStudyIUID() {
+        return studyIUID;
+    }
+
+    public String getExternalRetrieveAET() {
+        return externalRetrieveAET;
+    }
+
+    public int getExternalRetrieveAvailability() {
+        return externalRetrieveAvailability;
+    }
+
+    public void setExternalRetrieveAvailability(int availability) {
+        this.externalRetrieveAvailability = availability;
     }
 }

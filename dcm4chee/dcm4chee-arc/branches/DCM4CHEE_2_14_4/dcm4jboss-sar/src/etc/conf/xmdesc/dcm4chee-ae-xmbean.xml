@@ -117,10 +117,12 @@
          dcm4chee.archive:service=ContentEditService#CallingAETitle
          dcm4chee.archive:service=ECHOService#CallingAETitle
          dcm4chee.archive:service=ExportManager#CallingAETitle
-         dcm4chee.archive:service=Forward#ForwardModifiedToAETitles
+         dcm4chee.archive:service=FindScu#CallingAETitle
+         dcm4chee.archive:service=FileSystemMgt,group=LOSSY_STORAGE#DefaultRetrieveAETitle
          dcm4chee.archive:service=FileSystemMgt,group=NEARLINE_STORAGE#DefaultRetrieveAETitle
          dcm4chee.archive:service=FileSystemMgt,group=ONLINE_STORAGE#DefaultRetrieveAETitle
          dcm4chee.archive:service=FileSystemMgt#RetrieveAETitle
+         dcm4chee.archive:service=Forward#ForwardModifiedToAETitles
          dcm4chee.archive:service=GPWLScp#CalledAETitles
          dcm4chee.archive:service=GPWLScp#CallingAETitles
          dcm4chee.archive:service=GPWLScu#CallingAETitle

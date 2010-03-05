@@ -341,6 +341,12 @@
     </antcall>
     <antcall target="xslt">
       <param name="in"
+             value="${dcm4jboss-sar.xmdesc}/dcm4chee-findscu-xmbean.xml" />
+      <param name="out" value="findscu-xmbean.xml" />
+      <param name="mbean" value="dcm4chee.archive:service=FindScu" />
+    </antcall>
+    <antcall target="xslt">
+      <param name="in"
              value="${dcm4jboss-sar.xmdesc}/dcm4chee-filecopy-xmbean.xml" />
       <param name="out" value="filecopy-xmbean.xml" />
       <param name="mbean" value="dcm4chee.archive:service=FileCopy" />

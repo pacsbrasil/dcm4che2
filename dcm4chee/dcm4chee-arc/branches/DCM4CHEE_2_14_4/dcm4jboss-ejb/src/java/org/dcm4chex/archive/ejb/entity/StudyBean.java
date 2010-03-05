@@ -135,8 +135,6 @@ import org.dcm4chex.archive.util.Convert;
  *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.study.pk = ?1 AND i.media.mediaStatus = ?2"
  * @jboss.query signature="int ejbSelectNumberOfCommitedInstances(java.lang.Long pk)"
  * 	            query="SELECT COUNT(i) FROM Instance i WHERE i.series.study.pk = ?1 AND i.commitment = TRUE"
- * @jboss.query signature="int ejbSelectNumberOfExternalRetrieveableInstances(java.lang.Long pk)"
- *              query="SELECT COUNT(i) FROM Instance i WHERE i.series.study.pk = ?1 AND i.externalRetrieveAET IS NOT NULL"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnROFS(java.lang.Long pk, int status)"
  *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study.pk = ?1 AND f.fileStatus = ?2 AND f.fileSystem.availability <> 3 AND f.fileSystem.status = 2"
  * @jboss.query signature="int ejbSelectAvailability(java.lang.Long pk)"
@@ -599,11 +597,6 @@ public abstract class StudyBean implements EntityBean {
     public abstract int ejbSelectNumberOfReceivingSeries(Long pk) throws FinderException;
 
     /**
-     * @ejb.select query=""
-     */ 
-    public abstract int ejbSelectNumberOfExternalRetrieveableInstances(Long pk) throws FinderException;
-
-    /**
      * @ejb.interface-method
      * @jboss.method-attributes read-only="true"
      */
@@ -619,15 +612,6 @@ public abstract class StudyBean implements EntityBean {
         return ejbSelectNumberOfReceivingSeries(getPk());
     }
 
-    /**
-     * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
-     */
-    public boolean isStudyExternalRetrievable() throws FinderException {
-        return ejbSelectNumberOfExternalRetrieveableInstances(getPk()) 
-                == getNumberOfStudyRelatedInstances();
-    }
-    
     /**
      * @ejb.select query=""
      */

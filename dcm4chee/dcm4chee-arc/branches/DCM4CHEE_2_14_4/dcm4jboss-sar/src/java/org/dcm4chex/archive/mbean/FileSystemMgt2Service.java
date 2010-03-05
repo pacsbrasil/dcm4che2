@@ -58,6 +58,7 @@ import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DeleterThresholds;
 import org.dcm4chex.archive.config.RetryIntervalls;
+import org.dcm4chex.archive.dcm.findscu.FindScuDelegate;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
@@ -80,6 +81,8 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     private static final String GROUP = "group";
 
     private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;
+
+    private final FindScuDelegate findScu = new FindScuDelegate(this);
 
     private final DeleteStudyDelegate deleteStudy =
             new DeleteStudyDelegate(this);
@@ -159,6 +162,14 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     private Integer deleteOrphanedPrivateFilesListenerID;
 
     private ObjectName storeScpServiceName;
+
+    public ObjectName getFindScuServiceName() {
+        return findScu.getFindScuServiceName();
+    }
+
+    public void setFindScuServiceName(ObjectName findScuServiceName) {
+        findScu.setFindScuServiceName(findScuServiceName);
+    }
 
     public ObjectName getStoreScpServiceName() {
         return storeScpServiceName;
@@ -517,10 +528,6 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         return FileUtils.formatSize(expectedDataVolumePerDay);
     }
 
-    public final long getExpectedDataVolumePerDayBytes() {
-        return expectedDataVolumePerDay;
-    }
-
     public final void setExpectedDataVolumePerDay(String s) {
         this.expectedDataVolumePerDay = FileUtils.parseSize(s, FileUtils.MEGA);
     }
@@ -774,12 +781,12 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public FileSystemDTO updateFileSystemAvailability(String dirPath,
-            String availability) throws Exception {
+            String availability, String availabilityOfExternalRetrieveable)
+            throws Exception {
         return fileSystemMgt().updateFileSystemAvailability(
                         getFileSystemGroupID(), dirPath,
                         Availability.toInt(availability), 
-                        Availability.toInt(deleteStudy
-                                .getAvailabilityOfExternalRetrieveable()), 
+                        Availability.toInt(availabilityOfExternalRetrieveable), 
                         updateStudiesBatchSize);
     }
 
@@ -1073,6 +1080,8 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                     deleteOrdersAndAccessTime.deleteStudyOrders.iterator();
             while (sizeToDel > 0 && orderIter.hasNext()) {
                 DeleteStudyOrder order = orderIter.next();
+                if (!checkExternalRetrieveable(order))
+                    continue;
                 if (fsMgt.removeStudyOnFSRecord(order)) {
                     try {
                         deleteStudy.scheduleDeleteOrder(order);
@@ -1091,6 +1100,38 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         return countStudies;
     }
 
+    private boolean checkExternalRetrieveable(DeleteStudyOrder order) {
+        String aet = order.getExternalRetrieveAET();
+        if (aet == null)
+            return true;
+        
+        String availability = null;
+        String studyIUID = order.getStudyIUID();
+        try {
+            availability = findScu.availabilityOfStudy(aet, studyIUID);
+            if (availability == null) {
+                log.warn("Retrieve AE: " + aet
+                        + " does not return Instance Availability for study: "
+                        + studyIUID);
+                return false;
+            }
+        } catch (Exception e) {
+           log.warn("Query Instance Availability for study: " + studyIUID
+                   + " from external Retrieve AE: " + aet + " failed:", e);
+           return false;
+        }
+
+        int availabilityAsInt = Availability.toInt(availability);
+        if (availabilityAsInt == Availability.UNAVAILABLE) {
+            log.warn("Retrieve AE: " + aet
+                    + " returns Instance Availability: UNAVAILABLE for study: "
+                    + studyIUID);
+            return false;
+        }
+        order.setExternalRetrieveAvailability(availabilityAsInt);
+        return true;
+    }
+
     public long scheduleStudyForDeletion(String suid) throws Exception {
         FileSystemMgt2 fsMgt = fileSystemMgt();
         Collection<DeleteStudyOrder> orders = 
@@ -1098,6 +1139,8 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                     getFileSystemGroupID());
         long sizeToDel = 0;
         for (DeleteStudyOrder order : orders) {
+            if (!checkExternalRetrieveable(order))
+                continue;
             if (fsMgt.removeStudyOnFSRecord(order)) {
                 try {
                     deleteStudy.scheduleDeleteOrder(order);

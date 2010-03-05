@@ -304,14 +304,6 @@
     </descriptors>
   </attribute>
 
-  <attribute access="read-only" getMethod="getExpectedDataVolumePerDayBytes">
-    <description><![CDATA[Get expected data volume per day
-      in bytes, returned as a long.]]>
-    </description>
-    <name>ExpectedDataVolumePerDayBytes</name>
-    <type>long</type>
-  </attribute>
-
   <attribute access="read-write" getMethod="isAdjustExpectedDataVolumePerDay"
     setMethod="setAdjustExpectedDataVolumePerDay">
     <description><![CDATA[Update value of attribute ExpectedDataVolumePerDay
@@ -611,6 +603,13 @@
     <type>javax.management.ObjectName</type>
   </attribute>
 
+  <attribute access="read-write" getMethod="getFindScuServiceName"
+    setMethod="setFindScuServiceName">
+    <description>Used internally. Do NOT modify. </description>
+    <name>FindScuServiceName</name>
+    <type>javax.management.ObjectName</type>
+  </attribute>
+
   <!-- Operations -->
   &defaultOperations;
 
@@ -722,6 +721,13 @@
         "NEARLINE","OFFLINE", "UNAVAILABLE".
       </description>
       <name>availability</name>
+      <type>java.lang.String</type>
+    </parameter>
+    <parameter>
+      <description>Availability of only external retrieveable studies. Enumerated values: "ONLINE",
+        "NEARLINE","OFFLINE", "UNAVAILABLE".
+      </description>
+      <name>availabilityOfExternalRetrieveable</name>
       <type>java.lang.String</type>
     </parameter>
     <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>

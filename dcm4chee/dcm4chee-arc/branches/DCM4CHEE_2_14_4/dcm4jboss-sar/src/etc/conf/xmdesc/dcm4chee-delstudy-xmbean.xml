@@ -80,21 +80,6 @@
     </descriptors>
   </attribute>
 
-  <attribute access="read-write"
-    getMethod="getAvailabilityOfExternalRetrieveable"
-    setMethod="setAvailabilityOfExternalRetrieveable">
-    <description><![CDATA[Defines Instance Availability of studies which
-      becomes only external retrievable after deletion from file systems
-      accessable by this archive instance. Enumerated values: "ONLINE",
-      "NEARLINE", "OFFLINE", "UNAVAILABLE"]]>
-    </description>
-    <name>AvailabilityOfExternalRetrieveable</name>
-    <type>java.lang.String</type>
-    <descriptors>
-      <value value="NEARLINE" />
-    </descriptors>
-  </attribute>
-
   <attribute access="read-write" getMethod="getRetryIntervalsForJmsOrder"
     setMethod="setRetryIntervalsForJmsOrder">
     <description><![CDATA[Number and interval of retries made for failed JMS

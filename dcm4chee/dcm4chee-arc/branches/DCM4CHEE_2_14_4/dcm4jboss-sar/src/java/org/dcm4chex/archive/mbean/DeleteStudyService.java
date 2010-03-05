@@ -85,8 +85,6 @@ public class DeleteStudyService extends ServiceMBeanSupport
 
     private boolean createIANonStudyDelete = false;
 
-    private int availabilityOfExternalRetrieveable;
-
     private boolean deleteSeriesBySeries;
 
     public boolean isDeleteSeriesBySeries() {
@@ -119,15 +117,6 @@ public class DeleteStudyService extends ServiceMBeanSupport
 
     public void setCreateIANonStudyDelete(boolean createIANonStudyDelete) {
         this.createIANonStudyDelete = createIANonStudyDelete;
-    }
-
-    public String getAvailabilityOfExternalRetrieveable() {
-        return Availability.toString(availabilityOfExternalRetrieveable);
-    }
-
-    public void setAvailabilityOfExternalRetrieveable(String availability) {
-        this.availabilityOfExternalRetrieveable =
-                Availability.toInt(availability.trim());
     }
 
     public final String getRetryIntervalsForJmsOrder() {
@@ -266,8 +255,7 @@ public class DeleteStudyService extends ServiceMBeanSupport
             ian = fsMgt.createIAN(order, true);
         }
         String[] filePaths = fsMgt.deleteStudy(order,
-                availabilityOfExternalRetrieveable, deleteStudyFromDB,
-                deletePatientWithoutObjects);
+                deleteStudyFromDB, deletePatientWithoutObjects);
         for (int i = 0; i < filePaths.length; i++) {
             FileUtils.delete(FileUtils.toFile(filePaths[i]), true);
         }
@@ -304,8 +292,7 @@ public class DeleteStudyService extends ServiceMBeanSupport
                 }
             }
             String[] filePaths = fsMgt.deleteSeries(order, seriesPk, 
-                    availabilityOfExternalRetrieveable, deleteStudyFromDB,
-                    deletePatientWithoutObjects);
+                    deleteStudyFromDB, deletePatientWithoutObjects);
             if (filePaths.length == 0) {
                 // Files of this Series already deleted by previous attempt 
                 // processing this DeleteStudyOrder
