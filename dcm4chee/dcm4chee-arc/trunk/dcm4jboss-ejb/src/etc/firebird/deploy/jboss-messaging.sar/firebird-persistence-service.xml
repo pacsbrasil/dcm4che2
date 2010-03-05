@@ -17,13 +17,13 @@
       name="jboss.messaging:service=PersistenceManager"
       xmbean-dd="xmdesc/JDBCPersistenceManager-xmbean.xml">
 
-      <depends>jboss.jca:service=DataSourceBinding,name=arrDS</depends>
+      <depends>jboss.jca:service=DataSourceBinding,name=pacsDS</depends>
 
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
 
       <!-- The datasource to use for the persistence manager -->
 
-      <attribute name="DataSource">java:/arrDS</attribute>
+      <attribute name="DataSource">java:/pacsDS</attribute>
 
       <!-- If true will attempt to create tables and indexes on every start-up -->
 
@@ -100,7 +100,7 @@
 
       <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
 
-      <depends>jboss.jca:service=DataSourceBinding,name=arrDS</depends>
+      <depends>jboss.jca:service=DataSourceBinding,name=pacsDS</depends>
 
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
 
@@ -110,7 +110,7 @@
 
       <!-- The datasource used by the post office to access it's binding information -->
 
-      <attribute name="DataSource">java:/arrDS</attribute>
+      <attribute name="DataSource">java:/pacsDS</attribute>
 
       <!-- If true will attempt to create tables and indexes on every start-up -->
 
@@ -248,9 +248,9 @@ LOAD_BINDINGS=SELECT QUEUE_NAME, COND, SELECTOR, CHANNEL_ID, CLUSTERED, ALL_NODE
    <mbean code="org.jboss.jms.server.plugin.JDBCJMSUserManagerService"
       name="jboss.messaging:service=JMSUserManager"
       xmbean-dd="xmdesc/JMSUserManager-xmbean.xml">
-      <depends>jboss.jca:service=DataSourceBinding,name=arrDS</depends>
+      <depends>jboss.jca:service=DataSourceBinding,name=pacsDS</depends>
       <depends optional-attribute-name="TransactionManager">jboss:service=TransactionManager</depends>
-      <attribute name="DataSource">java:/arrDS</attribute>
+      <attribute name="DataSource">java:/pacsDS</attribute>
       <attribute name="CreateTablesOnStartup">true</attribute>
       <attribute name="SqlProperties"><![CDATA[
 CREATE_USER_TABLE=CREATE TABLE JBM_USER (USER_ID VARCHAR(32) NOT NULL, PASSWD VARCHAR(32) NOT NULL, CLIENTID VARCHAR(128), PRIMARY KEY(USER_ID))
