@@ -16,7 +16,10 @@
       <name>MCMScuService</name>
    </constructor>
 
-    <attribute access="read-write" getMethod="getCallingAET" setMethod="setCallingAET">
+   <!-- Attributes -->
+   &defaultAttributes;
+   &defaultSCUAttributes;
+   <attribute access="read-write" getMethod="getCallingAET" setMethod="setCallingAET">
       <description>The calling AE title.
       </description>
       <name>CallingAETitle</name>
@@ -261,8 +264,6 @@
       <type>java.lang.String</type>
    </attribute>
 
-	&defaultSCUAttributes;
-	   
    <attribute access="read-write"
       getMethod="getQueueName"
       setMethod="setQueueName">
@@ -298,18 +299,6 @@
       <name>JMSServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
- 
-  
-   <attribute access="read-write"
-      getMethod="getTLSConfigName"
-      setMethod="setTLSConfigName">
-      <description>Used internally. Do not modify.
-      </description>
-      <name>TLSConfigName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-   
-   &defaultAttributes;
 
    <!-- Operations -->
    &defaultOperations;

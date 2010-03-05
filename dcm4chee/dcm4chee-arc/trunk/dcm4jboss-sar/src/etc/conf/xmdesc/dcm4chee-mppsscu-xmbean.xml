@@ -18,6 +18,8 @@
    </constructor>
 
    <!-- Attributes -->
+   &defaultAttributes;
+   &defaultSCUAttributes;
    <attribute access="read-write" getMethod="getForwardingRules" setMethod="setForwardingRules">
       <description><![CDATA[List of forwarding rules, dependent upon which
         application - identified by the Calling AE title - sent the MPPS.
@@ -74,8 +76,6 @@
       </descriptors>
    </attribute>
    
-   &defaultSCUAttributes;
-   
    <attribute access="read-write"
       getMethod="getQueueName"
       setMethod="setQueueName">
@@ -100,15 +100,6 @@
       <name>MppsScpServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getTLSConfigName"
-      setMethod="setTLSConfigName">
-      <description>Used internally. Do not modify.
-      </description>
-      <name>TLSConfigName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-   &defaultAttributes;
 
    <!-- Operations -->
    &defaultOperations;

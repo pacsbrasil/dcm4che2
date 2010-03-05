@@ -16,7 +16,10 @@
       <name>GPWLScuService</name>
    </constructor>
 
-    <attribute access="read-write" getMethod="getCallingAET" setMethod="setCallingAET">
+   <!-- Attributes -->
+   &defaultAttributes;
+   &defaultSCUAttributes;
+   <attribute access="read-write" getMethod="getCallingAET" setMethod="setCallingAET">
       <description>The calling AE title.
       </description>
       <name>CallingAETitle</name>
@@ -45,8 +48,6 @@
       <type>boolean</type>
    </attribute>
 
-   &defaultSCUAttributes;
-
    <attribute access="read-write" getMethod="getPriority" setMethod="setPriority">
       <description>Priority for C-Find requests. Enumerated Values: LOW, MEDIUM, HIGH.
       </description>
@@ -55,14 +56,6 @@
       <descriptors>
          <value value="MEDIUM"/>
       </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getTLSConfigName"
-      setMethod="setTLSConfigName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>TLSConfigName</name>
-      <type>javax.management.ObjectName</type>
    </attribute>
 
    <!-- Operations -->

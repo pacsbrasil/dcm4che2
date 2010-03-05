@@ -19,6 +19,8 @@
    </constructor>
 
    <!-- Attributes -->
+   &defaultAttributes;
+   &defaultSCUAttributes;
    <attribute access="read-write" getMethod="getDestAETs" setMethod="setDestAETs">
       <description>List of the AE titles of application entities being notified
       about Work item status changes by GP-PPS messages, separated by \(backslash).
@@ -138,8 +140,6 @@
       </descriptors>
    </attribute>
    
-   &defaultSCUAttributes;
-   
    <attribute access="read-write"
       getMethod="getQueueName"
       setMethod="setQueueName">
@@ -164,15 +164,6 @@
       <name>GpwlScpServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
-   <attribute access="read-write"
-       getMethod="getTLSConfigName"
-       setMethod="setTLSConfigName">
-      <description>Used internally. Do not modify.
-      </description>
-      <name>TLSConfigName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-   &defaultAttributes;
 
    <!-- Operations -->
    &defaultOperations;

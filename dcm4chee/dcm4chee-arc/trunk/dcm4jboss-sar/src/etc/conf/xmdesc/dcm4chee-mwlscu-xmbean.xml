@@ -19,7 +19,10 @@
       <name>MWLScuService</name>
    </constructor>
 
-    <attribute access="read-write" getMethod="getCallingAET" setMethod="setCallingAET">
+   <!-- Attributes -->
+   &defaultAttributes;
+   &defaultSCUAttributes;
+   <attribute access="read-write" getMethod="getCallingAET" setMethod="setCallingAET">
       <description>The calling AE title.
       </description>
       <name>CallingAETitle</name>
@@ -115,19 +118,6 @@
       </descriptors>
    </attribute>
    
-   &defaultSCUAttributes;
-
-   <attribute access="read-write"
-      getMethod="getTLSConfigName"
-      setMethod="setTLSConfigName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>TLSConfigName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-   <!-- Operations -->
-   &defaultOperations;
-
    <operation impact="ACTION">
       <description>Get a list of modality worklist entries.
       </description>
