@@ -219,13 +219,14 @@ public class CreateOrEditReportPage extends WebPage {
                 
                 @Override
                 public Object getDisplayValue(Integer index) {
-                    return (index == null) ? null : diagramOptionsTypes[index] + "(" + diagramOptionsTooltips[index] + ")";
+                    return (index == null) ? null : diagramOptionsTypes[index] + " (" + diagramOptionsTooltips[index] + ")";
                 }
             }).setNullValid(true));
 
             add(new CheckBox("report-table-checkbox", new PropertyModel<Boolean>(thisReport, "table")));
 
             add(new AjaxFallbackButton("form-submit", CreateOrEditReportForm.this) {
+                
                 private static final long serialVersionUID = 1L;
     
                 @Override

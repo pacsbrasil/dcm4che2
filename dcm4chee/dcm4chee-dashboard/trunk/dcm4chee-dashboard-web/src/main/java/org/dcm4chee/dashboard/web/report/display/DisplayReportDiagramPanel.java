@@ -211,7 +211,7 @@ public class DisplayReportDiagramPanel extends Panel {
                                     new Integer(new ResourceModel("dashboard.report.reportdiagram.image.width").wrapOnAssignment(this).getObject().toString()), 
                                     new Integer(new ResourceModel("dashboard.report.reportdiagram.image.height").wrapOnAssignment(this).getObject().toString())));
 
-            final JFreeChart downloadableChart = chart; 
+            final JFreeChart downloadableChart = chart;
             add(new Link<Object>("diagram-download") {
                 
                 private static final long serialVersionUID = 1L;

@@ -75,14 +75,14 @@ public class DynamicLinkPanel extends Panel {
     private Link<Object> link;
     
     private ReportModel report;
-    private Object modalWindow;
+    private Object window;
 
     @SuppressWarnings("unchecked")
-    public DynamicLinkPanel(String id, String className, final ReportModel report, ModalWindow modalWindow) {
+    public DynamicLinkPanel(String id, String className, final ReportModel report, ModalWindow window) {
         super(id);
 
         this.report = report;
-        this.modalWindow = modalWindow;
+        this.window = window;
 
         try {
             if ((className.endsWith("CreateOrEditReportLink") || className.endsWith("RemoveLink"))
@@ -103,7 +103,7 @@ public class DynamicLinkPanel extends Panel {
                  this, 
                  "report-table-link", 
                  report, 
-                 this.modalWindow
+                 this.window
             }))
             .add(new Image("image")
             .add(new AttributeModifier("src", true, new AbstractReadOnlyModel() {
