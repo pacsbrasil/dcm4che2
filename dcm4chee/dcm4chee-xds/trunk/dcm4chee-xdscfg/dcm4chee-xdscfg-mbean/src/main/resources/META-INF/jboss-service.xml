@@ -35,7 +35,18 @@
       <name>AttributesToStore</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="dcm4chee.archive:service=XDS-I:*;dcm4chee.archive:service=XDSQueryService:*;XDSService:*;Store2Dcm:*;XDSbRepositoryService:*;XDSbSourceService:*;DocumentStoreService:*"/>
+         <value value="
+			dcm4chee.archive:service=XDS-I:*
+			dcm4chee.archive:service=PIXQuery:*
+			XDSService:*
+			XDSStoreService:*
+			XDSbRepositoryService:*
+			XDSbRetrieveService:*
+			XDSbSourceService:*
+			XDSQueryService:*
+			XDSRegistryService:*
+			XdsHttpCfgService:*
+         "/>
       </descriptors>
    </attribute>
 
