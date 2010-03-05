@@ -17,6 +17,8 @@
    </constructor>
 
    <!-- Attributes -->
+   &defaultAttributes;
+   &defaultSCUAttributes;
    <attribute access="read-write" getMethod="getTaskInterval" setMethod="setTaskInterval">
       <description><![CDATA[Interval in which to check for studies for Reconciliation.
           <br>Format: 
@@ -128,17 +130,6 @@
       <type>java.lang.String</type>
    </attribute>
 
-   &defaultSCUAttributes;
-
-   <attribute access="read-write"
-      getMethod="getTLSConfigName"
-      setMethod="setTLSConfigName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>TLSConfigName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-   
    <attribute access="read-write"
       getMethod="getSchedulerServiceName"
       setMethod="setSchedulerServiceName">
@@ -147,8 +138,6 @@
       <name>SchedulerServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>  
-   
-   &defaultAttributes;
 
    <!-- Operations -->
    &defaultOperations;

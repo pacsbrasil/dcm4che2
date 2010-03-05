@@ -20,6 +20,9 @@
       <name>MwlReplicaService</name>
    </constructor>
 
+   <!-- Attributes -->
+   &defaultAttributes;
+   &defaultSCUAttributes;
    <attribute access="read-write" getMethod="getCalledAET" setMethod="setCalledAET">
       <description><![CDATA[The AE title(s) of the Modality Worklist SCP to query for replication.<br/>
       				Multible AET's must be separated by \(backslash). For example, MWL_SCP1\MWL_SCP2.]]>
@@ -131,8 +134,6 @@
       <type>boolean</type>
    </attribute>
 
-   &defaultSCUAttributes;
-
    <attribute access="read-write" getMethod="getPriority" setMethod="setPriority">
       <description>Priority for C-Find requests. Enumerated Values: LOW, MEDIUM, HIGH.
         Only effective for queries of a remote Modality Worlist SCP which actual
@@ -145,17 +146,6 @@
       </descriptors>
    </attribute>
 
-   <attribute access="read-write"
-      getMethod="getTLSConfigName"
-      setMethod="setTLSConfigName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>TLSConfigName</name>
-      <type>javax.management.ObjectName</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=TLSConfig"/>
-      </descriptors>
-   </attribute>
    <attribute access="read-write" 
       getMethod="getTemplatesServiceName"
       setMethod="setTemplatesServiceName">

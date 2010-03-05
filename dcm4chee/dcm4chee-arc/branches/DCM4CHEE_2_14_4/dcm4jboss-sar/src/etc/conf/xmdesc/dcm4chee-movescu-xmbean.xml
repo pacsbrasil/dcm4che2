@@ -19,6 +19,8 @@
    </constructor>
 
    <!-- Attributes -->
+   &defaultAttributes;
+   &defaultSCUAttributes;
    <attribute access="read-write"
       getMethod="getCallingAET"
       setMethod="setCallingAET">
@@ -102,8 +104,6 @@
       </descriptors>
    </attribute>
    
-   &defaultSCUAttributes;
-
    <attribute access="read-write"
       getMethod="getQueueName"
       setMethod="setQueueName">
@@ -114,15 +114,6 @@
    </attribute>
    
    <attribute access="read-write"
-      getMethod="getTLSConfigName"
-      setMethod="setTLSConfigName">
-      <description>Used internally. Do not modify.
-      </description>
-      <name>TLSConfigName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-   
-   <attribute access="read-write"
       getMethod="getJmsServiceName"
       setMethod="setJmsServiceName">
       <description>Used internally. Do NOT modify.
@@ -130,8 +121,6 @@
       <name>JMSServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
-   
-   &defaultAttributes;
 
    <!-- Operations -->
    &defaultOperations;

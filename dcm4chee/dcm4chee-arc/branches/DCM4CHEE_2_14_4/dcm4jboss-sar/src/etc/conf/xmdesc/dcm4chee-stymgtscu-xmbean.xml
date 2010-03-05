@@ -20,7 +20,9 @@
    </constructor>
 
    <!-- Attributes -->
-    <attribute access="read-write" getMethod="getForwardingRules" setMethod="setForwardingRules">
+   &defaultAttributes;
+   &defaultSCUAttributes;
+   <attribute access="read-write" getMethod="getForwardingRules" setMethod="setForwardingRules">
       <description>List of forwarding rules.
       &lt;br&gt;Format:&lt;br&gt;[&lt;i&gt;condition&lt;/i&gt;=&lt;i&gt;value&lt;/i&gt;,&lt;i&gt;condition&lt;/i&gt;=&lt;i&gt;value&lt;/i&gt;,...]&lt;i&gt;aeTitle&lt;/i&gt;, &lt;i&gt;aeTitle&lt;/i&gt;,... | NONE
 
@@ -85,8 +87,6 @@ the &lt;i&gt;value&lt;/i&gt; is dependant on the condition variable used:&lt;br&
          <value value="1"/>
       </descriptors>
    </attribute>
-   
-   &defaultSCUAttributes;
 
    <attribute access="read-write"
       getMethod="getQueueName"
@@ -110,12 +110,6 @@ the &lt;i&gt;value&lt;/i&gt; is dependant on the condition variable used:&lt;br&
       <name>StudyMgtScpServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
-   <attribute access="read-write" getMethod="getTLSConfigName" setMethod="setTLSConfigName">
-      <description>Used internally. Do NOT modify.</description>
-      <name>TLSConfigName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-   &defaultAttributes;
 
    <!-- Operations -->
    &defaultOperations;

@@ -18,6 +18,7 @@
 
    <!-- Attributes -->
    &defaultAttributes;
+   &defaultSCUAttributes;
    <attribute access="read-write" getMethod="getNotifiedAETs" setMethod="setNotifiedAETs">
       <description>List of AE titles of notified application entities, separated by \(backslash).
       NONE = do not notify any application entity.
@@ -134,8 +135,6 @@
       </descriptors>
    </attribute>
    
-   &defaultSCUAttributes;
-
    <attribute access="read-write" 
      getMethod="getQueueName"
      setMethod="setQueueName">
@@ -181,14 +180,6 @@
       <description>Used internally. Do not modify.
       </description>
       <name>ContentEditServiceName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-   <attribute access="read-write" 
-      getMethod="getTLSConfigName"
-      setMethod="setTLSConfigName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>TLSConfigName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
 

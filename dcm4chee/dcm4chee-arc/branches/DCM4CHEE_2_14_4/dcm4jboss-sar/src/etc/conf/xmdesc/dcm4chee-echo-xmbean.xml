@@ -17,6 +17,8 @@
    </constructor>
 
    <!-- Attributes -->
+   &defaultAttributes;
+   &defaultSCUAttributes;
    <attribute access="read-write" getMethod="getCallingAET" setMethod="setCallingAET">
       <description>Calling AE title  that is used in echo associations.
       </description>
@@ -26,18 +28,6 @@
          <value value="DCM4CHEE"/>
       </descriptors>
    </attribute>
-
-   &defaultSCUAttributes;
-
-   <attribute access="read-write"
-      getMethod="getTLSConfigName"
-      setMethod="setTLSConfigName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>TLSConfigName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
-   &defaultAttributes;
 
    <!-- Operations -->
    <operation impact="ACTION">
