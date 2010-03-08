@@ -147,7 +147,7 @@ public class WicketApplication extends AuthenticatedWebApplication {
     }
 
     public boolean isUserOrAdminRole(String role) {
-        return userRoleName.equals(role) || adminRoleName.equals(role) ;
+        return userRoleName.equals(role) || adminRoleName.equals(role);
     }
 
     @Override

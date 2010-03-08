@@ -67,15 +67,14 @@ public class JaasWicketSession extends AuthenticatedWebSession {
     }
 
     public boolean authenticate(String username, String password) {
-        WicketApplication app = WicketApplication.get();
+        WicketApplication application = WicketApplication.get();
         try {
             LoginContext ctx = new LoginContext(
-                    app.getSecurityDomainName(),
+                    application.getSecurityDomainName(),
                     new LoginCallbackHandler(username, password));
             ctx.login();
             this.username = username;
-            this.roles = app.getRoles(ctx.getSubject());
-System.out.println("LOGIN " + this.username);
+            this.roles = application.getRoles(ctx.getSubject());
             return true;
         } catch (LoginException e) {
             return false;
@@ -107,8 +106,7 @@ System.out.println("LOGIN " + this.username);
                 if (callback instanceof NameCallback) {
                     ((NameCallback) callback).setName(username);
                 } else if (callback instanceof PasswordCallback) {
-                    PasswordCallback pwCallback = (PasswordCallback) callback;
-                    pwCallback.setPassword(password.toCharArray());
+                    ((PasswordCallback) callback).setPassword(password.toCharArray());
                 } else {
                     throw new UnsupportedCallbackException(callbacks[i],
                             "Callback type not supported");

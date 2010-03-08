@@ -224,7 +224,7 @@ public class UserListPanel extends Panel {
                 .setVisible(false);
 
             this.add(newAjaxComponent(
-                    new Label("new-username-label", new ResourceModel("userlist.add_user.username.label").wrapOnAssignment(this))));
+                    new Label("new-username-label", new Model<String>("schmarrn"))));//new ResourceModel("userlist.add_user.username.label").wrapOnAssignment(this))));
             TextField<String> usernameTf;
             this.add(newAjaxComponent(
                     (usernameTf = new TextField<String>("userlist.add_user.username.input", newUsername))

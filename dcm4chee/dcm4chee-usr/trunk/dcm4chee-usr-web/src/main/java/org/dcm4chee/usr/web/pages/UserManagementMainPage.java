@@ -45,7 +45,6 @@ import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.pages.InternalErrorPage;
 import org.dcm4chee.usr.dao.UserAccess;
-import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.web.session.JaasWicketSession;
 import org.dcm4chee.usr.wicket.usermanagement.ChangePasswordLink;
 import org.dcm4chee.usr.wicket.usermanagement.UserListPanel;
@@ -70,7 +69,6 @@ public class UserManagementMainPage extends WebPage {
     public UserManagementMainPage(final PageParameters parameters) {
         try {
             String name = ((JaasWicketSession) this.getSession()).getUsername();
-System.out.println("NAME: " + name);
             add(this.window = new ModalWindow("window"));
             add(new ChangePasswordLink("change-my-password-link", this.window, name, ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getUser(name)));
             add(new Link<Object>("logout-link") {
@@ -80,9 +78,8 @@ System.out.println("NAME: " + name);
                 @Override
                 public void onClick() {
                     this.getSession().invalidateNow();
-                    setResponsePage(LoginPage.class);
+                    setResponsePage(this.getApplication().getHomePage());
                 }
-                
             });
             add(new UserListPanel("userListPanel", name, this.window));
         } catch (Exception e) {
