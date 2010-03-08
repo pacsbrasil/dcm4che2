@@ -734,7 +734,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public FileSystemDTO addRWFileSystem(String dirPath) throws Exception {
-        return addRWFileSystem( mkFileSystemDTO(dirPath, FileSystemStatus.RW) );
+        return addRWFileSystem( mkFileSystemDTO(dirPath.trim(), FileSystemStatus.RW) );
     }
     
     protected FileSystemDTO addRWFileSystem( FileSystemDTO fsDTO ) throws Exception {
