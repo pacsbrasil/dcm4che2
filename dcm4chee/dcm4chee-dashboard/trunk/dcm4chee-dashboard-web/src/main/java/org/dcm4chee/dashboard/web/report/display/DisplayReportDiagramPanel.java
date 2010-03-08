@@ -266,9 +266,9 @@ public class DisplayReportDiagramPanel extends Panel {
         
         private static final long serialVersionUID = 1L;
 
-        private final int labeledTicks;
+        private final float labeledTicks;
 
-        public LabelAdaptingCategoryAxis(int labeledTicks, String label) {
+        public LabelAdaptingCategoryAxis(float labeledTicks, String label) {
             super(label);
             this.labeledTicks = labeledTicks;
         }
@@ -279,14 +279,13 @@ public class DisplayReportDiagramPanel extends Panel {
 
             List<CategoryTick> standardTicks = super.refreshTicks(g2, state, dataArea, edge);
             int interval;
-            if (standardTicks.isEmpty() || ((interval = (standardTicks.size() / labeledTicks)) < 1)) return standardTicks;
+            if (standardTicks.isEmpty() || ((interval = Math.round((float) standardTicks.size() / labeledTicks)) < 1)) return standardTicks;
             List<CategoryTick> newTicks = new ArrayList<CategoryTick>(standardTicks.size());
-             
             for (int i = 0; i < standardTicks.size(); i+=interval) {
                 if (i % interval == 0) {
                     CategoryTick tick = standardTicks.get(i);
                     TextBlock textBlock = new TextBlock();
-                    textBlock.addLine(tick.getCategory().toString(), 
+                    textBlock.addLine(tick.getCategory().toString().substring(0, Math.min(tick.getCategory().toString().length(), 8)), 
                                       tick.getLabel().getLastLine().getFirstTextFragment().getFont(), 
                                       tick.getLabel().getLastLine().getFirstTextFragment().getPaint());
                     newTicks.add(new CategoryTick(
