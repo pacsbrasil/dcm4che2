@@ -14,7 +14,7 @@
 	    </init-param>
 	    <init-param>
 	      <param-name>DashboardServiceName</param-name>
-	      <param-value>org.dcm4chee.dashboard.mbean:service=DashboardService</param-value>
+	      <param-value>dcm4chee:service=DashboardService</param-value>
 	    </init-param>
 	    <init-param>
 	      <param-name>userRoleName</param-name>
