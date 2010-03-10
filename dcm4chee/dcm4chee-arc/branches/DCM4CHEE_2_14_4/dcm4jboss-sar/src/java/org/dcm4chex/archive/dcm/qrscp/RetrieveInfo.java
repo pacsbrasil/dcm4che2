@@ -96,6 +96,8 @@ final class RetrieveInfo {
             new HashMap<String, Set<String>>();
     private final Set<String> notAvailableIuids = new HashSet<String>();
     private final Set<String> availableIuids = new HashSet<String>();
+    private final Set<String> studyIuids = new HashSet<String>();
+    private final Set<String> seriesIuids = new HashSet<String>();
     private Map.Entry<String, Set<String>> curMoveForward;
 
     private boolean externalRetrieveAET;
@@ -108,7 +110,8 @@ final class RetrieveInfo {
         for (int i = 0; i < size; ++i) {
             fileInfos = instInfos[i];
             iuid = fileInfos[0].sopIUID;
-            notAvailableIuids.add(iuid);
+            studyIuids.add(fileInfos[0].studyIUID);
+            seriesIuids.add(fileInfos[0].seriesIUID);
             for (int j = 0; j < fileInfos.length; j++) {
                 fileInfo = fileInfos[j];
                 if (fileInfo.fileRetrieveAET != null 
@@ -299,6 +302,14 @@ final class RetrieveInfo {
 
     public final Set<String> getAvailableIUIDs() {
         return availableIuids;
+    }
+
+    public final Set<String> getStudyIUIDs() {
+        return studyIuids;
+    }
+
+    public final Set<String> getSeriesIUIDs() {
+        return seriesIuids;
     }
 
 }
