@@ -293,11 +293,15 @@ public class MoveTask implements Runnable {
                 if (iuids.size() == total) {
                     if (log.isDebugEnabled())
                         log.debug("Forward original Move RQ to " + retrieveAET);
+                    MoveScu.addStudySeriesIUIDs(moveRqData,
+                            retrieveInfo.getStudyIUIDs(),
+                            retrieveInfo.getSeriesIUIDs());
                     moveScu.forwardMoveRQ(movePcid, msgID, priority,
                             moveDest1, moveRqData, iuids);
                 } else {
                     moveScu.splitAndForwardMoveRQ(movePcid, msgID, priority,
-                            moveDest1, iuids);
+                            moveDest1, retrieveInfo.getStudyIUIDs(),
+                            retrieveInfo.getSeriesIUIDs(), iuids);
                 }
                 if (directForwarding) {
                     completed += moveScu.completed();

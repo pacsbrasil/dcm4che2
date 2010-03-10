@@ -132,10 +132,15 @@ class MoveScu {
     }
 
     public void splitAndForwardMoveRQ(int pcid, int msgid, int priority,
-            String moveDest, Collection<String> iuids) {
+            String moveDest, Collection<String> studyIuids,
+            Collection<String> seriesIuids, Collection<String> iuids) {
         DcmObjectFactory dof = DcmObjectFactory.getInstance();
         Dataset ds = dof.newDataset();
         ds.putCS(Tags.QueryRetrieveLevel, IMAGE);
+        if (studyIuids.size() == 1)
+            ds.putUI(Tags.StudyInstanceUID, studyIuids.iterator().next());
+        if (seriesIuids.size() == 1)
+            ds.putUI(Tags.SeriesInstanceUID, seriesIuids.iterator().next());
         String[] a = (String[]) iuids.toArray(new String[iuids.size()]);
         if (a.length <= service.getMaxUIDsPerMoveRQ()) {
             ds.putUI(Tags.SOPInstanceUID, a);
@@ -288,5 +293,19 @@ class MoveScu {
                 + failed + (tmp == null ? 0 
                         : tmp.getInt(Tags.NumberOfFailedSubOperations, 0)));
      }
+
+    public static void addStudySeriesIUIDs(Dataset moveRqData,
+            Collection<String> studyIUIDs, Collection<String> seriesIUIDs) {
+        String qrLevel = moveRqData.getString(Tags.QueryRetrieveLevel);
+        if ("STUDY".equals(qrLevel) || "PATIENT".equals(qrLevel))
+            return;
+        if (studyIUIDs.size() == 1)
+            moveRqData.putUI(Tags.StudyInstanceUID,
+                    studyIUIDs.iterator().next());
+        if ("SERIES".equals(qrLevel)) return;
+        if (seriesIUIDs.size() == 1)
+            moveRqData.putUI(Tags.SeriesInstanceUID,
+                    seriesIUIDs.iterator().next());
+    }
 
 }

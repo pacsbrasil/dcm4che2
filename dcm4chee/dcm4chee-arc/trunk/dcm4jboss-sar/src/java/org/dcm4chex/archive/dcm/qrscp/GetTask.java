@@ -170,11 +170,16 @@ class GetTask implements Runnable {
                     moveScu = new MoveScu(service, calledAET, calledAET,
                             retrieveAET, 0);
                     if (iuids.size() == total) {
+                        MoveScu.addStudySeriesIUIDs(rqData,
+                                retrieveInfo.getStudyIUIDs(),
+                                retrieveInfo.getSeriesIUIDs());
                         moveScu.forwardMoveRQ(pcid, msgID, priority,
                                 service.getLocalStorageAET(), rqData, iuids);
                     } else {
                         moveScu.splitAndForwardMoveRQ(pcid, msgID, priority,
-                                service.getLocalStorageAET(), iuids);
+                                service.getLocalStorageAET(),
+                                retrieveInfo.getStudyIUIDs(),
+                                retrieveInfo.getSeriesIUIDs(), iuids);
                     }
                     if (moveScu.completed() > 0 || moveScu.warnings() > 0) {
                         updateLocalUIDs = true;
