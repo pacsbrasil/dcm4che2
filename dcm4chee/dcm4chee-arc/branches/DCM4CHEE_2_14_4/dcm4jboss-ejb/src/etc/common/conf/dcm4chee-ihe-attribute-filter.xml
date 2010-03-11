@@ -68,7 +68,6 @@
         <attr tag="0040A032"/> <!-- Observation DateTime -->
         <attr tag="0040A043"/> <!-- Concept Name Code Sequence -->
         <attr tag="0040A073"/> <!-- Verifying Observer Sequence -->
-        <attr tag="0040A073"/> <!-- Verifying Observer Sequence -->
         <attr seq="0040A073" tag="0040A075" case-sensitive="false"/> <!-- Verifying Observer Name -->
         <attr tag="0040A370"/> <!-- Referenced Request Sequence -->
         <attr tag="0040A375"/> <!-- Current Requested Procedure Evidence Sequence -->
