@@ -44,13 +44,17 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -69,7 +73,7 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.protocol.http.WebResponse;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.util.CSSUtils;
-import org.dcm4chee.dashboard.web.DashboardMainPage;
+import org.dcm4chee.dashboard.util.DatabaseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -90,11 +94,13 @@ public class DisplayReportTablePanel extends Panel {
     private static Logger log = LoggerFactory.getLogger(DisplayReportTablePanel.class);
 
     private ReportModel report;
+    private Map<String, String> parameters;
 
-    public DisplayReportTablePanel(String id, ReportModel report) {
+    public DisplayReportTablePanel(String id, ReportModel report, Map<String, String> parameters) {
         super(id);
         
         this.report = report;
+        this.parameters = parameters;
     }
     
     @Override
@@ -141,10 +147,37 @@ public class DisplayReportTablePanel extends Panel {
             node1.appendChild(node2);
             document.appendChild(node1);
 
-            ResultSet resultSet = 
-                (jdbcConnection  = DashboardMainPage.getDatabaseConnection(report.getDataSource()))
+            ResultSet resultSet = null;
+            if (parameters == null) {
+                resultSet = 
+                    (jdbcConnection = ((DataSource) (new InitialContext())
+                            .lookup(report.getDataSource()))
+                            .getConnection())
                 .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
                 .executeQuery(report.getStatement());
+            } else {
+                PreparedStatement preparedStatement = 
+                    (jdbcConnection = ((DataSource) (new InitialContext())
+                            .lookup(report.getDataSource()))
+                            .getConnection())
+                            .prepareStatement(DatabaseUtils.createSQLStatement(report.getStatement()), ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                    
+                    int i = 1;
+                    for (String parameterName : DatabaseUtils.getParameterOccurences(report.getStatement())) {
+                        if (parameterName.startsWith("text"))
+                            preparedStatement.setString(i, parameters.get(parameterName));
+                        else if (parameterName.startsWith("int"))
+                            preparedStatement.setInt(i, new Integer(parameters.get(parameterName)));
+                        else if (parameterName.startsWith("float"))
+                            preparedStatement.setFloat(i, new Float(parameters.get(parameterName)));
+                        else if (parameterName.startsWith("boolean"))
+                            preparedStatement.setBoolean(i, new Boolean(parameters.get(parameterName)));
+                        else if (parameterName.startsWith("date"))
+                            preparedStatement.setDate(i, Date.valueOf(parameters.get(parameterName)));
+                        i++;
+                    }
+                    resultSet = preparedStatement.executeQuery();
+            }
 
             for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++)
                 columnHeaders.add(new Label(columnHeaders.newChildId(), resultSet.getMetaData().getColumnName(i)));
@@ -263,7 +296,7 @@ public class DisplayReportTablePanel extends Panel {
         } finally {
             try {
                 jdbcConnection.close();
-            } catch (SQLException ignore) {
+            } catch (Exception ignore) {
             }
         }
     }    

@@ -45,9 +45,9 @@ import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
@@ -63,7 +63,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.protocol.http.WebResponse;
 import org.dcm4chee.dashboard.model.ReportModel;
-import org.dcm4chee.dashboard.web.DashboardMainPage;
+import org.dcm4chee.dashboard.util.DatabaseUtils;
 import org.dcm4chee.dashboard.web.common.JFreeChartImage;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -96,11 +96,13 @@ public class DisplayReportDiagramPanel extends Panel {
     private static Logger log = LoggerFactory.getLogger(DisplayReportDiagramPanel.class);
     
     private ReportModel report;
+    private Map<String, String> parameters;
 
-    public DisplayReportDiagramPanel(String id, ReportModel report) {
+    public DisplayReportDiagramPanel(String id, ReportModel report, Map<String, String> parameters) {
         super(id);
 
         this.report = report;
+        this.parameters = parameters;
     }
     
     @Override
@@ -110,12 +112,19 @@ public class DisplayReportDiagramPanel extends Panel {
         Connection jdbcConnection = null;
         try {
             if (report == null) throw new Exception("No report given to render diagram");
-            
-            ResultSet resultSet = 
-                (jdbcConnection  = DashboardMainPage.getDatabaseConnection(report.getDataSource()))
-                .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
-                .executeQuery(report.getStatement());
 
+            jdbcConnection = DatabaseUtils.getDatabaseConnection(report.getDataSource());
+            ResultSet resultSet = null;
+            if (parameters == null)
+                resultSet = 
+                    jdbcConnection
+                    .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
+                    .executeQuery(report.getStatement());
+            else
+                resultSet = 
+                    DatabaseUtils.createPreparedStatement(jdbcConnection, report.getStatement(), parameters)
+                    .executeQuery();
+            
             ResultSetMetaData metaData = resultSet.getMetaData();
             JFreeChart chart = null;
             resultSet.beforeFirst();
@@ -257,7 +266,7 @@ public class DisplayReportDiagramPanel extends Panel {
         } finally {
             try {
                 jdbcConnection.close();
-            } catch (SQLException ignore) {
+            } catch (Exception ignore) {
             }
         }
     }

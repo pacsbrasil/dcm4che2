@@ -38,19 +38,8 @@
 
 package org.dcm4chee.dashboard.web;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
@@ -111,48 +100,5 @@ public class DashboardMainPage extends WebPage {
             this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
             throw new RuntimeException();
         }
-    }
-
-    public static Connection getDatabaseConnection(String dataSourceName) throws Exception {
-
-        Context jndiContext = null;
-        try {
-            return ((DataSource) 
-                    (jndiContext = new InitialContext()).lookup(dataSourceName))
-                    .getConnection();
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            try {
-                jndiContext.close();
-            } catch (NamingException ignore) {
-            }
-        }
-    }
-    
-    public static boolean isConfigurableStatement(String statement) {
-        Matcher m = Pattern.compile("(\\:\\[[A-Za-z0-9\\.]*\\]\\:|\\:#[A-Za-z0-9\\.]*#\\:)").matcher(statement);
-        return m.find();
-    }
-    
-    public static String createSQLStatement(String statement) {
-        return Pattern.compile("\\:\\[[A-Za-z0-9\\.]*\\]\\:").matcher(
-                Pattern.compile("\\:#[A-Za-z0-9\\.]*#\\:").matcher(statement)
-                .replaceAll("?"))
-                .replaceAll("'?'");
-    }
-
-    public static Set<String> getParameterSet(String statement) {
-        Set<String> parameters = new TreeSet<String>();
-        Matcher m = Pattern.compile("(\\:\\[[A-Za-z0-9\\.]*\\]\\:|\\:#[A-Za-z0-9\\.]*#\\:)").matcher(statement);
-        while(m.find()) parameters.add(m.group().replaceAll("(\\:\\[|\\]\\:|\\:#|#\\:)", ""));
-        return parameters;
-    }
-
-    public static List<String> getParameterOccurences(String statement) {
-        List<String> parameters = new ArrayList<String>();
-        Matcher m = Pattern.compile("(\\:\\[[A-Za-z0-9\\.]*\\]\\:|\\:#[A-Za-z0-9\\.]*#\\:)").matcher(statement);
-        while(m.find()) parameters.add(m.group().replaceAll("(\\:\\[|\\]\\:|\\:#|#\\:)", ""));
-        return parameters;
     }
 }

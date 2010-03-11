@@ -40,11 +40,13 @@ package org.dcm4chee.dashboard.web.report.display;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Map;
 
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.dcm4chee.dashboard.model.ReportModel;
+import org.dcm4chee.dashboard.util.DatabaseUtils;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -53,14 +55,14 @@ import org.dcm4chee.dashboard.model.ReportModel;
  */
 public class DynamicDisplayPage extends WebPage {
 
-    public DynamicDisplayPage(ReportModel report, boolean displayDiagram, boolean displayTable) {
+    public DynamicDisplayPage(ReportModel report, Map<String, String> parameters, boolean displayDiagram, boolean displayTable) {
         add(new Label("title", report.getTitle()));
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(report.getCreated());
         add(new Label("date", new SimpleDateFormat("dd.MM.yyyy hh:mm").format(calendar.getTime())));
-        add(new Label("statement", report.getStatement()));
-        add(displayDiagram ? new DisplayReportDiagramPanel("diagramPanel", report) : new Label("diagramPanel", "").setVisible(false));
-        add(displayTable ? new DisplayReportTablePanel("tablePanel", report) : new Label("tablePanel", "").setVisible(false));
+        add(new Label("statement", DatabaseUtils.createSQLStatement(report.getStatement())));
+        add(displayDiagram ? new DisplayReportDiagramPanel("diagramPanel", report, parameters) : new Label("diagramPanel", "").setVisible(false));
+        add(displayTable ? new DisplayReportTablePanel("tablePanel", report, parameters) : new Label("tablePanel", "").setVisible(false));
     }
     
     class PlaceholderLink extends Link<Object> {

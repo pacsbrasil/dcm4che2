@@ -223,6 +223,7 @@ public class DashboardService extends ServiceMBeanSupport {
             BufferedWriter writer = new BufferedWriter(new FileWriter(isGroup ? this.groupFilename : this.reportFilename, true));
             JSONObject jsonObject = JSONObject.fromObject(report);
             if (isGroup) jsonObject.put("groupUuid", JSONNull.getInstance());
+            if (report.getDiagram() == null) jsonObject.put("diagram", JSONNull.getInstance());
             writer.write(jsonObject.toString());
             writer.newLine();
             writer.close();
@@ -253,7 +254,9 @@ public class DashboardService extends ServiceMBeanSupport {
                   writer.newLine();
                 } else {
                     if (!delete) {
-                        writer.write(JSONObject.fromObject(report).toString());
+                        JSONObject jsonObject = JSONObject.fromObject(report);
+                        if (report.getDiagram() == null) jsonObject.put("diagram", JSONNull.getInstance());
+                        writer.write(jsonObject.toString());
                         writer.newLine();
                     }
                 }

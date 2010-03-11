@@ -38,8 +38,6 @@
 
 package org.dcm4chee.dashboard.web.report;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,7 +63,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.model.ReportModel;
-import org.dcm4chee.dashboard.web.DashboardMainPage;
+import org.dcm4chee.dashboard.util.DatabaseUtils;
 import org.dcm4chee.dashboard.web.report.display.DynamicDisplayPage;
 import org.dcm4chee.dashboard.web.validator.ValidatorMessageLabel;
 import org.slf4j.Logger;
@@ -94,7 +92,6 @@ public class ConfigureReportPage extends WebPage {
         try {
             this.report = report;
             this.window = window;
-            
             this.diagram = diagram;
             this.table = table;
 
@@ -115,8 +112,8 @@ public class ConfigureReportPage extends WebPage {
         super.onBeforeRender();
 
         try {
-            if (!DashboardMainPage.isConfigurableStatement(this.report.getStatement()))
-                redirectToInterceptPage(new DynamicDisplayPage(this.report, this.diagram, this.table));
+            if (!DatabaseUtils.isConfigurableStatement(this.report.getStatement()))
+                redirectToInterceptPage(new DynamicDisplayPage(this.report, null, this.diagram, this.table));
             addOrReplace(new Label("page-title", new ResourceModel("dashboard.report.configure.title").wrapOnAssignment(this).getObject()));
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
@@ -130,7 +127,7 @@ public class ConfigureReportPage extends WebPage {
 
         private static final long serialVersionUID = 1L;
 
-        private Map<String, String> parameterNames = new HashMap<String, String>();
+        private Map<String, String> parameters = new HashMap<String, String>();
         
         public ConfigureReportForm(final String id, final ReportModel report, final Label resultMessage, final ModalWindow window) throws InstanceNotFoundException, MalformedObjectNameException, AttributeNotFoundException, ReflectionException, MBeanException, NullPointerException {
             super(id);
@@ -147,7 +144,7 @@ public class ConfigureReportPage extends WebPage {
             RepeatingView variableRows = new RepeatingView("variable-rows");
             add(variableRows);
 
-            for (final String parameterName : DashboardMainPage.getParameterSet(report.getStatement())) {
+            for (final String parameterName : DatabaseUtils.getParameterSet(report.getStatement())) {
 
                 TextField<String> textField;
                 variableRows.add(
@@ -159,12 +156,13 @@ public class ConfigureReportPage extends WebPage {
 
                             @Override
                             public void setObject(String value) {
-                                parameterNames.put(parameterName, value != null ? value : "");
+                                parameters.put(parameterName, value != null ? value : "");
                             }                            
-                        }))
-                        .add(new DatePicker()))))
+                        })))))
                         .add(new ValidatorMessageLabel("report-variable-validator-message-label", textField).setOutputMarkupId(true))
                 );
+                if (parameterName.toString().startsWith("date"))
+                    textField.add(new DatePicker());
             }
 
             add(new AjaxFallbackButton("form-submit", ConfigureReportForm.this) {
@@ -174,17 +172,12 @@ public class ConfigureReportPage extends WebPage {
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     
                     String message = null;
-                    Connection jdbcConnection = null;
-
                     try {
                         if (report.getDataSource() == null) {
                             message = new ResourceModel("dashboard.report.configure.form.statement-test-submit.no-datasource-message").wrapOnAssignment(this.getParent()).getObject();
                             return;
                         }
-
-                        (jdbcConnection = DashboardMainPage.getDatabaseConnection(report.getDataSource().toString())).createStatement().executeQuery(configureStatement());
-                        report.setStatement(configureStatement());
-                        window.redirectToInterceptPage(new DynamicDisplayPage(report, diagram, table));
+                        window.redirectToInterceptPage(new DynamicDisplayPage(report, parameters, diagram, table));
                     } catch (Exception e) {
                       message = e.getLocalizedMessage();
                       log.debug("Exception: ", e);
@@ -195,12 +188,6 @@ public class ConfigureReportPage extends WebPage {
                           .add(new AttributeModifier("class", true, new Model<String>("message-error")))
                           .setVisible(true);
                       target.addComponent(resultMessage);
-                    } finally {
-                        try {
-                            jdbcConnection.close();
-                        } catch (SQLException ignore) {
-                        } catch (NullPointerException ignore) {
-                        }
                     }
                 }
 
@@ -209,14 +196,6 @@ public class ConfigureReportPage extends WebPage {
                     target.addComponent(form);
                 }
             });
-        }
-
-        private String configureStatement() {
-            String statement = DashboardMainPage.createSQLStatement(report.getStatement());
-            for (String parameterName : DashboardMainPage.getParameterOccurences(report.getStatement())) {
-                statement = statement.replaceFirst("\\?", parameterNames.get(parameterName));
-            }
-            return statement;
         }
     }
 }

@@ -40,7 +40,6 @@ package org.dcm4chee.dashboard.web.report;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.List;
@@ -51,6 +50,8 @@ import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
 import javax.management.MalformedObjectNameException;
 import javax.management.ReflectionException;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -70,7 +71,7 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.dashboard.model.ReportModel;
-import org.dcm4chee.dashboard.web.DashboardMainPage;
+import org.dcm4chee.dashboard.util.DatabaseUtils;
 import org.dcm4chee.dashboard.web.WicketApplication;
 import org.dcm4chee.dashboard.web.validator.ReportTitleValidator;
 import org.dcm4chee.dashboard.web.validator.SQLSelectStatementValidator;
@@ -96,8 +97,7 @@ public class CreateOrEditReportPage extends WebPage {
         super();
 
         try {
-            this.report = report;
-            if (this.report == null) this.report = new ReportModel();
+            this.report = (report == null) ? new ReportModel() : report;
             if (this.report.getGroupUuid() == null) {
                 this.report.setGroupUuid(this.report.getUuid());
                 this.report.setUuid(null);
@@ -164,7 +164,7 @@ public class CreateOrEditReportPage extends WebPage {
                     Connection jdbcConnection = null;
 
                     try {
-                        if (DashboardMainPage.isConfigurableStatement(thisReport.getStatement())) {
+                        if (DatabaseUtils.isConfigurableStatement(thisReport.getStatement())) {
                             message = new ResourceModel("dashboard.report.createoredit.form.statement-test-submit.configurable-statement-message").wrapOnAssignment(this.getParent()).getObject();
                             return;
                         }
@@ -175,7 +175,9 @@ public class CreateOrEditReportPage extends WebPage {
                             return;
                         }
 
-                        (jdbcConnection = DashboardMainPage.getDatabaseConnection(dataSourceName.toString()))
+                        (jdbcConnection = ((DataSource) (new InitialContext())
+                                .lookup(dataSourceName.toString()))
+                                .getConnection())
                         .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
                         .executeQuery(thisReport.getStatement())
                         .close();
@@ -185,8 +187,7 @@ public class CreateOrEditReportPage extends WebPage {
                     } finally {
                         try {
                             jdbcConnection.close();
-                        } catch (SQLException ignore) {
-                        } catch (NullPointerException ignore) {
+                        } catch (Exception ignore) {
                         }
                         resultMessage.setDefaultModel(new Model<String>(new ResourceModel(message == null ? "dashboard.report.createoredit.form.statement-test-submit.success-message" : 
                                                                                           "dashboard.report.createoredit.form.statement-test-submit.failure-message")
@@ -196,6 +197,11 @@ public class CreateOrEditReportPage extends WebPage {
                         .setVisible(true);
                         setResponsePage(this.getPage());
                     }
+                }
+                
+                @Override
+                protected void onError(AjaxRequestTarget target, Form<?> form) {
+                    target.addComponent(form.get("report-statement-validator-message-label"));
                 }
             });
 
