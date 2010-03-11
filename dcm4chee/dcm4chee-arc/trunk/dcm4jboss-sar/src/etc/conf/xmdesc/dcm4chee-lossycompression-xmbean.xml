@@ -96,14 +96,22 @@ JPEG Lossy compression of received images.
     setMethod="setCompressionRules">
     <description><![CDATA[Specifies compression rules for particular SOP Class, Body Part Examined, Source AE Title.
 <br>
-<br>Format: <i>sop-class-name-or-uid</i>:<i>body-part</i>:<i>source-aet</i>:<i>delay</i>:<i>quality</i>:<i>ratio</i>:<i>near</i>
+<br>Format: <i>sop-class-name-or-uid</i>:<i>body-part</i>:<i>source-aet</i>:<i>delay</i>:<i>quality</i>:<i>description</i>:<i>ratio</i>:<i>near</i>
 <br>
 <br><i>sop-class-name-or-uid</i> = the UID of the SOP class, or a string name defined in the dictionary.xml file under uids type="SOPClass"
+<br>
 <br><i>body-part</i> = Body Part Examined or '*'
+<br>
 <br><i>source-aet</i> = Source AE Title
+<br>
 <br><i>delay</i> = compression delay in minutes (##m), hours (##h) or days (##d)
+<br>
 <br><i>quality</i> = compression quality between 0 (= lowest image quality / highest compression ratio) and 1.0 (= highest quality / lowest compression ratio)
-<br><i>ratio</i> = estimated compression ratio. Only used to fill attribute (0028,2112) <i>Lossy Image Compression Ratio</i> of compressed DICOM image
+<br>
+<br><i>description</i> = description stored in attribute <i>Derivation Description (0008,2111)</i> of compressed DICOM image
+<br>
+<br><i>ratio</i> = estimated compression ratio stored in attribute <i>Lossy Image Compression Ratio (0028,2112)</i> of compressed DICOM image
+<br>
 <br><i>near</i> = maximal absolute derivation of pixel sample values by lossy compression+decompression. -1 = disables validation of compressed images 
 ]]>
     </description>
@@ -112,21 +120,21 @@ JPEG Lossy compression of received images.
     <descriptors>
       <value
         value="
-         ComputedRadiographyImageStorage:*:MOD_AET:5d:0.75:5.0:64
-         DigitalXRayImageStorageForPresentation:*:MOD_AET:5d:0.75:5.0:64
-         DigitalXRayImageStorageForProcessing:*:MOD_AET:5d:0.75:5.0:64
-         DigitalMammographyXRayImageStorageForPresentation:*:MOD_AET:5d:0.75:5.0:64
-         DigitalMammographyXRayImageStorageForProcessing:*:MOD_AET:5d:0.75:5.0:64
-         CTImageStorage:*:MOD_AET:5d:0.75:5.0:64
-         MRImageStorage:*:MOD_AET:5d:0.75:5.0:64
-         UltrasoundImageStorage:*:MOD_AET:5d:0.75:5.0:64
-         UltrasoundMultiframeImageStorage:*:MOD_AET:5d:0.75:5.0:64
-         UltrasoundImageStorageRetired:*:MOD_AET:5d:0.75:5.0:64
-         UltrasoundMultiframeImageStorageRetired:*:MOD_AET:5d:0.75:5.0:64
-         SecondaryCaptureImageStorage:*:MOD_AET:5d:0.75:5.0:64
-         XRayAngiographicImageStorage:*:MOD_AET:5d:0.75:5.0:64
-         XRayRadiofluoroscopicImageStorage:*:MOD_AET:5d:0.75:5.0:64
-         NuclearMedicineImageStorage:*:MOD_AET:5d:0.75:5.0:64
+         ComputedRadiographyImageStorage:*:MOD_AET:5d:0.75:JPEG Lossy Compression with quality=0.75:5.0:64;
+         DigitalXRayImageStorageForPresentation:*:MOD_AET:5d:0.75:JPEG Lossy Compression with quality=0.75:5.0:64;
+         DigitalXRayImageStorageForProcessing:*:MOD_AET:5d:0.75:JPEG Lossy Compression with quality=0.75:5.0:64;
+         DigitalMammographyXRayImageStorageForPresentation:*:MOD_AET:5d:0.75:JPEG Lossy Compression with quality=0.75:5.0:64;
+         DigitalMammographyXRayImageStorageForProcessing:*:MOD_AET:5d:0.75:JPEG Lossy Compression with quality=0.75:5.0:64;
+         CTImageStorage:*:MOD_AET:5d:0.75:JPEG Lossy Compression with quality=0.75:5.0:64;
+         MRImageStorage:*:MOD_AET:5d:0.75:JPEG Lossy Compression with quality=0.75:5.0:64;
+         UltrasoundImageStorage:*:MOD_AET:5d:0.75:JPEG Lossy Compression with quality=0.75:5.0:64;
+         UltrasoundMultiframeImageStorage:*:MOD_AET:5d:0.75:JPEG Lossy Compression with quality=0.75:5.0:64;
+         UltrasoundImageStorageRetired:*:MOD_AET:5d:0.75:JPEG Lossy Compression with quality=0.75:5.0:64;
+         UltrasoundMultiframeImageStorageRetired:*:MOD_AET:5d:0.75:JPEG Lossy Compression with quality=0.75:5.0:64;
+         SecondaryCaptureImageStorage:*:MOD_AET:5d:0.75:JPEG Lossy Compression with quality=0.75:5.0:64;
+         XRayAngiographicImageStorage:*:MOD_AET:5d:0.75:JPEG Lossy Compression with quality=0.75:5.0:64;
+         XRayRadiofluoroscopicImageStorage:*:MOD_AET:5d:0.75:JPEG Lossy Compression with quality=0.75:5.0:64;
+         NuclearMedicineImageStorage:*:MOD_AET:5d:0.75:JPEG Lossy Compression with quality=0.75:5.0:64;
          " />
     </descriptors>
   </attribute>
@@ -259,6 +267,10 @@ JPEG Lossy compression of received images.
       <type>float</type>
     </parameter>
     <parameter>
+      <name>derivationDescription</name>
+      <type>java.lang.String</type>
+    </parameter>
+    <parameter>
       <name>estimatedCompressionRatio</name>
       <type>float</type>
     </parameter>
@@ -291,6 +303,12 @@ JPEG Lossy compression of received images.
       <description>Compression quality in the range 0.0 - 1.0.</description>
       <name>compressionQuality</name>
       <type>float</type>
+    </parameter>
+    <parameter>
+      <description>Description stored in Derivation Description (0008,2111) of
+      compressed images.</description>
+      <name>derivationDescription</name>
+      <type>java.lang.String</type>
     </parameter>
     <parameter>
       <description>Estimated Compression Ratio stored in Lossy Image 

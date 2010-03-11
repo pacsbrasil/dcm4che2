@@ -166,13 +166,14 @@ public abstract class CompressCmd extends CodecCmd {
     private static class JpegLossy extends CompressCmd {
 
         private final float quality;
+        private final String derivationDescription;
         private final float compressionRatio;
         private final String iuid;
         private final String suid;
 
         public JpegLossy(Dataset ds, String tsuid, float quality,
-                float compressionRatio, String iuid, String suid)
-                throws CompressionFailedException {
+                String derivationDescription, float compressionRatio,
+                String iuid, String suid) throws CompressionFailedException {
             super(ds, tsuid);
             if (suid != null && iuid == null)
                 throw new IllegalArgumentException(
@@ -189,6 +190,7 @@ public abstract class CompressCmd extends CodecCmd {
                         "JPEG Lossy compression of images with overlay data" +
                         " in the Image Pixel Data not supported");
             this.quality = quality;
+            this.derivationDescription = derivationDescription;
             this.compressionRatio = compressionRatio;
             this.iuid = iuid;
             this.suid = suid;
@@ -239,8 +241,7 @@ public abstract class CompressCmd extends CodecCmd {
             if (olddesc != null) {
                 desc.append(olddesc).append("; ");
             }
-            desc.append("Lossy Compression ")
-                .append(compressionRatio).append(":1");
+            desc.append(derivationDescription);
             ds.putST(Tags.DerivationDescription, desc.toString());
         }
 
@@ -326,9 +327,9 @@ public abstract class CompressCmd extends CodecCmd {
 
     public static byte[] compressFileJPEGLossy(File inFile, File outFile,
             int[] planarConfiguration, int[] pxdataVR, float quality,
-            float estimatedCompressionRatio, float[] actualCompressionRatio,
-            String iuid, String suid, byte[] buffer, Dataset ds,
-            FileInfo fileInfo) throws Exception {
+            String derivationDescription, float estimatedCompressionRatio,
+            float[] actualCompressionRatio, String iuid, String suid,
+            byte[] buffer, Dataset ds, FileInfo fileInfo) throws Exception {
         if (suid != null && iuid == null)
             throw new IllegalArgumentException(
                     "New Series Instance UID requires new SOP Instance UID");
@@ -351,7 +352,8 @@ public abstract class CompressCmd extends CodecCmd {
                         DatasetUtils.fromByteArray(fileInfo.instAttrs, ds))));
             }
             CompressCmd compressCmd = createJPEGLossyCompressCmd(ds, quality,
-                        estimatedCompressionRatio, iuid, suid);
+                        derivationDescription, estimatedCompressionRatio,
+                        iuid, suid);
             compressCmd.coerceDataset(ds);
             String tsuid = compressCmd.getTransferSyntaxUID();
             FileMetaInfo fmi = DcmObjectFactory.getInstance()
@@ -409,13 +411,13 @@ public abstract class CompressCmd extends CodecCmd {
     }
 
     public static CompressCmd createJPEGLossyCompressCmd(Dataset ds,
-            float quality, float ratio, String iuid, String suid)
-            throws CompressionFailedException {
+            float quality, String derivationDescription, float ratio,
+            String iuid, String suid) throws CompressionFailedException {
         return new JpegLossy(ds,
                 ds.getInt(Tags.BitsAllocated, 8) > 8
                     ? UIDs.JPEGExtended 
                     : UIDs.JPEGBaseline,
-                quality, ratio, iuid, suid);
+                quality, derivationDescription, ratio, iuid, suid);
     }
 
     

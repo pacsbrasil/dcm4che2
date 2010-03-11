@@ -481,9 +481,10 @@ from the Storage SCU and on values of particular image attributes
 &lt;conditions&gt; := '<tt>[</tt>' &lt;condition&gt; {'<tt>,</tt>' &lt;condition&gt;} '<tt>]</tt>'<br><br>
 &lt;condition&gt; := &lt;attribute&gt; ['<tt>!</tt>']'<tt>=</tt>' &lt;value&gt; {'<tt>|</tt>' &lt;value&gt;}<br><br>
 &lt;attribute&gt; := '<tt>calling</tt>' | '<tt>called</tt>' | '<tt>pmi</tt>' | '<tt>cuid</tt>' | '<tt>imgtype</tt>' | '<tt>bodypart</tt>'<br><br>
-&lt;compression&gt; := 'NONE' | 'JPLL' | 'JLSL' | 'J2KR' | ('JPLY' ['<tt>(</tt>' &lt;quality&gt; '<tt>:</tt>' &lt;ratio&gt; '<tt>)</tt>'])<br><br>
+&lt;compression&gt; := 'NONE' | 'JPLL' | 'JLSL' | 'J2KR' | ('JPLY' ['<tt>(</tt>' &lt;quality&gt; '<tt>:</tt>' &lt;description&gt; '<tt>:</tt>' &lt;ratio&gt; '<tt>)</tt>'])<br><br>
 &lt;quality&gt; := used compression quality between 0.0 and 1.0, 0.75 by default.<br><br>
-&lt;ratio&gt; := estimated compression ratio documented in attribute <i>Lossy Image Compression Ratio (0028,2112)</i>, 5.0 by default.
+&lt;description&gt; :=  description stored in attribute <i>Derivation Description (0008,2111)</i>, "JPEG Lossy Compression with quality=0.75" by default.<br><br>
+&lt;ratio&gt; := estimated compression ratio stored in attribute <i>Lossy Image Compression Ratio (0028,2112)</i>, 5.0 by default.
 <p>
 <b>Supported compression modes:</b>
 <ul>

@@ -86,12 +86,15 @@ public class CompressionRules {
         final Condition condition;
         final int compression;
         final float quality;
+        final String derivationDescription;
         final float ratio;
         
-        Entry(Condition condition, int compression, float quality, float ratio) {
+        Entry(Condition condition, int compression, float quality,
+                String derivationDescription, float ratio) {
             this.condition = condition;
             this.compression = compression;
             this.quality = quality;
+            this.derivationDescription = derivationDescription;
             this.ratio = ratio;
        }
     }
@@ -109,22 +112,29 @@ public class CompressionRules {
                 int compression;
                 float quality = 0.75f;
                 float ratio = 5.f;
+                String derivationDescription = "JPEG Lossy Compression with quality=0.75";
                 if (codec.startsWith("JPLY(")) {
                     if (!codec.endsWith(")"))
                         throw new IllegalArgumentException();
                     int endQuality = codec.indexOf(':');
                     if (endQuality == -1)
                         throw new IllegalArgumentException();
+                    int endDesc = codec.indexOf(':',endQuality+1); 
+                    if (endDesc == -1)
+                        throw new IllegalArgumentException();
                     compression = JPLY;
                     quality = Float.parseFloat(codec.substring(5, endQuality));
+                    derivationDescription =
+                        codec.substring(endQuality + 1, endDesc);
                     ratio =  Float.parseFloat(
-                            codec.substring(endQuality + 1, codec.length()-1));
+                            codec.substring(endDesc + 1, codec.length()-1));
                 } else {
                     compression = Arrays.asList(CODES).indexOf(codec);
                     if (compression == -1)
                         throw new IllegalArgumentException();
                 }
-                list.add(new Entry(cond, compression, quality, ratio));
+                list.add(new Entry(cond, compression, quality, derivationDescription,
+                        ratio));
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException(tk);
             }
@@ -147,7 +157,8 @@ public class CompressionRules {
                 try {
                     return (e.compression == NONE)? null : (e.compression == JPLY) 
                             ? CompressCmd.createJPEGLossyCompressCmd(
-                                    ds, e.quality, e.ratio, null, null)
+                                    ds, e.quality, e.derivationDescription,
+                                    e.ratio, null, null)
                             : CompressCmd.createCompressCmd(
                                     ds, TSUIDS[e.compression]);
                 } catch (CompressionFailedException e1) {

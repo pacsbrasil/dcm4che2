@@ -240,11 +240,14 @@ public class LossyCompressionService extends ServiceMBeanSupport {
 
     public final void setCompressionRules(String rules) {
         this.compressionRuleList.clear();
-        if (rules == null || rules.trim().length() < 1)
+        if (rules == null || rules.trim().length() == 0)
             return;
-        StringTokenizer st = new StringTokenizer(rules, ",;\n\r\t ");
+        StringTokenizer st = new StringTokenizer(rules, ",;\n\r\t");
         while (st.hasMoreTokens()) {
-            compressionRuleList.add(new CompressionRule(st.nextToken()));
+            String tk = st.nextToken().trim();
+            if (tk.length() == 0)
+                continue;
+            compressionRuleList.add(new CompressionRule(tk));
         }
     }
 
@@ -320,15 +323,15 @@ public class LossyCompressionService extends ServiceMBeanSupport {
     }
 
     public String compressFileJPEGLossy(String inFilePath, String outFilePath,
-            float compressionQuality, float estimatedCompressionRatio,
-            boolean newSOPInstanceUID, boolean newSeriesInstanceUID)
-            throws Exception {
+            float compressionQuality, String derivationDescription,
+            float estimatedCompressionRatio, boolean newSOPInstanceUID,
+            boolean newSeriesInstanceUID) throws Exception {
         File inFile = new File(inFilePath.trim());
         File outFile = new File(outFilePath.trim());
         float[] actualCompressionRatio = new float[1];
         CompressCmd.compressFileJPEGLossy(inFile, outFile, null, null,
-                compressionQuality, estimatedCompressionRatio,
-                actualCompressionRatio,
+                compressionQuality, derivationDescription,
+                estimatedCompressionRatio, actualCompressionRatio,
                 newSOPInstanceUID ? uidGenerator.createUID() : null,
                 newSeriesInstanceUID ? uidGenerator.createUID() : null,
                 new byte[bufferSize], null, null);
@@ -351,8 +354,9 @@ public class LossyCompressionService extends ServiceMBeanSupport {
     }
 
     public String compressSeriesJPEGLossy(String seriesIUID,
-            float compressionQuality, float estimatedCompressionRatio,
-            boolean decompress, boolean archive) throws Exception {
+            float compressionQuality, String derivationDescription,
+            float estimatedCompressionRatio, boolean decompress,
+            boolean archive) throws Exception {
         byte[] buffer = new byte[bufferSize];
         int[] planarConfiguration = new int[1];
         int[] pxdataVR = new int[1];
@@ -407,8 +411,9 @@ public class LossyCompressionService extends ServiceMBeanSupport {
                     Dataset ds = DcmObjectFactory.getInstance().newDataset();
                     byte[] md5 = CompressCmd.compressFileJPEGLossy(srcFile,
                             destFile, planarConfiguration, pxdataVR,
-                            compressionQuality, estimatedCompressionRatio,
-                            pixelCompressionRatio, iuid, suid, buffer, ds,
+                            compressionQuality, derivationDescription,
+                            estimatedCompressionRatio, pixelCompressionRatio,
+                            iuid, suid, buffer, ds,
                             fileInfo);
                     fileCompressionRatio =
                         (float) srcFile.length() / destFile.length();
@@ -549,12 +554,13 @@ public class LossyCompressionService extends ServiceMBeanSupport {
         final String srcAET;
         final long delay;
         final float quality;
+        final String derivationDescription;
         final float ratio;
         final int near;
         
         public CompressionRule(String s) {
             String[] a = StringUtils.split(s, ':');
-            if (a.length != 7)
+            if (a.length != 8)
                 throw new IllegalArgumentException(s);
             uidOf(a[0]);
             cuid = a[0];
@@ -562,8 +568,9 @@ public class LossyCompressionService extends ServiceMBeanSupport {
             srcAET = a[2];
             delay = RetryIntervalls.parseInterval(a[3]);
             quality = Float.parseFloat(a[4]);
-            ratio = Float.parseFloat(a[5]);
-            near = Integer.parseInt(a[6]);
+            derivationDescription = a[5];
+            ratio = Float.parseFloat(a[6]);
+            near = Integer.parseInt(a[7]);
         }
 
         public String toString() {
@@ -572,6 +579,7 @@ public class LossyCompressionService extends ServiceMBeanSupport {
                     + ':' + srcAET
                     + ':' + RetryIntervalls.formatInterval(delay)
                     + ':' + quality
+                    + ':' + derivationDescription
                     + ':' + ratio
                     + ':' + near;
         }
@@ -655,8 +663,9 @@ public class LossyCompressionService extends ServiceMBeanSupport {
             int[] planarConfiguration = new int[1];
             int[] pxdataVR = new int[1];
             byte[] md5 = CompressCmd.compressFileJPEGLossy(srcFile, destFile,
-                    planarConfiguration, pxdataVR, rule.quality, rule.ratio,
-                    null, null, null, buffer, ds, null);
+                    planarConfiguration, pxdataVR, rule.quality,
+                    rule.derivationDescription, rule.ratio, null, null, null,
+                    buffer, ds, null);
             if (rule.near >= 0) {
                 File absTmpDir = FileUtils.resolve(tmpDir);
                 if (absTmpDir.mkdirs())
