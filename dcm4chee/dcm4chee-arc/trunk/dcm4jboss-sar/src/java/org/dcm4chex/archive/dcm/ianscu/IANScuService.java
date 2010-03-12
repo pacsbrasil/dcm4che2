@@ -72,6 +72,8 @@ import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.mbean.JMSDelegate;
@@ -578,4 +580,18 @@ public class IANScuService extends AbstractScuService implements
         schedule(null, null, null, ian);
     }
 
+    public void scheduleIANforStudy(String uid) throws Exception { 
+        schedule(null, null, null, fileSystemMgt().createIANforStudy(uid));
+    }
+
+    public void scheduleIANforSeries(String uid) throws Exception {
+        schedule(null, null, null, fileSystemMgt().createIANforSeries(uid));
+    }
+
+    static FileSystemMgt2 fileSystemMgt() throws Exception {
+        FileSystemMgt2Home home = (FileSystemMgt2Home) EJBHomeFactory
+                .getFactory().lookup(FileSystemMgt2Home.class,
+                        FileSystemMgt2Home.JNDI_NAME);
+        return home.create();
+    }
 }

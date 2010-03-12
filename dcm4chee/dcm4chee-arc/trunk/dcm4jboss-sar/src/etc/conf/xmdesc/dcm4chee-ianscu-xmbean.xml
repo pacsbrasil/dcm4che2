@@ -186,6 +186,26 @@
    <!-- Operations -->
    &defaultOperations;
    <operation impact="ACTION">
+      <description>schedule IAN for instances of specified study</description>
+      <name>scheduleIANforStudy</name>
+      <parameter>
+        <description>Study Instance UID</description>
+        <name>uid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>schedule IAN for instances of specified series</description>
+      <name>scheduleIANforSeries</name>
+      <parameter>
+        <description>Series Instance UID</description>
+        <name>uid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+   <operation impact="ACTION">
       <description>schedule random IAN for testing</description>
       <name>scheduleRandomIAN</name>
       <parameter>
