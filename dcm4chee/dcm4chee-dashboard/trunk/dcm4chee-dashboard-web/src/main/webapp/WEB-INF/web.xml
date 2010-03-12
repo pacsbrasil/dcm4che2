@@ -14,7 +14,7 @@
 	    </init-param>
 	    <init-param>
 	      <param-name>DashboardServiceName</param-name>
-	      <param-value>dcm4chee:service=DashboardService</param-value>
+	      <param-value>dcm4chee.dashboard:service=DashboardService</param-value>
 	    </init-param>
 	    <init-param>
 	      <param-name>securityDomainName</param-name>
