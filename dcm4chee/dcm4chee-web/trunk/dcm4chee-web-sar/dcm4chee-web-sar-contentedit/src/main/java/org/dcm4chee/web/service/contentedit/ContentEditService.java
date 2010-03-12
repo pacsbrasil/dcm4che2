@@ -102,7 +102,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public void setRejectionNoteCode(String code) {
-        rejectNoteCode.parse(code);
+        rejectNoteCode = new Code(code);
     }
 
     public boolean isAuditEnabled() {
