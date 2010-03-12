@@ -38,9 +38,20 @@
 
 package org.dcm4chee.dashboard.web;
 
+import java.security.Principal;
+import java.security.acl.Group;
+import java.util.Enumeration;
+
+import javax.security.auth.Subject;
+
 import org.apache.wicket.Page;
+import org.apache.wicket.authentication.AuthenticatedWebApplication;
+import org.apache.wicket.authentication.AuthenticatedWebSession;
+import org.apache.wicket.authorization.strategies.role.Roles;
+import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
+import org.dcm4chee.dashboard.web.common.AccessDeniedPage;
 import org.dcm4chee.dashboard.web.common.InternalErrorPage;
 import org.dcm4chee.dashboard.web.common.PageExpiredErrorPage;
 import org.slf4j.Logger;
@@ -51,18 +62,31 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since 14.12.2009
  */
-public class WicketApplication extends WebApplication {
+public class WicketApplication extends AuthenticatedWebApplication {
 
     private static Logger log = LoggerFactory.getLogger(WicketApplication.class);
     
     private DashboardDelegator dashboardService;
 
+    private String securityDomainName;
+    private String rolesGroupName;
     private String userRoleName;
-
     private String adminRoleName;
+
+    private String hashEncoding;
+    private String hashCharset;
+    private String hashAlgorithm;
     
     public DashboardDelegator getDashboardService() {
         return dashboardService;
+    }
+
+    public String getSecurityDomainName() {
+        return securityDomainName;
+    }
+
+    public String getRolesGroupName() {
+        return rolesGroupName;
     }
 
     public String getUserRoleName() {
@@ -77,13 +101,40 @@ public class WicketApplication extends WebApplication {
         return (WicketApplication) WebApplication.get();
     }
 
+    public void setHashEncoding(String hashEncoding) {
+        this.hashEncoding = hashEncoding;
+    }
+
+    public String getHashEncoding() {
+        return hashEncoding;
+    }
+
+    public void setHashCharset(String hashCharset) {
+        this.hashCharset = hashCharset;
+    }
+
+    public String getHashCharset() {
+        return hashCharset;
+    }
+
+    public void setHashAlgorithm(String hashAlgorithm) {
+        this.hashAlgorithm = hashAlgorithm;
+    }
+
+    public String getHashAlgorithm() {
+        return hashAlgorithm;
+    }
+
     @Override
     protected void init() {
         super.init();
         
+        getApplicationSettings().setAccessDeniedPage(AccessDeniedPage.class);
         getApplicationSettings().setInternalErrorPage(InternalErrorPage.class);
         getApplicationSettings().setPageExpiredErrorPage(PageExpiredErrorPage.class);
 
+        this.securityDomainName = getInitParameter("securityDomainName");
+        this.rolesGroupName = getInitParameter("rolesGroupName");
         this.userRoleName = getInitParameter("userRoleName");
         this.adminRoleName = getInitParameter("adminRoleName");
         
@@ -95,8 +146,41 @@ public class WicketApplication extends WebApplication {
         }
     }
 
+    public Roles getRoles(Subject subject) {
+        Roles roles = new Roles();
+        for (Principal p : subject.getPrincipals()) {
+            if ((p instanceof Group) && (rolesGroupName.equals(p.getName()))) {
+                Group g = (Group) p;
+                Enumeration<? extends Principal> members = g.members();
+                while (members.hasMoreElements()) {
+                    Principal member = members.nextElement();
+                    String name = member.getName();
+                    if (userRoleName.equals(name))
+                        roles.add(Roles.USER);
+                    if (adminRoleName.equals(name))
+                        roles.add(Roles.ADMIN);
+                }
+            }
+        }
+        return roles;
+    }
+
+    public boolean isUserOrAdminRole(String role) {
+        return userRoleName.equals(role) || adminRoleName.equals(role);
+    }
+
     @Override
     public Class<? extends Page> getHomePage() {
         return DashboardMainPage.class;
+    }
+
+    @Override
+    protected Class<? extends WebPage> getSignInPageClass() {
+        return LoginPage.class;
+    }
+
+    @Override
+    protected Class<? extends AuthenticatedWebSession> getWebSessionClass() {
+        return JaasWicketSession.class;
     }
 }

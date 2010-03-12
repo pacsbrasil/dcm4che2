@@ -17,6 +17,14 @@
 	      <param-value>dcm4chee:service=DashboardService</param-value>
 	    </init-param>
 	    <init-param>
+	      <param-name>securityDomainName</param-name>
+	      <param-value>dcm4chee</param-value>
+	    </init-param>
+	    <init-param>
+	      <param-name>rolesGroupName</param-name>
+	      <param-value>Roles</param-value>
+	    </init-param>
+	    <init-param>
 	      <param-name>userRoleName</param-name>
 	      <param-value>WebUser</param-value>
 	    </init-param>

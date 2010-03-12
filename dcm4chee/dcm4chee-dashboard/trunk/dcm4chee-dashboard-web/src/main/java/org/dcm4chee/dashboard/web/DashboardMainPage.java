@@ -42,10 +42,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.apache.wicket.PageParameters;
+import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
 import org.apache.wicket.extensions.markup.html.tabs.AbstractTab;
 import org.apache.wicket.extensions.markup.html.tabs.ITab;
 import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.web.filesystem.FileSystemPanel;
@@ -59,6 +61,7 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since 18.11.2009
  */
+@AuthorizeInstantiation({"USER","ADMIN"})
 public class DashboardMainPage extends WebPage {
     
     private static final long serialVersionUID = 1L;
@@ -67,6 +70,17 @@ public class DashboardMainPage extends WebPage {
 
     public DashboardMainPage(final PageParameters parameters) {
         try {
+            add(new Link<Object>("logout-link") {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick() {
+                    this.getSession().invalidateNow();
+                    setResponsePage(this.getApplication().getHomePage());
+                }
+            });
+
             this.add(new AjaxTabbedPanel("tabs", new ArrayList<ITab>(Arrays.asList(
                 new AbstractTab(new ResourceModel("dashboard.tabs.tab1.name").wrapOnAssignment(this)) {
                 
@@ -93,7 +107,7 @@ public class DashboardMainPage extends WebPage {
                     }
                 })))
             );
-            ((AjaxTabbedPanel) this.get(0)).setSelectedTab(((parameters != null) && parameters.containsKey("tab")) ? parameters.getInt("tab") : 0);
+            ((AjaxTabbedPanel) this.get("tabs")).setSelectedTab(((parameters != null) && parameters.containsKey("tab")) ? parameters.getInt("tab") : 0);
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
             log.debug("Exception: ", e);
