@@ -585,17 +585,31 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         return new DeleteStudyOrdersAndMaxAccessTime(orders, maxAccessTime);
     }
 
-    /**    
+    /**
      * @ejb.interface-method
      */
-    public Dataset createIAN(DeleteStudyOrder order, boolean delStudyFromDB)
+    public Dataset createIANforStudy(Long studyPk)
             throws FinderException, NoSuchStudyException {
-        StudyLocal study;
         try {
-            study = studyHome.findByPrimaryKey(order.getStudyPk());
+            return createIAN(studyHome.findByPrimaryKey(studyPk));
         } catch (ObjectNotFoundException e) {
             throw new NoSuchStudyException(e);
         }
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Dataset createIANforStudy(String uid)
+            throws FinderException, NoSuchStudyException {
+        try {
+            return createIAN(studyHome.findByStudyIuid(uid));
+        } catch (ObjectNotFoundException e) {
+            throw new NoSuchStudyException(e);
+        }
+    }
+
+    private Dataset createIAN(StudyLocal study) {
         PatientLocal pat = study.getPatient();
         Dataset ian = DcmObjectFactory.getInstance().newDataset();
         ian.putAll(pat.getAttributes(false).subSet(IAN_PAT_TAGS));
@@ -605,7 +619,6 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         HashSet ppsuids = new HashSet();
         DcmElement refSerSeq = ian.putSQ(Tags.RefSeriesSeq);
         Collection seriess = study.getSeries();
-        String fsRetrieveAet = null;//RetrieveAET from Filesystem of order. To force Type1 Attribute RetrieveAET
         for (Iterator siter = seriess.iterator(); siter.hasNext();) {
             SeriesLocal series = (SeriesLocal) siter.next();
             Dataset serAttrs = series.getAttributes(false);
@@ -625,33 +638,38 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                 refSOP.putUI(Tags.RefSOPInstanceUID, inst.getSopIuid());
                 DatasetUtils.putRetrieveAET(refSOP, inst.getRetrieveAETs(),
                         inst.getExternalRetrieveAET());
-                if ( !refSOP.containsValue(Tags.RetrieveAET)) { //check Type1
-                    if ( fsRetrieveAet == null ) {
-                        FileSystemLocal fs = fileSystemHome.findByPrimaryKey(order.getFsPk());
-                        fsRetrieveAet = fs.getRetrieveAET();
-                    }
-                    refSOP.putAE(Tags.RetrieveAET, fsRetrieveAet);
-                }
-                refSOP.putCS(Tags.InstanceAvailability, Availability.toString(
-                        delStudyFromDB ? Availability.UNAVAILABLE
-                                       : inst.getAvailabilitySafe()));
+                refSOP.putCS(Tags.InstanceAvailability,
+                        Availability.toString(inst.getAvailabilitySafe()));
              }
         }
         return ian;
     }
 
-    /**    
+    /**
      * @ejb.interface-method
      */
-    public Dataset createIAN(DeleteStudyOrder order, Long seriesPk,
-            boolean delStudyFromDB) 
+    public Dataset createIANforSeries(Long seriesPk) 
             throws FinderException, NoSuchSeriesException {
-        SeriesLocal series;
         try {
-            series = seriesHome.findByPrimaryKey(seriesPk);
+            return createIAN(seriesHome.findByPrimaryKey(seriesPk));
         } catch (ObjectNotFoundException e) {
             throw new NoSuchSeriesException(e);
         }
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Dataset createIANforSeries(String uid) 
+            throws FinderException, NoSuchSeriesException {
+        try {
+            return createIAN(seriesHome.findBySeriesIuid(uid));
+        } catch (ObjectNotFoundException e) {
+            throw new NoSuchSeriesException(e);
+        }
+    }
+
+    private Dataset createIAN(SeriesLocal series) {
         StudyLocal study = series.getStudy();
         PatientLocal pat = study.getPatient();
         Dataset ian = DcmObjectFactory.getInstance().newDataset();
@@ -661,7 +679,6 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         DcmElement refPPSSeq = ian.putSQ(Tags.RefPPSSeq);
         HashSet ppsuids = new HashSet();
         DcmElement refSerSeq = ian.putSQ(Tags.RefSeriesSeq);
-        String fsRetrieveAet = null;//RetrieveAET from Filesystem of order. To force Type1 Attribute RetrieveAET
         Dataset serAttrs = series.getAttributes(false);
         Dataset refPPS = serAttrs.getItem(Tags.RefPPSSeq);
         if (refPPS != null
@@ -679,16 +696,8 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             refSOP.putUI(Tags.RefSOPInstanceUID, inst.getSopIuid());
             DatasetUtils.putRetrieveAET(refSOP, inst.getRetrieveAETs(),
                     inst.getExternalRetrieveAET());
-            if ( !refSOP.containsValue(Tags.RetrieveAET)) { //check Type1
-                if ( fsRetrieveAet == null ) {
-                    FileSystemLocal fs = fileSystemHome.findByPrimaryKey(order.getFsPk());
-                    fsRetrieveAet = fs.getRetrieveAET();
-                }
-                refSOP.putAE(Tags.RetrieveAET, fsRetrieveAet);
-            }
-            refSOP.putCS(Tags.InstanceAvailability, Availability.toString(
-                    delStudyFromDB ? Availability.UNAVAILABLE
-                            : inst.getAvailabilitySafe()));
+            refSOP.putCS(Tags.InstanceAvailability,
+                    Availability.toString(inst.getAvailabilitySafe()));
         }
         return ian;
     }
