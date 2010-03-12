@@ -82,7 +82,7 @@ public class XDSMetadata {
     private static final String SUBMISSION_SET = "SubmissionSet";
     private static final String FOLDER_DOC_ASSOC = "FolderDocAssoc";
     private static final String TAG_ASSOCIATION = "Association";
-    private static final String DEFAULT_TIME_STRING = "010101.000";
+    private static final String DEFAULT_TIME_STRING = "010101";
     private static final String DEFAULT_DATE_STRING = "20090101";
     private static final String ATTR_CLASSIFICATION_NODE = "classificationNode";
     private static final String ATTR_NODE_REPRESENTATION = "nodeRepresentation";
@@ -499,7 +499,7 @@ public class XDSMetadata {
                 date = manifest.getString(alternateDateTag);
             }
             if (date == null ) {
-                return DEFAULT_DATE_STRING+DEFAULT_TIME_STRING;
+                return formatter.format(new Date());
             } else if (alternateTimeTag != -1){
                 time = manifest.getString(alternateTimeTag);
                 if ( time == null ) time =DEFAULT_TIME_STRING;
