@@ -641,6 +641,7 @@ public class LossyCompressionService extends ServiceMBeanSupport {
         File destFile = null;
         File uncFile = null;
         File uncFile2 = null;
+        int failureStatus = FileStatus.COMPRESS_FAILED;
         try {
             FileSystemDTO destfs =
                     fsmgt.selectStorageFileSystem(destFSGroupID);
@@ -677,6 +678,7 @@ public class LossyCompressionService extends ServiceMBeanSupport {
                         pxdataVR[0], buffer);
                 int maxDiffPixelData = FileUtils.maxDiffPixelData(srcFile, uncFile2);
                 if (maxDiffPixelData > rule.near) {
+                    failureStatus = FileStatus.VERIFY_COMPRESS_FAILED;
                     throw new CompressionFailedException(
                             "Maximal absolute derivation of pixel sample values: "
                             + maxDiffPixelData
@@ -698,11 +700,10 @@ public class LossyCompressionService extends ServiceMBeanSupport {
         } catch (Exception e) {
             log.error("Lossy Compression of " + fileDTO + " failed:", e);
             try {
-                fsMgt.setFileStatus(fileDTO.getPk(),
-                                FileStatus.COMPRESS_FAILED);
+                fsMgt.setFileStatus(fileDTO.getPk(), failureStatus);
             } catch (Exception x1) {
-                log.error("Failed to set FAILED_TO_COMPRESS for file "
-                        + srcFile);
+                log.error("Failed to set status of " + fileDTO + " to "
+                        + failureStatus);
             }
         } finally {
             if (uncFile != null)
