@@ -75,6 +75,38 @@ public class Code extends BaseEntity implements Serializable {
     // JPA definition in orm.xml
     private String codeMeaning;
 
+    public Code() {
+    }
+    
+    public Code(String c) {
+        int pos1 = c.indexOf(',');
+        int posEnd = c.indexOf(')');
+        if (c.charAt(0) != '(' || posEnd == -1 || pos1 == -1 || pos1 > posEnd) {
+            throw new IllegalArgumentException(NOT_A_CODE_STRING+c);
+        }
+        codeValue = c.substring(1,pos1).trim();
+        int pos2 = c.indexOf(',',++pos1);
+        if (pos2 == -1) {
+            throw new IllegalArgumentException(NOT_A_CODE_STRING+c);
+        }
+        int pos3 = c.indexOf(';', pos1);
+        if (pos3 == -1) {
+            codingSchemeDesignator = c.substring(pos1,pos2).trim();
+            codingSchemeVersion = null;
+        } else {
+            codingSchemeDesignator = c.substring(pos1,pos3).trim();
+            codingSchemeVersion = c.substring(++pos3, pos2).trim();
+        }
+        codeMeaning = c.substring(++pos2, posEnd).trim();
+    }
+
+    public Code(DicomObject codeItem) {
+        codeValue = codeItem.getString(Tag.CodeValue);
+        codingSchemeDesignator = codeItem.getString(Tag.CodingSchemeDesignator);
+        codingSchemeVersion = codeItem.getString(Tag.CodingSchemeVersion);
+        codeMeaning = codeItem.getString(Tag.CodeMeaning);
+    }
+
     public String getCodeValue() {
         return codeValue;
     }
@@ -102,28 +134,6 @@ public class Code extends BaseEntity implements Serializable {
         return sb.toString();
     }
     
-    public void parse(String c) {
-        int pos1 = c.indexOf(',');
-        int posEnd = c.indexOf(')');
-        if (c.charAt(0) != '(' || posEnd == -1 || pos1 == -1 || pos1 > posEnd) {
-            throw new IllegalArgumentException(NOT_A_CODE_STRING+c);
-        }
-        codeValue = c.substring(1,pos1).trim();
-        int pos2 = c.indexOf(',',++pos1);
-        if (pos2 == -1) {
-            throw new IllegalArgumentException(NOT_A_CODE_STRING+c);
-        }
-        int pos3 = c.indexOf(';', pos1);
-        if (pos3 == -1) {
-            codingSchemeDesignator = c.substring(pos1,pos2).trim();
-            codingSchemeVersion = null;
-        } else {
-            codingSchemeDesignator = c.substring(pos1,pos3).trim();
-            codingSchemeVersion = c.substring(++pos3, pos2).trim();
-        }
-        codeMeaning = c.substring(++pos2, posEnd).trim();
-    }
-
     public void setAttributes(DicomObject attrs) {
         this.codeValue = attrs.getString(Tag.CodeValue);
         this.codingSchemeDesignator = attrs
