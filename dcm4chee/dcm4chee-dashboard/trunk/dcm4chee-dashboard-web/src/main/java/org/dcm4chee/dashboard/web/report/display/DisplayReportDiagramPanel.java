@@ -94,7 +94,7 @@ public class DisplayReportDiagramPanel extends Panel {
     private static final long serialVersionUID = 1L;
 
     private static Logger log = LoggerFactory.getLogger(DisplayReportDiagramPanel.class);
-    
+
     private ReportModel report;
     private Map<String, String> parameters;
 
@@ -114,16 +114,7 @@ public class DisplayReportDiagramPanel extends Panel {
             if (report == null) throw new Exception("No report given to render diagram");
 
             jdbcConnection = DatabaseUtils.getDatabaseConnection(report.getDataSource());
-            ResultSet resultSet = null;
-            if (parameters == null)
-                resultSet = 
-                    jdbcConnection
-                    .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
-                    .executeQuery(report.getStatement());
-            else
-                resultSet = 
-                    DatabaseUtils.createPreparedStatement(jdbcConnection, report.getStatement(), parameters)
-                    .executeQuery();
+            ResultSet resultSet = DatabaseUtils.getResultSet(jdbcConnection, report.getStatement(), parameters);
             
             ResultSetMetaData metaData = resultSet.getMetaData();
             JFreeChart chart = null;

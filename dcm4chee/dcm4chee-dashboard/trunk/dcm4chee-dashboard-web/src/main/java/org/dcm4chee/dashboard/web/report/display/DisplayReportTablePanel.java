@@ -44,8 +44,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,8 +51,6 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -147,37 +143,8 @@ public class DisplayReportTablePanel extends Panel {
             node1.appendChild(node2);
             document.appendChild(node1);
 
-            ResultSet resultSet = null;
-            if (parameters == null) {
-                resultSet = 
-                    (jdbcConnection = ((DataSource) (new InitialContext())
-                            .lookup(report.getDataSource()))
-                            .getConnection())
-                .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
-                .executeQuery(report.getStatement());
-            } else {
-                PreparedStatement preparedStatement = 
-                    (jdbcConnection = ((DataSource) (new InitialContext())
-                            .lookup(report.getDataSource()))
-                            .getConnection())
-                            .prepareStatement(DatabaseUtils.createSQLStatement(report.getStatement()), ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
-                    
-                    int i = 1;
-                    for (String parameterName : DatabaseUtils.getParameterOccurences(report.getStatement())) {
-                        if (parameterName.startsWith("text"))
-                            preparedStatement.setString(i, parameters.get(parameterName));
-                        else if (parameterName.startsWith("int"))
-                            preparedStatement.setInt(i, new Integer(parameters.get(parameterName)));
-                        else if (parameterName.startsWith("float"))
-                            preparedStatement.setFloat(i, new Float(parameters.get(parameterName)));
-                        else if (parameterName.startsWith("boolean"))
-                            preparedStatement.setBoolean(i, new Boolean(parameters.get(parameterName)));
-                        else if (parameterName.startsWith("date"))
-                            preparedStatement.setDate(i, Date.valueOf(parameters.get(parameterName)));
-                        i++;
-                    }
-                    resultSet = preparedStatement.executeQuery();
-            }
+            jdbcConnection = DatabaseUtils.getDatabaseConnection(report.getDataSource());
+            ResultSet resultSet = DatabaseUtils.getResultSet(jdbcConnection, report.getStatement(), parameters);
 
             for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++)
                 columnHeaders.add(new Label(columnHeaders.newChildId(), resultSet.getMetaData().getColumnName(i)));

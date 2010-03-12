@@ -64,6 +64,21 @@ import org.apache.wicket.model.ResourceModel;
  */
 public class DatabaseUtils {
 
+    public static ResultSet getResultSet(Connection jdbcConnection, String statement, Map<String, String> parameters) throws SQLException, Exception {
+
+        ResultSet resultSet = null;
+        if (parameters == null)
+            resultSet = 
+                jdbcConnection
+                .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
+                .executeQuery(statement);
+        else
+            resultSet = 
+                DatabaseUtils.createPreparedStatement(jdbcConnection, statement, parameters)
+                .executeQuery();
+        return resultSet;
+    }
+    
     public static Connection getDatabaseConnection(String dataSourceName) {
 
         Context jndiContext = null;
@@ -82,7 +97,7 @@ public class DatabaseUtils {
         return null;
     }
     
-    public static PreparedStatement createPreparedStatement(Connection connection, String sqlStatement, Map<String, String> parameters) throws SQLException, Exception {
+    private static PreparedStatement createPreparedStatement(Connection connection, String sqlStatement, Map<String, String> parameters) throws SQLException, Exception {
         
         PreparedStatement preparedStatement = (connection.prepareStatement(createSQLStatement(sqlStatement), ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY));        
         int i = 1;
