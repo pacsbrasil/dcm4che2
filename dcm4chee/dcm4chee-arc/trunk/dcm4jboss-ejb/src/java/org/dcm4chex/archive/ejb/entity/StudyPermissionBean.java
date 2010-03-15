@@ -59,7 +59,6 @@ import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
  * @ejb.persistence table-name="study_permission"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
- * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.StudyPermissionLocal find(java.lang.String suid, java.lang.String action, java.lang.String role)"
  *             query="SELECT OBJECT(p) FROM StudyPermission AS p WHERE p.studyIuid = ?1 AND p.action = ?2 AND p.role = ?3" transaction-type="Supports"
@@ -123,7 +122,6 @@ public abstract class StudyPermissionBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public StudyPermissionDTO toDTO() {
         StudyPermissionDTO dto = new StudyPermissionDTO();

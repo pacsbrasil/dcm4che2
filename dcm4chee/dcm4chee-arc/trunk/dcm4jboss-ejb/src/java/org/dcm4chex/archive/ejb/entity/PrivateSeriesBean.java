@@ -95,7 +95,6 @@ public abstract class PrivateSeriesBean implements EntityBean {
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract Long getPk();
     public abstract void setPk(Long pk);
@@ -103,14 +102,12 @@ public abstract class PrivateSeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="priv_type"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract int getPrivateType();
     public abstract void setPrivateType(int type);
 
-    /**
+ 	/**
      * @ejb.persistence column-name="series_attrs"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract byte[] getEncodedAttributes();
     public abstract void setEncodedAttributes(byte[] bytes);
@@ -118,7 +115,6 @@ public abstract class PrivateSeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="series_iuid"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getSeriesIuid();
     public abstract void setSeriesIuid(String uid);
@@ -126,14 +122,12 @@ public abstract class PrivateSeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="src_aet"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getSourceAET();
     public abstract void setSourceAET(String aet);
     
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public Dataset getAttributes() {
         Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
@@ -160,7 +154,6 @@ public abstract class PrivateSeriesBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.relation name="priv-study-series" role-name="priv-series-of-study" cascade-delete="yes"
      * @jboss.relation fk-column="study_fk" related-pk-field="pk"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract PrivateStudyLocal getStudy();
     public abstract void setStudy(PrivateStudyLocal study);

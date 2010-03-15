@@ -56,7 +56,6 @@ import org.dcm4chex.archive.ejb.conf.AttributeFilter;
  * @ejb.persistence table-name="verify_observer"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
- * @jboss.method-attributes pattern="get*" read-only="true"
  */
 public abstract class VerifyingObserverBean implements EntityBean {
 

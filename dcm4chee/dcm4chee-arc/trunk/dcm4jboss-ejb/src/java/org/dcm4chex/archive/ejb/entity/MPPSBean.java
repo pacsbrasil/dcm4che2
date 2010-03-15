@@ -130,7 +130,6 @@ public abstract class MPPSBean implements EntityBean {
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
      * 
-     * @jboss.method-attributes read-only="true"
      */
     public abstract Long getPk();
 
@@ -139,7 +138,6 @@ public abstract class MPPSBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="created_time"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract java.sql.Timestamp getCreatedTime();
 
@@ -148,7 +146,6 @@ public abstract class MPPSBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="updated_time"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract java.sql.Timestamp getUpdatedTime();
 
@@ -159,7 +156,6 @@ public abstract class MPPSBean implements EntityBean {
      * 
      * @ejb.persistence column-name="mpps_iuid"
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getSopIuid();
 
@@ -170,7 +166,6 @@ public abstract class MPPSBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.persistence column-name="pps_start"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract java.sql.Timestamp getPpsStartDateTime();
     public abstract void setPpsStartDateTime(java.sql.Timestamp dateTime);
@@ -188,7 +183,6 @@ public abstract class MPPSBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.persistence column-name="station_aet"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getPerformedStationAET();
     public abstract void setPerformedStationAET(String aet);
@@ -198,7 +192,6 @@ public abstract class MPPSBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.persistence column-name="modality"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getModality();
     public abstract void setModality(String md);
@@ -208,7 +201,6 @@ public abstract class MPPSBean implements EntityBean {
      *
      * @ejb.interface-method
      * @ejb.persistence column-name="accession_no"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getAccessionNumber();
     public abstract void setAccessionNumber(String md);
@@ -217,7 +209,6 @@ public abstract class MPPSBean implements EntityBean {
      * MPPS Status
      * 
      * @ejb.persistence column-name="mpps_status"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract int getPpsStatusAsInt();
 
@@ -227,7 +218,6 @@ public abstract class MPPSBean implements EntityBean {
      * MPPS DICOM Attributes
      * 
      * @ejb.persistence column-name="mpps_attrs"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract byte[] getEncodedAttributes();
 
@@ -245,7 +235,6 @@ public abstract class MPPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method view-type="local"
-     * @jboss.method-attributes read-only="true"
      * 
      * @return patient of this mpps
      */
@@ -273,7 +262,6 @@ public abstract class MPPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method view-type="local"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract CodeLocal getDrCode();
 
@@ -306,7 +294,6 @@ public abstract class MPPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public boolean isInProgress() {
         return getPpsStatusAsInt() == PPSStatus.IN_PROGRESS;
@@ -314,7 +301,6 @@ public abstract class MPPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public boolean isCompleted() {
         return getPpsStatusAsInt() == PPSStatus.COMPLETED;
@@ -322,7 +308,6 @@ public abstract class MPPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public boolean isDiscontinued() {
         return getPpsStatusAsInt() == PPSStatus.DISCONTINUED;
@@ -330,7 +315,6 @@ public abstract class MPPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public String getPpsStatus() {
         return PPSStatus.toString(getPpsStatusAsInt());
@@ -342,7 +326,6 @@ public abstract class MPPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public String asString() {
         return "MPPS[pk=" + getPk() + ", iuid=" + getSopIuid() + ", status="
@@ -351,7 +334,6 @@ public abstract class MPPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public Dataset getAttributes() {
         return DatasetUtils.fromByteArray(getEncodedAttributes());
@@ -385,7 +367,6 @@ public abstract class MPPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public boolean isIncorrectWorklistEntrySelected() {
         CodeLocal drcode = getDrCode();

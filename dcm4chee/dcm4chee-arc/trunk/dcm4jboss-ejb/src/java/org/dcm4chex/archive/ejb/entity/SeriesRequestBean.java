@@ -60,7 +60,6 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  * @ejb.persistence table-name="series_req"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
- * @jboss.method-attributes pattern="get*" read-only="true"
  */
 
 public abstract class SeriesRequestBean implements EntityBean {

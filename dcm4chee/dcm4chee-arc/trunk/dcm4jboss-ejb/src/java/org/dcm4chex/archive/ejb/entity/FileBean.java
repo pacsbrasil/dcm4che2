@@ -59,7 +59,6 @@ import org.dcm4chex.archive.ejb.interfaces.MD5;
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
  * @jboss.audit-created-time field-name="createdTime"
- * @jboss.method-attributes pattern="get*" read-only="true"
  * 
  * @ejb.finder signature="java.util.Collection findFilesToCompress(long fspk, java.lang.String cuid, java.sql.Timestamp before, int limit)"
  *             query="" transaction-type="Supports"
@@ -257,7 +256,6 @@ public abstract class FileBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public boolean isRedundant() {
         InstanceLocal inst = getInstance();
@@ -293,7 +291,6 @@ public abstract class FileBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public String asString() {
         return prompt();

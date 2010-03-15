@@ -209,7 +209,6 @@ public abstract class GPSPSBean implements EntityBean {
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract Long getPk();
 
@@ -218,7 +217,6 @@ public abstract class GPSPSBean implements EntityBean {
     /**
      * @ejb.persistence column-name="gpsps_iuid"
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getSopIuid();
 
@@ -227,7 +225,6 @@ public abstract class GPSPSBean implements EntityBean {
     /**
      * @ejb.persistence column-name="gpsps_tuid"
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getTransactionUid();
 
@@ -239,7 +236,6 @@ public abstract class GPSPSBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="start_datetime"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract java.sql.Timestamp getSpsStartDateTime();
     public abstract void setSpsStartDateTime(java.sql.Timestamp dateTime);
@@ -247,7 +243,6 @@ public abstract class GPSPSBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="end_datetime"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract java.sql.Timestamp getExpectedCompletionDateTime();
     public abstract void setExpectedCompletionDateTime(java.sql.Timestamp time);
@@ -255,14 +250,12 @@ public abstract class GPSPSBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="gpsps_status"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract int getGpspsStatusAsInt();
     public abstract void setGpspsStatusAsInt(int status);
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public String getGpspsStatus() {
         return GPSPSStatus.toString(getGpspsStatusAsInt());
@@ -274,7 +267,6 @@ public abstract class GPSPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public boolean isScheduled() {
         return getGpspsStatusAsInt() == GPSPSStatus.SCHEDULED;
@@ -282,7 +274,6 @@ public abstract class GPSPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public boolean isInProgress() {
         return getGpspsStatusAsInt() == GPSPSStatus.IN_PROGRESS;
@@ -290,7 +281,6 @@ public abstract class GPSPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public boolean isSuspended() {
         return getGpspsStatusAsInt() == GPSPSStatus.SUSPENDED;
@@ -298,7 +288,6 @@ public abstract class GPSPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public boolean isCompleted() {
         return getGpspsStatusAsInt() == GPSPSStatus.COMPLETED;
@@ -306,7 +295,6 @@ public abstract class GPSPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public boolean isDiscontinued() {
         return getGpspsStatusAsInt() == GPSPSStatus.DISCONTINUED;
@@ -314,7 +302,6 @@ public abstract class GPSPSBean implements EntityBean {
     
     /**
      * @ejb.persistence column-name="gpsps_prior"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract int getGpspsPriorityAsInt();
 
@@ -322,7 +309,6 @@ public abstract class GPSPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public String getGpspsPriority() {
         return GPSPSPriority.toString(getGpspsPriorityAsInt());
@@ -334,7 +320,6 @@ public abstract class GPSPSBean implements EntityBean {
 
     /**
      * @ejb.persistence column-name="in_availability"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract int getInputAvailabilityFlagAsInt();
 
@@ -342,7 +327,6 @@ public abstract class GPSPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public String getInputAvailabilityFlag() {
         return InputAvailabilityFlag.toString(getInputAvailabilityFlagAsInt());
@@ -354,7 +338,6 @@ public abstract class GPSPSBean implements EntityBean {
 
     /**
      * @ejb.persistence column-name="item_attrs"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract byte[] getEncodedAttributes();
 
@@ -370,7 +353,6 @@ public abstract class GPSPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method view-type="local"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract PatientLocal getPatient();
 
@@ -392,7 +374,6 @@ public abstract class GPSPSBean implements EntityBean {
      *               target-ejb="Code" target-role-name="workitemcode-of-gpsps"
      *               target-multiple="yes"
      * @jboss.relation fk-column="code_fk" related-pk-field="pk"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract CodeLocal getScheduledWorkItemCode();
     public abstract void setScheduledWorkItemCode(CodeLocal code);
@@ -457,7 +438,6 @@ public abstract class GPSPSBean implements EntityBean {
     
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public Dataset getAttributes() {
         return DatasetUtils.fromByteArray(getEncodedAttributes());
@@ -480,7 +460,6 @@ public abstract class GPSPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public String asString() {
         return prompt();

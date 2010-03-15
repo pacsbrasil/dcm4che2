@@ -186,7 +186,6 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract Long getPk();
 
@@ -195,7 +194,6 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="created_time"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract java.sql.Timestamp getCreatedTime();
 
@@ -204,7 +202,6 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="updated_time"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract java.sql.Timestamp getUpdatedTime();
 
@@ -214,7 +211,6 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.persistence column-name="sop_iuid"
      * @jboss.load-group name="most"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getSopIuid();
 
@@ -224,7 +220,6 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.persistence column-name="sop_cuid"
      * @jboss.load-group name="most"
-     * @jboss.method-attributes read-only="true"
      * 
      */
     public abstract String getSopCuid();
@@ -234,7 +229,6 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="inst_no"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getInstanceNumber();
 
@@ -243,7 +237,6 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="content_datetime"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract java.sql.Timestamp getContentDateTime();
 
@@ -257,7 +250,6 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="sr_complete"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getSrCompletionFlag();
 
@@ -266,7 +258,6 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="sr_verified"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getSrVerificationFlag();
 
@@ -275,7 +266,6 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="inst_custom1"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getInstanceCustomAttribute1();
 
@@ -283,7 +273,6 @@ public abstract class InstanceBean implements EntityBean {
 
     /**
      * @ejb.persistence column-name="inst_custom2"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getInstanceCustomAttribute2();
 
@@ -291,7 +280,6 @@ public abstract class InstanceBean implements EntityBean {
 
     /**
      * @ejb.persistence column-name="inst_custom3"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getInstanceCustomAttribute3();
 
@@ -299,7 +287,6 @@ public abstract class InstanceBean implements EntityBean {
 
     /**
      * @ejb.persistence column-name="inst_attrs"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract byte[] getEncodedAttributes();
 
@@ -309,7 +296,6 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.persistence column-name="ext_retr_aet"
      * @jboss.load-group name="most"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getExternalRetrieveAET();
 
@@ -322,7 +308,6 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.persistence column-name="retrieve_aets"
      * @jboss.load-group name="most"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getRetrieveAETs();
 
@@ -331,13 +316,11 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.persistence column-name="availability"
      * @jboss.load-group name="most"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract int getAvailability();
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public int getAvailabilitySafe() {
         try {
@@ -355,7 +338,6 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="inst_status"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract int getInstanceStatus();
 
@@ -366,7 +348,6 @@ public abstract class InstanceBean implements EntityBean {
 
     /**
      * @ejb.persistence column-name="all_attrs"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract boolean getAllAttributes();
 
@@ -377,13 +358,11 @@ public abstract class InstanceBean implements EntityBean {
 
     /**
      * @ejb.persistence column-name="commitment"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract boolean getCommitment();
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public boolean getCommitmentSafe() {
         try {
@@ -412,7 +391,6 @@ public abstract class InstanceBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      * 
      * @return series of this series
      */
@@ -434,7 +412,6 @@ public abstract class InstanceBean implements EntityBean {
      * @jboss.relation fk-column="media_fk" related-pk-field="pk"
      * 
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public abstract MediaLocal getMedia();
 
@@ -456,7 +433,6 @@ public abstract class InstanceBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      * 
      * @return code of SR title
      */
@@ -658,7 +634,6 @@ public abstract class InstanceBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public Dataset getAttributes(boolean supplement) {
         Dataset ds;
@@ -865,7 +840,6 @@ public abstract class InstanceBean implements EntityBean {
     /**
      * 
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public String asString() {
         return prompt();

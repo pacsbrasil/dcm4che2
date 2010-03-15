@@ -147,7 +147,7 @@ public abstract class HPDefinitionBean implements EntityBean {
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
-     * @jboss.method-attributes read-only="true"
+     *  
      */
     public abstract Long getPk();
 
@@ -162,14 +162,12 @@ public abstract class HPDefinitionBean implements EntityBean {
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public abstract HPLocal getHP();
 	
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="modality"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getModality();
 
@@ -178,7 +176,6 @@ public abstract class HPDefinitionBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="laterality"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getLaterality();
 
