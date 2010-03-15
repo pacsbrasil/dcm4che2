@@ -165,7 +165,6 @@ public abstract class FileSystemBean implements EntityBean {
     
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public int countFiles() throws FinderException {
         return ejbSelectNumberOfFiles(getPk());
@@ -214,7 +213,6 @@ public abstract class FileSystemBean implements EntityBean {
     
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public int countPrivateFiles() throws FinderException {
         return ejbSelectNumberOfPrivateFiles(getPk());
@@ -222,7 +220,6 @@ public abstract class FileSystemBean implements EntityBean {
     
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */ 
     public String asString() {
         StringBuilder sb = new StringBuilder();
@@ -247,7 +244,6 @@ public abstract class FileSystemBean implements EntityBean {
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
-     * @jboss.method-attributes read-only="true"
      *
      */
     public abstract Long getPk();
@@ -257,7 +253,6 @@ public abstract class FileSystemBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="dirpath"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getDirectoryPath();
 
@@ -269,7 +264,6 @@ public abstract class FileSystemBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="fs_group_id"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getGroupID();
 
@@ -281,7 +275,6 @@ public abstract class FileSystemBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="retrieve_aet"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getRetrieveAET();
 
@@ -293,7 +286,6 @@ public abstract class FileSystemBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="availability"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract int getAvailability();
 
@@ -304,7 +296,6 @@ public abstract class FileSystemBean implements EntityBean {
     
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public int getAvailabilitySafe() {
         try {
@@ -317,7 +308,6 @@ public abstract class FileSystemBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="fs_status"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract int getStatus();
 
@@ -329,7 +319,6 @@ public abstract class FileSystemBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="user_info"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getUserInfo();
 
@@ -345,7 +334,6 @@ public abstract class FileSystemBean implements EntityBean {
      *    role-name="prev-filesystem"
      *
      * @jboss.relation fk-column="next_fk" related-pk-field="pk"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract FileSystemLocal getNextFileSystem();
 
@@ -379,7 +367,6 @@ public abstract class FileSystemBean implements EntityBean {
     }
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public FileSystemDTO toDTO() {
         FileSystemDTO dto = new FileSystemDTO();

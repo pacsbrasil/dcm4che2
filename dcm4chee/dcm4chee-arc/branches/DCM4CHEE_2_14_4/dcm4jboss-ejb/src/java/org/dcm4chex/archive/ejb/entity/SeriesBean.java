@@ -191,7 +191,6 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract Long getPk();
     public abstract void setPk(Long pk);
@@ -199,7 +198,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="created_time"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract java.sql.Timestamp getCreatedTime();
     public abstract void setCreatedTime(java.sql.Timestamp time);
@@ -207,7 +205,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="updated_time"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract java.sql.Timestamp getUpdatedTime();
     public abstract void setUpdatedTime(java.sql.Timestamp time);
@@ -215,7 +212,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="series_iuid"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getSeriesIuid();
     public abstract void setSeriesIuid(String uid);
@@ -223,7 +219,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="series_no"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getSeriesNumber();
     public abstract void setSeriesNumber(String no);
@@ -231,7 +226,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="modality"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getModality();
     public abstract void setModality(String md);
@@ -239,7 +233,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="body_part"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getBodyPartExamined();
     public abstract void setBodyPartExamined(String bodyPart);
@@ -247,7 +240,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="laterality"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getLaterality();
     public abstract void setLaterality(String laterality);
@@ -255,7 +247,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="series_desc"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getSeriesDescription();
     public abstract void setSeriesDescription(String description);
@@ -263,7 +254,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="department"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getInstitutionalDepartmentName();
     public abstract void setInstitutionalDepartmentName(String name);
@@ -271,7 +261,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="institution"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getInstitutionName();
     public abstract void setInstitutionName(String name);
@@ -279,7 +268,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="station_name"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getStationName();
     public abstract void setStationName(String name);
@@ -305,7 +293,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="pps_start"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract java.sql.Timestamp getPpsStartDateTime();
     public abstract void setPpsStartDateTime(java.sql.Timestamp datetime);
@@ -319,7 +306,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="pps_iuid"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getPpsIuid();
     public abstract void setPpsIuid(String uid);
@@ -327,7 +313,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="series_custom1"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getSeriesCustomAttribute1();
     public abstract void setSeriesCustomAttribute1(String value);
@@ -335,7 +320,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="series_custom2"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getSeriesCustomAttribute2();
     public abstract void setSeriesCustomAttribute2(String value);
@@ -343,7 +327,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="series_custom3"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getSeriesCustomAttribute3();
     public abstract void setSeriesCustomAttribute3(String value);
@@ -351,7 +334,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="num_instances"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract int getNumberOfSeriesRelatedInstances();
     public abstract void setNumberOfSeriesRelatedInstances(int num);
@@ -365,7 +347,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="fileset_iuid"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getFilesetIuid();
     public abstract void setFilesetIuid(String iuid);
@@ -373,7 +354,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="fileset_id"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getFilesetId();
     public abstract void setFilesetId(String id);
@@ -381,7 +361,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="src_aet"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getSourceAET();
     public abstract void setSourceAET(String aet);
@@ -389,7 +368,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="ext_retr_aet"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getExternalRetrieveAET();
 
@@ -401,7 +379,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="retrieve_aets"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getRetrieveAETs();
 
@@ -409,13 +386,11 @@ public abstract class SeriesBean implements EntityBean {
 
     /**
      * @ejb.persistence column-name="availability"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract int getAvailability();
 
     /**
      * @ejb.interface-method
-     * @jboss.method-attributes read-only="true"
      */
     public int getAvailabilitySafe() {
         try {
@@ -430,7 +405,6 @@ public abstract class SeriesBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="series_status"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract int getSeriesStatus();
 
@@ -444,7 +418,6 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.relation name="study-series" role-name="series-of-study"
      *               cascade-delete="yes"
      * @jboss.relation fk-column="study_fk" related-pk-field="pk"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract StudyLocal getStudy();
 	
@@ -457,7 +430,6 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.relation name="mpps-series" role-name="series-of-mpps"
      * @jboss.relation fk-column="mpps_fk" related-pk-field="pk"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract MPPSLocal getMpps();
     public abstract void setMpps(MPPSLocal mpps);

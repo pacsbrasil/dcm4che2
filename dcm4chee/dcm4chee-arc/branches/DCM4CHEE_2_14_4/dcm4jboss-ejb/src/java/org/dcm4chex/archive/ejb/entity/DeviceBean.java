@@ -120,8 +120,6 @@ public abstract class DeviceBean implements EntityBean {
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
-     * @jboss.method-attributes read-only="true"
-     *  
      */
     public abstract Long getPk();
 
@@ -130,7 +128,6 @@ public abstract class DeviceBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="station_name"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getStationName();
     public abstract void setStationName(String stationName);
@@ -138,7 +135,6 @@ public abstract class DeviceBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="station_aet"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getStationAET();
     public abstract void setStationAET(String aet);
@@ -146,7 +142,6 @@ public abstract class DeviceBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="modality"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getModality();
     public abstract void setModality(String md);

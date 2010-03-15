@@ -90,7 +90,6 @@ public abstract class PrivatePatientBean implements EntityBean {
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract Long getPk();
     public abstract void setPk(Long pk);
@@ -98,7 +97,6 @@ public abstract class PrivatePatientBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="priv_type"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract int getPrivateType();
     public abstract void setPrivateType(int type);
@@ -106,7 +104,6 @@ public abstract class PrivatePatientBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_id"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getPatientId();
     public abstract void setPatientId(String pid);
@@ -114,7 +111,6 @@ public abstract class PrivatePatientBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_id_issuer"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getIssuerOfPatientId();
     public abstract void setIssuerOfPatientId(String issuer);
@@ -123,14 +119,12 @@ public abstract class PrivatePatientBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_name"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getPatientName();
     public abstract void setPatientName(String name);
     
    /**
      * @ejb.persistence column-name="pat_attrs"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract byte[] getEncodedAttributes();
     public abstract void setEncodedAttributes(byte[] bytes);

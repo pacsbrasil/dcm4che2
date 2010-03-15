@@ -111,8 +111,6 @@ public abstract class MediaBean implements EntityBean {
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
-     *  
-     * @jboss.method-attributes read-only="true"
      */
     public abstract Long getPk();
 
@@ -122,7 +120,6 @@ public abstract class MediaBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.persistence
      *  column-name="created_time"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract java.sql.Timestamp getCreatedTime();
 
@@ -132,7 +129,6 @@ public abstract class MediaBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.persistence
      *  column-name="updated_time"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract java.sql.Timestamp getUpdatedTime();
 
@@ -141,7 +137,6 @@ public abstract class MediaBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="fileset_id"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getFilesetId();
 
@@ -153,7 +148,6 @@ public abstract class MediaBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="fileset_iuid"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getFilesetIuid();
 
@@ -162,7 +156,6 @@ public abstract class MediaBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="media_rq_iuid"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getMediaCreationRequestIuid();
 
@@ -174,7 +167,6 @@ public abstract class MediaBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="media_usage"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract long getMediaUsage();
 
@@ -186,7 +178,6 @@ public abstract class MediaBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="media_status"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract int getMediaStatus();
 
@@ -198,7 +189,6 @@ public abstract class MediaBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="media_status_info"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getMediaStatusInfo();
 

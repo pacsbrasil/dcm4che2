@@ -128,7 +128,6 @@ public abstract class OtherPatientIDBean implements EntityBean {
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract Long getPk();
     public abstract void setPk(Long pk);
@@ -136,7 +135,6 @@ public abstract class OtherPatientIDBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_id"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getPatientId();
     public abstract void setPatientId(String pid);
@@ -144,7 +142,6 @@ public abstract class OtherPatientIDBean implements EntityBean {
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_id_issuer"
-     * @jboss.method-attributes read-only="true"
      */
     public abstract String getIssuerOfPatientId();
     public abstract void setIssuerOfPatientId(String issuer);
