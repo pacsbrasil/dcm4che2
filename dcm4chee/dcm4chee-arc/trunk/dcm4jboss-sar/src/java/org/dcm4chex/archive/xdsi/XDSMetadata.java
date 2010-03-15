@@ -233,8 +233,13 @@ public class XDSMetadata {
         if ( newFolder ) {
             addObjectRef(UUID.XDSFolder); 
             addObjectRef(UUID.XDSFolder_uniqueId); 
-            addObjectRef(UUID.XDSFolder_patientId); 
-            addObjectRef(UUID.XDSFolder_codeList); 
+            addObjectRef(UUID.XDSFolder_patientId);
+            
+            log.warn("Compile override for [#DCMEE-1390] 1 of 2");
+            /* Compile workaround for  [#DCMEE-1390].  Commented out problem code. 
+             * addObjectRef(UUID.XDSFolder_codeList);
+             */ 
+            
             addClassification("Folder", UUID.XDSFolder);
         }
         String title;
@@ -655,10 +660,15 @@ public class XDSMetadata {
         addExternalIdentifier(UUID.XDSFolder_uniqueId,"XDSFolder.uniqueId", uniqueId);
         addExternalIdentifier(UUID.XDSFolder_patientId,"XDSFolder.patientId", 
                 mdValues.getProperty("xadPatientID"));
-        addClassification(UUID.XDSFolder_codeList, uniqueId, 
+        
+        log.warn("Compile override for [#DCMEE-1390] 2 of 2");
+        /* Compile workaround for  [#DCMEE-1390].  Commented out problem code. 
+         * addClassification(UUID.XDSFolder_codeList, uniqueId, 
                 mdValues.getProperty("folderCode","default"),
                 mdValues.getProperty("folderCodeDN","default folderCodes"),
                 mdValues.getProperty("folderCodeCodingSchemeOID","Connect-a-thon folderCodes"));
+        */
+        
     }
     /**
      * @param property
