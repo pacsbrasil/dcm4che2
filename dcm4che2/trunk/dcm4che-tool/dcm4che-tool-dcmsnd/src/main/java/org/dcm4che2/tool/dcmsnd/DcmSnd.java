@@ -95,7 +95,7 @@ import org.dcm4che2.util.UIDUtils;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date::            $
  * @since Oct 13, 2005
  */
 public class DcmSnd extends StorageCommitmentService {
@@ -107,7 +107,7 @@ public class DcmSnd extends StorageCommitmentService {
     private static final int PEEK_LEN = 1024;
 
     private static final String USAGE = 
-        "dcmsnd [Options] <aet>[@<host>[:<port>]] <file>|<directory>...";
+        "dcmsnd <aet>[@<host>[:<port>]] <file>|<directory>... [Options]";
 
     private static final String DESCRIPTION = 
         "\nLoad composite DICOM Object(s) from specified DICOM file(s) and send it "
@@ -123,7 +123,7 @@ public class DcmSnd extends StorageCommitmentService {
       + "OPTIONS:";
 
     private static final String EXAMPLE = 
-        "\nExample: dcmsnd -stgcmt -L DCMSND:11113 STORESCP@localhost:11112 image.dcm \n"
+        "\nExample: dcmsnd STORESCP@localhost:11112 image.dcm -stgcmt -L DCMSND:11113 \n"
       + "=> Start listening on local port 11113 for receiving Storage Commitment "
       + "results, send DICOM object image.dcm to Application Entity STORESCP, "
       + "listening on local port 11112, and request Storage Commitment in same association.";
@@ -205,6 +205,10 @@ public class DcmSnd extends StorageCommitmentService {
     private long shutdownDelay = 1000L;
     
     private DicomObject stgCmtResult;
+
+    private DicomObject coerceAttrs;
+
+    private String[] suffixUID;
 
     private String keyStoreURL = "resource:tls/test_sys_1.p12";
     
@@ -530,6 +534,22 @@ public class DcmSnd extends StorageCommitmentService {
                 "request storage commitment of (successfully) sent objects " +
                 "afterwards in same association");
         
+        OptionBuilder.withArgName("attr=value");
+        OptionBuilder.hasArgs();
+        OptionBuilder.withValueSeparator('=');
+        OptionBuilder.withDescription("Replace value of specified attribute " +
+                "with specified value in transmitted objects. attr can be " +
+                "specified by name or tag value (in hex), e.g. PatientName " +
+                "or 00100010.");
+        opts.addOption(OptionBuilder.create("set"));
+
+        OptionBuilder.withArgName("sx1[:sx2[:sx3]");
+        OptionBuilder.hasArgs();
+        OptionBuilder.withValueSeparator(':');
+        OptionBuilder.withDescription("Suffix SOP [,Series [,Study]] " +
+                "Instance UID with specified value[s] in transmitted objects.");
+        opts.addOption(OptionBuilder.create("setuid"));
+
         OptionBuilder.withArgName("maxops");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
@@ -703,6 +723,15 @@ public class DcmSnd extends StorageCommitmentService {
             } catch (Exception e) {
                 exit("illegal argument of option -stgcmtae");
             }
+        }
+        if (cl.hasOption("set")) {
+            String[] vals = cl.getOptionValues("set");
+            for (int i = 0; i < vals.length; i++, i++) {
+                dcmsnd.addCoerceAttr(Tag.toTag(vals[i]), vals[i+1]);
+            }
+        }
+        if (cl.hasOption("setuid")) {
+            dcmsnd.setSuffixUID(cl.getOptionValues("setuid"));
         }
         if (cl.hasOption("connectTO"))
             dcmsnd.setConnectTimeout(parseInt(cl.getOptionValue("connectTO"),
@@ -898,6 +927,23 @@ public class DcmSnd extends StorageCommitmentService {
         }
     }
 
+    public void addCoerceAttr(int tag, String val) {
+        if (coerceAttrs == null)
+            coerceAttrs = new BasicDicomObject();
+        if (val.length() == 0)
+            coerceAttrs.putNull(tag, null);
+        else
+            coerceAttrs.putString(tag, null, val);
+    }
+
+    public void setSuffixUID(String[] suffix) {
+        if (suffix.length > 3)
+            throw new IllegalArgumentException(
+                    "suffix.length: " + suffix.length);
+
+        this.suffixUID = suffix.length > 0 ? suffix.clone() : null;
+    }
+
     private static void promptStgCmt(DicomObject cmtrslt, float seconds) {
         System.out.println("Received Storage Commitment Result after "
                 + seconds + "s:");
@@ -1011,6 +1057,8 @@ public class DcmSnd extends StorageCommitmentService {
             System.out.print('F');
             return;
         }
+        if (suffixUID != null)
+            info.iuid = info.iuid + suffixUID[0];
         addTransferCapability(info.cuid, info.tsuid);
         files.add(info);
         System.out.print('.');
@@ -1248,7 +1296,26 @@ public class DcmSnd extends StorageCommitmentService {
 
         public void writeTo(PDVOutputStream out, String tsuid)
                 throws IOException {
-            if (tsuid.equals(info.tsuid)) {
+            if (coerceAttrs != null || suffixUID != null) {
+                DicomObject attrs;
+                DicomInputStream dis = new DicomInputStream(info.f);
+                try {
+                    dis.setHandler(new StopTagInputHandler(Tag.PixelData));
+                    attrs = dis.readDicomObject();
+                    suffixUIDs(attrs);
+                    coerceAttrs(attrs);
+                    DicomOutputStream dos = new DicomOutputStream(out);
+                    dos.writeDataset(attrs, tsuid);
+                    if (dis.tag() >= Tag.PixelData) {
+                        copyPixelData(dis, dos, out);
+                        // copy attrs after PixelData
+                        attrs = dis.readDicomObject();
+                        dos.writeDataset(attrs, tsuid);
+                    }
+                } finally {
+                    dis.close();
+                }
+            } else if (tsuid.equals(info.tsuid)) {
                 FileInputStream fis = new FileInputStream(info.f);
                 try {
                     long skip = info.fmiEndPos;
@@ -1285,6 +1352,38 @@ public class DcmSnd extends StorageCommitmentService {
             }
         }
 
+    }
+
+    private void suffixUIDs(DicomObject attrs) {
+        if (suffixUID != null) {
+            int[] uidTags = { Tag.SOPInstanceUID,
+                    Tag.SeriesInstanceUID, Tag.StudyInstanceUID };
+            for (int i = 0; i < suffixUID.length; i++)
+                attrs.putString(uidTags[i], VR.UI,
+                        attrs.getString(uidTags[i]) + suffixUID[i]);
+        }
+    }
+
+    private void coerceAttrs(DicomObject attrs) {
+        if (coerceAttrs != null)
+            coerceAttrs.copyTo(attrs);
+    }
+
+    private void copyPixelData(DicomInputStream dis, DicomOutputStream dos,
+            PDVOutputStream out) throws IOException {
+        int vallen = dis.valueLength();
+        dos.writeHeader(dis.tag(), dis.vr(), vallen);
+        if (vallen == -1) {
+            int tag;
+            do {
+                tag = dis.readHeader();
+                vallen = dis.valueLength();
+                dos.writeHeader(tag, null, vallen);
+                out.copyFrom(dis, vallen);
+            } while (tag == Tag.Item);
+        } else {
+            out.copyFrom(dis, vallen);
+        }
     }
 
     private void promptErrRSP(String prefix, int status, FileInfo info,
