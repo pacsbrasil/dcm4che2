@@ -41,9 +41,7 @@
         </description>
         <name>otherList</name>
         <type>java.lang.String</type>
-        <descriptors>
-            <value>dcm4chee.archive:service=FileSystemMgt,group=ONLINE_STORAGE</value>
-        </descriptors>
+
     </attribute>
 	<attribute access="read-write" getMethod="getPropertyList" setMethod="setPropertyList">
         <description>

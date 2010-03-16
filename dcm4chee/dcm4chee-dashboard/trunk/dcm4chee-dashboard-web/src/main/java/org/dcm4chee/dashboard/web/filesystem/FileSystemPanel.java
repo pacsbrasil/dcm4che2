@@ -229,7 +229,6 @@ public class FileSystemPanel extends Panel {
             fileSystemTreeTable.setRootLess(true);
             add(fileSystemTreeTable);
         } catch (Exception e) {
-e.printStackTrace();
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
             this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
@@ -274,7 +273,8 @@ e.printStackTrace();
             dataset.addValue(fsm.getOverallDiskSpaceLong() == 0 ? 0 : (100 * 
                     fsm.getUsedDiskSpaceLong())
                     / fsm.getOverallDiskSpaceLong(), new Integer(1), "");
-            dataset.addValue(fsm.getOverallDiskSpaceLong() == 0 ? 0 : (100 * 
+            dataset.addValue(fsm.getOverallDiskSpaceLong() == 0 ? 0 : 
+                fsm.getMinimumFreeDiskSpaceLong() == 0 ? 100 : (100 * 
                     fsm.getUsableDiskSpaceLong()
                     / fsm.getOverallDiskSpaceLong()), new Integer(2), "");
             dataset.addValue(fsm.getOverallDiskSpaceLong() == 0 ? 0 : 100, new Integer(3), "");
@@ -427,6 +427,7 @@ e.printStackTrace();
             this.daysFormatter = DecimalFormat.getInstance();
             this.daysFormatter.setMaximumFractionDigits(0);
             this.daysFormatter.setMinimumIntegerDigits(1);
+            this.daysFormatter.setGroupingUsed(false);
         }
 
         public void setDirectoryPath(String directoryPath) {

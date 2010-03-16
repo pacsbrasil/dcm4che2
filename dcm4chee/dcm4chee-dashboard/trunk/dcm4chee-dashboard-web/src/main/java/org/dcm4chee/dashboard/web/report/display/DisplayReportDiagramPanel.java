@@ -224,7 +224,7 @@ public class DisplayReportDiagramPanel extends Panel {
                         public void respond(RequestCycle requestCycle) {
 
                             WebResponse wr = (WebResponse) requestCycle.getResponse();
-                            wr.setContentType("text/html");
+                            wr.setContentType("image/png");
                             wr.setHeader( "content-disposition", "attachment;filename=diagram.png");
                     
                                 OutputStream os = wr.getOutputStream();
