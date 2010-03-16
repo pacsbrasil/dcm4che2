@@ -43,6 +43,7 @@ import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
@@ -54,9 +55,9 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
-import org.apache.wicket.protocol.http.WebRequest;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.web.DashboardMainPage;
+import org.dcm4chee.dashboard.web.JaasWicketSession;
 import org.dcm4chee.dashboard.web.WicketApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,18 +87,18 @@ public class DynamicLinkPanel extends Panel {
 
         try {
             if ((className.endsWith("CreateOrEditReportLink") || className.endsWith("RemoveLink"))
-                      && !((WebRequest) getRequest()).getHttpServletRequest().isUserInRole(((WicketApplication) getApplication()).getAdminRoleName())) {
-                          add(new Link("report-table-link") {
+                  && !((JaasWicketSession) getSession()).getRoles().hasRole(Roles.ADMIN)) {
+                add(new Link("report-table-link") {
 
-                              private static final long serialVersionUID = 1L;
+                    private static final long serialVersionUID = 1L;
 
-                              @Override
-                              public void onClick() {                               
-                              }
-                          }
-                          .add(new Image("image")));
-                          return;
-                      }
+                    @Override
+                    public void onClick() {                               
+                    }
+                }
+                .add(new Image("image")));
+                return;
+            }
 
             add((this.link = (Link<Object>) ((Class<? extends Link<Object>>) Class.forName("org.dcm4chee.dashboard.web.report.DynamicLinkPanel$" + className)).getConstructors()[0].newInstance(new Object[] {
                  this, 

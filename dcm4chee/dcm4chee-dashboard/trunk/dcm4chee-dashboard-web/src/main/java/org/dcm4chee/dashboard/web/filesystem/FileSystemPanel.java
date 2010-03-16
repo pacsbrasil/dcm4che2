@@ -229,6 +229,7 @@ public class FileSystemPanel extends Panel {
             fileSystemTreeTable.setRootLess(true);
             add(fileSystemTreeTable);
         } catch (Exception e) {
+e.printStackTrace();
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
             this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);

@@ -53,6 +53,7 @@
 	    <param-name>configuration</param-name>
 		<param-value>deployment</param-value>
 	</context-param>
+	<!--
 	<security-constraint>
         <display-name>SecurityConstraint</display-name>
         <web-resource-collection>
@@ -73,4 +74,5 @@
         <auth-method>BASIC</auth-method>
         <realm-name>Dcm4chee-realm</realm-name>
     </login-config>
+     -->
 </web-app>
