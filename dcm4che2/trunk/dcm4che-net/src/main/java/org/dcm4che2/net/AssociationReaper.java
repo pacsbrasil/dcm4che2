@@ -108,7 +108,16 @@ public class AssociationReaper {
             previous.cancel();
         }
 
-        timer.schedule(task, period, period);
+        schedule(task);
+    }
+
+    private void schedule(TimerTask task) {
+        try {
+            timer.schedule(task, period, period);
+        } catch (IllegalStateException e) {
+            timer = new Timer(true);
+            timer.schedule(task, period, period);
+        }
     }
 
     /**
