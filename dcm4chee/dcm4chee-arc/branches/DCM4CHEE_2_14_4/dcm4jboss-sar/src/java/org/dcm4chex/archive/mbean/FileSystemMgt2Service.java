@@ -528,6 +528,10 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         return FileUtils.formatSize(expectedDataVolumePerDay);
     }
 
+    public final long getExpectedDataVolumePerDayBytes() {
+        return expectedDataVolumePerDay;
+    }
+
     public final void setExpectedDataVolumePerDay(String s) {
         this.expectedDataVolumePerDay = FileUtils.parseSize(s, FileUtils.MEGA);
     }
