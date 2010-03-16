@@ -44,6 +44,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.rmi.RemoteException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -115,6 +116,7 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.logging.Logger;
+import org.jboss.util.deadlock.ApplicationDeadlockException;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -1493,7 +1495,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         String aet = null;
         FileSystemMgt2 fsMgt = getFileSystemMgt();
         try {
-            fileDTOs = fsMgt.getFilesOfInstance(sopIUID);
+            fileDTOs = getFilesOfInstance(fsMgt, sopIUID);
             if (fileDTOs.length == 0) {
                 aet = fsMgt.getExternalRetrieveAET(sopIUID);
             } else {
@@ -1511,6 +1513,27 @@ public class QueryRetrieveScpService extends AbstractScpService {
         if ( aet == null ) return null;
         AEDTO aeData = aeMgr().findByAET(aet);
         return aeData;
+    }
+
+    private FileDTO[] getFilesOfInstance(FileSystemMgt2 fsMgt, String sopIUID) 
+    throws RemoteException, FinderException {
+        try {
+            return fsMgt.getFilesOfInstance(sopIUID);
+        } catch (RemoteException ex) {
+            Throwable cause = null;
+            RemoteException rex = ex;
+            while (rex.detail != null) {
+                cause = rex.detail;
+                if (cause instanceof ApplicationDeadlockException) {
+                    log.warn("Detect Application Deadlock - retry:", cause);
+                    return fsMgt.getFilesOfInstance(sopIUID);
+                }
+                if (cause instanceof RemoteException) {
+                    rex = (RemoteException)cause;
+                }
+            }
+            throw ex;
+        }
     }
 
     public DataSource getDatasourceOfInstance(String iuid) throws Exception {
