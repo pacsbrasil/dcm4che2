@@ -63,6 +63,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 /**
  * @ejb.bean name="MWLItem" type="CMP" view-type="local"
  *  primkey-field="pk" local-jndi-name="ejb/MWLItem"
+ * @jboss.container-configuration name="Instance Per Transaction CMP 2.x EntityBean"
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="mwl_item"
  * @jboss.entity-command name="hsqldb-fetch-key"

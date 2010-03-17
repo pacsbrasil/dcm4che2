@@ -58,6 +58,7 @@ import org.dcm4chex.archive.ejb.interfaces.PrivateStudyLocal;
  * 
  * @ejb.bean name="PrivateSeries" type="CMP" view-type="local"
  *           local-jndi-name="ejb/PrivateSeries" primkey-field="pk"
+ * @jboss.container-configuration name="Instance Per Transaction CMP 2.x EntityBean"
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="priv_series"
  * @jboss.entity-command name="hsqldb-fetch-key"

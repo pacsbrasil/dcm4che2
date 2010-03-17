@@ -55,6 +55,7 @@ import org.dcm4chex.archive.ejb.interfaces.GPSPSLocal;
  * 
  * @ejb.bean name="GPSPSRequest" type="CMP" view-type="local"
  *           local-jndi-name="ejb/GPSPSRequest" primkey-field="pk"
+ * @jboss.container-configuration name="Instance Per Transaction CMP 2.x EntityBean"
  * @ejb.persistence table-name="gpsps_req"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"

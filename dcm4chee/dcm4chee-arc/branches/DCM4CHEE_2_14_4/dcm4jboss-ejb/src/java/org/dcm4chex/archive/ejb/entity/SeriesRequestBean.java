@@ -57,6 +57,7 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  * 
  * @ejb.bean name="SeriesRequest" type="CMP" view-type="local"
  *           local-jndi-name="ejb/SeriesRequest" primkey-field="pk"
+ * @jboss.container-configuration name="Instance Per Transaction CMP 2.x EntityBean"
  * @ejb.persistence table-name="series_req"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
