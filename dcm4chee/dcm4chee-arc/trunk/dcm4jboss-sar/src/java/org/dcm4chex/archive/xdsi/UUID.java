@@ -67,4 +67,5 @@ public class UUID {
     public static final String XDSFolder = "urn:uuid:d9d542f3-6cc4-48b6-8870-ea235fbc94c2";
     public static final String XDSFolder_uniqueId = "urn:uuid:75df8f67-9973-4fbe-a900-df66cefecc5a";
     public static final String XDSFolder_patientId = "urn:uuid:f64ffdf0-4b97-4e06-b79f-a52b38ec2f8a";
+    public static final String XDSFolder_codeList = "urn:uuid:1ba97051-7806-41a8-a48b-8fce7af683c5";
 }
