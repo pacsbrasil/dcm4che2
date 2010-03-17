@@ -106,7 +106,7 @@
   </target>
 
   <target name="db-dist">
-    <property name="dist.db" value="dcm4chee-${db.name}-${version}"/>
+    <property name="dist.db" value="dcm4chee-${version}-${db.name}"/>
     <property name="dist.db.config" value="${dist.db}/server/default"/>
     <zip destfile="${target.dir}/${dist.db}.zip">
       <zipfileset dir="${dcm4che14.home}" prefix="${dist.db.config}">
