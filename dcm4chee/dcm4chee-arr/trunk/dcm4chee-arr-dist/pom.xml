@@ -1,19 +1,21 @@
-<project>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>dcm4che.dcm4chee</groupId>
-    <artifactId>dcm4chee-arr</artifactId>
+    <artifactId>dcm4chee-arr-parent</artifactId>
     <version>3.0.10</version>
   </parent>
   <groupId>dcm4che.dcm4chee</groupId>
-  <artifactId>dcm4chee-arr-dist-${db}</artifactId>
+  <artifactId>dcm4chee-arr-dist</artifactId>
   <packaging>pom</packaging>
   <version>3.0.10</version>
   <name>Assemble Distribution for ARR</name>
   <dependencies>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
-      <artifactId>dcm4chee-arr-${db}</artifactId>
+      <artifactId>dcm4chee-arr</artifactId>
+      <classifier>${db}</classifier>
       <type>ear</type>
       <version>3.0.10</version>
     </dependency>
@@ -49,12 +51,11 @@
     </dependency>
   </dependencies>
   <build>
-    <finalName>dcm4chee-arr-${db}-${version}</finalName>
+    <finalName>dcm4chee-arr-${version}</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
-          <appendAssemblyId>false</appendAssemblyId>
           <descriptors>
             <descriptor>src/main/assembly/${db}/bin.xml</descriptor>
           </descriptors>

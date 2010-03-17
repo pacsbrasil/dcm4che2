@@ -1,14 +1,15 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>dcm4che.dcm4chee</groupId>
-  <artifactId>dcm4chee-arr-seam-ejb</artifactId>
-  <version>3.0.10</version>
   <parent>
     <groupId>dcm4che.dcm4chee</groupId>
-    <artifactId>dcm4chee-arr</artifactId>
+    <artifactId>dcm4chee-arr-parent</artifactId>
     <version>3.0.10</version>
   </parent>
+  <groupId>dcm4che.dcm4chee</groupId>
+  <artifactId>dcm4chee-arr-seam-ejb</artifactId>
+  <packaging>ejb</packaging>
+  <version>3.0.10</version>
   <name>Seam (EJB3) Components for ARR</name>
   <dependencies>
     <dependency>
@@ -25,7 +26,8 @@
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
-      <artifactId>dcm4chee-arr-entities-${db}</artifactId>
+      <artifactId>dcm4chee-arr-entities</artifactId>
+      <classifier>${db}</classifier>
       <version>3.0.10</version>
       <scope>provided</scope>
     </dependency>
@@ -86,10 +88,10 @@
   <build>
     <plugins>
       <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
+        <artifactId>maven-ejb-plugin</artifactId>
+        <version>2.2</version>
         <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
+          <ejbVersion>3.0</ejbVersion>
         </configuration>
       </plugin>
     </plugins>

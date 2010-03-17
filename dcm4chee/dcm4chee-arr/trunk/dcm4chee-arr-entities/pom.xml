@@ -3,12 +3,13 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>dcm4che.dcm4chee</groupId>
-    <artifactId>dcm4chee-arr</artifactId>
+    <artifactId>dcm4chee-arr-parent</artifactId>
     <version>3.0.10</version>
   </parent>
   <name>Entity EJBs for ARR</name>
   <groupId>dcm4che.dcm4chee</groupId>
-  <artifactId>dcm4chee-arr-entities-${db}</artifactId>
+  <artifactId>dcm4chee-arr-entities</artifactId>
+  <packaging>ejb</packaging>
   <version>3.0.10</version>
   <properties>
     <hibernate.hbm2ddl.auto>update</hibernate.hbm2ddl.auto>
@@ -37,10 +38,11 @@
   <build>
     <plugins>
       <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
+        <artifactId>maven-ejb-plugin</artifactId>
+        <version>2.2</version>
         <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
+          <classifier>${db}</classifier>
+          <ejbVersion>3.0</ejbVersion>
         </configuration>
       </plugin>
       <plugin>
