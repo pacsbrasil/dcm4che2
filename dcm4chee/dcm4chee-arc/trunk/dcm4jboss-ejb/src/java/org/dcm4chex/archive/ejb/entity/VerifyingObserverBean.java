@@ -53,6 +53,7 @@ import org.dcm4chex.archive.ejb.conf.AttributeFilter;
  * 
  * @ejb.bean name="VerifyingObserver" type="CMP" view-type="local"
  *           local-jndi-name="ejb/VerifyingObserver" primkey-field="pk"
+ * @jboss.container-configuration name="Instance Per Transaction CMP 2.x EntityBean"
  * @ejb.persistence table-name="verify_observer"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"

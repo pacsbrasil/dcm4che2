@@ -55,6 +55,7 @@ import org.apache.log4j.Logger;
  * 	view-type="local"
  * 	primkey-field="pk"
  * 	local-jndi-name="ejb/Device"
+ * @jboss.container-configuration name="Instance Per Transaction CMP 2.x EntityBean"
  * 
  * @ejb.transaction
  * 	type="Required"

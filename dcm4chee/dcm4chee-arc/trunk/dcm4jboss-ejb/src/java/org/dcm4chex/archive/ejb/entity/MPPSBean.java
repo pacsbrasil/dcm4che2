@@ -69,6 +69,7 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
  * 
  * @ejb.bean name="MPPS" type="CMP" view-type="local" primkey-field="pk"
  *           local-jndi-name="ejb/MPPS"
+ * @jboss.container-configuration name="Instance Per Transaction CMP 2.x EntityBean"
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="mpps"
  * @jboss.entity-command name="hsqldb-fetch-key"

@@ -55,6 +55,7 @@ import org.dcm4chex.archive.ejb.interfaces.PrivateInstanceLocal;
  * 
  * @ejb.bean name="PrivateFile" type="CMP" view-type="local" primkey-field="pk"
  * 	         local-jndi-name="ejb/PrivateFile"
+ * @jboss.container-configuration name="Instance Per Transaction CMP 2.x EntityBean"
  * @ejb.persistence table-name="priv_file"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"

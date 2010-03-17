@@ -86,6 +86,7 @@ import org.dcm4chex.archive.util.Convert;
  *
  * @ejb.bean name="Series" type="CMP" view-type="local" primkey-field="pk"
  *           local-jndi-name="ejb/Series"
+ * @jboss.container-configuration name="Instance Per Transaction CMP 2.x EntityBean"
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="series"
  * @jboss.entity-command name="hsqldb-fetch-key"

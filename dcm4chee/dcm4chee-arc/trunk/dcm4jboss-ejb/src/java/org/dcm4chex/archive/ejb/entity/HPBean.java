@@ -70,6 +70,7 @@ import org.dcm4chex.archive.ejb.interfaces.HPDefinitionLocalHome;
  * 
  * @ejb.bean name="HP" type="CMP" view-type="local"
  *           local-jndi-name="ejb/HP" primkey-field="pk"
+ * @jboss.container-configuration name="Instance Per Transaction CMP 2.x EntityBean"
  * @ejb.persistence table-name="hp"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"

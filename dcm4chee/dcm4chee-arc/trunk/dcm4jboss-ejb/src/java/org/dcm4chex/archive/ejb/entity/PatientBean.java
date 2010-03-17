@@ -79,6 +79,7 @@ import org.dcm4chex.archive.util.Convert;
 /**
  * @ejb.bean name="Patient" type="CMP" view-type="local"
  *           local-jndi-name="ejb/Patient" primkey-field="pk"
+ * @jboss.container-configuration name="Instance Per Transaction CMP 2.x EntityBean"
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="patient"
  * @jboss.load-group name="pid"

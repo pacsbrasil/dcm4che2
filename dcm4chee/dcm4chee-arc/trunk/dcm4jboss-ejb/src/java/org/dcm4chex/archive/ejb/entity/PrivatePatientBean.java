@@ -54,6 +54,7 @@ import org.dcm4chex.archive.common.DatasetUtils;
  * 
  * @ejb.bean name="PrivatePatient" type="CMP" view-type="local"
  *           local-jndi-name="ejb/PrivatePatient" primkey-field="pk"
+ * @jboss.container-configuration name="Instance Per Transaction CMP 2.x EntityBean"
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="priv_patient"
  * @jboss.entity-command name="hsqldb-fetch-key"
