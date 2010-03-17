@@ -2,7 +2,7 @@ BUILD INSTRUCTIONS FOR DCM4CHEE AUDIT RECORD REPOSITORY:
 ========================================================
 
 Beside JDK 5 or JDK 6 - which is also needed for running the Audit Record
-Repository - you also have to download and install Maven 2.0.9 from
+Repository - you also have to download and install Maven 2.2.1 from
 http://maven.apache.org/download.html for building the Audit Record Repository.
 
 If you are behind a http proxy, you have to configure Maven, to use it for
@@ -22,7 +22,7 @@ by following build task for the Audit Record Repository.
 
 After that,
 
-$ cd dcm4chee-arr-3.0.8
+$ cd dcm4chee-arr-3.0.10
 $ mvn -Ddb=<database>  install
 
 with
@@ -39,6 +39,6 @@ Finally,
 $ cd dcm4chee-arr-dist
 $ mvn -Ddb=<database> assembly:assembly
 
-will assembly the binary distribution package dcm4chee-arr-<db>-3.0.8.zip,
+will assembly the binary distribution package dcm4chee-arr-3.0.10-<db>.zip,
 including the EAR archive built before, but also dcm4che-audit-logger,
 dcm4che-audit-login and JBoss configuration files.
