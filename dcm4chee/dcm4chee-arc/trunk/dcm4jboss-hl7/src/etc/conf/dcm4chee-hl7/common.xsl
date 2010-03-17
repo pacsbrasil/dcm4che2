@@ -28,6 +28,10 @@
     </attr>
     <attr tag="{$istag}" vr="LO">
       <xsl:value-of select="string($cx/component[3]/text())"/>
+      <xsl:if test="$cx/component[3]/subcomponent[1]" >
+        <xsl:text>&amp;</xsl:text><xsl:value-of select="$cx/component[3]/subcomponent[1]"/>
+        <xsl:text>&amp;</xsl:text><xsl:value-of select="$cx/component[3]/subcomponent[2]"/>
+        </xsl:if>
     </attr>
   </xsl:template>
   <xsl:template name="ei2attr">
