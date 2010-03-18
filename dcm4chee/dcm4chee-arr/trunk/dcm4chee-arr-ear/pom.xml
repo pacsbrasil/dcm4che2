@@ -7,7 +7,7 @@
     <version>3.0.10</version>
   </parent>
   <groupId>dcm4che.dcm4chee</groupId>
-  <artifactId>dcm4chee-arr-ear</artifactId>
+  <artifactId>dcm4chee-arr</artifactId>
   <packaging>ear</packaging>
   <version>3.0.10</version>
   <name>Assemble EAR for ARR</name>
@@ -76,7 +76,6 @@
         <version>2.4.1</version>
         <configuration>
           <classifier>${db}</classifier>
-          <finalName>dcm4chee-arr-${version}</finalName>
           <workDirectory>${project.build.directory}/${project.build.finalName}-${db}</workDirectory>
           <defaultJavaBundleDir>lib</defaultJavaBundleDir>
           <modules>

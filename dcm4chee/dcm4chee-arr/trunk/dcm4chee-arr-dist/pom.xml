@@ -14,7 +14,7 @@
   <dependencies>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
-      <artifactId>dcm4chee-arr-ear</artifactId>
+      <artifactId>dcm4chee-arr</artifactId>
       <classifier>${db}</classifier>
       <type>ear</type>
       <version>3.0.10</version>
