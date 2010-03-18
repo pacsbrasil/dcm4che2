@@ -1,0 +1,11 @@
+-- Update DB from dcm4chee-2.14.x to dcm4chee-2.15.x
+
+ALTER TABLE ae ADD station_name VARCHAR(255) NULL,
+                   institution VARCHAR(255) NULL,
+                   department VARCHAR(255) NULL,
+                   installed BIT NULL,
+                   vendor_data IMAGE NULL;
+GO
+
+UPDATE ae SET installed=1;
+ALTER TABLE ae ALTER COLUMN installed BIT NOT NULL;

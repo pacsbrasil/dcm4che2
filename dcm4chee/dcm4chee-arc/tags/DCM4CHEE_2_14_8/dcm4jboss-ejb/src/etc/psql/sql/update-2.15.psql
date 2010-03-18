@@ -1,0 +1,10 @@
+-- Update DB from dcm4chee-2.14.x to dcm4chee-2.15.x
+
+ALTER TABLE ae ADD station_name TEXT,
+               ADD institution TEXT,
+               ADD department TEXT,
+               ADD installed BOOLEAN,
+               ADD vendor_data BYTEA;
+               
+UPDATE ae SET installed=true;
+ALTER TABLE ae ALTER installed SET NOT NULL;
