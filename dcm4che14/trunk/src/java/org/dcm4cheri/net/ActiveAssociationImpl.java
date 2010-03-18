@@ -173,15 +173,12 @@ final class ActiveAssociationImpl implements ActiveAssociation,
         // checkRunning();
         int msgID = rq.getCommand().getMessageID();
         int maxOps = assoc.getMaxOpsInvoked();
-        if (maxOps == 0) {
-            rspDispatcher.put(msgID, l);
-        } else
-            synchronized (rspDispatcher) {
-                while (rspDispatcher.size() >= maxOps) {
+        synchronized (rspDispatcher) {
+            if (maxOps > 0)
+                while (rspDispatcher.size() >= maxOps)
                     rspDispatcher.wait();
-                }
-                rspDispatcher.put(msgID, l);
-            }
+            rspDispatcher.put(msgID, l);
+        }
         assoc.write(rq);
     }
 
