@@ -48,7 +48,7 @@ public class TransferSyntax
             new TransferSyntax("1.2.840.10008.1.2", false, false, false, false);
 
     public static final TransferSyntax ImplicitVRBigEndian =
-            new TransferSyntax(null, false, true, false, false);
+            new TransferSyntax("1.2.840.113619.5.2", false, true, false, false);
 
     public static final TransferSyntax ExplicitVRLittleEndian =
             new TransferSyntax("1.2.840.10008.1.2.1", true, false, false, false);
@@ -70,6 +70,7 @@ public class TransferSyntax
 
     static {
         add(ImplicitVRLittleEndian);
+        add(ImplicitVRBigEndian);
         add(ExplicitVRLittleEndian);
         add(ExplicitVRBigEndian);
         add(DeflatedExplicitVRLittleEndian);
@@ -77,6 +78,13 @@ public class TransferSyntax
         add(NoPixelDataDeflate);
     }
 
+    /** 
+     * Add entry for private Transfer Syntax to be returned by {@link valueOf}.
+     * Necessary to decode DICOM Objects encoded with Private Transfer Syntax
+     * with Big Endian or/and Implicit VR encoding. 
+     * 
+     * @param ts entry for private Transfer Syntax
+     */
     public static void add(TransferSyntax ts) {
         map.put(ts.uid, ts);
     }
