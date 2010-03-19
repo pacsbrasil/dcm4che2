@@ -38,6 +38,9 @@
 
 package org.dcm4che2.data;
 
+import java.util.Hashtable;
+import java.util.Map;
+
 public class TransferSyntax
 {
 
@@ -62,36 +65,45 @@ public class TransferSyntax
     public static final TransferSyntax NoPixelDataDeflate = 
         new TransferSyntax("1.2.840.10008.1.2.4.97", true, false, true, false);
 
-    public static TransferSyntax valueOf(String uid)
-    {
-        if (uid == null)
-            throw new NullPointerException("uid");
-        if (uid.equals(ImplicitVRLittleEndian.uid))
-            return ImplicitVRLittleEndian;
-        if (uid.equals(ExplicitVRLittleEndian.uid))
-            return ExplicitVRLittleEndian;
-        if (uid.equals(ExplicitVRBigEndian.uid))
-            return ExplicitVRBigEndian;
-        if (uid.equals(DeflatedExplicitVRLittleEndian.uid))
-            return DeflatedExplicitVRLittleEndian;
-        if (uid.equals(NoPixelData.uid))
-            return NoPixelData;
-        if (uid.equals(NoPixelDataDeflate.uid))
-            return NoPixelDataDeflate;
-        return new TransferSyntax(uid, true, false, false, true);
+    private static final Map<String,TransferSyntax> map =
+            new Hashtable<String,TransferSyntax>();
+
+    static {
+        add(ImplicitVRLittleEndian);
+        add(ExplicitVRLittleEndian);
+        add(ExplicitVRBigEndian);
+        add(DeflatedExplicitVRLittleEndian);
+        add(NoPixelData);
+        add(NoPixelDataDeflate);
     }
 
-    final String uid;
+    public static void add(TransferSyntax ts) {
+        map.put(ts.uid, ts);
+    }
 
-    final boolean bigEndian;
+    public static TransferSyntax remove(String tsuid) {
+        return map.remove(tsuid);
+    }
 
-    final boolean explicitVR;
+    public static TransferSyntax valueOf(String uid) {
+        if (uid == null)
+            throw new NullPointerException("uid");
+        TransferSyntax ts = map.get(uid);
+        return ts != null ? ts 
+                : new TransferSyntax(uid, true, false, false, true);
+    }
 
-    final boolean deflated;
+    private final String uid;
 
-    final boolean encapsulated;
+    private final boolean bigEndian;
 
-    private TransferSyntax(String uid, boolean explicitVR, boolean bigEndian,
+    private final boolean explicitVR;
+
+    private final boolean deflated;
+
+    private final boolean encapsulated;
+
+    public TransferSyntax(String uid, boolean explicitVR, boolean bigEndian,
             boolean deflated, boolean encapsulated)
     {
         this.uid = uid;
