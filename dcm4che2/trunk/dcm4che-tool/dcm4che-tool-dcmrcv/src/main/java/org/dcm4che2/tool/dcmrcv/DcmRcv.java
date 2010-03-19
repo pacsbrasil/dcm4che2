@@ -240,6 +240,10 @@ public class DcmRcv extends StorageService {
 
     private char[] trustStorePassword = SECRET;
 
+    public DcmRcv() {
+        this("DCMRCV");
+    }
+
     public DcmRcv(String name) {
         super(CUIDS);
         device = new Device(name);

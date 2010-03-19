@@ -220,6 +220,10 @@ public class DcmSnd extends StorageCommitmentService {
     
     private char[] trustStorePassword = SECRET;
 
+    public DcmSnd() {
+        this("DCMSND");
+    }
+
     public DcmSnd(String name) {
         device = new Device(name);
         executor = new NewThreadExecutor(name);
