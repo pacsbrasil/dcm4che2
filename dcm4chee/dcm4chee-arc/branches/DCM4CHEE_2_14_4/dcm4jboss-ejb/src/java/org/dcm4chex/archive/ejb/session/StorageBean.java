@@ -495,16 +495,18 @@ public abstract class StorageBean implements SessionBean {
             try {
                 PatientLocal dominantPat =
                         patHome.selectPatient(pid, issuer);
-                log.info("Detect duplicate Patient Record: "
-                        + dominantPat.asString());
-                dominantPat.getStudies().addAll(priorPat.getStudies());
-                dominantPat.getMpps().addAll(priorPat.getMpps());
-                dominantPat.getMwlItems().addAll(priorPat.getMwlItems());
-                dominantPat.getGsps().addAll(priorPat.getGsps());
-                dominantPat.getGppps().addAll(priorPat.getGppps());
-                dominantPat.getMerged().addAll(priorPat.getMerged());
-                priorPat.remove();
-                return dominantPat;
+                if (!dominantPat.isIdentical(priorPat)) {
+                    log.info("Detect duplicate Patient Record: "
+                            + dominantPat.asString());
+                    dominantPat.getStudies().addAll(priorPat.getStudies());
+                    dominantPat.getMpps().addAll(priorPat.getMpps());
+                    dominantPat.getMwlItems().addAll(priorPat.getMwlItems());
+                    dominantPat.getGsps().addAll(priorPat.getGsps());
+                    dominantPat.getGppps().addAll(priorPat.getGppps());
+                    dominantPat.getMerged().addAll(priorPat.getMerged());
+                    priorPat.remove();
+                    return dominantPat;
+                }
             } catch (ObjectNotFoundException e) {}
         }
         return priorPat ;
