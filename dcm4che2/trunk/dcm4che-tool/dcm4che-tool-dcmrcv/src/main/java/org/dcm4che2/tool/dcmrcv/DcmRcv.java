@@ -50,6 +50,7 @@ import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.util.List;
 import java.util.Properties;
+import java.util.Timer;
 import java.util.concurrent.Executor;
 
 import org.apache.commons.cli.CommandLine;
@@ -61,22 +62,23 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.filecache.FileCache;
 import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4che2.net.Association;
-import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.Device;
 import org.dcm4che2.net.DicomServiceException;
+import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4che2.net.NetworkApplicationEntity;
 import org.dcm4che2.net.NetworkConnection;
 import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.PDVInputStream;
 import org.dcm4che2.net.Status;
 import org.dcm4che2.net.TransferCapability;
-import org.dcm4che2.net.service.StorageService;
 import org.dcm4che2.net.service.VerificationService;
 import org.dcm4che2.util.CloseUtils;
 import org.slf4j.Logger;
@@ -87,9 +89,11 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since Oct 13, 2005
  */
-public class DcmRcv extends StorageService {
+public class DcmRcv {
 
-    private static Logger LOG = LoggerFactory.getLogger(DcmRcv.class);
+    private static final int NO_SUCH_OBJECT_INSTANCE = 0x0112;
+
+    static Logger LOG = LoggerFactory.getLogger(DcmRcv.class);
 
     private static final int KB = 1024;
 
@@ -99,7 +103,9 @@ public class DcmRcv extends StorageService {
             + "requests. If no local IP address of the network interface is specified "
             + "connections on any/all local addresses are accepted. If <aet> is "
             + "specified, only requests with matching called AE title will be "
-            + "accepted.\n" + "Options:";
+            + "accepted. If <aet> and a storage directory is specified by option "
+            + "-dest <dir>, also Storage Commitment requests will be accepted and "
+            + "processed.\n Options:";
 
     private static final String EXAMPLE = "\nExample: dcmrcv DCMRCV:11112 -dest /tmp \n"
             + "=> Starts server listening on port 11112, accepting association "
@@ -212,6 +218,11 @@ public class DcmRcv extends StorageService {
 
     private final NetworkConnection nc = new NetworkConnection();
 
+    private final StorageSCP storageSCP = new StorageSCP(this, CUIDS);
+
+    private final StgCmtSCP stgcmtSCP =
+            new StgCmtSCP(this);
+
     private String[] tsuids = NON_RETIRED_LE_TS;
 
     private FileCache cache = new FileCache();
@@ -240,12 +251,28 @@ public class DcmRcv extends StorageService {
 
     private char[] trustStorePassword = SECRET;
 
+    private Timer stgcmtTimer;
+
+    private boolean stgcmtReuseFrom = false;
+
+    private boolean stgcmtReuseTo = false;
+
+    private int stgcmtPort = 104;
+
+    private long stgcmtDelay = 1000;
+
+    private int stgcmtRetry = 0;
+
+    private long stgcmtRetryPeriod = 60000;
+
+    private final DimseRSPHandler nEventReportRspHandler = 
+        new DimseRSPHandler();
+
     public DcmRcv() {
         this("DCMRCV");
     }
 
     public DcmRcv(String name) {
-        super(CUIDS);
         device = new Device(name);
         executor = new NewThreadExecutor(name);
         device.setNetworkApplicationEntity(ae);
@@ -253,7 +280,8 @@ public class DcmRcv extends StorageService {
         ae.setNetworkConnection(nc);
         ae.setAssociationAcceptor(true);
         ae.register(new VerificationService());
-        ae.register(this);
+        ae.register(storageSCP);
+        ae.register(stgcmtSCP);
     }
 
     public final void setAEtitle(String aet) {
@@ -308,6 +336,10 @@ public class DcmRcv extends StorageService {
         trustStoreURL = url;
     }
 
+    public final void setConnectTimeout(int connectTimeout) {
+        nc.setConnectTimeout(connectTimeout);
+    }
+
     public final void setPackPDV(boolean packPDV) {
         ae.setPackPDV(packPDV);
     }
@@ -318,6 +350,10 @@ public class DcmRcv extends StorageService {
 
     public final void setTcpNoDelay(boolean tcpNoDelay) {
         nc.setTcpNoDelay(tcpNoDelay);
+    }
+
+    public final void setAcceptTimeout(int timeout) {
+        nc.setAcceptTimeout(timeout);
     }
 
     public final void setRequestTimeout(int timeout) {
@@ -356,8 +392,65 @@ public class DcmRcv extends StorageService {
         nc.setSendBufferSize(bufferSize);
     }
 
-    public void setDimseRspDelay(int delay) {
+    public final void setDimseRspDelay(int delay) {
         rspdelay = delay;
+    }
+
+    public final int getDimseRspDelay() {
+        return rspdelay;
+    }
+
+    public final void setStgCmtReuseFrom(boolean stgcmtReuseFrom) {
+        this.stgcmtReuseFrom = stgcmtReuseFrom;
+    }
+
+    public final boolean isStgCmtReuseFrom() {
+        return stgcmtReuseFrom;
+    }
+
+    public final void setStgCmtReuseTo(boolean stgcmtReuseTo) {
+        this.stgcmtReuseTo = stgcmtReuseTo;
+    }
+
+    public final boolean isStgCmtReuseTo() {
+        return stgcmtReuseTo;
+    }
+
+    public final int getStgCmtPort() {
+        return stgcmtPort;
+    }
+
+    public final void setStgCmtPort(int stgcmtPort) {
+        this.stgcmtPort = stgcmtPort;
+    }
+
+    public final void setStgCmtDelay(long delay) {
+        this.stgcmtDelay = delay;
+    }
+
+    public final long getStgCmtDelay() {
+        return stgcmtDelay;
+    }
+
+    public final int getStgCmtRetry() {
+        return stgcmtRetry;
+    }
+
+    public final void setStgCmtRetry(int stgcmtRetry) {
+        this.stgcmtRetry = stgcmtRetry;
+    }
+
+    public final long getStgCmtRetryPeriod() {
+        return stgcmtRetryPeriod;
+    }
+
+    public final void setStgCmtRetryPeriod(long stgcmtRetryPeriod) {
+        this.stgcmtRetryPeriod = stgcmtRetryPeriod;
+    }
+
+
+    final Executor executor() {
+        return executor;
     }
 
     private static CommandLine parse(String[] args) {
@@ -485,6 +578,45 @@ public class DcmRcv extends StorageService {
         opts.addOption("native", false,
                 "accept only transfer syntax with uncompressed pixel data.");
 
+        opts.addOption("screusefrom", false,
+                "attempt to issue the Storage Commitment N-EVENT-REPORT on " +
+                "the same Association on which the N-ACTION operation was " +
+                "performed; use different Association for N-EVENT-REPORT by " +
+                "default.");
+
+        opts.addOption("screuseto", false,
+                "attempt to issue the Storage Commitment N-EVENT-REPORT on " +
+                "previous initiated Association to the Storage Commitment SCU; " +
+                "initiate new Association for N-EVENT-REPORT by default.");
+
+        OptionBuilder.withArgName("port");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "port of Storage Commitment SCU to connect to issue " +
+                "N-EVENT-REPORT on different Association; 104 by default.");
+        opts.addOption(OptionBuilder.create("scport"));
+
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "delay in ms for N-EVENT-REPORT-RQ to Storage Commitment SCU, "
+                        + "1s by default");
+        opts.addOption(OptionBuilder.create("scdelay"));
+
+        OptionBuilder.withArgName("retry");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "number of retries to issue N-EVENT-REPORT-RQ to Storage " +
+                "Commitment SCU, 0 by default");
+        opts.addOption(OptionBuilder.create("scretry"));
+
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "interval im ms between retries to issue N-EVENT-REPORT-RQ to" +
+                "Storage Commitment SCU, 60s by default");
+        opts.addOption(OptionBuilder.create("scretryperiod"));
+
         OptionBuilder.withArgName("maxops");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
@@ -496,6 +628,24 @@ public class DcmRcv extends StorageService {
                                 + "pack command and data PDV in one P-DATA-TF PDU by default.");
         opts.addOption("tcpdelay", false,
                 "set TCP_NODELAY socket option to false, true by default");
+
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "timeout in ms for TCP connect, no timeout by default");
+        opts.addOption(OptionBuilder.create("connectTO"));
+
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "timeout in ms for receiving DIMSE-RSP, 10s by default");
+        opts.addOption(OptionBuilder.create("rspTO"));
+
+        OptionBuilder.withArgName("ms");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "timeout in ms for receiving A-ASSOCIATE-AC, 5s by default");
+        opts.addOption(OptionBuilder.create("acceptTO"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
@@ -520,6 +670,7 @@ public class DcmRcv extends StorageService {
         OptionBuilder.withDescription(
                 "timeout in ms for receiving A-RELEASE-RP, 5s by default");
         opts.addOption(OptionBuilder.create("releaseTO"));
+
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
@@ -628,11 +779,41 @@ public class DcmRcv extends StorageService {
                     : NATIVE_LE_TS);
         else if (cl.hasOption("bigendian"))
             dcmrcv.setTransferSyntax(NON_RETIRED_TS);
+        dcmrcv.setStgCmtReuseFrom(cl.hasOption("screusefrom"));
+        dcmrcv.setStgCmtReuseTo(cl.hasOption("screuseto"));
+        if (cl.hasOption("scport")) {
+            dcmrcv.setStgCmtPort(parseInt(cl.getOptionValue("scport"),
+                    "illegal port number", 1, 0xffff));
+        }
+        if (cl.hasOption("scdelay"))
+            dcmrcv.setStgCmtDelay(parseInt(cl.getOptionValue("scdelay"),
+                    "illegal argument of option -scdelay", 0,
+                    Integer.MAX_VALUE));
+        if (cl.hasOption("scretry"))
+            dcmrcv.setStgCmtRetry(parseInt(cl.getOptionValue("scretry"),
+                    "illegal argument of option -scretry", 0,
+                    Integer.MAX_VALUE));
+        if (cl.hasOption("scretryperiod"))
+            dcmrcv.setStgCmtRetryPeriod(parseInt(cl.getOptionValue("scretryperiod"),
+                    "illegal argument of option -scretryperiod", 1000,
+                    Integer.MAX_VALUE));
+        if (cl.hasOption("connectTO"))
+            dcmrcv.setConnectTimeout(parseInt(cl.getOptionValue("connectTO"),
+                    "illegal argument of option -connectTO", 1,
+                    Integer.MAX_VALUE));
         if (cl.hasOption("reaper"))
             dcmrcv.setAssociationReaperPeriod(parseInt(cl
                             .getOptionValue("reaper"),
                             "illegal argument of option -reaper", 1,
                             Integer.MAX_VALUE));
+        if (cl.hasOption("rspTO"))
+            dcmrcv.setDimseRspTimeout(parseInt(cl.getOptionValue("rspTO"),
+                    "illegal argument of option -rspTO",
+                    1, Integer.MAX_VALUE));
+        if (cl.hasOption("acceptTO"))
+            dcmrcv.setAcceptTimeout(parseInt(cl.getOptionValue("acceptTO"),
+                    "illegal argument of option -acceptTO", 
+                    1, Integer.MAX_VALUE));
         if (cl.hasOption("idleTO"))
             dcmrcv.setIdleTimeout(parseInt(cl.getOptionValue("idleTO"),
                             "illegal argument of option -idleTO", 1,
@@ -742,7 +923,15 @@ public class DcmRcv extends StorageService {
     }
 
     public void initTransferCapability() {
-        TransferCapability[] tc = new TransferCapability[CUIDS.length + 1];
+        TransferCapability[] tc;
+        if (isStgcmtEnabled()) {
+            tc = new TransferCapability[CUIDS.length + 2];
+            tc[tc.length -1 ] = new TransferCapability(
+                    UID.StorageCommitmentPushModelSOPClass, ONLY_DEF_TS,
+                    TransferCapability.SCP);
+        } else {
+            tc = new TransferCapability[CUIDS.length + 1];
+        }
         tc[0] = new TransferCapability(UID.VerificationSOPClass, ONLY_DEF_TS,
                 TransferCapability.SCP);
         for (int i = 0; i < CUIDS.length; i++)
@@ -893,86 +1082,58 @@ public class DcmRcv extends StorageService {
         throw new RuntimeException();
     }
 
-    /** Overwrite {@link StorageService#cstore} to send delayed C-STORE RSP 
-     * by separate Thread, so reading of following received C-STORE RQs from
-     * the open association is not blocked.
-     */
-    @Override
-    public void cstore(final Association as, final int pcid, DicomObject rq,
-            PDVInputStream dataStream, String tsuid)
-            throws DicomServiceException, IOException {
-        final DicomObject rsp = CommandUtils.mkRSP(rq, CommandUtils.SUCCESS);
-        onCStoreRQ(as, pcid, rq, dataStream, tsuid, rsp);
-        if (rspdelay > 0) {
-            executor.execute(new Runnable() {
-                public void run() {
-                    try {
-                        Thread.sleep(rspdelay);
-                        as.writeDimseRSP(pcid, rsp);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-        } else {
-            as.writeDimseRSP(pcid, rsp);
-        }
-        onCStoreRSP(as, pcid, rq, dataStream, tsuid, rsp);
+    boolean isStoreFile() {
+        return devnull != null || cache.getCacheRootDir() != null;
     }
 
-    @Override
-    protected void onCStoreRQ(Association as, int pcid, DicomObject rq,
+    private boolean isStgcmtEnabled() {
+        return ae.getAETitle() != null && cache.getCacheRootDir() != null;
+    }
+
+    void onCStoreRQ(Association as, int pcid, DicomObject rq,
             PDVInputStream dataStream, String tsuid, DicomObject rsp)
-            throws IOException, DicomServiceException {
-        if (devnull == null && cache.getCacheRootDir() == null) {
-            super.onCStoreRQ(as, pcid, rq, dataStream, tsuid, rsp);
-        }
-        else {
-            String cuid = rq.getString(Tag.AffectedSOPClassUID);
-            String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
-            File file = devnull != null ? devnull
-                    : new File(mkDir(as), iuid + ".part");
-            LOG.info("M-WRITE {}", file);
+            throws IOException {
+        String cuid = rq.getString(Tag.AffectedSOPClassUID);
+        String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+        File file = devnull != null ? devnull
+                : new File(mkDir(as), iuid + ".part");
+        LOG.info("M-WRITE {}", file);
+        try {
+            DicomOutputStream dos = new DicomOutputStream(
+                    new BufferedOutputStream(
+                            new FileOutputStream(file),
+                            fileBufferSize));
             try {
-                DicomOutputStream dos = new DicomOutputStream(
-                        new BufferedOutputStream(
-                                new FileOutputStream(file),
-                                fileBufferSize));
-                try {
-                    BasicDicomObject fmi = new BasicDicomObject();
-                    fmi.initFileMetaInformation(cuid, iuid, tsuid);
-                    dos.writeFileMetaInformation(fmi);
-                    dataStream.copyTo(dos);
-                } finally {
-                    CloseUtils.safeClose(dos);
-                }
-            } catch (IOException e) {
-                if (devnull == null && file != null) {
-                    if (file.delete()) {
-                        LOG.info("M-DELETE {}", file);
-                    }
-                }
-                throw new DicomServiceException(rq, Status.ProcessingFailure,
-                        e.getMessage());
+                BasicDicomObject fmi = new BasicDicomObject();
+                fmi.initFileMetaInformation(cuid, iuid, tsuid);
+                dos.writeFileMetaInformation(fmi);
+                dataStream.copyTo(dos);
+            } finally {
+                CloseUtils.safeClose(dos);
             }
-            
-            // Rename the file after it has been written. See DCM-279
+        } catch (IOException e) {
             if (devnull == null && file != null) {
-                File rename = new File(file.getParent(), iuid);
-                LOG.info("M-RENAME {} to {}", file, rename);
-                file.renameTo(rename);
-                if (cache.getJournalRootDir() != null) {
-                    cache.record(rename);
+                if (file.delete()) {
+                    LOG.info("M-DELETE {}", file);
                 }
+            }
+            throw new DicomServiceException(rq, Status.ProcessingFailure,
+                    e.getMessage());
+        }
+        
+        // Rename the file after it has been written. See DCM-279
+        if (devnull == null && file != null) {
+            File rename = new File(file.getParent(), iuid);
+            LOG.info("M-RENAME {} to {}", file, rename);
+            file.renameTo(rename);
+            if (cache.getJournalRootDir() != null) {
+                cache.record(rename);
             }
         }
     }
 
-    private File mkDir(Association as) {
+    private File getDir(Association as) {
         File dir = cache.getCacheRootDir();
-        if (called2dir == null && calling2dir == null) {
-            return dir;
-        }
         if (called2dir != null) {
             dir = new File(dir,
                     called2dir.getProperty(as.getCalledAET(), calleddefdir));
@@ -981,10 +1142,91 @@ public class DcmRcv extends StorageService {
             dir = new File(dir,
                     calling2dir.getProperty(as.getCallingAET(), callingdefdir));
         }
+        return dir;
+    }
+
+    private File mkDir(Association as) {
+        File dir = getDir(as);
         if (dir.mkdirs()) {
             LOG.info("M-WRITE {}", dir);
         }
         return dir;
+    }
+
+    public void onNActionRQ(Association as, DicomObject rq, DicomObject info) {
+        stgcmtTimer().schedule(new SendStgCmtResult(this, mkStgCmtAE(as),
+                mkStgCmtResult(as, info)), stgcmtDelay, stgcmtRetryPeriod);
+    }
+
+    private NetworkApplicationEntity mkStgCmtAE(Association as) {
+        NetworkApplicationEntity stgcmtAE = new NetworkApplicationEntity();
+        NetworkConnection stgcmtNC = new NetworkConnection();
+        stgcmtNC.setHostname(as.getSocket().getInetAddress().getHostAddress());
+        stgcmtNC.setPort(stgcmtPort);
+        stgcmtNC.setTlsCipherSuite(nc.getTlsCipherSuite());
+        stgcmtAE.setNetworkConnection(stgcmtNC);
+        stgcmtAE.setAETitle(as.getRemoteAET());
+        stgcmtAE.setTransferCapability(new TransferCapability[]{
+                new TransferCapability(
+                        UID.StorageCommitmentPushModelSOPClass, ONLY_DEF_TS,
+                        TransferCapability.SCU)});
+        return stgcmtAE;
+    }
+
+    private DicomObject mkStgCmtResult(Association as, DicomObject rqdata) {
+        DicomObject result = new BasicDicomObject();
+        result.putString(Tag.TransactionUID, VR.UI,
+                rqdata.getString(Tag.TransactionUID));
+        DicomElement rqsq = rqdata.get(Tag.ReferencedSOPSequence);
+        DicomElement resultsq = result.putSequence(Tag.ReferencedSOPSequence);
+        DicomElement failedsq = null;
+        File dir = getDir(as);
+        for (int i = 0, n = rqsq.countItems(); i < n; i++) {
+            DicomObject refsop = rqsq.getDicomObject(i);
+            String uid = refsop.getString(Tag.ReferencedSOPInstanceUID);
+            File f = new File(dir, uid);
+            if (f.isFile()) {
+                resultsq.addDicomObject(refsop);
+            } else {
+                DicomObject failedsop = new BasicDicomObject();
+                refsop.copyTo(failedsop);
+                failedsop.putInt(Tag.FailureReason, VR.US,
+                        NO_SUCH_OBJECT_INSTANCE);
+                if (failedsq == null)
+                    failedsq = result.putSequence(Tag.FailedSOPSequence);
+                failedsq.addDicomObject(failedsop);
+            }
+        }
+        return result;
+    }
+
+    private synchronized Timer stgcmtTimer() {
+        if (stgcmtTimer == null)
+            stgcmtTimer = new Timer("SendStgCmtResult", true);
+        return stgcmtTimer;
+    }
+
+    void sendStgCmtResult(NetworkApplicationEntity stgcmtAE,
+            DicomObject result) throws Exception {
+        synchronized(ae) {
+            ae.setReuseAssocationFromAETitle(stgcmtReuseFrom 
+                    ? new String[] { stgcmtAE.getAETitle() }
+                    : new String[] {});
+            ae.setReuseAssocationToAETitle(stgcmtReuseTo 
+                    ? new String[] { stgcmtAE.getAETitle() }
+                    : new String[] {});
+           Association as = ae.connect(stgcmtAE, executor);
+           as.nevent(UID.StorageCommitmentPushModelSOPClass,
+                    UID.StorageCommitmentPushModelSOPInstance,
+                    eventTypeIdOf(result), result, UID.ImplicitVRLittleEndian,
+                    nEventReportRspHandler);
+           if (!stgcmtReuseFrom && !stgcmtReuseTo)
+               as.release(true);
+        }
+    }
+
+    private static int eventTypeIdOf(DicomObject result) {
+        return result.contains(Tag.FailedSOPInstanceUIDList) ? 2 : 1;
     }
 
 }
