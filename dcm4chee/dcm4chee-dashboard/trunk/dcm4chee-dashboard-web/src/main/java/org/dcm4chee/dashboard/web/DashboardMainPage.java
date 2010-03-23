@@ -51,6 +51,7 @@ import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.web.filesystem.FileSystemPanel;
+import org.dcm4chee.dashboard.web.messaging.QueuePanel;
 import org.dcm4chee.dashboard.web.report.ReportPanel;
 import org.dcm4chee.dashboard.web.systeminfo.SystemInfoPanel;
 import org.slf4j.Logger;
@@ -104,6 +105,14 @@ public class DashboardMainPage extends WebPage {
                 
                     public Panel getPanel(String panelId) {
                         return new SystemInfoPanel(panelId);
+                    }
+                }, 
+                new AbstractTab(new ResourceModel("dashboard.tabs.tab4.name").wrapOnAssignment(this)) {
+                    
+                    private static final long serialVersionUID = 1L;
+                
+                    public Panel getPanel(String panelId) {
+                        return new QueuePanel(panelId);
                     }
                 })))
             );

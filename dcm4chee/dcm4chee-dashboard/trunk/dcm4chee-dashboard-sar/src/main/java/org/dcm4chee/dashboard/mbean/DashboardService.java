@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.UUID;
 
@@ -55,6 +56,7 @@ import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
 import javax.management.MalformedObjectNameException;
+import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
@@ -76,6 +78,7 @@ public class DashboardService extends ServiceMBeanSupport {
 
     private static Logger log = LoggerFactory.getLogger(DashboardService.class);
     
+    private String domainName;
     private String[] jbossSystemTypesToQuery = new String[] {"Server", "ServerConfig", "ServerInfo"};
     private String newline = System.getProperty("line.separator");
 
@@ -87,6 +90,14 @@ public class DashboardService extends ServiceMBeanSupport {
     private String reportFilename = "";
     private String groupFilename = "";
     
+    public void setDomainName(String domainName) {
+        this.domainName = domainName;
+    }
+
+    public String getDomainName() {
+        return domainName;
+    }
+
     public void setDataSourceList(String dataSourceList) {
         this.dataSourceList = tokenize(dataSourceList);
     }
@@ -268,6 +279,15 @@ public class DashboardService extends ServiceMBeanSupport {
         } catch (IOException e) {
             log.debug("Exception: ", e);
         }
+    }
+
+    public String[] listQueueNames() throws MalformedObjectNameException, NullPointerException {
+        List<String> queueNameList = new ArrayList<String>();
+        for (ObjectInstance oi : 
+            (Set<ObjectInstance>) this.server.queryMBeans(
+                new ObjectName(this.domainName + ":service=Queue,*"), null))
+            queueNameList.add(oi.getObjectName().getKeyProperty("name"));
+        return queueNameList.toArray(new String[0]);
     }
 
     private String[] tokenize(String sourceString) {

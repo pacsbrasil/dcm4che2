@@ -10,5 +10,6 @@
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="/home/axfmx/IMPL/ALPHA/dcm4chee-psql-2.15.0/server/default/lib/jboss-messaging.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

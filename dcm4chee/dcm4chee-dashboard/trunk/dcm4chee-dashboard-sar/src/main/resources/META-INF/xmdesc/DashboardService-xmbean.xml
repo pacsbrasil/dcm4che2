@@ -13,6 +13,16 @@
       <description>MBean Constructor.</description>
       <name>org.dcm4chee.dashboard.mbean.DashboardService</name>
    </constructor>
+	<attribute access="read-write" getMethod="getDomainName" setMethod="setDomainName">
+        <description>
+            Represents the xmbean domain name
+        </description>
+        <name>domainName</name>
+        <type>java.lang.String</type>
+        <descriptors>
+            <value>dcm4chee.archive</value>
+        </descriptors>
+    </attribute>
 	<attribute access="read-write" getMethod="getDataSourceList" setMethod="setDataSourceList">
         <description>
             Represents the jndi names for the configured data sources
@@ -166,5 +176,10 @@ Java;Version;java.version</value>
          <name>isGroup</name>
          <type>boolean</type>
       </parameter>
+   </operation>
+   <operation>
+      <description>MBean Operation.</description>
+      <name>listQueueNames</name>
+	  <return-type>[Ljava.lang.String;</return-type>
    </operation>
 </mbean>

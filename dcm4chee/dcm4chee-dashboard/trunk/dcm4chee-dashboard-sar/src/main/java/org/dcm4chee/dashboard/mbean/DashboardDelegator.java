@@ -162,4 +162,11 @@ public class DashboardDelegator {
                         .toString()
                         .split(this.newline);
     }
+    
+    public String[] listQueueNames() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException, AttributeNotFoundException {
+        return (String[]) server.invoke(
+                        this.objectName,
+                        "listQueueNames", null, null);       
+
+    }
 }
