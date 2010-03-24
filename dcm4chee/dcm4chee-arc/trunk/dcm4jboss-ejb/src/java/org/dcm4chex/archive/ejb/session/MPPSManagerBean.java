@@ -330,6 +330,7 @@ public abstract class MPPSManagerBean implements SessionBean {
 
     private static boolean containsAll(Collection insts,
             DcmElement srcRefSOPSeq, DcmElement dstRefSOPSeq) {
+        String aet;
         for (int i = 0, n = srcRefSOPSeq.countItems(); i < n; i++) {
             Dataset srcRefSOP = srcRefSOPSeq.getItem(i);
             String iuid = srcRefSOP.getString(Tags.RefSOPInstanceUID);
@@ -342,7 +343,8 @@ public abstract class MPPSManagerBean implements SessionBean {
             dstRefSOP.putUI(Tags.RefSOPInstanceUID, iuid);
             dstRefSOP.putCS(Tags.InstanceAvailability, Availability
                     .toString(inst.getAvailabilitySafe()));
-            dstRefSOP.putAE(Tags.RetrieveAET, inst.getRetrieveAETs());
+            aet = inst.getRetrieveAETs();
+            dstRefSOP.putAE(Tags.RetrieveAET, aet == null ? inst.getExternalRetrieveAET() : aet);
         }
         return true;
     }
