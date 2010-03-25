@@ -39,27 +39,26 @@ package org.dcm4chee.web.wicket.ae;
 
 import java.util.List;
 
-import org.apache.wicket.model.PropertyModel;
+import org.apache.wicket.model.IModel;
 import org.dcm4chee.archive.entity.AE;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
  * @since June 4, 2009
  */
-public class CipherModel extends PropertyModel {
+public class CipherModel implements IModel<String> {
+    private static final long serialVersionUID = 503961285550247097L;
     private int idx;
-    private static Logger log = LoggerFactory.getLogger(CipherModel.class);
+    private AE ae;
 
     public CipherModel(AE ae, int idx) {
-        super(ae, "cipherSuites");
+        this.ae = ae;
         this.idx = idx;
     }
  
-    public Object getObject() {
-        List<String> ciphers = (List<String>) super.getObject();
+    public String getObject() {
+        List<String> ciphers = ae.getCipherSuites();
         if ( idx < ciphers.size() ) {
             return ciphers.get(idx);
         } else {
@@ -67,15 +66,17 @@ public class CipherModel extends PropertyModel {
         }
     }
 
-    public void setObject(Object o) {
-        List<String> ciphers = (List<String>) super.getObject();
+    public void setObject(String s) {
+        List<String> ciphers = (List<String>) ae.getCipherSuites();
         if ( idx < ciphers.size() ) {
-            ciphers.set(idx, "-".equals(o) ? null : (String)o);
+            ciphers.set(idx, "-".equals(s) ? null : s);
         } else {
-            ciphers.add((String)o);
+            ciphers.add(s);
         }
-        super.setObject(ciphers);
+        ae.setCipherSuites(ciphers);
     }
     
+    public void detach() {
+    }
 }
 
