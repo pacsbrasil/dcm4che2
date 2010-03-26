@@ -423,11 +423,13 @@ public class StudyListBean implements StudyListLocal {
                 .getResultList();
     }
 
+    @SuppressWarnings("unchecked")
     public List<String> selectDistinctSourceAETs() {
         return em.createQuery("SELECT DISTINCT s.sourceAET FROM Series s WHERE s.sourceAET IS NOT NULL ORDER BY s.sourceAET")
                 .getResultList();
     }
 
+    @SuppressWarnings("unchecked")
     public List<String> selectDistinctModalities() {
         return em.createQuery("SELECT DISTINCT s.modality FROM Series s WHERE s.modality IS NOT NULL ORDER BY s.modality")
                 .getResultList();

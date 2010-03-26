@@ -55,7 +55,7 @@ import org.dcm4chee.web.wicket.fs.FileSystemPage;
 public class MainPage extends BaseWicketPage {
     
     private ModalWindow window;
-    public MainPage(final PageParameters parameters) {
+    public MainPage() {
         super();
         
         this.window = new ModalWindow("window");

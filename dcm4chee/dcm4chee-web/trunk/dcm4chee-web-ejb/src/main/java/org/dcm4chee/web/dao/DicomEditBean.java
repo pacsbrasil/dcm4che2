@@ -91,6 +91,7 @@ public class DicomEditBean implements DicomEditLocal {
         return moveInstancesToTrash(q.getResultList(), true);
     }
 
+    @SuppressWarnings("unchecked")
     public Collection<Instance> moveInstanceToTrash(String iuid) {
         Query q = em.createNamedQuery("Instance.findByIUID");
         q.setParameter("iuid", iuid);
@@ -122,6 +123,7 @@ public class DicomEditBean implements DicomEditLocal {
         return instances;
     }
 
+    @SuppressWarnings("unchecked")
     public Collection<Instance> moveSeriesToTrash(long[] pks) {
         Query q;
         q = getQueryForPks("SELECT OBJECT(s) FROM Series s WHERE pk ", pks);
@@ -164,6 +166,7 @@ public class DicomEditBean implements DicomEditLocal {
         return allInstances;
     }
 
+    @SuppressWarnings("unchecked")
     public Collection<Instance> moveStudiesToTrash(long[] pks) {
         Query q = getQueryForPks("SELECT OBJECT(s) FROM Study s WHERE pk ", pks);
         return moveStudiesToTrash(q.getResultList());
@@ -176,6 +179,7 @@ public class DicomEditBean implements DicomEditLocal {
         return this.moveStudiesToTrash(q.getResultList());
     }
 
+    @SuppressWarnings("unchecked")
     private Collection<Instance> moveStudiesToTrash(Collection<Study> studies) {
         List<Instance> allInstances = new ArrayList<Instance>();
         Set<Series> series;
@@ -199,11 +203,13 @@ public class DicomEditBean implements DicomEditLocal {
         return allInstances;
     }
     
+    @SuppressWarnings("unchecked")
     public Collection<Instance> movePatientsToTrash(long[] pks) {
         Query q = getQueryForPks("SELECT OBJECT(p) FROM Patient p WHERE pk ", pks);
         return movePatientsToTrash(q.getResultList());
     }
 
+    @SuppressWarnings("unchecked")
     public Collection<Instance> movePatientToTrash(String Id, String issuer) {
         Query q = em.createQuery("SELECT OBJECT(p) FROM Patient p "+
                 "WHERE patientID = :patId AND issuerOfPatientID = :issuer" )
