@@ -41,7 +41,7 @@ public class ChangePasswordLink extends AjaxFallbackLink<Object> {
                         
                         @Override
                         public Page createPage() {
-                            return new ChangePasswordPage(window, userId, forUser);
+                            return new ChangePasswordPage(userId, forUser, window);
                         }
                     }
             ).show(target);

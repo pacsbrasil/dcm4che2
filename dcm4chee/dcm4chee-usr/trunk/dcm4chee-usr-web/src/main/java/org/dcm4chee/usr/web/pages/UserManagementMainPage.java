@@ -83,7 +83,6 @@ public class UserManagementMainPage extends WebPage {
             });
             add(new UserListPanel("userListPanel", name, this.window));
         } catch (Exception e) {
-            e.printStackTrace();
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
             log.debug("Exception: ", e);
             this.redirectToInterceptPage(new InternalErrorPage());

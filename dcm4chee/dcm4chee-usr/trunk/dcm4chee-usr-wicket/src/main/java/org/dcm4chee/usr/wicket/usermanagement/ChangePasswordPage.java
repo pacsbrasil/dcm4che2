@@ -50,7 +50,6 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.validation.EqualPasswordInputValidator;
-import org.apache.wicket.markup.html.pages.InternalErrorPage;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
@@ -77,7 +76,7 @@ public class ChangePasswordPage extends WebPage {
 
     private static final ResourceReference CSS = new CompressedResourceReference(ChangePasswordPage.class, "wicket-style.css");
     
-    public ChangePasswordPage(final ModalWindow window, String userId, final User forUser) {
+    public ChangePasswordPage(String userId, final User forUser, final ModalWindow window) {
         try {
             if (ChangePasswordPage.CSS != null)
                 add(CSSPackageResource.getHeaderContribution(ChangePasswordPage.CSS));
