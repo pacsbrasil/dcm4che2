@@ -43,6 +43,7 @@ import java.net.UnknownHostException;
 import org.apache.wicket.Component;
 import org.apache.wicket.authentication.panel.SignInPanel;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.StringResourceModel;
 import org.dcm4chee.web.wicket.common.FocusOnLoadBehaviour;
 
@@ -50,19 +51,36 @@ import org.dcm4chee.web.wicket.common.FocusOnLoadBehaviour;
  * 
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since July 20, 2009
+ * @since March 26, 2010
  */
-public class LoginPage extends BaseWicketPage {
-    public LoginPage() {
-        super();
-        ModuleSelectorPanel selector = getModuleSelectorPanel();
-        selector.setShowLogoutLink(false);
-        selector.addModule(LoginPanel.class);
+public class LoginPanel extends Panel {
+
+    private static final long serialVersionUID = 2314918026799635837L;
+
+    public LoginPanel(final String id) {
+        super(id);
+        String nodeInfo;
+        try {
+            nodeInfo = System.getProperty("dcm4che.archive.nodename", InetAddress.getLocalHost().getHostName() );
+        } catch (UnknownHostException e) {
+            nodeInfo = "DCM4CHEE";
+        }
+        add(new Label("loginLabel", new StringResourceModel("loginLabel", LoginPanel.this, 
+                null, new Object[]{nodeInfo})));
+        add(new SignInPanel("signInPanel") {
+
+            private static final long serialVersionUID = 1L;
+
+            protected void onSignInFailed() {
+                Component user = LoginPanel.this.get("signInPanel:signInForm:username");
+                user.add(FocusOnLoadBehaviour.newFocusAndSelectBehaviour());
+            }
+        });  
+        this.get("signInPanel:signInForm").add(new FocusOnLoadBehaviour()); 
     }
     
-    @Override
-    protected String getBrowserTitle() {
-        return super.getBrowserTitle()+":"+
-            this.getString("application.login", null, "Login");
-    }    
+    public static String getModuleName() {
+        return "login";
+    }
+
 }
