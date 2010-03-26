@@ -27,6 +27,8 @@ import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.entity.StudyOnFileSystem;
 import org.dcm4chee.archive.entity.VerifyingObserver;
+import org.dcm4chee.usr.entity.Role;
+import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.web.dao.StudyListBean;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -45,7 +47,7 @@ public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
         File.class, FileSystem.class, StudyOnFileSystem.class, VerifyingObserver.class,
         Media.class, MPPS.class, GPSPS.class, GPPPS.class, GPSPSRequest.class, GPSPSPerformer.class,
         MWLItem.class,  
-        OtherPatientID.class, AE.class, RequestAttributes.class, Code.class};
+        OtherPatientID.class, AE.class, RequestAttributes.class, Code.class, User.class, Role.class};
     private static Logger log = LoggerFactory.getLogger(WicketApplicationTest.class);
 
     public WicketApplicationTest() throws Exception {
@@ -110,7 +112,7 @@ public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
 
     private void checkLogin(String user, String passwd, Class pageClass) {
         wicketTester.startPage(MainPage.class);
-        FormTester formTester = wicketTester.newFormTester("signInPanel:signInForm");
+        FormTester formTester = wicketTester.newFormTester("modules:panel:signInPanel:signInForm");
         formTester.setValue("username", user);
         formTester.setValue("password", passwd);
         formTester.submit();
