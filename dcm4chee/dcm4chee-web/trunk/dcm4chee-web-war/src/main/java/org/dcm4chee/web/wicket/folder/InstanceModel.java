@@ -58,6 +58,8 @@ import org.dcm4chee.archive.util.JNDIUtils;
  */
 public class InstanceModel extends AbstractDicomModel implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+    
     private List<FileModel> files = new ArrayList<FileModel>();
 
     public InstanceModel(Instance inst) {

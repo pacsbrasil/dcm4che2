@@ -59,6 +59,8 @@ import org.dcm4chee.archive.util.JNDIUtils;
  */
 public class PPSModel extends AbstractDicomModel implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+    
     private SeriesModel series1;
     private int numberOfInstances;
     private int numberOfSeries;

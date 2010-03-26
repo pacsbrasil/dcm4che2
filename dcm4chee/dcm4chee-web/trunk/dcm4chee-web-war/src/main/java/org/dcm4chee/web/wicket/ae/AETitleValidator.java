@@ -66,8 +66,8 @@ public class AETitleValidator extends StringValidator {
      * </p>
      */
     @Override
-    protected void onValidate(IValidatable v) {
-        String s = (String) v.getValue();
+    protected void onValidate(IValidatable<String> v) {
+        String s = v.getValue();
         if ( s.indexOf('^') == -1 ) {
             if ( s.length() > MAX_AET_LEN || s.trim().length() < 1) {
                 error(v,"StringValidator.range", getLengthVarMap(v, MAX_AET_LEN));
@@ -94,20 +94,17 @@ public class AETitleValidator extends StringValidator {
         return true;
     }
 
-    @SuppressWarnings("unchecked")
-    private Map getLengthVarMap(IValidatable validatable, int max) {
-        final Map map = super.variablesMap(validatable);
+    private Map<String, Object> getLengthVarMap(IValidatable<String> validatable, int max) {
+        final Map<String, Object> map = super.variablesMap(validatable);
         map.put("maximum", new Integer(max));
         map.put("minimum", new Integer(1));
         map.put("length", new Integer(((String) validatable.getValue()).length()));
         return map;
     }
     
-    @SuppressWarnings("unchecked")
-    private Map getPatternVarMap(IValidatable validatable) {
-        final Map map = super.variablesMap(validatable);
+    private Map<String, Object> getPatternVarMap(IValidatable<String> validatable) {
+        final Map<String, Object> map = super.variablesMap(validatable);
         map.put("pattern", "DICOM DEFAULT CHARACTER REPERTOIRE exclude '\\', LF, FF, CR and ESC");
         return map;
     }
-    
 }

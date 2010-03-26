@@ -63,7 +63,36 @@
 	      <param-name>moveScuServiceName</param-name>
 	      <param-value>dcm4chee.web:service=MoveScu</param-value>
 	    </init-param> 
- 				
+
+	    <init-param>
+	      <param-name>securityDomainName</param-name>
+	      <param-value>dcm4chee</param-value>
+	    </init-param>
+	    <init-param>
+	      <param-name>rolesGroupName</param-name>
+	      <param-value>Roles</param-value>
+	    </init-param>
+	    <init-param>
+	      <param-name>userRoleName</param-name>
+	      <param-value>WebUser</param-value>
+	    </init-param>
+	    <init-param>
+	      <param-name>adminRoleName</param-name>
+	      <param-value>JBossAdmin</param-value>
+	    </init-param>
+	    <init-param>
+	      <param-name>hashEncoding</param-name>
+	      <param-value>base64</param-value>
+	    </init-param>
+	    <init-param>
+	      <param-name>hashCharset</param-name>
+	      <param-value>UTF-8</param-value>
+	    </init-param>
+	    <init-param>
+	      <param-name>hashAlgorithm</param-name>
+	      <param-value>SHA-1</param-value>
+	    </init-param>	
+
  	</filter>
 
  <filter-mapping>

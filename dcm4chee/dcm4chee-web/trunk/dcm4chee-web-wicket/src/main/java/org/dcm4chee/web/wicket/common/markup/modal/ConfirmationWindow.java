@@ -52,20 +52,21 @@ import org.apache.wicket.model.ResourceModel;
  * @since Dec 11, 2009
  */
 public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
-    private static final long serialVersionUID = 2073963114732094166L;
+    
+    private static final long serialVersionUID = 1L;
     
     public static final String FOCUS_ON_CONFIRM = "content:confirm";
     public static final String FOCUS_ON_DECLINE = "content:decline";
 
     private T userObject;
     private String focusElementId;
-    private IModel msg, confirm, decline;
+    private IModel<?> msg, confirm, decline;
 
     public ConfirmationWindow(String id) {
         this(id, new ResourceModel("yesBtn"), new ResourceModel("noBtn"));
     }
     
-    public ConfirmationWindow(String id, IModel confirm, IModel decline) {
+    public ConfirmationWindow(String id, IModel<?> confirm, IModel<?> decline) {
         super(id);
         this.confirm = confirm;
         this.decline = decline;
@@ -89,11 +90,11 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
             target.focusComponent(this.get(focusElementId));
     }
     
-    public void confirm(AjaxRequestTarget target, IModel msg, T userObject) {
+    public void confirm(AjaxRequestTarget target, IModel<?> msg, T userObject) {
         confirm(target, msg, userObject, FOCUS_ON_DECLINE);
     }
     
-    public void confirm(AjaxRequestTarget target, IModel msg, T userObject, String focusElementId){
+    public void confirm(AjaxRequestTarget target, IModel<?> msg, T userObject, String focusElementId){
         this.msg = msg;
         this.userObject = userObject;
         this.focusElementId = focusElementId;
@@ -110,13 +111,19 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
 
         public MessageWindowPanel(String id) {
             super(id);
-            add(new Label("msg", new AbstractReadOnlyModel(){
+            add(new Label("msg", new AbstractReadOnlyModel<Object>(){
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public Object getObject() {
                     return msg == null ? null : msg.getObject();
                 }
             }));
-            add(new AjaxFallbackLink("confirm"){
+            add(new AjaxFallbackLink<Object>("confirm"){
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     onConfirmation(target, userObject);
@@ -124,7 +131,10 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                     close(target);
                 }
             }.add(new Label("confirmLabel", confirm)) );
-            add(new AjaxFallbackLink("decline"){
+            add(new AjaxFallbackLink<Object>("decline"){
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     onDecline(target, userObject);

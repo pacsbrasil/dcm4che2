@@ -60,6 +60,8 @@ import org.dcm4chee.web.wicket.util.DateUtils;
  */
 public class StudyModel extends AbstractDicomModel implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+    
     private List<PPSModel> ppss = new ArrayList<PPSModel>();
 
     public StudyModel(Study study) {

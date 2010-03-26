@@ -73,8 +73,11 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
     private boolean showLogout = true;
 
     public ModuleSelectorPanel(String id) {
-        super(id, new ArrayList());
-        add(new AjaxFallbackLink("logout"){
+        super(id, new ArrayList<ITab>());
+        add(new AjaxFallbackLink<Object>("logout"){
+            
+            private static final long serialVersionUID = 1L;
+            
             @Override
             public void onClick(final AjaxRequestTarget target) {
                 getSession().invalidate();
@@ -101,12 +104,22 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
         if (clazz.getResource("style.css") != null)
             add(CSSPackageResource.getHeaderContribution(clazz, "style.css"));
     }
+
+    public void addInstance(Panel instance) {
+        ITab tab = new ModuleTab(instance);
+        super.getTabs().add(tab);
+        if (instance.getClass().getResource("style.css") != null)
+            add(CSSPackageResource.getHeaderContribution(instance.getClass(), "style.css"));
+    }
     
     public void setShowLogoutLink(boolean show) {
         showLogout = show;
     }
     
     private final class ModuleTab implements ITab {
+
+        private static final long serialVersionUID = 1L;
+        
         private transient ClassStringResourceLoader classStringLoader; 
         private transient PackageStringResourceLoader pkgStringLoader;
         private static final String TAB_TITLE_EXT = ".tabTitle";
@@ -114,11 +127,20 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
         private String clazzName;
         private String tabTitlePropertyName;
         private Panel panel;
-        private IModel titleModel;
-
+        
         public ModuleTab(Class<? extends Panel> clazz2) {
             clazz = clazz2;
-            clazzName = clazz.getName().substring(clazz.getName().lastIndexOf('.')+1);
+            initialize();
+        }
+        
+        public ModuleTab(Panel instance) {
+            clazz = instance.getClass();
+            panel = instance;
+            initialize();
+        }
+
+        private void initialize() {
+            clazzName = clazz.getName().substring(clazz.getName().lastIndexOf('.')+1);            
             pkgStringLoader = new PackageStringResourceLoader();
             try {
                 Method m = clazz.getDeclaredMethod("getModuleName");
@@ -140,8 +162,7 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
             return pkgStringLoader;
         }
 
-        public Panel getPanel(String panelId)
-        {
+        public Panel getPanel(String panelId) {
             try {
                 if ( panel == null ) {
                     Constructor<? extends Panel> c = clazz.getConstructor(String.class);
@@ -162,12 +183,12 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
          * Therefore the title must be either configured in package.properties or &lt;clazz&gt;.properties! 
          * Other ResourceLoaders will be ignored!
          */
-        public IModel getTitle() {
+        public IModel<String> getTitle() {
             String t = getClassStringLoader().loadStringResource(null, tabTitlePropertyName);
             if (t== null)
                 t = getPackageStringLoader().loadStringResource(clazz, tabTitlePropertyName, 
                         getSession().getLocale(), null);
-            return new Model(t == null ? clazzName : t);
+            return new Model<String>(t == null ? clazzName : t);
         }
 
         public boolean isVisible() {

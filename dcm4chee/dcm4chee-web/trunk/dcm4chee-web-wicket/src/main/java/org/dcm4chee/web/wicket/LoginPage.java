@@ -65,6 +65,9 @@ public class LoginPage extends BaseWicketPage {
         add(new Label("loginLabel", new StringResourceModel("loginLabel", LoginPage.this, 
                 null, new Object[]{nodeInfo})));
         add(new SignInPanel("signInPanel") {
+
+            private static final long serialVersionUID = 1L;
+
             protected void onSignInFailed() {
                 Component user = LoginPage.this.get("signInPanel:signInForm:username");
                 user.add(FocusOnLoadBehaviour.newFocusAndSelectBehaviour());

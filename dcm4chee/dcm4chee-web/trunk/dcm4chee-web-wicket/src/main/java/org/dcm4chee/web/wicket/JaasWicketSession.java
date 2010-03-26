@@ -62,7 +62,9 @@ import org.slf4j.LoggerFactory;
  * JAAS based Wicket Session to use JBoss web security.
  */
 public class JaasWicketSession extends AuthenticatedWebSession {
-    private static final long serialVersionUID = 4250326508961222475L;
+    
+    private static final long serialVersionUID = 1L;
+    
     private String securityDomainName;
     private String rolesGroupName;
     private boolean useRoleMapping;
@@ -72,10 +74,10 @@ public class JaasWicketSession extends AuthenticatedWebSession {
 
     private Subject subject;
     private Roles roles = new Roles();
+    private String username;
 
     private final static Logger log = LoggerFactory.getLogger(JaasWicketSession.class);
 
-    @SuppressWarnings("deprecation")
     public JaasWicketSession(Request req) {
         super(req);
     }
@@ -104,6 +106,7 @@ public class JaasWicketSession extends AuthenticatedWebSession {
             LoginContext ctx = new LoginContext(securityDomainName, handler);
             ctx.login();
             authenticated = true;
+            this.username = username;
             subject = ctx.getSubject();
             String name;
             for (Principal p : subject.getPrincipals()) {
@@ -139,6 +142,10 @@ public class JaasWicketSession extends AuthenticatedWebSession {
 
     public Roles getRoles() {
         return roles;
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     private class LoginCallbackHandler implements CallbackHandler {

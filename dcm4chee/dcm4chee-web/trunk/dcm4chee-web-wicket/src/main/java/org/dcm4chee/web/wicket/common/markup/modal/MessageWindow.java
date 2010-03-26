@@ -51,7 +51,9 @@ import org.apache.wicket.model.ResourceModel;
  * @since Nov 02, 2009
  */
 public class MessageWindow extends AutoOpenModalWindow {
-    private static final long serialVersionUID = 2325295574246960490L;
+
+    private static final long serialVersionUID = 1L;
+    
     protected static final String TITLE_DEFAULT = "MessageWindow";
     public static final String TITLE_INFO="msgwindow.title.info";
     public static final String TITLE_WARNING="msgwindow.title.warn";
@@ -113,12 +115,18 @@ public class MessageWindow extends AutoOpenModalWindow {
         public MessageWindowPanel(String id) {
             super(id);
             add(new Label("msg", new AbstractReadOnlyModel<String>(){
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public String getObject() {
                     return msg;
                 }
             }));
-            add(new AjaxFallbackLink("close"){
+            add(new AjaxFallbackLink<Object>("close"){
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     close(target);

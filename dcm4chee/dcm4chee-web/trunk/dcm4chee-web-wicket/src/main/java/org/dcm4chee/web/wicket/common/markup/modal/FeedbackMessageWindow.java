@@ -57,7 +57,9 @@ import org.apache.wicket.model.ResourceModel;
  * @since Nov 02, 2009
  */
 public class FeedbackMessageWindow extends AutoOpenModalWindow {
-    private static final long serialVersionUID = -5261654140209466138L;
+
+    private static final long serialVersionUID = 1L;
+    
     private transient List<FeedbackMessage> messages;
 
     public FeedbackMessageWindow(String id) {
@@ -94,7 +96,10 @@ public class FeedbackMessageWindow extends AutoOpenModalWindow {
         public MessageWindowPanel(String id) {
             super(id);
             add(new FeedbackPanel("feedback"));
-            add(new AjaxFallbackLink("close", new ResourceModel("closeBtn")){
+            add(new AjaxFallbackLink<String>("close", new ResourceModel("closeBtn")) {
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     close(target);

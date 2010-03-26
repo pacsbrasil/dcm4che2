@@ -38,7 +38,6 @@
 
 package org.dcm4chee.web.wicket.folder;
 
-import java.io.Serializable;
 import java.util.Iterator;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -73,7 +72,9 @@ import org.dcm4chee.web.wicket.common.markup.modal.MessageWindow;
  * @since Jan 15, 2009
  */
 public class EditDicomObjectPanel extends Panel {
-    private static final long serialVersionUID = 1934305435730718692L;
+
+    private static final long serialVersionUID = 1L;
+    
     private static ElementDictionary dict = ElementDictionary.getDictionary();
     private final DicomObject dcmObj;
     private final WebMarkupContainer table;
@@ -87,13 +88,15 @@ public class EditDicomObjectPanel extends Panel {
         add(new Label("title", new ResourceModel("dicom.edit.title."+title)));
         this.dcmObj = new BasicDicomObject();
         dcmObj.copyTo(this.dcmObj);
-        Form form = new Form("form");
+        Form<?> form = new Form<Object>("form");
         add(form);
         table = new WebMarkupContainer("table");
         addHdrLabels(table);
         table.setOutputMarkupId(true);
         form.add(table);
         RepeatingView rv = new RepeatingView("elements") {
+
+            private static final long serialVersionUID = 1L;
 
             @Override
             protected void onPopulate() {
@@ -105,18 +108,26 @@ public class EditDicomObjectPanel extends Panel {
         };
         table.add(rv);
         form.add(new Button("apply", new ResourceModel("applyBtn")){
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onSubmit() {
                 EditDicomObjectPanel.this.onApply();
             }
         });
         form.add(new Button("submit", new ResourceModel("saveBtn")) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onSubmit() {
                 EditDicomObjectPanel.this.onSubmit();
             }
         });
         form.add(new Button("cancel", new ResourceModel("cancelBtn")) {
+
+            private static final long serialVersionUID = 1L;
 
             @Override
             public void onSubmit() {
@@ -185,6 +196,8 @@ public class EditDicomObjectPanel extends Panel {
 
     public class ElementFragment extends Fragment {
 
+        private static final long serialVersionUID = 1L;
+
         public ElementFragment(String id, DicomElement el,
                 SpecificCharacterSet cs, final int[] tagPath, String nesting) {
             super(id, "element", EditDicomObjectPanel.this);
@@ -193,11 +206,14 @@ public class EditDicomObjectPanel extends Panel {
             add(new Label("tag", TagUtils.toString(tag)));
             add(new Label("vr", el.vr().toString()));
             add(new Label("length", Integer.toString(el.length())));
-            add(new TextField("value", el.hasItems() ? new Model("") 
-                                  : new DicomElementModel(el, cs, tagPath))
+            add(new TextField<String>("value", el.hasItems() ? 
+                                                new Model<String>("") 
+                                              : new DicomElementModel(el, cs, tagPath))
                 .setVisible(!el.hasItems()));
-            add(new AjaxFallbackLink("remove"){
+            add(new AjaxFallbackLink<Object>("remove"){
                 
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     EditDicomObjectPanel.this.dcmObj.remove(tagPath);
@@ -213,20 +229,24 @@ public class EditDicomObjectPanel extends Panel {
 
     public class AddElementFragment extends Fragment {
 
+        private static final long serialVersionUID = 1L;
+
         public AddElementFragment(String id, final int[] itemPath, 
                 String nesting) {
             super(id, "addelement", EditDicomObjectPanel.this);
             add(new Label("name", nesting + "New Attribute"));
-            Form form = new BaseForm("form");
+            Form<?> form = new BaseForm("form");
             add(form);
-            final Model tagModel = new Model("(0008,0000)");
-            form.add(new TextField("tag", tagModel).add(new PatternValidator(
+            final Model<String> tagModel = new Model<String>("(0008,0000)");
+            form.add(new TextField<String>("tag", tagModel).add(new PatternValidator(
                     "\\([0-9a-fA-F]{4},[0-9a-fA-F]{4}\\)")).setOutputMarkupId(true));
             add(new AjaxSubmitLink("add", form){
 
+                private static final long serialVersionUID = 1L;
+                
                 @Override
-                public void onSubmit(AjaxRequestTarget target, Form form) {
-                    String s = (String) tagModel.getObject();
+                public void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                    String s = tagModel.getObject();
                     int tag = parseTag(s);
                     if (!TagUtils.isGroupLengthElement(tag)) {
                         EditDicomObjectPanel.this.dcmObj
@@ -241,7 +261,7 @@ public class EditDicomObjectPanel extends Panel {
                     }
                 }
                 @Override
-                protected void onError(AjaxRequestTarget target, Form form) {
+                protected void onError(AjaxRequestTarget target, Form<?> form) {
                     target.addComponent(form.get("tag"));
                 }
             });
@@ -256,12 +276,16 @@ public class EditDicomObjectPanel extends Panel {
 
     public class ItemFragment extends Fragment {
 
+        private static final long serialVersionUID = 1L;
+
         public ItemFragment(String id, final int[] tagPath,
                 final int itemIndex, String nesting) {
             super(id, "item", EditDicomObjectPanel.this);
             add(new Label("name", nesting + "Item #" + (itemIndex+1)));
-            add(new AjaxFallbackLink("remove"){
+            add(new AjaxFallbackLink<Object>("remove"){
                 
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     EditDicomObjectPanel.this.dcmObj.get(tagPath)
@@ -278,12 +302,16 @@ public class EditDicomObjectPanel extends Panel {
 
     public class AddItemFragment extends Fragment {
 
+        private static final long serialVersionUID = 1L;
+
         public AddItemFragment(String id, final int[] tagPath,
                 final int itemIndex, String nesting) {
             super(id, "additem", EditDicomObjectPanel.this);
             add(new Label("name", nesting + "New Item #" + (itemIndex+1)));
-            add(new AjaxFallbackLink("add"){
+            add(new AjaxFallbackLink<Object>("add"){
                 
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     EditDicomObjectPanel.this.dcmObj.get(tagPath)
@@ -298,8 +326,9 @@ public class EditDicomObjectPanel extends Panel {
 
      }
 
-    private class DicomElementModel extends Model {
+    private class DicomElementModel extends Model<String> {
 
+        private static final long serialVersionUID = 1L;
         private final int[] tagPath;
         private final int vr;
  
@@ -311,7 +340,7 @@ public class EditDicomObjectPanel extends Panel {
         }
 
         @Override
-        public void setObject(Serializable object) {
+        public void setObject(String object) {
             Object prev = super.getObject();
             if (vr != 0) {
                 if (object == null) {
@@ -319,7 +348,7 @@ public class EditDicomObjectPanel extends Panel {
                             VR.valueOf(vr));
                 } else if (!object.equals(prev)) {
                     EditDicomObjectPanel.this.dcmObj.putString(tagPath,
-                            VR.valueOf(vr), (String) object);
+                            VR.valueOf(vr), object);
                 }
             }
             super.setObject(object);

@@ -52,6 +52,8 @@ import org.apache.wicket.util.convert.IConverter;
  */
 public class DateTimeLabel extends Label {
 
+    private static final long serialVersionUID = 1L;
+
     public DateTimeLabel(String id) {
         super(id);
     }
@@ -60,13 +62,15 @@ public class DateTimeLabel extends Label {
         super(id, label);
     }
 
-    public DateTimeLabel(String id, IModel model) {
+    public DateTimeLabel(String id, IModel<?> model) {
         super(id, model);
     }
 
     @Override
-    public IConverter getConverter(Class type) {
+    public IConverter getConverter(Class<?> type) {
         return new IConverter() {
+
+            private static final long serialVersionUID = 1L;
 
             public Object convertToObject(String value, Locale locale) {
                 throw new UnsupportedOperationException();
@@ -76,6 +80,4 @@ public class DateTimeLabel extends Label {
                 return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(value);
             }};
     }
-
-
 }

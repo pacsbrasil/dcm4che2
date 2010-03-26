@@ -55,8 +55,6 @@ import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -65,27 +63,23 @@ import org.slf4j.LoggerFactory;
  * @since Oct 31, 2009
  */
 
-@SuppressWarnings("unchecked")
-public class BaseForm extends Form {
+public class BaseForm extends Form<Object> {
 
     private static final long serialVersionUID = 0L;
     public static final String LABEL_ID_EXTENSION = "Label";
 
-    private static Logger log = LoggerFactory.getLogger(BaseForm.class);
-    
     private String resourceIdPrefix;
     private TooltipBehaviour tooltipBehaviour;
 
-    @SuppressWarnings("unchecked")
-    private IVisitor visitor = new FormVisitor();
+    private IVisitor<Component> visitor = new FormVisitor();
     
     MarkInvalidBehaviour markInvalidBehaviour = new MarkInvalidBehaviour();
     
     public BaseForm(String id) {
         super(id);
     }
-    @SuppressWarnings("unchecked")
-    public BaseForm(String id, IModel model) {
+    
+    public BaseForm(String id, IModel<Object> model) {
         super(id, model);
     }
 
@@ -96,7 +90,6 @@ public class BaseForm extends Form {
         tooltipBehaviour = tooltip;
     }
     
-    @SuppressWarnings("unchecked")
     public void onBeforeRender() {
         super.onBeforeRender();
         visitChildren(visitor);
@@ -112,15 +105,25 @@ public class BaseForm extends Form {
      * 
      * @return The TextField (to allow adding Validators,.. )
      */
-    public TextField addLabeledTextField(String id) {
-        TextField tf = new TextField(id);
+    public TextField<String> addLabeledTextField(String id) {
+        TextField<String> tf = new TextField<String>(id);
         addInternalLabel(id);
-        add(tf);
+        this.add(tf);
         return tf;
     }
 
-    public TextField addLabeledTextField(String id, final IModel<Boolean> enabledModel) {
-        TextField tf = new TextField(id) {
+    public TextField<Integer> addLabeledNumberTextField(String id) {
+        TextField<Integer> tf = new TextField<Integer>(id);
+        addInternalLabel(id);
+        this.add(tf);
+        return tf;
+    }
+
+    public TextField<String> addLabeledTextField(String id, final IModel<Boolean> enabledModel) {
+        TextField<String> tf = new TextField<String>(id) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean isEnabled() {
                 return enabledModel.getObject();
@@ -131,15 +134,15 @@ public class BaseForm extends Form {
         return tf;
     }
     
-    public DropDownChoice addLabeledDropDownChoice(String id, IModel model, List<String> values) {
-        DropDownChoice ch = model == null ? new DropDownChoice(id, values) :
-                                            new DropDownChoice(id, model, values);
+    public DropDownChoice<?> addLabeledDropDownChoice(String id, IModel<Object> model, List<String> values) {
+        DropDownChoice<?> ch = model == null ? new DropDownChoice<Object>(id, values) :
+                                            new DropDownChoice<Object>(id, model, values);
         addInternalLabel(id);
         add(ch);
         return ch;
     }
     
-    public CheckBox addLabeledCheckBox(String id, IModel model) {
+    public CheckBox addLabeledCheckBox(String id, IModel<Boolean> model) {
         CheckBox chk = model == null ? new CheckBox(id) :
                                             new CheckBox(id, model);
         addInternalLabel(id);
@@ -167,20 +170,19 @@ public class BaseForm extends Form {
     
     
     public static void addInvalidComponentsToAjaxRequestTarget(
-            AjaxRequestTarget target, Form form) {
+            AjaxRequestTarget target, Form<?> form) {
         Component c;
-        for ( Iterator<Component> it = (Iterator<Component>) form.iterator() ; it.hasNext() ;) {
+        for ( Iterator<? extends Component> it = form.iterator() ; it.hasNext() ;) {
             c = it.next();
-            if ( c instanceof FormComponent ) {
-                FormComponent fc = (FormComponent) c;
+            if ( c instanceof FormComponent<?> ) {
+                FormComponent<?> fc = (FormComponent<?>) c;
                 if ( !fc.isValid() )
                     target.addComponent(fc);
             }
         }
     }
 
-    @SuppressWarnings("unchecked")
-    class FormVisitor implements IVisitor, Serializable {
+    class FormVisitor implements IVisitor<Component>, Serializable {
         private static final long serialVersionUID = 0L;
 
         Set<Component> visited = new HashSet<Component>();
@@ -190,7 +192,7 @@ public class BaseForm extends Form {
                 visited.add(c);
                 if ( tooltipBehaviour != null && componentHasNoTooltip(c))
                     c.add(tooltipBehaviour);
-                if (c instanceof FormComponent)
+                if (c instanceof FormComponent<?>)
                     c.add(markInvalidBehaviour);
             }
             return IVisitor.CONTINUE_TRAVERSAL;

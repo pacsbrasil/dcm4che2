@@ -53,6 +53,8 @@ public class EditDicomObjectPage extends WebPage {
             final AbstractDicomModel model) {
         add(new EditDicomObjectPanel("dicomobject", model.getDataset(), model.getClass().getSimpleName()) {
 
+            private static final long serialVersionUID = 1L;
+
             @Override
             protected void onCancel() {
                 setResponsePage(page);

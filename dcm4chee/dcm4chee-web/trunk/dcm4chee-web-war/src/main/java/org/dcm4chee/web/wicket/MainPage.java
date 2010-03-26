@@ -38,7 +38,10 @@
 
 package org.dcm4chee.web.wicket;
 
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.dcm4chee.usr.wicket.usermanagement.UserListPanel;
 import org.dcm4chee.web.wicket.ae.AEMgtPanel;
 import org.dcm4chee.web.wicket.folder.StudyListPage;
 import org.dcm4chee.web.wicket.fs.FileSystemPage;
@@ -51,8 +54,12 @@ import org.dcm4chee.web.wicket.fs.FileSystemPage;
 @AuthorizeInstantiation({"user","WebUser"})
 public class MainPage extends BaseWicketPage {
     
-    public MainPage() {
+    private ModalWindow window;
+    public MainPage(final PageParameters parameters) {
         super();
+        
+        this.window = new ModalWindow("window");
+        //        add(this.window);// = new ModalWindow("window"));
         addModules(getModuleSelectorPanel());
     }
     
@@ -60,5 +67,7 @@ public class MainPage extends BaseWicketPage {
         selectorPanel.addModule(StudyListPage.class);
         selectorPanel.addModule(AEMgtPanel.class);
         selectorPanel.addModule(FileSystemPage.class);
+
+        selectorPanel.addInstance(new UserListPanel("panel", ((WicketSession) getSession()).getUsername(), window));
     }
 }

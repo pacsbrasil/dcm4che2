@@ -56,6 +56,9 @@ import org.slf4j.LoggerFactory;
  * @since Nov 02, 2009
  */
 public abstract class AutoOpenModalWindow extends ModalWindow {
+
+    private static final long serialVersionUID = 1L;
+
     private boolean renderScript;
     private transient Field showField;
 
@@ -117,6 +120,9 @@ public abstract class AutoOpenModalWindow extends ModalWindow {
     }
         
     private class AutoOpenBehaviour extends AbstractBehavior implements IHeaderContributor {
+
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void renderHead(IHeaderResponse response) {
             if (renderScript) {

@@ -42,8 +42,6 @@ import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.wicket.BaseWicketPage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -53,12 +51,11 @@ import org.slf4j.LoggerFactory;
 public class AEMgtPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
+    
     private boolean editMode = false;
     private EditAETPanel editPanel;
     private AEListPanel listPanel;
       
-    private static Logger log = LoggerFactory.getLogger(AEMgtPanel.class);
-    
     public AEMgtPanel(final String id) {
         super(id);
         add(CSSPackageResource.getHeaderContribution(BaseWicketPage.class, "base_style.css"));

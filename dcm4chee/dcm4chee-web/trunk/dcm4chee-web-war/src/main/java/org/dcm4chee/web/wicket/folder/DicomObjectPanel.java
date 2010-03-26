@@ -58,6 +58,8 @@ import org.dcm4che2.util.TagUtils;
  */
 public class DicomObjectPanel extends Panel {
 
+    private static final long serialVersionUID = 1L;
+    
     private static ElementDictionary dict = ElementDictionary.getDictionary();
     private boolean populated;
 
@@ -65,6 +67,8 @@ public class DicomObjectPanel extends Panel {
         super(id);
         add(new WebMarkupContainer("header").setVisible(header));
         RepeatingView rv = new RepeatingView("elements") {
+
+            private static final long serialVersionUID = 1L;
 
             @Override
             protected void onPopulate() {
@@ -99,6 +103,8 @@ public class DicomObjectPanel extends Panel {
 
     public class ElementFragment extends Fragment {
 
+        private static final long serialVersionUID = 1L;
+
         public ElementFragment(String id, DicomElement el,
                 SpecificCharacterSet cs, String nesting) {
             super(id, "element", DicomObjectPanel.this);
@@ -114,6 +120,8 @@ public class DicomObjectPanel extends Panel {
      }
 
     public class ItemFragment extends Fragment {
+
+        private static final long serialVersionUID = 1L;
 
         public ItemFragment(String id, int itemIndex, String nestingLevel) {
             super(id, "item", DicomObjectPanel.this);

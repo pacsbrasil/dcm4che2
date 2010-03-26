@@ -41,6 +41,7 @@ public class BaseWicketApplication extends AuthenticatedWebApplication {
     public BaseWicketApplication() {
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     protected void init() {
         super.init();
@@ -63,8 +64,9 @@ public class BaseWicketApplication extends AuthenticatedWebApplication {
             mountBookmarkablePage("/denied", accessDeniedPage);
     }
 
+    @SuppressWarnings("unchecked")
     private Class<? extends Page> getPageClass(String className, Class<? extends Page> def) {
-        Class<? extends Page> clazz = null;
+        Class<?> clazz = null;
         if ( className != null ) {
             try {
                 clazz = (Class<? extends Page>) Class.forName(className);
@@ -72,7 +74,7 @@ public class BaseWicketApplication extends AuthenticatedWebApplication {
                 log.error("Could not get Class "+className+"! use default:"+def, t);
             }
         }
-        return clazz == null ? def : clazz;
+        return (Class<? extends Page>) (clazz == null ? def : clazz);
     }
 
     @Override

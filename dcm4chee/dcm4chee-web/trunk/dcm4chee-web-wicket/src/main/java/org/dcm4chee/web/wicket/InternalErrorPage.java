@@ -50,10 +50,11 @@ import org.apache.wicket.model.ResourceModel;
  */
 public class InternalErrorPage extends BaseWicketPage {
     
-    @SuppressWarnings({ "unchecked", "serial" })
     public InternalErrorPage() {
         super();
-        add( new Link("home") {
+        add( new Link<Object>("home") {
+
+            private static final long serialVersionUID = 1L;
 
             @Override
             public void onClick() {

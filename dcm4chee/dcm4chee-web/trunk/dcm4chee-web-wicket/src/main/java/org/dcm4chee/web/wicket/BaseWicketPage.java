@@ -71,7 +71,9 @@ public class BaseWicketPage extends WebPage {
     }
     
     private void initLayout() {
-        add( new Label("app_browser_title", new AbstractReadOnlyModel() {
+        add( new Label("app_browser_title", new AbstractReadOnlyModel<Object>() {
+
+            private static final long serialVersionUID = 1L;
 
             @Override
             public Object getObject() {
@@ -93,7 +95,7 @@ public class BaseWicketPage extends WebPage {
     }
 
     protected String getBrowserTitle() {
-        Class clazz = Application.get().getHomePage();
+        Class<?> clazz = Application.get().getHomePage();
         String s = new ClassStringResourceLoader(clazz).loadStringResource(null, "application.browser_title");
         if (s==null) {
             s = new PackageStringResourceLoader().loadStringResource(clazz, "application.browser_title", 

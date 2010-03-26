@@ -44,8 +44,6 @@ import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.TextField;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -55,12 +53,11 @@ import org.slf4j.LoggerFactory;
 
 public class FocusOnLoadBehaviour extends AbstractBehavior {
 
+    private static final long serialVersionUID = 1L;
+    
     private Component component;
     private transient FocusStrategy focusStrategy;
     
-    private static Logger log = LoggerFactory.getLogger(FocusOnLoadBehaviour.class);
-    private static final long serialVersionUID = -2328234159094338369L;
-
     public FocusOnLoadBehaviour() {}
 
     public FocusOnLoadBehaviour(FocusStrategy strategy) {
@@ -81,9 +78,9 @@ public class FocusOnLoadBehaviour extends AbstractBehavior {
     public void bind( Component component ) {
         this.component = component;
         if ( focusStrategy == null ) {
-            if (component instanceof FormComponent) {
+            if (component instanceof FormComponent<?>) {
                 focusStrategy = new EmptyFocusStrategy();
-            } else if (component instanceof Form) {
+            } else if (component instanceof Form<?>) {
                 focusStrategy = new FirstEmptyTextfieldFocusStrategy();
             }
         }
@@ -130,7 +127,7 @@ public class FocusOnLoadBehaviour extends AbstractBehavior {
 
     public class FocusAndSelectTextStrategy implements FocusStrategy {
         public void focus(IHeaderResponse headerResponse, Component c) {
-            if ( c instanceof TextField) {
+            if ( c instanceof TextField<?>) {
                 headerResponse.renderOnLoadJavascript(getJavaScriptString(c)+";elem.select()");
             }
         }
@@ -138,11 +135,11 @@ public class FocusOnLoadBehaviour extends AbstractBehavior {
     
     public class FirstEmptyTextfieldFocusStrategy implements FocusStrategy {
         public void focus(IHeaderResponse headerResponse, Component fc) {
-            Form form = (Form)fc;
+            Form<?> form = (Form<?>)fc;
             Component c;
             for ( int i=0 ; i<form.size() ; i++) {
                 c = form.get(i);
-                if (c instanceof TextField) {
+                if (c instanceof TextField<?>) {
                     if ( setFocusOnEmpty(headerResponse, c) ) {
                         c.setOutputMarkupId(true);
                         break;

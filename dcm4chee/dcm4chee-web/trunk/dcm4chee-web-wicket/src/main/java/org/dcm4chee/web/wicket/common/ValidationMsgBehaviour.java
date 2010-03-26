@@ -51,10 +51,9 @@ import org.apache.wicket.markup.html.form.FormComponent;
 public class ValidationMsgBehaviour extends AbstractBehavior {
     private static final long serialVersionUID = -2328234159094338369L;
 
-    @SuppressWarnings("unchecked")
     public void onRendered(Component c) {
-        if ( c instanceof FormComponent) {
-            FormComponent fc = (FormComponent)c;
+        if ( c instanceof FormComponent<?>) {
+            FormComponent<?> fc = (FormComponent<?>)c;
             if (!fc.isValid()) {
                 String error = fc.hasFeedbackMessage() ?
                         fc.getFeedbackMessage().getMessage().toString() : "invalid!";

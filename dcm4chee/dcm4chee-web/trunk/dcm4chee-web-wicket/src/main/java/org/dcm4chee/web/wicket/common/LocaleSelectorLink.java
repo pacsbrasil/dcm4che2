@@ -47,8 +47,10 @@ import org.apache.wicket.markup.html.link.Link;
  * @version $Revision$ $Date$
  * @since June 15, 2009
  */
-public class LocaleSelectorLink extends Link {
+public class LocaleSelectorLink extends Link<Object> {
     
+    private static final long serialVersionUID = 1L;
+
     private Locale locale;
 
     public LocaleSelectorLink(String id, String locale) {
@@ -59,11 +61,8 @@ public class LocaleSelectorLink extends Link {
         this.locale = locale;
     }
 
-    private static final long serialVersionUID = 1L;
-
     @Override
     public void onClick() {
         getSession().setLocale(locale);
     }
-
 }

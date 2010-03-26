@@ -65,11 +65,10 @@ public abstract class BaseMBeanDelegate {
         init();
     }
     
-    @SuppressWarnings("unchecked")
     protected void init() {
         log.info("Init MBeanDelegate! server:"+server+" serviceObjectName:"+serviceObjectName);
         if (server == null) {
-            List servers = MBeanServerFactory.findMBeanServer(null);
+            List<?> servers = MBeanServerFactory.findMBeanServer(null);
             if (servers != null && !servers.isEmpty()) {
                 server = (MBeanServerConnection) servers.get(0);
                 log.debug("Found MBeanServer:"+server);

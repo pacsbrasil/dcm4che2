@@ -50,8 +50,10 @@ import org.dcm4chee.web.wicket.common.DateTimeLabel;
  */
 public class FilePanel extends Panel {
 
+    private static final long serialVersionUID = 1L;
+
     public FilePanel(String id, FileModel fileModel) {
-        super(id, new CompoundPropertyModel(fileModel));
+        super(id, new CompoundPropertyModel<Object>(fileModel));
         add(new Label("file.pk"));
         add(new DateTimeLabel("file.createdTime"));
         add(new Label("file.fileSize"));

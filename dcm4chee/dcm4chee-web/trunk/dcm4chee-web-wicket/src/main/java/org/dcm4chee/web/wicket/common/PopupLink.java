@@ -54,7 +54,9 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since Jan 13, 2010
  */
-public abstract class PopupLink extends Link {
+public abstract class PopupLink extends Link<Object> {
+
+    private static final long serialVersionUID = 1L;
 
     private String popupPageName = "popupPage";
     private int popupHeight = 300;
@@ -68,7 +70,7 @@ public abstract class PopupLink extends Link {
         init(popupPageName);
     }
 
-    public PopupLink(String id, IModel model, String pageMapName) {
+    public PopupLink(String id, IModel<Object> model, String pageMapName) {
         super(id, model);
         init(pageMapName);
     }
@@ -96,6 +98,8 @@ public abstract class PopupLink extends Link {
 
     private class MultiPopupSettings extends PopupSettings {
         
+        private static final long serialVersionUID = 1L;
+
         public MultiPopupSettings(IPageMap pageMap) {
             super(pageMap);
         }
@@ -133,6 +137,9 @@ public abstract class PopupLink extends Link {
     }
     
     private class MultiPopupBehaviour extends AbstractBehavior implements IHeaderContributor {
+
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void renderHead(IHeaderResponse response) {
             try {

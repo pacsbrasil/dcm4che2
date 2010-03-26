@@ -48,7 +48,9 @@ import org.dcm4chee.archive.entity.AE;
  * @since June 4, 2009
  */
 public class CipherModel implements IModel<String> {
-    private static final long serialVersionUID = 503961285550247097L;
+    
+    private static final long serialVersionUID = 1L;
+    
     private int idx;
     private AE ae;
 
@@ -58,12 +60,7 @@ public class CipherModel implements IModel<String> {
     }
  
     public String getObject() {
-        List<String> ciphers = ae.getCipherSuites();
-        if ( idx < ciphers.size() ) {
-            return ciphers.get(idx);
-        } else {
-            return "-";
-        }
+        return idx < ae.getCipherSuites().size() ? ae.getCipherSuites().get(idx) : "-";
     }
 
     public void setObject(String s) {

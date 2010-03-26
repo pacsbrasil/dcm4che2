@@ -58,8 +58,8 @@ public class MarkInvalidBehaviour extends AbstractBehavior
     @Override
     public void beforeRender(Component c) {
         msg = null;
-        if ( c instanceof FormComponent) {
-            FormComponent fc = (FormComponent)c;
+        if ( c instanceof FormComponent<?>) {
+            FormComponent<?> fc = (FormComponent<?>)c;
             if (!fc.isValid()) {
                 FeedbackMessage fbMsg = fc.getFeedbackMessage();
                 msg = fbMsg != null ? msg = fbMsg.getMessage().toString() : "Value is not valid!";
@@ -68,7 +68,6 @@ public class MarkInvalidBehaviour extends AbstractBehavior
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void onComponentTag(Component c, ComponentTag tag) {
         if ( msg != null ) {

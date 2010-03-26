@@ -48,14 +48,15 @@ import org.apache.wicket.model.ResourceModel;
  * @version $Revision$ $Date$
  * @since 28.09.2009
  */
-public class AccessDeniedPage extends BaseWicketPage
-{
-  @SuppressWarnings({ "unchecked", "serial" })
+public class AccessDeniedPage extends BaseWicketPage {
+
   public AccessDeniedPage() {
       super();
-      add( new Link("home") {
+      add( new Link<Object>("home") {
 
-          @Override
+        private static final long serialVersionUID = 1L;
+
+        @Override
           public void onClick() {
               setResponsePage(Application.get().getHomePage());
           }

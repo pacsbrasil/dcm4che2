@@ -54,6 +54,7 @@ import org.dcm4chee.web.dao.FileSystemHomeLocal;
 public class AEMgtDelegate {
 
     private static final long serialVersionUID = 1L;
+    
     private static AEMgtDelegate singleton;
     private List<AE> list = new ArrayList<AE>();
     private AEHomeLocal aeHome = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);

@@ -49,6 +49,8 @@ import org.dcm4chee.archive.entity.File;
  */
 public class FileModel implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+    
     private boolean selected;
     private boolean details;
     private final File file;

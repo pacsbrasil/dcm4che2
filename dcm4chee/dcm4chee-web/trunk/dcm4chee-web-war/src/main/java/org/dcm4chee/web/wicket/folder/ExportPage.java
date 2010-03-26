@@ -80,8 +80,14 @@ import org.slf4j.LoggerFactory;
  * @since Jan 11, 2010
  */
 public class ExportPage extends BaseWicketPage {
-    private static final MetaDataKey<String> LAST_DESTINATION_AET_ATTRIBUTE = new MetaDataKey<String>(){};
-    private static final MetaDataKey<HashMap<Integer,ExportResult>> EXPORT_RESULTS = new MetaDataKey<HashMap<Integer,ExportResult>>(){};
+    private static final MetaDataKey<String> LAST_DESTINATION_AET_ATTRIBUTE = new MetaDataKey<String>(){
+
+        private static final long serialVersionUID = 1L;
+    };
+    private static final MetaDataKey<HashMap<Integer,ExportResult>> EXPORT_RESULTS = new MetaDataKey<HashMap<Integer,ExportResult>>(){
+
+        private static final long serialVersionUID = 1L;
+    };
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH.mm.ss,SSS");
     private String destinationAET;
     private boolean closeOnFinished;
@@ -92,9 +98,10 @@ public class ExportPage extends BaseWicketPage {
     private int resultId;
     private ExportInfo exportInfo;
     
-    //private static HashMap<Integer,ExportResult> results = new HashMap<Integer,ExportResult>();
-    
     private IModel<String> destinationModel = new IModel<String>(){
+
+        private static final long serialVersionUID = 1L;
+        
         public String getObject() {
             return destinationAET;
         }
@@ -133,7 +140,7 @@ public class ExportPage extends BaseWicketPage {
         form.add( new Label("selectedSeriesValue", new PropertyModel<Integer>(exportInfo, "nrOfSeries")));
         form.addLabel("selectedInstances");
         form.add( new Label("selectedInstancesValue", new PropertyModel<Integer>(exportInfo, "nrOfInstances")));
-        form.add(new DropDownChoice("destinationAETs", destinationModel, destinationAETs){
+        form.add(new DropDownChoice<String>("destinationAETs", destinationModel, destinationAETs){
             @Override
             public boolean isEnabled() {
                 return exportInfo.hasSelection() && isExportInactive();
@@ -268,7 +275,7 @@ public class ExportPage extends BaseWicketPage {
         int nrPat, nrStudy, nrSeries, nrInstances;
         
         private ExportInfo(List<PatientModel> patients) {
-            this.requests = new ArrayList(patients.size());
+            this.requests = new ArrayList<MoveRequest>(patients.size());
             for (PatientModel pat : patients) {
                 if (pat.isSelected()) {
                     prepareStudiesOfPatientRequests(pat);
@@ -282,18 +289,6 @@ public class ExportPage extends BaseWicketPage {
             return requests;
         }
 
-        public int getNrOfPatients() {
-            return nrPat;
-        }
-        public int getNrOfStudies() {
-            return nrStudy;
-        }
-        public int getNrOfSeries() {
-            return nrSeries;
-        }
-        public int getNrOfInstances() {
-            return nrInstances;
-        }
         public boolean hasSelection() {
             return (nrPat | nrStudy | nrSeries | nrInstances) != 0;
         }
@@ -373,17 +368,12 @@ public class ExportPage extends BaseWicketPage {
         private long start, end;
         private List<ExportResponseHandler> moveRequests = new ArrayList<ExportResponseHandler>(); 
         private List<ExportResponseHandler> failedRequests = new ArrayList<ExportResponseHandler>();
-        private int id;
         private int nrOfMoverequests;
         private boolean isRendered = true;
         
         public ExportResult(int id) {
-            this.id = id;
         }
 
-        public int getId() {
-            return id;
-        }
         public int[] calcTotal() {
             int[] total = new int[4];
             for ( ExportResponseHandler h : moveRequests) {
@@ -512,6 +502,9 @@ public class ExportPage extends BaseWicketPage {
     }
     
     private class MoveRequest implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+        
         String patId;
         String[] studyIUIDs, seriesIUIDs, sopIUIDs;
         
@@ -547,5 +540,4 @@ public class ExportPage extends BaseWicketPage {
             return sb.toString();
         }
     }
-
 }

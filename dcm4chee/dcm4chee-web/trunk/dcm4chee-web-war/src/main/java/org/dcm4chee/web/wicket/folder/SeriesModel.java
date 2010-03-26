@@ -58,7 +58,7 @@ import org.dcm4chee.web.wicket.util.DateUtils;
  */
 public class SeriesModel extends AbstractDicomModel implements Serializable {
 
-    private static final long serialVersionUID = 1461384501283007745L;
+    private static final long serialVersionUID = 1L;
     
     private String sourceAET;
     private List<InstanceModel> instances = new ArrayList<InstanceModel>();

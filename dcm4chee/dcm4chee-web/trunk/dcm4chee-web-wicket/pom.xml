@@ -82,6 +82,6 @@
 		</plugins>
 	</build>
 	<properties>
-		<wicket.version>1.4.2</wicket.version>
+		<wicket.version>1.4.7</wicket.version>
 	</properties>
 </project>

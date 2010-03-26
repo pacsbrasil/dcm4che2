@@ -43,8 +43,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.management.MBeanServerFactory;
-
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
@@ -78,8 +76,6 @@ import org.dcm4chee.web.wicket.common.BaseForm;
 import org.dcm4chee.web.wicket.common.DateTimeLabel;
 import org.dcm4chee.web.wicket.common.PopupLink;
 import org.dcm4chee.web.wicket.common.TooltipBehaviour;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class StudyListPage extends Panel {
 
@@ -89,6 +85,9 @@ public class StudyListPage extends Panel {
     private ViewPort viewport = ((WicketSession) getSession()).getViewPort();
     private StudyListHeader header = new StudyListHeader("thead");
     private IModel<Boolean> latestStudyFirst = new AbstractReadOnlyModel<Boolean>() {
+
+        private static final long serialVersionUID = 1L;
+
         @Override
         public Boolean getObject() {
             return viewport.getFilter().isLatestStudiesFirst();
@@ -99,12 +98,10 @@ public class StudyListPage extends Panel {
     private boolean notSearched = true;
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("folder.");
     
-    private static Logger log = LoggerFactory.getLogger(StudyListPage.class);
-
     public StudyListPage(final String id) {
         super(id);
         final StudyListFilter filter = viewport.getFilter();
-        BaseForm form = new BaseForm("form", new CompoundPropertyModel(filter));
+        BaseForm form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
         form.setResourceIdPrefix("folder.");
         form.setTooltipBehaviour(tooltipBehaviour);
         add(form);
@@ -119,6 +116,9 @@ public class StudyListPage extends Panel {
 
     private void addQueryFields(final StudyListFilter filter, BaseForm form) {
         IModel<Boolean> enabledModel = new AbstractReadOnlyModel<Boolean>(){
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public Boolean getObject() {
                 return !filter.isExtendedStudyQuery() || "*".equals(filter.getStudyInstanceUID());
@@ -149,12 +149,16 @@ public class StudyListPage extends Panel {
     private void addNavigation(BaseForm form) {
         form.add(new Button("search", new ResourceModel("searchBtn")) {
 
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onSubmit() {
                 viewport.setOffset(0);
                 queryStudies();
             }});
         form.add(new Button("prev", new ResourceModel("folder.prev")) {
+
+            private static final long serialVersionUID = 1L;
 
             @Override
             protected void onComponentTag(ComponentTag tag) {
@@ -171,6 +175,8 @@ public class StudyListPage extends Panel {
             }});
         form.add(new Button("next", new ResourceModel("nextBtn")) {
 
+            private static final long serialVersionUID = 1L;
+
             @Override
             protected void onComponentTag(ComponentTag tag) {
                 super.onComponentTag(tag);
@@ -186,7 +192,10 @@ public class StudyListPage extends Panel {
             }});
         //viewport label: use StringResourceModel with key substitution to select 
         //property key according notSearched and getTotal.
-        Model keySelectModel = new Model() {
+        Model<?> keySelectModel = new Model<Serializable>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public Serializable getObject() {
                 return notSearched ? "folder.notSearched" :
@@ -195,6 +204,9 @@ public class StudyListPage extends Panel {
             }
         };
         form.add(new Label("viewport", new StringResourceModel("${}", StudyListPage.this, keySelectModel,new Object[]{"dummy"}){
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             protected Object[] getParameters() {
                 return new Object[]{viewport.getOffset()+1,
@@ -206,6 +218,9 @@ public class StudyListPage extends Panel {
 
     private void addActions(BaseForm form) {
         PopupLink l = new PopupLink("export", "exportPage") {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onClick() {
                 ExportPage page = new ExportPage(viewport.getPatients());
@@ -217,9 +232,12 @@ public class StudyListPage extends Panel {
         form.add(l);
     }
 
-    private WebMarkupContainer addExtendedPatientSearch(final Form form) {
+    private WebMarkupContainer addExtendedPatientSearch(final Form<?> form) {
         final StudyListFilter filter = viewport.getFilter();
         final WebMarkupContainer extendedPatFilter = new WebMarkupContainer("extendedPatFilter") {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean isVisible() {
                 return filter.isExtendedPatQuery();
@@ -228,16 +246,22 @@ public class StudyListPage extends Panel {
         extendedPatFilter.add( new Label("birthDateLabel", new ResourceModel("folder.birthDate")));
         extendedPatFilter.add( new Label("birthDateMinLabel", new ResourceModel("folder.birthDateMin")));
         extendedPatFilter.add( new Label("birthDateMaxLabel", new ResourceModel("folder.birthDateMax")));
-        extendedPatFilter.add( new TextField("birthDateMin"));
-        extendedPatFilter.add( new TextField("birthDateMax"));
+        extendedPatFilter.add( new TextField<String>("birthDateMin"));
+        extendedPatFilter.add( new TextField<String>("birthDateMax"));
         form.add(extendedPatFilter);
-        AjaxFallbackLink l = new AjaxFallbackLink("showExtendedPatFilter") {
+        AjaxFallbackLink<?> l = new AjaxFallbackLink<Object>("showExtendedPatFilter") {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onClick(AjaxRequestTarget target) {
                 filter.setExtendedPatQuery(!filter.isExtendedPatQuery());
                 target.addComponent(form);
             }};
         l.add(new Image("showExtendedPatFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public ResourceReference getObject() {
                 return filter.isExtendedPatQuery() ? WicketApplication.IMAGE_COLLAPSE : 
@@ -247,24 +271,33 @@ public class StudyListPage extends Panel {
         form.add(l);
         return extendedPatFilter;
     }
-    private WebMarkupContainer addExtendedStudySearch(final Form form) {
+    private WebMarkupContainer addExtendedStudySearch(final Form<?> form) {
         final StudyListFilter filter = viewport.getFilter();
         final WebMarkupContainer extendedStudyFilter = new WebMarkupContainer("extendedStudyFilter") {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean isVisible() {
                 return filter.isExtendedStudyQuery();
             }
         };
         extendedStudyFilter.add( new Label("studyInstanceUIDLabel", new ResourceModel("folder.studyInstanceUID")));
-        extendedStudyFilter.add( new TextField("studyInstanceUID"));
+        extendedStudyFilter.add( new TextField<String>("studyInstanceUID"));
         form.add(extendedStudyFilter);
-        AjaxFallbackLink l = new AjaxFallbackLink("showExtendedStudyFilter") {
+        AjaxFallbackLink<?> l = new AjaxFallbackLink<Object>("showExtendedStudyFilter") {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onClick(AjaxRequestTarget target) {
                 filter.setExtendedStudyQuery(!filter.isExtendedStudyQuery());
                 target.addComponent(form);
             }};
         l.add(new Image("showExtendedStudyFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public ResourceReference getObject() {
                 return filter.isExtendedStudyQuery() ? WicketApplication.IMAGE_COLLAPSE : 
@@ -370,17 +403,22 @@ public class StudyListPage extends Panel {
         return MODULE_NAME;
     }
 
-    private final class PatientListView extends PropertyListView {
+    private final class PatientListView extends PropertyListView<Object> {
 
-        private PatientListView(String id, List list) {
+        private static final long serialVersionUID = 1L;
+
+        private PatientListView(String id, List<?> list) {
             super(id, list);
         }
 
         @Override
-        protected void populateItem(final ListItem item) {
+        protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
             final PatientModel patModel = (PatientModel) item.getModelObject();
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 protected void onComponentTag(ComponentTag tag) {
                    super.onComponentTag(tag);
@@ -396,7 +434,10 @@ public class StudyListPage extends Panel {
             item.add(new Label("sex").add(tooltipBehaviour));
             item.add(new Label("comments").add(tooltipBehaviour));
             item.add(new Label("pk").add(new TooltipBehaviour("folder.","patPk")));
-            item.add(new AjaxFallbackLink("toggledetails") {
+            item.add(new AjaxFallbackLink<Object>("toggledetails") {
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     patModel.setDetails(!patModel.isDetails());
@@ -407,8 +448,10 @@ public class StudyListPage extends Panel {
 
             }.add(new Image("detailImg",WicketApplication.IMAGE_DETAIL))
              .add(new TooltipBehaviour("folder.","patDetail")));
-            item.add( new Link("edit") {
+            item.add( new Link<Object>("edit") {
                 
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public void onClick() {
                     setResponsePage(
@@ -418,12 +461,16 @@ public class StudyListPage extends Panel {
              .add(new TooltipBehaviour("folder.","patEdit")));
             item.add(new AjaxCheckBox("selected"){
 
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);
                 }}.setOutputMarkupId(true).add(new TooltipBehaviour("folder.","patSelect")));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public boolean isVisible() {
                     return patModel.isDetails();
@@ -436,21 +483,26 @@ public class StudyListPage extends Panel {
         }
     }
 
-    private final class StudyListView extends PropertyListView {
+    private final class StudyListView extends PropertyListView<Object> {
 
-        private final ListItem patientListItem;
+        private static final long serialVersionUID = 1L;
+        
+        private final ListItem<?> patientListItem;
 
         private StudyListView(String id, List<StudyModel> list,
-                ListItem patientListItem) {
+                ListItem<?> patientListItem) {
             super(id, list);
             this.patientListItem = patientListItem;
         }
 
         @Override
-        protected void populateItem(final ListItem item) {
+        protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
             final StudyModel studyModel = (StudyModel) item.getModelObject();
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 protected void onComponentTag(ComponentTag tag) {
                    super.onComponentTag(tag);
@@ -468,7 +520,9 @@ public class StudyListPage extends Panel {
             item.add(new Label("numberOfInstances").add(new TooltipBehaviour("folder.study","NoI")));
             item.add(new Label("availability").add(new TooltipBehaviour("folder.study","Availability")));
             item.add(new Label("pk").add(new TooltipBehaviour("folder.", "studyPk")));
-            item.add(new AjaxFallbackLink("toggledetails") {
+            item.add(new AjaxFallbackLink<Object>("toggledetails") {
+
+                private static final long serialVersionUID = 1L;
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
@@ -480,8 +534,10 @@ public class StudyListPage extends Panel {
 
             }.add(new Image("detailImg",WicketApplication.IMAGE_DETAIL))
              .add(new TooltipBehaviour("folder.","studyDetail")));
-            item.add( new Link("edit") {
+            item.add( new Link<Object>("edit") {
                 
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public void onClick() {
                     setResponsePage(
@@ -491,17 +547,20 @@ public class StudyListPage extends Panel {
              .add(new TooltipBehaviour("folder.","studyEdit")));
             item.add( new AjaxCheckBox("selected"){
 
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);
                 }}.setOutputMarkupId(true).add(new TooltipBehaviour("folder.","studySelect")));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public boolean isVisible() {
                     return studyModel.isDetails();
                 }
-                
             };
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", studyModel.getDataset(), false));
@@ -510,21 +569,26 @@ public class StudyListPage extends Panel {
         }
     }
 
-    private final class PPSListView extends PropertyListView {
+    private final class PPSListView extends PropertyListView<Object> {
 
-        private final ListItem patientListItem;
+        private static final long serialVersionUID = 1L;
+        
+        private final ListItem<?> patientListItem;
 
         private PPSListView(String id, List<PPSModel> list,
-                ListItem patientListItem) {
+                ListItem<?> patientListItem) {
             super(id, list);
             this.patientListItem = patientListItem;
         }
 
         @Override
-        protected void populateItem(final ListItem item) {
+        protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
             final PPSModel ppsModel = (PPSModel) item.getModelObject();
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 protected void onComponentTag(ComponentTag tag) {
                    super.onComponentTag(tag);
@@ -532,6 +596,9 @@ public class StudyListPage extends Panel {
                 }
             };
             cell.add(new ExpandCollapseLink("expand", ppsModel, patientListItem){
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public boolean isVisible() {
                     return ppsModel.getUid() != null;
@@ -547,7 +614,9 @@ public class StudyListPage extends Panel {
             item.add(new Label("numberOfInstances").add(new TooltipBehaviour("folder.pps","NoI")));
             item.add(new Label("status").add(new TooltipBehaviour("folder.pps","Status")));
             item.add(new Label("pk").add(new TooltipBehaviour("folder.", "ppsPk")));
-            item.add(new AjaxFallbackLink("toggledetails") {
+            item.add(new AjaxFallbackLink<Object>("toggledetails") {
+
+                private static final long serialVersionUID = 1L;
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
@@ -563,7 +632,9 @@ public class StudyListPage extends Panel {
                 }
             }.add(new Image("detailImg",WicketApplication.IMAGE_DETAIL))
              .add(new TooltipBehaviour("folder.","ppsDetail")));
-            item.add(new Link("edit") {
+            item.add(new Link<Object>("edit") {
+
+                private static final long serialVersionUID = 1L;
 
                 @Override
                 public void onClick() {
@@ -578,12 +649,16 @@ public class StudyListPage extends Panel {
              .add(new TooltipBehaviour("folder.","ppsEdit")));
             item.add(new AjaxCheckBox("selected"){
 
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);
                 }}.setOutputMarkupId(true).add(new TooltipBehaviour("folder.","ppsSelect")));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public boolean isVisible() {
                     return ppsModel.isDetails();
@@ -597,21 +672,26 @@ public class StudyListPage extends Panel {
         }
     }
 
-    private final class SeriesListView extends PropertyListView {
+    private final class SeriesListView extends PropertyListView<Object> {
 
-        private final ListItem patientListItem;
+        private static final long serialVersionUID = 1L;
+        
+        private final ListItem<?> patientListItem;
 
         private SeriesListView(String id, List<SeriesModel> list,
-                ListItem patientListItem) {
+                ListItem<?> patientListItem) {
             super(id, list);
             this.patientListItem = patientListItem;
         }
 
         @Override
-        protected void populateItem(final ListItem item) {
+        protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
             final SeriesModel seriesModel = (SeriesModel) item.getModelObject();
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 protected void onComponentTag(ComponentTag tag) {
                    super.onComponentTag(tag);
@@ -628,7 +708,9 @@ public class StudyListPage extends Panel {
             item.add(new Label("numberOfInstances").add(new TooltipBehaviour("folder.series","NoI")));
             item.add(new Label("availability").add(new TooltipBehaviour("folder.series","Availability")));
             item.add(new Label("pk").add(new TooltipBehaviour("folder.", "seriesPk")));
-            item.add(new AjaxFallbackLink("toggledetails") {
+            item.add(new AjaxFallbackLink<Object>("toggledetails") {
+
+                private static final long serialVersionUID = 1L;
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
@@ -640,8 +722,10 @@ public class StudyListPage extends Panel {
 
             }.add(new Image("detailImg",WicketApplication.IMAGE_DETAIL))
              .add(new TooltipBehaviour("folder.","seriesDetail")));
-            item.add(new Link("edit") {
+            item.add(new Link<Object>("edit") {
                 
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public void onClick() {
                     setResponsePage(new EditDicomObjectPage(StudyListPage.this.getPage(), seriesModel));
@@ -650,12 +734,16 @@ public class StudyListPage extends Panel {
              .add(new TooltipBehaviour("folder.","seriesEdit")));
             item.add(new AjaxCheckBox("selected"){
 
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);
                 }}.setOutputMarkupId(true).add(new TooltipBehaviour("folder.","seriesSelect")));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public boolean isVisible() {
                     return seriesModel.isDetails();
@@ -669,21 +757,26 @@ public class StudyListPage extends Panel {
         }
     }
 
-    private final class InstanceListView extends PropertyListView {
+    private final class InstanceListView extends PropertyListView<Object> {
 
-        private final ListItem patientListItem;
+        private static final long serialVersionUID = 1L;
+        
+        private final ListItem<?> patientListItem;
 
         private InstanceListView(String id, List<InstanceModel> list,
-                ListItem patientListItem) {
+                ListItem<?> patientListItem) {
             super(id, list);
             this.patientListItem = patientListItem;
         }
 
         @Override
-        protected void populateItem(final ListItem item) {
+        protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
             final InstanceModel instModel = (InstanceModel) item.getModelObject();
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 protected void onComponentTag(ComponentTag tag) {
                    super.onComponentTag(tag);
@@ -698,7 +791,9 @@ public class StudyListPage extends Panel {
             item.add(new Label("description").add(new TooltipBehaviour("folder.instance","Description")));
             item.add(new Label("availability").add(new TooltipBehaviour("folder.instance","Availability")));
             item.add(new Label("pk").add(new TooltipBehaviour("folder.", "instancePk")));
-            item.add(new AjaxFallbackLink("toggledetails") {
+            item.add(new AjaxFallbackLink<Object>("toggledetails") {
+
+                private static final long serialVersionUID = 1L;
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
@@ -710,8 +805,10 @@ public class StudyListPage extends Panel {
 
             }.add(new Image("detailImg",WicketApplication.IMAGE_DETAIL))
              .add(new TooltipBehaviour("folder.","instanceDetail")));
-            item.add(new Link("edit") {
+            item.add(new Link<Object>("edit") {
                 
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public void onClick() {
                     setResponsePage(new EditDicomObjectPage(StudyListPage.this.getPage(), instModel));
@@ -720,12 +817,16 @@ public class StudyListPage extends Panel {
              .add(new TooltipBehaviour("folder.","instanceEdit")));
             item.add(new AjaxCheckBox("selected"){
 
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);
                 }}.setOutputMarkupId(true).add(new TooltipBehaviour("folder.","instanceSelect")));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public boolean isVisible() {
                     return instModel.isDetails();
@@ -738,18 +839,20 @@ public class StudyListPage extends Panel {
         }
     }
 
-    private final static class FileListView extends PropertyListView {
+    private final static class FileListView extends PropertyListView<Object> {
 
-        private final ListItem patientListItem;
+        private static final long serialVersionUID = 1L;
+        
+        private final ListItem<?> patientListItem;
 
         private FileListView(String id, List<FileModel> list,
-                ListItem patientListItem) {
+                ListItem<?> patientListItem) {
             super(id, list);
             this.patientListItem = patientListItem;
         }
 
         @Override
-        protected void populateItem(final ListItem item) {
+        protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
             final FileModel fileModel = (FileModel) item.getModelObject();
             item.add(new DateTimeLabel("file.createdTime").add(new TooltipBehaviour("folder.file.","createdTime")));
@@ -759,7 +862,9 @@ public class StudyListPage extends Panel {
             item.add(new Label("file.filePath").add(new TooltipBehaviour("folder.file.","filePath")));
             item.add(new Label("file.fileSystem.availability").add(new TooltipBehaviour("folder.file.fileSystem.","availability")));
             item.add(new Label("file.pk").add(new TooltipBehaviour("folder.","filePk")));
-            item.add(new AjaxFallbackLink("toggledetails") {
+            item.add(new AjaxFallbackLink<Object>("toggledetails") {
+
+                private static final long serialVersionUID = 1L;
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
@@ -773,12 +878,16 @@ public class StudyListPage extends Panel {
              .add(new TooltipBehaviour("folder.","fileDetail")));
             item.add(new AjaxCheckBox("selected"){
 
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);
                 }}.setOutputMarkupId(true).add(new TooltipBehaviour("folder.","fileSelect")));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public boolean isVisible() {
                     return fileModel.isDetails();
@@ -790,16 +899,21 @@ public class StudyListPage extends Panel {
         }
     }
     
-    private class ExpandCollapseLink extends AjaxFallbackLink {
+    private class ExpandCollapseLink extends AjaxFallbackLink<Object> {
 
-        private AbstractDicomModel model;
-        private ListItem patientListItem;
+        private static final long serialVersionUID = 1L;
         
-        private ExpandCollapseLink(String id, AbstractDicomModel m, ListItem patientListItem) {
+        private AbstractDicomModel model;
+        private ListItem<?> patientListItem;
+        
+        private ExpandCollapseLink(String id, AbstractDicomModel m, ListItem<?> patientListItem) {
             super(id);
             this.model = m;
             this.patientListItem = patientListItem;
             add( new Image(id+"Img", new AbstractReadOnlyModel<ResourceReference>() {
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public ResourceReference getObject() {
                     return model.isCollapsed() ? WicketApplication.IMAGE_EXPAND : 

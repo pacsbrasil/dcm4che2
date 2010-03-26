@@ -51,6 +51,8 @@ import org.dcm4chee.web.dao.StudyListFilter;
  */
 public class ViewPort implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+    
     private int offset = 0;
     private int total = 0;
     private final StudyListFilter filter = new StudyListFilter();

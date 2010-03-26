@@ -15,12 +15,16 @@ import org.dcm4chee.web.wicket.common.TooltipBehaviour;
 
 public class StudyListHeader extends Panel {
 
+    private static final long serialVersionUID = 1L;
+    
     private int headerExpandLevel = 1;
     private int expandAllLevel = 5;
     private Model<Boolean> autoExpand = new Model<Boolean>(false);
  
     private final class Row extends WebMarkupContainer {
 
+        private static final long serialVersionUID = 1L;
+        
         private final int entityLevel;
 
         public Row(String id, int entityLevel) {
@@ -37,12 +41,16 @@ public class StudyListHeader extends Panel {
 
     private final class Cell extends WebMarkupContainer {
 
+        private static final long serialVersionUID = 1L;
+        
         private final int entityLevel;
 
         public Cell(String id, int entityLevel) {
             super(id);
             this.entityLevel = entityLevel;
-            add(new AjaxFallbackLink("expand"){
+            add(new AjaxFallbackLink<Object>("expand"){
+
+                private static final long serialVersionUID = 1L;
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
@@ -53,6 +61,9 @@ public class StudyListHeader extends Panel {
                     }
                 }
             }.add( new Image("expandImg", new AbstractReadOnlyModel<ResourceReference>() {
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public ResourceReference getObject() {
                     return StudyListHeader.this.headerExpandLevel <= Cell.this.entityLevel ? 
@@ -74,8 +85,10 @@ public class StudyListHeader extends Panel {
         super(id);
         setOutputMarkupId(true);
         Cell patCell = new Cell("cell", 0);
-        patCell.add(new AjaxFallbackLink("expandAll"){
+        patCell.add(new AjaxFallbackLink<Object>("expandAll"){
 
+            private static final long serialVersionUID = 1L;
+            
             @Override
             public void onClick(AjaxRequestTarget target) {
                 if (target != null) {
@@ -89,6 +102,9 @@ public class StudyListHeader extends Panel {
             }
         }.add(new Image("expandAllImg", WicketApplication.IMAGE_EXPAND_ALL)));
         patCell.add(new AjaxCheckBox("autoExpand", autoExpand){
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
                 if (autoExpand.getObject()) {

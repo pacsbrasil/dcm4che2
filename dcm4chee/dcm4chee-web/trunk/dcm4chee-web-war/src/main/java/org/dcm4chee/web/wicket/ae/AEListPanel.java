@@ -65,18 +65,23 @@ public class AEListPanel extends Panel {
 
     private AEMgtPanel page;
     
-    @SuppressWarnings("serial")
     public AEListPanel(String id, AEMgtPanel p) {
         super(id);
         setOutputMarkupId(true);
         final DicomEchoWindow mw = new DicomEchoWindow("echoPanel", true);
         mw.setWindowClosedCallback(new WindowClosedCallback(){
+
+            private static final long serialVersionUID = 1L;
+
             public void onClose(AjaxRequestTarget target) {
                 AEMgtDelegate.getInstance().updateAEList();
                 target.addComponent(AEListPanel.this);
             }});
         add(mw);
-        final ConfirmationWindow confirm = new ConfirmationWindow<AE>("confirm"){
+        final ConfirmationWindow<AE> confirm = new ConfirmationWindow<AE>("confirm"){
+
+            private static final long serialVersionUID = 1L;
+            
             @Override
             public void onConfirmation(AjaxRequestTarget target, AE ae) {
                 AEMgtDelegate.getInstance().removeAET(ae);
@@ -102,10 +107,11 @@ public class AEListPanel extends Panel {
         page = p;
         add(new PropertyListView<AE>("list", AEMgtDelegate.getInstance().getAEList() ) {
 
+            private static final long serialVersionUID = 1L;
+
             @Override
-            protected ListItem<AE> newItem(final int index)
-            {
-                    return new OddEvenListItem<AE>(index, getListItemModel(getModel(), index));
+            protected ListItem<AE> newItem(final int index) {
+                return new OddEvenListItem<AE>(index, getListItemModel(getModel(), index));
             }
 
             @Override
@@ -113,9 +119,12 @@ public class AEListPanel extends Panel {
                 item.add(new Label("title"));
                 item.add(new Label("hostName"));
                 item.add(new Label("port"));
-                item.add(new ListView("cipherSuites", item.getModelObject().getCipherSuites()) {
+                item.add(new ListView<Object>("cipherSuites", item.getModelObject().getCipherSuites()) {
+
+                    private static final long serialVersionUID = 1L;
+
                     @Override
-                    protected void populateItem(final ListItem item1) {
+                    protected void populateItem(final ListItem<Object> item1) {
                         item1.add(new Label("ciphersuite", item1.getModel()));
                     }
                 });
@@ -128,8 +137,10 @@ public class AEListPanel extends Panel {
                 item.add(new Label("institution"));
                 item.add(new Label("department"));
                 item.add(new Label("installed"));
-                Link editAET = new Link("editAET") {
+                Link<?> editAET = new Link<Object>("editAET") {
                     
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public void onClick() {
                         page.setEditPage(item.getModelObject());
@@ -137,7 +148,10 @@ public class AEListPanel extends Panel {
                 };
                 item.add(editAET);
                 MetaDataRoleAuthorizationStrategy.authorize(editAET, RENDER, "WebAdmin");
-                AjaxLink removeAET = new AjaxLink("removeAET") {
+                AjaxLink<?> removeAET = new AjaxLink<Object>("removeAET") {
+
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public void onClick(AjaxRequestTarget target) {
                         AE ae = item.getModelObject();
@@ -146,7 +160,10 @@ public class AEListPanel extends Panel {
                 };
                 item.add(removeAET);
                 MetaDataRoleAuthorizationStrategy.authorize(removeAET, RENDER, "WebAdmin");
-                item.add(new AjaxLink("echo") {
+                item.add(new AjaxLink<Object>("echo") {
+
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public void onClick(AjaxRequestTarget target) {
                         mw.show(target, item.getModelObject());
@@ -154,8 +171,10 @@ public class AEListPanel extends Panel {
             }
             
         });
-        Link newAET = new Link("newAET") {
+        Link<?> newAET = new Link<Object>("newAET") {
             
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onClick() {
                 page.setEditPage(new AE());

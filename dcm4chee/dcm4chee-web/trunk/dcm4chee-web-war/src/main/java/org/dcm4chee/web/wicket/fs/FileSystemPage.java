@@ -29,8 +29,8 @@ public class FileSystemPage extends Panel {
             list = Collections.emptyList();
         }
         
-        add(new PropertyListView("list", list) {
-            protected void populateItem(ListItem item) {
+        add(new PropertyListView<Object>("list", list) {
+            protected void populateItem(ListItem<Object> item) {
                 FileSystem fs = (FileSystem) item.getModelObject();
                 item.add(new Label("pk"));
                 item.add(new Label("directoryPath"));
@@ -43,4 +43,7 @@ public class FileSystemPage extends Panel {
         });
     }
 
+    public static String getModuleName() {
+        return "filesystem";
+    }
 }

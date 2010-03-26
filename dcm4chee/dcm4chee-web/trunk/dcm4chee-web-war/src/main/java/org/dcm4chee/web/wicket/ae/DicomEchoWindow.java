@@ -62,22 +62,19 @@ import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.wicket.common.BaseForm;
 import org.dcm4chee.web.wicket.common.FocusOnLoadBehaviour;
 import org.dcm4chee.web.wicket.common.TooltipBehaviour;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
  * @since Aug 18, 2009
  */
-@SuppressWarnings("serial")
 public class DicomEchoWindow extends ModalWindow {
+
+    private static final long serialVersionUID = 1L;
 
     private boolean echoOnShow;
     private AE aeOri;
     private final AE aeEcho = new AE();
-
-    private static Logger log = LoggerFactory.getLogger(DicomEchoPanel.class);
 
     public DicomEchoWindow(String id, boolean echoOnShow) {
         super(id);
@@ -127,16 +124,19 @@ public class DicomEchoWindow extends ModalWindow {
         }
         return false;
     }
-
     
-    @SuppressWarnings("serial")
     public class DicomEchoPanel extends Panel {
+    
+    private static final long serialVersionUID = 1L;
     
     private Integer nrOfTests = 1;
     private String result;
     private boolean saveFailed;
     
     private IModel<Integer> nrOfTestsModel = new IModel<Integer>() {
+
+        private static final long serialVersionUID = 1L;
+        
         public Integer getObject() {
             return nrOfTests;
         }
@@ -146,11 +146,19 @@ public class DicomEchoWindow extends ModalWindow {
         public void detach() {}
     };
     
-    private Label resultLabel = new Label("result", new AbstractReadOnlyModel() {
-        @Override
-        public Object getObject() {
-            return result;
-        }}) {
+    private Label resultLabel = new Label("result", 
+            new AbstractReadOnlyModel<Object>() {
+        
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public Object getObject() {
+                    return result;
+                }
+            }
+    ) {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public void onComponentTag(ComponentTag tag) {
             tag.getAttributes().put("class", saveFailed ? "ae_save_failed" :
@@ -175,23 +183,25 @@ public class DicomEchoWindow extends ModalWindow {
         form.add(new Label("ciphersLabel", new ResourceModel("aet.echoCiphers")));
         form.add(new Label("nrOfTestsLabel", new ResourceModel("aet.echoNrOfTests")));
         form.add(new Label("echoResultLabel", new ResourceModel("aet.echoResult")));
-        form.add(new TextField("title").add(new AETitleValidator()).setRequired(true).setOutputMarkupId(true)); 
-        form.add(new TextField("hostName").add(StringValidator.minimumLength(1)).setRequired(true).setOutputMarkupId(true)); 
-        form.add( new TextField("port").add(new RangeValidator(1,65535)).setOutputMarkupId(true));
-        form.add(new DropDownChoice("ciphersuite1", new CipherModel(aeEcho, 0), AEMgtDelegate.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
-        form.add(new DropDownChoice("ciphersuite2", new CipherModel(aeEcho, 1), AEMgtDelegate.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
-        form.add(new DropDownChoice("ciphersuite3", new CipherModel(aeEcho, 2), AEMgtDelegate.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
-        form.add( new TextField("nrOfTests", nrOfTestsModel, Integer.class).add(new RangeValidator(1,2000)).setOutputMarkupId(true));
+        form.add(new TextField<String>("title").add(new AETitleValidator()).setRequired(true).setOutputMarkupId(true)); 
+        form.add(new TextField<String>("hostName").add(StringValidator.minimumLength(1)).setRequired(true).setOutputMarkupId(true)); 
+        form.add( new TextField<Integer>("port").add(new RangeValidator<Integer>(1,65535)).setOutputMarkupId(true));
+        form.add(new DropDownChoice<String>("ciphersuite1", new CipherModel(aeEcho, 0), AEMgtDelegate.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
+        form.add(new DropDownChoice<String>("ciphersuite2", new CipherModel(aeEcho, 1), AEMgtDelegate.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
+        form.add(new DropDownChoice<String>("ciphersuite3", new CipherModel(aeEcho, 2), AEMgtDelegate.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
+        form.add( new TextField<Integer>("nrOfTests", nrOfTestsModel, Integer.class).add(new RangeValidator<Integer>(1,2000)).setOutputMarkupId(true));
         resultLabel.setOutputMarkupId(true).setEnabled(false);
         form.add(resultLabel);
-        form.add(new AjaxButton("cancel", new ResourceModel("cancelBtn"))
-        {
+        form.add(new AjaxButton("cancel", new ResourceModel("cancelBtn")) {
+            
+            private static final long serialVersionUID = 1L;
+            
             @Override
-            protected void onSubmit(AjaxRequestTarget target, Form form) {
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 close(target);
             }
             @Override
-            protected void onError(AjaxRequestTarget target, Form form) {
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
                 close(target);
             }
         }).add(FocusOnLoadBehaviour.newSimpleFocusBehaviour());
@@ -215,11 +225,14 @@ public class DicomEchoWindow extends ModalWindow {
     }
 
     class EchoButton extends AjaxButton {
+
+        private static final long serialVersionUID = 1L;
+        
         private EchoButton(String id) {
             super(id, new ResourceModel("aet.echoButton"));
         }
         @Override
-        protected void onSubmit(AjaxRequestTarget target, Form form) {
+        protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
             doEcho(aeEcho);
             boolean chgd = !isSameNetCfg( aeOri, aeEcho);
             if ( chgd != saveBtn.isEnabled()) {
@@ -229,18 +242,21 @@ public class DicomEchoWindow extends ModalWindow {
             target.addComponent(resultLabel);
        }
         @Override
-        protected void onError(AjaxRequestTarget target, Form form) {
+        protected void onError(AjaxRequestTarget target, Form<?> form) {
             target.addComponent(resultLabel);
             BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
         }
     }
 
     class SaveButton extends AjaxButton {
+
+        private static final long serialVersionUID = 1L;
+        
         private SaveButton(String id) {
             super(id, new ResourceModel("saveBtn"));
         }
         @Override
-        protected void onSubmit(AjaxRequestTarget target, Form form) {
+        protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
             try {
                 AEMgtDelegate.getInstance().update(copyNetCfg(aeEcho, aeOri));
                 saveFailed = false;

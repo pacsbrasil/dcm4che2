@@ -49,9 +49,10 @@ import org.apache.wicket.markup.ComponentTag;
  * @version $Revision$ $Date$
  * @since Oct 31, 2009
  */
-public class TooltipBehaviour extends AbstractBehavior
-{
-    private static final long serialVersionUID = 5109347770809331652L;
+public class TooltipBehaviour extends AbstractBehavior {
+
+    private static final long serialVersionUID = 1L;
+    
     private static final String POSTFIX = ".tooltip";
     private String prefix, id;
     
@@ -76,7 +77,6 @@ public class TooltipBehaviour extends AbstractBehavior
         this.id = id;
     }
     
-    @SuppressWarnings("unchecked")
     public void onComponentTag(Component c, ComponentTag tag) {
         tag.put("title", getLocalizer().getStringIgnoreSettings(getResourceKey(c), c, null, ""));
     }

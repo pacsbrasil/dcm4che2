@@ -48,6 +48,8 @@ import org.dcm4chee.web.wicket.folder.ViewPort;
  */
 public class WicketSession extends JaasWicketSession {
 
+    private static final long serialVersionUID = 1L;
+    
     private ViewPort viewport = new ViewPort();
 
     public WicketSession(Request request) {

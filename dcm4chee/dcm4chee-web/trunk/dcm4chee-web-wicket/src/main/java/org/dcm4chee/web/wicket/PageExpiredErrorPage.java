@@ -49,13 +49,15 @@ import org.apache.wicket.model.ResourceModel;
  * @since 28.09.2009
  */
 public class PageExpiredErrorPage extends BaseWicketPage {
-  @SuppressWarnings({ "unchecked", "serial" })
+
   public PageExpiredErrorPage() {
       super();
       this.getModuleSelectorPanel().setShowLogoutLink(false);
-      add( new Link("login") {
+      add( new Link<Object>("login") {
 
-          @Override
+        private static final long serialVersionUID = 1L;
+
+        @Override
           public void onClick() {
               setResponsePage(Application.get().getHomePage());
           }
