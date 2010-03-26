@@ -39,6 +39,7 @@
 package org.dcm4che2.io;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,6 +51,7 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 import junit.framework.TestCase;
 
@@ -146,5 +148,17 @@ public class SAXWriterTest extends TestCase {
         DicomObject attrs = new BasicDicomObject();
         dis.readDicomObject(attrs, -1);
         dis.close();
+    }
+
+    public final void testXSLT() throws IOException, TransformerConfigurationException, 
+            TransformerFactoryConfigurationError, SAXException {
+        DicomObject attrs = load("sr/511/sr_511_ct.dcm");
+        SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
+        TransformerHandler th = tf.newTransformerHandler(
+                new StreamSource(locateFile("pat_info.xsl"), null));
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        th.setResult(new StreamResult(os));
+        new SAXWriter(th, null).write(attrs);
+        assertEquals("XSL Transformation:","PID:CT5|Name:CTFIVE^JIM", os.toString());
     }
 }
