@@ -210,7 +210,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     };
     private final NotificationListener aetChangeListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
-            if (callingAETs != null || callingAETs.length == 0) {
+            if (callingAETs != null && callingAETs.length == 0) {
                 try {
                     log.debug("Handle AE Title change notification!");
                     AetChanged userData = (AetChanged) notif.getUserData();
