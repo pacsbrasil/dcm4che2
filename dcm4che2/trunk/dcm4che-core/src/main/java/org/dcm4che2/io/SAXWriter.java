@@ -58,6 +58,14 @@ import org.xml.sax.helpers.AttributesImpl;
 
 public class SAXWriter implements DicomInputHandler {
     
+    private static final String TAG_ATTR = "attr";
+    private static final String TAG_DICOM = "dicom";
+    private static final String TAG_ITEM = "item";
+    private static final String ATTR_OFF = "off";
+    private static final String ATTR_SRC = "src";
+    private static final String ATTR_LEN = "len";
+    private static final String ATTR_VR = "vr";
+    private static final String ATTR_TAG = "tag";
     private static final int CBUF_LENGTH = 512;
     private final char[] cbuf = new char[CBUF_LENGTH];
     private ContentHandler ch;
@@ -106,7 +114,7 @@ public class SAXWriter implements DicomInputHandler {
             throws SAXException, IOException {
         ch.startDocument();
         file = baseDir;
-        writeContent(attrs, attrs.isRoot() ? "dicom" : "item");
+        writeContent(attrs, attrs.isRoot() ? TAG_DICOM : TAG_ITEM);
         ch.endDocument();
     }
 
@@ -114,14 +122,14 @@ public class SAXWriter implements DicomInputHandler {
             throws SAXException, IOException {
         AttributesImpl atts = new AttributesImpl();
         if (!attrs.isRoot()) {
-            atts.addAttribute("", "", "off", "",
+            atts.addAttribute("", ATTR_OFF, ATTR_OFF, "",
                     Long.toString(attrs.getItemOffset()));
         }
-        ch.startElement("", "", qName, new AttributesImpl());
+        ch.startElement("", qName, qName, new AttributesImpl());
         for (Iterator<DicomElement> it = attrs.iterator(); it.hasNext();) {
             writeElement(attrs, it.next());
         }
-        ch.endElement("", "", qName);
+        ch.endElement("", qName, qName);
     }
 
     private void writeElement(DicomObject attrs, DicomElement a)
@@ -154,7 +162,7 @@ public class SAXWriter implements DicomInputHandler {
         if (file != null)
             file = new File(file, Integer.toString(index+1));
         if (a.vr() == VR.SQ) {
-            writeContent(a.getDicomObject(index), "item");
+            writeContent(a.getDicomObject(index), TAG_ITEM);
         } else {
             final byte[] data = a.getFragment(index);
             writeFragment(a.vr(), data, a.bigEndian(),
@@ -195,7 +203,7 @@ public class SAXWriter implements DicomInputHandler {
             case Tag.ItemDelimitationItem:
                 in.readValue(in);
                 if (in.level() == 0) {
-                    ch.endElement("", "", "dicom");
+                    ch.endElement("", TAG_DICOM, TAG_DICOM);
                     ch.endDocument();
                 }
                 break;
@@ -207,7 +215,7 @@ public class SAXWriter implements DicomInputHandler {
                     seenFirst = true;
                     file = baseDir;
                     ch.startDocument();
-                    ch.startElement("", "", "dicom", new AttributesImpl());
+                    ch.startElement("", TAG_DICOM, TAG_DICOM, new AttributesImpl());
                 }
                 transcodeAttribute(in);
             }
@@ -244,18 +252,18 @@ public class SAXWriter implements DicomInputHandler {
     }
 
     private void endItemElement() throws SAXException {
-        ch.endElement("", "", "item");
+        ch.endElement("", TAG_ITEM, TAG_ITEM);
     }
 
     private void startItemElement(long off, int itemLen, String fpath)
             throws SAXException {
         final AttributesImpl atts = new AttributesImpl();
-        atts.addAttribute("", "", "off", "", Long.toString(off));
-        atts.addAttribute("", "", "len", "", Integer.toString(itemLen));
+        atts.addAttribute("", ATTR_OFF, ATTR_OFF, "", Long.toString(off));
+        atts.addAttribute("", ATTR_LEN, ATTR_LEN, "", Integer.toString(itemLen));
         if (fpath != null) {
-            atts.addAttribute("", "", "src", "", fpath);
+            atts.addAttribute("", ATTR_SRC, ATTR_SRC, "", fpath);
         }
-        ch.startElement("", "", "item", atts);
+        ch.startElement("", TAG_ITEM, TAG_ITEM, atts);
     }
 
     private void writeToFile(byte[] data) throws IOException {
@@ -309,7 +317,7 @@ public class SAXWriter implements DicomInputHandler {
     }
 
     private void endAttributeElement() throws SAXException {
-        ch.endElement("", "", "attr");
+        ch.endElement("", TAG_ATTR, TAG_ATTR);
     }
 
     private void startAttributeElement(int tag, VR vr, int vallen,
@@ -320,13 +328,13 @@ public class SAXWriter implements DicomInputHandler {
             lh.comment(name.toCharArray(), 0, name.length());
         }
         AttributesImpl atts = new AttributesImpl();
-        atts.addAttribute("", "", "tag", "", StringUtils.intToHex(tag));
-        atts.addAttribute("", "", "vr", "", vr.toString());
-        atts.addAttribute("", "", "len", "", Integer.toString(vallen));
+        atts.addAttribute("", ATTR_TAG, ATTR_TAG, "", StringUtils.intToHex(tag));
+        atts.addAttribute("", ATTR_VR, ATTR_VR, "", vr.toString());
+        atts.addAttribute("", ATTR_LEN, ATTR_LEN, "", Integer.toString(vallen));
         if (fpath != null) {
-            atts.addAttribute("", "", "src", "", fpath);                    
+            atts.addAttribute("", ATTR_SRC, ATTR_SRC, "", fpath);                    
         }
-        ch.startElement("", "", "attr", atts);
+        ch.startElement("", TAG_ATTR, TAG_ATTR, atts);
     }
 
     private String fpath(int tag, VR vr, int vallen) {
