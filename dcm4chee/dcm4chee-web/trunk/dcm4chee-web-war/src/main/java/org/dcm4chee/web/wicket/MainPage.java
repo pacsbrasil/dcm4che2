@@ -68,6 +68,6 @@ public class MainPage extends BaseWicketPage {
         selectorPanel.addModule(AEMgtPanel.class);
         selectorPanel.addModule(FileSystemPage.class);
 
-        //selectorPanel.addInstance(new UserListPanel("panel", ((WicketSession) getSession()).getUsername(), window));
+        selectorPanel.addInstance(new UserListPanel("panel", ((WicketSession) getSession()).getUsername(), window));
     }
 }
