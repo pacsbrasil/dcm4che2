@@ -68,9 +68,8 @@ public class UserValidator extends AbstractValidator<String> {
         String username = validatable.getValue().toString();
         if (username == null) error(validatable);
         try {
-            for (User user : this.allUsers) {
+            for (User user : this.allUsers)
                 if (user.getUserID().equals(username)) error(validatable);
-            }
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onValidate: " + e.getMessage());
             log.debug("Exception: ", e);

@@ -106,15 +106,15 @@ public class UserListPanel extends Panel {
     private ModalWindow window;
     private String userId;
 
+    private boolean init;
+
     public UserListPanel(String id, String userId, ModalWindow window) {
         super(id);
-        
+
         try {
+            init = true;
+            
             this.userId = userId;
-
-            this.allUsers = this.getAllUsers();
-            this.allRoleNames = this.getAllRolenames();
-
             this.window = window;
             
             if (UserListPanel.CSS != null)
@@ -130,19 +130,24 @@ public class UserListPanel extends Panel {
     @Override
     public void onBeforeRender() {
         super.onBeforeRender();
-        
+
         try {
-            addOrReplace(new ToggleFormLink("toggle-user-form-link", 
-                    new AddUserForm("add-user-form", this.allUsers),
-                    this, 
-                    "toggle-form-image-user", 
-                    Arrays.asList("userlist.add_user.title.tooltip", "userlist.add_user.close.tooltip"))
-            );
+            this.allUsers = this.getAllUsers();
+            this.allRoleNames = this.getAllRolenames();
+
+            if (init) {
+                addOrReplace(new ToggleFormLink("toggle-user-form-link", 
+                        new AddUserForm("add-user-form", this.allUsers),
+                        this, 
+                        "toggle-form-image-user", 
+                        Arrays.asList("userlist.add_user.title.tooltip", "userlist.add_user.close.tooltip"))
+                );
+                init = false;
+            }
             
             RepeatingView roleHeaders = new RepeatingView("role-headers");
-            for (String rolename : this.allRoleNames) {
+            for (String rolename : this.allRoleNames)
                 roleHeaders.add(new Label(roleHeaders.newChildId(), rolename));
-            }
             addOrReplace(roleHeaders);
     
             RepeatingView roleRows = new RepeatingView("role-rows");
@@ -252,31 +257,25 @@ public class UserListPanel extends Panel {
 
             this.add(new EqualPasswordInputValidator(passwordTf1, passwordTf2));
         
-            add(new AjaxFallbackButton("add-user-submit", AddUserForm.this) {
+            this.add(new Button("add-user-submit") {
                 
                 private static final long serialVersionUID = 1L;
-    
+
                 @Override
-                protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                public void onSubmit() {
                     try {
                         User user = new User();
                         user.setUserID(newUsername.getObject());
                         user.setPassword(SecurityUtils.encodePassword(password.getObject()));
                         ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).createUser(user);
-                        setResponsePage(this.getPage().getClass());
+                        get("toggle-user-form-link");
+                        init = true;
                     } catch (final Exception e) {
                         log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
                         log.debug("Exception: ", e);
                         this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
                         throw new RuntimeException();
                     }
-                }
-                
-                @Override
-                protected void onError(AjaxRequestTarget target, Form<?> form) {
-                    target.addComponent(form.get("new-username-validator-message-label"));
-                    target.addComponent(form.get("password-validator-message-label-1"));
-                    target.addComponent(form.get("password-validator-message-label-2"));
                 }
             });
         }

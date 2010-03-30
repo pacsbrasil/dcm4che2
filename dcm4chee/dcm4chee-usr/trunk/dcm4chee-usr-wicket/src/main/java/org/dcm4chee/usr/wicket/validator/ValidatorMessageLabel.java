@@ -33,7 +33,7 @@ public class ValidatorMessageLabel extends Label {
     protected void onBeforeRender() {
         super.onBeforeRender();
         this.setDefaultModel(null);
-        if (this.component.getFeedbackMessage() != null){
+        if (this.component.getFeedbackMessage() != null) {
             if (this.text != null)
                 this.setDefaultModel(new Model<String>(this.text.getObject().toString().replaceAll("\"", "")));
             else
@@ -42,8 +42,7 @@ public class ValidatorMessageLabel extends Label {
             // set this message rendered to avoid the warning concerning the feedback panel
             component.getFeedbackMessage().markRendered();           
             this.add(new AttributeModifier("class", true, new Model<String>("message-validator")));
-        } else {
+        } else
             this.setDefaultModel(null);
-        }
     }
 }
