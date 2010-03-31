@@ -265,6 +265,10 @@ public class DcmRcv {
 
     private long stgcmtRetryPeriod = 60000;
 
+    private String stgcmtRetrieveAET;
+
+    private String stgcmtRetrieveAETs;
+
     private final DimseRSPHandler nEventReportRspHandler = 
         new DimseRSPHandler();
 
@@ -448,6 +452,22 @@ public class DcmRcv {
         this.stgcmtRetryPeriod = stgcmtRetryPeriod;
     }
 
+    public final String getStgCmtRetrieveAET() {
+        return stgcmtRetrieveAET;
+    }
+
+    public final void setStgCmtRetrieveAET(String aet) {
+        this.stgcmtRetrieveAET = aet;
+    }
+
+
+    public final String getStgCmtRetrieveAETs() {
+        return stgcmtRetrieveAETs;
+    }
+
+    public final void setStgCmtRetrieveAETs(String aet) {
+        this.stgcmtRetrieveAETs = aet;
+    }
 
     final Executor executor() {
         return executor;
@@ -577,6 +597,21 @@ public class DcmRcv {
                 "accept also Explict VR Big Endian transfer syntax.");
         opts.addOption("native", false,
                 "accept only transfer syntax with uncompressed pixel data.");
+
+        OptionGroup scRetrieveAET = new OptionGroup();
+        OptionBuilder.withArgName("aet");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "Retrieve AE Title included in Storage Commitment " +
+                "N-EVENT-REPORT in items of the Referenced SOP Sequence.");
+        scRetrieveAET.addOption(OptionBuilder.create("scretraets"));
+        OptionBuilder.withArgName("aet");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "Retrieve AE Title included in Storage Commitment " +
+                "N-EVENT-REPORT outside of the Referenced SOP Sequence.");
+        scRetrieveAET.addOption(OptionBuilder.create("scretraet"));
+        opts.addOptionGroup(scRetrieveAET);
 
         opts.addOption("screusefrom", false,
                 "attempt to issue the Storage Commitment N-EVENT-REPORT on " +
@@ -779,6 +814,10 @@ public class DcmRcv {
                     : NATIVE_LE_TS);
         else if (cl.hasOption("bigendian"))
             dcmrcv.setTransferSyntax(NON_RETIRED_TS);
+        if (cl.hasOption("scretraets"))
+            dcmrcv.setStgCmtRetrieveAETs(cl.getOptionValue("scretraets"));
+        if (cl.hasOption("scretraet"))
+            dcmrcv.setStgCmtRetrieveAET(cl.getOptionValue("scretraet"));
         dcmrcv.setStgCmtReuseFrom(cl.hasOption("screusefrom"));
         dcmrcv.setStgCmtReuseTo(cl.hasOption("screuseto"));
         if (cl.hasOption("scport")) {
@@ -1179,22 +1218,27 @@ public class DcmRcv {
                 rqdata.getString(Tag.TransactionUID));
         DicomElement rqsq = rqdata.get(Tag.ReferencedSOPSequence);
         DicomElement resultsq = result.putSequence(Tag.ReferencedSOPSequence);
+        if (stgcmtRetrieveAET != null)
+            result.putString(Tag.RetrieveAETitle, VR.AE, stgcmtRetrieveAET);
         DicomElement failedsq = null;
         File dir = getDir(as);
         for (int i = 0, n = rqsq.countItems(); i < n; i++) {
-            DicomObject refsop = rqsq.getDicomObject(i);
-            String uid = refsop.getString(Tag.ReferencedSOPInstanceUID);
+            DicomObject rqItem = rqsq.getDicomObject(i);
+            String uid = rqItem.getString(Tag.ReferencedSOPInstanceUID);
+            DicomObject resultItem = new BasicDicomObject();
+            rqItem.copyTo(resultItem);
+            if (stgcmtRetrieveAETs != null)
+                resultItem.putString(Tag.RetrieveAETitle, VR.AE,
+                        stgcmtRetrieveAETs);
             File f = new File(dir, uid);
             if (f.isFile()) {
-                resultsq.addDicomObject(refsop);
+                resultsq.addDicomObject(resultItem);
             } else {
-                DicomObject failedsop = new BasicDicomObject();
-                refsop.copyTo(failedsop);
-                failedsop.putInt(Tag.FailureReason, VR.US,
+                resultItem.putInt(Tag.FailureReason, VR.US,
                         NO_SUCH_OBJECT_INSTANCE);
                 if (failedsq == null)
                     failedsq = result.putSequence(Tag.FailedSOPSequence);
-                failedsq.addDicomObject(failedsop);
+                failedsq.addDicomObject(resultItem);
             }
         }
         return result;
