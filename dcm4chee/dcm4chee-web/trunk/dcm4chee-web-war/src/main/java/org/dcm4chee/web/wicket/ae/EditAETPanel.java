@@ -147,9 +147,8 @@ public class EditAETPanel extends Panel {
 
             private static final long serialVersionUID = 1L;
             
-            @SuppressWarnings("unchecked")
             @Override
-            protected void onSubmit(AjaxRequestTarget target, Form form) {
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 mw.show(target, ae);
             }
             @Override
@@ -161,8 +160,7 @@ public class EditAETPanel extends Panel {
     
     private boolean submit() {
         try {
-            AE ae = (AE) getDefaultModelObject();
-            delegate.update(ae);
+            delegate.update((AE) getDefaultModelObject());
             return true;
         } catch ( Exception x ) {
             msgWin.setErrorMessage(getString("aet.titleAlreadyExist"));

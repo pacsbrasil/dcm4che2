@@ -55,7 +55,7 @@ public class AEMgtPanel extends Panel {
     private boolean editMode = false;
     private EditAETPanel editPanel;
     private AEListPanel listPanel;
-      
+
     public AEMgtPanel(final String id) {
         super(id);
         add(CSSPackageResource.getHeaderContribution(BaseWicketPage.class, "base_style.css"));

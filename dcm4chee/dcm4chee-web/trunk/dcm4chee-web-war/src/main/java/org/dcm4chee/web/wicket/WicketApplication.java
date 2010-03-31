@@ -19,5 +19,4 @@ public class WicketApplication extends BaseWicketApplication {
     protected Class<? extends AuthenticatedWebSession> getWebSessionClass() {
         return WicketSession.class;
     }
-
 }

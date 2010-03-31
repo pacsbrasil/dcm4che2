@@ -39,6 +39,7 @@
 package org.dcm4chee.web.wicket;
 
 import org.apache.wicket.Application;
+import org.apache.wicket.Page;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.model.ResourceModel;
@@ -50,8 +51,25 @@ import org.apache.wicket.model.ResourceModel;
  */
 public class InternalErrorPage extends BaseWicketPage {
     
+    private Throwable throwable;
+    private Page page;
+
     public InternalErrorPage() {
         super();
+    }
+    
+    public InternalErrorPage(final Throwable throwable, final Page page) {
+        super();
+        this.throwable = throwable;
+        this.page = page;
+    }
+
+    @Override
+    protected void onBeforeRender() {
+        super.onBeforeRender();
+
+        add(new Label("exception-message", new ResourceModel("application.internal_error.throwable").wrapOnAssignment(this).getObject() + (this.throwable == null ? "" : throwable.getLocalizedMessage())));
+        add(new Label("exception-page", new ResourceModel("application.internal_error.page").wrapOnAssignment(this).getObject() + (this.page == null ? "" : Page.class.toString())));
         add( new Link<Object>("home") {
 
             private static final long serialVersionUID = 1L;

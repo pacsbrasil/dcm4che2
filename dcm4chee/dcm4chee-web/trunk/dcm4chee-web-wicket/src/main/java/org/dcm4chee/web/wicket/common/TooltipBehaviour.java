@@ -57,6 +57,8 @@ public class TooltipBehaviour extends AbstractBehavior {
     private String prefix, id;
     
     private transient Localizer localizer;
+
+    private String textAddition;
     
     /*
      * Create a TooltipBehaviour with given prefix.
@@ -76,9 +78,14 @@ public class TooltipBehaviour extends AbstractBehavior {
         this.prefix = prefix;
         this.id = id;
     }
-    
+
+    public TooltipBehaviour(String prefix, String id, String textAddition) {
+        this(prefix, id);
+        this.textAddition = textAddition;
+    }
+
     public void onComponentTag(Component c, ComponentTag tag) {
-        tag.put("title", getLocalizer().getStringIgnoreSettings(getResourceKey(c), c, null, ""));
+        tag.put("title", getLocalizer().getStringIgnoreSettings(getResourceKey(c), c, null, "") + (textAddition==null ? "" : textAddition));
     }
 
     private String getResourceKey(Component c) {

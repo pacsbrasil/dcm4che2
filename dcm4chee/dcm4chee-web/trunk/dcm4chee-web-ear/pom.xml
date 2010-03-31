@@ -16,6 +16,12 @@
   <dependencies>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
+      <artifactId>dcm4chee-usr-entity</artifactId>
+      <type>ejb</type>
+      <version>0.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-usr-dao</artifactId>
       <type>ejb</type>
       <version>0.0.1</version>
@@ -84,6 +90,10 @@
         <configuration>
           <defaultJavaBundleDir>lib</defaultJavaBundleDir>
           <modules>
+            <ejbModule>
+              <groupId>dcm4che.dcm4chee</groupId>
+              <artifactId>dcm4chee-usr-entity</artifactId>
+            </ejbModule>
             <ejbModule>
               <groupId>dcm4che.dcm4chee</groupId>
               <artifactId>dcm4chee-usr-dao</artifactId>

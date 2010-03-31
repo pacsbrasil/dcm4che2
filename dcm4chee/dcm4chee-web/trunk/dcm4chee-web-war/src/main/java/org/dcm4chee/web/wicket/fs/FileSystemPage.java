@@ -25,7 +25,6 @@ public class FileSystemPage extends Panel {
                     JNDIUtils.lookup(FileSystemHomeLocal.JNDI_NAME);
             list = dao.findAll();
         } catch (Exception e) {
-            e.printStackTrace();
             list = Collections.emptyList();
         }
         
