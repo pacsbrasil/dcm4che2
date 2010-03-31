@@ -81,7 +81,7 @@ public class UserManagementMainPage extends WebPage {
                     setResponsePage(this.getApplication().getHomePage());
                 }
             });
-            add(new UserListPanel("userListPanel", name, this.window));
+            add(new UserListPanel("userListPanel", name));
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
             log.debug("Exception: ", e);

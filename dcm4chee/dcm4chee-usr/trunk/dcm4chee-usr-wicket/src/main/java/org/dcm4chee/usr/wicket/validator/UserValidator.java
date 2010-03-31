@@ -38,8 +38,7 @@
 
 package org.dcm4chee.usr.wicket.validator;
 
-import java.util.List;
-
+import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.validator.AbstractValidator;
 import org.dcm4chee.usr.entity.User;
@@ -57,19 +56,17 @@ public class UserValidator extends AbstractValidator<String> {
 
     private static Logger log = LoggerFactory.getLogger(UserValidator.class);
     
-    private List<User> allUsers;
+    private ListModel<User> allUsers;
     
-    public UserValidator(List<User> allUsers) {
+    public UserValidator(ListModel<User> allUsers) {
         this.allUsers = allUsers;
     }
 
     @Override
     protected void onValidate(IValidatable<String> validatable) {
-        String username = validatable.getValue().toString();
-        if (username == null) error(validatable);
         try {
-            for (User user : this.allUsers)
-                if (user.getUserID().equals(username)) error(validatable);
+            for (User user : this.allUsers.getObject())
+                if (user.getUserID().equals(validatable.getValue())) error(validatable);
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onValidate: " + e.getMessage());
             log.debug("Exception: ", e);

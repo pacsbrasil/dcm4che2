@@ -13,9 +13,15 @@
 	<name>Jar with the wicket components</name>
 	<description></description>
 	<properties>
-		<wicket.version>1.4.5</wicket.version>
+		<wicket.version>1.4.7</wicket.version>
 	</properties>
 	<dependencies>
+		<dependency>
+			<groupId>dcm4che.dcm4chee</groupId>
+			<artifactId>dcm4chee-web-wicket</artifactId>
+			<version>3.0.0-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>dcm4che</groupId>
 			<artifactId>dcm4che-base64</artifactId>

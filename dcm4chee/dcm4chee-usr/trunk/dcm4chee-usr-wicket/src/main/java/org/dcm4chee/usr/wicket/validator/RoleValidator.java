@@ -38,8 +38,7 @@
 
 package org.dcm4chee.usr.wicket.validator;
 
-import java.util.List;
-
+import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.validator.AbstractValidator;
 import org.slf4j.Logger;
@@ -56,19 +55,17 @@ public class RoleValidator extends AbstractValidator<String> {
 
     private static Logger log = LoggerFactory.getLogger(RoleValidator.class);
     
-    private List<String> allRoleNames;
+    private ListModel<String> allRolenames;
     
-    public RoleValidator(List<String> allRoleNames) {
-        this.allRoleNames = allRoleNames;
+    public RoleValidator(ListModel<String> allRolenames) {
+        this.allRolenames = allRolenames;
     }
 
     @Override
     protected void onValidate(IValidatable<String> validatable) {
-        String rolename = validatable.getValue().toString();
-        if (rolename == null) error(validatable);
         try {
-            for (String aRolename : this.allRoleNames)
-                if (aRolename.equals(rolename)) error(validatable);
+            for (String aRolename : this.allRolenames.getObject())
+                if (aRolename.equals(validatable.getValue())) error(validatable);
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onValidate: " + e.getMessage());
             log.debug("Exception: ", e);

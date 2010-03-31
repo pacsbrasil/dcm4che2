@@ -77,20 +77,13 @@ public class ChangePasswordPage extends WebPage {
     private static final ResourceReference CSS = new CompressedResourceReference(ChangePasswordPage.class, "wicket-style.css");
     
     public ChangePasswordPage(String userId, final User forUser, final ModalWindow window) {
-        try {
-            if (ChangePasswordPage.CSS != null)
-                add(CSSPackageResource.getHeaderContribution(ChangePasswordPage.CSS));
+        if (ChangePasswordPage.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(ChangePasswordPage.CSS));
 
-            Label resultMessage = new Label("result-message");
-            final ChangePasswordForm changePasswordForm = new ChangePasswordForm("change-password-form", userId, forUser, new Model<String>(), new Model<String>(), resultMessage, window);
-            add(changePasswordForm);
-            add(resultMessage);
-        } catch (Exception e) {
-            log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
-            log.debug("Exception: ", e);
-            this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
-            throw new RuntimeException();
-        }
+        Label resultMessage = new Label("result-message");
+        final ChangePasswordForm changePasswordForm = new ChangePasswordForm("change-password-form", userId, forUser, new Model<String>(), new Model<String>(), resultMessage, window);
+        add(changePasswordForm);
+        add(resultMessage);
     }
         
     private final class ChangePasswordForm extends Form<Object> {
