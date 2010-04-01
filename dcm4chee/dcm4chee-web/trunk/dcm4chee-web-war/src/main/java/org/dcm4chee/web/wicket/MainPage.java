@@ -40,7 +40,7 @@ package org.dcm4chee.web.wicket;
 
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
-import org.dcm4chee.usr.wicket.usermanagement.UserListPanel;
+import org.dcm4chee.usr.ui.usermanagement.UserListPanel;
 import org.dcm4chee.web.wicket.ae.AEMgtPanel;
 import org.dcm4chee.web.wicket.folder.StudyListPage;
 import org.dcm4chee.web.wicket.fs.FileSystemPage;
