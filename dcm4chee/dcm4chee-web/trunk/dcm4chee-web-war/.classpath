@@ -11,8 +11,8 @@
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/home/axfmx/devel2/dcm4chee-web/dcm4chee-web-wicket/target/dcm4chee-web-wicket-3.0.0-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="/home/axfmx/devel2/dcm4chee-usr/dcm4chee-usr-wicket/target/dcm4chee-usr-wicket-0.0.1.jar"/>
+	<classpathentry kind="lib" path="/home/axfmx/devel2/dcm4chee-web/dcm4chee-web-common/target/dcm4chee-web-common-3.0.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/home/axfmx/devel2/dcm4chee-usr/dcm4chee-usr-ui/target/dcm4chee-usr-wicket-0.0.1.jar"/>
 	<classpathentry kind="lib" path="/home/axfmx/devel/dcm4che2/dcm4che-net/target/dcm4che-net-2.0.22-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
