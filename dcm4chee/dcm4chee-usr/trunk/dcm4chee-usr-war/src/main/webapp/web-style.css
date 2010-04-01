@@ -1,0 +1,176 @@
+/*	GENERAL	*/
+
+th, td {
+	padding: 3px 3px 3px 3px;
+}
+
+.table-userlist, .table-header {
+	border-width: 1px;
+	border-color: #666666;
+	border-style: solid;
+}
+
+.form-change-password {
+	width: 350px;
+	border-width: 1px;
+	border-color: #666666;
+	border-style: solid;
+}
+
+.form-userlist-adduser {
+	width: 350px;
+	border-width: 1px;
+	border-color: #666666;
+	border-style: solid;
+}
+
+.form-userlist-addrole {
+	width: 150px;
+}
+
+.image {
+	border-style: none;
+}
+
+
+/*	COLOR	*/
+
+.nothing, .feedbackPanelERROR, .message-validator, .message-error {
+	/* AGFA WARM RED */
+	color: #E41715;
+}
+
+.nothing, .input-login, .input-change-password, .input-userlist, .table-text {
+	/* Black */
+	color: #000000;
+}
+
+.nothing {
+	/* Gray 1 */
+	color: #333333;
+}
+
+.nothing {
+	/* Gray 2 */
+	color: #666666;
+}
+
+.nothing, input, .button-change-password, .button-userlist {
+	/* Gray 3 */
+	color: #999999;
+}
+
+.nothing {
+	/* Gray 4 */
+	color: #CCCCCC;
+}
+
+.nothing, .hyperlink, .table-header, .title, .panel-login, .panel-change-password, .panel-userlist, .panel-accessdenied, .panel-internalerror, .panel-pageexpirederror, .label-userlist, .form-userlist-addrole, .message-system {
+	/* White */
+	color: #FFFFFF;
+}
+
+.nothing {
+	/* Green 1 */
+	color: #263F3F;
+}
+
+.nothing {
+	/* Green 2 */
+	color: #4C7F7E;
+}
+
+.nothing {
+	/* Green 3 */
+	color: #7FB1B2;
+}
+
+.nothing {
+	/* Green 4 */
+	color: #C1DAD9;
+}
+
+
+/*	BACKGROUND COLOR	*/
+
+.nothing {
+	/* AGFA WARM RED */
+	background-color: #E41715;
+}
+
+.nothing, input, .button-login, .button-change-password, .button-userlist {
+	/* Black */
+	background-color: #000000;
+}
+
+.nothing, .panel-change-password, .panel-userlist {
+	/* Gray 1 */
+	background-color: #333333;
+}
+
+.nothing {
+	/* Gray 2 */
+	background-color: #666666;
+}
+
+.nothing, .even {
+	/* Gray 3 */
+	background-color: #999999;
+}
+
+.nothing, .odd, .input-login, .input-change-password, .input-userlist {
+	/* Gray 4 */
+	background-color: #CCCCCC;
+}
+
+.nothing {
+	/* White */
+	background-color: #FFFFFF;
+}
+
+.nothing, .panel-login, .panel-error, .panel-accessdenied, .panel-internalerror, .panel-pageexpirederror, .table-header, .form-change-password, .form-userlist-adduser, .form-userlist-addrole {
+	/* Green 1 */
+	background-color: #263F3F;
+}
+
+.nothing {
+	/* Green 2 */
+	background-color: #4C7F7E;
+}
+
+.nothing {
+	/* Green 3 */
+	background-color: #7FB1B2;
+}
+
+.nothing {
+	/* Green 4 */
+	background-color: #C1DAD9;
+}
+
+
+/*	TYPOGRAPHY	*/
+
+.nothing {
+	/* non-critical information */
+	font-family: Tahoma;
+	font-size: 9pt;
+}
+
+.nothing, .table-text, .panel-login, .panel-change-password, .panel-accessdenied, .panel-internalerror, .panel-pageexpirederror, .panel-userlist, .label-userlist, .message-error {
+	/* standard labels and text */
+	font-family: Tahoma;
+	font-size: 11pt;
+}
+
+.nothing, .title, .table-header {
+	/* headings and text where readability and legibility are the key */
+	font-family: Tahoma;
+	font-size: 13pt;
+}
+
+.nothing, .message-system {
+	/* use very sparingly for rare cases that benefit from a very large typesize */
+	font-family: Tahoma;
+	font-size: 16pt;
+}
