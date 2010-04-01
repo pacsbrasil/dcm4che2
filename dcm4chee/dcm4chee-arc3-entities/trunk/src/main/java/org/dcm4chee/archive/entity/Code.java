@@ -80,7 +80,7 @@ public class Code extends BaseEntity implements Serializable {
     
     public Code(String c) {
         int pos1 = c.indexOf(',');
-        int posEnd = c.indexOf(')');
+        int posEnd = c.lastIndexOf(')');
         if (c.charAt(0) != '(' || posEnd == -1 || pos1 == -1 || pos1 > posEnd) {
             throw new IllegalArgumentException(NOT_A_CODE_STRING+c);
         }
@@ -97,7 +97,16 @@ public class Code extends BaseEntity implements Serializable {
             codingSchemeDesignator = c.substring(pos1,pos3).trim();
             codingSchemeVersion = c.substring(++pos3, pos2).trim();
         }
-        codeMeaning = c.substring(++pos2, posEnd).trim();
+        pos2 = c.indexOf('\"', pos2);
+        if (pos2==-1) {
+            throw new IllegalArgumentException(NOT_A_CODE_STRING+c);
+        }
+        pos2++;
+        posEnd = c.lastIndexOf('\"');
+        if (posEnd < pos2) {
+            throw new IllegalArgumentException(NOT_A_CODE_STRING+c);
+        }
+        codeMeaning = c.substring(pos2, posEnd).trim();
     }
 
     public Code(DicomObject codeItem) {
