@@ -14,10 +14,4 @@
 			<context-root>dcm4chee-usr-war</context-root>
 		</web>
 	</module>
-	<module id="WebModule_1270118440235">
-		<web>
-			<web-uri>dcm4chee-usr-war-0.0.1.war</web-uri>
-			<context-root>dcm4chee-usr-ear</context-root>
-		</web>
-	</module>
 </application>

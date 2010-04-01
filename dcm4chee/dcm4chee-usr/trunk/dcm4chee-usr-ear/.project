@@ -5,6 +5,7 @@
 	<projects>
 		<project>dcm4chee-usr-entity</project>
 		<project>dcm4chee-usr-dao</project>
+		<project>dcm4chee-usr-war</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
