@@ -74,7 +74,7 @@ import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.web.dao.DicomEditLocal;
-import org.dcm4chee.web.wicket.util.HttpUserInfo;
+import org.dcm4chee.web.service.common.HttpUserInfo;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -96,6 +96,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     
     private ObjectName rejNoteServiceName;
     private ObjectName ianScuServiceName;
+    private ObjectName hl7sendServiceName;
         
     public String getRejectionNoteCode() {
         return rejectNoteCode.toString()+"\r\n";
@@ -135,6 +136,14 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     public void setIANScuServiceName(ObjectName name) {
         this.ianScuServiceName = name;
+    }
+
+    public ObjectName getHl7sendServiceName() {
+        return hl7sendServiceName;
+    }
+
+    public void setHl7sendServiceName(ObjectName hl7sendServiceName) {
+        this.hl7sendServiceName = hl7sendServiceName;
     }
 
     public DicomObject moveInstanceToTrash(String iuid) throws InstanceNotFoundException, MBeanException, ReflectionException {
@@ -235,7 +244,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         processIANs(entityTree);
         return rejNotes;
     }
-    
+
     private DicomObject[] getRejectionNotes(Map<Patient, Map<Study, Map<Series, List<Instance>>>> entityTree) {
         DicomObject[] rejNotes = new DicomObject[entityTree.size()];
         int i = 0;
