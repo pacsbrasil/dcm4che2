@@ -41,14 +41,25 @@ package org.dcm4chee.web.service.tlscfg;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.Socket;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
+import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
+import org.dcm4che2.audit.util.SSLUtils;
 import org.dcm4che2.net.Device;
 import org.dcm4che2.net.NetworkConnection;
 import org.dcm4che2.util.StringUtils;
@@ -71,7 +82,7 @@ public class TlsCfgService extends ServiceMBeanSupport {
     private String[] tlsProtocol;
     private boolean needClientAuth;
     
-    protected String NONE ="NONE";
+    protected static final String NONE ="NONE";
     
     public TlsCfgService() {
     }
@@ -172,5 +183,30 @@ public class TlsCfgService extends ServiceMBeanSupport {
         }
         return key;
     }
+ 
+    public Socket initSocket(String host, int port, String[] ciphers, String bindAddress, int connectTimeout) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, KeyManagementException, UnrecoverableKeyException {
+        Socket s = ciphers != null && ciphers.length > 0 ? createTLSSocket(ciphers) : new Socket();
+        InetAddress addr = bindAddress == null ? null : InetAddress.getByName(bindAddress);
+        InetSocketAddress bindPoint = new InetSocketAddress(
+                (addr != null && addr.isLoopbackAddress()) ? null : addr, 0);
+        InetSocketAddress endpoint = new InetSocketAddress(InetAddress.getByName(host), port);
+        s.bind(bindPoint);
+        s.connect(endpoint, connectTimeout);
+        return s;
+    }
+    
+    protected Socket createTLSSocket(String[] ciphers) throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException, KeyManagementException, UnrecoverableKeyException {
+        KeyStore keyStore = loadKeyStore(keyStoreURL, keyStorePassword, keyStoreType);
+        KeyStore trustStore = loadKeyStore(trustStoreURL, trustStorePassword, trustStoreType);
+        SSLContext ctx = SSLUtils.getSSLContext(keyStore, keyPassword == null ? keyStorePassword : keyPassword, trustStore, null);
+        if (ctx == null)
+            throw new IllegalStateException("TLS Context not initialized!");
+        SSLSocketFactory sf = ctx.getSocketFactory();
+        SSLSocket s = (SSLSocket) sf.createSocket();
+        s.setEnabledProtocols(tlsProtocol);
+        s.setEnabledCipherSuites(ciphers);
+        return s;
+    }
+   
 }
 

@@ -136,7 +136,7 @@
    &defaultOperations;
 
    <operation impact="ACTION">
-      <description><![CDATA[ Initialize device and remote connection with TLS configuration and gicven cipher suites.
+      <description><![CDATA[ Initialize device and remote connection with TLS configuration and given cipher suites.
       		]]> </description>
       <name>initTLS</name>
       <parameter>
@@ -155,6 +155,38 @@
         <type>[Ljava.lang.String;</type>
       </parameter>
       <return-type>void</return-type>
+   </operation>
+   
+   <operation impact="ACTION">
+      <description><![CDATA[ Create and initialize socket with TLS configuration and given cipher suites.
+      		]]> </description>
+      <name>initSocket</name>
+      <parameter>
+        <description>Hostname to connect to</description>
+        <name>host</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Port</description>
+        <name>port</name>
+        <type>int</type>
+      </parameter>
+      <parameter>
+        <description>List of Cipher Suites</description>
+        <name>ciphers</name>
+        <type>[Ljava.lang.String;</type>
+      </parameter>
+      <parameter>
+        <description>Address to which the connection is bind to</description>
+        <name>bindAddress</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>connectionTimeout</description>
+        <name>connectionTimeout</name>
+        <type>int</type>
+      </parameter>
+      <return-type>java.net.Socket</return-type>
    </operation>
 
     </xmbean>

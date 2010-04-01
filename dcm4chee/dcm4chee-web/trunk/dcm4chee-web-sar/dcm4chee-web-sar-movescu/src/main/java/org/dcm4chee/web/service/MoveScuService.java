@@ -38,20 +38,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.service;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.util.List;
-import java.util.concurrent.Executor;
-
-import javax.naming.InitialContext;
 
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
@@ -61,21 +49,11 @@ import org.dcm4che2.data.UIDDictionary;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
-import org.dcm4che2.net.Device;
 import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4che2.net.ExtRetrieveTransferCapability;
-import org.dcm4che2.net.NetworkApplicationEntity;
-import org.dcm4che2.net.NetworkConnection;
-import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.NoPresentationContextException;
 import org.dcm4che2.net.TransferCapability;
-import org.dcm4che2.util.StringUtils;
-import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.web.dao.AEHomeLocal;
 import org.dcm4chee.web.service.common.AbstractScuService;
-import org.jboss.system.ServiceMBeanSupport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author franz.willer@gmail.com
