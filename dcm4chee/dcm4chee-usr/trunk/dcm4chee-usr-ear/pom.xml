@@ -28,7 +28,7 @@
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
-      <artifactId>dcm4chee-usr-web</artifactId>
+      <artifactId>dcm4chee-usr-war</artifactId>
       <type>war</type>
       <version>0.0.1</version>
     </dependency>
@@ -52,17 +52,11 @@
               <artifactId>dcm4chee-usr-dao</artifactId>
               <uri>lib/dcm4chee-usr-dao.jar</uri>
             </ejbModule>
-<!--            <jarModule>
-              <groupId>dcm4che.dcm4chee</groupId>
-              <artifactId>dcm4chee-usr-wicket</artifactId>
-              <uri>lib/dcm4chee-usr-wicket.jar</uri>
-            </jarModule>
-            -->
             <webModule>
               <groupId>dcm4che.dcm4chee</groupId>
-              <artifactId>dcm4chee-usr-web</artifactId>
-              <contextRoot>/dcm4chee-usr-web</contextRoot>
-              <bundleFileName>dcm4chee-usr-web.war</bundleFileName>
+              <artifactId>dcm4chee-usr-war</artifactId>
+              <contextRoot>/dcm4chee-usr-war</contextRoot>
+              <bundleFileName>dcm4chee-usr-war.war</bundleFileName>
             </webModule>
           </modules>
           <jboss>

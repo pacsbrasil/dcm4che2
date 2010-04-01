@@ -8,16 +8,16 @@
 	<module>
 		<ejb>lib/dcm4chee-usr-dao.jar</ejb>
 	</module>
-	<module id="WebModule_1261564458333">
-		<web>
-			<web-uri>dcm4chee-usr-web.war</web-uri>
-			<context-root>dcm4chee-usr</context-root>
-		</web>
-	</module>
 	<module id="WebModule_1266942644114">
 		<web>
-			<web-uri>dcm4chee-usr-web.war</web-uri>
-			<context-root>dcm4chee-usr-web</context-root>
+			<web-uri>dcm4chee-usr-war.war</web-uri>
+			<context-root>dcm4chee-usr-war</context-root>
+		</web>
+	</module>
+	<module id="WebModule_1270118440235">
+		<web>
+			<web-uri>dcm4chee-usr-war-0.0.1.war</web-uri>
+			<context-root>dcm4chee-usr-ear</context-root>
 		</web>
 	</module>
 </application>

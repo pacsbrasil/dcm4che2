@@ -3,7 +3,6 @@
 	<name>dcm4chee-usr-ear</name>
 	<comment></comment>
 	<projects>
-		<project>dcm4chee-usr-web</project>
 		<project>dcm4chee-usr-entity</project>
 		<project>dcm4chee-usr-dao</project>
 	</projects>

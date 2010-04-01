@@ -25,8 +25,8 @@
   <modules>
     <module>dcm4chee-usr-entity</module>
     <module>dcm4chee-usr-dao</module>
-    <module>dcm4chee-usr-wicket</module>
-    <module>dcm4chee-usr-web</module>
+    <module>dcm4chee-usr-ui</module>
+    <module>dcm4chee-usr-war</module>
     <module>dcm4chee-usr-ear</module>
   </modules>
   <repositories>
