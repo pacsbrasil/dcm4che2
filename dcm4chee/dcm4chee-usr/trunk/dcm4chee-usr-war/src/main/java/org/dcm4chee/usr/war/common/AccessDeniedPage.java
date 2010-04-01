@@ -36,11 +36,11 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.web.common;
+package org.dcm4chee.usr.war.common;
 
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.link.Link;
-import org.dcm4chee.usr.web.pages.LoginPage;
+import org.dcm4chee.usr.war.pages.LoginPage;
 
 /**
  * @author Robert David <robert.david@agfa.com>

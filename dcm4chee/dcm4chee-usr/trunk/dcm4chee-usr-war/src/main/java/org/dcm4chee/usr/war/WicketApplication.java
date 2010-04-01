@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.web;
+package org.dcm4chee.usr.war;
 
 import java.security.Principal;
 import java.security.acl.Group;
@@ -49,12 +49,12 @@ import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.authentication.AuthenticatedWebSession;
 import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.markup.html.WebPage;
-import org.dcm4chee.usr.web.common.AccessDeniedPage;
-import org.dcm4chee.usr.web.common.InternalErrorPage;
-import org.dcm4chee.usr.web.common.PageExpiredErrorPage;
-import org.dcm4chee.usr.web.pages.LoginPage;
-import org.dcm4chee.usr.web.pages.UserManagementMainPage;
-import org.dcm4chee.usr.web.session.JaasWicketSession;
+import org.dcm4chee.usr.war.common.AccessDeniedPage;
+import org.dcm4chee.usr.war.common.InternalErrorPage;
+import org.dcm4chee.usr.war.common.PageExpiredErrorPage;
+import org.dcm4chee.usr.war.pages.LoginPage;
+import org.dcm4chee.usr.war.pages.UserManagementMainPage;
+import org.dcm4chee.usr.war.session.JaasWicketSession;
 
 public class WicketApplication extends AuthenticatedWebApplication {
 

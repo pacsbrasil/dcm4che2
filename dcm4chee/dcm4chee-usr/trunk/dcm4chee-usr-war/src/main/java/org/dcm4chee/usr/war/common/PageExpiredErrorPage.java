@@ -36,32 +36,32 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.web.common;
+package org.dcm4chee.usr.war.common;
 
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.link.Link;
-import org.dcm4chee.usr.web.pages.LoginPage;
+import org.dcm4chee.usr.war.pages.LoginPage;
 
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since 28.09.2009
  */
-public class InternalErrorPage extends WebPage {
-    
-    @SuppressWarnings("unchecked")
-    public InternalErrorPage(){
+public class PageExpiredErrorPage extends WebPage
+{
+  @SuppressWarnings("unchecked")
+public PageExpiredErrorPage()
+  {
+      Link backToLoginLink = new Link("back-to-login") {
 
-        Link backToLoginLink = new Link("back-to-login") {
+          private static final long serialVersionUID = 1L;
 
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onClick() {
-                this.getSession().invalidateNow();
-                setResponsePage(LoginPage.class);
-            }
-        };
-        add(backToLoginLink);
-    }
+          @Override
+          public void onClick() {
+              this.getSession().invalidateNow();
+              setResponsePage(LoginPage.class);
+          }
+      };
+      add(backToLoginLink);
+  }
 }

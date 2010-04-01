@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.web.pages;
+package org.dcm4chee.usr.war.pages;
 
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
@@ -45,7 +45,7 @@ import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.pages.InternalErrorPage;
 import org.dcm4chee.usr.dao.UserAccess;
-import org.dcm4chee.usr.web.session.JaasWicketSession;
+import org.dcm4chee.usr.war.session.JaasWicketSession;
 import org.dcm4chee.usr.ui.usermanagement.ChangePasswordLink;
 import org.dcm4chee.usr.ui.usermanagement.UserListPanel;
 import org.dcm4chee.usr.ui.util.JNDIUtils;

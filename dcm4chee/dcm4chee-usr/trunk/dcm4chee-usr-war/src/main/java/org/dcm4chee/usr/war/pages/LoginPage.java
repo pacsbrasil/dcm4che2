@@ -45,7 +45,7 @@
  * @since July 20, 2009
  */
 
-package org.dcm4chee.usr.web.pages;
+package org.dcm4chee.usr.war.pages;
 
 import org.apache.wicket.authentication.panel.SignInPanel;
 import org.apache.wicket.markup.html.WebPage;

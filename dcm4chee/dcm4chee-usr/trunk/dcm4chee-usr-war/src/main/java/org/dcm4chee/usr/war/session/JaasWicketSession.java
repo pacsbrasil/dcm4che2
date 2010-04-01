@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.web.session;
+package org.dcm4chee.usr.war.session;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -49,7 +49,7 @@ import javax.security.auth.login.LoginException;
 import org.apache.wicket.Request;
 import org.apache.wicket.authentication.AuthenticatedWebSession;
 import org.apache.wicket.authorization.strategies.role.Roles;
-import org.dcm4chee.usr.web.WicketApplication;
+import org.dcm4chee.usr.war.WicketApplication;
 
 public class JaasWicketSession extends AuthenticatedWebSession {
 
