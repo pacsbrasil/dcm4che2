@@ -254,7 +254,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
      * is name (as in config string), value is real uid)
      */
     private Map privateTSuidMap = new LinkedHashMap();
-
+    
+    private boolean coerceAttributeTopDown = false;
+    
     public QueryRetrieveScpService() {
     	moveScp = createMoveScp();
         getScp = createGetScp();
@@ -1374,10 +1376,18 @@ public class QueryRetrieveScpService extends AbstractScpService {
             storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
         }
         File f = getFile(info);
-        Dataset mergeAttrs = DatasetUtils.fromByteArray(info.patAttrs,
-                DatasetUtils.fromByteArray(info.studyAttrs, DatasetUtils
-                        .fromByteArray(info.seriesAttrs, DatasetUtils
-                                .fromByteArray(info.instAttrs))));
+        Dataset mergeAttrs;
+        if (coerceAttributeTopDown) {
+        	mergeAttrs = DatasetUtils.fromByteArray(info.instAttrs,
+                    DatasetUtils.fromByteArray(info.seriesAttrs, DatasetUtils
+                    .fromByteArray(info.studyAttrs, DatasetUtils
+                    .fromByteArray(info.patAttrs))));
+        } else {
+        	mergeAttrs = DatasetUtils.fromByteArray(info.patAttrs,
+                    DatasetUtils.fromByteArray(info.studyAttrs, DatasetUtils
+                    .fromByteArray(info.seriesAttrs, DatasetUtils
+                    .fromByteArray(info.instAttrs))));
+        }
         coerceOutboundCStoreRQ(mergeAttrs, aeData, assoc);
         byte[] buf = (byte[]) assoc.getProperty(SEND_BUFFER);
         if (buf == null) {
@@ -1547,5 +1557,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
     protected void doPostCoercionProcessing(Dataset ds, int command,Association assoc) throws Exception {
         // Extension Point for customized QueryRetrieveScpService
     }
+    
+    public boolean isCoerceAttributeTopDown() {
+        return coerceAttributeTopDown;
+    }
 
+    public void setCoerceAttributeTopDown(boolean reverse) {
+        this.coerceAttributeTopDown = reverse;
+    }
+    
 }

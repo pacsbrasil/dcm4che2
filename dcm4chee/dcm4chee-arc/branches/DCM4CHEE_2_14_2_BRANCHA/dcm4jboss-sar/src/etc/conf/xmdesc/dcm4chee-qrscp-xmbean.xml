@@ -1006,6 +1006,17 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isCoerceAttributeTopDown"
+      setMethod="setCoerceAttributeTopDown">
+      <description>Coerce attributes Top-down
+      </description>
+      <name>CoerceAttributeTopDown</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getDcmServerName"
       setMethod="setDcmServerName">
       <description>Used internally. Do NOT modify.
