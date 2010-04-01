@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.wicket.usermanagement;
+package org.dcm4chee.usr.ui.usermanagement;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,12 +73,12 @@ import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.entity.Role;
 import org.dcm4chee.usr.entity.User;
-import org.dcm4chee.usr.wicket.util.CSSUtils;
-import org.dcm4chee.usr.wicket.util.JNDIUtils;
-import org.dcm4chee.usr.wicket.util.SecurityUtils;
-import org.dcm4chee.usr.wicket.validator.RoleValidator;
-import org.dcm4chee.usr.wicket.validator.UserValidator;
-import org.dcm4chee.usr.wicket.validator.ValidatorMessageLabel;
+import org.dcm4chee.usr.ui.util.CSSUtils;
+import org.dcm4chee.usr.ui.util.JNDIUtils;
+import org.dcm4chee.usr.ui.util.SecurityUtils;
+import org.dcm4chee.usr.ui.validator.RoleValidator;
+import org.dcm4chee.usr.ui.validator.UserValidator;
+import org.dcm4chee.usr.ui.validator.ValidatorMessageLabel;
 import org.dcm4chee.web.wicket.InternalErrorPage;
 import org.dcm4chee.web.wicket.common.TooltipBehaviour;
 import org.dcm4chee.web.wicket.common.markup.modal.ConfirmationWindow;

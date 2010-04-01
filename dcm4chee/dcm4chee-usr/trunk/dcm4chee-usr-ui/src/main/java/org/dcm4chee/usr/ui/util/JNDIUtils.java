@@ -36,39 +36,29 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.wicket.validator;
+package org.dcm4chee.usr.ui.util;
 
-import org.apache.wicket.model.util.ListModel;
-import org.apache.wicket.validation.IValidatable;
-import org.apache.wicket.validation.validator.AbstractValidator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.naming.InitialContext;
 
 /**
-* @author Robert David <robert.david@agfa.com>
-* @version $Revision$ $Date$
-* @since 28.09.2009
-*/
-public class RoleValidator extends AbstractValidator<String> {
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @version $Revision$ $Date$
+ * @since Dec 19, 2008
+ */
+public class JNDIUtils {
 
-    private static final long serialVersionUID = 1L;
-
-    private static Logger log = LoggerFactory.getLogger(RoleValidator.class);
-    
-    private ListModel<String> allRolenames;
-    
-    public RoleValidator(ListModel<String> allRolenames) {
-        this.allRolenames = allRolenames;
-    }
-
-    @Override
-    protected void onValidate(IValidatable<String> validatable) {
+    public static Object lookup(String name) {
         try {
-            for (String aRolename : this.allRolenames.getObject())
-                if (aRolename.equals(validatable.getValue())) error(validatable);
+            InitialContext jndiCtx = new InitialContext();
+            try {
+                return jndiCtx.lookup(name);
+            } finally {
+                try  {
+                    jndiCtx.close();
+                } catch ( Exception ignore ) {}
+            }
         } catch (Exception e) {
-            log.error(this.getClass().toString() + ": " + "onValidate: " + e.getMessage());
-            log.debug("Exception: ", e);
+            throw new RuntimeException(e);
         }
     }
 }

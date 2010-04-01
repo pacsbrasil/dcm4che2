@@ -1,4 +1,4 @@
-package org.dcm4chee.usr.wicket.util;
+package org.dcm4chee.usr.ui.util;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

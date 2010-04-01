@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.wicket.usermanagement;
+package org.dcm4chee.usr.ui.usermanagement;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
@@ -55,10 +55,10 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.entity.User;
-import org.dcm4chee.usr.wicket.util.JNDIUtils;
-import org.dcm4chee.usr.wicket.util.SecurityUtils;
-import org.dcm4chee.usr.wicket.validator.PasswordValidator;
-import org.dcm4chee.usr.wicket.validator.ValidatorMessageLabel;
+import org.dcm4chee.usr.ui.util.JNDIUtils;
+import org.dcm4chee.usr.ui.util.SecurityUtils;
+import org.dcm4chee.usr.ui.validator.PasswordValidator;
+import org.dcm4chee.usr.ui.validator.ValidatorMessageLabel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

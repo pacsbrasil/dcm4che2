@@ -1,4 +1,4 @@
-package org.dcm4chee.usr.wicket.validator;
+package org.dcm4chee.usr.ui.validator;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.markup.html.basic.Label;

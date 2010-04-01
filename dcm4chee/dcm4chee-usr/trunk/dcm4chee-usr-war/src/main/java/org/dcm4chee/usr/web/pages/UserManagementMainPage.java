@@ -46,9 +46,9 @@ import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.pages.InternalErrorPage;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.web.session.JaasWicketSession;
-import org.dcm4chee.usr.wicket.usermanagement.ChangePasswordLink;
-import org.dcm4chee.usr.wicket.usermanagement.UserListPanel;
-import org.dcm4chee.usr.wicket.util.JNDIUtils;
+import org.dcm4chee.usr.ui.usermanagement.ChangePasswordLink;
+import org.dcm4chee.usr.ui.usermanagement.UserListPanel;
+import org.dcm4chee.usr.ui.util.JNDIUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

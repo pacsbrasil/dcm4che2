@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.wicket.util;
+package org.dcm4chee.usr.ui.util;
 
 /**
  * @author Robert David <robert.david@agfa.com>

@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.wicket.validator;
+package org.dcm4chee.usr.ui.validator;
 
 import java.security.MessageDigest;
 

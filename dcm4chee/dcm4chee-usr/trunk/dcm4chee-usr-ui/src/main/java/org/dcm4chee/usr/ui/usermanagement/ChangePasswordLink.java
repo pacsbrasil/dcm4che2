@@ -1,4 +1,4 @@
-package org.dcm4chee.usr.wicket.usermanagement;
+package org.dcm4chee.usr.ui.usermanagement;
 
 import org.apache.wicket.Page;
 import org.apache.wicket.ajax.AjaxRequestTarget;
