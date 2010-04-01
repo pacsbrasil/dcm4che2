@@ -38,26 +38,14 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.service.common;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
 import javax.management.ObjectName;
-import javax.management.ReflectionException;
 import javax.naming.InitialContext;
 
-import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.Device;
@@ -65,7 +53,6 @@ import org.dcm4che2.net.NetworkApplicationEntity;
 import org.dcm4che2.net.NetworkConnection;
 import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.TransferCapability;
-import org.dcm4che2.util.StringUtils;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.dao.AEHomeLocal;
 import org.jboss.system.ServiceMBeanSupport;
@@ -93,7 +80,7 @@ public class AbstractScuService extends ServiceMBeanSupport {
   
     protected static final Logger LOG = LoggerFactory.getLogger(AbstractScuService.class);
     
-    protected String NONE ="NONE";
+    protected static final String NONE ="NONE";
     
     public static final String[] NATIVE_LE_TS = {
         UID.ExplicitVRLittleEndian,

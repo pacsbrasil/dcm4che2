@@ -38,6 +38,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.service.common;
 
+import java.io.Serializable;
+
 import org.dcm4che2.data.DicomObject;
 
 /**
@@ -45,27 +47,34 @@ import org.dcm4che2.data.DicomObject;
  * @version $Revision$ $Date$
  * @since Feb 14, 2010
  */
-public class DicomActionOrder extends BaseJmsOrder {
+public class BaseJmsOrder implements Serializable {
     private static final long serialVersionUID = 0L;
 
-    private String destAET;
-    private DicomObject obj;
+    private String description;
+    private int failureCount = 0;
+    private Throwable throwable;
     
-    public DicomActionOrder(String destAET, DicomObject obj, String descr) {
-        super(descr);
-        this.destAET = destAET;
-        this.obj = obj;
+    public BaseJmsOrder(String descr) {
+        this.description = descr;
     }
 
-    public String getDestAET() {
-        return destAET;
-    }
-
-    public DicomObject getDicomObject() {
-        return obj;
+    public String getDescription() {
+        return description;
     }
     
-    public String toString() {
-        return "DicomActionOrder '"+getDescription()+"' (failures="+getFailureCount()+"): destAET:"+destAET;
+    public final int getFailureCount() {
+        return failureCount;
+    }
+
+    public final void setFailureCount(int failureCount) {
+        this.failureCount = failureCount;
+    }
+
+    public Throwable getThrowable() {
+        return throwable;
+    }
+
+    public void setThrowable(Throwable throwable) {
+        this.throwable = throwable;
     }
 }
