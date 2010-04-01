@@ -36,20 +36,45 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket.ae;
+package org.dcm4chee.web.war.ae;
 
-import org.apache.wicket.markup.html.WebPage;
-import org.dcm4chee.web.war.ae.AEMgtPanel;
+import java.util.List;
+
+import org.apache.wicket.model.IModel;
+import org.dcm4chee.archive.entity.AE;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since Oct 23, 2009
+ * @since June 4, 2009
  */
-public class AETestPage extends WebPage {
+public class CipherModel implements IModel<String> {
     
-    public AETestPage() {
-        add(new AEMgtPanel("aemgt"));
+    private static final long serialVersionUID = 1L;
+    
+    private int idx;
+    private AE ae;
+
+    public CipherModel(AE ae, int idx) {
+        this.ae = ae;
+        this.idx = idx;
+    }
+ 
+    public String getObject() {
+        return idx < ae.getCipherSuites().size() ? ae.getCipherSuites().get(idx) : "-";
     }
 
+    public void setObject(String s) {
+        List<String> ciphers = (List<String>) ae.getCipherSuites();
+        if ( idx < ciphers.size() ) {
+            ciphers.set(idx, "-".equals(s) ? null : s);
+        } else {
+            ciphers.add(s);
+        }
+        ae.setCipherSuites(ciphers);
+    }
+    
+    public void detach() {
+    }
 }
+

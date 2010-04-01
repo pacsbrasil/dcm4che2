@@ -3,6 +3,7 @@ package org.dcm4chee.web.wicket;
 
 import java.net.URL;
 
+import org.apache.wicket.Page;
 import org.apache.wicket.Session;
 import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.protocol.http.MockServletContext;
@@ -30,9 +31,10 @@ import org.dcm4chee.archive.entity.VerifyingObserver;
 import org.dcm4chee.usr.entity.Role;
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.web.dao.StudyListBean;
+import org.dcm4chee.web.war.MainPage;
+import org.dcm4chee.web.war.WicketApplication;
+import org.dcm4chee.web.war.WicketSession;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.bm.testsuite.BaseSessionBeanFixture;
 
@@ -48,8 +50,6 @@ public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
         Media.class, MPPS.class, GPSPS.class, GPPPS.class, GPSPSRequest.class, GPSPSPerformer.class,
         MWLItem.class,  
         OtherPatientID.class, AE.class, RequestAttributes.class, Code.class, User.class, Role.class};
-    private static Logger log = LoggerFactory.getLogger(WicketApplicationTest.class);
-
     public WicketApplicationTest() throws Exception {
         super(StudyListBean.class, usedBeans);
     }
@@ -110,7 +110,7 @@ public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
         checkRoles( "guest", new String[]{"WebUser"});
     }
 
-    private void checkLogin(String user, String passwd, Class pageClass) {
+    private void checkLogin(String user, String passwd, Class<? extends Page> pageClass) {
         wicketTester.startPage(MainPage.class);
         FormTester formTester = wicketTester.newFormTester("modules:panel:signInPanel:signInForm");
         formTester.setValue("username", user);

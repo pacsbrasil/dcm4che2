@@ -36,20 +36,34 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket.ae;
+package org.dcm4chee.web.war;
 
-import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.dcm4chee.usr.ui.usermanagement.UserListPanel;
 import org.dcm4chee.web.war.ae.AEMgtPanel;
+import org.dcm4chee.web.war.folder.StudyListPage;
+import org.dcm4chee.web.war.fs.FileSystemPage;
+import org.dcm4chee.web.wicket.BaseWicketPage;
+import org.dcm4chee.web.wicket.ModuleSelectorPanel;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since Oct 23, 2009
+ * @since July 7, 2009
  */
-public class AETestPage extends WebPage {
+@AuthorizeInstantiation({"user","WebUser"})
+public class MainPage extends BaseWicketPage {
     
-    public AETestPage() {
-        add(new AEMgtPanel("aemgt"));
+    public MainPage() {
+        super();
+        addModules(getModuleSelectorPanel());
     }
+    
+    private void addModules(ModuleSelectorPanel selectorPanel) {
+        selectorPanel.addModule(StudyListPage.class);
+        selectorPanel.addModule(AEMgtPanel.class);
+        selectorPanel.addModule(FileSystemPage.class);
 
+        selectorPanel.addInstance(new UserListPanel("panel", ((WicketSession) getSession()).getUsername()));
+    }
 }
