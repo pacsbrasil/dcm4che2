@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket.ae;
+package org.dcm4chee.web.war.ae;
 
 import org.apache.wicket.markup.html.WebPage;
 import org.dcm4chee.web.war.ae.AEMgtPanel;

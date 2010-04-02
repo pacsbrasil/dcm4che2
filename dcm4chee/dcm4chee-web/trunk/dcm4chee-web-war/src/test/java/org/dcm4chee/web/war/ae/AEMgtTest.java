@@ -1,4 +1,4 @@
-package org.dcm4chee.web.wicket.ae;
+package org.dcm4chee.web.war.ae;
 
 
 import java.io.Serializable;

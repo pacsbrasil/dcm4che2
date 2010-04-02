@@ -36,7 +36,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.web.wicket.ae;
+package org.dcm4chee.web.war.ae;
 
 import javax.management.Attribute;
 import javax.management.AttributeList;

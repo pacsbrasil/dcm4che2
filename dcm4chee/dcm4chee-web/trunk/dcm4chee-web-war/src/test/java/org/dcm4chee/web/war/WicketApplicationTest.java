@@ -1,4 +1,4 @@
-package org.dcm4chee.web.wicket;
+package org.dcm4chee.web.war;
 
 
 import java.net.URL;
