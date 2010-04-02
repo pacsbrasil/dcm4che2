@@ -30,6 +30,7 @@ import org.dcm4chee.archive.entity.StudyOnFileSystem;
 import org.dcm4chee.archive.entity.VerifyingObserver;
 import org.dcm4chee.usr.entity.Role;
 import org.dcm4chee.usr.entity.User;
+import org.dcm4chee.web.common.base.LoginPage;
 import org.dcm4chee.web.dao.StudyListBean;
 import org.dcm4chee.web.war.MainPage;
 import org.dcm4chee.web.war.WicketApplication;
