@@ -59,9 +59,9 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.validation.validator.RangeValidator;
 import org.apache.wicket.validation.validator.StringValidator;
 import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.web.wicket.common.BaseForm;
-import org.dcm4chee.web.wicket.common.FocusOnLoadBehaviour;
-import org.dcm4chee.web.wicket.common.TooltipBehaviour;
+import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
+import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>

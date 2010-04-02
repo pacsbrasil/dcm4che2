@@ -52,7 +52,7 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.web.wicket.common.markup.modal.ConfirmationWindow;
+import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

@@ -41,7 +41,7 @@ package org.dcm4chee.web.war.ae;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.web.wicket.BaseWicketPage;
+import org.dcm4chee.web.common.base.BaseWicketPage;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
