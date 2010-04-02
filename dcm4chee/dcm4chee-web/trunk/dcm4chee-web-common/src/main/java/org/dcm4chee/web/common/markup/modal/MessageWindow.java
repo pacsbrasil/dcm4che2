@@ -36,120 +36,116 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket.common.markup.modal;
+package org.dcm4chee.web.common.markup.modal;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
-import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
+import org.dcm4chee.web.common.markup.modal.AutoOpenModalWindow;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since Dec 11, 2009
+ * @since Nov 02, 2009
  */
-public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
-    
+public class MessageWindow extends AutoOpenModalWindow {
+
     private static final long serialVersionUID = 1L;
     
-    public static final String FOCUS_ON_CONFIRM = "content:confirm";
-    public static final String FOCUS_ON_DECLINE = "content:decline";
-
-    private T userObject;
-    private String focusElementId;
-    private IModel<?> msg, confirm, decline;
-
-    public ConfirmationWindow(String id) {
-        this(id, new ResourceModel("yesBtn"), new ResourceModel("noBtn"));
-    }
+    protected static final String TITLE_DEFAULT = "MessageWindow";
+    public static final String TITLE_INFO="msgwindow.title.info";
+    public static final String TITLE_WARNING="msgwindow.title.warn";
+    public static final String TITLE_ERROR="msgwindow.title.error";
     
-    public ConfirmationWindow(String id, IModel<?> confirm, IModel<?> decline) {
+    private String msg;
+
+    public MessageWindow(String id) {
         super(id);
-        this.confirm = confirm;
-        this.decline = decline;
         initContent();
     }
 
     protected void initContent() {
-        setInitialWidth(400);
-        setInitialHeight(300);
-        setTitle("ConfirmationWindow");
+        setInitialWidth(300);
+        setInitialHeight(200);
+        setTitle(new ResourceModel(TITLE_INFO,TITLE_DEFAULT));
         setContent(new MessageWindowPanel("content"));
     }
     
-    public abstract void onConfirmation(AjaxRequestTarget target, T userObject);
-    public abstract void onDecline(AjaxRequestTarget target, T userObject);
+    public void setMessage(String msg) {
+        this.msg = msg;
+    }
+    public void setInfoMessage(String msg) {
+        this.msg = msg;
+        setTitle(new ResourceModel(TITLE_INFO,TITLE_DEFAULT));
+    }
+    public void setWarningMessage(String msg) {
+        this.msg = msg;
+        setTitle(new ResourceModel(TITLE_WARNING,TITLE_DEFAULT));
+    }
+    public void setErrorMessage(String msg) {
+        this.msg = msg;
+        setTitle(new ResourceModel(TITLE_ERROR,TITLE_DEFAULT));
+    }
+    
+    /**
+     * Called by onBeforeRender to check if window should be opened without AJAX for this request. 
+     *
+     * @return true when window should be opened. 
+     */
+    protected boolean needAutoOpen() {
+        return msg != null;
+    }
     
     @Override
     public void show(final AjaxRequestTarget target) {
         super.show(target);
-        if (focusElementId != null)
-            target.focusComponent(this.get(focusElementId));
+        target.focusComponent(this.get("content:close"));
     }
-    
-    public void confirm(AjaxRequestTarget target, IModel<?> msg, T userObject) {
-        confirm(target, msg, userObject, FOCUS_ON_DECLINE);
-    }
-    
-    public void confirm(AjaxRequestTarget target, IModel<?> msg, T userObject, String focusElementId){
+
+    public void show(AjaxRequestTarget target, String msg){
         this.msg = msg;
-        this.userObject = userObject;
-        this.focusElementId = focusElementId;
         show(target);
     }
 
-    @Override
-    protected boolean needAutoOpen() {
-        return msg != null;
-    }
-
     public class MessageWindowPanel extends Panel {
-        private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 0L;
 
         public MessageWindowPanel(String id) {
             super(id);
-            add(new Label("msg", new AbstractReadOnlyModel<Object>(){
+            add(new Label("msg", new AbstractReadOnlyModel<String>(){
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public Object getObject() {
-                    return msg == null ? null : msg.getObject();
+                public String getObject() {
+                    return msg;
                 }
             }));
-            add(new AjaxFallbackLink<Object>("confirm"){
+            add(new AjaxFallbackLink<Object>("close"){
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    onConfirmation(target, userObject);
-                    msg = null;
                     close(target);
                 }
-            }.add(new Label("confirmLabel", confirm)) );
-            add(new AjaxFallbackLink<Object>("decline"){
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void onClick(AjaxRequestTarget target) {
-                    onDecline(target, userObject);
-                    msg = null;
-                    close(target);
-                }
-            }.add(new Label("declineLabel", decline)) );
+            }.add(new Label("closeLabel", new ResourceModel("closeBtn"))) );
         }
-        
+
         /**
          * Return always true because ModalWindow.beforeRender set visibility of content to false!
          */
         @Override
         public boolean isVisible() {
             return true;
+        }
+        @Override
+        protected void onAfterRender() {
+            msg = null;
+            super.onAfterRender();
         }
     }   
 }

@@ -36,7 +36,7 @@
  *
  ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket.common;
+package org.dcm4chee.web.common.markup;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -55,6 +55,8 @@ import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
+import org.dcm4chee.web.common.behaviours.MarkInvalidBehaviour;
+import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 
 
 /**

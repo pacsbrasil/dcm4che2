@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket.common;
+package org.dcm4chee.web.common.behaviours;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.behavior.AbstractBehavior;

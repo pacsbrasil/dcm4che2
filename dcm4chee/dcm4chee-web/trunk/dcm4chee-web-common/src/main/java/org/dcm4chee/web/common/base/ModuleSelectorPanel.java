@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket;
+package org.dcm4chee.web.common.base;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -56,7 +56,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.resource.loader.ClassStringResourceLoader;
 import org.apache.wicket.resource.loader.PackageStringResourceLoader;
-import org.dcm4chee.web.wicket.common.LocaleSelectorLink;
+import org.dcm4chee.web.common.markup.LocaleSelectorLink;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

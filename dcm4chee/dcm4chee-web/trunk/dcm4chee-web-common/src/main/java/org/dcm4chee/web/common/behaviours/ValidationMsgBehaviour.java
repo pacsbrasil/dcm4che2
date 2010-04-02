@@ -35,40 +35,30 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.web.wicket.common;
 
-import org.apache.wicket.util.lang.Classes;
-import org.apache.wicket.validation.validator.UrlValidator;
+package org.dcm4chee.web.common.behaviours;
+
+import org.apache.wicket.Component;
+import org.apache.wicket.behavior.AbstractBehavior;
+import org.apache.wicket.markup.html.form.FormComponent;
 
 /**
- * Overwrite UrlValidator to allow URLs with simple hostnames like localhost, asterix, ...
- * <p/>
- * The original implementation checks the length of the top level domain (2 <= x <= 4) but in case of simple hostnames this would be fail!
- * 
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since July 20, 2009
+ * @since Oct 30, 2009
  */
-public class UrlValidator1 extends UrlValidator {
 
-    private static final long serialVersionUID = 1L;
-    private static final String DUMMY_TOP_DOMAIN = ".at";
+public class ValidationMsgBehaviour extends AbstractBehavior {
+    private static final long serialVersionUID = -2328234159094338369L;
 
-    @Override
-    protected boolean isValidAuthority(String authority) {
-        if ( authority == null )
-            return false;
-        if (authority.indexOf('.') == -1) {
-            int pos = authority.indexOf(':');
-            authority = pos == -1 ? authority + DUMMY_TOP_DOMAIN :
-                authority.substring(0,pos)+DUMMY_TOP_DOMAIN+authority.substring(pos);
+    public void onRendered(Component c) {
+        if ( c instanceof FormComponent<?>) {
+            FormComponent<?> fc = (FormComponent<?>)c;
+            if (!fc.isValid()) {
+                String error = fc.hasFeedbackMessage() ?
+                        fc.getFeedbackMessage().getMessage().toString() : "invalid!";
+                fc.getResponse().write("<div class=\"validationMsg\">" + error + "</div>");
+            }
         }
-        return super.isValidAuthority(authority);
-    }
-
-    @Override
-    protected String resourceKey() {
-        
-        return Classes.simpleName(UrlValidator.class);
     }
 }

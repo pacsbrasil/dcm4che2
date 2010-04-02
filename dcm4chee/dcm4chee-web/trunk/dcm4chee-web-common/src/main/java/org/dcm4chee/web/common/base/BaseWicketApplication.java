@@ -1,4 +1,4 @@
-package org.dcm4chee.web.wicket;
+package org.dcm4chee.web.common.base;
 
 import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;

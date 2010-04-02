@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket;
+package org.dcm4chee.web.common.base;
 
 import org.apache.wicket.Application;
 import org.apache.wicket.IPageMap;

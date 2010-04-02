@@ -35,52 +35,39 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.web.wicket;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+package org.dcm4chee.web.common.base;
 
-import org.apache.wicket.Component;
-import org.apache.wicket.authentication.panel.SignInPanel;
+import org.apache.wicket.Application;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.model.StringResourceModel;
-import org.dcm4chee.web.wicket.common.FocusOnLoadBehaviour;
+import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.model.ResourceModel;
 
 /**
- * 
- * @author Franz Willer <franz.willer@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since March 26, 2010
+ * @since 28.09.2009
  */
-public class LoginPanel extends Panel {
+public class PageExpiredErrorPage extends BaseWicketPage {
 
-    private static final long serialVersionUID = 2314918026799635837L;
+  public PageExpiredErrorPage() {
+      super();
+      this.getModuleSelectorPanel().setShowLogoutLink(false);
+      add( new Link<Object>("login") {
 
-    public LoginPanel(final String id) {
-        super(id);
-        String nodeInfo;
-        try {
-            nodeInfo = System.getProperty("dcm4che.archive.nodename", InetAddress.getLocalHost().getHostName() );
-        } catch (UnknownHostException e) {
-            nodeInfo = "DCM4CHEE";
-        }
-        add(new Label("loginLabel", new StringResourceModel("loginLabel", LoginPanel.this, 
-                null, new Object[]{nodeInfo})));
-        add(new SignInPanel("signInPanel") {
+        private static final long serialVersionUID = 1L;
 
-            private static final long serialVersionUID = 1L;
-
-            protected void onSignInFailed() {
-                Component user = LoginPanel.this.get("signInPanel:signInForm:username");
-                user.add(FocusOnLoadBehaviour.newFocusAndSelectBehaviour());
-            }
-        });  
-        this.get("signInPanel:signInForm").add(new FocusOnLoadBehaviour()); 
-    }
-    
-    public static String getModuleName() {
-        return "login";
-    }
-
+        @Override
+          public void onClick() {
+              setResponsePage(Application.get().getHomePage());
+          }
+      }.add(new Label("loginLabel", new ResourceModel("application.homeLogin"))));
+  }
+  
+  @Override
+  protected String getBrowserTitle() {
+      return super.getBrowserTitle()+":"+
+          this.getString("application.page_expired_error", null, "Page expired!");
+  }
+  
 }

@@ -36,29 +36,69 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket.common;
+package org.dcm4chee.web.common.behaviours;
 
+import org.apache.wicket.Application;
 import org.apache.wicket.Component;
+import org.apache.wicket.Localizer;
 import org.apache.wicket.behavior.AbstractBehavior;
-import org.apache.wicket.markup.html.form.FormComponent;
+import org.apache.wicket.markup.ComponentTag;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since Oct 30, 2009
+ * @since Oct 31, 2009
  */
+public class TooltipBehaviour extends AbstractBehavior {
 
-public class ValidationMsgBehaviour extends AbstractBehavior {
-    private static final long serialVersionUID = -2328234159094338369L;
+    private static final long serialVersionUID = 1L;
+    
+    private static final String POSTFIX = ".tooltip";
+    private String prefix, id;
+    
+    private transient Localizer localizer;
 
-    public void onRendered(Component c) {
-        if ( c instanceof FormComponent<?>) {
-            FormComponent<?> fc = (FormComponent<?>)c;
-            if (!fc.isValid()) {
-                String error = fc.hasFeedbackMessage() ?
-                        fc.getFeedbackMessage().getMessage().toString() : "invalid!";
-                fc.getResponse().write("<div class=\"validationMsg\">" + error + "</div>");
-            }
-        }
+    private String textAddition;
+    
+    /*
+     * Create a TooltipBehaviour with given prefix.
+     * <p>
+     * Format of resource key: <prefix><component id>.tooltip
+     */
+    public TooltipBehaviour(String prefix) {
+        this.prefix = prefix;
+    }
+
+    /*
+     * Create a TooltipBehaviour with given prefix and a fixed id.
+     * <p>
+     * Format of resource key: <prefix><id>.tooltip
+     */
+    public TooltipBehaviour(String prefix, String id) {
+        this.prefix = prefix;
+        this.id = id;
+    }
+
+    public TooltipBehaviour(String prefix, String id, String textAddition) {
+        this(prefix, id);
+        this.textAddition = textAddition;
+    }
+
+    public void onComponentTag(Component c, ComponentTag tag) {
+        tag.put("title", getLocalizer().getStringIgnoreSettings(getResourceKey(c), c, null, "") + (textAddition==null ? "" : textAddition));
+    }
+
+    private String getResourceKey(Component c) {
+        StringBuilder sb = new StringBuilder();
+        if ( prefix != null ) sb.append(prefix);
+        sb.append(id==null ? c.getId() : id);
+        sb.append(POSTFIX);
+        return sb.toString();
+    }
+
+    public Localizer getLocalizer() {
+        if ( localizer == null )
+            localizer = Application.get().getResourceSettings().getLocalizer();
+        return localizer;
     }
 }

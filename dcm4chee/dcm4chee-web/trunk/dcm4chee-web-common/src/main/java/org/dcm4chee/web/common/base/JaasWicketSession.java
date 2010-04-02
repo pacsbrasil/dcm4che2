@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket;
+package org.dcm4chee.web.common.base;
 
 import java.io.IOException;
 import java.security.Principal;

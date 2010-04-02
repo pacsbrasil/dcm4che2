@@ -36,75 +36,113 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket.common.markup.modal;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+package org.dcm4chee.web.common.markup.modal;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.feedback.FeedbackMessage;
-import org.apache.wicket.feedback.FeedbackMessages;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
+import org.dcm4chee.web.common.markup.modal.AutoOpenModalWindow;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since Nov 02, 2009
+ * @since Dec 11, 2009
  */
-public class FeedbackMessageWindow extends AutoOpenModalWindow {
-
+public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
+    
     private static final long serialVersionUID = 1L;
     
-    private transient List<FeedbackMessage> messages;
+    public static final String FOCUS_ON_CONFIRM = "content:confirm";
+    public static final String FOCUS_ON_DECLINE = "content:decline";
 
-    public FeedbackMessageWindow(String id) {
+    private T userObject;
+    private String focusElementId;
+    private IModel<?> msg, confirm, decline;
+
+    public ConfirmationWindow(String id) {
+        this(id, new ResourceModel("yesBtn"), new ResourceModel("noBtn"));
+    }
+    
+    public ConfirmationWindow(String id, IModel<?> confirm, IModel<?> decline) {
         super(id);
+        this.confirm = confirm;
+        this.decline = decline;
         initContent();
     }
 
     protected void initContent() {
-        messages = new ArrayList<FeedbackMessage>();
         setInitialWidth(400);
         setInitialHeight(300);
-        setTitle("FeedbackWindow");
+        setTitle("ConfirmationWindow");
         setContent(new MessageWindowPanel("content"));
     }
     
+    public abstract void onConfirmation(AjaxRequestTarget target, T userObject);
+    public abstract void onDecline(AjaxRequestTarget target, T userObject);
+    
+    @Override
+    public void show(final AjaxRequestTarget target) {
+        super.show(target);
+        if (focusElementId != null)
+            target.focusComponent(this.get(focusElementId));
+    }
+    
+    public void confirm(AjaxRequestTarget target, IModel<?> msg, T userObject) {
+        confirm(target, msg, userObject, FOCUS_ON_DECLINE);
+    }
+    
+    public void confirm(AjaxRequestTarget target, IModel<?> msg, T userObject, String focusElementId){
+        this.msg = msg;
+        this.userObject = userObject;
+        this.focusElementId = focusElementId;
+        show(target);
+    }
+
     @Override
     protected boolean needAutoOpen() {
-        FeedbackMessages fbMessages = getSession().getFeedbackMessages();
-        FeedbackMessage fbMsg;
-        boolean hasMsg = false;
-        for (final Iterator<FeedbackMessage> iter = fbMessages.iterator(); iter.hasNext();) {
-            fbMsg = iter.next();
-            if ( fbMsg.getReporter() != null && !fbMsg.isRendered() ) {
-                hasMsg = true;
-                messages.add(fbMsg);
-            }
-        }
-        return hasMsg;
+        return msg != null;
     }
 
     public class MessageWindowPanel extends Panel {
-        private static final long serialVersionUID = 0L;
+        private static final long serialVersionUID = 1L;
 
         public MessageWindowPanel(String id) {
             super(id);
-            add(new FeedbackPanel("feedback"));
-            add(new AjaxFallbackLink<String>("close", new ResourceModel("closeBtn")) {
+            add(new Label("msg", new AbstractReadOnlyModel<Object>(){
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public Object getObject() {
+                    return msg == null ? null : msg.getObject();
+                }
+            }));
+            add(new AjaxFallbackLink<Object>("confirm"){
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
+                    onConfirmation(target, userObject);
+                    msg = null;
                     close(target);
                 }
-            }.add(new Label("closeLabel", new ResourceModel("closeBtn"))));
+            }.add(new Label("confirmLabel", confirm)) );
+            add(new AjaxFallbackLink<Object>("decline"){
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    onDecline(target, userObject);
+                    msg = null;
+                    close(target);
+                }
+            }.add(new Label("declineLabel", decline)) );
         }
         
         /**

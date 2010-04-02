@@ -36,10 +36,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket;
+package org.dcm4chee.web.common.base;
 
 import org.apache.wicket.Application;
-import org.apache.wicket.Page;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.model.ResourceModel;
@@ -49,42 +48,24 @@ import org.apache.wicket.model.ResourceModel;
  * @version $Revision$ $Date$
  * @since 28.09.2009
  */
-public class InternalErrorPage extends BaseWicketPage {
-    
-    private Throwable throwable;
-    private Page page;
+public class AccessDeniedPage extends BaseWicketPage {
 
-    public InternalErrorPage() {
-        super();
-    }
-    
-    public InternalErrorPage(final Throwable throwable, final Page page) {
-        super();
-        this.throwable = throwable;
-        this.page = page;
-    }
+  public AccessDeniedPage() {
+      super();
+      add( new Link<Object>("home") {
 
-    @Override
-    protected void onBeforeRender() {
-        super.onBeforeRender();
+        private static final long serialVersionUID = 1L;
 
-        add(new Label("exception-message", new ResourceModel("application.internal_error.throwable").wrapOnAssignment(this).getObject() + (this.throwable == null ? "" : throwable.getLocalizedMessage())));
-        add(new Label("exception-page", new ResourceModel("application.internal_error.page").wrapOnAssignment(this).getObject() + (this.page == null ? "" : Page.class.toString())));
-        add( new Link<Object>("home") {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onClick() {
-                setResponsePage(Application.get().getHomePage());
-            }
-        }.add(new Label("homeLabel", new ResourceModel("application.home"))));
-    }
-    
-    @Override
-    protected String getBrowserTitle() {
-        return super.getBrowserTitle()+":"+
-            this.getString("application.internal_error", null, "Internal Error!");
-    }
-    
+        @Override
+          public void onClick() {
+              setResponsePage(Application.get().getHomePage());
+          }
+      }.add(new Label("homeLabel", new ResourceModel("application.home"))));
+  }
+  
+  @Override
+  protected String getBrowserTitle() {
+      return super.getBrowserTitle()+":"+
+          this.getString("application.access_denied", null, "Access denied!");
+  }
 }

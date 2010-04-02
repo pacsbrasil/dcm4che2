@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket.common.delegate;
+package org.dcm4chee.web.common.delegate;
 
 import java.util.List;
 

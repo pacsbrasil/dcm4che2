@@ -35,34 +35,56 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.web.wicket;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+package org.dcm4chee.web.common.base;
 
-import org.apache.wicket.Component;
-import org.apache.wicket.authentication.panel.SignInPanel;
+import org.apache.wicket.Application;
+import org.apache.wicket.Page;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.model.StringResourceModel;
-import org.dcm4chee.web.wicket.common.FocusOnLoadBehaviour;
+import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.model.ResourceModel;
 
 /**
- * 
- * @author Franz Willer <franz.willer@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since July 20, 2009
+ * @since 28.09.2009
  */
-public class LoginPage extends BaseWicketPage {
-    public LoginPage() {
+public class InternalErrorPage extends BaseWicketPage {
+    
+    private Throwable throwable;
+    private Page page;
+
+    public InternalErrorPage() {
         super();
-        ModuleSelectorPanel selector = getModuleSelectorPanel();
-        selector.setShowLogoutLink(false);
-        selector.addModule(LoginPanel.class);
+    }
+    
+    public InternalErrorPage(final Throwable throwable, final Page page) {
+        super();
+        this.throwable = throwable;
+        this.page = page;
+    }
+
+    @Override
+    protected void onBeforeRender() {
+        super.onBeforeRender();
+
+        add(new Label("exception-message", new ResourceModel("application.internal_error.throwable").wrapOnAssignment(this).getObject() + (this.throwable == null ? "" : throwable.getLocalizedMessage())));
+        add(new Label("exception-page", new ResourceModel("application.internal_error.page").wrapOnAssignment(this).getObject() + (this.page == null ? "" : Page.class.toString())));
+        add( new Link<Object>("home") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick() {
+                setResponsePage(Application.get().getHomePage());
+            }
+        }.add(new Label("homeLabel", new ResourceModel("application.home"))));
     }
     
     @Override
     protected String getBrowserTitle() {
         return super.getBrowserTitle()+":"+
-            this.getString("application.login", null, "Login");
-    }    
+            this.getString("application.internal_error", null, "Internal Error!");
+    }
+    
 }

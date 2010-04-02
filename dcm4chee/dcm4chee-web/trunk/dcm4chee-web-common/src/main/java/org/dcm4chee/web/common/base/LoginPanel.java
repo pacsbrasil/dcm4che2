@@ -35,39 +35,52 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+package org.dcm4chee.web.common.base;
 
-package org.dcm4chee.web.wicket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
-import org.apache.wicket.Application;
+import org.apache.wicket.Component;
+import org.apache.wicket.authentication.panel.SignInPanel;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.StringResourceModel;
+import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
 
 /**
- * @author Robert David <robert.david@agfa.com>
+ * 
+ * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since 28.09.2009
+ * @since March 26, 2010
  */
-public class PageExpiredErrorPage extends BaseWicketPage {
+public class LoginPanel extends Panel {
 
-  public PageExpiredErrorPage() {
-      super();
-      this.getModuleSelectorPanel().setShowLogoutLink(false);
-      add( new Link<Object>("login") {
+    private static final long serialVersionUID = 2314918026799635837L;
 
-        private static final long serialVersionUID = 1L;
+    public LoginPanel(final String id) {
+        super(id);
+        String nodeInfo;
+        try {
+            nodeInfo = System.getProperty("dcm4che.archive.nodename", InetAddress.getLocalHost().getHostName() );
+        } catch (UnknownHostException e) {
+            nodeInfo = "DCM4CHEE";
+        }
+        add(new Label("loginLabel", new StringResourceModel("loginLabel", LoginPanel.this, 
+                null, new Object[]{nodeInfo})));
+        add(new SignInPanel("signInPanel") {
 
-        @Override
-          public void onClick() {
-              setResponsePage(Application.get().getHomePage());
-          }
-      }.add(new Label("loginLabel", new ResourceModel("application.homeLogin"))));
-  }
-  
-  @Override
-  protected String getBrowserTitle() {
-      return super.getBrowserTitle()+":"+
-          this.getString("application.page_expired_error", null, "Page expired!");
-  }
-  
+            private static final long serialVersionUID = 1L;
+
+            protected void onSignInFailed() {
+                Component user = LoginPanel.this.get("signInPanel:signInForm:username");
+                user.add(FocusOnLoadBehaviour.newFocusAndSelectBehaviour());
+            }
+        });  
+        this.get("signInPanel:signInForm").add(new FocusOnLoadBehaviour()); 
+    }
+    
+    public static String getModuleName() {
+        return "login";
+    }
+
 }

@@ -35,70 +35,40 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+package org.dcm4chee.web.common.validators;
 
-package org.dcm4chee.web.wicket.common;
-
-import org.apache.wicket.Application;
-import org.apache.wicket.Component;
-import org.apache.wicket.Localizer;
-import org.apache.wicket.behavior.AbstractBehavior;
-import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.util.lang.Classes;
+import org.apache.wicket.validation.validator.UrlValidator;
 
 /**
+ * Overwrite UrlValidator to allow URLs with simple hostnames like localhost, asterix, ...
+ * <p/>
+ * The original implementation checks the length of the top level domain (2 <= x <= 4) but in case of simple hostnames this would be fail!
+ * 
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since Oct 31, 2009
+ * @since July 20, 2009
  */
-public class TooltipBehaviour extends AbstractBehavior {
+public class UrlValidator1 extends UrlValidator {
 
     private static final long serialVersionUID = 1L;
-    
-    private static final String POSTFIX = ".tooltip";
-    private String prefix, id;
-    
-    private transient Localizer localizer;
+    private static final String DUMMY_TOP_DOMAIN = ".at";
 
-    private String textAddition;
-    
-    /*
-     * Create a TooltipBehaviour with given prefix.
-     * <p>
-     * Format of resource key: <prefix><component id>.tooltip
-     */
-    public TooltipBehaviour(String prefix) {
-        this.prefix = prefix;
+    @Override
+    protected boolean isValidAuthority(String authority) {
+        if ( authority == null )
+            return false;
+        if (authority.indexOf('.') == -1) {
+            int pos = authority.indexOf(':');
+            authority = pos == -1 ? authority + DUMMY_TOP_DOMAIN :
+                authority.substring(0,pos)+DUMMY_TOP_DOMAIN+authority.substring(pos);
+        }
+        return super.isValidAuthority(authority);
     }
 
-    /*
-     * Create a TooltipBehaviour with given prefix and a fixed id.
-     * <p>
-     * Format of resource key: <prefix><id>.tooltip
-     */
-    public TooltipBehaviour(String prefix, String id) {
-        this.prefix = prefix;
-        this.id = id;
-    }
-
-    public TooltipBehaviour(String prefix, String id, String textAddition) {
-        this(prefix, id);
-        this.textAddition = textAddition;
-    }
-
-    public void onComponentTag(Component c, ComponentTag tag) {
-        tag.put("title", getLocalizer().getStringIgnoreSettings(getResourceKey(c), c, null, "") + (textAddition==null ? "" : textAddition));
-    }
-
-    private String getResourceKey(Component c) {
-        StringBuilder sb = new StringBuilder();
-        if ( prefix != null ) sb.append(prefix);
-        sb.append(id==null ? c.getId() : id);
-        sb.append(POSTFIX);
-        return sb.toString();
-    }
-
-    public Localizer getLocalizer() {
-        if ( localizer == null )
-            localizer = Application.get().getResourceSettings().getLocalizer();
-        return localizer;
+    @Override
+    protected String resourceKey() {
+        
+        return Classes.simpleName(UrlValidator.class);
     }
 }

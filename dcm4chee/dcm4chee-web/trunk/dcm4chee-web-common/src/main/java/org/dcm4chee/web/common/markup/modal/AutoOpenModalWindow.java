@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.wicket.common.markup.modal;
+package org.dcm4chee.web.common.markup.modal;
 
 import java.lang.reflect.Field;
 
@@ -47,6 +47,7 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.internal.HtmlHeaderContainer;
+import org.dcm4chee.web.common.markup.modal.AutoOpenModalWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -35,37 +35,34 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+package org.dcm4chee.web.common.base;
 
-package org.dcm4chee.web.wicket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
-import org.apache.wicket.Application;
+import org.apache.wicket.Component;
+import org.apache.wicket.authentication.panel.SignInPanel;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
+import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
 
 /**
- * @author Robert David <robert.david@agfa.com>
+ * 
+ * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since 28.09.2009
+ * @since July 20, 2009
  */
-public class AccessDeniedPage extends BaseWicketPage {
-
-  public AccessDeniedPage() {
-      super();
-      add( new Link<Object>("home") {
-
-        private static final long serialVersionUID = 1L;
-
-        @Override
-          public void onClick() {
-              setResponsePage(Application.get().getHomePage());
-          }
-      }.add(new Label("homeLabel", new ResourceModel("application.home"))));
-  }
-  
-  @Override
-  protected String getBrowserTitle() {
-      return super.getBrowserTitle()+":"+
-          this.getString("application.access_denied", null, "Access denied!");
-  }
+public class LoginPage extends BaseWicketPage {
+    public LoginPage() {
+        super();
+        ModuleSelectorPanel selector = getModuleSelectorPanel();
+        selector.setShowLogoutLink(false);
+        selector.addModule(LoginPanel.class);
+    }
+    
+    @Override
+    protected String getBrowserTitle() {
+        return super.getBrowserTitle()+":"+
+            this.getString("application.login", null, "Login");
+    }    
 }
