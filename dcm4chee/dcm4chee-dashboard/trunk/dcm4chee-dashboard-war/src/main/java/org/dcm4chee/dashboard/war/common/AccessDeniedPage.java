@@ -40,7 +40,7 @@ package org.dcm4chee.dashboard.war.common;
 
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.link.Link;
-import org.dcm4chee.dashboard.web.LoginPage;
+import org.dcm4chee.dashboard.war.pages.LoginPage;
 
 /**
  * @author Robert David <robert.david@agfa.com>

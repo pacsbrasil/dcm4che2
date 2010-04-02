@@ -41,7 +41,7 @@ package org.dcm4chee.dashboard.war.common;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
-import org.dcm4chee.dashboard.web.DashboardMainPage;
+import org.dcm4chee.dashboard.war.pages.DashboardMainPage;
 
 /**
  * @author Robert David <robert.david@agfa.com>

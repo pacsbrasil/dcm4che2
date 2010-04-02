@@ -69,8 +69,6 @@ public class WicketApplication extends AuthenticatedWebApplication {
 
     private static Logger log = LoggerFactory.getLogger(WicketApplication.class);
     
-    private DashboardDelegator dashboardService;
-
     private String securityDomainName;
     private String rolesGroupName;
     private String userRoleName;
@@ -80,10 +78,6 @@ public class WicketApplication extends AuthenticatedWebApplication {
     private String hashCharset;
     private String hashAlgorithm;
     
-    public DashboardDelegator getDashboardService() {
-        return dashboardService;
-    }
-
     public String getSecurityDomainName() {
         return securityDomainName;
     }
@@ -139,14 +133,7 @@ public class WicketApplication extends AuthenticatedWebApplication {
         this.securityDomainName = getInitParameter("securityDomainName");
         this.rolesGroupName = getInitParameter("rolesGroupName");
         this.userRoleName = getInitParameter("userRoleName");
-        this.adminRoleName = getInitParameter("adminRoleName");
-        
-        try {
-            this.dashboardService = new DashboardDelegator(getInitParameter("DashboardServiceName"));
-        } catch (Exception e) {
-            log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
-            log.debug("Exception: ", e);
-        }
+        this.adminRoleName = getInitParameter("adminRoleName");        
     }
 
     public Roles getRoles(Subject subject) {
