@@ -72,10 +72,10 @@ import org.dcm4chee.web.dao.StudyListFilter;
 import org.dcm4chee.web.dao.StudyListLocal;
 import org.dcm4chee.web.war.WicketApplication;
 import org.dcm4chee.web.war.WicketSession;
-import org.dcm4chee.web.wicket.common.BaseForm;
-import org.dcm4chee.web.wicket.common.DateTimeLabel;
-import org.dcm4chee.web.wicket.common.PopupLink;
-import org.dcm4chee.web.wicket.common.TooltipBehaviour;
+import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.markup.DateTimeLabel;
+import org.dcm4chee.web.common.markup.PopupLink;
+import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 
 public class StudyListPage extends Panel {
 

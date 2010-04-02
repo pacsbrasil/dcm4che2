@@ -62,9 +62,9 @@ import org.dcm4che2.data.ElementDictionary;
 import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.util.TagUtils;
-import org.dcm4chee.web.wicket.common.BaseForm;
-import org.dcm4chee.web.wicket.common.TooltipBehaviour;
-import org.dcm4chee.web.wicket.common.markup.modal.MessageWindow;
+import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.markup.modal.MessageWindow;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

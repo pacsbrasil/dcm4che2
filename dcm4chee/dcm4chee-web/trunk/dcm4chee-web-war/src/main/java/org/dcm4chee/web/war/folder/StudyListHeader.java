@@ -11,7 +11,7 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.web.war.WicketApplication;
-import org.dcm4chee.web.wicket.common.TooltipBehaviour;
+import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 
 public class StudyListHeader extends Panel {
 

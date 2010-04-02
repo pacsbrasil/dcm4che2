@@ -69,8 +69,8 @@ import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.dao.AEHomeLocal;
 import org.dcm4chee.web.dao.StudyListLocal;
-import org.dcm4chee.web.wicket.BaseWicketPage;
-import org.dcm4chee.web.wicket.common.BaseForm;
+import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.common.markup.BaseForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -49,7 +49,7 @@ import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.dao.StudyListLocal;
-import org.dcm4chee.web.wicket.util.DateUtils;
+import org.dcm4chee.web.common.util.DateUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

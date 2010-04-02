@@ -39,7 +39,7 @@
 package org.dcm4chee.web.war.folder;
 
 import org.dcm4che2.net.DimseRSPHandler;
-import org.dcm4chee.web.wicket.common.delegate.BaseMBeanDelegate;
+import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

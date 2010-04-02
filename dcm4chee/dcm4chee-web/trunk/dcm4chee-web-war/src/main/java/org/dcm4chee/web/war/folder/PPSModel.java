@@ -49,7 +49,7 @@ import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.web.dao.StudyListLocal;
-import org.dcm4chee.web.wicket.util.DateUtils;
+import org.dcm4chee.web.common.util.DateUtils;
 import org.dcm4chee.archive.util.JNDIUtils;
 
 /**
