@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.dashboard.web.filesystem;
+package org.dcm4chee.dashboard.ui.filesystem;
 
 import java.awt.Color;
 import java.awt.Paint;
@@ -54,6 +54,7 @@ import javax.swing.tree.TreeNode;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
+import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation;
 import org.apache.wicket.extensions.markup.html.tree.table.IColumn;
 import org.apache.wicket.extensions.markup.html.tree.table.IRenderable;
@@ -70,8 +71,8 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
-import org.dcm4chee.dashboard.web.WicketApplication;
-import org.dcm4chee.dashboard.web.common.JFreeChartImage;
+import org.dcm4chee.dashboard.mbean.DashboardDelegator;
+import org.dcm4chee.dashboard.ui.common.JFreeChartImage;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -95,6 +96,8 @@ public class FileSystemPanel extends Panel {
 
     private static Logger log = LoggerFactory.getLogger(FileSystemPanel.class);
 
+    private DashboardDelegator dashboardService;
+
     public FileSystemPanel(String id) {
         super(id);
     }
@@ -104,27 +107,28 @@ public class FileSystemPanel extends Panel {
         super.onBeforeRender();
 
         try {
+            dashboardService = new DashboardDelegator(((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"));
+
             DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new FileSystemModel());
-            for (String groupname : ((WicketApplication) getApplication()).getDashboardService().listAllFileSystemGroups()) {
+            for (String groupname : dashboardService.listAllFileSystemGroups()) {
                 FileSystemModel group = new FileSystemModel();
                 
                 int index = groupname.indexOf("group=");
                 if (index < 0) continue;
                 group.setDirectoryPath(groupname.substring(index + 6));
-                group.setDescription(groupname + ",AET=" + ((WicketApplication) getApplication())
-                        .getDashboardService().getDefaultRetrieveAETitle(groupname));
+                group.setDescription(groupname + ",AET=" + dashboardService.getDefaultRetrieveAETitle(groupname));
                 group.setGroup(true);
                 DefaultMutableTreeNode groupNode;
                 rootNode.add(groupNode = new DefaultMutableTreeNode(group));
 
                 File[] fileSystems = null;
                 try {
-                    fileSystems = ((WicketApplication) getApplication()).getDashboardService().listFileSystemsOfGroup(groupname);
+                    fileSystems = dashboardService.listFileSystemsOfGroup(groupname);
                 } catch (MBeanException mbe) {
                 }
                 
                 if (!((fileSystems == null) || (fileSystems.length == 0))) {
-                    long minBytesFree = ((WicketApplication) getApplication()).getDashboardService().getMinimumFreeDiskSpaceOfGroup(groupname);
+                    long minBytesFree = dashboardService.getMinimumFreeDiskSpaceOfGroup(groupname);
                     
                     for (File file : fileSystems) {
                         FileSystemModel fsm = new FileSystemModel();
@@ -136,7 +140,7 @@ public class FileSystemPanel extends Panel {
                         fsm.setMinimumFreeDiskSpace(fsm.getOverallDiskSpaceLong() == 0 ? 0 : minBytesFree / FileSystemModel.MEGA);
                         fsm.setUsableDiskSpace(Math.max((file.getUsableSpace() - minBytesFree) / FileSystemModel.MEGA, 0));
                         fsm.setRemainingTime(Math.max((file.getUsableSpace() - minBytesFree) / 
-                                ((WicketApplication) getApplication()).getDashboardService().getExpectedDataVolumePerDay(groupname), 0));
+                                dashboardService.getExpectedDataVolumePerDay(groupname), 0));
                         
                         group.setOverallDiskSpace(group.getOverallDiskSpaceLong() + fsm.getOverallDiskSpaceLong());
                         group.setUsedDiskSpace(group.getUsedDiskSpaceLong() + fsm.getUsedDiskSpaceLong());
@@ -149,7 +153,7 @@ public class FileSystemPanel extends Panel {
                 }
             }
 
-            String[] otherFileSystems = ((WicketApplication) getApplication()).getDashboardService().listOtherFileSystems();
+            String[] otherFileSystems = dashboardService.listOtherFileSystems();
             if (otherFileSystems != null && otherFileSystems.length > 0) {
 
                 FileSystemModel group = new FileSystemModel();

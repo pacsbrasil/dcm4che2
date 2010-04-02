@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.dashboard.web.report.display;
+package org.dcm4chee.dashboard.ui.report.display;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -68,8 +68,8 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.protocol.http.WebResponse;
 import org.dcm4chee.dashboard.model.ReportModel;
-import org.dcm4chee.dashboard.util.CSSUtils;
-import org.dcm4chee.dashboard.util.DatabaseUtils;
+import org.dcm4chee.dashboard.ui.util.CSSUtils;
+import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;

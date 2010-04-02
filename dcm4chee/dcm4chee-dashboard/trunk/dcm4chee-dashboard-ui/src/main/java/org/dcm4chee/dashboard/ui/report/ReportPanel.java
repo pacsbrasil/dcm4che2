@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.dashboard.web.report;
+package org.dcm4chee.dashboard.ui.report;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -48,6 +48,7 @@ import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
 import org.apache.wicket.extensions.markup.html.tree.table.AbstractColumn;
@@ -71,10 +72,9 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.validation.validator.PatternValidator;
+import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
-import org.dcm4chee.dashboard.web.DashboardMainPage;
-import org.dcm4chee.dashboard.web.WicketApplication;
-import org.dcm4chee.dashboard.web.validator.ValidatorMessageLabel;
+import org.dcm4chee.dashboard.ui.validator.ValidatorMessageLabel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,6 +89,8 @@ public class ReportPanel extends Panel {
     
     private static Logger log = LoggerFactory.getLogger(ReportPanel.class);
    
+    private DashboardDelegator dashboardService;
+
     private ModalWindow modalWindow;
     
     public ReportPanel(String id) {
@@ -114,14 +116,16 @@ public class ReportPanel extends Panel {
         super.onBeforeRender();
         
         try {
+            dashboardService = new DashboardDelegator(((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"));
+            
             DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new ReportModel());
             
-            for (ReportModel group : ((WicketApplication) getApplication()).getDashboardService().listAllReports(true)) {
+            for (ReportModel group : dashboardService.listAllReports(true)) {
                 DefaultMutableTreeNode groupNode = new DefaultMutableTreeNode();
                 groupNode.setUserObject(group);
                 rootNode.add(groupNode);
     
-                for (ReportModel report : ((WicketApplication) getApplication()).getDashboardService().listAllReports(false)) {
+                for (ReportModel report : dashboardService.listAllReports(false)) {
                     if (report.getGroupUuid() != null && report.getGroupUuid().equals(group.getUuid())) {
                         DefaultMutableTreeNode reportNode = new DefaultMutableTreeNode();
                         reportNode.setUserObject(report);
@@ -309,7 +313,7 @@ public class ReportPanel extends Panel {
         private static final long serialVersionUID = 1L;
         
         private Model<String> newGroupname = new Model<String>();
-        
+
         public AddGroupForm(String id) {
             super(id);
                       
@@ -329,11 +333,7 @@ public class ReportPanel extends Panel {
         @Override
         protected void onSubmit() {
             try {
-                ((WicketApplication) getApplication()).getDashboardService().createReport(
-                        new ReportModel(null, this.newGroupname.getObject(), null, null, null, false, null, null), true);
-                DashboardMainPage page = (DashboardMainPage) this.getPage();
-                ((AjaxTabbedPanel) page.get("tabs")).setSelectedTab(new Integer(new ResourceModel("dashboard.tabs.tab2.number").getObject()));
-                setResponsePage(page);
+                dashboardService.createReport(new ReportModel(null, this.newGroupname.getObject(), null, null, null, false, null, null), true);
             } catch (final Exception e) {
                 log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
                 log.debug("Exception: ", e);

@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.dashboard.web.report;
+package org.dcm4chee.dashboard.ui.report;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -56,6 +56,7 @@ import javax.sql.DataSource;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
+import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
@@ -70,12 +71,12 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.util.ListModel;
+import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
-import org.dcm4chee.dashboard.util.DatabaseUtils;
-import org.dcm4chee.dashboard.web.WicketApplication;
-import org.dcm4chee.dashboard.web.validator.ReportTitleValidator;
-import org.dcm4chee.dashboard.web.validator.SQLSelectStatementValidator;
-import org.dcm4chee.dashboard.web.validator.ValidatorMessageLabel;
+import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
+import org.dcm4chee.dashboard.ui.validator.ReportTitleValidator;
+import org.dcm4chee.dashboard.ui.validator.SQLSelectStatementValidator;
+import org.dcm4chee.dashboard.ui.validator.ValidatorMessageLabel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,11 +93,15 @@ public class CreateOrEditReportPage extends WebPage {
    
     protected ModalWindow window;
     private ReportModel report;
+
+    private DashboardDelegator dashboardService;
  
     public CreateOrEditReportPage(final ModalWindow window, final ReportModel report) {
         super();
 
         try {
+            dashboardService = new DashboardDelegator(((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"));
+            
             this.report = (report == null) ? new ReportModel() : report;
             if (this.report.getGroupUuid() == null) {
                 this.report.setGroupUuid(this.report.getUuid());
@@ -145,7 +150,7 @@ public class CreateOrEditReportPage extends WebPage {
             this.add(new ValidatorMessageLabel("report-title-validator-message-label", (FormComponent<?>) this.get(0)).setOutputMarkupId(true));
             
             add(new Label("report-datasource-dropdown-label", new ResourceModel("dashboard.report.createoredit.form.datasource.dropdown.title")));
-            add(new DropDownChoice<String>("report-datasource-dropdown-choice", new PropertyModel<String>(thisReport, "dataSource"), Arrays.asList(((WicketApplication) getApplication()).getDashboardService().getDataSources())).setNullValid(true));
+            add(new DropDownChoice<String>("report-datasource-dropdown-choice", new PropertyModel<String>(thisReport, "dataSource"), Arrays.asList(dashboardService.getDataSources())).setNullValid(true));
 
             this.add(new TextArea<String>("dashboard.report.createoredit.form.statement.input", new PropertyModel<String>(thisReport, "statement"))
             .setRequired(true)
@@ -239,9 +244,9 @@ public class CreateOrEditReportPage extends WebPage {
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     try {
                         if (thisReport == null || thisReport.getUuid() == null)
-                            ((WicketApplication) getApplication()).getDashboardService().createReport(thisReport, false);
+                            dashboardService.createReport(thisReport, false);
                         else 
-                            ((WicketApplication) getApplication()).getDashboardService().updateReport(thisReport);
+                            dashboardService.updateReport(thisReport);
                         window.close(target);
                     } catch (Exception e) {
                       log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());

@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.dashboard.util;
+package org.dcm4chee.dashboard.ui.util;
 
 /**
  * @author Robert David <robert.david@agfa.com>

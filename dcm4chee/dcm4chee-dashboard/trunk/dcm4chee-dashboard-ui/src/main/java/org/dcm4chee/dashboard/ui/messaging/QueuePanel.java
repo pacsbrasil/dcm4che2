@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.dashboard.web.messaging;
+package org.dcm4chee.dashboard.ui.messaging;
 
 import java.io.Serializable;
 import java.util.Enumeration;
@@ -57,6 +57,7 @@ import javax.swing.tree.TreeNode;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
+import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation;
 import org.apache.wicket.extensions.markup.html.tree.table.IColumn;
 import org.apache.wicket.extensions.markup.html.tree.table.PropertyRenderableColumn;
@@ -73,7 +74,7 @@ import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
-import org.dcm4chee.dashboard.web.WicketApplication;
+import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,8 +110,8 @@ public class QueuePanel extends Panel {
 
                 DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new QueueModel());
 
-                String[] queueNames;
-                for (String queueName : (queueNames = ((WicketApplication) getApplication()).getDashboardService().listQueueNames())) {
+                String[] queueNames = new DashboardDelegator(((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName")).listQueueNames();
+                for (String queueName : queueNames) {
                         QueueModel queueModel = new QueueModel(queueName);
                         DefaultMutableTreeNode queueNode;
                         queueModel.setQueue(true);

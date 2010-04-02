@@ -1,4 +1,4 @@
-package org.dcm4chee.dashboard.web.common;
+package org.dcm4chee.dashboard.ui.common;
 
 import org.apache.wicket.Resource;
 import org.apache.wicket.markup.html.image.NonCachingImage;

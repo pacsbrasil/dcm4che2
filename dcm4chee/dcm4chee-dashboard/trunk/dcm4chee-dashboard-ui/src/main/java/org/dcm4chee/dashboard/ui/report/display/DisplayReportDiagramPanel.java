@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.dashboard.web.report.display;
+package org.dcm4chee.dashboard.ui.report.display;
 
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
@@ -63,8 +63,8 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.protocol.http.WebResponse;
 import org.dcm4chee.dashboard.model.ReportModel;
-import org.dcm4chee.dashboard.util.DatabaseUtils;
-import org.dcm4chee.dashboard.web.common.JFreeChartImage;
+import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
+import org.dcm4chee.dashboard.ui.common.JFreeChartImage;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisState;

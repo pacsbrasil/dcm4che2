@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.dashboard.web.report.display;
+package org.dcm4chee.dashboard.ui.report.display;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -46,7 +46,7 @@ import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.dcm4chee.dashboard.model.ReportModel;
-import org.dcm4chee.dashboard.util.DatabaseUtils;
+import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
 
 /**
  * @author Robert David <robert.david@agfa.com>
