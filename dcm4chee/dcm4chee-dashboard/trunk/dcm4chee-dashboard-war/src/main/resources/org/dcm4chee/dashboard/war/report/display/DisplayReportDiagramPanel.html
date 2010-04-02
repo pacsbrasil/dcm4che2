@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	    <title>
+	    	<wicket:message key="dashboard.application.browser_title">
+	    		[Dashboard]
+			</wicket:message>
+		</title>
+		<link rel="stylesheet" type="text/css" href="style.css"/>
+	</head>
+	<body>
+		<wicket:panel>
+			<div class="donotprint">
+				<p>
+					<div wicket:id="error-message" />
+				</p>
+				<p>
+					<div wicket:id="error-reason" />
+				</p>
+				<p>
+					<a wicket:id="diagram-download" class="hyperlink">
+						<wicket:message key="dashboard.report.reportdiagram.image.downloadlink.title" />
+					</a>
+					<input wicket:id="diagram-print" type="button" style="margin-left: 20px" wicket:message="value:dashboard.report.reportdiagram.image.printbutton.title" onclick="javascript:window.print()">
+				</p>
+			</div>
+			<img wicket:id="diagram"></img>
+		</wicket:panel>
+	</body>
+</html>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	    <title>
+	    	<wicket:message key="dashboard.application.browser_title">
+	    		[Dashboard]
+			</wicket:message>
+		</title>
+		<link rel="stylesheet" type="text/css" href="style.css"/>
+	</head>
+	<body class="panel">
+		<wicket:panel>
+			<div wicket:id="modal-window" />
+			<p>
+				<a wicket:id="toggle-group-form-link" class="hyperlink" href="#">
+					<img wicket:id="toggle-group-form-image" class="image" src="images/plus.gif" />
+					<span>
+						<wicket:message key="dashboard.report.add-group.visible.false">
+							[Add group]
+						</wicket:message>				
+					</span>
+				</a>
+				<form wicket:id="add-group-form">
+					 <table><tr><td>
+						<p>
+							<input wicket:id="new-groupname-input" type="text" size="15" style="float: left" autocomplete="off" />
+							<div wicket:id="new-groupname-validator-message-label" class="message-validator" />
+
+						</p>
+						<p style="clear: left">
+							<input wicket:id="add-group-submit" type="submit" wicket:message="value:dashboard.report.add_group.submit" style="clear: left" />
+						</p>
+					</td></tr></table>
+				</form>
+			</p>
+			<div id="report">
+				<div wicket:id="report-tree-table">
+				</div>
+			</div>
+		</wicket:panel>
+	</body>
+</html>
