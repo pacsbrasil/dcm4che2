@@ -39,7 +39,7 @@
             <sarModule>
               <groupId>dcm4che.dcm4chee</groupId>
               <artifactId>dcm4chee-dashboard-sar</artifactId>
-              <uri>lib/dashboard.sar</uri>
+              <uri>dcm4chee-dashboard-dashboard.sar</uri>
             </sarModule>
             <webModule>
               <groupId>dcm4che.dcm4chee</groupId>
