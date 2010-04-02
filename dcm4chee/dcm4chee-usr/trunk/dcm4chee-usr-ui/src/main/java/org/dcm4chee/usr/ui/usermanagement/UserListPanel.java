@@ -79,9 +79,9 @@ import org.dcm4chee.usr.ui.util.SecurityUtils;
 import org.dcm4chee.usr.ui.validator.RoleValidator;
 import org.dcm4chee.usr.ui.validator.UserValidator;
 import org.dcm4chee.usr.ui.validator.ValidatorMessageLabel;
-import org.dcm4chee.web.wicket.InternalErrorPage;
-import org.dcm4chee.web.wicket.common.TooltipBehaviour;
-import org.dcm4chee.web.wicket.common.markup.modal.ConfirmationWindow;
+import org.dcm4chee.web.common.base.InternalErrorPage;
+import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
