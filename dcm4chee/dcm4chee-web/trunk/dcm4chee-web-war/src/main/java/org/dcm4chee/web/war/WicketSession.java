@@ -40,7 +40,7 @@ package org.dcm4chee.web.war;
 
 import org.apache.wicket.Request;
 import org.dcm4chee.web.war.folder.ViewPort;
-import org.dcm4chee.web.wicket.JaasWicketSession;
+import org.dcm4chee.web.common.base.JaasWicketSession;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

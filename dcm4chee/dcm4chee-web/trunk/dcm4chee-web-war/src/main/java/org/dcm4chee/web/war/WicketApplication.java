@@ -2,7 +2,7 @@ package org.dcm4chee.web.war;
 
 import org.apache.wicket.Page;
 import org.apache.wicket.authentication.AuthenticatedWebSession;
-import org.dcm4chee.web.wicket.BaseWicketApplication;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
 
 /**
  * Application object for your web application. If you want to run this

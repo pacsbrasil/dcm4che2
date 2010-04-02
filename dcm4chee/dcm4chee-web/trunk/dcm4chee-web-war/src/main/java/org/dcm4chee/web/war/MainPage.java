@@ -43,8 +43,8 @@ import org.dcm4chee.usr.ui.usermanagement.UserListPanel;
 import org.dcm4chee.web.war.ae.AEMgtPanel;
 import org.dcm4chee.web.war.folder.StudyListPage;
 import org.dcm4chee.web.war.fs.FileSystemPage;
-import org.dcm4chee.web.wicket.BaseWicketPage;
-import org.dcm4chee.web.wicket.ModuleSelectorPanel;
+import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.common.base.ModuleSelectorPanel;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
