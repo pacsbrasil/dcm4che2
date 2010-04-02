@@ -21,7 +21,8 @@
   </build>
   <modules>
     <module>dcm4chee-dashboard-sar</module>
-    <module>dcm4chee-dashboard-web</module>
+	<module>dcm4chee-dashboard-ui</module>
+    <module>dcm4chee-dashboard-war</module>
     <module>dcm4chee-dashboard-ear</module>
   </modules>
   <repositories>

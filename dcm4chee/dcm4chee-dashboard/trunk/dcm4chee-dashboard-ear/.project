@@ -4,10 +4,9 @@
 	<comment></comment>
 	<projects>
 		<project>dcm4chee-monitor-ear</project>
-		<project>dcm4chee-dashboard-web</project>
 		<project>dcm4chee-dashboard-sar</project>
 		<project>dcm4chee-dashboard-${db}</project>
-		<project>dcm4chee-dashboard-ear</project>
+		<project>dcm4chee-dashboard-war</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

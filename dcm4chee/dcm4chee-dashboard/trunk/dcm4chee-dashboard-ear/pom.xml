@@ -22,7 +22,7 @@
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
-      <artifactId>dcm4chee-dashboard-web</artifactId>
+      <artifactId>dcm4chee-dashboard-war</artifactId>
       <type>war</type>
       <version>0.0.1</version>
     </dependency>
@@ -43,9 +43,9 @@
             </sarModule>
             <webModule>
               <groupId>dcm4che.dcm4chee</groupId>
-              <artifactId>dcm4chee-dashboard-web</artifactId>
+              <artifactId>dcm4chee-dashboard-war</artifactId>
               <contextRoot>/dcm4chee-dashboard</contextRoot>
-              <bundleFileName>dcm4chee-dashboard-web.war</bundleFileName>
+              <bundleFileName>dcm4chee-dashboard-war.war</bundleFileName>
             </webModule>
           </modules>
           <jboss>
