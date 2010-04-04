@@ -1,5 +1,5 @@
 /*
-$Id: Jpdbi.java 13071 2010-04-04 22:10:07Z kianusch $
+$Id$
  */
 
 package com.agfa.db.tools;
@@ -1509,7 +1509,7 @@ public class Jpdbi {
     public static void main(String[] argv) {
         Properties defaultProps = new Properties();
 
-        String ID = "$Id: Jpdbi.java 13071 2010-04-04 22:10:07Z kianusch $";
+        String ID = "$Id$";
         String REVISION = "$Revision$";
 
         try {
