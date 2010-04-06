@@ -902,6 +902,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                             Types.VARCHAR,      // Instance.retrieveAETs
                             Types.VARCHAR,      // Instance.externalRetrieveAET
                             Types.INTEGER,      // Instance.availability
+                            Types.TIMESTAMP,    // Instance.updatedTime
                             Types.VARCHAR,      // Series.seriesIuid
                             Types.VARCHAR,      // Media.filesetId
                             Types.VARCHAR,      // Media.filesetIuid
@@ -945,9 +946,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                             "Instance.retrieveAETs",                    // (2)
                             "Instance.externalRetrieveAET",             // (3)
                             "Instance.availability",                    // (4)
-                            "Series.seriesIuid",                        // (5)
-                            "Media.filesetId",                          // (6)
-                            "Media.filesetIuid",                        // (7)
+                            "Instance.updatedTime",                     // (5)
+                            "Series.seriesIuid",                        // (6)
+                            "Media.filesetId",                          // (7)
+                            "Media.filesetIuid",                        // (8)
                             }
                     : new String[] {
                             "Instance.encodedAttributes",               // (1)
@@ -1002,9 +1004,12 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             fillDataset(ds, 1);
             DatasetUtils.putRetrieveAET(ds, rs.getString(2), rs.getString(3));
             ds.putCS(Tags.InstanceAvailability, AVAILABILITY[rs.getInt(4)]);
-            String seriesIuid = rs.getString(5);
-            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(6));
-            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(7));
+            ds.setPrivateCreatorID(PrivateTags.CreatorID);
+            ds.putDT(PrivateTags.InstanceUpdated, rs.getTimestamp(5));
+            ds.setPrivateCreatorID(null);
+            String seriesIuid = rs.getString(6);
+            ds.putSH(Tags.StorageMediaFileSetID, rs.getString(7));
+            ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(8));
             Dataset seriesAttrs = (Dataset) seriesAttrsCache.get(seriesIuid);
             if (seriesAttrs == null) {
                 if (log.isDebugEnabled()) {
