@@ -75,6 +75,7 @@ import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.ui.validator.ValidatorMessageLabel;
+import org.dcm4chee.web.common.base.InternalErrorPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,19 +95,12 @@ public class ReportPanel extends Panel {
     public ReportPanel(String id) {
         super(id);
 
-        try {
-            add(this.modalWindow = new ModalWindow("modal-window"));
-            add(new ToggleFormLink("toggle-group-form-link", 
-                    new AddGroupForm("add-group-form"), 
-                    this, 
-                    "toggle-group-form-image")
-            );
-        } catch (Exception e) {
-            log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
-            log.debug("Exception: ", e);
-            this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
-            throw new RuntimeException();
-        }
+        add(this.modalWindow = new ModalWindow("modal-window"));
+        add(new ToggleFormLink("toggle-group-form-link", 
+                new AddGroupForm("add-group-form"), 
+                this, 
+                "toggle-group-form-image")
+        );
     }
     
     @Override
@@ -169,8 +163,8 @@ public class ReportPanel extends Panel {
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
-            this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
-            throw new RuntimeException();
+            setResponsePage(new InternalErrorPage(e, null));
+
         }
     }
 

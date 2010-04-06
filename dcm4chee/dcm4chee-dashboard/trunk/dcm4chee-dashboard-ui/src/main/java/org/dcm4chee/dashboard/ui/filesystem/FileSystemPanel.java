@@ -73,6 +73,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.ui.common.JFreeChartImage;
+import org.dcm4chee.web.common.base.InternalErrorPage;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -231,8 +232,7 @@ public class FileSystemPanel extends Panel {
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
-            this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
-            throw new RuntimeException();
+            setResponsePage(new InternalErrorPage(e, null));
         }
     }
 
