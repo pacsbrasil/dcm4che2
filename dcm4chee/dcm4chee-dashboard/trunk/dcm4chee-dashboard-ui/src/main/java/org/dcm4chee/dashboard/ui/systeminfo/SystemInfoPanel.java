@@ -146,7 +146,7 @@ public class SystemInfoPanel extends Panel {
             
             DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new SystemPropertyModel());
 
-            Map<String, List<SystemPropertyModel>> propertyMap = new DashboardDelegator(((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName")).getSystemProperties();
+            Map<String, List<SystemPropertyModel>> propertyMap = DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).getSystemProperties();
             for (String key : propertyMap.keySet()) {
                 
                 SystemPropertyModel group = new SystemPropertyModel();

@@ -89,8 +89,6 @@ public class ReportPanel extends Panel {
     
     private static Logger log = LoggerFactory.getLogger(ReportPanel.class);
    
-    private DashboardDelegator dashboardService;
-
     private ModalWindow modalWindow;
     
     public ReportPanel(String id) {
@@ -116,16 +114,14 @@ public class ReportPanel extends Panel {
         super.onBeforeRender();
         
         try {
-            dashboardService = new DashboardDelegator(((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"));
-            
             DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new ReportModel());
             
-            for (ReportModel group : dashboardService.listAllReports(true)) {
+            for (ReportModel group : DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).listAllReports(true)) {
                 DefaultMutableTreeNode groupNode = new DefaultMutableTreeNode();
                 groupNode.setUserObject(group);
                 rootNode.add(groupNode);
     
-                for (ReportModel report : dashboardService.listAllReports(false)) {
+                for (ReportModel report : DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).listAllReports(false)) {
                     if (report.getGroupUuid() != null && report.getGroupUuid().equals(group.getUuid())) {
                         DefaultMutableTreeNode reportNode = new DefaultMutableTreeNode();
                         reportNode.setUserObject(report);
@@ -333,7 +329,7 @@ public class ReportPanel extends Panel {
         @Override
         protected void onSubmit() {
             try {
-                dashboardService.createReport(new ReportModel(null, this.newGroupname.getObject(), null, null, null, false, null, null), true);
+                DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).createReport(new ReportModel(null, this.newGroupname.getObject(), null, null, null, false, null, null), true);
             } catch (final Exception e) {
                 log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
                 log.debug("Exception: ", e);

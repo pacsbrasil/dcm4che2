@@ -59,17 +59,27 @@ import org.jboss.mx.util.MBeanServerLocator;
  * @version $Revision$ $Date$
  * @since 25.11.2009
  */
-public class DashboardDelegator {
+public final class DashboardDelegator {
 
+    private static final long serialVersionUID = 1L;
+    
+    private static DashboardDelegator dashboardDelegator;
+    
     private final MBeanServer server = MBeanServerLocator.locate();
     private ObjectName objectName;
     
     private String newline = System.getProperty("line.separator");
     
-    public DashboardDelegator(String objectName) throws MalformedObjectNameException, NullPointerException {
+    private DashboardDelegator(String objectName) throws MalformedObjectNameException, NullPointerException {
         this.objectName = new ObjectName(objectName);
     }
 
+    public static synchronized DashboardDelegator getInstance(String objectName) throws MalformedObjectNameException, NullPointerException { 
+        if (dashboardDelegator == null) 
+            dashboardDelegator = new DashboardDelegator(objectName); 
+        return dashboardDelegator; 
+    }
+    
     public String[] listAllFileSystemGroups() throws MalformedObjectNameException, NullPointerException, InstanceNotFoundException, ReflectionException, MBeanException {
         return (String[]) this.server.invoke(
                         this.objectName, 
@@ -81,7 +91,7 @@ public class DashboardDelegator {
                         this.objectName,
                         "listFileSystemsOfGroup",
                         new Object[] { groupname },
-                        new String[] { "java.lang.String" });
+                        new String[] { String.class.getName() });
     }
     
     public long getMinimumFreeDiskSpaceOfGroup(String groupname) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException, AttributeNotFoundException {
@@ -89,7 +99,7 @@ public class DashboardDelegator {
                         this.objectName,
                         "getMinimumFreeDiskSpaceOfGroup",
                         new Object[] { groupname },
-                        new String[] { "java.lang.String" }))
+                        new String[] { String.class.getName() }))
                         .longValue();
     }
     
@@ -98,7 +108,7 @@ public class DashboardDelegator {
                         this.objectName,
                         "getExpectedDataVolumePerDay",
                         new Object[] { groupname },
-                        new String[] { "java.lang.String" }))
+                        new String[] { String.class.getName() }))
                         .longValue();
     }
 
@@ -107,7 +117,7 @@ public class DashboardDelegator {
                         this.objectName,
                         "getDefaultRetrieveAETitle",
                         new Object[] { groupname },
-                        new String[] { "java.lang.String" }));
+                        new String[] { String.class.getName() }));
     }
     
     public String[] listOtherFileSystems() throws InstanceNotFoundException, ReflectionException, MBeanException {
@@ -128,7 +138,7 @@ public class DashboardDelegator {
                         this.objectName,
                         "listAllReports", 
                         new Object[] { groups },
-                        new String[] { "boolean" });
+                        new String[] { boolean.class.getName() });
     }
     
     public void createReport(ReportModel report, boolean isGroup) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
@@ -136,7 +146,7 @@ public class DashboardDelegator {
                         this.objectName,
                         "createReport", 
                         new Object[] { report, isGroup }, 
-                        new String[] { "org.dcm4chee.dashboard.model.ReportModel", "boolean"});
+                        new String[] { ReportModel.class.getName(), boolean.class.getName()});
     }
     
     public void updateReport(ReportModel report) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
@@ -144,7 +154,7 @@ public class DashboardDelegator {
                         this.objectName,
                         "updateReport", 
                         new Object[] { report }, 
-                        new String[] { "org.dcm4chee.dashboard.model.ReportModel" });       
+                        new String[] { ReportModel.class.getName() });       
     }
     
     public void deleteReport(ReportModel report, boolean isGroup) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
@@ -152,7 +162,7 @@ public class DashboardDelegator {
                         this.objectName,
                         "deleteReport", 
                         new Object[] { report, isGroup }, 
-                        new String[] { "org.dcm4chee.dashboard.model.ReportModel", "boolean" });       
+                        new String[] { ReportModel.class.getName(), boolean.class.getName() });       
     }
     
     public String[] getDataSources() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException, AttributeNotFoundException {
@@ -166,7 +176,6 @@ public class DashboardDelegator {
     public String[] listQueueNames() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException, AttributeNotFoundException {
         return (String[]) server.invoke(
                         this.objectName,
-                        "listQueueNames", null, null);       
-
+                        "listQueueNames", null, null);
     }
 }

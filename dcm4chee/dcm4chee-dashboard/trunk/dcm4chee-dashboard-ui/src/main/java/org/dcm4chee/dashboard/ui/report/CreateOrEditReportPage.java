@@ -94,14 +94,10 @@ public class CreateOrEditReportPage extends WebPage {
     protected ModalWindow window;
     private ReportModel report;
 
-    private DashboardDelegator dashboardService;
- 
     public CreateOrEditReportPage(final ModalWindow window, final ReportModel report) {
         super();
 
         try {
-            dashboardService = new DashboardDelegator(((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"));
-            
             this.report = (report == null) ? new ReportModel() : report;
             if (this.report.getGroupUuid() == null) {
                 this.report.setGroupUuid(this.report.getUuid());
@@ -150,7 +146,7 @@ public class CreateOrEditReportPage extends WebPage {
             this.add(new ValidatorMessageLabel("report-title-validator-message-label", (FormComponent<?>) this.get(0)).setOutputMarkupId(true));
             
             add(new Label("report-datasource-dropdown-label", new ResourceModel("dashboard.report.createoredit.form.datasource.dropdown.title")));
-            add(new DropDownChoice<String>("report-datasource-dropdown-choice", new PropertyModel<String>(thisReport, "dataSource"), Arrays.asList(dashboardService.getDataSources())).setNullValid(true));
+            add(new DropDownChoice<String>("report-datasource-dropdown-choice", new PropertyModel<String>(thisReport, "dataSource"), Arrays.asList(DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).getDataSources())).setNullValid(true));
 
             this.add(new TextArea<String>("dashboard.report.createoredit.form.statement.input", new PropertyModel<String>(thisReport, "statement"))
             .setRequired(true)
@@ -244,9 +240,9 @@ public class CreateOrEditReportPage extends WebPage {
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     try {
                         if (thisReport == null || thisReport.getUuid() == null)
-                            dashboardService.createReport(thisReport, false);
+                            DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).createReport(thisReport, false);
                         else 
-                            dashboardService.updateReport(thisReport);
+                            DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).updateReport(thisReport);
                         window.close(target);
                     } catch (Exception e) {
                       log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());

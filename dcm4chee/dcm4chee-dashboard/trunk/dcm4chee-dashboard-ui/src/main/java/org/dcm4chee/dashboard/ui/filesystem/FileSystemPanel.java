@@ -96,8 +96,6 @@ public class FileSystemPanel extends Panel {
 
     private static Logger log = LoggerFactory.getLogger(FileSystemPanel.class);
 
-    private DashboardDelegator dashboardService;
-
     public FileSystemPanel(String id) {
         super(id);
     }
@@ -107,28 +105,26 @@ public class FileSystemPanel extends Panel {
         super.onBeforeRender();
 
         try {
-            dashboardService = new DashboardDelegator(((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"));
-
             DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new FileSystemModel());
-            for (String groupname : dashboardService.listAllFileSystemGroups()) {
+            for (String groupname : DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).listAllFileSystemGroups()) {
                 FileSystemModel group = new FileSystemModel();
                 
                 int index = groupname.indexOf("group=");
                 if (index < 0) continue;
                 group.setDirectoryPath(groupname.substring(index + 6));
-                group.setDescription(groupname + ",AET=" + dashboardService.getDefaultRetrieveAETitle(groupname));
+                group.setDescription(groupname + ",AET=" + DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).getDefaultRetrieveAETitle(groupname));
                 group.setGroup(true);
                 DefaultMutableTreeNode groupNode;
                 rootNode.add(groupNode = new DefaultMutableTreeNode(group));
 
                 File[] fileSystems = null;
                 try {
-                    fileSystems = dashboardService.listFileSystemsOfGroup(groupname);
+                    fileSystems = DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).listFileSystemsOfGroup(groupname);
                 } catch (MBeanException mbe) {
                 }
                 
                 if (!((fileSystems == null) || (fileSystems.length == 0))) {
-                    long minBytesFree = dashboardService.getMinimumFreeDiskSpaceOfGroup(groupname);
+                    long minBytesFree = DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).getMinimumFreeDiskSpaceOfGroup(groupname);
                     
                     for (File file : fileSystems) {
                         FileSystemModel fsm = new FileSystemModel();
@@ -140,7 +136,7 @@ public class FileSystemPanel extends Panel {
                         fsm.setMinimumFreeDiskSpace(fsm.getOverallDiskSpaceLong() == 0 ? 0 : minBytesFree / FileSystemModel.MEGA);
                         fsm.setUsableDiskSpace(Math.max((file.getUsableSpace() - minBytesFree) / FileSystemModel.MEGA, 0));
                         fsm.setRemainingTime(Math.max((file.getUsableSpace() - minBytesFree) / 
-                                dashboardService.getExpectedDataVolumePerDay(groupname), 0));
+                                DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).getExpectedDataVolumePerDay(groupname), 0));
                         
                         group.setOverallDiskSpace(group.getOverallDiskSpaceLong() + fsm.getOverallDiskSpaceLong());
                         group.setUsedDiskSpace(group.getUsedDiskSpaceLong() + fsm.getUsedDiskSpaceLong());
@@ -153,7 +149,7 @@ public class FileSystemPanel extends Panel {
                 }
             }
 
-            String[] otherFileSystems = dashboardService.listOtherFileSystems();
+            String[] otherFileSystems = DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).listOtherFileSystems();
             if (otherFileSystems != null && otherFileSystems.length > 0) {
 
                 FileSystemModel group = new FileSystemModel();

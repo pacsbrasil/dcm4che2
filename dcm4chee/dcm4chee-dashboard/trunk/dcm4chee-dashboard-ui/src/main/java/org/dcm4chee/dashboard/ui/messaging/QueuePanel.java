@@ -110,7 +110,7 @@ public class QueuePanel extends Panel {
 
                 DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new QueueModel());
 
-                String[] queueNames = new DashboardDelegator(((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName")).listQueueNames();
+                String[] queueNames = DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).listQueueNames();
                 for (String queueName : queueNames) {
                         QueueModel queueModel = new QueueModel(queueName);
                         DefaultMutableTreeNode queueNode;

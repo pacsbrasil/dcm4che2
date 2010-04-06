@@ -38,6 +38,8 @@
 
 package org.dcm4chee.dashboard.ui.report;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
@@ -100,7 +102,7 @@ public class DynamicLinkPanel extends Panel {
                 return;
             }
 
-            add((this.link = (Link<Object>) ((Class<? extends Link<Object>>) Class.forName("org.dcm4chee.dashboard.web.report.DynamicLinkPanel$" + className)).getConstructors()[0].newInstance(new Object[] {
+            add((this.link = (Link<Object>) ((Class<? extends Link<Object>>) Class.forName(this.getClass().getName() + "$" + className)).getConstructors()[0].newInstance(new Object[] {
                  this, 
                  "report-table-link", 
                  report, 
@@ -211,7 +213,6 @@ public class DynamicLinkPanel extends Panel {
 
                 @Override
                 public void onClose(AjaxRequestTarget target) {
-//                    setResponsePage(DashboardMainPage.class, new PageParameters("tab=" + new ResourceModel("dashboard.tabs.tab2.number").getObject()));
                 }
             });
         }
@@ -244,7 +245,7 @@ public class DynamicLinkPanel extends Panel {
         private static final long serialVersionUID = 1L;
         
         public CreateOrEditReportLink(String id, ReportModel report, ModalWindow modalWindow) {
-            super(id, report, modalWindow);            
+            super(id, report, modalWindow);       
         }
         
         @Override
@@ -280,7 +281,7 @@ public class DynamicLinkPanel extends Panel {
         @Override
         public void onClick() {
             try {
-                new DashboardDelegator(((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName")).deleteReport(this.report, this.report.getGroupUuid() == null);
+                DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).deleteReport(this.report, this.report.getGroupUuid() == null);
             } catch (Exception e) {
                 log.error(this.getClass().toString() + ": " + "onClick: " + e.getMessage());
                 log.debug("Exception: ", e);
