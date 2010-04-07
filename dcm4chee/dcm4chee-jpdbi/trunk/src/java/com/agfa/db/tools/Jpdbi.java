@@ -913,11 +913,6 @@ public class Jpdbi {
         System.out.println("        --query <table.field=value>     Query non Standard Field");
         System.out.println("        --updatepw username password    Update Password for IMPAX User");
 
-        /*
-         * System.out.print(newline); System.out.println(" --force Display even
-         * if result would return more that 500 entries");
-         */
-
         System.out.print(newline);
         System.out.println("        --debug           Display SQL Statement");
 

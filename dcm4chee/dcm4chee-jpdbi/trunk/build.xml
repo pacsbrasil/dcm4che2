@@ -3,7 +3,7 @@
 		jPDBI ... Display DataBase Entries for DCM4CHE
 	</description>
 
-	<property name="jdbexp.location" value="/home/kianusch/workspace/jpdbi" />
+	<property name="jdbexp.location" value="${basedir}" />
 	<property name="dist.dir" value="${basedir}/dist" />
 	<property name="build.dir" value="${basedir}/build" />
 	<property name="src.dir" value="${basedir}/src/java" />
