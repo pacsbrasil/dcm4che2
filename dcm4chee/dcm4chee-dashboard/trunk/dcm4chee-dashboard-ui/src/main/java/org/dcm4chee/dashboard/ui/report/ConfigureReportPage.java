@@ -48,6 +48,7 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ReflectionException;
 
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
@@ -66,7 +67,6 @@ import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
 import org.dcm4chee.dashboard.ui.report.display.DynamicDisplayPage;
 import org.dcm4chee.dashboard.ui.validator.ValidatorMessageLabel;
-import org.dcm4chee.web.common.base.InternalErrorPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,7 +103,7 @@ public class ConfigureReportPage extends WebPage {
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
             log.debug("Exception: ", e);
-            setResponsePage(new InternalErrorPage(e, null));
+            throw new WicketRuntimeException(e.getLocalizedMessage(), e);
         }
     }
 
@@ -118,7 +118,7 @@ public class ConfigureReportPage extends WebPage {
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
-            setResponsePage(new InternalErrorPage(e, null));
+            throw new WicketRuntimeException(e.getLocalizedMessage(), e);
         }
     }
     

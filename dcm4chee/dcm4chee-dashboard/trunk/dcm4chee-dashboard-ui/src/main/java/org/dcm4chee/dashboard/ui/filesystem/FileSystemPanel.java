@@ -54,6 +54,7 @@ import javax.swing.tree.TreeNode;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
+import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation;
 import org.apache.wicket.extensions.markup.html.tree.table.IColumn;
@@ -73,7 +74,6 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.ui.common.JFreeChartImage;
-import org.dcm4chee.web.common.base.InternalErrorPage;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -232,7 +232,7 @@ public class FileSystemPanel extends Panel {
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
-            setResponsePage(new InternalErrorPage(e, null));
+            throw new WicketRuntimeException(e.getLocalizedMessage(), e); 
         }
     }
 

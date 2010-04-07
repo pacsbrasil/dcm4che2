@@ -43,6 +43,7 @@ import java.lang.reflect.InvocationTargetException;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
+import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
@@ -61,7 +62,6 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
-import org.dcm4chee.web.common.base.InternalErrorPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -151,7 +151,7 @@ public class DynamicLinkPanel extends Panel {
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
             log.debug("Exception: ", e);
-            setResponsePage(new InternalErrorPage(e, null));
+            throw new WicketRuntimeException(e.getLocalizedMessage(), e);
         }
     }
 
@@ -186,8 +186,7 @@ public class DynamicLinkPanel extends Panel {
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
-            this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
-            throw new RuntimeException();
+            throw new WicketRuntimeException(e.getLocalizedMessage(), e);
         }
     }
 

@@ -46,6 +46,7 @@ import javax.swing.tree.TreeNode;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
+import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
@@ -75,7 +76,6 @@ import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.ui.validator.ValidatorMessageLabel;
-import org.dcm4chee.web.common.base.InternalErrorPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -163,8 +163,7 @@ public class ReportPanel extends Panel {
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
-            setResponsePage(new InternalErrorPage(e, null));
-
+            throw new WicketRuntimeException(e.getLocalizedMessage(), e);
         }
     }
 
