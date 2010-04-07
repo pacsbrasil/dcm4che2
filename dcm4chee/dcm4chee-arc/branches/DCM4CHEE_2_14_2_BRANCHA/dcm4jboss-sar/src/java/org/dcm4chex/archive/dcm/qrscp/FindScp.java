@@ -333,6 +333,23 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
         return queryCmd.getDataset();
     }
 
+    protected void doBeforeRsp(ActiveAssociation assoc, Dimse rsp) {
+        if (log.isDebugEnabled())
+        {
+        	if (service.isCFindRspDebugLogDeferToDoBeforeRsp()) {
+        		try {
+        			Dataset ds = rsp.getDataset();
+        			if (ds != null) {
+        				log.debug("Identifier:\n");
+        				log.debug(ds);
+        			}
+        		} catch (IOException iOException) {
+        			log.error("Failed to debug log C-Find response", iOException);
+        		}
+        	}
+        }
+    }
+
     protected void doMultiRsp(ActiveAssociation assoc, Dimse rq,
             Command rspCmd, MultiDimseRsp mdr) throws IOException,
             DcmServiceException {
@@ -410,8 +427,10 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
                 }
                 rspCmd.putUS(Tags.Status, pendingStatus);
                 Dataset data = getDataset(queryCmd);
-                log.debug("Identifier:\n");
-                log.debug(data);
+                if (!service.isCFindRspDebugLogDeferToDoBeforeRsp()) {
+                    log.debug("Identifier:\n");
+                    log.debug(data);
+                }
                 service.logDIMSE(a, RESULT_XML, data);
                 if (count++ == 0) {
                     coerceTpl = service.getCoercionTemplates(callingAET, 

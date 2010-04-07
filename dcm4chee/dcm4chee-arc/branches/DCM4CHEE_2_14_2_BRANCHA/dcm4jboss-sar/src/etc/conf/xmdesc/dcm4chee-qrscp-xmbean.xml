@@ -1017,6 +1017,18 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isCFindRspDebugLogDeferToDoBeforeRsp"
+      setMethod="setCFindRspDebugLogDeferToDoBeforeRsp">
+      <description>Defer DEBUG logging of C-Find Response to doBeforeRsp()
+          function just before the response is actually being sent out
+      </description>
+      <name>CFindRspDebugLogDeferToDoBeforeRsp</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getDcmServerName"
       setMethod="setDcmServerName">
       <description>Used internally. Do NOT modify.

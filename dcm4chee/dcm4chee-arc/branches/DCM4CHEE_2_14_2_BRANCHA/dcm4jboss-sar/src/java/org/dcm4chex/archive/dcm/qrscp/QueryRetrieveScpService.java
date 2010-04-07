@@ -256,6 +256,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private Map privateTSuidMap = new LinkedHashMap();
     
     private boolean coerceAttributeTopDown = false;
+
+    private boolean cFindRspDebugLogDeferToDoBeforeRsp = false;
     
     public QueryRetrieveScpService() {
     	moveScp = createMoveScp();
@@ -1564,6 +1566,14 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public void setCoerceAttributeTopDown(boolean reverse) {
         this.coerceAttributeTopDown = reverse;
+    }
+
+    public boolean isCFindRspDebugLogDeferToDoBeforeRsp() {
+        return cFindRspDebugLogDeferToDoBeforeRsp;
+    }
+
+    public void setCFindRspDebugLogDeferToDoBeforeRsp(boolean defer) {
+        this.cFindRspDebugLogDeferToDoBeforeRsp = defer;
     }
     
 }
