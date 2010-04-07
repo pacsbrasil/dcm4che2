@@ -38,10 +38,12 @@
 
 package org.dcm4chee.dashboard.war.common;
 
+import org.apache.wicket.Application;
+import org.apache.wicket.Page;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
-import org.dcm4chee.dashboard.war.pages.DashboardMainPage;
+import org.apache.wicket.model.ResourceModel;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -49,25 +51,34 @@ import org.dcm4chee.dashboard.war.pages.DashboardMainPage;
  * @since 28.09.2009
  */
 public class InternalErrorPage extends WebPage {
+    
+    private Throwable throwable;
+    private Page page;
 
-    public InternalErrorPage(Exception e) {
-        this();
-    }
     public InternalErrorPage() {
+        super();
+    }
+    
+    public InternalErrorPage(final Throwable throwable, final Page page) {
+        super();
+        this.throwable = throwable;
+        this.page = page;
+    }
 
-        Link<Object> backToMainLink = new Link<Object>("back-to-main") {
+    @Override
+    protected void onBeforeRender() {
+        super.onBeforeRender();
+
+        add(new Label("exception-message", new ResourceModel("application.internal_error.throwable").wrapOnAssignment(this).getObject() + (this.throwable == null ? "" : throwable.getLocalizedMessage())));
+        add(new Label("exception-page", new ResourceModel("application.internal_error.page").wrapOnAssignment(this).getObject() + (this.page == null ? "" : Page.class.toString())));
+        add( new Link<Object>("back-to-main") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
             public void onClick() {
-                this.getSession().invalidateNow();
-                setResponsePage(DashboardMainPage.class);
+                setResponsePage(Application.get().getHomePage());
             }
-        };
-        add(backToMainLink);
-        add(new Label("exception-message", this.getApplication().getSessionStore().getAttribute(getRequest(), "exception") != null ?
-                                           ((Exception) this.getApplication().getSessionStore().getAttribute(getRequest(), "exception")).getLocalizedMessage() :
-                                           ""));
-    }
+        });
+    }    
 }
