@@ -1,4 +1,4 @@
-// $Id: jpdbi.java,v 1.2 2010-04-01 16:13:17 kianusch Exp $
+// $Id$
 
 package com.agfa.db.tools;
 
