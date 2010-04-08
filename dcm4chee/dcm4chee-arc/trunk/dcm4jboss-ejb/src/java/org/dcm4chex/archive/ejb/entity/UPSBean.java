@@ -147,7 +147,7 @@ public abstract class UPSBean implements EntityBean {
             createScheduledHumanPerformers(
                     ds.get(Tags.ScheduledHumanPerformersSeq));
             createRefRequests(ds.get(Tags.RefRequestSeq));
-            createRelatedPS(ds.get(Tags.RelatedProcedureStepSeq));
+            //createRelatedPS(ds.get(Tags.RelatedProcedureStepSeq));
         } catch (Exception e) {
             throw new EJBException(e);
         }
@@ -432,10 +432,10 @@ public abstract class UPSBean implements EntityBean {
             setIssuerOfAdmissionIDUniversialEntityID(
                     issuer.getString(Tags.UniversalEntityID));
         }
-        setProcedureStepLabel(ds.getString(Tags.ProcedureStepLabel));
-        setWorklistLabel(ds.getString(Tags.WorklistLabel));
-        setUPSStateAsInt(UPSState.toInt(ds.getString(Tags.UPSState)));
-        setUPSPriorityAsInt(Priority.toInt(ds.getString(Tags.SPSPriority)));
+//        setProcedureStepLabel(ds.getString(Tags.ProcedureStepLabel));
+//        setWorklistLabel(ds.getString(Tags.WorklistLabel));
+//        setUPSStateAsInt(UPSState.toInt(ds.getString(Tags.UPSState)));
+//        setUPSPriorityAsInt(Priority.toInt(ds.getString(Tags.SPSPriority)));
         setScheduledStartDateTime(toTimestamp(ds.getDate(Tags.SPSStartDateAndTime)));
         setExpectedCompletionDateTime(
                 toTimestamp(ds.getDate(Tags.ExpectedCompletionDateAndTime)));
