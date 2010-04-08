@@ -89,7 +89,7 @@ import org.dcm4chex.archive.exceptions.NonUniquePatientException;
 /**
  * Storage Bean
  * 
- * @ejb.bean name="Storage" type="Stateless" view-type="remote" 
+ * @ejb.bean name="Storage" type="Stateless" view-type="both" 
  * 			 jndi-name="ejb/Storage"
  * @ejb.transaction-type type="Container"
  * @ejb.transaction type="Required"
@@ -619,6 +619,14 @@ public abstract class StorageBean implements SessionBean {
         SeriesLocal ser = seriesHome.findBySeriesIuid(uid);
         seriesPkCache.put(uid, ser.getPk());
         return ser;
+    }
+    
+    /**
+     * @ejb.interface-method
+     * @ejb.transaction type="NotSupported"
+     */
+    public void removeFromSeriesPkCache(String uid){
+        seriesPkCache.remove(uid);
     }
 }
 
