@@ -30,6 +30,7 @@
 			<classpath>
 				<pathelement location="bin" />
 				<pathelement location="${jpdbi.location}/thirdparty/ojdbc14.jar" />
+				<pathelement location="${jpdbi.location}/thirdparty/dcm4che.jar" />
 			</classpath>
 		</javac>
 	</target>
@@ -49,7 +50,7 @@
 			<fileset dir="bin" />
 			<manifest>
 				<attribute name="Main-Class" value="com.agfa.db.tools.jpdbi"/>
-				<attribute name="Class-Path" value="./ ../lib/ojdbc5.jar ../lib/ojdbc14.jar"/>
+				<attribute name="Class-Path" value="./ ../lib/ojdbc5.jar ../lib/ojdbc14.jar ../lib/dcm4che.jar"/>
 			</manifest>
 		</jar>
 	</target>
