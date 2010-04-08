@@ -19,7 +19,7 @@ public class Display {
 
     public static long LastFile = -1;
 
-    static String Patient(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
+    static long Patient(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
         String out = "";
         long tmpKey = rs.getLong("A");
 
@@ -68,12 +68,12 @@ public class Display {
                 out = out.concat("[" + tmpKey + "]");
             }
             System.out.println(out);
-            return out;
+            return tmpKey;
         }
-        return null;
+        return -1;
     }
 
-    static String Study(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
+    static long Study(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
         String out = "";
         long tmpKey = rs.getLong("B");
 
@@ -136,13 +136,13 @@ public class Display {
             }
 
             System.out.println(" " + out);
-            return out;
+            return tmpKey;
         }
-        return null;
+        return -1;
 
     }
 
-    static String Serie(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
+    static long Serie(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
         String out = "";
         long tmpKey = rs.getLong("C");
 
@@ -189,12 +189,12 @@ public class Display {
                 out = out.concat("[" + tmpKey + "]");
             }
             System.out.println("  " + out);
-            return out;
+            return tmpKey;
         }
-        return null;
+        return -1;
     }
 
-    static String Instance(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
+    static long Instance(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
         String out = "";
         long tmpKey = rs.getLong("D");
 
@@ -233,13 +233,15 @@ public class Display {
                 out = out.concat("[" + tmpKey + "]");
             }
             System.out.println("   " + out);
-            return out;
+            return tmpKey;
         }
-        return null;
+        return -1;
     }
 
-    static String Path(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
+    static long Path(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
         String out = "";
+        long tmpKey = rs.getLong("E");
+        
         if (cfg.displayFields)
             out = out.concat("PATH:");
         out = out.concat(rs.getString("DIRPATH") + "/" + rs.getString("FILEPATH") + " ");
@@ -264,9 +266,9 @@ public class Display {
             out = out.concat(" ");
             if (cfg.displayFields)
                 out = out.concat("PK:");
-            out = out.concat("[" + rs.getLong("E") + "]");
+            out = out.concat("[" + tmpKey + "]");
         }
         System.out.println("    " + out);
-        return out;
+        return tmpKey;
     }
 }

@@ -3,8 +3,19 @@
 package com.agfa.db.tools;
 
 import java.sql.Types;
+import java.util.HashMap;
+import java.util.Hashtable;
 
 public class Query {
+
+	private static int Count(char c, String s) {
+		int cnt = 0;
+		for (int pos = 0; pos < s.length(); pos++)
+			if (s.charAt(pos) == c)
+				cnt++;
+		return cnt;
+	}
+
 	private static String addWhere(String w, String f, String v, int t) {
 		return addWhere(w, f, v, t, false);
 	}
@@ -45,7 +56,92 @@ public class Query {
 		return c;
 	}
 
-	static String Build(CommandLine cfg) {
+	static String[][] BuildUpdate(CommandLine cfg) {
+		String[][] UpdDicom = null;
+		if (!cfg.update.isEmpty()) {
+			Hashtable<String, Boolean> ht=new Hashtable<String, Boolean>();
+			String TmpLevel = null;
+			String TmpUpdDicom = null;
+			String UpdDB = null;
+			boolean UpdMulti = true;
+
+			String UpdMultiTmp = null;
+
+			int CntUpdates = cfg.update.size();
+
+			if (CntUpdates > 0) {
+				UpdDicom = new String[CntUpdates][5];
+
+				for (int loop = 0; loop < CntUpdates; loop++) {
+					String Update = cfg.update.get(loop);
+
+					int split = Update.indexOf('=');
+					if (split != -1) {
+						String UpdField = Update.substring(0, split).toLowerCase();
+						if ( ! ht.containsKey(UpdField)) { 
+
+							String UpdValue = Update.substring(split + 1);
+							String UpdPrefix = "update." + UpdField + ".";
+							String UpdLevel = cfg.applicationProps.getProperty(UpdPrefix.concat("level"), "").trim();
+							if (UpdLevel.length() > 0) {
+								if (TmpLevel == null)
+									TmpLevel = UpdLevel;
+								if (TmpLevel.equalsIgnoreCase(UpdLevel)) {
+									TmpUpdDicom = cfg.applicationProps.getProperty(UpdPrefix.concat("dcm"), "").trim();
+									UpdDB = cfg.applicationProps.getProperty(UpdPrefix.concat("dbfield"), "").trim();
+									UpdMultiTmp = cfg.applicationProps.getProperty(UpdPrefix.concat("multi"), "").trim();
+									if (UpdMultiTmp.equalsIgnoreCase("true") || UpdMultiTmp.equalsIgnoreCase("yes"))
+										UpdMulti &= true;
+									else
+										UpdMulti = false;
+									// Special Cases
+									// Patient Name
+									if (UpdDB.equalsIgnoreCase("PAT_NAME") && UpdLevel.equalsIgnoreCase("PATIENT")) {
+										int cnt = Count('^', UpdValue);
+										while (cnt++ < 4)
+											UpdValue += "^";
+									}
+								} else {
+									_System.exit(1, "Multilevel updates not supported ["+TmpLevel+" & "+UpdLevel+"].");
+								}
+
+								if (UpdDB.equalsIgnoreCase("NONE")) {
+									UpdDB = null;
+								}
+								if (UpdValue.equalsIgnoreCase("_REMOVE_")) {
+									UpdValue = null;
+								}
+
+								if (TmpUpdDicom.length() > 0) {
+									ht.put(UpdField, true);
+									UpdDicom[loop][0] = UpdDB;
+									UpdDicom[loop][1] = TmpUpdDicom;
+									UpdDicom[loop][2] = UpdValue;
+								}
+							} else {
+								_System.exit(1, "Update not defined ["+UpdField+"].");
+							}
+						} else {
+							_System.exit(1, "Duplicate Update ["+UpdField+"].");
+						}
+					} else {
+						_System.exit(1, "Update syntax error ["+Update+"].");
+					}
+				}
+				UpdDicom[0][3] = TmpLevel;
+				UpdDicom[0][4] = (UpdMulti ? "t" : "f");
+				if (TmpLevel.equals("PATIENT"))
+					cfg.levels.set(Jpdbi.PATIENT);
+				if (TmpLevel.equals("STUDY"))
+					cfg.levels.set(Jpdbi.STUDY);
+				if (TmpLevel.equals("SERIES"))
+					cfg.levels.set(Jpdbi.SERIE);
+			}
+		}
+		return UpdDicom;
+	}
+
+	static String[] Build(CommandLine cfg) {
 		String select = "";
 		String where = "";
 		String order = "";
@@ -130,7 +226,7 @@ public class Query {
 
 			if (myWhere.length() > 0) {
 				PatientLink = true;
-				
+
 				if (where.length() > 0)
 					where = where.concat(" and " + myWhere);
 				else
@@ -241,7 +337,7 @@ public class Query {
 		}
 
 		if (where.length() > 0)
-			return ("select " + select + " from " + from + " where " + links + where + " " + group + " order by " + order);
+			return new String[] { select,from,links,where,group,order };
 
 		System.err.println("No filter criteria given...");
 		System.err.println("Use at least % if you know what you are doing,");
@@ -250,5 +346,4 @@ public class Query {
 
 		return null;
 	}
-
 }
