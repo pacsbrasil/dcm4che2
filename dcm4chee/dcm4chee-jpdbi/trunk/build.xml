@@ -3,7 +3,7 @@
 		JPDBI ... Access Tables for DCM4CHEE
 	</description>
 	<version>
-		$Id  $
+		$Id$
 	</version>
 
 	<property name="jpdbi.location" value="${basedir}" />
