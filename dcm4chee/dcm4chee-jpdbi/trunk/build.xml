@@ -1,10 +1,9 @@
+<!-- $Id$ -->
+	
 <project basedir="." default="jar" name="Jpdbi">
 	<description>
 		JPDBI ... Access Tables for DCM4CHEE
 	</description>
-	<version>
-		$Id$
-	</version>
 
 	<property name="jpdbi.location" value="${basedir}" />
 	<property name="dist.dir" value="${basedir}/dist" />
