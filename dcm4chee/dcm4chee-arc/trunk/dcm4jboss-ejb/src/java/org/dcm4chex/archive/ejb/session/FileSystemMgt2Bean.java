@@ -848,7 +848,8 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                 patient.getMwlItems().isEmpty() &&
                 patient.getGsps().isEmpty() &&
                 patient.getMpps().isEmpty() &&
-                patient.getGppps().isEmpty() ) {
+                patient.getGppps().isEmpty() &&
+                patient.getUPS().isEmpty() ) {
             patient.remove();
         }
     }

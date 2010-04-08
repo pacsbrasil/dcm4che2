@@ -47,7 +47,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
-import org.dcm4chex.archive.common.GPSPSPriority;
+import org.dcm4chex.archive.common.Priority;
 import org.dcm4chex.archive.common.GPSPSStatus;
 import org.dcm4chex.archive.common.InputAvailabilityFlag;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
@@ -108,7 +108,7 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
         if (s != null) {
             sqlBuilder.addIntValueMatch(null, "GPSPS.gpspsPriorityAsInt",
                     SqlBuilder.TYPE1,
-                    GPSPSPriority.toInt(s));
+                    Priority.toInt(s));
         }
         sqlBuilder.addRangeMatch(null, "GPSPS.spsStartDateTime",
                 SqlBuilder.TYPE1,

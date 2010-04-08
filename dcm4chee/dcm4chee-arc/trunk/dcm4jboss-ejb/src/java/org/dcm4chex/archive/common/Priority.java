@@ -47,7 +47,7 @@ import java.util.Arrays;
  * @since 06.10.2004
  *
  */
-public class GPSPSPriority {
+public class Priority {
 
     private static final String[] ENUM = { "HIGH", "MEDIUM", "LOW" };
 

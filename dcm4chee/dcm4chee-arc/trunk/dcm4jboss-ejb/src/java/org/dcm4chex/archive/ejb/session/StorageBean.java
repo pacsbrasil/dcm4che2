@@ -503,6 +503,7 @@ public abstract class StorageBean implements SessionBean {
                     dominantPat.getMwlItems().addAll(priorPat.getMwlItems());
                     dominantPat.getGsps().addAll(priorPat.getGsps());
                     dominantPat.getGppps().addAll(priorPat.getGppps());
+                    dominantPat.getUPS().addAll(priorPat.getUPS());
                     dominantPat.getMerged().addAll(priorPat.getMerged());
                     priorPat.remove();
                     return dominantPat;

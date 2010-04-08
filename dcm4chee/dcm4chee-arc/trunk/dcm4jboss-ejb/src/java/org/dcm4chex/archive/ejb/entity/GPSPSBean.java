@@ -57,7 +57,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.common.DatasetUtils;
-import org.dcm4chex.archive.common.GPSPSPriority;
+import org.dcm4chex.archive.common.Priority;
 import org.dcm4chex.archive.common.GPSPSStatus;
 import org.dcm4chex.archive.common.InputAvailabilityFlag;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
@@ -312,11 +312,11 @@ public abstract class GPSPSBean implements EntityBean {
      * @ejb.interface-method
      */
     public String getGpspsPriority() {
-        return GPSPSPriority.toString(getGpspsPriorityAsInt());
+        return Priority.toString(getGpspsPriorityAsInt());
     }
 
     public void setGpspsPriority(String prior) {
-        setGpspsPriorityAsInt(GPSPSPriority.toInt(prior));
+        setGpspsPriorityAsInt(Priority.toInt(prior));
     }
 
     /**

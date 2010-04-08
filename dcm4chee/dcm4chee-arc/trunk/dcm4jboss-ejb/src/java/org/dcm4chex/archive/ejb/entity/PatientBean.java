@@ -453,6 +453,17 @@ public abstract class PatientBean implements EntityBean {
     public abstract void setGsps(java.util.Collection gsps);
 
     /**
+     * @ejb.interface-method view-type="local"
+     * @ejb.relation name="patient-ups" role-name="patient-has-ups"
+     */
+    public abstract java.util.Collection getUPS();
+
+    /**
+     * @ejb.interface-method view-type="local"
+     */
+    public abstract void setUPS(java.util.Collection ups);
+
+    /**
      * Create patient.
      *
      * @ejb.create-method
