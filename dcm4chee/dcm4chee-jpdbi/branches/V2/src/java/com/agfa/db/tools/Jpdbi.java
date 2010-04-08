@@ -2,8 +2,13 @@
 
 package com.agfa.db.tools;
 
-import java.sql.*;
-import java.io.*;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class Jpdbi {
     public final static String VERSION = "2.0";

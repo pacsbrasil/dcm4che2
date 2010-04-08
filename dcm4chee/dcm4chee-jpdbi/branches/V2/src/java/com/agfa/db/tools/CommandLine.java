@@ -32,6 +32,7 @@ class CommandLine {
     boolean debug = false;
 
     String jdbcUrl = null;
+    String AddQuery = null;
 
     public int Database = DBTypes.UNKNOWN;
 
@@ -96,6 +97,8 @@ class CommandLine {
         System.out.println("          -s | --studyiuid <iuid>        Study-IUID");
         System.out.println("          -S | --seriesiuid <iuid>       Series-IUID");
         System.out.println("          --patid [ISSUER:]PATID         (ISSUER and) Patient-ID");
+        System.out.println();
+        System.out.println("          -q | --query <statement>       Additional Query");
         System.out.println();
         System.out.println("        Display Options:");
         System.out.println("          -F                             include fieldnames");
@@ -191,6 +194,7 @@ class CommandLine {
                 new LongOpt("out", LongOpt.REQUIRED_ARGUMENT, null, 'O'),
                 new LongOpt("err", LongOpt.REQUIRED_ARGUMENT, null, 'E'),
                 new LongOpt("url", LongOpt.REQUIRED_ARGUMENT, null, 'U'),
+                new LongOpt("query", LongOpt.REQUIRED_ARGUMENT, null, 'q'),
                 new LongOpt("aet", LongOpt.NO_ARGUMENT, null, OPT_DISPLAYAET),
                 new LongOpt("pks", LongOpt.NO_ARGUMENT, null, OPT_DISPLAYPKS),
                 new LongOpt("db", LongOpt.REQUIRED_ARGUMENT, null, OPT_DBALIAS),
@@ -216,7 +220,7 @@ class CommandLine {
         //
         };
 
-        Getopt g = new Getopt("jpdbi", argv, ":U:E:O:s:S:hvzLF", longopts);
+        Getopt g = new Getopt("jpdbi", argv, ":U:E:O:s:S:q:hvzLF", longopts);
         g.setOpterr(true);
 
         int c;
@@ -266,8 +270,12 @@ class CommandLine {
                 break;
 
             case 'S':
-                SeriesIUID = g.getOptarg();
-                break;
+               SeriesIUID = g.getOptarg();
+               break;
+
+            case 'q':
+               AddQuery = g.getOptarg();
+               break;
 
             case 'L':
             case 'F':
