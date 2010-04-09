@@ -10,6 +10,7 @@ http://www.mysql.com/downloads/api-jdbc-stable.html
     <jndi-name>arrDS</jndi-name>
     <connection-url>jdbc:mysql://localhost:3306/arrdb</connection-url>
     <driver-class>com.mysql.jdbc.Driver</driver-class>
+    <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
     <user-name>arr</user-name>
     <password>arr</password>
     <exception-sorter-class-name>org.jboss.resource.adapter.jdbc.vendor.MySQLExceptionSorter</exception-sorter-class-name>
