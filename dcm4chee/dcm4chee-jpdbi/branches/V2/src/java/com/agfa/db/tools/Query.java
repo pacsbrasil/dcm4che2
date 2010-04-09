@@ -3,7 +3,6 @@
 package com.agfa.db.tools;
 
 import java.sql.Types;
-import java.util.HashMap;
 import java.util.Hashtable;
 
 public class Query {
@@ -21,29 +20,36 @@ public class Query {
 	}
 
 	private static String addWhere(String w, String f, String v, int t, boolean u) {
+		if (v == null)
+			return w;
+
 		if (w.length() > 0)
-			w = w.concat(" and ");
+			w += " and ";
 
-		if (u)
-			w = w.concat("upper(" + f + ")");
-		else
-			w = w.concat(f);
-
-		switch (t) {
-		case Types.VARCHAR:
-			if (v.indexOf('%') > -1 || v.indexOf('_') > -1)
-				w = w.concat(" like ");
-			else
-				w = w.concat("=");
-
+		if (v.length() == 0) {
+			w += f + " is NULL";
+		} else {
 			if (u)
-				w = w.concat("upper('" + v + "')");
+				w += "upper(" + f + ")";
 			else
-				w = w.concat("'" + v + "'");
-			break;
-		case Types.DATE:
-			w = w.concat("={d '" + v + "'}");
-			break;
+				w += f;
+
+			switch (t) {
+			case Types.VARCHAR:
+				if (v.indexOf('%') > -1 || v.indexOf('_') > -1)
+					w += " like ";
+				else
+					w += "=";
+
+				if (u)
+					w += "upper('" + v + "')";
+				else
+					w += "'" + v + "'";
+				break;
+			case Types.DATE:
+				w += "={d '" + v + "'}";
+				break;
+			}
 		}
 
 		return w;
@@ -59,7 +65,7 @@ public class Query {
 	static String[][] BuildUpdate(CommandLine cfg) {
 		String[][] UpdDicom = null;
 		if (!cfg.update.isEmpty()) {
-			Hashtable<String, Boolean> ht=new Hashtable<String, Boolean>();
+			Hashtable<String, Boolean> ht = new Hashtable<String, Boolean>();
 			String TmpLevel = null;
 			String TmpUpdDicom = null;
 			String UpdDB = null;
@@ -78,7 +84,7 @@ public class Query {
 					int split = Update.indexOf('=');
 					if (split != -1) {
 						String UpdField = Update.substring(0, split).toLowerCase();
-						if ( ! ht.containsKey(UpdField)) { 
+						if (!ht.containsKey(UpdField)) {
 
 							String UpdValue = Update.substring(split + 1);
 							String UpdPrefix = "update." + UpdField + ".";
@@ -102,7 +108,7 @@ public class Query {
 											UpdValue += "^";
 									}
 								} else {
-									_System.exit(1, "Multilevel updates not supported ["+TmpLevel+" & "+UpdLevel+"].");
+									_System.exit(1, "Multilevel updates not supported [" + TmpLevel + " & " + UpdLevel + "].");
 								}
 
 								if (UpdDB.equalsIgnoreCase("NONE")) {
@@ -119,23 +125,33 @@ public class Query {
 									UpdDicom[loop][2] = UpdValue;
 								}
 							} else {
-								_System.exit(1, "Update not defined ["+UpdField+"].");
+								_System.exit(1, "Update not defined [" + UpdField + "].");
 							}
 						} else {
-							_System.exit(1, "Duplicate Update ["+UpdField+"].");
+							_System.exit(1, "Duplicate Update [" + UpdField + "].");
 						}
 					} else {
-						_System.exit(1, "Update syntax error ["+Update+"].");
+						_System.exit(1, "Update syntax error [" + Update + "].");
 					}
 				}
 				UpdDicom[0][3] = TmpLevel;
 				UpdDicom[0][4] = (UpdMulti ? "t" : "f");
-				if (TmpLevel.equals("PATIENT"))
+
+				if (cfg.debug)
+					System.err.println("DEBUG: Update Level: " + TmpLevel);
+
+				if (TmpLevel.equals("PATIENT")) {
 					cfg.levels.set(Jpdbi.PATIENT);
-				if (TmpLevel.equals("STUDY"))
+					cfg.updateDS.set(Jpdbi.PATIENT);
+				}
+				if (TmpLevel.equals("STUDY")) {
 					cfg.levels.set(Jpdbi.STUDY);
-				if (TmpLevel.equals("SERIES"))
+					cfg.updateDS.set(Jpdbi.STUDY);
+				}
+				if (TmpLevel.equals("SERIES")) {
 					cfg.levels.set(Jpdbi.SERIE);
+					cfg.updateDS.set(Jpdbi.SERIE);
+				}
 			}
 		}
 		return UpdDicom;
@@ -153,11 +169,10 @@ public class Query {
 		String FirstName = cfg.FirstName;
 		String LastName = cfg.LastName;
 		String BirthDate = cfg.BirthDate;
-		String Issuer = cfg.Issuer;
+		String Issuer = cfg.PatIssuer;
 		String PatID = cfg.PatID;
 		String StudyIUID = cfg.StudyIUID;
 		String SeriesIUID = cfg.SeriesIUID;
-		String AddQuery = cfg.AddQuery;
 
 		boolean PatientLink = false;
 		boolean StudyLink = false;
@@ -165,24 +180,35 @@ public class Query {
 
 		cfg.levels.set(Jpdbi.PATIENT);
 
-		// QUERY
-		if (AddQuery != null && AddQuery.length() > 0) {
-			int split = AddQuery.indexOf(".");
-			if (split > -1) {
-				String field = AddQuery.substring(0, split);
-				String value = AddQuery.substring(split + 1);
+		// Extended QUERY
+		int CntQueries = cfg.extendedquery.size();
 
-				if (field.equalsIgnoreCase("PATIENT")) {
-					PatientLink = true;
-				} else if (field.equalsIgnoreCase("STUDY")) {
-					StudyLink = true;
-				} else if (field.equalsIgnoreCase("SERIES")) {
-					SeriesLink = true;
+		if (CntQueries > 0) {
+			for (int loop = 0; loop < CntQueries; loop++) {
+				String qry = cfg.extendedquery.get(loop);
+
+				String[] wrds = qry.split("\\s+");
+
+				for (int i = 0; i < wrds.length; i++) {
+					int split = wrds[i].indexOf(".");
+					if (split > -1) {
+						String field = wrds[i].substring(0, split).toUpperCase();
+						// String value = qry.substring(split + 1);
+
+						if (field.equals("PATIENT")) {
+							PatientLink = true;
+						} else if (field.equals("STUDY")) {
+							StudyLink = true;
+						} else if (field.equals("SERIES")) {
+							SeriesLink = true;
+						}
+					}
 				}
 				if (where.length() > 0)
-					where = where.concat(" and " + AddQuery);
+					where += " and " + qry;
 				else
-					where = AddQuery;
+					where = qry;
+
 			}
 		}
 
@@ -270,8 +296,8 @@ public class Query {
 		if (cfg.levels.get(Jpdbi.PATH)) {
 			from = from.concat("FILESYSTEM,FILES,");
 			links = links.concat("INSTANCE.PK=INSTANCE_FK and FILESYSTEM.PK=FILES.FILESYSTEM_FK and ");
-            join = "left join FILESYSTEM on FILESYSTEM.PK=FILES.FILESYSTEM_FK "+join;
-            join = "left join FILES on INSTANCE.PK=INSTANCE_FK "+join;
+			join = "left join FILESYSTEM on FILESYSTEM.PK=FILES.FILESYSTEM_FK " + join;
+			join = "left join FILES on INSTANCE.PK=INSTANCE_FK " + join;
 			cfg.levels.set(Jpdbi.INSTANCE);
 			if (cfg.displayFSInfo)
 				select = PrependSql("FILESYSTEM.PK F, FS_GROUP_ID FSGRP", select);
@@ -280,10 +306,12 @@ public class Query {
 			order = PrependSql("E", order);
 		}
 
-		if (cfg.levels.get(Jpdbi.INSTANCE)) {
+		if (cfg.levels.get(Jpdbi.INSTANCE) || cfg.updateDS.get(Jpdbi.INSTANCE)) {
 			from = from.concat("INSTANCE,");
 			links = links.concat("SERIES.PK=SERIES_FK and ");
-            join = "left join INSTANCE on SERIES.PK=SERIES_FK "+join;
+			join = "left join INSTANCE on SERIES.PK=SERIES_FK " + join;
+			if (cfg.displayDS.get(Jpdbi.INSTANCE) || cfg.updateDS.get(Jpdbi.INSTANCE))
+				select = PrependSql("INST_ATTRS ", select);
 			cfg.levels.set(Jpdbi.SERIE);
 			if (cfg.displayAET)
 				select = PrependSql("INSTANCE.EXT_RETR_AET INSTEXTRETAET, INSTANCE.RETRIEVE_AETS INSTRETAET", select);
@@ -294,11 +322,13 @@ public class Query {
 			order = PrependSql("D", order);
 		}
 
-		if (SeriesLink || cfg.levels.get(Jpdbi.SERIE)) {
+		if (SeriesLink || cfg.levels.get(Jpdbi.SERIE) || cfg.updateDS.get(Jpdbi.SERIE)) {
 			StudyLink = true;
 			from = from.concat("SERIES,");
 			links = links.concat("STUDY.PK=STUDY_FK and ");
-            join = "left join SERIES on STUDY.PK=STUDY_FK "+join;
+			join = "left join SERIES on STUDY.PK=STUDY_FK " + join;
+			if (cfg.displayDS.get(Jpdbi.SERIE) || cfg.updateDS.get(Jpdbi.SERIE))
+				select = PrependSql("SERIES_ATTRS ", select);
 			if (cfg.levels.get(Jpdbi.SERIE)) {
 				cfg.levels.set(Jpdbi.STUDY);
 				if (cfg.displayAET)
@@ -313,11 +343,13 @@ public class Query {
 			}
 		}
 
-		if (StudyLink || cfg.levels.get(Jpdbi.STUDY)) {
+		if (StudyLink || cfg.levels.get(Jpdbi.STUDY) || cfg.updateDS.get(Jpdbi.STUDY)) {
 			PatientLink = true;
 			from = from.concat("STUDY,");
 			links = links.concat("PATIENT.PK=STUDY.PATIENT_FK");
-            join = "left join STUDY on PATIENT.PK=STUDY.PATIENT_FK "+join;
+			join = "left join STUDY on PATIENT.PK=STUDY.PATIENT_FK " + join;
+			if (cfg.displayDS.get(Jpdbi.STUDY) || cfg.updateDS.get(Jpdbi.STUDY))
+				select = PrependSql("STUDY_ATTRS ", select);
 			if (cfg.levels.get(Jpdbi.STUDY)) {
 				cfg.levels.set(Jpdbi.PATIENT);
 				if (cfg.displayAET)
@@ -330,9 +362,11 @@ public class Query {
 			}
 		}
 
-		if (PatientLink || cfg.levels.get(Jpdbi.PATIENT)) {
+		if (PatientLink || cfg.levels.get(Jpdbi.PATIENT) || cfg.updateDS.get(Jpdbi.PATIENT)) {
 			from = from.concat("PATIENT");
-		    join = "PATIENT "+join;
+			join = "PATIENT " + join;
+			if (cfg.displayDS.get(Jpdbi.PATIENT) || cfg.updateDS.get(Jpdbi.PATIENT))
+				select = PrependSql("PAT_ATTRS ", select);
 			if (cfg.levels.get(Jpdbi.PATIENT)) {
 				select = PrependSql("PATIENT.PK A, PAT_NAME, PAT_SEX, PAT_BIRTHDATE BD, PAT_ID, PAT_ID_ISSUER ", select);
 				order = PrependSql("PAT_NAME,A", order);
@@ -344,19 +378,16 @@ public class Query {
 		}
 
 		/*
-		if (cfg.debug) {
-            System.err.println("Select: "+select);
-            System.err.println("From: "+from);
-            System.err.println("Join: "+join);
-            System.err.println("Links: "+links);
-            System.err.println("Where: "+where);
-            System.err.println("Group: "+group);
-            System.err.println("Order: "+order);
-		}
-		*/
-		
-		if (where.length() > 0) 
-			return new String[] { select,from,join,links,where,group,order };
+		 * if (cfg.debug) { System.err.println("Select: "+select);
+		 * System.err.println("From: "+from); System.err.println("Join: "+join);
+		 * System.err.println("Links: "+links);
+		 * System.err.println("Where: "+where);
+		 * System.err.println("Group: "+group);
+		 * System.err.println("Order: "+order); }
+		 */
+
+		if (where.length() > 0)
+			return new String[] { select, from, join, links, where, group, order };
 
 		System.err.println("No filter criteria given...");
 		System.err.println("Use at least % if you know what you are doing,");

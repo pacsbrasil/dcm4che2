@@ -21,6 +21,12 @@ import java.util.zip.GZIPOutputStream;
 
 class CommandLine {
 	BitSet levels = new BitSet();
+	BitSet displayDS = new BitSet();
+	BitSet updateDS = new BitSet();
+
+	public ArrayList<String> update = new ArrayList<String>();
+
+	public ArrayList<String> extendedquery = new ArrayList<String>();
 
 	boolean displayPKS = false;
 
@@ -33,7 +39,6 @@ class CommandLine {
 	boolean debug = false;
 
 	String jdbcUrl = null;
-	String AddQuery = null;
 
 	public int Database = DBTypes.UNKNOWN;
 
@@ -47,23 +52,14 @@ class CommandLine {
 
 	// PATIENT LEVEL
 	public String FirstName = null;
-
 	public String LastName = null;
-
 	public String BirthDate = null;
-
 	public String PatID = null;
-
-	public String Issuer = null;
-
+	public String PatIssuer = null;
 	public String StudyIUID = null;
-
 	public String SeriesIUID = null;
-
 	public boolean pre214 = false;
 	public boolean nonempty = false;
-
-	public ArrayList<String> update = new ArrayList<String>();
 
 	Properties applicationProps = null;
 
@@ -92,36 +88,36 @@ class CommandLine {
 		System.out.println("       java -jar jpdbi -h | --help");
 		System.out.println("       java -jar jpdbi -v | --version");
 		System.out.println();
-		System.out.println("        -v | --version     display version information");
-		System.out.println("        -h | --help        display extended help");
+		System.out.println("        -v|--version                   display version information");
+		System.out.println("        -h|--help                      display extended help");
 		System.out.println();
-		System.out.println("        -U | --url <jdbcURL>             DB jdbcURL to connect");
-		System.out.println("             --db <alias>                DB alias to connect");
+		System.out.println("        -U|--url <jdbcURL>             DB jdbcURL to connect");
+		System.out.println("           --db <alias>                DB alias to connect");
 		System.out.println();
 		System.out.println("        Search options:");
-		System.out.println("          -s | --studyiuid <iuid>        Study-IUID");
-		System.out.println("          -S | --seriesiuid <iuid>       Series-IUID");
-		System.out.println("          --patid [ISSUER:]PATID         (ISSUER and) Patient-ID");
+		System.out.println("          -s|--studyiuid <iuid>        Study-IUID");
+		System.out.println("          -S|--seriesiuid <iuid>       Series-IUID");
+		System.out.println("          --patid [ISSUER:]PATID       (ISSUER and) Patient-ID");
 		System.out.println();
-		System.out.println("          -q | --query <statement>       Additional Query");
+		System.out.println("          -q|--query <statement>       Additional Query");
 		System.out.println();
 		System.out.println("        Display Options:");
-		System.out.println("          -F                             include fieldnames");
-		System.out.println("          --aet                          AET's");
-		System.out.println("          --pks                          primary keys");
-		System.out.println("          --study-level                  patient+study");
-		System.out.println("          --series-level                   +series)");
-		System.out.println("          --instance-level                   +instance");
-		System.out.println("          --path                               +path");
-		System.out.println("          --fs                           FS information (FS-PK, Group)");
+		System.out.println("          -F                           include fieldnames");
+		System.out.println("          --aet                        AET's");
+		System.out.println("          --pks                        primary keys");
+		System.out.println("          --study-level                patient+study");
+		System.out.println("          --series-level                +series)");
+		System.out.println("          --instance-level               +instance");
+		System.out.println("          --path [--fs]                    +path [+FS information (FS-PK, Group)]");
+		System.out.println("          --ignorenonempty             ignore patients with no studies/series/...");
 		System.out.println();
-		System.out.println("        OutputOptions:");
-		System.out.println("          -O | --out <file> [-z | -gzip]   output to (gziped) <file>");
-		System.out.println("          -E | --err <file>                error to <file>");
+		System.out.println("        Output Options:");
+		System.out.println("          -O|--out <file> [-z|--gzip]   output to (gziped) <file>");
+		System.out.println("          -E|--err <file>               error to <file>");
 		System.out.println("");
-		System.out.println("        --jdbcurlhelp                    jdbcURL Syntax");
+		System.out.println("        --jdbcurlhelp                   jdbcURL Syntax");
 		System.out.println();
-		System.out.println("        --debug                          debug mode");
+		System.out.println("        --debug                         debug mode");
 		System.out.println();
 		System.out.println("        Use % as wildcard statement");
 		System.out.println();
@@ -179,39 +175,59 @@ class CommandLine {
 		final int OPT_URLHELP = 2;
 		final int OPT_DBALIAS = 3;
 		final int OPT_PATID = 4;
+		final int OPT_PATISSUER = 5;
 
-		final int OPT_STUDYLEVEL = 5;
-		final int OPT_SERIESLEVEL = 6;
-		final int OPT_SOPLEVEL = 7;
 		final int OPT_DISPLAYPKS = 8;
 		final int OPT_PATH = 9;
 		final int OPT_DISPLAYAET = 10;
 		final int OPT_FSINFO = 11;
-        final int OPT_UPDATE = 12;
-        final int OPT_NONEMPTY = 13;
+		final int OPT_UPDATE = 12;
+		final int OPT_NONEMPTY = 13;
+
+		//
+		final int OPT_STUDYLEVEL = 30;
+		final int OPT_SERIESLEVEL = 31;
+		final int OPT_SOPLEVEL = 32;
+
+		//
+		final int OPT_DS = 20;
+		final int OPT_PATDS = 21;
+		final int OPT_STYDS = 22;
+		final int OPT_SERDS = 23;
+		final int OPT_SOPDS = 24;
 
 		int version = 0;
 
 		final LongOpt[] longopts = {
-				new LongOpt("jdbcurlhelp", LongOpt.NO_ARGUMENT, null, OPT_URLHELP),
-				new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
-				new LongOpt("debug", LongOpt.NO_ARGUMENT, null, OPT_DEBUG),
-                new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
-                new LongOpt("nonempty", LongOpt.NO_ARGUMENT, null, OPT_NONEMPTY),
+				// DataSets
+				new LongOpt("patds", LongOpt.NO_ARGUMENT, null, OPT_PATDS),
+				new LongOpt("studyds", LongOpt.NO_ARGUMENT, null, OPT_STYDS),
+				new LongOpt("seriesds", LongOpt.NO_ARGUMENT, null, OPT_SERDS),
+				new LongOpt("sopds", LongOpt.NO_ARGUMENT, null, OPT_SOPDS),
+
+				// Output
 				new LongOpt("gzip", LongOpt.NO_ARGUMENT, null, 'z'),
 				new LongOpt("out", LongOpt.REQUIRED_ARGUMENT, null, 'O'),
 				new LongOpt("err", LongOpt.REQUIRED_ARGUMENT, null, 'E'),
+
+				//
 				new LongOpt("url", LongOpt.REQUIRED_ARGUMENT, null, 'U'),
-				new LongOpt("query", LongOpt.REQUIRED_ARGUMENT, null, 'q'),
-				new LongOpt("aet", LongOpt.NO_ARGUMENT, null, OPT_DISPLAYAET),
-                new LongOpt("pks", LongOpt.NO_ARGUMENT, null, OPT_DISPLAYPKS),
 				new LongOpt("db", LongOpt.REQUIRED_ARGUMENT, null, OPT_DBALIAS),
+
+				//
+				new LongOpt("pks", LongOpt.NO_ARGUMENT, null, OPT_DISPLAYPKS),
+				new LongOpt("ignorenonempty", LongOpt.NO_ARGUMENT, null, OPT_NONEMPTY),
+				new LongOpt("aet", LongOpt.NO_ARGUMENT, null, OPT_DISPLAYAET),
+
+				//
+				new LongOpt("query", LongOpt.REQUIRED_ARGUMENT, null, 'q'),
 
 				// UPDATE
 				new LongOpt("update", LongOpt.REQUIRED_ARGUMENT, null, OPT_UPDATE),
 
 				// PATIENT LEVEL - FirstName, LastName, BirthDate
 				new LongOpt("patid", LongOpt.REQUIRED_ARGUMENT, null, OPT_PATID),
+				new LongOpt("issuer", LongOpt.REQUIRED_ARGUMENT, null, OPT_PATISSUER),
 
 				// STUDY LEVEL
 				new LongOpt("studyiuid", LongOpt.REQUIRED_ARGUMENT, null, 's'),
@@ -227,7 +243,13 @@ class CommandLine {
 
 				// PATH
 				new LongOpt("path", LongOpt.NO_ARGUMENT, null, OPT_PATH),
-				new LongOpt("fs", LongOpt.NO_ARGUMENT, null, OPT_FSINFO)
+				new LongOpt("fs", LongOpt.NO_ARGUMENT, null, OPT_FSINFO),
+
+				//
+				new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
+				new LongOpt("jdbcurlhelp", LongOpt.NO_ARGUMENT, null, OPT_URLHELP),
+				new LongOpt("debug", LongOpt.NO_ARGUMENT, null, OPT_DEBUG),
+				new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v')
 		//
 		};
 
@@ -280,16 +302,16 @@ class CommandLine {
 				StudyIUID = g.getOptarg();
 				break;
 
-            case 'S':
-                SeriesIUID = g.getOptarg();
-                break;
-                
-            case OPT_PATID:
-                PatID = g.getOptarg();
-                break;
+			case 'S':
+				SeriesIUID = g.getOptarg();
+				break;
 
-			case 'q':
-				AddQuery = g.getOptarg();
+			case OPT_PATID:
+				PatID = g.getOptarg();
+				break;
+
+			case OPT_PATISSUER:
+				PatIssuer = g.getOptarg();
 				break;
 
 			case 'L':
@@ -301,13 +323,13 @@ class CommandLine {
 				displayPKS = true;
 				break;
 
-            case OPT_DISPLAYAET:
-                displayAET = true;
-                break;
+			case OPT_DISPLAYAET:
+				displayAET = true;
+				break;
 
-            case OPT_NONEMPTY:
-                nonempty = true;
-                break;
+			case OPT_NONEMPTY:
+				nonempty = true;
+				break;
 
 			case OPT_STUDYLEVEL:
 				levels.set(Jpdbi.STUDY);
@@ -331,6 +353,26 @@ class CommandLine {
 
 			case OPT_UPDATE:
 				update.add(g.getOptarg());
+				break;
+
+			case 'q':
+				extendedquery.add(g.getOptarg());
+				break;
+
+			case OPT_PATDS:
+				displayDS.set(Jpdbi.PATIENT);
+				break;
+
+			case OPT_STYDS:
+				displayDS.set(Jpdbi.STUDY);
+				break;
+
+			case OPT_SERDS:
+				displayDS.set(Jpdbi.SERIE);
+				break;
+
+			case OPT_SOPDS:
+				displayDS.set(Jpdbi.INSTANCE);
 				break;
 
 			default:
