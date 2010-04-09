@@ -61,6 +61,7 @@ class CommandLine {
 	public String SeriesIUID = null;
 
 	public boolean pre214 = false;
+	public boolean nonempty = false;
 
 	public ArrayList<String> update = new ArrayList<String>();
 
@@ -186,7 +187,8 @@ class CommandLine {
 		final int OPT_PATH = 9;
 		final int OPT_DISPLAYAET = 10;
 		final int OPT_FSINFO = 11;
-		final int OPT_UPDATE = 12;
+        final int OPT_UPDATE = 12;
+        final int OPT_NONEMPTY = 13;
 
 		int version = 0;
 
@@ -194,14 +196,15 @@ class CommandLine {
 				new LongOpt("jdbcurlhelp", LongOpt.NO_ARGUMENT, null, OPT_URLHELP),
 				new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
 				new LongOpt("debug", LongOpt.NO_ARGUMENT, null, OPT_DEBUG),
-				new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
+                new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
+                new LongOpt("nonempty", LongOpt.NO_ARGUMENT, null, OPT_NONEMPTY),
 				new LongOpt("gzip", LongOpt.NO_ARGUMENT, null, 'z'),
 				new LongOpt("out", LongOpt.REQUIRED_ARGUMENT, null, 'O'),
 				new LongOpt("err", LongOpt.REQUIRED_ARGUMENT, null, 'E'),
 				new LongOpt("url", LongOpt.REQUIRED_ARGUMENT, null, 'U'),
 				new LongOpt("query", LongOpt.REQUIRED_ARGUMENT, null, 'q'),
 				new LongOpt("aet", LongOpt.NO_ARGUMENT, null, OPT_DISPLAYAET),
-				new LongOpt("pks", LongOpt.NO_ARGUMENT, null, OPT_DISPLAYPKS),
+                new LongOpt("pks", LongOpt.NO_ARGUMENT, null, OPT_DISPLAYPKS),
 				new LongOpt("db", LongOpt.REQUIRED_ARGUMENT, null, OPT_DBALIAS),
 
 				// UPDATE
@@ -277,9 +280,13 @@ class CommandLine {
 				StudyIUID = g.getOptarg();
 				break;
 
-			case 'S':
-				SeriesIUID = g.getOptarg();
-				break;
+            case 'S':
+                SeriesIUID = g.getOptarg();
+                break;
+                
+            case OPT_PATID:
+                PatID = g.getOptarg();
+                break;
 
 			case 'q':
 				AddQuery = g.getOptarg();
@@ -294,9 +301,13 @@ class CommandLine {
 				displayPKS = true;
 				break;
 
-			case OPT_DISPLAYAET:
-				displayAET = true;
-				break;
+            case OPT_DISPLAYAET:
+                displayAET = true;
+                break;
+
+            case OPT_NONEMPTY:
+                nonempty = true;
+                break;
 
 			case OPT_STUDYLEVEL:
 				levels.set(Jpdbi.STUDY);

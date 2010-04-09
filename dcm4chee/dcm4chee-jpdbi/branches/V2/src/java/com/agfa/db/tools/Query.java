@@ -148,6 +148,7 @@ public class Query {
 		String from = "";
 		String links = "";
 		String group = "";
+		String join = "";
 
 		String FirstName = cfg.FirstName;
 		String LastName = cfg.LastName;
@@ -269,6 +270,8 @@ public class Query {
 		if (cfg.levels.get(Jpdbi.PATH)) {
 			from = from.concat("FILESYSTEM,FILES,");
 			links = links.concat("INSTANCE.PK=INSTANCE_FK and FILESYSTEM.PK=FILES.FILESYSTEM_FK and ");
+            join = "left join FILESYSTEM on FILESYSTEM.PK=FILES.FILESYSTEM_FK "+join;
+            join = "left join FILES on INSTANCE.PK=INSTANCE_FK "+join;
 			cfg.levels.set(Jpdbi.INSTANCE);
 			if (cfg.displayFSInfo)
 				select = PrependSql("FILESYSTEM.PK F, FS_GROUP_ID FSGRP", select);
@@ -280,6 +283,7 @@ public class Query {
 		if (cfg.levels.get(Jpdbi.INSTANCE)) {
 			from = from.concat("INSTANCE,");
 			links = links.concat("SERIES.PK=SERIES_FK and ");
+            join = "left join INSTANCE on SERIES.PK=SERIES_FK "+join;
 			cfg.levels.set(Jpdbi.SERIE);
 			if (cfg.displayAET)
 				select = PrependSql("INSTANCE.EXT_RETR_AET INSTEXTRETAET, INSTANCE.RETRIEVE_AETS INSTRETAET", select);
@@ -294,6 +298,7 @@ public class Query {
 			StudyLink = true;
 			from = from.concat("SERIES,");
 			links = links.concat("STUDY.PK=STUDY_FK and ");
+            join = "left join SERIES on STUDY.PK=STUDY_FK "+join;
 			if (cfg.levels.get(Jpdbi.SERIE)) {
 				cfg.levels.set(Jpdbi.STUDY);
 				if (cfg.displayAET)
@@ -312,6 +317,7 @@ public class Query {
 			PatientLink = true;
 			from = from.concat("STUDY,");
 			links = links.concat("PATIENT.PK=STUDY.PATIENT_FK");
+            join = "left join STUDY on PATIENT.PK=STUDY.PATIENT_FK "+join;
 			if (cfg.levels.get(Jpdbi.STUDY)) {
 				cfg.levels.set(Jpdbi.PATIENT);
 				if (cfg.displayAET)
@@ -326,6 +332,7 @@ public class Query {
 
 		if (PatientLink || cfg.levels.get(Jpdbi.PATIENT)) {
 			from = from.concat("PATIENT");
+		    join = "PATIENT "+join;
 			if (cfg.levels.get(Jpdbi.PATIENT)) {
 				select = PrependSql("PATIENT.PK A, PAT_NAME, PAT_SEX, PAT_BIRTHDATE BD, PAT_ID, PAT_ID_ISSUER ", select);
 				order = PrependSql("PAT_NAME,A", order);
@@ -336,8 +343,20 @@ public class Query {
 			links = links.concat(" and ");
 		}
 
-		if (where.length() > 0)
-			return new String[] { select,from,links,where,group,order };
+		/*
+		if (cfg.debug) {
+            System.err.println("Select: "+select);
+            System.err.println("From: "+from);
+            System.err.println("Join: "+join);
+            System.err.println("Links: "+links);
+            System.err.println("Where: "+where);
+            System.err.println("Group: "+group);
+            System.err.println("Order: "+order);
+		}
+		*/
+		
+		if (where.length() > 0) 
+			return new String[] { select,from,join,links,where,group,order };
 
 		System.err.println("No filter criteria given...");
 		System.err.println("Use at least % if you know what you are doing,");

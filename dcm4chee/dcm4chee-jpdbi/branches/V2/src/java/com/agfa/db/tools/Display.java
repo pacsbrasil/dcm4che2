@@ -9,19 +9,24 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 
 public class Display {
-    public static long LastPatient = -1;
+    public static long LastPatient = -2;
 
-    public static long LastStudy = -1;
+    public static long LastStudy = -2;
 
-    public static long LastSerie = -1;
+    public static long LastSerie = -2;
 
-    public static long LastInstance = -1;
+    public static long LastInstance = -2;
 
-    public static long LastFile = -1;
+    public static long LastFile = -2;
 
     static long Patient(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
         String out = "";
         long tmpKey = rs.getLong("A");
+        
+        if (rs.wasNull()) {
+            System.out.println("No Patient Object");
+            return -2;
+        }
 
         if (LastPatient != tmpKey) {
             LastPatient = tmpKey;
@@ -76,6 +81,11 @@ public class Display {
     static long Study(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
         String out = "";
         long tmpKey = rs.getLong("B");
+        if (rs.wasNull()) {
+            System.out.println(" No Study Objects");
+            return -2;
+        }
+
 
         if (LastStudy != tmpKey) {
             LastStudy = tmpKey;
@@ -145,6 +155,11 @@ public class Display {
     static long Serie(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
         String out = "";
         long tmpKey = rs.getLong("C");
+        if (rs.wasNull()) {
+            System.out.println("  No Series Objects");
+            return -2;
+        }
+
 
         if (LastSerie != tmpKey) {
             LastSerie = tmpKey;
@@ -197,6 +212,10 @@ public class Display {
     static long Instance(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
         String out = "";
         long tmpKey = rs.getLong("D");
+        if (rs.wasNull()) {
+            System.out.println("   No Instance Objects");
+            return -2;
+        }
 
         if (LastInstance != tmpKey) {
             LastInstance = tmpKey;
@@ -241,6 +260,10 @@ public class Display {
     static long Path(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
         String out = "";
         long tmpKey = rs.getLong("E");
+        if (rs.wasNull()) {
+            System.out.println("    No File Objects");
+            return -2;
+        }
         
         if (cfg.displayFields)
             out = out.concat("PATH:");
