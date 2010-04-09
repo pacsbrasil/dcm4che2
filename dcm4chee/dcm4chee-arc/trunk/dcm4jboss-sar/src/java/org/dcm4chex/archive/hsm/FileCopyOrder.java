@@ -131,7 +131,7 @@ public class FileCopyOrder extends BaseJmsOrder {
             try {
                 ian.dumpDataset(sw, null);
                 sb.append(sw.toString());
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 sb.append("Failed to dump dataset due to: " + e.getMessage());
             }
         }
