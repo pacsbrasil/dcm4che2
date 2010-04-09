@@ -74,10 +74,9 @@ public class Implementation
    }
    
    public static Object findFactory(String key) {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        String name = rb.getString(key);
+       String name = rb.getString(key);
         try {
-            return loader.loadClass(name).newInstance();
+            return getProviderClass(name).newInstance();
         } catch (ClassNotFoundException ex) {
             throw new ConfigurationError("class not found: " + name, ex); 
         } catch (InstantiationException ex) {
@@ -85,6 +84,18 @@ public class Implementation
         } catch (IllegalAccessException ex) {
             throw new ConfigurationError("could not instantiate: " + name, ex); 
         }
+   }
+
+   private static Class getProviderClass(String className)
+           throws ClassNotFoundException {
+       ClassLoader loader = Thread.currentThread().getContextClassLoader();
+       if (loader != null) {
+           try {
+               return loader.loadClass(className);
+           } catch (ClassNotFoundException e) {}
+       }
+       return Class.forName(className, true,
+               Implementation.class.getClassLoader());
    }
 
    // Constructors --------------------------------------------------
