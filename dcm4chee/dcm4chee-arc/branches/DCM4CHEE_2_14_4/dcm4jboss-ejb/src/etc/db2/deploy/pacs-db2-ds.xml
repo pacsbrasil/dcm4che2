@@ -15,6 +15,7 @@
     <connection-url>jdbc:db2://localhost:50000/pacsdb:currentSchema=PACSDB;</connection-url>
     <driver-class>com.ibm.db2.jcc.DB2Driver</driver-class>
     <!--driver-class>COM.ibm.db2.jdbc.app.DB2Driver</driver-class -->
+    <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
     <user-name>pacs</user-name>
     <password>pacs</password>
     <min-pool-size>0</min-pool-size>
@@ -31,7 +32,6 @@
          <type-mapping>DB2</type-mapping>
       </metadata>
       
-    <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
   </local-tx-datasource>
 
 </datasources>
