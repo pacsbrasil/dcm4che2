@@ -56,7 +56,6 @@ public class Jpdbi {
 	final static int QUERY_ORDER = 6;
 
 	public static void UpdateStudyModality(Connection connection, long pk, CommandLine cfg) {
-
 		String sql = "select distinct MODALITY from SERIES where STUDY_FK=" + pk;
 		try {
 			Statement stmt = connection.createStatement();
@@ -246,10 +245,10 @@ public class Jpdbi {
 		rs.close();
 
 		if (rows > 0) {
-			if (DoUpdate && !multi && rows != 1) {
-				_System.exit(1, "Multiple Updates not allowed on this Configuration.");
-			}
-
+            if (DoUpdate && !multi && rows != 1) {
+                _System.exit(1, "Multiple Updates not allowed on this Configuration.");
+            }
+            
 			if (DoUpdate) {
 				UpdStmt = conn.prepareStatement("update " + UpdateLevel + " set " + UpdateStatement);
 			}

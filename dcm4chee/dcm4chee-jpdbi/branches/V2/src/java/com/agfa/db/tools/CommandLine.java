@@ -36,7 +36,9 @@ class CommandLine {
 
 	public boolean displayFSInfo = false;
 
-	boolean debug = false;
+    boolean debug = false;
+    
+    boolean expert = false;
 
 	String jdbcUrl = null;
 
@@ -57,6 +59,7 @@ class CommandLine {
 	public String PatID = null;
 	public String PatIssuer = null;
 	public String StudyIUID = null;
+	public String StudyDATE = null;
 	public String SeriesIUID = null;
 	public boolean pre214 = false;
 	public boolean nonempty = false;
@@ -97,9 +100,11 @@ class CommandLine {
 		System.out.println("        Search options:");
 		System.out.println("          -s|--studyiuid <iuid>        Study-IUID");
 		System.out.println("          -S|--seriesiuid <iuid>       Series-IUID");
-		System.out.println("          --patid [ISSUER:]PATID       (ISSUER and) Patient-ID");
+        System.out.println("          --issuer <ISSUER>            ISSUER");
+        System.out.println("          --patid [ISSUER:]PATID       (ISSUER and) Patient-ID");
+        System.out.println("          -d|--date [<date>|<n>]       StudyDate or n-past days");
 		System.out.println();
-		System.out.println("          -q|--query <statement>       Additional Query");
+		System.out.println("          -q|--query <statement>       Extended query");
 		System.out.println();
 		System.out.println("        Display Options:");
 		System.out.println("          -F                           include fieldnames");
@@ -176,6 +181,7 @@ class CommandLine {
 		final int OPT_DBALIAS = 3;
 		final int OPT_PATID = 4;
 		final int OPT_PATISSUER = 5;
+        final int OPT_EXPERT = 6;
 
 		final int OPT_DISPLAYPKS = 8;
 		final int OPT_PATH = 9;
@@ -231,7 +237,8 @@ class CommandLine {
 
 				// STUDY LEVEL
 				new LongOpt("studyiuid", LongOpt.REQUIRED_ARGUMENT, null, 's'),
-				new LongOpt("study-level", LongOpt.NO_ARGUMENT, null, OPT_STUDYLEVEL),
+                new LongOpt("study-level", LongOpt.NO_ARGUMENT, null, OPT_STUDYLEVEL),
+                new LongOpt("date", LongOpt.REQUIRED_ARGUMENT, null, 'd'),
 
 				// SERIES LEVEL
 				new LongOpt("seriesiuid", LongOpt.REQUIRED_ARGUMENT, null, 'S'),
@@ -249,11 +256,12 @@ class CommandLine {
 				new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
 				new LongOpt("jdbcurlhelp", LongOpt.NO_ARGUMENT, null, OPT_URLHELP),
 				new LongOpt("debug", LongOpt.NO_ARGUMENT, null, OPT_DEBUG),
-				new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v')
+                new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
+                new LongOpt("ThisOptionDoesNotExist", LongOpt.NO_ARGUMENT, null, OPT_EXPERT),
 		//
 		};
 
-		Getopt g = new Getopt("jpdbi", argv, ":U:E:O:s:S:q:hvzLF", longopts);
+		Getopt g = new Getopt("jpdbi", argv, ":U:E:O:s:S:q:q:hvzLF", longopts);
 		g.setOpterr(true);
 
 		int c;
@@ -298,9 +306,13 @@ class CommandLine {
 				gzip = true;
 				break;
 
-			case 's':
-				StudyIUID = g.getOptarg();
-				break;
+            case 's':
+                StudyIUID = g.getOptarg();
+                break;
+
+            case 'd':
+                StudyDATE = g.getOptarg();
+                break;
 
 			case 'S':
 				SeriesIUID = g.getOptarg();
@@ -327,9 +339,13 @@ class CommandLine {
 				displayAET = true;
 				break;
 
-			case OPT_NONEMPTY:
-				nonempty = true;
-				break;
+            case OPT_NONEMPTY:
+                nonempty = true;
+                break;
+
+            case OPT_EXPERT:
+                expert = true;
+                break;
 
 			case OPT_STUDYLEVEL:
 				levels.set(Jpdbi.STUDY);
