@@ -1718,7 +1718,52 @@
   <element tag="(0072,0712)" name="Show Graphic Annotation Flag" vr="CS" vm="1" key="ShowGraphicAnnotationFlag" />
   <element tag="(0072,0714)" name="Show Patient Demographics Flag" vr="CS" vm="1" key="ShowPatientDemographicsFlag" />
   <element tag="(0072,0716)" name="Show Acquisition Techniques Flag" vr="CS" vm="1" key="ShowAcquisitionTechniquesFlag" />
-    
+
+  <element tag="(0074,1000)" name="Unified Procedure Step State" vr="CS" vm="1" key="UPSState" />
+  <element tag="(0074,1002)" name="Unified Procedure Step Progress Information Sequence" vr="SQ" vm="1" key="UPSProgressInformationSeq" />
+  <element tag="(0074,1004)" name="Unified Procedure Step Progress" vr="DS" vm="1" key="UPSProgress" />
+  <element tag="(0074,1006)" name="Unified Procedure Step Progress Description" vr="ST" vm="1" key="UPSProgressDescription" />
+  <element tag="(0074,1008)" name="Unified Procedure Step Communications URI Sequence" vr="SQ" vm="1" key="UPSCommunicationsURISeq" />
+  <element tag="(0074,100A)" name="Contact URI" vr="ST" vm="1" key="ContactURI" />
+  <element tag="(0074,100C)" name="Contact Display Name" vr="LO" vm="1" key="ContactDisplayName" />
+  <element tag="(0074,100E)" name="Unified Procedure Step Discontinuation Reason Code Sequence" vr="SQ" vm="1" key="UPSDiscontinuationReasonCodeSeq" />
+  <element tag="(0074,1020)" name="Beam Task Sequence" vr="SQ" vm="1" key="BeamTaskSeq" />
+  <element tag="(0074,1022)" name="Beam Task Type" vr="CS" vm="1" key="BeamTaskType" />
+  <element tag="(0074,1024)" name="Beam Order Index" vr="IS" vm="1" key="BeamOrderIndex" />
+  <element tag="(0074,1030)" name="Delivery Verification Image Sequence" vr="SQ" vm="1" key="DeliveryVerificationImageSeq" />
+  <element tag="(0074,1032)" name="Verification Image Timing" vr="CS" vm="1" key="VerificationImageTiming" />
+  <element tag="(0074,1034)" name="Double Exposure Flag" vr="CS" vm="1" key="DoubleExposureFlag" />
+  <element tag="(0074,1036)" name="Double Exposure Ordering" vr="CS" vm="1" key="DoubleExposureOrdering" />
+  <element tag="(0074,1038)" name="Double Exposure Meterset" vr="DS" vm="1" key="DoubleExposureMeterset" />
+  <element tag="(0074,103A)" name="Double Exposure Field Delta" vr="DS" vm="4" key="DoubleExposureFieldDelta" />
+  <element tag="(0074,1040)" name="Related Reference RT Image Sequence" vr="SQ" vm="1" key="RelatedReferenceRTImageSeq" />
+  <element tag="(0074,1042)" name="General Machine Verification Sequence" vr="SQ" vm="1" key="GeneralMachineVerificationSeq" />
+  <element tag="(0074,1044)" name="Conventional Machine Verification Sequence" vr="SQ" vm="1" key="ConventionalMachineVerificationSeq" />
+  <element tag="(0074,1046)" name="Ion Machine Verification Sequence" vr="SQ" vm="1" key="IonMachineVerificationSeq" />
+  <element tag="(0074,1048)" name="Failed Attributes Sequence" vr="SQ" vm="1" key="FailedAttributesSeq" />
+  <element tag="(0074,104A)" name="Overridden Attributes Sequence" vr="SQ" vm="1" key="OverriddenAttributesSeq" />
+  <element tag="(0074,104C)" name="Conventional Control Point Verification Sequence" vr="SQ" vm="1" key="ConventionalControlPointVerificationSeq" />
+  <element tag="(0074,104E)" name="Ion Control Point Verification Sequence" vr="SQ" vm="1" key="IonControlPointVerificationSeq" />
+  <element tag="(0074,1050)" name="Attribute Occurrence Sequence" vr="SQ" vm="1" key="AttributeOccurrenceSeq" />
+  <element tag="(0074,1052)" name="Attribute Occurrence Pointer" vr="AT" vm="1" key="AttributeOccurrencePointer" />
+  <element tag="(0074,1054)" name="Attribute Item Selector" vr="UL" vm="1" key="AttributeItemSelector" />
+  <element tag="(0074,1056)" name="Attribute Occurrence Private Creator" vr="LO" vm="1" key="AttributeOccurrencePrivateCreator" />
+  <element tag="(0074,1200)" name="Scheduled Procedure Step Priority" vr="CS" vm="1" key="SPSPriority" />
+  <element tag="(0074,1202)" name="Worklist Label" vr="LO" vm="1" key="WorklistLabel" />
+  <element tag="(0074,1204)" name="Procedure Step Label" vr="LO" vm="1" key="ProcedureStepLabel" />
+  <element tag="(0074,1210)" name="Scheduled Processing Parameters Sequence" vr="SQ" vm="1" key="ScheduledProcessingParametersSeq" />
+  <element tag="(0074,1212)" name="Performed Processing Parameters Sequence" vr="SQ" vm="1" key="PerformedProcessingParametersSeq" />
+  <element tag="(0074,1216)" name="Unified Procedure Step Performed Procedure Sequence" vr="SQ" vm="1" key="UPSPerformedProcedureSeq" />
+  <element tag="(0074,1220)" name="Related Procedure Step Sequence" vr="SQ" vm="1" key="RelatedProcedureStepSeq"/>
+  <element tag="(0074,1222)" name="Procedure Step Relationship Type" vr="LO" vm="1" key="ProcedureStepRelationshipType" />
+  <element tag="(0074,1230)" name="Deletion Lock" vr="LO" vm="1" key="DeletionLock" />
+  <element tag="(0074,1234)" name="Receiving AE" vr="AE" vm="1" key="ReceivingAE" />
+  <element tag="(0074,1236)" name="Requesting AE" vr="AE" vm="1" key="RequestingAE" />
+  <element tag="(0074,1238)" name="Reason for Cancellation" vr="LT" vm="1" key="ReasonForCancellation" />
+  <element tag="(0074,1242)" name="SCP Status" vr="CS" vm="1" key="SCPStatus" />
+  <element tag="(0074,1244)" name="Subscription List Status" vr="CS" vm="1" key="SubscriptionListStatus" />
+  <element tag="(0074,1246)" name="Unified Procedure Step List Status" vr="CS" vm="1" key="UPSListStatus" />
+
   <element tag="(0088,0130)" name="Storage Media File-set ID" vr="SH" vm="1" key="StorageMediaFileSetID" />
   <element tag="(0088,0140)" name="Storage Media File-set UID" vr="UI" vm="1" key="StorageMediaFileSetUID" />
   <element tag="(0088,0200)" name="Icon Image Sequence" vr="SQ" vm="1" key="IconImageSeq" />
@@ -2471,6 +2516,11 @@
   <uid value="1.2.40.0.13.1.1.2.4.94" name="Dcm4che URI Referenced" key="Dcm4cheURIReferenced" />  
 </uids>
 
+<uids type="ServiceClass">
+  <uid value="1.2.840.10008.4.2" name="Storage Service Class" key="StorageServiceClass" />
+  <uid value="1.2.840.10008.5.1.4.34.4" name="Unified Worklist and Procedure Step Service Class" key="UnifiedWorklistandProcedureStepServiceClass" />
+</uids>
+
 <uids type="SOPClass">
   <uid value="1.2.840.10008.1.1" name="Verification SOP Class" key="Verification" />
   <uid value="1.2.840.10008.1.3.10" name="Media Storage Directory Storage" key="MediaStorageDirectoryStorage" />
@@ -2487,7 +2537,6 @@
   <uid value="1.2.840.10008.3.1.2.3.5" name="Modality Performed Procedure Step Notification SOP Class" key="ModalityPerformedProcedureStepNotification" />
   <uid value="1.2.840.10008.3.1.2.5.1" name="Detached Results Management SOP Class" key="DetachedResultsManagement" />
   <uid value="1.2.840.10008.3.1.2.6.1" name="Detached Interpretation Management SOP Class" key="DetachedInterpretationManagement" />
-  <uid value="1.2.840.10008.4.2" name="Storage Service Class" key="StorageServiceClass" />
   <uid value="1.2.840.10008.5.1.1.1" name="Basic Film Session SOP Class" key="BasicFilmSession" />
   <uid value="1.2.840.10008.5.1.1.2" name="Basic Film Box SOP Class" key="BasicFilmBoxSOP" />
   <uid value="1.2.840.10008.5.1.1.4" name="Basic Grayscale Image Box SOP Class" key="BasicGrayscaleImageBox" />
@@ -2614,6 +2663,13 @@
   <uid value="1.2.840.10008.5.1.4.32.2" name="General Purpose Scheduled Procedure Step SOP Class" key="GeneralPurposeScheduledProcedureStepSOPClass" />
   <uid value="1.2.840.10008.5.1.4.32.3" name="General Purpose Performed Procedure Step SOP Class" key="GeneralPurposePerformedProcedureStepSOPClass" />
   <uid value="1.2.840.10008.5.1.4.33" name="Instance Availability Notification SOP Class" key="InstanceAvailabilityNotificationSOPClass" />
+  <uid value="1.2.840.10008.5.1.4.34.1" name="RT Beams Delivery Instruction Storage (Supplement 74 Frozen Draft)" key="RTBeamsDeliveryInstructionStorageSupplement74FrozenDraft" />
+  <uid value="1.2.840.10008.5.1.4.34.2" name="RT Conventional Machine Verification (Supplement 74 Frozen Draft)" key="RTConventionalMachineVerificationSupplement74FrozenDraft" />
+  <uid value="1.2.840.10008.5.1.4.34.3" name="RT Ion Machine Verification (Supplement 74 Frozen Draft)" key="RTIonMachineVerificationSupplement74FrozenDraft" />
+  <uid value="1.2.840.10008.5.1.4.34.4.1" name="Unified Procedure Step - Push SOP Class" key="UnifiedProcedureStepPushSOPClass" />
+  <uid value="1.2.840.10008.5.1.4.34.4.2" name="Unified Procedure Step - Watch SOP Class" key="UnifiedProcedureStepWatchSOPClass" />
+  <uid value="1.2.840.10008.5.1.4.34.4.3" name="Unified Procedure Step - Pull SOP Class" key="UnifiedProcedureStepPullSOPClass" />
+  <uid value="1.2.840.10008.5.1.4.34.4.4" name="Unified Procedure Step - Event SOP Class" key="UnifiedProcedureStepEventSOPClass" />
   <uid value="1.2.840.10008.5.1.4.37.1" name="General Relevant Patient Information Query General Relevant" key="PatientInformationQuery" />
   <uid value="1.2.840.10008.5.1.4.37.2" name="Breast Imaging Relevant Patient Information Query" key="BreastImagingRelevantPatientInformationQuery" />
   <uid value="1.2.840.10008.5.1.4.37.3" name="Cardiac Relevant Patient Information Query" key="CardiacRelevantPatientInformationQuery" />
@@ -2680,6 +2736,7 @@
   <uid value="1.2.840.10008.5.1.1.17" name="Printer SOP Instance" key="PrinterSOPInstance" />
   <uid value="1.2.840.10008.5.1.1.17.376" name="Printer Configuration Retrieval SOP Instance" key="PrinterConfigurationRetrievalSOPInstance" />
   <uid value="1.2.840.10008.5.1.1.25" name="Print Queue SOP Instance" key="PrintQueueSOPInstance" />
+  <uid value="1.2.840.10008.5.1.4.34.5" name="Unified Worklist and Procedure Step SOP Instance" key="UnifiedWorklistandProcedureStepSOPInstance" />
 </uids>
 
 <uids type="ApplicationContextName">

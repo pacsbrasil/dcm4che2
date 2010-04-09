@@ -13,7 +13,7 @@
                   key     CDATA #REQUIRED>
 
 <!ELEMENT uids (uid*)>
-<!ATTLIST uids type (TransferSyntax|SOPClass|MetaSOPClass|SOPInstance|ApplicationContextName|CodingScheme|SynchronizationFrameOfReference) #REQUIRED>
+<!ATTLIST uids type (TransferSyntax|ServiceClass|SOPClass|MetaSOPClass|SOPInstance|ApplicationContextName|CodingScheme|SynchronizationFrameOfReference) #REQUIRED>
 
 <!ELEMENT uid EMPTY>
 <!ATTLIST uid value   CDATA #REQUIRED
