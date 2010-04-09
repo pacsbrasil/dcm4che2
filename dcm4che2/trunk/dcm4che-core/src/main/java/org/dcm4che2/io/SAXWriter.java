@@ -236,7 +236,7 @@ public class SAXWriter implements DicomInputHandler {
         final String fpath = fpath(sq.tag(), sqvr, itemLen);
         startItemElement(in.tagPosition(), itemLen, fpath);
         in.readValue(in);
-        if (sqvr != VR.SQ) {
+        if (sq.hasFragments() && index < sq.countItems()) {
             byte[] data = sq.getFragment(index);
             if (fpath != null) {
                 writeToFile(data);
