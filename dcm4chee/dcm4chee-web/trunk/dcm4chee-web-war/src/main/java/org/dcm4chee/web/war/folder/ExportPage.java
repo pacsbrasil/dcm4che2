@@ -289,6 +289,19 @@ public class ExportPage extends BaseWicketPage {
             return requests;
         }
 
+        public int getNrOfPatients() {
+            return nrPat;
+        }
+        public int getNrOfStudies() {
+            return nrStudy;
+        }
+        public int getNrOfSeries() {
+            return nrSeries;
+        }
+        public int getNrOfInstances() {
+            return nrInstances;
+        }
+        
         public boolean hasSelection() {
             return (nrPat | nrStudy | nrSeries | nrInstances) != 0;
         }
@@ -368,12 +381,18 @@ public class ExportPage extends BaseWicketPage {
         private long start, end;
         private List<ExportResponseHandler> moveRequests = new ArrayList<ExportResponseHandler>(); 
         private List<ExportResponseHandler> failedRequests = new ArrayList<ExportResponseHandler>();
+        private int id;
         private int nrOfMoverequests;
         private boolean isRendered = true;
         
         public ExportResult(int id) {
+            this.id = id;
         }
 
+        public int getId() {
+            return id;
+        }
+        
         public int[] calcTotal() {
             int[] total = new int[4];
             for ( ExportResponseHandler h : moveRequests) {
