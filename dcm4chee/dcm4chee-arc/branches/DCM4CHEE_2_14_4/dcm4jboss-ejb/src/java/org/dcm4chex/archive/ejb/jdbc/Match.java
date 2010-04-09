@@ -365,19 +365,19 @@ abstract class Match {
 
         protected void appendBodyTo(StringBuffer sb) {
             sb.append(column);
-            if (range[0] == null) {
-                sb.append(" <= ");
-                sb.append(range[1]);
-            } else if (range[1] == null) {
-                sb.append(" >= ");
+            if (range[0] != null) {
+                sb.append(" >= '");
                 sb.append(range[0]);
-            } else {
-                sb.append(" BETWEEN ");
-                sb.append(range[0]);
-                sb.append(" AND ");
+                if (range[1] != null) {
+                    sb.append("' AND ");
+                    sb.append(column);
+                }
+            }
+            if (range[1] != null) {
+                sb.append(" <= '");
                 sb.append(range[1]);
             }
-
+            sb.append('\'');
         }
 
     }
