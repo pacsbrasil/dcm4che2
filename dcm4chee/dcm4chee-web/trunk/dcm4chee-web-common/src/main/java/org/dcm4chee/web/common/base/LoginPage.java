@@ -55,9 +55,25 @@ import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
 public class LoginPage extends BaseWicketPage {
     public LoginPage() {
         super();
-        ModuleSelectorPanel selector = getModuleSelectorPanel();
-        selector.setShowLogoutLink(false);
-        selector.addModule(LoginPanel.class);
+        this.getModuleSelectorPanel().setShowLogoutLink(false);
+        String nodeInfo;
+        try {
+            nodeInfo = System.getProperty("dcm4che.archive.nodename", InetAddress.getLocalHost().getHostName() );
+        } catch (UnknownHostException e) {
+            nodeInfo = "DCM4CHEE";
+        }
+        add(new Label("loginLabel", new StringResourceModel("loginLabel", LoginPage.this, 
+                null, new Object[]{nodeInfo})));
+        add(new SignInPanel("signInPanel") {
+
+            private static final long serialVersionUID = 1L;
+
+            protected void onSignInFailed() {
+                Component user = LoginPage.this.get("signInPanel:signInForm:username");
+                user.add(FocusOnLoadBehaviour.newFocusAndSelectBehaviour());
+            }
+        });  
+        this.get("signInPanel:signInForm").add(new FocusOnLoadBehaviour()); 
     }
     
     @Override

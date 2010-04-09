@@ -113,7 +113,7 @@ public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
 
     private void checkLogin(String user, String passwd, Class<? extends Page> pageClass) {
         wicketTester.startPage(MainPage.class);
-        FormTester formTester = wicketTester.newFormTester("modules:panel:signInPanel:signInForm");
+        FormTester formTester = wicketTester.newFormTester("signInPanel:signInForm");
         formTester.setValue("username", user);
         formTester.setValue("password", passwd);
         formTester.submit();
