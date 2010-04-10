@@ -1,8 +1,4 @@
-/*
-$Id$
-$Log: Query.java,v $
-
-*/
+// $Id$
 
 package com.agfa.db.tools;
 

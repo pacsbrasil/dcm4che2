@@ -1,6 +1,4 @@
-/*
-$Id$
- */
+// $Id$
 
 package com.agfa.db.tools;
 
@@ -24,10 +22,8 @@ import org.dcm4che.dict.Tags;
 
 public class Jpdbi {
     public final static String VERSION = "2.0";
-
     public final static String ID = "$Id$";
-
-    public static final int OPT_DEBUG = 2;
+    public final static String REVISION = "$Revision$";
 
     //
 
