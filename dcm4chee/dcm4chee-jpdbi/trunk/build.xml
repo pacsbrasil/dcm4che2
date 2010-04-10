@@ -39,9 +39,9 @@
 
 	<target name="jar" depends="build">
 		<mkdir dir="${dist.dir}" />
-		<copy tofile="${build.dir}/com/agfa/db/tools/jpdbi.properties" file="${basedir}/resources/default.properties" />
-		<copy todir="${build.dir}/gnu/getopt/" file="${src.dir}/gnu/getopt/MessagesBundle.properties" />
-		<copy todir="${build.dir}/" file="./thirdparty/log4j.properties" />
+		<copy tofile="bin/com/agfa/db/tools/jpdbi.properties" file="${basedir}/resources/default.properties" />
+		<copy todir="${build.dir}/" file="${basedir}/thirdparty/log4j.properties" />
+		<copy todir="bin/gnu/getopt/" file="${src.dir}/gnu/getopt/MessagesBundle.properties" />
 		<jar destfile="${dist.dir}/jpdbi.jar" update="true">
 			<zipfileset src="./thirdparty/ojdbc14.jar" />
 			<zipfileset src="./thirdparty/dcm4che.jar" />
