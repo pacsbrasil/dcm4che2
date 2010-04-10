@@ -11,24 +11,26 @@
 	<property name="src.dir" value="${basedir}/src/java" />
 
 	<path id="project.classpath">
-		<pathelement location="bin" />
+		<pathelement location="${build.dir}" />
 		<pathelement location="${jpdbi.location}/thirdparty/ojdbc14.jar" />
+		<pathelement location="${jpdbi.location}/thirdparty/dcm4che.jar" />
 	</path>
 
 	<target name="init">
-		<mkdir dir="bin" />
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${dist.dir}" />
 	</target>
 
 	<target name="clean">
-		<delete dir="bin" />
 		<delete dir="${dist.dir}" />
+		<delete dir="${build.dir}" />
 	</target>
 
 	<target name="build" depends="init">
 		<echo message="${ant.project.name}: ${ant.file}" />
-		<javac destdir="bin" srcdir="${src.dir}">
+		<javac destdir="${build.dir}" srcdir="${src.dir}">
 			<classpath>
-				<pathelement location="bin" />
+				<pathelement location="${build.dir}" />
 				<pathelement location="${jpdbi.location}/thirdparty/ojdbc14.jar" />
 				<pathelement location="${jpdbi.location}/thirdparty/dcm4che.jar" />
 			</classpath>
@@ -37,17 +39,20 @@
 
 	<target name="jar" depends="build">
 		<mkdir dir="${dist.dir}" />
-		<copy tofile="bin/com/agfa/db/tools/jpdbi.properties" file="${basedir}/resources/default.properties" />
-		<copy todir="bin/gnu/getopt/" file="${src.dir}/gnu/getopt/MessagesBundle.properties" />
+		<copy tofile="${build.dir}/com/agfa/db/tools/jpdbi.properties" file="${basedir}/resources/default.properties" />
+		<copy todir="${build.dir}/gnu/getopt/" file="${src.dir}/gnu/getopt/MessagesBundle.properties" />
+		<copy todir="${build.dir}/" file="./thirdparty/log4j.properties" />
 		<jar destfile="${dist.dir}/jpdbi.jar" update="true">
 			<zipfileset src="./thirdparty/ojdbc14.jar" />
-			<fileset dir="bin" />
+			<zipfileset src="./thirdparty/dcm4che.jar" />
+			<zipfileset src="./thirdparty/log4j.jar" />
+			<fileset dir="${build.dir}" />
 			<manifest>
 				<attribute name="Main-Class" value="com.agfa.db.tools.Jpdbi" />
 			</manifest>
 		</jar>
 		<jar destfile="${dist.dir}/jpdbi-stripped.jar" update="true">
-			<fileset dir="bin" />
+			<fileset dir="${build.dir}" />
 			<manifest>
 				<attribute name="Main-Class" value="com.agfa.db.tools.jpdbi"/>
 				<attribute name="Class-Path" value="./ ../lib/ojdbc5.jar ../lib/ojdbc14.jar ../lib/dcm4che.jar"/>
