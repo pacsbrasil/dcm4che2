@@ -186,6 +186,7 @@ public class Query {
         String StudyIUID = cfg.StudyIUID;
         String SeriesIUID = cfg.SeriesIUID;
         String StudyDATE = cfg.StudyDATE;
+        String SeriesMOD = cfg.SeriesMOD;
 
         boolean PatientLink = false;
         boolean StudyLink = false;
@@ -320,6 +321,9 @@ public class Query {
             String myWhere = "";
             if (SeriesIUID != null) {
                 myWhere = addWhere(myWhere, "SERIES.SERIES_IUID", SeriesIUID, Types.VARCHAR);
+            }
+            if (SeriesMOD != null) {
+                myWhere = addWhere(myWhere, "SERIES.MODALITY", SeriesMOD, Types.VARCHAR);
             }
             if (myWhere.length() > 0) {
                 SeriesLink = true;
