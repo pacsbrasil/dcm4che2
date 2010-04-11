@@ -7,13 +7,6 @@ import java.util.Hashtable;
 import java.util.Calendar;
 
 public class Query {
-    private static int Count(char c, String s) {
-        int cnt = 0;
-        for (int pos = 0; pos < s.length(); pos++)
-            if (s.charAt(pos) == c)
-                cnt++;
-        return cnt;
-    }
 
     public static boolean isLongNumber(String num) {
         try {
@@ -75,99 +68,109 @@ public class Query {
     }
 
     static String[][] BuildUpdate(CommandLine cfg) {
-		String[][] UpdDicom = null;
-		if (!cfg.update.isEmpty()) {
-			Hashtable<String, Boolean> ht = new Hashtable<String, Boolean>();
-			String TmpLevel = null;
-			String TmpUpdDicom = null;
-			String UpdDB = null;
-			boolean UpdMulti = true;
+        String[][] UpdDicom = null;
+        if (!cfg.update.isEmpty()) {
+            Hashtable<String, Boolean> ht = new Hashtable<String, Boolean>();
+            boolean UpdMulti = true;
 
-			String UpdMultiTmp = null;
+            String TmpLevel = null;
 
-			int CntUpdates = cfg.update.size();
+            String TmpUpdDCM = null;
+            String TmpUpdDB = null;
+            String TmpUpdTYPE = null;
+            String TmpUpdMULTI = null;
 
-			if (CntUpdates > 0) {
-				UpdDicom = new String[CntUpdates][5];
+            int CntUpdates = cfg.update.size();
 
-				for (int loop = 0; loop < CntUpdates; loop++) {
-					String Update = cfg.update.get(loop);
+            if (CntUpdates > 0) {
+                UpdDicom = new String[CntUpdates][5];
 
-					int split = Update.indexOf('=');
-					if (split != -1) {
-						String UpdField = Update.substring(0, split).toLowerCase();
-						if (!ht.containsKey(UpdField)) {
+                for (int loop = 0; loop < CntUpdates; loop++) {
+                    String Update = cfg.update.get(loop);
+                    int split = Update.indexOf('=');
+                    if (split != -1) {
+                        String UpdField = Update.substring(0, split).toLowerCase();
+                        if (!ht.containsKey(UpdField)) {
+                            String UpdValue = Update.substring(split + 1);
+                            String UpdDef = cfg.applicationProps.getProperty("update." + UpdField, "").trim();
+                            if (UpdDef.length() > 0) {
+                                String[] TmpUpdate = UpdDef.split(":");
+                                if (!(TmpUpdate.length < 3 || TmpUpdate.length > 5)) {
+                                    if (TmpLevel == null || TmpLevel.equals(TmpUpdate[0].toUpperCase().trim())) {
+                                        // Setting Level
+                                        TmpLevel = TmpUpdate[0].toUpperCase().trim();
 
-							String UpdValue = Update.substring(split + 1);
-							String UpdPrefix = "update." + UpdField + ".";
-							String UpdLevel = cfg.applicationProps.getProperty(UpdPrefix.concat("level"), "").trim();
-							if (UpdLevel.length() > 0) {
-								if (TmpLevel == null)
-									TmpLevel = UpdLevel;
-								if (TmpLevel.equalsIgnoreCase(UpdLevel)) {
-									TmpUpdDicom = cfg.applicationProps.getProperty(UpdPrefix.concat("dcm"), "").trim();
-									UpdDB = cfg.applicationProps.getProperty(UpdPrefix.concat("dbfield"), "").trim();
-									UpdMultiTmp = cfg.applicationProps.getProperty(UpdPrefix.concat("multi"), "").trim();
-									if (UpdMultiTmp.equalsIgnoreCase("true") || UpdMultiTmp.equalsIgnoreCase("yes"))
-										UpdMulti &= true;
-									else
-										UpdMulti = false;
-									// Special Cases
-									// Patient Name
-									if (UpdDB.equalsIgnoreCase("PAT_NAME") && UpdLevel.equalsIgnoreCase("PATIENT")) {
-										int cnt = Count('^', UpdValue);
-										while (cnt++ < 4)
-											UpdValue += "^";
-									}
-								} else {
-									_System.exit(1, "Multilevel updates not supported [" + TmpLevel + " & " + UpdLevel + "].");
-								}
+                                        TmpUpdDB = TmpUpdate[1].toUpperCase().trim();
+                                        if (TmpUpdDB.equals("NONE") || TmpUpdDB.length() == 0)
+                                            TmpUpdDB = null;
+                                        TmpUpdDCM = TmpUpdate[2].trim();
+                                        if (TmpUpdDCM.equalsIgnoreCase("NONE") || TmpUpdDCM.length() == 0)
+                                            TmpUpdDCM = null;
+                                        TmpUpdTYPE = "VARCHAR";
+                                        if (TmpUpdate.length > 3) {
+                                            TmpUpdTYPE = TmpUpdate[3].trim().toUpperCase();
+                                            if (TmpUpdTYPE.length() == 0)
+                                                TmpUpdTYPE = "VARCHAR";
+                                        }
+                                        
+                                        TmpUpdMULTI = "false";
+                                        if (TmpUpdate.length > 4) {
+                                            TmpUpdMULTI = TmpUpdate[4].trim().toLowerCase();
+                                            if (!(TmpUpdMULTI.equals("true") || TmpUpdMULTI.equals("yes")))
+                                                TmpUpdTYPE = "false";
+                                        }
+                                        
+                                        if (TmpUpdMULTI.equals("false"))
+                                            UpdMulti = false;
+                                        else
+                                            UpdMulti &= true;
 
-								if (UpdDB.equalsIgnoreCase("NONE")) {
-									UpdDB = null;
-								}
-								if (UpdValue.equalsIgnoreCase("_REMOVE_")) {
-									UpdValue = null;
-								}
 
-								if (TmpUpdDicom.length() > 0) {
-									ht.put(UpdField, true);
-									UpdDicom[loop][0] = UpdDB;
-									UpdDicom[loop][1] = TmpUpdDicom;
-									UpdDicom[loop][2] = UpdValue;
-								}
-							} else {
-								_System.exit(1, "Update not defined [" + UpdField + "].");
-							}
-						} else {
-							_System.exit(1, "Duplicate Update [" + UpdField + "].");
-						}
-					} else {
-						_System.exit(1, "Update syntax error [" + Update + "].");
-					}
-				}
-				UpdDicom[0][3] = TmpLevel;
-				UpdDicom[0][4] = (UpdMulti ? "t" : "f");
+                                        if (UpdValue.equalsIgnoreCase("_REMOVE_")) {
+                                            UpdValue = null;
+                                        }
 
-				if (cfg.debug)
-					System.err.println("DEBUG: Update Level: " + TmpLevel);
+                                        if (TmpUpdDCM != null) {
+                                            ht.put(UpdField, true);
+                                            UpdDicom[loop][0] = TmpUpdDB;
+                                            UpdDicom[loop][1] = TmpUpdDCM;
+                                            UpdDicom[loop][2] = UpdValue;
+                                            UpdDicom[loop][3] = TmpUpdTYPE;
+                                        }
+                                    } else {
+                                        _System.exit(1, "Multilevel updates not supported [" + TmpLevel + " & "
+                                                + TmpUpdate[0] + "].");
+                                    }
+                                } else {
+                                    _System.exit(1, "Update definition problem [" + UpdDef + "].");
+                                }
+                            } else {
+                                _System.exit(1, "Update not defined [" + UpdField + "].");
+                            }
+                        } else {
+                            _System.exit(1, "Duplicate Update [" + UpdField + "].");
+                        }
+                    } else {
+                        _System.exit(1, "Update syntax error [" + Update + "].");
+                    }
 
-				if (TmpLevel.equals("PATIENT")) {
-					cfg.levels.set(Jpdbi.PATIENT);
-					cfg.updateDS.set(Jpdbi.PATIENT);
-				}
-				if (TmpLevel.equals("STUDY")) {
-					cfg.levels.set(Jpdbi.STUDY);
-					cfg.updateDS.set(Jpdbi.STUDY);
-				}
-				if (TmpLevel.equals("SERIES")) {
-					cfg.levels.set(Jpdbi.SERIE);
-					cfg.updateDS.set(Jpdbi.SERIE);
-				}
-			}
-		}
-		return UpdDicom;
-	}
+                    for (int i=0; i < Jpdbi.Tables.length; i++) {
+                        if (TmpLevel.equals(Jpdbi.Tables[i])) {
+                            cfg.levels.set(i);
+                            cfg.updateLevel.set(i);
+                            if (TmpUpdDCM != null)
+                                cfg.updateDS.set(i);
+                        }
+                    }
+                }
+                UpdDicom[0][4] = (UpdMulti ? "t" : "f");
+
+                if (cfg.debug)
+                    System.err.println("DEBUG: Update Level: " + TmpLevel);
+            }
+        }
+        return UpdDicom;
+    }
 
     static String[] Build(CommandLine cfg) {
         String select = "";
@@ -280,7 +283,7 @@ public class Query {
             String myWhere = "";
 
             if (StudyDATE != null) {
-                long dummy=-1;
+                long dummy = -1;
 
                 if (isLongNumber(StudyDATE))
                     dummy = Long.parseLong(StudyDATE);
@@ -291,11 +294,11 @@ public class Query {
                         dummy = 1;
                 }
 
-                if (dummy>=0 && dummy <= 999) {
+                if (dummy >= 0 && dummy <= 999) {
                     Calendar cal = Calendar.getInstance();
                     cal.add(Calendar.DATE, (int) -dummy);
                     String mydate = "" + cal.get(Calendar.YEAR) + "-" + (cal.get(Calendar.MONTH) + 1) + "-"
-                            + (cal.get(Calendar.DATE)) + " 00:00:00";
+                    + (cal.get(Calendar.DATE)) + " 00:00:00";
                     myWhere = addWhere(myWhere, "STUDY.STUDY_DATETIME", mydate, Types.TIMESTAMP);
                 } else {
                     myWhere += " (STUDY_DATETIME" + ">= {ts'" + StudyDATE + " 00:00:00'} and";

@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.BitSet;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmEncodeParam;
@@ -22,20 +23,32 @@ import org.dcm4che.dict.Tags;
 
 public class Jpdbi {
     public final static String VERSION = "2.0";
+
     public final static String ID = "$Id$";
+
     public final static String REVISION = "$Revision$";
 
     //
 
-    final static int PATIENT = 1;
+    final static String[] Tables = { "PATIENT", "STUDY", "SERIES", "INSTANCE", "FILES", "FILESYSTEM" };
 
-    final static int STUDY = 2;
+    //
 
-    final static int SERIE = 3;
+    final static String[] Attrs = { "PAT_ATTRS", "STUDY_ATTRS", "SERIES_ATTRS", "INST_ATTRS", null };
 
-    final static int INSTANCE = 4;
+    //
 
-    final static int PATH = 5;
+    final static int PATIENT = 0;
+
+    final static int STUDY = 1;
+
+    final static int SERIE = 2;
+
+    final static int INSTANCE = 3;
+
+    final static int PATH = 4;
+
+    final static int FILESYSTEM = 5;
 
     //
 
@@ -52,6 +65,14 @@ public class Jpdbi {
     final static int QUERY_GROUP = 5;
 
     final static int QUERY_ORDER = 6;
+
+    private static int CountCharInString(char c, String s) {
+        int cnt = 0;
+        for (int pos = 0; pos < s.length(); pos++)
+            if (s.charAt(pos) == c)
+                cnt++;
+        return cnt;
+    }
 
     public static void UpdateStudyModality(Connection connection, long pk, CommandLine cfg) {
         String sql = "select distinct MODALITY from SERIES where STUDY_FK=" + pk;
@@ -88,18 +109,8 @@ public class Jpdbi {
         }
     }
 
-    static void UpdateField(ResultSet rs, PreparedStatement stmt, Long pk, String level, String[][] update, boolean debug)
-    throws SQLException, IOException {
-        String field = "";
-
-        if (level.equals("PATIENT"))
-            field = "PAT_ATTRS";
-        if (level.equals("STUDY"))
-            field = "STUDY_ATTRS";
-        if (level.equals("SERIES"))
-            field = "SERIES_ATTRS";
-        if (level.equals("INSTANCE"))
-            field = "INST_ATTRS";
+    static void UpdateField(ResultSet rs, PreparedStatement stmt, Long pk, String field, String[][] update,
+            boolean debug) throws SQLException, IOException {
 
         if (debug)
             System.err.println("DEBUG: Reading " + field + "...");
@@ -167,7 +178,7 @@ public class Jpdbi {
     }
 
     private static void ParseQuery(Connection conn, String[] query, String[][] update, CommandLine cfg)
-    throws SQLException, IOException {
+            throws SQLException, IOException {
         Statement stmt = conn.createStatement();
         ResultSet rs = null;
 
@@ -194,38 +205,45 @@ public class Jpdbi {
         boolean multi = false;
         boolean UpdModality = false;
         String UpdateStatement = null;
-        String UpdateLevel = null;
+        int UpdateLevel = -1;
         boolean DoUpdate = false;
         PreparedStatement UpdStmt = null;
 
         if (update != null) {
-            UpdateLevel = update[0][3].toUpperCase();
+            UpdateLevel = cfg.updateLevel.nextSetBit(0);
+
             if (update[0][4].equals("t"))
                 multi = true;
 
             for (int loop = 0; loop < update.length; loop++) {
                 if (update[loop][0] != null) {
+                    String UpdValue = update[loop][2];
+                    // Special Case Patient Name
+                    if (update[loop][0].equals("PAT_NAME") && UpdateLevel == Jpdbi.PATIENT && UpdValue != null) {
+                        int cnt = CountCharInString('^', UpdValue);
+                        while (cnt++ < 4)
+                            UpdValue += "^";
+                        update[loop][2] = UpdValue;
+                    }
+                    // Special Case Modality
+                    if (update[loop][0].equals("MODALITY"))
+                        UpdModality = true;
+
                     if (UpdateStatement == null)
                         UpdateStatement = "";
                     else if (UpdateStatement.length() > 0)
                         UpdateStatement += ",";
                     UpdateStatement += update[loop][0].toUpperCase();
-                    UpdateStatement += (update[loop][2] == null) ? "=null" : "='" + update[loop][2] + "'";
-                    if (update[loop][0].equals("MODALITY"))
-                        UpdModality = true;
+                    UpdateStatement += (UpdValue == null) ? "=null" : "='" + UpdValue + "'";
                 }
             }
+
             if (!cfg.updateDS.isEmpty()) {
                 if (UpdateStatement == null)
                     UpdateStatement = "";
                 else if (UpdateStatement.length() > 0)
                     UpdateStatement += ",";
-                if (UpdateLevel.equals("PATIENT"))
-                    UpdateStatement += "PAT_ATTRS";
-                if (UpdateLevel.equals("STUDY"))
-                    UpdateStatement += "STUDY_ATTRS";
-                if (UpdateLevel.equals("SERIES"))
-                    UpdateStatement += "SERIES_ATTRS";
+                UpdateStatement += Jpdbi.Attrs[cfg.updateDS.nextSetBit(0)];
                 UpdateStatement += "=?";
             }
 
@@ -233,7 +251,8 @@ public class Jpdbi {
             DoUpdate = true;
 
             if (cfg.debug) {
-                System.err.println("DEBUG: Update: < " + "update " + UpdateLevel + " set " + UpdateStatement + " >");
+                System.err.println("DEBUG: Update: < " + "update " + Jpdbi.Tables[UpdateLevel] + " set "
+                        + UpdateStatement + " >");
             }
         }
 
@@ -248,62 +267,58 @@ public class Jpdbi {
                     _System.exit(1, "Multiple Updates not allowed on this Configuration.");
                 }
 
-                if (cfg.expert || rows == 1 || rows==cfg.UpdCount) {
-                    UpdStmt = conn.prepareStatement("update " + UpdateLevel + " set " + UpdateStatement);
+                if (cfg.expert || rows == 1 || rows == cfg.UpdCount) {
+                    UpdStmt = conn.prepareStatement("update " + Jpdbi.Tables[UpdateLevel] + " set " + UpdateStatement);
                 } else {
-                    _System.exit(1, "Updating more than one entry.  Please provide option \"--count "+rows+"\"");
+                    _System.exit(1, "Updating more than one entry.  Please provide option \"--count " + rows + "\"");
                 }
             }
 
             rs = stmt.executeQuery(QueryStatement);
             ResultSetMetaData md = rs.getMetaData();
 
-            long PK;
+            long PK = -1;
             long LastPK = -1;
 
             while (rs.next()) {
-                PK = Display.Patient(rs, md, cfg);
-                if (DoUpdate && UpdateLevel.equals("PATIENT") && PK > -1) {
-                    if (cfg.updateDS.isEmpty())
-                        UpdateField(UpdStmt, PK, cfg.debug);
-                    else
-                        UpdateField(rs, UpdStmt, PK, UpdateLevel, update, cfg.debug);
-                }
-
-                if (cfg.levels.get(STUDY)) {
-                    PK = Display.Study(rs, md, cfg);
-
-                    if (DoUpdate && PK > -1) {
-                        if (UpdModality && PK != LastPK && LastPK > -1)
-                            UpdateStudyModality(conn, LastPK, cfg);
-
-                        if (UpdateLevel.equals("STUDY")) {
+                for (int i = 0; i < Jpdbi.Tables.length; i++) {
+                    if (cfg.levels.get(i)) {
+                        switch (i) {
+                        case Jpdbi.PATIENT:
+                            PK = Display.Patient(rs, md, cfg);
+                            break;
+                        case Jpdbi.STUDY:
+                            PK = Display.Study(rs, md, cfg);
+                            if (PK > -1) {
+                                if (UpdModality && PK != LastPK && LastPK > -1)
+                                    UpdateStudyModality(conn, LastPK, cfg);
+                                LastPK = PK;
+                            }
+                            break;
+                        case Jpdbi.SERIE:
+                            PK = Display.Serie(rs, md, cfg);
+                            break;
+                        case Jpdbi.INSTANCE:
+                            PK = Display.Instance(rs, md, cfg);
+                            break;
+                        case Jpdbi.PATH:
+                            Display.Path(rs, md, cfg);
+                            break;
+                        default:
+                            PK = -1;
+                            break;
+                        }
+                        if (cfg.updateLevel.get(i) && PK > -1) {
                             if (cfg.updateDS.isEmpty())
                                 UpdateField(UpdStmt, PK, cfg.debug);
                             else
-                                UpdateField(rs, UpdStmt, PK, UpdateLevel, update, cfg.debug);
+                                UpdateField(rs, UpdStmt, PK, Jpdbi.Attrs[i], update, cfg.debug);
                         }
-                        LastPK = PK;
                     }
-                }
-                if (cfg.levels.get(SERIE)) {
-                    PK = Display.Serie(rs, md, cfg);
-                    if (DoUpdate && UpdateLevel.equals("SERIES") && PK > -1) {
-                        if (cfg.updateDS.isEmpty())
-                            UpdateField(UpdStmt, PK, cfg.debug);
-                        else
-                            UpdateField(rs, UpdStmt, PK, UpdateLevel, update, cfg.debug);
-                    }
-                }
-                if (cfg.levels.get(INSTANCE)) {
-                    Display.Instance(rs, md, cfg);
-                }
-                if (cfg.levels.get(PATH)) {
-                    Display.Path(rs, md, cfg);
                 }
             }
 
-            if (DoUpdate && UpdModality && LastPK > -1)
+            if (UpdModality && LastPK > -1)
                 UpdateStudyModality(conn, LastPK, cfg);
 
             rs.close();
@@ -321,7 +336,7 @@ public class Jpdbi {
         String update[][] = null;
 
         CommandLine cfg = new CommandLine(argv);
-              
+
         if (cfg.debug) {
             System.err.println("DEBUG: Connect Url: < " + cfg.jdbcUrl + " >");
         }

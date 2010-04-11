@@ -23,8 +23,8 @@ class CommandLine {
     BitSet levels = new BitSet();
 
     BitSet displayDS = new BitSet();
-
     BitSet updateDS = new BitSet();
+    BitSet updateLevel = new BitSet();
 
     public ArrayList<String> update = new ArrayList<String>();
 
