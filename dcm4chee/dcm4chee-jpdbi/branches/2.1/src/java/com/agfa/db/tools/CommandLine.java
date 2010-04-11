@@ -19,8 +19,6 @@ import java.util.BitSet;
 import java.util.Properties;
 import java.util.zip.GZIPOutputStream;
 
-import javax.swing.JPanel;
-
 class CommandLine {
     BitSet levels = new BitSet();
 
@@ -217,7 +215,7 @@ class CommandLine {
         final int OPT_SOPLEVEL = 32;
 
         //
-        final int OPT_DS = 20;
+        // final int OPT_DS = 20;
         final int OPT_PATDS = 21;
         final int OPT_STYDS = 22;
         final int OPT_SERDS = 23;

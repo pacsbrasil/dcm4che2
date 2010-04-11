@@ -24,7 +24,6 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.dict.DictionaryFactory;
@@ -36,7 +35,6 @@ public class Display {
 	private static OutputStream out = System.out;
 	private static final DcmParserFactory pfact = DcmParserFactory.getInstance();
 	private static int[] excludeTags = {};
-	private static int excludeValueLengthLimit = Integer.MAX_VALUE;
 	private static URL xslt = null;
 	private static LinkedList xsltParams = new LinkedList();
 	private static boolean xsltInc = false;
@@ -51,6 +49,7 @@ public class Display {
 	public static long LastInstance = -2;
 
 	public static long LastFile = -2;
+    private static int excludeValueLengthLimit = Integer.MAX_VALUE;
 
 	public final void setExcludeValueLengthLimit(int excludeValueLengthLimit) {
 		this.excludeValueLengthLimit = excludeValueLengthLimit;
