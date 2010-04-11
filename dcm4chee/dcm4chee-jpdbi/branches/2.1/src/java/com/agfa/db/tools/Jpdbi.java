@@ -63,7 +63,17 @@ public class Jpdbi {
     final static int QUERY_GROUP = 5;
 
     final static int QUERY_ORDER = 6;
-    
+
+    // DB Types
+
+    public static final int DBTYPE_UNKNOWN = 0;
+
+    public static final int DBTYPE_ORACLE = 1;
+
+    public static final int DBTYPE_MYSQL = 2;
+
+    //
+
     static void exit(int ExitCode) {
         System.out.flush();
         System.out.close();
@@ -105,8 +115,7 @@ public class Jpdbi {
             else
                 stmt.executeUpdate(sql);
             stmt.close();
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
+        } catch (SQLException e) {           
             e.printStackTrace();
         }
     }
@@ -277,11 +286,11 @@ public class Jpdbi {
                 if (!multi && rows != 1) {
                     Jpdbi.exit(1, "Multiple Updates not allowed on this Configuration.");
                 }
-
-                if (cfg.expert || rows == 1 || rows == cfg.UpdCount) {
+                
+                if ( cfg.UpdCount == -666 || rows == cfg.UpdCount ) {
                     UpdStmt = conn.prepareStatement("update " + Jpdbi.Tables[UpdateLevel] + " set " + UpdateStatement);
                 } else {
-                    Jpdbi.exit(1, "Updating more than one entry.  Please provide option \"--count " + rows + "\"");
+                    Jpdbi.exit(1, "Updating ["+rows+"] rows.  Please supply correct \"--count\" option.");
                 }
             }
 

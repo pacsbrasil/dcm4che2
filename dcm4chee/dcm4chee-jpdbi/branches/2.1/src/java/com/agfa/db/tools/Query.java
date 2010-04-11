@@ -138,8 +138,7 @@ public class Query {
                                             UpdDicom[loop][3] = TmpUpdTYPE;
                                         }
                                     } else {
-                                        Jpdbi.exit(1, "Multilevel updates not supported [" + TmpLevel + " & "
-                                                + TmpUpdate[0] + "].");
+                                        Jpdbi.exit(1, "Multilevel updates not supported [" + TmpLevel + " & " + TmpUpdate[0] + "].");
                                     }
                                 } else {
                                     Jpdbi.exit(1, "Update definition problem [" + UpdDef + "].");
@@ -154,6 +153,7 @@ public class Query {
                         Jpdbi.exit(1, "Update syntax error [" + Update + "].");
                     }
 
+                    // Set levels && updateLevel according to TABLES to be updated
                     for (int i=0; i < Jpdbi.Tables.length; i++) {
                         if (TmpLevel.equals(Jpdbi.Tables[i])) {
                             cfg.levels.set(i);

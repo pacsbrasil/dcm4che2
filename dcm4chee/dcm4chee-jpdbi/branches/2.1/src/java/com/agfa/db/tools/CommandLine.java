@@ -40,13 +40,11 @@ class CommandLine {
 
     boolean debug = false;
 
-    boolean expert = false;
-
-    public long UpdCount = 0;
+    public long UpdCount = 1;
 
     String jdbcUrl = null;
 
-    public int Database = DBTypes.UNKNOWN;
+    public int Database = Jpdbi.DBTYPE_UNKNOWN;
 
     String nl = System.getProperty("line.separator");
 
@@ -150,11 +148,11 @@ class CommandLine {
         DatabaseMetaData dmd = conn.getMetaData();
 
         if (dmd.getDatabaseProductName().equalsIgnoreCase("ORACLE")) {
-            Database = DBTypes.ORACLE;
+            Database = Jpdbi.DBTYPE_ORACLE;
         } else if (dmd.getDatabaseProductName().equalsIgnoreCase("MYSQL")) {
-            Database = DBTypes.MYSQL;
+            Database = Jpdbi.DBTYPE_MYSQL;
         } else {
-            Database = DBTypes.UNKNOWN;
+            Database = Jpdbi.DBTYPE_UNKNOWN;
         }
     }
 
@@ -369,7 +367,7 @@ class CommandLine {
                 break;
 
             case OPT_EXPERT:
-                expert = true;
+                UpdCount = -666;
                 break;
 
             case OPT_UPDCOUNT:
