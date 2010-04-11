@@ -14,8 +14,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.BitSet;
-
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
@@ -65,6 +63,19 @@ public class Jpdbi {
     final static int QUERY_GROUP = 5;
 
     final static int QUERY_ORDER = 6;
+    
+    static void exit(int ExitCode) {
+        System.out.flush();
+        System.out.close();
+        System.err.flush();
+        System.err.close();
+        System.exit(ExitCode);
+    }
+
+    static void exit(int ExitCode, String ErrorText) {
+        System.err.println(ErrorText);
+        exit(ExitCode);
+    }
 
     private static int CountCharInString(char c, String s) {
         int cnt = 0;
@@ -264,13 +275,13 @@ public class Jpdbi {
         if (rows > 0) {
             if (DoUpdate) {
                 if (!multi && rows != 1) {
-                    _System.exit(1, "Multiple Updates not allowed on this Configuration.");
+                    Jpdbi.exit(1, "Multiple Updates not allowed on this Configuration.");
                 }
 
                 if (cfg.expert || rows == 1 || rows == cfg.UpdCount) {
                     UpdStmt = conn.prepareStatement("update " + Jpdbi.Tables[UpdateLevel] + " set " + UpdateStatement);
                 } else {
-                    _System.exit(1, "Updating more than one entry.  Please provide option \"--count " + rows + "\"");
+                    Jpdbi.exit(1, "Updating more than one entry.  Please provide option \"--count " + rows + "\"");
                 }
             }
 
@@ -356,8 +367,8 @@ public class Jpdbi {
             if (cfg.debug)
                 e.printStackTrace();
             else
-                _System.exit(1, e.toString());
+                Jpdbi.exit(1, e.toString());
         }
-        _System.exit(0);
+        Jpdbi.exit(0);
     }
 }

@@ -19,6 +19,8 @@ import java.util.BitSet;
 import java.util.Properties;
 import java.util.zip.GZIPOutputStream;
 
+import javax.swing.JPanel;
+
 class CommandLine {
     BitSet levels = new BitSet();
 
@@ -164,7 +166,7 @@ class CommandLine {
         try {
             defaultProps.load(ClassLoader.getSystemResourceAsStream("com/agfa/db/tools/jpdbi.properties"));
         } catch (Exception e) {
-            _System.exit(1, "I/O failed.");
+            Jpdbi.exit(1, "I/O failed.");
         }
 
         applicationProps = new Properties(defaultProps);
@@ -176,7 +178,7 @@ class CommandLine {
             try {
                 applicationProps.load(new FileInputStream(tmp));
             } catch (Exception e) {
-                _System.exit(1, "Can't find " + tmp);
+                Jpdbi.exit(1, "Can't find " + tmp);
             }
         }
         tmp = new File("/etc/jdb.properties");
@@ -184,7 +186,7 @@ class CommandLine {
             try {
                 applicationProps.load(new FileInputStream(tmp));
             } catch (Exception e) {
-                _System.exit(1, "Can't find " + tmp);
+                Jpdbi.exit(1, "Can't find " + tmp);
             }
         }
 
@@ -421,7 +423,7 @@ class CommandLine {
                 break;
 
             default:
-                _System.exit(1, "Error encountered during Argument Parsing." + nl + "Use -h for help.");
+                Jpdbi.exit(1, "Error encountered during Argument Parsing." + nl + "Use -h for help.");
                 break;
             }
 
@@ -447,7 +449,7 @@ class CommandLine {
             try {
                 System.setErr(new PrintStream(new BufferedOutputStream(new FileOutputStream(errFilename))));
             } catch (Exception e) {
-                _System.exit(1, e.toString());
+                Jpdbi.exit(1, e.toString());
             }
         }
 
@@ -460,7 +462,7 @@ class CommandLine {
                     System.setOut(new PrintStream(new BufferedOutputStream(new FileOutputStream(outFilename))));
 
             } catch (Exception e) {
-                _System.exit(1, e.toString());
+                Jpdbi.exit(1, e.toString());
             }
         }
 
@@ -480,7 +482,7 @@ class CommandLine {
         }
 
         if (gzip && outFilename == null) {
-            _System.exit(1, "Error: gzip option only makes sense with out option.");
+            Jpdbi.exit(1, "Error: gzip option only makes sense with out option.");
         }
 
         if (i < argv.length) {
@@ -496,7 +498,7 @@ class CommandLine {
         try {
             Class.forName(jdbcDriverClass);
         } catch (ClassNotFoundException e) {
-            _System.exit(-1, e.toString());
+            Jpdbi.exit(-1, e.toString());
         }
 
         if (jdbcUrl == null) {
@@ -505,7 +507,7 @@ class CommandLine {
             if (dbalias != null) {
                 jdbcUrl = applicationProps.getProperty("jdbc.url." + dbalias);
                 if (jdbcUrl == null) {
-                    _System.exit(1, "ERROR: DB Alias: < " + dbalias + " > not found!");
+                    Jpdbi.exit(1, "ERROR: DB Alias: < " + dbalias + " > not found!");
 
                 }
             }

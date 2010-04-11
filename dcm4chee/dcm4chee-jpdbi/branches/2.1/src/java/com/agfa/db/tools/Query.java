@@ -138,20 +138,20 @@ public class Query {
                                             UpdDicom[loop][3] = TmpUpdTYPE;
                                         }
                                     } else {
-                                        _System.exit(1, "Multilevel updates not supported [" + TmpLevel + " & "
+                                        Jpdbi.exit(1, "Multilevel updates not supported [" + TmpLevel + " & "
                                                 + TmpUpdate[0] + "].");
                                     }
                                 } else {
-                                    _System.exit(1, "Update definition problem [" + UpdDef + "].");
+                                    Jpdbi.exit(1, "Update definition problem [" + UpdDef + "].");
                                 }
                             } else {
-                                _System.exit(1, "Update not defined [" + UpdField + "].");
+                                Jpdbi.exit(1, "Update not defined [" + UpdField + "].");
                             }
                         } else {
-                            _System.exit(1, "Duplicate Update [" + UpdField + "].");
+                            Jpdbi.exit(1, "Duplicate Update [" + UpdField + "].");
                         }
                     } else {
-                        _System.exit(1, "Update syntax error [" + Update + "].");
+                        Jpdbi.exit(1, "Update syntax error [" + Update + "].");
                     }
 
                     for (int i=0; i < Jpdbi.Tables.length; i++) {
