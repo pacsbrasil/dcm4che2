@@ -57,7 +57,6 @@ cp -v "$JBOSS_SERV"/deploy/bsh-deployer.xml \
   "$JBOSS_SERV"/deploy/jbossjca-service.xml \
   "$JBOSS_SERV"/deploy/jboss-local-jdbc.rar \
   "$JBOSS_SERV"/deploy/jboss-xa-jdbc.rar \
-  "$JBOSS_SERV"/deploy/jmx-invoker-service.xml \
   "$JBOSS_SERV"/deploy/jsr88-service.xml \
   "$JBOSS_SERV"/deploy/mail-service.xml \
   "$JBOSS_SERV"/deploy/properties-service.xml \
