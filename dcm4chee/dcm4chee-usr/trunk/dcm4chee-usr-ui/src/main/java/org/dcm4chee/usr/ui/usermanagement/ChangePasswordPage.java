@@ -74,7 +74,7 @@ public class ChangePasswordPage extends WebPage {
     
     private static Logger log = LoggerFactory.getLogger(ChangePasswordPage.class);
 
-    private static final ResourceReference CSS = new CompressedResourceReference(ChangePasswordPage.class, "wicket-style.css");
+    private static final ResourceReference CSS = new CompressedResourceReference(ChangePasswordPage.class, "usr-style.css");
     
     public ChangePasswordPage(String userId, final User forUser, final ModalWindow window) {
         if (ChangePasswordPage.CSS != null)

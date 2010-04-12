@@ -78,9 +78,7 @@ import org.dcm4chee.usr.ui.validator.RoleValidator;
 import org.dcm4chee.usr.ui.validator.UserValidator;
 import org.dcm4chee.usr.ui.validator.ValidatorMessageLabel;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
-import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
-import org.dcm4chee.web.common.base.InternalErrorPage;
-import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 
 /**
@@ -92,7 +90,7 @@ public class UserListPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
     
-    private static final ResourceReference CSS = new CompressedResourceReference(UserListPanel.class, "wicket-style.css");
+    private static final ResourceReference CSS = new CompressedResourceReference(UserListPanel.class, "usr-style.css");
     
     private ListModel<User> allUsers;
     private ListModel<String> allRolenames;
@@ -205,7 +203,7 @@ public class UserListPanel extends Panel {
         }
     }
 
-    private final class AddUserForm extends Form<Object> {
+    private final class AddUserForm extends BaseForm {
         
         private static final long serialVersionUID = 1L;
         
@@ -214,10 +212,11 @@ public class UserListPanel extends Panel {
         
         public AddUserForm(String id, ListModel<User> currentUserList) {
             super(id);
-                      
+
             newAjaxComponent(this)
                 .setVisible(false);
-
+            setTooltipBehaviour(new TooltipBehaviour("userlist."));
+            
             this.add(newAjaxComponent(
                     new Label("new-username-label", new ResourceModel("userlist.add-user-form.username.label"))));
             final TextField<String> usernameTf;
@@ -226,24 +225,18 @@ public class UserListPanel extends Panel {
                     .setRequired(true)
                     .add(new UserValidator(currentUserList)))
             );
-            this.add(newAjaxComponent(
-                    new ValidatorMessageLabel("new-username-validator-message-label", usernameTf)));
             
             this.add(newAjaxComponent(
                     new Label("password-label-1", new ResourceModel("userlist.add-user-form.password_1.label"))));
             PasswordTextField passwordTf1 = null;
             this.add(newAjaxComponent(
                     (passwordTf1 = new PasswordTextField("userlist.add-user-form.password_1.input", password))));
-            this.add(newAjaxComponent(
-                    new ValidatorMessageLabel("password-validator-message-label-1", passwordTf1)));
          
             this.add(newAjaxComponent(
                     new Label("password-label-2", new ResourceModel("userlist.add-user-form.password_2.label"))));
             PasswordTextField passwordTf2 = null;
             this.add(newAjaxComponent(
                     (passwordTf2 = new PasswordTextField("userlist.add-user-form.password_2.input", new Model<String>("")))));
-            this.add(newAjaxComponent(
-                    new ValidatorMessageLabel("password-validator-message-label-2", passwordTf2)));
 
             this.add(new EqualPasswordInputValidator(passwordTf1, passwordTf2));
         
@@ -268,7 +261,7 @@ public class UserListPanel extends Panel {
         }
     };
     
-    private final class AddRoleForm extends Form<Object> {
+    private final class AddRoleForm extends BaseForm {
         
         private static final long serialVersionUID = 1L;
         
@@ -279,6 +272,7 @@ public class UserListPanel extends Panel {
             
             newAjaxComponent(this)
                 .setVisible(false);
+            setTooltipBehaviour(new TooltipBehaviour("userlist."));
             
             this.add(newAjaxComponent(
                     new Label("new-rolename-label", new ResourceModel("userlist.add-role-form.rolename.label"))));
@@ -288,8 +282,6 @@ public class UserListPanel extends Panel {
                     .setRequired(true)
                     .add(new RoleValidator(currentRolenameList)))
             );
-            this.add(newAjaxComponent(
-                    new ValidatorMessageLabel("new-rolename-validator-message-label", rolenameTf)));
             
             this.add(new Button("add-role-submit") {
                 

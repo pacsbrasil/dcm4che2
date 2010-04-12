@@ -11,7 +11,7 @@
 	<module id="WebModule_1266942644114">
 		<web>
 			<web-uri>dcm4chee-usr-war.war</web-uri>
-			<context-root>dcm4chee-usr-war</context-root>
+			<context-root>dcm4chee-usr</context-root>
 		</web>
 	</module>
 </application>

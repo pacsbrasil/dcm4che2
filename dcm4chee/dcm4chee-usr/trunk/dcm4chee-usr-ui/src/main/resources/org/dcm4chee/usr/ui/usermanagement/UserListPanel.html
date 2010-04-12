@@ -5,86 +5,111 @@
   xmlns:wicket="http://wicket.apache.org">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<link rel="stylesheet" type="text/css" href="style.css"/>
 	</head>
-	<body class="panel-userlist">
+	<body>
 	<wicket:panel>
 		<div wicket:id="change-password-window" />
 		<div wicket:id="confirmation-window" />
 		<p>
-			<a wicket:id="toggle-user-form-link" class="hyperlink" href="#">
-				<img wicket:id="toggle-form-image-user" class="image" src="images/plus.gif" />
+			<a wicket:id="toggle-user-form-link" href="#">
+				<img wicket:id="toggle-form-image-user" src="images/plus.gif" />
 				<span>
 					<wicket:message key="userlist.add-user-form.title">
 						[Add user]
 					</wicket:message>				
 				</span>
 			</a>
-			<form wicket:id="add-user-form">
-				 <table class="form-userlist-adduser"><tr><td>
-					<p>
-						<div wicket:id="new-username-label" />
-						<input wicket:id="userlist.add-user-form.username.input" class="input-userlist" type="text" size="15" style="float: left" autocomplete="off" />
-						<div wicket:id="new-username-validator-message-label" />
-					</p>
-					<p>
-						<div wicket:id="password-label-1" style="clear: left" />
-						<input wicket:id="userlist.add-user-form.password_1.input" class="input-userlist" type="password" size="15" style="float:left" autocomplete="off" />
-						<div wicket:id="password-validator-message-label-1" />
-					</p>
-					<p>
-						<div wicket:id="password-label-2" style="clear: left" />
-						<input wicket:id="userlist.add-user-form.password_2.input" class="input-userlist" type="password" size="15" style="float:left" autocomplete="off" />
-						<div wicket:id="password-validator-message-label-2" />
-					</p>
-					<p style="clear: left">
-						<input wicket:id="add-user-submit" class="button-userlist" type="submit" wicket:message="value:userlist.add-user-form.save" style="clear: left" />
-					</p>
-				</td></tr></table>
+			<form wicket:id="add-user-form" class="add-user">
+				 <table>
+				 	<tr class="input">
+				 		<td>
+							<div class="userlist-input-desc">
+								<span wicket:id="new-username-label" />
+							</div>
+						</td>
+						<td>
+							<div class="userlist-input-value">
+								<input wicket:id="userlist.add-user-form.username.input" type="text" size="15" autocomplete="off" />
+							</div>
+						</td>
+					</tr>
+				 	<tr class="input">
+				 		<td>
+							<div class="userlist-input-desc">
+								<span wicket:id="password-label-1" />
+							</div>
+						</td>
+						<td>
+							<div class="userlist-input-value">
+								<input wicket:id="userlist.add-user-form.password_1.input" type="password" size="15" autocomplete="off" />
+							</div>
+						</td>
+					</tr>
+				 	<tr class="input">
+				 		<td>
+							<div class="userlist-input-desc">
+								<span wicket:id="password-label-2" />
+							</div>
+						</td>
+						<td>
+							<div class="userlist-input-value">
+								<input wicket:id="userlist.add-user-form.password_2.input" type="password" size="15" autocomplete="off" />
+							</div>
+						</td>
+					</tr>
+					<tr class="submit">
+						<td>
+						</td>
+						<td>
+							<input wicket:id="add-user-submit" type="submit" wicket:message="value:userlist.add-user-form.save" />
+						</td>
+					</tr>
+				</table>
 			</form>
 		</p>
 		<br />
-		<table class="table-userlist">
+		<table class="userlist">
 		  <thead>
 		    <tr>
-				<th class="table-header">
+				<th>
 					<wicket:message key="userlist.table.userid_title">
 						[User ID]
 					</wicket:message>
 				</th>
-				<th class="table-header"></th>
-				<th class="table-header"></th>
-				<th class="table-header"></th>
-				<th wicket:id="role-headers" class="table-header"></th>
+				<th></th>
+				<th></th>
+				<th></th>
+				<th wicket:id="role-headers"></th>
 		    </tr>
 		  </thead>
-		  <tbody class="table-text">
+		  <tbody>
 		    <tr wicket:id="role-rows">
 				<td wicket:id="userID">
 		      		[User ID]
 		      	</td>		  
-				<td style="align: center">
+				<td class="centered">
 					<a wicket:id="change-password-link" href="#">
 						<img wicket:id="img-change-password" class="image" src="images/changepassword.gif" />
 					</a>
 		      	</td>
-				<td style="align: center">
+				<td class="centered">
 					<a wicket:id="remove-user-link" href="#">
 						<img wicket:id="img-delete" class="image" src="images/delete.gif" />
 					</a>
 		      	</td>
-				<td style="width: 150px">
+				<td class="form">
 					<a wicket:id="toggle-role-form-link" href="#">
-						<img wicket:id="toggle-form-image-role" class="image" src="images/plus.gif" />
+						<img wicket:id="toggle-form-image-role" src="images/plus.gif" />
 					</a>
-					<form wicket:id="add-role-form" class="form-userlist-addrole">
-						<div wicket:id="new-rolename-label" class="label-userlist" />
-						<input wicket:id="userlist.add-role-form.rolename.input" class="input-userlist" type="text" size="15" />
-						<div wicket:id="new-rolename-validator-message-label" />
-						<input wicket:id="add-role-submit" class="button-userlist" type="submit" wicket:message="value:userlist.add-role-form.submit" />
+					<form wicket:id="add-role-form" class="add-role">
+						<div wicket:id="new-rolename-label" class="userlist-input-desc" />
+						<input wicket:id="userlist.add-role-form.rolename.input" class="userlist-input-value" type="text" size="15" />
+						<div class="userlist-input-button">
+							<input wicket:id="add-role-submit" type="submit" wicket:message="value:userlist.add-role-form.submit" />
+						</div>
 					</form>
 		      	</td>
-	 	  	  	<td wicket:id="role-dividers" style="text-align:center">
+	 	  	  	<td wicket:id="role-dividers" class="centered"">
 					<input wicket:id="role-checkbox" class="input-userlist" type="checkbox" />
 	 	  	  	</td>
 		    </tr>
