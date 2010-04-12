@@ -113,7 +113,6 @@ public class ExportPage extends BaseWicketPage {
         
     private static Logger log = LoggerFactory.getLogger(ExportPage.class);
     
-    @SuppressWarnings("serial")
     public ExportPage(List<PatientModel> list) {
         super();
         HashMap<Integer,ExportResult> results = getSession().getMetaData(EXPORT_RESULTS);
@@ -141,6 +140,9 @@ public class ExportPage extends BaseWicketPage {
         form.addLabel("selectedInstances");
         form.add( new Label("selectedInstancesValue", new PropertyModel<Integer>(exportInfo, "nrOfInstances")));
         form.add(new DropDownChoice<String>("destinationAETs", destinationModel, destinationAETs){
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean isEnabled() {
                 return exportInfo.hasSelection() && isExportInactive();
@@ -149,6 +151,9 @@ public class ExportPage extends BaseWicketPage {
         form.addLabel("destinationAETsLabel");
         form.addLabel("exportResultLabel");
         form.add( new Label("exportResult", new AbstractReadOnlyModel<String>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public String getObject() {
                 if (exportInfo.hasSelection()) {
@@ -159,6 +164,9 @@ public class ExportPage extends BaseWicketPage {
                 }
             }}).setOutputMarkupId(true));
         form.add( new Button("export", new ResourceModel("exportBtn")){
+
+            private static final long serialVersionUID = 1L;
+            
             @Override
             public void onSubmit() {
                 getSession().setMetaData(LAST_DESTINATION_AET_ATTRIBUTE, destinationAET);
@@ -170,6 +178,9 @@ public class ExportPage extends BaseWicketPage {
             }
         }.setOutputMarkupId(true));
         form.add(new Button("close", new ResourceModel("closeBtn")){
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onSubmit() {
                 getExportResults().remove(resultId);
@@ -179,6 +190,9 @@ public class ExportPage extends BaseWicketPage {
             }
         });
         form.add(new AjaxCheckBox("closeOnFinished", new IModel<Boolean>(){
+
+            private static final long serialVersionUID = 1L;
+            
             public Boolean getObject() {
                 return closeOnFinished;
             }
@@ -187,6 +201,8 @@ public class ExportPage extends BaseWicketPage {
             }
             public void detach() {}
         }){
+
+            private static final long serialVersionUID = 1L;
 
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
@@ -197,6 +213,9 @@ public class ExportPage extends BaseWicketPage {
         form.addLabel("closeOnFinishedLabel");
         
         form.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(700)){
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             protected void onTimer(AjaxRequestTarget target) {
                 ExportResult result = getExportResults().get(resultId);

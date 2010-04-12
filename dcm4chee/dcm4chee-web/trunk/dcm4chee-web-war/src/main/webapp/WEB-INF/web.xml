@@ -23,6 +23,10 @@
 			<param-name>applicationClassName</param-name>
 			<param-value>org.dcm4chee.web.war.WicketApplication</param-value>
  		</init-param>
+	    <init-param>
+	      <param-name>DashboardServiceName</param-name>
+	      <param-value>dcm4chee.dashboard:service=DashboardService</param-value>
+	    </init-param>
  		<!-- Name of security domain. Default is dcm4chee 
 	    <init-param>
 	      <param-name>securityDomainName</param-name>

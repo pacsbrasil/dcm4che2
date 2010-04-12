@@ -13,6 +13,7 @@
 		<project>dcm4chee-web-sar-common</project>
 		<project>dcm4chee-web-sar-ianscu</project>
 		<project>dcm4chee-web-sar-movescu</project>
+		<project>dcm4chee-dashboard-sar</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

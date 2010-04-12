@@ -39,6 +39,7 @@
 package org.dcm4chee.web.war;
 
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.usr.ui.usermanagement.UserListPanel;
 import org.dcm4chee.web.war.ae.AEMgtPanel;
 import org.dcm4chee.web.war.folder.StudyListPage;
@@ -65,5 +66,6 @@ public class MainPage extends BaseWicketPage {
         selectorPanel.addModule(FileSystemPage.class);
 
         selectorPanel.addInstance(new UserListPanel("panel", ((WicketSession) getSession()).getUsername()));
+        selectorPanel.addInstance(new DashboardPanel("panel"));
     }
 }

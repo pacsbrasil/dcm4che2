@@ -16,8 +16,8 @@
   <dependencies>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
-      <artifactId>dcm4chee-usr-entity</artifactId>
-      <type>ejb</type>
+      <artifactId>dcm4chee-dashboard-sar</artifactId>
+      <type>sar</type>
       <version>0.0.1</version>
     </dependency>
     <dependency>
@@ -92,13 +92,9 @@
           <modules>
             <ejbModule>
               <groupId>dcm4che.dcm4chee</groupId>
-              <artifactId>dcm4chee-usr-entity</artifactId>
-            </ejbModule>
-            <ejbModule>
-              <groupId>dcm4che.dcm4chee</groupId>
               <artifactId>dcm4chee-usr-dao</artifactId>
             </ejbModule>
-            <ejbModule>
+             <ejbModule>
               <groupId>dcm4che.dcm4chee</groupId>
               <artifactId>dcm4chee-usr-entity</artifactId>
             </ejbModule>
@@ -111,6 +107,10 @@
               <artifactId>dcm4chee-web-war</artifactId>
               <contextRoot>/dcm4chee-web3</contextRoot>
             </webModule>
+            <sarModule>
+              <groupId>dcm4che.dcm4chee</groupId>
+              <artifactId>dcm4chee-dashboard-sar</artifactId>
+            </sarModule>
             <sarModule>
               <groupId>dcm4che.dcm4chee</groupId>
               <artifactId>dcm4chee-web-sar-rejnotescu</artifactId>
