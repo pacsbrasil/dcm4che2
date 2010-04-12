@@ -208,16 +208,16 @@ class CommandLine {
         final int OPT_NONEMPTY = 13;
 
         //
-        final int OPT_STUDYLEVEL = 30;
-        final int OPT_SERIESLEVEL = 31;
-        final int OPT_SOPLEVEL = 32;
+        final int OPT_STUDYLEVEL = 14;
+        final int OPT_SERIESLEVEL = 15;
+        final int OPT_SOPLEVEL = 16;
 
         //
         // final int OPT_DS = 20;
-        final int OPT_PATDS = 21;
-        final int OPT_STYDS = 22;
-        final int OPT_SERDS = 23;
-        final int OPT_SOPDS = 24;
+        final int OPT_PATDS = 18;
+        final int OPT_STYDS = 19;
+        final int OPT_SERDS = 20;
+        final int OPT_SOPDS = 21;
 
         int version = 0;
 
@@ -280,7 +280,7 @@ class CommandLine {
         //
         };
 
-        Getopt g = new Getopt("jpdbi", argv, ":U:m:E:O:s:S:q:q:hvzLF", longopts);
+        Getopt g = new Getopt("jpdbi", argv, ":U:m:E:O:s:S:q:hvzLF", longopts);
         g.setOpterr(true);
 
         int c;
