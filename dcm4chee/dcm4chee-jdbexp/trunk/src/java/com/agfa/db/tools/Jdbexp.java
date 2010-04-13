@@ -25,7 +25,7 @@ import java.sql.Types;
 public class Jdbexp {
 
 	public final static String ID = "$Id$";
-	public final static String REVISION = "$Revision: 1.2 $";
+	public final static String REVISION = "$Revision$";
 
 	public static final int DB_TYPES_UNKNOWN = 0;
 	public static final int DB_TYPES_ORACLE = 1;
