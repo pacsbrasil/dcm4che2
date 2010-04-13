@@ -41,7 +41,7 @@ package org.dcm4chee.usr.ui;
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since 28.09.2009
+ * @since 13.04.2010
  */
 public class ImageAnchor {
 }
