@@ -1323,7 +1323,12 @@ public interface DicomObject extends Serializable {
     DicomObject exclude(int[] tags);
 
     /**
-     * @return
+     * Note that this method does not remove private attributes from
+     * <strong>this</strong> DicomObject, rather, it returns a view of the
+     * DicomObject without private attributes. You you may store this view to a
+     * file.
+     * 
+     * @return a new DicomObject without private attributes.
      */
     DicomObject excludePrivate();
 

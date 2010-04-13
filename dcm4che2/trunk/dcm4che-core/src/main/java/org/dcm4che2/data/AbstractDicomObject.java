@@ -323,6 +323,9 @@ abstract class AbstractDicomObject implements DicomObject {
                 : this;
     }
 
+    /** 
+     * @see org.dcm4che2.data.DicomObject#excludePrivate()
+     */
     public DicomObject excludePrivate() {
         return new FilteredDicomObject.ExcludePrivate(this);
     }
