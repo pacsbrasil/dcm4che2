@@ -216,7 +216,6 @@ public class UserListPanel extends Panel {
 
             newAjaxComponent(this)
                 .setVisible(false);
-            setTooltipBehaviour(new TooltipBehaviour("userlist."));
             
             this.add(newAjaxComponent(
                     new Label("new-username-label", new ResourceModel("userlist.add-user-form.username.label"))));

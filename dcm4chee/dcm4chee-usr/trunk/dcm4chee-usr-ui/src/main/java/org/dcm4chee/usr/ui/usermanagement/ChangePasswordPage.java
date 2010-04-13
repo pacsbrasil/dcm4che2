@@ -47,6 +47,7 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.validation.EqualPasswordInputValidator;
@@ -58,7 +59,8 @@ import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.ui.util.JNDIUtils;
 import org.dcm4chee.usr.ui.util.SecurityUtils;
 import org.dcm4chee.usr.ui.validator.PasswordValidator;
-import org.dcm4chee.usr.ui.validator.ValidatorMessageLabel;
+import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.common.markup.BaseForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,40 +76,37 @@ public class ChangePasswordPage extends WebPage {
     
     private static Logger log = LoggerFactory.getLogger(ChangePasswordPage.class);
 
+    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     private static final ResourceReference CSS = new CompressedResourceReference(ChangePasswordPage.class, "usr-style.css");
     
     public ChangePasswordPage(String userId, final User forUser, final ModalWindow window) {
+        if (ChangePasswordPage.BaseCSS != null)
+            add(CSSPackageResource.getHeaderContribution(ChangePasswordPage.BaseCSS));
         if (ChangePasswordPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(ChangePasswordPage.CSS));
 
-        Label resultMessage = new Label("result-message");
-        final ChangePasswordForm changePasswordForm = new ChangePasswordForm("change-password-form", userId, forUser, new Model<String>(), new Model<String>(), resultMessage, window);
-        add(changePasswordForm);
-        add(resultMessage);
+        add(new ChangePasswordForm("change-password-form", userId, forUser, new Model<String>(), new Model<String>(), window));
     }
         
-    private final class ChangePasswordForm extends Form<Object> {
+    private final class ChangePasswordForm extends BaseForm {
 
         private static final long serialVersionUID = 1L;
 
         private User forUser;
         private Label resultMessage;
 
-        public ChangePasswordForm(String id, String userId, final User forUser, Model<String> oldPassword, final Model<String> newPassword, final Label resultMessage, final ModalWindow window) {
+        public ChangePasswordForm(String id, String userId, final User forUser, Model<String> oldPassword, final Model<String> newPassword, final ModalWindow window) {
             super(id);
             
             this.forUser = (forUser == null) ? 
                     ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getUser(userId)
                     : forUser;
-            this.resultMessage = resultMessage;
-            this.resultMessage.setVisible(false);
 
             final Label oldPasswordLabel = new Label("old-password-label", new ResourceModel("change_password.old_password.label").wrapOnAssignment(this));
             this.add(oldPasswordLabel);
 
             final PasswordTextField oldPasswordTf = new PasswordTextField("change_password.old_password.input", oldPassword);
             this.add(oldPasswordTf);
-            this.add(new ValidatorMessageLabel("old-password-validator-message-label", oldPasswordTf).setOutputMarkupId(true));
 
             Label forUserLabel = new Label("for-user-label", this.forUser.getUserID());
             
@@ -122,16 +121,13 @@ public class ChangePasswordPage extends WebPage {
             
             final PasswordTextField newPasswordTf1 = new PasswordTextField("change_password.new_password_1.input", newPassword);
             this.add(newPasswordTf1);
-            this.add(new ValidatorMessageLabel("new-password-validator-message-label-1", newPasswordTf1).setOutputMarkupId(true));
 
             final PasswordTextField newPasswordTf2 = new PasswordTextField("change_password.new_password_2.input", new Model<String>(""));
             this.add(newPasswordTf2);
-            this.add(new ValidatorMessageLabel("new-password-validator-message-label-2", newPasswordTf2).setOutputMarkupId(true));
        
             this.add(new EqualPasswordInputValidator(newPasswordTf1, newPasswordTf2));
 
             add(new AjaxFallbackButton("change-password-submit", ChangePasswordForm.this) {
-                
                 private static final long serialVersionUID = 1L;
     
                 @Override
@@ -155,16 +151,9 @@ public class ChangePasswordPage extends WebPage {
                 
                 @Override
                 protected void onError(AjaxRequestTarget target, Form<?> form) {
-                    target.addComponent(form.get("old-password-validator-message-label"));
-                    target.addComponent(form.get("new-password-validator-message-label-1"));
-                    target.addComponent(form.get("new-password-validator-message-label-2"));
+                    target.addComponent(form);
                 }
             });
-        }
-        
-        @Override
-        protected void onValidate() {
-            resultMessage.setVisible(false);
         }
     }
 }
