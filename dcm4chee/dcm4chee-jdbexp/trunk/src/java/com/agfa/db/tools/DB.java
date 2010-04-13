@@ -1,4 +1,4 @@
-// $Id: xxx $
+// $Id$
 
 package com.agfa.db.tools;
 

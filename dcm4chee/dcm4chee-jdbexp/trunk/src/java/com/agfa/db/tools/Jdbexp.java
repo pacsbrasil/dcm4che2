@@ -1,4 +1,4 @@
-// $Id: Jdbexp2.java,v 1.2 2010-04-01 16:13:17 kianusch Exp $
+// $Id$
 
 package com.agfa.db.tools;
 
@@ -24,7 +24,7 @@ import java.sql.Types;
 
 public class Jdbexp {
 
-	public final static String ID = "$Id: Jdbexp2.java,v 1.2 2010-04-01 16:13:17 kianusch Exp $";
+	public final static String ID = "$Id$";
 	public final static String REVISION = "$Revision: 1.2 $";
 
 	public static final int DB_TYPES_UNKNOWN = 0;
