@@ -71,6 +71,7 @@ import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.entity.Role;
 import org.dcm4chee.usr.entity.User;
+import org.dcm4chee.usr.ui.ImageAnchor;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.ui.util.JNDIUtils;
 import org.dcm4chee.usr.ui.util.SecurityUtils;
@@ -161,7 +162,7 @@ public class UserListPanel extends Panel {
             row_parent.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i))));
             RemoveUserLink removeUserLink = new RemoveUserLink("remove-user-link", user);
             removeUserLink.add(new TooltipBehaviour("userlist.", "remove-user-link", user.getUserID()));
-            removeUserLink.add(new Image("img-delete", new ResourceReference(UserListPanel.class, "images/delete.gif")));
+            removeUserLink.add(new Image("img-delete", new ResourceReference(ImageAnchor.class, "images/delete.gif")));
             row_parent.add(removeUserLink);
 
             if (this.userId.equals(user.getUserID()))
@@ -169,7 +170,7 @@ public class UserListPanel extends Panel {
             
             row_parent.add(
                     new ChangePasswordLink("change-password-link", this.changePasswordWindow, this.userId, user)
-                    .add(new Image("img-change-password", new ResourceReference(UserListPanel.class, "images/changepassword.gif")))
+                    .add(new Image("img-change-password", new ResourceReference(ImageAnchor.class, "images/changepassword.gif")))
                     .add(new AttributeModifier("title", true, new Model<String>(new ResourceModel("userlist.change_password.tooltip").wrapOnAssignment(this).getObject())))
             );
             
@@ -272,7 +273,7 @@ public class UserListPanel extends Panel {
             
             newAjaxComponent(this)
                 .setVisible(false);
-            setTooltipBehaviour(new TooltipBehaviour("userlist."));
+            setTooltipBehaviour(new TooltipBehaviour(""));
             
             this.add(newAjaxComponent(
                     new Label("new-rolename-label", new ResourceModel("userlist.add-role-form.rolename.label"))));
@@ -320,8 +321,8 @@ public class UserListPanel extends Panel {
         protected void onComponentTag(ComponentTag tag) {
             super.onComponentTag(tag);
             tag.put("src", this.forForm.isVisible() ? 
-                    this.getRequestCycle().urlFor(new ResourceReference(UserListPanel.class, "images/minus.gif"))
-                    : this.getRequestCycle().urlFor(new ResourceReference(UserListPanel.class, "images/plus.gif")));
+                    this.getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/minus.gif"))
+                    : this.getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/plus.gif")));
         }
     };
     
