@@ -71,7 +71,6 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
@@ -100,7 +99,7 @@ public class QueuePanel extends Panel {
     @Override
     public void onBeforeRender() {
         super.onBeforeRender();
-        
+
             Connection connection = null;
             InitialContext initialContext = null;
             
@@ -134,12 +133,7 @@ public class QueuePanel extends Panel {
                         queueModel.setQueueDepth(j);
                     } catch (Exception ignore) {}
                 }
-                
-                RepeatingView rv;
-                add(rv = new RepeatingView("message"));
-                for (int i = 0; i < queueNames.length; i++)
-                    rv.add(new Label(String.valueOf(i), queueNames[i]));
-                           
+
                 QueueTreeTable queueTreeTable = new QueueTreeTable("queue-tree-table", 
                        new DefaultTreeModel(rootNode), new IColumn[] {
                    new PropertyTreeColumn(new ColumnLocation(
@@ -156,7 +150,7 @@ public class QueuePanel extends Panel {
                queueTreeTable.getTreeState().setAllowSelectMultiple(true);
                queueTreeTable.getTreeState().collapseAll();
                queueTreeTable.setRootLess(true);
-               add(queueTreeTable);
+               addOrReplace(queueTreeTable);
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);

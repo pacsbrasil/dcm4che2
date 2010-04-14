@@ -38,22 +38,12 @@
 
 package org.dcm4chee.dashboard.war.pages;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
-import org.apache.wicket.extensions.markup.html.tabs.AbstractTab;
-import org.apache.wicket.extensions.markup.html.tabs.ITab;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.model.ResourceModel;
-import org.dcm4chee.dashboard.ui.filesystem.FileSystemPanel;
-import org.dcm4chee.dashboard.ui.messaging.QueuePanel;
-import org.dcm4chee.dashboard.ui.report.ReportPanel;
-import org.dcm4chee.dashboard.ui.systeminfo.SystemInfoPanel;
+import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,40 +72,8 @@ public class DashboardMainPage extends WebPage {
                 }
             });
 
-            this.add(new AjaxTabbedPanel("tabs", new ArrayList<ITab>(Arrays.asList(
-                new AbstractTab(new ResourceModel("dashboard.tabs.tab1.name").wrapOnAssignment(this)) {
-                
-                    private static final long serialVersionUID = 1L;
-                
-                    public Panel getPanel(String panelId) {
-                        return new FileSystemPanel(panelId);
-                    }
-                },  
-                new AbstractTab(new ResourceModel("dashboard.tabs.tab2.name").wrapOnAssignment(this)) {
-                    
-                    private static final long serialVersionUID = 1L;
-                
-                    public Panel getPanel(String panelId) {
-                        return new ReportPanel(panelId);
-                    }
-                },
-                new AbstractTab(new ResourceModel("dashboard.tabs.tab3.name").wrapOnAssignment(this)) {
-                    
-                    private static final long serialVersionUID = 1L;
-                
-                    public Panel getPanel(String panelId) {
-                        return new SystemInfoPanel(panelId);
-                    }
-                }, 
-                new AbstractTab(new ResourceModel("dashboard.tabs.tab4.name").wrapOnAssignment(this)) {
-                    
-                    private static final long serialVersionUID = 1L;
-                
-                    public Panel getPanel(String panelId) {
-                        return new QueuePanel(panelId);
-                    }
-                })))
-            );
+            this.add(new DashboardPanel("tabs"));
+            
             ((AjaxTabbedPanel) this.get("tabs")).setSelectedTab(((parameters != null) && parameters.containsKey("tab")) ? parameters.getInt("tab") : 0);
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());

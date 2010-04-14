@@ -54,6 +54,7 @@ import javax.swing.tree.TreeNode;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation;
@@ -65,14 +66,18 @@ import org.apache.wicket.extensions.markup.html.tree.table.TreeTable;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation.Alignment;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation.Unit;
 import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
+import org.dcm4chee.dashboard.ui.DashboardPanel;
+import org.dcm4chee.dashboard.ui.ImageAnchor;
 import org.dcm4chee.dashboard.ui.common.JFreeChartImage;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -97,8 +102,13 @@ public class FileSystemPanel extends Panel {
 
     private static Logger log = LoggerFactory.getLogger(FileSystemPanel.class);
 
+    private static final ResourceReference CSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
+    
     public FileSystemPanel(String id) {
         super(id);
+        
+        if (FileSystemPanel.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(FileSystemPanel.CSS));
     }
     
     @Override
@@ -228,7 +238,7 @@ public class FileSystemPanel extends Panel {
             fileSystemTreeTable.getTreeState().setAllowSelectMultiple(true);
             fileSystemTreeTable.getTreeState().collapseAll();
             fileSystemTreeTable.setRootLess(true);
-            add(fileSystemTreeTable);
+            addOrReplace(fileSystemTreeTable);
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
@@ -372,12 +382,12 @@ public class FileSystemPanel extends Panel {
                 protected void onComponentTag(ComponentTag tag) {
                     super.onComponentTag(tag);
 
-                    tag.put("style", "background-image: url('images/" + 
+                    tag.put("style", "background-image: url('" + 
                             (((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).isGroup() ?  
-                                    "filesystemgroup" :
+                                    this.getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/filesystemgroup.gif")) :
                                     ((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).getDirectoryPath().contains("tar:") ?
-                                            "folder_files" : 
-                                            "filesystem") + ".gif')"
+                                            this.getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/folder_files.gif")) : 
+                                            this.getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/filesystem.gif")))
                     );
                     tag.put("title", ((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).getDescription());
                 }
