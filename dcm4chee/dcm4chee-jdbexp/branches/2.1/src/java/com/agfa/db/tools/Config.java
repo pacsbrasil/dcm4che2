@@ -18,6 +18,40 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.commons.cli.*;
 
 class Config {
+    protected String FieldSeperator = ";";
+
+    protected String RecordSeperator = "";
+
+    protected String TextDelimitor = "";
+
+    protected boolean debug = false;
+    
+    public void setFieldSeperator(String s) {
+        this.FieldSeperator = s;
+    }
+
+    public String getFieldSeperator() {
+        return this.FieldSeperator;
+    }
+
+    public void setRecordSeperator(String s) {
+        this.RecordSeperator = s;
+    }
+
+    public String getRecordSeperator() {
+        return this.RecordSeperator;
+    }
+
+    public void setDebug(Boolean b) {
+        this.debug = b;
+    }
+
+    public boolean isDebug() {
+        return this.debug;
+    }
+}
+
+class Config1 {
     String FieldSeperator = ";";
 
     String RecordSeperator = "";
@@ -26,7 +60,6 @@ class Config {
 
     String tableName = null;
 
-    boolean debug = false;
 
     boolean header = false;
 
@@ -140,7 +173,7 @@ class Config {
         }
     }
 
-    Config(String[] argv) {
+    Config1(String[] argv) {
         Properties defaultProps = new Properties();
 
         try {
@@ -188,16 +221,18 @@ class Config {
         options.addOption("H", "header", false, "display header");
         options.addOption(OptionBuilder.withLongOpt("url").withDescription("jdbc connection url").hasArg().withArgName(
                 "JDBCURL").create("U"));
-        options.addOption(OptionBuilder.withLongOpt("db").withDescription("DB alias").hasArg().withArgName("ALIAS").create());
+        options.addOption(OptionBuilder.withLongOpt("db").withDescription("DB alias").hasArg().withArgName("ALIAS")
+                .create());
         options.addOption(OptionBuilder.withLongOpt("delimiter").withDescription("field delimiter").hasArg()
                 .withArgName("DELIMITER").create("d"));
         options.addOption(OptionBuilder.withLongOpt("cvs").withDescription("display as cvs").create());
-        options.addOption(OptionBuilder.withLongOpt("insert").withDescription("display with insert statements").create());
-        options.addOption(OptionBuilder.withLongOpt("dump").withDescription("display as dump").create());
-        options.addOption(OptionBuilder.withLongOpt("sqlfile").withDescription("read statemtents from sqlfile").hasArg().withArgName("FILE")
+        options.addOption(OptionBuilder.withLongOpt("insert").withDescription("display with insert statements")
                 .create());
-        options.addOption(OptionBuilder.withLongOpt("commit").withDescription("commit after <COMMIT> statements").hasArg().withArgName(
-                "COMMIT").create());
+        options.addOption(OptionBuilder.withLongOpt("dump").withDescription("display as dump").create());
+        options.addOption(OptionBuilder.withLongOpt("sqlfile").withDescription("read statemtents from sqlfile")
+                .hasArg().withArgName("FILE").create());
+        options.addOption(OptionBuilder.withLongOpt("commit").withDescription("commit after <COMMIT> statements")
+                .hasArg().withArgName("COMMIT").create());
         options.addOption(OptionBuilder.withLongOpt("macro").withDescription("exec macro").hasArg()
                 .withArgName("MACRO").create("M"));
         options.addOption(OptionBuilder.withLongOpt("out").withDescription("output stdout to FILE").hasArg()
