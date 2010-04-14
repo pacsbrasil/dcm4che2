@@ -38,9 +38,9 @@
 	<target name="jar" depends="build">
 		<mkdir dir="${dist.dir}" />
 		<copy tofile="${build.dir}/com/agfa/db/tools/jdbexp.properties" file="${basedir}/resources/default.properties" />
-		<copy todir="${build.dir}/gnu/getopt/" file="${src.dir}/gnu/getopt/MessagesBundle.properties" />
 		<jar destfile="${dist.dir}/jdbexp.jar" update="true">
 			<zipfileset src="../thirdparty/ojdbc14.jar" />
+			<zipfileset src="../thirdparty/commons-cli-1.2.jar" />
 			<fileset dir="${build.dir}" />
 			<manifest>
 				<attribute name="Main-Class" value="com.agfa.db.tools.Jdbexp" />

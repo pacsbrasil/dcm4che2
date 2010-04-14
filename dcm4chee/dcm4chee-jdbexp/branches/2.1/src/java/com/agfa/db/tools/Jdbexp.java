@@ -120,7 +120,7 @@ public class Jdbexp {
 		case Types.TIMESTAMP:
 			Timestamp ts = rs.getTimestamp(col);
 			if (!rs.wasNull()) {
-				value = StringDelimiter + CommandLine.fTimeStamp.format(ts) + StringDelimiter;
+				value = StringDelimiter + Config.fTimeStamp.format(ts) + StringDelimiter;
 				if (inserts)
 					value = "{ts " + value + "}";
 			}
@@ -128,7 +128,7 @@ public class Jdbexp {
 		case Types.TIME:
 			Time time = rs.getTime(col);
 			if (!rs.wasNull()) {
-				value = StringDelimiter + CommandLine.fTime.format(time) + StringDelimiter;
+				value = StringDelimiter + Config.fTime.format(time) + StringDelimiter;
 				if (inserts)
 					value = "{t " + value + "}";
 			}
@@ -136,7 +136,7 @@ public class Jdbexp {
 		case Types.DATE:
 			Date date = rs.getDate(col);
 			if (!rs.wasNull()) {
-				value = StringDelimiter + CommandLine.fDate.format(date) + StringDelimiter;
+				value = StringDelimiter + Config.fDate.format(date) + StringDelimiter;
 				if (inserts)
 					value = "{d " + value + "}";
 			}
@@ -197,7 +197,7 @@ public class Jdbexp {
 		return value;
 	}
 
-	private static void evalResultSet(ResultSet rs, CommandLine cfg) throws SQLException, IOException {
+	private static void evalResultSet(ResultSet rs, Config cfg) throws SQLException, IOException {
 		String fields = null;
 		String PlaceHolder = "";
 
@@ -303,7 +303,7 @@ public class Jdbexp {
 		long unCommitted = 0;
 		ResultSet rs = null;
 
-		CommandLine cfg = new CommandLine(argv);
+		Config cfg = new Config(argv);
 
 		if (cfg.debug)
 			System.err.println("DEBUG: Connect Url: < " + cfg.jdbcUrl + " >");
