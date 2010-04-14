@@ -53,6 +53,6 @@ public class ExtQueryTransferCapability extends TransferCapability {
     public ExtQueryTransferCapability(String sopClass,
             String[] transferSyntax, String role) {
         super(sopClass, transferSyntax, role);
-        super.setExtInfo(new byte[4]);
+        super.setExtInfo(new byte[3]);
     }
 }
