@@ -5,24 +5,28 @@ package com.agfa.db.tools;
 import java.io.ByteArrayInputStream;
 import java.sql.*;
 
-class PrepStmt {
+class SQL {
    private int FT[] = null;
 
-   Connection conn = null;
+   private Connection conn = null;
 
    private boolean debug = false;
 
-   PreparedStatement pStmt = null;
+   private PreparedStatement pStmt = null;
 
    private long cnt = -1;
 
    private boolean active = false;
 
-   PrepStmt(Connection _conn, boolean _debug) throws SQLException {
+   SQL(Connection _conn, boolean _debug) throws SQLException {
        debug = _debug;
        conn = _conn;
        cnt = -1;
        active = false;
+   }
+   
+   boolean isPrepareStatement() {
+   	return (pStmt==null);
    }
 
    public ResultSet getResultSet() throws SQLException {

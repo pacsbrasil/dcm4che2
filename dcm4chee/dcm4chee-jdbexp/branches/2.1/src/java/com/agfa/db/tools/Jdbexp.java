@@ -7,18 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.sql.Types;
+import java.sql.*;
 
 // import oracle.jdbc.*;
 
@@ -35,7 +24,7 @@ public class Jdbexp {
 	public static final String PREPARECALL = "PrepareCall";
 	public static final String DEFINEFIELDS = "DefineFields";
 	public static final String EXECUTE = "ExecuteStatement";
-	
+
 	static void exit(int ExitCode) {
 		System.out.flush();
 		System.out.close();
@@ -204,22 +193,22 @@ public class Jdbexp {
 		ResultSetMetaData md = rs.getMetaData();
 		int count = md.getColumnCount();
 
-		if (cfg.header || cfg.dump || cfg.inserts) {
+		if (cfg.isHeader() || cfg.isDump() || cfg.isInsert()) {
 			fields = "";
 			for (int j = 1; j <= count; j++) {
-				if (cfg.csv)
-					fields = fields.concat(cfg.TextDelimitor + md.getColumnName(j) + cfg.TextDelimitor);
+				if (cfg.isCsv())
+					fields = fields.concat(cfg.getDelimitor() + md.getColumnName(j) + cfg.getDelimitor());
 				else
 					fields = fields.concat(md.getColumnName(j));
 				PlaceHolder = PlaceHolder.concat("?");
 				if (j != count) {
-					fields = fields.concat(cfg.FieldSeperator);
+					fields = fields.concat(cfg.getFieldSeperator());
 					PlaceHolder = PlaceHolder.concat(",");
 				}
 			}
 
-			if (cfg.header) {
-				fields = fields.concat(cfg.RecordSeperator + cfg.nl);
+			if (cfg.isHeader()) {
+				fields = fields.concat(cfg.getRecordSeperator() + cfg.nl);
 				System.out.print(fields);
 			}
 		}
@@ -227,13 +216,13 @@ public class Jdbexp {
 		String prefix = "";
 		String postfix = "";
 
-		if (cfg.inserts) {
-			prefix = "insert into " + cfg.tableName + " (" + fields + ") values (";
+		if (cfg.isInsert()) {
+			prefix = "insert into " + cfg.getTableName() + " (" + fields + ") values (";
 			postfix = ");";
 		}
 
-		if (cfg.dump) {
-			switch (cfg.Database) {
+		if (cfg.isDump()) {
+			switch (cfg.getDatabaseType()) {
 			case DB_TYPES_ORACLE:
 				System.out.print("-- " + PREPARECALL + ": begin ");
 				break;
@@ -242,9 +231,9 @@ public class Jdbexp {
 				break;
 			}
 
-			System.out.print("insert into " + cfg.tableName + " (" + fields + ") values (" + PlaceHolder + ");");
+			System.out.print("insert into " + cfg.getTableName() + " (" + fields + ") values (" + PlaceHolder + ");");
 
-			switch (cfg.Database) {
+			switch (cfg.getDatabaseType()) {
 			case DB_TYPES_ORACLE:
 				System.out.println(" end;");
 				break;
@@ -256,7 +245,7 @@ public class Jdbexp {
 			String values = "-- " + DEFINEFIELDS + ": ";
 			for (int j = 1; j <= count; j++) {
 				if (j > 1)
-					values = values.concat(cfg.FieldSeperator);
+					values = values.concat(cfg.getFieldSeperator());
 				values = values.concat(md.getColumnTypeName(j));
 			}
 			System.out.println(values + ";");
@@ -266,21 +255,21 @@ public class Jdbexp {
 			String values = prefix;
 
 			for (int j = 1; j <= count; j++) {
-				String result = getColumn(rs, j, md.getColumnType(j), md.getColumnTypeName(j), cfg.TextDelimitor, cfg.csv,
-						cfg.dump, cfg.inserts, cfg.displaylobs);
+				String result = getColumn(rs, j, md.getColumnType(j), md.getColumnTypeName(j), cfg.getDelimitor(), cfg
+						.isCsv(), cfg.isDump(), cfg.isInsert(), cfg.isDisplayLobs());
 				if (j > 1)
-					values = values.concat(cfg.FieldSeperator);
+					values = values.concat(cfg.getFieldSeperator());
 
-				if (cfg.label)
+				if (cfg.isLabel())
 					values = values.concat(md.getColumnName(j) + ": ");
 
 				values = values.concat(result);
 			}
 
-			values = values.concat(postfix + cfg.RecordSeperator + cfg.nl);
+			values = values.concat(postfix + cfg.getRecordSeperator() + cfg.nl);
 			System.out.print(values);
 		}
-		if (cfg.dump)
+		if (cfg.isDump())
 			System.out.println("--");
 
 		rs.close();
@@ -298,39 +287,41 @@ public class Jdbexp {
 		Connection conn = null;
 		Statement stmt = null;
 		BufferedReader br = null;
-		PrepStmt prepStmt = null;
+		SQL prepStmt = null;
 		long StmtCount = 0;
 		long unCommitted = 0;
 		ResultSet rs = null;
 
-		Config cfg = new Config(argv);
+		Config cfg = new Config();
+		cfg.ParseCommandLine(argv);
 
-		if (cfg.debug)
-			System.err.println("DEBUG: Connect Url: < " + cfg.jdbcUrl + " >");
+		if (cfg.isDebug())
+			System.err.println("DEBUG: Connect Url: < " + cfg.getJdbcUrl() + " >");
 
 		try {
-			conn = DriverManager.getConnection(cfg.jdbcUrl);
-			cfg.setDatabase(conn);
+			conn = DriverManager.getConnection(cfg.getJdbcUrl());
+			DatabaseMetaData dmd = conn.getMetaData();
+			cfg.setDatabaseType(dmd.getDatabaseProductName());
 
-			if (cfg.commitInterval > 0) {
-				if (cfg.debug)
-					System.err.println("DEBUG: AutoCommit turned off. Committing after " + cfg.commitInterval
+			if (cfg.getCommitInterval() > 0) {
+				if (cfg.isDebug())
+					System.err.println("DEBUG: AutoCommit turned off. Committing after " + cfg.getCommitInterval()
 							+ " Statements.");
 				conn.setAutoCommit(false);
 			}
 
 			stmt = conn.createStatement();
-			prepStmt = new PrepStmt(conn, cfg.debug);
+			prepStmt = new SQL(conn, cfg.isDebug());
 
-			if (cfg.sqlFile) {
+			if (cfg.isSqlFile()) {
 				try {
-					br = new BufferedReader(new FileReader(cfg.sqlFilename));
+					br = new BufferedReader(new FileReader(cfg.getSqlFilename()));
 				} catch (FileNotFoundException e) {
 					Jdbexp.exit(1, e.toString());
 				}
 				sql = sqlFileRead(br);
 			} else {
-				sql = cfg.sql.trim();
+				sql = cfg.getSql().trim();
 			}
 
 			while (sql != null) {
@@ -340,10 +331,10 @@ public class Jdbexp {
 
 				if (sql.length() > 0) {
 					try {
-						if (cfg.sqlFile && (prepStmt.pStmt != null || sql.startsWith("--"))) {
+						if (cfg.isSqlFile() && (!prepStmt.isPrepareStatement() || sql.startsWith("--"))) {
 							// System.err.println("<"+sql+">");
 							if (prepStmt.parse(sql, StmtCount)) {
-								if (cfg.debug)
+								if (cfg.isDebug())
 									System.err.println("DEBUG: [" + StmtCount + "] * Executing Call/PrepareStatement");
 								if (prepStmt.execute()) {
 									rs = prepStmt.getResultSet();
@@ -352,7 +343,7 @@ public class Jdbexp {
 								}
 							}
 						} else {
-							if (cfg.debug)
+							if (cfg.isDebug())
 								System.err.println("DEBUG: [" + StmtCount + "] SQL: " + sql);
 							if (stmt.execute(sql)) {
 								rs = stmt.getResultSet();
@@ -372,31 +363,31 @@ public class Jdbexp {
 					} catch (SQLException e) {
 						System.err.println("Error: [" + StmtCount + "] Statement: " + sql);
 						System.err.print("Error: [" + StmtCount + "] " + e);
-						if (cfg.ignoresqlerror == false) {
+						if (cfg.isIgnore() == false) {
 							Jdbexp.exit(1, "Aborting SQL Execution...");
 
 						}
 					}
 
-					if (cfg.commitInterval > 0 && unCommitted >= cfg.commitInterval) {
-						_Commit(conn, cfg.debug);
+					if (cfg.getCommitInterval() > 0 && unCommitted >= cfg.getCommitInterval()) {
+						_Commit(conn, cfg.isDebug());
 						unCommitted = 0;
 					}
 				}
-				if (cfg.sqlFile)
+				if (cfg.isSqlFile())
 					sql = sqlFileRead(br);
 				else
 					sql = null;
 			}
 
-			if (cfg.commitInterval > 0 && unCommitted > 0) {
-				_Commit(conn, cfg.debug);
+			if (cfg.getCommitInterval() > 0 && unCommitted > 0) {
+				_Commit(conn, cfg.isDebug());
 			}
 
 			stmt.close();
 			conn.close();
 		} catch (SQLException e) {
-			if (cfg.debug)
+			if (cfg.isDebug())
 				e.printStackTrace();
 			else
 				Jdbexp.exit(1, e.toString());

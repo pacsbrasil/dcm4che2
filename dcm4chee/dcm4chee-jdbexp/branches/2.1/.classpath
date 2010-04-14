@@ -2,6 +2,10 @@
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5"/>
-	<classpathentry kind="lib" path="/thirdparty/commons-cli-1.2.jar"/>
+	<classpathentry kind="lib" path="/thirdparty/commons-cli-1.2.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/home/kianusch/workspace/thirdparty/doc/commons-cli-1.2-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="build"/>
 </classpath>
