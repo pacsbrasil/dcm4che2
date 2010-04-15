@@ -104,6 +104,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
+import org.dcm4chex.archive.ejb.interfaces.PIDCreator;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
@@ -687,7 +688,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             Dataset coercedElements = updateDB(store, ds, 
                     fsDTO != null ? fsDTO.getPk() : -1L,
                     filePath, fileLength, md5sum,
-                    newSeries);
+                    newSeries, service);
             if(newSeries) {
                seriesStored = initSeriesStored(ds, callingAET, retrieveAET);
                assoc.putProperty(SERIES_STORED, seriesStored);
@@ -971,19 +972,22 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     protected Dataset updateDB(Storage storage, Dataset ds, long fspk,
             String filePath, long fileLength, byte[] md5,
-            boolean updateStudyAccessTime) throws DcmServiceException,
-            CreateException, HomeFactoryException, IOException {
+            boolean updateStudyAccessTime, PIDCreator genpid)
+            throws DcmServiceException, CreateException, HomeFactoryException,
+            IOException {
         int retry = 0;
         for (;;) {
             try {
                 if (serializeDBUpdate) {
                     synchronized (storage) {
                         return storage.store(ds, fspk, filePath, fileLength,
-                                md5, updateStudyAccessTime, service.patientMatching());
+                                md5, updateStudyAccessTime,
+                                service.patientMatching(), genpid);
                     }
                 } else {
                     return storage.store(ds, fspk, filePath, fileLength,
-                            md5, updateStudyAccessTime, service.patientMatching());
+                            md5, updateStudyAccessTime,
+                            service.patientMatching(), genpid);
                 }
             } catch (Exception e) {
                 ++retry;

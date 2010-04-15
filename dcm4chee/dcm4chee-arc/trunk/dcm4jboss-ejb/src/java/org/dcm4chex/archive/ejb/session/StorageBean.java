@@ -77,6 +77,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.PIDCreator;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
@@ -85,6 +86,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
 import org.dcm4chex.archive.exceptions.NonUniquePatientException;
+import org.dcm4chex.archive.exceptions.NonUniquePatientIDException;
 
 /**
  * Storage Bean
@@ -183,8 +185,8 @@ public abstract class StorageBean implements SessionBean {
      */
     public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds,
             long fspk, java.lang.String fileid, long size, byte[] md5,
-            boolean updateStudyAccessTime, PatientMatching matching)
-    throws DcmServiceException {
+            boolean updateStudyAccessTime, PatientMatching matching,
+            PIDCreator genpid) throws DcmServiceException {
         FileMetaInfo fmi = ds.getFileMetaInfo();
         final String iuid = fmi.getMediaStorageSOPInstanceUID();
         final String cuid = fmi.getMediaStorageSOPClassUID();
@@ -198,7 +200,7 @@ public abstract class StorageBean implements SessionBean {
                 coerceInstanceIdentity(instance, ds, coercedElements);
             } catch (ObjectNotFoundException onfe) {
                 instance = instHome.create(ds,
-                        getSeries(matching, ds, coercedElements));
+                        getSeries(matching, ds, coercedElements, genpid));
             }
             if (fspk != -1) {
                 FileSystemLocal fs = fileSystemHome.findByPrimaryKey(new Long(fspk));
@@ -394,7 +396,7 @@ public abstract class StorageBean implements SessionBean {
     }
 
     private SeriesLocal getSeries(PatientMatching matching, Dataset ds,
-            Dataset coercedElements) throws Exception {
+            Dataset coercedElements, PIDCreator genpid) throws Exception {
         final String uid = ds.getString(Tags.SeriesInstanceUID);
         SeriesLocal series;
         try {
@@ -402,7 +404,7 @@ public abstract class StorageBean implements SessionBean {
         } catch (ObjectNotFoundException onfe) {
             try {
                 return seriesHome.create(ds,
-                        getStudy(matching, ds, coercedElements));
+                        getStudy(matching, ds, coercedElements, genpid));
             } catch (CreateException e1) {
                 // check if Series record was inserted by concurrent thread
                 try {
@@ -417,7 +419,7 @@ public abstract class StorageBean implements SessionBean {
     }
 
     private StudyLocal getStudy(PatientMatching matching, Dataset ds,
-            Dataset coercedElements) throws Exception {
+            Dataset coercedElements, PIDCreator genpid) throws Exception {
         final String uid = ds.getString(Tags.StudyInstanceUID);
         StudyLocal study;
         try {
@@ -425,7 +427,7 @@ public abstract class StorageBean implements SessionBean {
         } catch (ObjectNotFoundException onfe) {
             try {
                 return studyHome.create(ds,
-                        getPatient(matching, ds, coercedElements));
+                        getPatient(matching, ds, coercedElements, genpid));
             } catch (CreateException e1) {
                 // check if Study record was inserted by concurrent thread
                 try {
@@ -440,7 +442,7 @@ public abstract class StorageBean implements SessionBean {
     }
 
     private PatientLocal getPatient(PatientMatching matching, Dataset ds,
-            Dataset coercedElements) throws Exception {
+            Dataset coercedElements, PIDCreator genpid) throws Exception {
         PatientLocal pat;
         try {
             pat = patHome.selectPatient(ds, matching, true);
@@ -468,6 +470,14 @@ public abstract class StorageBean implements SessionBean {
                  }
             }
             
+        } catch (NonUniquePatientIDException nupide) {
+            log.warn(nupide.getMessage());
+            genpid.coercePatientID(ds);
+            coercedElements.putLO(Tags.PatientID,
+                    ds.getString(Tags.PatientID));
+            coercedElements.putLO(Tags.IssuerOfPatientID,
+                    ds.getString(Tags.IssuerOfPatientID));
+            return patHome.create(ds);
         } catch (NonUniquePatientException nupe) {
             return patHome.create(ds);
         }

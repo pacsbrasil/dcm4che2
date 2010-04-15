@@ -73,6 +73,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.exceptions.CircularMergedException;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.exceptions.NonUniquePatientException;
+import org.dcm4chex.archive.exceptions.NonUniquePatientIDException;
 import org.dcm4chex.archive.exceptions.PatientMergedException;
 import org.dcm4chex.archive.util.Convert;
 
@@ -546,8 +547,8 @@ public abstract class PatientBean implements EntityBean {
             String familyName, String givenName, String middleName,
             String birthdate, PatientMatching matching, boolean followMerged)
             throws ObjectNotFoundException, FinderException,
-            NonUniquePatientException, CircularMergedException,
-            PatientMergedException {
+            NonUniquePatientException, NonUniquePatientIDException,
+            CircularMergedException, PatientMergedException {
         PatientLocalHome patHome = (PatientLocalHome) ctx.getEJBLocalHome();
         if (matching.noMatchesFor(pid, issuer, familyName, givenName,
                 middleName, birthdate)) {
@@ -567,9 +568,25 @@ public abstract class PatientBean implements EntityBean {
             if (c.isEmpty()) {
                 throw new ObjectNotFoundException();
             }
-            if (!matchIssuer(matching, issuer, c)) {
-                matchDemographics(matching, familyName, givenName, middleName,
-                    birthdate, c);
+            if (issuer != null) {
+                int countWithIssuer = matchIssuer(matching, issuer, c);
+                if (!matching.trustPatientIDWithIssuer) {
+                    PatientLocal matchWithIssuer = (countWithIssuer > 0) ?
+                                (PatientLocal) c.iterator().next() : null;
+                    matchDemographics(matching, familyName, givenName,
+                            middleName, birthdate, c);
+                    if (matchWithIssuer != null && c.isEmpty()) {
+                        throw new NonUniquePatientIDException(
+                                "Existing " + matchWithIssuer.asString() +
+                                " with equal Patient ID but different demographis than Patient[id="
+                                + pid + ", issuer=" + issuer
+                                + ", name=" + familyName + '^' + givenName
+                                + "]");
+                    }
+                }
+            } else {
+                matchDemographics(matching, familyName, givenName,
+                        middleName, birthdate, c);
             }
         } else {
             c = patHome.findByPatientName(familyName.toUpperCase() + "^%");
@@ -583,7 +600,7 @@ public abstract class PatientBean implements EntityBean {
             throw new ObjectNotFoundException();
         }
         if (c.size() > 1) {
-            throw new NonUniquePatientException("Patient ID[id="
+            throw new NonUniquePatientException("Patient[id="
                     + pid + ", issuer=" + issuer
                     + ", name=" + familyName + '^' + givenName
                     + "] ambiguous");
@@ -617,11 +634,8 @@ public abstract class PatientBean implements EntityBean {
         return pat;
     }
 
-    private boolean matchIssuer(PatientMatching matching, String issuer,
+    private int matchIssuer(PatientMatching matching, String issuer,
             Collection c) {
-        if (issuer == null) {
-            return false;
-        }
         int countWithIssuer = 0;
         for (Iterator iter = c.iterator(); iter.hasNext();) {
             PatientLocal pat = (PatientLocal) iter.next();
@@ -643,7 +657,7 @@ public abstract class PatientBean implements EntityBean {
                 }
             }
         }
-        return matching.trustPatientIDWithIssuer && countWithIssuer > 0;
+        return countWithIssuer;
     }
 
     private void matchDemographics(PatientMatching matching, String familyName,
@@ -1056,7 +1070,9 @@ public abstract class PatientBean implements EntityBean {
     }
 
     private String prompt() {
-        return "Patient[pk=" + getPk() + ", pid=" + getPatientId() + ", name="
-                + getPatientName() + "]";
+        return "Patient[pk=" + getPk()
+                + ", pid=" + getPatientId()
+                + ", issuer=" + getIssuerOfPatientId()
+                + ", name=" + getPatientName() + "]";
     }
 }

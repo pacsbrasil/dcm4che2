@@ -252,12 +252,40 @@ Surrounding <i>demograhic-match</i> by brackets('[]') defines, that
 demographic fields shall *not* be considered for the selection of an existing
 Patient record, if the Patient ID is qualified by an Issuer/Authority in the
 received DICOM Composite Object *and* in the matching Patient Record.
-]]>
+<p>
+Without surrounding brackets('[]'), the specified <i>demograhic-match</i>
+will be considered even if the Patient ID is qualified by an Issuer/Authority
+in the received DICOM Composite Object and there is an existing Patient
+Record with such Patient ID and Issuer/Authority: If the Patient Record does
+not also match in the specified demographic attributes, it will not be selected,
+but Patient ID and Issuer/Authority in the received DICOM Composite Object
+will be replace by a new Patient ID generated according configured
+<b>GeneratePatientID</b> and by configured <b>IssuerOfGeneratedPatientID</b>.
+If <b>StoreOriginalPatientIDInOtherPatientIDsSequence</b> = <code>true</code>,
+the original <i>Patient ID</i> and <i>Issuer Of Patient ID</id> in the received
+DICOM Composite Object will be stored in an item of the <i>Other Patient IDs
+Sequence</i>.]]>
       </description>
       <name>PatientMatching</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="pid,issuer?[familyname,givenname,middlename?,birthdate]" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isStoreOriginalPatientIDInOtherPatientIDsSeq"
+      setMethod="setStoreOriginalPatientIDInOtherPatientIDsSeq">
+      <description><![CDATA[Specifies, if the original <i>Patient ID</i> and
+<i>Issuer Of Patient ID</id> in the received DICOM Composite Object will be
+stored in an item of the <i>Other Patient IDs Sequence</i>, if they have to be
+replaced by a new generated Patient ID, caused by an already existing Patient
+Record with matching <i>Patient ID</i> and <i>Issuer Of Patient ID</i>, but
+not matching demographic fields.]]>
+      </description>
+      <name>StoreOriginalPatientIDInOtherPatientIDsSequence</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
