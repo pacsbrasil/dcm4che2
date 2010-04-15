@@ -416,10 +416,7 @@ public class FileSystemPanel extends Panel {
                     
                     super.onComponentTag(tag);
 
-                    String imageFolder = "resources/org.dcm4chee.dashboard.ui.ImageAnchor/images/";
-                    Response response = RequestCycle.get().getResponse();
-
-                    response.write("<span class=\"" 
+                    RequestCycle.get().getResponse().write("<span class=\"" 
                             + ((node.getParent() == null ? 
                                     true
                                     : node.getParent().getChildAt(node.getParent().getChildCount() - 1).equals(node)) ? 
@@ -429,8 +426,7 @@ public class FileSystemPanel extends Panel {
                                 (!node.isLeaf() ? "plus" : "corner") 
                                     + "\""
                                     +  (!node.isLeaf() ? 
-                                    " style=\"background-image: url('" 
-                                            + imageFolder 
+                                    " style=\"background-image: url('resources/org.dcm4chee.dashboard.ui.ImageAnchor/images/" 
                                             + (isNodeExpanded(node) ? 
                                                     "minus" 
                                                     : "plus") 
