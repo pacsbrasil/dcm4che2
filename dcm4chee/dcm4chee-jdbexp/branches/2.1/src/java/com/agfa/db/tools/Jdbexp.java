@@ -222,7 +222,7 @@ public class Jdbexp {
 		}
 
 		if (cfg.isDump()) {
-			switch (cfg.getDatabaseType()) {
+			switch (cfg.getDbType()) {
 			case DB_TYPES_ORACLE:
 				System.out.print("-- " + PREPARECALL + ": begin ");
 				break;
@@ -233,7 +233,7 @@ public class Jdbexp {
 
 			System.out.print("insert into " + cfg.getTableName() + " (" + fields + ") values (" + PlaceHolder + ");");
 
-			switch (cfg.getDatabaseType()) {
+			switch (cfg.getDbType()) {
 			case DB_TYPES_ORACLE:
 				System.out.println(" end;");
 				break;
@@ -292,8 +292,8 @@ public class Jdbexp {
 		long unCommitted = 0;
 		ResultSet rs = null;
 
-		Config cfg = new Config();
-		cfg.ParseCommandLine(argv);
+        Config cfg = new Config();
+        cfg.ParseCommandLine(argv);
 
 		if (cfg.isDebug())
 			System.err.println("DEBUG: Connect Url: < " + cfg.getJdbcUrl() + " >");
@@ -301,7 +301,7 @@ public class Jdbexp {
 		try {
 			conn = DriverManager.getConnection(cfg.getJdbcUrl());
 			DatabaseMetaData dmd = conn.getMetaData();
-			cfg.setDatabaseType(dmd.getDatabaseProductName());
+			cfg.setDbType(dmd.getDatabaseProductName());
 
 			if (cfg.getCommitInterval() > 0) {
 				if (cfg.isDebug())
@@ -363,7 +363,7 @@ public class Jdbexp {
 					} catch (SQLException e) {
 						System.err.println("Error: [" + StmtCount + "] Statement: " + sql);
 						System.err.print("Error: [" + StmtCount + "] " + e);
-						if (cfg.isIgnore() == false) {
+						if (cfg.isIgnoreSqlError() == false) {
 							Jdbexp.exit(1, "Aborting SQL Execution...");
 
 						}

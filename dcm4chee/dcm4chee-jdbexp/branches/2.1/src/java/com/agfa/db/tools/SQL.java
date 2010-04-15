@@ -26,7 +26,7 @@ class SQL {
    }
    
    boolean isPrepareStatement() {
-   	return (pStmt==null);
+   	return pStmt!=null;
    }
 
    public ResultSet getResultSet() throws SQLException {
