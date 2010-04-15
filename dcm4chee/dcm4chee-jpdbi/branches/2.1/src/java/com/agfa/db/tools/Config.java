@@ -531,16 +531,16 @@ class Config {
             options.addOption(OptionBuilder.withLongOpt("fs").withDescription("display FS group & PK").create());
             options.addOption(OptionBuilder.withLongOpt("pre214").withDescription("query pre214 archives").create());
             //
-            OptionGroup og=new OptionGroup();
+            // OptionGroup og=new OptionGroup();
             //
-            og.addOption(OptionBuilder.withLongOpt("patient-level").withDescription("display patient level").create());
-            og.addOption(OptionBuilder.withLongOpt("instance-level").withDescription("display instance level").create());
-            og.addOption(OptionBuilder.withLongOpt("sop-level").withDescription("display instance level").create());
-            og.addOption(OptionBuilder.withLongOpt("series-level").withDescription("display series level").create());
-            og.addOption(OptionBuilder.withLongOpt("study-level").withDescription("display study level").create());
-            og.addOption(OptionBuilder.withLongOpt("path").withDescription("display object path").create());
+            options.addOption(OptionBuilder.withLongOpt("patient-level").withDescription("display patient level").create());
+            options.addOption(OptionBuilder.withLongOpt("instance-level").withDescription("display instance level").create());
+            options.addOption(OptionBuilder.withLongOpt("sop-level").withDescription("display instance level").create());
+            options.addOption(OptionBuilder.withLongOpt("series-level").withDescription("display series level").create());
+            options.addOption(OptionBuilder.withLongOpt("study-level").withDescription("display study level").create());
+            options.addOption(OptionBuilder.withLongOpt("path").withDescription("display object path").create());
             //
-            options.addOptionGroup(og);
+            // options.addOptionGroup(og);
             //
             // options.addOption(OptionBuilder.withLongOpt("ThisOptionDoesNotExist").create());
 
