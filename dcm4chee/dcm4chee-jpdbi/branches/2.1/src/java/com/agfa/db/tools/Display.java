@@ -49,7 +49,7 @@ public class Display {
 	public static long LastInstance = -2;
 
 	public static long LastFile = -2;
-    private static int excludeValueLengthLimit = Integer.MAX_VALUE;
+	private static int excludeValueLengthLimit = Integer.MAX_VALUE;
 
 	public final void setExcludeValueLengthLimit(int excludeValueLengthLimit) {
 		this.excludeValueLengthLimit = excludeValueLengthLimit;
@@ -181,7 +181,7 @@ public class Display {
 			}
 			System.out.println(out);
 			if (cfg.isDisplayDS(Jpdbi.PATIENT)) {
-				DataSet(rs, "PAT_ATTRS");			
+				DataSet(rs, "PAT_ATTRS");
 			}
 			return tmpKey;
 		}
@@ -256,7 +256,7 @@ public class Display {
 
 			System.out.println(" " + out);
 			if (cfg.isDisplayDS(Jpdbi.STUDY)) {
-				DataSet(rs, "STUDY_ATTRS");			
+				DataSet(rs, "STUDY_ATTRS");
 			}
 			return tmpKey;
 		}
@@ -316,7 +316,7 @@ public class Display {
 			}
 			System.out.println("  " + out);
 			if (cfg.isDisplayDS(Jpdbi.SERIE)) {
-				DataSet(rs, "SERIES_ATTRS");			
+				DataSet(rs, "SERIES_ATTRS");
 			}
 			return tmpKey;
 		}
@@ -367,7 +367,7 @@ public class Display {
 			}
 			System.out.println("   " + out);
 			if (cfg.isDisplayDS(Jpdbi.INSTANCE)) {
-				DataSet(rs, "INST_ATTRS");			
+				DataSet(rs, "INST_ATTRS");
 			}
 			return tmpKey;
 		}
@@ -400,6 +400,13 @@ public class Display {
 			if (cfg.isDisplayFields())
 				out = out.concat("GROUP:");
 			out = out.concat(rs.getString("FSGRP") + "");
+		}
+		
+		if (cfg.isDisplayAETs()) {
+			out+=" ";
+			if (cfg.isDisplayFields())
+				out+="AET:";
+			out += "{"+rs.getString("FSRETAET")+"}";
 		}
 
 		if (cfg.isDisplayPKs()) {

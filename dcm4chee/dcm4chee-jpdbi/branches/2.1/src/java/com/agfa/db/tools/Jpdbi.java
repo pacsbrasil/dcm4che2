@@ -198,10 +198,12 @@ public class Jpdbi {
 
     }
 
-    private static void ParseQuery(Connection conn, String[] query, String[][] update, Config cfg)
+    private static void ParseQuery(Connection conn, Config cfg)
             throws SQLException, IOException {
         Statement stmt = conn.createStatement();
         ResultSet rs = null;
+        
+        String [] query=cfg.getSqlPortions();
 
         String SQLStatement = "";
 
@@ -223,6 +225,7 @@ public class Jpdbi {
             System.err.println("DEBUG: Query: < " + QueryStatement + " >");
         }
 
+        String[][] update=cfg.getUpdDicom();
         boolean multi = false;
         boolean UpdModality = false;
         String UpdateStatement = null;
@@ -353,10 +356,7 @@ public class Jpdbi {
         System.setProperty("java.awt.headless", "true");
 
         Connection conn = null;
-        String query[] = null;
-        String update[][] = null;
-
-        Config cfg = new Config();
+        final Config cfg = new Config();
         cfg.ParseCommandLine(argv);
 
         if (cfg.isDebug()) {
@@ -370,10 +370,7 @@ public class Jpdbi {
 
             // setPreparedStatements(conn);
 
-            update = cfg.BuildUpdate();
-            query = cfg.BuildQuery();
-
-            ParseQuery(conn, query, update, cfg);
+            ParseQuery(conn, cfg);
 
             conn.close();
         } catch (Exception e) {
