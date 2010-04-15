@@ -262,7 +262,7 @@ but Patient ID and Issuer/Authority in the received DICOM Composite Object
 will be replace by a new Patient ID generated according configured
 <b>GeneratePatientID</b> and by configured <b>IssuerOfGeneratedPatientID</b>.
 If <b>StoreOriginalPatientIDInOtherPatientIDsSequence</b> = <code>true</code>,
-the original <i>Patient ID</i> and <i>Issuer Of Patient ID</id> in the received
+the original <i>Patient ID</i> and <i>Issuer Of Patient ID</i> in the received
 DICOM Composite Object will be stored in an item of the <i>Other Patient IDs
 Sequence</i>.]]>
       </description>
