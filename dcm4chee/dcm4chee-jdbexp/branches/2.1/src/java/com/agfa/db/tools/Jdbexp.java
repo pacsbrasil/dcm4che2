@@ -13,7 +13,8 @@ import java.sql.*;
 
 public class Jdbexp {
 
-	public final static String ID = "$Id$";
+    public final static String VERSION = "2.1.0";
+    public final static String ID = "$Id$";
 	public final static String REVISION = "$Revision$";
 
 	public static final int DB_TYPES_UNKNOWN = 0;

@@ -367,14 +367,14 @@ class Config {
             options.addOption("H", "header", false, "display header");
             options.addOption(OptionBuilder.withLongOpt("url").withDescription("jdbc connection url").hasArg()
                     .withArgName("JDBCURL").create("U"));
-            options.addOption(OptionBuilder.withLongOpt("db").withDescription("DB alias").hasArg().withArgName("ALIAS")
+            options.addOption(OptionBuilder.withLongOpt("db").withDescription("DB alias").hasArg().withArgName("ALIAS | list")
                     .create());
             options.addOption(OptionBuilder.withLongOpt("delimiter").withDescription("field delimiter").hasArg()
                     .withArgName("DELIMITER").create("d"));
             options.addOption(OptionBuilder.withLongOpt("commit").withDescription("commit after <COMMIT> statements")
                     .hasArg().withArgName("COMMIT").create());
             options.addOption(OptionBuilder.withLongOpt("macro").withDescription("exec macro").hasArg().withArgName(
-                    "MACRO").create("M"));
+                    "MACRO | list").create("M"));
             options.addOption(OptionBuilder.withLongOpt("out").withDescription("output stdout to FILE").hasArg()
                     .withArgName("FILE").create("O"));
             options.addOption(OptionBuilder.withLongOpt("gzip").withDescription("compress output").create("z"));
@@ -427,12 +427,12 @@ class Config {
                 sqlMacro = line.getOptionValue("M");
 
                 if (sqlMacro.equalsIgnoreCase("list")) {
-                    System.out.println("MACROS:");
+                    System.out.println("Defined macros:");
                     Enumeration e = applicationProps.propertyNames();
                     while (e.hasMoreElements()) {
                         String key = (String) e.nextElement();
                         if (key.startsWith("macro."))
-                            System.out.println(key + ": " + applicationProps.getProperty(key));
+                            System.out.println("   "+key.substring(6) + ": <" + applicationProps.getProperty(key)+">");
                     }
                     System.exit(0);
                 } else {
@@ -463,6 +463,7 @@ class Config {
             }
 
             if (line.hasOption("v")) {
+                System.out.println("Jdbexp Version: " + Jdbexp.VERSION);
                 System.out.println(Jdbexp.ID);
                 System.out.println(Jdbexp.REVISION);
                 System.exit(0);
@@ -491,19 +492,24 @@ class Config {
                 }
             }
 
-            if (!isSql() && i < argv.length)
-                setSql(argv[i++].trim());
-
-            if (i < argv.length)
-                System.err.println("Error: Too many arguments.");
-
-            if (isSqlFile() && isSql()) {
-                System.err.println("Error: Either SQLFILE or SQL Statement must be provided.");
-            }
-
-            if ((!isSqlFile() && !isSql()) || (isSqlFile() && isSql()) || (i < argv.length)) {
-                ShortHelp();
-                System.exit(1);
+            // db alias
+            if (line.hasOption("db")) {
+                if (line.getOptionValue("db").equalsIgnoreCase("list")) {
+                    System.out.println("Defined DB connections:");
+                    Enumeration e = applicationProps.propertyNames();
+                    while (e.hasMoreElements()) {
+                        String key = (String) e.nextElement();
+                        if (key.equals("jdbc.url"))
+                            System.out.println("   DEFAULT <" + applicationProps.getProperty(key) + ">");
+                        if (key.startsWith("jdbc.url.")) {
+                            System.out.println("   " + key.substring(9) + " <" + applicationProps.getProperty(key)
+                                    + ">");
+                        }
+                    }
+                    System.exit(0);
+                } else if (setJdbcUrl(applicationProps.getProperty("jdbc.url." + line.getOptionValue("db"))) == null) {
+                    Jdbexp.exit(1, "ERROR: DB Alias: < " + line.getOptionValue("db") + " > not found!");
+                }
             }
 
             if (isDump() || isInsert()) {
@@ -530,11 +536,6 @@ class Config {
                 Jdbexp.exit(-1, e.toString());
             }
 
-            // db alias
-            if (line.hasOption("db"))
-                if (setJdbcUrl(applicationProps.getProperty("jdbc.url." + line.getOptionValue("db"))) == null)
-                    Jdbexp.exit(1, "ERROR: DB Alias: < " + line.getOptionValue("db") + " > not found!");
-
             // jdbc url
             if (line.hasOption("U"))
                 setJdbcUrl(line.getOptionValue("U"));
@@ -542,7 +543,20 @@ class Config {
             if (getJdbcUrl() == null)
                 if (setJdbcUrl(System.getProperty("jdbc.url")) == null)
                     setJdbcUrl(applicationProps.getProperty("jdbc.url"));
+            if (!isSql() && i < argv.length)
+                setSql(argv[i++].trim());
 
+            if (i < argv.length)
+                System.err.println("Error: Too many arguments.");
+
+            if (isSqlFile() && isSql()) {
+                System.err.println("Error: Either SQLFILE or SQL Statement must be provided.");
+            }
+
+            if ((!isSqlFile() && !isSql()) || (isSqlFile() && isSql()) || (i < argv.length)) {
+                ShortHelp();
+                System.exit(1);
+            }
         } catch (ParseException exp) {
             Jdbexp.exit(1, "Unexpected exception:" + exp.getMessage());
         }
