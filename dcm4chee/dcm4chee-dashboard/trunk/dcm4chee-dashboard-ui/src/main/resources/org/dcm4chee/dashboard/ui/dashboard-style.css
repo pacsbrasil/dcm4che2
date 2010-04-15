@@ -1,0 +1,30 @@
+/*
+	Dashboard CSS
+*/
+
+body {font-family:font-family:Arial,sans-serif !important;}
+
+div.header {
+	background: #99bbaa !important;
+	border-width: 1px !important;
+	border-color: #666 !important;
+	border-style: solid !important;
+}
+
+div.wicket-tree-table-body {
+	background: #aaccbb !important;
+	border-width: 1px !important;
+	border-color: #666 !important;
+	border-style: solid !important;
+}
+
+/* for dashboard FileSystemTreeTable */
+div[id="filesystem"] div.row, div[id="filesystem"] span {
+	height: 50px !important;
+	border-color: #666 !important;
+}
+
+/* class of tree table of wicket extensions */
+span.c_ {
+	text-align: center;
+}

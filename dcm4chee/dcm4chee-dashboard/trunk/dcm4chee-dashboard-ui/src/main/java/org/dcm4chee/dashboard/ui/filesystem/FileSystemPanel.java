@@ -54,8 +54,11 @@ import javax.swing.tree.TreeNode;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
+import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
+import org.apache.wicket.Response;
 import org.apache.wicket.WicketRuntimeException;
+import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation;
 import org.apache.wicket.extensions.markup.html.tree.table.IColumn;
@@ -69,6 +72,7 @@ import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
@@ -240,6 +244,7 @@ public class FileSystemPanel extends Panel {
             fileSystemTreeTable.setRootLess(true);
             addOrReplace(fileSystemTreeTable);
         } catch (Exception e) {
+            e.printStackTrace();
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
             throw new WicketRuntimeException(e.getLocalizedMessage(), e); 
@@ -349,7 +354,12 @@ public class FileSystemPanel extends Panel {
 
                 add(newIndentation(this, "indent", node, level));
                 add(newJunctionLink(this, "link", "image", node));
-
+                
+//                ((Image) get("image"))
+//                .setImageResourceReference(new ResourceReference(ImageAnchor.class, "images/minus.gif"));
+                
+//                .add(new Image("image", new ResourceReference(ImageAnchor.class, "images/folder_files.gif"))));
+                
                 add(newNodeLink(this, "nodeLink", node)
                 .add(newNodeIcon(this, "icon", node))
                 .add(new Label("label", new AbstractReadOnlyModel<Object>() {
@@ -392,6 +402,43 @@ public class FileSystemPanel extends Panel {
                     tag.put("title", ((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).getDescription());
                 }
             };
+        }
+        
+        @Override
+        protected MarkupContainer newJunctionImage(MarkupContainer parent, final String id, final TreeNode node) {
+
+            return (MarkupContainer)new WebMarkupContainer(id) {
+                
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onComponentTag(ComponentTag tag) {
+                    
+                    super.onComponentTag(tag);
+
+                    String imageFolder = "resources/org.dcm4chee.dashboard.ui.ImageAnchor/images/";
+                    Response response = RequestCycle.get().getResponse();
+
+                    response.write("<span class=\"" 
+                            + ((node.getParent() == null ? 
+                                    true
+                                    : node.getParent().getChildAt(node.getParent().getChildCount() - 1).equals(node)) ? 
+                                            "junction-last" 
+                                            : "junction")
+                            + "\"><span class=\"" +
+                                (!node.isLeaf() ? "plus" : "corner") 
+                                    + "\""
+                                    +  (!node.isLeaf() ? 
+                                    " style=\"background-image: url('" 
+                                            + imageFolder 
+                                            + (isNodeExpanded(node) ? 
+                                                    "minus" 
+                                                    : "plus") 
+                                                    + ".gif')\""
+                                    : "")
+                            + "></span></span>");
+                }
+            }.setRenderBodyOnly(true);
         }
     };
 
@@ -540,5 +587,5 @@ public class FileSystemPanel extends Panel {
         public String getRemainingTimeString() {
             return this.remainingTime >= 0 ? "~ " + this.daysFormatter.format(new Float(this.remainingTime)) : ""; 
         }
-    }
+    }    
 }
