@@ -127,7 +127,7 @@ public class Display {
 		return th;
 	}
 
-	static long Patient(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
+	static long Patient(ResultSet rs, ResultSetMetaData md, Config cfg) throws SQLException, IOException {
 		String out = "";
 		long tmpKey = rs.getLong("A");
 
@@ -139,20 +139,20 @@ public class Display {
 		if (LastPatient != tmpKey) {
 			LastPatient = tmpKey;
 
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("NAME:");
 			out = out.concat(("" + rs.getString("PAT_NAME")).replace('^', ' ').trim() + " ");
 
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("SEX:");
 			out = out.concat(rs.getString("PAT_SEX") + " ");
 
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("BIRTHDATE:");
-			if (cfg.pre214) {
+			if (cfg.isPre214()) {
 				Timestamp tmpBD = rs.getTimestamp("BD");
 				if (tmpBD != null) {
-					out = out.concat(CommandLine.fDate.format(tmpBD) + " ");
+					out = out.concat(cfg.fDate.format(tmpBD) + " ");
 				} else {
 					out = out.concat("- ");
 				}
@@ -165,7 +165,7 @@ public class Display {
 				}
 			}
 
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("ISSUER/ID:");
 			out = out.concat("<");
 			out = out.concat(rs.getString("PAT_ID_ISSUER") + "");
@@ -173,14 +173,14 @@ public class Display {
 			out = out.concat(rs.getString("PAT_ID") + "");
 			out = out.concat(">");
 
-			if (cfg.displayPKS) {
+			if (cfg.isDisplayPKs()) {
 				out = out.concat(" ");
-				if (cfg.displayFields)
+				if (cfg.isDisplayFields())
 					out = out.concat("PK:");
 				out = out.concat("[" + tmpKey + "]");
 			}
 			System.out.println(out);
-			if (cfg.displayDS.get(Jpdbi.PATIENT)) {
+			if (cfg.isDisplayDS(Jpdbi.PATIENT)) {
 				DataSet(rs, "PAT_ATTRS");			
 			}
 			return tmpKey;
@@ -188,7 +188,7 @@ public class Display {
 		return -1;
 	}
 
-	static long Study(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
+	static long Study(ResultSet rs, ResultSetMetaData md, Config cfg) throws SQLException, IOException {
 		String out = "";
 		long tmpKey = rs.getLong("B");
 		if (rs.wasNull()) {
@@ -198,18 +198,18 @@ public class Display {
 
 		if (LastStudy != tmpKey) {
 			LastStudy = tmpKey;
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("IUID:");
 			out = out.concat(rs.getString("STYIUID") + " ");
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("DATE:");
 			Timestamp tmpSD = rs.getTimestamp("STYD");
 			if (tmpSD != null) {
-				out = out.concat(CommandLine.fTimeStamp.format(tmpSD) + " ");
+				out = out.concat(cfg.fTimeStamp.format(tmpSD) + " ");
 			} else {
 				out = out.concat("- ");
 			}
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("MODS:");
 			String tmpMOD = rs.getString("STYMODS");
 			if (tmpMOD != null) {
@@ -218,20 +218,20 @@ public class Display {
 				out = out.concat("( - ) ");
 			}
 
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("#SER:");
 			out = out.concat(rs.getLong("STYNUMSER") + " ");
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("#INST:");
 			out = out.concat(rs.getLong("STYNUMINST") + " ");
 
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("AVAIL:");
 			out = out.concat(rs.getLong("STYAVAIL") + "");
 
-			if (cfg.displayAET) {
+			if (cfg.isDisplayAETs()) {
 				out = out.concat(" ");
-				if (cfg.displayFields)
+				if (cfg.isDisplayFields())
 					out = out.concat("RETAET:");
 				String tmpAET = null;
 				String tmpAET1 = rs.getString("STYRETAET");
@@ -247,15 +247,15 @@ public class Display {
 				out = out.concat("{" + tmpAET + "}");
 			}
 
-			if (cfg.displayPKS) {
+			if (cfg.isDisplayPKs()) {
 				out = out.concat(" ");
-				if (cfg.displayFields)
+				if (cfg.isDisplayFields())
 					out = out.concat("PK:");
 				out = out.concat("[" + tmpKey + "]");
 			}
 
 			System.out.println(" " + out);
-			if (cfg.displayDS.get(Jpdbi.STUDY)) {
+			if (cfg.isDisplayDS(Jpdbi.STUDY)) {
 				DataSet(rs, "STUDY_ATTRS");			
 			}
 			return tmpKey;
@@ -264,7 +264,7 @@ public class Display {
 
 	}
 
-	static long Serie(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
+	static long Serie(ResultSet rs, ResultSetMetaData md, Config cfg) throws SQLException, IOException {
 		String out = "";
 		long tmpKey = rs.getLong("C");
 		if (rs.wasNull()) {
@@ -274,25 +274,25 @@ public class Display {
 
 		if (LastSerie != tmpKey) {
 			LastSerie = tmpKey;
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("IUID:");
 			out = out.concat(rs.getString("SERIUID") + " ");
 			// out=out.concat(result.getString("SD") + " ");
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("MOD:");
 			out = out.concat(rs.getString("SERMOD") + " ");
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("#INST:");
 			out = out.concat(rs.getLong("SERNUMINST") + " ");
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("AVAIL:");
 			out = out.concat(rs.getLong("SERAVAIL") + " ");
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("STAT:");
 			out = out.concat(rs.getLong("SERSTATUS") + "");
-			if (cfg.displayAET) {
+			if (cfg.isDisplayAETs()) {
 				out = out.concat(" ");
-				if (cfg.displayFields)
+				if (cfg.isDisplayFields())
 					out = out.concat("SRC::RETAET:");
 				String tmpAET = null;
 				String tmpAET1 = rs.getString("SERRETAET");
@@ -308,14 +308,14 @@ public class Display {
 				}
 				out = out.concat("{" + srcAET + "::" + tmpAET + "}");
 			}
-			if (cfg.displayPKS) {
+			if (cfg.isDisplayPKs()) {
 				out = out.concat(" ");
-				if (cfg.displayFields)
+				if (cfg.isDisplayFields())
 					out = out.concat("PK:");
 				out = out.concat("[" + tmpKey + "]");
 			}
 			System.out.println("  " + out);
-			if (cfg.displayDS.get(Jpdbi.SERIE)) {
+			if (cfg.isDisplayDS(Jpdbi.SERIE)) {
 				DataSet(rs, "SERIES_ATTRS");			
 			}
 			return tmpKey;
@@ -323,7 +323,7 @@ public class Display {
 		return -1;
 	}
 
-	static long Instance(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
+	static long Instance(ResultSet rs, ResultSetMetaData md, Config cfg) throws SQLException, IOException {
 		String out = "";
 		long tmpKey = rs.getLong("D");
 		if (rs.wasNull()) {
@@ -333,18 +333,18 @@ public class Display {
 
 		if (LastInstance != tmpKey) {
 			LastInstance = tmpKey;
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("IUID:");
 			out = out.concat(rs.getString("SOPIUID") + " ");
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("AVAIL:");
 			out = out.concat(rs.getString("INSTAVAIL") + " ");
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("STAT:");
 			out = out.concat(rs.getString("INSTSTATUS") + "");
-			if (cfg.displayAET) {
+			if (cfg.isDisplayAETs()) {
 				out = out.concat(" ");
-				if (cfg.displayFields)
+				if (cfg.isDisplayFields())
 					out = out.concat("RETAET:");
 				String tmpAET = null;
 				String tmpAET1 = rs.getString("INSTRETAET");
@@ -359,14 +359,14 @@ public class Display {
 				}
 				out = out.concat("{" + tmpAET + "}");
 			}
-			if (cfg.displayPKS) {
+			if (cfg.isDisplayPKs()) {
 				out = out.concat(" ");
-				if (cfg.displayFields)
+				if (cfg.isDisplayFields())
 					out = out.concat("PK:");
 				out = out.concat("[" + tmpKey + "]");
 			}
 			System.out.println("   " + out);
-			if (cfg.displayDS.get(Jpdbi.INSTANCE)) {
+			if (cfg.isDisplayDS(Jpdbi.INSTANCE)) {
 				DataSet(rs, "INST_ATTRS");			
 			}
 			return tmpKey;
@@ -374,7 +374,7 @@ public class Display {
 		return -1;
 	}
 
-	static long Path(ResultSet rs, ResultSetMetaData md, CommandLine cfg) throws SQLException, IOException {
+	static long Path(ResultSet rs, ResultSetMetaData md, Config cfg) throws SQLException, IOException {
 		String out = "";
 		long tmpKey = rs.getLong("E");
 		if (rs.wasNull()) {
@@ -382,29 +382,29 @@ public class Display {
 			return -2;
 		}
 
-		if (cfg.displayFields)
+		if (cfg.isDisplayFields())
 			out = out.concat("PATH:");
 		out = out.concat(rs.getString("DIRPATH") + "/" + rs.getString("FILEPATH") + " ");
-		if (cfg.displayFields)
+		if (cfg.isDisplayFields())
 			out = out.concat("SIZE:");
 		out = out.concat(rs.getString("FILESIZE") + " ");
-		if (cfg.displayFields)
+		if (cfg.isDisplayFields())
 			out = out.concat("AVAIL:");
 		out = out.concat(rs.getString("FSAVAIL") + "");
 
-		if (cfg.displayFSInfo) {
+		if (cfg.isDisplayLevel(Jpdbi.FILESYSTEM)) {
 			out = out.concat(" ");
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("FSPK:");
 			out = out.concat("[" + rs.getLong("F") + "] ");
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("GROUP:");
 			out = out.concat(rs.getString("FSGRP") + "");
 		}
 
-		if (cfg.displayPKS) {
+		if (cfg.isDisplayPKs()) {
 			out = out.concat(" ");
-			if (cfg.displayFields)
+			if (cfg.isDisplayFields())
 				out = out.concat("PK:");
 			out = out.concat("[" + tmpKey + "]");
 		}

@@ -12,8 +12,9 @@
 
 	<path id="project.classpath">
 		<pathelement location="${build.dir}" />
-		<pathelement location="${jpdbi.location}/thirdparty/ojdbc14.jar" />
-		<pathelement location="${jpdbi.location}/thirdparty/dcm4che.jar" />
+		<pathelement location="../thirdparty/ojdbc14.jar" />
+		<pathelement location="../thirdparty/dcm4che.jar" />
+		<pathelement location="../thirdparty/commons-cli-1.2.jar" />
 	</path>
 
 	<target name="init">
@@ -31,8 +32,9 @@
 		<javac destdir="${build.dir}" srcdir="${src.dir}">
 			<classpath>
 				<pathelement location="${build.dir}" />
-				<pathelement location="${jpdbi.location}/thirdparty/ojdbc14.jar" />
-				<pathelement location="${jpdbi.location}/thirdparty/dcm4che.jar" />
+				<pathelement location="../thirdparty/ojdbc14.jar" />
+				<pathelement location="../thirdparty/dcm4che.jar" />
+				<pathelement location="../thirdparty/commons-cli-1.2.jar" />
 			</classpath>
 		</javac>
 	</target>
@@ -41,11 +43,11 @@
 		<mkdir dir="${dist.dir}" />
 		<copy tofile="${build.dir}/com/agfa/db/tools/jpdbi.properties" file="${basedir}/resources/default.properties" />
 		<copy todir="${build.dir}/" file="${basedir}/thirdparty/log4j.properties" />
-		<copy todir="${build.dir}/gnu/getopt/" file="${src.dir}/gnu/getopt/MessagesBundle.properties" />
 		<jar destfile="${dist.dir}/jpdbi.jar" update="true">
-			<zipfileset src="./thirdparty/ojdbc14.jar" />
-			<zipfileset src="./thirdparty/dcm4che.jar" />
-			<zipfileset src="./thirdparty/log4j.jar" />
+			<zipfileset src="../thirdparty/ojdbc14.jar" />
+			<zipfileset src="../thirdparty/dcm4che.jar" />
+			<zipfileset src="../thirdparty/log4j.jar" />
+			<zipfileset src="../thirdparty/commons-cli-1.2.jar" />
 			<fileset dir="${build.dir}" />
 			<manifest>
 				<attribute name="Main-Class" value="com.agfa.db.tools.Jpdbi" />
@@ -55,7 +57,7 @@
 			<fileset dir="${build.dir}" />
 			<manifest>
 				<attribute name="Main-Class" value="com.agfa.db.tools.jpdbi"/>
-				<attribute name="Class-Path" value="./ ../lib/ojdbc5.jar ../lib/ojdbc14.jar ../lib/dcm4che.jar"/>
+				<attribute name="Class-Path" value="./ ../lib/ojdbc5.jar ../lib/ojdbc14.jar ../lib/dcm4che.jar ../thirdparty/commons-cli-1.2.jar" />
 			</manifest>
 		</jar>
 	</target>

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Blob;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -95,7 +96,7 @@ public class Jpdbi {
         return cnt;
     }
 
-    public static void UpdateStudyModality(Connection connection, long pk, CommandLine cfg) {
+    public static void UpdateStudyModality(Connection connection, long pk, Config cfg) {
         String sql = "select distinct MODALITY from SERIES where STUDY_FK=" + pk;
         try {
             Statement stmt = connection.createStatement();
@@ -110,7 +111,7 @@ public class Jpdbi {
             }
             rs.close();
             sql = "update STUDY set MODS_IN_STUDY='" + MODALITIES + "' where PK=" + pk;
-            if (cfg.debug)
+            if (cfg.isDebug())
                 System.err.println("DEBUG: " + sql);
             else
                 stmt.executeUpdate(sql);
@@ -197,14 +198,14 @@ public class Jpdbi {
 
     }
 
-    private static void ParseQuery(Connection conn, String[] query, String[][] update, CommandLine cfg)
+    private static void ParseQuery(Connection conn, String[] query, String[][] update, Config cfg)
             throws SQLException, IOException {
         Statement stmt = conn.createStatement();
         ResultSet rs = null;
 
         String SQLStatement = "";
 
-        if (cfg.nonempty) {
+        if (cfg.isIgnoreEmpty()) {
             SQLStatement += "from " + query[QUERY_FROM] + " ";
             SQLStatement += "where " + query[QUERY_LINKS] + " " + query[QUERY_WHERE];
         } else {
@@ -217,7 +218,7 @@ public class Jpdbi {
         // Construct Select Statement
         String QueryStatement = "select " + query[QUERY_SELECT] + " " + SQLStatement;
 
-        if (cfg.debug) {
+        if (cfg.isDebug()) {
             System.err.println("DEBUG: Count: < " + CountStatement + " >");
             System.err.println("DEBUG: Query: < " + QueryStatement + " >");
         }
@@ -230,7 +231,7 @@ public class Jpdbi {
         PreparedStatement UpdStmt = null;
 
         if (update != null) {
-            UpdateLevel = cfg.updateLevel.nextSetBit(0);
+            UpdateLevel = cfg.getUpdateLevel().nextSetBit(0);
 
             if (update[0][4].equals("t"))
                 multi = true;
@@ -258,19 +259,19 @@ public class Jpdbi {
                 }
             }
 
-            if (!cfg.updateDS.isEmpty()) {
+            if (!cfg.getUpdateDS().isEmpty()) {
                 if (UpdateStatement == null)
                     UpdateStatement = "";
                 else if (UpdateStatement.length() > 0)
                     UpdateStatement += ",";
-                UpdateStatement += Jpdbi.Attrs[cfg.updateDS.nextSetBit(0)];
+                UpdateStatement += Jpdbi.Attrs[cfg.getUpdateDS().nextSetBit(0)];
                 UpdateStatement += "=?";
             }
 
             UpdateStatement += " where PK=?";
             DoUpdate = true;
 
-            if (cfg.debug) {
+            if (cfg.isDebug()) {
                 System.err.println("DEBUG: Update: < " + "update " + Jpdbi.Tables[UpdateLevel] + " set "
                         + UpdateStatement + " >");
             }
@@ -287,7 +288,7 @@ public class Jpdbi {
                     Jpdbi.exit(1, "Multiple Updates not allowed on this Configuration.");
                 }
                 
-                if ( cfg.UpdCount == -666 || rows == cfg.UpdCount ) {
+                if ( cfg.getUpdateCount() == -666 || rows == cfg.getUpdateCount() ) {
                     UpdStmt = conn.prepareStatement("update " + Jpdbi.Tables[UpdateLevel] + " set " + UpdateStatement);
                 } else {
                     Jpdbi.exit(1, "Updating ["+rows+"] rows.  Please supply correct \"--count\" option.");
@@ -302,7 +303,7 @@ public class Jpdbi {
 
             while (rs.next()) {
                 for (int i = 0; i < Jpdbi.Tables.length; i++) {
-                    if (cfg.levels.get(i)) {
+                    if (cfg.isDisplayLevel(i)) {
                         switch (i) {
                         case Jpdbi.PATIENT:
                             PK = Display.Patient(rs, md, cfg);
@@ -328,11 +329,11 @@ public class Jpdbi {
                             PK = -1;
                             break;
                         }
-                        if (cfg.updateLevel.get(i) && PK > -1) {
-                            if (cfg.updateDS.isEmpty())
-                                UpdateField(UpdStmt, PK, cfg.debug);
+                        if (cfg.isUpdateLevel(i) && PK > -1) {
+                            if (cfg.getUpdateDS().isEmpty())
+                                UpdateField(UpdStmt, PK, cfg.isDebug());
                             else
-                                UpdateField(rs, UpdStmt, PK, Jpdbi.Attrs[i], update, cfg.debug);
+                                UpdateField(rs, UpdStmt, PK, Jpdbi.Attrs[i], update, cfg.isDebug());
                         }
                     }
                 }
@@ -355,25 +356,28 @@ public class Jpdbi {
         String query[] = null;
         String update[][] = null;
 
-        CommandLine cfg = new CommandLine(argv);
+        Config cfg = new Config();
+        cfg.ParseCommandLine(argv);
 
-        if (cfg.debug) {
-            System.err.println("DEBUG: Connect Url: < " + cfg.jdbcUrl + " >");
+        if (cfg.isDebug()) {
+            System.err.println("DEBUG: Connect Url: < " + cfg.getJdbcUrl() + " >");
         }
 
         try {
-            conn = DriverManager.getConnection(cfg.jdbcUrl);
-            cfg.setDatabase(conn);
+            conn = DriverManager.getConnection(cfg.getJdbcUrl());
+            DatabaseMetaData dmd = conn.getMetaData();
+            cfg.setDbType(dmd.getDatabaseProductName());
+
             // setPreparedStatements(conn);
 
-            update = Query.BuildUpdate(cfg);
-            query = Query.Build(cfg);
+            update = cfg.BuildUpdate();
+            query = cfg.BuildQuery();
 
             ParseQuery(conn, query, update, cfg);
 
             conn.close();
         } catch (Exception e) {
-            if (cfg.debug)
+            if (cfg.isDebug())
                 e.printStackTrace();
             else
                 Jpdbi.exit(1, e.toString());
