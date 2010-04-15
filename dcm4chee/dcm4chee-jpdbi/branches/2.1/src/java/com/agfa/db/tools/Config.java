@@ -7,16 +7,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
-import java.sql.SQLPermission;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.BitSet;
 import java.util.Calendar;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.cli.CommandLine;
@@ -522,7 +518,8 @@ class Config {
 			//
 			options.addOption(OptionBuilder.withLongOpt("studyiuid").withDescription("query study IUID").hasArg()
 					.withArgName("STUDYIUID").create("s"));
-			options.addOption(OptionBuilder.withLongOpt("study-level").withDescription("display study level").create());
+            options.addOption(OptionBuilder.withLongOpt("study-level").withDescription("display study level").create());
+            options.addOption(OptionBuilder.withLongOpt("patient-level").withDescription("display patient level").create());
 			options.addOption(OptionBuilder.withLongOpt("date").withDescription("query study date").hasArg().withArgName(
 					"YYYY-MM-DD | N").create("d"));
 			//
@@ -541,7 +538,7 @@ class Config {
 			options.addOption(OptionBuilder.withLongOpt("fs").withDescription("display FS group & PK").create());
 			options.addOption(OptionBuilder.withLongOpt("pre214").withDescription("query pre214 archives").create());
 			//
-			options.addOption(OptionBuilder.withLongOpt("ThisOptionDoesNotExist").create());
+			// options.addOption(OptionBuilder.withLongOpt("ThisOptionDoesNotExist").create());
 
 			// parse the command line arguments
 			CommandLine line = parser.parse(options, argv);
@@ -590,11 +587,15 @@ class Config {
 			if (line.hasOption("count"))
 				setUpdateCount(Long.parseLong(line.getOptionValue("count")));
 
+			/*
 			if (line.hasOption("ThisOptionDoesNotExists"))
 				setUpdateCount(-666);
+				*/
 
-			if (line.hasOption("study-level"))
-				setDisplayLevel(Jpdbi.STUDY);
+            if (line.hasOption("patient-level"))
+                setDisplayLevel(Jpdbi.PATIENT);
+            if (line.hasOption("study-level"))
+                setDisplayLevel(Jpdbi.STUDY);
 			if (line.hasOption("series-level"))
 				setDisplayLevel(Jpdbi.SERIE);
 			if (line.hasOption("instance-level") || line.hasOption("sop-level"))
@@ -631,7 +632,8 @@ class Config {
 			}
 
 			if (line.hasOption("v")) {
-				System.out.println(Jpdbi.ID);
+                System.out.println("JPDBI Version: " + Jpdbi.VERSION);
+                System.out.println(Jpdbi.ID);
 				System.out.println(Jpdbi.REVISION);
 				System.exit(0);
 			}
@@ -704,7 +706,9 @@ class Config {
 					setJdbcUrl(applicationProps.getProperty("jdbc.url"));
 
 			setProps(applicationProps);
-
+			
+			if (getDisplayLevel().isEmpty())
+			    setDisplayLevel(Jpdbi.STUDY);
 		} catch (ParseException exp) {
 			Jpdbi.exit(1, "Unexpected exception:" + exp.getMessage());
 		}
