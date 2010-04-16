@@ -50,6 +50,7 @@ import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -408,6 +409,8 @@ public class DcmQR {
 
     private int priority = 0;
 
+    private boolean cfind;
+
     private boolean cget; 
 
     private String moveDest;
@@ -703,6 +706,9 @@ public class DcmQR {
         OptionBuilder.withDescription(
                 "retrieve instances of matching entities by C-MOVE to specified destination.");
         opts.addOption(OptionBuilder.create("cmove"));
+
+        opts.addOption("nocfind", false,
+                "retrieve instances without previous query - unique keys must be specified by -q options");
 
         opts.addOption("cget", false, "retrieve instances of matching entities by C-GET.");
 
@@ -1109,6 +1115,7 @@ public class DcmQR {
             if (cl.hasOption("cstoredest"))
                 dcmqr.setStoreDestination(cl.getOptionValue("cstoredest"));
         }
+        dcmqr.setCFind(!cl.hasOption("nocfind"));
         dcmqr.setCGet(cl.hasOption("cget"));
         if (cl.hasOption("cmove"))
             dcmqr.setMoveDest(cl.getOptionValue("cmove"));
@@ -1240,10 +1247,16 @@ public class DcmQR {
             LOG.info("Connected to {} in {} s", remoteAE, Float.valueOf((t2 - t1) / 1000f));
 
             for (;;) {
-                List<DicomObject> result = dcmqr.query();
-                long t3 = System.currentTimeMillis();
-                LOG.info("Received {} matching entries in {} s", Integer.valueOf(result.size()),
-                        Float.valueOf((t3 - t2) / 1000f));
+                List<DicomObject> result;
+                if (dcmqr.isCFind()) {
+                    result = dcmqr.query();
+                    long t3 = System.currentTimeMillis();
+                    LOG.info("Received {} matching entries in {} s", Integer.valueOf(result.size()),
+                            Float.valueOf((t3 - t2) / 1000f));
+                    t2 = t3;
+                } else {
+                    result = Collections.singletonList(dcmqr.getKeys());
+                }
                 if (dcmqr.isCMove() || dcmqr.isCGet()) {
                     if (dcmqr.isCMove())
                         dcmqr.move(result);
@@ -1256,7 +1269,7 @@ public class DcmQR {
                                     .getTotalRetrieved()),
                                     Integer.valueOf(dcmqr.getWarning()),
                                     Integer.valueOf(dcmqr.getFailed()),
-                                    Float.valueOf((t4 - t3) / 1000f) });
+                                    Float.valueOf((t4 - t2) / 1000f) });
                 }
                 if (repeat == 0 || closeAssoc) {
                     try {
@@ -1439,6 +1452,14 @@ public class DcmQR {
         privateFind.add(cuid);
     }
 
+    public void setCFind(boolean cfind) {
+        this.cfind = cfind;
+    }
+
+    public boolean isCFind() {
+        return cfind;
+    }
+
     public void setCGet(boolean cget) {
         this.cget = cget;
     }
@@ -1504,6 +1525,10 @@ public class DcmQR {
     public void open() throws IOException, ConfigurationException,
             InterruptedException {
         assoc = ae.connect(remoteAE, executor);
+    }
+
+    public DicomObject getKeys() {
+        return keys;
     }
 
     public List<DicomObject> query() throws IOException, InterruptedException {
