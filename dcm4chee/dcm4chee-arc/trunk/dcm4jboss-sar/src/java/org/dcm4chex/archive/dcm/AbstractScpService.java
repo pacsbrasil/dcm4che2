@@ -1006,7 +1006,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         }
     }
 
-    public void generatePatientID(Dataset pat, Dataset sty) {
+    public void generatePatientID(Dataset pat, Dataset sty, String calledAET) {
         if (generatePatientID == null) {
             return;
         }
@@ -1047,16 +1047,21 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             pid = sb.toString();
         }
         pat.putLO(Tags.PatientID, pid);
-        pat.putLO(Tags.IssuerOfPatientID, issuerOfGeneratedPatientID);
-        if (log.isInfoEnabled()) {
-            StringBuffer prompt = new StringBuffer("Generate Patient ID: ");
-            prompt.append(pid);
-            if (issuerOfGeneratedPatientID != null) {
-                prompt.append("^^^").append(issuerOfGeneratedPatientID);
-            }
-            prompt.append(" for Patient: ").append(pname);
-            log.info(prompt.toString());
-        }
+        String issuer = issuerOfGeneratedPatientID(calledAET);
+        pat.putLO(Tags.IssuerOfPatientID, issuer);
+        if (log.isInfoEnabled())
+            log.info("Generate Patient ID: " + pid + "^^^" + issuer
+                    + " for Patient: " + pname);
+    }
+
+    private String issuerOfGeneratedPatientID(String calledAET) {
+        try {
+            AEDTO ae = aeMgr().findByAET(calledAET);
+            String issuer = ae.getIssuerOfPatientID();
+            if (issuer != null)
+                return issuer;
+        } catch (Exception ignore) {}
+        return issuerOfGeneratedPatientID;
     }
 
     public boolean ignorePatientIDForUnscheduled(Dataset ds,

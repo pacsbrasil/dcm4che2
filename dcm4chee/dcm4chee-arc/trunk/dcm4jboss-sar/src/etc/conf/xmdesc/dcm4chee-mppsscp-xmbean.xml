@@ -49,13 +49,17 @@
    <attribute access="read-write"
       getMethod="getGeneratePatientID"
       setMethod="setGeneratePatientID">
-      <description><![CDATA[Generate a patient ID from a hash of the 
-          patient name and birth date and/or study instance uid, if
-          the received MPPS N-CREATE message contains no patient ID.
-          <br>Use ### and/or $$$ as a placeholder for the decimal hash value of
-          patient name and/or study instance uid.
-          For example, PACS-##########.
-          <br>NONE = do not generate patient IDs..]]>
+      <description><![CDATA[Generate a patient ID from a hash of the patient
+name and birth date and/or study instance uid, if the received MPPS N-CREATE
+message contains no patient ID.
+<br>Use ### and/or $$$ as a placeholder for the decimal hash value of patient
+name and/or study instance uid. For example, PACS-##########.
+<br>NONE = do not generate patient IDs.
+<br><i>Issuer of Patient ID</i> for generated <i>Patient IDs</i> will be set to
+the <i>Issuer of Patient ID</i> associated to the MPPS SCP (=Called) AE by
+its AE configuration entry. If no <i>Issuer of Patient ID</i> is configured for
+the MPPS SCP, <i>Issuer of Patient ID</i> is set to the value configured by
+attribute <b>IssuerOfPatientIDGeneratedPatientID</b>.]]>
       </description>
       <name>GeneratePatientID</name>
       <type>java.lang.String</type>
@@ -66,9 +70,9 @@
    <attribute access="read-write"
       getMethod="getIssuerOfGeneratedPatientID"
       setMethod="setIssuerOfGeneratedPatientID">
-      <description><![CDATA[Value for Issuer Of Patient ID if the patient ID is
-      generated according configured <i>GeneratePatientID<i>.
-      <br>NONE = do not set Issuer Of Patient ID for generated patient IDs.]]>
+      <description><![CDATA[<i>Issuer of Patient ID</i> for generated
+<i>Patient ID's</i>, if no <i>Issuer of Patient ID</i> is associated with the
+MPPS SCP (=Called) AE by its AE Configuration entry.]]>
       </description>
       <name>IssuerOfPatientIDGeneratedPatientID</name>
       <type>java.lang.String</type>
@@ -80,8 +84,8 @@
       getMethod="isSupplementIssuerOfPatientID"
       setMethod="setSupplementIssuerOfPatientID">
       <description><![CDATA[Supplement received MPPS N-CREATE message containing
-          a <i>Patient ID</i>, but no <i>Issuer Of Patient ID</i>, with a value
-          for <i>Issuer Of Patient ID</i>, if such is associated with the
+          a <i>Patient ID</i>, but no <i>Issuer of Patient ID</i>, with a value
+          for <i>Issuer of Patient ID</i>, if such is associated with the
           MPPS SCU AE by its AE Configuration entry.]]>
       </description>
       <name>SupplementIssuerOfPatientID</name>

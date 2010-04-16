@@ -133,13 +133,19 @@
    <attribute access="read-write"
       getMethod="getGeneratePatientID"
       setMethod="setGeneratePatientID">
-      <description><![CDATA[Generate a patient ID from a hash of the 
-          patient name and birth date and/or study instance uid, if
-          the received object contains no patient ID.
-          <br>Use ### and/or $$$ as a placeholder for the decimal hash value of
-          patient name and/or study instance uid.
-          For example, PACS-##########.
-          <br>NONE = do not generate patient IDs. But, this means media creation will fail.]]>
+      <description><![CDATA[Generate a patient ID from a hash of the patient
+name and birth date and/or study instance uid, if the received object contains
+no patient ID, or if it is received from one Storage SCU listend in
+<b>GeneratePatientIDForUnscheduledFromAETitles</b> and does not contain a
+reference to a Scheduled Procedure Step.
+<br>Use ### and/or $$$ as a placeholder for the decimal hash value of patient
+name and/or study instance uid. For example, PACS-##########.
+<br>NONE = do not generate patient IDs.
+<br><i>Issuer of Patient ID</i> for generated <i>Patient IDs</i> will be set to
+the <i>Issuer of Patient ID</i> associated to the Storage SCP (=Called) AE by
+its AE configuration entry. If no <i>Issuer of Patient ID</i> is configured for
+the Storage SCP, <i>Issuer of Patient ID</i> is set to the value configured by
+attribute <b>IssuerOfPatientIDGeneratedPatientID</b>.]]>
       </description>
       <name>GeneratePatientID</name>
       <type>java.lang.String</type>
@@ -150,9 +156,9 @@
    <attribute access="read-write"
       getMethod="getIssuerOfGeneratedPatientID"
       setMethod="setIssuerOfGeneratedPatientID">
-      <description><![CDATA[Value for Issuer Of Patient ID if the patient ID is
-      generated according configured <i>GeneratePatientID<i>.
-      <br>NONE = do not set Issuer Of Patient ID for generated patient IDs.]]>
+      <description><![CDATA[<i>Issuer of Patient ID</i> for generated
+<i>Patient ID's</i>, if no <i>Issuer of Patient ID</i> is associated with the
+Storage SCP (=Called) AE by its AE Configuration entry.]]>
       </description>
       <name>IssuerOfPatientIDGeneratedPatientID</name>
       <type>java.lang.String</type>
@@ -164,8 +170,8 @@
       getMethod="isSupplementIssuerOfPatientID"
       setMethod="setSupplementIssuerOfPatientID">
       <description><![CDATA[Supplement received objects containing a
-          <i>Patient ID</i>, but no <i>Issuer Of Patient ID</i>, with a value
-          for <i>Issuer Of Patient ID</i>, if such is associated with the
+          <i>Patient ID</i>, but no <i>Issuer of Patient ID</i>, with a value
+          for <i>Issuer of Patient ID</i>, if such is associated with the
           Storage SCU AE by its AE Configuration entry.]]>
       </description>
       <name>SupplementIssuerOfPatientID</name>
@@ -262,7 +268,7 @@ but Patient ID and Issuer/Authority in the received DICOM Composite Object
 will be replace by a new Patient ID generated according configured
 <b>GeneratePatientID</b> and by configured <b>IssuerOfGeneratedPatientID</b>.
 If <b>StoreOriginalPatientIDInOtherPatientIDsSequence</b> = <code>true</code>,
-the original <i>Patient ID</i> and <i>Issuer Of Patient ID</i> in the received
+the original <i>Patient ID</i> and <i>Issuer of Patient ID</i> in the received
 DICOM Composite Object will be stored in an item of the <i>Other Patient IDs
 Sequence</i>.]]>
       </description>
@@ -276,10 +282,10 @@ Sequence</i>.]]>
       getMethod="isStoreOriginalPatientIDInOtherPatientIDsSeq"
       setMethod="setStoreOriginalPatientIDInOtherPatientIDsSeq">
       <description><![CDATA[Specifies, if the original <i>Patient ID</i> and
-<i>Issuer Of Patient ID</id> in the received DICOM Composite Object will be
+<i>Issuer of Patient ID</id> in the received DICOM Composite Object will be
 stored in an item of the <i>Other Patient IDs Sequence</i>, if they have to be
 replaced by a new generated Patient ID, caused by an already existing Patient
-Record with matching <i>Patient ID</i> and <i>Issuer Of Patient ID</i>, but
+Record with matching <i>Patient ID</i> and <i>Issuer of Patient ID</i>, but
 not matching demographic fields.]]>
       </description>
       <name>StoreOriginalPatientIDInOtherPatientIDsSequence</name>

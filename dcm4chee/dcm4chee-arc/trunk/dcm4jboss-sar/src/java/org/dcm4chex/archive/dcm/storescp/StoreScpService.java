@@ -73,6 +73,7 @@ import org.dcm4che2.audit.message.InstancesTransferredMessage;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
@@ -973,7 +974,10 @@ public class StoreScpService extends AbstractScpService
         }
         ds.remove(Tags.PatientID);
         ds.remove(Tags.IssuerOfPatientID);
-        generatePatientID(ds, ds);
+        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        String calledAET = ds.getString(PrivateTags.CalledAET);
+        ds.setPrivateCreatorID(null);
+        generatePatientID(ds, ds, calledAET);
     }
 
 }

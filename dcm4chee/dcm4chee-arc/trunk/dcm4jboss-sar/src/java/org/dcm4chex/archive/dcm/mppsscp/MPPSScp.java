@@ -123,7 +123,7 @@ public class MPPSScp extends DcmServiceBase {
                     Tags.ScheduledStepAttributesSeq, callingAET);
             service.supplementInstitutionalData(mpps, callingAET);
             service.generatePatientID(mpps,
-                    mpps.getItem(Tags.ScheduledStepAttributesSeq));
+                    mpps.getItem(Tags.ScheduledStepAttributesSeq), calledAET);
         }
         mpps.putUI(Tags.SOPClassUID, cuid);
         mpps.putUI(Tags.SOPInstanceUID, iuid);
