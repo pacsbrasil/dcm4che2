@@ -722,6 +722,13 @@ class Config {
 
 
             String jdbcDriverClass = System.getProperty("jdbc.driver");
+            
+            if (getJdbcUrl().startsWith("{") && getJdbcUrl().contains("}")) {
+                String tmpJdbcUrl=getJdbcUrl();
+                int pos = tmpJdbcUrl.indexOf("}");
+                jdbcDriverClass=tmpJdbcUrl.substring(1, pos);
+                setJdbcUrl(tmpJdbcUrl.substring(pos+1));
+            }
 
             if (jdbcDriverClass == null)
                 jdbcDriverClass = applicationProps.getProperty("jdbc.driver", "oracle.jdbc.driver.OracleDriver");

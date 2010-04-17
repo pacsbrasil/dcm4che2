@@ -57,8 +57,8 @@
 		<jar destfile="${dist.dir}/jpdbi-stripped.jar" update="true">
 			<fileset dir="${build.dir}" />
 			<manifest>
-				<attribute name="Main-Class" value="com.agfa.db.tools.jpdbi"/>
-				<attribute name="Class-Path" value="./ ../lib/ojdbc5.jar ../lib/ojdbc14.jar ../lib/dcm4che.jar ../thirdparty/commons-cli-1.2.jar" />
+				<attribute name="Main-Class" value="com.agfa.db.tools.Jpdbi"/>
+				<attribute name="Class-Path" value="./ ../lib/ojdbc5.jar ../lib/ojdbc14.jar ../lib/dcm4che.jar ../lib/commons-cli-1.2.jar ../log4j.jar" />
 			</manifest>
 		</jar>
 	</target>
