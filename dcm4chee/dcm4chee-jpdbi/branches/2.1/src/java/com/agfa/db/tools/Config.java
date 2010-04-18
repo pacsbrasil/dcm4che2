@@ -139,16 +139,27 @@ class Config {
     public boolean isDebug() {
         return debug;
     }
+    
+    //
+    private static boolean displayStatus = false;    
+
+    public static boolean isDisplayStatus() {
+        return displayStatus;
+    }
+
+    public static void setDisplayStatus(boolean b) {
+        displayStatus = b;
+    }
 
     //
     private boolean displayFields = false;
 
     public void setDisplayFields(boolean b) {
-        this.displayFields = b;
+        displayFields = b;
     }
 
     public boolean isDisplayFields() {
-        return this.displayFields;
+        return displayFields;
     }
 
     //
@@ -156,27 +167,27 @@ class Config {
 
     public void setDbType(String s) {
         if (s.equalsIgnoreCase("ORACLE"))
-            this.dbType = Jpdbi.DBTYPE_ORACLE;
+            dbType = Jpdbi.DBTYPE_ORACLE;
         else if (s.equalsIgnoreCase("MYSQL"))
-            this.dbType = Jpdbi.DBTYPE_MYSQL;
+            dbType = Jpdbi.DBTYPE_MYSQL;
         else
-            this.dbType = Jpdbi.DBTYPE_UNKNOWN;
+            dbType = Jpdbi.DBTYPE_UNKNOWN;
     }
 
     public int getDbType() {
-        return this.dbType;
+        return dbType;
     }
 
     //
     private String jdbcUrl = null;
 
     public String setJdbcUrl(String s) {
-        this.jdbcUrl = s;
+        jdbcUrl = s;
         return s;
     }
 
     public String getJdbcUrl() {
-        return this.jdbcUrl;
+        return jdbcUrl;
     }
 
     //
@@ -290,8 +301,8 @@ class Config {
         return displayPKs;
     }
 
-    public void setDisplayPKs(boolean displayPKs) {
-        this.displayPKs = displayPKs;
+    public void setDisplayPKs(boolean displayPKsL) {
+        displayPKs = displayPKsL;
     }
 
     private static boolean displayAETs = false;
@@ -314,14 +325,14 @@ class Config {
         pre214 = pre214l;
     }
 
-    private boolean ignoreEmpty = false;
+    private boolean ignoreEmpty = true;
 
     public boolean isIgnoreEmpty() {
         return ignoreEmpty;
     }
 
-    public void setIgnoreEmpty(boolean ignoreEmpty) {
-        this.ignoreEmpty = ignoreEmpty;
+    public void setIgnoreEmpty(boolean ignoreEmptyL) {
+        ignoreEmpty = ignoreEmptyL;
     }
 
     private long updateCount = 1;
@@ -330,8 +341,8 @@ class Config {
         return updateCount;
     }
 
-    public void setUpdateCount(long updateCount) {
-        this.updateCount = updateCount;
+    public void setUpdateCount(long updateCountL) {
+        updateCount = updateCountL;
     }
 
     private static String[] update = null;
@@ -481,6 +492,8 @@ class Config {
             options.addOption("v", "version", false, "version information");
             options.addOption("F", false, "display field names");
             options.addOption("L", false, "display field names");
+            
+            options.addOption(OptionBuilder.withLongOpt("status").withDescription("display status, availability and more").create());
 
             // DataSets
             options.addOption(OptionBuilder.withLongOpt("patds").withDescription("print patient dataset").create());
@@ -500,8 +513,8 @@ class Config {
                     "ALIAS | list").create());
             //
             options.addOption(OptionBuilder.withLongOpt("pks").withDescription("print primary keys").create());
-            options.addOption(OptionBuilder.withLongOpt("ignoreempty").withDescription(
-                    "ignore patients with no studies/series").create());
+            // options.addOption(OptionBuilder.withLongOpt("ignoreempty").withDescription("ignore patients with no studies/series").create("i"));
+            options.addOption(OptionBuilder.withLongOpt("all").withDescription("display all results").create("a"));
             options.addOption(OptionBuilder.withLongOpt("aet").withDescription("print AE titles").create());
             //
             options.addOption(OptionBuilder.withLongOpt("debug").withDescription("output debug").create());
@@ -519,7 +532,8 @@ class Config {
             options.addOption(OptionBuilder.withLongOpt("issuer").withDescription("query issuer").hasArg().withArgName(
                     "ISSUER").create());
             //
-            options.addOption(OptionBuilder.withLongOpt("studyiuid").withDescription("query study IUID").hasArg().withArgName("STUDYIUID").create("s"));
+            options.addOption(OptionBuilder.withLongOpt("studyiuid").withDescription("query study IUID").hasArg()
+                    .withArgName("STUDYIUID").create("s"));
             options.addOption(OptionBuilder.withLongOpt("date").withDescription("query study date").hasArg()
                     .withArgName("YYYY-MM-DD | N").create("d"));
             //
@@ -530,18 +544,20 @@ class Config {
             //
             options.addOption(OptionBuilder.withLongOpt("fs").withDescription("display FS group & PK").create());
             options.addOption(OptionBuilder.withLongOpt("pre214").withDescription("query pre214 archives").create());
-            //
-            // OptionGroup og=new OptionGroup();
-            //
-            options.addOption(OptionBuilder.withLongOpt("patient-level").withDescription("display patient level").create());
-            options.addOption(OptionBuilder.withLongOpt("instance-level").withDescription("display instance level").create());
-            options.addOption(OptionBuilder.withLongOpt("sop-level").withDescription("display instance level").create());
-            options.addOption(OptionBuilder.withLongOpt("series-level").withDescription("display series level").create());
-            options.addOption(OptionBuilder.withLongOpt("study-level").withDescription("display study level").create());
-            options.addOption(OptionBuilder.withLongOpt("path").withDescription("display object path").create());
-            //
-            // options.addOptionGroup(og);
-            //
+            
+            OptionGroup optionGroup=new OptionGroup();
+            
+            optionGroup.addOption(OptionBuilder.withLongOpt("patient-level").withDescription("display patient level")
+                    .create("l1"));
+            optionGroup.addOption(OptionBuilder.withLongOpt("instance-level").withDescription("display instance level")
+                    .create("l2"));           
+            optionGroup.addOption(OptionBuilder.withLongOpt("series-level").withDescription("display series level")
+                    .create("l3"));
+            optionGroup.addOption(OptionBuilder.withLongOpt("study-level").withDescription("display study level").create("l4"));
+            optionGroup.addOption(OptionBuilder.withLongOpt("path").withDescription("display object path").create("l5"));
+            
+            options.addOptionGroup(optionGroup);
+            
             // options.addOption(OptionBuilder.withLongOpt("ThisOptionDoesNotExist").create());
 
             // parse the command line arguments
@@ -552,8 +568,12 @@ class Config {
             if (line.hasOption("debug"))
                 setDebug(true);
 
+/*
             if (line.hasOption("ignoreempty"))
                 setIgnoreEmpty(true);
+*/
+            if (line.hasOption("all"))
+                setIgnoreEmpty(false);
 
             if (line.hasOption("F") || line.hasOption("L"))
                 setDisplayFields(true);
@@ -574,13 +594,16 @@ class Config {
                 setStudyDate(line.getOptionValue("d"));
 
             if (line.hasOption("patid"))
-                setIssuer(line.getOptionValue("patid"));
+                setPatientId(line.getOptionValue("patid"));
 
             if (line.hasOption("issuer"))
                 setIssuer(line.getOptionValue("issuer"));
 
             if (line.hasOption("pks"))
                 setDisplayPKs(true);
+
+            if (line.hasOption("status"))
+                setDisplayStatus(true);
 
             if (line.hasOption("aet"))
                 setDisplayAETs(true);
@@ -699,7 +722,7 @@ class Config {
 
             if (i < argv.length)
                 System.err.println("Error: Too many arguments.");
-            
+
             // db alias
             if (line.hasOption("db")) {
                 if (line.getOptionValue("db").equalsIgnoreCase("list")) {
@@ -720,14 +743,13 @@ class Config {
                 }
             }
 
-
             String jdbcDriverClass = System.getProperty("jdbc.driver");
-            
+
             if (getJdbcUrl().startsWith("{") && getJdbcUrl().contains("}")) {
-                String tmpJdbcUrl=getJdbcUrl();
+                String tmpJdbcUrl = getJdbcUrl();
                 int pos = tmpJdbcUrl.indexOf("}");
-                jdbcDriverClass=tmpJdbcUrl.substring(1, pos);
-                setJdbcUrl(tmpJdbcUrl.substring(pos+1));
+                jdbcDriverClass = tmpJdbcUrl.substring(1, pos);
+                setJdbcUrl(tmpJdbcUrl.substring(pos + 1));
             }
 
             if (jdbcDriverClass == null)
@@ -867,6 +889,8 @@ class Config {
             boolean patientLink = false;
             boolean studyLink = false;
             boolean seriesLink = false;
+            boolean instanceLink = false;
+            boolean filesLink = false;
             // boolean InstanceLink=false;
             // BUILD WHERE CLAUSE
             String where = "";
@@ -874,29 +898,25 @@ class Config {
 
             // Extended QUERY
             if (getQuery() != null) {
-                String qry = getQuery();
-
-                String[] wrds = qry.split("\\s+");
+                String[] wrds = getQuery().toUpperCase().split("\\W+");
 
                 for (int i = 0; i < wrds.length; i++) {
-                    int split = wrds[i].indexOf(".");
-                    if (split > -1) {
-                        String field = wrds[i].substring(0, split).toUpperCase();
-                        // String value = qry.substring(split + 1);
-
-                        if (field.equals("PATIENT")) {
-                            patientLink = true;
-                        } else if (field.equals("STUDY")) {
-                            studyLink = true;
-                        } else if (field.equals("SERIES")) {
-                            seriesLink = true;
-                        }
+                    if (wrds[i].equals("PATIENT")) {
+                        patientLink = true;
+                    } else if (wrds[i].equals("STUDY")) {
+                        studyLink = true;
+                    } else if (wrds[i].equals("SERIES")) {
+                        seriesLink = true;
+                    } else if (wrds[i].equals("INSTANCE")) {
+                        instanceLink = true;
+                    } else if (wrds[i].equals("FILES") || wrds[i].equals("FILESYSTEM")) {
+                        filesLink = true;
                     }
                 }
                 if (where.length() > 0)
-                    where += " and " + qry;
+                    where += " and " + getQuery();
                 else
-                    where = qry;
+                    where = getQuery();
             }
 
             // Patient
@@ -998,11 +1018,15 @@ class Config {
             String select = "";
             String order = "";
 
-            if (isDisplayLevel(Jpdbi.PATH)) {
-                from += "FILESYSTEM,FILES,";
-                links += "INSTANCE.PK=INSTANCE_FK and FILESYSTEM.PK=FILES.FILESYSTEM_FK and ";
-                join = "left join FILESYSTEM on FILESYSTEM.PK=FILES.FILESYSTEM_FK " + join;
-                join = "left join FILES on INSTANCE.PK=INSTANCE_FK " + join;
+            if (filesLink || isDisplayLevel(Jpdbi.PATH)) {
+                if (filesLink || isIgnoreEmpty()) {
+                    instanceLink = true;
+                    from += ",FILES,FILESYSTEM";
+                    links += "INSTANCE.PK=INSTANCE_FK and FILESYSTEM.PK=FILES.FILESYSTEM_FK and ";
+                } else {
+                    join = "left join FILESYSTEM on FILESYSTEM.PK=FILES.FILESYSTEM_FK " + join;
+                    join = "left join FILES on INSTANCE.PK=INSTANCE_FK " + join;
+                }
                 setDisplayLevel(Jpdbi.INSTANCE);
                 if (isDisplayAETs())
                     select = PrependSql("FILESYSTEM.RETRIEVE_AET FSRETAET", select);
@@ -1014,10 +1038,14 @@ class Config {
                 order = PrependSql("E", order);
             }
 
-            if (isDisplayLevel(Jpdbi.INSTANCE) || isUpdateDS(Jpdbi.INSTANCE)) {
-                from += "INSTANCE,";
-                links += "SERIES.PK=SERIES_FK and ";
-                join = "left join INSTANCE on SERIES.PK=SERIES_FK " + join;
+            if (instanceLink || isDisplayLevel(Jpdbi.INSTANCE) || isUpdateDS(Jpdbi.INSTANCE)) {
+                if (instanceLink || isIgnoreEmpty()) {
+                    seriesLink = true;
+                    from = ",INSTANCE" + from;
+                    links += "SERIES.PK=SERIES_FK and ";
+                } else {
+                    join = "left join INSTANCE on SERIES.PK=SERIES_FK " + join;
+                }
                 if (isUpdateDS(Jpdbi.INSTANCE) || isUpdateDS(Jpdbi.INSTANCE))
                     select = PrependSql("INST_ATTRS ", select);
                 setDisplayLevel(Jpdbi.SERIE);
@@ -1032,10 +1060,13 @@ class Config {
             }
 
             if (seriesLink || isDisplayLevel(Jpdbi.SERIE) || isUpdateDS(Jpdbi.SERIE)) {
-                studyLink = true;
-                from += "SERIES,";
-                links += "STUDY.PK=STUDY_FK and ";
-                join = "left join SERIES on STUDY.PK=STUDY_FK " + join;
+                if (seriesLink || isIgnoreEmpty()) {
+                    studyLink = true;
+                    from = ",SERIES" + from;
+                    links += "STUDY.PK=SERIES.STUDY_FK and ";
+                } else {
+                    join = "left join SERIES on STUDY.PK=STUDY_FK " + join;
+                }
                 if (isDisplayDS(Jpdbi.SERIE) || isUpdateDS(Jpdbi.SERIE))
                     select = PrependSql("SERIES_ATTRS ", select);
                 if (isDisplayLevel(Jpdbi.SERIE)) {
@@ -1053,10 +1084,13 @@ class Config {
             }
 
             if (studyLink || isDisplayLevel(Jpdbi.STUDY) || isUpdateDS(Jpdbi.STUDY)) {
-                patientLink = true;
-                from += "STUDY,";
-                links += "PATIENT.PK=STUDY.PATIENT_FK";
-                join = "left join STUDY on PATIENT.PK=STUDY.PATIENT_FK " + join;
+                if (studyLink || isIgnoreEmpty()) {
+                    patientLink = true;
+                    from = ",STUDY" + from;
+                    links += "PATIENT.PK=STUDY.PATIENT_FK";
+                } else {
+                    join = "left join STUDY on PATIENT.PK=STUDY.PATIENT_FK " + join;
+                }
                 if (isDisplayDS(Jpdbi.STUDY) || isUpdateDS(Jpdbi.STUDY))
                     select = PrependSql("STUDY_ATTRS ", select);
                 if (isDisplayLevel(Jpdbi.STUDY)) {
@@ -1072,8 +1106,12 @@ class Config {
             }
 
             if (patientLink || isDisplayLevel(Jpdbi.PATIENT) || isUpdateDS(Jpdbi.PATIENT)) {
-                from += "PATIENT";
-                join = "PATIENT " + join;
+                if (patientLink) {
+                    from = "PATIENT" + from;
+                } else {
+                    join = "PATIENT " + join;
+                }
+
                 if (isDisplayDS(Jpdbi.PATIENT) || isUpdateDS(Jpdbi.PATIENT))
                     select = PrependSql("PAT_ATTRS ", select);
                 if (isDisplayLevel(Jpdbi.PATIENT)) {
@@ -1084,7 +1122,7 @@ class Config {
             }
 
             if (links.length() > 0 && where.length() > 0) {
-                links = links.concat(" and ");
+                links += " and ";
             }
 
             if (where.length() == 0) {

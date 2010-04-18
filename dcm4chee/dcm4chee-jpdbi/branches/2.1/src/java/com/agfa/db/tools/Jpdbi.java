@@ -208,11 +208,11 @@ public class Jpdbi {
         String SQLStatement = "";
 
         if (cfg.isIgnoreEmpty()) {
-            SQLStatement += "from " + query[QUERY_FROM] + " ";
+            SQLStatement += "from " + query[QUERY_FROM] + " " + query[QUERY_JOIN] + " ";
             SQLStatement += "where " + query[QUERY_LINKS] + " " + query[QUERY_WHERE];
         } else {
-            SQLStatement += "from " + query[QUERY_JOIN] + " ";
-            SQLStatement += "where " + query[QUERY_WHERE];
+            SQLStatement += "from " + query[QUERY_FROM] + " " + query[QUERY_JOIN] + " ";
+            SQLStatement += "where " + query[QUERY_LINKS] + " " + query[QUERY_WHERE];
         }
 
         // Construct Count Statement
