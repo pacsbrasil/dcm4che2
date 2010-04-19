@@ -4,39 +4,41 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	    <title>
-	    	<wicket:message key="dashboard.application.browser_title">
-	    		[Dashboard]
-			</wicket:message>
-		</title>
-		<link rel="stylesheet" type="text/css" href="style.css"/>
 	</head>
 	<body>
 		<wicket:panel>
 			<div class="donotprint">
 				<p>
-					<div wicket:id="error-message" />
+					<div wicket:id="error-message" class="error-message" />
 				</p>
 				<p>
-					<div wicket:id="error-reason" />
+					<div wicket:id="error-reason" class="error-message" />
 				</p>
-				<p>
-					<a wicket:id="table-download-xml" class="hyperlink">
-						<wicket:message key="dashboard.report.reporttable.xml.downloadlink.title" />
-					</a>
-					<a wicket:id="table-download-csv" class="hyperlink" style="margin-left: 20px">
-						<wicket:message key="dashboard.report.reporttable.csv.downloadlink.title" />
-					</a>
-					<input type="button" style="margin-left: 20px" wicket:message="value:dashboard.report.reporttable.table.printbutton.title" onclick="javascript:window.print()">
-				</p>
+				<table class="report-info">
+					<tr>
+						<td>
+							<a wicket:id="table-download-xml">
+								<wicket:message key="dashboard.report.reporttable.xml.downloadlink.title" />
+							</a>
+						</td>
+						<td>
+							<a wicket:id="table-download-csv">
+								<wicket:message key="dashboard.report.reporttable.csv.downloadlink.title" />
+							</a>
+						</td>
+						<td>
+							<input type="button" wicket:message="value:dashboard.report.reporttable.table.printbutton.title" onclick="javascript:window.print()">
+						</td>
+					</tr>
+				</table>
 			</div>
-			<table class="table">
+			<table class="report-result">
 				<thead>
 					<tr>
-						<th wicket:id="column-headers" class="table-header" />
+						<th wicket:id="column-headers" />
 					</tr>
 				</thead>
-				<tbody class="table-text">
+				<tbody>
 					<tr wicket:id="report-rows">
 			 	  	  	<td wicket:id="column-values" style="text-align:center">
 							<div wicket:id="column-value" />

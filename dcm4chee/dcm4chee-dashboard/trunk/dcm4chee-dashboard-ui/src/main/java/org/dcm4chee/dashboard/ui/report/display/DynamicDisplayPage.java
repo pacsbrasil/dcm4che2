@@ -42,11 +42,16 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Map;
 
+import org.apache.wicket.ResourceReference;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.dcm4chee.dashboard.model.ReportModel;
+import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
+import org.dcm4chee.web.common.base.BaseWicketPage;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -55,7 +60,19 @@ import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
  */
 public class DynamicDisplayPage extends WebPage {
 
+    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+    private static final ResourceReference CSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
+    private static final ResourceReference PrintCSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-print.css");
+
     public DynamicDisplayPage(ReportModel report, Map<String, String> parameters, boolean displayDiagram, boolean displayTable) {
+
+        if (DynamicDisplayPage.BaseCSS != null)
+            add(CSSPackageResource.getHeaderContribution(DynamicDisplayPage.BaseCSS));
+        if (DynamicDisplayPage.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(DynamicDisplayPage.CSS));
+        if (DynamicDisplayPage.PrintCSS != null)
+            add(CSSPackageResource.getHeaderContribution(DynamicDisplayPage.PrintCSS, "print"));
+
         add(new Label("title", report.getTitle()));
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(report.getCreated());

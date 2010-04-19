@@ -4,28 +4,28 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	    <title>
-	    	<wicket:message key="dashboard.application.browser_title">
-	    		[Dashboard]
-			</wicket:message>
-		</title>
-		<link rel="stylesheet" type="text/css" href="style.css"/>
 	</head>
 	<body>
 		<wicket:panel>
 			<div class="donotprint">
 				<p>
-					<div wicket:id="error-message" />
+					<div wicket:id="error-message" class="error-message" />
 				</p>
 				<p>
-					<div wicket:id="error-reason" />
+					<div wicket:id="error-reason" class="error-message" />
 				</p>
-				<p>
-					<a wicket:id="diagram-download" class="hyperlink">
-						<wicket:message key="dashboard.report.reportdiagram.image.downloadlink.title" />
-					</a>
-					<input wicket:id="diagram-print" type="button" style="margin-left: 20px" wicket:message="value:dashboard.report.reportdiagram.image.printbutton.title" onclick="javascript:window.print()">
-				</p>
+				<table class="report-info">
+					<tr>
+						<td>
+							<a wicket:id="diagram-download">
+								<wicket:message key="dashboard.report.reportdiagram.image.downloadlink.title" />
+							</a>
+						</td>
+						<td>
+							<input wicket:id="diagram-print" type="button" wicket:message="value:dashboard.report.reportdiagram.image.printbutton.title" onclick="javascript:window.print()">
+						</td>
+					</tr>
+				</table>
 			</div>
 			<img wicket:id="diagram"></img>
 		</wicket:panel>

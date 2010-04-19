@@ -38,11 +38,9 @@
 
 package org.dcm4chee.dashboard.ui.report;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Page;
-import org.apache.wicket.PageParameters;
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
@@ -51,7 +49,6 @@ import org.apache.wicket.authentication.AuthenticatedWebSession;
 import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
-import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
 import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.image.Image;
@@ -62,6 +59,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
+import org.dcm4chee.dashboard.ui.ImageAnchor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,16 +116,16 @@ public class DynamicLinkPanel extends Panel {
                 public Object getObject() {
                     return (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.CreateOrEditReportLink) ? 
                         (report == null || report.getGroupUuid() == null) ? 
-                            "images/report.gif" :
-                            "images/edit.gif" : 
+                                getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/report.gif")) :
+                                    getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/edit.gif")) : 
                     (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.RemoveLink) ? 
-                        "images/delete.gif" : 
+                            getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/delete.gif")) : 
                     (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.DisplayDiagramLink) ?
-                        "images/diagram.gif" : 
+                            getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/diagram.gif")) : 
                     (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.DisplayTableLink) ?
-                        "images/table.gif" : 
+                            getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/table.gif")) : 
                     (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.DisplayDiagramAndTableLink) ? 
-                        "images/diagram+table.gif" : 
+                            getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/diagram+table.gif")) : 
                     "";
                 }
             }))));
@@ -159,35 +157,29 @@ public class DynamicLinkPanel extends Panel {
     public void onBeforeRender() {
         super.onBeforeRender();
         
-        try {
-            if (this.link == null) return;
-            
-            this.link.get("image").add(new AttributeModifier("title", true, 
-                    (this.report.getGroupUuid() == null ? 
-                            this.link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.CreateOrEditReportLink ?
-                                    new ResourceModel("dashboard.dynamiclink.report.create" ).wrapOnAssignment(this) :
-                                    this.link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.RemoveLink ? 
-                                            new ResourceModel("dashboard.dynamiclink.report.group.remove").wrapOnAssignment(this) : 
-                                            new Model<String>("")
-                            : 
-                            this.link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.CreateOrEditReportLink ? 
-                                    new ResourceModel("dashboard.dynamiclink.report.edit").wrapOnAssignment(this) : 
-                                    this.link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.RemoveLink ?
-                                            new ResourceModel("dashboard.dynamiclink.report.remove").wrapOnAssignment(this) : 
-                                            new Model<String>("")
-            )));
-            
-            if (this.link instanceof RemoveLink)
-                    this.link.add(new AttributeModifier("onclick", true, new Model<String>("return confirm('" + new ResourceModel(
-                            this.report.getGroupUuid() == null ? 
-                                    "dashboard.dynamiclink.report.group.remove_confirmation" : 
-                                    "dashboard.dynamiclink.report.remove_confirmation"
-                    ).wrapOnAssignment(this).getObject() + "');")));
-        } catch (Exception e) {
-            log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
-            log.debug("Exception: ", e);
-            throw new WicketRuntimeException(e.getLocalizedMessage(), e);
-        }
+        if (this.link == null) return;
+        
+        this.link.get("image").add(new AttributeModifier("title", true, 
+                (this.report.getGroupUuid() == null ? 
+                        this.link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.CreateOrEditReportLink ?
+                                new ResourceModel("dashboard.dynamiclink.report.create" ).wrapOnAssignment(this) :
+                                this.link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.RemoveLink ? 
+                                        new ResourceModel("dashboard.dynamiclink.report.group.remove").wrapOnAssignment(this) : 
+                                        new Model<String>("")
+                        : 
+                        this.link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.CreateOrEditReportLink ? 
+                                new ResourceModel("dashboard.dynamiclink.report.edit").wrapOnAssignment(this) : 
+                                this.link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.RemoveLink ?
+                                        new ResourceModel("dashboard.dynamiclink.report.remove").wrapOnAssignment(this) : 
+                                        new Model<String>("")
+        )));
+        
+        if (this.link instanceof RemoveLink)
+                this.link.add(new AttributeModifier("onclick", true, new Model<String>("return confirm('" + new ResourceModel(
+                        this.report.getGroupUuid() == null ? 
+                                "dashboard.dynamiclink.report.group.remove_confirmation" : 
+                                "dashboard.dynamiclink.report.remove_confirmation"
+                ).wrapOnAssignment(this).getObject() + "');")));
     }
 
     abstract private class AjaxDisplayLink extends AjaxFallbackLink<Object> {
@@ -282,8 +274,9 @@ public class DynamicLinkPanel extends Panel {
             try {
                 DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).deleteReport(this.report, this.report.getGroupUuid() == null);
             } catch (Exception e) {
-                log.error(this.getClass().toString() + ": " + "onClick: " + e.getMessage());
+                log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
                 log.debug("Exception: ", e);
+                throw new WicketRuntimeException(e.getLocalizedMessage(), e); 
             }
         }
     }

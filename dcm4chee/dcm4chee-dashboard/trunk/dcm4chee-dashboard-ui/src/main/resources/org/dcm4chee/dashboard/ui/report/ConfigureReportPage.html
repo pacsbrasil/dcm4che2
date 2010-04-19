@@ -5,48 +5,50 @@
   xmlns:wicket="http://wicket.apache.org">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	    <title>
-	    	<wicket:message key="dashboard.application.browser_title">
-	    		[User Management]
-			</wicket:message>
-		</title>
-		<link rel="stylesheet" type="text/css" href="style.css"/>
 	</head>
-	<body class="panel">
-		<br />
-    	<p>
-			<div wicket:id="page-title" />
-			<br />
-			<form wicket:id="configure-report-form">
-				 <table class="table-form">
-				 	<tr>
+	<body>
+    	<div class="msgWindow">
+			<wicket:message key="dashboard.report.configure.title">
+				[Configure report]
+			</wicket:message>
+			<form wicket:id="configure-report-form" class="configure-report">
+				<table>
+				 	<tr class="input">
 				 		<td>
-							<wicket:message key="dashboard.report.configure.form.title.title" />
+				 			<div class="dashboard-input-desc">
+								<wicket:message key="dashboard.report.configure.form.title.label" />
+							</div>
 						</td>
 						<td>
-							<label wicket:id="dashboard.report.configure.form.title.input" />
+							<div class="dashboard-input-desc">
+								<label wicket:id="dashboard.report.configure.form.title.name" />
+							</div>
 						</td>
 					</tr>
-		 	  	  	<tr wicket:id="variable-rows">
+		 	  	  	<tr wicket:id="variable-rows" class="input">
 			 	  	  	<td>
-			 	  	  		<div wicket:id="variable-name" />
-			 	  	  	</td>
-			 	  	  	<td>
-							<input wicket:id="variable-value" type="text" />
-							<div wicket:id="report-variable-validator-message-label" />
+							<div class="dashboard-input-desc">
+			 	  	  			<div wicket:id="variable-name" />
+							</div>
+						</td>
+						<td>
+							<div class="dashboard-input-value">
+								<input wicket:id="variable-value" type="text" />
+							</div>
 						</td>
 		 	  	  	</tr>
-					<tr>
+					<tr class="submit">
 						<td>
 						</td>
-						<td>				
-							<input wicket:id="form-submit" class="button-submit" type="submit" wicket:message="value:dashboard.report.configure.form.submit" style="clear: left" />
+						<td>
+							<div class="dashboard-input-submit">
+								<input wicket:id="form-submit" type="submit" wicket:message="value:dashboard.report.configure.form.submit" style="clear: left" />
+							</div>
 						</td>
 					</tr>
 				</table>
 			</form>
-        </p>
-        <br />
+        </div>
         <p>
 			<div wicket:id="result-message">
 				[Result message]

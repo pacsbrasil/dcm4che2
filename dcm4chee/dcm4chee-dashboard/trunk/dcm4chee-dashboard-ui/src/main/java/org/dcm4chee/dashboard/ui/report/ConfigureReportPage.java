@@ -48,25 +48,30 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ReflectionException;
 
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.yui.calendar.DatePicker;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.model.ReportModel;
-import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
+import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.report.display.DynamicDisplayPage;
-import org.dcm4chee.dashboard.ui.validator.ValidatorMessageLabel;
+import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
+import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.common.markup.BaseForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,15 +85,25 @@ public class ConfigureReportPage extends WebPage {
     private static final long serialVersionUID = 1L;
     
     private static Logger log = LoggerFactory.getLogger(ConfigureReportPage.class);
-   
+
+    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+    private static final ResourceReference CSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
+
     private ReportModel report;
     protected ModalWindow window;
     
     private boolean diagram;
     private boolean table;
     
+    private Label resultMessage;
+    
     public ConfigureReportPage(final ModalWindow window, final ReportModel report, boolean diagram, boolean table) {
         super();
+
+        if (ConfigureReportPage.BaseCSS != null)
+            add(CSSPackageResource.getHeaderContribution(ConfigureReportPage.BaseCSS));
+        if (ConfigureReportPage.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(ConfigureReportPage.CSS));
 
         try {
             this.report = report;
@@ -96,9 +111,10 @@ public class ConfigureReportPage extends WebPage {
             this.diagram = diagram;
             this.table = table;
 
-            Label resultMessage;
             add(resultMessage = new Label("result-message"));
             resultMessage.setOutputMarkupId(true);
+            resultMessage.setDefaultModel(new Model<String>(""));
+
             add(new ConfigureReportForm("configure-report-form", this.report, resultMessage, this.window));
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
@@ -111,18 +127,11 @@ public class ConfigureReportPage extends WebPage {
     public void onBeforeRender() {
         super.onBeforeRender();
 
-        try {
-            if (!DatabaseUtils.isConfigurableStatement(this.report.getStatement()))
-                redirectToInterceptPage(new DynamicDisplayPage(this.report, null, this.diagram, this.table));
-            addOrReplace(new Label("page-title", new ResourceModel("dashboard.report.configure.title").wrapOnAssignment(this).getObject()));
-        } catch (Exception e) {
-            log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
-            log.debug("Exception: ", e);
-            throw new WicketRuntimeException(e.getLocalizedMessage(), e);
-        }
+        if (!DatabaseUtils.isConfigurableStatement(this.report.getStatement()))
+            redirectToInterceptPage(new DynamicDisplayPage(this.report, null, this.diagram, this.table));
     }
     
-    private final class ConfigureReportForm extends Form<Object> {
+    private final class ConfigureReportForm extends BaseForm {
 
         private static final long serialVersionUID = 1L;
 
@@ -131,14 +140,8 @@ public class ConfigureReportPage extends WebPage {
         public ConfigureReportForm(final String id, final ReportModel report, final Label resultMessage, final ModalWindow window) throws InstanceNotFoundException, MalformedObjectNameException, AttributeNotFoundException, ReflectionException, MBeanException, NullPointerException {
             super(id);
 
-            this.add(new Label("dashboard.report.configure.form.title.input", new PropertyModel<String>(report, "title"))
+            this.add(new Label("dashboard.report.configure.form.title.name", new PropertyModel<String>(report, "title"))
             .add(new AttributeModifier("size", true, new ResourceModel("dashboard.report.configure.form.title.columns"))));
-
-            this.add(new TextArea<String>("dashboard.report.configure.form.statement.input", new PropertyModel<String>(report, "statement"))
-            .setRequired(true)
-            .add(new AttributeModifier("rows", true, new ResourceModel("dashboard.report.configure.form.statement.rows")))
-            .add(new AttributeModifier("cols", true, new ResourceModel("dashboard.report.configure.form.statement.columns")))
-            .setEnabled(false));
 
             RepeatingView variableRows = new RepeatingView("variable-rows");
             add(variableRows);
@@ -158,7 +161,6 @@ public class ConfigureReportPage extends WebPage {
                                 parameters.put(parameterName, value != null ? value : "");
                             }                            
                         })))))
-                        .add(new ValidatorMessageLabel("report-variable-validator-message-label", textField).setOutputMarkupId(true))
                 );
                 if (parameterName.toString().startsWith("date"))
                     textField.add(new DatePicker());

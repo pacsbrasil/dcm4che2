@@ -54,30 +54,34 @@ import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
+import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
 import org.dcm4chee.dashboard.ui.validator.ReportTitleValidator;
 import org.dcm4chee.dashboard.ui.validator.SQLSelectStatementValidator;
-import org.dcm4chee.dashboard.ui.validator.ValidatorMessageLabel;
+import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.common.markup.BaseForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,50 +95,57 @@ public class CreateOrEditReportPage extends WebPage {
     private static final long serialVersionUID = 1L;
     
     private static Logger log = LoggerFactory.getLogger(CreateOrEditReportPage.class);
-   
+
+    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+    private static final ResourceReference CSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
+
     protected ModalWindow window;
     private ReportModel report;
+    
+    String[] diagramOptionsTypes;
+    String[] diagramOptionsTooltips;
+
+    private Label resultMessage;
 
     public CreateOrEditReportPage(final ModalWindow window, final ReportModel report) {
         super();
 
-        try {
-            this.report = (report == null) ? new ReportModel() : report;
-            if (this.report.getGroupUuid() == null) {
-                this.report.setGroupUuid(this.report.getUuid());
-                this.report.setUuid(null);
-                this.report.setTitle(null);
-            }
-            this.window = window;
-            
-            Label resultMessage;
-            add(resultMessage = new Label("result-message"));
-            add(new CreateOrEditReportForm("create-or-edit-report-form", this.report, resultMessage, this.window));
-        } catch (Exception e) {
-            log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
-            log.debug("Exception: ", e);
-            throw new WicketRuntimeException(e.getLocalizedMessage(), e);
+        if (CreateOrEditReportPage.BaseCSS != null)
+            add(CSSPackageResource.getHeaderContribution(CreateOrEditReportPage.BaseCSS));
+        if (CreateOrEditReportPage.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(CreateOrEditReportPage.CSS));
+
+        this.report = (report == null) ? new ReportModel() : report;
+        if (this.report.getGroupUuid() == null) {
+            this.report.setGroupUuid(this.report.getUuid());
+            this.report.setUuid(null);
+            this.report.setTitle(null);
         }
+        this.window = window;
+        
+        add(resultMessage = new Label("result-message"));
+        resultMessage.setOutputMarkupId(true);
+        resultMessage.setDefaultModel(new Model<String>(""));
     }
 
     @Override
     public void onBeforeRender() {
         super.onBeforeRender();
-        
+
         try {
+            diagramOptionsTypes = new ResourceModel("dashboard.report.createoredit.diagram.options.types").wrapOnAssignment(this).getObject().split(";");
+            diagramOptionsTooltips = new ResourceModel("dashboard.report.createoredit.diagram.options.tooltips").wrapOnAssignment(this).getObject().split(";");
+            
+            addOrReplace(new CreateOrEditReportForm("create-or-edit-report-form", this.report, resultMessage, this.window));
             addOrReplace(new Label("page-title", new ResourceModel(this.report.getUuid() == null ? "dashboard.report.createoredit.create.title" : "dashboard.report.createoredit.edit.title")));
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
-            setResponsePage( 
-                    getApplication().getSessionSettings().getPageFactory()
-                    .newPage(getApplication().getApplicationSettings()
-                            .getInternalErrorPage(), 
-                            e, null));
+            throw new WicketRuntimeException(e.getLocalizedMessage(), e); 
         }
     }
-    
-    private final class CreateOrEditReportForm extends Form<Object> {
+
+    private final class CreateOrEditReportForm extends BaseForm {
 
         private static final long serialVersionUID = 1L;
         
@@ -146,7 +157,6 @@ public class CreateOrEditReportPage extends WebPage {
             .setRequired(true)
             .add(new ReportTitleValidator())
             .add(new AttributeModifier("size", true, new ResourceModel("dashboard.report.createoredit.form.title.columns"))));
-            this.add(new ValidatorMessageLabel("report-title-validator-message-label", (FormComponent<?>) this.get(0)).setOutputMarkupId(true));
             
             add(new Label("report-datasource-dropdown-label", new ResourceModel("dashboard.report.createoredit.form.datasource.dropdown.title")));
             add(new DropDownChoice<String>("report-datasource-dropdown-choice", new PropertyModel<String>(thisReport, "dataSource"), Arrays.asList(DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).getDataSources())).setNullValid(true));
@@ -156,7 +166,6 @@ public class CreateOrEditReportPage extends WebPage {
             .add(new SQLSelectStatementValidator())
             .add(new AttributeModifier("rows", true, new ResourceModel("dashboard.report.createoredit.form.statement.rows")))
             .add(new AttributeModifier("cols", true, new ResourceModel("dashboard.report.createoredit.form.statement.columns"))));
-            this.add(new ValidatorMessageLabel("report-statement-validator-message-label", (FormComponent<?>) this.get("dashboard.report.createoredit.form.statement.input")).setOutputMarkupId(true));
 
             add(new AjaxFallbackButton("statement-test-submit", CreateOrEditReportForm.this) {
                 private static final long serialVersionUID = 1L;
@@ -187,7 +196,6 @@ public class CreateOrEditReportPage extends WebPage {
                         .close();
                     } catch (Exception e) {
                         message = e.getLocalizedMessage();
-                        log.debug("Exception: ", e);
                     } finally {
                         try {
                             jdbcConnection.close();
@@ -197,20 +205,17 @@ public class CreateOrEditReportPage extends WebPage {
                                                                                           "dashboard.report.createoredit.form.statement-test-submit.failure-message")
                                                             .wrapOnAssignment(this.getParent()).getObject().toString()
                                                             + (message == null ? "" : message)))
-                        .add(new AttributeModifier("class", true, new Model<String>(message == null ? "message-system" : "message-error")))              
-                        .setVisible(true);
-                        setResponsePage(this.getPage());
+                        .add(new AttributeModifier("class", true, new Model<String>(message == null ? "result-message" : "error-message")));              
+                        target.addComponent(resultMessage);
                     }
                 }
                 
                 @Override
                 protected void onError(AjaxRequestTarget target, Form<?> form) {
-                    target.addComponent(form.get("report-statement-validator-message-label"));
+                    target.addComponent(form);
                 }
             });
 
-            final String[] diagramOptionsTypes = new ResourceModel("dashboard.report.diagram.options.types").wrapOnAssignment(this.getParent()).getObject().split(";");
-            final String[] diagramOptionsTooltips = new ResourceModel("dashboard.report.diagram.options.tooltips").wrapOnAssignment(this.getParent()).getObject().split(";");
             add(new Label("report-diagram-dropdown-label", new ResourceModel("dashboard.report.createoredit.form.diagram.dropdown.title")));
             add(new DropDownChoice<Integer>("report-diagram-dropdown-choice", new PropertyModel<Integer>(thisReport, "diagram"), new ListModel<Integer>() {
 
@@ -248,20 +253,15 @@ public class CreateOrEditReportPage extends WebPage {
                             DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).updateReport(thisReport);
                         window.close(target);
                     } catch (Exception e) {
-                      log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
-                      log.debug("Exception: ", e);
-
-                      resultMessage.setDefaultModel(new ResourceModel("dashboard.report.createoredit.form.form-submit.failure-message"))
-                      .add(new AttributeModifier("class", true, new Model<String>("message-error")))
-                      .setVisible(true);
-                      setResponsePage(this.getPage());
+                        log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
+                        log.debug("Exception: ", e);
+                        throw new WicketRuntimeException(e.getLocalizedMessage(), e);
                     }
                 }
-                
+
                 @Override
                 protected void onError(AjaxRequestTarget target, Form<?> form) {
-                    target.addComponent(form.get("report-title-validator-message-label"));
-                    target.addComponent(form.get("report-statement-validator-message-label"));
+                    target.addComponent(form);
                 }
             });
         }

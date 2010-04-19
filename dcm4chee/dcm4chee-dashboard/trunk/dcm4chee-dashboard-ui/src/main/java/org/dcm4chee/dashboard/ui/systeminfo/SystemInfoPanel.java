@@ -53,27 +53,29 @@ import javax.swing.tree.TreeNode;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation;
 import org.apache.wicket.extensions.markup.html.tree.table.IColumn;
 import org.apache.wicket.extensions.markup.html.tree.table.PropertyRenderableColumn;
 import org.apache.wicket.extensions.markup.html.tree.table.PropertyTreeColumn;
-import org.apache.wicket.extensions.markup.html.tree.table.TreeTable;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation.Alignment;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation.Unit;
 import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
-import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.SystemPropertyModel;
+import org.dcm4chee.dashboard.ui.DashboardPanel;
+import org.dcm4chee.dashboard.ui.common.DashboardTreeTable;
 import org.dcm4chee.dashboard.ui.util.CSSUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,8 +91,13 @@ public class SystemInfoPanel extends Panel {
     
     private static Logger log = LoggerFactory.getLogger(SystemInfoPanel.class);
 
+    private static final ResourceReference CSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
+
     public SystemInfoPanel(String id) {
         super(id);
+        
+        if (SystemInfoPanel.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(SystemInfoPanel.CSS));
     }
     
     @Override
@@ -189,45 +196,12 @@ public class SystemInfoPanel extends Panel {
         }
     }
     
-    private class SystemPropertyTreeTable extends TreeTable {
+    private class SystemPropertyTreeTable extends DashboardTreeTable {
 
         private static final long serialVersionUID = 1L;
 
         public SystemPropertyTreeTable(String id, TreeModel model, IColumn[] columns) {
             super(id, model, columns);
-            add(new AttributeModifier("class", true, new Model<String>("table")));
-        }
-
-        private class TreeFragment extends Fragment {
-
-            private static final long serialVersionUID = 1L;
-
-            public TreeFragment(String id, final TreeNode node, int level,
-                    final IRenderNodeCallback renderNodeCallback) {
-                super(id, "fragment", SystemPropertyTreeTable.this);
-
-                add(newIndentation(this, "indent", node, level));
-                add(newJunctionLink(this, "link", "image", node));
-
-                add(newNodeLink(this, "nodeLink", node)
-                .add(newNodeIcon(this, "icon", node))
-                .add(new Label("label", new AbstractReadOnlyModel<Object>() {
-
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    public Object getObject() {
-                        return renderNodeCallback.renderNode(node);
-                    }
-                }))
-                .setEnabled(false));
-            }
-        }
-
-        @Override
-        protected Component newTreePanel(MarkupContainer parent, String id, final TreeNode node, 
-                                         int level, IRenderNodeCallback renderNodeCallback) {
-            return new TreeFragment(id, node, level, renderNodeCallback);
         }
 
         @Override
@@ -246,7 +220,7 @@ public class SystemInfoPanel extends Panel {
                         "folder_open" : "property") + ".gif')");
                 }
             };
-        }
+        }        
     };
 
     private class MemoryInstanceModel implements Serializable {

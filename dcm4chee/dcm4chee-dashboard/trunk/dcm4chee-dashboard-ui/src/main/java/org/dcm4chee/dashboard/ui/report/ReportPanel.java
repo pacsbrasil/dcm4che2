@@ -43,39 +43,40 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 
-import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
-import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
 import org.apache.wicket.extensions.markup.html.tree.table.AbstractColumn;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation;
 import org.apache.wicket.extensions.markup.html.tree.table.IColumn;
 import org.apache.wicket.extensions.markup.html.tree.table.IRenderable;
 import org.apache.wicket.extensions.markup.html.tree.table.PropertyTreeColumn;
-import org.apache.wicket.extensions.markup.html.tree.table.TreeTable;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation.Alignment;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation.Unit;
 import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
-import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
-import org.dcm4chee.dashboard.ui.validator.ValidatorMessageLabel;
+import org.dcm4chee.dashboard.ui.DashboardPanel;
+import org.dcm4chee.dashboard.ui.ImageAnchor;
+import org.dcm4chee.dashboard.ui.common.DashboardTreeTable;
+import org.dcm4chee.web.common.markup.BaseForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,11 +90,16 @@ public class ReportPanel extends Panel {
     private static final long serialVersionUID = 1L;
     
     private static Logger log = LoggerFactory.getLogger(ReportPanel.class);
-   
+
+    private static final ResourceReference CSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
+
     private ModalWindow modalWindow;
     
     public ReportPanel(String id) {
         super(id);
+
+        if (ReportPanel.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(ReportPanel.CSS));
 
         add(this.modalWindow = new ModalWindow("modal-window"));
         add(new ToggleFormLink("toggle-group-form-link", 
@@ -167,47 +173,12 @@ public class ReportPanel extends Panel {
         }
     }
 
-    private class ReportTreeTable extends TreeTable {
+    private class ReportTreeTable extends DashboardTreeTable {
 
         private static final long serialVersionUID = 1L;
 
         public ReportTreeTable(String id, TreeModel model, IColumn[] columns) {
             super(id, model, columns);
-            
-            add(new AttributeModifier("class", true, new Model<String>("table")));
-        }
-
-        private class TreeFragment extends Fragment {
-
-            private static final long serialVersionUID = 1L;
-
-            public TreeFragment(String id, final TreeNode node, int level, final IRenderNodeCallback renderNodeCallback) {
-                super(id, "fragment", ReportTreeTable.this);
-
-                setLinkType(LinkType.AJAX_FALLBACK);
-                
-                add(newIndentation(this, "indent", node, level));
-                add(newJunctionLink(this, "link", "image", node));
-                
-                add(newNodeLink(this, "nodeLink", node)
-                .add(newNodeIcon(this, "icon", node))
-                .add(new Label("label", new AbstractReadOnlyModel<Object>() {
-
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    public Object getObject() {
-                        return renderNodeCallback.renderNode(node);
-                    }
-                }))
-                .setEnabled(false));
-            }            
-        }
-
-        @Override
-        protected Component newTreePanel(MarkupContainer parent, String id, final TreeNode node, 
-                                         int level, IRenderNodeCallback renderNodeCallback) {
-            return new TreeFragment(id, node, level, renderNodeCallback);
         }
 
         @Override
@@ -275,7 +246,7 @@ public class ReportPanel extends Panel {
                 @Override
                 protected void onComponentTag(ComponentTag tag) {
                     super.onComponentTag(tag);
-                    tag.put("src",form.isVisible() ? "images/minus.gif" : "images/plus.gif");
+                    tag.put("src",form.isVisible() ? this.getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/minus.gif")) : this.getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/plus.gif")));
                 }
             }));
         }
@@ -285,8 +256,8 @@ public class ReportPanel extends Panel {
             super.onComponentTag(tag);
             
             tag.put("title", this.form.isVisible() ? 
-                    new ResourceModel("dashboard.report.add-group.visible.true").wrapOnAssignment(this).getObject()
-                    : new ResourceModel("dashboard.report.add-group.visible.false").wrapOnAssignment(this).getObject());
+                    new ResourceModel("dashboard.report.add-group-form.visible.true").wrapOnAssignment(this).getObject()
+                    : new ResourceModel("dashboard.report.add-group-form.visible.false").wrapOnAssignment(this).getObject());
         }
         
         @Override
@@ -297,7 +268,7 @@ public class ReportPanel extends Panel {
         }
     };
     
-    private final class AddGroupForm extends Form<Object> {
+    private final class AddGroupForm extends BaseForm {
         
         private static final long serialVersionUID = 1L;
         
@@ -310,25 +281,29 @@ public class ReportPanel extends Panel {
             this.setVisible(false);
 
             this.add(newAjaxComponent(
-                    new Label("new-group-label", new ResourceModel("dashboard.report.add-group.label").wrapOnAssignment(this))));
-            TextField<String> groupTf;
-            this.add(newAjaxComponent((groupTf = new TextField<String>("new-groupname-input", newGroupname))
+                    new Label("new-groupname-label", new ResourceModel("dashboard.report.add-group-form.label").wrapOnAssignment(this))));
+            final TextField<String> groupnameTf;
+            this.add(newAjaxComponent((groupnameTf = new TextField<String>("dashboard.report.add-group-form.groupname.input", newGroupname))
             .add(new PatternValidator("^[A-Za-z0-9]+$"))
             .setRequired(true)));
-            this.add(new ValidatorMessageLabel("new-groupname-validator-message-label", groupTf));
-            this.add(new Button("add-group-submit"));
-        }
+            this.add(new Button("add-group-submit") {
+        
+                private static final long serialVersionUID = 1L;
 
-        @Override
-        protected void onSubmit() {
-            try {
-                DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).createReport(new ReportModel(null, this.newGroupname.getObject(), null, null, null, false, null, null), true);
-            } catch (final Exception e) {
-                log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
-                log.debug("Exception: ", e);
-            }
+                @Override
+                public void onSubmit() {
+                    try {
+                        DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).createReport(new ReportModel(null, newGroupname.getObject(), null, null, null, false, null, null), true);
+                        this.getParent().setVisible(false);
+                        groupnameTf.setModelObject("");
+                    } catch (final Exception e) {
+                        log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
+                        log.debug("Exception: ", e);
+                    }
+                }
+            });
         }
-    };
+    }
     
     private Component newAjaxComponent(Component component) {
         component.setOutputMarkupId(true);

@@ -21,10 +21,99 @@ div.wicket-tree-table-body {
 /* for dashboard FileSystemTreeTable */
 div[id="filesystem"] div.row, div[id="filesystem"] span {
 	height: 50px !important;
-	border-color: #666 !important;
 }
 
 /* class of tree table of wicket extensions */
 span.c_ {
 	text-align: center;
 }
+
+div.dashboard-input-desc {
+	border: none;
+	text-align: left;
+	height: 20;
+}
+div.dashboard-input-value {
+	border: 1px solid;
+	float: left;
+	text-align: right;
+	margin: 0 6;
+	height: 20;
+}
+div.dashboard-input-button {
+	background: none #aaaaaa;
+	padding: 5 0 0 0;
+	height: 30;
+	text-align: left;
+}
+
+form.add-group {width: 33%;}
+form.add-group tr.input {
+	background: #99bbaa;
+	padding: 1 0 0 0;
+	height: 30;
+}
+form.add-group tr.submit {
+	background: none #aaaaaa;
+	padding: 1 0 0 0;
+	height: 30;
+}
+
+form.create-or-edit-report {width: 33%;}
+form.create-or-edit-report tr.input {
+	background: #99bbaa;
+	padding: 1 0 0 0;
+	height: 30;
+}
+form.create-or-edit-report tr.submit {
+	background: none #aaaaaa;
+	padding: 1 0 0 0;
+	height: 30;
+}
+
+form.configure-report {width: 33%;}
+form.configure-report tr.input {
+	background: #99bbaa;
+	padding: 1 0 0 0;
+	height: 30;
+}
+form.configure-report tr.submit {
+	background: none #aaaaaa;
+	padding: 1 0 0 0;
+	height: 30;
+}
+
+.result-message {
+	color: black;
+}
+
+.error-message {
+	color: red;
+}
+
+table.report-info {}
+table.report-info th {background: #99bbaa; border-color: #666;}
+table.report-info tr.even {background: #aaccbb;}
+table.report-info tr.odd {background: #99bbaa;}
+table.report-info td.centered {align: center;}
+
+div.diagram-panel {
+	float: left;
+	margin: 20px;	
+}
+
+div.table-panel {
+	margin: 20px;	
+}
+
+table.report-result {}
+table.report-result th {background: #99bbaa; border-color: #666;}
+table.report-result tr.even {background: #aaccbb;}
+table.report-result tr.odd {background: #99bbaa;}
+table.report-result td.centered {align: center;}
+
+table.memory {}
+table.memory th {background: #99bbaa; border-color: #666;}
+table.memory tr.even {background: #aaccbb;}
+table.memory tr.odd {background: #99bbaa;}
+table.memory td.centered {align: center;}

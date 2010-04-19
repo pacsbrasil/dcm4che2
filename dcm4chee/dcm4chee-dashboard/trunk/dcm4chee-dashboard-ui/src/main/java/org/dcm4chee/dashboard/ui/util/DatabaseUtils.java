@@ -56,6 +56,7 @@ import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -125,7 +126,7 @@ public class DatabaseUtils {
     
     public static List<String> getParameterOccurences(String statement) {
         List<String> parameters = new ArrayList<String>();
-        Matcher m = Pattern.compile("\\[\\:" + new ResourceModel("dashboard.report.parameter.options.types").getObject().toString() + "\\:[A-Za-z0-9\\.]*\\:\\]").matcher(statement);
+        Matcher m = Pattern.compile("\\[\\:(text|int|float|boolean|date)\\:[A-Za-z0-9\\.]*\\:\\]").matcher(statement);
         while(m.find()) parameters.add(m.group().replaceAll("(\\[\\:|\\:\\])", "").replaceAll("\\:", " "));
         return parameters;
     }
@@ -136,7 +137,7 @@ public class DatabaseUtils {
     
     public static Set<String> getParameterSet(String statement) {
         Set<String> parameters = new TreeSet<String>();
-        Matcher m = Pattern.compile("\\[\\:" + new ResourceModel("dashboard.report.parameter.options.types").getObject().toString() + "\\:[A-Za-z0-9\\.]*\\:\\]").matcher(statement);
+        Matcher m = Pattern.compile("\\[\\:(text|int|float|boolean|date)\\:[A-Za-z0-9\\.]*\\:\\]").matcher(statement);
         while(m.find()) parameters.add(m.group().replaceAll("(\\[\\:|\\:\\])", "").replaceAll("\\:", " "));
         return parameters;
     }
