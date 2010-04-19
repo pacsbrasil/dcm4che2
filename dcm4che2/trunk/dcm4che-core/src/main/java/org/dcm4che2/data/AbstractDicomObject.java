@@ -47,6 +47,7 @@ import java.util.regex.Pattern;
 
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.util.DateUtils;
+import org.dcm4che2.util.TagUtils;
 
 abstract class AbstractDicomObject implements DicomObject {
 
@@ -61,7 +62,35 @@ abstract class AbstractDicomObject implements DicomObject {
     public void copyTo(final DicomObject dest) {
         accept(new Visitor() {
             public boolean visit(DicomElement attr) {
-                dest.add(attr);
+                int tag = attr.tag();
+                VR vr = attr.vr();
+                if (!TagUtils.isPrivateDataElement(tag))
+                    dest.add(attr);
+                else if (!TagUtils.isPrivateCreatorDataElement(tag)) {
+                    int destTag =
+                            dest.resolveTag(tag, getPrivateCreator(tag), true);
+                    if (attr.hasItems()) {
+                        final int n = attr.countItems();
+                        DicomElement t;
+                        if (vr == VR.SQ) {
+                            t = dest.putSequence(destTag, n);
+                            for (int i = 0; i < n; i++) {
+                                DicomObject srcItem = attr.getDicomObject(i);
+                                BasicDicomObject item = new BasicDicomObject(
+                                        srcItem.size());
+                                item.setParent(dest);
+                                srcItem.copyTo(item);
+                                t.addDicomObject(item);
+                            }
+                        } else {
+                            t = putFragments(destTag, vr, attr.bigEndian(), n);
+                            for (int i = 0; i < n; i++) {
+                                t.addFragment(attr.getFragment(i));
+                            }
+                        }
+                    } else
+                        dest.putBytes(destTag, vr, getBytes(tag));
+                }
                 return true;
             }
         });

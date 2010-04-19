@@ -156,4 +156,35 @@ public class DicomObjectTest extends TestCase {
                 item1.resolveTag(0x00570042, "VEPRO BROKER 1.0 DATA REPLACE"),
                 VR.SH));
     }
+    
+    public void testCopyPrivate() {
+        DicomObject dcmobj1 = new BasicDicomObject();
+        DicomObject dcmobj2 = new BasicDicomObject();
+        dcmobj1.putString(
+                dcmobj1.resolveTag(0x00990010, "PrivateCreator1", true),
+                VR.LT, "PrivateValue1");
+        dcmobj1.putString(
+                dcmobj1.resolveTag(0x00990010, "PrivateCreator2", true),
+                VR.LT, "PrivateValue2");
+        dcmobj2.putString(
+                dcmobj2.resolveTag(0x00990010, "PrivateCreator2", true),
+                VR.LT, "PrivateValue2");
+        DicomElement sq2 = dcmobj2.putSequence(
+                dcmobj2.resolveTag(0x00990011, "PrivateCreator2", true));
+        BasicDicomObject item2 = new BasicDicomObject();
+        item2.putString(
+                dcmobj1.resolveTag(0x00990010, "PrivateCreator2", true),
+                VR.LT, "PrivateValue3");
+        sq2.addDicomObject(item2);
+        dcmobj2.copyTo(dcmobj1);
+        assertEquals("PrivateValue1", dcmobj1.getString(
+                dcmobj1.resolveTag(0x00990010, "PrivateCreator1")));
+        assertEquals("PrivateValue2", dcmobj1.getString(
+                dcmobj1.resolveTag(0x00990010, "PrivateCreator2")));
+        DicomObject item1 = dcmobj1.getNestedDicomObject(
+                dcmobj1.resolveTag(0x00990011, "PrivateCreator2"));
+        assertNotNull(item1);
+        assertEquals("PrivateValue3", item1.getString(
+                dcmobj1.resolveTag(0x00990010, "PrivateCreator2")));
+    }
 }
