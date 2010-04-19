@@ -9,7 +9,6 @@
 	    		[Dashboard]
 			</wicket:message>
 		</title>
-		<link rel="stylesheet" type="text/css" href="style.css"/>
 	</head>
 	<body class="panel">
 		<p>
@@ -19,10 +18,10 @@
 						<img class="image" src="images/logo.gif" style="background-color: white"/>
 					</td>
 					<td style="text-align: left">
-						<div class="title">						
-						<wicket:message key="dashboard.application.title">
-							[Dashboard]
-						</wicket:message>
+						<div>						
+							<wicket:message key="dashboard.application.title">
+								[Dashboard]
+							</wicket:message>
 						</div>
 					</td>
 					<td width="140px" style="text-align: right">
@@ -30,7 +29,7 @@
 					<td width="50px" style="text-align: right">
 					</td>
 					<td width="50px" style="text-align: right">
-						<a wicket:id="logout-link" class="hyperlink" href="#">
+						<a wicket:id="logout-link" href="#">
 							<wicket:message key="dashboard.application.logout">
 								[Log out]
 							</wicket:message>
