@@ -135,7 +135,7 @@ public class SystemInfoPanel extends Panel {
                 }
             }
 
-            add(new ListView<MemoryInstanceModel>("memory-instance-rows", memoryInstanceList) {
+            addOrReplace(new ListView<MemoryInstanceModel>("memory-instance-rows", memoryInstanceList) {
 
                 private static final long serialVersionUID = 1L;
 
@@ -188,7 +188,7 @@ public class SystemInfoPanel extends Panel {
             systemPropertyTreeTable.getTreeState().setAllowSelectMultiple(true);
             systemPropertyTreeTable.getTreeState().expandAll();
             systemPropertyTreeTable.setRootLess(true);
-            add(systemPropertyTreeTable);
+            addOrReplace(systemPropertyTreeTable);
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
