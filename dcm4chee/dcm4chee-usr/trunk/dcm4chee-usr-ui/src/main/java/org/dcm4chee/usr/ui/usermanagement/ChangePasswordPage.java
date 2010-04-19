@@ -38,7 +38,6 @@
 
 package org.dcm4chee.usr.ui.usermanagement;
 
-import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
@@ -47,7 +46,6 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.validation.EqualPasswordInputValidator;
@@ -61,8 +59,6 @@ import org.dcm4chee.usr.ui.util.SecurityUtils;
 import org.dcm4chee.usr.ui.validator.PasswordValidator;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -74,8 +70,6 @@ public class ChangePasswordPage extends WebPage {
     
     private static final long serialVersionUID = 1L;
     
-    private static Logger log = LoggerFactory.getLogger(ChangePasswordPage.class);
-
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     private static final ResourceReference CSS = new CompressedResourceReference(ChangePasswordPage.class, "usr-style.css");
     
@@ -93,8 +87,6 @@ public class ChangePasswordPage extends WebPage {
         private static final long serialVersionUID = 1L;
 
         private User forUser;
-        private Label resultMessage;
-
         public ChangePasswordForm(String id, String userId, final User forUser, Model<String> oldPassword, final Model<String> newPassword, final ModalWindow window) {
             super(id);
             
@@ -132,21 +124,12 @@ public class ChangePasswordPage extends WebPage {
     
                 @Override
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                    try {
-                        UserAccess dao = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);
-                        String encodedPassword = SecurityUtils.encodePassword(newPassword.getObject());
-                        dao.updateUser(forUser.getUserID(), encodedPassword);
-                        forUser.setPassword(encodedPassword);
-                        window.close(target);
-                    } catch (final Exception e) {
-                        log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
-                        log.debug("Exception: ", e);
-                        
-                        resultMessage.setDefaultModel(new ResourceModel("change_password.failure-message"))
-                        .add(new AttributeModifier("class", true, new Model<String>("message-error")))
-                        .setVisible(true);
-                        setResponsePage(this.getPage().getClass());
-                    }
+
+                    UserAccess dao = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);
+                    String encodedPassword = SecurityUtils.encodePassword(newPassword.getObject());
+                    dao.updateUser(forUser.getUserID(), encodedPassword);
+                    forUser.setPassword(encodedPassword);
+                    window.close(target);
                 }
                 
                 @Override
