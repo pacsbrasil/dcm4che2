@@ -745,7 +745,7 @@ class Config {
 
             String jdbcDriverClass = System.getProperty("jdbc.driver");
 
-            if (getJdbcUrl().startsWith("{") && getJdbcUrl().contains("}")) {
+            if (getJdbcUrl() != null && getJdbcUrl().startsWith("{") && getJdbcUrl().contains("}")) {
                 String tmpJdbcUrl = getJdbcUrl();
                 int pos = tmpJdbcUrl.indexOf("}");
                 jdbcDriverClass = tmpJdbcUrl.substring(1, pos);
@@ -767,14 +767,15 @@ class Config {
 
             if (getJdbcUrl() == null)
                 if (setJdbcUrl(System.getProperty("jdbc.url")) == null)
-                    setJdbcUrl(applicationProps.getProperty("jdbc.url"));
+                    if (setJdbcUrl(applicationProps.getProperty("jdbc.url")) == null)
+                       Jpdbi.exit(1, "ERROR: Missing JDBC Url.");
 
             setProps(applicationProps);
 
             if (getDisplayLevel().isEmpty())
                 setDisplayLevel(Jpdbi.STUDY);
         } catch (ParseException exp) {
-            Jpdbi.exit(1, "Unexpected exception:" + exp.getMessage());
+           Jpdbi.exit(1, "Unexpected exception:" + exp.getMessage());
         }
 
         // Build Update
@@ -971,10 +972,11 @@ class Config {
                         cal.add(Calendar.DATE, (int) -dummy);
                         String mydate = "" + cal.get(Calendar.YEAR) + "-" + (cal.get(Calendar.MONTH) + 1) + "-"
                                 + (cal.get(Calendar.DATE)) + " 00:00:00";
-                        myWhere = addWhere(myWhere, "STUDY.STUDY_DATETIME", mydate, Types.TIMESTAMP);
+                        // myWhere = addWhere(myWhere, "STUDY.STUDY_DATETIME", mydate, Types.TIMESTAMP);
+                        myWhere += " STUDY_DATETIME" + ">= {ts '"+mydate+ "'}";
                     } else {
-                        myWhere += " (STUDY_DATETIME" + ">= {ts'" + StudyDATE + " 00:00:00'} and";
-                        myWhere += "  STUDY_DATETIME" + "<= {ts'" + StudyDATE + " 23:59:59'})";
+                       myWhere += " (STUDY_DATETIME" + ">= {ts '" + StudyDATE + " 00:00:00'} and";
+                        myWhere += "  STUDY_DATETIME" + "<= {ts '" + StudyDATE + " 23:59:59'})";
                     }
                 }
 
