@@ -139,8 +139,8 @@ public class MoveScp extends DcmServiceBase implements AssociationListener {
 
                 aeData = service.queryAEData(dest, 
                         thirdPartyMove ? null : a.getSocket().getInetAddress());
-                fileInfos = RetrieveCmd.create(rqData).getFileInfos();
-
+                fileInfos = getFileInfos(rqData);
+                
                 perfMon.setProperty(assoc, rq, PerfPropertyEnum.NUM_OF_RESULTS, String.valueOf(fileInfos.length));
                 perfMon.stop(assoc, rq, PerfCounterEnum.C_MOVE_SCP_QUERY_DB);
                 checkPermission(a, thirdPartyMove, aeData, fileInfos);
@@ -177,6 +177,11 @@ public class MoveScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
+    // Extension point for derived classes
+    protected FileInfo[][] getFileInfos(Dataset rqData) throws Exception {
+    	return RetrieveCmd.create(rqData).getFileInfos();
+    }
+    
     private void checkPermission(Association a, boolean thirdPartyMove, 
             AEDTO ae, FileInfo[][] fileInfos) throws Exception {
         boolean checkExportPermissions = thirdPartyMove
