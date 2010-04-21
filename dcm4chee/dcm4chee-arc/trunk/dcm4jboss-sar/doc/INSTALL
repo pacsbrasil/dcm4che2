@@ -187,17 +187,18 @@ configuration page for the Storage SCP Service (service=StoreScp). E.g. set it
 to "JLSL", to compress all type of images received from any Storage SCU using
 JPEG-LS Lossless codec.
 
-14. [Optional] The directory used for caching generated JPEG representations
+14. [Optional] The directories used for caching generated JPEG representations
 of archived images requested by Web Access to DICOM Persistent Objects (WADO)
-can be specified by attribute "CacheRoot" in the configuration page for
-the WADO Service (service=WADOService). 
-Default: dcm4chee-2.14.8-xxx/server/default/wadocache.
+can be specified by attributes "CacheDataRootDirectory" and 
+"CacheJournalRootDirectory" in the configuration page for the WADO Service
+(service=WADOService).
+Defaults: dcm4chee-2.14.8-xxx/server/default/wadocachedata and 
+          dcm4chee-2.14.8-xxx/server/default/wadocachejournal.
 
 The directory used for caching generated PDF representations of archived
 Structured Report Documents requested by IHE Retrieve Information for Display
-(RID) Services can be specified by attribute "CacheRoot" in the configuration
-page for the RID Service (service=RIDService). 
-Default: dcm4chee-2.14.8-xxx/server/default/ihe_rid_cache.
+(RID) Services can be specified by modifying BASE_DIR=docstore/rid/store in
+file conf/dcm4chee-docstore/dcm4chee-docstore-cfg.xml (this file will not
 
 15. Send some object/images to the archive's Storage SCP, e.g. by using the 
 send utility of the dcm4che 2.0 core package available at Sourceforge
