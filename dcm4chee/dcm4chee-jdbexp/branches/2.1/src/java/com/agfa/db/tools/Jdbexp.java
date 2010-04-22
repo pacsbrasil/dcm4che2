@@ -297,7 +297,6 @@ public class Jdbexp {
         SQL prepStmt = null;
         long StmtCount = 0;
         long unCommitted = 0;
-        ResultSet rs = null;
 
         Config cfg = new Config();
         cfg.ParseCommandLine(argv);
@@ -338,6 +337,7 @@ public class Jdbexp {
 
                 if (sql.length() > 0) {
                     try {
+                        ResultSet rs = null;
                         if (cfg.isSqlFile() && (prepStmt.isPrepareStatement() || sql.startsWith("--"))) {
                             // System.err.println("<"+sql+">");
                             if (prepStmt.parse(sql, StmtCount)) {
@@ -345,8 +345,6 @@ public class Jdbexp {
                                     System.err.println("DEBUG: [" + StmtCount + "] * Executing Call/PrepareStatement");
                                 if (prepStmt.execute()) {
                                     rs = prepStmt.getResultSet();
-                                } else {
-                                    rs = null;
                                 }
                             }
                         } else {
@@ -354,13 +352,12 @@ public class Jdbexp {
                                 System.err.println("DEBUG: [" + StmtCount + "] SQL: " + sql);
                             if (stmt.execute(sql)) {
                                 rs = stmt.getResultSet();
-                            } else {
-                                rs = null;
                             }
                         }
                         if (rs != null) {
                             try {
                                 evalResultSet(rs, cfg);
+                                rs.close();
                             } catch (IOException e) {
                                 Jdbexp.exit(1, e.toString());
                             }
