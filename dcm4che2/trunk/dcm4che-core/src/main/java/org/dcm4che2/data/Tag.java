@@ -5962,7 +5962,7 @@ public class Tag {
     /** (0070,0227) VR=LO, VM=1 Font Name  */
     public static final int FontName = 0x00700227;
 
-    /** (0070,0228) VR=LO, VM=1 Font Name Time  */
+    /** (0070,0228) VR=CS, VM=1 Font Name Type  */
     public static final int FontNameType = 0x00700228;
 
     /** (0070,0229) VR=LO, VM=1 CSS Font Name  */
@@ -6013,14 +6013,14 @@ public class Tag {
     /** (0070,0250) VR=CS, VM=1 Italic  */
     public static final int Italic = 0x00700250;
 
-    /** (0070,0251) VR=US, VM=3 Pattern On CIELab Value  */
-    public static final int PatternOnCIELabValue = 0x00700251;
+    /** (0070,0251) VR=US, VM=3 Pattern On Color CIELab Value  */
+    public static final int PatternOnColorCIELabValue = 0x00700251;
 
-    /** (0070,0252) VR=US, VM=3 Pattern Off CIELab Value  */
-    public static final int PatternOffCIELabValue = 0x00700252;
+    /** (0070,0252) VR=US, VM=3 Pattern Off Color CIELab Value  */
+    public static final int PatternOffColorCIELabValue = 0x00700252;
 
-    /** (0070,0253) VR=FL, VM=1 Thickness  */
-    public static final int Thickness = 0x00700253;
+    /** (0070,0253) VR=FL, VM=1 Line Thickness  */
+    public static final int LineThickness = 0x00700253;
 
     /** (0070,0254) VR=CS, VM=1 Line Dashing Style  */
     public static final int LineDashingStyle = 0x00700254;
@@ -6040,10 +6040,10 @@ public class Tag {
     /** (0070,0261) VR=FL, VM=1 Gap Length  */
     public static final int GapLength = 0x00700261;
 
-    /** (0070,0262) VR=FL, VM=1 Diameter of Visibilit  */
+    /** (0070,0262) VR=FL, VM=1 Diameter of Visibility  */
     public static final int DiameterOfVisibility = 0x00700262;
 
-    /** (0070,0273) VR=FL, VM=1 Rotation Point  */
+    /** (0070,0273) VR=FL, VM=2 Rotation Point  */
     public static final int RotationPoint = 0x00700273;
 
     /** (0070,0274) VR=CS, VM=1 Tick Alignment  */
@@ -6055,8 +6055,8 @@ public class Tag {
     /** (0070,0279) VR=CS, VM=1 Tick Label Alignment  */
     public static final int TickLabelAlignment = 0x00700279;
 
-    /** (0070,0282) VR=CS, VM=1 Compound Graphics Dimension Type  */
-    public static final int CompoundGraphicsDimensionType = 0x00700282;
+    /** (0070,0282) VR=CS, VM=1 Compound Graphic Units  */
+    public static final int CompoundGraphicUnits = 0x00700282;
 
     /** (0070,0284) VR=FL, VM=1 Pattern On Opacity  */
     public static final int PatternOnOpacity = 0x00700284;
@@ -6073,11 +6073,11 @@ public class Tag {
     /** (0070,0289) VR=SH, VM=1 Tick Label  */
     public static final int TickLabel = 0x00700289;
 
-    /** (0070,0294) VR=ST, VM=1 Compound Graphic Type  */
+    /** (0070,0294) VR=CS, VM=1 Compound Graphic Type  */
     public static final int CompoundGraphicType = 0x00700294;
 
-    /** (0070,0295) VR=UL, VM=1 Annotation Group ID  */
-    public static final int AnnotationGroupID = 0x00700295;
+    /** (0070,0295) VR=UL, VM=1 Graphic Group ID  */
+    public static final int GraphicGroupID = 0x00700295;
 
     /** (0070,0306) VR=CS, VM=1 Shape Type  */
     public static final int ShapeType = 0x00700306;
