@@ -44,6 +44,7 @@ import org.dcm4chee.usr.ui.usermanagement.UserListPanel;
 import org.dcm4chee.web.war.ae.AEMgtPanel;
 import org.dcm4chee.web.war.folder.StudyListPage;
 import org.dcm4chee.web.war.fs.FileSystemPage;
+import org.dcm4chee.web.war.worklist.modality.ModalityWorklistPanel;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.base.ModuleSelectorPanel;
 
@@ -67,5 +68,6 @@ public class MainPage extends BaseWicketPage {
 
         selectorPanel.addInstance(new UserListPanel("panel", ((WicketSession) getSession()).getUsername()));
         selectorPanel.addInstance(new DashboardPanel("panel"));
+        selectorPanel.addInstance(new ModalityWorklistPanel("panel"));
     }
 }

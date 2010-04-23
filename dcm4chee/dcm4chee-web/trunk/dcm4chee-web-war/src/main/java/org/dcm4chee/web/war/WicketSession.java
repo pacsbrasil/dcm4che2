@@ -39,7 +39,6 @@
 package org.dcm4chee.web.war;
 
 import org.apache.wicket.Request;
-import org.dcm4chee.web.war.folder.ViewPort;
 import org.dcm4chee.web.common.base.JaasWicketSession;
 
 /**
@@ -51,14 +50,18 @@ public class WicketSession extends JaasWicketSession {
 
     private static final long serialVersionUID = 1L;
     
-    private ViewPort viewport = new ViewPort();
-
+    private org.dcm4chee.web.war.folder.ViewPort folderViewport = new org.dcm4chee.web.war.folder.ViewPort();
+    private org.dcm4chee.web.war.worklist.modality.ViewPort mwViewport = new org.dcm4chee.web.war.worklist.modality.ViewPort();
+    
     public WicketSession(Request request) {
         super(request);
     }
 
-    public ViewPort getViewPort() {
-        return viewport;
+    public org.dcm4chee.web.war.folder.ViewPort getFolderViewPort() {
+        return folderViewport;
     }
 
+    public org.dcm4chee.web.war.worklist.modality.ViewPort getMwViewPort() {
+        return mwViewport;
+    }
 }

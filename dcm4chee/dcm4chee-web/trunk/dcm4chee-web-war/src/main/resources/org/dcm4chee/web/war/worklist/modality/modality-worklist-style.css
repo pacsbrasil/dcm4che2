@@ -1,8 +1,6 @@
 #
-# Folder CSS
+# Modality worklist CSS
 #
-
-form.folder {}
 
 div.filterPanel {float:left; margin: 0; padding: 0; font-weight: bold;} 
 div.filter {float:left; border: double; height:63px;}
@@ -34,33 +32,11 @@ td.val input { width: 100%; }
 col.action { width: 30px; }
 td.item, td.newitem, td.newattr { font-style: italic; }
 
-tr.study td.expand, tr.pps td.expand, 
-  tr.series td.expand, tr.instance td.expand,
-  tr.patient td.expand
- {width: 21px;}
+tr.mwlitem td.expand {width: 21px;}
 
-input#patientID { width:100px }
-input#issuerOfPatientID { width:100px }
-input#birthDateMin { width:80px }
-input#birthDateMax { width:80px}
-input#studyDateMin { width:80px }
-input#studyDateMax { width:80px}
-
-.patient {
+thead tr.mwlitem {
     background : #99bbaa;
-} 
-.study {
+}
+tbody tr.mwlitem {
     background : #aaccbb;
-} 
-.pps {
-    background : #ccddcc;
-} 
-.series {
-    background : #cecece;
-} 
-.instance {
-    background : #dddddd;
-} 
-.file {
-    background : #ffffff;
 } 

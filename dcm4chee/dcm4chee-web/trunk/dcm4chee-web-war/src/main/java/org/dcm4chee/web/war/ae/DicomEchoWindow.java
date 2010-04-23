@@ -175,7 +175,7 @@ public class DicomEchoWindow extends ModalWindow {
         super(id);
         BaseForm form = new BaseForm("form");
         form.setTooltipBehaviour(new TooltipBehaviour("aet."));
-        add(CSSPackageResource.getHeaderContribution(DicomEchoPanel.class, "style.css"));
+        add(CSSPackageResource.getHeaderContribution(DicomEchoPanel.class, "ae-style.css"));
         add(form);
         CompoundPropertyModel<AE> model = new CompoundPropertyModel<AE>(aeEcho);
         setDefaultModel(model);

@@ -42,6 +42,7 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
@@ -53,6 +54,7 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
+import org.dcm4chee.web.war.folder.ExportPage;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -67,6 +69,9 @@ public class AEListPanel extends Panel {
     
     public AEListPanel(String id, AEMgtPanel p) {
         super(id);
+        
+        add(CSSPackageResource.getHeaderContribution(AEListPanel.class, "ae-style.css"));
+        
         setOutputMarkupId(true);
         final DicomEchoWindow mw = new DicomEchoWindow("echoPanel", true);
         mw.setWindowClosedCallback(new WindowClosedCallback(){

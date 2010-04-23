@@ -36,48 +36,50 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.ae;
+package org.dcm4chee.web.war.worklist.modality;
 
-import org.apache.wicket.markup.html.CSSPackageResource;
-import org.apache.wicket.markup.html.panel.Panel;
-import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.web.common.base.BaseWicketPage;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.dcm4chee.archive.entity.MWLItem;
+import org.dcm4chee.web.dao.ModalityWorklistFilter;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since Jan 5, 2009
+ * @since 20.04.2010
  */
-public class AEMgtPanel extends Panel {
+public class ViewPort implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
-    private boolean editMode = false;
-    private EditAETPanel editPanel;
-    private AEListPanel listPanel;
+    private int offset = 0;
+    private int total = 0;
+    private final ModalityWorklistFilter filter = new ModalityWorklistFilter();
+    private final List<MWLItemModel> mwlItemModels = new ArrayList<MWLItemModel>();
 
-    public AEMgtPanel(final String id) {
-        super(id);
-        add(CSSPackageResource.getHeaderContribution(BaseWicketPage.class, "base-style.css"));
-        AEMgtDelegate.getInstance().updateAEList();
-        if ( listPanel == null ) {
-            listPanel = new AEListPanel("ae_panel", this);
-        }
-        this.addOrReplace( editMode ? editPanel : listPanel);
+    public int getOffset() {
+        return offset;
     }
-    
-    public void setEditPage(AE ae) {
-        editMode = true;
-        editPanel = new EditAETPanel("ae_panel", this, ae);
-        this.addOrReplace(editPanel);
+
+    public void setOffset(int offset) {
+        this.offset = offset;
     }
-    
-    public void setListPage() {
-        editMode = false;
-        addOrReplace(listPanel);
-}
-    
-    public static String getModuleName() {
-        return "aet";
+
+    public int getTotal() {
+        return total;
+    }
+
+    public void setTotal(int total) {
+        this.total = total;
+    }
+
+    public ModalityWorklistFilter getFilter() {
+        return filter;
+    }
+
+    public List<MWLItemModel> getMWLItemModels() {
+        return mwlItemModels;
     }
 }

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+<head>
+<title>Studies</title>
+</head>
+<body>
+<wicket:panel>
+	<form style="clear: both" wicket:id="form">
+        <div class="filterPanel">
+            <div class="filter">
+                <div class="filterHeader2Lines" wicket:id="patientNameLabel">Patient Name</div>
+                <div class="filterValue">
+                    <input wicket:id="patientName" id="patientName" type="text"/>
+                </div>
+            </div>
+            <div class="filter">
+                <div class="filterHeader" wicket:id="patientIDDescr">Patient ID</div>
+                <div class="filterValue2Lines">
+                    <div class="filterLabeledValueFirst">
+                        <div class="filterHeader" wicket:id="patientIDLabel">ID</div>
+                        <div class="filterValue">
+                            <input wicket:id="patientID" id="patientID" type="text" title="ID"/>
+                        </div>
+                    </div>
+                    <div class="filterLabeledValue">
+                        <div class="filterHeader" wicket:id="issuerOfPatientIDLabel">Issuer</div>
+                        <div class="filterValue">
+                            <input wicket:id="issuerOfPatientID" id="issuerOfPatientID" type="text"
+                                title="Issuer"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter" wicket:id="extendedPatFilter">
+                <div class="filterHeader" wicket:id="birthDateLabel">Birth Date</div>
+                <div class="filterValue2Lines">
+                    <div class="filterLabeledValueFirst">
+                        <div class="filterHeader" wicket:id="birthDateMinLabel">from</div>
+                        <div class="filterValue">
+                            <input wicket:id="birthDateMin" id="birthDateMin" type="text" />
+                        </div>
+                    </div>
+                    <div class="filterLabeledValue">
+                        <div class="filterHeader" wicket:id="birthDateMaxLabel">to</div>
+                        <div class="filterValue">
+                            <input wicket:id="birthDateMax" id="birthDateMax" type="text" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a wicket:id="showExtendedPatFilter" href="#"><img wicket:id="showExtendedPatFilterImg" alt="(+)" /></a>
+            <div class="filter" >
+                <div class="filterHeader" wicket:id="startDate">Start Date</div>
+                <div class="filterValue2Lines">
+                    <div class="filterLabeledValueFirst">
+                        <div class="filterHeader" wicket:id="startDateMinLabel">from</div>
+                        <div class="filterValue">
+                            <input wicket:id="startDateMin" id="startDateMin" type="text" />
+                        </div>
+                    </div>
+                    <div class="filterLabeledValue">
+                        <div class="filterHeader" wicket:id="startDateMaxLabel">to</div>
+                        <div class="filterValue">
+                            <input wicket:id="startDateMax" id="startDateMax" type="text" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter">
+                <div class="filterHeader2Lines" wicket:id="accessionNumberLabel">Accession Number</div>
+                <div class="filterValue">
+                    <input wicket:id="accessionNumber" id="accessionNumber" type="text"/>
+                </div>
+            </div>
+            <div class="filter" wicket:id="extendedStudyFilter">
+                <div class="filterHeader2Lines" wicket:id="studyInstanceUIDLabel">Study Instance UID</div>
+                <div class="filterValue">
+                    <input wicket:id="studyInstanceUID" id="studyInstanceUID" type="text"/>
+                </div>
+            </div>
+            <a wicket:id="showExtendedStudyFilter" href="#"><img wicket:id="showExtendedStudyFilterImg" alt="(+)" /></a>
+            <div class="filter">
+                <div class="filterHeader2Lines" wicket:id="modalityLabel">Mod</div>
+                <div class="filterValue">
+			      <select wicket:id="modality">
+			        <option>*</option>
+			        <option>CR</option>
+			        <option>CT</option>
+			        <option>MR</option>
+			      </select>
+                </div>
+            </div>
+            <div class="filter">
+                <div class="filterHeader2Lines" wicket:id="scheduledStationAETLabel">Source AET</div>
+                <div class="filterValue">
+			      <select wicket:id="scheduledStationAET">
+			        <option>*</option>
+			        <option>DCMSND</option>
+			      </select>
+                </div>
+            </div>
+        </div>
+		<div class="queryoptions">
+		  <input type="checkbox" id="latestItemsFirst" wicket:id="latestItemsFirst" />
+		  <label for="latestItemsFirst" wicket:id="latestItemsFirstLabel">latest items first</label>
+		</div>
+		<div class="NavAndAction">
+			<div class="query_nav">
+				<div class="querybuttons">
+				  <input type="submit" wicket:id="search"/>
+				  <input type="submit" wicket:id="prev"/>
+				  <input type="submit" wicket:id="next"/>
+				</div>
+				<div wicket:id="viewport" class="viewport">Displaying studies 1 to 20 from 1234 matching studies</div>
+			</div>
+		</div>
+	<table>
+		<thead>
+			<tr class="mwlitem">
+				<th>SPS Description</th>
+	      		<th>Patient Name</th>
+	      		<th>Modality</th>
+				<th>Start Date</th>
+				<th>SPS ID</th>
+				<th>Requested Procedure ID</th>
+	      		<th>Accession Number</th>
+	      		<th></th>
+	    	</tr>
+		</thead>
+		<tbody wicket:id="mwlitems">
+	    	<tr class="mwlitem">
+	      		<td wicket:id="scheduledProcedureStepDescription">[Scheduled Procedure Step Description]</td>
+				<td wicket:id="patientName">[PatientName]</td>
+				<td wicket:id="modality">[Modality]</td>
+				<td wicket:id="startDate">[Start Date]</td>
+				<td wicket:id="scheduledProcedureStepID">[Scheduled Procedure Step ID]</td>
+				<td wicket:id="requestedProcedureID">[Requested Procedure ID]</td>
+				<td wicket:id="accessionNumber">[Accession Number]</td>
+				<td>
+					<a wicket:id="toggledetails" href="#">
+						<img wicket:id="detailImg" alt="D" />
+					</a>
+					<a wicket:id="edit" href="#">
+						<img wicket:id="editImg" alt="E" />
+					</a>
+				</td>
+
+	      <!--
+	      <td><input wicket:id="selected" type="checkbox" /></td>
+	      -->
+	    </tr>
+	    <tr wicket:id="details">
+	      <td colspan="9">
+	        <div wicket:id="dicomobject"></div>
+	      </td>
+	    </tr>
+	  </tbody>
+	</table>
+	</form>
+</wicket:panel>	
+</body>
+</html>

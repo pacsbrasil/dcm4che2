@@ -4,15 +4,11 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
 <head>
 <title>Studies</title>
-<link href="style.css" rel="stylesheet" />
-<script type="text/javascript" id="willi_test"><!--/*--><![CDATA[/*><!--*/
-var willi_count=1;
-/*-->]]>*/</script>
+<link href="folder-style.css" rel="stylesheet" />
 </head>
 <body>
 <wicket:panel>
-	<form style="clear: both" wicket:id="form" class="folder">
-	<div class="folder_header">
+	<form style="clear: both" wicket:id="form">
         <div class="filterPanel">
             <div class="filter">
                 <div class="filterHeader2Lines" wicket:id="patientNameLabel">Patient Name</div>
@@ -127,7 +123,6 @@ var willi_count=1;
 				<a wicket:id="export" href="#"><img src="images/export.gif" alt="Export" /></a>
 			</div>
 		</div>
-	</div>
 	<table>
 	  <thead wicket:id="thead" align="left" valign="top" >
 	    <wicket:remove>

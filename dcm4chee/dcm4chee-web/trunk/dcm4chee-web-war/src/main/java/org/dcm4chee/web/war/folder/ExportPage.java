@@ -125,7 +125,7 @@ public class ExportPage extends BaseWicketPage {
         ExportResult result = new ExportResult(resultId);
         results.put(resultId, result);
         destinationAET = getSession().getMetaData(LAST_DESTINATION_AET_ATTRIBUTE);
-        add(CSSPackageResource.getHeaderContribution(ExportPage.class, "style.css"));
+        add(CSSPackageResource.getHeaderContribution(ExportPage.class, "folder-style.css"));
         initDestinationAETs();
         final BaseForm form = new BaseForm("form");
         add(form);

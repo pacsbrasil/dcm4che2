@@ -83,7 +83,7 @@ public class EditDicomObjectPanel extends Panel {
 
     public EditDicomObjectPanel(String id, DicomObject dcmObj, String title) {
         super(id);
-        add(CSSPackageResource.getHeaderContribution(EditDicomObjectPanel.class, "style.css"));
+        add(CSSPackageResource.getHeaderContribution(EditDicomObjectPanel.class, "folder-style.css"));
         add(mw);
         add(new Label("title", new ResourceModel("dicom.edit.title."+title)));
         this.dcmObj = new BasicDicomObject();

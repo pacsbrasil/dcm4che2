@@ -47,7 +47,9 @@ import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
+import org.apache.wicket.extensions.yui.calendar.DatePicker;
 import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
@@ -82,7 +84,7 @@ public class StudyListPage extends Panel {
     private static final String MODULE_NAME = "folder";
     private static final long serialVersionUID = 1L;
     private static int PAGESIZE = 10;
-    private ViewPort viewport = ((WicketSession) getSession()).getViewPort();
+    private ViewPort viewport = ((WicketSession) getSession()).getFolderViewPort();
     private StudyListHeader header = new StudyListHeader("thead");
     private IModel<Boolean> latestStudyFirst = new AbstractReadOnlyModel<Boolean>() {
 
@@ -100,6 +102,9 @@ public class StudyListPage extends Panel {
     
     public StudyListPage(final String id) {
         super(id);
+        
+        add(CSSPackageResource.getHeaderContribution(StudyListPage.class, "folder-style.css"));
+        
         final StudyListFilter filter = viewport.getFilter();
         BaseForm form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
         form.setResourceIdPrefix("folder.");
@@ -133,8 +138,8 @@ public class StudyListPage extends Panel {
                 "\\*|(((19)|(20))\\d{2}-((0[1-9])|(1[0-2]))-((0[1-9])|([12]\\d)|(3[01])))");
         addExtendedPatientSearch(form);
         form.addLabel("studyDate");
-        form.addLabeledTextField("studyDateMin", enabledModel).add(datePatternValidator);
-        form.addLabeledTextField("studyDateMax", enabledModel).add(datePatternValidator);
+        form.addLabeledTextField("studyDateMin", enabledModel).add(datePatternValidator).add(new DatePicker());
+        form.addLabeledTextField("studyDateMax", enabledModel).add(datePatternValidator).add(new DatePicker());
         form.addLabeledTextField("accessionNumber", enabledModel);
         addExtendedStudySearch(form);
         form.addLabeledDropDownChoice("modality", null, modalities);
