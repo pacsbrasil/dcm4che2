@@ -17,6 +17,7 @@
          <module>dcm4chee-web-sar-rejnotescu</module>
          <module>dcm4chee-web-sar-ianscu</module>
          <module>dcm4chee-web-sar-tlscfg</module>
+         <module>dcm4chee-web-sar-hl7send</module>
       </modules>
 	<name>JMX services for dcm4chee-web</name>
 	<dependencies>
