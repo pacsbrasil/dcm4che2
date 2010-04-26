@@ -13,6 +13,12 @@
 	<name>JMX MoveSCU service for dcm4chee-web DICOM export</name>
 	<dependencies>
 		<dependency>
+			<groupId>javax.jms</groupId>
+			<artifactId>jms</artifactId>
+			<version>1.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>jboss</groupId>
 			<artifactId>jboss-jmx</artifactId>
 			<version>4.2.3.GA</version>

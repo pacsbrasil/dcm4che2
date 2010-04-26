@@ -3,11 +3,19 @@
 
 <!--  Version $Revision:$ $Date:$ -->
 <server>
-  <mbean code="org.dcm4chee.web.service.MoveScuService" 
+  <mbean code="org.jboss.jms.server.destination.QueueService"
+    name="dcm4chee.web:service=Queue,name=MoveScu_web" xmbean-dd="xmdesc/Queue-xmbean.xml">
+    <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+    <depends>jboss.messaging:service=PostOffice</depends>
+  </mbean>
+  
+  <mbean code="org.dcm4chee.web.service.movescu.MoveScuService" 
          name="dcm4chee.web:service=MoveScu"
          xmbean-dd="">
 
     <depends optional-attribute-name="TlsCfgServiceName">dcm4chee.web:service=TlsConfig</depends>
+    <depends optional-attribute-name="JMSServiceName">dcm4chee.archive:service=JMS</depends>
+    <depends>dcm4chee.web:service=Queue,name=MoveScu_web</depends>
     <xmbean>
       <description><![CDATA[<b>DICOM C-MOVE SCU Service</b>
 		]]> </description>
@@ -17,7 +25,7 @@
        <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
     </descriptors>
 
-    <class>org.dcm4chee.web.service.MoveScuService</class>
+    <class>org.dcm4chee.web.service.movescu.MoveScuService</class>
 
     <constructor>
          <description>The default constructor</description>
@@ -68,6 +76,41 @@
       </descriptors>
    </attribute>
    
+   <attribute access="read-write"
+      getMethod="getRetryIntervalls"
+      setMethod="setRetryIntervalls">
+      <description><![CDATA[Number and interval of retries made for
+      failed Move Requests.
+      <br>Format:
+      <br>Comma separated list of <i>number</i>x<i>interval</i> pairs or NEVER to disable retry for any destinations.
+      <br>The interval can be specified in seconds (##s),
+      minutes (##m), hours (##h) or days (##d).
+      <br/>Optional: Individual settings for specific Destination AETs. e.g. [AET1]3x1m,5x1h
+      <br/>Several AET settings can be seperated with new line or ';'. 
+      A entry without AET will be treated as default for AETs not listed here.
+      <br/>Example: 
+      <br/>5x1m,10x10m means retry a total of 5 times, one minute
+      apart for each retry; then retry a total of 10 times, 10 minutes 
+      <br/>Example: 
+      <br/>[AET1]2x1m,3x10m 
+      <br/>[AET2] 
+      <br/>5x1m,10x10m 
+      <br/>means: for destination AET1 retry a total of 2 times, one minute
+      apart for each retry; then retry a total of 3 times, 10 minutes 
+      apart for each retry.
+      <br/>Retries are disabled for destination AET2!
+      <br/>for all other destinations retry a total of 5 times, one minute
+      apart for each retry; then retry a total of 10 times, 10 minutes 
+      apart for each retry.
+      ]]>
+      </description>
+      <name>RetryIntervals</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="5x1m,12x5m,24x1h,7x1d" />
+      </descriptors>
+   </attribute>
+
    <attribute access="read-write"
      getMethod="getConnectTimeout"
      setMethod="setConnectTimeout">
@@ -164,6 +207,34 @@
       <type>javax.management.ObjectName</type>
    </attribute>
 
+   <attribute access="read-write" 
+     getMethod="getQueueName"
+     setMethod="setQueueName">
+      <description>Used internally. Do not modify.</description>
+      <name>QueueName</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="MoveScu_web" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getJmsServiceName"
+      setMethod="setJmsServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>JMSServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write" getMethod="getConcurrency" setMethod="setConcurrency">
+      <description>Maximum number of concurrent sent notifications.
+      </description>
+      <name>Concurrency</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1"/>
+      </descriptors>
+   </attribute>
+
    &defaultAttributes;
    
    <!-- Operations -->
@@ -245,6 +316,42 @@
         </description>
         <name>waitAndCloseAssoc</name>
         <type>boolean</type>
+      </parameter>
+      
+      <return-type>void</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[ Schedule DICOM C-MOVE requests to given Destination AET for instances referenced in given IAN.
+      		]]> </description>
+      <name>scheduleMoveInstances</name>
+      <parameter>
+        <description>Application Entity Title of MOVE SCP (retrieve AET)</description>
+        <name>ian</name>
+        <type>org.dcm4che2.data.DicomObject</type>
+      </parameter>
+      <parameter>
+        <description>Application Entity Title of MOVE destination</description>
+        <name>destAET</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Patient ID</description>
+        <name>priority</name>
+        <type>java.lang.Integer</type>
+      </parameter>
+      
+      <return-type>void</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[ Schedule given MoveOrder for a DICOM C-MOVE.
+      		]]> </description>
+      <name>schedule</name>
+      <parameter>
+        <description>DICOM C-Move Order</description>
+        <name>MoveOrder</name>
+        <type>org.dcm4chee.web.service.movescu.MoveOrder</type>
       </parameter>
       
       <return-type>void</return-type>
