@@ -149,7 +149,7 @@ public class ModalityWorklistPanel extends Panel {
             @Override
             public void onSubmit() {
                 viewport.setOffset(0);
-                queryStudies();
+                queryMWLItems();
             }});
         form.add(new Button("prev", new ResourceModel("mw.prev")) {
 
@@ -166,7 +166,7 @@ public class ModalityWorklistPanel extends Panel {
             @Override
             public void onSubmit() {
                 viewport.setOffset(Math.max(0, viewport.getOffset() - PAGESIZE));
-                queryStudies();
+                queryMWLItems();
             }});
         form.add(new Button("next", new ResourceModel("nextBtn")) {
 
@@ -183,7 +183,7 @@ public class ModalityWorklistPanel extends Panel {
             @Override
             public void onSubmit() {
                 viewport.setOffset(viewport.getOffset() + PAGESIZE);
-                queryStudies();
+                queryMWLItems();
             }});
         //viewport label: use StringResourceModel with key substitution to select 
         //property key according notSearched and getTotal.
@@ -315,18 +315,15 @@ public class ModalityWorklistPanel extends Panel {
         sourceAETs.addAll(dao.selectDistinctSourceAETs());
     }
 
-    private void queryStudies() {
+    private void queryMWLItems() {
+
+        ModalityWorklist dao = (ModalityWorklist) JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
         viewport.getMWLItemModels().clear();
-        ModalityWorklist dao = (ModalityWorklist)
-                JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
         viewport.setTotal(dao.countMWLItems(viewport.getFilter()));
-        
-        
+             
         List<MWLItemModel> current = viewport.getMWLItemModels();
-        
-        for (MWLItem mwlItem : dao.findMWLItems(viewport.getFilter(), PAGESIZE, viewport.getOffset())) {
+        for (MWLItem mwlItem : dao.findMWLItems(viewport.getFilter(), PAGESIZE, viewport.getOffset()))
             current.add(new MWLItemModel(mwlItem, new Model<Boolean>(false)));
-        }
         
         notSearched = false;
     }
