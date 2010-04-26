@@ -215,7 +215,7 @@ public class SeriesModel extends AbstractDicomModel implements Serializable {
         if (ppsuid2 != null) {
             return false;
         }
-        return getSourceAET().equals(series.getSourceAET())
+        return equals(getSourceAET(), series.getSourceAET())
                 && equals(getSeriesDate(), series.getSeriesDate())
                 && equals(getStationName(), series.getStationName())
                 && equals(getManufacturerModelName(),

@@ -58,6 +58,8 @@ public abstract class AbstractDicomModel implements Serializable {
     public static final int SERIES_LEVEL = 3;
     public static final int INSTANCE_LEVEL = 4;
     
+    public static final String[] LEVEL_STRINGS = {"Patient", "Study", "PPS", "Series", "Instance"};
+    
     private long pk;
     private boolean selected;
     private boolean details;
@@ -89,6 +91,10 @@ public abstract class AbstractDicomModel implements Serializable {
 
     public void setDetails(boolean details) {
         this.details = details;
+    }
+    
+    public String getAttributeValueAsString(int tag) {
+        return dataset.getString(tag);
     }
 
     public abstract int getRowspan();

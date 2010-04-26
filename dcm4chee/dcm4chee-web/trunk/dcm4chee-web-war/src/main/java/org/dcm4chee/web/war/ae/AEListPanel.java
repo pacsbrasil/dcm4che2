@@ -92,8 +92,6 @@ public class AEListPanel extends Panel {
                 AEMgtDelegate.getInstance().removeAET(ae);
                 target.addComponent(AEListPanel.this);
             }
-            @Override
-            public void onDecline(AjaxRequestTarget target, AE ae) {}
         };
         add(confirm);
         add( new Label("titleHdrLabel", new ResourceModel("aet.titleHdr")));

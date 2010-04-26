@@ -67,6 +67,10 @@
 	      <param-name>moveScuServiceName</param-name>
 	      <param-value>dcm4chee.web:service=MoveScu</param-value>
 	    </init-param> 
+	    <init-param>
+	      <param-name>contentEditServiceName</param-name>
+	      <param-value>dcm4chee.web:service=ContentEditService</param-value>
+	    </init-param> 
 
 	    <init-param>
 	      <param-name>securityDomainName</param-name>
