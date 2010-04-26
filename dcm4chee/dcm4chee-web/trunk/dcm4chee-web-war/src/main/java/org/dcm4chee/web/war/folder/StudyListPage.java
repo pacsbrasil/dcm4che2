@@ -46,6 +46,7 @@ import java.util.List;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.extensions.yui.calendar.DatePicker;
 import org.apache.wicket.markup.ComponentTag;
@@ -70,26 +71,32 @@ import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
+import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.exceptions.SelectionException;
+import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.markup.DateTimeLabel;
+import org.dcm4chee.web.common.markup.PopupLink;
+import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
+import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.dao.StudyListFilter;
 import org.dcm4chee.web.dao.StudyListLocal;
 import org.dcm4chee.web.war.WicketApplication;
 import org.dcm4chee.web.war.WicketSession;
-import org.dcm4chee.web.common.markup.BaseForm;
-import org.dcm4chee.web.common.markup.DateTimeLabel;
-import org.dcm4chee.web.common.markup.PopupLink;
-import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StudyListPage extends Panel {
 
     private static final String MODULE_NAME = "folder";
     private static final long serialVersionUID = 1L;
     private static int PAGESIZE = 10;
+    private static Logger log = LoggerFactory.getLogger(StudyListPage.class);
     private ViewPort viewport = ((WicketSession) getSession()).getFolderViewPort();
     private StudyListHeader header = new StudyListHeader("thead");
+    private SelectedEntities selected = new SelectedEntities();
+
     private IModel<Boolean> latestStudyFirst = new AbstractReadOnlyModel<Boolean>() {
-
         private static final long serialVersionUID = 1L;
-
         @Override
         public Boolean getObject() {
             return viewport.getFilter().isLatestStudiesFirst();
@@ -99,6 +106,7 @@ public class StudyListPage extends Panel {
     private List<String> modalities = new ArrayList<String>();
     private boolean notSearched = true;
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("folder.");
+    private MessageWindow msgWin = new MessageWindow("msgWin");
     
     public StudyListPage(final String id) {
         super(id);
@@ -116,6 +124,7 @@ public class StudyListPage extends Panel {
         addActions(form);
         form.add(header);
         form.add(new PatientListView("patients", viewport.getPatients()));
+        add(msgWin);
         initModalitiesAndSourceAETs();
     }
 
@@ -221,20 +230,91 @@ public class StudyListPage extends Panel {
         }));
     }
 
-    private void addActions(BaseForm form) {
-        PopupLink l = new PopupLink("export", "exportPage") {
-
+    private void addActions(final BaseForm form) {
+        PopupLink exportBtn = new PopupLink("exportBtn", "exportPage") {
             private static final long serialVersionUID = 1L;
-
             @Override
             public void onClick() {
                 ExportPage page = new ExportPage(viewport.getPatients());
                 this.setResponsePage(page);
             }
         };
-        l.setPopupHeight(400);
-        l.setPopupWidth(550);
-        form.add(l);
+        exportBtn.setPopupHeight(400);
+        exportBtn.setPopupWidth(550);
+        form.add(exportBtn);
+        final ConfirmationWindow<SelectedEntities> confirmMove = new ConfirmationWindow<SelectedEntities>("confirmMove"){
+            private static final long serialVersionUID = 1L;
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, SelectedEntities selected) {
+                try {
+                    int nrOfMovedInstances = ContentEditDelegate.getInstance().moveEntities(selected);
+                    if (nrOfMovedInstances != -1) {
+                        this.setStatus(new StringResourceModel("folder.moveDone", StudyListPage.this,null));
+                        viewport.getPatients().clear();
+                    } else {
+                        this.setStatus(new StringResourceModel("folder.moveFailed", StudyListPage.this,null));
+                    }
+                } catch (SelectionException x) {
+                    log.warn(x.getMessage());
+                    this.setStatus(new StringResourceModel(x.getMsgId(), StudyListPage.this,null));
+                }
+                queryStudies();
+            }
+            @Override
+            public void onOk(AjaxRequestTarget target) {
+                target.addComponent(form);
+            }
+        };
+        confirmMove.setInitialHeight(150);
+        form.add(confirmMove);
+        AjaxLink<?> moveBtn = new AjaxLink<Object>("moveBtn") {
+            private static final long serialVersionUID = 1L;
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                selected.update(viewport.getPatients());
+                selected.deselectChildsOfSelectedEntities();
+                log.info("Selected Entities:"+selected);
+                if (selected.hasDicomSelection()) {
+                    confirmMove.confirm(target, new StringResourceModel("folder.confirmMove",this, null,new Object[]{selected}), selected);
+                }
+            }
+        };
+        form.add(moveBtn);
+        final ConfirmationWindow<SelectedEntities> confirmDelete = new ConfirmationWindow<SelectedEntities>("confirmDelete"){
+            private static final long serialVersionUID = 1L;
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, SelectedEntities selected) {
+                if (ContentEditDelegate.getInstance().moveToTrash(selected)) {
+                    this.setStatus(new StringResourceModel("folder.deleteDone", StudyListPage.this,null));
+                    viewport.getPatients().clear();
+                } else {
+                    this.setStatus(new StringResourceModel("folder.deleteFailed", StudyListPage.this,null));
+                }
+                queryStudies();
+            }
+            @Override
+            public void onOk(AjaxRequestTarget target) {
+                target.addComponent(form);
+            }
+        };
+        confirmDelete.setInitialHeight(150);
+        form.add(confirmDelete);
+        AjaxLink<?> deleteBtn = new AjaxLink<Object>("deleteBtn") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                selected.update(viewport.getPatients());
+                selected.deselectChildsOfSelectedEntities();
+                log.info("Selected Entities: :"+selected);
+                if (selected.hasDicomSelection()) {
+                    confirmDelete.confirm(target, new StringResourceModel("folder.confirmDelete",this, null,new Object[]{selected}), selected);
+                }
+            }
+        };
+        deleteBtn.add(new Image("deleteImg",WicketApplication.IMAGE_TRASH));
+        form.add(deleteBtn);
     }
 
     private WebMarkupContainer addExtendedPatientSearch(final Form<?> form) {

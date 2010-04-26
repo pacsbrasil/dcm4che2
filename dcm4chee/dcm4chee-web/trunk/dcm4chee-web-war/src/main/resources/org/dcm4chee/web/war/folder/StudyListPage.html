@@ -8,7 +8,10 @@
 </head>
 <body>
 <wicket:panel>
+    <div wicket:id="msgWin" >MessageWindow</div>
 	<form style="clear: both" wicket:id="form">
+		<div wicket:id="confirmDelete" >ConfirmDelete</div>
+		<div wicket:id="confirmMove" >ConfirmMove</div>
         <div class="filterPanel">
             <div class="filter">
                 <div class="filterHeader2Lines" wicket:id="patientNameLabel">Patient Name</div>
@@ -120,7 +123,9 @@
 				<div wicket:id="viewport" class="viewport">Displaying studies 1 to 20 from 1234 matching studies</div>
 			</div>
 			<div class="action">
-				<a wicket:id="export" href="#"><img src="images/export.gif" alt="Export" /></a>
+				<a wicket:id="deleteBtn" href="#"><img wicket:id="deleteImg" alt="Delete" /></a>
+				<a wicket:id="moveBtn" href="#"><img src="images/move.gif" alt="Move" /></a>
+				<a wicket:id="exportBtn" href="#"><img src="images/export.gif" alt="Export" /></a>
 			</div>
 		</div>
 	<table>
