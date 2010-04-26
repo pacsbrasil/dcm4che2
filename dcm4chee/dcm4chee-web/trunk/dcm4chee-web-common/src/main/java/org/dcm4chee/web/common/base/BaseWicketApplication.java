@@ -29,6 +29,8 @@ public class BaseWicketApplication extends AuthenticatedWebApplication {
         new ResourceReference(BaseWicketApplication.class, "images/edit.gif");
     public static final ResourceReference IMAGE_DETAIL = 
         new ResourceReference(BaseWicketApplication.class, "images/details.gif");
+    public static final ResourceReference IMAGE_TRASH = 
+        new ResourceReference(BaseWicketApplication.class, "images/trash.gif");
     
     private Class<? extends Page> homePage;
     private Class<? extends WebPage> signinPage;

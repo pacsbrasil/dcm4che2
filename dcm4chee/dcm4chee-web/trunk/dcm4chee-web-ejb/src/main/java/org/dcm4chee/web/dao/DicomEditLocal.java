@@ -38,11 +38,9 @@
 
 package org.dcm4chee.web.dao;
 
-import java.util.Collection;
-
 import javax.ejb.Local;
 
-import org.dcm4chee.archive.entity.Instance;
+import org.dcm4chee.web.dao.vo.EntityTree;
 
 /**
  * @author Franz Willer <fwiller@gmail.com>
@@ -54,12 +52,19 @@ public interface DicomEditLocal {
 
     String JNDI_NAME = "dcm4chee-web-ear/DicomEditBean/local";
 
-    Collection<Instance> moveInstancesToTrash(long[] pk);
-    Collection<Instance> moveInstanceToTrash(String iuid);
-    Collection<Instance> moveSeriesToTrash(long[] pk);
-    Collection<Instance> moveSeriesToTrash(String iuid);
-    Collection<Instance> moveStudiesToTrash(long[] pk);
-    Collection<Instance> moveStudyToTrash(String iuid);
-    Collection<Instance> movePatientsToTrash(long[] pk);
-    Collection<Instance> movePatientToTrash(String patId, String issuer);
+    EntityTree moveInstancesToTrash(long[] pk);
+    EntityTree moveInstanceToTrash(String iuid);
+    EntityTree moveSeriesToTrash(long[] pk);
+    EntityTree moveSeriesToTrash(String iuid);
+    EntityTree moveStudiesToTrash(long[] pk);
+    EntityTree moveStudyToTrash(String iuid);
+    EntityTree movePatientsToTrash(long[] pk);
+    EntityTree movePatientToTrash(String patId, String issuer);
+    
+    EntityTree[] moveInstanceToSeries(String sopIuid, String seriesIuid);
+    EntityTree[] moveInstancesToSeries(long[] pks, long pk);
+    EntityTree[] moveSeriesToStudy(String seriesIuid, String studyIuid);
+    EntityTree[] moveSeriesToStudy(long[] pks, long pk);
+    EntityTree[] moveStudyToPatient(String studyIuid, String patId, String issuer);
+    EntityTree[] moveStudiesToPatient(long[] pks, long pk);
 }

@@ -9,6 +9,7 @@
 
     <depends optional-attribute-name="RejectionNoteServiceName">dcm4chee.web:service=RejectionNoteSCU</depends>
     <depends optional-attribute-name="IANScuServiceName">dcm4chee.web:service=IANSCU</depends>
+    <depends optional-attribute-name="MoveScuServiceName">dcm4chee.web:service=MoveScu</depends>
 
     <xmbean>
       <description><![CDATA[<b>Content Edit Service for dcm4chee-web3</b>
@@ -29,7 +30,7 @@
    <attribute access="read-write"
       getMethod="getRejectionNoteCode"
       setMethod="setRejectionNoteCode">
-      <description>Concept Name Code used for Rejection Note Key Selection Object.
+      <description>Concept Name Code used for Rejection Note Key Object Selection.
       </description>
       <name>RejectionNoteCode</name>
       <type>java.lang.String</type>
@@ -50,6 +51,28 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isProcessRejNote"
+      setMethod="setProcessRejNote">
+      <description>Enable/Disable sending Rejection Note.
+      </description>
+      <name>enableRejNote</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isProcessIAN"
+      setMethod="setProcessIAN">
+      <description>Enable/Disable sending Instance Availability Notification.
+      </description>
+      <name>enableIAN</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isAuditEnabled"
       setMethod="setAuditEnabled">
       <description>Enable/Disable Audit logging.
@@ -58,6 +81,18 @@
       <type>boolean</type>
       <descriptors>
          <value value="true" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getMoveDestinationAETs"
+      setMethod="setMoveDestinationAETs">
+      <description>AE title(s) of Move Destinations for entities that are moved.
+      </description>
+      <name>MoveDestinationAETs</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
       </descriptors>
    </attribute>
 
@@ -76,6 +111,14 @@
       <description>Used internally. Do NOT modify.
       </description>
       <name>IANScuServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMoveScuServiceName"
+      setMethod="setMoveScuServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>MoveScuServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
    
@@ -179,6 +222,112 @@
       <return-type>[Lorg.dcm4che2.data.DicomObject;</return-type>
    </operation>
    
+   <operation impact="ACTION">
+      <description><![CDATA[ Move instances with given pk's to series with given pk.
+      		]]> </description>
+      <name>moveInstancesToSeries</name>
+      <parameter>
+        <description>Primary keys of Instances</description>
+        <name>instPks</name>
+        <type>[J</type>
+      </parameter>
+      <parameter>
+        <description>Primary key of Series</description>
+        <name>seriesPk</name>
+        <type>long</type>
+      </parameter>
+      <return-type>int</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[ Move instance with given SopInstanceUID to series with given series IUID.
+      		]]> </description>
+      <name>moveInstanceToSeries</name>
+      <parameter>
+        <description>SOP Instance UID</description>
+        <name>sopIUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Series Instance UID</description>
+        <name>seriesIUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>int</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[ Move series with given pk's to study with given pk.
+      		]]> </description>
+      <name>moveSeriesToStudy</name>
+      <parameter>
+        <description>Primary keys of series</description>
+        <name>seriesPks</name>
+        <type>[J</type>
+      </parameter>
+      <parameter>
+        <description>Primary key of Study</description>
+        <name>studyPk</name>
+        <type>long</type>
+      </parameter>
+      <return-type>int</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[ Move series with given Series InstanceUID to study with given Study IUID.
+      		]]> </description>
+      <name>moveSeriesToStudy</name>
+      <parameter>
+        <description>Series Instance UID</description>
+        <name>seriesIUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Study Instance UID</description>
+        <name>studyIUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>int</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[ Move studies with given pk's to Patient with given pk.
+      		]]> </description>
+      <name>moveStudiesToPatient</name>
+      <parameter>
+        <description>Primary keys of Studies</description>
+        <name>studyPks</name>
+        <type>[J</type>
+      </parameter>
+      <parameter>
+        <description>Primary key of Patient</description>
+        <name>patPk</name>
+        <type>long</type>
+      </parameter>
+      <return-type>int</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Move studies with given Study InstanceUID to Patient with given PatientID/Issuer.
+      		]]> </description>
+      <name>moveStudyToPatient</name>
+      <parameter>
+        <description>Study Instance UID</description>
+        <name>studyIUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Patient ID</description>
+        <name>patId</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Issuer of Patient ID</description>
+        <name>issuer</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>int</return-type>
+   </operation>
+
     </xmbean>
   </mbean>
 </server>

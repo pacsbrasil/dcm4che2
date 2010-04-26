@@ -35,52 +35,24 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.web.common.base;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
-import org.apache.wicket.Component;
-import org.apache.wicket.authentication.panel.SignInPanel;
-import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.model.StringResourceModel;
-import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
+package org.dcm4chee.web.common.exceptions;
 
 /**
- * 
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since March 26, 2010
+ * @since Apr 22, 2010
  */
-public class LoginPanel extends Panel {
+public class SelectionException extends Exception{
 
-    private static final long serialVersionUID = 2314918026799635837L;
-
-    public LoginPanel(final String id) {
-        super(id);
-        String nodeInfo;
-        try {
-            nodeInfo = System.getProperty("dcm4che.archive.nodename", InetAddress.getLocalHost().getHostName() );
-        } catch (UnknownHostException e) {
-            nodeInfo = "DCM4CHEE";
-        }
-        add(new Label("loginLabel", new StringResourceModel("loginLabel", LoginPanel.this, 
-                null, new Object[]{nodeInfo})));
-        add(new SignInPanel("signInPanel") {
-
-            private static final long serialVersionUID = 1L;
-
-            protected void onSignInFailed() {
-                Component user = LoginPanel.this.get("signInPanel:signInForm:username");
-                user.add(FocusOnLoadBehaviour.newFocusAndSelectBehaviour());
-            }
-        });  
-        this.get("signInPanel:signInForm").add(new FocusOnLoadBehaviour()); 
+    private String msgId;
+    public SelectionException(String msg, String msgId) {
+        super(msg);
+        this.msgId = msgId;
     }
     
-    public static String getModuleName() {
-        return "login";
+    public String getMsgId() {
+        return msgId;
     }
-
+    
 }

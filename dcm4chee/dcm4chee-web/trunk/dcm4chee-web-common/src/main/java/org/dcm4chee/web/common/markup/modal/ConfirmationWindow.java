@@ -46,6 +46,8 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.web.common.markup.modal.AutoOpenModalWindow;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -62,6 +64,10 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
     private T userObject;
     private String focusElementId;
     private IModel<?> msg, confirm, decline;
+    
+    private boolean hasStatus;
+    
+    private static Logger log = LoggerFactory.getLogger(ConfirmationWindow.class);
 
     public ConfirmationWindow(String id) {
         this(id, new ResourceModel("yesBtn"), new ResourceModel("noBtn"));
@@ -82,10 +88,12 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
     }
     
     public abstract void onConfirmation(AjaxRequestTarget target, T userObject);
-    public abstract void onDecline(AjaxRequestTarget target, T userObject);
+    public void onDecline(AjaxRequestTarget target, T userObject){}
+    public void onOk(AjaxRequestTarget target) {}
     
     @Override
     public void show(final AjaxRequestTarget target) {
+        hasStatus = false;
         super.show(target);
         if (focusElementId != null)
             target.focusComponent(this.get(focusElementId));
@@ -101,6 +109,11 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
         this.focusElementId = focusElementId;
         show(target);
     }
+    
+    public void setStatus(IModel statusMsg) {
+        msg = statusMsg;
+        hasStatus = true;
+    }
 
     @Override
     protected boolean needAutoOpen() {
@@ -112,7 +125,7 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
 
         public MessageWindowPanel(String id) {
             super(id);
-            add(new Label("msg", new AbstractReadOnlyModel<Object>(){
+            final Label msgLabel =new Label("msg", new AbstractReadOnlyModel<Object>(){
 
                 private static final long serialVersionUID = 1L;
 
@@ -120,18 +133,33 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                 public Object getObject() {
                     return msg == null ? null : msg.getObject();
                 }
-            }));
-            add(new AjaxFallbackLink<Object>("confirm"){
+            });
+            //msgLabel.setOutputMarkupId(true);
+            //msgLabel.setOutputMarkupPlaceholderTag(true);
+            add(msgLabel);
+            AjaxFallbackLink confirmBtn = new AjaxFallbackLink<Object>("confirm"){
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     onConfirmation(target, userObject);
-                    msg = null;
-                    close(target);
+                    log.info("hasStatus:"+hasStatus+" msg:"+msg.getObject());
+                    if (hasStatus) {
+                        target.addComponent(MessageWindowPanel.this);
+                    } else {
+                        msg = null;
+                        close(target);
+                    }
                 }
-            }.add(new Label("confirmLabel", confirm)) );
+                @Override
+                public boolean isVisible() {
+                    return !hasStatus;
+                }
+            };
+            confirmBtn.add(new Label("confirmLabel", confirm));
+            confirmBtn.setOutputMarkupId(true);
+            add(confirmBtn);
             add(new AjaxFallbackLink<Object>("decline"){
 
                 private static final long serialVersionUID = 1L;
@@ -142,7 +170,27 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                     msg = null;
                     close(target);
                 }
+                @Override
+                public boolean isVisible() {
+                    return !hasStatus;
+                }
             }.add(new Label("declineLabel", decline)) );
+            add(new AjaxFallbackLink<Object>("ok"){
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    onOk(target);
+                    msg = null;
+                    close(target);
+                }
+                @Override
+                public boolean isVisible() {
+                    return hasStatus;
+                }
+            }.add(new Label("okLabel", new ResourceModel("okBtn"))) );
+            this.setOutputMarkupId(true);
         }
         
         /**

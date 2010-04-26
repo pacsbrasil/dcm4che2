@@ -87,6 +87,7 @@ public class AbstractScuService extends ServiceMBeanSupport {
         UID.ImplicitVRLittleEndian};
     
     public static final String[] PRIORITIES = {"MEDIUM", "HIGH", "LOW"};
+    public static final String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
         
     public AbstractScuService() {
         String scuName = this.getClass().getSimpleName();
