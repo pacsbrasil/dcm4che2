@@ -38,6 +38,8 @@
 
 package org.dcm4chee.web.common.behaviours;
 
+import java.io.Serializable;
+
 import org.apache.wicket.Component;
 import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.markup.html.IHeaderResponse;
@@ -56,7 +58,7 @@ public class FocusOnLoadBehaviour extends AbstractBehavior {
     private static final long serialVersionUID = 1L;
     
     private Component component;
-    private transient FocusStrategy focusStrategy;
+    private FocusStrategy focusStrategy;
     
     public FocusOnLoadBehaviour() {}
 
@@ -109,7 +111,7 @@ public class FocusOnLoadBehaviour extends AbstractBehavior {
                 c.getMarkupId() + "');elem.focus()";
     }
 
-    public interface FocusStrategy {
+    public interface FocusStrategy extends Serializable {
         void focus( IHeaderResponse headerResponse, Component c );
     }
     
