@@ -161,7 +161,7 @@ public class StudyListPage extends Panel {
     }
 
     private void addNavigation(BaseForm form) {
-        form.add(new Button("search", new ResourceModel("searchBtn")) {
+        Button searchBtn = new Button("search", new ResourceModel("searchBtn")) {
 
             private static final long serialVersionUID = 1L;
 
@@ -169,7 +169,9 @@ public class StudyListPage extends Panel {
             public void onSubmit() {
                 viewport.setOffset(0);
                 queryStudies();
-            }});
+            }};
+        form.add(searchBtn);
+        form.setDefaultButton(searchBtn);
         form.add(new Button("prev", new ResourceModel("folder.prev")) {
 
             private static final long serialVersionUID = 1L;
