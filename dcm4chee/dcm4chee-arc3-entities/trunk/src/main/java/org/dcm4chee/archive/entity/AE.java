@@ -136,7 +136,7 @@ public class AE extends BaseEntity implements Serializable {
 
     public List<String> getCipherSuites() {
         List<String> l = new ArrayList<String>();
-        if ( cipherSuites != null ) {
+        if ( cipherSuites != null && cipherSuites.trim().length()>0) {
             int pos0=0, pos1;
             for ( int i = 0 ; i < 3 ; i++ ) {
                 pos1 = cipherSuites.indexOf(',', pos0);
