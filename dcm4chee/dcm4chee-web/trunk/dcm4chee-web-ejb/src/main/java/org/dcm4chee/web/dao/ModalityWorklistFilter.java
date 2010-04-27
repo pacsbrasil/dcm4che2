@@ -39,6 +39,9 @@
 package org.dcm4chee.web.dao;
 
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -52,13 +55,18 @@ public class ModalityWorklistFilter implements Serializable {
     private String patientName = "*";
     private String patientID = "*";
     private String issuerOfPatientID = "*";
-    private String startDate = "*";
     private String accessionNumber = "*";
     private boolean extendedQuery;
     private String studyInstanceUID = "*";
     private String modality = "*";
     private String scheduledStationAET = "*";
     private boolean latestItemsFirst;
+
+    private Date startDateMin;
+    private Date startDateMax;
+
+    private Date birthDateMin;
+    private Date birthDateMax;
 
     private static String nullToAsterisk(String s) {
         return s == null ? "*" : s;
@@ -86,14 +94,6 @@ public class ModalityWorklistFilter implements Serializable {
 
     public String getIssuerOfPatientID() {
         return issuerOfPatientID;
-    }
-
-    public String getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(String startDate) {
-        this.startDate = nullToAsterisk(startDate);
     }
 
     public String getAccessionNumber() {
@@ -136,31 +136,43 @@ public class ModalityWorklistFilter implements Serializable {
         this.latestItemsFirst = latestItemsFirst;
     }
 
-    public String getStartDateMin() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public String getStartDateMax() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public String getBirthDateMin() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public String getBirthDateMax() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
     public String getScheduledStationAET() {
         return this.scheduledStationAET;
     }
     
     public void setScheduledStationAET() {
         this.scheduledStationAET = nullToAsterisk(scheduledStationAET);
+    }
+
+    public Date getStartDateMin() {
+        return startDateMin;
+    }
+
+    public void setStartDateMin(Date startDateMin) {
+        this.startDateMin = startDateMin;
+    }
+
+    public Date getStartDateMax() {
+        return startDateMax;
+    }
+
+    public void setStartDateMax(Date startDateMax) {
+        this.startDateMax = startDateMax;
+    }
+
+    public Date getBirthDateMin() {
+        return null;
+    }
+
+    public void setBirthDateMin(Date birthDateMin) {
+        this.birthDateMin = birthDateMin;
+    }
+
+    public Date getBirthDateMax() {
+        return null;
+    }
+    
+    public void setBirthDateMax(Date birthDateMax) {
+        this.birthDateMax = birthDateMax;
     }
 }

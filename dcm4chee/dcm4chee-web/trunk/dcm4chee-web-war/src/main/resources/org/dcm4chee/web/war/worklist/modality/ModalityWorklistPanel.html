@@ -32,24 +32,6 @@
                     </div>
                 </div>
             </div>
-            <div class="filter" wicket:id="extendedPatFilter">
-                <div class="filterHeader" wicket:id="birthDateLabel">Birth Date</div>
-                <div class="filterValue2Lines">
-                    <div class="filterLabeledValueFirst">
-                        <div class="filterHeader" wicket:id="birthDateMinLabel">from</div>
-                        <div class="filterValue">
-                            <input wicket:id="birthDateMin" id="birthDateMin" type="text" />
-                        </div>
-                    </div>
-                    <div class="filterLabeledValue">
-                        <div class="filterHeader" wicket:id="birthDateMaxLabel">to</div>
-                        <div class="filterValue">
-                            <input wicket:id="birthDateMax" id="birthDateMax" type="text" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <a wicket:id="showExtendedPatFilter" href="#"><img wicket:id="showExtendedPatFilterImg" alt="(+)" /></a>
             <div class="filter" >
                 <div class="filterHeader" wicket:id="startDate">Start Date</div>
                 <div class="filterValue2Lines">
@@ -92,12 +74,9 @@
                 </div>
             </div>
             <div class="filter">
-                <div class="filterHeader2Lines" wicket:id="scheduledStationAETLabel">Source AET</div>
+                <div class="filterHeader2Lines" wicket:id="scheduledStationAETLabel">Station AET</div>
                 <div class="filterValue">
-			      <select wicket:id="scheduledStationAET">
-			        <option>*</option>
-			        <option>DCMSND</option>
-			      </select>
+			      <input wicket:id="scheduledStationAET" type="text" />
                 </div>
             </div>
         </div>

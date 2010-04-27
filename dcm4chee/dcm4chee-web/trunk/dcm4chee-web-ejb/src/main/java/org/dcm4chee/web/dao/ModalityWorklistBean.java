@@ -39,6 +39,7 @@
 package org.dcm4chee.web.dao;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -104,10 +105,6 @@ public class ModalityWorklistBean implements ModalityWorklist {
     }
 
     private static void appendFromClause(StringBuilder ql, ModalityWorklistFilter filter) {
-//        ql.append(filter.isPatientsWithoutStudies()
-//                ? " FROM MWLItem m LEFT JOIN m.patient p "
-//                : " FROM Patient p INNER JOIN p.studies s");
-
         if (ql.toString().startsWith("SELECT COUNT(*)"))
             ql.append(" FROM MWLItem m LEFT JOIN m.patient p ");
         else
@@ -121,13 +118,13 @@ public class ModalityWorklistBean implements ModalityWorklist {
             appendPatientIDFilter(ql, filter.getPatientID());
             appendIssuerOfPatientIDFilter(ql, filter.getIssuerOfPatientID());
             if (filter.isExtendedQuery()) {
-                appendPatientBirthDateFilter(ql, filter.getStartDate(), filter.getStartDateMax());
+                appendPatientBirthDateFilter(ql, filter.getBirthDateMin(), filter.getBirthDateMax());
             }
             appendAccessionNumberFilter(ql, filter.getAccessionNumber());
             if (filter.getStartDateMin() != null)
-                appendStudyDateMinFilter(ql, filter.getStartDateMin());
+                appendStartDateMinFilter(ql, filter.getStartDateMin());
             if (filter.getStartDateMax() != null)
-                appendStudyDateMaxFilter(ql, filter.getStartDateMax());
+                appendStartDateMaxFilter(ql, filter.getStartDateMax());
         } else {
             ql.append(" AND m.studyInstanceUID = :studyInstanceUID");
         }
@@ -276,62 +273,50 @@ public class ModalityWorklistBean implements ModalityWorklist {
         }
     }
 
-    private static void appendPatientBirthDateFilter(StringBuilder ql,
-            String minDate, String maxDate) {
-        if (!"*".equals(minDate)) {
-            if ("*".equals(maxDate)) {
+    private static void appendPatientBirthDateFilter(StringBuilder ql, Date date2, Date date) {
+        if (!"*".equals(date2)) {
+            if ("*".equals(date)) {
                 ql.append(" AND p.patientBirthDate >= :birthdateMin");
             } else {
                 ql.append(" AND p.patientBirthDate BETWEEN :birthdateMin AND :birthdateMax");
                 
             }
-        } else if ( !"*".equals(maxDate)) {
+        } else if ( !"*".equals(date)) {
             ql.append(" AND p.patientBirthDate <= :birthdateMax");
         }
     }
-    private static void setPatientBirthDateQueryParameter(Query query,
-            String minDate, String maxDate) {
-        if ( !"*".equals(minDate))
-            query.setParameter("birthdateMin", normalizeDate(minDate));
-        if ( !"*".equals(maxDate))
-            query.setParameter("birthdateMax", normalizeDate(maxDate));
+    private static void setPatientBirthDateQueryParameter(Query query, Date date, Date date2) {
+        if (date != null)
+            query.setParameter("birthdateMin", date);
+        if (date2 != null)
+            query.setParameter("birthdateMax", date2);
     }
 
-    private static String normalizeDate(String date) {
-        return date.substring(0,4)+date.substring(5,7)+date.substring(8);
-    }
-
-    private static void appendStudyDateMinFilter(StringBuilder ql,
-            String studyDate) {
-        if (!"*".equals(studyDate)) {
+    private static void appendStartDateMinFilter(StringBuilder ql, Date date) {
+        if (date != null) {
             ql.append(" AND m.startDateTime >= :startDateTimeMin");
         }
     }
 
-    private static void appendStudyDateMaxFilter(StringBuilder ql,
-            String studyDate) {
-        if (!"*".equals(studyDate)) {
+    private static void appendStartDateMaxFilter(StringBuilder ql, Date date) {
+        if (date != null) {
             ql.append(" AND m.startDateTime <= :startDateTimeMax");
         }
     }
 
-    private static void setStartDateMinQueryParameter(Query query,
-            String startDate) {
-        setStartDateQueryParameter(query, startDate, "startDateMin", false);
+    private static void setStartDateMinQueryParameter(Query query, Date date) {
+        setStartDateQueryParameter(query, date, "startDateTimeMin", false);
     }
 
-    private static void setStartDateMaxQueryParameter(Query query,
-            String startDate) {
-        setStartDateQueryParameter(query, startDate, "startDate", true);
+    private static void setStartDateMaxQueryParameter(Query query, Date date) {
+        setStartDateQueryParameter(query, date, "startDateTimeMax", true);
     }
 
     private static void setStartDateQueryParameter(Query query,
-            String startDate, String param, boolean max) {
-        if (!"*".equals(startDate)) {
-            int year = Integer.parseInt(startDate.substring(0,4));
-            int month = Integer.parseInt(startDate.substring(5,7))-1;
-            int day = Integer.parseInt(startDate.substring(8,10));
-            GregorianCalendar cal = new GregorianCalendar(year, month, day);
+            Date startDate, String param, boolean max) {
+        if (startDate != null) {
+            GregorianCalendar cal = new GregorianCalendar();
+            cal.setTime(startDate);
             if (max) {
                 cal.set(Calendar.HOUR_OF_DAY, 23);
                 cal.set(Calendar.MINUTE, 59);
@@ -411,34 +396,6 @@ public class ModalityWorklistBean implements ModalityWorklist {
                 .setParameter(1, pk)
                 .getResultList();
     }
-
-//    @SuppressWarnings("unchecked")
-//    public List<Series> findSeriesOfStudy(long pk) {
-//        return em.createQuery("FROM Series s LEFT JOIN FETCH s.modalityPerformedProcedureStep WHERE s.study.pk=?1 ORDER BY s.pk")
-//                .setParameter(1, pk)
-//                .getResultList();
-//    }
-//
-//    @SuppressWarnings("unchecked")
-//    public List<Series> findSeriesOfMpps(String uid) {
-//        return em.createQuery("FROM Series s WHERE s.performedProcedureStepInstanceUID=?1 ORDER BY s.pk")
-//                .setParameter(1, uid)
-//                .getResultList();
-//    }
-//
-//    @SuppressWarnings("unchecked")
-//    public List<Instance> findInstancesOfSeries(long pk) {
-//        return em.createQuery("FROM Instance i LEFT JOIN FETCH i.media WHERE i.series.pk=?1 ORDER BY i.pk")
-//                .setParameter(1, pk)
-//                .getResultList();
-//   }
-//
-//    @SuppressWarnings("unchecked")
-//    public List<File> findFilesOfInstance(long pk) {
-//        return em.createQuery("FROM File f JOIN FETCH f.fileSystem WHERE f.instance.pk=?1 ORDER BY f.pk")
-//                .setParameter(1, pk)
-//                .getResultList();
-//    }
 
     @SuppressWarnings("unchecked")
     public List<String> selectDistinctSourceAETs() {

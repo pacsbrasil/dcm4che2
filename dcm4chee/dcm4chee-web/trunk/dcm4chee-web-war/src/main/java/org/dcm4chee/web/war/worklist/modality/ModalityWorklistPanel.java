@@ -39,12 +39,20 @@
 package org.dcm4chee.web.war.worklist.modality;
 
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.DateFormatSymbols;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.datetime.DateConverter;
+import org.apache.wicket.datetime.PatternDateConverter;
+import org.apache.wicket.datetime.markup.html.form.DateTextField;
+import org.apache.wicket.extensions.yui.calendar.DateField;
 import org.apache.wicket.extensions.yui.calendar.DatePicker;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
@@ -65,6 +73,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.validation.validator.DateValidator;
 import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -84,12 +93,14 @@ import org.dcm4chee.web.war.folder.DicomObjectPanel;
 public class ModalityWorklistPanel extends Panel {
 
     private static final ResourceReference CSS = new CompressedResourceReference(ModalityWorklistPanel.class, "modality-worklist-style.css");
+
+    private static final long serialVersionUID = 1L;
+
+    // TODO: put this into .properties file
+    private static int PAGESIZE = 10;
     
     private static final String MODULE_NAME = "mw";
-    private static final long serialVersionUID = 1L;
-    private static int PAGESIZE = 10;
     private ViewPort viewport = ((WicketSession) getSession()).getMwViewPort();
-    private List<String> sourceAETs = new ArrayList<String>();
     private List<String> modalities = new ArrayList<String>();
     private boolean notSearched = true;
     public ModalityWorklistPanel(final String id) {
@@ -106,7 +117,7 @@ public class ModalityWorklistPanel extends Panel {
         addQueryOptions(form);
         addNavigation(form);
         form.add(new MWLItemListView("mwlitems", viewport.getMWLItemModels()));
-        initModalitiesAndSourceAETs();
+        initModalities();
     }
 
     private void addQueryFields(final ModalityWorklistFilter filter, BaseForm form) {
@@ -118,26 +129,21 @@ public class ModalityWorklistPanel extends Panel {
             public Boolean getObject() {
                 return !filter.isExtendedQuery() || "*".equals(filter.getStudyInstanceUID());
             }
-            
         };
         form.addLabeledTextField("patientName", enabledModel);
         form.addLabel("patientIDDescr");
         form.addLabeledTextField("patientID", enabledModel);
         form.addLabeledTextField("issuerOfPatientID", enabledModel);
-        PatternValidator datePatternValidator = new PatternValidator(
-                "\\*|(((19)|(20))\\d{2}-((0[1-9])|(1[0-2]))-((0[1-9])|([12]\\d)|(3[01])))");
-        addExtendedPatientSearch(form);
         form.addLabel("startDate");
-        form.addLabeledTextField("startDateMin", enabledModel).add(datePatternValidator).add(new DatePicker());
-        form.addLabeledTextField("startDateMax", enabledModel).add(datePatternValidator).add(new DatePicker());
+        form.addLabeledTextField("startDateMin", enabledModel).add(new DatePicker());
+        form.addLabeledTextField("startDateMax", enabledModel).add(new DatePicker());
         form.addLabeledTextField("accessionNumber", enabledModel);
         addExtendedStudySearch(form);
         form.addLabeledDropDownChoice("modality", null, modalities);
-        form.addLabeledDropDownChoice("scheduledStationAET", null, sourceAETs);
+        form.addLabeledTextField("scheduledStationAET", enabledModel);
     }
 
     private void addQueryOptions(BaseForm form) {
-//        form.addLabeledCheckBox("patientsWithoutStudies", null);
         form.addLabeledCheckBox("latestItemsFirst", null);
     }
 
@@ -227,46 +233,6 @@ public class ModalityWorklistPanel extends Panel {
 //        form.add(l);
 //    }
 
-    private WebMarkupContainer addExtendedPatientSearch(final Form<?> form) {
-        final ModalityWorklistFilter filter = viewport.getFilter();
-        final WebMarkupContainer extendedPatFilter = new WebMarkupContainer("extendedPatFilter") {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public boolean isVisible() {
-                return filter.isExtendedQuery();
-            }
-        };
-        extendedPatFilter.add( new Label("birthDateLabel", new ResourceModel("mw.birthDate")));
-        extendedPatFilter.add( new Label("birthDateMinLabel", new ResourceModel("mw.birthDateMin")));
-        extendedPatFilter.add( new Label("birthDateMaxLabel", new ResourceModel("mw.birthDateMax")));
-        extendedPatFilter.add( new TextField<String>("birthDateMin"));
-        extendedPatFilter.add( new TextField<String>("birthDateMax"));
-        form.add(extendedPatFilter);
-        AjaxFallbackLink<?> l = new AjaxFallbackLink<Object>("showExtendedPatFilter") {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                filter.setExtendedQuery(!filter.isExtendedQuery());
-                target.addComponent(form);
-            }};
-        l.add(new Image("showExtendedPatFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public ResourceReference getObject() {
-                return filter.isExtendedQuery() ? WicketApplication.IMAGE_COLLAPSE : 
-                    WicketApplication.IMAGE_EXPAND;
-            }
-        }));
-        form.add(l);
-        return extendedPatFilter;
-    }
-    
     private WebMarkupContainer addExtendedStudySearch(final Form<?> form) {
         final ModalityWorklistFilter filter = viewport.getFilter();
         final WebMarkupContainer extendedStudyFilter = new WebMarkupContainer("extendedStudyFilter") {
@@ -304,15 +270,12 @@ public class ModalityWorklistPanel extends Panel {
         return extendedStudyFilter;
     }
 
-    private void initModalitiesAndSourceAETs() {
+    private void initModalities() {
         ModalityWorklist dao = (ModalityWorklist)
                 JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
         modalities.clear();
         modalities.add("*");
         modalities.addAll(dao.selectDistinctModalities());
-        sourceAETs.clear();
-        sourceAETs.add("*");
-        sourceAETs.addAll(dao.selectDistinctSourceAETs());
     }
 
     private void queryMWLItems() {
@@ -475,4 +438,14 @@ System.out.println("EDIT IS NOT IMPLEMENTED YET");
 //            }
 //        }
 //    }
+  
+//  private class DatePicker4 extends DatePicker {
+//      
+//      public DatePicker4() {
+//          super();
+//      }
+//      
+//      @Override
+//      
+//  }
 }
