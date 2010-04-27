@@ -117,9 +117,6 @@ public class ModalityWorklistBean implements ModalityWorklist {
             appendPatientNameFilter(ql, filter.getPatientName());
             appendPatientIDFilter(ql, filter.getPatientID());
             appendIssuerOfPatientIDFilter(ql, filter.getIssuerOfPatientID());
-            if (filter.isExtendedQuery()) {
-                appendPatientBirthDateFilter(ql, filter.getBirthDateMin(), filter.getBirthDateMax());
-            }
             appendAccessionNumberFilter(ql, filter.getAccessionNumber());
             if (filter.getStartDateMin() != null)
                 appendStartDateMinFilter(ql, filter.getStartDateMin());
@@ -137,11 +134,7 @@ public class ModalityWorklistBean implements ModalityWorklist {
             setPatientNameQueryParameter(query, filter.getPatientName());
             setPatientIDQueryParameter(query, filter.getPatientID());
             setIssuerOfPatientIDQueryParameter(query, filter.getIssuerOfPatientID());
-            if ( filter.isExtendedQuery()) {
-                setPatientBirthDateQueryParameter(query, filter.getBirthDateMin(), filter.getBirthDateMax());
-            }
-            setAccessionNumberQueryParameter(query, filter.getAccessionNumber());
-            
+            setAccessionNumberQueryParameter(query, filter.getAccessionNumber());           
             if (filter.getStartDateMin() != null)
                 setStartDateMinQueryParameter(query, filter.getStartDateMin());
             if (filter.getStartDateMax() != null)
@@ -271,25 +264,6 @@ public class ModalityWorklistBean implements ModalityWorklist {
                             ? toLike(issuerOfPatientID)
                             : issuerOfPatientID);
         }
-    }
-
-    private static void appendPatientBirthDateFilter(StringBuilder ql, Date date2, Date date) {
-        if (!"*".equals(date2)) {
-            if ("*".equals(date)) {
-                ql.append(" AND p.patientBirthDate >= :birthdateMin");
-            } else {
-                ql.append(" AND p.patientBirthDate BETWEEN :birthdateMin AND :birthdateMax");
-                
-            }
-        } else if ( !"*".equals(date)) {
-            ql.append(" AND p.patientBirthDate <= :birthdateMax");
-        }
-    }
-    private static void setPatientBirthDateQueryParameter(Query query, Date date, Date date2) {
-        if (date != null)
-            query.setParameter("birthdateMin", date);
-        if (date2 != null)
-            query.setParameter("birthdateMax", date2);
     }
 
     private static void appendStartDateMinFilter(StringBuilder ql, Date date) {

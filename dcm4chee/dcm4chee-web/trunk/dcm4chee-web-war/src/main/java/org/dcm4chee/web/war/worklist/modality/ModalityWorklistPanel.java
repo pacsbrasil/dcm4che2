@@ -335,7 +335,7 @@ public class ModalityWorklistPanel extends Panel {
     
                     @Override
                     public void onClick() {
-System.out.println("EDIT IS NOT IMPLEMENTED YET");
+                        System.out.println("EDIT IS NOT IMPLEMENTED YET");
 //                        setResponsePage(
 //                                new EditDicomObjectPage(ModalityWorklistPanel.this.getPage(), patModel));
                     }
@@ -353,99 +353,5 @@ System.out.println("EDIT IS NOT IMPLEMENTED YET");
                 .add(new DicomObjectPanel("dicomobject", mwlItemModel.getDataset(), false)))
                 .setOutputMarkupId(true);
             }
-        }
-   
-//    private class ExpandCollapseLink extends AjaxFallbackLink<Object> {
-//
-//        private static final long serialVersionUID = 1L;
-//        
-//        private AbstractDicomModel model = new AbstractDicomModel() {
-//
-//            @Override
-//            public void collapse() {
-//                // TODO Auto-generated method stub
-//                
-//            }
-//
-//            @Override
-//            public void expand() {
-//                // TODO Auto-generated method stub
-//                
-//            }
-//
-//            @Override
-//            public List<? extends AbstractDicomModel> getDicomModelsOfNextLevel() {
-//                // TODO Auto-generated method stub
-//                return null;
-//            }
-//
-//            @Override
-//            public int getRowspan() {
-//                // TODO Auto-generated method stub
-//                return 0;
-//            }
-//
-//            @Override
-//            public boolean isCollapsed() {
-//                // TODO Auto-generated method stub
-//                return false;
-//            }
-//
-//            @Override
-//            public int levelOfModel() {
-//                // TODO Auto-generated method stub
-//                return 0;
-//            }
-//
-//            @Override
-//            public void update(DicomObject dicomObject) {
-//                // TODO Auto-generated method stub
-//                
-//            }
-//            
-//        };
-//        private ListItem<?> patientListItem;
-//        
-//        private ExpandCollapseLink(String id, DicomObject o, ListItem<?> patientListItem) {
-//            super(id);
-////            this.model = m;
-//            this.patientListItem = patientListItem;
-////            add( new Image(id+"Img", new AbstractReadOnlyModel<ResourceReference>() {
-////
-////                private static final long serialVersionUID = 1L;
-////
-////                @Override
-////                public ResourceReference getObject() {
-////                    return null;
-//////                    return model.isCollapsed() ? WicketApplication.IMAGE_EXPAND : 
-//////                        WicketApplication.IMAGE_COLLAPSE;
-////                }
-////            }));
-//        }
-//        
-//        @Override
-//        public void onClick(AjaxRequestTarget target) {
-//            if (model.isCollapsed()) {
-//                model.expand();
-//            } else {
-//                model.collapse();
-//            }
-//            boolean chgd = expandLevelChanged(model);
-//            if (target != null) {
-//                target.addComponent(patientListItem);
-////                if (chgd)
-////                    target.addComponent(header);
-//            }
-//        }
-//    }
-  
-//  private class DatePicker4 extends DatePicker {
-//      
-//      public DatePicker4() {
-//          super();
-//      }
-//      
-//      @Override
-//      
-//  }
+        }   
 }
