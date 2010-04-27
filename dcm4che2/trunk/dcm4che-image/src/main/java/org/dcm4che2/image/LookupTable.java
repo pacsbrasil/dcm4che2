@@ -439,7 +439,7 @@ public abstract class LookupTable {
             in2 = (int) (((c_05 + w_2) - intercept) / slope);
         }
         int off = Math.max(in1, inMin);
-        int iMax = Math.min(in2, inMax) - off;
+        int iMax = Math.max(inMin, Math.min(in2, inMax)) - off;
         int size = iMax + 1;
         int outBits1 = pval2out == null ? outBits : inBits(pval2out);
         int outRange = 1 << outBits1;
