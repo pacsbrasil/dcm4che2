@@ -38,16 +38,19 @@
 
 package org.dcm4chee.web.war.ae;
 
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
@@ -58,6 +61,7 @@ import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.validators.UrlValidator1;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
+import org.dcm4chee.web.war.worklist.modality.ModalityWorklistPanel;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -69,11 +73,17 @@ public class EditAETPanel extends Panel {
     
     private static final long serialVersionUID = 1L;
     
+    private static final ResourceReference CSS = new CompressedResourceReference(EditAETPanel.class, "ae-style.css");
+    
     transient AEMgtDelegate delegate = AEMgtDelegate.getInstance();
     private MessageWindow msgWin = new MessageWindow("feedbackWin");
     
     public EditAETPanel( String id, final AEMgtPanel page, final AE ae) {
         super(id);
+        
+        if (EditAETPanel.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(EditAETPanel.CSS));
+
         setOutputMarkupId(true);
         BaseForm form = new BaseForm("form");
         form.setResourceIdPrefix("aet.");
