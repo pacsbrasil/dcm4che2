@@ -370,6 +370,7 @@ public class Jdbexp {
                         if (cfg.isIgnoreSqlError() == false) {
                             Jdbexp.exit(1, "Aborting SQL Execution...");
 
+
                         }
                     }
 
