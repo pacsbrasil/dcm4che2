@@ -254,6 +254,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private boolean coerceAttributeTopDown = false;
 
+    private boolean cFindRspDebugLogDeferToDoBeforeRsp = false;
+    
     public QueryRetrieveScpService() {
     	moveScp = createMoveScp();
         getScp = createGetScp();
@@ -1622,5 +1624,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public void setCoerceAttributeTopDown(boolean reverse) {
         this.coerceAttributeTopDown = reverse;
+    }
+
+    public boolean isCFindRspDebugLogDeferToDoBeforeRsp() {
+        return cFindRspDebugLogDeferToDoBeforeRsp;
+    }
+
+    public void setCFindRspDebugLogDeferToDoBeforeRsp(boolean defer) {
+        this.cFindRspDebugLogDeferToDoBeforeRsp = defer;
     }
 }
