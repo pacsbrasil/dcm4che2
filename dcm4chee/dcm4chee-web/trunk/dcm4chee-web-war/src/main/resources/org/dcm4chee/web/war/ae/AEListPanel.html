@@ -26,6 +26,8 @@
 	    <th wicket:id="departmentHdrLabel">Department</th>
 	    <th wicket:id="installedHdrLabel">Installed</th>
 	    <th><a wicket:id="newAET" href="#">new</a></th>
+	    <th></th>
+	    <th></th>
 	  </tr>
 	  <tr wicket:id="list">
 	    <td title="Application Entity Title" wicket:id="title">[Title]</td>
@@ -45,10 +47,20 @@
 	    <td wicket:id="institution">[Institution]</td>
 	    <td wicket:id="department">[Department]</td>
 	    <td wicket:id="installed">[Installed]</td>
-	    <td>
-	        <a wicket:id="editAET" href="#">edit</a>
-	        <a wicket:id="removeAET" href="#">del</a>
-	        <a wicket:id="echo" href="#">echo</a>
+	    <td align="center">
+	        <a wicket:id="editAET" href="#">
+	        	<img wicket:id="img-editAET" />
+	        </a>
+	    </td>
+	    <td align="center">
+	        <a wicket:id="removeAET" href="#">
+	        	<img wicket:id="img-removeAET" />
+			</a>
+	    </td>
+	    <td align="center">
+	        <a wicket:id="echo" href="#">
+	        	<img wicket:id="img-echoAET" />
+	        </a>
 	    </td>
 	  </tr>
 	</table>

@@ -38,12 +38,14 @@
 
 package org.dcm4chee.web.war.ae;
 
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
@@ -53,6 +55,7 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.dcm4chee.archive.entity.AE;
+import org.dcm4chee.web.common.base.ImageAnchor;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 
 /**
@@ -148,6 +151,7 @@ public class AEListPanel extends Panel {
                         page.setEditPage(item.getModelObject());
                     }
                 };
+                editAET.add(new Image("img-editAET", new ResourceReference(ImageAnchor.class, "images/edit.gif")));
                 item.add(editAET);
                 MetaDataRoleAuthorizationStrategy.authorize(editAET, RENDER, "WebAdmin");
                 AjaxLink<?> removeAET = new AjaxLink<Object>("removeAET") {
@@ -160,6 +164,7 @@ public class AEListPanel extends Panel {
                         confirm.confirm(target, new StringResourceModel("aet.confirmDelete",AEListPanel.this, null,new Object[]{ae}), ae);
                     }
                 };
+                removeAET.add(new Image("img-removeAET", new ResourceReference(ImageAnchor.class, "images/delete.gif")));
                 item.add(removeAET);
                 MetaDataRoleAuthorizationStrategy.authorize(removeAET, RENDER, "WebAdmin");
                 item.add(new AjaxLink<Object>("echo") {
@@ -169,7 +174,9 @@ public class AEListPanel extends Panel {
                     @Override
                     public void onClick(AjaxRequestTarget target) {
                         mw.show(target, item.getModelObject());
-                    }});
+                    }
+                }.add(new Image("img-echoAET", new ResourceReference(ImageAnchor.class, "images/echo.gif")))
+                );
             }
             
         });
