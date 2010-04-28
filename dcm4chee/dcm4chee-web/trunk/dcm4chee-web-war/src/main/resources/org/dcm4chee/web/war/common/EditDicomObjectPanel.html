@@ -8,7 +8,7 @@
 <body>
 <wicket:panel>
   <span wicket:id="title" class="editTitle" />
-  <form wicket:id="form">
+  <form wicket:id="form" class="edit-dicom-object">
   <table wicket:id="table">
     <colgroup>
       <col class="attrname" />
@@ -19,7 +19,7 @@
       <col class="action" />
     </colgroup>
     <thead>
-      <tr>
+      <tr class="input">
         <th class="attrname" wicket:id="nameHdr">Attribute Name</th>
         <th class="tag" wicket:id="tagHdr">Tag</th>
         <th class="vr" wicket:id="vrHdr">VR</th>
@@ -29,7 +29,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr wicket:id="elements">
+      <tr wicket:id="elements" class="input">
         <wicket:container wicket:id="fragment" />
         <wicket:fragment wicket:id="element">
           <td wicket:id="name" class="attrname">[Attribute Name]</td>
@@ -61,9 +61,11 @@
       </wicket:fragment>
     </tbody>
   </table>
-  <input type="submit" wicket:id="apply" />
-  <input type="submit" wicket:id="submit"/>
-  <input type="submit" wicket:id="cancel"/>
+  <div class="submit">
+	  <input type="submit" wicket:id="apply" />
+	  <input type="submit" wicket:id="submit"/>
+	  <input type="submit" wicket:id="cancel"/>
+	</div>
   </form>
   <div wicket:id="mw" >MessageWindow</div>
 </wicket:panel>

@@ -39,8 +39,11 @@
 package org.dcm4chee.web.war.common;
 
 import org.apache.wicket.Page;
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
+import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
 /**
@@ -51,10 +54,16 @@ import org.dcm4chee.web.war.common.model.AbstractDicomModel;
  */
 public class EditDicomObjectPage extends WebPage {
 
+    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+    private static final ResourceReference CSS = new CompressedResourceReference(EditDicomObjectPage.class, "edit-style.css");
+    
     public EditDicomObjectPage(final Page page,
             final AbstractDicomModel model) {
         
-        add(CSSPackageResource.getHeaderContribution(EditDicomObjectPage.class, "edit-style.css"));
+        if (EditDicomObjectPage.BaseCSS != null)
+            add(CSSPackageResource.getHeaderContribution(EditDicomObjectPage.BaseCSS));
+        if (EditDicomObjectPage.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(EditDicomObjectPage.CSS));
         
         add(new EditDicomObjectPanel("dicomobject", model.getDataset(), model.getClass().getSimpleName()) {
 
