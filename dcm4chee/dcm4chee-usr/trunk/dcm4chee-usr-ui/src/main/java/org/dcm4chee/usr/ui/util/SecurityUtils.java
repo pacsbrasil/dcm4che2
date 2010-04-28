@@ -1,9 +1,8 @@
 package org.dcm4chee.usr.ui.util;
 
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
-import org.dcm4che2.base64.Base64Encoder;
 
 public class SecurityUtils {
 
@@ -11,10 +10,12 @@ public class SecurityUtils {
         MessageDigest md;
         try {
             md = MessageDigest.getInstance("SHA");
+            md.update(password.getBytes());
+            return new String(md.digest(), "x-base64");
         } catch (NoSuchAlgorithmException e) {
             return null;
+        } catch (UnsupportedEncodingException e) {
+            return null;
         }
-        md.update(password.getBytes());
-        return new String(Base64Encoder.encode(md.digest()));
     }
 }

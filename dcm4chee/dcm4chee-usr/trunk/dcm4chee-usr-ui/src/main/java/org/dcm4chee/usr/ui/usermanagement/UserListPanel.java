@@ -159,14 +159,13 @@ public class UserListPanel extends Panel {
             row_parent.add(userIDLabel);
             roleRows.add(row_parent);
 
-            row_parent.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i))));
             RemoveUserLink removeUserLink = new RemoveUserLink("remove-user-link", user);
             removeUserLink.add(new TooltipBehaviour("userlist.", "remove-user-link", user.getUserID()));
-            removeUserLink.add(new Image("img-delete", new ResourceReference(ImageAnchor.class, "images/delete.gif")));
-            row_parent.add(removeUserLink);
+            removeUserLink.add(new Image("img-delete", new ResourceReference(org.dcm4chee.web.common.base.ImageAnchor.class, "images/delete.gif")));
 
-            if (this.userId.equals(user.getUserID()))
-                removeUserLink.setVisible(false);
+            row_parent.add(removeUserLink);
+            row_parent.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i))));
+            removeUserLink.setVisible(!this.userId.equals(user.getUserID()));
             
             row_parent.add(
                     new ChangePasswordLink("change-password-link", this.changePasswordWindow, this.userId, user)
@@ -435,7 +434,7 @@ public class UserListPanel extends Panel {
         
         @Override
         public void onClick(AjaxRequestTarget target) {
-            confirmationWindow.confirm(target, new ResourceModel("userlist.remove-user-link.confirmation").wrapOnAssignment(this.getParent()), this.user);
+            confirmationWindow.confirm(target, new Model<String>(new ResourceModel("userlist.remove-user-link.confirmation").wrapOnAssignment(this.getParent()).getObject()), this.user);
         }
     };
 
