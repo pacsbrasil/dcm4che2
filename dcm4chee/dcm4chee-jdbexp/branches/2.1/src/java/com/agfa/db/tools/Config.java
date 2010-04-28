@@ -149,6 +149,8 @@ class Config {
     //
     public void setLabel(boolean b) {
         this.label = b;
+        if (this.label && this.header)
+            Jdbexp.exit(1, "Error: Use either csv/header or label option.");
         this.fieldSeperator = nl;
         this.recordSeperator = nl;
     }
@@ -160,6 +162,8 @@ class Config {
     //
     public void setCsv(Boolean b) {
         this.csv = b;
+        if (this.csv && this.label)
+            Jdbexp.exit(1, "Error: Use either csv or label option.");
         this.header = true;
         this.textDelimitor = "\"";
         this.fieldSeperator = ";";
@@ -172,6 +176,8 @@ class Config {
     //
     public void setDump(boolean b, String s) {
         dump = b;
+        if (dump && insert)
+            Jdbexp.exit(1, "Error: Use either dump or insert option.");
         tableName = s;
         textDelimitor = "\'";
         fieldSeperator = ",";
@@ -185,6 +191,8 @@ class Config {
     //
     public void setInsert(boolean b, String s) {
         insert = b;
+        if (dump && insert)
+            Jdbexp.exit(1, "Error: Use either dump or insert option.");
         tableName = s;
         textDelimitor = "\'";
         fieldSeperator = ",";
@@ -245,6 +253,39 @@ class Config {
     static SimpleDateFormat fTime = new SimpleDateFormat("HH:mm:ss");
 
     static SimpleDateFormat fDate = new SimpleDateFormat("yyyy-MM-dd");
+
+    public static void LongHelp() {
+        System.out.println("Usage: java -jar jdbexp [options] <sql> | --sqlfile <file> | -M <macro>");
+        System.out.println("       java -jar jdbexp -h | --help");
+        System.out.println("       java -jar jdbexp -v | --version");
+        System.out.println("       java -jar jdbexp --jdbcurlhelp");
+        System.out.println();
+        System.out.println("        -v | --verson                    display version information");
+        System.out.println();
+        System.out.println("        -U | --url <jdbcURL>             DB jdbcURL to connect");
+        System.out.println("             --db <alias>                DB alias to connect");
+        System.out.println();
+        System.out.println("        -d | --delimiter <delimiter>     set <delimiter> (')");
+        System.out.println("        -H | --header                    display columnnames as header");
+        System.out.println("        -L | --label                     display columnnames as labels (linewise)");
+        System.out.println();
+        System.out.println("        --csv                            export as CSV");
+        System.out.println("        --insert                         export with insert statements");
+        System.out.println("        --dump                           export as (nonportable) dump");
+        System.out.println();
+        System.out.println("        --sqlfile <file>                 use <file> for SQL statements");
+        System.out.println("        --commit <interval>              commit after <interval> statements");
+        System.out.println();
+        System.out.println("        -M <macro> [arguments]           execute predefined macro");
+        System.out.println();
+        System.out.println("        -O | --out <file> [-z | -gzip]   write output to (gziped) <file>");
+        System.out.println("        -E | --err <file>                write error to <file>");
+        System.out.println("");
+        System.out.println("        --jdbcurlhelp                    jdbcURL Syntax");
+        System.out.println();
+        System.out.println("        --debug                          debug mode");
+        System.out.println();
+    }
 
     public static void UrlHelp() {
         System.out.println("jdbc URL Examples:");
@@ -323,7 +364,12 @@ class Config {
 
             options.addOption("h", "help", false, "print this message");
             options.addOption("v", "version", false, "version information");
-            
+            options.addOption("L", "label", false, "display labels");
+            options.addOption("H", "header", false, "display header");
+            options.addOption(OptionBuilder.withLongOpt("url").withDescription("jdbc connection url").hasArg()
+                    .withArgName("JDBCURL").create("U"));
+            options.addOption(OptionBuilder.withLongOpt("db").withDescription("DB alias").hasArg().withArgName(
+                    "ALIAS | list").create());
             options.addOption(OptionBuilder.withLongOpt("delimiter").withDescription("field delimiter").hasArg()
                     .withArgName("DELIMITER").create("d"));
             options.addOption(OptionBuilder.withLongOpt("commit").withDescription("commit after <COMMIT> statements")
@@ -341,22 +387,14 @@ class Config {
                     .create());
             options.addOption(OptionBuilder.withLongOpt("ignoresqlerrors").withDescription("ignore SQL errors")
                     .create());
-            options.addOption(OptionBuilder.withLongOpt("sqlfile").withDescription("read statemtents from sqlfile").hasArg().withArgName("FILE").create());
 
-            OptionGroup dbGroup = new OptionGroup();
-            dbGroup.addOption(OptionBuilder.withLongOpt("url").withDescription("jdbc connection url").hasArg().withArgName("JDBCURL").create("U"));
-            dbGroup.addOption(OptionBuilder.withLongOpt("db").withDescription("DB alias").hasArg().withArgName("ALIAS | list").create("db"));
-            options.addOptionGroup(dbGroup);
+            options.addOption(OptionBuilder.withLongOpt("cvs").withDescription("display as cvs").create());
+            options.addOption(OptionBuilder.withLongOpt("insert").withDescription("display with insert statements")
+                    .create());
+            options.addOption(OptionBuilder.withLongOpt("dump").withDescription("display as dump").create());
+            options.addOption(OptionBuilder.withLongOpt("sqlfile").withDescription("read statemtents from sqlfile")
+                    .hasArg().withArgName("FILE").create());
 
-            OptionGroup displayGroup = new OptionGroup();
-            displayGroup.addOption(OptionBuilder.withLongOpt("label").withDescription("display labels").create("L"));
-            displayGroup.addOption(OptionBuilder.withLongOpt("header").withDescription("display header").create("H"));
-            displayGroup.addOption(OptionBuilder.withLongOpt("cvs").withDescription("display as cvs").create("cvs"));
-            displayGroup.addOption(OptionBuilder.withLongOpt("insert").withDescription("display with insert statements").create("insert"));
-            displayGroup.addOption(OptionBuilder.withLongOpt("dump").withDescription("display as dump").create("dump"));
-            options.addOptionGroup(displayGroup);
-            
-            
             // parse the command line arguments
             CommandLine line = parser.parse(options, argv);
             argv = line.getArgs();
@@ -472,29 +510,38 @@ class Config {
                     }
                     System.exit(0);
                 } else if (setJdbcUrl(applicationProps.getProperty("jdbc.url." + line.getOptionValue("db"))) == null) {
-                    Jdbexp.exit(1, "ERROR: DB Alias: < " + line.getOptionValue("db") + " > not found!");
-                }
+                   Jdbexp.exit(1, "ERROR: DB Alias: < " + line.getOptionValue("db") + " > not found!");
+               }
+            }
+
+            // jdbc url
+            if (line.hasOption("U")) {
+            	String s=line.getOptionValue("U");
+            	if (s.startsWith("$")) {
+            		if (setJdbcUrl(applicationProps.getProperty("jdbc.url." + s.substring(1))) == null) {
+            			Jdbexp.exit(1, "ERROR: DB Alias: < " + s.substring(1) + " > not found!");
+            		}
+            	} else {
+            		setJdbcUrl(s);
+            	}
             }
 
             if (!isSql() && i < argv.length)
-                setSql(argv[i++].trim());
-
-            // jdbc url
-            if (line.hasOption("U"))
-                setJdbcUrl(line.getOptionValue("U"));
+               setSql(argv[i++].trim());
 
             if (getJdbcUrl() == null)
                 if (setJdbcUrl(System.getProperty("jdbc.url")) == null)
-                    setJdbcUrl(applicationProps.getProperty("jdbc.url"));
+                    if (setJdbcUrl(applicationProps.getProperty("jdbc.url")) == null);
+            				Jdbexp.exit(1, "ERROR: Missing JDBC Url.");
 
             String jdbcDriverClass = System.getProperty("jdbc.driver");
 
-            if (getJdbcUrl().startsWith("{") && getJdbcUrl().contains("}")) {
-                String tmpJdbcUrl = getJdbcUrl();
-                int pos = tmpJdbcUrl.indexOf("}");
-                jdbcDriverClass = tmpJdbcUrl.substring(1, pos);
-                setJdbcUrl(tmpJdbcUrl.substring(pos + 1));
-            }
+            if (getJdbcUrl() != null && getJdbcUrl().startsWith("{") && getJdbcUrl().contains("}")) {
+               String tmpJdbcUrl = getJdbcUrl();
+               int pos = tmpJdbcUrl.indexOf("}");
+               jdbcDriverClass = tmpJdbcUrl.substring(1, pos);
+               setJdbcUrl(tmpJdbcUrl.substring(pos + 1));
+           }
 
             if (jdbcDriverClass == null)
                 jdbcDriverClass = applicationProps.getProperty("jdbc.driver", "oracle.jdbc.driver.OracleDriver");
