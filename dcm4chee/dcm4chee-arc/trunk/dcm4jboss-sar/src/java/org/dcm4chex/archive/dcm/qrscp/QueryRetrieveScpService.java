@@ -252,6 +252,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
      */
     private Map privateTSuidMap = new LinkedHashMap();
 
+    private boolean coerceAttributeTopDown = false;
+
     public QueryRetrieveScpService() {
     	moveScp = createMoveScp();
         getScp = createGetScp();
@@ -1330,10 +1332,18 @@ public class QueryRetrieveScpService extends AbstractScpService {
             storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
         }
         File f = getFile(info);
-        Dataset mergeAttrs = DatasetUtils.fromByteArray(info.patAttrs,
+        Dataset mergeAttrs;
+        if (coerceAttributeTopDown) {
+        	mergeAttrs = DatasetUtils.fromByteArray(info.instAttrs,
+                    DatasetUtils.fromByteArray(info.seriesAttrs, DatasetUtils
+                    .fromByteArray(info.studyAttrs, DatasetUtils
+                    .fromByteArray(info.patAttrs))));
+        } else {
+        	mergeAttrs = DatasetUtils.fromByteArray(info.patAttrs,
                 DatasetUtils.fromByteArray(info.studyAttrs, DatasetUtils
                         .fromByteArray(info.seriesAttrs, DatasetUtils
                                 .fromByteArray(info.instAttrs))));
+        }
         coerceOutboundCStoreRQ(mergeAttrs, aeData, assoc);
         byte[] buf = (byte[]) assoc.getProperty(SEND_BUFFER);
         if (buf == null) {
@@ -1605,4 +1615,12 @@ public class QueryRetrieveScpService extends AbstractScpService {
 			int retrieveRspStatusForNoMatchingInstanceToRetrieve) {
 		this.retrieveRspStatusForNoMatchingInstanceToRetrieve = retrieveRspStatusForNoMatchingInstanceToRetrieve;
 	}
+
+    public boolean isCoerceAttributeTopDown() {
+        return coerceAttributeTopDown;
+    }
+
+    public void setCoerceAttributeTopDown(boolean reverse) {
+        this.coerceAttributeTopDown = reverse;
+    }
 }
