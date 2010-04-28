@@ -110,7 +110,7 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
         show(target);
     }
     
-    public void setStatus(IModel statusMsg) {
+    public void setStatus(IModel<?> statusMsg) {
         msg = statusMsg;
         hasStatus = true;
     }
@@ -134,10 +134,8 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                     return msg == null ? null : msg.getObject();
                 }
             });
-            //msgLabel.setOutputMarkupId(true);
-            //msgLabel.setOutputMarkupPlaceholderTag(true);
             add(msgLabel);
-            AjaxFallbackLink confirmBtn = new AjaxFallbackLink<Object>("confirm"){
+            AjaxFallbackLink<Object> confirmBtn = new AjaxFallbackLink<Object>("confirm"){
 
                 private static final long serialVersionUID = 1L;
 

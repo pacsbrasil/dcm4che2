@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dcm4chee.web.dao.StudyListFilter;
+import org.dcm4chee.web.war.folder.model.PatientModel;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

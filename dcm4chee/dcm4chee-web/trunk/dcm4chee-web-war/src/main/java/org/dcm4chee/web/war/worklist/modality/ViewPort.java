@@ -42,8 +42,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.web.dao.ModalityWorklistFilter;
+import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
 
 /**
  * @author Robert David <robert.david@agfa.com>

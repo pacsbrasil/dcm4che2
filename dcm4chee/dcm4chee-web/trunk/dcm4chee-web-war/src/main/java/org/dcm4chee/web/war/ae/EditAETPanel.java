@@ -61,7 +61,7 @@ import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.validators.UrlValidator1;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
-import org.dcm4chee.web.war.worklist.modality.ModalityWorklistPanel;
+import org.dcm4chee.web.war.ae.model.CipherModel;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>

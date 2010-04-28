@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.ae;
+package org.dcm4chee.web.war.ae.model;
 
 import java.util.List;
 

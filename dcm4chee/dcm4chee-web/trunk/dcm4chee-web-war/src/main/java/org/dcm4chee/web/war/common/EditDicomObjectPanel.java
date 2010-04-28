@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.folder;
+package org.dcm4chee.web.war.common;
 
 import java.util.Iterator;
 
@@ -79,11 +79,11 @@ public class EditDicomObjectPanel extends Panel {
     private final DicomObject dcmObj;
     private final WebMarkupContainer table;
     private MessageWindow mw = new MessageWindow("mw");
-    private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("folder.");
+    private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("dicom.");
 
     public EditDicomObjectPanel(String id, DicomObject dcmObj, String title) {
         super(id);
-        add(CSSPackageResource.getHeaderContribution(EditDicomObjectPanel.class, "folder-style.css"));
+        add(CSSPackageResource.getHeaderContribution(EditDicomObjectPanel.class, "edit-style.css"));
         add(mw);
         add(new Label("title", new ResourceModel("dicom.edit.title."+title)));
         this.dcmObj = new BasicDicomObject();
@@ -136,11 +136,11 @@ public class EditDicomObjectPanel extends Panel {
     }
 
     private void addHdrLabels(WebMarkupContainer table) {
-        table.add(new Label("nameHdr", new ResourceModel("folder.nameHdr")).add(tooltipBehaviour));
-        table.add(new Label("tagHdr", new ResourceModel("folder.tagHdr")).add(tooltipBehaviour));
-        table.add(new Label("vrHdr", new ResourceModel("folder.vrHdr")).add(tooltipBehaviour));
-        table.add(new Label("lenHdr", new ResourceModel("folder.lenHdr")).add(tooltipBehaviour));
-        table.add(new Label("valueHdr", new ResourceModel("folder.valueHdr")).add(tooltipBehaviour));
+        table.add(new Label("nameHdr", new ResourceModel("dicom.nameHdr")).add(tooltipBehaviour));
+        table.add(new Label("tagHdr", new ResourceModel("dicom.tagHdr")).add(tooltipBehaviour));
+        table.add(new Label("vrHdr", new ResourceModel("dicom.vrHdr")).add(tooltipBehaviour));
+        table.add(new Label("lenHdr", new ResourceModel("dicom.lenHdr")).add(tooltipBehaviour));
+        table.add(new Label("valueHdr", new ResourceModel("dicom.valueHdr")).add(tooltipBehaviour));
     }
 
     protected DicomObject getDicomObject() {

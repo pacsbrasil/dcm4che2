@@ -116,18 +116,27 @@ public class FocusOnLoadBehaviour extends AbstractBehavior {
     }
     
     public class SimpleFocusStrategy implements FocusStrategy {
+
+        private static final long serialVersionUID = 1L;
+
         public void focus(IHeaderResponse headerResponse, Component c) {
             headerResponse.renderOnLoadJavascript(getJavaScriptString(c));
         }
     }
 
     public class EmptyFocusStrategy implements FocusStrategy {
+
+        private static final long serialVersionUID = 1L;
+
         public void focus(IHeaderResponse headerResponse, Component c) {
             setFocusOnEmpty(headerResponse, c);
         }
     }
 
     public class FocusAndSelectTextStrategy implements FocusStrategy {
+
+        private static final long serialVersionUID = 1L;
+
         public void focus(IHeaderResponse headerResponse, Component c) {
             if ( c instanceof TextField<?>) {
                 headerResponse.renderOnLoadJavascript(getJavaScriptString(c)+";elem.select()");
@@ -136,6 +145,9 @@ public class FocusOnLoadBehaviour extends AbstractBehavior {
     }
     
     public class FirstEmptyTextfieldFocusStrategy implements FocusStrategy {
+
+        private static final long serialVersionUID = 1L;
+
         public void focus(IHeaderResponse headerResponse, Component fc) {
             Form<?> form = (Form<?>)fc;
             Component c;

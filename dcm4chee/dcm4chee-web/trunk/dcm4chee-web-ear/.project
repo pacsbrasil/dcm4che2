@@ -9,11 +9,11 @@
 		<project>dcm4chee-web-sar-tlscfg</project>
 		<project>dcm4chee-web-ejb</project>
 		<project>dcm4chee-web-sar-contentedit</project>
-		<project>dcm4chee-web-war</project>
 		<project>dcm4chee-web-sar-common</project>
 		<project>dcm4chee-web-sar-ianscu</project>
 		<project>dcm4chee-web-sar-movescu</project>
 		<project>dcm4chee-dashboard-sar</project>
+		<project>dcm4chee-web-war</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

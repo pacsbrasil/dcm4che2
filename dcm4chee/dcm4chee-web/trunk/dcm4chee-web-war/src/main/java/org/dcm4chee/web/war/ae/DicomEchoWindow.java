@@ -62,6 +62,7 @@ import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.war.ae.model.CipherModel;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>

@@ -40,7 +40,6 @@ package org.dcm4chee.web.war.folder;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Set;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
@@ -48,6 +47,7 @@ import javax.management.ReflectionException;
 
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
 import org.dcm4chee.web.common.exceptions.SelectionException;
+import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

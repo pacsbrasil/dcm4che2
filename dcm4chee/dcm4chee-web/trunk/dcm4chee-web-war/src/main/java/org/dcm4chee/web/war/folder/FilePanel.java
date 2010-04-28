@@ -42,6 +42,7 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
+import org.dcm4chee.web.war.folder.model.FileModel;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

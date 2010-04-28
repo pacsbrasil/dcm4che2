@@ -45,6 +45,8 @@ package org.dcm4chee.web.common.exceptions;
  */
 public class SelectionException extends Exception{
 
+    private static final long serialVersionUID = 1L;
+    
     private String msgId;
     public SelectionException(String msg, String msgId) {
         super(msg);

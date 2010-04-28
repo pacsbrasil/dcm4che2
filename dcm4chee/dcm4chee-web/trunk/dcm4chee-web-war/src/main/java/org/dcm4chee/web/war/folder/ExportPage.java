@@ -69,6 +69,11 @@ import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.dao.AEHomeLocal;
 import org.dcm4chee.web.dao.StudyListLocal;
+import org.dcm4chee.web.war.folder.model.InstanceModel;
+import org.dcm4chee.web.war.folder.model.PPSModel;
+import org.dcm4chee.web.war.folder.model.PatientModel;
+import org.dcm4chee.web.war.folder.model.SeriesModel;
+import org.dcm4chee.web.war.folder.model.StudyModel;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.slf4j.Logger;
@@ -308,19 +313,6 @@ public class ExportPage extends BaseWicketPage {
             return requests;
         }
 
-        public int getNrOfPatients() {
-            return nrPat;
-        }
-        public int getNrOfStudies() {
-            return nrStudy;
-        }
-        public int getNrOfSeries() {
-            return nrSeries;
-        }
-        public int getNrOfInstances() {
-            return nrInstances;
-        }
-        
         public boolean hasSelection() {
             return (nrPat | nrStudy | nrSeries | nrInstances) != 0;
         }
@@ -400,18 +392,12 @@ public class ExportPage extends BaseWicketPage {
         private long start, end;
         private List<ExportResponseHandler> moveRequests = new ArrayList<ExportResponseHandler>(); 
         private List<ExportResponseHandler> failedRequests = new ArrayList<ExportResponseHandler>();
-        private int id;
         private int nrOfMoverequests;
         private boolean isRendered = true;
         
         public ExportResult(int id) {
-            this.id = id;
         }
 
-        public int getId() {
-            return id;
-        }
-        
         public int[] calcTotal() {
             int[] total = new int[4];
             for ( ExportResponseHandler h : moveRequests) {

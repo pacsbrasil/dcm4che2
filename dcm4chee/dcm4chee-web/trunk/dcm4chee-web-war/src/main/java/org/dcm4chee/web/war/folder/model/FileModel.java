@@ -36,45 +36,31 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.folder;
+package org.dcm4chee.web.war.folder.model;
 
 import java.io.Serializable;
-import java.util.List;
 
-import org.dcm4che2.data.DicomObject;
+import org.dcm4chee.archive.entity.File;
 
 /**
- * @author Franz Willer <franz.willer@gmail.com>
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Nov 12, 2009
+ * @since Dec 12, 2008
  */
-public abstract class AbstractDicomModel implements Serializable {
+public class FileModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
-    public static final int PATIENT_LEVEL = 0;
-    public static final int STUDY_LEVEL = 1;
-    public static final int PPS_LEVEL = 2;
-    public static final int SERIES_LEVEL = 3;
-    public static final int INSTANCE_LEVEL = 4;
-    
-    public static final String[] LEVEL_STRINGS = {"Patient", "Study", "PPS", "Series", "Instance"};
-    
-    private long pk;
     private boolean selected;
     private boolean details;
-    protected DicomObject dataset;
+    private final File file;
 
-    public long getPk() {
-        return pk;
+    public FileModel(File file) {
+        this.file = file;
     }
 
-    public void setPk(long pk) {
-        this.pk = pk;
-    }
-    
-    public DicomObject getDataset() {
-        return dataset;
+    public File getFile() {
+        return file;
     }
 
     public boolean isSelected() {
@@ -92,22 +78,9 @@ public abstract class AbstractDicomModel implements Serializable {
     public void setDetails(boolean details) {
         this.details = details;
     }
-    
-    public String getAttributeValueAsString(int tag) {
-        return dataset.getString(tag);
+
+    public int getRowspan() {
+        return details ? 2 : 1;
     }
 
-    public abstract int getRowspan();
-    
-    public abstract void expand();
-    
-    public abstract void collapse();
-
-    public abstract boolean isCollapsed();
-    
-    public abstract List<? extends AbstractDicomModel> getDicomModelsOfNextLevel();
-    
-    public abstract int levelOfModel();
-
-    public abstract void update(DicomObject dicomObject);
 }

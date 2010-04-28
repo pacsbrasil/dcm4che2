@@ -82,6 +82,14 @@ import org.dcm4chee.web.dao.StudyListFilter;
 import org.dcm4chee.web.dao.StudyListLocal;
 import org.dcm4chee.web.war.WicketApplication;
 import org.dcm4chee.web.war.WicketSession;
+import org.dcm4chee.web.war.common.EditDicomObjectPage;
+import org.dcm4chee.web.war.common.model.AbstractDicomModel;
+import org.dcm4chee.web.war.folder.model.FileModel;
+import org.dcm4chee.web.war.folder.model.InstanceModel;
+import org.dcm4chee.web.war.folder.model.PPSModel;
+import org.dcm4chee.web.war.folder.model.PatientModel;
+import org.dcm4chee.web.war.folder.model.SeriesModel;
+import org.dcm4chee.web.war.folder.model.StudyModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

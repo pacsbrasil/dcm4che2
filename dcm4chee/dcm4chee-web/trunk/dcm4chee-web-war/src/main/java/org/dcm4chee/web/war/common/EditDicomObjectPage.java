@@ -36,10 +36,12 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.folder;
+package org.dcm4chee.web.war.common;
 
 import org.apache.wicket.Page;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebPage;
+import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -51,6 +53,9 @@ public class EditDicomObjectPage extends WebPage {
 
     public EditDicomObjectPage(final Page page,
             final AbstractDicomModel model) {
+        
+        add(CSSPackageResource.getHeaderContribution(EditDicomObjectPage.class, "edit-style.css"));
+        
         add(new EditDicomObjectPanel("dicomobject", model.getDataset(), model.getClass().getSimpleName()) {
 
             private static final long serialVersionUID = 1L;

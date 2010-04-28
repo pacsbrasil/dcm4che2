@@ -39,22 +39,18 @@
 package org.dcm4chee.web.war.folder;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.VR;
-import org.dcm4chee.archive.entity.MPPS;
-import org.dcm4chee.archive.entity.Series;
-import org.dcm4chee.archive.entity.Study;
-import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.dao.StudyListLocal;
-import org.dcm4chee.web.common.util.DateUtils;
+import org.dcm4chee.web.war.common.model.AbstractDicomModel;
+import org.dcm4chee.web.war.folder.model.FileModel;
+import org.dcm4chee.web.war.folder.model.InstanceModel;
+import org.dcm4chee.web.war.folder.model.PPSModel;
+import org.dcm4chee.web.war.folder.model.PatientModel;
+import org.dcm4chee.web.war.folder.model.SeriesModel;
+import org.dcm4chee.web.war.folder.model.StudyModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.folder;
+package org.dcm4chee.web.war.folder.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -48,6 +48,7 @@ import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.web.dao.StudyListLocal;
+import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.common.util.DateUtils;
 import org.dcm4chee.archive.util.JNDIUtils;
 

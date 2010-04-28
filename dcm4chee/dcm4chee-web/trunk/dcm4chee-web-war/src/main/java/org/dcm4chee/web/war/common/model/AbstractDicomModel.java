@@ -36,31 +36,45 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.folder;
+package org.dcm4chee.web.war.common.model;
 
 import java.io.Serializable;
+import java.util.List;
 
-import org.dcm4chee.archive.entity.File;
+import org.dcm4che2.data.DicomObject;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since Dec 12, 2008
+ * @since Nov 12, 2009
  */
-public class FileModel implements Serializable {
+public abstract class AbstractDicomModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
+    public static final int PATIENT_LEVEL = 0;
+    public static final int STUDY_LEVEL = 1;
+    public static final int PPS_LEVEL = 2;
+    public static final int SERIES_LEVEL = 3;
+    public static final int INSTANCE_LEVEL = 4;
+    
+    public static final String[] LEVEL_STRINGS = {"Patient", "Study", "PPS", "Series", "Instance"};
+    
+    private long pk;
     private boolean selected;
     private boolean details;
-    private final File file;
+    protected DicomObject dataset;
 
-    public FileModel(File file) {
-        this.file = file;
+    public long getPk() {
+        return pk;
     }
 
-    public File getFile() {
-        return file;
+    public void setPk(long pk) {
+        this.pk = pk;
+    }
+    
+    public DicomObject getDataset() {
+        return dataset;
     }
 
     public boolean isSelected() {
@@ -78,9 +92,22 @@ public class FileModel implements Serializable {
     public void setDetails(boolean details) {
         this.details = details;
     }
-
-    public int getRowspan() {
-        return details ? 2 : 1;
+    
+    public String getAttributeValueAsString(int tag) {
+        return dataset.getString(tag);
     }
 
+    public abstract int getRowspan();
+    
+    public abstract void expand();
+    
+    public abstract void collapse();
+
+    public abstract boolean isCollapsed();
+    
+    public abstract List<? extends AbstractDicomModel> getDicomModelsOfNextLevel();
+    
+    public abstract int levelOfModel();
+
+    public abstract void update(DicomObject dicomObject);
 }

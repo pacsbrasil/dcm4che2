@@ -39,20 +39,12 @@
 package org.dcm4chee.web.war.worklist.modality;
 
 import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.DateFormatSymbols;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.datetime.DateConverter;
-import org.apache.wicket.datetime.PatternDateConverter;
-import org.apache.wicket.datetime.markup.html.form.DateTextField;
-import org.apache.wicket.extensions.yui.calendar.DateField;
 import org.apache.wicket.extensions.yui.calendar.DatePicker;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
@@ -73,8 +65,6 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
-import org.apache.wicket.validation.validator.DateValidator;
-import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
@@ -83,7 +73,9 @@ import org.dcm4chee.web.dao.ModalityWorklist;
 import org.dcm4chee.web.dao.ModalityWorklistFilter;
 import org.dcm4chee.web.war.WicketApplication;
 import org.dcm4chee.web.war.WicketSession;
+import org.dcm4chee.web.war.common.EditDicomObjectPage;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
+import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -217,22 +209,6 @@ public class ModalityWorklistPanel extends Panel {
         }));
     }
 
-//    private void addActions(BaseForm form) {
-//        PopupLink l = new PopupLink("export", "exportPage") {
-//
-//            private static final long serialVersionUID = 1L;
-//
-//            @Override
-//            public void onClick() {
-//                ExportPage page = new ExportPage(viewport.getPatients());
-//                this.setResponsePage(page);
-//            }
-//        };
-//        l.setPopupHeight(400);
-//        l.setPopupWidth(550);
-//        form.add(l);
-//    }
-
     private WebMarkupContainer addExtendedStudySearch(final Form<?> form) {
         final ModalityWorklistFilter filter = viewport.getFilter();
         final WebMarkupContainer extendedStudyFilter = new WebMarkupContainer("extendedStudyFilter") {
@@ -335,9 +311,7 @@ public class ModalityWorklistPanel extends Panel {
     
                     @Override
                     public void onClick() {
-                        System.out.println("EDIT IS NOT IMPLEMENTED YET");
-//                        setResponsePage(
-//                                new EditDicomObjectPage(ModalityWorklistPanel.this.getPage(), patModel));
+                        setResponsePage(new EditDicomObjectPage(ModalityWorklistPanel.this.getPage(), mwlItemModel));
                     }
                 }.add(new Image("editImg",WicketApplication.IMAGE_EDIT))
                  .add(new TooltipBehaviour("mw.","patEdit")))

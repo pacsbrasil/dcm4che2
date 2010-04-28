@@ -36,16 +36,17 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.worklist.modality;
+package org.dcm4chee.web.war.worklist.modality.model;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.wicket.model.IModel;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.MWLItem;
-import org.dcm4chee.web.war.folder.AbstractDicomModel;
+import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -55,8 +56,6 @@ import org.dcm4chee.web.war.folder.AbstractDicomModel;
 public class MWLItemModel extends AbstractDicomModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-    private IModel<Boolean> latestStudyFirst;
 
     private MWLItem mwlItem;
     
@@ -72,7 +71,6 @@ public class MWLItemModel extends AbstractDicomModel implements Serializable {
         setPk(mwlItem.getPk());
         this.mwlItem = mwlItem;
         this.dataset = mwlItem.getAttributes();
-        this.latestStudyFirst = latestStudyFirst;
     }
 
     public String getScheduledProcedureStepDescription() {
@@ -80,28 +78,27 @@ public class MWLItemModel extends AbstractDicomModel implements Serializable {
     }
 
     public String getPatientName() {
-        return this.mwlItem.getPatient().getPatientName();
-//        return this.dataset.getString(Tag.pat);
+        return this.mwlItem.getPatient().getAttributes().getString(Tag.PatientName);
     }
     
     public String getModality() {
-        return this.mwlItem.getModality();
+        return this.mwlItem.getAttributes().getString(Tag.Modality);
     }
 
     public String getStartDate() {
-        return this.mwlItem.getStartDateTime().toString();
+        return new Date(this.mwlItem.getAttributes().getInt(Tag.StartAcquisitionDateTime)).toString();
     }
 
     public String getScheduledProcedureStepID() {
-        return this.mwlItem.getScheduledProcedureStepID();
+        return this.mwlItem.getAttributes().getString(Tag.ScheduledProcedureStepID);
     }
 
     public String getRequestedProcedureID() {
-        return this.mwlItem.getRequestedProcedureID();
+        return this.mwlItem.getAttributes().getString(Tag.RequestedProcedureID);
     }
 
     public String getAccessionNumber() {
-        return this.mwlItem.getAccessionNumber();
+        return this.mwlItem.getAttributes().getString(Tag.AccessionNumber);
     }
     
     @Override
@@ -116,13 +113,11 @@ public class MWLItemModel extends AbstractDicomModel implements Serializable {
 
     @Override
     public List<? extends AbstractDicomModel> getDicomModelsOfNextLevel() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public int getRowspan() {
-        // TODO Auto-generated method stub
         return 0;
     }
 
@@ -133,12 +128,10 @@ public class MWLItemModel extends AbstractDicomModel implements Serializable {
 
     @Override
     public int levelOfModel() {
-        // TODO Auto-generated method stub
         return 0;
     }
 
     @Override
     public void update(DicomObject dicomObject) {
-        // TODO Auto-generated method stub
     }
 }
