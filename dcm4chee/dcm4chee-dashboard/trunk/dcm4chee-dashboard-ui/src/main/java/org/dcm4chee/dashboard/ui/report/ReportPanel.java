@@ -74,8 +74,9 @@ import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
-import org.dcm4chee.dashboard.ui.ImageAnchor;
 import org.dcm4chee.dashboard.ui.common.DashboardTreeTable;
+import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -194,8 +195,10 @@ public class ReportPanel extends Panel {
 
                     tag.put("style", "background-image: url('images/" + 
                             ((((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getGroupUuid() == null) ? 
-                                "folder_files" : "report") + ".gif')");
-
+                                    getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_REPORT_FOLDER) 
+                                    : getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_REPORT))
+                                    + "')"
+                    );
                     tag.put("title", ((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getStatement());
                 }
             };
@@ -246,9 +249,12 @@ public class ReportPanel extends Panel {
                 @Override
                 protected void onComponentTag(ComponentTag tag) {
                     super.onComponentTag(tag);
-                    tag.put("src",form.isVisible() ? this.getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/minus.gif")) : this.getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/plus.gif")));
+                    tag.put("src",form.isVisible() ? 
+                            getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_COLLAPSE)
+                            : getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_EXPAND)
+                    );
                 }
-            }));
+            }).add(new ImageSizeBehaviour()));
         }
 
         @Override

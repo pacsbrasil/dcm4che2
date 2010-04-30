@@ -77,6 +77,7 @@ import org.dcm4chee.dashboard.model.SystemPropertyModel;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.common.DashboardTreeTable;
 import org.dcm4chee.dashboard.ui.util.CSSUtils;
+import org.dcm4chee.icons.ImageManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -215,9 +216,12 @@ public class SystemInfoPanel extends Panel {
                 protected void onComponentTag(ComponentTag tag) {
                     super.onComponentTag(tag);
 
-                    tag.put("style", "background-image: url('images/" + 
+                    tag.put("style", "background-image: url('" + 
                     ((((SystemPropertyModel) ((DefaultMutableTreeNode) node).getUserObject()).getGroup() == null) ? 
-                        "folder_open" : "property") + ".gif')");
+                        getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_FOLDER_PROPERTY) 
+                        : getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_PROPERTY)) 
+                        + "')"
+                    );
                 }
             };
         }        

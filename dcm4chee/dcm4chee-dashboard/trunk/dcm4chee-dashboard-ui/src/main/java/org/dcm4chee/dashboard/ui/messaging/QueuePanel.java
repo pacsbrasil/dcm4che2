@@ -74,6 +74,7 @@ import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.common.DashboardTreeTable;
+import org.dcm4chee.icons.ImageManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -192,10 +193,10 @@ public class QueuePanel extends Panel {
                 protected void onComponentTag(ComponentTag tag) {
                     super.onComponentTag(tag);
 
-                    tag.put("style", "background-image: url('images/" + 
+                    tag.put("style", "background-image: url('" + 
                             (((QueueModel) ((DefaultMutableTreeNode) node).getUserObject()).isQueue() ?  
-                                    "queue" :
-                                    "message") + ".gif')"
+                                    getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_QUEUE)
+                                    : getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_MESSAGE)) +"')"
                     );
                     tag.put("title", ((QueueModel) ((DefaultMutableTreeNode) node).getUserObject()).getJndiName());
                 }

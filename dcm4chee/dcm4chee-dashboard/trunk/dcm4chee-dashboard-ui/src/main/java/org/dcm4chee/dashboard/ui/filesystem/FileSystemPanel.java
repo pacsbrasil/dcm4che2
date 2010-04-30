@@ -72,9 +72,9 @@ import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
-import org.dcm4chee.dashboard.ui.ImageAnchor;
 import org.dcm4chee.dashboard.ui.common.DashboardTreeTable;
 import org.dcm4chee.dashboard.ui.common.JFreeChartImage;
+import org.dcm4chee.icons.ImageManager;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -347,10 +347,11 @@ public class FileSystemPanel extends Panel {
 
                     tag.put("style", "background-image: url('" + 
                             (((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).isGroup() ?  
-                                    this.getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/filesystemgroup.gif")) :
+                                    getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_FILESYSTEM_GROUP) :
                                     ((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).getDirectoryPath().contains("tar:") ?
-                                            this.getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/folder_files.gif")) : 
-                                            this.getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/filesystem.gif")))
+                                            getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_FILESYSTEM_TAR) : 
+                                            getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_FILESYSTEM_FOLDER))
+                                            + "')\"" 
                     );
                     tag.put("title", ((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).getDescription());
                 }

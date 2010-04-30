@@ -40,7 +40,6 @@ package org.dcm4chee.dashboard.ui.report;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Page;
-import org.apache.wicket.ResourceReference;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
@@ -59,7 +58,8 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
-import org.dcm4chee.dashboard.ui.ImageAnchor;
+import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,6 +108,7 @@ public class DynamicLinkPanel extends Panel {
                  this.window
             }))
             .add(new Image("image")
+            .add(new ImageSizeBehaviour())
             .add(new AttributeModifier("src", true, new AbstractReadOnlyModel() {
     
                 private static final long serialVersionUID = 1L;
@@ -116,16 +117,16 @@ public class DynamicLinkPanel extends Panel {
                 public Object getObject() {
                     return (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.CreateOrEditReportLink) ? 
                         (report == null || report.getGroupUuid() == null) ? 
-                                getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/report.gif")) :
-                                    getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/edit.gif")) : 
+                                getRequestCycle().urlFor(ImageManager.IMAGE_REPORT_NEW) :
+                                    getRequestCycle().urlFor(ImageManager.IMAGE_EDIT) : 
                     (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.RemoveLink) ? 
-                            getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/delete.gif")) : 
+                            getRequestCycle().urlFor(ImageManager.IMAGE_DELETE) : 
                     (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.DisplayDiagramLink) ?
-                            getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/diagram.gif")) : 
+                            getRequestCycle().urlFor(ImageManager.IMAGE_DIAGRAM) : 
                     (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.DisplayTableLink) ?
-                            getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/table.gif")) : 
+                            getRequestCycle().urlFor(ImageManager.IMAGE_TABLE) : 
                     (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.DisplayDiagramAndTableLink) ? 
-                            getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/diagram+table.gif")) : 
+                            getRequestCycle().urlFor(ImageManager.IMAGE_DIAGRAM_TABLE) : 
                     "";
                 }
             }))));

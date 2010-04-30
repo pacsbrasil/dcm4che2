@@ -53,6 +53,7 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
+import org.dcm4chee.icons.ImageManager;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -117,15 +118,15 @@ public abstract class DashboardTreeTable extends TreeTable {
                                 : node.getParent().getChildAt(node.getParent().getChildCount() - 1).equals(node)) ? 
                                         "junction-last" 
                                         : "junction")
-                        + "\"><span class=\"" +
+                        + "\"><span width=\"16\" height=\"16\" class=\"" +
                             (!node.isLeaf() ? "plus" : "corner") 
                                 + "\""
                                 +  (!node.isLeaf() ? 
-                                " style=\"background-image: url('resources/org.dcm4chee.dashboard.ui.ImageAnchor/images/" 
+                                " style=\"background-image: url('"
                                         + (isNodeExpanded(node) ? 
-                                                "minus" 
-                                                : "plus") 
-                                                + ".gif')\""
+                                                getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_COLLAPSE)
+                                                : getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_EXPAND)) 
+                                                + "')\""
                                 : "")
                         + "></span></span>");
             }
