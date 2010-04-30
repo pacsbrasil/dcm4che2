@@ -68,10 +68,11 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.util.ListModel;
+import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.entity.Role;
 import org.dcm4chee.usr.entity.User;
-import org.dcm4chee.usr.ui.ImageAnchor;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.ui.util.JNDIUtils;
 import org.dcm4chee.usr.ui.util.SecurityUtils;
@@ -161,7 +162,8 @@ public class UserListPanel extends Panel {
 
             RemoveUserLink removeUserLink = new RemoveUserLink("remove-user-link", user);
             removeUserLink.add(new TooltipBehaviour("userlist.", "remove-user-link", user.getUserID()));
-            removeUserLink.add(new Image("img-delete", new ResourceReference(org.dcm4chee.web.common.base.ImageAnchor.class, "images/delete.gif")));
+            removeUserLink.add(new Image("img-delete", ImageManager.IMAGE_DELETE)
+            .add(new ImageSizeBehaviour()));
 
             row_parent.add(removeUserLink);
             row_parent.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i))));
@@ -169,7 +171,8 @@ public class UserListPanel extends Panel {
             
             row_parent.add(
                     new ChangePasswordLink("change-password-link", this.changePasswordWindow, this.userId, user)
-                    .add(new Image("img-change-password", new ResourceReference(ImageAnchor.class, "images/changepassword.gif")))
+                    .add(new Image("img-change-password", ImageManager.IMAGE_CHANGE_PASSWORD)
+                    .add(new ImageSizeBehaviour()))
                     .add(new AttributeModifier("title", true, new Model<String>(new ResourceModel("userlist.change_password.tooltip").wrapOnAssignment(this).getObject())))
             );
             
@@ -313,14 +316,15 @@ public class UserListPanel extends Panel {
         public ToggleFormImage(String id, Form<?> forForm) {
             super(id);
             this.forForm = forForm;
+            this.add(new ImageSizeBehaviour());
         }
         
         @Override
         protected void onComponentTag(ComponentTag tag) {
             super.onComponentTag(tag);
             tag.put("src", this.forForm.isVisible() ? 
-                    this.getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/minus.gif"))
-                    : this.getRequestCycle().urlFor(new ResourceReference(ImageAnchor.class, "images/plus.gif")));
+                    this.getRequestCycle().urlFor(ImageManager.IMAGE_COLLAPSE)
+                    : this.getRequestCycle().urlFor(ImageManager.IMAGE_EXPAND));
         }
     };
     
