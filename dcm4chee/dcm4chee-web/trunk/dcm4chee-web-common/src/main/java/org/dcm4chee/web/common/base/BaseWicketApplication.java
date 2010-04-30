@@ -1,7 +1,6 @@
 package org.dcm4chee.web.common.base;
 
 import org.apache.wicket.Page;
-import org.apache.wicket.ResourceReference;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.authentication.AuthenticatedWebSession;
 import org.apache.wicket.markup.html.WebPage;
@@ -17,20 +16,20 @@ import org.slf4j.LoggerFactory;
  */
 public class BaseWicketApplication extends AuthenticatedWebApplication {
 
-    public static final ResourceReference IMAGE_EXPAND = 
-        new ResourceReference(BaseWicketApplication.class, "images/plus.gif");
-    public static final ResourceReference IMAGE_COLLAPSE = 
-        new ResourceReference(BaseWicketApplication.class, "images/minus.gif");
-    public static final ResourceReference IMAGE_EXPAND_ALL = 
-        new ResourceReference(BaseWicketApplication.class, "images/expandall.gif");
-    public static final ResourceReference IMAGE_DELETE = 
-        new ResourceReference(BaseWicketApplication.class, "images/delete.gif");
-    public static final ResourceReference IMAGE_EDIT = 
-        new ResourceReference(BaseWicketApplication.class, "images/edit.gif");
-    public static final ResourceReference IMAGE_DETAIL = 
-        new ResourceReference(BaseWicketApplication.class, "images/details.gif");
-    public static final ResourceReference IMAGE_TRASH = 
-        new ResourceReference(BaseWicketApplication.class, "images/trash.gif");
+//    public static final ResourceReference IMAGE_EXPAND = 
+//        new ResourceReference(BaseWicketApplication.class, "images/plus.gif");
+//    public static final ResourceReference IMAGE_COLLAPSE = 
+//        new ResourceReference(BaseWicketApplication.class, "images/minus.gif");
+//    public static final ResourceReference IMAGE_EXPAND_ALL = 
+//        new ResourceReference(BaseWicketApplication.class, "images/expandall.gif");
+//    public static final ResourceReference IMAGE_DELETE = 
+//        new ResourceReference(BaseWicketApplication.class, "images/delete.gif");
+//    public static final ResourceReference IMAGE_EDIT = 
+//        new ResourceReference(BaseWicketApplication.class, "images/edit.gif");
+//    public static final ResourceReference IMAGE_DETAIL = 
+//        new ResourceReference(BaseWicketApplication.class, "images/details.gif");
+//    public static final ResourceReference IMAGE_TRASH = 
+//        new ResourceReference(BaseWicketApplication.class, "images/trash.gif");
     
     private Class<? extends Page> homePage;
     private Class<? extends WebPage> signinPage;

@@ -71,6 +71,8 @@ import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
+import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.exceptions.SelectionException;
 import org.dcm4chee.web.common.markup.BaseForm;
@@ -80,7 +82,6 @@ import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.dao.StudyListFilter;
 import org.dcm4chee.web.dao.StudyListLocal;
-import org.dcm4chee.web.war.WicketApplication;
 import org.dcm4chee.web.war.WicketSession;
 import org.dcm4chee.web.war.common.EditDicomObjectPage;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
@@ -251,6 +252,8 @@ public class StudyListPage extends Panel {
         };
         exportBtn.setPopupHeight(400);
         exportBtn.setPopupWidth(550);
+        exportBtn.add(new Image("exportImg", ImageManager.IMAGE_EXPORT)
+        .add(new ImageSizeBehaviour()));
         form.add(exportBtn);
         final ConfirmationWindow<SelectedEntities> confirmMove = new ConfirmationWindow<SelectedEntities>("confirmMove"){
             private static final long serialVersionUID = 1L;
@@ -289,6 +292,8 @@ public class StudyListPage extends Panel {
                 }
             }
         };
+        moveBtn.add(new Image("moveImg",ImageManager.IMAGE_MOVE)
+        .add(new ImageSizeBehaviour()));
         form.add(moveBtn);
         final ConfirmationWindow<SelectedEntities> confirmDelete = new ConfirmationWindow<SelectedEntities>("confirmDelete"){
             private static final long serialVersionUID = 1L;
@@ -323,7 +328,9 @@ public class StudyListPage extends Panel {
                 }
             }
         };
-        deleteBtn.add(new Image("deleteImg",WicketApplication.IMAGE_TRASH));
+        deleteBtn.add(new Image("deleteImg",ImageManager.IMAGE_TRASH)
+        .add(new ImageSizeBehaviour()))
+        .add(tooltipBehaviour);
         form.add(deleteBtn);
     }
 
@@ -355,14 +362,15 @@ public class StudyListPage extends Panel {
             }};
         l.add(new Image("showExtendedPatFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
 
-            private static final long serialVersionUID = 1L;
+                private static final long serialVersionUID = 1L;
 
-            @Override
-            public ResourceReference getObject() {
-                return filter.isExtendedPatQuery() ? WicketApplication.IMAGE_COLLAPSE : 
-                    WicketApplication.IMAGE_EXPAND;
-            }
-        }));
+                @Override
+                public ResourceReference getObject() {
+                    return filter.isExtendedPatQuery() ? ImageManager.IMAGE_COLLAPSE : 
+                        ImageManager.IMAGE_EXPAND;
+                }
+            })
+        .add(new ImageSizeBehaviour()));
         form.add(l);
         return extendedPatFilter;
     }
@@ -395,10 +403,12 @@ public class StudyListPage extends Panel {
 
             @Override
             public ResourceReference getObject() {
-                return filter.isExtendedStudyQuery() ? WicketApplication.IMAGE_COLLAPSE : 
-                    WicketApplication.IMAGE_EXPAND;
+                return filter.isExtendedStudyQuery() ? ImageManager.IMAGE_COLLAPSE : 
+                    ImageManager.IMAGE_EXPAND;
             }
-        }));
+        })
+        .add(new ImageSizeBehaviour()));
+
         form.add(l);
         return extendedStudyFilter;
     }
@@ -541,8 +551,9 @@ public class StudyListPage extends Panel {
                     }
                 }
 
-            }.add(new Image("detailImg",WicketApplication.IMAGE_DETAIL))
-             .add(new TooltipBehaviour("folder.","patDetail")));
+            }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
+            .add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","patDetail")));
             item.add( new Link<Object>("edit") {
                 
                 private static final long serialVersionUID = 1L;
@@ -552,8 +563,9 @@ public class StudyListPage extends Panel {
                     setResponsePage(
                             new EditDicomObjectPage(StudyListPage.this.getPage(), patModel));
                 }
-            }.add(new Image("editImg",WicketApplication.IMAGE_EDIT))
-             .add(new TooltipBehaviour("folder.","patEdit")));
+            }.add(new Image("editImg",ImageManager.IMAGE_EDIT)
+            .add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","patEdit")));
             item.add(new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -627,8 +639,9 @@ public class StudyListPage extends Panel {
                     }
                 }
 
-            }.add(new Image("detailImg",WicketApplication.IMAGE_DETAIL))
-             .add(new TooltipBehaviour("folder.","studyDetail")));
+            }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
+            .add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","studyDetail")));
             item.add( new Link<Object>("edit") {
                 
                 private static final long serialVersionUID = 1L;
@@ -638,8 +651,9 @@ public class StudyListPage extends Panel {
                     setResponsePage(
                             new EditDicomObjectPage(StudyListPage.this.getPage(), studyModel));
                 }
-            }.add(new Image("editImg",WicketApplication.IMAGE_EDIT))
-             .add(new TooltipBehaviour("folder.","studyEdit")));
+            }.add(new Image("editImg",ImageManager.IMAGE_EDIT)
+            .add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","studyEdit")));
             item.add( new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -725,8 +739,9 @@ public class StudyListPage extends Panel {
                 public boolean isVisible() {
                     return ppsModel.getDataset() != null;
                 }
-            }.add(new Image("detailImg",WicketApplication.IMAGE_DETAIL))
-             .add(new TooltipBehaviour("folder.","ppsDetail")));
+            }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
+            .add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","ppsDetail")));
             item.add(new Link<Object>("edit") {
 
                 private static final long serialVersionUID = 1L;
@@ -740,8 +755,9 @@ public class StudyListPage extends Panel {
                 public boolean isVisible() {
                     return ppsModel.getDataset() != null;
                 }
-            }.add(new Image("editImg",WicketApplication.IMAGE_EDIT))
-             .add(new TooltipBehaviour("folder.","ppsEdit")));
+            }.add(new Image("editImg",ImageManager.IMAGE_EDIT)
+            .add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","ppsEdit")));
             item.add(new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -815,8 +831,9 @@ public class StudyListPage extends Panel {
                     }
                 }
 
-            }.add(new Image("detailImg",WicketApplication.IMAGE_DETAIL))
-             .add(new TooltipBehaviour("folder.","seriesDetail")));
+            }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
+            .add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","seriesDetail")));
             item.add(new Link<Object>("edit") {
                 
                 private static final long serialVersionUID = 1L;
@@ -825,8 +842,9 @@ public class StudyListPage extends Panel {
                 public void onClick() {
                     setResponsePage(new EditDicomObjectPage(StudyListPage.this.getPage(), seriesModel));
                 }
-            }.add(new Image("editImg",WicketApplication.IMAGE_EDIT))
-             .add(new TooltipBehaviour("folder.","seriesEdit")));
+            }.add(new Image("editImg",ImageManager.IMAGE_EDIT)
+            .add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","seriesEdit")));
             item.add(new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -898,8 +916,9 @@ public class StudyListPage extends Panel {
                     }
                 }
 
-            }.add(new Image("detailImg",WicketApplication.IMAGE_DETAIL))
-             .add(new TooltipBehaviour("folder.","instanceDetail")));
+            }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
+            .add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","instanceDetail")));
             item.add(new Link<Object>("edit") {
                 
                 private static final long serialVersionUID = 1L;
@@ -908,8 +927,9 @@ public class StudyListPage extends Panel {
                 public void onClick() {
                     setResponsePage(new EditDicomObjectPage(StudyListPage.this.getPage(), instModel));
                 }
-            }.add(new Image("editImg",WicketApplication.IMAGE_EDIT))
-             .add(new TooltipBehaviour("folder.","instanceEdit")));
+            }.add(new Image("editImg",ImageManager.IMAGE_EDIT)
+            .add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","instanceEdit")));
             item.add(new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -969,8 +989,9 @@ public class StudyListPage extends Panel {
                     }
                 }
 
-            }.add(new Image("detailImg",WicketApplication.IMAGE_DETAIL))
-             .add(new TooltipBehaviour("folder.","fileDetail")));
+            }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
+            .add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","fileDetail")));
             item.add(new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -1011,10 +1032,11 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public ResourceReference getObject() {
-                    return model.isCollapsed() ? WicketApplication.IMAGE_EXPAND : 
-                        WicketApplication.IMAGE_COLLAPSE;
+                    return model.isCollapsed() ? ImageManager.IMAGE_EXPAND : 
+                        ImageManager.IMAGE_COLLAPSE;
                 }
-            }));
+            })
+            .add(new ImageSizeBehaviour()));
         }
         
         @Override

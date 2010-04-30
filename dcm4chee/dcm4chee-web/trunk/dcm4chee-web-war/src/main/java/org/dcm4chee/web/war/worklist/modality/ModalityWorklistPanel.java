@@ -67,11 +67,12 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.util.JNDIUtils;
+import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.dao.ModalityWorklist;
 import org.dcm4chee.web.dao.ModalityWorklistFilter;
-import org.dcm4chee.web.war.WicketApplication;
 import org.dcm4chee.web.war.WicketSession;
 import org.dcm4chee.web.war.common.EditDicomObjectPage;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
@@ -238,10 +239,11 @@ public class ModalityWorklistPanel extends Panel {
 
             @Override
             public ResourceReference getObject() {
-                return filter.isExtendedQuery() ? WicketApplication.IMAGE_COLLAPSE : 
-                    WicketApplication.IMAGE_EXPAND;
+                return filter.isExtendedQuery() ? ImageManager.IMAGE_COLLAPSE : 
+                    ImageManager.IMAGE_EXPAND;
             }
-        }));
+        })
+        .add(new ImageSizeBehaviour()));
         form.add(l);
         return extendedStudyFilter;
     }
@@ -303,8 +305,9 @@ public class ModalityWorklistPanel extends Panel {
                             target.addComponent(item);
                     }
     
-                }.add(new Image("detailImg",WicketApplication.IMAGE_DETAIL))
-                 .add(new TooltipBehaviour("mw.","patDetail")))
+                }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
+                .add(new ImageSizeBehaviour()))
+                .add(new TooltipBehaviour("mw.","patDetail")))
                 .add( new Link<Object>("edit") {
                     
                     private static final long serialVersionUID = 1L;
@@ -313,9 +316,10 @@ public class ModalityWorklistPanel extends Panel {
                     public void onClick() {
                         setResponsePage(new EditDicomObjectPage(ModalityWorklistPanel.this.getPage(), mwlItemModel));
                     }
-                }.add(new Image("editImg",WicketApplication.IMAGE_EDIT))
-                 .add(new TooltipBehaviour("mw.","patEdit")))
-                 .add(new WebMarkupContainer("details") {
+                }.add(new Image("editImg",ImageManager.IMAGE_EDIT)
+                .add(new ImageSizeBehaviour()))
+                .add(new TooltipBehaviour("mw.","patEdit")))
+                .add(new WebMarkupContainer("details") {
                     
                     private static final long serialVersionUID = 1L;
 

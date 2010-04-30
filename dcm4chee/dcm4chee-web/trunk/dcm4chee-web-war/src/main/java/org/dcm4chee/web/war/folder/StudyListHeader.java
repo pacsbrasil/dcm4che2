@@ -10,7 +10,8 @@ import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
-import org.dcm4chee.web.war.WicketApplication;
+import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 
 public class StudyListHeader extends Panel {
@@ -67,9 +68,10 @@ public class StudyListHeader extends Panel {
                 @Override
                 public ResourceReference getObject() {
                     return StudyListHeader.this.headerExpandLevel <= Cell.this.entityLevel ? 
-                            WicketApplication.IMAGE_EXPAND : WicketApplication.IMAGE_COLLAPSE;
+                            ImageManager.IMAGE_EXPAND : ImageManager.IMAGE_COLLAPSE;
                 }
-            })));
+            })
+            .add(new ImageSizeBehaviour())));
         }
 
         @Override
@@ -77,9 +79,7 @@ public class StudyListHeader extends Panel {
            super.onComponentTag(tag);
            tag.put("rowspan", 1 + headerExpandLevel - entityLevel);
         }
-
     }
-
 
     public StudyListHeader(String id) {
         super(id);
@@ -100,7 +100,9 @@ public class StudyListHeader extends Panel {
             public boolean isVisible() {
                 return headerExpandLevel < expandAllLevel;
             }
-        }.add(new Image("expandAllImg", WicketApplication.IMAGE_EXPAND_ALL)));
+        }.add(new Image("expandAllImg", ImageManager.IMAGE_EXPAND_ALL)
+        .add(new ImageSizeBehaviour())));
+
         patCell.add(new AjaxCheckBox("autoExpand", autoExpand){
 
             private static final long serialVersionUID = 1L;

@@ -40,7 +40,6 @@ package org.dcm4chee.web.war.common;
 
 import java.util.Iterator;
 
-import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
@@ -63,7 +62,8 @@ import org.dcm4che2.data.ElementDictionary;
 import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.util.TagUtils;
-import org.dcm4chee.web.common.base.ImageAnchor;
+import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
@@ -223,8 +223,8 @@ public class EditDicomObjectPanel extends Panel {
                     }
                 }
 
-            }.add(new Image("img-remove", new ResourceReference(ImageAnchor.class, "images/delete.gif")))
-            );
+            }.add(new Image("img-remove", ImageManager.IMAGE_DELETE)
+            .add(new ImageSizeBehaviour())));
         }
      }
 
@@ -265,8 +265,8 @@ public class EditDicomObjectPanel extends Panel {
                 protected void onError(AjaxRequestTarget target, Form<?> form) {
                     target.addComponent(form.get("tag"));
                 }
-            }.add(new Image("img-add", new ResourceReference(ImageAnchor.class, "images/plus.gif")))
-            );
+            }.add(new Image("img-add",ImageManager.IMAGE_NEW)
+            .add(new ImageSizeBehaviour())));
         }
      }
 
@@ -296,8 +296,8 @@ public class EditDicomObjectPanel extends Panel {
                     }
                 }
                 
-            }.add(new Image("img-remove", new ResourceReference(ImageAnchor.class, "images/delete.gif")))
-            );
+            }.add(new Image("img-remove", ImageManager.IMAGE_DELETE)
+            .add(new ImageSizeBehaviour())));
         }
      }
 
@@ -322,8 +322,8 @@ public class EditDicomObjectPanel extends Panel {
                     }
                 }
                 
-            }.add(new Image("img-add", new ResourceReference(ImageAnchor.class, "images/plus.gif")))
-            );
+            }.add(new Image("img-add", ImageManager.IMAGE_NEW)
+            .add(new ImageSizeBehaviour())));
         }
 
      }

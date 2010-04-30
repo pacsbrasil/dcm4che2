@@ -38,7 +38,6 @@
 
 package org.dcm4chee.web.war.ae;
 
-import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
@@ -55,7 +54,8 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.web.common.base.ImageAnchor;
+import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 
 /**
@@ -151,7 +151,8 @@ public class AEListPanel extends Panel {
                         page.setEditPage(item.getModelObject());
                     }
                 };
-                editAET.add(new Image("img-editAET", new ResourceReference(ImageAnchor.class, "images/edit.gif")));
+                editAET.add(new Image("img-editAET",ImageManager.IMAGE_EDIT)
+                .add(new ImageSizeBehaviour()));
                 item.add(editAET);
                 MetaDataRoleAuthorizationStrategy.authorize(editAET, RENDER, "WebAdmin");
                 AjaxLink<?> removeAET = new AjaxLink<Object>("removeAET") {
@@ -164,7 +165,8 @@ public class AEListPanel extends Panel {
                         confirm.confirm(target, new StringResourceModel("aet.confirmDelete",AEListPanel.this, null,new Object[]{ae}), ae);
                     }
                 };
-                removeAET.add(new Image("img-removeAET", new ResourceReference(ImageAnchor.class, "images/delete.gif")));
+                removeAET.add(new Image("img-removeAET", ImageManager.IMAGE_DELETE)
+                .add(new ImageSizeBehaviour()));
                 item.add(removeAET);
                 MetaDataRoleAuthorizationStrategy.authorize(removeAET, RENDER, "WebAdmin");
                 item.add(new AjaxLink<Object>("echo") {
@@ -175,7 +177,8 @@ public class AEListPanel extends Panel {
                     public void onClick(AjaxRequestTarget target) {
                         mw.show(target, item.getModelObject());
                     }
-                }.add(new Image("img-echoAET", new ResourceReference(ImageAnchor.class, "images/echo.gif")))
+                }.add(new Image("img-echoAET", ImageManager.IMAGE_ECHO)
+                .add(new ImageSizeBehaviour()))
                 );
             }
             
