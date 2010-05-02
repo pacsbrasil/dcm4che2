@@ -120,6 +120,7 @@ public class ExportPage extends BaseWicketPage {
     
     public ExportPage(List<PatientModel> list) {
         super();
+        this.getModuleSelectorPanel().setShowLogoutLink(false);
         HashMap<Integer,ExportResult> results = getSession().getMetaData(EXPORT_RESULTS);
         exportInfo = new ExportInfo(list);
         if ( results == null ) {
@@ -313,6 +314,19 @@ public class ExportPage extends BaseWicketPage {
             return requests;
         }
 
+        public int getNrOfPatients() {
+            return nrPat;
+        }
+        public int getNrOfStudies() {
+            return nrStudy;
+        }
+        public int getNrOfSeries() {
+            return nrSeries;
+        }
+        public int getNrOfInstances() {
+            return nrInstances;
+        }
+        
         public boolean hasSelection() {
             return (nrPat | nrStudy | nrSeries | nrInstances) != 0;
         }
