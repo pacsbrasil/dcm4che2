@@ -61,7 +61,7 @@
  		<!-- MBean Service Names -->
 	    <init-param>
 	      <param-name>echoServiceName</param-name>
-	      <param-value>dcm4chee.archive:service=ECHOService</param-value>
+	      <param-value>dcm4chee.web:service=EchoService</param-value>
 	    </init-param> 
 	    <init-param>
 	      <param-name>moveScuServiceName</param-name>
