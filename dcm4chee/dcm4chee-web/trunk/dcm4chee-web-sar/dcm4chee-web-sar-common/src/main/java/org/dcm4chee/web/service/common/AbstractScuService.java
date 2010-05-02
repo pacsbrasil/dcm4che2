@@ -40,6 +40,7 @@ package org.dcm4chee.web.service.common;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -235,6 +236,10 @@ public class AbstractScuService extends ServiceMBeanSupport {
                 log.error("Failed to initialize TLS! AE:"+ae+" ciphers:"+ciphers, e);
                 throw new IOException("Failed to initialize TLS aet:"+ae.getTitle());
             }
+        } else {
+            NetworkConnection localConn = device.getNetworkConnection()[0];
+            remoteConn.setTlsCipherSuite(new String[0]);
+            localConn.setTlsCipherSuite(new String[0]);
         }
         try {
             return localNAE.connect(remoteAE, executor);

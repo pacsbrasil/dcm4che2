@@ -36,60 +36,24 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.ae;
+package org.dcm4chee.web.dao;
 
-import java.util.List;
+import javax.ejb.Local;
 
-import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 
 /**
- * @author Franz Willer <franz.willer@gmail.com>
+ * @author Franz Willer <fwiller@gmail.com>
  * @version $Revision$ $Date$
- * @since Aug 18, 2009
+ * @since Apr 24, 2010
  */
-public class EchoDelegate extends BaseMBeanDelegate {
+@Local
+public interface MppsToMwlLinkLocal {
 
-    private static Logger log = LoggerFactory.getLogger(EchoDelegate.class);
-    
-    public EchoDelegate() {
-        super();
-    }
-    
-    public String echo(AE ae, int nrOfTests) {
-        log.debug("ECHO:"+ae);
-        try {
-            return (String) server.invoke(serviceObjectName, "echo", 
-                new Object[]{ae, nrOfTests}, 
-                new String[]{AE.class.getName(), int.class.getName()});
-        } catch (Exception x) {
-            String msg = "DICOM Echo failed! Reason:"+x.getMessage();
-            log.error(msg,x);
-            return msg;
-        }
-    }
+    String JNDI_NAME = "dcm4chee-web-ear/MppsToMwlLinkBean/local";
 
-    private String toString(List<String> strings) {
-        if ( strings == null || strings.size() < 1)
-            return null;
-        StringBuilder sb = new StringBuilder();
-        for ( String s : strings ) {
-            sb.append(s).append(',');
-        }
-        sb.setLength(sb.length()-1);
-        return sb.toString();
-    }
-
-    @Override
-    public String getInitParameterName() {
-        return "echoServiceName";
-    }
-    
-    @Override
-    public String getDefaultServiceObjectName() {
-        return "dcm4chee.web:service=EchoService";
-    }
-
+    MppsToMwlLinkResult linkMppsToMwl(String mppsIUID, String rpId, String spsId, String modifyingSystem, String reason);
+    MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, long mwlPk, String modifyingSystem, String reason);
+    void updateSeriesAndStudyAttributes(String[] mppsIuids, DicomObject coerce);
 }

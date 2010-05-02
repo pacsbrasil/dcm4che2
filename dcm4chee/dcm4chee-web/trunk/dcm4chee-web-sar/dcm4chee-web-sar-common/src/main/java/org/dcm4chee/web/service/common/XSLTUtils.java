@@ -38,24 +38,25 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.service.common;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Enumeration;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.io.ContentHandlerAdapter;
 import org.dcm4che2.io.SAXWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 /**
@@ -67,19 +68,55 @@ public class XSLTUtils {
 
     public static final SAXTransformerFactory transformerFactory =
         (SAXTransformerFactory) TransformerFactory.newInstance();
-    
+
+    protected static final Logger log = LoggerFactory.getLogger(XSLTUtils.class);
+            
     public static void xslt(DicomObject attrs, Templates tpl, OutputStream out, Map<String,String> parameter) throws TransformerConfigurationException, SAXException, IOException {
         TransformerHandler th = tpl == null ? transformerFactory.newTransformerHandler() : 
             transformerFactory.newTransformerHandler(tpl);
         Transformer t = th.getTransformer();
+        setParameter(parameter, t);
+        th.setResult(new StreamResult(out));
+        SAXWriter writer = new SAXWriter(th,null);
+        writer.write(attrs);
+    }
+ 
+    public static void xslt(DicomObject attrs, Templates tpl, DicomObject out, Map<String,String> parameter) throws TransformerConfigurationException, SAXException, IOException {
+        TransformerHandler th = tpl == null ? transformerFactory.newTransformerHandler() : 
+            transformerFactory.newTransformerHandler(tpl);
+        ContentHandlerAdapter cha = new ContentHandlerAdapter(out);
+        Transformer t = th.getTransformer();
+        setParameter(parameter, t);
+        th.setResult(new SAXResult(cha));
+        SAXWriter writer = new SAXWriter(th,null);
+        writer.write(attrs);
+    }
+    public static void xslt(DicomObject attrs, Templates[] tpls, DicomObject out, Map<String,String> parameter) throws TransformerConfigurationException, SAXException, IOException {
+        if(tpls==null || tpls.length == 1) {
+            xslt(attrs, tpls[0], out, parameter);
+        }
+        TransformerHandler thIn = transformerFactory.newTransformerHandler(tpls[0]);
+        TransformerHandler thX1, thX2 = null;
+        thX1 = thIn;
+        setParameter(parameter, thIn.getTransformer());
+        for ( int i=1 ; i<tpls.length ; i++) {
+            thX2 = transformerFactory.newTransformerHandler(tpls[i]);
+            setParameter(parameter, thX2.getTransformer());
+            thX1.setResult(new SAXResult(thX2));
+        }
+        ContentHandlerAdapter cha = new ContentHandlerAdapter(out);
+        thX2.setResult(new SAXResult(cha));
+        SAXWriter writer = new SAXWriter(thIn,null);
+        writer.write(attrs);
+    }
+
+    private static void setParameter(Map<String, String> parameter,
+            Transformer t) {
         if (parameter != null) {
             for ( Map.Entry<String,String> e : parameter.entrySet() ) {
                 t.setParameter(e.getKey(), e.getValue());
             }
         }
-        th.setResult(new StreamResult(out));
-        SAXWriter writer = new SAXWriter(th,null);
-        writer.write(attrs);
     }
     
     public static void dump(DicomObject attrs, Templates tpl, String filename, boolean comment) throws TransformerConfigurationException, SAXException, IOException {
@@ -94,6 +131,6 @@ public class XSLTUtils {
             out.close();
         }
         
-    }
-
+    }    
 }
+

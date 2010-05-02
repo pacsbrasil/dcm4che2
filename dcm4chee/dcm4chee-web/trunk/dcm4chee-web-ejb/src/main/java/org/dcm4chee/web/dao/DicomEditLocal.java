@@ -38,8 +38,12 @@
 
 package org.dcm4chee.web.dao;
 
+import java.util.Collection;
+
 import javax.ejb.Local;
 
+import org.dcm4chee.archive.entity.Patient;
+import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.web.dao.vo.EntityTree;
 
 /**
@@ -67,4 +71,5 @@ public interface DicomEditLocal {
     EntityTree[] moveSeriesToStudy(long[] pks, long pk);
     EntityTree[] moveStudyToPatient(String studyIuid, String patId, String issuer);
     EntityTree[] moveStudiesToPatient(long[] pks, long pk);
+    EntityTree[] moveStudiesToPatient(Collection<Study> studies, Patient pat);
 }

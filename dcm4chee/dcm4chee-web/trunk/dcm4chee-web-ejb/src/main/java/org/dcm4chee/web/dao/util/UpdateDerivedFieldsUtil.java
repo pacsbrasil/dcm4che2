@@ -94,19 +94,15 @@ public class UpdateDerivedFieldsUtil {
         Query qI = em.createQuery("SELECT count(i) FROM Study st INNER JOIN st.series s INNER JOIN s.instances i WHERE st.pk = :pk");
         qI.setParameter("pk", study.getPk());
         Long noi = (Long) qI.getSingleResult();
-        DicomObject attrs = study.getAttributes(true);
-        attrs.putInt(Tag.NumberOfStudyRelatedSeries, VR.IS, nos.intValue());
-        attrs.putInt(Tag.NumberOfStudyRelatedInstances, VR.IS, noi.intValue());
-        study.setAttributes(attrs);
+        study.setNumberOfStudyRelatedSeries(nos.intValue());
+        study.setNumberOfStudyRelatedInstances(noi.intValue());
     }
 
     private void updateNumberOfSeriesRelatedInstances(Series series) {
         Query qI = em.createQuery("SELECT count(i) FROM Series s INNER JOIN s.instances i WHERE s.pk = :pk");
         qI.setParameter("pk", series.getPk());
         Long noi = (Long) qI.getSingleResult();
-        DicomObject attrs = series.getAttributes(true);
-        attrs.putInt(Tag.NumberOfSeriesRelatedInstances, VR.IS, noi.intValue());
-        series.setAttributes(attrs);
+        series.setNumberOfSeriesRelatedInstances(noi.intValue());
     }
     
     public boolean updateModalitiesInStudy(Study study) {

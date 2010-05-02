@@ -10,6 +10,7 @@
     <depends optional-attribute-name="RejectionNoteServiceName">dcm4chee.web:service=RejectionNoteSCU</depends>
     <depends optional-attribute-name="IANScuServiceName">dcm4chee.web:service=IANSCU</depends>
     <depends optional-attribute-name="MoveScuServiceName">dcm4chee.web:service=MoveScu</depends>
+    <depends optional-attribute-name="TemplatesServiceName">dcm4chee.archive:service=Templates</depends>
 
     <xmbean>
       <description><![CDATA[<b>Content Edit Service for dcm4chee-web3</b>
@@ -97,6 +98,80 @@
    </attribute>
 
    <attribute access="read-write"
+      getMethod="getModifyingSystem"
+      setMethod="setModifyingSystem">
+      <description>Identification of the system which modifies attributes. Used in OriginalAttributesSequence.
+      </description>
+      <name>ModifyingSystem</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="DCM4CHEE" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getModifyReason"
+      setMethod="setModifyReason">
+      <description>Default Reason for attribute modifications. Used in OriginalAttributesSequence.
+      </description>
+      <name>ModifyReason</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="COERCE" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getCoerceConfigDir"
+      setMethod="setCoerceConfigDir">
+      <description><![CDATA[Directory where configuration files for attribute
+      coercion are located: if XSL stylesheet "mwl-cfindrsp2cstorerq.xsl" exists in this directory 
+      or in a sub-directory equal to the ScheduledStationAETitle, Serien and Study attributes will be updated 
+      with Request attributes from MWL item according these stylesheets.
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>  
+      </description>
+      <name>CoerceConfigDirectory</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4chee-ae"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isDcm14Stylesheet"
+      setMethod="setDcm14Stylesheet">
+      <description>Set true if the mwl-cfindrsp2cstorerq.xsl stylesheet use the dcm4che14 xml format.
+      </description>
+      <name>Dcm14Stylesheet</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDcm2To14Tpl"
+      setMethod="setDcm2To14Tpl">
+      <description>Stylesheet to transform dcm4che2 formatted xml to dcm4che14 xml.
+      </description>
+      <name>Dcm2To14XSL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="resource:xsl/dcm2To14.xsl" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDcm14To2Tpl"
+      setMethod="setDcm14To2Tpl">
+      <description>Stylesheet to transform dcm4che14 formatted xml to dcm4che2 xml.
+      </description>
+      <name>Dcm14To2XSL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="resource:xsl/dcm14To2.xsl" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
       getMethod="getRejectionNoteServiceName"
       setMethod="setRejectionNoteServiceName">
       <description>Used internally. Do NOT modify.
@@ -119,6 +194,14 @@
       <description>Used internally. Do NOT modify.
       </description>
       <name>MoveScuServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getTemplatesServiceName"
+      setMethod="setTemplatesServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TemplatesServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
    
@@ -326,6 +409,38 @@
         <type>java.lang.String</type>
       </parameter>
       <return-type>int</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[ Link a MPPS to an MWL item.
+      		]]> </description>
+      <name>linkMppsToMwl</name>
+      <parameter>
+        <description>MPPS Instance UID</description>
+        <name>mppsIUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Trquested Procedure ID</description>
+        <name>rpId</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Scheduled Procedure Step ID</description>
+        <name>spsId</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Name of Modifying System</description>
+        <name>modifyingSystem</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Reason for modifying</description>
+        <name>reason</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
    </operation>
 
     </xmbean>

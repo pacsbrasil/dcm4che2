@@ -357,17 +357,6 @@
       <return-type>void</return-type>
    </operation>
 
-   <operation impact="ACTION">
-      <description><![CDATA[ Perform a DICOM Echo to given Application Entity.
-      		]]> </description>
-      <name>echo</name>
-      <parameter>
-        <description>Application Entity Title</description>
-        <name>aet</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <return-type>boolean</return-type>
-   </operation>
-    </xmbean>
+     </xmbean>
   </mbean>
 </server>

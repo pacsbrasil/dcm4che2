@@ -108,7 +108,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
 
     public int moveEntities(SelectedEntities selected) throws SelectionException {
         try {
-            if (selected.getPpss().size() > 1) {
+            if (selected.getPpss().size() > 0) {
                 throw new SelectionException(MSG_ERR_SELECTION_MOVE_PPS, MSGID_ERR_SELECTION_MOVE_PPS);
             } 
             // study -> pat

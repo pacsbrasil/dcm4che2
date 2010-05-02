@@ -68,6 +68,7 @@ import org.dcm4chee.archive.entity.PrivateStudy;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.entity.StudyOnFileSystem;
+import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.dao.util.UpdateDerivedFieldsUtil;
 import org.dcm4chee.web.dao.vo.EntityTree;
 import org.jboss.annotation.ejb.LocalBinding;
@@ -101,7 +102,7 @@ public class DicomEditBean implements DicomEditLocal {
     }
     @SuppressWarnings("unchecked")
     public EntityTree moveInstancesToTrash(long[] pks) {
-        Query q = getQueryForPks("SELECT OBJECT(i) FROM Instance i WHERE i.pk ", pks);
+        Query q = QueryUtil.getQueryForPks(em, "SELECT OBJECT(i) FROM Instance i WHERE i.pk ", pks);
         return moveInstancesToTrash(q.getResultList(), true);
     }
 
@@ -137,7 +138,7 @@ public class DicomEditBean implements DicomEditLocal {
     @SuppressWarnings("unchecked")
     public EntityTree moveSeriesToTrash(long[] pks) {
         Query q;
-        q = getQueryForPks("SELECT OBJECT(s) FROM Series s WHERE pk ", pks);
+        q = QueryUtil.getQueryForPks(em, "SELECT OBJECT(s) FROM Series s WHERE pk ", pks);
         return moveSeriesToTrash(q.getResultList(), true, null);
     }
 
@@ -179,7 +180,7 @@ public class DicomEditBean implements DicomEditLocal {
 
     @SuppressWarnings("unchecked")
     public EntityTree moveStudiesToTrash(long[] pks) {
-        Query q = getQueryForPks("SELECT OBJECT(s) FROM Study s WHERE pk ", pks);
+        Query q = QueryUtil.getQueryForPks(em, "SELECT OBJECT(s) FROM Study s WHERE pk ", pks);
         return moveStudiesToTrash(q.getResultList(), null);
     }
     
@@ -215,13 +216,13 @@ public class DicomEditBean implements DicomEditLocal {
     
     @SuppressWarnings("unchecked")
     public EntityTree movePatientsToTrash(long[] pks) {
-        Query q = getQueryForPks("SELECT OBJECT(p) FROM Patient p WHERE pk ", pks);
+        Query q = QueryUtil.getQueryForPks(em, "SELECT OBJECT(p) FROM Patient p WHERE pk ", pks);
         return movePatientsToTrash(q.getResultList(), null);
     }
 
     @SuppressWarnings("unchecked")
     public EntityTree movePatientToTrash(String patId, String issuer) {
-        return this.movePatientsToTrash(getPatientQuery(patId, issuer).getResultList(), null);
+        return this.movePatientsToTrash(QueryUtil.getPatientQuery(em, patId, issuer).getResultList(), null);
     }
     
     private EntityTree movePatientsToTrash(Collection<Patient> patients, EntityTree entityTree) {
@@ -316,7 +317,7 @@ public class DicomEditBean implements DicomEditLocal {
     
     @SuppressWarnings("unchecked")
     public EntityTree[] moveInstancesToSeries(long[] pks, long pk) {
-        Query qI = getQueryForPks("SELECT OBJECT(i) FROM Instance i WHERE i.pk ", pks);
+        Query qI = QueryUtil.getQueryForPks(em, "SELECT OBJECT(i) FROM Instance i WHERE i.pk ", pks);
         Query qS = em.createQuery("SELECT OBJECT(s) FROM Series s WHERE pk = :pk")
             .setParameter("pk", pk);
         return moveInstancesToSeries(qI.getResultList(), (Series) qS.getSingleResult());
@@ -380,7 +381,7 @@ public class DicomEditBean implements DicomEditLocal {
 
     @SuppressWarnings("unchecked")
     public EntityTree[] moveSeriesToStudy(long[] pks, long pk) {
-        Query qSeries = getQueryForPks("SELECT OBJECT(s) FROM Series s WHERE s.pk ", pks);
+        Query qSeries = QueryUtil.getQueryForPks(em, "SELECT OBJECT(s) FROM Series s WHERE s.pk ", pks);
         Query qStudy = em.createQuery("SELECT OBJECT(s) FROM Study s WHERE pk = :pk")
             .setParameter("pk", pk);
         return moveSeriesToStudy(qSeries.getResultList(), (Study) qStudy.getSingleResult());
@@ -407,6 +408,7 @@ public class DicomEditBean implements DicomEditLocal {
         for (Series s : series) {
             srcStudyList.add(s.getStudy());
             oldSeries = new Series();
+            s.setModalityPerformedProcedureStep(null);
             oldStudy = s.getStudy();
             oldSeries.setStudy(oldStudy);
             seriesAttrs = s.getAttributes(true);
@@ -437,7 +439,7 @@ public class DicomEditBean implements DicomEditLocal {
     
     @SuppressWarnings("unchecked")
     public EntityTree[] moveStudiesToPatient(long[] pks, long pk) {
-        Query qS = getQueryForPks("SELECT OBJECT(s) FROM Study s WHERE s.pk ", pks);
+        Query qS = QueryUtil.getQueryForPks(em, "SELECT OBJECT(s) FROM Study s WHERE s.pk ", pks);
         Query qP = em.createQuery("SELECT OBJECT(p) FROM Patient p WHERE pk = :pk")
             .setParameter("pk", pk);
         return moveStudiesToPatient(qS.getResultList(), (Patient) qP.getSingleResult());
@@ -448,10 +450,10 @@ public class DicomEditBean implements DicomEditLocal {
         Query qS = em.createQuery("SELECT OBJECT(s) FROM Study s WHERE studyInstanceUID = :iuid")
         .setParameter("iuid", studyIuid.trim());
         return moveStudiesToPatient((List<Study>)qS.getResultList(), 
-                (Patient) getPatientQuery(patId, issuer).getSingleResult());
+                (Patient) QueryUtil.getPatientQuery(em, patId, issuer).getSingleResult());
     }
 
-    private EntityTree[] moveStudiesToPatient(List<Study> studies, Patient pat) {
+    public EntityTree[] moveStudiesToPatient(Collection<Study> studies, Patient pat) {
         EntityTree oldTree = new EntityTree();
         EntityTree newTree = new EntityTree();
         Study oldStudy;
@@ -467,47 +469,4 @@ public class DicomEditBean implements DicomEditLocal {
         return new EntityTree[]{oldTree, newTree};
     }
     
-    private Query getQueryForPks(String base, long[] pks) {
-        Query q;
-        int len=pks.length;
-        if (len == 1) {
-            q = em.createQuery(base+"= :pk").setParameter("pk", pks[0]);
-        } else {
-            StringBuilder sb = new StringBuilder(base);
-            appendIN(sb, len);
-            q = em.createQuery(sb.toString());
-            this.setParametersForIN(q, pks);
-        }
-        return q;
-    }
-    
-    private void appendIN(StringBuilder sb, int len) {
-        sb.append(" IN ( ?");
-        for (int i = 1 ; i < len ; i++ ) {
-            sb.append(i).append(", ?");
-        }
-        sb.append(len).append(" )");
-    }
-        
-    private void setParametersForIN(Query q, long[] pks) {
-        int i = 1;
-        for ( long pk : pks ) {
-            q.setParameter(i++, pk);
-        }
-    }    
-    
-    public Query getPatientQuery(String patId, String issuer) {
-        StringBuilder sb = new StringBuilder();
-        boolean useIssuer = issuer != null && issuer.trim().length() > 0;
-        sb.append("SELECT OBJECT(p) FROM Patient p WHERE patientID = :patId");
-        if (useIssuer) {
-            sb.append(" AND issuerOfPatientID = :issuer");
-        }
-        Query qP = em.createQuery(sb.toString()).setParameter("patId", patId);
-        if (useIssuer)
-            qP.setParameter("issuer", issuer);
-        return qP;
-        
-    }
-        
 }

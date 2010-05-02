@@ -38,6 +38,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.service.contentedit;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -49,6 +51,10 @@ import javax.management.MBeanException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import javax.naming.InitialContext;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 import org.dcm4che2.audit.message.AuditEvent;
@@ -56,11 +62,14 @@ import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.InstancesAccessedMessage;
 import org.dcm4che2.audit.message.ParticipantObject;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
+import org.dcm4che2.audit.message.ProcedureRecordMessage;
 import org.dcm4che2.audit.message.StudyDeletedMessage;
+import org.dcm4che2.audit.message.AuditEvent.ActionCode;
 import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
@@ -70,12 +79,17 @@ import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.entity.Code;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.MPPS;
+import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.web.dao.DicomEditLocal;
+import org.dcm4chee.web.dao.MppsToMwlLinkLocal;
 import org.dcm4chee.web.dao.vo.EntityTree;
+import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.service.common.HttpUserInfo;
+import org.dcm4chee.web.service.common.TemplatesDelegate;
+import org.dcm4chee.web.service.common.XSLTUtils;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -85,13 +99,15 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class ContentEditService extends ServiceMBeanSupport {
 
-    private String NONE ="NONE";
+    private static final String NONE ="NONE";
+    private static final String MWL2STORE_XSL = "mwl-cfindrsp2cstorerq.xsl";
     
     private Code rejectNoteCode = new Code();
 
     private String[] moveDestinationAETs;
     
     private DicomEditLocal dicomEdit;
+    private MppsToMwlLinkLocal mpps2mwl;
 
     private boolean auditEnabled = true;
 
@@ -104,7 +120,16 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     private boolean processIAN;
     private boolean processRejNote;
+    private boolean dcm14Stylesheet;
+    
+    private String modifyingSystem;
+    private String modifyReason;
         
+    private static final TransformerFactory tf = TransformerFactory.newInstance();
+    protected TemplatesDelegate templates = new TemplatesDelegate(this);
+    private String dcm2To14TplName, dcm14To2TplName;
+    private Templates dcm2To14Tpl, dcm14To2Tpl;
+    
     public String getRejectionNoteCode() {
         return rejectNoteCode.toString()+"\r\n";
     }
@@ -152,6 +177,30 @@ public class ContentEditService extends ServiceMBeanSupport {
         this.forceNewRejNoteStudyIUID = forceNewRejNoteStudyIUID;
     }
 
+    public String getModifyingSystem() {
+        return modifyingSystem;
+    }
+
+    public void setModifyingSystem(String modifyingSystem) {
+        this.modifyingSystem = modifyingSystem;
+    }
+
+    public String getModifyReason() {
+        return modifyReason;
+    }
+
+    public void setModifyReason(String modifyReason) {
+        this.modifyReason = modifyReason;
+    }
+
+    public final String getCoerceConfigDir() {
+        return templates.getConfigDir();
+    }
+
+    public final void setCoerceConfigDir(String path) {
+        templates.setConfigDir(path);
+    }
+
     public ObjectName getRejectionNoteServiceName() {
         return rejNoteServiceName;
     }
@@ -184,6 +233,42 @@ public class ContentEditService extends ServiceMBeanSupport {
         this.hl7sendServiceName = hl7sendServiceName;
     }
     
+    public final ObjectName getTemplatesServiceName() {
+        return templates.getTemplatesServiceName();
+    }
+
+    public final void setTemplatesServiceName(ObjectName serviceName) {
+        templates.setTemplatesServiceName(serviceName);
+    }
+
+    public boolean isDcm14Stylesheet() {
+        return dcm14Stylesheet;
+    }
+
+    public void setDcm14Stylesheet(boolean dcm14Stylesheet) {
+        this.dcm14Stylesheet = dcm14Stylesheet;
+    }
+
+    public String getDcm2To14Tpl() {
+        return dcm2To14TplName;
+    }
+
+    public void setDcm2To14Tpl(String name) throws TransformerConfigurationException, MalformedURLException {
+        new URL(name);
+        dcm2To14Tpl = tf.newTemplates(new StreamSource(name));
+        dcm2To14TplName = name;
+    }
+
+    public String getDcm14To2Tpl() {
+        return dcm14To2TplName;
+    }
+
+    public void setDcm14To2Tpl(String name) throws MalformedURLException, TransformerConfigurationException {
+        new URL(name);
+        dcm14To2Tpl = tf.newTemplates(new StreamSource(name));
+        dcm14To2TplName = name;
+    }
+
     public DicomObject moveInstanceToTrash(String iuid) throws InstanceNotFoundException, MBeanException, ReflectionException {
         EntityTree entityTree = lookupDicomEditLocal().moveInstanceToTrash(iuid);
         if (entityTree.isEmpty()) 
@@ -324,6 +409,68 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
     }
 
+    public void linkMppsToMwl(String mppsIUID, String rpId, String spsId, String system, String reason) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        if ( system == null || system.trim().length() < 1) {
+            system = modifyingSystem;
+        }
+        if ( reason == null || reason.trim().length() < 1) {
+            reason = this.modifyReason;
+        }
+        MppsToMwlLinkResult result = lookupMppsToMwlLinkLocal().linkMppsToMwl(mppsIUID, rpId, spsId, system, reason);
+        log.info("MppsToMwlLinkResult:"+result);
+        logMppsLinkRecord(result);
+        updateSeriesAttributes(result);
+        if (result.getStudiesToMove().size() < 1) {
+            Patient pat = result.getMwl().getPatient();
+            log.info("Patient of some MPPS are not identical to patient of MWL! Move studies to Patient of MWL:"+
+                    pat.getPatientID());
+            long[] studyPks = new long[result.getStudiesToMove().size()];
+            int i = 0;
+            for ( Study s : result.getStudiesToMove()) {
+                studyPks[i++] = s.getPk();
+            }
+            this.moveStudiesToPatient(studyPks, pat.getPk());
+        }
+    }
+    
+    private void updateSeriesAttributes(MppsToMwlLinkResult result) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        DicomObject coerce = getCoercionAttrs(result.getMwl().getAttributes());
+        if ( coerce != null) {
+            String[] mppsIuids = new String[result.getMppss().size()];
+            int i = 0;
+            for (MPPS m : result.getMppss()) {
+                mppsIuids[i++] = m.getSopInstanceUID();
+            }
+            this.lookupMppsToMwlLinkLocal().updateSeriesAndStudyAttributes(mppsIuids, coerce);
+        }        
+    }
+    private DicomObject getCoercionAttrs(DicomObject ds) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        if ( ds == null ) return null;        
+        DicomObject sps = ds.get(Tag.ScheduledProcedureStepSequence).getDicomObject();
+        String aet = sps == null ? null : sps.getString(Tag.ScheduledStationAETitle);
+        Templates tpl = templates.getTemplatesForAET(aet, MWL2STORE_XSL);
+        log.info("found template for aet("+aet+"):"+tpl);
+        if (tpl == null) {
+            log.warn("Coercion template "+MWL2STORE_XSL+" not found! Can not store MWL attributes to series!");
+            return null;
+        }
+        DicomObject out = new BasicDicomObject();
+        try {
+            log.info("dcm14Stylesheet:"+dcm14Stylesheet);
+            if (dcm14Stylesheet) {
+                Templates[] tpls = new Templates[]{dcm2To14Tpl,tpl,dcm14To2Tpl};
+                XSLTUtils.xslt(ds, tpls, out, null);
+            } else {
+                XSLTUtils.xslt(ds, tpl, out, null);
+            }
+        } catch (Exception e) {
+            log.error("Attribute coercion failed:", e);
+            return null;
+        }
+        log.info("return coerced attributes:"+out);
+        return out;
+    }
+    
 
     private DicomObject[] getRejectionNotes(EntityTree entityTree) {
         Map<Patient, Map<Study, Map<Series, Set<Instance>>>> entityTreeMap = entityTree.getEntityTreeMap();
@@ -450,6 +597,18 @@ public class ContentEditService extends ServiceMBeanSupport {
         return dicomEdit;
     }
     
+    private MppsToMwlLinkLocal lookupMppsToMwlLinkLocal() {
+        if ( mpps2mwl == null ) {
+            try {
+                InitialContext jndiCtx = new InitialContext();
+                mpps2mwl = (MppsToMwlLinkLocal) jndiCtx.lookup(MppsToMwlLinkLocal.JNDI_NAME);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return mpps2mwl;
+    }
+
     private void logInstancesAccessed(DicomObject kos,
             AuditEvent.ActionCode actionCode, boolean addIUID, String detailMessage) {
         if (!auditEnabled )
@@ -478,6 +637,44 @@ public class ContentEditService extends ServiceMBeanSupport {
         } catch (Exception x) {
             log.warn("Audit Log 'Instances Accessed' (actionCode:" + actionCode
                     + ") failed:", x);
+        }
+    }
+
+    public void logMppsLinkRecord(MppsToMwlLinkResult result ) {
+        MWLItem mwl = result.getMwl();
+        DicomObject mwlAttrs = mwl.getAttributes();
+        String accNr = mwl.getAccessionNumber();
+        String spsId = mwl.getScheduledProcedureStepID();
+        String studyIuid = mwl.getStudyInstanceUID();
+        DicomObject patAttrs = mwl.getPatient().getAttributes();
+        for ( MPPS mpps : result.getMppss()) {
+            String desc = "MPPS "+mpps.getSopInstanceUID()+" linked with MWL entry "+spsId;
+            logProcedureRecord(patAttrs, studyIuid, accNr, ProcedureRecordMessage.UPDATE, desc);
+        }
+    }
+    private void logProcedureRecord(DicomObject patAttrs, String studyIuid, 
+            String accNr, ActionCode actionCode, String desc) {
+        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
+                .isEnableDNSLookups());
+        log.debug("log Procedure Record! actionCode:" + actionCode);
+        try {
+            ProcedureRecordMessage msg = new ProcedureRecordMessage(actionCode);
+            msg.addUserPerson(userInfo.getUserId(), null, null, userInfo
+                    .getHostName(), true);
+            PersonName pn = new PersonName(patAttrs.getString(Tag.PatientName));
+            String pname = pn.get(PersonName.GIVEN);
+            pname = pname == null ? pname = pn.get(PersonName.FAMILY) :
+                pname+" "+pn.get(PersonName.FAMILY);
+            msg.addPatient(patAttrs.getString(Tag.PatientID), pname);
+            ParticipantObjectDescription poDesc = new ParticipantObjectDescription();
+            if (accNr != null)
+                poDesc.addAccession(accNr);
+            ParticipantObject study = msg.addStudy(studyIuid, poDesc);
+            study.addParticipantObjectDetail("Description", desc);
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
+        } catch (Exception x) {
+            log.warn("Audit Log 'Procedure Record' failed:", x);
         }
     }
 

@@ -36,60 +36,68 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.ae;
+package org.dcm4chee.web.dao.util;
 
-import java.util.List;
-
-import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 
 /**
- * @author Franz Willer <franz.willer@gmail.com>
+ * @author Franz Willer <fwiller@gmail.com>
  * @version $Revision$ $Date$
- * @since Aug 18, 2009
+ * @since Apr 25, 2010
  */
-public class EchoDelegate extends BaseMBeanDelegate {
 
-    private static Logger log = LoggerFactory.getLogger(EchoDelegate.class);
-    
-    public EchoDelegate() {
-        super();
-    }
-    
-    public String echo(AE ae, int nrOfTests) {
-        log.debug("ECHO:"+ae);
-        try {
-            return (String) server.invoke(serviceObjectName, "echo", 
-                new Object[]{ae, nrOfTests}, 
-                new String[]{AE.class.getName(), int.class.getName()});
-        } catch (Exception x) {
-            String msg = "DICOM Echo failed! Reason:"+x.getMessage();
-            log.error(msg,x);
-            return msg;
+public class QueryUtil {
+
+    public static Query getQueryForPks(EntityManager em, String base, long[] pks) {
+        Query q;
+        int len=pks.length;
+        if (len == 1) {
+            q = em.createQuery(base+"= :pk").setParameter("pk", pks[0]);
+        } else {
+            StringBuilder sb = new StringBuilder(base);
+            appendIN(sb, len);
+            q = em.createQuery(sb.toString());
+            setParametersForIN(q, pks);
         }
+        return q;
     }
-
-    private String toString(List<String> strings) {
-        if ( strings == null || strings.size() < 1)
-            return null;
+    
+    public static void appendIN(StringBuilder sb, int len) {
+        sb.append(" IN ( ?");
+        for (int i = 1 ; i < len ; i++ ) {
+            sb.append(i).append(", ?");
+        }
+        sb.append(len).append(" )");
+    }
+        
+    public static void setParametersForIN(Query q, long[] pks) {
+        int i = 1;
+        for ( long pk : pks ) {
+            q.setParameter(i++, pk);
+        }
+    }    
+    
+    public static void setParametersForIN(Query q, Object[] values) {
+        int i = 1;
+        for ( Object v : values ) {
+            q.setParameter(i++, v);
+        }
+    }    
+    
+    public static Query getPatientQuery(EntityManager em, String patId, String issuer) {
         StringBuilder sb = new StringBuilder();
-        for ( String s : strings ) {
-            sb.append(s).append(',');
+        boolean useIssuer = issuer != null && issuer.trim().length() > 0;
+        sb.append("SELECT OBJECT(p) FROM Patient p WHERE patientID = :patId");
+        if (useIssuer) {
+            sb.append(" AND issuerOfPatientID = :issuer");
         }
-        sb.setLength(sb.length()-1);
-        return sb.toString();
+        Query qP = em.createQuery(sb.toString()).setParameter("patId", patId);
+        if (useIssuer)
+            qP.setParameter("issuer", issuer);
+        return qP;
+        
     }
-
-    @Override
-    public String getInitParameterName() {
-        return "echoServiceName";
-    }
+        
     
-    @Override
-    public String getDefaultServiceObjectName() {
-        return "dcm4chee.web:service=EchoService";
-    }
-
 }

@@ -61,11 +61,9 @@ import org.dcm4che2.data.UIDDictionary;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
-import org.dcm4che2.net.DicomServiceException;
 import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4che2.net.ExtRetrieveTransferCapability;
 import org.dcm4che2.net.NoPresentationContextException;
-import org.dcm4che2.net.Status;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4chee.web.service.common.AbstractScuService;
 import org.dcm4chee.web.service.common.JMSDelegate;
@@ -391,32 +389,7 @@ public class MoveScuService extends AbstractScuService implements MessageListene
         }    
         setTransferCapability(tcs);
     }
-    
-    /**
-     * Perform a DICOM Echo to given Application Entity Title.
-     */
-    public boolean echo(String title) {
-        Association assoc = null;
-        try {
-            assoc = open(title);
-        } catch (Throwable t) {
-            log.error("Failed to establish Association aet:"+title, t);
-            return false;
-        }
-        try {
-            assoc.cecho().next();
-        } catch (Throwable t) {
-            log.error("Echo failed! aet:"+title, t);
-            return false;
-        }
-        try {
-            assoc.release(true);
-        } catch (InterruptedException t) {
-            log.error("Association release failed! aet:"+title, t);
-        }
-        return true;
-    }
-
+        
     private class MoveRspHandler extends DimseRSPHandler {
         private int status;
         DicomObject cmd;
