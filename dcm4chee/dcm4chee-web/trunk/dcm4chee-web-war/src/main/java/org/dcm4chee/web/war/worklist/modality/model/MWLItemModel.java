@@ -59,6 +59,8 @@ public class MWLItemModel extends AbstractDicomModel implements Serializable {
 
     private MWLItem mwlItem;
     
+    private DicomObject patAttrs, spsItem;
+    
     private boolean collapsed;
 
     public MWLItem getMwlItem() {
@@ -71,36 +73,65 @@ public class MWLItemModel extends AbstractDicomModel implements Serializable {
         setPk(mwlItem.getPk());
         this.mwlItem = mwlItem;
         this.dataset = mwlItem.getAttributes();
+        patAttrs = mwlItem.getPatient().getAttributes();
+        spsItem = dataset.getNestedDicomObject(Tag.ScheduledProcedureStepSequence);
     }
 
     public String getScheduledProcedureStepDescription() {
-        return this.dataset.getString(Tag.ScheduledProcedureStepDescription);
+        String desc = getCodeString(spsItem.get(Tag.ScheduledProtocolCodeSequence));
+        if (desc == null)
+            desc = spsItem.getString(Tag.ScheduledProcedureStepDescription);
+        return desc;
     }
 
     public String getPatientName() {
-        return this.mwlItem.getPatient().getAttributes().getString(Tag.PatientName);
+        return patAttrs.getString(Tag.PatientName);
     }
     
     public String getModality() {
-        return this.mwlItem.getAttributes().getString(Tag.Modality);
+        return spsItem.getString(Tag.Modality);
     }
 
     public String getStartDate() {
-        return new Date(this.mwlItem.getAttributes().getInt(Tag.StartAcquisitionDateTime)).toString();
+        Date d = spsItem.getDate(Tag.ScheduledProcedureStepStartDateAndTime);
+        if (d == null) {
+            d = spsItem.getDate(Tag.ScheduledProcedureStepStartDate, Tag.ScheduledProcedureStepStartTime);
+        }
+        return d.toString();
     }
 
     public String getScheduledProcedureStepID() {
-        return this.mwlItem.getAttributes().getString(Tag.ScheduledProcedureStepID);
+        return spsItem.getString(Tag.ScheduledProcedureStepID);
     }
 
     public String getRequestedProcedureID() {
-        return this.mwlItem.getAttributes().getString(Tag.RequestedProcedureID);
+        return dataset.getString(Tag.RequestedProcedureID);
     }
 
     public String getAccessionNumber() {
-        return this.mwlItem.getAttributes().getString(Tag.AccessionNumber);
+        return dataset.getString(Tag.AccessionNumber);
     }
-    
+ 
+    public String getReqProcedureDescription() {
+        String desc = getCodeString(dataset.get(Tag.RequestedProcedureCodeSequence));
+        if (desc == null) {
+            desc = dataset.getString( Tag.RequestedProcedureDescription );
+        }
+        return desc;
+    }
+
+    public String getStationAET() {
+        return spsItem.getString( Tag.ScheduledStationAETitle );
+    }
+
+    public String getStationName() {
+        return spsItem.getString( Tag.ScheduledStationName );
+    }
+
+    public String getSpsStatus() {
+        return spsItem.getString(Tag.ScheduledProcedureStepStatus);
+    }
+
     @Override
     public void collapse() {
         this.collapsed = true;
