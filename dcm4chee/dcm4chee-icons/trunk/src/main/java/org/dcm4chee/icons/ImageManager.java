@@ -61,7 +61,7 @@ public class ImageManager {
     public static final ResourceReference IMAGE_TREETABLE_FILESYSTEM_GROUP = 
         new ResourceReference(ImageManager.class, treetable + "/treetable-filesystem-group.png");
     public static final ResourceReference IMAGE_TREETABLE_FILESYSTEM_TAR = 
-        new ResourceReference(ImageManager.class, iconset + "/treetable-filesystem-tar.png");
+        new ResourceReference(ImageManager.class, treetable + "/treetable-filesystem-tar.png");
     public static final ResourceReference IMAGE_TREETABLE_FILESYSTEM_FOLDER = 
         new ResourceReference(ImageManager.class, treetable + "/treetable-filesystem-folder.png");
     public static final ResourceReference IMAGE_TREETABLE_QUEUE = 
@@ -72,7 +72,7 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, treetable + "/treetable-report-folder.png");
     public static final ResourceReference IMAGE_TREETABLE_REPORT = 
         new ResourceReference(ImageManager.class, treetable + "/treetable-report.png");
-    public static final ResourceReference IMAGE_TREETABLE_FOLDER_PROPERTY = 
+    public static final ResourceReference IMAGE_TREETABLE_PROPERTY_FOLDER = 
         new ResourceReference(ImageManager.class, treetable + "/treetable-folder-property.png");
     public static final ResourceReference IMAGE_TREETABLE_PROPERTY = 
         new ResourceReference(ImageManager.class, treetable + "/treetable-property.png");
