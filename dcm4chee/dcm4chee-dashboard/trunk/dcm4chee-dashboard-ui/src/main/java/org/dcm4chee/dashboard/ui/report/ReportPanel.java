@@ -73,6 +73,7 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
+import org.dcm4chee.dashboard.model.SystemPropertyModel;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.common.DashboardTreeTable;
 import org.dcm4chee.icons.ImageManager;
@@ -193,12 +194,12 @@ public class ReportPanel extends Panel {
                 protected void onComponentTag(ComponentTag tag) {
                     super.onComponentTag(tag);
 
-                    tag.put("style", "background-image: url('images/" + 
+                    tag.put("style", "background-image: url('" + 
                             ((((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getGroupUuid() == null) ? 
                                     getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_REPORT_FOLDER) 
                                     : getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_REPORT))
                                     + "')"
-                    );
+                    );                    
                     tag.put("title", ((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getStatement());
                 }
             };

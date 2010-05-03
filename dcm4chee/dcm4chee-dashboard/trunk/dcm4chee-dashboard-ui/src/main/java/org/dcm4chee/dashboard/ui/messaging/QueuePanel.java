@@ -196,7 +196,8 @@ public class QueuePanel extends Panel {
                     tag.put("style", "background-image: url('" + 
                             (((QueueModel) ((DefaultMutableTreeNode) node).getUserObject()).isQueue() ?  
                                     getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_QUEUE)
-                                    : getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_MESSAGE)) +"')"
+                                    : getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_MESSAGE)) 
+                                    +"')"
                     );
                     tag.put("title", ((QueueModel) ((DefaultMutableTreeNode) node).getUserObject()).getJndiName());
                 }

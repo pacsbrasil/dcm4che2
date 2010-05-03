@@ -218,7 +218,7 @@ public class SystemInfoPanel extends Panel {
 
                     tag.put("style", "background-image: url('" + 
                     ((((SystemPropertyModel) ((DefaultMutableTreeNode) node).getUserObject()).getGroup() == null) ? 
-                        getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_FOLDER_PROPERTY) 
+                        getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_PROPERTY_FOLDER) 
                         : getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_PROPERTY)) 
                         + "')"
                     );

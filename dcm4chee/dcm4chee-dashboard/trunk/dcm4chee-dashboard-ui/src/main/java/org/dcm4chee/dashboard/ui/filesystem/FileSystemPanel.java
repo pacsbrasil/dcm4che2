@@ -351,7 +351,7 @@ public class FileSystemPanel extends Panel {
                                     ((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).getDirectoryPath().contains("tar:") ?
                                             getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_FILESYSTEM_TAR) : 
                                             getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_FILESYSTEM_FOLDER))
-                                            + "')\"" 
+                                            + "')"
                     );
                     tag.put("title", ((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).getDescription());
                 }
