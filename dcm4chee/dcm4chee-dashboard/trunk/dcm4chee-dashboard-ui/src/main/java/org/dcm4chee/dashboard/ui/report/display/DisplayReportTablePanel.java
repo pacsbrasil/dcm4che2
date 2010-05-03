@@ -61,6 +61,7 @@ import org.apache.wicket.IRequestTarget;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.repeater.RepeatingView;
@@ -70,6 +71,8 @@ import org.apache.wicket.protocol.http.WebResponse;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.ui.util.CSSUtils;
 import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
+import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -89,19 +92,8 @@ public class DisplayReportTablePanel extends Panel {
     
     private static Logger log = LoggerFactory.getLogger(DisplayReportTablePanel.class);
 
-    private ReportModel report;
-    private Map<String, String> parameters;
-
     public DisplayReportTablePanel(String id, ReportModel report, Map<String, String> parameters) {
         super(id);
-        
-        this.report = report;
-        this.parameters = parameters;
-    }
-    
-    @Override
-    public void onBeforeRender() {
-        super.onBeforeRender();
         
         Connection jdbcConnection = null;
         try {
@@ -214,7 +206,11 @@ public class DisplayReportTablePanel extends Panel {
                         }
                     });
                 }
-            });
+            }
+            .add(new Image("table-download-xml-image", ImageManager.IMAGE_REPORT_XML)
+                .add(new ImageSizeBehaviour())
+                )
+            );
 
             add(new Link<Object>("table-download-csv") {
                 
@@ -251,13 +247,22 @@ public class DisplayReportTablePanel extends Panel {
                         }
                     });
                 }
-            });
+            }
+            .add(new Image("table-download-csv-image", ImageManager.IMAGE_REPORT_CSV)
+                .add(new ImageSizeBehaviour())
+                )
+            );
+
+            add(new Image("table-print-image", ImageManager.IMAGE_REPORT_PRINT)
+            .add(new ImageSizeBehaviour())
+            );
 
             add(new Label("error-message", "").setVisible(false));
             add(new Label("error-reason", "").setVisible(false));
         } catch (Exception e) {
             addOrReplace(((DynamicDisplayPage) this.getPage()).new PlaceholderLink("table-download-xml"));
             addOrReplace(((DynamicDisplayPage) this.getPage()).new PlaceholderLink("table-download-csv"));
+            addOrReplace(new Image("table-print-image"));
             add(new Label("error-message", new ResourceModel("dashboard.report.reporttable.statement.error").wrapOnAssignment(this).getObject()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
             add(new Label("error-reason", e.getMessage()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
         } finally {

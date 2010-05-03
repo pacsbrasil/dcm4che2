@@ -18,16 +18,20 @@
 					<tr>
 						<td>
 							<a wicket:id="table-download-xml">
-								<wicket:message key="dashboard.report.reporttable.xml.downloadlink.title" />
+								<img wicket:id="table-download-xml-image" wicket:message="title:dashboard.report.reporttable.xml.downloadlink.title"/>
 							</a>
 						</td>
 						<td>
 							<a wicket:id="table-download-csv">
-								<wicket:message key="dashboard.report.reporttable.csv.downloadlink.title" />
+								<img wicket:id="table-download-csv-image" wicket:message="title:dashboard.report.reporttable.csv.downloadlink.title" />
 							</a>
 						</td>
 						<td>
-							<input type="button" wicket:message="value:dashboard.report.reporttable.table.printbutton.title" onclick="javascript:window.print()">
+							<td>
+								<a href="#" onclick="javascript:window.print()">
+									<img wicket:id="table-print-image" wicket:message="title:dashboard.report.reporttable.table.printbutton.title" />
+								</a>
+							</td>
 						</td>
 					</tr>
 				</table>

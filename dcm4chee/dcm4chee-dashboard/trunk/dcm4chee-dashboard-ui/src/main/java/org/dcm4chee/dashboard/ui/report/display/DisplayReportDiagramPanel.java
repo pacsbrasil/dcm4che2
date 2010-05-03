@@ -65,6 +65,8 @@ import org.apache.wicket.protocol.http.WebResponse;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
 import org.dcm4chee.dashboard.ui.common.JFreeChartImage;
+import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisState;
@@ -95,20 +97,9 @@ public class DisplayReportDiagramPanel extends Panel {
 
     private static Logger log = LoggerFactory.getLogger(DisplayReportDiagramPanel.class);
 
-    private ReportModel report;
-    private Map<String, String> parameters;
-
     public DisplayReportDiagramPanel(String id, ReportModel report, Map<String, String> parameters) {
         super(id);
 
-        this.report = report;
-        this.parameters = parameters;
-    }
-    
-    @Override
-    public void onBeforeRender() {
-        super.onBeforeRender();
-        
         Connection jdbcConnection = null;
         try {
             if (report == null) throw new Exception("No report given to render diagram");
@@ -243,14 +234,21 @@ public class DisplayReportDiagramPanel extends Panel {
                         }
                     });
                 }
-            });
+            }
+            .add(new Image("diagram-download-image", ImageManager.IMAGE_DIAGRAM_DOWNLOAD)
+                .add(new ImageSizeBehaviour())
+                )
+            );
 
-            addOrReplace(new Button("diagram-print"));
+            add(new Image("diagram-print-image", ImageManager.IMAGE_REPORT_PRINT)
+            .add(new ImageSizeBehaviour())
+            );
+
             add(new Label("error-message", "").setVisible(false));
             add(new Label("error-reason", "").setVisible(false));
         } catch (Exception e) {
             addOrReplace(((DynamicDisplayPage) this.getPage()).new PlaceholderLink("diagram-download"));
-            addOrReplace(new Button("diagram-print").setVisible(false));
+            addOrReplace(new Image("diagram-print-image"));
             addOrReplace(new Image("diagram"));
             add(new Label("error-message", new ResourceModel("dashboard.report.reportdiagram.statement.error").wrapOnAssignment(this).getObject()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
             add(new Label("error-reason", e.getMessage()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
