@@ -110,4 +110,12 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, iconset + "/mimetypes/application-x-siag.png");
     public static final ResourceReference IMAGE_DIAGRAM_TABLE = 
         new ResourceReference(ImageManager.class, iconset + "/mimetypes/application-vnd.ms-powerpoint.png");
+    public static final ResourceReference IMAGE_DIAGRAM_DOWNLOAD = 
+        new ResourceReference(ImageManager.class, iconset + "/places/folder-downloads.png");
+    public static final ResourceReference IMAGE_REPORT_XML = 
+        new ResourceReference(ImageManager.class, iconset + "/mimetypes/text-xml.png");
+    public static final ResourceReference IMAGE_REPORT_CSV = 
+        new ResourceReference(ImageManager.class, iconset + "/mimetypes/text-csv.png");
+    public static final ResourceReference IMAGE_REPORT_PRINT = 
+        new ResourceReference(ImageManager.class, iconset + "/apps/preferences-desktop-printer.png");
 }
