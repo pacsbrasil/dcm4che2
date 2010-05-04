@@ -2551,101 +2551,98 @@
   <uid value="1.2.840.10008.5.1.1.24" name="Image Overlay Box SOP Class (Retired)" key="ImageOverlayBox" retired="true" />
   <uid value="1.2.840.10008.5.1.1.24.1" name="Basic Print Image Overlay Box SOP Class" key="BasicPrintImageOverlayBox" />
   <uid value="1.2.840.10008.5.1.1.26" name="Print Queue Management SOP Class" key="PrintQueueManagement" />
-  <uid value="1.2.840.10008.5.1.1.27" name="Stored Print Storage SOP Class" key="StoredPrintStorage" />
-  <uid value="1.2.840.10008.5.1.1.29" name="Hardcopy Grayscale Image Storage SOP Class" key="HardcopyGrayscaleImageStorage" />
-  <uid value="1.2.840.10008.5.1.1.30" name="Hardcopy Color Image Storage SOP Class" key="HardcopyColorImageStorage " />
+  <uid value="1.2.840.10008.5.1.1.27" name="Stored Print Storage SOP Class" key="StoredPrintStorage" dirrecord="STORED PRINT" />
+  <uid value="1.2.840.10008.5.1.1.29" name="Hardcopy Grayscale Image Storage SOP Class" key="HardcopyGrayscaleImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.1.30" name="Hardcopy Color Image Storage SOP Class" key="HardcopyColorImageStorage " dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.1.31" name="Pull Print Request SOP Class" key="PullPrintRequest" />
   <uid value="1.2.840.10008.5.1.1.33" name="Media Creation Management SOP Class" key="MediaCreationManagementSOPClass" />
-  <uid value="1.2.840.10008.5.1.4.1.1.1" name="Computed Radiography Image Storage" key="ComputedRadiographyImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.1.1" name="Digital X-Ray Image Storage - For Presentation" key="DigitalXRayImageStorageForPresentation" />
-  <uid value="1.2.840.10008.5.1.4.1.1.1.1.1" name="Digital X-Ray Image Storage - For Processing" key="DigitalXRayImageStorageForProcessing" />
-  <uid value="1.2.840.10008.5.1.4.1.1.1.2" name="Digital Mammography X-Ray Image Storage - For Presentation" key="DigitalMammographyXRayImageStorageForPresentation" />
-  <uid value="1.2.840.10008.5.1.4.1.1.1.2.1" name="Digital Mammography X-Ray Image Storage - For Processing" key="DigitalMammographyXRayImageStorageForProcessing" />
-  <uid value="1.2.840.10008.5.1.4.1.1.1.3" name="Digital Intra-oral X-Ray Image Storage - For Presentation" key="DigitalIntraoralXRayImageStorageForPresentation" />
-  <uid value="1.2.840.10008.5.1.4.1.1.1.3.1" name="Digital Intra-oral X-Ray Image Storage - For Processing" key="DigitalIntraoralXRayImageStorageForProcessing" />
-  <uid value="1.2.840.10008.5.1.4.1.1.2" name="CT Image Storage" key="CTImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.2.1" name="Enhanced CT Image Storage" key="EnhancedCTImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.3" name="Ultrasound Multi-frame Image Storage (Retired)" key="UltrasoundMultiframeImageStorageRetired" retired="true" />
-  <uid value="1.2.840.10008.5.1.4.1.1.3.1" name="Ultrasound Multi-frame Image Storage" key="UltrasoundMultiframeImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.4" name="MR Image Storage" key="MRImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.4.1" name="Enhanced MR Image Storage" key="EnhancedMRImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.4.2" name="MR Spectroscopy Storage" key="MRSpectroscopyStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.5" name="Nuclear Medicine Image Storage (Retired)" key="NuclearMedicineImageStorageRetired" retired="true" />
-  <uid value="1.2.840.10008.5.1.4.1.1.6" name="Ultrasound Image Storage (Retired)" key="UltrasoundImageStorageRetired" retired="true" />
-  <uid value="1.2.840.10008.5.1.4.1.1.6.1" name="Ultrasound Image Storage" key="UltrasoundImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.7" name="Secondary Capture Image Storage" key="SecondaryCaptureImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.7.1" name="Multi-frame Single Bit Secondary Capture Image Storage" key="MultiframeSingleBitSecondaryCaptureImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.7.2" name="Multi-frame Grayscale Byte Secondary Capture Image Storage" key="MultiframeGrayscaleByteSecondaryCaptureImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.7.3" name="Multi-frame Grayscale Word Secondary Capture Image Storage" key="MultiframeGrayscaleWordSecondaryCaptureImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.7.4" name="Multi-frame True Color Secondary Capture Image Storage" key="MultiframeTrueColorSecondaryCaptureImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.8" name="Standalone Overlay Storage" key="StandaloneOverlayStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.9" name="Standalone Curve Storage" key="StandaloneCurveStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.9.1.1" name="12-lead ECG Waveform Storage" key="TwelveLeadECGWaveformStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.9.1.2" name="General ECG Waveform Storage" key="GeneralECGWaveformStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.9.1.3" name="Ambulatory ECG Waveform Storage" key="AmbulatoryECGWaveformStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.9.2.1" name="Hemodynamic Waveform Storage" key="HemodynamicWaveformStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.9.3.1" name="Cardiac Electrophysiology Waveform Storage" key="CardiacElectrophysiologyWaveformStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.9.4.1" name="Basic Voice Audio Waveform Storage" key="BasicVoiceAudioWaveformStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.10" name="Standalone Modality LUT Storage" key="StandaloneModalityLUTStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.11" name="Standalone VOI LUT Storage" key="StandaloneVOILUTStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.11.1" name="Grayscale Softcopy Presentation State Storage SOP Class" key="GrayscaleSoftcopyPresentationStateStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.11.2" name="Color Softcopy Presentation State Storage SOP Class" key="ColorSoftcopyPresentationStateStorage"/>
-  <uid value="1.2.840.10008.5.1.4.1.1.11.3" name="Pseudo-Color Softcopy Presentation State Storage SOP Class" key="PseudoColorSoftcopyPresentationStateStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.11.4" name="Blending Softcopy Presentation State Storage SOP Class" key="BlendingSoftcopyPresentationStateStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.12.1" name="X-Ray Angiographic Image Storage" key="XRayAngiographicImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.12.1.1" name="Enhanced X-Ray Angiographic Image Storage" key="EnhancedXRayAngiographicImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.12.2" name="X-Ray Radiofluoroscopic Image Storage" key="XRayRadiofluoroscopicImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.12.2.1" name="Enhanced X-Ray Radiofluoroscopic Image Storage" key="EnhancedXRayRadiofluoroscopicImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.12.3" name="X-Ray Angiographic Bi-Plane Image Storage (Retired)" key="XRayAngiographicBiPlaneImageStorageRetired" retired="true" />
-  <uid value="1.2.840.10008.5.1.4.1.1.13.1.1" name="X-Ray 3D Angiographic Image Storage" key="XRay3DAngiographicImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.13.1.2" name="X-Ray 3D Craniofacial Image Storage" key="XRay3DCraniofacialImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.20" name="Nuclear Medicine Image Storage" key="NuclearMedicineImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.66" name="Raw Data Storage" key="RawDataStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.66.1" name="Spatial Registration Storage" key="SpatialRegistrationStorage" /> 
-  <uid value="1.2.840.10008.5.1.4.1.1.66.2" name="Spatial Fiducials Storage" key="SpatialFiducialsStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.66.3" name="Deformable Spatial Registration Storage" key="DeformableSpatialRegistrationStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.66.4" name="Segmentation Storage" key="SegmentationStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.67" name="Real World Value Mapping Storage" key="RealWorldValueMappingStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.77.1" name="VL Image Storage (Retired)" key="VLImageStorageRetired" retired="true" />
-  <uid value="1.2.840.10008.5.1.4.1.1.77.2" name="VL Multi-frame Image Storage (Retired)" key="VLMultiframeImageStorageRetired" retired="true" />
-  <uid value="1.2.840.10008.5.1.4.1.1.77.1.1" name="VL Endoscopic Image Storage" key="VLEndoscopicImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.77.1.2" name="VL Microscopic Image Storage" key="VLMicroscopicImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.77.1.3" name="VL Slide-Coordinates Microscopic Image Storage" key="VLSlideCoordinatesMicroscopicImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.77.1.4" name="VL Photographic Image Storage" key="VLPhotographicImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.77.1.1.1" name="Video Endoscopic Image Storage" key="VideoEndoscopicImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.77.1.2.1" name="Video Microscopic Image Storage" key="VideoMicroscopicImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.77.1.4.1" name="Video Photographic Image Storage" key="VideoPhotographicImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.77.1.5.1" name="Ophthalmic Photography 8 Bit Image Storage" key="OphthalmicPhotography8BitImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.77.1.5.2" name="Ophthalmic Photography 16 Bit Image Storage" key="OphthalmicPhotography16BitImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.77.1.5.3" name="Stereometric Relationship Storage" key="StereometricRelationshipStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.88.1" name="Structured Report Text Storage (Retired)" key="StructuredReportTextStorageRetired" />
+  <uid value="1.2.840.10008.5.1.4.1.1.1" name="Computed Radiography Image Storage" key="ComputedRadiographyImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.1.1" name="Digital X-Ray Image Storage - For Presentation" key="DigitalXRayImageStorageForPresentation" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.1.1.1" name="Digital X-Ray Image Storage - For Processing" key="DigitalXRayImageStorageForProcessing" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.1.2" name="Digital Mammography X-Ray Image Storage - For Presentation" key="DigitalMammographyXRayImageStorageForPresentation" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.1.2.1" name="Digital Mammography X-Ray Image Storage - For Processing" key="DigitalMammographyXRayImageStorageForProcessing" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.1.3" name="Digital Intra-oral X-Ray Image Storage - For Presentation" key="DigitalIntraoralXRayImageStorageForPresentation" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.1.3.1" name="Digital Intra-oral X-Ray Image Storage - For Processing" key="DigitalIntraoralXRayImageStorageForProcessing" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.2" name="CT Image Storage" key="CTImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.2.1" name="Enhanced CT Image Storage" key="EnhancedCTImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.3" name="Ultrasound Multi-frame Image Storage (Retired)" key="UltrasoundMultiframeImageStorageRetired" retired="true" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.3.1" name="Ultrasound Multi-frame Image Storage" key="UltrasoundMultiframeImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.4" name="MR Image Storage" key="MRImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.4.1" name="Enhanced MR Image Storage" key="EnhancedMRImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.4.2" name="MR Spectroscopy Storage" key="MRSpectroscopyStorage" dirrecord="SPECTROSCOPY" />
+  <uid value="1.2.840.10008.5.1.4.1.1.5" name="Nuclear Medicine Image Storage (Retired)" key="NuclearMedicineImageStorageRetired" retired="true" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.6" name="Ultrasound Image Storage (Retired)" key="UltrasoundImageStorageRetired" retired="true" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.6.1" name="Ultrasound Image Storage" key="UltrasoundImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.7" name="Secondary Capture Image Storage" key="SecondaryCaptureImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.7.1" name="Multi-frame Single Bit Secondary Capture Image Storage" key="MultiframeSingleBitSecondaryCaptureImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.7.2" name="Multi-frame Grayscale Byte Secondary Capture Image Storage" key="MultiframeGrayscaleByteSecondaryCaptureImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.7.3" name="Multi-frame Grayscale Word Secondary Capture Image Storage" key="MultiframeGrayscaleWordSecondaryCaptureImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.7.4" name="Multi-frame True Color Secondary Capture Image Storage" key="MultiframeTrueColorSecondaryCaptureImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.8" name="Standalone Overlay Storage" key="StandaloneOverlayStorage" dirrecord="OVERLAY" />
+  <uid value="1.2.840.10008.5.1.4.1.1.9" name="Standalone Curve Storage" key="StandaloneCurveStorage" dirrecord="CURVE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.9.1.1" name="12-lead ECG Waveform Storage" key="TwelveLeadECGWaveformStorage" dirrecord="WAVEFORM" />
+  <uid value="1.2.840.10008.5.1.4.1.1.9.1.2" name="General ECG Waveform Storage" key="GeneralECGWaveformStorage" dirrecord="WAVEFORM" />
+  <uid value="1.2.840.10008.5.1.4.1.1.9.1.3" name="Ambulatory ECG Waveform Storage" key="AmbulatoryECGWaveformStorage" dirrecord="WAVEFORM" />
+  <uid value="1.2.840.10008.5.1.4.1.1.9.2.1" name="Hemodynamic Waveform Storage" key="HemodynamicWaveformStorage" dirrecord="WAVEFORM" />
+  <uid value="1.2.840.10008.5.1.4.1.1.9.3.1" name="Cardiac Electrophysiology Waveform Storage" key="CardiacElectrophysiologyWaveformStorage" dirrecord="WAVEFORM" />
+  <uid value="1.2.840.10008.5.1.4.1.1.9.4.1" name="Basic Voice Audio Waveform Storage" key="BasicVoiceAudioWaveformStorage" dirrecord="WAVEFORM" />
+  <uid value="1.2.840.10008.5.1.4.1.1.10" name="Standalone Modality LUT Storage" key="StandaloneModalityLUTStorage" dirrecord="MODALITY LUT" />
+  <uid value="1.2.840.10008.5.1.4.1.1.11" name="Standalone VOI LUT Storage" key="StandaloneVOILUTStorage" dirrecord="VOILUT" />
+  <uid value="1.2.840.10008.5.1.4.1.1.11.1" name="Grayscale Softcopy Presentation State Storage SOP Class" key="GrayscaleSoftcopyPresentationStateStorage" dirrecord="PRESENTATION" />
+  <uid value="1.2.840.10008.5.1.4.1.1.11.2" name="Color Softcopy Presentation State Storage SOP Class" key="ColorSoftcopyPresentationStateStorage" dirrecord="PRESENTATION"/>
+  <uid value="1.2.840.10008.5.1.4.1.1.11.3" name="Pseudo-Color Softcopy Presentation State Storage SOP Class" key="PseudoColorSoftcopyPresentationStateStorage" dirrecord="PRESENTATION" />
+  <uid value="1.2.840.10008.5.1.4.1.1.11.4" name="Blending Softcopy Presentation State Storage SOP Class" key="BlendingSoftcopyPresentationStateStorage" dirrecord="PRESENTATION" />
+  <uid value="1.2.840.10008.5.1.4.1.1.12.1" name="X-Ray Angiographic Image Storage" key="XRayAngiographicImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.12.1.1" name="Enhanced X-Ray Angiographic Image Storage" key="EnhancedXRayAngiographicImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.12.2" name="X-Ray Radiofluoroscopic Image Storage" key="XRayRadiofluoroscopicImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.12.2.1" name="Enhanced X-Ray Radiofluoroscopic Image Storage" key="EnhancedXRayRadiofluoroscopicImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.12.3" name="X-Ray Angiographic Bi-Plane Image Storage (Retired)" key="XRayAngiographicBiPlaneImageStorageRetired" retired="true" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.13.1.1" name="X-Ray 3D Angiographic Image Storage" key="XRay3DAngiographicImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.13.1.2" name="X-Ray 3D Craniofacial Image Storage" key="XRay3DCraniofacialImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.20" name="Nuclear Medicine Image Storage" key="NuclearMedicineImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.66" name="Raw Data Storage" key="RawDataStorage" dirrecord="RAW DATA" />
+  <uid value="1.2.840.10008.5.1.4.1.1.66.1" name="Spatial Registration Storage" key="SpatialRegistrationStorage" dirrecord="REGISTRATION" /> 
+  <uid value="1.2.840.10008.5.1.4.1.1.66.2" name="Spatial Fiducials Storage" key="SpatialFiducialsStorage" dirrecord="FIDUCIAL" />
+  <uid value="1.2.840.10008.5.1.4.1.1.66.3" name="Deformable Spatial Registration Storage" key="DeformableSpatialRegistrationStorage" dirrecord="REGISTRATION" />
+  <uid value="1.2.840.10008.5.1.4.1.1.66.4" name="Segmentation Storage" key="SegmentationStorage" dirrecord="SEGMENTATION" />
+  <uid value="1.2.840.10008.5.1.4.1.1.67" name="Real World Value Mapping Storage" key="RealWorldValueMappingStorage" dirrecord="VALUE MAP" />
+  <uid value="1.2.840.10008.5.1.4.1.1.77.1" name="VL Image Storage (Retired)" key="VLImageStorageRetired" retired="true" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.77.2" name="VL Multi-frame Image Storage (Retired)" key="VLMultiframeImageStorageRetired" retired="true" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.77.1.1" name="VL Endoscopic Image Storage" key="VLEndoscopicImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.77.1.2" name="VL Microscopic Image Storage" key="VLMicroscopicImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.77.1.3" name="VL Slide-Coordinates Microscopic Image Storage" key="VLSlideCoordinatesMicroscopicImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.77.1.4" name="VL Photographic Image Storage" key="VLPhotographicImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.77.1.1.1" name="Video Endoscopic Image Storage" key="VideoEndoscopicImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.77.1.2.1" name="Video Microscopic Image Storage" key="VideoMicroscopicImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.77.1.4.1" name="Video Photographic Image Storage" key="VideoPhotographicImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.77.1.5.1" name="Ophthalmic Photography 8 Bit Image Storage" key="OphthalmicPhotography8BitImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.77.1.5.2" name="Ophthalmic Photography 16 Bit Image Storage" key="OphthalmicPhotography16BitImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.77.1.5.3" name="Stereometric Relationship Storage" key="StereometricRelationshipStorage" dirrecord="STEREOMETRIC" />
+  <uid value="1.2.840.10008.5.1.4.1.1.88.1" name="Structured Report Text Storage (Retired)" key="StructuredReportTextStorageRetired" dirrecord="SR DOCUMENT" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.2" name="Structured Report Audio Storage (Retired)" key="StructuredReportAudioStorageRetired" />
-  <uid value="1.2.840.10008.5.1.4.1.1.88.3" name="Structured Report Detail Storage (Retired)" key="StructuredReportDetailStorageRetired" />
-  <uid value="1.2.840.10008.5.1.4.1.1.88.4" name="Structured Report Comprehensive Storage (Retired)" key="StructuredComprehensiveStorageRetired" />
-  <uid value="1.2.840.10008.5.1.4.1.1.88.11" name="Basic Text SR" key="BasicTextSR" />
-  <uid value="1.2.840.10008.5.1.4.1.1.88.22" name="Enhanced SR" key="EnhancedSR" />
-  <uid value="1.2.840.10008.5.1.4.1.1.88.33" name="Comprehensive SR" key="ComprehensiveSR" />
-  <uid value="1.2.840.10008.5.1.4.1.1.88.40" name="Procedure Log Storage" key="ProcedureLogStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.88.50" name="Mammography CAD SR" key="MammographyCADSR" />
-  <uid value="1.2.840.10008.5.1.4.1.1.88.59" name="Key Object Selection Document" key="KeyObjectSelectionDocument" />
-  <uid value="1.2.840.10008.5.1.4.1.1.88.65" name="Chest CAD SR" key="ChestCADSR" />
-  <uid value="1.2.840.10008.5.1.4.1.1.88.67" name="X-Ray Radiation Dose SR" key="XRayRadiationDoseSR" />
-  <uid value="1.2.840.10008.5.1.4.1.1.104.1" name="Encapsulated PDF Storage" key="EncapsulatedPDFStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.104.2" name="Encapsulated CDA Storage" key="EncapsulatedCDAStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.128" name="Positron Emission Tomography Image Storage" key="PositronEmissionTomographyImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.129" name="Standalone PET Curve Storage" key="StandalonePETCurveStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.481.1" name="RT Image Storage" key="RTImageStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.481.2" name="RT Dose Storage" key="RTDoseStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.481.3" name="RT Structure Set Storage" key="RTStructureSetStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.481.4" name="RT Beams Treatment Record Storage" key="RTBeamsTreatmentRecordStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.481.5" name="RT Plan Storage" key="RTPlanStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.481.6" name="RT Brachy Treatment Record Storage" key="RTBrachyTreatmentRecordStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.481.7" name="RT Treatment Summary Record Storage" key="RTTreatmentSummaryRecordStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.481.8" name="RT Ion Plan Storage" key="RTIonPlanStorage" />
-  <uid value="1.2.840.10008.5.1.4.1.1.481.9" name="RT Ion Beams Treatment Record Storage" key="RTIonBeamsTreatmentRecordStorage" />
-  <uid value="1.2.840.10008.5.1.4.34.1" name="RT Beams Delivery Instruction Storage" key="RTBeamsDeliveryInstructionStorage" />
-  <uid value="1.2.840.10008.5.1.4.34.2" name="RT Conventional Machine Verification" key="RTConventionalMachineVerification" />
-  <uid value="1.2.840.10008.5.1.4.34.3" name="RT Ion Machine Verification" key="RTIonMachineVerification" />
+  <uid value="1.2.840.10008.5.1.4.1.1.88.3" name="Structured Report Detail Storage (Retired)" key="StructuredReportDetailStorageRetired" dirrecord="SR DOCUMENT" />
+  <uid value="1.2.840.10008.5.1.4.1.1.88.4" name="Structured Report Comprehensive Storage (Retired)" key="StructuredComprehensiveStorageRetired" dirrecord="SR DOCUMENT" />
+  <uid value="1.2.840.10008.5.1.4.1.1.88.11" name="Basic Text SR" key="BasicTextSR" dirrecord="SR DOCUMENT" />
+  <uid value="1.2.840.10008.5.1.4.1.1.88.22" name="Enhanced SR" key="EnhancedSR" dirrecord="SR DOCUMENT" />
+  <uid value="1.2.840.10008.5.1.4.1.1.88.33" name="Comprehensive SR" key="ComprehensiveSR" dirrecord="SR DOCUMENT" />
+  <uid value="1.2.840.10008.5.1.4.1.1.88.40" name="Procedure Log Storage" key="ProcedureLogStorage" dirrecord="SR DOCUMENT" />
+  <uid value="1.2.840.10008.5.1.4.1.1.88.50" name="Mammography CAD SR" key="MammographyCADSR" dirrecord="SR DOCUMENT" />
+  <uid value="1.2.840.10008.5.1.4.1.1.88.59" name="Key Object Selection Document" key="KeyObjectSelectionDocument" dirrecord="KEY OBJECT DOC" />
+  <uid value="1.2.840.10008.5.1.4.1.1.88.65" name="Chest CAD SR" key="ChestCADSR" dirrecord="SR DOCUMENT" />
+  <uid value="1.2.840.10008.5.1.4.1.1.88.67" name="X-Ray Radiation Dose SR" key="XRayRadiationDoseSR" dirrecord="SR DOCUMENT" />
+  <uid value="1.2.840.10008.5.1.4.1.1.104.1" name="Encapsulated PDF Storage" key="EncapsulatedPDFStorage" dirrecord="ENCAP DOCS" />
+  <uid value="1.2.840.10008.5.1.4.1.1.104.2" name="Encapsulated CDA Storage" key="EncapsulatedCDAStorage" dirrecord="HL7 STRUC DOC" />
+  <uid value="1.2.840.10008.5.1.4.1.1.128" name="Positron Emission Tomography Image Storage" key="PositronEmissionTomographyImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.129" name="Standalone PET Curve Storage" key="StandalonePETCurveStorage" dirrecord="CURVE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.481.1" name="RT Image Storage" key="RTImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.481.2" name="RT Dose Storage" key="RTDoseStorage" dirrecord="RT DOSE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.481.3" name="RT Structure Set Storage" key="RTStructureSetStorage" dirrecord="RT STRUCTURE SET" />
+  <uid value="1.2.840.10008.5.1.4.1.1.481.4" name="RT Beams Treatment Record Storage" key="RTBeamsTreatmentRecordStorage" dirrecord="RT TREAT RECORD" />
+  <uid value="1.2.840.10008.5.1.4.1.1.481.5" name="RT Plan Storage" key="RTPlanStorage" dirrecord="RT PLAN" />
+  <uid value="1.2.840.10008.5.1.4.1.1.481.6" name="RT Brachy Treatment Record Storage" key="RTBrachyTreatmentRecordStorage" dirrecord="RT TREAT RECORD" />
+  <uid value="1.2.840.10008.5.1.4.1.1.481.7" name="RT Treatment Summary Record Storage" key="RTTreatmentSummaryRecordStorage" dirrecord="RT TREAT RECORD" />
+  <uid value="1.2.840.10008.5.1.4.1.1.481.8" name="RT Ion Plan Storage" key="RTIonPlanStorage" dirrecord="RT PLAN" />
+  <uid value="1.2.840.10008.5.1.4.1.1.481.9" name="RT Ion Beams Treatment Record Storage" key="RTIonBeamsTreatmentRecordStorage" dirrecord="RT TREAT RECORD" />
   <uid value="1.2.840.10008.5.1.4.1.2.1.1" name="Patient Root Query/Retrieve Information Model - FIND" key="PatientRootQueryRetrieveInformationModelFIND" />
   <uid value="1.2.840.10008.5.1.4.1.2.1.2" name="Patient Root Query/Retrieve Information Model - MOVE" key="PatientRootQueryRetrieveInformationModelMOVE" />
   <uid value="1.2.840.10008.5.1.4.1.2.1.3" name="Patient Root Query/Retrieve Information Model - GET" key="PatientRootQueryRetrieveInformationModelGET" />
@@ -2673,7 +2670,7 @@
   <uid value="1.2.840.10008.5.1.4.37.1" name="General Relevant Patient Information Query General Relevant" key="PatientInformationQuery" />
   <uid value="1.2.840.10008.5.1.4.37.2" name="Breast Imaging Relevant Patient Information Query" key="BreastImagingRelevantPatientInformationQuery" />
   <uid value="1.2.840.10008.5.1.4.37.3" name="Cardiac Relevant Patient Information Query" key="CardiacRelevantPatientInformationQuery" />
-  <uid value="1.2.840.10008.5.1.4.38.1" name="Hanging Protocol Storage" key="HangingProtocolStorage" />
+  <uid value="1.2.840.10008.5.1.4.38.1" name="Hanging Protocol Storage" key="HangingProtocolStorage" dirrecord="HANGING PROTOCOL"/>
   <uid value="1.2.840.10008.5.1.4.38.2" name="Hanging Protocol Information Model - FIND" key="HangingProtocolInformationModelFIND" />
   <uid value="1.2.840.10008.5.1.4.38.3" name="Hanging Protocol Information Model - MOVE" key="HangingProtocolInformationModelMOVE" />
   <uid value="1.2.40.0.13.1.5.1.4.1.1.2.1" name="Dcm4che Upgraded CT Image Storage" key="Dcm4cheUpgradedCTImageStorage" />

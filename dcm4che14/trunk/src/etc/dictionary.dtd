@@ -19,7 +19,8 @@
 <!ATTLIST uid value   CDATA #REQUIRED
               name    CDATA #REQUIRED
               retired (true|false) "false"
-              key     CDATA #REQUIRED>
+              key     CDATA #REQUIRED
+              dirrecord CDATA #IMPLIED>
               
 <!ELEMENT statuses (status*)>
 <!ATTLIST statuses service CDATA #IMPLIED>

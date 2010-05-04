@@ -41,11 +41,9 @@ package org.dcm4che.media;
 import org.dcm4che.Implementation;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.FileMetaInfo;
-import org.dcm4che.dict.UIDs;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 
 import javax.imageio.stream.ImageInputStream;
 
@@ -61,88 +59,9 @@ import javax.imageio.stream.ImageInputStream;
  */
 public abstract class DirBuilderFactory {
 
-    private static HashMap REC_TYPE_MAP = new HashMap(79);
-    
-    static {
-        REC_TYPE_MAP.put(UIDs.StoredPrintStorage, DirRecord.STORED_PRINT);
-        REC_TYPE_MAP.put(UIDs.HardcopyGrayscaleImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.HardcopyGrayscaleImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.HardcopyColorImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.ComputedRadiographyImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.DigitalXRayImageStorageForPresentation, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.DigitalXRayImageStorageForProcessing, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.DigitalMammographyXRayImageStorageForPresentation, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.DigitalMammographyXRayImageStorageForProcessing, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.DigitalIntraoralXRayImageStorageForPresentation, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.DigitalIntraoralXRayImageStorageForProcessing, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.CTImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.UltrasoundMultiframeImageStorageRetired, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.UltrasoundMultiframeImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.MRImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.NuclearMedicineImageStorageRetired, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.UltrasoundImageStorageRetired, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.UltrasoundImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.SecondaryCaptureImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.MultiframeSingleBitSecondaryCaptureImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.MultiframeGrayscaleByteSecondaryCaptureImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.MultiframeGrayscaleWordSecondaryCaptureImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.MultiframeTrueColorSecondaryCaptureImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.StandaloneOverlayStorage, DirRecord.OVERLAY);
-        REC_TYPE_MAP.put(UIDs.StandaloneCurveStorage, DirRecord.CURVE);
-        REC_TYPE_MAP.put(UIDs.TwelveLeadECGWaveformStorage, DirRecord.WAVEFORM);
-        REC_TYPE_MAP.put(UIDs.GeneralECGWaveformStorage, DirRecord.WAVEFORM);
-        REC_TYPE_MAP.put(UIDs.AmbulatoryECGWaveformStorage, DirRecord.WAVEFORM);
-        REC_TYPE_MAP.put(UIDs.HemodynamicWaveformStorage, DirRecord.WAVEFORM);
-        REC_TYPE_MAP.put(UIDs.CardiacElectrophysiologyWaveformStorage, DirRecord.WAVEFORM);
-        REC_TYPE_MAP.put(UIDs.BasicVoiceAudioWaveformStorage, DirRecord.WAVEFORM);
-        REC_TYPE_MAP.put(UIDs.StandaloneModalityLUTStorage, DirRecord.MODALITY_LUT);
-        REC_TYPE_MAP.put(UIDs.StandaloneVOILUTStorage, DirRecord.VOI_LUT);
-        REC_TYPE_MAP.put(UIDs.GrayscaleSoftcopyPresentationStateStorage, DirRecord.PRESENTATION);
-        REC_TYPE_MAP.put(UIDs.ColorSoftcopyPresentationStateStorage, DirRecord.PRESENTATION);
-        REC_TYPE_MAP.put(UIDs.PseudoColorSoftcopyPresentationStateStorage, DirRecord.PRESENTATION);
-        REC_TYPE_MAP.put(UIDs.BlendingSoftcopyPresentationStateStorage, DirRecord.PRESENTATION);
-        REC_TYPE_MAP.put(UIDs.XRayAngiographicImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.XRayRadiofluoroscopicImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.XRayAngiographicBiPlaneImageStorageRetired, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.NuclearMedicineImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.VLImageStorageRetired, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.VLMultiframeImageStorageRetired, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.VLEndoscopicImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.VLMicroscopicImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.VLSlideCoordinatesMicroscopicImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.VLPhotographicImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.BasicTextSR, DirRecord.SR_DOCUMENT);
-        REC_TYPE_MAP.put(UIDs.EnhancedSR, DirRecord.SR_DOCUMENT);
-        REC_TYPE_MAP.put(UIDs.ComprehensiveSR, DirRecord.SR_DOCUMENT);
-        REC_TYPE_MAP.put(UIDs.MammographyCADSR, DirRecord.SR_DOCUMENT);
-        REC_TYPE_MAP.put(UIDs.KeyObjectSelectionDocument, DirRecord.KEY_OBJECT_DOC);
-        REC_TYPE_MAP.put(UIDs.MRSpectroscopyStorage, DirRecord.SPECTROSCOPY);
-        REC_TYPE_MAP.put(UIDs.PositronEmissionTomographyImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.StandalonePETCurveStorage, DirRecord.CURVE);
-        REC_TYPE_MAP.put(UIDs.RTImageStorage, DirRecord.IMAGE);
-        REC_TYPE_MAP.put(UIDs.RTDoseStorage, DirRecord.RT_DOSE);
-        REC_TYPE_MAP.put(UIDs.RTStructureSetStorage, DirRecord.RT_STRUCTURE_SET);
-        REC_TYPE_MAP.put(UIDs.RTBeamsTreatmentRecordStorage, DirRecord.RT_TREAT_RECORD);
-        REC_TYPE_MAP.put(UIDs.RTIonBeamsTreatmentRecordStorage, DirRecord.RT_TREAT_RECORD);
-        REC_TYPE_MAP.put(UIDs.RTPlanStorage, DirRecord.RT_PLAN);
-        REC_TYPE_MAP.put(UIDs.RTIonPlanStorage, DirRecord.RT_PLAN);
-        REC_TYPE_MAP.put(UIDs.RTBrachyTreatmentRecordStorage, DirRecord.RT_TREAT_RECORD);
-        REC_TYPE_MAP.put(UIDs.RTTreatmentSummaryRecordStorage, DirRecord.RT_TREAT_RECORD);
-        REC_TYPE_MAP.put(UIDs.RawDataStorage, DirRecord.RAW_DATA);
-        REC_TYPE_MAP.put(UIDs.SpatialRegistrationStorage, DirRecord.REGISTRATION);
-        REC_TYPE_MAP.put(UIDs.DeformableSpatialRegistrationStorage, DirRecord.REGISTRATION);
-        REC_TYPE_MAP.put(UIDs.SpatialFiducialsStorage, DirRecord.FIDUCIAL);
-        REC_TYPE_MAP.put(UIDs.EncapsulatedPDFStorage, DirRecord.ENCAP_DOC);
-        REC_TYPE_MAP.put(UIDs.RealWorldValueMappingStorage, DirRecord.VALUE_MAP);
-        REC_TYPE_MAP.put(UIDs.StereometricRelationshipStorage, DirRecord.STEREOMETRIC);
-    }
 
     public static String getRecordType(String classUID) {
-        String type = (String) REC_TYPE_MAP.get(classUID);
-        if (type == null) {
-            return DirRecord.PRIVATE;
-        }
-        return type;
+        return DirRecordTypes.getRecordType(classUID);
     }
     
    /**

@@ -103,6 +103,12 @@
              in="${src.etc.dir}/dictionary.xml"
              out="${build.generate.dir}/org/dcm4che/dict/UIDs.java"
       />
+
+      <xslt processor="trax"
+             style="${src.etc.dir}/DirRecordTypes.xsl"
+             in="${src.etc.dir}/dictionary.xml"
+             out="${build.generate.dir}/org/dcm4che/media/DirRecordTypes.java"
+      />
       
       <xslt processor="trax"
              style="${src.etc.dir}/Status.xsl"
