@@ -1564,6 +1564,52 @@
   <element tag="(0064,000F)" name="Pre Deformation Matrix Registration Sequence" vr="SQ" vm="1" key="PreDeformationMatrixRegistrationSeq" />
   <element tag="(0064,0010)" name="Post Deformation Matrix Registration Sequence" vr="SQ" vm="1" key="PostDeformationMatrixReg" />
   
+  <element tag="(0066,0001)" name="Number of Surfaces" vr="UL" vm="1" key="NumberOfSurfaces" />
+  <element tag="(0066,0002)" name="Surface Sequence" vr="SQ" vm="1" key="SurfaceSeq" />
+  <element tag="(0066,0003)" name="Surface Number" vr="UL" vm="1" key="SurfaceNumber" />
+  <element tag="(0066,0004)" name="Surface Comments" vr="LT" vm="1" key="SurfaceComments" />
+  <element tag="(0066,0009)" name="Surface Processing" vr="CS" vm="1" key="SurfaceProcessing" />
+  <element tag="(0066,000A)" name="Surface Processing Ratio" vr="FL" vm="1" key="SurfaceProcessingRatio" />
+  <element tag="(0066,000B)" name="Surface Processing Description" vr="LO" vm="1" key="SurfaceProcessingDescription" />
+  <element tag="(0066,000C)" name="Recommended Presentation Opacity" vr="FL" vm="1" key="RecommendedPresentationOpacity" />
+  <element tag="(0066,000D)" name="Recommended Presentation Type" vr="CS" vm="1" key="RecommendedPresentationType" />
+  <element tag="(0066,000E)" name="Finite Volume" vr="CS" vm="1" key="FiniteVolume" />
+  <element tag="(0066,0010)" name="Manifold" vr="CS" vm="1" key="Manifold" />
+  <element tag="(0066,0011)" name="Surface Points Sequence" vr="SQ" vm="1" key="SurfacePointsSeq" />
+  <element tag="(0066,0012)" name="Surface Points Normals Sequence" vr="SQ" vm="1" key="SurfacePointsNormalsSeq" />
+  <element tag="(0066,0013)" name="Surface Mesh Primitives Sequence" vr="SQ" vm="1" key="SurfaceMeshPrimitivesSeq" />
+  <element tag="(0066,0015)" name="Number of Surface Points" vr="UL" vm="1" key="NumberOfSurfacePoints" />
+  <element tag="(0066,0016)" name="Point Coordinates Data" vr="OF" vm="1" key="PointCoordinatesData" />
+  <element tag="(0066,0017)" name="Point Position Accuracy" vr="FL" vm="3" key="PointPositionAccuracy" />
+  <element tag="(0066,0018)" name="Mean Point Distance" vr="FL" vm="1" key="MeanPointDistance" />
+  <element tag="(0066,0019)" name="Maximum Point Distance" vr="FL" vm="1" key="MaximumPointDistance" />
+  <element tag="(0066,001A)" name="Points Bounding Box Coordinates" vr="FL" vm="6" key="PointsBoundingBoxCoordinates" />
+  <element tag="(0066,001B)" name="Axis of Rotation" vr="FL" vm="3" key="AxisOfRotation" />
+  <element tag="(0066,001C)" name="Center of Rotation" vr="FL" vm="3" key="CenterOfRotation" />
+  <element tag="(0066,001E)" name="Number of Vectors" vr="UL" vm="1" key="NumberOfVectors" />
+  <element tag="(0066,001F)" name="Vector Dimensionality" vr="US" vm="1" key="VectorDimensionality" />
+  <element tag="(0066,0020)" name="Vector Accuracy" vr="FL" vm="1-n" key="VectorAccuracy" />
+  <element tag="(0066,0021)" name="Vector Coordinate Data" vr="OF" vm="1" key="VectorCoordinateData" />
+  <element tag="(0066,0023)" name="Triangle Point Index List" vr="OW" vm="1" key="TrianglePointIndexList" />
+  <element tag="(0066,0024)" name="Edge Point Index List" vr="OW" vm="1" key="EdgePointIndexList" />
+  <element tag="(0066,0025)" name="Vertex Point Index List" vr="OW" vm="1" key="VertexPointIndexList" />
+  <element tag="(0066,0026)" name="Triangle Strip Sequence" vr="SQ" vm="1" key="TriangleStripSeq" />
+  <element tag="(0066,0027)" name="Triangle Fan Sequence" vr="SQ" vm="1" key="TriangleFanSeq" />
+  <element tag="(0066,0028)" name="Line Sequence" vr="SQ" vm="1" key="LineSeq" />
+  <element tag="(0066,0029)" name="Primitive Point Index List" vr="OW" vm="1" key="PrimitivePointIndexList" />
+  <element tag="(0066,002A)" name="Surface Count" vr="UL" vm="1" key="SurfaceCount" />
+  <element tag="(0066,002B)" name="Referenced Surface Sequence" vr="SQ" vm="1" key="ReferencedSurfaceSeq" />
+  <element tag="(0066,002C)" name="Referenced Surface Number" vr="UL" vm="1" key="ReferencedSurfaceNumber" />
+  <element tag="(0066,002D)" name="Segment Surface Generation Algorithm Identification Sequence" vr="SQ" vm="1" key="SegmentSurfaceGenerationAlgorithmIdentificationSeq" />
+  <element tag="(0066,002E)" name="Segment Surface Source Instance Sequence" vr="SQ" vm="1" key="SegmentSurfaceSourceInstanceSeq" />
+  <element tag="(0066,002F)" name="Algorithm Family Code Sequence" vr="SQ" vm="1" key="AlgorithmFamilyCodeSeq" />
+  <element tag="(0066,0030)" name="Algorithm Name Code Sequence" vr="SQ" vm="1" key="AlgorithmNameCodeSeq" />
+  <element tag="(0066,0031)" name="Algorithm Version" vr="LO" vm="1" key="AlgorithmVersion" />
+  <element tag="(0066,0032)" name="Algorithm Parameters" vr="LT" vm="1" key="AlgorithmParameters" />
+  <element tag="(0066,0034)" name="Facet Sequence" vr="SQ" vm="1" key="FacetSeq" />
+  <element tag="(0066,0035)" name="Surface Processing Algorithm Identification Sequence" vr="SQ" vm="1" key="SurfaceProcessingAlgorithmIdentificationSeq" />
+  <element tag="(0066,0036)" name="Algorithm Name" vr="LO" vm="1" key="AlgorithmName" />
+  
   <element tag="(0070,0001)" name="Graphic Annotation Sequence" vr="SQ" vm="1" key="GraphicAnnotationSeq" />
   <element tag="(0070,0002)" name="Graphic Layer" vr="CS" vm="1" key="GraphicLayer" />
   <element tag="(0070,0003)" name="Bounding Box Annotation Units" vr="CS" vm="1" key="BoundingBoxAnnotationUnits" />
@@ -2605,6 +2651,7 @@
   <uid value="1.2.840.10008.5.1.4.1.1.66.2" name="Spatial Fiducials Storage" key="SpatialFiducialsStorage" dirrecord="FIDUCIAL" />
   <uid value="1.2.840.10008.5.1.4.1.1.66.3" name="Deformable Spatial Registration Storage" key="DeformableSpatialRegistrationStorage" dirrecord="REGISTRATION" />
   <uid value="1.2.840.10008.5.1.4.1.1.66.4" name="Segmentation Storage" key="SegmentationStorage" dirrecord="SEGMENTATION" />
+  <uid value="1.2.840.10008.5.1.4.1.1.66.5" name="Surface Segmentation StorageS" key="SurfaceSegmentationStorage" dirrecord="SEGMENTATION" />
   <uid value="1.2.840.10008.5.1.4.1.1.67" name="Real World Value Mapping Storage" key="RealWorldValueMappingStorage" dirrecord="VALUE MAP" />
   <uid value="1.2.840.10008.5.1.4.1.1.77.1" name="VL Image Storage (Retired)" key="VLImageStorageRetired" retired="true" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.77.2" name="VL Multi-frame Image Storage (Retired)" key="VLMultiframeImageStorageRetired" retired="true" dirrecord="IMAGE" />
