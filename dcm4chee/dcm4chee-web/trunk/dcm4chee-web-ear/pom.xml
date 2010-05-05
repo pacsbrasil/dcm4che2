@@ -92,6 +92,12 @@
       <type>sar</type>
       <version>3.0.0-SNAPSHOT</version>
     </dependency>
+    <dependency>
+      <groupId>dcm4che.dcm4chee</groupId>
+      <artifactId>dcm4chee-web-sar-bridge-store</artifactId>
+      <type>sar</type>
+      <version>3.0.0-SNAPSHOT</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -150,6 +156,10 @@
             <sarModule>
               <groupId>dcm4che.dcm4chee</groupId>
               <artifactId>dcm4chee-web-sar-echo</artifactId>
+            </sarModule>
+            <sarModule>
+              <groupId>dcm4che.dcm4chee</groupId>
+              <artifactId>dcm4chee-web-sar-bridge-store</artifactId>
             </sarModule>
           </modules>
           <jboss>
