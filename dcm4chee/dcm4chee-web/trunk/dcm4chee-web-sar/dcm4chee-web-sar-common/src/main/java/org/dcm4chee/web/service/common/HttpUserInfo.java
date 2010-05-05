@@ -75,6 +75,8 @@ public class HttpUserInfo {
     
     private void init(HttpServletRequest rq, boolean enableDNSLookups) {
         userId = rq.getRemoteUser();
+        if (userId == null || userId.length() < 1)
+            userId = "UNKNOWN_USER";
         String xForward = (String) rq.getHeader("x-forwarded-for");
         if (xForward != null) {
             int pos = xForward.indexOf(',');

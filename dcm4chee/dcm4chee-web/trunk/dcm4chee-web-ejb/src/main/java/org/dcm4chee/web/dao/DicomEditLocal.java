@@ -42,6 +42,7 @@ import java.util.Collection;
 
 import javax.ejb.Local;
 
+import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.web.dao.vo.EntityTree;
@@ -65,11 +66,10 @@ public interface DicomEditLocal {
     EntityTree movePatientsToTrash(long[] pk);
     EntityTree movePatientToTrash(String patId, String issuer);
     
-    EntityTree[] moveInstanceToSeries(String sopIuid, String seriesIuid);
-    EntityTree[] moveInstancesToSeries(long[] pks, long pk);
-    EntityTree[] moveSeriesToStudy(String seriesIuid, String studyIuid);
-    EntityTree[] moveSeriesToStudy(long[] pks, long pk);
-    EntityTree[] moveStudyToPatient(String studyIuid, String patId, String issuer);
-    EntityTree[] moveStudiesToPatient(long[] pks, long pk);
-    EntityTree[] moveStudiesToPatient(Collection<Study> studies, Patient pat);
+    DicomObject getCompositeObjectforSeries(String seriesIuid);
+    DicomObject getCompositeObjectforSeries(long pk);
+    DicomObject getCompositeObjectforStudy(String studyIuid);
+    DicomObject getCompositeObjectforStudy(long pk);
+    DicomObject getPatientAttributes(String patId, String issuer);
+    DicomObject getPatientAttributes(long pk);
 }

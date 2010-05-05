@@ -15,6 +15,7 @@
     <depends optional-attribute-name="JMSServiceName">dcm4chee.archive:service=JMS</depends>
     <depends>dcm4chee.web:service=Queue,name=HL7SendV2</depends>
     <depends optional-attribute-name="TlsCfgServiceName">dcm4chee.web:service=TlsConfig</depends>
+    <depends optional-attribute-name="ContentEditServiceName">dcm4chee.web:service=ContentEditService</depends>
 
     <xmbean>
       <description><![CDATA[<b>HL7 v2 Send Service</b>
@@ -69,17 +70,33 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getConfigDir"
+      setMethod="setConfigDir">
+      <description><![CDATA[Directory where configuration (XSL) files for HL7Send service are located.
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>  
+      </description>
+      <name>ConfigDirectory</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4chee-hl7"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getXslFilenames"
       setMethod="setXslFilenames">
       <description><![CDATA[Mapping of MsgTypeID like pat_upd to a XSL URL to transform Dicom Dataset to an HL7 message.<br/>
-      	Format: &lt;msgTypeID&gt;:&lt;XSL URL&gt; <br/> ]]>
+      	Format: &lt;msgTypeID&gt;:&lt;XSL URL/Name&gt;[|14] <br/>
+      	The optional postfix '|14' can be used to support stylesheets written for dcm4che14 xml format. <br/>
+      	XSL names that do not start with resource: must be located in ConfigDirectory/[Receiver/] ]]>
       </description>
       <name>XslFilenames</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="
          	pat_upd=resource:xsl/pat_upd.xsl
-         	pat_mrg=resource:xsl/pat_mrg.xsl" />
+         	pat_mrg=resource:xsl/pat_mrg.xsl
+         	mpps2orm=mpps2orm.xsl|14" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -91,6 +108,17 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="ISO-8859-1" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getDcm2To14Tpl"
+      setMethod="setDcm2To14Tpl">
+      <description>Stylesheet to transform dcm4che2 formatted xml to dcm4che14 xml.
+      </description>
+      <name>Dcm2To14XSL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="resource:xsl/dcm2To14.xsl" />
       </descriptors>
    </attribute>
    
@@ -168,6 +196,14 @@
       <name>JMSServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getContentEditServiceName"
+      setMethod="setContentEditServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>ContentEditServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
    
    &defaultAttributes;
    
@@ -198,6 +234,30 @@
         <description>Array of Dicom Object with Patient Attributes of prior Patients.</description>
         <name>dominantPatAttrs</name>
         <type>[Lorg.dcm4che2.data.DicomObject;</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[ Schedule a ORM HL7 Message with information of MPPS attributes after MPPS to MWL linking.
+      		]]> </description>
+      <name>scheduleMPPS2ORM</name>
+      <parameter>
+        <description>Result of linking MPPS to MWL. Only MPPS attributes will be used.</description>
+        <name>linkResult</name>
+        <type>org.dcm4chee.web.dao.vo.MppsToMwlLinkResult</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[ Schedule a ORM HL7 Message with information of given MPPS attributes.
+      		]]> </description>
+      <name>scheduleMPPS2ORM</name>
+      <parameter>
+        <description>Dicom Object with Patient Attributes.</description>
+        <name>mppsAttrs</name>
+        <type>org.dcm4che2.data.DicomObject</type>
       </parameter>
       <return-type>void</return-type>
    </operation>

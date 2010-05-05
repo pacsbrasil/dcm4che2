@@ -11,6 +11,7 @@
     <depends optional-attribute-name="IANScuServiceName">dcm4chee.web:service=IANSCU</depends>
     <depends optional-attribute-name="MoveScuServiceName">dcm4chee.web:service=MoveScu</depends>
     <depends optional-attribute-name="TemplatesServiceName">dcm4chee.archive:service=Templates</depends>
+    <depends optional-attribute-name="StoreScpServiceName">dcm4chee.web:service=StoreBridge</depends>
 
     <xmbean>
       <description><![CDATA[<b>Content Edit Service for dcm4chee-web3</b>
@@ -27,6 +28,18 @@
          <description>The default constructor</description>
          <name>ContentEditService</name>
     </constructor>
+
+   <attribute access="read-write"
+      getMethod="getUIDRoot"
+      setMethod="setUIDRoot">
+      <description>Root part of new generated UIDs.
+      </description>
+      <name>UIDRoot</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value='1.2.40.0.13.1.1' />
+      </descriptors>
+   </attribute>
 
    <attribute access="read-write"
       getMethod="getRejectionNoteCode"
@@ -202,6 +215,14 @@
       <description>Used internally. Do NOT modify.
       </description>
       <name>TemplatesServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getStoreScpServiceName"
+      setMethod="setStoreScpServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>StoreScpServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
    

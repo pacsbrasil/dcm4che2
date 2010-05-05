@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.dcm4chee.archive.entity.Instance;
+import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
@@ -93,6 +94,8 @@ public class EntityTree implements Serializable {
             return;
         }
         Series series = instance.getSeries();
+        MPPS mpps = series.getModalityPerformedProcedureStep();
+        if (mpps != null) mpps.getPatient();
         Study study = series.getStudy();
         Patient pat = study.getPatient();
         Map<Study, Map<Series, Set<Instance>>> mapStudies = entityTreeMap.get(pat);

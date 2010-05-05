@@ -250,6 +250,7 @@ public class DicomEditBean implements DicomEditLocal {
         for ( File f : instance.getFiles() ) {
             PrivateFile pf = new PrivateFile();
             pf.setFileSystem(f.getFileSystem());
+            f.getFileSystem().getAvailability();//initialize FileSystem
             pf.setFilePath(f.getFilePath());
             pf.setTransferSyntaxUID(f.getTransferSyntaxUID());
             pf.setFileStatus(f.getFileStatus());
@@ -315,158 +316,44 @@ public class DicomEditBean implements DicomEditLocal {
         return pPat;
     }
     
-    @SuppressWarnings("unchecked")
-    public EntityTree[] moveInstancesToSeries(long[] pks, long pk) {
-        Query qI = QueryUtil.getQueryForPks(em, "SELECT OBJECT(i) FROM Instance i WHERE i.pk ", pks);
-        Query qS = em.createQuery("SELECT OBJECT(s) FROM Series s WHERE pk = :pk")
-            .setParameter("pk", pk);
-        return moveInstancesToSeries(qI.getResultList(), (Series) qS.getSingleResult());
-    }
+    public DicomObject getCompositeObjectforSeries(String iuid) {
+        Query q = em.createQuery("SELECT OBJECT(s) FROM Series s WHERE seriesInstanceUID = :iuid")
+            .setParameter("iuid", iuid.trim());
+        Series s = (Series) q.getSingleResult();
+        DicomObject attrs = s.getAttributes(false);
+        s.getStudy().getAttributes(false).copyTo(attrs);
+        s.getStudy().getPatient().getAttributes().copyTo(attrs);
+        return attrs;
 
-    @SuppressWarnings("unchecked")
-    public EntityTree[] moveInstanceToSeries(String sopIuid, String seriesIuid) {
-        Query qI = em.createNamedQuery("Instance.findByIUID");
-        qI.setParameter("iuid", sopIuid.trim());
-        Query qS = em.createQuery("SELECT OBJECT(s) FROM Series s WHERE seriesInstanceUID = :iuid")
-            .setParameter("iuid", seriesIuid.trim());
-        return moveInstancesToSeries(qI.getResultList(), (Series) qS.getSingleResult());
     }
-
-    private EntityTree[] moveInstancesToSeries(List<Instance> instances, Series destSeries) {
-        EntityTree oldInstances = new EntityTree(instances.size());
-        EntityTree newInstances = new EntityTree(instances.size());
-        HashSet<Series> srcSeriesList = new HashSet<Series>();
-        HashSet<Study> srcStudyList = new HashSet<Study>();
-        Instance oldInstance;
-        Series srcSeries;
-        Study srcStudy;
-        DicomObject attrs;
-        for (Instance i : instances) {
-            srcSeries = i.getSeries();
-            srcStudy = srcSeries.getStudy();
-            srcSeriesList.add(srcSeries);
-            srcStudyList.add(srcStudy);
-            oldInstance = new Instance();
-            attrs = i.getAttributes(true);
-            oldInstance.setAttributes(attrs);
-            oldInstance.setSeries(srcSeries);
-            oldInstances.addInstance(oldInstance);
-            attrs.putString(Tag.SOPInstanceUID, VR.UI, UIDUtils.createUID());
-            i.setAttributes(attrs);
-            i.setSeries(destSeries);
-            i.setStorageStatus(StorageStatus.RECEIVING);
-            newInstances.addInstance(i);
-            srcSeries.setNumberOfSeriesRelatedInstances(srcSeries.getNumberOfSeriesRelatedInstances()-1);
-            srcStudy.setNumberOfStudyRelatedInstances(srcStudy.getNumberOfStudyRelatedInstances()-1);
-        }
-        for ( Series s : srcSeriesList ) {
-            em.merge(s);
-            em.merge(s.getStudy());
-        }
-        if ( instances.size() > 0) {
-            destSeries.setNumberOfSeriesRelatedInstances(destSeries.getNumberOfSeriesRelatedInstances()+instances.size());
-            destSeries.setStorageStatus(StorageStatus.RECEIVING);
-        }
-        em.merge(destSeries);
-        Study destStudy = destSeries.getStudy();
-        destStudy.setNumberOfStudyRelatedInstances(destStudy.getNumberOfStudyRelatedInstances()+instances.size());
-        em.merge(destStudy);
-        getUpdateDerivedFieldsUtil().updateDerivedFieldsOfStudy(destStudy);
-        for (Study s : srcStudyList) {
-            getUpdateDerivedFieldsUtil().updateDerivedFieldsOfStudy(s);
-        }
-        EntityTree[] result = new EntityTree[]{oldInstances, newInstances};
-        return result;
+    public DicomObject getCompositeObjectforSeries(long pk) {
+        Query q = em.createQuery("SELECT OBJECT(s) FROM Series s WHERE pk = :pk").setParameter("pk", pk);
+        Series s = (Series) q.getSingleResult();
+        DicomObject attrs = s.getAttributes(false);
+        s.getStudy().getAttributes(false).copyTo(attrs);
+        s.getStudy().getPatient().getAttributes().copyTo(attrs);
+        return attrs;
     }
-
-    @SuppressWarnings("unchecked")
-    public EntityTree[] moveSeriesToStudy(long[] pks, long pk) {
-        Query qSeries = QueryUtil.getQueryForPks(em, "SELECT OBJECT(s) FROM Series s WHERE s.pk ", pks);
-        Query qStudy = em.createQuery("SELECT OBJECT(s) FROM Study s WHERE pk = :pk")
-            .setParameter("pk", pk);
-        return moveSeriesToStudy(qSeries.getResultList(), (Study) qStudy.getSingleResult());
+    public DicomObject getCompositeObjectforStudy(String studyIuid) {
+        Query q = em.createQuery("SELECT OBJECT(s) FROM Study s WHERE studyInstanceUID = :iuid").setParameter("iuid", studyIuid.trim());
+        Study s = (Study) q.getSingleResult();
+        DicomObject attrs = s.getAttributes(false);
+        s.getPatient().getAttributes().copyTo(attrs);
+        return attrs;
     }
-
-    @SuppressWarnings("unchecked")
-    public EntityTree[] moveSeriesToStudy(String seriesIuid, String studyIuid) {
-        Query qI = em.createNamedQuery("Series.findByIUID");
-        qI.setParameter("iuid", seriesIuid.trim());
-        Query qS = em.createQuery("SELECT OBJECT(s) FROM Study s WHERE studyInstanceUID = :iuid")
-            .setParameter("iuid", studyIuid.trim());
-        return moveSeriesToStudy((List<Series>)qI.getResultList(), (Study) qS.getSingleResult());
+    public DicomObject getCompositeObjectforStudy(long pk) {
+        Query q = em.createQuery("SELECT OBJECT(s) FROM Study s WHERE pk = :pk").setParameter("pk", pk);
+        Study s = (Study) q.getSingleResult();
+        DicomObject attrs = s.getAttributes(false);
+        s.getPatient().getAttributes().copyTo(attrs);
+        return attrs;
     }
-
-    private EntityTree[] moveSeriesToStudy(List<Series> series, Study destStudy) {
-        EntityTree oldInstances = new EntityTree();
-        EntityTree newInstances = new EntityTree();
-        HashSet<Study> srcStudyList = new HashSet<Study>();
-        Set<Instance> instances; 
-        Instance oldInstance;
-        Series oldSeries;
-        Study oldStudy;
-        DicomObject instAttrs, seriesAttrs;
-        for (Series s : series) {
-            srcStudyList.add(s.getStudy());
-            oldSeries = new Series();
-            s.setModalityPerformedProcedureStep(null);
-            oldStudy = s.getStudy();
-            oldSeries.setStudy(oldStudy);
-            seriesAttrs = s.getAttributes(true);
-            oldSeries.setAttributes(seriesAttrs);
-            seriesAttrs.putString(Tag.SeriesInstanceUID, VR.UI, UIDUtils.createUID());
-            s.setAttributes(seriesAttrs);
-            s.setStudy(destStudy);
-            instances = s.getInstances();
-            for (Instance i : instances) {
-                oldInstance = new Instance();
-                instAttrs = i.getAttributes(true);
-                oldInstance.setAttributes(instAttrs);
-                oldInstance.setSeries(oldSeries);
-                oldInstances.addInstance(oldInstance);
-                instAttrs.putString(Tag.SOPInstanceUID, VR.UI, UIDUtils.createUID());
-                i.setAttributes(instAttrs);
-                newInstances.addInstance(i);
-            }
-        }
-        for ( Study s : srcStudyList ) {
-            getUpdateDerivedFieldsUtil().updateDerivedFieldsOfStudy(s);
-        }
-        em.merge(destStudy);
-        getUpdateDerivedFieldsUtil().updateDerivedFieldsOfStudy(destStudy);
-        EntityTree[] result = new EntityTree[]{oldInstances, newInstances};
-        return result;
+    public DicomObject getPatientAttributes(String patId, String issuer) {
+        return ((Patient) QueryUtil.getPatientQuery(em, patId, issuer).getSingleResult()).getAttributes();
     }
-    
-    @SuppressWarnings("unchecked")
-    public EntityTree[] moveStudiesToPatient(long[] pks, long pk) {
-        Query qS = QueryUtil.getQueryForPks(em, "SELECT OBJECT(s) FROM Study s WHERE s.pk ", pks);
-        Query qP = em.createQuery("SELECT OBJECT(p) FROM Patient p WHERE pk = :pk")
-            .setParameter("pk", pk);
-        return moveStudiesToPatient(qS.getResultList(), (Patient) qP.getSingleResult());
-    }
-
-    @SuppressWarnings("unchecked")
-    public EntityTree[] moveStudyToPatient(String studyIuid, String patId, String issuer) {
-        Query qS = em.createQuery("SELECT OBJECT(s) FROM Study s WHERE studyInstanceUID = :iuid")
-        .setParameter("iuid", studyIuid.trim());
-        return moveStudiesToPatient((List<Study>)qS.getResultList(), 
-                (Patient) QueryUtil.getPatientQuery(em, patId, issuer).getSingleResult());
-    }
-
-    public EntityTree[] moveStudiesToPatient(Collection<Study> studies, Patient pat) {
-        EntityTree oldTree = new EntityTree();
-        EntityTree newTree = new EntityTree();
-        Study oldStudy;
-        for ( Study s : studies ) {
-            oldStudy = new Study();
-            oldStudy.setAttributes(s.getAttributes(true));
-            oldStudy.setSeries(s.getSeries());
-            oldTree.addStudy(oldStudy);
-            s.setPatient(pat);
-            em.merge(s);
-            newTree.addStudy(s);
-        }
-        return new EntityTree[]{oldTree, newTree};
+    public DicomObject getPatientAttributes(long pk) {
+        Query q = em.createQuery("SELECT OBJECT(p) FROM Patient p WHERE pk = :pk").setParameter("pk", pk);
+        return ((Patient)q.getSingleResult()).getAttributes();
     }
     
 }

@@ -48,6 +48,7 @@ import java.util.Set;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
+import javax.management.Notification;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import javax.naming.InitialContext;
@@ -77,6 +78,7 @@ import org.dcm4che2.util.StringUtils;
 import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.entity.Code;
+import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.MWLItem;
@@ -87,6 +89,7 @@ import org.dcm4chee.web.dao.DicomEditLocal;
 import org.dcm4chee.web.dao.MppsToMwlLinkLocal;
 import org.dcm4chee.web.dao.vo.EntityTree;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
+import org.dcm4chee.web.service.common.FileImportOrder;
 import org.dcm4chee.web.service.common.HttpUserInfo;
 import org.dcm4chee.web.service.common.TemplatesDelegate;
 import org.dcm4chee.web.service.common.XSLTUtils;
@@ -115,8 +118,8 @@ public class ContentEditService extends ServiceMBeanSupport {
     
     private ObjectName rejNoteServiceName;
     private ObjectName ianScuServiceName;
-    private ObjectName hl7sendServiceName;
     private ObjectName moveScuServiceName;
+    private ObjectName storeScpServiceName;
 
     private boolean processIAN;
     private boolean processRejNote;
@@ -129,6 +132,14 @@ public class ContentEditService extends ServiceMBeanSupport {
     protected TemplatesDelegate templates = new TemplatesDelegate(this);
     private String dcm2To14TplName, dcm14To2TplName;
     private Templates dcm2To14Tpl, dcm14To2Tpl;
+    
+    public String getUIDRoot() {
+        return UIDUtils.getRoot();
+    }
+    
+    public void setUIDRoot(String root) {
+        UIDUtils.setRoot(root);
+    }
     
     public String getRejectionNoteCode() {
         return rejectNoteCode.toString()+"\r\n";
@@ -204,7 +215,6 @@ public class ContentEditService extends ServiceMBeanSupport {
     public ObjectName getRejectionNoteServiceName() {
         return rejNoteServiceName;
     }
-
     public void setRejectionNoteServiceName(ObjectName name) {
         this.rejNoteServiceName = name;
     }
@@ -212,25 +222,23 @@ public class ContentEditService extends ServiceMBeanSupport {
     public ObjectName getIANScuServiceName() {
         return ianScuServiceName;
     }
-
     public void setIANScuServiceName(ObjectName name) {
         this.ianScuServiceName = name;
-    }
-
-    public ObjectName getHl7sendServiceName() {
-        return hl7sendServiceName;
     }
 
     public void setMoveScuServiceName(ObjectName name) {
         this.moveScuServiceName = name;
     }
-
     public ObjectName getMoveScuServiceName() {
         return moveScuServiceName;
     }
 
-    public void setHl7sendServiceName(ObjectName hl7sendServiceName) {
-        this.hl7sendServiceName = hl7sendServiceName;
+    public ObjectName getStoreScpServiceName() {
+        return storeScpServiceName;
+    }
+
+    public void setStoreScpServiceName(ObjectName name) {
+        storeScpServiceName = name;
     }
     
     public final ObjectName getTemplatesServiceName() {
@@ -361,51 +369,99 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public int moveInstancesToSeries(long[] instPks, long seriesPk) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        EntityTree[] entityTree = lookupDicomEditLocal().moveInstancesToSeries(instPks, seriesPk);
-        processAfterMoveEntities(entityTree);
-        return entityTree[0].getAllInstances().size();
+        EntityTree entityTree = lookupDicomEditLocal().moveInstancesToTrash(instPks);
+        processAfterMoveEntities(entityTree, lookupDicomEditLocal().getCompositeObjectforSeries(seriesPk));
+        return entityTree.getAllInstances().size();
     }
 
     public int moveInstanceToSeries(String sopIUID, String seriesIUID) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        EntityTree[] entityTree = lookupDicomEditLocal().moveInstanceToSeries(sopIUID, seriesIUID);
-        processAfterMoveEntities(entityTree);
-        return entityTree[0].getAllInstances().size();
+        EntityTree entityTree = lookupDicomEditLocal().moveInstanceToTrash(sopIUID);
+        processAfterMoveEntities(entityTree, lookupDicomEditLocal().getCompositeObjectforSeries(seriesIUID));
+        return entityTree.getAllInstances().size();
     }
     
     public int moveSeriesToStudy(long[] seriesPks, long studyPk) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        EntityTree[] entityTree = lookupDicomEditLocal().moveSeriesToStudy(seriesPks, studyPk);
-        processAfterMoveEntities(entityTree);
-        return entityTree[0].getAllInstances().size();
+        EntityTree entityTree = lookupDicomEditLocal().moveSeriesToTrash(seriesPks);
+        processAfterMoveEntities(entityTree, lookupDicomEditLocal().getCompositeObjectforStudy(studyPk));
+        return entityTree.getAllInstances().size();
     }
 
     public int moveSeriesToStudy(String seriesIUID, String studyIUID) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        EntityTree[] entityTree = lookupDicomEditLocal().moveSeriesToStudy(seriesIUID, studyIUID);
-        processAfterMoveEntities(entityTree);
-        return entityTree[0].getAllInstances().size();
+        EntityTree entityTree = lookupDicomEditLocal().moveSeriesToTrash(seriesIUID);
+        processAfterMoveEntities(entityTree, lookupDicomEditLocal().getCompositeObjectforStudy(studyIUID));
+        return entityTree.getAllInstances().size();
     }
 
     public int moveStudiesToPatient(long[] studyPks, long patPk) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        EntityTree[] entityTree = lookupDicomEditLocal().moveStudiesToPatient(studyPks, patPk);
-        processAfterMoveEntities(entityTree);
-        return entityTree[0].getAllInstances().size();
+        EntityTree entityTree = lookupDicomEditLocal().moveStudiesToTrash(studyPks);
+        processAfterMoveEntities(entityTree, lookupDicomEditLocal().getPatientAttributes(patPk));
+        return entityTree.getAllInstances().size();
     }
     public int moveStudyToPatient(String studyIUID, String patId, String issuer) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        EntityTree[] entityTree = lookupDicomEditLocal().moveStudyToPatient(studyIUID, patId, issuer);
-        processAfterMoveEntities(entityTree);
-        return entityTree[0].getAllInstances().size();
+        EntityTree entityTree = lookupDicomEditLocal().moveStudyToTrash(studyIUID);
+        processAfterMoveEntities(entityTree, lookupDicomEditLocal().getPatientAttributes(patId, issuer));
+        return entityTree.getAllInstances().size();
     }
 
-    private void processAfterMoveEntities(EntityTree[] entityTree)
+    private void processAfterMoveEntities(EntityTree entityTree, DicomObject targetAttrs)
         throws InstanceNotFoundException, MBeanException,ReflectionException {
-        if (!entityTree[0].isEmpty()) { 
-            DicomObject[] rejNotes = getRejectionNotes(entityTree[0]);
+        if (!entityTree.isEmpty()) { 
+            DicomObject[] rejNotes = getRejectionNotes(entityTree);
             for (DicomObject kos : rejNotes) {
-                logInstancesAccessed(kos, InstancesAccessedMessage.DELETE, true, "Referenced Series of deleted Instances for move entities:");
+                logInstancesAccessed(kos, InstancesAccessedMessage.DELETE, true, "Deleted Instances for move entities:");
                 processRejectionNote(kos);
             }
-            processIANs(entityTree[0], Availability.UNAVAILABLE);
-            processIANs(entityTree[1], Availability.ONLINE);
-            processMoveRequests(entityTree[1]);
+            processIANs(entityTree, Availability.UNAVAILABLE);
+            importFiles(entityTree, targetAttrs);
+        }
+    }
+
+    private void importFiles(EntityTree entityTree, DicomObject targetAttrs) {
+        FileImportOrder order = new FileImportOrder();
+        DicomObject headerAttrs, studyAttrs, seriesAttrs;
+        File file;
+        for ( Map<Study, Map<Series, Set<Instance>>> studies : entityTree.getEntityTreeMap().values() ) {
+            for (Map.Entry<Study, Map<Series, Set<Instance>>> entry : studies.entrySet() ) {
+                if (targetAttrs.containsValue(Tag.StudyInstanceUID)) {
+                    studyAttrs = null;
+                } else {
+                    studyAttrs = entry.getKey().getAttributes(false);
+                    studyAttrs.putString(Tag.StudyInstanceUID, VR.UI, UIDUtils.createUID());
+                }
+                for (Map.Entry<Series, Set<Instance>> seriesEntry : entry.getValue().entrySet()) {
+                    if (targetAttrs.containsValue(Tag.SeriesInstanceUID)) {
+                        seriesAttrs = null;
+                    } else {
+                        seriesAttrs = seriesEntry.getKey().getAttributes(false);
+                        seriesAttrs.putString(Tag.SeriesInstanceUID, VR.UI, UIDUtils.createUID());
+                    }
+                    for ( Instance i : seriesEntry.getValue()) {
+                        headerAttrs = new BasicDicomObject();
+                        targetAttrs.copyTo(headerAttrs);
+                        if ( studyAttrs != null) {
+                            studyAttrs.copyTo(headerAttrs);
+                        }
+                        if ( seriesAttrs != null) {
+                            seriesAttrs.copyTo(headerAttrs);
+                        }
+                        i.getAttributes(false).copyTo(headerAttrs);
+                        headerAttrs.putString(Tag.SOPInstanceUID, VR.UI, UIDUtils.createUID());
+                        file = i.getFiles().iterator().next();
+                        order.addFile(file, headerAttrs);
+                    }
+                }
+            }
+        }
+        importFiles(order);
+    }
+    
+    private void importFiles(FileImportOrder order) {
+        log.info("import Files:"+order);
+        try {
+            server.invoke(storeScpServiceName, "importFile", 
+                new Object[]{order}, new String[]{FileImportOrder.class.getName()});
+        } catch (Throwable t) {
+            log.error("Import files failed! order:"+order);
         }
     }
 
@@ -420,6 +476,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         log.info("MppsToMwlLinkResult:"+result);
         logMppsLinkRecord(result);
         updateSeriesAttributes(result);
+        this.sendJMXNotification(result);
         if (result.getStudiesToMove().size() < 1) {
             Patient pat = result.getMwl().getPatient();
             log.info("Patient of some MPPS are not identical to patient of MWL! Move studies to Patient of MWL:"+
@@ -471,7 +528,6 @@ public class ContentEditService extends ServiceMBeanSupport {
         return out;
     }
     
-
     private DicomObject[] getRejectionNotes(EntityTree entityTree) {
         Map<Patient, Map<Study, Map<Series, Set<Instance>>>> entityTreeMap = entityTree.getEntityTreeMap();
         DicomObject[] rejNotes = new DicomObject[entityTreeMap.size()];
@@ -652,6 +708,7 @@ public class ContentEditService extends ServiceMBeanSupport {
             logProcedureRecord(patAttrs, studyIuid, accNr, ProcedureRecordMessage.UPDATE, desc);
         }
     }
+    
     private void logProcedureRecord(DicomObject patAttrs, String studyIuid, 
             String accNr, ActionCode actionCode, String desc) {
         HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
@@ -808,5 +865,16 @@ public class ContentEditService extends ServiceMBeanSupport {
         return new ArrayList<DicomObject>();
     }
     
+    public void sendJMXNotification(Object o) {
+        if (log.isDebugEnabled()) {
+            log.debug("Send JMX Notification: " + o);
+        }
+        long eventID = super.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(o.getClass().getName(), this,
+                eventID);
+        notif.setUserData(o);
+        super.sendNotification(notif);
+    }
+
 }
 

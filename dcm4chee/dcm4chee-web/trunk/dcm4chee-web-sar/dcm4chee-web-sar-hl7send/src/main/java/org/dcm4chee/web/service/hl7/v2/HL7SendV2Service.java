@@ -62,6 +62,9 @@ import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
+import javax.management.Notification;
+import javax.management.NotificationFilter;
+import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import javax.naming.InitialContext;
@@ -72,19 +75,21 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.io.DicomInputStream;
-import org.dcm4che2.io.SAXWriter;
 import org.dcm4che2.io.StopTagInputHandler;
 import org.dcm4che2.util.StringUtils;
 import org.dcm4chee.archive.entity.AE;
+import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.web.dao.AEHomeLocal;
+import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.service.common.JMSDelegate;
 import org.dcm4chee.web.service.common.RetryIntervalls;
+import org.dcm4chee.web.service.common.TemplatesDelegate;
 import org.dcm4chee.web.service.common.XSLTUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -106,6 +111,7 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
     private ObjectName tlscfgServiceName;
+    private ObjectName contentEditServiceName;
 
     private String[] receiver;
     private String sendingApplication, sendingFacility;
@@ -126,8 +132,32 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
     private String charsetName;
     
     private static final TransformerFactory tf = TransformerFactory.newInstance();
-    private Map<String, Templates> templates = new HashMap<String, Templates>();
+    private Map<String, Templates[]> templatesCache = new HashMap<String, Templates[]>();
 
+    private boolean oneORMperSPS;
+    protected TemplatesDelegate templatesDelegate = new TemplatesDelegate(this);
+    private String dcm2To14TplName;
+    private Templates dcm2To14Tpl;
+    
+    private final NotificationListener mppsLinkedListener = new NotificationListener() {
+        public void handleNotification(Notification notif, Object handback) {
+            try {
+                log.info("handle MPPS LINKED notification:"+notif);
+                HL7SendV2Service.this.scheduleMPPS2ORM((MppsToMwlLinkResult) notif.getUserData());
+            } catch (Throwable t) {
+                log.error("Can not handle 'MPPS linked' Notification! Ignored!");
+            }
+        }
+    };
+    public static final NotificationFilter MPPS_LINKED_FILTER =
+        new NotificationFilter() {          
+        private static final long serialVersionUID = 7625954422409724162L;
+
+        public boolean isNotificationEnabled(Notification notif) {
+            return MppsToMwlLinkResult.class.getName().equals(notif.getType());
+        }
+    };
+    
     public HL7SendV2Service() {
     }
 
@@ -155,6 +185,14 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
         this.sendingFacility = facility;
     }
 
+    public final String getConfigDir() {
+        return templatesDelegate.getConfigDir();
+    }
+
+    public final void setConfigDir(String path) {
+        templatesDelegate.setConfigDir(path);
+    }
+    
     public String getXslFilenames() {
         if (xslFilenames == null ) 
             return NONE;
@@ -169,7 +207,7 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
         if ( fn == null || NONE.equals(fn)) {
             xslFilenames = null;
         }
-        templates.clear();
+        templatesCache.clear();
         StringTokenizer st = new StringTokenizer(fn, " \r\n\t;");
         xslFilenames = new HashMap<String, String>(st.countTokens());
         String tk;
@@ -179,8 +217,9 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
             if (tk.length() == 0)
                 continue;
             pos = tk.indexOf('=');
-            if (pos != -1)
+            if (pos != -1) {
                 xslFilenames.put(tk.substring(0,pos).trim(), tk.substring(++pos).trim());
+            }
         }
         if (xslFilenames.size() < 1)
             xslFilenames = null;
@@ -202,6 +241,24 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
         this.retryIntervalls = new RetryIntervalls(s);
     }
 
+    public String getDcm2To14Tpl() {
+        return dcm2To14TplName;
+    }
+
+    public void setDcm2To14Tpl(String name) throws TransformerConfigurationException, MalformedURLException {
+        new URL(name);
+        dcm2To14Tpl = tf.newTemplates(new StreamSource(name));
+        dcm2To14TplName = name;
+    }
+
+    public boolean isOneORMperSPS() {
+        return oneORMperSPS;
+    }
+
+    public void setOneORMperSPS(boolean oneORMperSPS) {
+        this.oneORMperSPS = oneORMperSPS;
+    }
+    
     public int getAcceptTimeout() {
         return acTimeout;
     }
@@ -240,6 +297,14 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
         this.tlscfgServiceName = tlscfgServiceName;
     }
 
+    public ObjectName getContentEditServiceName() {
+        return contentEditServiceName;
+    }
+
+    public void setContentEditServiceName(ObjectName contentEditServiceName) {
+        this.contentEditServiceName = contentEditServiceName;
+    }
+
     public final int getConcurrency() {
         return concurrency;
     }
@@ -258,9 +323,11 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
 
     protected void startService() throws Exception {
         jmsDelegate.startListening(queueName, this, concurrency);
+        server.addNotificationListener(contentEditServiceName, mppsLinkedListener, MPPS_LINKED_FILTER, null);
     }
 
     protected void stopService() throws Exception {
+        server.removeNotificationListener(contentEditServiceName, mppsLinkedListener, MPPS_LINKED_FILTER, null);
         jmsDelegate.stopListening(queueName);
     }
 
@@ -297,15 +364,15 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
         DicomObject attrs = dis.readDicomObject();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         log.info("Dataset to transform to msgTypeID:"+msgTypeID+" attrs:\n"+attrs);
-        writeHL7Message(attrs, toTemplates(msgTypeID), null, receiver, new BufferedOutputStream(baos));
+        writeHL7Message(attrs, toTemplates(msgTypeID, receiver), null, receiver, new BufferedOutputStream(baos));
         return baos.toString(charsetName);
     }
     
-    private void writeHL7Message(DicomObject attrs, Templates tpl, Map<String,String> parameter,
+    private void writeHL7Message(DicomObject attrs, Templates[] tpls, Map<String,String> parameter,
             String receiver, OutputStream os) 
         throws TransformerConfigurationException, TransformerFactoryConfigurationError, InstanceNotFoundException, MBeanException, ReflectionException, SAXException, IOException {
-        TransformerHandler th = XSLTUtils.transformerFactory.newTransformerHandler(tpl);
-        Transformer t = th.getTransformer();
+        TransformerHandler[] thChain = XSLTUtils.toTransformerHandlerChain(tpls);
+        Transformer t = thChain[thChain.length-1].getTransformer();
         t.setOutputProperty(OutputKeys.METHOD, "text");
         t.setOutputProperty(OutputKeys.ENCODING, charsetName);
         t.setParameter("messageControlID", String.valueOf(++messageControlID) );
@@ -320,9 +387,7 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
                 t.setParameter(e.getKey(), e.getValue());
             }
         }
-        th.setResult(new StreamResult(os));
-        SAXWriter writer = new SAXWriter(th,null);
-        writer.write(attrs);
+        XSLTUtils.xslt(attrs, thChain, os);
     }
     
     private boolean sendDcmAsHL7Msg(DicomObject attrs, Map<String, String> parameter, String receiver, String msgTypeID) 
@@ -342,7 +407,7 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
         try {
             MLLPDriver mllpDriver = new MLLPDriver(s.getInputStream(), s
                     .getOutputStream(), true);
-            writeHL7Message(attrs, toTemplates(msgTypeID), parameter, receiver, mllpDriver.getOutputStream());
+            writeHL7Message(attrs, toTemplates(msgTypeID, receiver), parameter, receiver, mllpDriver.getOutputStream());
             mllpDriver.turn();
             if (acTimeout > 0) {
                 s.setSoTimeout(acTimeout);
@@ -364,22 +429,29 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
         }
     }
     
-    private Templates toTemplates(String msgTypeID) throws InstanceNotFoundException, MBeanException, ReflectionException, TransformerConfigurationException {
-        Templates tpl = templates.get(msgTypeID);
-        if (tpl == null) {
-            String url = xslFilenames.get(msgTypeID);
-            log.info("Get template for url:"+url);
-            if (url == null)
+    private Templates[] toTemplates(String msgTypeID, String receiver) throws InstanceNotFoundException, MBeanException, ReflectionException, TransformerConfigurationException {
+        Templates[] tpls = templatesCache.get(msgTypeID);
+        if (tpls == null) {
+            boolean dcm14Version = false;;
+            String xslName = xslFilenames.get(msgTypeID);
+            log.info("Get template for url:"+xslName);
+            if (xslName == null)
                 throw new IllegalArgumentException("Unknown msgTypeID! You need to map a XSL URL to msgTypeID:"+msgTypeID);
-            try {
-                URL url1 = new URL(url);
-            } catch (MalformedURLException e) {
-                log.error("Malformed URL!", e);
+            int pos = xslName.lastIndexOf('|');
+            if (pos != -1) {
+                dcm14Version = "|14".equals(xslName.substring(pos));
+                xslName = xslName.substring(0,pos);
             }
-            tpl = tf.newTemplates(new StreamSource(url));
-            templates.put(msgTypeID, tpl);
+            Templates tpl;
+            if (xslName.startsWith("resource:")) {
+                tpl = tf.newTemplates(new StreamSource(xslName));
+            } else {
+                tpl = this.templatesDelegate.getTemplatesForAET(receiver, xslName);
+            }
+            tpls = dcm14Version ? new Templates[]{dcm2To14Tpl, tpl} : new Templates[]{tpl};
+            templatesCache.put(msgTypeID, tpls);
         }
-        return tpl;
+        return tpls;
     }
 
     public boolean sendHL7File(String receiver, String filename) throws IOException, InstanceNotFoundException, MBeanException, ReflectionException, InterruptedException, GeneralSecurityException, SAXException {
@@ -495,6 +567,41 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
         } catch (Throwable e) {
             log.error("unexpected error during processing message: " + msg, e);
         }
+    }
+
+    public void scheduleMPPS2ORM(MppsToMwlLinkResult result) throws Exception {
+        List<MPPS> mppss = result.getMppss();
+        log.info("scheduleMPPS2ORM mppss:"+mppss);
+        for (MPPS mpps : mppss) {
+            scheduleMPPS2ORM( mpps );
+        }
+    }
+
+    private void scheduleMPPS2ORM(MPPS mpps) throws Exception {
+        DicomObject mppsAttrs = mpps.getAttributes();
+        DicomElement ssaSq = mppsAttrs.get(Tag.ScheduledStepAttributesSequence);
+        log.info("ScheduledStepAttributesSequence:"+ssaSq);
+        if (ssaSq == null || ssaSq.isEmpty()) {
+            log.error("Missing Scheduled Step Attributes Sequence in MPPS!\n"+mppsAttrs);
+            return;
+        }
+        if (oneORMperSPS) {
+            log.info("one ORM per SPS!");
+            DicomObject sps;
+            for (int i = 0, len = ssaSq.countItems() ; i < len ; i++) {
+                sps = ssaSq.getDicomObject(i);
+                mppsAttrs.putSequence(Tag.ScheduledStepAttributesSequence).addDicomObject(sps);
+                scheduleMPPS2ORM(mppsAttrs);
+            }
+        } else {
+            scheduleMPPS2ORM(mppsAttrs);
+        }
+        
+    }
+    
+    public void scheduleMPPS2ORM(DicomObject mppsAttrs) throws Exception {
+        log.info("schedule MPPS to ORM MEssage. mppsAttrs:"+mppsAttrs);
+        scheduleHL7Message(mppsAttrs, null, "mpps2orm");
     }
 
     private AEHomeLocal lookupAEHome() {

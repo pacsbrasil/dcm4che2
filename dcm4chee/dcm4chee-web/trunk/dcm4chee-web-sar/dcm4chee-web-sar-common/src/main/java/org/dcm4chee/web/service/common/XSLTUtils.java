@@ -95,19 +95,51 @@ public class XSLTUtils {
         if(tpls==null || tpls.length == 1) {
             xslt(attrs, tpls[0], out, parameter);
         }
-        TransformerHandler thIn = transformerFactory.newTransformerHandler(tpls[0]);
-        TransformerHandler thX1, thX2 = null;
-        thX1 = thIn;
-        setParameter(parameter, thIn.getTransformer());
-        for ( int i=1 ; i<tpls.length ; i++) {
-            thX2 = transformerFactory.newTransformerHandler(tpls[i]);
-            setParameter(parameter, thX2.getTransformer());
-            thX1.setResult(new SAXResult(thX2));
+        TransformerHandler[] thChain = toTransformerHandlerChain(tpls);
+        for ( int i=0 ; i<thChain.length ; i++) {
+            setParameter(parameter, thChain[i].getTransformer());
         }
-        ContentHandlerAdapter cha = new ContentHandlerAdapter(out);
-        thX2.setResult(new SAXResult(cha));
-        SAXWriter writer = new SAXWriter(thIn,null);
+        xslt(attrs, thChain, out);
+    }
+
+    public static void xslt(DicomObject attrs, Templates[] tpls, OutputStream out, Map<String,String> parameter) throws TransformerConfigurationException, SAXException, IOException {
+        if(tpls==null || tpls.length == 1) {
+            xslt(attrs, tpls[0], out, parameter);
+        }
+        TransformerHandler[] thChain = toTransformerHandlerChain(tpls);
+        for ( int i=0 ; i<thChain.length ; i++) {
+            setParameter(parameter, thChain[i].getTransformer());
+        }
+        xslt(attrs, thChain, out);
+    }
+
+    public static void xslt(DicomObject attrs, TransformerHandler[] thChain,
+            OutputStream out) throws SAXException, IOException {
+        thChain[thChain.length-1].setResult(new StreamResult(out));
+        SAXWriter writer = new SAXWriter(thChain[0],null);
         writer.write(attrs);
+    }
+    
+    public static void xslt(DicomObject attrs, TransformerHandler[] thChain,
+            DicomObject out) throws SAXException, IOException {
+        ContentHandlerAdapter cha = new ContentHandlerAdapter(out);
+        thChain[thChain.length-1].setResult(new SAXResult(cha));
+        SAXWriter writer = new SAXWriter(thChain[0],null);
+        writer.write(attrs);
+    }
+
+
+    public static TransformerHandler[] toTransformerHandlerChain(Templates[] tpls) throws TransformerConfigurationException, SAXException, IOException {
+        if(tpls==null || tpls.length < 1) {
+            return null;
+        }
+        TransformerHandler[] thChain = new TransformerHandler[tpls.length];
+        thChain[0] = transformerFactory.newTransformerHandler(tpls[0]);
+        for ( int i=1, prev=0 ; i<tpls.length ; i++,prev++) {
+            thChain[i] = transformerFactory.newTransformerHandler(tpls[i]);
+            thChain[prev].setResult(new SAXResult(thChain[i]));
+        }
+        return thChain;
     }
 
     private static void setParameter(Map<String, String> parameter,

@@ -185,21 +185,23 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
         Query qS = em.createQuery(sb.toString());
         QueryUtil.setParametersForIN(qS, mppsIuids);
         List<Series> seriess = (List<Series>) qS.getResultList();
-        DicomObject seriesAndStudyAttrs = null;
-        Study study = null;
-        for (Series s : seriess) {
-            seriesAndStudyAttrs = s.getAttributes(true);
-            study = s.getStudy();
-            seriesAndStudyAttrs.setParent(study.getAttributes(true));
-            seriesAndStudyAttrs.remove(Tag.RequestAttributesSequence);
-            log.info("Coerce SeriesAndStudy: orig:"+seriesAndStudyAttrs);
-            log.info("Coerce SeriesAndStudy: coerce:"+coerce);
-            coerceAttributes(seriesAndStudyAttrs, coerce, null);
-            log.info("Set coerced SeriesAndStudy: "+seriesAndStudyAttrs);
-            s.setAttributes(seriesAndStudyAttrs);
-            em.merge(s);
+        if (seriess.size() > 0) {
+            DicomObject seriesAndStudyAttrs = null;
+            Study study = null;
+            for (Series s : seriess) {
+                seriesAndStudyAttrs = s.getAttributes(true);
+                study = s.getStudy();
+                seriesAndStudyAttrs.setParent(study.getAttributes(true));
+                seriesAndStudyAttrs.remove(Tag.RequestAttributesSequence);
+                log.info("Coerce SeriesAndStudy: orig:"+seriesAndStudyAttrs);
+                log.info("Coerce SeriesAndStudy: coerce:"+coerce);
+                coerceAttributes(seriesAndStudyAttrs, coerce, null);
+                log.info("Set coerced SeriesAndStudy: "+seriesAndStudyAttrs);
+                s.setAttributes(seriesAndStudyAttrs);
+                em.merge(s);
+            }
+            study.setAttributes(seriesAndStudyAttrs);
         }
-        study.setAttributes(seriesAndStudyAttrs);
     }
 
     private void updateOriginalAttributeSequence(DicomObject attrs,
