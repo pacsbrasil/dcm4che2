@@ -2813,6 +2813,7 @@
   <status code="0121" name="Missing attribute value" type="Failure" key="MissingAttributeValue"/>
   <status code="0212" name="Mistyped argument" type="Failure" key="MistypedArgument"/>
   <status code="0114" name="No such argument" type="Failure" key="NoSuchArgument"/>
+  <status code="0105" name="No such attribute" type="Failure" key="NoSuchAttribute"/>
   <status code="0113" name="No such event type" type="Failure" key="NoSuchEventType"/>
   <status code="0112" name="No Such object instance" type="Failure" key="NoSuchObjectInstance"/>
   <status code="0118" name="No Such SOP class" type="Failure" key="NoSuchSOPClass"/>
