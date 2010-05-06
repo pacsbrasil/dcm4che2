@@ -69,6 +69,7 @@ import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.common.DeleteStudyOrdersAndMaxAccessTime;
 import org.dcm4chex.archive.common.FileSystemStatus;
+import org.dcm4chex.archive.common.IANAndPatientID;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
@@ -600,10 +601,16 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset createIANforStudy(String uid)
+    public IANAndPatientID createIANforStudy(String uid)
             throws FinderException, NoSuchStudyException {
         try {
-            return createIAN(studyHome.findByStudyIuid(uid));
+            StudyLocal study = studyHome.findByStudyIuid(uid);
+            Dataset styAttrs = study.getAttributes(false);
+            Dataset patAttrs = study.getPatient().getAttributes(false);
+            Dataset ian = createIAN(study);
+            return new IANAndPatientID(patAttrs.getString(Tags.PatientID),
+                    patAttrs.getString(Tags.PatientName),
+                    styAttrs.getString(Tags.StudyID), ian);
         } catch (ObjectNotFoundException e) {
             throw new NoSuchStudyException(e);
         }
@@ -660,10 +667,17 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset createIANforSeries(String uid) 
+    public IANAndPatientID createIANforSeries(String uid) 
             throws FinderException, NoSuchSeriesException {
         try {
-            return createIAN(seriesHome.findBySeriesIuid(uid));
+            SeriesLocal series = seriesHome.findBySeriesIuid(uid);
+            StudyLocal study = series.getStudy();
+            Dataset styAttrs = study.getAttributes(false);
+            Dataset patAttrs = study.getPatient().getAttributes(false);
+            Dataset ian = createIAN(series);
+            return new IANAndPatientID(patAttrs.getString(Tags.PatientID),
+                    patAttrs.getString(Tags.PatientName),
+                    styAttrs.getString(Tags.StudyID), ian);
         } catch (ObjectNotFoundException e) {
             throw new NoSuchSeriesException(e);
         }

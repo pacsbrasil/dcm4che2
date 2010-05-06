@@ -67,6 +67,7 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PresContext;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.IANAndPatientID;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.RetryIntervalls;
@@ -580,11 +581,13 @@ public class IANScuService extends AbstractScuService implements
     }
 
     public void scheduleIANforStudy(String uid) throws Exception { 
-        schedule(null, null, null, fileSystemMgt().createIANforStudy(uid));
+        IANAndPatientID ian = fileSystemMgt().createIANforStudy(uid);
+        schedule(ian.patid, ian.patname, ian.studyid, ian.ian);
     }
 
     public void scheduleIANforSeries(String uid) throws Exception {
-        schedule(null, null, null, fileSystemMgt().createIANforSeries(uid));
+        IANAndPatientID ian = fileSystemMgt().createIANforSeries(uid);
+        schedule(ian.patid, ian.patname, ian.studyid, ian.ian);
     }
 
     static FileSystemMgt2 fileSystemMgt() throws Exception {
