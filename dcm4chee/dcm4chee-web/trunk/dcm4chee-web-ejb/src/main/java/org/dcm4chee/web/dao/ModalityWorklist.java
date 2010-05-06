@@ -54,12 +54,10 @@ public interface ModalityWorklist {
 
     String JNDI_NAME = "dcm4chee-web-ear/ModalityWorklistBean/local";
 
-    List<MWLItem> findAll();
-
+    public List<MWLItem> findAll();
     public int countMWLItems(ModalityWorklistFilter filter);
-    
-    List<String> selectDistinctSourceAETs();
-    List<String> selectDistinctModalities();
-
-    List<MWLItem> findMWLItems(ModalityWorklistFilter filter, int pAGESIZE, int offset);
+    public List<String> selectDistinctModalities();
+    public List<MWLItem> findMWLItems(ModalityWorklistFilter filter, int pAGESIZE, int offset);
+    public List<String> selectDistinctStationAETs();
+    public List<String> selectDistinctStationNames();
 }

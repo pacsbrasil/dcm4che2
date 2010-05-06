@@ -39,8 +39,6 @@
 package org.dcm4chee.web.dao;
 
 import java.io.Serializable;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -52,32 +50,27 @@ public class ModalityWorklistFilter implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private String patientName = "*";
-    private String patientID = "*";
-    private String issuerOfPatientID = "*";
-    private String accessionNumber = "*";
+    private String patientName;
+    private String patientID;
+    private String issuerOfPatientID;
+    private String accessionNumber;
     private boolean extendedQuery;
-    private String studyInstanceUID = "*";
-    private String modality = "*";
-    private String scheduledStationAET = "*";
+    private String studyInstanceUID;
+    private String modality;
+    private String scheduledStationAET;
+    private String scheduledStationName;
     private boolean latestItemsFirst;
-
+    private String scheduledProcedureStepStatus;
+    
     private Date startDateMin;
     private Date startDateMax;
-
-    private Date birthDateMin;
-    private Date birthDateMax;
-
-    private static String nullToAsterisk(String s) {
-        return s == null ? "*" : s;
-    }
 
     public String getPatientName() {
         return patientName;
     }
 
     public void setPatientName(String patientName) {
-        this.patientName = nullToAsterisk(patientName);
+        this.patientName = patientName;
     }
 
     public String getPatientID() {
@@ -85,7 +78,7 @@ public class ModalityWorklistFilter implements Serializable {
     }
 
     public void setPatientID(String patientID) {
-        this.patientID = nullToAsterisk(patientID);
+        this.patientID = patientID;
     }
 
     public void setIssuerOfPatientID(String issuerOfPatientID) {
@@ -101,7 +94,7 @@ public class ModalityWorklistFilter implements Serializable {
     }
 
     public void setAccessionNumber(String accessionNumber) {
-        this.accessionNumber = nullToAsterisk(accessionNumber);
+        this.accessionNumber = accessionNumber;
     }
 
     public void setExtendedQuery(boolean extendedQuery) {
@@ -125,7 +118,7 @@ public class ModalityWorklistFilter implements Serializable {
     }
 
     public void setModality(String modality) {
-        this.modality = nullToAsterisk(modality);
+        this.modality = modality;
     }
    
     public boolean isLatestItemsFirst() {
@@ -137,11 +130,27 @@ public class ModalityWorklistFilter implements Serializable {
     }
 
     public String getScheduledStationAET() {
-        return this.scheduledStationAET;
+        return scheduledStationAET;
     }
     
-    public void setScheduledStationAET() {
-        this.scheduledStationAET = nullToAsterisk(scheduledStationAET);
+    public void setScheduledStationAET(String scheduledStationAET) {
+        this.scheduledStationAET = scheduledStationAET;
+    }
+
+    public String getScheduledStationName() {
+        return scheduledStationName;
+    }
+    
+    public void setScheduledStationName(String scheduledStationName) {
+        this.scheduledStationName = scheduledStationName;
+    }
+
+    public String getScheduledProcedureStepStatus() {
+        return scheduledProcedureStepStatus;
+    }
+
+    public void setScheduledProcedureStepStatus(String scheduledProcedureStepStatus) {
+        this.scheduledProcedureStepStatus = scheduledProcedureStepStatus;
     }
 
     public Date getStartDateMin() {
@@ -158,21 +167,5 @@ public class ModalityWorklistFilter implements Serializable {
 
     public void setStartDateMax(Date startDateMax) {
         this.startDateMax = startDateMax;
-    }
-
-    public Date getBirthDateMin() {
-        return null;
-    }
-
-    public void setBirthDateMin(Date birthDateMin) {
-        this.birthDateMin = birthDateMin;
-    }
-
-    public Date getBirthDateMax() {
-        return null;
-    }
-    
-    public void setBirthDateMax(Date birthDateMax) {
-        this.birthDateMax = birthDateMax;
     }
 }

@@ -39,9 +39,11 @@
 package org.dcm4chee.web.war.worklist.modality.model;
 
 import java.io.Serializable;
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.wicket.Session;
 import org.apache.wicket.model.IModel;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -97,7 +99,13 @@ public class MWLItemModel extends AbstractDicomModel implements Serializable {
         if (d == null) {
             d = spsItem.getDate(Tag.ScheduledProcedureStepStartDate, Tag.ScheduledProcedureStepStartTime);
         }
-        return d.toString();
+        ;
+        return d == null ? 
+                null : 
+                DateFormat.getDateTimeInstance(DateFormat.SHORT, 
+                                                DateFormat.SHORT, 
+                                                Session.get().getLocale()
+                                                ).format(d);
     }
 
     public String getScheduledProcedureStepID() {

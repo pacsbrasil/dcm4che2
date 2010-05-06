@@ -40,12 +40,13 @@ package org.dcm4chee.web.war.worklist.modality;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.extensions.yui.calendar.DatePicker;
+import org.apache.wicket.extensions.yui.calendar.DateTimeField;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -63,8 +64,10 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.dcm4chee.archive.common.SPSStatus;
 import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
@@ -95,7 +98,11 @@ public class ModalityWorklistPanel extends Panel {
     private static final String MODULE_NAME = "mw";
     private ViewPort viewport = ((WicketSession) getSession()).getMwViewPort();
     private List<String> modalities = new ArrayList<String>();
+    private List<String> scheduledStationAETs = new ArrayList<String>();
+    private List<String> scheduledStationNames = new ArrayList<String>();
+    private List<String> status = new ArrayList<String>();
     private boolean notSearched = true;
+
     public ModalityWorklistPanel(final String id) {
         super(id);
         
@@ -111,6 +118,9 @@ public class ModalityWorklistPanel extends Panel {
         addNavigation(form);
         form.add(new MWLItemListView("mwlitems", viewport.getMWLItemModels()));
         initModalities();
+        initStationAETs();
+        initStationNames();
+        initStatus();
     }
 
     private void addQueryFields(final ModalityWorklistFilter filter, BaseForm form) {
@@ -127,13 +137,19 @@ public class ModalityWorklistPanel extends Panel {
         form.addLabel("patientIDDescr");
         form.addLabeledTextField("patientID", enabledModel);
         form.addLabeledTextField("issuerOfPatientID", enabledModel);
+        
         form.addLabel("startDate");
-        form.addLabeledTextField("startDateMin", enabledModel).add(new DatePicker());
-        form.addLabeledTextField("startDateMax", enabledModel).add(new DatePicker());
+        form.addLabel("startDateMinLabel");
+        form.add((new DateTimeField("startDateMin", new PropertyModel<Date>(filter, "startDateMin"))));
+        form.addLabel("startDateMaxLabel");
+        form.add((new DateTimeField("startDateMax", new PropertyModel<Date>(filter, "startDateMax"))));
+
         form.addLabeledTextField("accessionNumber", enabledModel);
         addExtendedStudySearch(form);
         form.addLabeledDropDownChoice("modality", null, modalities);
-        form.addLabeledTextField("scheduledStationAET", enabledModel);
+        form.addLabeledDropDownChoice("scheduledStationAET", null, scheduledStationAETs);
+        form.addLabeledDropDownChoice("scheduledStationName", null, scheduledStationNames);
+        form.addLabeledDropDownChoice("scheduledProcedureStepStatus", null, status);
     }
 
     private void addQueryOptions(BaseForm form) {
@@ -248,14 +264,6 @@ public class ModalityWorklistPanel extends Panel {
         return extendedStudyFilter;
     }
 
-    private void initModalities() {
-        ModalityWorklist dao = (ModalityWorklist)
-                JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
-        modalities.clear();
-        modalities.add("*");
-        modalities.addAll(dao.selectDistinctModalities());
-    }
-
     private void queryMWLItems() {
 
         ModalityWorklist dao = (ModalityWorklist) JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
@@ -331,5 +339,36 @@ public class ModalityWorklistPanel extends Panel {
                 .add(new DicomObjectPanel("dicomobject", mwlItemModel.getDataset(), false)))
                 .setOutputMarkupId(true);
             }
-        }   
+      }
+  
+      private void initModalities() {
+          ModalityWorklist dao = (ModalityWorklist)
+                  JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
+          modalities.clear();
+          modalities.add("*");
+          modalities.addAll(dao.selectDistinctModalities());
+      }
+    
+      private void initStationAETs() {
+          ModalityWorklist dao = (ModalityWorklist)
+                  JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
+          scheduledStationAETs.clear();
+          scheduledStationAETs.add("*");
+          scheduledStationAETs.addAll(dao.selectDistinctStationAETs());
+      }
+
+      private void initStationNames() {
+          ModalityWorklist dao = (ModalityWorklist)
+                  JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
+          scheduledStationNames.clear();
+          scheduledStationNames.add("*");
+          scheduledStationNames.addAll(dao.selectDistinctStationNames());
+      }
+
+      private void initStatus() {
+          status.clear();
+          status.add("*");
+          for (SPSStatus spsStatus : SPSStatus.class.getEnumConstants())
+              status.add(spsStatus.toString());
+      }
 }

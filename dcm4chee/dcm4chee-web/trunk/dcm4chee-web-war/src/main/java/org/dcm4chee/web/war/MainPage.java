@@ -65,7 +65,6 @@ public class MainPage extends BaseWicketPage {
         selectorPanel.addModule(StudyListPage.class);
         selectorPanel.addModule(AEMgtPanel.class);
         selectorPanel.addModule(FileSystemPage.class);
-
         selectorPanel.addInstance(new UserListPanel("panel", ((WicketSession) getSession()).getUsername()));
         selectorPanel.addInstance(new DashboardPanel("panel"));
         selectorPanel.addInstance(new ModalityWorklistPanel("panel"));

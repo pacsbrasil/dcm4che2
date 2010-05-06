@@ -51,6 +51,7 @@ import javax.persistence.Query;
 import javax.persistence.TemporalType;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4chee.archive.common.SPSStatus;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.MWLItem;
@@ -99,51 +100,76 @@ public class ModalityWorklistBean implements ModalityWorklist {
         if (filter.isLatestItemsFirst()) {
             ql.append(" DESC");
         }
+
         Query query = em.createQuery(ql.toString());
         setQueryParameters(query, filter);
         return query.setMaxResults(max).setFirstResult(index).getResultList();
     }
 
     private static void appendFromClause(StringBuilder ql, ModalityWorklistFilter filter) {
-        if (ql.toString().startsWith("SELECT COUNT(*)"))
-            ql.append(" FROM MWLItem m LEFT JOIN m.patient p ");
-        else
-            ql.append(" FROM MWLItem m LEFT JOIN FETCH m.patient p ");
+        ql.append(ql.toString().startsWith("SELECT COUNT(*)") ?
+            " FROM MWLItem m LEFT JOIN m.patient p " : 
+            " FROM MWLItem m LEFT JOIN FETCH m.patient p "
+        );
     }
 
     private static void appendWhereClause(StringBuilder ql, ModalityWorklistFilter filter) {
         ql.append(" WHERE p.mergedWith IS NULL");
-        if ( !filter.isExtendedQuery() || "*".equals(filter.getStudyInstanceUID()) ) {
-            appendPatientNameFilter(ql, filter.getPatientName());
-            appendPatientIDFilter(ql, filter.getPatientID());
-            appendIssuerOfPatientIDFilter(ql, filter.getIssuerOfPatientID());
-            appendAccessionNumberFilter(ql, filter.getAccessionNumber());
+
+        if (!filter.isExtendedQuery()) {            
+            if (filter.getPatientName() != null)
+                appendPatientNameFilter(ql, filter.getPatientName());
+            if (filter.getPatientID() != null)
+                appendPatientIDFilter(ql, filter.getPatientID());
+            if (filter.getIssuerOfPatientID() != null)
+                appendIssuerOfPatientIDFilter(ql, filter.getIssuerOfPatientID());
+            if (filter.getAccessionNumber() != null)
+                appendAccessionNumberFilter(ql, filter.getAccessionNumber());
             if (filter.getStartDateMin() != null)
                 appendStartDateMinFilter(ql, filter.getStartDateMin());
             if (filter.getStartDateMax() != null)
                 appendStartDateMaxFilter(ql, filter.getStartDateMax());
+            if (filter.getModality() != null)        
+                appendModalityFilter(ql, filter.getModality());
+            if (filter.getScheduledStationAET() != null)        
+                appendScheduledStationAETFilter(ql, filter.getScheduledStationAET());
+            if (filter.getScheduledStationName() != null)
+                appendScheduledStationNameFilter(ql, filter.getScheduledStationName());
+            if (filter.getScheduledProcedureStepStatus() != null)
+                appendScheduledProcedureStepStatus(ql, filter.getScheduledProcedureStepStatus());
         } else {
-            ql.append(" AND m.studyInstanceUID = :studyInstanceUID");
-        }
-        appendModalityFilter(ql, filter.getModality());
-        appendscheduledStationAETFilter(ql, filter.getScheduledStationAET());
+            if (!"*".equals(filter.getStudyInstanceUID()))
+                ql.append(" AND m.studyInstanceUID = :studyInstanceUID");
+        }        
     }
     
     private static void setQueryParameters(Query query, ModalityWorklistFilter filter) {
-        if ( !filter.isExtendedQuery() || "*".equals(filter.getStudyInstanceUID()) ) {
-            setPatientNameQueryParameter(query, filter.getPatientName());
-            setPatientIDQueryParameter(query, filter.getPatientID());
-            setIssuerOfPatientIDQueryParameter(query, filter.getIssuerOfPatientID());
-            setAccessionNumberQueryParameter(query, filter.getAccessionNumber());           
+
+        if (!filter.isExtendedQuery()) {
+            if (filter.getPatientName() != null)
+                setPatientNameQueryParameter(query, filter.getPatientName());
+            if (filter.getPatientID() != null)
+                setPatientIDQueryParameter(query, filter.getPatientID());
+            if (filter.getIssuerOfPatientID() != null)
+                setIssuerOfPatientIDQueryParameter(query, filter.getIssuerOfPatientID());
+            if (filter.getAccessionNumber() != null)
+                setAccessionNumberQueryParameter(query, filter.getAccessionNumber());
             if (filter.getStartDateMin() != null)
                 setStartDateMinQueryParameter(query, filter.getStartDateMin());
             if (filter.getStartDateMax() != null)
                 setStartDateMaxQueryParameter(query, filter.getStartDateMax());
-        } else {
-            setStudyInstanceUIDQueryParameter(query, filter.getStudyInstanceUID());
+            if (filter.getModality() != null)
+                setModalityQueryParameter(query, filter.getModality());
+            if (filter.getScheduledStationAET() != null)
+                setScheduledStationAETQueryParameter(query, filter.getScheduledStationAET());
+            if (filter.getScheduledStationName() != null)
+                setScheduledStationNameQueryParameter(query, filter.getScheduledStationName());
+            if (filter.getScheduledProcedureStepStatus() != null)
+                setScheduledProcedureStepStatusQueryParameter(query, filter.getScheduledProcedureStepStatus());
+        } else {        
+            if (!"*".equals(filter.getStudyInstanceUID()))
+                setStudyInstanceUIDQueryParameter(query, filter.getStudyInstanceUID());
         }
-        setModalityQueryParameter(query, filter.getModality());
-        setscheduledStationAETQueryParameter(query, filter.getScheduledStationAET());
     }
 
     private static boolean containsWildcard(String s) {
@@ -186,8 +212,8 @@ public class ModalityWorklistBean implements ModalityWorklist {
         }
     }
 
-    private static void setPatientNameQueryParameter(Query query,
-            String patientName) {
+    private static void setPatientNameQueryParameter(Query query, String patientName) {
+
         if (!"*".equals(patientName)) {
             int padcarets = 4;
             StringBuilder param = new StringBuilder();
@@ -333,11 +359,10 @@ public class ModalityWorklistBean implements ModalityWorklist {
         }
     }
 
-
     private static void appendModalityFilter(StringBuilder ql,
             String modality) {
         if (!"*".equals(modality)) {
-            ql.append(" AND m.modality = :modality)");
+            ql.append(" AND m.modality = :modality");
         }
     }
 
@@ -348,17 +373,45 @@ public class ModalityWorklistBean implements ModalityWorklist {
         }
     }
 
-    private static void appendscheduledStationAETFilter(StringBuilder ql,
+    private static void appendScheduledStationAETFilter(StringBuilder ql,
             String scheduledStationAET) {
         if (!"*".equals(scheduledStationAET)) {
-            ql.append(" AND m.scheduledStationAET = :scheduledStationAET)");
+            ql.append(" AND m.scheduledStationAET = :scheduledStationAET");
         }
     }
 
-    private static void setscheduledStationAETQueryParameter(Query query,
+    private static void setScheduledStationAETQueryParameter(Query query,
             String scheduledStationAET) {
         if (!"*".equals(scheduledStationAET)) {
             query.setParameter("scheduledStationAET", scheduledStationAET);
+        }
+    }
+
+    private static void appendScheduledStationNameFilter(StringBuilder ql,
+            String scheduledStationName) {
+        if (!"*".equals(scheduledStationName)) {
+            ql.append(" AND m.scheduledStationName = :scheduledStationName");
+        }
+    }
+
+    private static void setScheduledStationNameQueryParameter(Query query,
+            String scheduledStationName) {
+        if (!"*".equals(scheduledStationName)) {
+            query.setParameter("scheduledStationName", scheduledStationName);
+        }
+    }
+
+    private static void appendScheduledProcedureStepStatus(StringBuilder ql,
+            String scheduledProcedureStepStatus) {
+        if (!"*".equals(scheduledProcedureStepStatus)) {
+            ql.append(" AND m.status = :scheduledProcedureStepStatus");
+        }
+    }
+
+    private static void setScheduledProcedureStepStatusQueryParameter(Query query,
+            String scheduledProcedureStepStatus) {        
+        if (!"*".equals(scheduledProcedureStepStatus)) {
+            query.setParameter("scheduledProcedureStepStatus", SPSStatus.valueOf(scheduledProcedureStepStatus));
         }
     }
 
@@ -372,14 +425,26 @@ public class ModalityWorklistBean implements ModalityWorklist {
     }
 
     @SuppressWarnings("unchecked")
-    public List<String> selectDistinctSourceAETs() {
-        return em.createQuery("SELECT DISTINCT m.scheduledStationAET FROM MWLItem m WHERE m.scheduledStationAET IS NOT NULL ORDER BY m.scheduledStationAET")
+    public List<String> selectDistinctModalities() {
+        return em.createQuery("SELECT DISTINCT m.modality FROM MWLItem m WHERE m.modality IS NOT NULL ORDER BY m.modality")
                 .getResultList();
     }
 
     @SuppressWarnings("unchecked")
-    public List<String> selectDistinctModalities() {
-        return em.createQuery("SELECT DISTINCT m.modality FROM MWLItem m WHERE m.modality IS NOT NULL ORDER BY m.modality")
+    public List<String> selectDistinctStationAETs() {
+        return em.createQuery("SELECT DISTINCT m.scheduledStationAET FROM MWLItem m WHERE m.scheduledStationAET IS NOT NULL ORDER BY m.scheduledStationAET")
+        .getResultList();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<String> selectDistinctStationNames() {
+        return em.createQuery("SELECT DISTINCT m.scheduledStationName FROM MWLItem m WHERE m.scheduledStationName IS NOT NULL ORDER BY m.scheduledStationName")
+        .getResultList();
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> selectDistinctStatus() {
+        return em.createQuery("SELECT DISTINCT m.status FROM MWLItem m WHERE m.status IS NOT NULL ORDER BY m.status")
                 .getResultList();
     }
 
