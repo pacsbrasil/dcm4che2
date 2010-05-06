@@ -62,8 +62,8 @@ public class MarkInvalidBehaviour extends AbstractBehavior
             FormComponent<?> fc = (FormComponent<?>)c;
             if (!fc.isValid()) {
                 FeedbackMessage fbMsg = fc.getFeedbackMessage();
-                msg = fbMsg != null ? msg = fbMsg.getMessage().toString() : "Value is not valid!";
-                fbMsg.markRendered();
+                msg = fbMsg != null ? msg = fbMsg.getMessage().toString() : "";
+                if (fbMsg != null) fbMsg.markRendered();
             }
         }
     }

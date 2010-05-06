@@ -39,6 +39,7 @@
 package org.dcm4chee.web.common.markup;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -47,6 +48,7 @@ import java.util.Set;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.behavior.IBehavior;
+import org.apache.wicket.extensions.yui.calendar.DateTimeField;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.DropDownChoice;
@@ -135,7 +137,22 @@ public class BaseForm extends Form<Object> {
         add(tf);
         return tf;
     }
-    
+
+    public DateTimeField addLabeledDateTimeField(String id, IModel<Date> model, final IModel<Boolean> enabledModel) {
+        DateTimeField dtf;
+        add((dtf = new DateTimeField(id, model) {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public boolean isEnabled() {
+                return enabledModel.getObject();
+            }
+        }));
+        addInternalLabel(id);
+        return dtf;
+    }
+
     public DropDownChoice<?> addLabeledDropDownChoice(String id, IModel<Object> model, List<String> values) {
         DropDownChoice<?> ch = model == null ? new DropDownChoice<Object>(id, values) :
                                             new DropDownChoice<Object>(id, model, values);
@@ -143,7 +160,31 @@ public class BaseForm extends Form<Object> {
         add(ch);
         return ch;
     }
-    
+
+    public DropDownChoice<?> addLabeledDropDownChoice(String id, IModel<Object> model, List<String> values, final IModel<Boolean> enabledModel) {
+        DropDownChoice<?> ch = model == null ? new DropDownChoice<Object>(id, values)  {
+
+                                                private static final long serialVersionUID = 1L;
+                                    
+                                                @Override
+                                                public boolean isEnabled() {
+                                                    return enabledModel.getObject();
+                                                }
+                                            } : 
+                                            new DropDownChoice<Object>(id, model, values) {
+
+                                                private static final long serialVersionUID = 1L;
+
+                                                @Override
+                                                public boolean isEnabled() {
+                                                    return enabledModel.getObject();
+                                                }
+                                            };
+        addInternalLabel(id);
+        add(ch);
+        return ch;
+    }
+
     public CheckBox addLabeledCheckBox(String id, IModel<Boolean> model) {
         CheckBox chk = model == null ? new CheckBox(id) :
                                             new CheckBox(id, model);

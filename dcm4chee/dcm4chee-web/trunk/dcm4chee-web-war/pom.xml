@@ -190,7 +190,6 @@
             <version>4.2.3.GA</version>
             <scope>test</scope>
         </dependency>
-
 	</dependencies>
 	<build>
 		<testResources>

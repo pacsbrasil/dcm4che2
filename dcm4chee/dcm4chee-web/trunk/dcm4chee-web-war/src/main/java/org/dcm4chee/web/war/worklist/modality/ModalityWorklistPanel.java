@@ -124,7 +124,7 @@ public class ModalityWorklistPanel extends Panel {
     }
 
     private void addQueryFields(final ModalityWorklistFilter filter, BaseForm form) {
-        IModel<Boolean> enabledModel = new AbstractReadOnlyModel<Boolean>(){
+        final IModel<Boolean> enabledModel = new AbstractReadOnlyModel<Boolean>(){
 
             private static final long serialVersionUID = 1L;
 
@@ -139,17 +139,15 @@ public class ModalityWorklistPanel extends Panel {
         form.addLabeledTextField("issuerOfPatientID", enabledModel);
         
         form.addLabel("startDate");
-        form.addLabel("startDateMinLabel");
-        form.add((new DateTimeField("startDateMin", new PropertyModel<Date>(filter, "startDateMin"))));
-        form.addLabel("startDateMaxLabel");
-        form.add((new DateTimeField("startDateMax", new PropertyModel<Date>(filter, "startDateMax"))));
+        form.addLabeledDateTimeField("startDateMin", new PropertyModel<Date>(filter, "startDateMin"), enabledModel);
+        form.addLabeledDateTimeField("startDateMax", new PropertyModel<Date>(filter, "startDateMax"), enabledModel);
 
         form.addLabeledTextField("accessionNumber", enabledModel);
         addExtendedStudySearch(form);
-        form.addLabeledDropDownChoice("modality", null, modalities);
-        form.addLabeledDropDownChoice("scheduledStationAET", null, scheduledStationAETs);
-        form.addLabeledDropDownChoice("scheduledStationName", null, scheduledStationNames);
-        form.addLabeledDropDownChoice("scheduledProcedureStepStatus", null, status);
+        form.addLabeledDropDownChoice("modality", null, modalities, enabledModel);
+        form.addLabeledDropDownChoice("scheduledStationAET", null, scheduledStationAETs, enabledModel);
+        form.addLabeledDropDownChoice("scheduledStationName", null, scheduledStationNames, enabledModel);
+        form.addLabeledDropDownChoice("scheduledProcedureStepStatus", null, status, enabledModel);
     }
 
     private void addQueryOptions(BaseForm form) {
