@@ -85,6 +85,9 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
             if ( selected.hasStudies()) {
                 moveToTrash("moveStudiesToTrash", toPks(selected.getStudies()));
             }
+            if ( selected.hasPPS()) {
+                moveToTrash("movePpsToTrash", toPks(selected.getPpss()));
+            }
             if ( selected.hasSeries()) {
                 moveToTrash("moveSeriesToTrash", toPks(selected.getSeries()));
             }

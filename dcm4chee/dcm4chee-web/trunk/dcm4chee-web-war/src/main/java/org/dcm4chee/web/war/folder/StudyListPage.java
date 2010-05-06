@@ -133,6 +133,7 @@ public class StudyListPage extends Panel {
         addActions(form);
         form.add(header);
         form.add(new PatientListView("patients", viewport.getPatients()));
+        msgWin.setTitle(MessageWindow.TITLE_WARNING);
         add(msgWin);
         initModalitiesAndSourceAETs();
     }
@@ -289,6 +290,8 @@ public class StudyListPage extends Panel {
                 log.info("Selected Entities:"+selected);
                 if (selected.hasDicomSelection()) {
                     confirmMove.confirm(target, new StringResourceModel("folder.confirmMove",this, null,new Object[]{selected}), selected);
+                } else {
+                    msgWin.show(target, getString("folder.noSelection"));
                 }
             }
         };
@@ -325,6 +328,8 @@ public class StudyListPage extends Panel {
                 log.info("Selected Entities: :"+selected);
                 if (selected.hasDicomSelection()) {
                     confirmDelete.confirm(target, new StringResourceModel("folder.confirmDelete",this, null,new Object[]{selected}), selected);
+                } else {
+                    msgWin.show(target, getString("folder.noSelection"));
                 }
             }
         };
