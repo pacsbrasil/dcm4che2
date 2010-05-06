@@ -439,7 +439,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         ds.setPrivateCreatorID(null);
         try {
             if (bb != null)
-                return StringUtils.split(new String(bb.array(), "UTF-8"), '\\');
+                return StringUtils.split(
+                        new String(bb.array(), "UTF-8").trim(), '\\');
         } catch (UnsupportedEncodingException ignore) {}
         return new String[]{};
     }
