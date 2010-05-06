@@ -43,6 +43,8 @@ import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.web.common.markup.modal.AutoOpenModalWindow;
 
@@ -60,7 +62,7 @@ public class MessageWindow extends AutoOpenModalWindow {
     public static final String TITLE_WARNING="msgwindow.title.warn";
     public static final String TITLE_ERROR="msgwindow.title.error";
     
-    private String msg;
+    private IModel<String> msgModel;
 
     public MessageWindow(String id) {
         super(id);
@@ -75,18 +77,18 @@ public class MessageWindow extends AutoOpenModalWindow {
     }
     
     public void setMessage(String msg) {
-        this.msg = msg;
+        this.msgModel = new Model<String>(msg);
     }
     public void setInfoMessage(String msg) {
-        this.msg = msg;
+        this.msgModel = new Model<String>(msg);
         setTitle(new ResourceModel(TITLE_INFO,TITLE_DEFAULT));
     }
     public void setWarningMessage(String msg) {
-        this.msg = msg;
+        this.msgModel = new Model<String>(msg);
         setTitle(new ResourceModel(TITLE_WARNING,TITLE_DEFAULT));
     }
     public void setErrorMessage(String msg) {
-        this.msg = msg;
+        this.msgModel = new Model<String>(msg);
         setTitle(new ResourceModel(TITLE_ERROR,TITLE_DEFAULT));
     }
     
@@ -96,7 +98,7 @@ public class MessageWindow extends AutoOpenModalWindow {
      * @return true when window should be opened. 
      */
     protected boolean needAutoOpen() {
-        return msg != null;
+        return msgModel != null;
     }
     
     @Override
@@ -106,7 +108,11 @@ public class MessageWindow extends AutoOpenModalWindow {
     }
 
     public void show(AjaxRequestTarget target, String msg){
-        this.msg = msg;
+        this.msgModel = new Model<String>(msg);
+        show(target);
+    }
+    public void show(AjaxRequestTarget target, IModel<String> msg){
+        this.msgModel = msg;
         show(target);
     }
 
@@ -121,7 +127,7 @@ public class MessageWindow extends AutoOpenModalWindow {
 
                 @Override
                 public String getObject() {
-                    return msg;
+                    return msgModel == null ? null : msgModel.getObject();
                 }
             }));
             add(new AjaxFallbackLink<Object>("close"){
@@ -144,7 +150,7 @@ public class MessageWindow extends AutoOpenModalWindow {
         }
         @Override
         protected void onAfterRender() {
-            msg = null;
+            msgModel = null;
             super.onAfterRender();
         }
     }   

@@ -133,8 +133,10 @@ public class EntityTree implements Serializable {
         } else {
             mapSeries = mapStudies.get(study);
         }
-        mapSeries.put(series, series.getInstances());
-        
+        Set<Instance> instances = series.getInstances();
+        mapSeries.put(series, instances);
+        if (instances != null)
+            allInstances.addAll(instances);
     }
 
     public void addStudy(Study study) {
@@ -146,10 +148,14 @@ public class EntityTree implements Serializable {
             entityTreeMap.put(pat, mapStudies);
         }
         mapStudies.put(study, mapSeries);
+        Set<Instance> instances;
         for (Series series : study.getSeries()) {
-            mapSeries.put(series, series.getInstances());
+            instances = series.getInstances();
+            mapSeries.put(series, instances);
+            allInstances.addAll(series.getInstances());
+            if (instances != null)
+                allInstances.addAll(instances);
         }
-        
     }
     
     public boolean isEmpty() {
