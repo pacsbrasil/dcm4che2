@@ -43,8 +43,8 @@ import java.util.List;
 
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.dao.AEHomeLocal;
-import org.dcm4chee.web.dao.FileSystemHomeLocal;
+import org.dcm4chee.web.dao.ae.AEHomeLocal;
+import org.dcm4chee.web.dao.fs.FileSystemHomeLocal;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>

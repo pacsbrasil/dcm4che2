@@ -67,15 +67,15 @@ import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4che2.util.StringUtils;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.dao.AEHomeLocal;
-import org.dcm4chee.web.dao.StudyListLocal;
+import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.dao.ae.AEHomeLocal;
+import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
-import org.dcm4chee.web.common.base.BaseWicketPage;
-import org.dcm4chee.web.common.markup.BaseForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -314,19 +314,6 @@ public class ExportPage extends BaseWicketPage {
             return requests;
         }
 
-        public int getNrOfPatients() {
-            return nrPat;
-        }
-        public int getNrOfStudies() {
-            return nrStudy;
-        }
-        public int getNrOfSeries() {
-            return nrSeries;
-        }
-        public int getNrOfInstances() {
-            return nrInstances;
-        }
-        
         public boolean hasSelection() {
             return (nrPat | nrStudy | nrSeries | nrInstances) != 0;
         }

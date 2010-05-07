@@ -38,8 +38,6 @@
 
 package org.dcm4chee.web.war.ae;
 
-import java.util.List;
-
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
 import org.slf4j.Logger;
@@ -69,17 +67,6 @@ public class EchoDelegate extends BaseMBeanDelegate {
             log.error(msg,x);
             return msg;
         }
-    }
-
-    private String toString(List<String> strings) {
-        if ( strings == null || strings.size() < 1)
-            return null;
-        StringBuilder sb = new StringBuilder();
-        for ( String s : strings ) {
-            sb.append(s).append(',');
-        }
-        sb.setLength(sb.length()-1);
-        return sb.toString();
     }
 
     @Override

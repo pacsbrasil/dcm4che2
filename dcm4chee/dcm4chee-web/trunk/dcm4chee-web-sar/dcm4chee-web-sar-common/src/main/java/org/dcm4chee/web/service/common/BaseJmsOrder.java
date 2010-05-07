@@ -40,8 +40,6 @@ package org.dcm4chee.web.service.common;
 
 import java.io.Serializable;
 
-import org.dcm4che2.data.DicomObject;
-
 /**
  * @author franz.willer@gmail.com
  * @version $Revision$ $Date$

@@ -8,8 +8,8 @@ import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.dcm4chee.archive.entity.FileSystem;
-import org.dcm4chee.web.dao.FileSystemHomeLocal;
 import org.dcm4chee.archive.util.JNDIUtils;
+import org.dcm4chee.web.dao.fs.FileSystemHomeLocal;
 
 public class FileSystemPage extends Panel {
 

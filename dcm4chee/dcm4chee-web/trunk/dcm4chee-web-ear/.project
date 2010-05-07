@@ -14,6 +14,9 @@
 		<project>dcm4chee-web-sar-movescu</project>
 		<project>dcm4chee-dashboard-sar</project>
 		<project>dcm4chee-web-war</project>
+		<project>dcm4chee-web-sar-echo</project>
+		<project>dcm4chee-web-sar-hl7send</project>
+		<project>dcm4chee-web-sar-bridge-store</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -85,7 +85,7 @@ import org.dcm4che2.io.StopTagInputHandler;
 import org.dcm4che2.util.StringUtils;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.entity.MPPS;
-import org.dcm4chee.web.dao.AEHomeLocal;
+import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.service.common.JMSDelegate;
 import org.dcm4chee.web.service.common.RetryIntervalls;

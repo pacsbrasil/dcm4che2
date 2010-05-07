@@ -72,6 +72,9 @@ public class FileImportOrder extends BaseJmsOrder {
     }
     
     public class FileAndHeader implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+        
         private File file;
         private DicomObject headerAttrs;
         

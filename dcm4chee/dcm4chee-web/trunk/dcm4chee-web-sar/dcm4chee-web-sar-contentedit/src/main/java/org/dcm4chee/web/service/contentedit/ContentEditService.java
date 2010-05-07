@@ -85,8 +85,8 @@ import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
-import org.dcm4chee.web.dao.DicomEditLocal;
-import org.dcm4chee.web.dao.MppsToMwlLinkLocal;
+import org.dcm4chee.web.dao.common.DicomEditLocal;
+import org.dcm4chee.web.dao.folder.MppsToMwlLinkLocal;
 import org.dcm4chee.web.dao.vo.EntityTree;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.service.common.FileImportOrder;
@@ -720,7 +720,6 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     public void logMppsLinkRecord(MppsToMwlLinkResult result ) {
         MWLItem mwl = result.getMwl();
-        DicomObject mwlAttrs = mwl.getAttributes();
         String accNr = mwl.getAccessionNumber();
         String spsId = mwl.getScheduledProcedureStepID();
         String studyIuid = mwl.getStudyInstanceUID();
@@ -870,23 +869,6 @@ public class ContentEditService extends ServiceMBeanSupport {
         return new ArrayList<DicomObject>();
     }
 
-    private ArrayList<DicomObject> processMoveRequests(EntityTree entityTree) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        if (moveDestinationAETs != null) {
-            ArrayList<DicomObject> ians = getIANs(entityTree, null);
-            for (DicomObject ian : ians) {
-                for (String aet : moveDestinationAETs) {
-                    log.info("Schedule move request for IAN:"+ian);
-                    server.invoke(moveScuServiceName, "scheduleMoveInstances", 
-                            new Object[]{ian, aet, null}, 
-                            new String[]{DicomObject.class.getName(), 
-                            String.class.getName(), Integer.class.getName()});
-                }
-            }
-            return ians;
-        }
-        return new ArrayList<DicomObject>();
-    }
-    
     public void sendJMXNotification(Object o) {
         if (log.isDebugEnabled()) {
             log.debug("Send JMX Notification: " + o);

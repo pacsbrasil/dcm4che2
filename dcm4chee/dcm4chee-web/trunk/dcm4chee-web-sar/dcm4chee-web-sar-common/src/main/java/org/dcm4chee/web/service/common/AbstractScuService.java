@@ -40,7 +40,6 @@ package org.dcm4chee.web.service.common;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.KeyStore;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -55,7 +54,7 @@ import org.dcm4che2.net.NetworkConnection;
 import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.web.dao.AEHomeLocal;
+import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.jboss.system.ServiceMBeanSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

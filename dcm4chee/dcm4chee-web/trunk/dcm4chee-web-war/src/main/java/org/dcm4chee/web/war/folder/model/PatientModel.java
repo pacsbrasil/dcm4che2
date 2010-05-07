@@ -49,9 +49,9 @@ import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.dao.StudyListLocal;
-import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.common.util.DateUtils;
+import org.dcm4chee.web.dao.folder.StudyListLocal;
+import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
