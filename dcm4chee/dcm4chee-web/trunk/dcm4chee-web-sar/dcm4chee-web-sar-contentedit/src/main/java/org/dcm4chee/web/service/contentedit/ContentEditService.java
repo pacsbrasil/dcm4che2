@@ -323,6 +323,19 @@ public class ContentEditService extends ServiceMBeanSupport {
         return rejNotes;
     }
 
+    public DicomObject[] movePpsToTrash(long[] pks) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        EntityTree entityTree = lookupDicomEditLocal().movePpsToTrash(pks);
+        if (entityTree.isEmpty())
+            return null;
+        DicomObject[] rejNotes = getRejectionNotes(entityTree);
+        for (DicomObject kos : rejNotes) {
+            logInstancesAccessed(kos, InstancesAccessedMessage.DELETE, true, "Deleted Series:");
+            processRejectionNote(kos);
+        }
+        processIANs(entityTree, Availability.UNAVAILABLE);
+        return rejNotes;
+    }
+    
     public DicomObject moveStudyToTrash(String iuid) throws InstanceNotFoundException, MBeanException, ReflectionException {
         EntityTree entityTree = lookupDicomEditLocal().moveStudyToTrash(iuid);
         if (entityTree.isEmpty())
@@ -369,37 +382,47 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public int moveInstancesToSeries(long[] instPks, long seriesPk) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        DicomObject targetAttrs = lookupDicomEditLocal().getCompositeObjectforSeries(seriesPk);
         EntityTree entityTree = lookupDicomEditLocal().moveInstancesToTrash(instPks);
-        processAfterMoveEntities(entityTree, lookupDicomEditLocal().getCompositeObjectforSeries(seriesPk));
+        processAfterMoveEntities(entityTree, targetAttrs);
         return entityTree.getAllInstances().size();
     }
 
     public int moveInstanceToSeries(String sopIUID, String seriesIUID) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        DicomObject targetAttrs = lookupDicomEditLocal().getCompositeObjectforSeries(seriesIUID);
         EntityTree entityTree = lookupDicomEditLocal().moveInstanceToTrash(sopIUID);
-        processAfterMoveEntities(entityTree, lookupDicomEditLocal().getCompositeObjectforSeries(seriesIUID));
+        processAfterMoveEntities(entityTree, targetAttrs);
         return entityTree.getAllInstances().size();
     }
     
     public int moveSeriesToStudy(long[] seriesPks, long studyPk) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        DicomObject targetAttrs = lookupDicomEditLocal().getCompositeObjectforStudy(studyPk);
         EntityTree entityTree = lookupDicomEditLocal().moveSeriesToTrash(seriesPks);
-        processAfterMoveEntities(entityTree, lookupDicomEditLocal().getCompositeObjectforStudy(studyPk));
+        processAfterMoveEntities(entityTree, targetAttrs);
         return entityTree.getAllInstances().size();
     }
 
     public int moveSeriesToStudy(String seriesIUID, String studyIUID) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        DicomObject targetAttrs = lookupDicomEditLocal().getCompositeObjectforStudy(studyIUID);
         EntityTree entityTree = lookupDicomEditLocal().moveSeriesToTrash(seriesIUID);
-        processAfterMoveEntities(entityTree, lookupDicomEditLocal().getCompositeObjectforStudy(studyIUID));
+        processAfterMoveEntities(entityTree, targetAttrs);
         return entityTree.getAllInstances().size();
     }
 
     public int moveStudiesToPatient(long[] studyPks, long patPk) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        EntityTree entityTree = lookupDicomEditLocal().moveStudiesToTrash(studyPks);
-        processAfterMoveEntities(entityTree, lookupDicomEditLocal().getPatientAttributes(patPk));
+        EntityTree entityTree = lookupDicomEditLocal().moveStudiesToPatient(studyPks, patPk);
+        if (!entityTree.isEmpty()) {
+            DicomObject kos = getRejectionNotes(entityTree)[0];
+            logInstancesAccessed(kos, InstancesAccessedMessage.UPDATE, true, "Studies moved to patient:");
+        }
         return entityTree.getAllInstances().size();
     }
     public int moveStudyToPatient(String studyIUID, String patId, String issuer) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        EntityTree entityTree = lookupDicomEditLocal().moveStudyToTrash(studyIUID);
-        processAfterMoveEntities(entityTree, lookupDicomEditLocal().getPatientAttributes(patId, issuer));
+        EntityTree entityTree = lookupDicomEditLocal().moveStudyToPatient(studyIUID, patId, issuer);
+        if (!entityTree.isEmpty()) {
+            DicomObject kos = getRejectionNotes(entityTree)[0];
+            logInstancesAccessed(kos, InstancesAccessedMessage.UPDATE, true, "Studies moved to patient:");
+        }
         return entityTree.getAllInstances().size();
     }
 
@@ -426,7 +449,6 @@ public class ContentEditService extends ServiceMBeanSupport {
                     studyAttrs = null;
                 } else {
                     studyAttrs = entry.getKey().getAttributes(false);
-                    studyAttrs.putString(Tag.StudyInstanceUID, VR.UI, UIDUtils.createUID());
                 }
                 for (Map.Entry<Series, Set<Instance>> seriesEntry : entry.getValue().entrySet()) {
                     if (targetAttrs.containsValue(Tag.SeriesInstanceUID)) {
