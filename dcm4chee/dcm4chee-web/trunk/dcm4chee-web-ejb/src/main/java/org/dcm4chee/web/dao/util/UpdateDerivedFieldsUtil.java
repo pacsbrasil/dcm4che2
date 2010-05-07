@@ -45,9 +45,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
-import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
@@ -110,12 +107,12 @@ public class UpdateDerivedFieldsUtil {
         if (study.getNumberOfStudyRelatedInstances() > 0) {
             Query qM = em.createQuery("SELECT DISTINCT s.modality FROM Study st, IN(st.series) s WHERE st.pk = :pk");
             qM.setParameter("pk", study.getPk());
-            List modalities = qM.getResultList();
+            List<?> modalities = qM.getResultList();
             if (modalities.remove(null))
                 log.warn("Study[iuid=" + study.getStudyInstanceUID()
                         + "] contains Series with unspecified Modality");
             if (!modalities.isEmpty()) {
-                Iterator it = modalities.iterator();
+                Iterator<?> it = modalities.iterator();
                 StringBuffer sb = new StringBuffer((String) it.next());
                 while (it.hasNext())
                     sb.append('\\').append(it.next());
