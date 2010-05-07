@@ -39,8 +39,10 @@
 package org.dcm4chee.web.dao.common;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.Stateless;
@@ -51,7 +53,9 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.MPPS;
@@ -124,9 +128,10 @@ public class DicomEditBean implements DicomEditLocal {
 
         }
         if (deleteInstance) {
+            removeInstancesFromMpps(instances);
             for (Study st : studies) {
                 getUpdateDerivedFieldsUtil().updateDerivedFieldsOfStudy(st);
-}
+            }
         }
         return entityTree == null ? new EntityTree(instances) : entityTree.addInstances(instances);
     }
@@ -156,11 +161,12 @@ public class DicomEditBean implements DicomEditLocal {
                 log.debug("move empty series to trash:{}",s.getSeriesInstanceUID());
                 this.moveSeriesToTrash(s);
             } else {
-                MPPS mpps = s.getModalityPerformedProcedureStep();
-                if (mpps!=null) mpps.getAccessionNumber();//initialize MPPS
                 entityTree = moveInstancesToTrash(instances, false, entityTree);
             }
+            MPPS mpps = s.getModalityPerformedProcedureStep();
+            if (mpps!=null) mpps.getAccessionNumber();//initialize MPPS
             if (deleteSeries) {
+                removeSeriesFromMPPS(mpps, s.getSeriesInstanceUID());
                 studies.add(study = s.getStudy());
                 em.remove(s);
                 study.getSeries().remove(s);
@@ -174,6 +180,19 @@ public class DicomEditBean implements DicomEditLocal {
         return entityTree == null ? new EntityTree() : entityTree;
     }
 
+    @SuppressWarnings("unchecked")
+    public EntityTree movePpsToTrash(long[] pks)
+    {
+        Query q = QueryUtil.getQueryForPks(em, "SELECT OBJECT(p) FROM MPPS p WHERE pk ", pks);
+        EntityTree tree = null;
+        List<MPPS> mppss = q.getResultList();
+        for(MPPS mpps : mppss) {
+            tree = moveSeriesToTrash(mpps.getSeries(), true, null);
+            em.remove(mpps);
+        }
+
+        return tree;
+    }
     @SuppressWarnings("unchecked")
     public EntityTree moveStudiesToTrash(long[] pks) {
         Query q = QueryUtil.getQueryForPks(em, "SELECT OBJECT(s) FROM Study s WHERE pk ", pks);
@@ -311,6 +330,37 @@ public class DicomEditBean implements DicomEditLocal {
         }
         return pPat;
     }
+
+    public EntityTree moveStudiesToPatient(long pks[], long pk)
+    {
+        Query qP = em.createQuery("SELECT OBJECT(p) FROM Patient p WHERE pk = :pk").setParameter("pk", Long.valueOf(pk));
+        Query qS = QueryUtil.getQueryForPks(em, "SELECT OBJECT(s) FROM Study s WHERE pk ", pks);
+        return moveStudiesToPatient(qS.getResultList(), (Patient)qP.getSingleResult());
+    }
+
+    public EntityTree moveStudyToPatient(String iuid, String patId, String issuer)
+    {
+        Query qS = em.createQuery("SELECT OBJECT(s) FROM Study s WHERE studyInstanceUID = :iuid").setParameter("iuid", iuid.trim());
+        Query qP = QueryUtil.getPatientQuery(em, patId, issuer);
+        return moveStudiesToPatient(qS.getResultList(), (Patient)qP.getSingleResult());
+    }
+
+    private EntityTree moveStudiesToPatient(List<Study> studies, Patient patient)
+    {
+        EntityTree tree = new EntityTree();
+        for(Study s : studies) {
+            tree.addStudy(s);
+            s.setPatient(patient);
+            for (Series series : s.getSeries()) {
+                MPPS mpps = series.getModalityPerformedProcedureStep();
+                if(mpps != null) {
+                    mpps.setPatient(patient);
+                    em.merge(mpps);
+                }
+            } 
+        }
+        return tree;
+    }
     
     public DicomObject getCompositeObjectforSeries(String iuid) {
         Query q = em.createQuery("SELECT OBJECT(s) FROM Series s WHERE seriesInstanceUID = :iuid")
@@ -351,5 +401,60 @@ public class DicomEditBean implements DicomEditLocal {
         Query q = em.createQuery("SELECT OBJECT(p) FROM Patient p WHERE pk = :pk").setParameter("pk", pk);
         return ((Patient)q.getSingleResult()).getAttributes();
     }
-    
+ 
+    private void removeSeriesFromMPPS(MPPS mpps, String seriesIUID) {
+        if(mpps != null && mpps.getAttributes() != null) {
+            DicomObject mppsAttrs = mpps.getAttributes();
+            removeFromMPPS(mppsAttrs, seriesIUID, null);
+            mpps.setAttributes(mppsAttrs);
+            em.merge(mpps);
+        }
+    }
+
+    private void removeFromMPPS(DicomObject mppsAttrs, String seriesIUID, Collection<String> sopIUIDs) {
+        DicomElement psSq = mppsAttrs.get(Tag.PerformedSeriesSequence);
+        for(int i = psSq.countItems() - 1; i >= 0; i--) {
+            DicomObject psItem = psSq.getDicomObject(i);
+            if(!seriesIUID.equals(psItem.getString(Tag.SeriesInstanceUID)))
+                continue;
+            if(sopIUIDs == null) {
+                psSq.removeDicomObject(i);
+                break;
+            }
+            DicomElement refImgSq = psItem.get(Tag.ReferencedImageSequence);
+            int j = refImgSq.countItems() - 1;
+            for(; i >= 0; i--) {
+                DicomObject refImgItem = refImgSq.getDicomObject(j);
+                if(sopIUIDs.contains(refImgItem.getString(Tag.ReferencedSOPInstanceUID)))
+                    refImgSq.removeDicomObject(j);
+            }
+        }
+    }
+
+    private void removeInstancesFromMpps(Collection<Instance> instances) {
+        Map<Series, Set<String>> map = new HashMap<Series, Set<String>>();
+        Set<String> iuidsPerSeries;
+        for(Instance i : instances)
+        {
+            Series s = i.getSeries();
+            iuidsPerSeries = (Set<String>)map.get(s);
+            if(iuidsPerSeries == null)
+            {
+                iuidsPerSeries = new HashSet<String>();
+                map.put(s, iuidsPerSeries);
+            }
+            iuidsPerSeries.add(i.getSOPInstanceUID());
+        }
+
+        for (Map.Entry<Series, Set<String>> entry : map.entrySet()) {
+            Series s = (Series)entry.getKey();
+            MPPS mpps = s.getModalityPerformedProcedureStep();
+            if(mpps != null && mpps.getAttributes() != null) {
+                DicomObject mppsAttrs = mpps.getAttributes();
+                removeFromMPPS(mppsAttrs, s.getSeriesInstanceUID(), entry.getValue());
+                mpps.setAttributes(mppsAttrs);
+                em.merge(mpps);
+            }
+        }
+    }
 }

@@ -57,11 +57,15 @@ public interface DicomEditLocal {
     EntityTree moveInstanceToTrash(String iuid);
     EntityTree moveSeriesToTrash(long[] pk);
     EntityTree moveSeriesToTrash(String iuid);
+    EntityTree movePpsToTrash(long[] pks);
     EntityTree moveStudiesToTrash(long[] pk);
     EntityTree moveStudyToTrash(String iuid);
     EntityTree movePatientsToTrash(long[] pk);
     EntityTree movePatientToTrash(String patId, String issuer);
     
+    EntityTree moveStudiesToPatient(long al[], long l);
+    EntityTree moveStudyToPatient(String s, String s1, String s2);
+
     DicomObject getCompositeObjectforSeries(String seriesIuid);
     DicomObject getCompositeObjectforSeries(long pk);
     DicomObject getCompositeObjectforStudy(String studyIuid);
