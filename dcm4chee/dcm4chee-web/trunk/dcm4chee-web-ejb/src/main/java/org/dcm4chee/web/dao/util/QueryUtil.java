@@ -99,5 +99,13 @@ public class QueryUtil {
         
     }
         
-    
+    public static String checkAutoWildcard(String s) {
+        if (s==null) return null;
+        s = s.trim();
+        if (s.length() == 0  || s.equals("*"))
+            return null;
+        if (s.indexOf('*')!=-1 || s.indexOf('?')!=-1 || s.indexOf('^')!=-1)
+            return s;
+        return s+'*';
+    }
 }
