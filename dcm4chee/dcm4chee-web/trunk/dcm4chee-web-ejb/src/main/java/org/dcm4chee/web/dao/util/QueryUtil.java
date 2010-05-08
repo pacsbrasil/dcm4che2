@@ -100,12 +100,16 @@ public class QueryUtil {
     }
         
     public static String checkAutoWildcard(String s) {
-        if (s==null) return null;
-        s = s.trim();
-        if (s.length() == 0  || s.equals("*"))
+        if (isUniversalMatch(s)) {
             return null;
-        if (s.indexOf('*')!=-1 || s.indexOf('?')!=-1 || s.indexOf('^')!=-1)
+        } else if (s.indexOf('*')!=-1 || s.indexOf('?')!=-1 || s.indexOf('^')!=-1) {
             return s;
-        return s+'*';
+        } else {
+            return s+'*';
+        } 
     }
+    public static boolean isUniversalMatch(String s) {
+        return s == null || s.length() == 0  || s.equals("*");
+    }
+
 }

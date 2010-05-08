@@ -58,6 +58,7 @@ import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
+import org.dcm4chee.web.dao.util.QueryUtil;
 import org.jboss.annotation.ejb.LocalBinding;
 
 /**
@@ -117,28 +118,18 @@ public class ModalityWorklistBean implements ModalityWorklist {
         ql.append(" WHERE p.mergedWith IS NULL");
 
         if (!filter.isExtendedQuery()) {            
-            if (filter.getPatientName() != null)
-                appendPatientNameFilter(ql, filter.getPatientName());
-            if (filter.getPatientID() != null)
-                appendPatientIDFilter(ql, filter.getPatientID());
-            if (filter.getIssuerOfPatientID() != null)
-                appendIssuerOfPatientIDFilter(ql, filter.getIssuerOfPatientID());
-            if (filter.getAccessionNumber() != null)
-                appendAccessionNumberFilter(ql, filter.getAccessionNumber());
-            if (filter.getStartDateMin() != null)
-                appendStartDateMinFilter(ql, filter.getStartDateMin());
-            if (filter.getStartDateMax() != null)
-                appendStartDateMaxFilter(ql, filter.getStartDateMax());
-            if (filter.getModality() != null)        
-                appendModalityFilter(ql, filter.getModality());
-            if (filter.getScheduledStationAET() != null)        
-                appendScheduledStationAETFilter(ql, filter.getScheduledStationAET());
-            if (filter.getScheduledStationName() != null)
-                appendScheduledStationNameFilter(ql, filter.getScheduledStationName());
-            if (filter.getScheduledProcedureStepStatus() != null)
-                appendScheduledProcedureStepStatus(ql, filter.getScheduledProcedureStepStatus());
+            appendPatientNameFilter(ql, filter.getPatientName());
+            appendPatientIDFilter(ql, filter.getPatientID());
+            appendIssuerOfPatientIDFilter(ql, filter.getIssuerOfPatientID());
+            appendAccessionNumberFilter(ql, filter.getAccessionNumber());
+            appendStartDateMinFilter(ql, filter.getStartDateMin());
+            appendStartDateMaxFilter(ql, filter.getStartDateMax());
+            appendModalityFilter(ql, filter.getModality());
+            appendScheduledStationAETFilter(ql, filter.getScheduledStationAET());
+            appendScheduledStationNameFilter(ql, filter.getScheduledStationName());
+            appendScheduledProcedureStepStatus(ql, filter.getScheduledProcedureStepStatus());
         } else {
-            if (!"*".equals(filter.getStudyInstanceUID()))
+            if (!QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()))
                 ql.append(" AND m.studyInstanceUID = :studyInstanceUID");
         }        
     }
@@ -146,28 +137,18 @@ public class ModalityWorklistBean implements ModalityWorklist {
     private static void setQueryParameters(Query query, ModalityWorklistFilter filter) {
 
         if (!filter.isExtendedQuery()) {
-            if (filter.getPatientName() != null)
-                setPatientNameQueryParameter(query, filter.getPatientName());
-            if (filter.getPatientID() != null)
-                setPatientIDQueryParameter(query, filter.getPatientID());
-            if (filter.getIssuerOfPatientID() != null)
-                setIssuerOfPatientIDQueryParameter(query, filter.getIssuerOfPatientID());
-            if (filter.getAccessionNumber() != null)
-                setAccessionNumberQueryParameter(query, filter.getAccessionNumber());
-            if (filter.getStartDateMin() != null)
-                setStartDateMinQueryParameter(query, filter.getStartDateMin());
-            if (filter.getStartDateMax() != null)
-                setStartDateMaxQueryParameter(query, filter.getStartDateMax());
-            if (filter.getModality() != null)
-                setModalityQueryParameter(query, filter.getModality());
-            if (filter.getScheduledStationAET() != null)
-                setScheduledStationAETQueryParameter(query, filter.getScheduledStationAET());
-            if (filter.getScheduledStationName() != null)
-                setScheduledStationNameQueryParameter(query, filter.getScheduledStationName());
-            if (filter.getScheduledProcedureStepStatus() != null)
-                setScheduledProcedureStepStatusQueryParameter(query, filter.getScheduledProcedureStepStatus());
+            setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+            setPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientID()));
+            setIssuerOfPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
+            setAccessionNumberQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
+            setStartDateMinQueryParameter(query, filter.getStartDateMin());
+            setStartDateMaxQueryParameter(query, filter.getStartDateMax());
+            setModalityQueryParameter(query, filter.getModality());
+            setScheduledStationAETQueryParameter(query, filter.getScheduledStationAET());
+            setScheduledStationNameQueryParameter(query, filter.getScheduledStationName());
+            setScheduledProcedureStepStatusQueryParameter(query, filter.getScheduledProcedureStepStatus());
         } else {        
-            if (!"*".equals(filter.getStudyInstanceUID()))
+            if (!QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()))
                 setStudyInstanceUIDQueryParameter(query, filter.getStudyInstanceUID());
         }
     }
@@ -207,14 +188,14 @@ public class ModalityWorklistBean implements ModalityWorklist {
 
     private static void appendPatientNameFilter(StringBuilder ql,
             String patientName) {
-        if (!"*".equals(patientName)) {
+        if (patientName!=null) {
             ql.append(" AND p.patientName LIKE :patientName");
         }
     }
 
     private static void setPatientNameQueryParameter(Query query, String patientName) {
 
-        if (!"*".equals(patientName)) {
+        if (patientName!=null) {
             int padcarets = 4;
             StringBuilder param = new StringBuilder();
             StringTokenizer tokens = new StringTokenizer(patientName.toUpperCase(),
@@ -251,7 +232,7 @@ public class ModalityWorklistBean implements ModalityWorklist {
 
     private static void appendPatientIDFilter(StringBuilder ql,
             String patientID) {
-        if (!"*".equals(patientID)) {
+        if (patientID!=null) {
             ql.append(containsWildcard(patientID)
                     ? " AND p.patientID LIKE :patientID"
                     : " AND p.patientID = :patientID");
@@ -260,7 +241,7 @@ public class ModalityWorklistBean implements ModalityWorklist {
 
     private static void setPatientIDQueryParameter(Query query,
             String patientID) {
-        if (!"*".equals(patientID)) {
+        if (patientID!=null) {
             query.setParameter("patientID", containsWildcard(patientID) 
                     ? toLike(patientID)
                     : patientID);
@@ -269,7 +250,7 @@ public class ModalityWorklistBean implements ModalityWorklist {
 
     private static void appendIssuerOfPatientIDFilter(StringBuilder ql,
             String issuerOfPatientID) {
-        if (!"*".equals(issuerOfPatientID)) {
+        if (issuerOfPatientID!=null) {
             ql.append("-".equals(issuerOfPatientID)
                     ? " AND p.issuerOfPatientID IS NULL" 
                     : isMustNotNull(issuerOfPatientID)
@@ -282,7 +263,7 @@ public class ModalityWorklistBean implements ModalityWorklist {
 
     private static void setIssuerOfPatientIDQueryParameter(Query query,
             String issuerOfPatientID) {
-        if (!"*".equals(issuerOfPatientID)
+        if (issuerOfPatientID!=null
                 && !"-".equals(issuerOfPatientID)
                 && !isMustNotNull(issuerOfPatientID)) {
             query.setParameter("issuerOfPatientID",
@@ -329,7 +310,7 @@ public class ModalityWorklistBean implements ModalityWorklist {
 
     private static void appendAccessionNumberFilter(StringBuilder ql,
             String accessionNumber) {
-        if (!"*".equals(accessionNumber)) {
+        if (accessionNumber!=null) {
             ql.append("-".equals(accessionNumber)
                     ? " AND m.accessionNumber IS NULL"
                     : isMustNotNull(accessionNumber)
@@ -342,7 +323,7 @@ public class ModalityWorklistBean implements ModalityWorklist {
 
     private static void setAccessionNumberQueryParameter(Query query,
             String accessionNumber) {
-        if (!"*".equals(accessionNumber)
+        if (accessionNumber!=null
                 && !"-".equals(accessionNumber)
                 && !isMustNotNull(accessionNumber)) {
             query.setParameter("accessionNumber",
@@ -354,63 +335,63 @@ public class ModalityWorklistBean implements ModalityWorklist {
 
     private static void setStudyInstanceUIDQueryParameter(Query query,
             String studyInstanceUID) {
-        if (!"*".equals(studyInstanceUID)) {
+        if (!QueryUtil.isUniversalMatch(studyInstanceUID)) {
             query.setParameter("studyInstanceUID", studyInstanceUID);
         }
     }
 
     private static void appendModalityFilter(StringBuilder ql,
             String modality) {
-        if (!"*".equals(modality)) {
+        if (!QueryUtil.isUniversalMatch(modality)) {
             ql.append(" AND m.modality = :modality");
         }
     }
 
     private static void setModalityQueryParameter(Query query,
             String modality) {
-        if (!"*".equals(modality)) {
+        if (!QueryUtil.isUniversalMatch(modality)) {
             query.setParameter("modality", modality);
         }
     }
 
     private static void appendScheduledStationAETFilter(StringBuilder ql,
             String scheduledStationAET) {
-        if (!"*".equals(scheduledStationAET)) {
+        if (!QueryUtil.isUniversalMatch(scheduledStationAET)) {
             ql.append(" AND m.scheduledStationAET = :scheduledStationAET");
         }
     }
 
     private static void setScheduledStationAETQueryParameter(Query query,
             String scheduledStationAET) {
-        if (!"*".equals(scheduledStationAET)) {
+        if (!QueryUtil.isUniversalMatch(scheduledStationAET)) {
             query.setParameter("scheduledStationAET", scheduledStationAET);
         }
     }
 
     private static void appendScheduledStationNameFilter(StringBuilder ql,
             String scheduledStationName) {
-        if (!"*".equals(scheduledStationName)) {
+        if (!QueryUtil.isUniversalMatch(scheduledStationName)) {
             ql.append(" AND m.scheduledStationName = :scheduledStationName");
         }
     }
 
     private static void setScheduledStationNameQueryParameter(Query query,
             String scheduledStationName) {
-        if (!"*".equals(scheduledStationName)) {
+        if (!QueryUtil.isUniversalMatch(scheduledStationName)) {
             query.setParameter("scheduledStationName", scheduledStationName);
         }
     }
 
     private static void appendScheduledProcedureStepStatus(StringBuilder ql,
             String scheduledProcedureStepStatus) {
-        if (!"*".equals(scheduledProcedureStepStatus)) {
+        if (!QueryUtil.isUniversalMatch(scheduledProcedureStepStatus)) {
             ql.append(" AND m.status = :scheduledProcedureStepStatus");
         }
     }
 
     private static void setScheduledProcedureStepStatusQueryParameter(Query query,
             String scheduledProcedureStepStatus) {        
-        if (!"*".equals(scheduledProcedureStepStatus)) {
+        if (!QueryUtil.isUniversalMatch(scheduledProcedureStepStatus)) {
             query.setParameter("scheduledProcedureStepStatus", SPSStatus.valueOf(scheduledProcedureStepStatus));
         }
     }

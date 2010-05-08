@@ -56,6 +56,7 @@ import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
+import org.dcm4chee.web.dao.util.QueryUtil;
 import org.jboss.annotation.ejb.LocalBinding;
 
 /**
@@ -104,14 +105,14 @@ public class StudyListBean implements StudyListLocal {
     private static void appendWhereClause(StringBuilder ql,
             StudyListFilter filter) {
         ql.append(" WHERE p.mergedWith IS NULL");
-        if ( !filter.isExtendedStudyQuery() || "*".equals(filter.getStudyInstanceUID()) ) {
-            appendPatientNameFilter(ql, filter.getPatientName());
-            appendPatientIDFilter(ql, filter.getPatientID());
-            appendIssuerOfPatientIDFilter(ql, filter.getIssuerOfPatientID());
+        if ( !filter.isExtendedStudyQuery() || QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()) ) {
+            appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+            appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID()));
+            appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
             if ( filter.isExtendedPatQuery()) {
                 appendPatientBirthDateFilter(ql, filter.getBirthDateMin(), filter.getBirthDateMax());
             }
-            appendAccessionNumberFilter(ql, filter.getAccessionNumber());
+            appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
             appendStudyDateMinFilter(ql, filter.getStudyDateMin());
             appendStudyDateMaxFilter(ql, filter.getStudyDateMax());
         } else {
@@ -122,14 +123,14 @@ public class StudyListBean implements StudyListLocal {
     }
 
     private static void setQueryParameters(Query query, StudyListFilter filter) {
-        if ( !filter.isExtendedStudyQuery() || "*".equals(filter.getStudyInstanceUID()) ) {
-            setPatientNameQueryParameter(query, filter.getPatientName());
-            setPatientIDQueryParameter(query, filter.getPatientID());
-            setIssuerOfPatientIDQueryParameter(query, filter.getIssuerOfPatientID());
+        if ( !filter.isExtendedStudyQuery() || QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()) ) {
+            setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+            setPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientID()));
+            setIssuerOfPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
             if ( filter.isExtendedPatQuery()) {
                 setPatientBirthDateQueryParameter(query, filter.getBirthDateMin(), filter.getBirthDateMax());
             }
-            setAccessionNumberQueryParameter(query, filter.getAccessionNumber());
+            setAccessionNumberQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
             setStudyDateMinQueryParameter(query, filter.getStudyDateMin());
             setStudyDateMaxQueryParameter(query, filter.getStudyDateMax());
         } else {
@@ -174,14 +175,14 @@ public class StudyListBean implements StudyListLocal {
 
     private static void appendPatientNameFilter(StringBuilder ql,
             String patientName) {
-        if (!"*".equals(patientName)) {
+        if (patientName!=null) {
             ql.append(" AND p.patientName LIKE :patientName");
         }
     }
 
     private static void setPatientNameQueryParameter(Query query,
             String patientName) {
-        if (!"*".equals(patientName)) {
+        if (patientName!=null) {
             int padcarets = 4;
             StringBuilder param = new StringBuilder();
             StringTokenizer tokens = new StringTokenizer(patientName.toUpperCase(),
@@ -218,7 +219,7 @@ public class StudyListBean implements StudyListLocal {
 
     private static void appendPatientIDFilter(StringBuilder ql,
             String patientID) {
-        if (!"*".equals(patientID)) {
+        if (patientID!=null) {
             ql.append(containsWildcard(patientID)
                     ? " AND p.patientID LIKE :patientID"
                     : " AND p.patientID = :patientID");
@@ -227,7 +228,7 @@ public class StudyListBean implements StudyListLocal {
 
     private static void setPatientIDQueryParameter(Query query,
             String patientID) {
-        if (!"*".equals(patientID)) {
+        if (patientID!=null) {
             query.setParameter("patientID", containsWildcard(patientID) 
                     ? toLike(patientID)
                     : patientID);
@@ -236,7 +237,7 @@ public class StudyListBean implements StudyListLocal {
 
     private static void appendIssuerOfPatientIDFilter(StringBuilder ql,
             String issuerOfPatientID) {
-        if (!"*".equals(issuerOfPatientID)) {
+        if (issuerOfPatientID!=null) {
             ql.append("-".equals(issuerOfPatientID)
                     ? " AND p.issuerOfPatientID IS NULL" 
                     : isMustNotNull(issuerOfPatientID)
@@ -249,7 +250,7 @@ public class StudyListBean implements StudyListLocal {
 
     private static void setIssuerOfPatientIDQueryParameter(Query query,
             String issuerOfPatientID) {
-        if (!"*".equals(issuerOfPatientID)
+        if (issuerOfPatientID!=null
                 && !"-".equals(issuerOfPatientID)
                 && !isMustNotNull(issuerOfPatientID)) {
             query.setParameter("issuerOfPatientID",
@@ -261,22 +262,22 @@ public class StudyListBean implements StudyListLocal {
 
     private static void appendPatientBirthDateFilter(StringBuilder ql,
             String minDate, String maxDate) {
-        if (!"*".equals(minDate)) {
-            if ("*".equals(maxDate)) {
+        if (minDate!=null) {
+            if (maxDate==null) {
                 ql.append(" AND p.patientBirthDate >= :birthdateMin");
             } else {
                 ql.append(" AND p.patientBirthDate BETWEEN :birthdateMin AND :birthdateMax");
                 
             }
-        } else if ( !"*".equals(maxDate)) {
+        } else if (maxDate!=null) {
             ql.append(" AND p.patientBirthDate <= :birthdateMax");
         }
     }
     private static void setPatientBirthDateQueryParameter(Query query,
             String minDate, String maxDate) {
-        if ( !"*".equals(minDate))
+        if ( minDate!=null)
             query.setParameter("birthdateMin", normalizeDate(minDate));
-        if ( !"*".equals(maxDate))
+        if ( maxDate!=null)
             query.setParameter("birthdateMax", normalizeDate(maxDate));
     }
 
@@ -286,14 +287,14 @@ public class StudyListBean implements StudyListLocal {
 
     private static void appendStudyDateMinFilter(StringBuilder ql,
             String studyDate) {
-        if (!"*".equals(studyDate)) {
+        if (studyDate!=null) {
             ql.append(" AND s.studyDateTime >= :studyDateTimeMin");
         }
     }
 
     private static void appendStudyDateMaxFilter(StringBuilder ql,
             String studyDate) {
-        if (!"*".equals(studyDate)) {
+        if (studyDate!=null) {
             ql.append(" AND s.studyDateTime <= :studyDateTimeMax");
         }
     }
@@ -310,7 +311,7 @@ public class StudyListBean implements StudyListLocal {
 
     private static void setStudyDateQueryParameter(Query query,
             String studyDate, String param, boolean max) {
-        if (!"*".equals(studyDate)) {
+        if (studyDate != null && !"*".equals(studyDate)) {
             int year = Integer.parseInt(studyDate.substring(0,4));
             int month = Integer.parseInt(studyDate.substring(5,7))-1;
             int day = Integer.parseInt(studyDate.substring(8,10));
@@ -327,7 +328,7 @@ public class StudyListBean implements StudyListLocal {
 
     private static void appendAccessionNumberFilter(StringBuilder ql,
             String accessionNumber) {
-        if (!"*".equals(accessionNumber)) {
+        if (accessionNumber!=null) {
             ql.append("-".equals(accessionNumber)
                     ? " AND s.accessionNumber IS NULL"
                     : isMustNotNull(accessionNumber)
@@ -340,7 +341,7 @@ public class StudyListBean implements StudyListLocal {
 
     private static void setAccessionNumberQueryParameter(Query query,
             String accessionNumber) {
-        if (!"*".equals(accessionNumber)
+        if (accessionNumber!=null
                 && !"-".equals(accessionNumber)
                 && !isMustNotNull(accessionNumber)) {
             query.setParameter("accessionNumber",
@@ -352,7 +353,7 @@ public class StudyListBean implements StudyListLocal {
 
     private static void setStudyInstanceUIDQueryParameter(Query query,
             String studyInstanceUID) {
-        if (!"*".equals(studyInstanceUID)) {
+        if (!QueryUtil.isUniversalMatch(studyInstanceUID)) {
             query.setParameter("studyInstanceUID", studyInstanceUID);
         }
     }
@@ -360,28 +361,28 @@ public class StudyListBean implements StudyListLocal {
 
     private static void appendModalityFilter(StringBuilder ql,
             String modality) {
-        if (!"*".equals(modality)) {
+        if (!QueryUtil.isUniversalMatch(modality)) {
             ql.append(" AND EXISTS (SELECT ser FROM s.series ser WHERE ser.modality = :modality)");
         }
     }
 
     private static void setModalityQueryParameter(Query query,
             String modality) {
-        if (!"*".equals(modality)) {
+        if (!QueryUtil.isUniversalMatch(modality)) {
             query.setParameter("modality", modality);
         }
     }
 
     private static void appendSourceAETFilter(StringBuilder ql,
             String sourceAET) {
-        if (!"*".equals(sourceAET)) {
+        if (!QueryUtil.isUniversalMatch(sourceAET)) {
             ql.append(" AND EXISTS (SELECT ser FROM s.series ser WHERE ser.sourceAET = :sourceAET)");
         }
     }
 
     private static void setSourceAETQueryParameter(Query query,
             String sourceAET) {
-        if (!"*".equals(sourceAET)) {
+        if (!QueryUtil.isUniversalMatch(sourceAET)) {
             query.setParameter("sourceAET", sourceAET);
         }
     }

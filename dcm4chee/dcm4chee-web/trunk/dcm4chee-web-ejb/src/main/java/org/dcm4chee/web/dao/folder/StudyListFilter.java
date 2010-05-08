@@ -49,32 +49,28 @@ public class StudyListFilter implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private String patientName = "*";
-    private String patientID = "*";
-    private String issuerOfPatientID = "*";
+    private String patientName;
+    private String patientID;
+    private String issuerOfPatientID;
     private boolean extendedPatQuery;
-    private String birthDateMin = "*";
-    private String birthDateMax = "*";
-    private String accessionNumber = "*";
-    private String studyDateMin = "*";
-    private String studyDateMax = "*";
+    private String birthDateMin;
+    private String birthDateMax;
+    private String accessionNumber;
+    private String studyDateMin;
+    private String studyDateMax;
     private boolean extendedStudyQuery;
-    private String studyInstanceUID = "*";
-    private String modality = "*";
-    private String sourceAET = "*";
+    private String studyInstanceUID;
+    private String modality;
+    private String sourceAET;
     private boolean patientsWithoutStudies;
     private boolean latestStudiesFirst;
-
-    private static String nullToAsterisk(String s) {
-        return s == null ? "*" : s;
-    }
 
     public String getPatientName() {
         return patientName;
     }
 
     public void setPatientName(String patientName) {
-        this.patientName = nullToAsterisk(patientName);
+        this.patientName = patientName;
     }
 
     public String getPatientID() {
@@ -82,7 +78,7 @@ public class StudyListFilter implements Serializable {
     }
 
     public void setPatientID(String patientID) {
-        this.patientID = nullToAsterisk(patientID);
+        this.patientID = patientID;
     }
 
     public String getIssuerOfPatientID() {
@@ -90,7 +86,7 @@ public class StudyListFilter implements Serializable {
     }
 
     public void setIssuerOfPatientID(String issuerOfPatientID) {
-        this.issuerOfPatientID = nullToAsterisk(issuerOfPatientID);
+        this.issuerOfPatientID = issuerOfPatientID;
     }
 
     public boolean isExtendedPatQuery() {
@@ -106,7 +102,7 @@ public class StudyListFilter implements Serializable {
     }
 
     public void setBirthDateMin(String birthdateMin) {
-        this.birthDateMin = nullToAsterisk(birthdateMin);
+        this.birthDateMin = birthdateMin;
     }
 
     public String getBirthDateMax() {
@@ -114,7 +110,7 @@ public class StudyListFilter implements Serializable {
     }
 
     public void setBirthDateMax(String birthdateMax) {
-        this.birthDateMax = nullToAsterisk(birthdateMax);
+        this.birthDateMax = birthdateMax;
     }
 
     public String getAccessionNumber() {
@@ -122,7 +118,7 @@ public class StudyListFilter implements Serializable {
     }
 
     public void setAccessionNumber(String accessionNumber) {
-        this.accessionNumber = nullToAsterisk(accessionNumber);
+        this.accessionNumber = accessionNumber;
     }
 
     public String getStudyDateMin() {
@@ -130,7 +126,7 @@ public class StudyListFilter implements Serializable {
     }
 
     public void setStudyDateMin(String studyDate) {
-        this.studyDateMin = nullToAsterisk(studyDate);
+        this.studyDateMin = studyDate;
     }
 
     public String getStudyDateMax() {
@@ -138,7 +134,7 @@ public class StudyListFilter implements Serializable {
     }
 
     public void setStudyDateMax(String studyDate) {
-        this.studyDateMax = nullToAsterisk(studyDate);
+        this.studyDateMax = studyDate;
     }
 
     public boolean isExtendedStudyQuery() {
@@ -154,7 +150,7 @@ public class StudyListFilter implements Serializable {
     }
 
     public void setStudyInstanceUID(String studyInstanceUID) {
-        this.studyInstanceUID = nullToAsterisk(studyInstanceUID);
+        this.studyInstanceUID = studyInstanceUID;
     }
 
     public String getModality() {
@@ -162,7 +158,7 @@ public class StudyListFilter implements Serializable {
     }
 
     public void setModality(String modality) {
-        this.modality = nullToAsterisk(modality);
+        this.modality = modality;
     }
 
     public String getSourceAET() {
@@ -170,7 +166,7 @@ public class StudyListFilter implements Serializable {
     }
 
     public void setSourceAET(String sourceAET) {
-        this.sourceAET = nullToAsterisk(sourceAET);
+        this.sourceAET = sourceAET;
     }
 
     public boolean isPatientsWithoutStudies() {
