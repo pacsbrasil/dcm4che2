@@ -91,6 +91,8 @@ import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
+import org.dcm4chee.web.war.worklist.modality.ModalityWorklistPanel;
+import org.dcm4chee.web.war.worklist.modality.Mpps2MwlLinkPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -727,6 +729,22 @@ public class StudyListPage extends Panel {
             item.add(new Label("numberOfSeries").add(new TooltipBehaviour("folder.pps","NoS")));
             item.add(new Label("numberOfInstances").add(new TooltipBehaviour("folder.pps","NoI")));
             item.add(new Label("status").add(new TooltipBehaviour("folder.pps","Status")));
+            item.add( new Image("linkStatus", new AbstractReadOnlyModel<ResourceReference>() {
+                private static final long serialVersionUID = 1L;
+                @Override
+                public ResourceReference getObject() {
+                    return ppsModel.getAccessionNumber() == null ? ImageManager.IMAGE_STATUS_UNLINKED : 
+                        ImageManager.IMAGE_STATUS_LINKED;
+                }
+            }) {
+                private static final long serialVersionUID = 1L;
+                @Override
+                public boolean isVisible() {
+                    return ppsModel.getDataset() != null;
+                }
+            }
+            .add(new ImageSizeBehaviour()));
+
             item.add(new Label("pk").add(new TooltipBehaviour("folder.", "ppsPk")));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
@@ -762,7 +780,22 @@ public class StudyListPage extends Panel {
                 }
             }.add(new Image("editImg",ImageManager.IMAGE_EDIT)
             .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","ppsEdit")));
+            .add(new TooltipBehaviour("folder.","ppsDetail")));
+            
+            PopupLink linkBtn = new PopupLink("linkBtn", "linkPage") {
+                private static final long serialVersionUID = 1L;
+                @Override
+                public void onClick() {
+                    Mpps2MwlLinkPage page = new Mpps2MwlLinkPage(ppsModel);
+                    this.setResponsePage(page);
+                }
+            };
+            linkBtn.setPopupHeight(400);
+            linkBtn.setPopupWidth(550);
+            linkBtn.add(new Image("linkImg", ImageManager.IMAGE_INSERT_LINK)
+            .add(new ImageSizeBehaviour())).add(new TooltipBehaviour("folder.","ppsLink"));
+            item.add(linkBtn);
+            
             item.add(new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;

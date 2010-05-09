@@ -453,7 +453,7 @@
         <type>java.lang.String</type>
       </parameter>
       <parameter>
-        <description>Trquested Procedure ID</description>
+        <description>Requested Procedure ID</description>
         <name>rpId</name>
         <type>java.lang.String</type>
       </parameter>
@@ -461,6 +461,32 @@
         <description>Scheduled Procedure Step ID</description>
         <name>spsId</name>
         <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Name of Modifying System</description>
+        <name>modifyingSystem</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Reason for modifying</description>
+        <name>reason</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Link a MPPS to an MWL item.
+      		]]> </description>
+      <name>linkMppsToMwl</name>
+      <parameter>
+        <description>MPPS primary keys</description>
+        <name>mppsPks</name>
+        <type>[J</type>
+      </parameter>
+      <parameter>
+        <description>MWL primary key</description>
+        <name>mwlPk</name>
+        <type>long</type>
       </parameter>
       <parameter>
         <description>Name of Modifying System</description>

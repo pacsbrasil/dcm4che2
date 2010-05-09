@@ -48,6 +48,8 @@ import javax.management.ReflectionException;
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
 import org.dcm4chee.web.common.exceptions.SelectionException;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
+import org.dcm4chee.web.war.folder.model.PPSModel;
+import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -170,7 +172,13 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
             ReflectionException, IOException {
         return (Integer) server.invoke(serviceObjectName, op, new Object[]{pks, pk}, 
         new String[]{long[].class.getName(), long.class.getName()});
-}
+    }
+    
+    public void linkMppsToMwl(Collection<PPSModel> mppss, MWLItemModel mwl) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
+        server.invoke(serviceObjectName, "linkMppsToMwl", 
+                new Object[]{toPks(mppss), mwl.getPk(), null, null}, 
+                new String[]{long[].class.getName(), long.class.getName(), String.class.getName(), String.class.getName()});
+    }
     
     private long[] toPks(Collection<? extends AbstractDicomModel> models) {
         long[] pks = new long[models.size()];

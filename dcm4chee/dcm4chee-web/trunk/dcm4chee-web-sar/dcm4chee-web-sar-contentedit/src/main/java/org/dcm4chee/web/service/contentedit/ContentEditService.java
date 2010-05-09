@@ -487,6 +487,31 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
     }
 
+    public void linkMppsToMwl(long[] mppsPks, long mwlPk, String system, String reason) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        if ( system == null || system.trim().length() < 1) {
+            system = modifyingSystem;
+        }
+        if ( reason == null || reason.trim().length() < 1) {
+            reason = this.modifyReason;
+        }
+        MppsToMwlLinkResult result = lookupMppsToMwlLinkLocal().linkMppsToMwl(mppsPks, mwlPk, modifyingSystem, reason);
+        log.info("MppsToMwlLinkResult:"+result);
+        logMppsLinkRecord(result);
+        updateSeriesAttributes(result);
+        this.sendJMXNotification(result);
+        if (result.getStudiesToMove().size() < 1) {
+            Patient pat = result.getMwl().getPatient();
+            log.info("Patient of some MPPS are not identical to patient of MWL! Move studies to Patient of MWL:"+
+                    pat.getPatientID());
+            long[] studyPks = new long[result.getStudiesToMove().size()];
+            int i = 0;
+            for ( Study s : result.getStudiesToMove()) {
+                studyPks[i++] = s.getPk();
+            }
+            this.moveStudiesToPatient(studyPks, pat.getPk());
+        }
+    }
+    
     public void linkMppsToMwl(String mppsIUID, String rpId, String spsId, String system, String reason) throws InstanceNotFoundException, MBeanException, ReflectionException {
         if ( system == null || system.trim().length() < 1) {
             system = modifyingSystem;

@@ -56,7 +56,6 @@ import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
-import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
@@ -78,6 +77,7 @@ import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistFilter;
 import org.dcm4chee.web.war.WicketSession;
 import org.dcm4chee.web.war.common.EditDicomObjectPage;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
+import org.dcm4chee.web.war.worklist.modality.MWLItemListView.MwlActionProvider;
 import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
 
 /**
@@ -85,7 +85,7 @@ import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
  * @version $Revision$ $Date$
  * @since 20.04.2010
  */
-public class ModalityWorklistPanel extends Panel {
+public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
     private static final ResourceReference CSS = new CompressedResourceReference(ModalityWorklistPanel.class, "modality-worklist-style.css");
 
@@ -95,16 +95,14 @@ public class ModalityWorklistPanel extends Panel {
     private static int PAGESIZE = 10;
     
     private static final String MODULE_NAME = "mw";
-    private ViewPort viewport = ((WicketSession) getSession()).getMwViewPort();
-    private List<String> modalities = new ArrayList<String>();
-    private List<String> scheduledStationAETs = new ArrayList<String>();
-    private List<String> scheduledStationNames = new ArrayList<String>();
-    private List<String> status = new ArrayList<String>();
+    private ViewPort viewport;
     private boolean notSearched = true;
+    
+    private ModalityWorklist dao;
 
     public ModalityWorklistPanel(final String id) {
         super(id);
-        
+        viewport = initViewPort();
         if (ModalityWorklistPanel.CSS != null)
             add(CSSPackageResource.getHeaderContribution(ModalityWorklistPanel.CSS));
 
@@ -113,16 +111,17 @@ public class ModalityWorklistPanel extends Panel {
         form.setResourceIdPrefix("mw.");
         add(form);
         addQueryFields(filter, form);
+        addExtendedStudySearch(form);
         addQueryOptions(form);
         addNavigation(form);
-        form.add(new MWLItemListView("mwlitems", viewport.getMWLItemModels()));
-        initModalities();
-        initStationAETs();
-        initStationNames();
-        initStatus();
+        form.add(new MWLItemListView("mwlitems", viewport.getMWLItemModels(), this));
+    }
+    
+    protected ViewPort initViewPort() {
+        return ((WicketSession) getSession()).getMwViewPort();
     }
 
-    private void addQueryFields(final ModalityWorklistFilter filter, BaseForm form) {
+    protected void addQueryFields(final ModalityWorklistFilter filter, BaseForm form) {
         final IModel<Boolean> enabledModel = new AbstractReadOnlyModel<Boolean>(){
 
             private static final long serialVersionUID = 1L;
@@ -142,18 +141,17 @@ public class ModalityWorklistPanel extends Panel {
         form.addLabeledDateTimeField("startDateMax", new PropertyModel<Date>(filter, "startDateMax"), enabledModel);
 
         form.addLabeledTextField("accessionNumber", enabledModel);
-        addExtendedStudySearch(form);
-        form.addLabeledDropDownChoice("modality", null, modalities, enabledModel);
-        form.addLabeledDropDownChoice("scheduledStationAET", null, scheduledStationAETs, enabledModel);
-        form.addLabeledDropDownChoice("scheduledStationName", null, scheduledStationNames, enabledModel);
-        form.addLabeledDropDownChoice("scheduledProcedureStepStatus", null, status, enabledModel);
+        form.addLabeledDropDownChoice("modality", null, getModalityChoices(), enabledModel);
+        form.addLabeledDropDownChoice("scheduledStationAET", null, getStationAETChoices(), enabledModel);
+        form.addLabeledDropDownChoice("scheduledStationName", null, getStationNameChoices(), enabledModel);
+        form.addLabeledDropDownChoice("scheduledProcedureStepStatus", null, getSpsStatusChoices(), enabledModel);
     }
 
-    private void addQueryOptions(BaseForm form) {
+    protected void addQueryOptions(BaseForm form) {
         form.addLabeledCheckBox("latestItemsFirst", null);
     }
 
-    private void addNavigation(BaseForm form) {
+    protected void addNavigation(BaseForm form) {
         form.add(new Button("search", new ResourceModel("searchBtn")) {
 
             private static final long serialVersionUID = 1L;
@@ -223,7 +221,7 @@ public class ModalityWorklistPanel extends Panel {
         }));
     }
 
-    private WebMarkupContainer addExtendedStudySearch(final Form<?> form) {
+    protected WebMarkupContainer addExtendedStudySearch(final Form<?> form) {
         final ModalityWorklistFilter filter = viewport.getFilter();
         final WebMarkupContainer extendedStudyFilter = new WebMarkupContainer("extendedStudyFilter") {
 
@@ -261,9 +259,9 @@ public class ModalityWorklistPanel extends Panel {
         return extendedStudyFilter;
     }
 
-    private void queryMWLItems() {
+    protected void queryMWLItems() {
 
-        ModalityWorklist dao = (ModalityWorklist) JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
+        ModalityWorklist dao = lookupMwlDAO();
         viewport.getMWLItemModels().clear();
         viewport.setTotal(dao.countMWLItems(viewport.getFilter()));
              
@@ -274,98 +272,86 @@ public class ModalityWorklistPanel extends Panel {
         notSearched = false;
     }
 
+    private ModalityWorklist lookupMwlDAO() {
+        if (dao == null)
+            dao = (ModalityWorklist) JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
+        return dao;
+    }
+
     public static String getModuleName() {
         return MODULE_NAME;
     }
 
-  private final class MWLItemListView extends PropertyListView<Object> {
-    
+    protected List<String> getModalityChoices() {
+        ModalityWorklist dao = lookupMwlDAO();
+        List<String> modalities = new ArrayList<String>();
+        modalities.add("*");
+        modalities.addAll(dao.selectDistinctModalities());
+        return modalities;
+    }
+
+    protected List<String> getStationAETChoices() {
+        ModalityWorklist dao = lookupMwlDAO();
+        List<String> scheduledStationAETs = new ArrayList<String>();
+        scheduledStationAETs.add("*");
+        scheduledStationAETs.addAll(dao.selectDistinctStationAETs());
+        return scheduledStationAETs;
+    }
+
+    protected List<String> getStationNameChoices() {
+        ModalityWorklist dao = lookupMwlDAO();
+        List<String> scheduledStationNames = new ArrayList<String>();
+        scheduledStationNames.add("*");
+        scheduledStationNames.addAll(dao.selectDistinctStationNames());
+        return scheduledStationNames;
+    }
+
+    protected List<String> getSpsStatusChoices() {
+        List<String> status = new ArrayList<String>();
+        status.add("*");
+        for (SPSStatus spsStatus : SPSStatus.values())
+            status.add(spsStatus.toString());
+        return status;
+    }
+
+    //MwlActionProvider (details and edit)
+    public void addMwlActions(final ListItem<MWLItemModel> item, final MWLItemListView mwlListView) {
+        final MWLItemModel mwlItemModel = item.getModelObject();
+        item.add(new AjaxFallbackLink<Object>("toggledetails") {
+
             private static final long serialVersionUID = 1L;
-    
-            private MWLItemListView(String id, List<?> list) {
-                super(id, list);
-            }
-    
+
             @Override
-            protected void populateItem(final ListItem<Object> item) {
-                
-                final MWLItemModel mwlItemModel = (MWLItemModel) item.getModelObject();
-
-                item
-                .add(new Label("scheduledProcedureStepDescription"))
-                .add(new Label("scheduledProcedureStepID"))
-                .add(new Label("requestedProcedureID"))
-                .add(new Label("accessionNumber"))
-                .add(new Label("patientName"))
-                .add(new Label("modality"))
-                .add(new Label("startDate"))
-                .add(new AjaxFallbackLink<Object>("toggledetails") {
-    
-                    private static final long serialVersionUID = 1L;
-    
-                    @Override
-                    public void onClick(AjaxRequestTarget target) {
-                        mwlItemModel.setDetails(!mwlItemModel.isDetails());
-                        if (target != null) 
-                            target.addComponent(item);
-                    }
-    
-                }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
-                .add(new ImageSizeBehaviour()))
-                .add(new TooltipBehaviour("mw.","patDetail")))
-                .add( new Link<Object>("edit") {
-                    
-                    private static final long serialVersionUID = 1L;
-    
-                    @Override
-                    public void onClick() {
-                        setResponsePage(new EditDicomObjectPage(ModalityWorklistPanel.this.getPage(), mwlItemModel));
-                    }
-                }.add(new Image("editImg",ImageManager.IMAGE_EDIT)
-                .add(new ImageSizeBehaviour()))
-                .add(new TooltipBehaviour("mw.","patEdit")))
-                .add(new WebMarkupContainer("details") {
-                    
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    public boolean isVisible() {
-                        return mwlItemModel.isDetails();
-                    }
-                }
-                .add(new DicomObjectPanel("dicomobject", mwlItemModel.getDataset(), false)))
-                .setOutputMarkupId(true);
+            public void onClick(AjaxRequestTarget target) {
+                mwlItemModel.setDetails(!mwlItemModel.isDetails());
+                if (target != null) 
+                    target.addComponent(item);
             }
-      }
-  
-      private void initModalities() {
-          ModalityWorklist dao = (ModalityWorklist)
-                  JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
-          modalities.clear();
-          modalities.add("*");
-          modalities.addAll(dao.selectDistinctModalities());
-      }
-    
-      private void initStationAETs() {
-          ModalityWorklist dao = (ModalityWorklist)
-                  JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
-          scheduledStationAETs.clear();
-          scheduledStationAETs.add("*");
-          scheduledStationAETs.addAll(dao.selectDistinctStationAETs());
-      }
 
-      private void initStationNames() {
-          ModalityWorklist dao = (ModalityWorklist)
-                  JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
-          scheduledStationNames.clear();
-          scheduledStationNames.add("*");
-          scheduledStationNames.addAll(dao.selectDistinctStationNames());
-      }
+        }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
+        .add(new ImageSizeBehaviour()))
+        .add(new TooltipBehaviour("mw.","patDetail")))
+        .add( new Link<Object>("edit") {
 
-      private void initStatus() {
-          status.clear();
-          status.add("*");
-          for (SPSStatus spsStatus : SPSStatus.class.getEnumConstants())
-              status.add(spsStatus.toString());
-      }
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick() {
+                setResponsePage(new EditDicomObjectPage(mwlListView.getPage(), mwlItemModel));
+            }
+        }.add(new Image("editImg",ImageManager.IMAGE_EDIT)
+        .add(new ImageSizeBehaviour()))
+        .add(new TooltipBehaviour("mw.","patEdit")))
+        .add(new WebMarkupContainer("details") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public boolean isVisible() {
+                return mwlItemModel.isDetails();
+            }
+        }
+        .add(new DicomObjectPanel("dicomobject", mwlItemModel.getDataset(), false)))
+        .setOutputMarkupId(true);
+    }
 }

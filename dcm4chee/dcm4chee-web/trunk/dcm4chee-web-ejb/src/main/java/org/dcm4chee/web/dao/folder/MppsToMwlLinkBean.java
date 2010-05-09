@@ -189,9 +189,9 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
             DicomObject seriesAndStudyAttrs = null;
             Study study = null;
             for (Series s : seriess) {
-                seriesAndStudyAttrs = s.getAttributes(true);
+                seriesAndStudyAttrs = s.getAttributes(false);
                 study = s.getStudy();
-                seriesAndStudyAttrs.setParent(study.getAttributes(true));
+                seriesAndStudyAttrs.setParent(study.getAttributes(false));
                 seriesAndStudyAttrs.remove(Tag.RequestAttributesSequence);
                 log.info("Coerce SeriesAndStudy: orig:"+seriesAndStudyAttrs);
                 log.info("Coerce SeriesAndStudy: coerce:"+coerce);
@@ -200,7 +200,8 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
                 s.setAttributes(seriesAndStudyAttrs);
                 em.merge(s);
             }
-            study.setAttributes(seriesAndStudyAttrs);
+            if (seriesAndStudyAttrs.containsValue(Tag.StudyInstanceUID))
+                study.setAttributes(seriesAndStudyAttrs);
         }
     }
 
