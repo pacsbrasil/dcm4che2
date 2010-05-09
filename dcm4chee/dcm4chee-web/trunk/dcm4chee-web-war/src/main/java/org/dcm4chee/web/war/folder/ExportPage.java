@@ -318,6 +318,22 @@ public class ExportPage extends BaseWicketPage {
             return (nrPat | nrStudy | nrSeries | nrInstances) != 0;
         }
         
+        public int getNrPat() {
+            return nrPat;
+        }
+
+        public int getNrStudy() {
+            return nrStudy;
+        }
+
+        public int getNrSeries() {
+            return nrSeries;
+        }
+
+        public int getNrInstances() {
+            return nrInstances;
+        }
+
         private void prepareStudiesOfPatientRequests(PatientModel pat) {
             nrPat++;
             ArrayList<String> uids = new ArrayList<String>();
