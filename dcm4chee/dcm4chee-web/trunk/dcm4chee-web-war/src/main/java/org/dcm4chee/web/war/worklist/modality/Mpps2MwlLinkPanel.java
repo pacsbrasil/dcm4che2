@@ -52,6 +52,8 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.image.Image;
+import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.markup.html.link.PopupCloseLink.ClosePopupPage;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
@@ -121,18 +123,18 @@ public class Mpps2MwlLinkPanel extends ModalityWorklistPanel {
 
     public void addMwlActions(final ListItem<MWLItemModel> item, final MWLItemListView mwlListView) {
         final MWLItemModel mwlItemModel = item.getModelObject();
-        item.add(new AjaxFallbackLink<Object>("link") {
+        item.add(new Link<Object>("link") {
             private static final long serialVersionUID = 1L;
             @Override
-            public void onClick(AjaxRequestTarget target) {
+            public void onClick() {
                 log.info("Link MPPS to MWL!:"+mwlItemModel);
                 try {
                     ContentEditDelegate.getInstance().linkMppsToMwl(ppsModels, mwlItemModel);
+                    setResponsePage(ClosePopupPage.class);
                 } catch (Exception e) {
                     log.error("MPPS to MWL link failed!", e);
                 }
             }
-
         }.add(new Image("linkImg",ImageManager.IMAGE_INSERT_LINK)
         .add(new ImageSizeBehaviour())));
     }    
