@@ -118,4 +118,10 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, iconset + "/mimetypes/text-csv.png");
     public static final ResourceReference IMAGE_REPORT_PRINT = 
         new ResourceReference(ImageManager.class, iconset + "/apps/preferences-desktop-printer.png");
+    public static final ResourceReference IMAGE_STATUS_LINKED = 
+        new ResourceReference(ImageManager.class, "status/linked.png");
+    public static final ResourceReference IMAGE_STATUS_UNLINKED = 
+        new ResourceReference(ImageManager.class, "status/unlinked.png");
+    public static final ResourceReference IMAGE_INSERT_LINK = 
+        new ResourceReference(ImageManager.class, iconset + "/actions/insert-link.png");
 }
