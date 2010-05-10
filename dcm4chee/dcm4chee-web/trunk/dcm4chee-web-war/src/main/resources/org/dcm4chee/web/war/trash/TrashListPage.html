@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+<head>
+<title>Studies</title>
+<link href="folder-style.css" rel="stylesheet" />
+</head>
+<body>
+<wicket:panel>
+    <div wicket:id="msgWin" >MessageWindow</div>
+	<form style="clear: both" wicket:id="form">
+		<div wicket:id="confirmDelete" >ConfirmDelete</div>
+        <div class="filterPanel">
+            <div class="filter">
+                <div class="filterHeader2Lines" wicket:id="patientNameLabel">Patient Name</div>
+                <div class="filterValue">
+                    <input wicket:id="patientName" id="patientName" type="text"/>
+                </div>
+            </div>
+            <div class="filter">
+                <div class="filterHeader" wicket:id="patientIDDescr">Patient ID</div>
+                <div class="filterValue2Lines">
+                    <div class="filterLabeledValueFirst">
+                        <div class="filterHeader" wicket:id="patientIDLabel">ID</div>
+                        <div class="filterValue">
+                            <input wicket:id="patientID" id="patientID" type="text" title="ID"/>
+                        </div>
+                    </div>
+                    <div class="filterLabeledValue">
+                        <div class="filterHeader" wicket:id="issuerOfPatientIDLabel">Issuer</div>
+                        <div class="filterValue">
+                            <input wicket:id="issuerOfPatientID" id="issuerOfPatientID" type="text"
+                                title="Issuer"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter">
+                <div class="filterHeader2Lines" wicket:id="accessionNumberLabel">Accession Number</div>
+                <div class="filterValue">
+                    <input wicket:id="accessionNumber" id="accessionNumber" type="text"/>
+                </div>
+            </div>
+            <div class="filter">
+                <div class="filterHeader2Lines" wicket:id="sourceAETLabel">Source AET</div>
+                <div class="filterValue">
+			      <select wicket:id="sourceAET">
+			        <option>*</option>
+			        <option>DCMSND</option>
+			      </select>
+                </div>
+            </div>
+        </div>
+	
+		<div class="queryoptions">
+		  <input type="checkbox" id="patientsWithoutStudies" wicket:id="patientsWithoutStudies" />
+		  <label for="patientsWithoutStudies" wicket:id="patientsWithoutStudiesLabel">patients w/o studies</label>
+		</div>
+		<div class="NavAndAction">
+			<div class="query_nav">
+				<div class="querybuttons">
+				  <input type="submit" wicket:id="search"/>
+				  <input type="submit" wicket:id="prev"/>
+				  <input type="submit" wicket:id="next"/>
+				</div>
+				<div wicket:id="viewport" class="viewport">Displaying studies 1 to 20 from 1234 matching studies</div>
+			</div>
+			<div class="action">
+				<a wicket:id="deleteBtn" href="#"><img wicket:id="deleteImg" alt="Delete" /></a>
+			</div>
+		</div>
+	<table>
+	  <thead wicket:id="thead" align="left" valign="top" >
+	    <wicket:remove>
+	    <tr class="patient">
+	      <td rowspan="6">
+	        <a href="#">(-)</a>
+	      </td>
+	      <th colspan="5">Patient Name</th>
+	      <th>Patient ID/Issuer</th>
+	      <th>Birth Date</th>
+	      <th>Sex</th>
+	      <th colspan="3">Comments</th>
+	      <th>Pk</th>
+	      <th></th>
+	      <th></th>
+	    </tr>
+	    <tr class="study">
+	      <td rowspan="5">
+	        <a href="#">(-)</a>
+	      </td>
+	      <th colspan="4">Study Date/Time</th>
+	      <th>ID</th>
+	      <th>Accession No</th>
+	      <th>Mods</th>
+	      <th>Description</th>
+	      <th>#S/#I</th>
+	      <th>Availability</th>
+	      <th>Pk</th>
+	      <th></th>
+	      <th></th>
+	    </tr>
+	    <tr class="series">
+	      <td rowspan="3">
+	        <a href="#">(-)</a>
+	      </td>
+	      <th colspan="2">Series Date/Time</th>
+	      <th>Series No</th>
+	      <th>Source AET</th>
+	      <th>Mod</th>
+	      <th>Description</th>
+	      <th>#I</th>
+	      <th>Availability</th>
+	      <th>Pk</th>
+	      <th></th>
+	      <th></th>
+	    </tr>
+	    <tr class="instance">
+	      <td rowspan="2">
+	        <a href="#">(-)</a>
+	      </td>
+	      <th>Instance Date/Time</th>
+	      <th>Instance No</th>
+	      <th colspan="2">SOP Class UID</th>
+	      <th colspan="2">Description</th>
+	      <th>Availability</th>
+	      <th>Pk</th>
+	      <th></th>
+	      <th></th>
+	    </tr>
+	    </wicket:remove>
+	  </thead>
+	  <tbody wicket:id="patients" align="left" valign="top" >
+	    <tr class="patient">
+	      <td wicket:id="cell" rowspan="7" class="expand">
+	        <a wicket:id="expand" href="#"><img wicket:id="expandImg" alt="(+)" /></a>
+	      </td>
+	      <td wicket:id="name" colspan="5">[PatientName]</td>
+	      <td><span wicket:id="id">[Patient ID]</span>/<span
+	                wicket:id="issuer">[Issuer]</span>
+	      </td>
+	      <td wicket:id="birthdate">[Birth Date]</td>
+	      <td wicket:id="sex">[Sex]</td>
+	      <td wicket:id="comments" colspan="3">[Patient Comments]</td>
+	      <td wicket:id="pk">[Pk]</td>
+	      <td>
+	        <a wicket:id="toggledetails" href="#"><img wicket:id="detailImg" alt="D" /></a>
+	      </td>
+	      <td><input wicket:id="selected" type="checkbox" /></td>
+	    </tr>
+	    <tr wicket:id="details" class="patient">
+	      <td colspan="14">
+	        <div wicket:id="dicomobject"></div>
+	      </td>
+	    </tr>
+	    <wicket:container wicket:id="studies" >
+	    <tr class="study">
+	      <td wicket:id="cell" rowspan="5" class="expand">
+	        <a wicket:id="expand" href="#"><img wicket:id="expandImg" alt="(+)" /></a>
+	      </td>
+	      <td wicket:id="datetime" colspan="4">[Study Date/Time]</td>
+	      <td wicket:id="id">[Study ID]</td>
+	      <td wicket:id="accessionNumber">[Acc No]</td>
+	      <td wicket:id="modalities">[Mods]</td>
+	      <td wicket:id="description">[Description]</td>
+	      <td><span wicket:id="numberOfSeries">[#S]</span>/<span
+	                wicket:id="numberOfInstances">[#I]</span>
+	      </td>
+	      <td wicket:id="availability">[Availability]</td>
+	      <td wicket:id="pk">[Pk]</td>
+	      <td>
+	        <a wicket:id="toggledetails" href="#"><img wicket:id="detailImg" alt="D" /></a>
+	      </td>
+	      <td><input wicket:id="selected" type="checkbox" /></td>
+	    </tr>
+	    <tr wicket:id="details" class="study">
+	      <td colspan="13">
+	        <div wicket:id="dicomobject"></div>
+	      </td>
+	    </tr>
+	    <wicket:container wicket:id="series" >
+	    <tr class="series">
+	      <td wicket:id="cell" rowspan="3" class="expand">
+	        <a wicket:id="expand" href="#"><img wicket:id="expandImg" alt="(+)" /></a>
+	      </td>
+	      <td wicket:id="datetime" colspan="2">[Series Date/Time]</td>
+	      <td wicket:id="seriesNumber">[No]</td>
+	      <td wicket:id="sourceAET">[Source AET]</td>
+	      <td wicket:id="modality">[Mod]</td>
+	      <td wicket:id="description">[Description]</td>
+	      <td wicket:id="numberOfInstances">[#I]</td>
+	      <td wicket:id="availability">[Availability]</td>
+	      <td wicket:id="pk">[Pk]</td>
+	      <td>
+	        <a wicket:id="toggledetails" href="#"><img wicket:id="detailImg" alt="D" /></a>
+	      </td>
+	      <td><input wicket:id="selected" type="checkbox" /></td>
+	    </tr>
+	    <tr wicket:id="details" class="series">
+	      <td colspan="11">
+	        <div wicket:id="dicomobject"></div>
+	      </td>
+	    </tr>
+	    <wicket:container wicket:id="instances" >
+	    <tr class="instance">
+	      <td wicket:id="cell" rowspan="2" class="expand">
+	        <a wicket:id="expand" href="#"><img wicket:id="expandImg" alt="(+)" /></a>
+	      </td>
+	      <td wicket:id="datetime">[Content Date/Time]</td>
+	      <td wicket:id="instanceNumber">[No]</td>
+	      <td wicket:id="sopClassUID" colspan="2">[SOP Class UID]</td>
+	      <td wicket:id="description" colspan="2">[Description]</td>
+	      <td wicket:id="availability">[Availability]</td>
+	      <td wicket:id="pk">[Pk]</td>
+	      <td>
+	        <a wicket:id="toggledetails" href="#"><img wicket:id="detailImg" alt="D" /></a>
+	      </td>
+	      <td><input wicket:id="selected" type="checkbox" /></td>
+	    </tr>
+	    <tr wicket:id="details" class="instance">
+	      <td colspan="10">
+	        <div wicket:id="dicomobject"></div>
+	      </td>
+	    </tr>
+	    </wicket:container>
+	    </wicket:container>
+	    </wicket:container>
+	  </tbody>
+	</table>
+	</form>
+</wicket:panel>	
+</body>
+</html>
