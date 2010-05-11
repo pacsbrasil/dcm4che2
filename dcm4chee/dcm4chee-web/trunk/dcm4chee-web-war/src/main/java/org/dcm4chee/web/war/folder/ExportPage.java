@@ -318,19 +318,19 @@ public class ExportPage extends BaseWicketPage {
             return (nrPat | nrStudy | nrSeries | nrInstances) != 0;
         }
         
-        public int getNrPat() {
+        public int getNrOfPatients() {
             return nrPat;
         }
 
-        public int getNrStudy() {
+        public int getNrOfStudies() {
             return nrStudy;
         }
 
-        public int getNrSeries() {
+        public int getNrOfSeries() {
             return nrSeries;
         }
 
-        public int getNrInstances() {
+        public int getNrOfInstances() {
             return nrInstances;
         }
 
