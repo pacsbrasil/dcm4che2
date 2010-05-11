@@ -53,10 +53,10 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.ActionOrder;
-import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.BaseJmsOrder;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.config.RetryIntervalls;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.exceptions.ConcurrentStudyStorageException;
@@ -145,11 +145,13 @@ public class DeleteStudyService extends ServiceMBeanSupport
         jmsDelegate.setJmsServiceName(jmsServiceName);
     }
 
-    protected void startService() throws Exception {
+    @Override
+	protected void startService() throws Exception {
         jmsDelegate.startListening(deleteStudyQueueName, this , 1);
     }
 
-    protected void stopService() throws Exception {
+    @Override
+	protected void stopService() throws Exception {
         jmsDelegate.stopListening(deleteStudyQueueName);
     }
 
@@ -258,15 +260,15 @@ public class DeleteStudyService extends ServiceMBeanSupport
         }
         String[] filePaths = fsMgt.deleteStudy(order,
                 deleteStudyFromDB, deletePatientWithoutObjects);
+        FileSystemDTO fsDto = fsMgt.getFileSystem(order.getFsPk()); 
         for (int i = 0; i < filePaths.length; i++) {
-            FileUtils.delete(FileUtils.toFile(filePaths[i]), true);
+            FileUtils.delete(FileUtils.toFile(filePaths[i]), true, fsDto.getDirectoryPath());
         }
         if (createIANonStudyDelete) {
             try {
                 try {
                     ian = fsMgt.createIANforStudy(order.getStudyPk());
-                    updateRetrieveAET(ian, 
-                            fsMgt.getFileSystem(order.getFsPk()).getRetrieveAET());
+                    updateRetrieveAET(ian, fsMgt.getFileSystem(order.getFsPk()).getRetrieveAET());
                 } catch (NoSuchStudyException e) {
                     // OK, in case of study was deleted from DB
                     if (ian == null) {
@@ -309,6 +311,7 @@ public class DeleteStudyService extends ServiceMBeanSupport
     private void deleteSeries(DeleteStudyOrder order) throws Exception {
         FileSystemMgt2 fsMgt = fileSystemMgt();
         Collection<Long> seriesPks = fsMgt.getSeriesPks(order);
+        FileSystemDTO fsDto = fsMgt.getFileSystem(order.getFsPk()); 
         for (Long seriesPk : seriesPks) {
             Dataset ian = null;
             // prepare IAN if series may be deleted from DB by fsMgt.deleteSeries()
@@ -329,14 +332,13 @@ public class DeleteStudyService extends ServiceMBeanSupport
                 continue;
             }
             for (int i = 0; i < filePaths.length; i++) {
-                FileUtils.delete(FileUtils.toFile(filePaths[i]), true);
+                FileUtils.delete(FileUtils.toFile(filePaths[i]), true, fsDto.getDirectoryPath());
             }
             if (createIANonStudyDelete) {
                 try {
                     try {
                         ian = fsMgt.createIANforSeries(seriesPk);
-                        updateRetrieveAET(ian, 
-                                fsMgt.getFileSystem(order.getFsPk()).getRetrieveAET());
+                        updateRetrieveAET(ian, fsMgt.getFileSystem(order.getFsPk()).getRetrieveAET());
                     } catch (NoSuchSeriesException e) {
                         // OK, in case of series was deleted from DB
                         if (ian == null) {
@@ -351,7 +353,7 @@ public class DeleteStudyService extends ServiceMBeanSupport
             }
         }
     }
-
+    
     static FileSystemMgt2 fileSystemMgt() throws Exception {
         FileSystemMgt2Home home = (FileSystemMgt2Home) EJBHomeFactory
                 .getFactory().lookup(FileSystemMgt2Home.class,

@@ -183,7 +183,7 @@ public class FileUtils {
     }
 
     public static String formatSize(long size) {
-        return (size == -1) ? "UNKOWN" : (size < GIGA) ? ((float) size / MEGA)
+        return (size == -1) ? "UNKNOWN" : (size < GIGA) ? ((float) size / MEGA)
                 + "MB" : ((float) size / GIGA) + "GB";
     }
 
@@ -343,6 +343,18 @@ public class FileUtils {
     }
 
     public static boolean delete(File file, boolean deleteEmptyParents) {
+    	return delete(file, deleteEmptyParents, null);
+    }
+
+    /**
+     * 
+     * @param file - the file to delete
+     * @param deleteEmptyParents - removing empty parent folders flag
+     * @param parentFolderToKeep - if deleteEmptyParents is true, this parameters shows the parent folder 
+     * where removing parents must stop
+     * @return True, if the file has been successfully removed, otherwise returns false
+     */
+    public static boolean delete(File file, boolean deleteEmptyParents, String parentFolderToKeep) {
         log.info("M-DELETE file: " + file);
         if (!file.exists()) {
             log.warn("File: " + file + " was already deleted");
@@ -353,8 +365,12 @@ public class FileUtils {
             return false;
         }
         if (deleteEmptyParents) {
-            File parent = file.getParentFile();
-            while (parent.delete()) {
+            File parentToKeep = null;
+            if (parentFolderToKeep != null)
+            	parentToKeep = toFile(parentFolderToKeep);
+            
+        	File parent = file.getParentFile();
+            while (!parent.equals(parentToKeep) && parent.delete()){
                 log.info("M-DELETE directory: " + parent);
                 parent = parent.getParentFile();
             }

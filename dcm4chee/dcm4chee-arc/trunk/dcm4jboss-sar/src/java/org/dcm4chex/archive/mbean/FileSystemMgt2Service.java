@@ -261,7 +261,8 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         return isRunningDeleteOrphanedPrivateFiles;
     }
 
-    protected void startService() throws Exception {
+    @Override
+	protected void startService() throws Exception {
         scheduleStudiesForDeletionListenerID = scheduler.startScheduler(
                 timerIDScheduleStudiesForDeletion,
                 scheduleStudiesForDeletionInterval,
@@ -275,7 +276,8 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                 SeriesStored.NOTIF_FILTER, null);
     }
 
-    protected void stopService() throws Exception {
+    @Override
+	protected void stopService() throws Exception {
         scheduler.stopScheduler(timerIDScheduleStudiesForDeletion,
                 scheduleStudiesForDeletionListenerID,
                 scheduleStudiesForDeletionListener);
@@ -1187,7 +1189,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                     log.info("-> Keep dereferenced file: " + file);
                     continue;
                 }
-                FileUtils.delete(file, true);
+                FileUtils.delete(file, true, fileDTO.getDirectoryPath());
                 deleted++;
             }
             return deleted;

@@ -220,13 +220,15 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
         this.bufferSize = bufferSize;
     }
 
-    protected void startService() throws Exception {
+    @Override
+	protected void startService() throws Exception {
         jmsDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(storeScpServiceName, this,
                 SeriesStored.NOTIF_FILTER, null);
     }
 
-    protected void stopService() throws Exception {
+    @Override
+	protected void stopService() throws Exception {
         server.removeNotificationListener(storeScpServiceName, this,
                 SeriesStored.NOTIF_FILTER, null);
         jmsDelegate.stopListening(queueName);
@@ -470,7 +472,7 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
                 .deleteStoredSeries(seriesStored);
         for (FileDTO fileDTO : fileDTOs) {
             FileUtils.delete(FileUtils.toFile(fileDTO.getDirectoryPath(),
-                    fileDTO.getFilePath()), true);
+                    fileDTO.getFilePath()), true, fileDTO.getDirectoryPath());
         }
     }
 }
