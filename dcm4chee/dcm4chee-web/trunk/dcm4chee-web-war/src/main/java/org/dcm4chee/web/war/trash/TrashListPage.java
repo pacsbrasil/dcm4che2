@@ -84,8 +84,6 @@ import org.dcm4chee.web.war.trash.model.PrivInstanceModel;
 import org.dcm4chee.web.war.trash.model.PrivPatientModel;
 import org.dcm4chee.web.war.trash.model.PrivSeriesModel;
 import org.dcm4chee.web.war.trash.model.PrivStudyModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -97,7 +95,6 @@ public class TrashListPage extends Panel {
     private static final String MODULE_NAME = "trash";
     private static final long serialVersionUID = 1L;
     private static int PAGESIZE = 10;
-    private static Logger log = LoggerFactory.getLogger(TrashListPage.class);
     private TrashViewPort viewport = new TrashViewPort();
     private StudyListHeader header = new StudyListHeader("thead");
 
@@ -109,7 +106,7 @@ public class TrashListPage extends Panel {
     public TrashListPage(final String id) {
         super(id);
         
-        add(CSSPackageResource.getHeaderContribution(TrashListPage.class, "folder-style.css"));
+        add(CSSPackageResource.getHeaderContribution(TrashListPage.class, "trash-style.css"));
         
         final TrashListFilter filter = viewport.getFilter();
         BaseForm form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));

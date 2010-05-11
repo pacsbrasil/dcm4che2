@@ -51,11 +51,8 @@ import org.dcm4chee.web.war.worklist.modality.Mpps2MwlLinkPanel;
  * @since May 07, 2010
  */
 public class Mpps2MwlLinkPage extends BaseWicketPage {
-    private List<PPSModel> ppsModels;
-    
     public Mpps2MwlLinkPage(List<PPSModel> ppsModels) {
         super();
-        this.ppsModels = ppsModels;
         this.getModuleSelectorPanel().setShowLogoutLink(false);
         this.getModuleSelectorPanel().addInstance(new Mpps2MwlLinkPanel("panel", ppsModels));
     }

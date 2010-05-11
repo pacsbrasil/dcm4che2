@@ -48,6 +48,8 @@ import org.apache.wicket.model.IModel;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.MWLItem;
+import org.dcm4chee.archive.util.JNDIUtils;
+import org.dcm4chee.web.dao.worklist.modality.ModalityWorklist;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
 /**
@@ -71,7 +73,7 @@ public class MWLItemModel extends AbstractDicomModel implements Serializable {
 
     public MWLItemModel(MWLItem mwlItem, IModel<Boolean> latestStudyFirst) {
         this.collapsed = true;
-        
+
         setPk(mwlItem.getPk());
         this.mwlItem = mwlItem;
         this.dataset = mwlItem.getAttributes();
@@ -170,7 +172,9 @@ public class MWLItemModel extends AbstractDicomModel implements Serializable {
         return 0;
     }
 
-    @Override
     public void update(DicomObject dicomObject) {
+        ModalityWorklist dao = (ModalityWorklist)
+                JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
+        dataset = dao.updateMWLItem(getPk(), dicomObject).getAttributes();
     }
 }

@@ -4,7 +4,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
 <head>
 <title>Studies</title>
-<link href="folder-style.css" rel="stylesheet" />
 </head>
 <body>
 <wicket:panel>
@@ -63,13 +62,13 @@
                     <div class="filterLabeledValueFirst">
                         <div class="filterHeader" wicket:id="studyDateMinLabel">from</div>
                         <div class="filterValue">
-                            <input wicket:id="studyDateMin" id="studyDateMin" type="text" />
+                            <div wicket:id="studyDateMin" id="studyDateMin" />
                         </div>
                     </div>
                     <div class="filterLabeledValue">
                         <div class="filterHeader" wicket:id="studyDateMaxLabel">to</div>
                         <div class="filterValue">
-                            <input wicket:id="studyDateMax" id="studyDateMax" type="text" />
+                            <div wicket:id="studyDateMax" id="studyDateMax" />
                         </div>
                     </div>
                 </div>

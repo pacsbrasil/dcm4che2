@@ -42,6 +42,7 @@ import java.util.List;
 
 import javax.ejb.Local;
 
+import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.archive.entity.MWLItem;
 
 /**
@@ -56,8 +57,10 @@ public interface ModalityWorklist {
 
     public List<MWLItem> findAll();
     public int countMWLItems(ModalityWorklistFilter filter);
-    public List<String> selectDistinctModalities();
     public List<MWLItem> findMWLItems(ModalityWorklistFilter filter, int pAGESIZE, int offset);
+    public MWLItem updateMWLItem(long pk, DicomObject attrs);
+        
+    public List<String> selectDistinctModalities();
     public List<String> selectDistinctStationAETs();
     public List<String> selectDistinctStationNames();
 }

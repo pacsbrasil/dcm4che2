@@ -67,8 +67,6 @@ public class MWLItemListView extends PropertyListView<MWLItemModel> {
     @Override
     protected void populateItem(final ListItem<MWLItemModel> item) {
 
-        final MWLItemModel mwlItemModel = item.getModelObject();
-
         item
         .add(new Label("scheduledProcedureStepDescription"))
         .add(new Label("scheduledProcedureStepID"))

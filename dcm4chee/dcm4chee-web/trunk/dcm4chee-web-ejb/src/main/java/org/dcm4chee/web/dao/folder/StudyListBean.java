@@ -39,6 +39,7 @@
 package org.dcm4chee.web.dao.folder;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -285,37 +286,31 @@ public class StudyListBean implements StudyListLocal {
         return date.substring(0,4)+date.substring(5,7)+date.substring(8);
     }
 
-    private static void appendStudyDateMinFilter(StringBuilder ql,
-            String studyDate) {
-        if (studyDate!=null) {
+    private static void appendStudyDateMinFilter(StringBuilder ql, Date date) {
+        if (date != null) {
             ql.append(" AND s.studyDateTime >= :studyDateTimeMin");
         }
     }
 
-    private static void appendStudyDateMaxFilter(StringBuilder ql,
-            String studyDate) {
-        if (studyDate!=null) {
+    private static void appendStudyDateMaxFilter(StringBuilder ql, Date date) {
+        if (date != null) {
             ql.append(" AND s.studyDateTime <= :studyDateTimeMax");
         }
     }
-
-    private static void setStudyDateMinQueryParameter(Query query,
-            String studyDate) {
-        setStudyDateQueryParameter(query, studyDate, "studyDateTimeMin", false);
+    
+    private static void setStudyDateMinQueryParameter(Query query, Date date) {
+        setStudyDateQueryParameter(query, date, "studyDateTimeMin", false);
     }
 
-    private static void setStudyDateMaxQueryParameter(Query query,
-            String studyDate) {
-        setStudyDateQueryParameter(query, studyDate, "studyDateTimeMax", true);
+    private static void setStudyDateMaxQueryParameter(Query query, Date date) {
+        setStudyDateQueryParameter(query, date, "studyDateTimeMax", true);
     }
 
     private static void setStudyDateQueryParameter(Query query,
-            String studyDate, String param, boolean max) {
-        if (studyDate != null && !"*".equals(studyDate)) {
-            int year = Integer.parseInt(studyDate.substring(0,4));
-            int month = Integer.parseInt(studyDate.substring(5,7))-1;
-            int day = Integer.parseInt(studyDate.substring(8,10));
-            GregorianCalendar cal = new GregorianCalendar(year, month, day);
+            Date studyDate, String param, boolean max) {
+        if (studyDate != null) {
+            GregorianCalendar cal = new GregorianCalendar();
+            cal.setTime(studyDate);
             if (max) {
                 cal.set(Calendar.HOUR_OF_DAY, 23);
                 cal.set(Calendar.MINUTE, 59);

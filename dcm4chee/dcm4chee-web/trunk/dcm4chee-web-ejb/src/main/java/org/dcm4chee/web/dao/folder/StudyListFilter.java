@@ -39,6 +39,7 @@
 package org.dcm4chee.web.dao.folder;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -56,8 +57,8 @@ public class StudyListFilter implements Serializable {
     private String birthDateMin;
     private String birthDateMax;
     private String accessionNumber;
-    private String studyDateMin;
-    private String studyDateMax;
+    private Date studyDateMin;
+    private Date studyDateMax;
     private boolean extendedStudyQuery;
     private String studyInstanceUID;
     private String modality;
@@ -121,19 +122,19 @@ public class StudyListFilter implements Serializable {
         this.accessionNumber = accessionNumber;
     }
 
-    public String getStudyDateMin() {
+    public Date getStudyDateMin() {
         return studyDateMin;
     }
 
-    public void setStudyDateMin(String studyDate) {
+    public void setStudyDateMin(Date studyDate) {
         this.studyDateMin = studyDate;
     }
 
-    public String getStudyDateMax() {
+    public Date getStudyDateMax() {
         return studyDateMax;
     }
 
-    public void setStudyDateMax(String studyDate) {
+    public void setStudyDateMax(Date studyDate) {
         this.studyDateMax = studyDate;
     }
 

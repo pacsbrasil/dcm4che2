@@ -331,6 +331,7 @@ public class DicomEditBean implements DicomEditLocal {
         return pPat;
     }
 
+    @SuppressWarnings("unchecked")
     public EntityTree moveStudiesToPatient(long pks[], long pk)
     {
         Query qP = em.createQuery("SELECT OBJECT(p) FROM Patient p WHERE pk = :pk").setParameter("pk", Long.valueOf(pk));
@@ -338,6 +339,7 @@ public class DicomEditBean implements DicomEditLocal {
         return moveStudiesToPatient(qS.getResultList(), (Patient)qP.getSingleResult());
     }
 
+    @SuppressWarnings("unchecked")
     public EntityTree moveStudyToPatient(String iuid, String patId, String issuer)
     {
         Query qS = em.createQuery("SELECT OBJECT(s) FROM Study s WHERE studyInstanceUID = :iuid").setParameter("iuid", iuid.trim());

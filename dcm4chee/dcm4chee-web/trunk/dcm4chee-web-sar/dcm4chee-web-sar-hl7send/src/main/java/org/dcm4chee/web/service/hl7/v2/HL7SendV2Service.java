@@ -511,6 +511,7 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
         return msg;
     }
     
+    @SuppressWarnings("unchecked")
     private boolean checkResponse(Document rsp) {
         Element msh = rsp.getRootElement().element("MSH");
         if (msh == null)

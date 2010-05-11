@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.folder;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -48,7 +49,6 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
-import org.apache.wicket.extensions.yui.calendar.DatePicker;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -65,9 +65,9 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
-import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -91,8 +91,6 @@ import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
-import org.dcm4chee.web.war.worklist.modality.ModalityWorklistPanel;
-import org.dcm4chee.web.war.worklist.modality.Mpps2MwlLinkPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -155,12 +153,12 @@ public class StudyListPage extends Panel {
         form.addLabel("patientIDDescr");
         form.addLabeledTextField("patientID", enabledModel);
         form.addLabeledTextField("issuerOfPatientID", enabledModel);
-        PatternValidator datePatternValidator = new PatternValidator(
-                "\\*|(((19)|(20))\\d{2}-((0[1-9])|(1[0-2]))-((0[1-9])|([12]\\d)|(3[01])))");
         addExtendedPatientSearch(form);
+        
         form.addLabel("studyDate");
-        form.addLabeledTextField("studyDateMin", enabledModel).add(datePatternValidator).add(new DatePicker());
-        form.addLabeledTextField("studyDateMax", enabledModel).add(datePatternValidator).add(new DatePicker());
+        form.addLabeledDateTimeField("studyDateMin", new PropertyModel<Date>(filter, "studyDateMin"), enabledModel);
+        form.addLabeledDateTimeField("studyDateMax", new PropertyModel<Date>(filter, "studyDateMax"), enabledModel);
+
         form.addLabeledTextField("accessionNumber", enabledModel);
         addExtendedStudySearch(form);
         form.addLabeledDropDownChoice("modality", null, modalities);
