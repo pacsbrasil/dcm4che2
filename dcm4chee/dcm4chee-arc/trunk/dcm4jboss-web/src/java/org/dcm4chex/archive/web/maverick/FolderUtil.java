@@ -165,9 +165,12 @@ public class FolderUtil {
     private static void addPatientInstances(Set instanceUIDs, Integer patPk) {
         try {
             List l = lookupContentManager().listStudiesOfPatient(patPk.intValue());
+            Dataset ds;
             for ( Iterator iter = l.iterator() ; iter.hasNext() ; ) {
+                ds = (Dataset) iter.next();
+                ds.setPrivateCreatorID(PrivateTags.CreatorID);
                 addStudyInstances( instanceUIDs, 
-                        Convert.toLong( ((Dataset) iter.next()).getByteBuffer(PrivateTags.StudyPk).array()));
+                        Convert.toLong( ds.getByteBuffer(PrivateTags.StudyPk).array()));
             }
         } catch (Exception x) {
             log.error("Cant add instances of patient (pk="+patPk+")!",x);
