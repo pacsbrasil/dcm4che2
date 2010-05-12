@@ -231,7 +231,8 @@ public class TrashListPage extends Panel {
             
             @Override
             public void onConfirmation(AjaxRequestTarget target, PrivSelectedEntities selected) {
-                if (removeTrashItems(selected)) {
+
+                if (selected == null ? removeTrashAll() : removeTrashItems(selected)) {
                     this.setStatus(new StringResourceModel("trash.deleteDone", TrashListPage.this,null));
                     viewport.getPatients().clear();
                 } else {
@@ -253,7 +254,6 @@ public class TrashListPage extends Panel {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                selected.update(viewport.getPatients());
                 selected.deselectChildsOfSelectedEntities();
                 log.info("Selected Entities: :"+selected);
                 if (selected.hasDicomSelection()) {
@@ -263,10 +263,24 @@ public class TrashListPage extends Panel {
                 }
             }
         };
-        deleteBtn.add(new Image("deleteImg",ImageManager.IMAGE_TRASH)
+        deleteBtn.add(new Image("deleteImg", ImageManager.IMAGE_TRASH)
         .add(new ImageSizeBehaviour()))
         .add(tooltipBehaviour);
         form.add(deleteBtn);
+        AjaxLink<?> deleteAllBtn = new AjaxLink<Object>("deleteAllBtn") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                confirmDelete.confirm(target, new StringResourceModel("trash.confirmDelete",this, null,new Object[]{new StringResourceModel("trash.all", this, null).getObject()}), null);
+            }
+        };
+        deleteAllBtn.add(new Image("deleteAllImg", ImageManager.IMAGE_TRASH_REMOVE_ALL)
+        .add(new ImageSizeBehaviour()))
+        .add(tooltipBehaviour);
+        form.add(deleteAllBtn);
+
     }
 
     private void initModalitiesAndSourceAETs() {
@@ -706,6 +720,17 @@ public class TrashListPage extends Panel {
             for (PrivPatientModel patientModel : selected.getPatients())
                 pks.add(patientModel.getPk());
             dao.removeTrashPatients(pks);               
+        } catch (Exception x) {
+            String msg = "Delete failed! Reason:"+x.getMessage();
+            log.error(msg,x);
+            return false;
+        }
+        return true;
+    }
+    
+    private boolean removeTrashAll() {
+        try {
+            ((TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME)).removeTrashAll();
         } catch (Exception x) {
             String msg = "Delete failed! Reason:"+x.getMessage();
             log.error(msg,x);

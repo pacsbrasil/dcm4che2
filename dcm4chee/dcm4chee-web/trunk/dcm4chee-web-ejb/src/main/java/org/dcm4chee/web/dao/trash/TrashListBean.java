@@ -379,4 +379,12 @@ public class TrashListBean implements TrashListLocal {
             } else return;
         }
     }
+    
+    public void removeTrashAll() {
+        em.createQuery("UPDATE PrivateFile p SET p.instance = Null").executeUpdate();
+        em.createQuery("DELETE FROM PrivateInstance pi").executeUpdate();
+        em.createQuery("DELETE FROM PrivateSeries pse").executeUpdate();
+        em.createQuery("DELETE FROM PrivateStudy pst").executeUpdate();
+        em.createQuery("DELETE FROM PrivatePatient pp").executeUpdate();
+    }
 }
