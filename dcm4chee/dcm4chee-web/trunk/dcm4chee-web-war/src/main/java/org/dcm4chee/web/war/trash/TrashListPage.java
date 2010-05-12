@@ -57,6 +57,7 @@ import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
@@ -66,6 +67,7 @@ import org.apache.wicket.model.StringResourceModel;
 import org.dcm4chee.archive.entity.PrivatePatient;
 import org.dcm4chee.archive.entity.PrivateStudy;
 import org.dcm4chee.archive.util.JNDIUtils;
+import org.dcm4chee.dashboard.ui.filesystem.FileSystemPanel;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
@@ -78,12 +80,12 @@ import org.dcm4chee.web.dao.trash.TrashListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
-import org.dcm4chee.web.war.folder.SelectedEntities;
-import org.dcm4chee.web.war.folder.StudyListHeader;
 import org.dcm4chee.web.war.trash.model.PrivInstanceModel;
 import org.dcm4chee.web.war.trash.model.PrivPatientModel;
 import org.dcm4chee.web.war.trash.model.PrivSeriesModel;
 import org.dcm4chee.web.war.trash.model.PrivStudyModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -92,12 +94,17 @@ import org.dcm4chee.web.war.trash.model.PrivStudyModel;
  */
 public class TrashListPage extends Panel {
 
+    private static Logger log = LoggerFactory.getLogger(FileSystemPanel.class);
+
+    private static final ResourceReference CSS = new CompressedResourceReference(TrashListPage.class, "trash-style.css");
+
     private static final String MODULE_NAME = "trash";
     private static final long serialVersionUID = 1L;
     private static int PAGESIZE = 10;
     private TrashViewPort viewport = new TrashViewPort();
-    private StudyListHeader header = new StudyListHeader("thead");
-
+    private TrashListHeader header = new TrashListHeader("thead");
+    private PrivSelectedEntities selected = new PrivSelectedEntities();
+    
     private List<String> sourceAETs = new ArrayList<String>();
     private boolean notSearched = true;
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("trash.");
@@ -106,8 +113,9 @@ public class TrashListPage extends Panel {
     public TrashListPage(final String id) {
         super(id);
         
-        add(CSSPackageResource.getHeaderContribution(TrashListPage.class, "trash-style.css"));
-        
+        if (TrashListPage.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(TrashListPage.CSS));
+       
         final TrashListFilter filter = viewport.getFilter();
         BaseForm form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
         form.setResourceIdPrefix("trash.");
@@ -217,11 +225,21 @@ public class TrashListPage extends Panel {
     }
 
     private void addActions(final BaseForm form) {
-        final ConfirmationWindow<SelectedEntities> confirmDelete = new ConfirmationWindow<SelectedEntities>("confirmDelete"){
+        final ConfirmationWindow<PrivSelectedEntities> confirmDelete = new ConfirmationWindow<PrivSelectedEntities>("confirmDelete"){
+
             private static final long serialVersionUID = 1L;
+            
             @Override
-            public void onConfirmation(AjaxRequestTarget target, SelectedEntities selected) {
+            public void onConfirmation(AjaxRequestTarget target, PrivSelectedEntities selected) {
+                if (removeTrashItems(selected)) {
+                    this.setStatus(new StringResourceModel("trash.deleteDone", TrashListPage.this,null));
+                    viewport.getPatients().clear();
+                } else {
+                    this.setStatus(new StringResourceModel("trash.deleteFailed", TrashListPage.this,null));
+                }
+                queryStudies();
             }
+            
             @Override
             public void onOk(AjaxRequestTarget target) {
                 target.addComponent(form);
@@ -235,6 +253,14 @@ public class TrashListPage extends Panel {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
+                selected.update(viewport.getPatients());
+                selected.deselectChildsOfSelectedEntities();
+                log.info("Selected Entities: :"+selected);
+                if (selected.hasDicomSelection()) {
+                    confirmDelete.confirm(target, new StringResourceModel("trash.confirmDelete",this, null,new Object[]{selected}), selected);
+                } else {
+                    msgWin.show(target, getString("trash.noSelection"));
+                }
             }
         };
         deleteBtn.add(new Image("deleteImg",ImageManager.IMAGE_TRASH)
@@ -572,18 +598,6 @@ public class TrashListPage extends Panel {
         protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
             final PrivInstanceModel instModel = (PrivInstanceModel) item.getModelObject();
-            WebMarkupContainer cell = new WebMarkupContainer("cell"){
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                protected void onComponentTag(ComponentTag tag) {
-                   super.onComponentTag(tag);
-                   tag.put("rowspan", instModel.getRowspan());
-                }
-            };
-            cell.add(new ExpandCollapseLink("expand", instModel, patientListItem));
-            item.add(cell);
             item.add(new Label("datetime").add(new TooltipBehaviour("trash.instance","DateTime")));
             item.add(new Label("instanceNumber").add(new TooltipBehaviour("trash.","instanceNumber")));
             item.add(new Label("sopClassUID").add(new TooltipBehaviour("trash.","sopClassUID")));
@@ -667,5 +681,36 @@ public class TrashListPage extends Panel {
                     target.addComponent(header);
             }
         }
+    }
+    
+    private boolean removeTrashItems(PrivSelectedEntities selected) {
+        try {
+            TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
+            
+            List<Long> pks = new ArrayList<Long>();
+            for (PrivInstanceModel instanceModel : selected.getInstances())
+                pks.add(instanceModel.getPk());
+            dao.removeTrashInstances(pks);
+
+            pks = new ArrayList<Long>();
+            for (PrivSeriesModel seriesModel : selected.getSeries())
+                pks.add(seriesModel.getPk());
+            dao.removeTrashSeries(pks);
+            
+            pks = new ArrayList<Long>();
+            for (PrivStudyModel studyModel : selected.getStudies())
+                pks.add(studyModel.getPk());
+            dao.removeTrashStudies(pks);
+
+            pks = new ArrayList<Long>();
+            for (PrivPatientModel patientModel : selected.getPatients())
+                pks.add(patientModel.getPk());
+            dao.removeTrashPatients(pks);               
+        } catch (Exception x) {
+            String msg = "Delete failed! Reason:"+x.getMessage();
+            log.error(msg,x);
+            return false;
+        }
+        return true;
     }
 }

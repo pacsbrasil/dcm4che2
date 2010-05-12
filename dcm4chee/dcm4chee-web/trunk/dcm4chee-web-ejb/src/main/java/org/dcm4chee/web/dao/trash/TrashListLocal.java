@@ -74,4 +74,9 @@ public interface TrashListLocal {
     PrivateSeries getSeries(long pk);
 
     PrivateInstance getInstance(long pk);
+    
+    public void removeTrashPatients(List<Long> pks);
+    public void removeTrashStudies(List<Long> pks);
+    public void removeTrashSeries(List<Long> pks);
+    public void removeTrashInstances(List<Long> pks);
 }

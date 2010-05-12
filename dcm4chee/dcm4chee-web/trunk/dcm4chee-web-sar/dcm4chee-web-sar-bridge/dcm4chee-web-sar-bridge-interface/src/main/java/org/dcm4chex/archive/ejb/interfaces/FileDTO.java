@@ -47,7 +47,7 @@ import java.io.Serializable;
  *          2006) $
  * @since 20.02.2004
  */
-public final class FileDTO implements Serializable, Comparable {
+public final class FileDTO implements Serializable, Comparable<Object> {
 
     private static final long serialVersionUID = -3713363057919313663L;
 
@@ -66,8 +66,6 @@ public final class FileDTO implements Serializable, Comparable {
     private String path;
 
     private String tsuid;
-
-    private String sopIuid;
 
     private String sopCuid;
 

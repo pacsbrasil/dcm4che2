@@ -46,6 +46,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.dcm4chee.archive.entity.BaseEntity;
+import org.dcm4chee.archive.entity.PrivateFile;
 import org.dcm4chee.archive.entity.PrivateInstance;
 import org.dcm4chee.archive.entity.PrivatePatient;
 import org.dcm4chee.archive.entity.PrivateSeries;
@@ -327,5 +329,54 @@ public class TrashListBean implements TrashListLocal {
 
     public PrivateInstance getInstance(long pk) {
         return em.find(PrivateInstance.class, pk);
+    }
+    
+    public void removeTrashPatients(List<Long> pks) {
+        for (Long pk : pks)
+            removeTrashEntity(getPatient(pk));
+    }
+
+    public void removeTrashStudies(List<Long> pks) {
+        for (Long pk : pks)
+            removeTrashEntity(getStudy(pk));
+    }
+
+    public void removeTrashSeries(List<Long> pks) {
+        for (Long pk : pks)
+            removeTrashEntity(getSeries(pk));
+    }
+
+    public void removeTrashInstances(List<Long> pks) {
+        for (Long pk : pks)
+            removeTrashEntity(getInstance(pk));
+    }
+    
+    private void removeTrashEntity(BaseEntity entity) {
+        if (entity == null) return;
+        else {
+            if (entity instanceof PrivatePatient) {
+                PrivatePatient pp = (PrivatePatient) entity;
+                for (PrivateStudy pst : pp.getStudies())
+                    removeTrashEntity(pst);
+                em.remove(pp);
+            } else if (entity instanceof PrivateStudy) {
+                PrivateStudy pst = (PrivateStudy) entity;
+                for (PrivateSeries pse : pst.getSeries())
+                    removeTrashEntity(pse);
+                em.remove(pst);
+            } else if (entity instanceof PrivateSeries) {
+                PrivateSeries pse = (PrivateSeries) entity;
+                for (PrivateInstance pi : pse.getInstances())
+                    removeTrashEntity(pi);
+                em.remove(pse);
+            } else if (entity instanceof PrivateInstance) {
+                PrivateInstance pi = (PrivateInstance) entity;
+                for (PrivateFile pf : pi.getFiles()) {
+                    pf.setInstance(null);
+                    em.merge(pf);
+                }
+                em.remove(pi);
+            } else return;
+        }
     }
 }

@@ -116,10 +116,7 @@
 	      <th></th>
 	    </tr>
 	    <tr class="instance">
-	      <td rowspan="2">
-	        <a href="#">(-)</a>
-	      </td>
-	      <th>Instance Date/Time</th>
+	      <th colspan="3">Instance Date/Time</th>
 	      <th>Instance No</th>
 	      <th colspan="2">SOP Class UID</th>
 	      <th colspan="2">Description</th>
@@ -183,7 +180,7 @@
 	      <td wicket:id="cell" rowspan="3" class="expand">
 	        <a wicket:id="expand" href="#"><img wicket:id="expandImg" alt="(+)" /></a>
 	      </td>
-	      <td wicket:id="datetime" colspan="2">[Series Date/Time]</td>
+	      <td wicket:id="datetime" colspan="3">[Series Date/Time]</td>
 	      <td wicket:id="seriesNumber">[No]</td>
 	      <td wicket:id="sourceAET">[Source AET]</td>
 	      <td wicket:id="modality">[Mod]</td>
@@ -197,16 +194,13 @@
 	      <td><input wicket:id="selected" type="checkbox" /></td>
 	    </tr>
 	    <tr wicket:id="details" class="series">
-	      <td colspan="11">
+	      <td colspan="12">
 	        <div wicket:id="dicomobject"></div>
 	      </td>
 	    </tr>
 	    <wicket:container wicket:id="instances" >
 	    <tr class="instance">
-	      <td wicket:id="cell" rowspan="2" class="expand">
-	        <a wicket:id="expand" href="#"><img wicket:id="expandImg" alt="(+)" /></a>
-	      </td>
-	      <td wicket:id="datetime">[Content Date/Time]</td>
+	      <td wicket:id="datetime" colspan="3">[Content Date/Time]</td>
 	      <td wicket:id="instanceNumber">[No]</td>
 	      <td wicket:id="sopClassUID" colspan="2">[SOP Class UID]</td>
 	      <td wicket:id="description" colspan="2">[Description]</td>
@@ -218,7 +212,7 @@
 	      <td><input wicket:id="selected" type="checkbox" /></td>
 	    </tr>
 	    <tr wicket:id="details" class="instance">
-	      <td colspan="10">
+	      <td colspan="12">
 	        <div wicket:id="dicomobject"></div>
 	      </td>
 	    </tr>

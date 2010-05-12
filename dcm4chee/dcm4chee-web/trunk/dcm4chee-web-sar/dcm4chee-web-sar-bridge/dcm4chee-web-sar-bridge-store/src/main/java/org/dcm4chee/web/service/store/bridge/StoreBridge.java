@@ -114,7 +114,7 @@ public class StoreBridge extends ServiceMBeanSupport {
         ByteArrayOutputStream baos = new ByteArrayOutputStream(bufsize);
         DicomOutputStream dos = new DicomOutputStream(baos);
         dos.writeDataset(attrs, TransferSyntax.ExplicitVRLittleEndian);
-        Dataset ds = DcmObjectFactory.getInstance().newDataset();DcmDecodeParam p;
+        Dataset ds = DcmObjectFactory.getInstance().newDataset();
         ds.readDataset(new ByteArrayInputStream(baos.toByteArray()), DcmDecodeParam.EVR_LE, -1);
         return ds;
     }
@@ -124,6 +124,6 @@ public class StoreBridge extends ServiceMBeanSupport {
         server.invoke(storeScpServiceName, "importFile", 
                 new Object[] {fileDTO, ds, prevseriuid, last},
                 new String[] {FileDTO.class.getName(), Dataset.class.getName(), String.class.getName(), boolean.class.getName()});
-    }    
+    }
  }
 
