@@ -9,6 +9,6 @@
     <depends>jboss.j2ee:jndiName=ejb/MWLManager,service=EJB</depends>
     <depends optional-attribute-name="SchedulerServiceName">dcm4chee.archive:service=Scheduler</depends>
     <depends optional-attribute-name="TemplatesServiceName">dcm4chee.archive:service=Templates</depends>
-
+	<depends optional-attribute-name="TLSConfigName">dcm4chee.archive:service=TLSConfig</depends>
   </mbean>
 </server>
