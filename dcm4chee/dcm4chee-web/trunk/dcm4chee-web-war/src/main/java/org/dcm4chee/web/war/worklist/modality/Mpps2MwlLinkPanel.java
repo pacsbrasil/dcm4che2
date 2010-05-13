@@ -41,22 +41,32 @@ package org.dcm4chee.web.war.worklist.modality;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.wicket.ResourceReference;
+import org.apache.wicket.extensions.yui.calendar.DateTimeField;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.link.PopupCloseLink.ClosePopupPage;
 import org.apache.wicket.markup.html.list.ListItem;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
+import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistFilter;
 import org.dcm4chee.web.war.folder.ContentEditDelegate;
 import org.dcm4chee.web.war.folder.model.PPSModel;
+import org.dcm4chee.web.war.folder.model.PatientModel;
+import org.dcm4chee.web.war.folder.model.StudyModel;
 import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,14 +80,22 @@ public class Mpps2MwlLinkPanel extends ModalityWorklistPanel {
 
     private static final long serialVersionUID = 1L;
     
+    private static final ResourceReference CSS = new CompressedResourceReference(Mpps2MwlLinkPanel.class, "mpps-link-style.css");
+    
     private List<PPSModel> ppsModels;
+    private TextField<String> tfPatName;
+    private DateTimeField tfStartDateMin;
+    private DropDownChoice<?> tfModality;
 
     private static Logger log = LoggerFactory.getLogger(Mpps2MwlLinkPanel.class);
     
     public Mpps2MwlLinkPanel(final String id, List<PPSModel> ppsModels) {
         super(id);
         this.ppsModels = ppsModels;
+        presetSearchfields();
         addMppsInfoPanel();
+        if (Mpps2MwlLinkPanel.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(Mpps2MwlLinkPanel.CSS));
     }
 
     protected ViewPort initViewPort() {
@@ -94,17 +112,17 @@ public class Mpps2MwlLinkPanel extends ModalityWorklistPanel {
                 return !filter.isExtendedQuery() || "*".equals(filter.getStudyInstanceUID());
             }
         };
-        form.addLabeledTextField("patientName", enabledModel);
+        tfPatName = form.addLabeledTextField("patientName", enabledModel);
         form.addLabel("patientIDDescr");
         form.addLabeledTextField("patientID", enabledModel);
         form.addLabeledTextField("issuerOfPatientID", enabledModel);
         
         form.addLabel("startDate");
-        form.addLabeledDateTimeField("startDateMin", new PropertyModel<Date>(filter, "startDateMin"), enabledModel);
-        form.addLabeledDateTimeField("startDateMax", new PropertyModel<Date>(filter, "startDateMax"), enabledModel);
+        tfStartDateMin = form.addLabeledDateTimeField("startDateMin", new PropertyModel<Date>(filter, "startDateMin"), enabledModel, false);
+        tfStartDateMin = form.addLabeledDateTimeField("startDateMax", new PropertyModel<Date>(filter, "startDateMax"), enabledModel, true);
 
         form.addLabeledTextField("accessionNumber", enabledModel);
-        form.addLabeledDropDownChoice("modality", null, getModalityChoices(), enabledModel);
+        tfModality = form.addLabeledDropDownChoice("modality", null, getModalityChoices(), enabledModel);
         form.addLabeledDropDownChoice("scheduledStationAET", null, getStationAETChoices(), enabledModel);
         form.addLabeledDropDownChoice("scheduledStationName", null, getStationNameChoices(), enabledModel);
         form.addLabeledDropDownChoice("scheduledProcedureStepStatus", null, getSpsStatusChoices(), enabledModel);
@@ -133,14 +151,36 @@ public class Mpps2MwlLinkPanel extends ModalityWorklistPanel {
     }    
     
     private void addMppsInfoPanel() {
-        WebMarkupContainer p = new WebMarkupContainer("mppsInfo");
         PPSModel ppsModel = ppsModels.get(0);
-        p.add(new Label("mppsInfoTitle", "MPPS INFO"));
-        p.add(new Label("accessionNumber", ppsModel.getAccessionNumber()));
+        StudyModel studyModel= ppsModel.getParent();
+        PatientModel patModel = studyModel.getParent();
+        WebMarkupContainer p = new WebMarkupContainer("mppsInfo");
+        p.add(new Label("mppsInfoTitle", new ResourceModel("link.ppsInfoTitle")));
+        p.add(new Label("patNameLabel", new ResourceModel("link.patNameLabel")));
+        p.add(new Label("patName", patModel.getName()));
+        p.add(new Label("patIdLabel", new ResourceModel("link.patIdLabel")));
+        p.add(new Label("patId", patModel.getId()));
+        p.add(new Label("patIssuerLabel", new ResourceModel("link.patIssuerLabel")));
+        p.add(new Label("patIssuer", patModel.getIssuer()));
+        p.add(new Label("modalityLabel", new ResourceModel("link.modalityLabel")));
         p.add(new Label("modality", ppsModel.getModality()));
-        p.add(new Label("startDateTime", ppsModel.getDatetime()));
+        p.add(new Label("startDateLabel", new ResourceModel("link.startDateLabel")));
+        p.add(new DateTimeLabel("datetime", new PropertyModel<Date>(ppsModel, "datetime")));
         add(p);
     }
+    
+    @SuppressWarnings("unchecked")
+    private void presetSearchfields() {
+        PPSModel ppsModel = ppsModels.get(0);
+        PatientModel patModel = ppsModel.getParent().getParent();
+        String name = patModel.getName();
+        if (name != null && name.length() > 3)
+            name = name.substring(0,4);
+        tfPatName.getModel().setObject(name);
+        ((IModel<String>)tfModality.getModel()).setObject(ppsModel.getModality());
+        queryMWLItems();
+    }
+
     public static String getModuleName() {
         return "mpps2mwl";
     }
