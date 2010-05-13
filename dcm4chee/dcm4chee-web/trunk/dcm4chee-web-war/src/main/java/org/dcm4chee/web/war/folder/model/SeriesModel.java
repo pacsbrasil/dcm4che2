@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.folder.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -48,7 +49,6 @@ import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.common.util.DateUtils;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
@@ -64,20 +64,29 @@ public class SeriesModel extends AbstractDicomModel implements Serializable {
     private String sourceAET;
     private List<InstanceModel> instances = new ArrayList<InstanceModel>();
 
-    public SeriesModel(Series series) {
+    private PPSModel parent;
+
+    public SeriesModel(Series series, PPSModel ppsModel) {
         setPk(series.getPk());
         this.sourceAET = series.getSourceAET();
         this.dataset = series.getAttributes(true);
+        setParent(ppsModel);
+    }
+
+    protected void setParent(PPSModel ppsModel) {
+       parent = ppsModel;
+    }
+
+    public PPSModel getParent() {
+        return parent;
     }
 
     public String getSeriesInstanceUID() {
         return dataset.getString(Tag.SeriesInstanceUID);
     }
     
-    public String getDatetime() {
-        return DateUtils.datm2str(
-                dataset.getString(Tag.SeriesDate, ""),
-                dataset.getString(Tag.SeriesTime, ""));
+    public Date getDatetime() {
+        return dataset.getDate(Tag.SeriesDate, Tag.SeriesTime);
     }
 
     public String getSeriesDate() {
@@ -124,10 +133,8 @@ public class SeriesModel extends AbstractDicomModel implements Serializable {
         return dataset.getInt(Tag.NumberOfSeriesRelatedInstances);
     }
 
-    public String getPPSStartDatetime() {
-        return DateUtils.datm2str(
-                dataset.getString(Tag.PerformedProcedureStepStartDate, ""),
-                dataset.getString(Tag.PerformedProcedureStepStartTime, ""));
+    public Date getPPSStartDatetime() {
+        return dataset.getDate(Tag.PerformedProcedureStepStartDate, Tag.PerformedProcedureStepStartTime);
     }
 
     public String getPPSId() {
@@ -186,7 +193,7 @@ public class SeriesModel extends AbstractDicomModel implements Serializable {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         for (Instance inst : dao.findInstancesOfSeries(getPk())) {
-            this.instances.add(new InstanceModel(inst));
+            this.instances.add(new InstanceModel(inst, this));
         }
     }
 

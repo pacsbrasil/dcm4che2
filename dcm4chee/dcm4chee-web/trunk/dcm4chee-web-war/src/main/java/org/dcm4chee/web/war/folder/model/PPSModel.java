@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.folder.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -49,7 +50,6 @@ import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.common.util.DateUtils;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
@@ -66,15 +66,26 @@ public class PPSModel extends AbstractDicomModel implements Serializable {
     private int numberOfInstances;
     private int numberOfSeries;
     private List<SeriesModel> series = new ArrayList<SeriesModel>();
-
-    public PPSModel(MPPS mpps, SeriesModel series1) {
+    private StudyModel parent;
+    
+    public PPSModel(MPPS mpps, SeriesModel series1, StudyModel studyModel) {
         if (mpps != null) {
             setPk(mpps.getPk());
             this.dataset = mpps.getAttributes();
+            setParent(studyModel);
         }
         this.series1 = series1;
         series.add(series1);
     }
+    
+    public void setParent(StudyModel m) {
+        parent = m;
+    }
+    
+    public StudyModel getParent() {
+        return parent;
+    }
+
 
     public List<SeriesModel> getSeries() {
         return series;
@@ -84,11 +95,9 @@ public class PPSModel extends AbstractDicomModel implements Serializable {
         return series1;
     }
 
-    public String getDatetime() {
+    public Date getDatetime() {
         return dataset != null 
-                ? DateUtils.datm2str(
-                        dataset.getString(Tag.PerformedProcedureStepStartDate, ""),
-                        dataset.getString(Tag.PerformedProcedureStepStartTime, ""))
+                ? dataset.getDate(Tag.PerformedProcedureStepStartDate, Tag.PerformedProcedureStepStartTime)
                 : series1.getPPSStartDatetime();
     }
 
@@ -188,7 +197,7 @@ public class PPSModel extends AbstractDicomModel implements Serializable {
                 ? dataset.getString(Tag.PerformedProcedureStepStatus)
                 : null;
     }
-
+    
     public int getRowspan() {
         int rowspan = isDetails() ? 2 : 1;
         for (SeriesModel ser : series) {
@@ -221,7 +230,7 @@ public class PPSModel extends AbstractDicomModel implements Serializable {
             StudyListLocal dao = (StudyListLocal)
                     JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
             for (Series ser : dao.findSeriesOfMpps(uid)) {
-                series.add(new SeriesModel(ser));
+                series.add(new SeriesModel(ser, this));
             }
         }
     }

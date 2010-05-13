@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.folder.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -48,7 +49,6 @@ import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.common.util.DateUtils;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
@@ -60,12 +60,21 @@ import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 public class InstanceModel extends AbstractDicomModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
     private List<FileModel> files = new ArrayList<FileModel>();
+    private SeriesModel parent;
 
-    public InstanceModel(Instance inst) {
+    public InstanceModel(Instance inst, SeriesModel seriesModel) {
         setPk(inst.getPk());
         this.dataset = inst.getAttributes(true);
+        setParent(seriesModel);
+    }
+
+    private void setParent(SeriesModel m) {
+        parent = m;
+    }
+    
+    public SeriesModel getParent() {
+        return parent;
     }
 
     public String getSOPInstanceUID() {
@@ -98,14 +107,10 @@ public class InstanceModel extends AbstractDicomModel implements Serializable {
                 new int[] { Tag.ConceptNameCodeSequence, 0, Tag.CodeMeaning });
     }
 
-    public String getDatetime() {
+    public Date getDatetime() {
         return isPresentationState(getSopClassUID())
-                ? DateUtils.datm2str(
-                        dataset.getString(Tag.PresentationCreationDate, ""),
-                        dataset.getString(Tag.PresentationCreationDate, ""))
-                : DateUtils.datm2str(
-                        dataset.getString(Tag.ContentDate, ""),
-                        dataset.getString(Tag.ContentTime, ""));
+                ? dataset.getDate(Tag.PresentationCreationDate, Tag.PresentationCreationTime)
+                : dataset.getDate(Tag.ContentDate, Tag.ContentTime);
     }
 
     private boolean isPresentationState(String cuid) {

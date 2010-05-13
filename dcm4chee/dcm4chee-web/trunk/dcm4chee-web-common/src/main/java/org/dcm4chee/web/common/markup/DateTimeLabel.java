@@ -39,11 +39,14 @@
 package org.dcm4chee.web.common.markup;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.util.convert.IConverter;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -53,6 +56,8 @@ import org.apache.wicket.util.convert.IConverter;
 public class DateTimeLabel extends Label {
 
     private static final long serialVersionUID = 1L;
+    private SimpleDateFormat df = new SimpleDateFormat("HH:mm");
+    boolean withoutTime;
 
     public DateTimeLabel(String id) {
         super(id);
@@ -62,8 +67,13 @@ public class DateTimeLabel extends Label {
         super(id, label);
     }
 
-    public DateTimeLabel(String id, IModel<?> model) {
+    public DateTimeLabel(String id, IModel<Date> model) {
         super(id, model);
+    }
+    
+    public DateTimeLabel setWithoutTime(boolean b) {
+        withoutTime = b;
+        return this;
     }
 
     @Override
@@ -77,7 +87,21 @@ public class DateTimeLabel extends Label {
             }
 
             public String convertToString(Object value, Locale locale) {
-                return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(value);
+                
+                if (value == null) return null;
+                Date d = (Date) value;
+                String pattern = DateTimeFormat.patternForStyle("S-", getLocale());
+                int pos1 = pattern.indexOf('y');
+                if (pos1 != -1) {
+                    if (pattern.length() <= pos1+2) {
+                        pattern = pattern + "yy";
+                    } else if ( pattern.charAt(pos1+2)!='y') {
+                        pattern = pattern.substring(0,pos1)+"yyyy"+pattern.substring(pos1+2);
+                    }
+                }
+                DateTimeFormatter dtf = DateTimeFormat.forPattern(pattern)
+                .withLocale(getLocale()).withPivotYear(2000);
+                return withoutTime ? dtf.print(d.getTime()) : dtf.print(d.getTime())+" "+df.format(d);
             }};
     }
 }

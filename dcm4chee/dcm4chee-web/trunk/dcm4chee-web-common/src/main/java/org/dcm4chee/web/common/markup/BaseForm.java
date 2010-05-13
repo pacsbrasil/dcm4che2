@@ -39,7 +39,9 @@
 package org.dcm4chee.web.common.markup;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -48,6 +50,8 @@ import java.util.Set;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.behavior.IBehavior;
+import org.apache.wicket.datetime.StyleDateConverter;
+import org.apache.wicket.datetime.markup.html.form.DateTextField;
 import org.apache.wicket.extensions.yui.calendar.DateTimeField;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
@@ -56,9 +60,12 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.web.common.behaviours.MarkInvalidBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 
 /**
@@ -138,11 +145,55 @@ public class BaseForm extends Form<Object> {
         return tf;
     }
 
-    public DateTimeField addLabeledDateTimeField(String id, IModel<Date> model, final IModel<Boolean> enabledModel) {
+    public DateTimeField addLabeledDateTimeField(String id, IModel<Date> model, final IModel<Boolean> enabledModel, final boolean max) {
         DateTimeField dtf;
         add((dtf = new DateTimeField(id, model) {
 
             private static final long serialVersionUID = 1L;
+
+            @Override
+            protected boolean use12HourFormat() {
+                return false;
+            }
+
+            @Override
+            protected void convertInput() {
+                super.convertInput();
+                Date d = this.getConvertedInput();
+                if (d != null) {
+                    GregorianCalendar cal = new GregorianCalendar();
+                    cal.setTime(d);
+                    if (max && cal.get(Calendar.HOUR_OF_DAY) == 0 &&
+                        cal.get(Calendar.MINUTE) == 0 && cal.get(Calendar.SECOND) == 0) {
+                        cal.set(Calendar.HOUR_OF_DAY, 23);
+                        cal.set(Calendar.MINUTE, 59);
+                        cal.set(Calendar.SECOND, 59);
+                        cal.set(Calendar.MILLISECOND, 999);
+                        this.setConvertedInput(cal.getTime());
+                    }
+                }
+            }
+            @SuppressWarnings("unchecked")
+            @Override
+            protected DateTextField newDateTextField(String id, PropertyModel dateFieldModel) {
+                return new DateTextField(id, dateFieldModel, 
+                    new StyleDateConverter("S-", false){
+                        @Override
+                        protected DateTimeFormatter getFormat() {
+                            String pattern = getDatePattern();
+                            int pos1 = pattern.indexOf('y');
+                            if (pos1 != -1) {
+                                if (pattern.length() <= pos1+2) {
+                                    pattern = pattern + "yy";
+                                } else if ( pattern.charAt(pos1+2)!='y') {
+                                    pattern = pattern.substring(0,pos1)+"yyyy"+pattern.substring(pos1+2);
+                                }
+                            }
+                            return DateTimeFormat.forPattern(pattern).withLocale(getLocale())
+                                            .withPivotYear(2000);
+                        }
+                });
+            }
 
             @Override
             public boolean isEnabled() {

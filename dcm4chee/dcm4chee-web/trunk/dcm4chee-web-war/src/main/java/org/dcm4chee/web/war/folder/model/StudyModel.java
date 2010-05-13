@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.folder.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -50,7 +51,6 @@ import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.common.util.DateUtils;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
@@ -65,27 +65,36 @@ public class StudyModel extends AbstractDicomModel implements Serializable {
     
     private List<PPSModel> ppss = new ArrayList<PPSModel>();
 
-    public StudyModel(Study study) {
+    private PatientModel parent;
+
+    public StudyModel(Study study, PatientModel patModel) {
         setPk(study.getPk());
         dataset = study.getAttributes(true);
+        setParent(patModel);
+    }
+
+    private void setParent(PatientModel patModel) {
+        parent = patModel;
+    }
+
+    public PatientModel getParent() {
+        return parent;
     }
 
     public String getStudyInstanceUID() {
         return dataset.getString(Tag.StudyInstanceUID, "");
     }
 
-    public String getDatetime() {
-        return DateUtils.datm2str(
-                dataset.getString(Tag.StudyDate, ""),
-                dataset.getString(Tag.StudyTime, ""));
+    public Date getDatetime() {
+        return dataset.getDate(Tag.StudyDate, Tag.StudyTime);
     }
 
-    public void setDatetime(String datetime) {
-        String[] datm = DateUtils.str2datm(datetime);
-        dataset.putString(Tag.StudyDate, VR.DA, datm[0]);
-        dataset.putString(Tag.StudyTime, VR.TM, datm[1]);
+    public void setDatetime(Date datetime) {
+        
+        dataset.putDate(Tag.StudyDate, VR.DA, datetime);
+        dataset.putDate(Tag.StudyTime, VR.TM, datetime);
     }
-
+    
     public String getId() {
         return dataset.getString(Tag.StudyID);
     }
@@ -187,16 +196,17 @@ public class StudyModel extends AbstractDicomModel implements Serializable {
     
     private void add(Series series) {
         MPPS mpps = series.getModalityPerformedProcedureStep();
-        SeriesModel seriesModel = new SeriesModel(series);
+        SeriesModel seriesModel = new SeriesModel(series,null);
         for (PPSModel pps : ppss) {
             if (mpps != null ? mpps.getPk() == pps.getPk()
                     : pps.getDataset() == null 
                             && seriesModel.containedBySamePPS(pps.getSeries1())) {
+                seriesModel.setParent(pps);
                 pps.getSeries().add(seriesModel);
                 return;
             }
         }
-        ppss.add(new PPSModel(mpps, seriesModel));
+        ppss.add(new PPSModel(mpps, seriesModel, this));
     }
 
     @Override
