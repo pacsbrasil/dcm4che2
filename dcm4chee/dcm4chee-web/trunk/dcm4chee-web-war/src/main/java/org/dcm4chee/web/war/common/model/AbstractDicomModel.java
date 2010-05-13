@@ -66,7 +66,7 @@ public abstract class AbstractDicomModel implements Serializable {
     private boolean selected;
     private boolean details;
     protected DicomObject dataset;
-
+    
     public long getPk() {
         return pk;
     }

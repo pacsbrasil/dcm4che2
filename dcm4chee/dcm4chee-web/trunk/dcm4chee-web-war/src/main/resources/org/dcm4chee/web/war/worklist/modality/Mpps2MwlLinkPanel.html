@@ -7,13 +7,22 @@
 </head>
 <body>
 <wicket:panel>
-	<div wicket:id="mppsInfo">
-		<span wicket:id="mppsInfoTitle" >[INFO]</span>
-		AccNr.:<span wicket:id="accessionNumber" >[ACC_NR]</span>
-		Modality:<span wicket:id="modality" >[MODALITY]</span>
-		SPS Startdate:<span wicket:id="startDateTime" >[SPS_STARTDATE]</span>
+	<div class="mpps-info"><div wicket:id="mppsInfo">
+		<div class="info-title"><span wicket:id="mppsInfoTitle" >[INFO]</span></div>
+		<span class="info-desc" wicket:id="patNameLabel" >Patient name:</span>
+		<div class="info-value">
+			<span wicket:id="patName" >[PatientName]</span><span> (</span>
+			<span wicket:id="patIdLabel" >patId:</span>
+			<span wicket:id="patId" >[PatId]</span><span>/</span>
+			<span wicket:id="patIssuerLabel" >Issuer:</span>
+			<span wicket:id="patIssuer" >[Issuer]</span><span>)</span>
+		</div>
+		<span class="info-desc" wicket:id="modalityLabel" >Modality:</span>
+		<span class="info-value" wicket:id="modality" >[MODALITY]</span>
+		<span class="info-desc" wicket:id="startDateLabel" >SPS start date:</span>
+		<span class="info-value" wicket:id="datetime" >[SPS_STARTDATE]</span>
 		
-	</div> 
+	</div> </div>
 	<form style="clear: both" wicket:id="form">
         <div class="filterPanel">
             <div class="filter">
@@ -107,7 +116,7 @@
 				  <input type="submit" wicket:id="prev"/>
 				  <input type="submit" wicket:id="next"/>
 				</div>
-				<div wicket:id="viewport" class="viewport">Displaying studies 1 to 20 from 1234 matching studies</div>
+				<div wicket:id="viewport" class="viewport">Displaying entries 1 to 20 from 1234 matching entries</div>
 			</div>
 		</div>
 	<table>

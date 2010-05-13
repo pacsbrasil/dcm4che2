@@ -334,6 +334,8 @@ public class DicomEditBean implements DicomEditLocal {
     @SuppressWarnings("unchecked")
     public EntityTree moveStudiesToPatient(long pks[], long pk)
     {
+        log.info("############pks:"+pks);
+        if (pks != null) log.info("######pks.length:"+pks.length);
         Query qP = em.createQuery("SELECT OBJECT(p) FROM Patient p WHERE pk = :pk").setParameter("pk", Long.valueOf(pk));
         Query qS = QueryUtil.getQueryForPks(em, "SELECT OBJECT(s) FROM Study s WHERE pk ", pks);
         return moveStudiesToPatient(qS.getResultList(), (Patient)qP.getSingleResult());

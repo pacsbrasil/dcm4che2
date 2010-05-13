@@ -501,6 +501,18 @@
       <return-type>void</return-type>
    </operation>
 
+   <operation impact="ACTION">
+      <description><![CDATA[ Unlink a MPPS.
+      		]]> </description>
+      <name>unlinkMpps</name>
+      <parameter>
+        <description>MPPS primary key</description>
+        <name>mppsPk</name>
+        <type>long</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+
     </xmbean>
   </mbean>
 </server>

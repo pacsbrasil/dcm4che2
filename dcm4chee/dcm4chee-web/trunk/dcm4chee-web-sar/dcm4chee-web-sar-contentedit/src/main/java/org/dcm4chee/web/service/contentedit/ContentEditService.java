@@ -410,6 +410,9 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public int moveStudiesToPatient(long[] studyPks, long patPk) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        if ( studyPks == null || studyPks.length < 1) {
+            return 0;
+        }
         EntityTree entityTree = lookupDicomEditLocal().moveStudiesToPatient(studyPks, patPk);
         if (!entityTree.isEmpty()) {
             DicomObject kos = getRejectionNotes(entityTree)[0];
@@ -535,6 +538,25 @@ public class ContentEditService extends ServiceMBeanSupport {
             }
             this.moveStudiesToPatient(studyPks, pat.getPk());
         }
+    }
+    
+    public boolean unlinkMpps(long pk) {
+        MPPS mpps = lookupMppsToMwlLinkLocal().unlinkMpps(pk, modifyingSystem, modifyReason);
+        if (mpps != null) {
+            DicomObject mppsAttrs = mpps.getAttributes();
+            DicomObject patAttrs = mpps.getPatient().getAttributes();
+            StringBuilder sb = new StringBuilder();
+            sb.append("Unlink MPPS iuid:").append(mppsAttrs.getString(Tag.SOPInstanceUID)).append(" from SPS ID(s): ");
+            DicomElement ssaSQ = mppsAttrs.get(Tag.ScheduledStepAttributesSequence);
+            for ( int i = 0, len = ssaSQ.countItems() ; i < len ; i++) {
+                sb.append(ssaSQ.getDicomObject(i).getString(Tag.ScheduledProcedureStepID)).append(", ");
+            }
+            logProcedureRecord(patAttrs, ssaSQ.getDicomObject().getString(Tag.StudyInstanceUID),
+                    mpps.getAccessionNumber(), 
+                    ProcedureRecordMessage.UPDATE, sb.substring(0,sb.length()-2));
+            return true;
+        }
+        return false;
     }
     
     private void updateSeriesAttributes(MppsToMwlLinkResult result) throws InstanceNotFoundException, MBeanException, ReflectionException {

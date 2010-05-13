@@ -92,8 +92,13 @@ public abstract class PopupLink extends Link<Object> {
         this.popupWidth = popupWidth;
     }
 
-    public void setPopupDisplayFlag(int popupDisplayFlag) {
+    public void setPopupDisplayFlags(int popupDisplayFlag) {
         this.popupDisplayFlag = popupDisplayFlag;
+    }
+    
+    public void setPopupDisplayFlag(int flag, boolean b) {
+        this.popupDisplayFlag = b ?
+                popupDisplayFlag | flag : popupDisplayFlag & ~flag;
     }
 
     private class MultiPopupSettings extends PopupSettings {

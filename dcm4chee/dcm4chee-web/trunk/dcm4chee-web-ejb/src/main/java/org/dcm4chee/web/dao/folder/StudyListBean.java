@@ -299,25 +299,17 @@ public class StudyListBean implements StudyListLocal {
     }
     
     private static void setStudyDateMinQueryParameter(Query query, Date date) {
-        setStudyDateQueryParameter(query, date, "studyDateTimeMin", false);
+        setStudyDateQueryParameter(query, date, "studyDateTimeMin");
     }
 
     private static void setStudyDateMaxQueryParameter(Query query, Date date) {
-        setStudyDateQueryParameter(query, date, "studyDateTimeMax", true);
+        setStudyDateQueryParameter(query, date, "studyDateTimeMax");
     }
 
     private static void setStudyDateQueryParameter(Query query,
-            Date studyDate, String param, boolean max) {
+            Date studyDate, String param) {
         if (studyDate != null) {
-            GregorianCalendar cal = new GregorianCalendar();
-            cal.setTime(studyDate);
-            if (max) {
-                cal.set(Calendar.HOUR_OF_DAY, 23);
-                cal.set(Calendar.MINUTE, 59);
-                cal.set(Calendar.SECOND, 59);
-                cal.set(Calendar.MILLISECOND, 999);
-            }
-            query.setParameter(param, cal, TemporalType.TIMESTAMP);
+            query.setParameter(param, studyDate, TemporalType.TIMESTAMP);
         }
     }
 

@@ -177,6 +177,52 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
         mpps.setAttributes(mppsAttrs);
         em.merge(mpps);
     }
+
+    public MPPS unlinkMpps(long pk, String modifyingSystem, String modifyReason) {
+        MPPS mpps = em.find(MPPS.class, pk);
+        MPPS mppsSav = new MPPS();
+        mppsSav.setAttributes(mpps.getAttributes());
+        mpps.getPatient().getPatientID();
+        mppsSav.setPatient(mpps.getPatient());
+        DicomObject mppsAttrs = mpps.getAttributes();
+        DicomElement ssaSQ = mppsAttrs.get(Tag.ScheduledStepAttributesSequence);
+        String rpId, spsId;
+        DicomObject item = null;
+        DicomObject mwlAttrs;
+        MWLItem mwlItem = null;
+        Query qMwl = em.createQuery("select object(m) from MWLItem m where requestedProcedureID = :rpId and scheduledProcedureStepID = :spsId");
+        for ( int i = 0, len = ssaSQ.countItems() ; i < len ; i++) {
+            item = ssaSQ.getDicomObject(i);
+            rpId = item.getString(Tag.RequestedProcedureID);
+            spsId = item.getString(Tag.ScheduledProcedureStepID);
+            if (spsId != null) {
+                try {
+                    qMwl.setParameter("rpId", rpId).setParameter("spsId", spsId);
+                    mwlItem = (MWLItem)qMwl.getSingleResult();
+                    mwlAttrs = mwlItem.getAttributes();
+                    mwlAttrs.get(Tag.ScheduledStepAttributesSequence).getDicomObject()
+                        .putString(Tag.ScheduledProcedureStepStatus, VR.CS, "SCHEDULED");
+                    mwlItem.setAttributes(mwlAttrs);
+                    em.merge(mwlItem);
+                } catch (Exception ignore) {
+                    log.warn("Can't update MWLItem status to SCHEDULED! MWL:"+mwlItem);
+                }
+            }
+        }
+        String studyIUID = item.getString(Tag.StudyInstanceUID);
+        item.clear();
+        item.putString(Tag.StudyInstanceUID, VR.UI, studyIUID);
+        item.putString(Tag.ScheduledProcedureStepID, VR.SH, null);
+        item.putString(Tag.AccessionNumber, VR.SH, null);
+        item.putSequence(Tag.ReferencedStudySequence);
+        item.putString(Tag.RequestedProcedureID, VR.SH, null);
+        item.putString(Tag.ScheduledProcedureStepDescription, VR.LO, null);
+        item.putSequence(Tag.ScheduledProtocolCodeSequence);
+        mppsAttrs.putSequence(Tag.ScheduledStepAttributesSequence).addDicomObject(item);
+        mpps.setAttributes(mppsAttrs);
+        em.merge(mpps);
+        return mppsSav;
+    }
     
     @SuppressWarnings("unchecked")
     public void updateSeriesAndStudyAttributes(String[] mppsIuids, DicomObject coerce) {

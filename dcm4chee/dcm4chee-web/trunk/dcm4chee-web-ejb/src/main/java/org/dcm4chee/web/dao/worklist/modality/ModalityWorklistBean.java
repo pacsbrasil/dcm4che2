@@ -282,25 +282,17 @@ public class ModalityWorklistBean implements ModalityWorklist {
     }
 
     private static void setStartDateMinQueryParameter(Query query, Date date) {
-        setStartDateQueryParameter(query, date, "startDateTimeMin", false);
+        setStartDateQueryParameter(query, date, "startDateTimeMin");
     }
 
     private static void setStartDateMaxQueryParameter(Query query, Date date) {
-        setStartDateQueryParameter(query, date, "startDateTimeMax", true);
+        setStartDateQueryParameter(query, date, "startDateTimeMax");
     }
 
     private static void setStartDateQueryParameter(Query query,
-            Date startDate, String param, boolean max) {
+            Date startDate, String param) {
         if (startDate != null) {
-            GregorianCalendar cal = new GregorianCalendar();
-            cal.setTime(startDate);
-            if (max) {
-                cal.set(Calendar.HOUR_OF_DAY, 23);
-                cal.set(Calendar.MINUTE, 59);
-                cal.set(Calendar.SECOND, 59);
-                cal.set(Calendar.MILLISECOND, 999);
-            }
-            query.setParameter(param, cal, TemporalType.TIMESTAMP);
+            query.setParameter(param, startDate, TemporalType.TIMESTAMP);
         }
     }
 
