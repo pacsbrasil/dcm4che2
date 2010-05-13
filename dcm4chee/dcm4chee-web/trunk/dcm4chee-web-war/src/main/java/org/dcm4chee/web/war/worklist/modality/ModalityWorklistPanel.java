@@ -137,8 +137,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         form.addLabeledTextField("issuerOfPatientID", enabledModel);
         
         form.addLabel("startDate");
-        form.addLabeledDateTimeField("startDateMin", new PropertyModel<Date>(filter, "startDateMin"), enabledModel);
-        form.addLabeledDateTimeField("startDateMax", new PropertyModel<Date>(filter, "startDateMax"), enabledModel);
+        form.addLabeledDateTimeField("startDateMin", new PropertyModel<Date>(filter, "startDateMin"), enabledModel, false);
+        form.addLabeledDateTimeField("startDateMax", new PropertyModel<Date>(filter, "startDateMax"), enabledModel, true);
 
         form.addLabeledTextField("accessionNumber", enabledModel);
         form.addLabeledDropDownChoice("modality", null, getModalityChoices(), enabledModel);
@@ -204,8 +204,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             @Override
             public Serializable getObject() {
                 return notSearched ? "mw.notSearched" :
-                        viewport.getTotal() == 0 ? "mw.noMatchingStudiesFound" : 
-                            "mw.studiesFound";
+                        viewport.getTotal() == 0 ? "mw.noMatchingMppsFound" : 
+                            "mw.mppsFound";
             }
         };
         form.add(new Label("viewport", new StringResourceModel("${}", ModalityWorklistPanel.this, keySelectModel,new Object[]{"dummy"}){

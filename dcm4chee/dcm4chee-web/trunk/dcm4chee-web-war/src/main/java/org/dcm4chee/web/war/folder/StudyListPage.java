@@ -39,6 +39,7 @@
 package org.dcm4chee.web.war.folder;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -49,6 +50,7 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
+import org.apache.wicket.datetime.StyleDateConverter;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -58,6 +60,7 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.markup.html.link.PopupSettings;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -116,6 +119,7 @@ public class StudyListPage extends Panel {
     private boolean notSearched = true;
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("folder.");
     private MessageWindow msgWin = new MessageWindow("msgWin");
+    private ConfirmationWindow<PPSModel> confirmUnlinkMpps;
     
     public StudyListPage(final String id) {
         super(id);
@@ -156,8 +160,8 @@ public class StudyListPage extends Panel {
         addExtendedPatientSearch(form);
         
         form.addLabel("studyDate");
-        form.addLabeledDateTimeField("studyDateMin", new PropertyModel<Date>(filter, "studyDateMin"), enabledModel);
-        form.addLabeledDateTimeField("studyDateMax", new PropertyModel<Date>(filter, "studyDateMax"), enabledModel);
+        form.addLabeledDateTimeField("studyDateMin", new PropertyModel<Date>(filter, "studyDateMin"), enabledModel, false);
+        form.addLabeledDateTimeField("studyDateMax", new PropertyModel<Date>(filter, "studyDateMax"), enabledModel, true);
 
         form.addLabeledTextField("accessionNumber", enabledModel);
         addExtendedStudySearch(form);
@@ -337,6 +341,29 @@ public class StudyListPage extends Panel {
         .add(new ImageSizeBehaviour()))
         .add(tooltipBehaviour);
         form.add(deleteBtn);
+
+        confirmUnlinkMpps = new ConfirmationWindow<PPSModel>("confirmUnlink"){
+            private static final long serialVersionUID = 1L;
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, PPSModel ppsModel) {
+                try {
+                    if (ContentEditDelegate.getInstance().unlink(ppsModel)) {
+                        this.setStatus(new StringResourceModel("folder.unlinkDone", StudyListPage.this,null));
+                        return;
+                    }
+                } catch (Exception x) {
+                    log.error("Unlink of MPPS failed:"+ppsModel, x);
+                }
+                this.setStatus(new StringResourceModel("folder.moveFailed", StudyListPage.this,null));
+
+            }
+            @Override
+            public void onOk(AjaxRequestTarget target) {
+                target.addComponent(form);
+            }
+        };
+        form.add(confirmUnlinkMpps);
+
     }
 
     private WebMarkupContainer addExtendedPatientSearch(final Form<?> form) {
@@ -455,7 +482,7 @@ public class StudyListPage extends Panel {
                 return false;
             }
         }
-        studies.add(new StudyModel(study));
+        studies.add(new StudyModel(study, patient));
         return true;
     }
 
@@ -540,7 +567,7 @@ public class StudyListPage extends Panel {
             item.add(new Label("name").add(tooltipBehaviour));
             item.add(new Label("id").add(tooltipBehaviour));
             item.add(new Label("issuer").add(tooltipBehaviour));
-            item.add(new Label("birthdate").add(tooltipBehaviour));
+            item.add(new DateTimeLabel("birthdate").setWithoutTime(true).add(tooltipBehaviour));
             item.add(new Label("sex").add(tooltipBehaviour));
             item.add(new Label("comments").add(tooltipBehaviour));
             item.add(new Label("pk").add(new TooltipBehaviour("folder.","patPk")));
@@ -623,7 +650,7 @@ public class StudyListPage extends Panel {
             };
             cell.add(new ExpandCollapseLink("expand", studyModel, patientListItem));
             item.add(cell);
-            item.add(new Label("datetime").add(new TooltipBehaviour("folder.study","DateTime")));
+            item.add(new DateTimeLabel("datetime").add(new TooltipBehaviour("folder.study","DateTime")));
             item.add(new Label("id").add(new TooltipBehaviour("folder.study","Id")));
             item.add(new Label("accessionNumber").add(new TooltipBehaviour("folder.","accessionNumber")));
             item.add(new Label("modalities").add(new TooltipBehaviour("folder.","modalities")));
@@ -687,12 +714,12 @@ public class StudyListPage extends Panel {
 
         private static final long serialVersionUID = 1L;
         
-        private final ListItem<?> patientListItem;
+        private final ListItem<?> ppsListItem;
 
         private PPSListView(String id, List<PPSModel> list,
                 ListItem<?> patientListItem) {
             super(id, list);
-            this.patientListItem = patientListItem;
+            this.ppsListItem = patientListItem;
         }
 
         @Override
@@ -709,7 +736,7 @@ public class StudyListPage extends Panel {
                    tag.put("rowspan", ppsModel.getRowspan());
                 }
             };
-            cell.add(new ExpandCollapseLink("expand", ppsModel, patientListItem){
+            cell.add(new ExpandCollapseLink("expand", ppsModel, ppsListItem){
 
                 private static final long serialVersionUID = 1L;
 
@@ -719,7 +746,7 @@ public class StudyListPage extends Panel {
                 }
             });
             item.add(cell);
-            item.add(new Label("datetime").add(new TooltipBehaviour("folder.pps","DateTime")));
+            item.add(new DateTimeLabel("datetime").add(new TooltipBehaviour("folder.pps","DateTime")));
             item.add(new Label("id").add(new TooltipBehaviour("folder.pps","Id")));
             item.add(new Label("spsid").add(new TooltipBehaviour("folder.","spsid")));
             item.add(new Label("modality").add(new TooltipBehaviour("folder.pps","Modality")));
@@ -752,7 +779,7 @@ public class StudyListPage extends Panel {
                 public void onClick(AjaxRequestTarget target) {
                     ppsModel.setDetails(!ppsModel.isDetails());
                     if (target != null) {
-                        target.addComponent(patientListItem);
+                        target.addComponent(StudyListPage.this.get("form"));
                     }
                 }
 
@@ -785,14 +812,34 @@ public class StudyListPage extends Panel {
                 @Override
                 public void onClick() {
                     Mpps2MwlLinkPage page = new Mpps2MwlLinkPage(ppsModel);
-                    this.setResponsePage(page);
+                    setResponsePage(page);
+                }
+                @Override
+                public boolean isVisible() {
+                    return ppsModel.getDataset() != null && ppsModel.getAccessionNumber()==null;
                 }
             };
-            linkBtn.setPopupHeight(400);
-            linkBtn.setPopupWidth(550);
+            linkBtn.setPopupHeight(600);
+            linkBtn.setPopupWidth(850);
+            linkBtn.setPopupDisplayFlag(PopupSettings.SCROLLBARS, true);
             linkBtn.add(new Image("linkImg", ImageManager.IMAGE_INSERT_LINK)
             .add(new ImageSizeBehaviour())).add(new TooltipBehaviour("folder.","ppsLink"));
             item.add(linkBtn);
+
+            item.add(new AjaxFallbackLink<Object>("unlinkBtn") {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    confirmUnlinkMpps.confirm(target, new StringResourceModel("folder.confirmUnlink",this, null,new Object[]{ppsModel}), ppsModel);
+                }
+
+                @Override
+                public boolean isVisible() {
+                    return ppsModel.getDataset() != null && ppsModel.getAccessionNumber()!=null;
+                }
+            }.add(new Image("unlinkImg",ImageManager.IMAGE_STATUS_UNLINKED).add(new ImageSizeBehaviour())));
             
             item.add(new AjaxCheckBox("selected"){
 
@@ -815,7 +862,7 @@ public class StudyListPage extends Panel {
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", ppsModel.getDataset(), false));
             item.add(new SeriesListView("series",
-                    ppsModel.getSeries(), patientListItem));
+                    ppsModel.getSeries(), ppsListItem));
         }
     }
 
@@ -847,7 +894,7 @@ public class StudyListPage extends Panel {
             };
             cell.add(new ExpandCollapseLink("expand", seriesModel, patientListItem));
             item.add(cell);
-            item.add(new Label("datetime").add(new TooltipBehaviour("folder.series","DateTime")));
+            item.add(new DateTimeLabel("datetime").add(new TooltipBehaviour("folder.series","DateTime")));
             item.add(new Label("seriesNumber").add(new TooltipBehaviour("folder.","seriesNumber")));
             item.add(new Label("sourceAET").add(new TooltipBehaviour("folder.","sourceAET")));
             item.add(new Label("modality").add(new TooltipBehaviour("folder.series","Modality")));
@@ -934,7 +981,7 @@ public class StudyListPage extends Panel {
             };
             cell.add(new ExpandCollapseLink("expand", instModel, patientListItem));
             item.add(cell);
-            item.add(new Label("datetime").add(new TooltipBehaviour("folder.instance","DateTime")));
+            item.add(new DateTimeLabel("datetime").add(new TooltipBehaviour("folder.instance","DateTime")));
             item.add(new Label("instanceNumber").add(new TooltipBehaviour("folder.","instanceNumber")));
             item.add(new Label("sopClassUID").add(new TooltipBehaviour("folder.","sopClassUID")));
             item.add(new Label("description").add(new TooltipBehaviour("folder.instance","Description")));

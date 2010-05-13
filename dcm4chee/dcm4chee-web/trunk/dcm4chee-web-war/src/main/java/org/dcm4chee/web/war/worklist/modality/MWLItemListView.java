@@ -43,6 +43,7 @@ import java.util.List;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
+import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
 
 /**
@@ -74,7 +75,7 @@ public class MWLItemListView extends PropertyListView<MWLItemModel> {
         .add(new Label("accessionNumber"))
         .add(new Label("patientName"))
         .add(new Label("modality"))
-        .add(new Label("startDate"));
+        .add(new DateTimeLabel("startDate"));
         if (mwlActionProvider != null) {
             mwlActionProvider.addMwlActions(item, MWLItemListView.this);
         }
