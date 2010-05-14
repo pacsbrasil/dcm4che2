@@ -1,6 +1,6 @@
 <project name="xero-wado" default="install">
   <property name="version.ownVersion" value="true" />
-  <property name="version.increment" value="720" />
+  <property name="version.increment" value="721" />
 
   <property file="build.properties" />
   <property name="baseAntDefns" value="../xero-util/baseBuild.xml" />
