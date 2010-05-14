@@ -3,7 +3,7 @@
   <property file="build.properties" />
   <property name="baseAntDefns" value="xero-util/baseBuild.xml" />
   <property name="version.ownVersion" value="true" />
-  <property name="version.increment" value="40" />
+  <property name="version.increment" value="41" />
   <property name="version.base" value="1.0-rc" />
   <property name="version.parent.tagdir" value="tags" />
   <property name="version.tags" value="https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4chee/dcm4chee-xero/${version.parent.tagdir}" />
