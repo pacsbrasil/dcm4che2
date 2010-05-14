@@ -368,6 +368,10 @@ public class ADTService extends AbstractHL7Service {
         getPatientUpdate().changePatientIdentifierList(correct, prior, patientMatching);
     }
 
+    protected boolean deletePatient(Dataset ds, PatientMatching patientMatching) throws Exception {
+        return getPatientUpdate().deletePatient(ds, patientMatching);
+    }
+
     protected void patientArrived(Dataset ds, PatientMatching patientMatching) throws Exception {
         getPatientUpdate().patientArrived(ds,patientMatching);
     }
