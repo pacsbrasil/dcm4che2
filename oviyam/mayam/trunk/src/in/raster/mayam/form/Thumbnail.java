@@ -50,7 +50,7 @@ import java.awt.image.BufferedImage;
  * @version 0.5
  *
  */
-public class ThumbnailImage1 extends JLabel{
+public class Thumbnail extends JLabel{
 
     private BufferedImage image = null;
     private int thumbWidth=96;
@@ -61,7 +61,7 @@ public class ThumbnailImage1 extends JLabel{
     private int x;
     private int y;
 
-    public ThumbnailImage1(BufferedImage image) {
+    public Thumbnail(BufferedImage image) {
         this.image = image;
         initComponents();
         

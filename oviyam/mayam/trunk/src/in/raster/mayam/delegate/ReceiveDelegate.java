@@ -80,6 +80,9 @@ public class ReceiveDelegate {
              ApplicationContext.writeLog(ex.toString());
             Logger.getLogger(ReceiveDelegate.class.getName()).log(Level.SEVERE, null, ex);
         }
+        catch (Exception e) {
+            e.printStackTrace();          
+        }
     }
     public void stop()
     {
@@ -88,5 +91,4 @@ public class ReceiveDelegate {
             dcmrcv = null;
         }
     }
-
 }

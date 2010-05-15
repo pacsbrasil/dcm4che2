@@ -161,7 +161,7 @@ public class MainScreen extends javax.swing.JFrame {
      * This routine used to initialize the database
      */
     public void initDB() {
-        ApplicationContext.createDB();
+        ApplicationContext.openOrCreateDB();
     }
 
     /**
@@ -178,6 +178,7 @@ public class MainScreen extends javax.swing.JFrame {
         try {
             startReceiver();
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

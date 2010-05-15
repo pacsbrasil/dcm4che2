@@ -98,7 +98,7 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
     private ImageIcon imageIcon;
     private BufferedImage currentbufferedimage;
     private BufferedImage image;
-    private ThumbnailImage1 imageLabel;   
+    private Thumbnail imageLabel;
 
     private boolean instanceListAdded = false;
 
@@ -124,7 +124,7 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
      * This routine used to add the image in this container.
      */
     private void addImage() {
-        imageLabel = new ThumbnailImage1(image);
+        imageLabel = new Thumbnail(image);
         imageLabel.setSize(96, 96);
         this.add(imageLabel);
         imageLabel.addMouseListener(this);       

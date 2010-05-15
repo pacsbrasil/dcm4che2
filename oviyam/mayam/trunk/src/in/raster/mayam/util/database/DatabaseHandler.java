@@ -39,6 +39,8 @@
 package in.raster.mayam.util.database;
 
 import in.raster.mayam.context.ApplicationContext;
+import in.raster.mayam.facade.ApplicationFacade;
+import in.raster.mayam.form.dialog.NumberFormatValidator;
 import in.raster.mayam.model.AEModel;
 import in.raster.mayam.model.Instance;
 import in.raster.mayam.model.PresetModel;
@@ -60,6 +62,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Vector;
+import javax.swing.JOptionPane;
 import org.dcm4che.dict.Tags;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
@@ -117,8 +120,8 @@ public class DatabaseHandler {
     }
 
     /** It initializes the Java Derby Databse.It creates the database if it is not available. */
-    public void initDrivers() {
-        try {
+    public void openOrCreateDB() {
+        try {           
             try {
                 Class.forName(driver).newInstance();
             } catch (InstantiationException e) {
@@ -131,16 +134,36 @@ public class DatabaseHandler {
                 StringWriter str = new StringWriter();
                 e.printStackTrace(new PrintWriter(str));
             }
+            try
+            {
             ds = new org.apache.derby.jdbc.EmbeddedSimpleDataSource();
-            this.dbExists = checkDBexists(System.getProperty("user.dir"));
             ds.setDatabaseName(databasename);
-
+            }
+            catch(NoClassDefFoundError e)
+            {
+                System.err.println("ERROR: ClassNotFoundException:"+e.getMessage());
+                ApplicationFacade.exitApp("ERROR: ClassNotFoundException:"+e.getMessage()+": Exiting the program");
+            }
+            this.dbExists = checkDBexists(System.getProperty("user.dir"));           
+            try
+            {
             if (!dbExists) {
                 conn = DriverManager.getConnection(protocol + databasename + ";create=true",
                         username, password);
             } else {
                 conn = DriverManager.getConnection(protocol + databasename + ";create=false", username, password);
             }
+            }
+            catch(SQLException e)
+            {               
+                if(conn==null)
+                {                    
+                 System.err.println("ERROR: Database connection cannot be created:"+e.getMessage());
+                 System.err.println("A instance of application is already running");
+                 ApplicationFacade.exitApp("A instance of Mayam is already running: Exiting the program");
+                }
+            }    
+
             statement = conn.createStatement();
             if (!dbExists) {
                 createTables();
@@ -148,12 +171,12 @@ public class DatabaseHandler {
                 insertDefaultListenerDetail();
                 insertDefaultLayoutDetail();
                 insertDefaultPresets();
-            }
+            }          
             conn.setAutoCommit(false);
         } catch (SQLException e) {
             StringWriter str = new StringWriter();
             e.printStackTrace(new PrintWriter(str));
-        }
+        }      
     }
 
     /**
@@ -244,19 +267,18 @@ public class DatabaseHandler {
     public String[] getListenerDetails() {
         ResultSet rs = null;
         String detail[] = new String[3];
-        try {
+        try {            
             rs = conn.createStatement().executeQuery("select * from listener");
             while (rs.next()) {
                 detail[0] = rs.getString("aetitle");
                 detail[1] = "" + rs.getInt("port");
                 detail[2] = rs.getString("storagelocation");
             }
-
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }      
         return detail;
-    }
+    }  
 
     // checks the existence of the file
     public boolean TableExists(String TableName) throws SQLException {
@@ -970,7 +992,6 @@ public class DatabaseHandler {
                     img.setSop_iuid(rs1.getString("SopUID"));
                     img.setInstance_no(rs1.getString("InstanceNo"));
                     series.getImageList().add(img);
-
                 }
                 arr.add(series);
             }

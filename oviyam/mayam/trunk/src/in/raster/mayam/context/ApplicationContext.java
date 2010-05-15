@@ -97,8 +97,8 @@ public class ApplicationContext {
      * This routine used to init the driver and open database if it is already created,
      * otherwise it will create a new database
      */
-    public static void createDB() {
-        databaseRef.initDrivers();
+    public static void openOrCreateDB() {
+        databaseRef.openOrCreateDB();
     }
     /**
      * This routine used to create log file if does not exist
@@ -143,5 +143,9 @@ public class ApplicationContext {
             } catch (IOException ex) {
             }
         }
+    }
+    public static void exit()
+    {
+
     }
 }
