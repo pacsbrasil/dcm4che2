@@ -125,7 +125,6 @@ public class UserListPanel extends Panel {
                 ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).deleteUser(userObject.getUserID());
                 target.addComponent(UserListPanel.this);
                 allUsers = new ListModel<User>(getAllUsers());
-                init();
             }
 
             @Override
@@ -138,11 +137,12 @@ public class UserListPanel extends Panel {
                 "toggle-form-image-user", 
                 Arrays.asList("userlist.toggle-user-form-link.title.tooltip", "userlist.toggle-user-form-link.close.tooltip"))
         );
-        
-        init();
     }
 
-    private void init() {
+    @Override
+    protected void onBeforeRender() {
+        super.onBeforeRender();
+        
         RepeatingView roleHeaders = new RepeatingView("role-headers");
         for (String rolename : this.allRolenames.getObject())
             roleHeaders.add(new Label(roleHeaders.newChildId(), rolename));
@@ -256,8 +256,6 @@ public class UserListPanel extends Panel {
                     this.getParent().setVisible(false);
                     usernameTf.setModelObject("");
                     allUsers = new ListModel<User>(getAllUsers());
-                    
-                    init();
                 }
             });
         }
@@ -300,8 +298,6 @@ public class UserListPanel extends Panel {
                     rolenameTf.setModelObject("");
                     allUsers = new ListModel<User>(getAllUsers());
                     allRolenames = new ListModel<String>(getAllRolenames());
-                    
-                    init();
                 }
             });
         }
