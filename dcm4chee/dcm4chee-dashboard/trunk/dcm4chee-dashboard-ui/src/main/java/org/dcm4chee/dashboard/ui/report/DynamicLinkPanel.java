@@ -205,6 +205,8 @@ public class DynamicLinkPanel extends Panel {
 
                 @Override
                 public void onClose(AjaxRequestTarget target) {
+                    modalWindow.getPage().setOutputMarkupId(true);
+                    target.addComponent(modalWindow.getPage());
                 }
             });
         }
@@ -251,10 +253,10 @@ public class DynamicLinkPanel extends Panel {
                   
                 @Override
                 public Page createPage() {
-                    return new CreateOrEditReportPage(modalWindow, report);
-                }                
+                    return new CreateOrEditReportPage(modalWindow, report);                        
+                }
             });
-
+            
             ((ModalWindow) this.modalWindow.add(new DisableDefaultConfirmBehavior()))
             .setInitialWidth(new Integer(new ResourceModel("dashboard.dynamiclink.report.createoredit.window.width").wrapOnAssignment(this).getObject().toString()))
             .setInitialHeight(new Integer(new ResourceModel("dashboard.dynamiclink.report.createoredit.window.height").wrapOnAssignment(this).getObject().toString()))

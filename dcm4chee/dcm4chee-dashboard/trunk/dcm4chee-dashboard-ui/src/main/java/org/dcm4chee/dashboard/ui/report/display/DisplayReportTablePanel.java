@@ -92,9 +92,19 @@ public class DisplayReportTablePanel extends Panel {
     
     private static Logger log = LoggerFactory.getLogger(DisplayReportTablePanel.class);
 
+    private ReportModel report;
+    private Map<String, String> parameters;
+
     public DisplayReportTablePanel(String id, ReportModel report, Map<String, String> parameters) {
         super(id);
-        
+        this.report = report;
+        this.parameters = parameters;
+    }
+    
+    @Override
+    public void onBeforeRender() {
+        super.onBeforeRender();
+
         Connection jdbcConnection = null;
         try {
 
@@ -168,7 +178,7 @@ public class DisplayReportTablePanel extends Panel {
             }
             resultSet.close();
 
-            add(new Link<Object>("table-download-xml") {
+            addOrReplace(new Link<Object>("table-download-xml") {
                 
                 private static final long serialVersionUID = 1L;
 
@@ -212,7 +222,7 @@ public class DisplayReportTablePanel extends Panel {
                 )
             );
 
-            add(new Link<Object>("table-download-csv") {
+            addOrReplace(new Link<Object>("table-download-csv") {
                 
                 private static final long serialVersionUID = 1L;
 
@@ -253,18 +263,18 @@ public class DisplayReportTablePanel extends Panel {
                 )
             );
 
-            add(new Image("table-print-image", ImageManager.IMAGE_REPORT_PRINT)
+            addOrReplace(new Image("table-print-image", ImageManager.IMAGE_REPORT_PRINT)
             .add(new ImageSizeBehaviour())
             );
 
-            add(new Label("error-message", "").setVisible(false));
-            add(new Label("error-reason", "").setVisible(false));
+            addOrReplace(new Label("error-message", "").setVisible(false));
+            addOrReplace(new Label("error-reason", "").setVisible(false));
         } catch (Exception e) {
             addOrReplace(((DynamicDisplayPage) this.getPage()).new PlaceholderLink("table-download-xml"));
             addOrReplace(((DynamicDisplayPage) this.getPage()).new PlaceholderLink("table-download-csv"));
             addOrReplace(new Image("table-print-image"));
-            add(new Label("error-message", new ResourceModel("dashboard.report.reporttable.statement.error").wrapOnAssignment(this).getObject()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
-            add(new Label("error-reason", e.getMessage()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
+            addOrReplace(new Label("error-message", new ResourceModel("dashboard.report.reporttable.statement.error").wrapOnAssignment(this).getObject()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
+            addOrReplace(new Label("error-reason", e.getMessage()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
         } finally {
             try {
                 jdbcConnection.close();

@@ -50,15 +50,12 @@ import org.apache.wicket.authentication.AuthenticatedWebSession;
 import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebApplication;
-import org.dcm4chee.dashboard.mbean.DashboardDelegator;
-import org.dcm4chee.dashboard.war.session.JaasWicketSession;
 import org.dcm4chee.dashboard.war.common.AccessDeniedPage;
 import org.dcm4chee.dashboard.war.common.InternalErrorPage;
 import org.dcm4chee.dashboard.war.common.PageExpiredErrorPage;
-import org.dcm4chee.dashboard.war.pages.LoginPage;
 import org.dcm4chee.dashboard.war.pages.DashboardMainPage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.dcm4chee.dashboard.war.pages.LoginPage;
+import org.dcm4chee.dashboard.war.session.JaasWicketSession;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -67,8 +64,6 @@ import org.slf4j.LoggerFactory;
  */
 public class WicketApplication extends AuthenticatedWebApplication {
 
-    private static Logger log = LoggerFactory.getLogger(WicketApplication.class);
-    
     private String securityDomainName;
     private String rolesGroupName;
     private String userRoleName;

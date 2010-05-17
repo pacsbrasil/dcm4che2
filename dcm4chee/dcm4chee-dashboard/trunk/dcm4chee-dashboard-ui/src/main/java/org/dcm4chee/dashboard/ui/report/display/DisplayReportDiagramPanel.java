@@ -55,7 +55,6 @@ import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.IRequestTarget;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -63,8 +62,8 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.protocol.http.WebResponse;
 import org.dcm4chee.dashboard.model.ReportModel;
-import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
 import org.dcm4chee.dashboard.ui.common.JFreeChartImage;
+import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.jfree.chart.ChartFactory;
@@ -97,8 +96,18 @@ public class DisplayReportDiagramPanel extends Panel {
 
     private static Logger log = LoggerFactory.getLogger(DisplayReportDiagramPanel.class);
 
+    private ReportModel report;
+    private Map<String, String> parameters;
+
     public DisplayReportDiagramPanel(String id, ReportModel report, Map<String, String> parameters) {
         super(id);
+        this.report = report;
+        this.parameters = parameters;
+    }
+    
+    @Override
+    public void onBeforeRender() {
+        super.onBeforeRender();
 
         Connection jdbcConnection = null;
         try {
@@ -197,13 +206,13 @@ public class DisplayReportDiagramPanel extends Panel {
                         true);
             }
 
-            add(new JFreeChartImage("diagram", 
+            addOrReplace(new JFreeChartImage("diagram", 
                                     chart, 
                                     new Integer(new ResourceModel("dashboard.report.reportdiagram.image.width").wrapOnAssignment(this).getObject().toString()), 
                                     new Integer(new ResourceModel("dashboard.report.reportdiagram.image.height").wrapOnAssignment(this).getObject().toString())));
 
             final JFreeChart downloadableChart = chart;
-            add(new Link<Object>("diagram-download") {
+            addOrReplace(new Link<Object>("diagram-download") {
                 
                 private static final long serialVersionUID = 1L;
 
@@ -240,18 +249,18 @@ public class DisplayReportDiagramPanel extends Panel {
                 )
             );
 
-            add(new Image("diagram-print-image", ImageManager.IMAGE_REPORT_PRINT)
+            addOrReplace(new Image("diagram-print-image", ImageManager.IMAGE_REPORT_PRINT)
             .add(new ImageSizeBehaviour())
             );
 
-            add(new Label("error-message", "").setVisible(false));
-            add(new Label("error-reason", "").setVisible(false));
+            addOrReplace(new Label("error-message", "").setVisible(false));
+            addOrReplace(new Label("error-reason", "").setVisible(false));
         } catch (Exception e) {
             addOrReplace(((DynamicDisplayPage) this.getPage()).new PlaceholderLink("diagram-download"));
             addOrReplace(new Image("diagram-print-image"));
             addOrReplace(new Image("diagram"));
-            add(new Label("error-message", new ResourceModel("dashboard.report.reportdiagram.statement.error").wrapOnAssignment(this).getObject()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
-            add(new Label("error-reason", e.getMessage()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
+            addOrReplace(new Label("error-message", new ResourceModel("dashboard.report.reportdiagram.statement.error").wrapOnAssignment(this).getObject()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
+            addOrReplace(new Label("error-reason", e.getMessage()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
         } finally {
             try {
                 jdbcConnection.close();

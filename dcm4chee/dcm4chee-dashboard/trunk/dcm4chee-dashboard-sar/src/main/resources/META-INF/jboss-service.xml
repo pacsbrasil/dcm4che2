@@ -7,4 +7,11 @@
   		 name="dcm4chee.dashboard:service=DashboardService"
   		 xmbean-dd="resource:META-INF/xmdesc/DashboardService-xmbean.xml">
   </mbean>
+
+<!-- 
+  <mbean code="org.dcm4chee.dashboard.mbean.DashboardService" 
+  		 name="ImpaxServer.archive:service=DashboardService"
+  		 xmbean-dd="resource:META-INF/xmdesc/DashboardService-xmbean.xml">
+  </mbean>
+   -->
 </server>
