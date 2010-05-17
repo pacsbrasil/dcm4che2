@@ -165,8 +165,8 @@ public class StudyListPage extends Panel {
 
         form.addLabeledTextField("accessionNumber", enabledModel);
         addExtendedStudySearch(form);
-        form.addLabeledDropDownChoice("modality", null, modalities);
-        form.addLabeledDropDownChoice("sourceAET", null, sourceAETs);
+        form.addLabeledDropDownChoice("modality", null, modalities, enabledModel);
+        form.addLabeledDropDownChoice("sourceAET", null, sourceAETs, enabledModel);
     }
 
     private void addQueryOptions(BaseForm form) {
