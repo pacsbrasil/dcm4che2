@@ -45,12 +45,12 @@
             <ejbModule>
               <groupId>dcm4che.dcm4chee</groupId>
               <artifactId>dcm4chee-usr-entity</artifactId>
-              <uri>lib/dcm4chee-usr-entity.jar</uri>
+              <uri>dcm4chee-usr-entity-0.0.1.jar</uri>
             </ejbModule>
             <ejbModule>
               <groupId>dcm4che.dcm4chee</groupId>
               <artifactId>dcm4chee-usr-dao</artifactId>
-              <uri>lib/dcm4chee-usr-dao.jar</uri>
+              <uri>dcm4chee-usr-dao-0.0.1.jar</uri>
             </ejbModule>
             <webModule>
               <groupId>dcm4che.dcm4chee</groupId>

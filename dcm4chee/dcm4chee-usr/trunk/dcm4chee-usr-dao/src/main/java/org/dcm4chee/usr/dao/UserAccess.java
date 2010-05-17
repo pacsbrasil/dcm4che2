@@ -52,7 +52,7 @@ import org.dcm4chee.usr.entity.User;
  */
 @Local
 public interface UserAccess {
-    String JNDI_NAME = "UserAccess/local";
+    String JNDI_NAME = "dcm4chee-usr-dao/UserAccess/local";
     
     public List<User> findAll();
 
