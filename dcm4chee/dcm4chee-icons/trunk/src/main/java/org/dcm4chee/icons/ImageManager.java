@@ -126,6 +126,10 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, "status/unlinked.png");
     public static final ResourceReference IMAGE_INSERT_LINK = 
         new ResourceReference(ImageManager.class, iconset + "/actions/insert-link.png");
+    public static final ResourceReference IMAGE_WEBVIEWER = 
+        new ResourceReference(ImageManager.class, "actions/webview.gif");
+    public static final ResourceReference IMAGE_WADO = 
+        new ResourceReference(ImageManager.class, "actions/wado.gif");
     public static final ResourceReference IMAGE_TRASH_RESTORE = 
         new ResourceReference(ImageManager.class, iconset + "/actions/system-switch-user.png");
 }
