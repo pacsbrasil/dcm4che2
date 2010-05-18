@@ -61,7 +61,7 @@ public abstract class PopupLink extends Link<Object> {
     private String popupPageName = "popupPage";
     private int popupHeight = 300;
     private int popupWidth = 500;
-    private int popupDisplayFlag = 0;
+    private int popupDisplayFlag = PopupSettings.RESIZABLE | PopupSettings.SCROLLBARS;
     
     private static Logger log = LoggerFactory.getLogger(PopupLink.class);
     

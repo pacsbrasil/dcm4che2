@@ -106,7 +106,10 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
     }
 
     public void addInstance(Panel instance) {
-        ITab tab = new ModuleTab(instance);
+        addInstance(instance, null);
+    }
+    public void addInstance(Panel instance, IModel<String> titleModel) {
+        ITab tab = new ModuleTab(instance, titleModel);
         super.getTabs().add(tab);
         if (instance.getClass().getResource("style.css") != null)
             add(CSSPackageResource.getHeaderContribution(instance.getClass(), "style.css"));
@@ -127,16 +130,19 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
         private String clazzName;
         private String tabTitlePropertyName;
         private Panel panel;
+        private IModel<String> titleModel;
         
         public ModuleTab(Class<? extends Panel> clazz2) {
             clazz = clazz2;
             initialize();
         }
         
-        public ModuleTab(Panel instance) {
+        public ModuleTab(Panel instance, IModel<String> titleModel) {
             clazz = instance.getClass();
             panel = instance;
-            initialize();
+            this.titleModel = titleModel;
+            if ( titleModel == null)
+                initialize();
         }
 
         private void initialize() {
@@ -184,11 +190,15 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
          * Other ResourceLoaders will be ignored!
          */
         public IModel<String> getTitle() {
-            String t = getClassStringLoader().loadStringResource(null, tabTitlePropertyName);
-            if (t== null)
-                t = getPackageStringLoader().loadStringResource(clazz, tabTitlePropertyName, 
-                        getSession().getLocale(), null);
-            return new Model<String>(t == null ? clazzName : t);
+            if ( titleModel == null) {
+                String t = getClassStringLoader().loadStringResource(null, tabTitlePropertyName);
+                if (t== null)
+                    t = getPackageStringLoader().loadStringResource(clazz, tabTitlePropertyName, 
+                            getSession().getLocale(), null);
+                return new Model<String>(t == null ? clazzName : t);
+            } else {
+                return titleModel;
+            }
         }
 
         public boolean isVisible() {
