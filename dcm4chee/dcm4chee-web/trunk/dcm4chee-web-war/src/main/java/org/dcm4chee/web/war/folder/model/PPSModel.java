@@ -72,8 +72,9 @@ public class PPSModel extends AbstractDicomModel implements Serializable {
         if (mpps != null) {
             setPk(mpps.getPk());
             this.dataset = mpps.getAttributes();
-            setParent(studyModel);
         }
+        setParent(studyModel);
+        series1.setParent(this);
         this.series1 = series1;
         series.add(series1);
     }

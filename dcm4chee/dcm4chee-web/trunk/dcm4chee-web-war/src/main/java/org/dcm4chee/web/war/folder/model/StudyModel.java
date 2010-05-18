@@ -206,7 +206,8 @@ public class StudyModel extends AbstractDicomModel implements Serializable {
                 return;
             }
         }
-        ppss.add(new PPSModel(mpps, seriesModel, this));
+        PPSModel pps = new PPSModel(mpps, seriesModel, this);
+        ppss.add(pps);
     }
 
     @Override

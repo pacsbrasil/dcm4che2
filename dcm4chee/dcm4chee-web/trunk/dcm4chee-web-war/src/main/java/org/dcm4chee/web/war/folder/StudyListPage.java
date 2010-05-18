@@ -45,6 +45,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.wicket.Application;
+import org.apache.wicket.PageMap;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
@@ -60,6 +62,7 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.markup.html.link.ExternalLink;
 import org.apache.wicket.markup.html.link.PopupSettings;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
@@ -71,6 +74,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.protocol.http.WebApplication;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -83,6 +87,8 @@ import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.common.markup.PopupLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
+import org.dcm4chee.web.common.markup.IFramePage;
+import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.dao.folder.StudyListFilter;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.war.WicketSession;
@@ -121,9 +127,11 @@ public class StudyListPage extends Panel {
     private MessageWindow msgWin = new MessageWindow("msgWin");
     private ConfirmationWindow<PPSModel> confirmUnlinkMpps;
     
+    private WebviewerLinkProvider webviewerLinkProvider;
+    
     public StudyListPage(final String id) {
         super(id);
-        
+        webviewerLinkProvider = new WebviewerLinkProvider(((WebApplication)Application.get()).getInitParameter("webviewerName"));
         add(CSSPackageResource.getHeaderContribution(StudyListPage.class, "folder-style.css"));
         
         final StudyListFilter filter = viewport.getFilter();
@@ -598,6 +606,17 @@ public class StudyListPage extends Panel {
             }.add(new Image("editImg",ImageManager.IMAGE_EDIT)
             .add(new ImageSizeBehaviour()))
             .add(new TooltipBehaviour("folder.","patEdit")));
+            item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForPatient(patModel.getId(), patModel.getIssuer())) {
+                private static final long serialVersionUID = 1L;
+                @Override
+                public boolean isVisible() {
+                    return webviewerLinkProvider.supportPatientLevel();
+                }
+            }
+            .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
+                    PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
+            .add(new Image("webviewImg",ImageManager.IMAGE_WEBVIEWER).add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","patWebviewer")));
             item.add(new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -703,6 +722,17 @@ public class StudyListPage extends Panel {
                     return studyModel.isDetails();
                 }
             };
+            item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForStudy(studyModel.getStudyInstanceUID())) {
+                private static final long serialVersionUID = 1L;
+                @Override
+                public boolean isVisible() {
+                    return webviewerLinkProvider.supportStudyLevel();
+                }
+            }
+            .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
+                    PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
+            .add(new Image("webviewImg",ImageManager.IMAGE_WEBVIEWER).add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","studyWebviewer")));
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", studyModel.getDataset(), false));
             item.add(new PPSListView("ppss",
@@ -936,7 +966,7 @@ public class StudyListPage extends Panel {
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);
                 }}.setOutputMarkupId(true).add(new TooltipBehaviour("folder.","seriesSelect")));
-            WebMarkupContainer details = new WebMarkupContainer("details") {
+            final WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
 
@@ -946,6 +976,17 @@ public class StudyListPage extends Panel {
                 }
                 
             };
+            item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForStudy(seriesModel.getSeriesInstanceUID())) {
+                private static final long serialVersionUID = 1L;
+                @Override
+                public boolean isVisible() {
+                    return webviewerLinkProvider.supportSeriesLevel();
+                }
+            }
+            .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
+                    PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
+            .add(new Image("webviewImg",ImageManager.IMAGE_WEBVIEWER).add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","seriesWebviewer")));
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", seriesModel.getDataset(), false));
             item.add(new InstanceListView("instances",
@@ -1013,6 +1054,44 @@ public class StudyListPage extends Panel {
             }.add(new Image("editImg",ImageManager.IMAGE_EDIT)
             .add(new ImageSizeBehaviour()))
             .add(new TooltipBehaviour("folder.","instanceEdit")));
+            item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForInstance(instModel.getSOPInstanceUID())) {
+                private static final long serialVersionUID = 1L;
+                @Override
+                public boolean isVisible() {
+                    return webviewerLinkProvider.supportInstanceLevel();
+                }
+            }
+            .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
+                    PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
+            .add(new Image("webviewImg",ImageManager.IMAGE_WEBVIEWER).add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","instanceWebviewer")));
+/*            item.add( new PopupLink("wado", "wadoPage") {
+                private static final long serialVersionUID = 1L;
+                @Override
+                public void onClick() {
+                    setResponsePage(
+                            new WadoPage(new AbstractReadOnlyModel<String>(){
+                                public String getObject() {
+                                    return WADODelegate.getInstance().getURL(instModel);
+                                }
+                            }) );
+                }
+                @Override
+                public boolean isVisible() {
+                    return WADODelegate.getInstance().getRenderType(instModel.getSopClassUID()) != WADODelegate.NOT_RENDERABLE;
+                }
+            }.add(new Image("wadoImg",ImageManager.IMAGE_WADO)
+            .add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","wado")));
+*/
+            item.add(new ExternalLink("wado", WADODelegate.getInstance().getURL(instModel)){
+                @Override
+                public boolean isVisible() {
+                    return WADODelegate.getInstance().getRenderType(instModel.getSopClassUID()) != WADODelegate.NOT_RENDERABLE;
+                }
+                
+            }.add(new Image("wadoImg",ImageManager.IMAGE_WADO).add(new ImageSizeBehaviour())
+                    .add(new TooltipBehaviour("folder.","wado"))));
             item.add(new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
