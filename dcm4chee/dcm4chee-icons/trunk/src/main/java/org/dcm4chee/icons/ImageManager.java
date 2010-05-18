@@ -91,6 +91,8 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, iconset + "/categories/preferences-desktop-peripherals.png");
     public static final ResourceReference IMAGE_TRASH = 
         new ResourceReference(ImageManager.class, iconset + "/places/user-trash.png");
+    public static final ResourceReference IMAGE_TRASH_REMOVE_ALL = 
+        new ResourceReference(ImageManager.class, iconset + "/actions/edit-bomb.png");
     public static final ResourceReference IMAGE_MOVE = 
         new ResourceReference(ImageManager.class, iconset + "/actions/system-switch-user.png");
     public static final ResourceReference IMAGE_EXPORT = 
@@ -124,4 +126,6 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, "status/unlinked.png");
     public static final ResourceReference IMAGE_INSERT_LINK = 
         new ResourceReference(ImageManager.class, iconset + "/actions/insert-link.png");
+    public static final ResourceReference IMAGE_TRASH_RESTORE = 
+        new ResourceReference(ImageManager.class, iconset + "/actions/system-switch-user.png");
 }
