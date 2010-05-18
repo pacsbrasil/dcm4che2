@@ -461,6 +461,8 @@ public class ContentEditService extends ServiceMBeanSupport {
                         seriesAttrs.putString(Tag.SeriesInstanceUID, VR.UI, UIDUtils.createUID());
                     }
                     for ( Instance i : seriesEntry.getValue()) {
+                        if ( i.getFiles().size() < 1)
+                            continue;
                         headerAttrs = new BasicDicomObject();
                         targetAttrs.copyTo(headerAttrs);
                         if ( studyAttrs != null) {
