@@ -71,6 +71,21 @@
 	      <param-name>contentEditServiceName</param-name>
 	      <param-value>dcm4chee.web:service=ContentEditService</param-value>
 	    </init-param> 
+	    <init-param>
+	      <param-name>wadoServiceName</param-name>
+	      <param-value>dcm4chee.archice:service=WADOService</param-value>
+	    </init-param>
+	    <!--  WADO Base URL. uncomment and configure it when the WADO is not in the same web container
+	    <init-param>
+	      <param-name>wadoBaseURL</param-name>
+	      <param-value>http://WADOSERVER:8080/wado?requestType=WADO</param-value>
+	    </init-param>  -->
+	    <!-- Uncomment and configure to the correct name of Webviewer Link Provider if more than one are installed.
+	    	The name is case sensitive! 
+	    <init-param>
+	      <param-name>webviewerName</param-name>
+	      <param-value>MY_WEB_VIEWER</param-value>
+	    </init-param> -->
 
 	    <init-param>
 	      <param-name>securityDomainName</param-name>
