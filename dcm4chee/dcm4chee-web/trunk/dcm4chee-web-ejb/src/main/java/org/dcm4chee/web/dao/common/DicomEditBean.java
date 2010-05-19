@@ -315,14 +315,33 @@ public class DicomEditBean implements DicomEditLocal {
         return pStudy;
     }
 
+    @SuppressWarnings("unchecked")
     private PrivatePatient movePatientToTrash(Patient patient) {
-        PrivatePatient pPat;
+        PrivatePatient pPat = null;
         try {
-            Query q = em.createNamedQuery("PrivatePatient.findByIdAndIssuer");
-            q.setParameter("patId", patient.getPatientID());
-            q.setParameter("issuer", patient.getIssuerOfPatientID());
-            pPat = (PrivatePatient) q.getSingleResult();
-        } catch (NoResultException nre) {
+            if ( patient.getIssuerOfPatientID() != null) {
+                Query q = em.createNamedQuery("PrivatePatient.findByIdAndIssuer");
+                q.setParameter("patId", patient.getPatientID());
+                q.setParameter("issuer", patient.getIssuerOfPatientID());
+                pPat = (PrivatePatient) q.getSingleResult();
+            } else {
+                Query q = em.createQuery("select object(p) from PrivatePatient p where patientID = :patId and patientName = :name");
+                q.setParameter("patId", patient.getPatientID());
+                q.setParameter("name", patient.getPatientName());
+                List<PrivatePatient> pList = (List<PrivatePatient>) q.getResultList();
+                PrivatePatient p;
+                String birthdate = patient.getAttributes().getString(Tag.PatientBirthDate, "X");
+                for (int i = 0, len = pList.size() ;  i  < len ; i++) {
+                    p = pList.get(i);
+                    if (p.getAttributes().getString(Tag.PatientBirthDate, "X").equals(birthdate)) {
+                        pPat = p;
+                        break;
+                    }
+                }
+            }
+        } catch (NoResultException nre) {            
+        }
+        if (pPat == null) {
             pPat = new PrivatePatient();
             pPat.setAttributes(patient.getAttributes());
             pPat.setPrivateType(DELETED);
