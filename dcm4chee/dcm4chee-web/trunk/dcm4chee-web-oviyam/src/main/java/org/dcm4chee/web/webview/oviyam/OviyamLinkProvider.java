@@ -36,7 +36,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.common.webview.link.spi;
+package org.dcm4chee.web.webview.oviyam;
+
+import org.dcm4chee.web.common.webview.link.spi.WebviewerLinkProviderSPI;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -44,6 +46,8 @@ package org.dcm4chee.web.common.webview.link.spi;
  * @since May 15, 2010
  */
 public class OviyamLinkProvider extends WebviewerLinkProviderSPI {
+    private static final long serialVersionUID = 4548297230882756086L;
+
     private static String baseUrl = "http://localhost:8080/oviyam/oviyam?";
     
     public String getName() {
