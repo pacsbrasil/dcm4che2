@@ -287,7 +287,9 @@ public final class VRMap implements Serializable {
                         .replace('x', '0'), 16);
                 String vrstr = attributes.getValue("vr");
                 if (vrstr != null && vrstr.length() != 0) {
-                    VR vr = VR.valueOf(vrstr.charAt(0) << 8 | vrstr.charAt(1));
+                    VR vr = "US|SS|OW".equals(vrstr) ? VR.OW 
+                            : VR.valueOf(vrstr.charAt(0) << 8
+                                    | vrstr.charAt(1));
                     table.put(tag, vr);
                 }
             } else if ("dictionary".equals(qName)) {
