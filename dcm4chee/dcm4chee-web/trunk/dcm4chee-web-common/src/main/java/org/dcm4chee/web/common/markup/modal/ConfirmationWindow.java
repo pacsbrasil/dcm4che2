@@ -45,7 +45,6 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
-import org.dcm4chee.web.common.markup.modal.AutoOpenModalWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -198,5 +197,5 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
         public boolean isVisible() {
             return true;
         }
-    }   
+    }
 }

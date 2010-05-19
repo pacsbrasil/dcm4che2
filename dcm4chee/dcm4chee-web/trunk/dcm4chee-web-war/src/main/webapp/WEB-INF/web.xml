@@ -86,7 +86,10 @@
 	      <param-name>webviewerName</param-name>
 	      <param-value>MY_WEB_VIEWER</param-value>
 	    </init-param> -->
-
+	    <init-param>
+	      <param-name>storeBridgeServiceName</param-name>
+	      <param-value>dcm4chee.web:service=StoreBridge</param-value>
+	    </init-param> 
 	    <init-param>
 	      <param-name>securityDomainName</param-name>
 	      <param-value>dcm4chee</param-value>

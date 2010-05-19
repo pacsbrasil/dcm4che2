@@ -39,7 +39,6 @@
 package org.dcm4chee.web.war.folder;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -52,7 +51,6 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
-import org.apache.wicket.datetime.StyleDateConverter;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -61,8 +59,8 @@ import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
-import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.link.ExternalLink;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.link.PopupSettings;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
@@ -87,7 +85,6 @@ import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.common.markup.PopupLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
-import org.dcm4chee.web.common.markup.IFramePage;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.dao.folder.StudyListFilter;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
@@ -1132,6 +1129,9 @@ public class StudyListPage extends Panel {
             .add(new TooltipBehaviour("folder.","wado")));
 */
             item.add(new ExternalLink("wado", WADODelegate.getInstance().getURL(instModel)){
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public boolean isVisible() {
                     return WADODelegate.getInstance().getRenderType(instModel.getSopClassUID()) != WADODelegate.NOT_RENDERABLE;
@@ -1250,15 +1250,11 @@ public class StudyListPage extends Panel {
         
         @Override
         public void onClick(AjaxRequestTarget target) {
-            if (model.isCollapsed()) {
-                model.expand();
-            } else {
-                model.collapse();
-            }
-            boolean chgd = expandLevelChanged(model);
+            if (model.isCollapsed()) model.expand();
+            else model.collapse();
             if (target != null) {
                 target.addComponent(patientListItem);
-                if (chgd)
+                if (expandLevelChanged(model))
                     target.addComponent(header);
             }
         }

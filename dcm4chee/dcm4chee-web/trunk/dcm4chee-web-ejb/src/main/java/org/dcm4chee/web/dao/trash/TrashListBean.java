@@ -46,6 +46,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.archive.entity.BaseEntity;
 import org.dcm4chee.archive.entity.PrivateFile;
 import org.dcm4chee.archive.entity.PrivateInstance;
@@ -363,19 +364,28 @@ public class TrashListBean implements TrashListLocal {
                 PrivateStudy pst = (PrivateStudy) entity;
                 for (PrivateSeries pse : pst.getSeries())
                     removeTrashEntity(pse);
+                PrivatePatient p = pst.getPatient();
                 em.remove(pst);
+                if (p.getStudies().size() <= 1)
+                    em.remove(p);
             } else if (entity instanceof PrivateSeries) {
                 PrivateSeries pse = (PrivateSeries) entity;
                 for (PrivateInstance pi : pse.getInstances())
                     removeTrashEntity(pi);
+                PrivateStudy pst = pse.getStudy();
                 em.remove(pse);
+                if (pst.getSeries().size() <= 1)
+                    em.remove(pst);
             } else if (entity instanceof PrivateInstance) {
                 PrivateInstance pi = (PrivateInstance) entity;
                 for (PrivateFile pf : pi.getFiles()) {
                     pf.setInstance(null);
                     em.merge(pf);
                 }
+                PrivateSeries pse = pi.getSeries();
                 em.remove(pi);
+                if (pse.getInstances().size() <= 1)
+                    em.remove(pse);
             } else return;
         }
     }
@@ -386,5 +396,42 @@ public class TrashListBean implements TrashListLocal {
         em.createQuery("DELETE FROM PrivateSeries pse").executeUpdate();
         em.createQuery("DELETE FROM PrivateStudy pst").executeUpdate();
         em.createQuery("DELETE FROM PrivatePatient pp").executeUpdate();
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<PrivateFile> getFilesForPatient(long patientPk) {
+        return em.createQuery("SELECT DISTINCT f FROM PrivateFile f LEFT JOIN FETCH f.fileSystem fs LEFT JOIN FETCH f.instance i LEFT JOIN i.series se LEFT JOIN se.study st LEFT JOIN st.patient p WHERE p.pk = :patientPk")
+            .setParameter("patientPk", patientPk)
+            .getResultList();
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<PrivateFile> getFilesForStudy(long studyPk) {
+        return em.createQuery("SELECT DISTINCT f FROM PrivateFile f LEFT JOIN FETCH f.fileSystem fs LEFT JOIN FETCH f.instance i LEFT JOIN i.series se LEFT JOIN se.study st WHERE st.pk = :studyPk")
+            .setParameter("studyPk", studyPk)
+            .getResultList();
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<PrivateFile> getFilesForSeries(long seriesPk) {
+        return em.createQuery("SELECT DISTINCT f FROM PrivateFile f LEFT JOIN FETCH f.fileSystem fs LEFT JOIN FETCH f.instance i LEFT JOIN i.series se WHERE se.pk = :seriesPk")
+            .setParameter("seriesPk", seriesPk)
+            .getResultList();
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<PrivateFile> getFilesForInstance(long instancePk) {
+        return em.createQuery("SELECT DISTINCT f FROM PrivateFile f LEFT JOIN FETCH f.fileSystem fs LEFT JOIN FETCH f.instance i  WHERE i.pk = :instancePk")
+            .setParameter("instancePk", instancePk)
+            .getResultList();
+    }
+
+    public DicomObject getDicomAttributes(long filePk) {
+        PrivateFile pf = em.find(PrivateFile.class, filePk);
+        DicomObject dio = pf.getInstance().getAttributes();
+        pf.getInstance().getSeries().getAttributes().copyTo(dio);
+        pf.getInstance().getSeries().getStudy().getAttributes().copyTo(dio);
+        pf.getInstance().getSeries().getStudy().getPatient().getAttributes().copyTo(dio);
+        return dio;
     }
 }

@@ -114,6 +114,9 @@ public class WebviewerLinkProvider implements Serializable {
     }
     
     private class DummyProvider extends WebviewerLinkProviderSPI {
+
+        private static final long serialVersionUID = 1L;
+        
         public String getName() {
             return "DUMMY";
         }

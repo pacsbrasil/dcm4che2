@@ -64,6 +64,10 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4chee.archive.entity.File;
+import org.dcm4chee.archive.entity.Instance;
+import org.dcm4chee.archive.entity.PrivateFile;
 import org.dcm4chee.archive.entity.PrivatePatient;
 import org.dcm4chee.archive.entity.PrivateStudy;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -78,6 +82,8 @@ import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.trash.TrashListFilter;
 import org.dcm4chee.web.dao.trash.TrashListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
+import org.dcm4chee.web.service.common.FileImportOrder;
+import org.dcm4chee.web.war.WicketApplication;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
 import org.dcm4chee.web.war.trash.model.PrivInstanceModel;
@@ -225,7 +231,7 @@ public class TrashListPage extends Panel {
     }
 
     private void addActions(final BaseForm form) {
-        final ConfirmationWindow<PrivSelectedEntities> confirmDelete = new ConfirmationWindow<PrivSelectedEntities>("confirmDelete"){
+        final ConfirmationWindow<PrivSelectedEntities> confirmDelete = new ConfirmationWindow<PrivSelectedEntities>("confirmDelete") {
 
             private static final long serialVersionUID = 1L;
             
@@ -235,9 +241,8 @@ public class TrashListPage extends Panel {
                 if (selected == null ? removeTrashAll() : removeTrashItems(selected)) {
                     this.setStatus(new StringResourceModel("trash.deleteDone", TrashListPage.this,null));
                     viewport.getPatients().clear();
-                } else {
+                } else
                     this.setStatus(new StringResourceModel("trash.deleteFailed", TrashListPage.this,null));
-                }
                 queryStudies();
             }
             
@@ -248,12 +253,59 @@ public class TrashListPage extends Panel {
         };
         confirmDelete.setInitialHeight(150);
         form.add(confirmDelete);
+        final ConfirmationWindow<PrivSelectedEntities> confirmRestore = new ConfirmationWindow<PrivSelectedEntities>("confirmRestore") {
+
+            private static final long serialVersionUID = 1L;
+            
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, PrivSelectedEntities selected) {
+
+                try {
+                    FileImportOrder fio = new FileImportOrder();
+                    List<PrivateFile> files = getFilesToRestore();
+                    TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
+                    
+                    for (PrivateFile privateFile : files) {
+                        DicomObject dio = dao.getDicomAttributes(privateFile.getPk());
+                        File file = new File();
+                        file.setFilePath(privateFile.getFilePath());
+                        file.setFileSize(privateFile.getFileSize());
+                        file.setFileStatus(privateFile.getFileStatus());
+                        file.setFileSystem(privateFile.getFileSystem());
+                        file.setMD5Sum(privateFile.getFileMD5());
+                        file.setTransferSyntaxUID(privateFile.getTransferSyntaxUID());
+                        Instance instance = new Instance();
+                        instance.setAttributes(privateFile.getInstance().getAttributes());
+                        file.setInstance(instance);
+                        fio.addFile(file, dio);
+                    }
+
+                    StoreBridgeDelegate.getInstance(((WicketApplication) getApplication()).getInitParameter("storeBridgeServiceName")).importFile(fio);
+                    removeRestoredEntries();                            
+                            
+                    this.setStatus(new StringResourceModel("trash.restoreDone", TrashListPage.this,null));
+                } catch (Exception e) {
+                    log.error("Exception restoring entry: :"+e.getMessage());
+                    this.setStatus(new StringResourceModel("trash.restoreFailed", TrashListPage.this,null));
+                }
+                viewport.getPatients().clear();
+                queryStudies();
+            }
+            
+            @Override
+            public void onOk(AjaxRequestTarget target) {
+                target.addComponent(form);
+            }
+        };
+        confirmRestore.setInitialHeight(150);
+        form.add(confirmRestore);
         AjaxLink<?> deleteBtn = new AjaxLink<Object>("deleteBtn") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
             public void onClick(AjaxRequestTarget target) {
+                selected.update(viewport.getPatients());
                 selected.deselectChildsOfSelectedEntities();
                 log.info("Selected Entities: :"+selected);
                 if (selected.hasDicomSelection()) {
@@ -280,7 +332,24 @@ public class TrashListPage extends Panel {
         .add(new ImageSizeBehaviour()))
         .add(tooltipBehaviour);
         form.add(deleteAllBtn);
+        AjaxLink<?> restoreBtn = new AjaxLink<Object>("restoreBtn") {
 
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                selected.update(viewport.getPatients());
+                selected.deselectChildsOfSelectedEntities();
+                if (selected.hasDicomSelection())
+                    confirmRestore.confirm(target, new StringResourceModel("trash.confirmRestore", this, null,new Object[]{selected}), selected);
+                else
+                    msgWin.show(target, getString("trash.noSelection"));
+            }
+        };
+        restoreBtn.add(new Image("restoreImg", ImageManager.IMAGE_TRASH_RESTORE)
+        .add(new ImageSizeBehaviour()))
+        .add(tooltipBehaviour);
+        form.add(restoreBtn);
     }
 
     private void initModalitiesAndSourceAETs() {
@@ -656,7 +725,6 @@ public class TrashListPage extends Panel {
         }
     }
 
-    
     private class ExpandCollapseLink extends AjaxFallbackLink<Object> {
 
         private static final long serialVersionUID = 1L;
@@ -683,15 +751,11 @@ public class TrashListPage extends Panel {
         
         @Override
         public void onClick(AjaxRequestTarget target) {
-            if (model.isCollapsed()) {
-                model.expand();
-            } else {
-                model.collapse();
-            }
-            boolean chgd = expandLevelChanged(model);
+            if (model.isCollapsed()) model.expand();
+            else model.collapse();
             if (target != null) {
                 target.addComponent(patientListItem);
-                if (chgd)
+                if (expandLevelChanged(model))
                     target.addComponent(header);
             }
         }
@@ -721,8 +785,7 @@ public class TrashListPage extends Panel {
                 pks.add(patientModel.getPk());
             dao.removeTrashPatients(pks);               
         } catch (Exception x) {
-            String msg = "Delete failed! Reason:"+x.getMessage();
-            log.error(msg,x);
+            log.error("Delete failed! Reason:"+x.getMessage(),x);
             return false;
         }
         return true;
@@ -732,10 +795,63 @@ public class TrashListPage extends Panel {
         try {
             ((TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME)).removeTrashAll();
         } catch (Exception x) {
-            String msg = "Delete failed! Reason:"+x.getMessage();
-            log.error(msg,x);
+            log.error("Delete failed! Reason:"+x.getMessage(),x);
             return false;
         }
         return true;
+    }
+    
+    private List<PrivateFile> getFilesToRestore() {
+
+        List<PrivateFile> files = new ArrayList<PrivateFile>();
+        TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
+        
+        if (selected.hasPatients()) {
+            for (PrivPatientModel pp : selected.getPatients())
+                files.addAll(dao.getFilesForPatient(pp.getPk()));
+        }
+        if (selected.hasStudies()) {
+            for (PrivStudyModel pst : selected.getStudies())
+                files.addAll(dao.getFilesForStudy(pst.getPk()));
+        }
+        if (selected.hasSeries()) {
+            for (PrivSeriesModel pse : selected.getSeries())
+                files.addAll(dao.getFilesForSeries(pse.getPk()));
+        }
+        if (selected.hasInstances()) {
+            for (PrivInstanceModel pi : selected.getInstances())
+                files.addAll(dao.getFilesForInstance(pi.getPk()));
+        }
+        return files;
+    }
+
+    private void removeRestoredEntries() {
+
+        TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
+
+        if (selected.hasInstances()) {
+            List<Long> pkList = new ArrayList<Long>();
+            for (PrivInstanceModel pi : selected.getInstances())
+                pkList.add(pi.getPk());
+            dao.removeTrashInstances(pkList);
+        }
+        if (selected.hasSeries()) {
+            List<Long> pkList = new ArrayList<Long>();
+            for (PrivSeriesModel pse : selected.getSeries())
+                pkList.add(pse.getPk());
+            dao.removeTrashSeries(pkList);
+        }
+        if (selected.hasStudies()) {
+            List<Long> pkList = new ArrayList<Long>();
+            for (PrivStudyModel pst : selected.getStudies())
+                pkList.add(pst.getPk());
+            dao.removeTrashStudies(pkList);
+        }
+        if (selected.hasPatients()) {
+            List<Long> pkList = new ArrayList<Long>();
+            for (PrivPatientModel pp : selected.getPatients())
+                pkList.add(pp.getPk());
+            dao.removeTrashPatients(pkList);
+        }
     }
 }

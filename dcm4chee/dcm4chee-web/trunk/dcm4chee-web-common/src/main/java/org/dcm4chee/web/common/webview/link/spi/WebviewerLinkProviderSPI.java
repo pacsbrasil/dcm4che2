@@ -46,6 +46,9 @@ import java.io.Serializable;
  * @since May 15, 2010
  */
 public abstract class WebviewerLinkProviderSPI implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+    
     public abstract String getName();
     public abstract boolean supportPatientLevel();
     public abstract boolean supportStudyLevel();

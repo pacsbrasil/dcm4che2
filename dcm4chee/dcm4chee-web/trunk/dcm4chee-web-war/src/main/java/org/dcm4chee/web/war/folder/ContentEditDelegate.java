@@ -205,5 +205,4 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
             delegate = new ContentEditDelegate();
         return delegate;
     }
-
 }
