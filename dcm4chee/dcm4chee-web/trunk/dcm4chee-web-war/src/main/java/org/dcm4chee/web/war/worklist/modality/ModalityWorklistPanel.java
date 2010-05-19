@@ -98,7 +98,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     private ViewPort viewport;
     private boolean notSearched = true;
     
-    private ModalityWorklist dao;
+    private transient ModalityWorklist dao;
 
     public ModalityWorklistPanel(final String id) {
         super(id);
