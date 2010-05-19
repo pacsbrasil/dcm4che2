@@ -107,6 +107,13 @@
 			      </select>
                 </div>
             </div>
+            <div class="filter" wicket:id="extendedSeriesFilter">
+                <div class="filterHeader2Lines" wicket:id="seriesInstanceUIDLabel">Series Instance UID</div>
+                <div class="filterValue">
+                    <input wicket:id="seriesInstanceUID" id="seriesInstanceUID" type="text"/>
+                </div>
+            </div>
+            <a wicket:id="showExtendedSeriesFilter" href="#"><img wicket:id="showExtendedSeriesFilterImg" alt="(+)" /></a>
         </div>
 	
 		<div class="queryoptions">
@@ -114,6 +121,8 @@
 		  <label for="patientsWithoutStudies" wicket:id="patientsWithoutStudiesLabel">patients w/o studies</label>
 		  <input type="checkbox" id="latestStudiesFirst" wicket:id="latestStudiesFirst" />
 		  <label for="latestStudiesFirst" wicket:id="latestStudiesFirstLabel">latest studies first</label>
+		  <input type="checkbox" id="ppsWithoutMwl" wicket:id="ppsWithoutMwl" />
+		  <label for="ppsWithoutMwl" wicket:id="ppsWithoutMwlLabel">Studies with unlinked PPS</label>
 		</div>
 		<div class="NavAndAction">
 			<div class="query_nav">

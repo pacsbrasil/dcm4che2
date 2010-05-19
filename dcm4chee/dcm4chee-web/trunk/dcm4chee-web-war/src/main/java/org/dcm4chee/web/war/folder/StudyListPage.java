@@ -91,6 +91,7 @@ import org.dcm4chee.web.common.markup.IFramePage;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.dao.folder.StudyListFilter;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
+import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.war.WicketSession;
 import org.dcm4chee.web.war.common.EditDicomObjectPage;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
@@ -157,7 +158,8 @@ public class StudyListPage extends Panel {
 
             @Override
             public Boolean getObject() {
-                return !filter.isExtendedStudyQuery() || "*".equals(filter.getStudyInstanceUID());
+                return (!filter.isExtendedStudyQuery() || QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) &&
+                       (!filter.isExtendedSeriesQuery() || QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID()));
             }
             
         };
@@ -175,11 +177,13 @@ public class StudyListPage extends Panel {
         addExtendedStudySearch(form);
         form.addLabeledDropDownChoice("modality", null, modalities, enabledModel);
         form.addLabeledDropDownChoice("sourceAET", null, sourceAETs, enabledModel);
+        addExtendedSeriesSearch(form);
     }
 
     private void addQueryOptions(BaseForm form) {
         form.addLabeledCheckBox("patientsWithoutStudies", null);
         form.addLabeledCheckBox("latestStudiesFirst", null);
+        form.addLabeledCheckBox("ppsWithoutMwl", null);
     }
 
     private void addNavigation(BaseForm form) {
@@ -451,6 +455,49 @@ public class StudyListPage extends Panel {
 
         form.add(l);
         return extendedStudyFilter;
+    }
+    private WebMarkupContainer addExtendedSeriesSearch(final Form<?> form) {
+        final StudyListFilter filter = viewport.getFilter();
+        final WebMarkupContainer extendedSeriesFilter = new WebMarkupContainer("extendedSeriesFilter") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public boolean isVisible() {
+                return filter.isExtendedSeriesQuery();
+            }
+        };
+        extendedSeriesFilter.add( new Label("seriesInstanceUIDLabel", new ResourceModel("folder.seriesInstanceUID")));
+        extendedSeriesFilter.add( new TextField<String>("seriesInstanceUID") {
+            @Override
+            public boolean isEnabled() {
+                return !filter.isExtendedStudyQuery() || QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
+            }
+        });
+        form.add(extendedSeriesFilter);
+        AjaxFallbackLink<?> l = new AjaxFallbackLink<Object>("showExtendedSeriesFilter") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                filter.setExtendedSeriesQuery(!filter.isExtendedSeriesQuery());
+                target.addComponent(form);
+            }};
+        l.add(new Image("showExtendedSeriesFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public ResourceReference getObject() {
+                return filter.isExtendedSeriesQuery() ? ImageManager.IMAGE_COLLAPSE : 
+                    ImageManager.IMAGE_EXPAND;
+            }
+        })
+        .add(new ImageSizeBehaviour()));
+
+        form.add(l);
+        return extendedSeriesFilter;
     }
 
     private void initModalitiesAndSourceAETs() {

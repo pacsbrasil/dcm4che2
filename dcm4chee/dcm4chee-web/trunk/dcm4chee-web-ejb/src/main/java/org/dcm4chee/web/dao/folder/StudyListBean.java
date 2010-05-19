@@ -99,14 +99,18 @@ public class StudyListBean implements StudyListLocal {
 
     private static void appendFromClause(StringBuilder ql, StudyListFilter filter) {
         ql.append(filter.isPatientsWithoutStudies()
-                ? " FROM Patient p LEFT JOIN p.studies s "
+                ? " FROM Patient p LEFT JOIN p.studies s"
                 : " FROM Patient p INNER JOIN p.studies s");
     }
 
     private static void appendWhereClause(StringBuilder ql,
             StudyListFilter filter) {
         ql.append(" WHERE p.mergedWith IS NULL");
-        if ( !filter.isExtendedStudyQuery() || QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()) ) {
+        if ( filter.isExtendedStudyQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) {
+            ql.append(" AND s.studyInstanceUID = :studyInstanceUID");
+        } else if (filter.isExtendedSeriesQuery() && !QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID())) {
+            appendSeriesInstanceUIDFilter(ql, filter.getSeriesInstanceUID());
+        } else {
             appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName()));
             appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID()));
             appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
@@ -114,17 +118,20 @@ public class StudyListBean implements StudyListLocal {
                 appendPatientBirthDateFilter(ql, filter.getBirthDateMin(), filter.getBirthDateMax());
             }
             appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
+            appendPpsWithoutMwlFilter(ql, filter.isPpsWithoutMwl());
             appendStudyDateMinFilter(ql, filter.getStudyDateMin());
             appendStudyDateMaxFilter(ql, filter.getStudyDateMax());
-        } else {
-            ql.append(" AND s.studyInstanceUID = :studyInstanceUID");
+            appendModalityFilter(ql, filter.getModality());
+            appendSourceAETFilter(ql, filter.getSourceAET());
         }
-        appendModalityFilter(ql, filter.getModality());
-        appendSourceAETFilter(ql, filter.getSourceAET());
     }
 
     private static void setQueryParameters(Query query, StudyListFilter filter) {
-        if ( !filter.isExtendedStudyQuery() || QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()) ) {
+        if ( filter.isExtendedStudyQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) {
+            setStudyInstanceUIDQueryParameter(query, filter.getStudyInstanceUID());
+        } else if (filter.isExtendedSeriesQuery() && !QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID())) {
+            setSeriesInstanceUIDQueryParameter(query, filter.getSeriesInstanceUID());
+        } else {
             setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName()));
             setPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientID()));
             setIssuerOfPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
@@ -134,11 +141,9 @@ public class StudyListBean implements StudyListLocal {
             setAccessionNumberQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
             setStudyDateMinQueryParameter(query, filter.getStudyDateMin());
             setStudyDateMaxQueryParameter(query, filter.getStudyDateMax());
-        } else {
-            setStudyInstanceUIDQueryParameter(query, filter.getStudyInstanceUID());
+            setModalityQueryParameter(query, filter.getModality());
+            setSourceAETQueryParameter(query, filter.getSourceAET());
         }
-        setModalityQueryParameter(query, filter.getModality());
-        setSourceAETQueryParameter(query, filter.getSourceAET());
     }
 
     private static boolean containsWildcard(String s) {
@@ -338,13 +343,19 @@ public class StudyListBean implements StudyListLocal {
         }
     }
 
+    private static void appendPpsWithoutMwlFilter(StringBuilder ql, boolean ppsWithoutMwl) {
+        if (ppsWithoutMwl) {
+            ql.append(" AND EXISTS (SELECT ser FROM s.series ser WHERE "+
+                    "ser.modalityPerformedProcedureStep IS NOT NULL AND ser.modalityPerformedProcedureStep.accessionNumber IS NULL)");
+        }
+    }
+    
     private static void setStudyInstanceUIDQueryParameter(Query query,
             String studyInstanceUID) {
         if (!QueryUtil.isUniversalMatch(studyInstanceUID)) {
             query.setParameter("studyInstanceUID", studyInstanceUID);
         }
     }
-
 
     private static void appendModalityFilter(StringBuilder ql,
             String modality) {
@@ -371,6 +382,19 @@ public class StudyListBean implements StudyListLocal {
             String sourceAET) {
         if (!QueryUtil.isUniversalMatch(sourceAET)) {
             query.setParameter("sourceAET", sourceAET);
+        }
+    }
+
+    private static void appendSeriesInstanceUIDFilter(StringBuilder ql, String seriesInstanceUID) {
+        if (!QueryUtil.isUniversalMatch(seriesInstanceUID)) {
+            ql.append(" AND EXISTS (SELECT ser FROM s.series ser WHERE ser.seriesInstanceUID = :seriesInstanceUID)");
+        }
+    }
+    
+    private static void setSeriesInstanceUIDQueryParameter(Query query,
+            String seriesInstanceUID) {
+        if (!QueryUtil.isUniversalMatch(seriesInstanceUID)) {
+            query.setParameter("seriesInstanceUID", seriesInstanceUID);
         }
     }
 

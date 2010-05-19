@@ -63,8 +63,11 @@ public class StudyListFilter implements Serializable {
     private String studyInstanceUID;
     private String modality;
     private String sourceAET;
+    private boolean extendedSeriesQuery;
+    private String seriesInstanceUID;
     private boolean patientsWithoutStudies;
     private boolean latestStudiesFirst;
+    private boolean ppsWithoutMwl;
 
     public String getPatientName() {
         return patientName;
@@ -122,6 +125,14 @@ public class StudyListFilter implements Serializable {
         this.accessionNumber = accessionNumber;
     }
 
+    public boolean isPpsWithoutMwl() {
+        return ppsWithoutMwl;
+    }
+
+    public void setPpsWithoutMwl(boolean ppsWithoutMwl) {
+        this.ppsWithoutMwl = ppsWithoutMwl;
+    }
+
     public Date getStudyDateMin() {
         return studyDateMin;
     }
@@ -170,6 +181,22 @@ public class StudyListFilter implements Serializable {
         this.sourceAET = sourceAET;
     }
 
+    public boolean isExtendedSeriesQuery() {
+        return extendedSeriesQuery;
+    }
+
+    public void setExtendedSeriesQuery(boolean extendedSeriesQuery) {
+        this.extendedSeriesQuery = extendedSeriesQuery;
+    }
+
+    public String getSeriesInstanceUID() {
+        return seriesInstanceUID;
+    }
+
+    public void setSesriesInstanceUID(String seriesInstanceUID) {
+        this.seriesInstanceUID = seriesInstanceUID;
+    }
+    
     public boolean isPatientsWithoutStudies() {
         return patientsWithoutStudies;
     }
