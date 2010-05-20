@@ -51,6 +51,7 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
+import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -641,18 +642,7 @@ public class StudyListPage extends Panel {
             }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
             .add(new ImageSizeBehaviour()))
             .add(new TooltipBehaviour("folder.","patDetail")));
-            item.add( new Link<Object>("edit") {
-                
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void onClick() {
-                    setResponsePage(
-                            new EditDicomObjectPage(StudyListPage.this.getPage(), patModel));
-                }
-            }.add(new Image("editImg",ImageManager.IMAGE_EDIT)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","patEdit")));
+            item.add(getEditLink(patModel, "patEdit"));
             item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForPatient(patModel.getId(), patModel.getIssuer())) {
                 private static final long serialVersionUID = 1L;
                 @Override
@@ -740,18 +730,7 @@ public class StudyListPage extends Panel {
             }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
             .add(new ImageSizeBehaviour()))
             .add(new TooltipBehaviour("folder.","studyDetail")));
-            item.add( new Link<Object>("edit") {
-                
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void onClick() {
-                    setResponsePage(
-                            new EditDicomObjectPage(StudyListPage.this.getPage(), studyModel));
-                }
-            }.add(new Image("editImg",ImageManager.IMAGE_EDIT)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","studyEdit")));
+            item.add( getEditLink(studyModel, "studyEdit"));
             item.add( new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -867,22 +846,7 @@ public class StudyListPage extends Panel {
             }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
             .add(new ImageSizeBehaviour()))
             .add(new TooltipBehaviour("folder.","ppsDetail")));
-            item.add(new Link<Object>("edit") {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void onClick() {
-                    setResponsePage(new EditDicomObjectPage(StudyListPage.this.getPage(), ppsModel));
-                }
-
-                @Override
-                public boolean isVisible() {
-                    return ppsModel.getDataset() != null;
-                }
-            }.add(new Image("editImg",ImageManager.IMAGE_EDIT)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","ppsDetail")));
+            item.add(getEditLink(ppsModel, "ppsDetail"));
             
             PopupLink linkBtn = new PopupLink("linkBtn", "linkPage") {
                 private static final long serialVersionUID = 1L;
@@ -994,17 +958,7 @@ public class StudyListPage extends Panel {
             }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
             .add(new ImageSizeBehaviour()))
             .add(new TooltipBehaviour("folder.","seriesDetail")));
-            item.add(new Link<Object>("edit") {
-                
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void onClick() {
-                    setResponsePage(new EditDicomObjectPage(StudyListPage.this.getPage(), seriesModel));
-                }
-            }.add(new Image("editImg",ImageManager.IMAGE_EDIT)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","seriesEdit")));
+            item.add(getEditLink(seriesModel, "seriesEdit"));
             item.add(new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -1090,17 +1044,7 @@ public class StudyListPage extends Panel {
             }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
             .add(new ImageSizeBehaviour()))
             .add(new TooltipBehaviour("folder.","instanceDetail")));
-            item.add(new Link<Object>("edit") {
-                
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void onClick() {
-                    setResponsePage(new EditDicomObjectPage(StudyListPage.this.getPage(), instModel));
-                }
-            }.add(new Image("editImg",ImageManager.IMAGE_EDIT)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","instanceEdit")));
+            item.add(getEditLink(instModel, "instanceEdit"));
             item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForInstance(instModel.getSOPInstanceUID())) {
                 private static final long serialVersionUID = 1L;
                 @Override
@@ -1225,6 +1169,23 @@ public class StudyListPage extends Panel {
             item.add(details);
             details.add(new FilePanel("file", fileModel));
         }
+    }
+    
+    private Link<Object> getEditLink(final AbstractDicomModel model, String tooltipId) {
+        Link<Object> link = new Link<Object>("edit") {
+            
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick() {
+                setResponsePage(
+                        new EditDicomObjectPage(StudyListPage.this.getPage(), model));
+            }
+        };
+        link.add(new Image("editImg",ImageManager.IMAGE_EDIT).add(new ImageSizeBehaviour()));
+        link.add(new TooltipBehaviour("folder.", tooltipId));
+        MetaDataRoleAuthorizationStrategy.authorize(link, RENDER, "WebAdmin");
+        return link;
     }
     
     private class ExpandCollapseLink extends AjaxFallbackLink<Object> {
