@@ -332,24 +332,21 @@ public class TrashListBean implements TrashListLocal {
         return em.find(PrivateInstance.class, pk);
     }
     
-    public void removeTrashPatients(List<Long> pks) {
-        for (Long pk : pks)
-            removeTrashEntity(getPatient(pk));
-    }
-
-    public void removeTrashStudies(List<Long> pks) {
-        for (Long pk : pks)
-            removeTrashEntity(getStudy(pk));
-    }
-
-    public void removeTrashSeries(List<Long> pks) {
-        for (Long pk : pks)
-            removeTrashEntity(getSeries(pk));
-    }
-
-    public void removeTrashInstances(List<Long> pks) {
-        for (Long pk : pks)
-            removeTrashEntity(getInstance(pk));
+    public void removeTrashEntities(List<Long> pks, Class<? extends BaseEntity> clazz) {
+        
+        if (clazz.equals(PrivatePatient.class)) {
+            for (Long pk : pks)
+                removeTrashEntity(getPatient(pk));
+        } else if (clazz.equals(PrivateStudy.class)) {
+            for (Long pk : pks)
+                removeTrashEntity(getStudy(pk));
+        } else if (clazz.equals(PrivateSeries.class)) {
+            for (Long pk : pks)
+                removeTrashEntity(getSeries(pk));
+        } else if (clazz.equals(PrivateInstance.class)) {
+            for (Long pk : pks)
+                removeTrashEntity(getInstance(pk));
+        }
     }
     
     private void removeTrashEntity(BaseEntity entity) {

@@ -72,11 +72,8 @@ public interface TrashListLocal {
     PrivateSeries getSeries(long pk);
     PrivateInstance getInstance(long pk);
     
-    public void removeTrashPatients(List<Long> pks);
-    public void removeTrashStudies(List<Long> pks);
-    public void removeTrashSeries(List<Long> pks);
-    public void removeTrashInstances(List<Long> pks);
-    
+    public void removeTrashEntities(List<Long> pks, Class<? extends BaseEntity> clazz);
+
     public void removeTrashAll();
     
     public List<PrivateFile> getFilesForEntity(long pk, Class<? extends BaseEntity> clazz);
