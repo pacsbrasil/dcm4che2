@@ -95,7 +95,6 @@ public class ModalityWorklistBean implements ModalityWorklist {
         if (filter.isLatestItemsFirst()) {
             ql.append(" DESC");
         }
-
         Query query = em.createQuery(ql.toString());
         setQueryParameters(query, filter);
         return query.setMaxResults(max).setFirstResult(index).getResultList();
@@ -111,11 +110,11 @@ public class ModalityWorklistBean implements ModalityWorklist {
     private static void appendWhereClause(StringBuilder ql, ModalityWorklistFilter filter) {
         ql.append(" WHERE p.mergedWith IS NULL");
 
-        if (!filter.isExtendedQuery()) {            
-            appendPatientNameFilter(ql, filter.getPatientName());
-            appendPatientIDFilter(ql, filter.getPatientID());
-            appendIssuerOfPatientIDFilter(ql, filter.getIssuerOfPatientID());
-            appendAccessionNumberFilter(ql, filter.getAccessionNumber());
+        if (!filter.isExtendedQuery()) {
+            appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+            appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID()));
+            appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
+            appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
             appendStartDateMinFilter(ql, filter.getStartDateMin());
             appendStartDateMaxFilter(ql, filter.getStartDateMax());
             appendModalityFilter(ql, filter.getModality());
@@ -180,15 +179,13 @@ public class ModalityWorklistBean implements ModalityWorklist {
         return param.toString();
     }
 
-    private static void appendPatientNameFilter(StringBuilder ql,
-            String patientName) {
+    private static void appendPatientNameFilter(StringBuilder ql, String patientName) {
         if (patientName!=null) {
             ql.append(" AND p.patientName LIKE :patientName");
         }
     }
 
     private static void setPatientNameQueryParameter(Query query, String patientName) {
-
         if (patientName!=null) {
             int padcarets = 4;
             StringBuilder param = new StringBuilder();

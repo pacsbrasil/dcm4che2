@@ -98,8 +98,7 @@ public class TrashListBean implements TrashListLocal {
                 : " FROM PrivatePatient p INNER JOIN p.studies s");
     }
 
-    private static void appendWhereClause(StringBuilder ql,
-            TrashListFilter filter) {
+    private static void appendWhereClause(StringBuilder ql, TrashListFilter filter) {
         ql.append(" WHERE p.privateType = 1");
         if ( QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()) ) {
             appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName()));
@@ -157,15 +156,13 @@ public class TrashListBean implements TrashListLocal {
         return param.toString();
     }
 
-    private static void appendPatientNameFilter(StringBuilder ql,
-            String patientName) {
+    private static void appendPatientNameFilter(StringBuilder ql, String patientName) {
         if (patientName!=null) {
             ql.append(" AND p.patientName LIKE :patientName");
         }
     }
 
-    private static void setPatientNameQueryParameter(Query query,
-            String patientName) {
+    private static void setPatientNameQueryParameter(Query query, String patientName) {
         if (patientName!=null) {
             int padcarets = 4;
             StringBuilder param = new StringBuilder();
@@ -197,6 +194,9 @@ public class TrashListBean implements TrashListLocal {
             while (padcarets-- > 0) {
                 param.append("^%");
             }
+            System.out.println("T: HAVE patientName FILTER VALUE: " + patientName);
+            System.out.println("T: SETTING patientName PARAMETER TO: " + param.toString());
+
             query.setParameter("patientName", param.toString());
         }
     }
