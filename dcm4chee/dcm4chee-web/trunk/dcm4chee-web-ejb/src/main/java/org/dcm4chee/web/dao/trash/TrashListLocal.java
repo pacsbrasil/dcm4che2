@@ -43,6 +43,7 @@ import java.util.List;
 import javax.ejb.Local;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4chee.archive.entity.BaseEntity;
 import org.dcm4chee.archive.entity.PrivateFile;
 import org.dcm4chee.archive.entity.PrivateInstance;
 import org.dcm4chee.archive.entity.PrivatePatient;
@@ -78,10 +79,7 @@ public interface TrashListLocal {
     
     public void removeTrashAll();
     
-    public List<PrivateFile> getFilesForPatient(long patientPk);
-    public List<PrivateFile> getFilesForStudy(long studyPk);
-    public List<PrivateFile> getFilesForSeries(long seriesPk);
-    public List<PrivateFile> getFilesForInstance(long instancePk);
+    public List<PrivateFile> getFilesForEntity(long pk, Class<? extends BaseEntity> clazz);
     
     public DicomObject getDicomAttributes(long filePk);
 }

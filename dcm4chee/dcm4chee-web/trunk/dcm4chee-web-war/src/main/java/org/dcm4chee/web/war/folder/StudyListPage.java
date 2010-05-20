@@ -466,6 +466,9 @@ public class StudyListPage extends Panel {
         };
         extendedSeriesFilter.add( new Label("seriesInstanceUIDLabel", new ResourceModel("folder.seriesInstanceUID")));
         extendedSeriesFilter.add( new TextField<String>("seriesInstanceUID") {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean isEnabled() {
                 return !filter.isExtendedStudyQuery() || QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());

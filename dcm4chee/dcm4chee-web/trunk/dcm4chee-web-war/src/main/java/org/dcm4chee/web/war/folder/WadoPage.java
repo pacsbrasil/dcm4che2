@@ -38,11 +38,7 @@
 
 package org.dcm4chee.web.war.folder;
 
-import org.apache.wicket.markup.ComponentTag;
-import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 
@@ -54,8 +50,6 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
 public class WadoPage extends BaseWicketPage {
     
     private IModel<String> urlModel;
-    private IModel<String> titleModel;
-    
     public WadoPage() {
         super();
         initPage();

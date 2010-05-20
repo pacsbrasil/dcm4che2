@@ -39,11 +39,9 @@
 package org.dcm4chee.web.war.worklist.modality.model;
 
 import java.io.Serializable;
-import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.wicket.Session;
 import org.apache.wicket.model.IModel;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;

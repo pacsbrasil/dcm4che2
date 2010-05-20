@@ -42,7 +42,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.wicket.ResourceReference;
-import org.apache.wicket.extensions.yui.calendar.DateTimeField;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
@@ -84,7 +83,6 @@ public class Mpps2MwlLinkPanel extends ModalityWorklistPanel {
     
     private List<PPSModel> ppsModels;
     private TextField<String> tfPatName;
-    private DateTimeField tfStartDateMin;
     private DropDownChoice<?> tfModality;
 
     private static Logger log = LoggerFactory.getLogger(Mpps2MwlLinkPanel.class);
@@ -118,8 +116,8 @@ public class Mpps2MwlLinkPanel extends ModalityWorklistPanel {
         form.addLabeledTextField("issuerOfPatientID", enabledModel);
         
         form.addLabel("startDate");
-        tfStartDateMin = form.addLabeledDateTimeField("startDateMin", new PropertyModel<Date>(filter, "startDateMin"), enabledModel, false);
-        tfStartDateMin = form.addLabeledDateTimeField("startDateMax", new PropertyModel<Date>(filter, "startDateMax"), enabledModel, true);
+        form.addLabeledDateTimeField("startDateMin", new PropertyModel<Date>(filter, "startDateMin"), enabledModel, false);
+        form.addLabeledDateTimeField("startDateMax", new PropertyModel<Date>(filter, "startDateMax"), enabledModel, true);
 
         form.addLabeledTextField("accessionNumber", enabledModel);
         tfModality = form.addLabeledDropDownChoice("modality", null, getModalityChoices(), enabledModel);

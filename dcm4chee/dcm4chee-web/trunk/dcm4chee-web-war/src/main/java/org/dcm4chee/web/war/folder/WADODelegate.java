@@ -40,7 +40,6 @@ package org.dcm4chee.web.war.folder;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 

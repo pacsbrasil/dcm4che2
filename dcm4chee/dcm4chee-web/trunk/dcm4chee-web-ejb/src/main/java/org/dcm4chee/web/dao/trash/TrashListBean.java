@@ -399,30 +399,29 @@ public class TrashListBean implements TrashListLocal {
     }
 
     @SuppressWarnings("unchecked")
-    public List<PrivateFile> getFilesForPatient(long patientPk) {
-        return em.createQuery("SELECT DISTINCT f FROM PrivateFile f LEFT JOIN FETCH f.fileSystem fs LEFT JOIN FETCH f.instance i LEFT JOIN i.series se LEFT JOIN se.study st LEFT JOIN st.patient p WHERE p.pk = :patientPk")
-            .setParameter("patientPk", patientPk)
-            .getResultList();
-    }
+    public List<PrivateFile> getFilesForEntity(long pk, Class<? extends BaseEntity> clazz) {
+        
+        String query = "SELECT DISTINCT f FROM PrivateFile f LEFT JOIN FETCH f.fileSystem fs LEFT JOIN FETCH f.instance i ";
 
-    @SuppressWarnings("unchecked")
-    public List<PrivateFile> getFilesForStudy(long studyPk) {
-        return em.createQuery("SELECT DISTINCT f FROM PrivateFile f LEFT JOIN FETCH f.fileSystem fs LEFT JOIN FETCH f.instance i LEFT JOIN i.series se LEFT JOIN se.study st WHERE st.pk = :studyPk")
-            .setParameter("studyPk", studyPk)
-            .getResultList();
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<PrivateFile> getFilesForSeries(long seriesPk) {
-        return em.createQuery("SELECT DISTINCT f FROM PrivateFile f LEFT JOIN FETCH f.fileSystem fs LEFT JOIN FETCH f.instance i LEFT JOIN i.series se WHERE se.pk = :seriesPk")
-            .setParameter("seriesPk", seriesPk)
-            .getResultList();
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<PrivateFile> getFilesForInstance(long instancePk) {
-        return em.createQuery("SELECT DISTINCT f FROM PrivateFile f LEFT JOIN FETCH f.fileSystem fs LEFT JOIN FETCH f.instance i  WHERE i.pk = :instancePk")
-            .setParameter("instancePk", instancePk)
+        if (clazz.equals(PrivateInstance.class))
+            query += "WHERE i.pk = :pk";
+        else {
+            query += "LEFT JOIN i.series se ";
+            
+            if (clazz.equals(PrivateSeries.class))
+                query += "WHERE se.pk = :pk";
+            else {
+                query += "LEFT JOIN se.study st";
+                if (clazz.equals(PrivateStudy.class))
+                    query += " WHERE st.pk = :pk";
+                else if (clazz.equals(PrivatePatient.class))
+                    query += "LEFT JOIN st.patient p WHERE p.pk = :pk";
+                else return null;
+            }
+        }
+        
+        return em.createQuery(query)
+            .setParameter("pk", pk)
             .getResultList();
     }
 

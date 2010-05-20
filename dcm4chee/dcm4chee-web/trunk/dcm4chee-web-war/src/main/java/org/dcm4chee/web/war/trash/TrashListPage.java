@@ -68,7 +68,9 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.PrivateFile;
+import org.dcm4chee.archive.entity.PrivateInstance;
 import org.dcm4chee.archive.entity.PrivatePatient;
+import org.dcm4chee.archive.entity.PrivateSeries;
 import org.dcm4chee.archive.entity.PrivateStudy;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.dashboard.ui.filesystem.FileSystemPanel;
@@ -808,19 +810,19 @@ public class TrashListPage extends Panel {
         
         if (selected.hasPatients()) {
             for (PrivPatientModel pp : selected.getPatients())
-                files.addAll(dao.getFilesForPatient(pp.getPk()));
+                files.addAll(dao.getFilesForEntity(pp.getPk(), PrivatePatient.class));
         }
         if (selected.hasStudies()) {
             for (PrivStudyModel pst : selected.getStudies())
-                files.addAll(dao.getFilesForStudy(pst.getPk()));
+                files.addAll(dao.getFilesForEntity(pst.getPk(), PrivateStudy.class));
         }
         if (selected.hasSeries()) {
             for (PrivSeriesModel pse : selected.getSeries())
-                files.addAll(dao.getFilesForSeries(pse.getPk()));
+                files.addAll(dao.getFilesForEntity(pse.getPk(), PrivateSeries.class));
         }
         if (selected.hasInstances()) {
             for (PrivInstanceModel pi : selected.getInstances())
-                files.addAll(dao.getFilesForInstance(pi.getPk()));
+                files.addAll(dao.getFilesForEntity(pi.getPk(), PrivateInstance.class));
         }
         return files;
     }

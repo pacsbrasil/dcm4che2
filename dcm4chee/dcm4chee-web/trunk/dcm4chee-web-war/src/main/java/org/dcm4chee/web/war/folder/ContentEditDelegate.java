@@ -161,8 +161,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
         } catch (SelectionException x) {
             throw x;
         } catch (Exception x) {
-            String msg = "Move selected Entities failed! Reason:"+x.getMessage();
-            log.error(msg,x);
+            log.error("Move selected Entities failed! Reason:"+x.getMessage(),x);
             return -1;
         }
     }
