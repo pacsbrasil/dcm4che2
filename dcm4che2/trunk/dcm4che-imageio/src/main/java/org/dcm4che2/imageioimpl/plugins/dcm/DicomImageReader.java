@@ -40,6 +40,7 @@ package org.dcm4che2.imageioimpl.plugins.dcm;
 
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -49,6 +50,7 @@ import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
+import java.awt.image.ReplicateScaleFilter;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
@@ -457,7 +459,7 @@ public class DicomImageReader extends ImageReader {
         }
         return raster;
     }
-
+    
     /**
      * Reads the provided image as a buffered image. It is possible to read
      * image overlays by providing the 0x60000000 number associated with the
@@ -487,9 +489,7 @@ public class DicomImageReader extends ImageReader {
             bi = reader.read(0, param1);
             postDecompress();
         } else if( pmi.endsWith("422") || pmi.endsWith("420") ) {
-            WritableRaster wr = (WritableRaster) readRaster(imageIndex, param);
-            bi = new BufferedImage(ColorModelFactory.createColorModel(ds),
-                    wr, false, null);
+            bi = readYbr400(imageIndex, param);
         } else {
             bi = reader.read(imageIndex, param);
             if (swapByteOrder) {
@@ -524,6 +524,59 @@ public class DicomImageReader extends ImageReader {
             }
         }
         return bi;
+    }
+
+    /**
+     * Reads the Ybr 422 and 420 type images.  Sub-samples after reading as necessary.
+     * 
+     * @param imageIndex
+     * @param param
+     * @return
+     * @throws IOException
+     */
+    private BufferedImage readYbr400(int imageIndex, ImageReadParam param) throws IOException
+    {
+        ImageReadParam useParam = param;
+        Rectangle sourceRegion = param.getSourceRegion();
+        if( param.getSourceXSubsampling()!=1 
+                || param.getSourceYSubsampling()!=1 
+                || sourceRegion!=null ) {
+            useParam = getDefaultReadParam();
+        }
+        BufferedImage bi;
+        System.out.println("Reading 422/420 image");
+        WritableRaster wr = (WritableRaster) readRaster(imageIndex, useParam);
+        bi = new BufferedImage(ColorModelFactory.createColorModel(ds),
+                wr, false, null);
+        if( useParam==param ) return bi;
+        return subsampleRGB(bi,sourceRegion,param.getSourceXSubsampling(),param.getSourceYSubsampling());
+    }
+ 
+    /** Sub-samples RGB buffered images when the reader doesn't support it.  */
+    public static BufferedImage subsampleRGB(BufferedImage src, Rectangle sourceRegion, int subSampleX, int subSampleY) {
+        if( sourceRegion==null ) sourceRegion = new Rectangle(src.getWidth(), src.getHeight());
+        int dWidth = sourceRegion.width/subSampleX;
+        int dHeight = sourceRegion.height/subSampleY;
+        BufferedImage ret = new BufferedImage(dWidth,dHeight,BufferedImage.TYPE_INT_RGB);
+
+        int[] srcRgb = new int[src.getWidth()];
+        int[] destRgb = new int[dWidth];
+        int maxY = sourceRegion.y+sourceRegion.height;
+        int maxX =  sourceRegion.x+sourceRegion.width;
+        int destY=0;
+        for (int iy = sourceRegion.y; iy < maxY; iy += subSampleY, destY++) {
+            srcRgb = src.getRGB(sourceRegion.x, iy, sourceRegion.width, 1, srcRgb, 0, src.getWidth());
+            if( subSampleX==1 ) {
+                ret.setRGB(0, destY, dWidth, 1, srcRgb, 0, src.getWidth());
+            } else {
+                int destX = 0;
+                for(int ix=sourceRegion.x; ix < maxX; ix += subSampleX) {
+                    destRgb[destX++] = srcRgb[ix];
+                }
+                ret.setRGB(0, destY, dWidth, 1, destRgb, 0, dWidth);
+            }
+        }
+        return ret;
     }
 
     /**
